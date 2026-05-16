@@ -1,0 +1,385 @@
+"use client";
+
+import type {
+  DRGSummaryData,
+  SutPatientOutcomeData,
+} from "@/lib/domains/sut";
+import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
+import { SyntheticDemoProvenance } from "@/components/sut/SyntheticDemoProvenance";
+import useStaggeredReveal from "@/hooks/useStaggeredReveal";
+import PatientSearch from "@/components/ui/PatientSearch";
+import { searchSutPatients } from "@/lib/api/sut";
+import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
+import {
+  fmtNum,
+  fmtTRY,
+  fmtTRYOrUnavailable,
+  getSutOutcomeViewState,
+  KpiCard,
+} from "./shared";
+
+export function PatientSUTContent({
+  data,
+  error,
+  loading,
+  reveal,
+  selectedPatientId,
+  onPatientSelect,
+  onRetry,
+}: {
+  data: SutPatientOutcomeData | null;
+  error: string | null;
+  loading: boolean;
+  reveal: ReturnType<typeof useStaggeredReveal>;
+  selectedPatientId: string | null;
+  onPatientSelect: (patientId: string) => void;
+  onRetry: () => void;
+}) {
+  const outcomeState = getSutOutcomeViewState({
+    selectedPatientId,
+    loading,
+    error,
+    hasData: Boolean(data),
+  });
+
+  const getReveal = (index: number) =>
+    reveal.getRevealProps?.(index, "scale") ?? {
+      staggerAttrs: {},
+      staggerClass: "",
+      staggerStyle: undefined,
+    };
+
+  const summaryReveal = getReveal(0);
+  const warningReveal = getReveal(1);
+  const claimReveal = getReveal(2);
+  const drgReveal = getReveal(3);
+
+  return (
+    <div>
+      <div className="frost-card mb-6 px-6 py-4">
+        <div className="flex items-center gap-4">
+          <span className="font-semibold whitespace-nowrap">Patient:</span>
+          <PatientSearch
+            id="patient-sut-search"
+            selectedPatientId={selectedPatientId}
+            onSelect={onPatientSelect}
+            placeholder="Search patient ID for SUT analysis..."
+            searchFn={searchSutPatients}
+          />
+        </div>
+      </div>
+
+      {selectedPatientId && (
+        <div className="frost-card mb-6 px-6 py-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Selected patient
+              </p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">Patient {selectedPatientId}</p>
+            </div>
+            <p className="text-xs text-slate-500">
+              {outcomeState === "loading"
+                ? "Refreshing exact DRG analytics..."
+                : outcomeState === "error"
+                  ? "Patient analytics could not be loaded."
+                  : outcomeState === "empty"
+                    ? "Patient-level DRG analytics are not currently loaded."
+                    : "Patient-level DRG analytics are ready."}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {outcomeState === "idle" ? (
+        <div className="frost-card p-8 text-center sut-section-description">
+          Search for a patient above to load exact-only SUT DRG analytics.
+        </div>
+      ) : outcomeState === "loading" ? (
+        <SutPatientAnalyticsSkeleton patientId={selectedPatientId} />
+      ) : outcomeState === "error" ? (
+        <div className="frost-card sut-premium-error space-y-3 p-6">
+          <div>
+            <p className="sut-premium-error-title text-sm font-semibold">{error}</p>
+            <p className="sut-premium-error-hint mt-1 text-xs">
+              Retry this patient, or pick a different patient from the search box.
+            </p>
+          </div>
+          <div>
+            <button
+              type="button"
+              className="sut-section-btn sut-section-btn-active sut-section-btn-compact"
+              onClick={onRetry}
+            >
+              <span className="text-xs font-semibold">Retry patient outcome</span>
+            </button>
+          </div>
+        </div>
+      ) : outcomeState === "empty" ? (
+        <div className="empty-state space-y-3">
+          <p className="empty-state-text">
+            Patient-level SUT analytics are not currently loaded for patient {selectedPatientId}.
+          </p>
+          <div>
+            <button
+              type="button"
+              className="sut-section-btn sut-section-btn-compact"
+              onClick={onRetry}
+            >
+              <span className="text-xs font-semibold">Retry patient outcome</span>
+            </button>
+          </div>
+        </div>
+      ) : data ? (
+        <div className="space-y-6">
+          <div
+            {...summaryReveal.staggerAttrs}
+            className={`frost-panel p-5 ${summaryReveal.staggerClass}`}
+            style={summaryReveal.staggerStyle}
+          >
+            <SyntheticDemoProvenance dataSource={data} className="mb-4" />
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Exact-only patient outcome
+            </p>
+            <h3 className="mt-2 text-lg font-semibold text-slate-950">DRG package review stays explicit</h3>
+            <div className="mt-3 space-y-2 text-sm leading-relaxed text-slate-500">
+              <p>
+                Estimate-backed SUT cost ranges and gap projections were removed.
+              </p>
+              <p>
+                This patient view now keeps only the surviving DRG package outcome surface, and missing
+                pricing metadata stays unavailable instead of being treated as exact.
+              </p>
+            </div>
+          </div>
+
+          {data.consistency_warnings && data.consistency_warnings.length > 0 && (
+            <div
+              {...warningReveal.staggerAttrs}
+              className={`rounded-lg border border-green-200 bg-green-50/50 px-4 py-3 ${warningReveal.staggerClass}`}
+              style={warningReveal.staggerStyle}
+            >
+              {data.consistency_warnings.map((warning, index) => (
+                <p key={index} className="text-xs text-amber-800">
+                  {warning}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {data.sut_claim_totals && (
+            <div
+              {...claimReveal.staggerAttrs}
+              className={`frost-panel p-5 ${claimReveal.staggerClass}`}
+              style={claimReveal.staggerStyle}
+            >
+              <ClaimSummaryPanel data={data} />
+            </div>
+          )}
+
+          {data.drg_summary && data.drg_summary.n_episodes > 0 ? (
+            <div
+              {...drgReveal.staggerAttrs}
+              className={`frost-panel p-5 ${drgReveal.staggerClass}`}
+              style={drgReveal.staggerStyle}
+            >
+              <DRGPanel data={data.drg_summary} />
+            </div>
+          ) : (
+            <div
+              {...drgReveal.staggerAttrs}
+              className={`frost-panel p-5 ${drgReveal.staggerClass}`}
+              style={drgReveal.staggerStyle}
+            >
+              <p className="text-sm font-semibold text-slate-900">No DRG episode summary available</p>
+              <p className="mt-2 text-sm text-slate-500">
+                This patient outcome no longer includes estimate-backed fallback sections. If exact DRG
+                pricing inputs are unavailable, the patient remains unavailable here.
+              </p>
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function ClaimSummaryPanel({ data }: { data: SutPatientOutcomeData }) {
+  const totals = data.sut_claim_totals;
+  const summary = data.sut_claim_summary;
+  if (!totals) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-text-secondary">
+          Exact Claim-Line Summary
+        </h3>
+        <p className="text-xs text-slate-400">
+          Patient-level SUT totals are assembled from exact synthetic claim headers and claim lines.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <KpiCard
+          label="Total Billed"
+          value={fmtTRYOrUnavailable(totals.total_billed_try)}
+          sub="Exact claim-line amount"
+        />
+        <KpiCard
+          label="Expected Payable"
+          value={fmtTRYOrUnavailable(totals.total_expected_payable_try)}
+          sub="Synthetic expected output"
+        />
+        <KpiCard label="Claims" value={fmtNum(totals.claim_count)} />
+        <KpiCard label="Procedure Lines" value={fmtNum(totals.procedure_line_count)} />
+      </div>
+
+      {summary && (
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <KpiCard label="Material Lines" value={fmtNum(summary.material_line_count)} />
+            <KpiCard label="Drug Lines" value={fmtNum(summary.drug_line_count)} />
+            <KpiCard label="Diagnoses" value={fmtNum(summary.diagnosis_count)} />
+            <KpiCard
+              label="Rule Flags"
+              value={fmtNum(
+                summary.top_procedures.filter((procedure) =>
+                  procedure.surcharge_applicable || procedure.copay_rate_applicable
+                ).length,
+              )}
+              sub="Visible top procedures"
+            />
+          </div>
+
+          {summary.top_procedures.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="min-w-[720px] w-full text-xs" style={{ color: "#1A1A1A" }}>
+                <thead>
+                  <tr className="border-b" style={{ borderColor: "rgba(122,139,122,0.15)" }}>
+                    <th className="pb-2 pr-3 text-left">Date</th>
+                    <th className="pb-2 pr-3 text-left">Procedure</th>
+                    <th className="pb-2 pr-3 text-right">Billed</th>
+                    <th className="pb-2 pr-3 text-center">Surcharge</th>
+                    <th className="pb-2 text-center">Copay Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {summary.top_procedures.slice(0, 6).map((procedure) => (
+                    <tr key={procedure.procedure_line_id} className="border-b" style={{ borderColor: "rgba(122,139,122,0.08)" }}>
+                      <td className="py-2 pr-3 font-mono">{procedure.procedure_date ?? "—"}</td>
+                      <td className="py-2 pr-3">
+                        <span className="font-semibold">{procedure.procedure_code}</span>
+                        <span className="ml-2 text-slate-500">{procedure.procedure_name}</span>
+                      </td>
+                      <td className="py-2 pr-3 text-right">{fmtTRYOrUnavailable(procedure.billed_amount_try)}</td>
+                      <td className="py-2 pr-3 text-center">{procedure.surcharge_applicable ? "Yes" : "No"}</td>
+                      <td className="py-2 text-center">{procedure.copay_rate_applicable ? "Yes" : "No"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+export function DRGPanel({ data }: { data: DRGSummaryData }) {
+  const drgExact = isExactOutput(data);
+  const totalPkgPrice = drgExact ? data.total_drg_package_price : null;
+
+  return (
+    <>
+      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-secondary">
+        DRG Episode Cost Modeling
+      </h3>
+      <p className="mb-3 text-xs text-slate-400">
+        Compares itemized episode costs against SGK bundled DRG package prices (EK-2C).
+        Surplus means the DRG package covers more than itemized costs.
+      </p>
+      {!drgExact && (
+        <div
+          className="mb-4 rounded-2xl border px-4 py-3 text-sm"
+          style={{ borderColor: "rgba(113, 113, 122, 0.2)", color: "#52525B" }}
+        >
+          {getUnavailableMessage(
+            data,
+            "DRG package pricing remains unavailable until every episode has an exact admission date and historical package price.",
+          )}
+        </div>
+      )}
+      <div className="mb-4 flex flex-wrap gap-6 text-sm">
+        <div>
+          <span className="text-slate-400">Episodes:</span>{" "}
+          <span className="font-bold text-text-primary">{fmtNum(data.n_episodes)}</span>
+        </div>
+        <div>
+          <span className="text-slate-400">Itemized Cost:</span>{" "}
+          <span className="font-bold text-emerald-700">{fmtTRY(data.total_drg_cost)}</span>
+        </div>
+        <div>
+          <span className="text-slate-400">DRG Package Price:</span>{" "}
+          <span className="font-bold text-amber-800">{fmtTRYOrUnavailable(totalPkgPrice)}</span>
+        </div>
+        <div>
+          <span className="text-slate-400">Mean/Episode:</span>{" "}
+          <span className="font-bold text-text-primary">{fmtTRY(data.mean_episode_cost)}</span>
+        </div>
+        <div>
+          <span className="text-slate-400">Costliest:</span>{" "}
+          <span className="font-bold text-amber-800">{data.most_expensive_drg}</span>
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-slate-200 text-left text-slate-400">
+              <th className="pb-2 pr-3">#</th>
+              <th className="pb-2 pr-3">ICD-10</th>
+              <th className="pb-2 pr-3">Description</th>
+              <th className="pb-2 pr-3 text-center">Group</th>
+              <th className="pb-2 pr-3 text-right">LOS</th>
+              <th className="pb-2 pr-3 text-right">Lab</th>
+              <th className="pb-2 pr-3 text-right">Visit</th>
+              <th className="pb-2 pr-3 text-right">Rx</th>
+              <th className="pb-2 pr-3 text-right">Proc</th>
+              <th className="pb-2 pr-3 text-right">Itemized</th>
+              <th className="pb-2 pr-3 text-right">DRG Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.episodes.map((ep) => {
+              const episodeExact = isExactOutput(ep);
+              return (
+                <tr key={ep.episode_id} className="border-b border-slate-100 hover:bg-slate-50/50">
+                  <td className="py-1.5 pr-3 text-slate-500">{fmtNum(ep.episode_id + 1)}</td>
+                  <td className="py-1.5 pr-3 font-mono text-emerald-700">{ep.primary_icd10}</td>
+                  <td className="py-1.5 pr-3 text-text-secondary">{ep.description}</td>
+                  <td className="py-1.5 pr-3 text-center">
+                    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+                      {ep.ek2c_group || "—"}
+                    </span>
+                  </td>
+                  <td className="py-1.5 pr-3 text-right text-text-secondary">{fmtNum(ep.los_days)}</td>
+                  <td className="py-1.5 pr-3 text-right text-text-secondary">{fmtTRY(ep.lab_cost)}</td>
+                  <td className="py-1.5 pr-3 text-right text-text-secondary">{fmtTRY(ep.visit_cost)}</td>
+                  <td className="py-1.5 pr-3 text-right text-text-secondary">{fmtTRY(ep.rx_cost)}</td>
+                  <td className="py-1.5 pr-3 text-right text-text-secondary">{fmtTRY(ep.procedure_cost)}</td>
+                  <td className="py-1.5 pr-3 text-right font-semibold text-text-primary">{fmtTRY(ep.total_cost)}</td>
+                  <td className="py-1.5 pr-3 text-right font-semibold text-amber-800">
+                    {fmtTRYOrUnavailable(episodeExact ? ep.drg_package_price : null)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}

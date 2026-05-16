@@ -1,0 +1,403 @@
+/* SUT modal stepper extracted from legacy frontend/src/app/styles/how-modal.css:4-393. */
+
+.how-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(26, 35, 50, 0.50);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: modalFadeIn 180ms ease-out;
+}
+
+.how-modal {
+  width: min(960px, 100%);
+  max-height: min(86vh, 780px);
+  overflow: auto;
+  padding: 20px 24px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+
+.how-modal-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.how-modal-kicker {
+  color: var(--color-accent);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.how-modal-intro {
+  max-width: 44rem;
+  margin: 0;
+  color: #71717A;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.how-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.how-modal-head h2 {
+  margin: 0;
+  color: #1A1A1A;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.how-modal-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);
+  background: rgba(255, 255, 255, 0.80);
+  color: #71717A;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.how-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.how-modal-content section {
+  border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(247, 248, 251, 0.80);
+}
+
+.how-modal-content h3 {
+  margin: 0 0 7px;
+  font-size: 0.86rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+}
+
+.how-modal-content p,
+.how-modal-content li {
+  color: #71717A;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.how-modal-content ol,
+.how-modal-content ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.how-phase-counter {
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #A1A1AA;
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.how-stepper-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 20px;
+  min-height: 400px;
+}
+
+.how-phase-nav {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 0;
+}
+
+.how-phase-line {
+  position: absolute;
+  left: 17px;
+  top: 20px;
+  bottom: 20px;
+  width: 2px;
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-radius: 1px;
+  z-index: 0;
+}
+
+.how-phase-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.how-phase-nav-item:hover {
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+.how-phase-dot {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  background: rgba(255, 255, 255, 0.90);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #A1A1AA;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+}
+
+.how-phase-nav-item.is-active .how-phase-dot {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #FFFFFF;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+.how-phase-nav-item.is-past .how-phase-dot {
+  border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+.how-phase-nav-label {
+  font-size: 0.74rem;
+  font-weight: 560;
+  color: #A1A1AA;
+  text-align: left;
+  line-height: 1.25;
+  transition: color 0.15s ease;
+}
+
+.how-phase-nav-item.is-active .how-phase-nav-label {
+  color: #1A1A1A;
+  font-weight: 650;
+}
+
+.how-phase-nav-item.is-past .how-phase-nav-label {
+  color: #71717A;
+}
+
+.how-phase-detail {
+  border: 1px solid color-mix(in srgb, var(--color-accent) 14%, transparent);
+  border-radius: 14px;
+  padding: 22px 24px;
+  background: rgba(247, 248, 251, 0.85);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: phaseSlideIn 280ms cubic-bezier(0.22, 0.88, 0.24, 1);
+}
+
+@keyframes phaseSlideIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.how-phase-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.how-phase-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.how-phase-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  letter-spacing: -0.01em;
+}
+
+.how-phase-description {
+  color: #71717A;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.how-phase-details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.how-phase-detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: #A1A1AA;
+  line-height: 1.4;
+}
+
+.how-phase-detail-bullet {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 5px;
+  background: var(--color-accent);
+  opacity: 0.8;
+}
+
+.how-phase-feeds {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 4%, transparent);
+}
+
+.how-phase-feeds-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.how-phase-feeds-value {
+  font-size: 0.8rem;
+  color: #71717A;
+  line-height: 1.35;
+}
+
+.how-phase-nav-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.how-phase-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  background: rgba(255, 255, 255, 0.80);
+  color: #71717A;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.how-phase-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1A1A1A;
+}
+
+.how-phase-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.how-phase-btn-primary {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  color: var(--color-accent);
+}
+
+.how-phase-btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: #0A5470;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .how-modal-overlay {
+    padding: 14px;
+  }
+
+  .how-modal {
+    padding: 14px;
+    max-height: 88vh;
+  }
+
+  .how-modal-head {
+    align-items: flex-start;
+  }
+
+  .how-stepper-layout {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .how-phase-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .how-phase-line,
+  .how-phase-nav-label {
+    display: none;
+  }
+
+  .how-phase-dot {
+    width: 32px;
+    height: 32px;
+  }
+
+  .how-phase-detail {
+    padding: 16px;
+  }
+}
+
+@media print {
+  .how-modal-overlay {
+    display: none !important;
+  }
+}

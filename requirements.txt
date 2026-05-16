@@ -1,0 +1,29 @@
+# BILUN — Standalone Subset Requirements
+# Install with: pip install -r requirements.txt
+#
+# This is the BILUN-specific subset of the ILAY project dependencies.
+# IHP-only ML dependencies (xgboost, lightgbm, boruta, optuna, shap,
+# interpret, joblib) have been removed.
+#
+# Backend API served via FastAPI.
+
+# ── Core (required) ─────────────────────────────────────────────────────────
+numpy>=1.24
+pandas>=2.0
+openpyxl>=3.1
+pyarrow>=14.0
+scipy>=1.10
+
+# ── ML / Analytics ──────────────────────────────────────────────────────────
+scikit-learn==1.7.2   # pinned to match model serialization version
+
+# ── API Backend ─────────────────────────────────────────────────────────────
+fastapi>=0.100
+pydantic>=2.0
+uvicorn>=0.23.0
+duckdb>=1.0
+polars>=1.0
+httpx>=0.24
+
+# ── Testing ─────────────────────────────────────────────────────────────────
+pytest>=8
