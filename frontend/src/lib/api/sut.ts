@@ -11,6 +11,11 @@ import type {
   MaterialsBySpecialtyResponse,
   CheckupPricingResponse,
   SutPatientOutcomeData,
+  CopaySimulateRequest,
+  CopaySimulateResult,
+  ExposureSummaryResponse,
+  DrgChapterPricing,
+  DrgGroupRange,
 } from "../domains/sut";
 import type { PatientMeta, PatientSearchResponse } from "../domains/patient";
 
@@ -332,4 +337,35 @@ export async function getLabPrices(options?: RequestInit): Promise<{ tests: LabP
 
 export async function getCheckupPricing(options?: RequestInit): Promise<CheckupPricingResponse> {
   return requestJSON<CheckupPricingResponse>("/api/checkup-pricing", options);
+}
+
+// ── Legacy copay / exposure / DRG endpoints ──
+
+export async function simulateCopay(
+  req: CopaySimulateRequest,
+  options?: RequestInit,
+): Promise<CopaySimulateResult> {
+  return postJSON<CopaySimulateResult, CopaySimulateRequest>(
+    "/api/copay-simulate",
+    req,
+    options,
+  );
+}
+
+export async function getExposureSummary(
+  options?: RequestInit,
+): Promise<ExposureSummaryResponse> {
+  return requestJSON<ExposureSummaryResponse>(
+    "/api/exposure-summary",
+    options,
+  );
+}
+
+export async function getDrgPricing(
+  options?: RequestInit,
+): Promise<{ chapters: DrgChapterPricing[]; groups: DrgGroupRange[] }> {
+  return requestJSON<{ chapters: DrgChapterPricing[]; groups: DrgGroupRange[] }>(
+    "/api/drg-pricing",
+    options,
+  );
 }

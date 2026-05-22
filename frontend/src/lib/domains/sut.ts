@@ -531,3 +531,117 @@ export interface CohortRecoverySummary extends ExactnessState, SUTDataSourceCarr
   savings_by_category: Record<string, number>;
   priority_distribution: Record<string, number>;
 }
+
+// ── Legacy estimate-based types (copay simulator, exposure summary, DRG pricing) ──
+
+export interface SUTCostRange {
+  min: number;
+  max: number;
+}
+
+export interface SUTCostBreakdown {
+  lab: SUTCostRange;
+  visit: SUTCostRange;
+  rx: SUTCostRange;
+  procedure: SUTCostRange;
+}
+
+export interface SUTCostEstimate {
+  cost_min: number;
+  cost_max: number;
+  cost_mid: number;
+  cost_tier: string;
+  cost_tier_label: string;
+  breakdown: SUTCostBreakdown;
+  n_lab_tests: number;
+  n_visits: number;
+  n_prescriptions: number;
+  n_procedures: number;
+}
+
+export interface SUTCohortSummary {
+  n_patients: number;
+  total_cost_min: number;
+  total_cost_max: number;
+  total_cost_mid: number;
+  mean_cost_mid: number;
+  median_cost_mid: number;
+  tier_distribution: Record<string, number>;
+  category_totals: {
+    lab: SUTCostRange;
+    visit: SUTCostRange;
+    rx: SUTCostRange;
+    procedure: SUTCostRange;
+  };
+  copayment?: {
+    total_copay_min: number;
+    total_copay_max: number;
+    total_copay_mid: number;
+    mean_copay_mid: number;
+  };
+  cost_distribution?: {
+    p10: number;
+    p25: number;
+    p75: number;
+    p90: number;
+  };
+  sgk_exposure?: {
+    total_sgk_exposure_mid: number;
+    mean_sgk_exposure_mid: number;
+  };
+  top_5_high_cost?: Array<{
+    patient_id: string;
+    cost_mid: number;
+    cost_tier: string;
+    n_visits: number;
+    n_prescriptions: number;
+  }>;
+  high_cost_concentration?: {
+    top_10pct_patients: number;
+    top_10pct_cost_share: number;
+  };
+}
+
+export interface CopaySimulateRequest {
+  facility_tier: string;
+  patient_category: string;
+  n_visits: number;
+  rx_cost: number;
+  n_prescriptions: number;
+}
+
+export interface CopaySimulateResult {
+  facility_tier: string;
+  patient_category: string;
+  n_visits: number;
+  visit: {
+    copay_per_visit: number;
+    copay_total: number;
+  };
+  drug: {
+    rx_copay_rate: number;
+    rx_copay_percentage: number;
+    rx_copay_flat: number;
+    rx_copay_total: number;
+  };
+  total_copay_min: number;
+  total_copay_max: number;
+  total_copay_mid: number;
+}
+
+export interface ExposureSummaryResponse {
+  sut_summary: SUTCohortSummary;
+}
+
+export interface DrgChapterPricing {
+  chapter: string;
+  name: string;
+  ek2c_group: string;
+  median_price: number;
+}
+
+export interface DrgGroupRange {
+  group: string;
+  min: number;
+  max: number;
+}
