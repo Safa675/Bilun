@@ -35,7 +35,10 @@ Thumbs.db
 *.duckdb
 *.duckdb.wal
 .cache/
-data/
+data/*
+!data/synthetic/
+!data/gazette/
+!data/legacy/
 
 # Node.js / Frontend
 node_modules/

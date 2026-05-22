@@ -1,0 +1,414 @@
+{
+  "meta": {
+    "kaynak": "SGK SUT (Saglik Uygulama Tebligi)",
+    "resmi_gazete": "RG-24.03.2013/28597 (guncelleme: 17/1/2026-33140)",
+    "katsayi": 0.593,
+    "formul": "Islem Bedeli (TL) = Puan x Katsayi",
+    "not": "Check-up islemleri SGK tarafindan karsilanmaz; maliyet referans amaçlidir"
+  },
+  "katilim_payi": {
+    "muayene": {
+      "1_basamak": 0,
+      "2_basamak_resmi": 26,
+      "3_basamak_resmi": 26,
+      "egitim_arastirma": 26,
+      "universite_devlet": 26,
+      "universite_vakif": 26,
+      "2_3_basamak_ozel": 60
+    },
+    "ilac": {
+      "gelir_aylik_alan_oran": 0.1,
+      "diger_oran": 0.2,
+      "recete_basi_3kutuya_kadar_tl": 3.76,
+      "ek_kutu_basi_tl": 1.25
+    }
+  },
+  "lab_testleri": {
+    "glucose_fasting": {
+      "sut_kodu": "L102890",
+      "sut_adi": "Glukoz (Serum/Plazma) ",
+      "puan": 11.08,
+      "tl": 6.57
+    },
+    "hba1c": {
+      "sut_kodu": "L102820",
+      "sut_adi": "Glike hemoglobin (Hb A1c)",
+      "puan": 44.41,
+      "tl": 26.34
+    },
+    "cholesterol_total": {
+      "sut_kodu": "L104520",
+      "sut_adi": "Kolesterol (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "hdl": {
+      "sut_kodu": "L103050",
+      "sut_adi": "HDL kolesterol",
+      "puan": 17.73,
+      "tl": 10.51
+    },
+    "ldl": {
+      "sut_kodu": "L105000",
+      "sut_adi": "LDL kolesterol (Direkt)",
+      "puan": 27.76,
+      "tl": 16.46
+    },
+    "triglycerides": {
+      "sut_kodu": "L107250",
+      "sut_adi": "Trigliserid (Serum/Plazma)",
+      "puan": 13.32,
+      "tl": 7.9
+    },
+    "uric_acid": {
+      "sut_kodu": "L107460",
+      "sut_adi": "Ürik asit (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "hemogram": {
+      "sut_kodu": "L107020",
+      "sut_adi": "Tam Kan Sayımı (Hemogram)",
+      "puan": 33.27,
+      "tl": 19.73
+    },
+    "hemoglobin": {
+      "sut_kodu": "L107020",
+      "sut_adi": "Tam Kan Sayımı (Hemogram)",
+      "puan": 33.27,
+      "tl": 19.73
+    },
+    "wbc": {
+      "sut_kodu": "L107020",
+      "sut_adi": "Tam Kan Sayımı (Hemogram)",
+      "puan": 33.27,
+      "tl": 19.73
+    },
+    "rbc": {
+      "sut_kodu": "L107020",
+      "sut_adi": "Tam Kan Sayımı (Hemogram)",
+      "puan": 33.27,
+      "tl": 19.73
+    },
+    "platelets": {
+      "sut_kodu": "L107020",
+      "sut_adi": "Tam Kan Sayımı (Hemogram)",
+      "puan": 33.27,
+      "tl": 19.73
+    },
+    "hematocrit": {
+      "sut_kodu": "L103120",
+      "sut_adi": "Hematokrit (Manuel)",
+      "puan": 9.92,
+      "tl": 5.88
+    },
+    "creatinine": {
+      "sut_kodu": "L104780",
+      "sut_adi": "Kreatinin (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "egfr": {
+      "sut_kodu": "L104780",
+      "sut_adi": "Kreatinin (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "bun": {
+      "sut_kodu": "L107420",
+      "sut_adi": "Üre (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "sodium": {
+      "sut_kodu": "L106910",
+      "sut_adi": "Sodyum (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "potassium": {
+      "sut_kodu": "L106150",
+      "sut_adi": "Potasyum (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "calcium": {
+      "sut_kodu": "L103820",
+      "sut_adi": "İyonize kalsiyum (Serum/Plazma)",
+      "puan": 28.82,
+      "tl": 17.09
+    },
+    "ast": {
+      "sut_kodu": "L101280",
+      "sut_adi": "Aspartat aminotransferaz (AST) (Serum/Plazma)",
+      "puan": 11.08,
+      "tl": 6.57
+    },
+    "alt": {
+      "sut_kodu": "L100300",
+      "sut_adi": "Alanin aminotransferaz (ALT) (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "ggt": {
+      "sut_kodu": "L102780",
+      "sut_adi": "Gamma glutamil transferaz (GGT) (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "alp": {
+      "sut_kodu": "L100710",
+      "sut_adi": "Alkalen fosfataz (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "bilirubin_total": {
+      "sut_kodu": "L101730",
+      "sut_adi": "Bilirubin, total (Serum/Plazma)",
+      "puan": 11.08,
+      "tl": 6.57
+    },
+    "bilirubin_direct": {
+      "sut_kodu": "L101710",
+      "sut_adi": "Bilirubin, direkt (Serum/Plazma)",
+      "puan": 11.08,
+      "tl": 6.57
+    },
+    "albumin": {
+      "sut_kodu": "L100320",
+      "sut_adi": "Albümin (Serum/Plazma) ",
+      "puan": 11.08,
+      "tl": 6.57
+    },
+    "tsh": {
+      "sut_kodu": "L107380",
+      "sut_adi": "TSH ",
+      "puan": 49.9,
+      "tl": 29.59
+    },
+    "ft4": {
+      "sut_kodu": "L106770",
+      "sut_adi": "Serbest T4",
+      "puan": 49.9,
+      "tl": 29.59
+    },
+    "ft3": {
+      "sut_kodu": "L106760",
+      "sut_adi": "Serbest T3",
+      "puan": 49.9,
+      "tl": 29.59
+    },
+    "crp": {
+      "sut_kodu": "L101840",
+      "sut_adi": "C reaktif protein (CRP) (Lateks)",
+      "puan": 16.63,
+      "tl": 9.86
+    },
+    "ferritin": {
+      "sut_kodu": "L102410",
+      "sut_adi": "Ferritin (Serum/Plazma)",
+      "puan": 55.45,
+      "tl": 32.88
+    },
+    "iron": {
+      "sut_kodu": "L102120",
+      "sut_adi": "Demir (Serum/Plazma)",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "tibc": {
+      "sut_kodu": "L102160",
+      "sut_adi": "Demir bağlama kapasitesi",
+      "puan": 12.15,
+      "tl": 7.2
+    },
+    "vitamin_d": {
+      "sut_kodu": "L100220",
+      "sut_adi": "25-Hidroksi vitamin D",
+      "puan": 223.49,
+      "tl": 132.53
+    },
+    "vitamin_b12": {
+      "sut_kodu": "L107520",
+      "sut_adi": "Vitamin B12 ",
+      "puan": 55.45,
+      "tl": 32.88
+    },
+    "folat": {
+      "sut_kodu": "L102480",
+      "sut_adi": "Folat (Serum/Plazma)",
+      "puan": 72.17,
+      "tl": 42.8
+    },
+    "sedimentasyon": {
+      "sut_kodu": "L106650",
+      "sut_adi": "Sedimantasyon",
+      "puan": 18.89,
+      "tl": 11.2
+    },
+    "tam_idrar": {
+      "sut_kodu": "L107010",
+      "sut_adi": "Tam idrar analizi (Strip+Mikroskopi)  ",
+      "puan": 44.36,
+      "tl": 26.31
+    },
+    "psa": {
+      "sut_kodu": "L106270",
+      "sut_adi": "Prostat spesifik antijen (PSA), serbest",
+      "puan": 113.2,
+      "tl": 67.13
+    },
+    "psa_serbest": {
+      "sut_kodu": "L106270",
+      "sut_adi": "Prostat spesifik antijen (PSA), serbest",
+      "puan": 113.2,
+      "tl": 67.13
+    },
+    "mikroalbumin": {
+      "sut_kodu": "L100330",
+      "sut_adi": "Albümin/Kreatinin (Spot idrar)",
+      "puan": 78.79,
+      "tl": 46.72
+    }
+  },
+  "islemler": {
+    "normal_poliklinik_muayene": {
+      "sut_kodu": "520030",
+      "sut_adi": "Normal poliklinik muayenesi",
+      "puan": 144.57,
+      "tl": 85.73
+    },
+    "acil_poliklinik_muayene": {
+      "sut_kodu": "520020",
+      "sut_adi": "Acil poliklinik muayenesi ",
+      "puan": 144.57,
+      "tl": 85.73
+    },
+    "yesil_alan_muayene": {
+      "sut_kodu": "520021",
+      "sut_adi": "Yeşil alan muayenesi",
+      "puan": 182.56,
+      "tl": 108.26
+    },
+    "birinci_basamak_muayene": {
+      "sut_kodu": "520080",
+      "sut_adi": "Birinci basamak poliklinik muayenesi ",
+      "puan": 88.5,
+      "tl": 52.48
+    },
+    "konsultasyon": {
+      "sut_kodu": "520010",
+      "sut_adi": "Konsültasyon (Her bir branş için)",
+      "puan": 55.94,
+      "tl": 33.17
+    },
+    "saglik_kurulu_raporu": {
+      "sut_kodu": "520050",
+      "sut_adi": "Sağlık kurulu raporu ",
+      "puan": 28.09,
+      "tl": 16.66
+    },
+    "standart_yatak": {
+      "sut_kodu": "510010",
+      "sut_adi": "Standart yatak tarifesi",
+      "puan": 374.97,
+      "tl": 222.36
+    },
+    "yogun_bakim": {
+      "sut_kodu": "510090",
+      "sut_adi": "Yoğun bakım",
+      "puan": 1252.27,
+      "tl": 742.6
+    },
+    "gunduz_yatak": {
+      "sut_kodu": "510120",
+      "sut_adi": "Gündüz yatak tarifesi",
+      "puan": 74.96,
+      "tl": 44.45
+    },
+    "refakat": {
+      "sut_kodu": "510121",
+      "sut_adi": "Refakat",
+      "puan": 124.95,
+      "tl": 74.1
+    },
+    "ekg": {
+      "sut_kodu": "700500",
+      "sut_adi": "Telefonik ya da telemetrik ritm EKG (1 kez) ",
+      "puan": 121.83,
+      "tl": 72.25
+    },
+    "holter_24saat": {
+      "sut_kodu": "700540",
+      "sut_adi": "24 saat EKG kaydı (Holter) ",
+      "puan": 562.35,
+      "tl": 333.47
+    },
+    "ekokardiyografi": {
+      "sut_kodu": "700600",
+      "sut_adi": "Transtorasik ekokardiyografi",
+      "puan": 245.55,
+      "tl": 145.61
+    },
+    "eforlu_eko": {
+      "sut_kodu": "700620",
+      "sut_adi": "Ekzersiz (Eforlu) veya farmakolojik stres ekokardiyografi",
+      "puan": 667.34,
+      "tl": 395.73
+    },
+    "pa_akciger_grafi": {
+      "sut_kodu": "801690",
+      "sut_adi": "Akciğer grafisi (İki yön) ",
+      "puan": 142.09,
+      "tl": 84.26
+    },
+    "toraks_bt": {
+      "sut_kodu": "R100450",
+      "sut_adi": "BT, Toraks, kontrastsız",
+      "puan": 610.69,
+      "tl": 362.14
+    },
+    "batin_usg": {
+      "sut_kodu": "803570",
+      "sut_adi": "Abdomen US, tüm",
+      "puan": 264.27,
+      "tl": 156.71
+    },
+    "tiroid_usg": {
+      "sut_kodu": "803510",
+      "sut_adi": "Tiroid US",
+      "puan": 160.99,
+      "tl": 95.47
+    },
+    "mamografi": {
+      "sut_kodu": "801592",
+      "sut_adi": "Mammografi (bilateral meme)",
+      "puan": 283.14,
+      "tl": 167.9
+    },
+    "kemik_dansitometri": {
+      "sut_kodu": "802900",
+      "sut_adi": "Kemik dansitometresi (Lokal)",
+      "puan": 206.56,
+      "tl": 122.49
+    },
+    "efor_testi": {
+      "sut_kodu": "700530",
+      "sut_adi": "Kardiyovasküler stress test ",
+      "puan": 393.7,
+      "tl": 233.46
+    },
+    "spirometri": {
+      "sut_kodu": "701220",
+      "sut_adi": "Solunum fonksiyon testleri ",
+      "puan": 234.36,
+      "tl": 138.98
+    },
+    "odyometri": {
+      "sut_kodu": "704170",
+      "sut_adi": "Saf ses odyometrisi, iki taraf",
+      "puan": 56.23,
+      "tl": 33.34
+    }
+  }
+}
