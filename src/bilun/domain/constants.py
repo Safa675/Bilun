@@ -13,7 +13,7 @@ from pathlib import Path
 # Paths
 # ═══════════════════════════════════════════════════════════════════════════
 
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _SUT_DATA_DIR = _PROJECT_ROOT / "sut data"
 _DATA_DIR = _PROJECT_ROOT / "data"
 _GAZETTE_DIR = _DATA_DIR / "gazette"

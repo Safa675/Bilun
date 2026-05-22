@@ -26,7 +26,7 @@ from src.bilun.domain.claims.models import (
     ProcedureClaimLine,
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_CLAIMS_DIR = DEFAULT_SYNTHETIC_CLAIMS_DIR
 CENT = Decimal("0.01")
 T = TypeVar("T")

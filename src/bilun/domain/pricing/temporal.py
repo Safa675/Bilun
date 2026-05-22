@@ -34,7 +34,7 @@ def _load_ek2b_history() -> pl.DataFrame:
 
     ek2b_path = Path("data/gazette/curated/ek2b_catalog_history.parquet")
     if not ek2b_path.exists():
-        ek2b_path = Path(__file__).resolve().parents[3] / ek2b_path
+        ek2b_path = Path(__file__).resolve().parents[4] / ek2b_path
 
     if not ek2b_path.exists():
         raise FileNotFoundError(f"EK-2B history not found at {ek2b_path}")
@@ -52,7 +52,7 @@ def _load_ek2c_history() -> pl.DataFrame:
 
     ek2c_path = Path("data/gazette/curated/ek2c_catalog_history.parquet")
     if not ek2c_path.exists():
-        ek2c_path = Path(__file__).resolve().parents[3] / ek2c_path
+        ek2c_path = Path(__file__).resolve().parents[4] / ek2c_path
 
     if not ek2c_path.exists():
         raise FileNotFoundError(f"EK-2C history not found at {ek2c_path}")

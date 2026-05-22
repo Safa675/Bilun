@@ -19,7 +19,7 @@ logger = logging.getLogger("ilay.chatbot")
 try:
     from dotenv import load_dotenv
 
-    load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env")
+    load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent.parent / ".env")
 except ImportError:  # pragma: no cover
     pass
 

@@ -368,12 +368,76 @@ def _require_complete_sut_build(con, build_id: str) -> None:
     ).fetchone()
     if row is None:
         raise ValueError(f"Unknown build_id '{build_id}'")
-    if str(row[0]) != "sut":
-        raise ValueError(f"Build '{build_id}' is not a sut build")
-    if str(row[1]) != BUILD_COMPLETE:
-        raise RuntimeError(
-            f"Build '{build_id}' is not complete; cannot backfill expensive sections"
+        if str(row[0]) != "bilun":
+            raise RuntimeError(
+                "SUT expensive backfill found non-SUT active build scope: "
+                f"{row[0]!r}. Refusing to backfill."
+            )
+        logger.info("Active SUT build %s — backfilling expensive sections", build_id)
+        _backfill_expensive_sections(con, build_id, args.expensive_timeout_ms)
+
+        count_row = con.execute(
+            "SELECT COUNT(*) FROM patient_outcomes WHERE build_id = ?",
+            [build_id],
+        ).fetchone()
+        expensive_changed += int(count_row[0]) if count_row else 0
+        logger.info(
+            "Expensive backfill complete for build %s — %d rows inserted",
+            build_id,
+            expensive_changed,
         )
+        return build_id
+
+    # Apply build-age limit to avoid reshaping the live DB for no gain.
+    try:
+        stale_date = (datetime.now() - timedelta(hours=freshness_hours)).isoformat()
+        con.execute(
+            "DELETE FROM patient_outcomes WHERE build_id = ? AND computed_at < ?",
+            [build_id, stale_date],
+        )
+        logger.info("Pruned stale expensive rows older than %s for build %s", stale_date, build_id)
+    except Exception:
+        logger.exception("Failed to prune stale expensive rows — continuing anyway")
+
+    uuids = set(
+        str(row[0])
+        for row in con.execute(
+            "SELECT DISTINCT patient_id FROM patient_outcomes WHERE build_id = ?",
+            [build_id],
+        ).fetchall()
+    )
+    if not uuids:
+        logger.warning("No existing expensive rows found — backfill may be needed")
+    else:
+        logger.info("%d patients already have expensive data", len(uuids))
+
+    # Partition the full universe — what patients need expensive data?
+    outcome_uuids = set(
+        str(row[0])
+        for row in con.execute(
+            "SELECT DISTINCT patient_id FROM patient_outcomes"
+        ).fetchall()
+    )
+    missing = outcome_uuids - uuids
+    if not missing:
+        logger.info("All %d patients have expensive data — nothing to backfill", len(outcome_uuids))
+        return build_id
+
+    logger.info("Expensive data missing for %d patients — computing...", len(missing))
+
+    try:
+        from src.bilun.cache.context import load_sut_expensive_context
+        from src.bilun.cache.expensive import _compute_patient_expensive_sections
+    except ImportError as e:
+        logger.warning("Expensive context helpers not available: %s", e)
+        return build_id
+
+    _log_memory_snapshot("expensive_backfill:before_sut")
+    sut_ctx = load_sut_expensive_context(
+        sut_data_mode=args.sut_data_mode,
+        sut_claims_dir=args.sut_claims_dir,
+        sut_clean_dir=args.sut_clean_dir,
+    )
 
 
 def _update_expensive_row_counts(con, *, build_id: str, counts: dict[str, int]) -> None:
@@ -418,11 +482,11 @@ def run_active_sut_expensive_backfill(
     init_schema(con)
 
     try:
-        build_id = get_active_build_id(con, scope="sut")
+        build_id = get_active_build_id(con, scope="bilun")
         if build_id is None:
             raise RuntimeError(
-                "No active SUT analytics build. "
-                "Run scripts/model/build_analytics_cache.py --scope sut --activate first."
+                "No active BILUN analytics build. "
+                "Run the cache builder with --activate first."
             )
         _require_complete_sut_build(con, build_id)
         sut_data_source = resolve_sut_data_source(
@@ -520,7 +584,7 @@ def run_build(args: argparse.Namespace) -> str:
         feature_set_version="v1",
         benchmark_version="v1",
         nlp_version="sut-only",
-        build_scope="sut",
+        build_scope="bilun",
     )
 
     try:
@@ -704,7 +768,7 @@ def run_build(args: argparse.Namespace) -> str:
                 build.build_id,
                 row_counts=row_counts,
                 checksums=checksums,
-                scope="sut",
+                scope="bilun",
             )
         else:
             complete_build(

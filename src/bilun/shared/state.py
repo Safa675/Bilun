@@ -13,7 +13,7 @@ from src.bilun.shared.memory import (
 )
 
 # ── Resolve project root (two levels up from src/bilun/shared/) ──────────────
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 # ── Logging ─────────────────────────────────────────────────────────────────
 LOG_DIR = PROJECT_ROOT / "logs"

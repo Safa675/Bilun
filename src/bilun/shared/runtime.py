@@ -22,7 +22,7 @@ from src.bilun.db.request_cache import (
 
 logger = logging.getLogger("bilun")
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 
 @dataclass

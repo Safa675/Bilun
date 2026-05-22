@@ -7,9 +7,9 @@ from typing import Any
 
 import polars as pl
 
-from src.analytics_cache.billing_context import assemble_billing_context
-from src.analytics_cache.loaders import load_normalized_raw_data, resolve_patient_ids
-from src.analytics_cache.patient_context import (
+from src.bilun.cache.billing_context import assemble_billing_context
+from src.bilun.cache.loaders import load_normalized_raw_data, resolve_patient_ids
+from src.bilun.cache.patient_slice import (
     _build_diagnoses_by_pid,
     _partition_by_patient,
 )
@@ -19,7 +19,7 @@ from src.bilun.cache.sut_context import (
     build_exact_sut_patient_totals,
     build_sut_patient_alerts_cache,
 )
-from src.pipeline.data_loader import load_anadata, load_labdata, load_recete
+from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
 from src.bilun.domain.claims import (
     SUTDataSourceConfig,
     load_sut_claim_dataset,
@@ -32,7 +32,7 @@ from src.bilun.domain.optimization import (
     check_copay_exemptions,
     compute_optimization_summary,
 )
-from src.utils.memory import memory_snapshot_message, read_current_rss_mb
+from src.bilun.shared.memory import memory_snapshot_message, read_current_rss_mb
 
 
 def _log_memory_snapshot(stage: str, **objects: Any) -> None:

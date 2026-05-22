@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping, Sequence
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 SYNTHETIC_SUT_DIR = PROJECT_ROOT / "data" / "synthetic" / "sut"
 DEFAULT_SYNTHETIC_CLAIMS_DIR = SYNTHETIC_SUT_DIR / "claims"
 DEFAULT_SYNTHETIC_CLEAN_DIR = SYNTHETIC_SUT_DIR / "clean"
