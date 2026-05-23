@@ -8,6 +8,8 @@ No dependencies on other src.sut modules.
 from __future__ import annotations
 
 import math
+import re
+from difflib import SequenceMatcher
 from typing import Any
 
 
@@ -40,6 +42,48 @@ def turkish_upper(text: str) -> str:
     survives the final .upper() call — this is intentional, not accidental.
     """
     return text.replace("i", "\u0130").replace("\u0131", "I").upper()
+
+
+def fuzzy_match_name(
+    needle_lower: str,
+    candidates: list[tuple[str, Any]],
+    *,
+    threshold: float = 0.85,
+) -> tuple[str, Any] | None:
+    """Fuzzy-match a name against a list of (lowered_name, item) tuples.
+
+    Returns the best (name, item) with similarity >= threshold, or None.
+    Uses SequenceMatcher for typo-tolerant matching (e.g. 1-2 char differences).
+
+    Two-level matching:
+      1. Full-name comparison against each candidate name.
+      2. Token-level: splits candidate name into words and compares each
+         against needle (handles e.g. 'enjektör' matching
+         'enjektör 50cc (beslenme amaçlı)').
+    """
+    _TOKEN_SPLIT_RE = re.compile(r"[\s\(\)\-/,.;:]+")
+
+    best_ratio = 0.0
+    best_match: tuple[str, Any] | None = None
+
+    for cand_name, cand_item in candidates:
+        # Level 1: full-name comparison
+        ratio = SequenceMatcher(None, needle_lower, cand_name).ratio()
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_match = (cand_name, cand_item)
+
+        # Level 2: token-level comparison
+        tokens = [t for t in _TOKEN_SPLIT_RE.split(cand_name) if t and len(t) >= 3]
+        for token in tokens:
+            token_ratio = SequenceMatcher(None, needle_lower, token).ratio()
+            if token_ratio > best_ratio:
+                best_ratio = token_ratio
+                best_match = (cand_name, cand_item)
+
+    if best_ratio >= threshold:
+        return best_match
+    return None
 
 
 def _safe_float(val: Any) -> float | None:

@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from ..utils import turkish_lower
+from ..utils import turkish_lower, fuzzy_match_name
 
 
 @dataclass
@@ -66,10 +66,14 @@ def estimate_material_costs(
                     unit_price = idx_price
                     source = idx_src
                     break
+            else:
+                fuzzy = fuzzy_match_name(name_lower, list(ek3_price_index.items()), threshold=0.80)
+                if fuzzy:
+                    unit_price, source = fuzzy[1]
 
         if unit_price <= 0:
             unit_price = hospital_price
-            source = "hospital" if hospital_price > 0 else "unknown"
+            source = "hospital" if hospital_price > 0 else "catalog_miss"
 
         total = round(unit_price * qty, 2)
 

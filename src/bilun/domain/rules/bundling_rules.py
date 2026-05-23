@@ -21,7 +21,7 @@ import logging
 from typing import Any
 
 from src.bilun.domain.materials import get_bundled_consumables
-from src.bilun.domain.utils import turkish_lower
+from src.bilun.domain.utils import turkish_lower, fuzzy_match_name
 
 logger = logging.getLogger("ilay.sut_optimization.bundling")
 
@@ -79,26 +79,14 @@ def check_bundling_violations(
         # Check against bundled items (substring match both directions)
         for bundled_name, bundled_entry in bundled_index:
             if mat_lower in bundled_name or bundled_name in mat_lower:
-                category = bundled_entry.get("description") or "Unknown"
-                violations.append(
-                    {
-                        "rule": "bundling",
-                        "severity": "error" if billed > 50.0 else "warning",
-                        "material_name": mat_name,
-                        "matched_bundled_item": bundled_entry.get("item_name", ""),
-                        "bundled_category": category,
-                        "billed_amount": billed,
-                        "savings_try": billed,
-                        "procedure_code": procedure_code or "",
-                        "message": (
-                            f"'{mat_name}' is bundled into the procedure price "
-                            f"(EK-3B-1: {category}). "
-                            f"Cannot be billed separately. "
-                            f"Potential savings: {billed:.2f} TRY."
-                        ),
-                    }
-                )
-                break  # One match per material is enough
+                _add_bundling_violation(violations, bundled_entry, mat_name, billed,
+                                        procedure_code)
+                break
+        else:
+            fuzzy = fuzzy_match_name(mat_lower, bundled_index, threshold=0.80)
+            if fuzzy:
+                _add_bundling_violation(violations, fuzzy[1], mat_name, billed,
+                                        procedure_code)
 
     if violations:
         logger.info(
@@ -110,3 +98,31 @@ def check_bundling_violations(
         )
 
     return violations
+
+
+def _add_bundling_violation(
+    violations: list[dict[str, Any]],
+    bundled_entry: dict[str, Any],
+    mat_name: str,
+    billed: float,
+    procedure_code: str | None,
+) -> None:
+    category = bundled_entry.get("description") or "Unknown"
+    violations.append(
+        {
+            "rule": "bundling",
+            "severity": "error" if billed > 50.0 else "warning",
+            "material_name": mat_name,
+            "matched_bundled_item": bundled_entry.get("item_name", ""),
+            "bundled_category": category,
+            "billed_amount": billed,
+            "savings_try": billed,
+            "procedure_code": procedure_code or "",
+            "message": (
+                f"'{mat_name}' is bundled into the procedure price "
+                f"(EK-3B-1: {category}). "
+                f"Cannot be billed separately. "
+                f"Potential savings: {billed:.2f} TRY."
+            ),
+        }
+    )

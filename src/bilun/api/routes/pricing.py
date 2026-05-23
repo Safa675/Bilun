@@ -21,7 +21,7 @@ from src.bilun.api.schemas import (
     VisitPricingResponse,
 )
 from src.bilun.domain.materials import get_all_specialty_materials
-from src.bilun.domain.utils import turkish_lower
+from src.bilun.domain.utils import turkish_lower, fuzzy_match_name
 
 router = APIRouter()
 
@@ -80,8 +80,10 @@ def get_material_pricing(code: str):
     search = turkish_lower(code.strip())
     matches: list[dict] = []
 
+    all_materials = list(get_all_specialty_materials())
+
     # Search all specialty materials (EK-3A through EK-3T, 27 annexes)
-    for mat in get_all_specialty_materials():
+    for mat in all_materials:
         mat_name = (mat.get("material_name") or mat.get("name") or "").strip()
         mat_code = str(
             mat.get("sut_code") or mat.get("code") or mat.get("material_code") or ""
@@ -105,6 +107,28 @@ def get_material_pricing(code: str):
             )
             if len(matches) >= 100:
                 break
+
+    if not matches:
+        cands = [(turkish_lower(
+            (mat.get("material_name") or mat.get("name") or "").strip()
+        ), mat) for mat in all_materials]
+        cands = [(n, m) for n, m in cands if n]
+        fuzzy = fuzzy_match_name(search, cands, threshold=0.80)
+        if fuzzy:
+            fuzzy_mat = fuzzy[1]
+            mat_name = (fuzzy_mat.get("material_name") or fuzzy_mat.get("name") or "").strip()
+            mat_code = str(
+                fuzzy_mat.get("sut_code") or fuzzy_mat.get("code") or fuzzy_mat.get("material_code") or ""
+            ).strip()
+            matches.append(
+                {
+                    "material_code": mat_code,
+                    "material_name": mat_name,
+                    "price_try": fuzzy_mat.get("price_try", 0.0),
+                    "source": fuzzy_mat.get("source", ""),
+                    "description": fuzzy_mat.get("description", fuzzy_mat.get("category", "")),
+                }
+            )
 
     return {
         "query": code,

@@ -66,6 +66,15 @@ modules so frontend Unavailable panels become exact in `synthetic_demo` mode.
 - Generator lab linkage export (optional follow-up)
 - Automated rule engine vs `expected_rule_outputs` assertion harness
 
+### Bug Fix: Material typo handling (2026-05-23)
+- [ ] Add `fuzzy_match_name()` to `utils.py` using `difflib` for typo-tolerant matching
+- [ ] Update `estimate_material_costs()` to use fuzzy fallback when strict match fails
+- [ ] Update `is_consumable_bundled()` to use fuzzy fallback
+- [ ] Update `is_material_reimbursable()` to use fuzzy fallback
+- [ ] Update `check_bundling_violations()` in bundling_rules.py to use fuzzy fallback
+- [ ] Update material pricing endpoint to use fuzzy fallback
+- [ ] Verify: "Enejtör" correctly matches "Enjektör" and shows catalog price + bundling flag
+
 ### Review
 - **Implemented:** Claim context layer, billing drug/copay/strategy/materials from claim lines, cohort optimizer aggregation, DRG unbundling + drug discount validation, lab SUT-code price resolution, API sanitization fixes.
 - **Smoke test:** 50 patients → drug 30,504 TRY, copay 10,067 TRY, strategy 1,493,570 TRY cohort savings; optimization summary surcharge/copay/drug exact.

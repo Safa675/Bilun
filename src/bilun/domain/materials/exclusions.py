@@ -11,7 +11,7 @@ from typing import Any
 import pandas as pd
 
 from ..constants import EK3B1_BUNDLED_PATH, EK3B2_NON_REIMBURSABLE_PATH
-from ..utils import _safe_str, turkish_lower
+from ..utils import _safe_str, turkish_lower, fuzzy_match_name
 
 logger = logging.getLogger("ilay.sut_catalog")
 
@@ -111,6 +111,14 @@ def is_material_reimbursable(material_name: str) -> bool:
             continue
         if needle in mat_name or mat_name in needle:
             return False
+
+    fuzzy_candidates = [
+        (turkish_lower((e.get("material_name") or "").strip()), e)
+        for e in exclusions
+    ]
+    fuzzy_candidates = [(n, e) for n, e in fuzzy_candidates if n]
+    if fuzzy_match_name(needle, fuzzy_candidates, threshold=0.80):
+        return False
     return True
 
 
@@ -134,4 +142,10 @@ def is_consumable_bundled(item_name: str) -> bool:
             continue
         if needle in entry_name or entry_name in needle:
             return True
-    return False
+
+    fuzzy_candidates = [
+        (turkish_lower((e.get("item_name") or "").strip()), e)
+        for e in bundled
+    ]
+    fuzzy_candidates = [(n, e) for n, e in fuzzy_candidates if n]
+    return fuzzy_match_name(needle, fuzzy_candidates, threshold=0.80) is not None
