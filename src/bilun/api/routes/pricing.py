@@ -164,13 +164,13 @@ def get_price_history(code: str):
 
 @router.get("/lab-prices", response_model=LabPricesResponse)
 def get_lab_prices():
-    """Return ILAY test name → SUT code + gazette price mapping."""
+    """Return BILUN test name → SUT code + gazette price mapping."""
     from src.bilun.domain.catalog import get_all_lab_prices
-    from src.bilun.domain.constants import ILAY_TO_SUT_CODE
+    from src.bilun.domain.constants import BILUN_TO_SUT_CODE
 
     prices = get_all_lab_prices()
     result = []
-    for test_name, sut_code in sorted(ILAY_TO_SUT_CODE.items()):
+    for test_name, sut_code in sorted(BILUN_TO_SUT_CODE.items()):
         result.append({
             "test_name": test_name,
             "sut_code": sut_code,

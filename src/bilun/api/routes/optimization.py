@@ -29,13 +29,14 @@ from src.bilun.domain.optimization import (
     detect_drg_unbundling,
 )
 from src.bilun.domain.claims import load_sut_claim_dataset
+from src.bilun.domain.claims.patient_context import build_patient_claim_context
 from src.bilun.domain.claims.config import SUTDataSourceConfigError
 from src.bilun.domain.claims.errors import ClaimValidationError
 from src.bilun.domain.optimization.claim_context import (
     build_copay_rate_claim_context,
     build_surcharge_claim_context,
 )
-from src.bilun.domain.optimization.exactness import unavailable_drug_discount_validation
+from src.bilun.domain.optimization.exactness import is_exact_output
 from src.bilun.domain.optimization.runtime_claim_context import ClaimContextManager
 
 from .provenance import attach_bilun_data_source, read_active_bilun_data_source
@@ -46,13 +47,8 @@ logger = logging.getLogger("bilun.api.optimization")
 
 
 def _sanitize_optimization_summary(payload: dict) -> dict:
-    return attach_bilun_data_source({
-        **payload,
-        "surcharge_exposure": analyze_surcharge_exposure(set()),
-        "copay_rate_exposure": analyze_copay_rate_exposure(set()),
-        "drg_unbundling": detect_drg_unbundling(set()),
-        "drug_discount_validation": unavailable_drug_discount_validation(),
-    })
+    """Attach provenance without overwriting claim-backed exactness fields."""
+    return attach_bilun_data_source(payload)
 
 
 def _pipeline_mode() -> str:
@@ -161,6 +157,17 @@ def get_patient_optimization(patient_id: str):
                 ):
                     surcharge_exposure = analyze_surcharge_exposure(chapters)
                     copay_rate_exposure = analyze_copay_rate_exposure(chapters)
+
+                patient_claim_context = None
+                if claim_dataset is not None:
+                    patient_claim_context = build_patient_claim_context(
+                        patient_id,
+                        claim_dataset,
+                    )
+                drg_unbundling = detect_drg_unbundling(
+                    chapters,
+                    patient_claim_context,
+                )
                 return {
                     "patient_id": patient_id,
                     "n_diagnoses": len(cached_diagnoses),
@@ -169,7 +176,7 @@ def get_patient_optimization(patient_id: str):
                     "copay_exemptions": check_copay_exemptions(cached_diagnoses),
                     "surcharge_exposure": surcharge_exposure,
                     "copay_rate_exposure": copay_rate_exposure,
-                    "drg_unbundling": detect_drg_unbundling(chapters),
+                    "drg_unbundling": drg_unbundling,
                     "data_source": data_source,
                 }
             # Patient not in cache — could be unknown patient

@@ -47,12 +47,11 @@ _MAX_PATIENT_ALERT_LIMIT = 100
 
 def _sanitize_patient_alert_summary(summary: dict[str, object]) -> dict[str, object]:
     total_patients = int(summary.get("n_total_patients") or 0)
-    surcharge = unavailable_patient_alert_surcharge()
-    copay_rate = unavailable_patient_alert_copay_rate()
     sanitized = dict(summary)
     if not is_exact_output(
         {"exactness_status": summary.get("surcharge_exactness_status")}
     ):
+        surcharge = unavailable_patient_alert_surcharge()
         sanitized.update(
             {
                 "n_patients_with_surcharge_flags": None,
@@ -68,6 +67,7 @@ def _sanitize_patient_alert_summary(summary: dict[str, object]) -> dict[str, obj
     if not is_exact_output(
         {"exactness_status": summary.get("copay_rate_exactness_status")}
     ):
+        copay_rate = unavailable_patient_alert_copay_rate()
         sanitized.update(
             {
                 "n_patients_with_copay_rate_flags": None,
