@@ -1,6 +1,6 @@
 # BILUN
 
-BILUN is a standalone healthcare reimbursement intelligence system extracted from the ILAY monolith. It analyzes, validates, and optimizes hospital claim reimbursements against the Turkish SGK/SUT regulations — the official Health Implementation Communiqué governing public healthcare billing in Turkey.
+BILUN is a standalone healthcare reimbursement intelligence system. It analyzes, validates, and optimizes hospital claim reimbursements against the Turkish SGK/SUT regulations — the official Health Implementation Communiqué governing public healthcare billing in Turkey.
 
 
 ## Tech Stack
@@ -44,7 +44,7 @@ BILUN is a standalone healthcare reimbursement intelligence system extracted fro
 │   ├── cache/           # Analytics cache build lifecycle
 │   ├── chatbot/         # SUT-aware AI assistant (OpenRouter)
 │   └── shared/          # Runtime state, exceptions, utilities
-├── frontend/            # Next.js SPA (ILAY SUT branding)
+├── frontend/            # Next.js SPA (BILUN branding)
 ├── data/                # 37 gazette catalogs + synthetic demo data
 ├── scripts/             # Catalog builders, data generators
 ├── tests/               # Unit + smoke tests
