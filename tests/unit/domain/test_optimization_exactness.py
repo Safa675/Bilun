@@ -42,7 +42,7 @@ def test_non_exact_optimization_features_return_missing_exact_inputs() -> None:
     assert drg["has_unbundling_risk"] is None
     assert drg["chapter_analysis"] == []
 
-    drug = validate_drug_discount_tiers()
+    drug = validate_drug_discount_tiers(None)
     assert drug["exactness_status"] == "missing_exact_inputs"
     assert drug["n_active_drugs"] is None
     assert "catalog reference" in drug["methodology"].lower()
