@@ -36,7 +36,7 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
     )
     monkeypatch.setattr(
         sut_chat_mod,
-        "get_sut_patient_outcome",
+        "get_bilun_patient_outcome",
         lambda patient_id, include_expensive=True: {
             "patient_id": patient_id,
             "drg_summary": {
@@ -71,7 +71,7 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
 
     with TestClient(app) as client:
         response = client.post(
-            "/api/sut/chat",
+            "/api/chat",
             json={
                 "messages": [{"role": "user", "content": "Summarize this patient."}],
                 "patient_id": "P-001",
@@ -85,12 +85,12 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
     assert 'data: "[DONE]"' in response.text
     assert captured["messages"] == [{"role": "user", "content": "Summarize this patient."}]
     runtime_context = str(captured["runtime_context"])
-    assert '"product": "ILAY SUT"' in runtime_context
+    assert '"product": "BILUN"' in runtime_context
     assert '"active_tab": "SUT Patient Workspace"' in runtime_context
-    assert '"patient_id": "P-001"' in runtime_context
-    assert '"exempt": true' in runtime_context
-    assert '"pricing_status": "unknown_date"' in runtime_context
-    assert '"visit_date"' in runtime_context
+    assert "Patient ID: P-001" in runtime_context
+    assert "Copay exempt: YES" in runtime_context
+    assert "[exactness: unknown_date]" in runtime_context
+    assert "visit_date" in runtime_context
 
 
 def test_removed_estimate_native_sut_routes_return_404():

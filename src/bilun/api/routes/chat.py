@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from src.bilun.shared.exceptions import RateLimitError
 from src.bilun.shared.state import _chat_rate_lock as _rate_lock, _chat_rate_window as _rate_window
 from src.bilun.chatbot import stream_chat_response
+from src.bilun.chatbot.context import build_bilun_runtime_context
 
 import time as _time
 
@@ -68,6 +69,9 @@ class BilunChatRequest(BaseModel):
     messages: list[BilunChatMessage] = Field(default_factory=list)
     active_tab: str = "BILUN Analytics"
     patient_id: str | None = None
+
+
+# ── Summarizers (keep in chat.py — they depend on route imports) ──────────────
 
 
 def _summarize_optimization(payload: dict[str, Any]) -> dict[str, Any]:
@@ -162,40 +166,43 @@ def _summarize_patient_optimization(payload: dict[str, Any]) -> dict[str, Any]:
 def _safe_context_block(label: str, builder) -> dict[str, Any]:
     try:
         return {"status": "ready", "summary": builder()}
-    except Exception as exc:  # pragma: no cover - defensive context assembly
+    except Exception as exc:
         return {"status": "unavailable", "detail": f"{label} unavailable: {exc}"}
 
 
-def _build_bilun_runtime_context(active_tab: str, patient_id: str | None) -> str:
-    context: dict[str, Any] = {
-        "product": "BILUN",
-        "active_tab": active_tab,
-        "assistant_rules": [
-            "Answer only from BILUN financial, reimbursement, optimization, and patient-workspace context.",
-            "If an exactness or pricing status is not exact, describe that surface as unavailable instead of inventing zero, clear, or low-risk values.",
-            "Do not rely on IHP-only risk, causal, or trajectory claims.",
-        ],
+# ── Data fetching (lives in chat.py — this is the only place that imports   ──
+# ── from sibling route modules)                                              ──
+
+
+def _fetch_runtime_data(active_tab: str, patient_id: str | None) -> dict[str, Any]:
+    """Fetch all data needed for context assembly.
+
+    Returns a dict of pre-fetched data. Each value is wrapped via
+    _safe_context_block so context.py can handle unavailable blocks.
+    """
+    data: dict[str, Any] = {
         "optimization_summary": _safe_context_block(
             "Optimization summary",
             lambda: _summarize_optimization(get_optimization_summary()),
         ),
     }
     if patient_id:
-        context["patient_outcome"] = _safe_context_block(
+        data["patient_outcome"] = _safe_context_block(
             "Patient outcome",
             lambda: _summarize_patient_outcome(
                 get_bilun_patient_outcome(patient_id, include_expensive=True)
             ),
         )
-        context["patient_optimization"] = _safe_context_block(
+        data["patient_optimization"] = _safe_context_block(
             "Patient optimization",
-            lambda: _summarize_patient_optimization(get_patient_optimization(patient_id)),
+            lambda: _summarize_patient_optimization(
+                get_patient_optimization(patient_id)
+            ),
         )
-    return (
-        "BILUN runtime context for the BILUN assistant.\n"
-        "Use this context to answer reimbursement, optimization, and patient financial workspace questions.\n\n"
-        f"{json.dumps(context, ensure_ascii=False, indent=2)}"
-    )
+    return data
+
+
+# ── Endpoint ─────────────────────────────────────────────────────────────────
 
 
 @router.post(
@@ -215,10 +222,13 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
     if not _check_rate_limit(client_ip):
         raise RateLimitError("Too many requests. Please wait a moment.")
 
-    runtime_context = await asyncio.to_thread(
-        _build_bilun_runtime_context,
+    raw_data = await asyncio.to_thread(
+        _fetch_runtime_data,
         req.active_tab,
         req.patient_id,
+    )
+    runtime_context = build_bilun_runtime_context(
+        raw_data, req.active_tab, req.patient_id
     )
 
     async def sse_generator():

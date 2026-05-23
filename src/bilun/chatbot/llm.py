@@ -1,4 +1,4 @@
-"""OpenRouter-compatible streaming client for ILAY chat."""
+"""OpenRouter-compatible streaming client for BILUN chat."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import httpx
 from .metadata import get_chat_model_context
 from .prompts import build_system_prompt
 
-logger = logging.getLogger("ilay.chatbot")
+logger = logging.getLogger("bilun.chatbot")
 
 try:
     from dotenv import load_dotenv
@@ -97,8 +97,8 @@ async def stream_chat_response(
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://ilay.app",
-        "X-Title": "ILAY",
+        "HTTP-Referer": "https://bilun.app",
+        "X-Title": "BILUN",
     }
     payload = {
         "model": MODEL,
@@ -167,4 +167,12 @@ async def stream_chat_response(
         yield "\n⚠️ Request timed out. Please try again."
     except httpx.RequestError as exc:
         logger.error("LLM NETWORK ERROR | error=%s", exc, exc_info=True)
-        yield f"\n⚠️ Network error: {exc}"
+        message = str(exc).lower()
+        if "name resolution" in message or "getaddrinfo" in message or "errno -3" in message:
+            yield (
+                "\n⚠️ Cannot reach the LLM provider (DNS/network). "
+                "Ensure this machine has internet access and can resolve openrouter.ai, "
+                "then retry."
+            )
+        else:
+            yield f"\n⚠️ Network error: {exc}"
