@@ -29,6 +29,12 @@ from src.bilun.domain.claims.models import (
     PatientSUTClaimTotals,
     ProcedureClaimLine,
 )
+from src.bilun.domain.claims.patient_context import (
+    CohortClaimContext,
+    PatientClaimContext,
+    build_cohort_claim_context,
+    build_patient_claim_context,
+)
 from src.bilun.domain.claims.provenance import (
     UNAVAILABLE_BILUN_DATA_MODE,
     attach_bilun_data_source_metadata,
@@ -42,12 +48,14 @@ __all__ = [
     "ClaimDiagnosis",
     "ClaimTotals",
     "ClaimValidationError",
+    "CohortClaimContext",
     "DEFAULT_SYNTHETIC_CLAIMS_DIR",
     "DEFAULT_SYNTHETIC_CLEAN_DIR",
     "DrugClaimLine",
     "ExpectedRuleOutput",
     "MaterialClaimLine",
     "PatientSUTClaimTotals",
+    "PatientClaimContext",
     "ProcedureClaimLine",
     "REAL_CLAIMS_MODE",
     "SUTDataSourceConfig",
@@ -57,6 +65,8 @@ __all__ = [
     "SYNTHETIC_DEMO_MODE",
     "UNAVAILABLE_BILUN_DATA_MODE",
     "attach_bilun_data_source_metadata",
+    "build_cohort_claim_context",
+    "build_patient_claim_context",
     "configured_bilun_data_source_metadata",
     "load_sut_claim_dataset",
     "normalize_bilun_data_source_metadata",

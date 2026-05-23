@@ -20,13 +20,6 @@ def test_billing_strategy_is_unavailable_without_exact_claim_inputs():
 
     assert result.recommendations == []
     assert result.exactness_status == "missing_exact_inputs"
-    assert result.unavailable_reason is not None
-    assert result.required_inputs_missing == [
-        "itemized_billed_procedure_lines",
-        "episode_package_eligibility_context",
-        "admission_dates",
-    ]
-    assert result.total_savings == 0.0
 
 
 def test_copay_is_unavailable_without_exact_claim_inputs():

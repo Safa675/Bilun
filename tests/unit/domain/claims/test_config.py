@@ -156,7 +156,8 @@ def test_loader_accepts_configured_synthetic_claims_dir():
         mode="synthetic_demo",
     )
 
-    assert len(dataset.claims) == 5
+    assert len(dataset.claims) == 138
+    assert len(dataset.patient_totals) == 50
 
 
 def test_loader_rejects_real_claims_mode_with_synthetic_claims_dir():
@@ -175,4 +176,5 @@ def test_loader_can_read_configured_real_claims_dir(tmp_path):
 
     dataset = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
 
-    assert len(dataset.claims) == 5
+    assert len(dataset.claims) == 138
+    assert len(dataset.patient_totals) == 50

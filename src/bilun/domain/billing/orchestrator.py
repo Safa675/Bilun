@@ -8,7 +8,7 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 import logging
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import polars as pl
 
@@ -21,11 +21,20 @@ from .types import (
     BillingActionReport,
     CohortRecoverySummary,
 )
+from src.bilun.domain.claims.patient_context import build_patient_claim_context
+from src.bilun.domain.billing.claim_copay import optimize_copay_from_claims
+from src.bilun.domain.billing.claim_materials import precheck_materials_from_claims
+from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
+from src.bilun.domain.billing.drug_claims import optimize_drug_from_claims
 from .lab import _optimize_lab_billing
 from .drug import _optimize_drug_costs
 from .copay import _optimize_copay
 from .strategy import _recommend_billing_strategy
 from .materials import _precheck_materials
+
+if TYPE_CHECKING:
+    from src.bilun.domain.claims.loader import SUTClaimDataset
+    from src.bilun.domain.claims.patient_context import PatientClaimContext
 
 logger = logging.getLogger("ilay.sut_billing_optimizer")
 
@@ -66,6 +75,11 @@ def _finalize_report_exactness(report: BillingActionReport) -> None:
     report.exactness_status = EXACTNESS_STATUS_PARTIAL
     report.unavailable_reason = BILLING_REPORT_PARTIAL_REASON
     report.required_inputs_missing = _collect_required_inputs(non_exact_blocks)
+    if not report.required_inputs_missing:
+        report.required_inputs_missing = [
+            f"{getattr(block, '__class__', type(block)).__name__}.required_inputs_missing"
+            for block in non_exact_blocks
+        ]
 
 
 def _finalize_summary_exactness(
@@ -86,11 +100,14 @@ def _finalize_summary_exactness(
     summary.exactness_status = EXACTNESS_STATUS_PARTIAL
     summary.unavailable_reason = COHORT_RECOVERY_PARTIAL_REASON
     summary.required_inputs_missing = _collect_required_inputs(non_exact_reports)
+    if not summary.required_inputs_missing:
+        summary.required_inputs_missing = ["cohort_billing_report.required_inputs_missing"]
 
 
 def compute_patient_billing_report(
     pid: str,
     *,
+    claim_context: PatientClaimContext | None = None,
     patient_lab_tests: list[str] | None = None,
     patient_lab_dates: list[str | None] | None = None,
     patient_drug_names: list[str] | None = None,
@@ -115,19 +132,33 @@ def compute_patient_billing_report(
 
     report.lab = _optimize_lab_billing(pid, patient_lab_tests or [], patient_lab_dates)
 
-    report.drug = _optimize_drug_costs(pid, patient_drug_names or [])
+    exemption = copay_exemption or {
+        "exempt": False,
+        "n_qualifying": 0,
+        "qualifying_diagnoses": [],
+    }
 
-    report.copay = _optimize_copay(
-        pid,
-        copay_exemption
-        or {"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []},
-    )
+    if claim_context is not None and claim_context.drug_lines:
+        report.drug = optimize_drug_from_claims(claim_context)
+    else:
+        report.drug = _optimize_drug_costs(pid, patient_drug_names or [])
 
-    report.billing_strategy = _recommend_billing_strategy(
-        pid, chapters or set()
-    )
+    if claim_context is not None and (
+        claim_context.procedure_lines or claim_context.drug_lines
+    ):
+        report.copay = optimize_copay_from_claims(claim_context, exemption)
+    else:
+        report.copay = _optimize_copay(pid, exemption)
 
-    report.materials = _precheck_materials(pid, chapters or set())
+    if claim_context is not None and claim_context.claims:
+        report.billing_strategy = recommend_billing_strategy_from_claims(claim_context)
+    else:
+        report.billing_strategy = _recommend_billing_strategy(pid, chapters or set())
+
+    if claim_context is not None:
+        report.materials = precheck_materials_from_claims(claim_context)
+    else:
+        report.materials = _precheck_materials(pid, chapters or set())
 
     total = (
         report.lab.total_savings
@@ -176,6 +207,7 @@ def compute_all_billing_reports(
     t0 = time.perf_counter()
 
     sut_by_pid = cache.get("sut_by_pid", {})
+    claim_dataset: SUTClaimDataset | None = cache.get("sut_claim_dataset")
     alerts_cache = cache.get("patient_alerts_cache", {})
     lab_df_pl: pl.DataFrame = cache.get("lab_df_pl", pl.DataFrame())
     rec_df_pl: pl.DataFrame = cache.get("rec_df_pl", pl.DataFrame())
@@ -239,8 +271,13 @@ def compute_all_billing_reports(
         chapters_list = alert.get("icd10_chapters", [])
         chapters = set(chapters_list)
 
+        claim_context = None
+        if claim_dataset is not None:
+            claim_context = build_patient_claim_context(pid, claim_dataset)
+
         report = compute_patient_billing_report(
             pid,
+            claim_context=claim_context,
             patient_lab_tests=lab_tests_by_pid.get(pid, []),
             patient_lab_dates=lab_dates_by_pid.get(pid),
             patient_drug_names=drug_names_by_pid.get(pid, []),

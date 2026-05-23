@@ -8,9 +8,9 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from ..constants import HEMOGRAM_TESTS, ILAY_TO_SUT_CODE
+from ..constants import HEMOGRAM_TESTS, BILUN_TO_SUT_CODE
 from ..estimators import SUT_LAB_PRICES, SUT_LAB_DEFAULT, _ensure_enrichment
-from ..catalog import get_all_lab_prices
+from ..catalog import get_all_lab_prices, lookup_procedure_code
 from .types import LabOptimization
 
 logger = logging.getLogger("ilay.sut_billing_optimizer")
@@ -41,6 +41,33 @@ def _get_gazette_lab_prices() -> dict[str, float]:
     return _gazette_lab_prices
 
 
+logger = logging.getLogger("ilay.sut_billing_optimizer")
+
+
+def _resolve_lab_test_price(test_name: str, gazette: dict[str, float]) -> tuple[float, str, str]:
+    """Resolve gazette price and SUT code for a lab test name or L-code."""
+
+    tn = str(test_name).strip()
+    if not tn:
+        return SUT_LAB_DEFAULT[0], "", ""
+
+    upper = tn.upper()
+    if upper.startswith("L") and len(upper) >= 4:
+        lookup = lookup_procedure_code(upper)
+        entry = lookup.get("entry") if lookup else None
+        if entry is not None:
+            price = float(entry.get("price_try") or SUT_LAB_DEFAULT[0])
+            code = str(entry.get("code") or upper)
+            name = str(entry.get("name") or upper)
+            return price, code, name
+
+    price = gazette.get(tn)
+    if price is None:
+        price = gazette.get(tn.lower(), SUT_LAB_DEFAULT[0])
+    sut_code = BILUN_TO_SUT_CODE.get(tn, "")
+    return price, sut_code, tn
+
+
 def _optimize_lab_billing(
     patient_id: str,
     patient_lab_tests: list[str],
@@ -66,7 +93,7 @@ def _optimize_lab_billing(
     hemogram_price = gazette.get(
         "Hemoglobin", SUT_LAB_PRICES.get("Hemoglobin", SUT_LAB_DEFAULT)[0]
     )
-    hemogram_sut_code = ILAY_TO_SUT_CODE.get("Hemoglobin", "L107020")
+    hemogram_sut_code = BILUN_TO_SUT_CODE.get("Hemoglobin", "L107020")
 
     hemogram_by_date: dict[str, int] = {}
     test_counts: dict[str, int] = {}
@@ -87,12 +114,10 @@ def _optimize_lab_billing(
 
         test_counts[tn] = test_counts.get(tn, 0) + 1
 
-        price = gazette.get(tn)
-        if price is None:
-            price = gazette.get(tn.lower(), SUT_LAB_DEFAULT[0])
-        sut_code = ILAY_TO_SUT_CODE.get(tn, "")
+        price, sut_code, display_name = _resolve_lab_test_price(tn, gazette)
 
         normative_total += price
+        _ = display_name
 
     total_hemogram_subtests = sum(hemogram_by_date.values())
     n_hemogram_dates = len(hemogram_by_date)
@@ -119,13 +144,12 @@ def _optimize_lab_billing(
 
     for tn, count in test_counts.items():
         if count > 1:
-            price = gazette.get(tn, gazette.get(tn.lower(), SUT_LAB_DEFAULT[0]))
-            sut_code = ILAY_TO_SUT_CODE.get(tn, "")
+            price, sut_code, display_name = _resolve_lab_test_price(tn, gazette)
             dup_savings = price * (count - 1)
             result.duplicate_test_savings += dup_savings
             flagged.append(
                 {
-                    "test_name": tn,
+                    "test_name": display_name or tn,
                     "sut_code": sut_code,
                     "gazette_price": round(price, 2),
                     "flag_type": "duplicate_test",
