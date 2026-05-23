@@ -7,7 +7,7 @@ const SYNTHETIC_DEMO_COPY = vi.hoisted(
 
 vi.mock("@/lib/constants", () => ({
   SUT_BRAND: {
-    moduleLabel: "ILAY SUT",
+    moduleLabel: "BILUN",
     heroDescription: "Standalone SUT workspace",
   },
 }));

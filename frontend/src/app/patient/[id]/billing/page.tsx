@@ -10,7 +10,20 @@ import type { BillingActionReport, PatientOptimization } from "@/lib/domains/sut
 import { buildSutBillingHref, buildSutHomeHref, SUT_BRAND } from "@/lib/constants";
 import { SutBillingReportSkeleton } from "@/components/skeletons/SutSkeletons";
 import { SUT_ALERT_BADGE_LABELS } from "@/lib/sutLabels";
-import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
+import { getUnavailableMessage, hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
+import {
+  copayCorrectionBilledTry,
+  copayCorrectionPayableTry,
+  copayCorrectionProcedureLabel,
+  copayCorrectionSavingsTry,
+  strategyItemizedTotalTry,
+  strategyModeLabel,
+  strategyPackageTotalTry,
+  strategyPrimaryLabel,
+  strategySecondaryLabel,
+  usesClaimCopayCorrectionShape,
+  usesClaimStrategyShape,
+} from "@/lib/billingReportFields";
 import { theme } from "@/lib/theme";
 import { SyntheticDemoProvenance } from "@/components/sut/SyntheticDemoProvenance";
 import {
@@ -112,8 +125,13 @@ function TableWrap({
 
 export function BillingSummary({ billingReport }: { billingReport: BillingActionReport }) {
   const reportExact = isExactOutput(billingReport);
-  const priorityColor = reportExact ? PRIORITY_COLORS[billingReport.priority] : "#71717A";
-  const statusLabel = reportExact ? fmtPriorityLabel(billingReport.priority) : "Partial exact";
+  const reportHasTotals = hasRecoverableBillingTotals(billingReport);
+  const priorityColor = reportHasTotals ? PRIORITY_COLORS[billingReport.priority] : "#71717A";
+  const statusLabel = reportExact
+    ? fmtPriorityLabel(billingReport.priority)
+    : reportHasTotals
+      ? "Partial exact"
+      : "Unavailable";
 
   return (
     <div className="frost-panel sut-premium-panel p-6">
@@ -134,20 +152,36 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
       <div className="mt-5 grid gap-3 md:grid-cols-3">
         <KpiCard
           label="Rule-calculated opportunity"
-          value={reportExact ? fmtTRY2(billingReport.total_recoverable_try) : "Unavailable"}
+          value={
+            reportHasTotals
+              ? fmtTRY2(billingReport.total_recoverable_try)
+              : "Unavailable"
+          }
           valueColor={ACCENT}
         />
         <KpiCard
           label="Recommended actions"
-          value={reportExact ? fmtNum(billingReport.action_count) : "Review sections"}
+          value={reportHasTotals ? fmtNum(billingReport.action_count) : "Review sections"}
         />
         <KpiCard
           label="Priority tier"
-          value={reportExact ? fmtPriorityLabel(billingReport.priority) : "Unavailable"}
+          value={
+            reportHasTotals
+              ? fmtPriorityLabel(billingReport.priority)
+              : "Unavailable"
+          }
           valueColor={priorityColor}
         />
       </div>
-      {!reportExact && (
+      {!reportExact && reportHasTotals && (
+        <div className="mt-5">
+          <ExactnessNotice
+            block={billingReport}
+            fallback="Section totals are exact where marked; review section-level exactness before treating the aggregate as fully exact."
+          />
+        </div>
+      )}
+      {!reportHasTotals && (
         <div className="mt-5">
           <ExactnessNotice
             block={billingReport}
@@ -249,7 +283,9 @@ function DrugOptimizationSection({ drugData }: { drugData: BillingActionReport["
                   color={recommendation.issue === "passivated" ? "#B91C1C" : "#D97706"}
                 />
               </td>
-              <td title={recommendation.alternative}>{recommendation.alternative}</td>
+              <td title={recommendation.issue === "discount_tier_applied" ? (recommendation.detail || "Tier correction on same drug") : recommendation.alternative}>
+                {recommendation.issue === "discount_tier_applied" ? "Tier correction" : recommendation.alternative}
+              </td>
               <td className="num-col font-semibold" style={{ color: ACCENT }}>
                 {fmtTRY2(recommendation.savings_try)}
               </td>
@@ -301,18 +337,46 @@ function CopayOptimizationSection({ copayData }: { copayData: BillingActionRepor
             <thead>
               <tr>
                 <th>Procedure</th>
-                <th className="num-col" style={WRAPPED_HEADER_STYLE}>Gazette rate</th>
-                <th className="num-col" style={WRAPPED_HEADER_STYLE}>Correction</th>
+                {usesClaimCopayCorrectionShape(copayData.rate_corrections[0]) ? (
+                  <>
+                    <th className="num-col" style={WRAPPED_HEADER_STYLE}>Billed</th>
+                    <th className="num-col" style={WRAPPED_HEADER_STYLE}>Payable</th>
+                    <th className="num-col" style={WRAPPED_HEADER_STYLE}>Copay component</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="num-col" style={WRAPPED_HEADER_STYLE}>Gazette rate</th>
+                    <th className="num-col" style={WRAPPED_HEADER_STYLE}>Correction</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
               {copayData.rate_corrections.map((correction, index) => (
-                <tr key={`${correction.procedure}-${index}`}>
-                  <td>{correction.procedure}</td>
-                  <td className="num-col">{fmtTRY2(correction.gazette_rate)}</td>
-                  <td className="num-col font-semibold" style={{ color: ACCENT }}>
-                    {fmtTRY2(correction.correction_try)}
-                  </td>
+                <tr key={`${copayCorrectionProcedureLabel(correction)}-${index}`}>
+                  <td>{copayCorrectionProcedureLabel(correction)}</td>
+                  {usesClaimCopayCorrectionShape(correction) ? (
+                    <>
+                      <td className="num-col">
+                        {fmtTRY2OrUnavailable(copayCorrectionBilledTry(correction))}
+                      </td>
+                      <td className="num-col">
+                        {fmtTRY2OrUnavailable(copayCorrectionPayableTry(correction))}
+                      </td>
+                      <td className="num-col font-semibold" style={{ color: ACCENT }}>
+                        {fmtTRY2OrUnavailable(copayCorrectionSavingsTry(correction))}
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="num-col">
+                        {fmtTRY2OrUnavailable(copayCorrectionBilledTry(correction))}
+                      </td>
+                      <td className="num-col font-semibold" style={{ color: ACCENT }}>
+                        {fmtTRY2OrUnavailable(copayCorrectionSavingsTry(correction))}
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -348,32 +412,66 @@ function BillingStrategySection({ strategyData }: { strategyData: BillingActionR
       <TableWrap minWidth={980}>
         <thead>
           <tr>
-            <th style={WRAPPED_HEADER_STYLE}>Chapter</th>
-            <th>Group</th>
-            <th>Strategy</th>
-            <th className="num-col" style={WRAPPED_HEADER_STYLE}>Package price</th>
+            {usesClaimStrategyShape(strategyData.recommendations[0]) ? (
+              <>
+                <th style={WRAPPED_HEADER_STYLE}>Claim</th>
+                <th>Recommendation</th>
+              </>
+            ) : (
+              <>
+                <th style={WRAPPED_HEADER_STYLE}>Chapter</th>
+                <th>Group</th>
+                <th>Strategy</th>
+              </>
+            )}
+            <th className="num-col" style={WRAPPED_HEADER_STYLE}>Package total</th>
             <th className="num-col" style={WRAPPED_HEADER_STYLE}>Itemized total</th>
             <th className="num-col" style={WRAPPED_HEADER_STYLE}>Savings</th>
           </tr>
         </thead>
         <tbody>
           {strategyData.recommendations.map((item, index) => (
-            <tr key={`${item.chapter}-${index}`}>
-              <td>
-                <div className="font-semibold text-slate-950">{item.chapter_description}</div>
-                <div className="mt-1 text-xs" style={{ color: "#71717A" }}>
-                  {item.chapter}
-                </div>
+            <tr key={`${strategyPrimaryLabel(item)}-${index}`}>
+              {usesClaimStrategyShape(item) ? (
+                <>
+                  <td>
+                    <div className="font-semibold text-slate-950">{strategyPrimaryLabel(item)}</div>
+                    {strategySecondaryLabel(item) && (
+                      <div className="mt-1 text-xs" style={{ color: "#71717A" }}>
+                        {strategySecondaryLabel(item)}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    <StatusChip
+                      label={fmtLabel(strategyModeLabel(item))}
+                      color={strategyModeLabel(item) === "package" ? ACCENT : "#2563EB"}
+                    />
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td>
+                    <div className="font-semibold text-slate-950">{item.chapter_description}</div>
+                    <div className="mt-1 text-xs" style={{ color: "#71717A" }}>
+                      {item.chapter}
+                    </div>
+                  </td>
+                  <td>{item.ek2c_group}</td>
+                  <td>
+                    <StatusChip
+                      label={fmtLabel(strategyModeLabel(item))}
+                      color={strategyModeLabel(item) === "package" ? ACCENT : "#2563EB"}
+                    />
+                  </td>
+                </>
+              )}
+              <td className="num-col">
+                {fmtTRY2OrUnavailable(strategyPackageTotalTry(item))}
               </td>
-              <td>{item.ek2c_group}</td>
-              <td>
-                <StatusChip
-                  label={fmtLabel(item.strategy)}
-                  color={item.strategy === "package" ? ACCENT : "#2563EB"}
-                />
+              <td className="num-col">
+                {fmtTRY2OrUnavailable(strategyItemizedTotalTry(item))}
               </td>
-              <td className="num-col">{fmtTRY2(item.package_price)}</td>
-              <td className="num-col">{fmtTRY2(item.itemized_estimate)}</td>
               <td className="num-col font-semibold" style={{ color: ACCENT }}>
                 {fmtTRY2(item.savings_try)}
               </td>

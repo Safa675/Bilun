@@ -22,12 +22,29 @@ export function isExactOutput(block: ExactnessLike | null | undefined): boolean 
   return block?.exactness_status === "exact" || block?.pricing_status === "exact";
 }
 
+export function hasRecoverableBillingTotals(
+  block: ExactnessLike | null | undefined,
+): boolean {
+  return (
+    isExactOutput(block) ||
+    block?.exactness_status === "partial_exact"
+  );
+}
+
+function filterDisplayRequiredInputs(inputs: string[] | null | undefined): string[] {
+  if (!inputs?.length) {
+    return [];
+  }
+  return inputs.filter((input) => input !== "exactness_status");
+}
+
 export function formatRequiredInputs(inputs: string[] | null | undefined): string {
-  if (!inputs || inputs.length === 0) {
+  const filtered = filterDisplayRequiredInputs(inputs);
+  if (filtered.length === 0) {
     return "";
   }
 
-  return inputs
+  return filtered
     .map((input) => REQUIRED_INPUT_LABELS[input] ?? input.replace(/_/g, " "))
     .join(", ");
 }

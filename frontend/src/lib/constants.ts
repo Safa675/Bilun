@@ -12,14 +12,14 @@ export const ACCENT = theme.accent;
 export type SutHomeTab = "analytics" | "optimizer";
 
 export const SUT_BRAND = {
-  productName: "ILAY SUT",
-  metaTitle: "ILAY SUT",
-  metaDescription: "ILAY SUT billing rule intelligence module",
+  productName: "BILUN",
+  metaTitle: "BILUN",
+  metaDescription: "BILUN billing rule intelligence module",
   heroTitle: "Billing rule intelligence",
   heroDescription: "A standalone SUT workspace for SGK/SUT analytics, claim validation, financial exposure, and optimization workflows.",
   billingTitle: "Patient billing report",
   billingDescription: "Per-patient SUT rule review for labs, drugs, copay policy, billing strategy, and materials controls.",
-  moduleLabel: "ILAY SUT",
+  moduleLabel: "BILUN",
 } as const;
 
 export const SUT_HOME_TABS: { id: SutHomeTab; label: string; subtitle: string }[] = [

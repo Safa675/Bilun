@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRequiredInputs, getUnavailableMessage, isExactOutput } from "./sutExactness";
+import { formatRequiredInputs, getUnavailableMessage, hasRecoverableBillingTotals, isExactOutput } from "./sutExactness";
 
 describe("sutExactness helpers", () => {
   it("requires explicit exactness metadata before treating a block as exact", () => {
@@ -11,10 +11,21 @@ describe("sutExactness helpers", () => {
     expect(isExactOutput({ pricing_status: "unknown_date" })).toBe(false);
   });
 
+  it("treats partial exact reports as having recoverable totals", () => {
+    expect(hasRecoverableBillingTotals({ exactness_status: "partial_exact" })).toBe(true);
+    expect(hasRecoverableBillingTotals({ exactness_status: "missing_exact_inputs" })).toBe(
+      false,
+    );
+  });
+
   it("formats required input identifiers into readable labels", () => {
     expect(formatRequiredInputs(["billed_procedure_codes", "procedure_dates"])).toBe(
       "billed procedure codes, procedure dates",
     );
+  });
+
+  it("hides schema placeholder exactness_status from missing-input labels", () => {
+    expect(formatRequiredInputs(["exactness_status", "claim_lines"])).toBe("claim lines");
   });
 
   it("builds a combined unavailable message from reason and missing inputs", () => {

@@ -287,8 +287,7 @@ export default function SutInlineAIPanel({
         <div className="sut-chat-title-wrap">
           <Sparkles className="sut-chat-title-icon" />
           <div>
-            <p className="sut-muted-label">SUT copilot</p>
-            <div className="sut-chat-title">ILAY SUT Analysis</div>
+            <div className="sut-chat-title">BILUN Analysis</div>
             <p className="sut-chat-subtitle">{patientId ? `${activeTab} - ${patientId}` : activeTab}</p>
           </div>
         </div>
@@ -342,7 +341,7 @@ export default function SutInlineAIPanel({
 
       <div className="sut-chat-copy">
         {isAutoLoading && !autoText && (
-          <span className="sut-chat-loading">ILAY SUT is analyzing...</span>
+          <span className="sut-chat-loading">BILUN is analyzing...</span>
         )}
         {autoText}
         {isAutoLoading && autoText && (
@@ -401,7 +400,7 @@ export default function SutInlineAIPanel({
           value={input}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={patientId ? "Ask ILAY SUT about this patient or billing review..." : "Ask ILAY SUT about this workspace..."}
+          placeholder={patientId ? "Ask BILUN about this patient or billing review..." : "Ask BILUN about this workspace..."}
           disabled={isAutoLoading || isResponding}
           className="sut-input sut-chat-input"
         />

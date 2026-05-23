@@ -44,7 +44,7 @@ vi.mock("@/lib/constants", () => ({
   buildSutBillingHref: (patientId: string) => `/patient/${patientId}/billing`,
   buildSutHomeHref: () => "/?tab=optimizer",
   SUT_BRAND: {
-    moduleLabel: "ILAY SUT",
+    moduleLabel: "BILUN",
     billingTitle: "Patient billing report",
     billingDescription: "Per-patient SUT rule review.",
   },
@@ -62,6 +62,10 @@ vi.mock("@/lib/sutLabels", () => ({
 vi.mock("@/lib/sutExactness", () => ({
   isExactOutput: (block: { exactness_status?: string | null; pricing_status?: string | null } | null | undefined) =>
     block?.exactness_status === "exact" || block?.pricing_status === "exact",
+  hasRecoverableBillingTotals: (block: { exactness_status?: string | null; pricing_status?: string | null } | null | undefined) =>
+    block?.exactness_status === "exact" ||
+    block?.pricing_status === "exact" ||
+    block?.exactness_status === "partial_exact",
   getUnavailableMessage: (
     block: { unavailable_reason?: string | null } | null | undefined,
     fallback: string,
@@ -166,5 +170,22 @@ describe("BillingSummary provenance", () => {
     expect(html).toContain(SYNTHETIC_DEMO_COPY);
     expect(html).toContain("Needs exact claim sections.");
     expect(html).toContain("Unavailable");
+  });
+
+  it("shows recoverable totals for partial exact reports", () => {
+    const partialReport: BillingActionReport = {
+      ...baseReport,
+      exactness_status: "partial_exact",
+      unavailable_reason: "Some sections are still partial.",
+      required_inputs_missing: ["exactness_status"],
+      total_recoverable_try: 22552.44,
+      action_count: 28,
+      priority: "medium",
+    };
+    const html = renderToStaticMarkup(<BillingSummary billingReport={partialReport} />);
+
+    expect(html).toContain("22552.44 TRY");
+    expect(html).toContain("Partial exact");
+    expect(html).not.toContain("Rule-calculated opportunity:Unavailable");
   });
 });

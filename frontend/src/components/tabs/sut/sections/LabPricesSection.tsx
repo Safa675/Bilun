@@ -17,7 +17,7 @@ export function LabPricesSection() {
   if (!data) return <SutReferenceSectionSkeleton title="Loading lab prices" />;
   return (
     <div className="frost-panel p-4 rounded-2xl">
-      <h4 className="text-sm font-bold mb-3" style={{ color: "#1A1A1A" }}>ILAY Lab Test → SUT Code Mapping ({fmtNum(data.total)} tests)</h4>
+      <h4 className="text-sm font-bold mb-3" style={{ color: "#1A1A1A" }}>BILUN Lab Test → SUT Code Mapping ({fmtNum(data.total)} tests)</h4>
       <table className="frost-table" style={{ fontSize: 12 }}>
         <thead><tr><th>Test Name</th><th>SUT Code</th><th>Gazette Price (TL)</th></tr></thead>
         <tbody>

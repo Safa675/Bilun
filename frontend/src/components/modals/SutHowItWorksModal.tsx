@@ -15,7 +15,7 @@ const SUT_PHASES: SutPhase[] = [
     number: "01",
     title: "Gazette catalog assembly",
     description:
-      "ILAY SUT reads the curated gazette schedules that back current procedure pricing, DRG package pricing, and normative SUT controls.",
+      "BILUN reads the curated gazette schedules that back current procedure pricing, DRG package pricing, and normative SUT controls.",
     details: [
       "Canonical SUT pricing uses dated gazette catalog lookups.",
       "Procedure, DRG, material, and checkup references stay within SUT-owned routes.",
@@ -112,7 +112,7 @@ export default function SutHowItWorksModal({
       className="how-modal-overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="How ILAY SUT works"
+      aria-label="How BILUN works"
       onClick={handleClose}
     >
       <div
@@ -122,7 +122,7 @@ export default function SutHowItWorksModal({
         <div className="how-modal-head">
           <div className="how-modal-title-block">
             <span className="how-modal-kicker">
-              ILAY SUT
+              BILUN
             </span>
             <h2>How the SUT workspace works</h2>
             <p className="how-modal-intro">

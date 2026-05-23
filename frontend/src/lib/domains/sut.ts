@@ -462,22 +462,33 @@ export interface CopayOptimization extends ExactnessState {
   rx_copay_savings_try: number;
   total_copay_savings_try: number;
   rate_corrections: Array<{
-    procedure: string;
-    gazette_rate: number;
-    correction_try: number;
+    procedure?: string;
+    gazette_rate?: number;
+    correction_try?: number;
+    code?: string;
+    name?: string;
+    billed_try?: number;
+    payable_try?: number;
+    copay_component_try?: number;
+    detail?: string;
   }>;
 }
 
 export interface BillingStrategyRecommendation extends ExactnessState {
   recommendations: Array<{
-    chapter: string;
-    chapter_description: string;
-    ek2c_group: string;
-    strategy: "package" | "itemized";
-    package_price: number;
-    itemized_estimate: number;
+    chapter?: string;
+    chapter_description?: string;
+    ek2c_group?: string;
+    strategy?: "package" | "itemized";
+    package_price?: number;
+    itemized_estimate?: number;
     savings_try: number;
-    confidence: "high" | "medium" | "low";
+    confidence?: "high" | "medium" | "low";
+    claim_id?: string;
+    recommendation?: "package" | "itemized";
+    package_total_try?: number;
+    itemized_total_try?: number;
+    detail?: string;
   }>;
 }
 
