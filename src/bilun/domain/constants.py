@@ -80,10 +80,10 @@ _EK3_SPECIALTY_CATALOGS: dict[str, tuple[str, str]] = {
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ILAY test name -> SUT code mapping  (updated to current L1xxxxx format)
+# BILUN test name -> SUT code mapping  (updated to current L1xxxxx format)
 # ═══════════════════════════════════════════════════════════════════════════
 
-ILAY_TO_SUT_CODE: dict[str, str] = {
+BILUN_TO_SUT_CODE: dict[str, str] = {
     # ── Inflammatory panel ────────────────────────────────────────────
     "CRP": "L101840",
     "Prokalsitonin": "L106230",
@@ -162,7 +162,7 @@ _OLD_TO_NEW_CODE: dict[str, str] = {
     "904290": "L100050",  # aPTT
 }
 
-# Hemogram bundle: all these ILAY test names map to a SINGLE SUT test (L107020).
+# Hemogram bundle: all these BILUN test names map to a SINGLE SUT test (L107020).
 HEMOGRAM_TESTS: frozenset[str] = frozenset(
     {
         "Hemoglobin",
@@ -181,10 +181,10 @@ HEMOGRAM_TESTS: frozenset[str] = frozenset(
     }
 )
 
-# Reverse mapping: SUT code -> ILAY test names
-_SUT_CODE_TO_ILAY: dict[str, list[str]] = {}
-for _name, _code in ILAY_TO_SUT_CODE.items():
-    _SUT_CODE_TO_ILAY.setdefault(_code, []).append(_name)
+# Reverse mapping: SUT code -> BILUN test names
+_SUT_CODE_TO_BILUN: dict[str, list[str]] = {}
+for _name, _code in BILUN_TO_SUT_CODE.items():
+    _SUT_CODE_TO_BILUN.setdefault(_code, []).append(_name)
 
 
 # ═══════════════════════════════════════════════════════════════════════════

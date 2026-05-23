@@ -20,7 +20,7 @@ from typing import Any
 import pandas as pd
 
 from .constants import (
-    ILAY_TO_SUT_CODE,
+    BILUN_TO_SUT_CODE,
     _OLD_TO_NEW_CODE,
 )
 from .loaders import (
@@ -177,16 +177,16 @@ def load_sut_catalog(
 
 def get_lab_price(test_name: str, visit_date: Any | None = None) -> float | None:
     """
-    Get the SUT gazette price (TRY) for an ILAY lab test name.
+    Get the SUT gazette price (TRY) for a BILUN lab test name.
 
     Args:
-        test_name: ILAY test name (e.g., "ALT", "CRP", "Hemoglobin")
+        test_name: BILUN test name (e.g., "ALT", "CRP", "Hemoglobin")
         visit_date: Optional date for temporal catalog selection.
 
     Returns:
         Price in TRY, or None if the test is not in the mapping or catalog.
     """
-    sut_code = ILAY_TO_SUT_CODE.get(test_name)
+    sut_code = BILUN_TO_SUT_CODE.get(test_name)
     if sut_code is None:
         return None
 
@@ -200,17 +200,17 @@ def get_lab_price(test_name: str, visit_date: Any | None = None) -> float | None
 
 def get_all_lab_prices(visit_date: Any | None = None) -> dict[str, float]:
     """
-    Get SUT gazette prices for all mapped ILAY lab test names.
+    Get SUT gazette prices for all mapped BILUN lab test names.
 
     Returns:
-        Dict mapping test_name -> price_try for all tests in ILAY_TO_SUT_CODE
+        Dict mapping test_name -> price_try for all tests in BILUN_TO_SUT_CODE
         that have a valid price in the catalog.
     """
     catalog = load_sut_catalog(visit_date=visit_date)
     by_code = catalog["ek2b"]["by_code"]
 
     result: dict[str, float] = {}
-    for test_name, sut_code in ILAY_TO_SUT_CODE.items():
+    for test_name, sut_code in BILUN_TO_SUT_CODE.items():
         entry = by_code.get(sut_code)
         if entry is not None:
             result[test_name] = entry["price_try"]
@@ -456,14 +456,14 @@ def main() -> None:
     for grp, gs in sorted(ek2c.get("group_stats", {}).items()):
         print(f"    {grp}: {gs['count']} pkgs, {gs['price_min']}-{gs['price_max']} TRY")
 
-    # Verify ILAY lab mappings
-    print("\nILAY Lab Price Mapping:")
+    # Verify BILUN lab mappings
+    print("\nBILUN Lab Price Mapping:")
     lab_prices = get_all_lab_prices()
     for name, price in sorted(lab_prices.items(), key=lambda x: x[1], reverse=True):
-        code = ILAY_TO_SUT_CODE[name]
+        code = BILUN_TO_SUT_CODE[name]
         print(f"  {name:20s} -> {price:>10.2f} TRY (SUT code {code})")
 
-    print(f"\n{len(lab_prices)}/{len(ILAY_TO_SUT_CODE)} tests mapped successfully")
+    print(f"\n{len(lab_prices)}/{len(BILUN_TO_SUT_CODE)} tests mapped successfully")
 
     # Print check-up procedure prices
     proc_prices = get_checkup_procedure_prices()

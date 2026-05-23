@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import duckdb
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
@@ -105,5 +106,29 @@ def register_exception_handlers(app: FastAPI) -> None:
                 "error": exc.error_code,
                 "message": exc.message,
                 "context": exc.context,
+            },
+        )
+
+    @app.exception_handler(duckdb.IOException)
+    async def _duckdb_io_error_handler(_request: Request, exc: duckdb.IOException) -> JSONResponse:
+        message = str(exc)
+        if "Could not set lock on file" in message:
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "error": "service_unavailable",
+                    "message": (
+                        "BILUN cache database is currently locked by another process. "
+                        "Stop duplicate backend/cache-builder processes and retry."
+                    ),
+                    "context": {"detail": message},
+                },
+            )
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "internal_error",
+                "message": message,
+                "context": {},
             },
         )

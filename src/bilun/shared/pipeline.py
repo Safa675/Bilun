@@ -1,6 +1,6 @@
 """BILUN pipeline helpers — DRG payload normalization.
 
-Extracted from ILAY's src/api/pipeline.py for standalone BILUN use.
+Extracted from BILUN's src/api/pipeline.py for standalone BILUN use.
 """
 
 from __future__ import annotations
