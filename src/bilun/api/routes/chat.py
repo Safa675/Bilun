@@ -40,7 +40,7 @@ def _check_rate_limit(client_ip: str) -> bool:
     now = _time.time()
     with _rate_lock:
         _prune_rate_windows(now)
-        window = _rate_window[client_ip]
+        _rate_window.setdefault(client_ip, [])
         if len(_rate_window[client_ip]) >= RATE_LIMIT:
             return False
         _rate_window[client_ip].append(now)

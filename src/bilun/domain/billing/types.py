@@ -33,6 +33,9 @@ COPAY_UNAVAILABLE_REASON = (
     "dispensed drug claim lines, and billed amounts, which are not available "
     "in the active SUT runtime inputs."
 )
+MATERIALS_REQUIRED_INPUTS = (
+    "billed_material_codes",
+)
 MATERIALS_PARTIAL_REASON = (
     "Materials pre-check findings mix exact pre-authorization and MIAT rules "
     "with non-exact ceiling heuristics, so the section should not be treated "
@@ -126,7 +129,9 @@ class MaterialPreCheck:
     gazette_ceiling_by_specialty: dict[str, float] = field(default_factory=dict)
     exactness_status: str = EXACTNESS_STATUS_PARTIAL
     unavailable_reason: str | None = MATERIALS_PARTIAL_REASON
-    required_inputs_missing: list[str] = field(default_factory=list)
+    required_inputs_missing: list[str] = field(
+        default_factory=lambda: list(MATERIALS_REQUIRED_INPUTS)
+    )
 
 
 @dataclass

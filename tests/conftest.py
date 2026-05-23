@@ -5,7 +5,7 @@ import os
 
 os.environ["TESTING"] = "1"
 
-from src.bilun.tests.fixtures.sut import (  # noqa: E402
+from tests.fixtures.sut import (  # noqa: E402
     cohort_sut_summary_payload,
     sut_single_json_payloads,
 )

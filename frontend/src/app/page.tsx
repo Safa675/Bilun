@@ -112,6 +112,10 @@ function SutHomeContent() {
     ? (chatDock === "left" ? SUT_INLINE_CHAT_PANEL_WIDTH / 2 : -(SUT_INLINE_CHAT_PANEL_WIDTH / 2))
     : 0;
 
+  const dockPadding = shouldRenderChat && chatDock !== "center"
+    ? { paddingLeft: `${SUT_INLINE_CHAT_PANEL_WIDTH / 2}px`, paddingRight: `${SUT_INLINE_CHAT_PANEL_WIDTH / 2}px` }
+    : undefined;
+
   useEffect(() => {
     if (!enteredWorkspace || !showAdmin) {
       setHealthStatus(null);
@@ -145,7 +149,7 @@ function SutHomeContent() {
 
   return (
     <>
-      <main id="main-content" className="sut-app-main">
+      <main id="main-content" className="sut-app-main" style={dockPadding}>
         <div
           style={{
             transform: `translateX(${chatShiftX}px)`,

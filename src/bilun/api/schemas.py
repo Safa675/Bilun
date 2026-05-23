@@ -263,7 +263,6 @@ class BillingExactnessResponse(BaseModel):
         if (
             self.exactness_status in _STATUSES_REQUIRING_INPUTS
             and not self.required_inputs_missing
-            and "exactness_status" not in self.model_fields_set
         ):
             self.required_inputs_missing = _default_missing_exactness_inputs()
             self.unavailable_reason = (
