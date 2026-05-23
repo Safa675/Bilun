@@ -103,12 +103,13 @@ def _assemble_sut_and_billing_context(
     )
 
     billing_ctx = assemble_billing_context(
-        sut_by_pid={},
+        sut_by_pid=sut_ctx["sut_by_pid"],
         patient_alerts_cache=sut_ctx["patient_alerts_cache"],
         lab_df=lab_df,
         rec_df=rec_df,
         billing_workers=billing_workers,
         compute_all_billing_reports_fn=compute_all_billing_reports,
+        sut_claim_dataset=sut_ctx.get("sut_claim_dataset"),
     )
     _log_memory_snapshot(
         "analytics_context:after_billing",

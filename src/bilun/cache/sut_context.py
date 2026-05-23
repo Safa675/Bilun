@@ -379,6 +379,7 @@ def assemble_sut_context(
         ana_df,
         patient_ids,
         diagnoses_by_pid=diagnoses_by_pid,
+        claim_dataset=claim_dataset,
     )
     patient_alerts_cache = build_sut_patient_alerts_cache(
         patient_ids,
