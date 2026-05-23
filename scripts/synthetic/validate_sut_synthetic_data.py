@@ -10,7 +10,13 @@ import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_DATA_DIR = PROJECT_ROOT / "data" / "synthetic" / "sut"
-WORKBOOK_NAME = "sentetik_sut_5_hasta.xlsx"
+WORKBOOK_NAME = "sentetik_sut_v2_50_hasta.xlsx"
+MIN_PATIENTS = 50
+MIN_CLAIMS = 100
+MIN_PROCEDURES = 300
+MIN_DRUGS = 60
+MIN_MATERIALS = 50
+MIN_LABS = 500
 
 REQUIRED_SHEETS = [
     "veri_seti_manifestosu",
@@ -141,8 +147,8 @@ def _validate_workbook(tables: dict[str, pd.DataFrame], errors: list[str]) -> No
     if not tables:
         return
     patients = tables["hastalar"]
-    if len(patients) != 5:
-        _error(errors, f"Expected 5 patients, found {len(patients)}")
+    if len(patients) < MIN_PATIENTS:
+        _error(errors, f"Expected at least {MIN_PATIENTS} patients, found {len(patients)}")
     patient_ids = set(patients["hasta_id"].astype(str))
     bad_ids = [pid for pid in patient_ids if not pid.startswith("SENTETIK-HASTA-")]
     if bad_ids:
@@ -153,22 +159,27 @@ def _validate_workbook(tables: dict[str, pd.DataFrame], errors: list[str]) -> No
     missing_proc = sorted(patient_ids - patients_with_procedures)
     if missing_proc:
         _error(errors, f"Patients without procedure lines: {missing_proc}")
-    if len(procedures) < 15:
-        _error(errors, f"Expected at least 15 procedure lines, found {len(procedures)}")
-    if len(tables["malzeme_fatura_satirlari"]) < 5:
+    if len(procedures) < MIN_PROCEDURES:
+        _error(errors, f"Expected at least {MIN_PROCEDURES} procedure lines, found {len(procedures)}")
+    if len(tables["malzeme_fatura_satirlari"]) < MIN_MATERIALS:
         _error(
             errors,
-            f"Expected at least 5 material lines, found {len(tables['malzeme_fatura_satirlari'])}",
+            f"Expected at least {MIN_MATERIALS} material lines, found {len(tables['malzeme_fatura_satirlari'])}",
         )
-    if len(tables["ilac_fatura_satirlari"]) < 5:
+    if len(tables["ilac_fatura_satirlari"]) < MIN_DRUGS:
         _error(
             errors,
-            f"Expected at least 5 drug claim lines, found {len(tables['ilac_fatura_satirlari'])}",
+            f"Expected at least {MIN_DRUGS} drug claim lines, found {len(tables['ilac_fatura_satirlari'])}",
         )
-    if len(tables["laboratuvar_sonuclari"]) < 80:
+    if len(tables["laboratuvar_sonuclari"]) < MIN_LABS:
         _error(
             errors,
-            f"Expected at least 80 lab rows, found {len(tables['laboratuvar_sonuclari'])}",
+            f"Expected at least {MIN_LABS} lab rows, found {len(tables['laboratuvar_sonuclari'])}",
+        )
+    if len(tables["fatura_basliklari"]) < MIN_CLAIMS:
+        _error(
+            errors,
+            f"Expected at least {MIN_CLAIMS} claims, found {len(tables['fatura_basliklari'])}",
         )
     _validate_lab_traceability(tables, procedures, errors)
     _validate_prescription_traceability(tables, errors)
@@ -354,7 +365,10 @@ def main() -> None:
     print("=" * 72)
     print(f"Validating synthetic SUT data: {data_dir}")
     tables = _read_excel(data_dir, errors)
-    _validate_workbook(tables, errors)
+    if not tables:
+        _error(errors, f"Workbook validation skipped because {WORKBOOK_NAME} is missing or invalid")
+    else:
+        _validate_workbook(tables, errors)
     _validate_parquet_dir(data_dir / "clean", REQUIRED_CLEAN_COLUMNS, errors)
     _validate_parquet_dir(data_dir / "claims", REQUIRED_CLAIM_COLUMNS, errors)
 
