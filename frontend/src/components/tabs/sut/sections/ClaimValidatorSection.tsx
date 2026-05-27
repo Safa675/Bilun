@@ -21,6 +21,7 @@ import {
   EMPTY_MATERIAL,
 } from "../shared";
 import { getSutSeverityLabel } from "@/lib/sutLabels";
+import { Chip, DataTable, Surface } from "@/components/primitives";
 
 export function ClaimValidatorSection() {
   const [claimId, setClaimId] = useState("CLM-001");
@@ -131,7 +132,7 @@ export function ClaimValidatorSection() {
 
   return (
     <div className="space-y-5">
-      <div className="frost-panel p-5 rounded-2xl">
+      <Surface variant="base" padding="lg">
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
           Claim Details
         </h3>
@@ -172,7 +173,7 @@ export function ClaimValidatorSection() {
                     onClick={() => setProcedureCode(c.code)}
                   >
                     <span className="font-mono font-medium">{c.code}</span>
-                    <span style={{ color: "#6EE7B7" }}>{" — "}</span>
+                    <span className="text-[var(--text-muted)]">{" — "}</span>
                     <span>{c.name}</span>
                     {c.price_try > 0 && (
                       <span style={{ color: "#94A3B8" }}>{" "}({fmtTRY2(c.price_try)})</span>
@@ -218,12 +219,12 @@ export function ClaimValidatorSection() {
             {loading ? "Validating..." : "Validate Claim"}
           </button>
         </div>
-      </div>
+      </Surface>
 
       {error && (
-        <div className="frost-panel p-4 rounded-2xl" style={{ borderColor: "rgba(185, 28, 28, 0.3)", background: "rgba(185, 28, 28, 0.04)" }}>
-          <p className="text-sm font-medium" style={{ color: "#B91C1C" }}>{error}</p>
-        </div>
+        <Surface variant="soft" padding="md">
+          <Chip variant="danger">{error}</Chip>
+        </Surface>
       )}
 
       {result && <ValidationResultPanel result={result} />}
@@ -245,27 +246,26 @@ function ValidationResultPanel({ result }: { result: SutValidationResult }) {
       </div>
 
       {result.violations.length > 0 && (
-        <div className="frost-panel p-5 rounded-2xl">
+        <Surface variant="base" padding="lg">
           <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>Rule Violations</h3>
           <div className="space-y-2">
             {result.violations.map((v, i) => (
               <ViolationRow key={i} violation={v} />
             ))}
           </div>
-        </div>
+        </Surface>
       )}
 
       {result.material_estimates.length > 0 && (
-        <div className="frost-panel p-5 rounded-2xl">
+        <Surface variant="base" padding="lg">
           <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>Material Cost Estimates</h3>
-          <div className="overflow-x-auto">
-            <table className="frost-table w-full">
+          <DataTable>
               <thead>
                 <tr>
                   <th className="text-left">Material</th>
-                  <th className="text-right">Unit Price</th>
-                  <th className="text-right">Qty</th>
-                  <th className="text-right">Total</th>
+                  <th className="text-right tabular-nums">Unit Price</th>
+                  <th className="text-right tabular-nums">Qty</th>
+                  <th className="text-right tabular-nums">Total</th>
                   <th className="text-center">Reimbursable</th>
                   <th className="text-center">Bundled</th>
                   <th className="text-left">Source</th>
@@ -276,9 +276,8 @@ function ValidationResultPanel({ result }: { result: SutValidationResult }) {
                   <MaterialEstimateRow key={i} estimate={m} />
                 ))}
               </tbody>
-            </table>
-          </div>
-        </div>
+          </DataTable>
+        </Surface>
       )}
 
       <div className="text-xs text-right" style={{ color: "#A1A1AA" }}>

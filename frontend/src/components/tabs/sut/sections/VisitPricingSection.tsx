@@ -5,6 +5,7 @@ import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons
 import type { VisitPricingSpecialty } from "@/lib/domains/sut";
 import { fmtTRY } from "../shared";
 import { useSutApi } from "../useSutApi";
+import { DataTable, Surface } from "@/components/primitives";
 
 type VisitData = { specialties: VisitPricingSpecialty[] };
 
@@ -20,14 +21,14 @@ export function VisitPricingSection() {
   if (!data) return <SutReferenceSectionSkeleton title="Loading visit pricing" />;
   const tiers = ["A1", "A2", "B", "C", "D", "E"];
   return (
-    <div className="frost-panel p-4 rounded-2xl">
+    <Surface variant="base" padding="md">
       <h4 className="text-sm font-bold mb-3" style={{ color: "#1A1A1A" }}>EK-2A Outpatient Visit Pricing by Specialty</h4>
       <div style={{ maxHeight: 500, overflowY: "auto" }}>
-        <table className="frost-table" style={{ fontSize: 10 }}>
+        <DataTable className="text-[10px]">
           <thead>
             <tr>
               <th>Code</th><th>Specialty</th>
-              {tiers.map(t => <th key={t} className="num-col">{t}</th>)}
+              {tiers.map(t => <th key={t} className="tabular-nums text-right">{t}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -37,13 +38,13 @@ export function VisitPricingSection() {
                 <tr key={i}>
                   <td style={{ fontWeight: 600, fontFamily: "monospace" }}>{String(s.code ?? "")}</td>
                   <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{String(s.name ?? "")}</td>
-                  {tiers.map(t => <td key={t} className="num-col">{prices[t] != null ? fmtTRY(Number(prices[t])) : "--"}</td>)}
+                  {tiers.map(t => <td key={t} className="tabular-nums text-right">{prices[t] != null ? fmtTRY(Number(prices[t])) : "--"}</td>)}
                 </tr>
               );
             })}
           </tbody>
-        </table>
+        </DataTable>
       </div>
-    </div>
+    </Surface>
   );
 }

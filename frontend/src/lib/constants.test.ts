@@ -20,6 +20,7 @@ describe("sut constants", () => {
   it("parses home tab query parameters safely", () => {
     expect(parseSutHomeTab("analytics")).toBe("analytics");
     expect(parseSutHomeTab("optimizer")).toBe("optimizer");
+    expect(parseSutHomeTab("reference-tools")).toBe("reference-tools");
     expect(parseSutHomeTab("unknown")).toBe("analytics");
     expect(parseSutHomeTab(null)).toBe("analytics");
   });
@@ -27,11 +28,12 @@ describe("sut constants", () => {
   it("builds split SUT navigation routes", () => {
     expect(buildSutHomeHref("analytics")).toBe("/?tab=analytics");
     expect(buildSutHomeHref("optimizer")).toBe("/?tab=optimizer");
+    expect(buildSutHomeHref("reference-tools")).toBe("/?tab=reference-tools");
     expect(buildSutPatientHref("A 123/45")).toBe("/patient/A%20123%2F45");
-    expect(buildSutBillingHref("A 123/45")).toBe("/patient/A%20123%2F45/billing");
+    expect(buildSutBillingHref("A 123/45")).toBe("/patient/A%20123%2F45");
   });
 
   it("defines the expected split SUT tabs", () => {
-    expect(SUT_HOME_TABS.map((tab) => tab.id)).toEqual(["analytics", "optimizer"]);
+    expect(SUT_HOME_TABS.map((tab) => tab.id)).toEqual(["analytics", "optimizer", "reference-tools"]);
   });
 });

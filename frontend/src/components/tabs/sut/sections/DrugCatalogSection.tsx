@@ -5,6 +5,7 @@ import { getDrugCatalog } from "@/lib/api/sut";
 import type { DrugEntry } from "@/lib/api/sut";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import { fmtNum, fmtPct } from "../shared";
+import { DataTable, Surface } from "@/components/primitives";
 
 export function DrugCatalogSection() {
   const [query, setQuery] = useState("");
@@ -35,7 +36,7 @@ export function DrugCatalogSection() {
   }, [query, page]);
 
   return (
-    <div className="frost-panel p-4 rounded-2xl">
+    <Surface variant="base" padding="md">
       <h4 className="text-sm font-bold mb-3" style={{ color: "#1A1A1A" }}>
         EK-4A Drug Reimbursement Catalog ({data ? fmtNum(data.total) : "..."} drugs)
       </h4>
@@ -54,7 +55,7 @@ export function DrugCatalogSection() {
       ) : data && data.drugs.length > 0 ? (
         <>
           <div style={{ maxHeight: 400, overflowY: "auto" }}>
-            <table className="frost-table" style={{ fontSize: 11 }}>
+            <DataTable className="text-[11px]">
               <thead><tr><th>Drug Name</th><th>Equivalence</th><th>Status</th><th>Tier 1</th><th>Passivated</th></tr></thead>
               <tbody>
                 {data.drugs.map((d, i) => (
@@ -62,12 +63,12 @@ export function DrugCatalogSection() {
                     <td style={{ fontWeight: 600, maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{String(d.drug_name ?? "")}</td>
                     <td style={{ fontSize: 10 }}>{String(d.equivalence_group ?? "--")}</td>
                     <td style={{ fontSize: 10 }}>{String(d.discount_status ?? "--")}</td>
-                     <td className="num-col">{d.discount_tier_1 != null ? fmtPct(Number(d.discount_tier_1) * 100, 0) : "--"}</td>
+                     <td className="tabular-nums text-right">{d.discount_tier_1 != null ? fmtPct(Number(d.discount_tier_1) * 100, 0) : "--"}</td>
                     <td style={{ fontSize: 10 }}>{d.passivation_date ? String(d.passivation_date) : "--"}</td>
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </DataTable>
           </div>
           {data.total_pages > 1 && (
             <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 8, fontSize: 11, color: "#71717A" }}>
@@ -78,8 +79,8 @@ export function DrugCatalogSection() {
           )}
         </>
       ) : (
-        <p className="text-sm" style={{ color: "#A1A1AA" }}>No drugs found.</p>
+        <p className="text-sm text-[var(--text-secondary)]">No drugs found.</p>
       )}
-    </div>
+    </Surface>
   );
 }

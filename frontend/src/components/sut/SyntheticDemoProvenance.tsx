@@ -1,5 +1,6 @@
 "use client";
 
+import { Chip } from "@/components/primitives";
 import type { SUTDataSourceCarrier, SUTDataSourceMetadata } from "@/lib/domains/sut";
 
 export const SYNTHETIC_DEMO_COPY =
@@ -24,14 +25,42 @@ export function isSyntheticDemoDataSource(
   return dataSource?.mode === "synthetic_demo" || dataSource?.is_synthetic === true;
 }
 
-function firstSyntheticDataSource(inputs: ProvenanceInput[]): SUTDataSourceMetadata | null {
-  for (const input of inputs) {
-    const dataSource = getSutDataSource(input);
-    if (isSyntheticDemoDataSource(dataSource)) return dataSource;
-  }
-  return null;
+function resolveSyntheticNotice(input: ProvenanceInput): string | null {
+  const dataSource = getSutDataSource(input);
+  if (!isSyntheticDemoDataSource(dataSource)) return null;
+  const notice = dataSource.notice?.trim() || SYNTHETIC_DEMO_COPY;
+  return notice.includes("Synthetic demo claims") ? notice : SYNTHETIC_DEMO_COPY;
 }
 
+/** Compact top-bar chip — Phase 6 replaces inline page banners. */
+export function SyntheticDemoChip({
+  dataSource,
+  title,
+  className,
+}: {
+  dataSource?: ProvenanceInput;
+  title?: string;
+  className?: string;
+}) {
+  const notice = resolveSyntheticNotice(dataSource);
+  if (!notice) return null;
+
+  return (
+    <Chip
+      variant="outline"
+      className={className}
+      title={title ?? notice}
+      aria-label="Synthetic SUT demo provenance"
+    >
+      Synthetic demo
+    </Chip>
+  );
+}
+
+/**
+ * @deprecated Phase 6 — use `SyntheticDemoChip` in `AppTopBar` instead of inline banners.
+ * Kept for tests and gradual removal.
+ */
 export function SyntheticDemoProvenance({
   dataSource,
   dataSources,
@@ -43,25 +72,27 @@ export function SyntheticDemoProvenance({
   compact?: boolean;
   className?: string;
 }) {
-  const syntheticDataSource = firstSyntheticDataSource([
-    dataSource,
-    ...(dataSources ?? []),
-  ]);
-  if (!syntheticDataSource) return null;
+  const inputs = [dataSource, ...(dataSources ?? [])];
+  const notice = inputs.map(resolveSyntheticNotice).find(Boolean);
+  if (!notice) return null;
 
-  const notice = syntheticDataSource.notice?.trim() || SYNTHETIC_DEMO_COPY;
-  const classes = [
-    "sut-synthetic-provenance",
-    compact ? "sut-synthetic-provenance-compact" : "",
-    className,
-  ].filter(Boolean).join(" ");
+  if (compact) {
+    return <SyntheticDemoChip dataSource={dataSource ?? dataSources?.[0]} className={className} />;
+  }
 
   return (
-    <div className={classes} role="note" aria-label="Synthetic SUT demo provenance">
-      <span className="sut-synthetic-provenance-label">Synthetic demo claims</span>
-      <span className="sut-synthetic-provenance-copy">
-        {notice.includes("Synthetic demo claims") ? notice : SYNTHETIC_DEMO_COPY}
+    <div
+      className={[
+        "rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-soft)] px-3 py-2 text-xs text-[var(--text-secondary)]",
+        className,
+      ].filter(Boolean).join(" ")}
+      role="note"
+      aria-label="Synthetic SUT demo provenance"
+    >
+      <span className="font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+        Synthetic demo claims
       </span>
+      <span className="ml-2 font-medium text-[var(--text-primary)]">{notice}</span>
     </div>
   );
 }

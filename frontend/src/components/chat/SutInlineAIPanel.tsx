@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { sendSutChatMessage } from "@/lib/api/sutChat";
+import { cn } from "@/lib/cn";
 import type { ChatMessage } from "@/lib/domains/common";
 import type { SutChatDockPosition, SutInlineChatState } from "@/stores/storeInterfaces";
 
@@ -25,6 +26,15 @@ interface SutInlineAIPanelProps {
 }
 
 export const SUT_INLINE_CHAT_PANEL_WIDTH = 380;
+
+const CHAT_INPUT_CLASS =
+  "flex-1 rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-2 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-[border-color] duration-150 focus:border-[var(--gold)] focus:outline-none focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--gold)_15%,transparent)]";
+
+const CHAT_CURSOR_CLASS =
+  "inline-block h-3.5 w-1.5 ml-0.5 align-text-bottom bg-[var(--gold)] [animation:sutChatCursorBlink_1s_step-end_infinite]";
+
+const CHAT_ICON_BTN_CLASS =
+  "inline-flex items-center justify-center rounded-[var(--r-md)] border-none bg-transparent p-[0.3rem] text-[var(--text-muted)] transition-[background,color] duration-150 hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]";
 
 const DEFAULT_PROMPTS: Record<string, string> = {
   "SUT Workspace":
@@ -273,25 +283,32 @@ export default function SutInlineAIPanel({
       handleSend();
     }
   };
-  const panelClassName = [
-    "frost-panel",
-    "sut-chat-panel",
-    "sut-premium-enter",
-    dock === "center" ? "sut-chat-panel-inline" : "sut-chat-panel-docked",
-    dock !== "center" ? `sut-chat-panel-${dock}` : "",
-  ].filter(Boolean).join(" ");
-
   return (
-    <div className={panelClassName}>
-      <div className="sut-chat-header">
-        <div className="sut-chat-title-wrap">
-          <Sparkles className="sut-chat-title-icon" />
+    <div
+      className={cn(
+        "border border-[var(--border-subtle)] bg-[var(--surface-base)] px-5 py-4 text-[var(--text-primary)] shadow-[var(--shadow-1)]",
+        dock === "center"
+          ? "my-4 max-h-80 w-full overflow-y-auto rounded-[var(--r-lg)]"
+          : cn(
+              "fixed top-0 z-50 h-screen w-[380px] overflow-y-auto rounded-none max-md:w-[min(100vw,380px)]",
+              dock === "left" && "left-0",
+              dock === "right" && "right-0",
+            ),
+      )}
+    >
+      <div className="mb-2 flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <Sparkles className="mt-[0.15rem] h-4 w-4 shrink-0 text-[var(--gold)]" />
           <div>
-            <div className="sut-chat-title">BILUN Analysis</div>
-            <p className="sut-chat-subtitle">{patientId ? `${activeTab} - ${patientId}` : activeTab}</p>
+            <div className="text-[0.95rem] font-bold leading-[1.35] text-[var(--text-primary)]">
+              BILUN Analysis
+            </div>
+            <p className="mt-[0.2rem] text-[0.78rem] leading-[1.4] text-[var(--text-muted)]">
+              {patientId ? `${activeTab} - ${patientId}` : activeTab}
+            </p>
           </div>
         </div>
-        <div className="sut-chat-actions">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => {
@@ -301,18 +318,21 @@ export default function SutInlineAIPanel({
             }}
             aria-label="Regenerate analysis"
             title="Regenerate analysis"
-            className="sut-chat-icon-btn"
+            className={CHAT_ICON_BTN_CLASS}
           >
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
           {onDockChange && (
-            <div className="sut-chat-actions">
+            <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => onDockChange("left")}
                 aria-label="Dock left"
                 title="Dock left"
-                className={`sut-chat-icon-btn ${dock === "left" ? "sut-chat-icon-btn-active" : ""}`}
+                className={cn(
+                  CHAT_ICON_BTN_CLASS,
+                  dock === "left" && "bg-[var(--gold-subtle)] text-[var(--gold)]",
+                )}
               >
                 <PanelLeft className="h-3.5 w-3.5" />
               </button>
@@ -321,7 +341,10 @@ export default function SutInlineAIPanel({
                 onClick={() => onDockChange("center")}
                 aria-label="Center inline"
                 title="Center (inline)"
-                className={`sut-chat-icon-btn ${dock === "center" ? "sut-chat-icon-btn-active" : ""}`}
+                className={cn(
+                  CHAT_ICON_BTN_CLASS,
+                  dock === "center" && "bg-[var(--gold-subtle)] text-[var(--gold)]",
+                )}
               >
                 <Minimize2 className="h-3.5 w-3.5" />
               </button>
@@ -330,7 +353,10 @@ export default function SutInlineAIPanel({
                 onClick={() => onDockChange("right")}
                 aria-label="Dock right"
                 title="Dock right"
-                className={`sut-chat-icon-btn ${dock === "right" ? "sut-chat-icon-btn-active" : ""}`}
+                className={cn(
+                  CHAT_ICON_BTN_CLASS,
+                  dock === "right" && "bg-[var(--gold-subtle)] text-[var(--gold)]",
+                )}
               >
                 <PanelRight className="h-3.5 w-3.5" />
               </button>
@@ -339,17 +365,17 @@ export default function SutInlineAIPanel({
         </div>
       </div>
 
-      <div className="sut-chat-copy">
+      <div className={cn("min-h-6 overflow-y-auto whitespace-pre-wrap text-[13px] leading-[1.65] text-[var(--text-primary)]", dock === "center" ? "max-h-40" : "max-h-none")}>
         {isAutoLoading && !autoText && (
-          <span className="sut-chat-loading">BILUN is analyzing...</span>
+          <span className="italic text-[var(--text-muted)]">BILUN is analyzing...</span>
         )}
         {autoText}
         {isAutoLoading && autoText && (
-          <span className="sut-chat-cursor" />
+          <span className={CHAT_CURSOR_CLASS} />
         )}
         {autoError && !autoText && (
-          <div className="sut-chat-error">
-            <AlertCircle className="sut-chat-error-icon" />
+          <div className="flex items-start gap-2 text-[var(--danger)]">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>
               {autoError}{" "}
               <button
@@ -359,7 +385,7 @@ export default function SutInlineAIPanel({
                   setAutoError(null);
                   fireAutoAnalysis();
                 }}
-                className="sut-chat-error-link"
+                className="cursor-pointer border-none bg-transparent p-0 font-[inherit] text-[var(--gold)] underline"
               >
                 Retry
               </button>
@@ -369,11 +395,16 @@ export default function SutInlineAIPanel({
       </div>
 
       {messages.length > 2 && (
-        <div className="sut-chat-history">
+        <div className="mt-2.5 border-t border-[var(--border-subtle)] pt-2">
           {messages.slice(2).map((message, index) => (
             <div
               key={`${message.role}-${index}-${message.content.slice(0, 24)}`}
-              className={`sut-chat-message ${message.role === "user" ? "sut-chat-message-user" : "sut-chat-message-assistant"}`}
+              className={cn(
+                "mb-2 whitespace-pre-wrap text-[13px] leading-[1.7]",
+                message.role === "user"
+                  ? "italic text-[var(--text-muted)]"
+                  : "text-[var(--text-primary)]",
+              )}
             >
               {message.role === "user" ? `You: ${message.content}` : message.content}
             </div>
@@ -382,19 +413,19 @@ export default function SutInlineAIPanel({
       )}
 
       {followUpText && (
-        <div className="sut-chat-message sut-chat-message-assistant sut-chat-streaming">
+        <div className="mt-2 whitespace-pre-wrap text-[13px] leading-[1.7] text-[var(--text-primary)]">
           {followUpText}
-          <span className="sut-chat-cursor" />
+          <span className={CHAT_CURSOR_CLASS} />
         </div>
       )}
 
       {followUpError && (
-        <div className="sut-chat-error-text">
+        <div className="mt-2 text-[13px] text-[var(--danger)]">
           {followUpError}
         </div>
       )}
 
-      <div className="sut-chat-input-row">
+      <div className="mt-2.5 flex items-center gap-2">
         <input
           type="text"
           value={input}
@@ -402,14 +433,14 @@ export default function SutInlineAIPanel({
           onKeyDown={handleKeyDown}
           placeholder={patientId ? "Ask BILUN about this patient or billing review..." : "Ask BILUN about this workspace..."}
           disabled={isAutoLoading || isResponding}
-          className="sut-input sut-chat-input"
+          className={CHAT_INPUT_CLASS}
         />
         <button
           type="button"
           onClick={handleSend}
           disabled={!input.trim() || isAutoLoading || isResponding}
           aria-label="Send message"
-          className="sut-chat-send-btn"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--r-md)] border-none bg-[var(--gold)] text-[var(--text-inverse)] transition-colors duration-150 hover:bg-[var(--gold-hover)] disabled:cursor-default disabled:bg-[var(--surface-soft)] disabled:text-[var(--text-muted)]"
         >
           <Send className="h-3.5 w-3.5" />
         </button>

@@ -5,11 +5,12 @@ import type {
   SutPatientOutcomeData,
 } from "@/lib/domains/sut";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
-import { SyntheticDemoProvenance } from "@/components/sut/SyntheticDemoProvenance";
 import useStaggeredReveal from "@/hooks/useStaggeredReveal";
 import PatientSearch from "@/components/ui/PatientSearch";
 import { searchSutPatients } from "@/lib/api/sut";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
+import { Chip, Eyebrow, Surface } from "@/components/primitives";
+import PatientInvoiceTable from "@/components/tables/PatientInvoiceTable";
 import {
   fmtNum,
   fmtTRY,
@@ -56,7 +57,7 @@ export function PatientSUTContent({
 
   return (
     <div>
-      <div className="frost-card mb-6 px-6 py-4">
+      <Surface variant="base" padding="lg" className="mb-6">
         <div className="flex items-center gap-4">
           <span className="font-semibold whitespace-nowrap">Patient:</span>
           <PatientSearch
@@ -67,18 +68,16 @@ export function PatientSUTContent({
             searchFn={searchSutPatients}
           />
         </div>
-      </div>
+      </Surface>
 
       {selectedPatientId && (
-        <div className="frost-card mb-6 px-6 py-4">
+        <Surface variant="base" padding="lg" className="mb-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Selected patient
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">Patient {selectedPatientId}</p>
+              <Eyebrow>Selected patient</Eyebrow>
+              <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">Patient {selectedPatientId}</p>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[var(--text-secondary)]">
               {outcomeState === "loading"
                 ? "Refreshing exact DRG analytics..."
                 : outcomeState === "error"
@@ -88,20 +87,18 @@ export function PatientSUTContent({
                     : "Patient-level DRG analytics are ready."}
             </p>
           </div>
-        </div>
+        </Surface>
       )}
 
       {outcomeState === "idle" ? (
-        <div className="frost-card p-8 text-center sut-section-description">
-          Search for a patient above to load exact-only SUT DRG analytics.
-        </div>
+        <PatientInvoiceTable />
       ) : outcomeState === "loading" ? (
         <SutPatientAnalyticsSkeleton patientId={selectedPatientId} />
       ) : outcomeState === "error" ? (
-        <div className="frost-card sut-premium-error space-y-3 p-6">
+        <Surface variant="base" padding="lg" className="space-y-3">
           <div>
-            <p className="sut-premium-error-title text-sm font-semibold">{error}</p>
-            <p className="sut-premium-error-hint mt-1 text-xs">
+            <Chip variant="danger">{error}</Chip>
+            <p className="mt-2 text-xs text-[var(--text-secondary)]">
               Retry this patient, or pick a different patient from the search box.
             </p>
           </div>
@@ -114,7 +111,7 @@ export function PatientSUTContent({
               <span className="text-xs font-semibold">Retry patient outcome</span>
             </button>
           </div>
-        </div>
+        </Surface>
       ) : outcomeState === "empty" ? (
         <div className="empty-state space-y-3">
           <p className="empty-state-text">
@@ -132,17 +129,16 @@ export function PatientSUTContent({
         </div>
       ) : data ? (
         <div className="space-y-6">
-          <div
+          <Surface
+            variant="base"
+            padding="lg"
             {...summaryReveal.staggerAttrs}
-            className={`frost-panel p-5 ${summaryReveal.staggerClass}`}
+            className={summaryReveal.staggerClass}
             style={summaryReveal.staggerStyle}
           >
-            <SyntheticDemoProvenance dataSource={data} className="mb-4" />
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Exact-only patient outcome
-            </p>
-            <h3 className="mt-2 text-lg font-semibold text-slate-950">DRG package review stays explicit</h3>
-            <div className="mt-3 space-y-2 text-sm leading-relaxed text-slate-500">
+            <Eyebrow>Exact-only patient outcome</Eyebrow>
+            <h3 className="mt-2 text-lg font-semibold text-[var(--text-primary)]">DRG package review stays explicit</h3>
+            <div className="mt-3 space-y-2 text-sm leading-relaxed text-[var(--text-secondary)]">
               <p>
                 Estimate-backed SUT cost ranges and gap projections were removed.
               </p>
@@ -151,7 +147,7 @@ export function PatientSUTContent({
                 pricing metadata stays unavailable instead of being treated as exact.
               </p>
             </div>
-          </div>
+          </Surface>
 
           {data.consistency_warnings && data.consistency_warnings.length > 0 && (
             <div
@@ -168,35 +164,41 @@ export function PatientSUTContent({
           )}
 
           {data.sut_claim_totals && (
-            <div
+            <Surface
+              variant="base"
+              padding="lg"
               {...claimReveal.staggerAttrs}
-              className={`frost-panel p-5 ${claimReveal.staggerClass}`}
+              className={claimReveal.staggerClass}
               style={claimReveal.staggerStyle}
             >
               <ClaimSummaryPanel data={data} />
-            </div>
+            </Surface>
           )}
 
           {data.drg_summary && data.drg_summary.n_episodes > 0 ? (
-            <div
+            <Surface
+              variant="base"
+              padding="lg"
               {...drgReveal.staggerAttrs}
-              className={`frost-panel p-5 ${drgReveal.staggerClass}`}
+              className={drgReveal.staggerClass}
               style={drgReveal.staggerStyle}
             >
               <DRGPanel data={data.drg_summary} />
-            </div>
+            </Surface>
           ) : (
-            <div
+            <Surface
+              variant="base"
+              padding="lg"
               {...drgReveal.staggerAttrs}
-              className={`frost-panel p-5 ${drgReveal.staggerClass}`}
+              className={drgReveal.staggerClass}
               style={drgReveal.staggerStyle}
             >
-              <p className="text-sm font-semibold text-slate-900">No DRG episode summary available</p>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="text-sm font-semibold text-[var(--text-primary)]">No DRG episode summary available</p>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
                 This patient outcome no longer includes estimate-backed fallback sections. If exact DRG
                 pricing inputs are unavailable, the patient remains unavailable here.
               </p>
-            </div>
+            </Surface>
           )}
         </div>
       ) : null}
@@ -320,7 +322,7 @@ export function DRGPanel({ data }: { data: DRGSummaryData }) {
         </div>
         <div>
           <span className="text-slate-400">Itemized Cost:</span>{" "}
-          <span className="font-bold text-emerald-700">{fmtTRY(data.total_drg_cost)}</span>
+          <span className="font-bold tabular-nums text-[var(--text-primary)]">{fmtTRY(data.total_drg_cost)}</span>
         </div>
         <div>
           <span className="text-slate-400">DRG Package Price:</span>{" "}
@@ -358,7 +360,7 @@ export function DRGPanel({ data }: { data: DRGSummaryData }) {
               return (
                 <tr key={ep.episode_id} className="border-b border-slate-100 hover:bg-slate-50/50">
                   <td className="py-1.5 pr-3 text-slate-500">{fmtNum(ep.episode_id + 1)}</td>
-                  <td className="py-1.5 pr-3 font-mono text-emerald-700">{ep.primary_icd10}</td>
+                  <td className="py-1.5 pr-3 font-mono tabular-nums text-[var(--text-primary)]">{ep.primary_icd10}</td>
                   <td className="py-1.5 pr-3 text-text-secondary">{ep.description}</td>
                   <td className="py-1.5 pr-3 text-center">
                     <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">

@@ -5,11 +5,31 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import SutInlineAIPanel, { SUT_INLINE_CHAT_PANEL_WIDTH } from "@/components/chat/SutInlineAIPanel";
 import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
+import {
+  BillingSummary,
+  LabOptimizationSection,
+  DrugOptimizationSection,
+  CopayOptimizationSection,
+  BillingStrategySection,
+  MaterialsPreCheckSection,
+  SutOptimizationSection,
+} from "@/components/patient/SutBillingReportSections";
+import { Eyebrow, Surface } from "@/components/primitives";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
 import PatientSearch from "@/components/ui/PatientSearch";
-import { getPatientOptimization, getSutPatientOutcome, searchSutPatients } from "@/lib/api/sut";
+import {
+  getPatientBillingReport,
+  getPatientOptimization,
+  getSutPatientOutcome,
+  searchSutPatients,
+} from "@/lib/api/sut";
 import { buildSutHomeHref, buildSutPatientHref } from "@/lib/constants";
-import type { PatientOptimization, SutPatientOutcomeData } from "@/lib/domains/sut";
+import { recordRecent } from "@/lib/recents";
+import type {
+  BillingActionReport,
+  PatientOptimization,
+  SutPatientOutcomeData,
+} from "@/lib/domains/sut";
 import {
   useAiDockPosition,
   useSetAiDockPosition,
@@ -27,28 +47,36 @@ export default function SutPatientPage() {
 
   const [outcome, setOutcome] = useState<SutPatientOutcomeData | null>(null);
   const [optimization, setOptimization] = useState<PatientOptimization | null>(null);
+  const [billingReport, setBillingReport] = useState<BillingActionReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [outcomeError, setOutcomeError] = useState<string | null>(null);
   const [optimizationError, setOptimizationError] = useState<string | null>(null);
+  const [billingError, setBillingError] = useState<string | null>(null);
   const chatDock = useAiDockPosition();
   const setChatDock = useSetAiDockPosition();
   const outcomeControllerRef = useRef<AbortController | null>(null);
   const optimizationControllerRef = useRef<AbortController | null>(null);
+  const billingControllerRef = useRef<AbortController | null>(null);
 
   const loadWorkspace = useCallback((nextPatientId: string) => {
     outcomeControllerRef.current?.abort();
     optimizationControllerRef.current?.abort();
+    billingControllerRef.current?.abort();
 
     const outcomeController = new AbortController();
     const optimizationController = new AbortController();
+    const billingController = new AbortController();
     outcomeControllerRef.current = outcomeController;
     optimizationControllerRef.current = optimizationController;
+    billingControllerRef.current = billingController;
 
     setLoading(true);
     setOutcome(null);
     setOptimization(null);
+    setBillingReport(null);
     setOutcomeError(null);
     setOptimizationError(null);
+    setBillingError(null);
 
     const outcomePromise = getSutPatientOutcome(nextPatientId, {
       signal: outcomeController.signal,
@@ -56,42 +84,63 @@ export default function SutPatientPage() {
     const optimizationPromise = getPatientOptimization(nextPatientId, {
       signal: optimizationController.signal,
     });
-
-    void Promise.allSettled([outcomePromise, optimizationPromise]).then(([outcomeResult, optimizationResult]) => {
-      if (outcomeController.signal.aborted || optimizationController.signal.aborted) {
-        return;
-      }
-
-      if (outcomeResult.status === "fulfilled") {
-        setOutcome(outcomeResult.value);
-      } else {
-        setOutcomeError(
-          outcomeResult.reason instanceof Error
-            ? outcomeResult.reason.message
-            : "Failed to load patient SUT outcome.",
-        );
-      }
-
-      if (optimizationResult.status === "fulfilled") {
-        setOptimization(optimizationResult.value);
-      } else {
-        setOptimizationError(
-          optimizationResult.reason instanceof Error
-            ? optimizationResult.reason.message
-            : "Failed to load patient optimization.",
-        );
-      }
-
-      setLoading(false);
-      outcomeControllerRef.current = null;
-      optimizationControllerRef.current = null;
+    const billingPromise = getPatientBillingReport(nextPatientId, {
+      signal: billingController.signal,
     });
+
+    void Promise.allSettled([outcomePromise, optimizationPromise, billingPromise]).then(
+      ([outcomeResult, optimizationResult, billingResult]) => {
+        if (
+          outcomeController.signal.aborted ||
+          optimizationController.signal.aborted ||
+          billingController.signal.aborted
+        ) {
+          return;
+        }
+
+        if (outcomeResult.status === "fulfilled") {
+          setOutcome(outcomeResult.value);
+        } else {
+          setOutcomeError(
+            outcomeResult.reason instanceof Error
+              ? outcomeResult.reason.message
+              : "Failed to load patient SUT outcome.",
+          );
+        }
+
+        if (optimizationResult.status === "fulfilled") {
+          setOptimization(optimizationResult.value);
+        } else {
+          setOptimizationError(
+            optimizationResult.reason instanceof Error
+              ? optimizationResult.reason.message
+              : "Failed to load patient optimization.",
+          );
+        }
+
+        if (billingResult.status === "fulfilled") {
+          setBillingReport(billingResult.value);
+        } else {
+          setBillingError(
+            billingResult.reason instanceof Error
+              ? billingResult.reason.message
+              : "Failed to load patient billing report.",
+          );
+        }
+
+        setLoading(false);
+        outcomeControllerRef.current = null;
+        optimizationControllerRef.current = null;
+        billingControllerRef.current = null;
+      },
+    );
   }, []);
 
   useEffect(() => {
     if (!patientId) {
       return;
     }
+    recordRecent("patient", patientId);
     const timeoutId = window.setTimeout(() => {
       loadWorkspace(patientId);
     }, 0);
@@ -99,6 +148,7 @@ export default function SutPatientPage() {
       window.clearTimeout(timeoutId);
       outcomeControllerRef.current?.abort();
       optimizationControllerRef.current?.abort();
+      billingControllerRef.current?.abort();
     };
   }, [loadWorkspace, patientId]);
 
@@ -106,44 +156,52 @@ export default function SutPatientPage() {
     router.push(buildSutPatientHref(selectedPatientId));
   }, [router]);
 
-  const pageError = outcomeError && optimizationError
-    ? `${outcomeError} ${optimizationError}`
-    : outcomeError ?? optimizationError;
+  const hasAnyData = Boolean(outcome) || Boolean(optimization) || Boolean(billingReport);
+  const hasAnyError = Boolean(outcomeError) || Boolean(optimizationError) || Boolean(billingError);
+  const allFailed = hasAnyError && !hasAnyData;
+  const pageError = allFailed
+    ? [outcomeError, optimizationError, billingError].filter(Boolean).join(" ")
+    : null;
+
   const chatSessionKey = useMemo(() => `patient:${patientId}`, [patientId]);
   const chatState = useSutChatSession(chatSessionKey);
   const setChatSession = useSetSutChatSession();
-  const shouldRenderChat = !loading && !(pageError && !outcome && !optimization);
-  const chatShiftX = shouldRenderChat && chatDock !== "center"
-    ? (chatDock === "left" ? SUT_INLINE_CHAT_PANEL_WIDTH / 2 : -(SUT_INLINE_CHAT_PANEL_WIDTH / 2))
-    : 0;
-
-  const dockPadding = shouldRenderChat && chatDock !== "center"
-    ? { paddingLeft: `${SUT_INLINE_CHAT_PANEL_WIDTH / 2}px`, paddingRight: `${SUT_INLINE_CHAT_PANEL_WIDTH / 2}px` }
+  const shouldRenderChat = !loading && !allFailed;
+  const CHAT_DOCK_MARGIN = 32;
+  const dockOffset = SUT_INLINE_CHAT_PANEL_WIDTH + CHAT_DOCK_MARGIN;
+  const isDocked = shouldRenderChat && chatDock !== "center";
+  const dockPadding = isDocked
+    ? chatDock === "left"
+      ? { paddingLeft: `${dockOffset}px`, paddingRight: "1.5rem" }
+      : { paddingRight: `${dockOffset}px`, paddingLeft: "1.5rem" }
     : undefined;
+  const sectionClass = isDocked
+    ? "w-full space-y-6"
+    : "mx-auto max-w-7xl space-y-6";
 
   return (
     <>
       <main id="main-content" className="sut-app-main" style={dockPadding}>
-        <div
-          style={{
-            transform: `translateX(${chatShiftX}px)`,
-            transition: "transform 0.25s ease",
-          }}
-        >
-          <section className="mx-auto max-w-7xl space-y-6">
-            <div className="frost-panel sut-premium-glass sut-route-search-panel">
-              <nav className="sut-breadcrumb mb-4" aria-label="SUT patient breadcrumb">
-                <Link href={buildSutHomeHref("analytics")} className="sut-breadcrumb-link">
+        <section className={sectionClass}>
+            <Surface variant="base" padding="lg">
+              <nav
+                aria-label="SUT patient breadcrumb"
+                className="mb-4 flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--text-muted)]"
+              >
+                <Link
+                  href={buildSutHomeHref("analytics")}
+                  className="text-[var(--text-secondary)] transition-colors hover:text-[var(--gold-hover)]"
+                >
                   SUT workspace
                 </Link>
-                <span className="sut-breadcrumb-separator" aria-hidden="true">/</span>
-                <span className="sut-breadcrumb-current">Patient {patientId || "unknown"}</span>
+                <span aria-hidden="true" className="text-[var(--border-strong)]">
+                  /
+                </span>
+                <span className="text-[var(--text-primary)]">Patient {patientId || "unknown"}</span>
               </nav>
-              <div className="sut-route-search-grid">
-                <div className="sut-route-search-control">
-                  <p className="sut-muted-label mb-2">
-                    Patient search
-                  </p>
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
+                <div>
+                  <Eyebrow className="mb-2">Patient search</Eyebrow>
                   <PatientSearch
                     id="sut-patient-workspace-search"
                     selectedPatientId={patientId || null}
@@ -152,51 +210,65 @@ export default function SutPatientPage() {
                     searchFn={searchSutPatients}
                   />
                 </div>
-                <p className="sut-section-description max-w-2xl">
-                  Patient selection now routes into the dedicated SUT workspace instead of loading inline on home.
+                <p className="text-sm leading-snug text-[var(--text-secondary)]">
+                  Patient selection routes into the dedicated SUT workspace instead of loading inline on
+                  home.
                 </p>
               </div>
-            </div>
+            </Surface>
 
             {shouldRenderChat && chatDock === "center" && (
-                <SutInlineAIPanel
-                  patientId={patientId}
-                  activeTab="SUT Patient Workspace"
-                  dock={chatDock}
-                  onDockChange={setChatDock}
-                  chatState={chatState}
-                  onChatStateChange={(state) => setChatSession(chatSessionKey, state)}
-                />
-              )}
+              <SutInlineAIPanel
+                patientId={patientId}
+                activeTab="SUT Patient Workspace"
+                dock={chatDock}
+                onDockChange={setChatDock}
+                chatState={chatState}
+                onChatStateChange={(state) => setChatSession(chatSessionKey, state)}
+              />
+            )}
 
             {loading ? (
               <SutPatientAnalyticsSkeleton patientId={patientId} />
-            ) : pageError && !outcome && !optimization ? (
-              <div className="frost-panel sut-premium-error rounded-2xl p-6">
-                <h1 className="sut-premium-error-title text-xl font-semibold">Patient workspace unavailable</h1>
-                <p className="sut-premium-error-hint mt-3 text-sm leading-6">{pageError}</p>
-              </div>
+            ) : allFailed ? (
+              <Surface variant="base" padding="lg">
+                <Eyebrow tone="primary" as="h1" className="text-base normal-case tracking-normal">
+                  Billing Report unavailable
+                </Eyebrow>
+                <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{pageError}</p>
+              </Surface>
             ) : (
               <>
-                {outcomeError && (
-                  <div className="sut-premium-warn rounded-2xl px-4 py-3 text-sm">
-                    {outcomeError}
-                  </div>
-                )}
-                {optimizationError && (
-                  <div className="sut-premium-warn rounded-2xl px-4 py-3 text-sm">
-                    {optimizationError}
-                  </div>
+                {hasAnyError && (
+                  <Surface variant="soft" padding="md" className="text-sm text-[var(--text-secondary)]">
+                    {outcomeError && <p>{outcomeError}</p>}
+                    {optimizationError && <p>{optimizationError}</p>}
+                    {billingError && <p>{billingError}</p>}
+                  </Surface>
                 )}
                 <SutPatientWorkspace
                   patientId={patientId}
                   outcome={outcome}
                   optimization={optimization}
                 />
+                {billingReport && (
+                  <>
+                    <BillingSummary billingReport={billingReport} />
+                    <LabOptimizationSection labData={billingReport.lab} />
+                    <DrugOptimizationSection drugData={billingReport.drug} />
+                    <CopayOptimizationSection copayData={billingReport.copay} />
+                    <BillingStrategySection strategyData={billingReport.billing_strategy} />
+                    <MaterialsPreCheckSection materialsData={billingReport.materials} />
+                    {optimization && <SutOptimizationSection optimization={optimization} />}
+                    <p className="py-2 text-center text-xs text-[var(--text-muted)]">
+                      Normative analysis based on official SUT gazette rule references (EK-1A, EK-2B,
+                      EK-2C, EK-4A)
+                    </p>
+                  </>
+                )}
               </>
             )}
           </section>
-        </div>
       </main>
       {shouldRenderChat && chatDock !== "center" && (
         <SutInlineAIPanel

@@ -40,15 +40,6 @@ vi.mock("@/components/skeletons/SutSkeletons", () => ({
   SutPatientAnalyticsSkeleton: () => null,
 }));
 
-const SYNTHETIC_DEMO_COPY = vi.hoisted(
-  () => "Synthetic demo claims — SUT rule calculations are exact for this generated claim-line fixture.",
-);
-
-vi.mock("@/components/sut/SyntheticDemoProvenance", () => ({
-  SYNTHETIC_DEMO_COPY,
-  SyntheticDemoProvenance: () => <div>{SYNTHETIC_DEMO_COPY}</div>,
-}));
-
 let ClaimSummaryPanel: typeof import("./PatientSection").ClaimSummaryPanel;
 let DRGPanel: typeof import("./PatientSection").DRGPanel;
 let PatientSUTContent: typeof import("./PatientSection").PatientSUTContent;
@@ -256,7 +247,6 @@ describe("DRGPanel exactness rendering", () => {
     );
 
     expect(html).toContain("Estimate-backed SUT cost ranges and gap projections were removed.");
-    expect(html).toContain(SYNTHETIC_DEMO_COPY);
     expect(html).toContain("DRG Episode Cost Modeling");
     expect(html).not.toContain("Estimated SUT Cost");
     expect(html).not.toContain("Reimbursement Gap Analysis");

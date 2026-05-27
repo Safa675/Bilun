@@ -11,15 +11,16 @@ import {
   KpiCard,
   MethodologyBadge,
 } from "../shared";
+import { Surface } from "@/components/primitives";
 
 export function TemporalPriceSection({ data }: { data: OptimizationSummary }) {
   const temporal = data.temporal_price_validation;
 
   if (!temporal) {
     return (
-      <div className="frost-panel p-6 rounded-2xl text-center">
-        <p className="text-sm" style={{ color: "#A1A1AA" }}>Temporal price data not available.</p>
-      </div>
+      <Surface variant="base" padding="lg" className="text-center">
+        <p className="text-sm text-[var(--text-secondary)]">Temporal price data not available.</p>
+      </Surface>
     );
   }
 
@@ -48,7 +49,7 @@ export function TemporalPriceSection({ data }: { data: OptimizationSummary }) {
       </div>
 
       {dateLabels.length > 0 && (
-        <div className="frost-panel p-4 rounded-xl">
+        <Surface variant="base" padding="md">
           <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "#A1A1AA" }}>
             Gazette Amendment Timeline
           </div>
@@ -59,7 +60,7 @@ export function TemporalPriceSection({ data }: { data: OptimizationSummary }) {
               </span>
             ))}
           </div>
-        </div>
+        </Surface>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -79,7 +80,7 @@ function PriceChangeTable({ title, items, direction }: { title: string; items: {
   const color = direction === "up" ? "#B91C1C" : theme.accent;
   const fmtDate = (d?: string) => d ? d.slice(0, 10) : "—";
   return (
-    <div className="frost-panel p-4 rounded-xl">
+    <Surface variant="base" padding="md">
       <div className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color }}>
         {title}
       </div>
@@ -111,8 +112,8 @@ function PriceChangeTable({ title, items, direction }: { title: string; items: {
           </table>
         </div>
       ) : (
-        <p className="text-sm" style={{ color: "#A1A1AA" }}>No {direction === "up" ? "increases" : "decreases"} detected</p>
+        <p className="text-sm text-[var(--text-secondary)]">No {direction === "up" ? "increases" : "decreases"} detected</p>
       )}
-    </div>
+    </Surface>
   );
 }

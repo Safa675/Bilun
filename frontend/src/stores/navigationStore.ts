@@ -7,11 +7,9 @@ export function createNavigationStore(): StoreApi<NavigationStore> {
     showHowItWorks: false,
     showAdmin: false,
     aiDockPosition: "center",
-    workspaceEntered: false,
 
     setShowHowItWorks: (showHowItWorks) => set({ showHowItWorks }),
     setShowAdmin: (showAdmin) => set({ showAdmin }),
     setAiDockPosition: (aiDockPosition) => set({ aiDockPosition }),
-    setWorkspaceEntered: (workspaceEntered) => set({ workspaceEntered }),
   }));
 }

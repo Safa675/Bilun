@@ -4,7 +4,7 @@
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: rgba(26, 35, 50, 0.50);
+  background: rgba(26, 35, 50, 0.72);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   display: flex;
@@ -20,6 +20,7 @@
   overflow: auto;
   padding: 20px 24px;
   border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent);
+  background: var(--surface-base, #ffffff);
 }
 
 .how-modal-title-block {
@@ -81,7 +82,7 @@
   border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent);
   border-radius: 12px;
   padding: 12px 14px;
-  background: rgba(247, 248, 251, 0.80);
+  background: var(--surface-soft, #f7f8fb);
 }
 
 .how-modal-content h3 {
@@ -213,7 +214,7 @@
   border: 1px solid color-mix(in srgb, var(--color-accent) 14%, transparent);
   border-radius: 14px;
   padding: 22px 24px;
-  background: rgba(247, 248, 251, 0.85);
+  background: var(--surface-soft, #f7f8fb);
   display: flex;
   flex-direction: column;
   gap: 16px;

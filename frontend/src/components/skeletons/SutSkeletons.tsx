@@ -1,5 +1,7 @@
 "use client";
 
+import { DataTable, Surface } from "@/components/primitives";
+
 function SkeletonBars({ count, widths }: { count: number; widths?: string[] }) {
   return (
     <div className="space-y-2">
@@ -26,40 +28,46 @@ function SkeletonCardGrid({ count }: { count: number }) {
 
 function SkeletonTable({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="frost-table-wrap overflow-hidden rounded-2xl">
-      <div className="space-y-3 p-4">
-        <div className="grid grid-cols-4 gap-3">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="skeleton skeleton-line h-4" />
-          ))}
-        </div>
-        {Array.from({ length: rows }).map((_, index) => (
-          <div key={index} className="grid grid-cols-4 gap-3">
-            {Array.from({ length: 4 }).map((__, cellIndex) => (
-              <div key={cellIndex} className="skeleton skeleton-line h-4" />
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
+    <DataTable className="overflow-hidden">
+      <tbody>
+        <tr>
+          <td colSpan={4} className="border-0 p-0">
+            <div className="space-y-3 p-4">
+              <div className="grid grid-cols-4 gap-3">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="skeleton skeleton-line h-4" />
+                ))}
+              </div>
+              {Array.from({ length: rows }).map((_, index) => (
+                <div key={index} className="grid grid-cols-4 gap-3">
+                  {Array.from({ length: 4 }).map((__, cellIndex) => (
+                    <div key={cellIndex} className="skeleton skeleton-line h-4" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </DataTable>
   );
 }
 
 export function SutAnalyticsShellSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex flex-wrap gap-3">
         {Array.from({ length: 3 }).map((_, index) => (
           <div key={index} className="skeleton skeleton-card h-10 w-40" />
         ))}
       </div>
-      <div className="frost-panel rounded-2xl p-5">
+      <Surface variant="base" padding="lg">
         <SkeletonBars count={2} widths={["30%", "55%"]} />
         <div className="mt-5">
           <SkeletonCardGrid count={3} />
         </div>
         <div className="mt-5 skeleton skeleton-block h-72" />
-      </div>
+      </Surface>
     </div>
   );
 }
@@ -67,38 +75,38 @@ export function SutAnalyticsShellSkeleton() {
 export function SutPatientAnalyticsSkeleton({ patientId }: { patientId?: string | null }) {
   return (
     <div className="space-y-5">
-      <div className="frost-card p-6">
+      <Surface variant="base" padding="lg">
         <SkeletonBars count={2} widths={["22%", "48%"]} />
-      </div>
-      <div className="frost-card p-6">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+      </Surface>
+      <Surface variant="base" padding="lg">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
           {patientId ? `Loading patient ${patientId}` : "Loading patient analytics"}
         </p>
         <div className="mt-3">
           <SkeletonCardGrid count={3} />
         </div>
         <div className="mt-5 skeleton skeleton-block h-80" />
-      </div>
+      </Surface>
     </div>
   );
 }
 
 export function SutExposureSkeleton() {
   return (
-    <div className="frost-panel rounded-2xl p-5">
+    <Surface variant="base" padding="lg">
       <SkeletonBars count={2} widths={["24%", "44%"]} />
       <div className="mt-5">
         <SkeletonCardGrid count={3} />
       </div>
       <div className="mt-5 skeleton skeleton-block h-72" />
-    </div>
+    </Surface>
   );
 }
 
 export function SutOptimizerShellSkeleton() {
   return (
     <div className="space-y-5">
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex flex-wrap gap-3">
         {Array.from({ length: 2 }).map((_, index) => (
           <div key={index} className="skeleton skeleton-card h-10 w-44" />
         ))}
@@ -113,10 +121,10 @@ export function SutAlertTableSkeleton() {
   return (
     <div className="space-y-5">
       <SkeletonCardGrid count={4} />
-      <div className="frost-panel rounded-2xl p-5">
+      <Surface variant="base" padding="lg">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="skeleton skeleton-card h-11 w-72" />
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-2">
             {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="skeleton skeleton-card h-9 w-24" />
             ))}
@@ -125,30 +133,32 @@ export function SutAlertTableSkeleton() {
         <div className="mt-5">
           <SkeletonTable rows={6} />
         </div>
-      </div>
+      </Surface>
     </div>
   );
 }
 
 export function SutReferenceSectionSkeleton({ title }: { title: string }) {
   return (
-    <div className="frost-panel rounded-2xl p-5">
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{title}</p>
+    <Surface variant="base" padding="lg">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+        {title}
+      </p>
       <div className="mt-4">
         <SkeletonBars count={2} widths={["28%", "52%"]} />
       </div>
       <div className="mt-5">
         <SkeletonTable rows={5} />
       </div>
-    </div>
+    </Surface>
   );
 }
 
 export function SutBillingReportSkeleton({ patientId }: { patientId?: string | null }) {
   return (
     <div className="space-y-6">
-      <div className="frost-panel rounded-3xl p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
+      <Surface variant="base" padding="lg">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
           {patientId ? `Loading ${patientId}` : "Loading billing report"}
         </p>
         <div className="mt-4">
@@ -157,14 +167,14 @@ export function SutBillingReportSkeleton({ patientId }: { patientId?: string | n
         <div className="mt-5">
           <SkeletonCardGrid count={3} />
         </div>
-      </div>
+      </Surface>
       {Array.from({ length: 3 }).map((_, index) => (
-        <div key={index} className="frost-panel rounded-2xl p-5">
+        <Surface key={index} variant="base" padding="lg">
           <SkeletonBars count={1} widths={["30%"]} />
           <div className="mt-4">
             <SkeletonTable rows={4} />
           </div>
-        </div>
+        </Surface>
       ))}
     </div>
   );

@@ -9,13 +9,12 @@
 import { theme } from "@/lib/theme";
 
 export const ACCENT = theme.accent;
-export type SutHomeTab = "analytics" | "optimizer";
+export type SutHomeTab = "analytics" | "optimizer" | "reference-tools";
 
 export const SUT_BRAND = {
   productName: "BILUN",
   metaTitle: "BILUN",
   metaDescription: "BILUN billing rule intelligence module",
-  heroTitle: "Billing rule intelligence",
   heroDescription: "A standalone SUT workspace for SGK/SUT analytics, claim validation, financial exposure, and optimization workflows.",
   billingTitle: "Patient billing report",
   billingDescription: "Per-patient SUT rule review for labs, drugs, copay policy, billing strategy, and materials controls.",
@@ -26,17 +25,24 @@ export const SUT_HOME_TABS: { id: SutHomeTab; label: string; subtitle: string }[
   {
     id: "analytics",
     label: "SUT Analytics",
-    subtitle: "Patient rule outcomes, exposure, and reference tools",
+    subtitle: "Patient rule outcomes and exposure analysis",
   },
   {
     id: "optimizer",
     label: "SUT Optimizer",
     subtitle: "Compliance alerts, recovery review, and billing optimization",
   },
+  {
+    id: "reference-tools",
+    label: "Reference Tools",
+    subtitle: "Billing and gazette reference lookups, validators, and catalogs",
+  },
 ];
 
 export function parseSutHomeTab(value: string | null | undefined): SutHomeTab {
-  return value === "optimizer" ? "optimizer" : "analytics";
+  if (value === "optimizer") return "optimizer";
+  if (value === "reference-tools") return "reference-tools";
+  return "analytics";
 }
 
 export function buildSutHomeHref(tab: SutHomeTab): string {
@@ -48,22 +54,22 @@ export function buildSutPatientHref(patientId: string): string {
 }
 
 export function buildSutBillingHref(patientId: string): string {
-  return `${buildSutPatientHref(patientId)}/billing`;
+  return buildSutPatientHref(patientId);
 }
 
 export const TAB_BACKGROUNDS = ["", "", "", "", "", ""];
 
 export const CHART_COLORS = {
-  bg: "#FAFAF9",
-  grid: "#F4F4F5",
-  axis: "#E4E4E7",
-  text: "#A1A1AA",
-  accent: ACCENT,
-  prescription: "#B45309",
-  positive: theme.accentDark,
-  negative: "#B91C1C",
-  neutral: "#A1A1AA",
-  amber: "#B45309",
+  bg: theme.surfaceBase,
+  grid: theme.borderSubtle,
+  axis: theme.borderSubtle,
+  text: theme.textMuted,
+  accent: theme.gold,
+  prescription: theme.warning,
+  positive: theme.success,
+  negative: theme.danger,
+  neutral: theme.textMuted,
+  amber: theme.warning,
   band: theme.accentAlpha(0.04),
 };
 

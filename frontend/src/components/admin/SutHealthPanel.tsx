@@ -1,19 +1,19 @@
 "use client";
 
 import type { HealthStatus } from "@/lib/api/health";
-import { theme } from "@/lib/theme";
+import { Chip, Eyebrow, Surface } from "@/components/primitives";
 
-function statusColor(status: HealthStatus["status"] | "unavailable"): string {
+function statusVariant(status: HealthStatus["status"] | "unavailable"): "success" | "warning" | "danger" | "neutral" {
   switch (status) {
     case "ready":
-      return theme.accent;
+      return "success";
     case "building":
-      return "#B45309";
+      return "warning";
     case "error":
     case "not_started":
     case "unavailable":
     default:
-      return "#B91C1C";
+      return "danger";
   }
 }
 
@@ -21,25 +21,31 @@ export default function SutHealthPanel({ healthStatus }: { healthStatus: HealthS
   const resolvedStatus = healthStatus?.status ?? "unavailable";
 
   return (
-    <div className="frost-panel" style={{ padding: 16, display: "flex", alignItems: "center", gap: 16, fontSize: 12 }}>
-      <span style={{ fontWeight: 700, color: "#71717A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-        Admin
+    <Surface
+      variant="soft"
+      padding="md"
+      className="flex flex-wrap items-center gap-4 text-xs text-[var(--text-secondary)]"
+    >
+      <Eyebrow>Admin</Eyebrow>
+      <span className="inline-flex items-center gap-2">
+        Status
+        <Chip variant={statusVariant(resolvedStatus)}>{resolvedStatus}</Chip>
       </span>
-      <span style={{ color: "#71717A" }}>
-        Status:{" "}
-        <strong style={{ color: statusColor(resolvedStatus) }}>
-          {resolvedStatus}
+      <span>
+        Patients:{" "}
+        <strong className="font-semibold text-[var(--text-primary)] tabular-nums">
+          {healthStatus?.patients ?? "—"}
         </strong>
       </span>
-      <span style={{ color: "#71717A" }}>
-        Patients: {healthStatus?.patients ?? "—"}
+      <span>
+        Build:{" "}
+        <code className="rounded bg-[var(--surface-base)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--text-primary)]">
+          {healthStatus?.build_id ?? "—"}
+        </code>
       </span>
-      <span style={{ color: "#71717A" }}>
-        Build: <code style={{ fontSize: 11 }}>{healthStatus?.build_id ?? "—"}</code>
-      </span>
-      {healthStatus?.message && (
-        <span style={{ color: "#71717A" }}>{healthStatus.message}</span>
-      )}
-    </div>
+      {healthStatus?.message ? (
+        <span className="text-[var(--text-muted)]">{healthStatus.message}</span>
+      ) : null}
+    </Surface>
   );
 }

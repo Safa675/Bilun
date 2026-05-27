@@ -19,14 +19,12 @@ export interface NavigationState {
   showHowItWorks: boolean;
   showAdmin: boolean;
   aiDockPosition: SutChatDockPosition;
-  workspaceEntered: boolean;
 }
 
 export interface NavigationActions {
   setShowHowItWorks: (show: boolean) => void;
   setShowAdmin: (show: boolean) => void;
   setAiDockPosition: (position: SutChatDockPosition) => void;
-  setWorkspaceEntered: (entered: boolean) => void;
 }
 
 export type NavigationStore = NavigationState & NavigationActions;

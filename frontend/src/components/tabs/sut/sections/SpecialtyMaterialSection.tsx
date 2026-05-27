@@ -5,6 +5,7 @@ import { getMaterialsBySpecialty } from "@/lib/api/sut";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import type { MaterialEntry } from "@/lib/domains/sut";
 import { fmtNum, fmtTRY } from "../shared";
+import { DataTable, Surface } from "@/components/primitives";
 
 export function SpecialtyMaterialSection() {
   const [specialties, setSpecialties] = useState<{ label: string; name: string }[]>([]);
@@ -43,7 +44,7 @@ export function SpecialtyMaterialSection() {
   }, [selected, reloadKey]);
 
   return (
-    <div className="frost-panel p-4 rounded-2xl">
+    <Surface variant="base" padding="md">
       <h4 className="text-sm font-bold mb-3" style={{ color: "#1A1A1A" }}>EK-3 Materials by Specialty ({fmtNum(total)} items)</h4>
       <select
         value={selected}
@@ -70,23 +71,23 @@ export function SpecialtyMaterialSection() {
         </div>
       ) : materials.length > 0 ? (
         <div style={{ maxHeight: 400, overflowY: "auto" }}>
-          <table className="frost-table" style={{ fontSize: 11 }}>
+          <DataTable className="text-[11px]">
             <thead><tr><th>Code</th><th>Name</th><th>Price (TL)</th><th>Source</th></tr></thead>
             <tbody>
               {materials.map((m, i) => (
                 <tr key={i}>
                   <td style={{ fontFamily: "monospace", fontSize: 10 }}>{m.sut_code}</td>
                   <td style={{ maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.material_name}</td>
-                  <td className="num-col">{fmtTRY(m.price_try)}</td>
+                  <td className="tabular-nums text-right">{fmtTRY(m.price_try)}</td>
                   <td style={{ fontSize: 10 }}>{m.source}</td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </DataTable>
         </div>
       ) : (
-        <p className="text-sm" style={{ color: "#A1A1AA" }}>No materials found for this specialty.</p>
+        <p className="text-sm text-[var(--text-secondary)]">No materials found for this specialty.</p>
       )}
-    </div>
+    </Surface>
   );
 }

@@ -127,24 +127,22 @@ export function KpiCard({
   valueColor?: string;
   sub?: string;
 }) {
+  // Phase 4: chrome stripped. Renders as a flat label/value block on a
+  // transparent surface. Caller's grid container owns layout/spacing.
+  // `valueColor` is still honored for status colors; default is navy.
   return (
-    <div className="frost-panel p-4 rounded-xl glass-hover">
-      <div
-        className="text-xs font-medium uppercase tracking-wider mb-1"
-        style={{ color: "#A1A1AA" }}
-      >
+    <div className="flex flex-col gap-1.5">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
         {label}
-      </div>
-      <div
-        className="text-lg font-bold"
-        style={{ color: valueColor ?? "#1A1A1A" }}
+      </p>
+      <p
+        className="text-lg font-semibold tabular-nums lining-nums leading-tight"
+        style={{ color: valueColor ?? "var(--text-primary)" }}
       >
         {value}
-      </div>
+      </p>
       {sub && (
-        <div className="text-xs mt-0.5" style={{ color: "#71717A" }}>
-          {sub}
-        </div>
+        <p className="text-xs leading-snug text-[var(--text-secondary)]">{sub}</p>
       )}
     </div>
   );
@@ -161,8 +159,8 @@ export function ChartTooltipContent({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="frost-tooltip px-3 py-2 text-xs">
-      <p className="mb-1 font-medium text-text-primary">{label}</p>
+    <div className="rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-2 text-xs shadow-[var(--shadow-1)]">
+      <p className="mb-1 font-medium text-[var(--text-primary)]">{label}</p>
       {payload.map((entry, i) => (
         <p key={i} style={{ color: entry.fill || ACCENT }}>
           {typeof entry.value === "number"
@@ -186,10 +184,10 @@ export const TIER_COLORS: Record<string, string> = {
 };
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  lab: theme.accent,
-  visit: theme.accent,
-  rx: "#6EE7B7",
-  procedure: "#A7F3D0",
+  lab: theme.gold,
+  visit: theme.textPrimary,
+  rx: theme.warning,
+  procedure: theme.textSecondary,
 };
 
 export const SEVERITY_COLORS: Record<
@@ -247,7 +245,7 @@ export function MethodologyBadge({ text }: { text: string }) {
       <span className="font-bold uppercase tracking-wider" style={{ color: theme.accent }}>
         100% Gazette Data
       </span>
-      <span className="mx-1.5" style={{ color: "#6EE7B7" }}>|</span>
+      <span className="mx-1.5 text-[var(--gold-light)]">|</span>
       {text}
     </div>
   );

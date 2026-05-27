@@ -46,7 +46,6 @@ import {
 } from "@/lib/constants";
 import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
-import { SyntheticDemoProvenance } from "@/components/sut/SyntheticDemoProvenance";
 import {
   SUT_ACTION_LABELS,
   SUT_ALERT_BADGE_LABELS,
@@ -62,6 +61,16 @@ import {
   fmtTRY2OrUnavailable,
   KpiCard,
 } from "../shared";
+import {
+  Chip,
+  Eyebrow,
+  Section,
+  Stat,
+  Surface,
+  TabsList,
+  TabsRoot,
+  TabsTrigger,
+} from "@/components/primitives";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONSTANTS
@@ -69,7 +78,7 @@ import {
 
 const ACCENT = theme.accent;
 
-const PIE_COLORS = [theme.accent, "#B45309", "#B91C1C"];
+const PIE_COLORS = [theme.textPrimary, theme.gold, theme.warning, theme.danger];
 
 interface AlertQueryBarProps {
   category: PatientAlertsCategory;
@@ -122,12 +131,10 @@ function AlertQueryBar({
   }
 
   return (
-    <div className="frost-panel sut-premium-glass p-5">
+    <Surface variant="base" padding="lg">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <div className="sut-muted-label">
-            Search
-          </div>
+          <Eyebrow as="div">Search</Eyebrow>
           <input
             type="text"
             value={search}
@@ -138,54 +145,51 @@ function AlertQueryBar({
         </div>
 
         <div className="space-y-2">
-          <div className="sut-muted-label">
-            Filter
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {getAlertStatusOptions(category).map((option) => (
-              <button
-                key={option}
-                type="button"
-              onClick={() => onStatusChange(option)}
-              className={`sut-section-btn sut-section-btn-compact ${status === option ? "sut-section-btn-active" : ""}`}
-            >
-                <span className="text-xs font-semibold">{getAlertStatusLabel(option)}</span>
-              </button>
-            ))}
-          </div>
+          <Eyebrow as="div">Filter</Eyebrow>
+          <TabsRoot
+            value={status}
+            onValueChange={(value) => onStatusChange(value as PatientAlertsStatus)}
+            className="gap-0"
+          >
+            <TabsList density="compact" aria-label="Alert status filter">
+              {getAlertStatusOptions(category).map((option) => (
+                <TabsTrigger key={option} value={option} density="compact">
+                  {getAlertStatusLabel(option)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </TabsRoot>
         </div>
 
         <div className="space-y-2 lg:text-right">
-          <div className="sut-muted-label">
-            Pagination
-          </div>
+          <Eyebrow as="div" className="lg:text-right">Pagination</Eyebrow>
           <div className="flex flex-col gap-2 sm:items-start lg:items-end">
             <div className="flex flex-wrap items-center gap-2 lg:justify-end">
               <button
                 type="button"
-                className="sut-section-btn sut-section-btn-compact"
+                className="rounded-[var(--r-md)] border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] disabled:opacity-50"
                 onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
                 disabled={!hasPrev || loading}
               >
-                <span className="text-xs font-semibold">Prev</span>
+                Prev
               </button>
-              <span className="text-xs font-semibold sut-section-description">
+              <span className="text-xs font-semibold text-[var(--text-secondary)]">
                 Page {fmtNum(currentPage)} of {fmtNum(totalPages)}
               </span>
               <button
                 type="button"
-                className="sut-section-btn sut-section-btn-compact"
+                className="rounded-[var(--r-md)] border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] disabled:opacity-50"
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={!hasNext || loading}
               >
-                <span className="text-xs font-semibold">Next</span>
+                Next
               </button>
             </div>
 
             <form className="flex flex-wrap items-center gap-2 lg:justify-end" onSubmit={handlePageJumpSubmit}>
               <label
                 htmlFor={`${category}-page-jump`}
-                className="sut-muted-label text-[11px]"
+                className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]"
               >
                 Jump to page
               </label>
@@ -201,19 +205,19 @@ function AlertQueryBar({
               />
               <button
                 type="submit"
-                className="sut-section-btn sut-section-btn-compact"
+                className="rounded-[var(--r-md)] border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] disabled:opacity-50"
                 disabled={loading || totalPages <= 1}
               >
-                <span className="text-xs font-semibold">Go</span>
+                Go
               </button>
             </form>
           </div>
         </div>
       </div>
-      <div className="text-xs mt-3 sut-section-description">
+      <p className="mt-3 text-xs text-[var(--text-secondary)]">
         {totalMatching > 0 ? `Displaying the current ${ALERT_CATEGORY_LABELS[category]} page from ${fmtNum(totalMatching)} matching patients.` : "No matching patients for the current query."}
-      </div>
-    </div>
+      </p>
+    </Surface>
   );
 }
 
@@ -360,20 +364,15 @@ function CopayExemptionAlerts({ data, loading }: { data: PatientAlertsResponse |
         <KpiCard label="Non-Exempt" value={fmtNum(summary.n_total_patients - summary.n_exempt_patients)} sub="Standard copay applies" />
       </div>
 
-      {/* Filter + Table */}
-      <div className="frost-panel p-5 rounded-2xl">
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: ACCENT }}>
-            Patient Alerts
-          </h3>
-          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#71717A" }}>
-            {getAlertStatusLabel(data.query.status)}
-          </div>
-        </div>
-
-        <div className="text-xs mb-2" style={{ color: "#A1A1AA" }}>
+      <Section
+        title="Patient Alerts"
+        trailing={<Chip variant="outline">{getAlertStatusLabel(data.query.status)}</Chip>}
+        padding="lg"
+        className="[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wider [&_h2]:text-[var(--gold)]"
+      >
+        <p className="mb-2 text-xs text-[var(--text-muted)]">
           Showing {fmtNum(rangeStart)}-{fmtNum(rangeEnd)} of {fmtNum(totalMatching)} patients on page {fmtNum(currentPage)} of {fmtNum(totalPages)}
-        </div>
+        </p>
 
         <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
           <table className="min-w-[720px] w-full text-xs" style={{ color: "#1A1A1A" }}>
@@ -409,7 +408,7 @@ function CopayExemptionAlerts({ data, loading }: { data: PatientAlertsResponse |
             </tbody>
           </table>
         </div>
-      </div>
+      </Section>
     </div>
   );
 }
@@ -475,19 +474,15 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
         />
       </div>
 
-      <div className="frost-panel p-5 rounded-2xl">
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: ACCENT }}>
-            Patient Alerts
-          </h3>
-          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#71717A" }}>
-            {getAlertStatusLabel(data.query.status)}
-          </div>
-        </div>
-
-        <div className="text-xs mb-2" style={{ color: "#A1A1AA" }}>
+      <Section
+        title="Patient Alerts"
+        trailing={<Chip variant="outline">{getAlertStatusLabel(data.query.status)}</Chip>}
+        padding="lg"
+        className="[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wider [&_h2]:text-[var(--gold)]"
+      >
+        <p className="mb-2 text-xs text-[var(--text-muted)]">
           Showing {fmtNum(rangeStart)}-{fmtNum(rangeEnd)} of {fmtNum(totalMatching)} patients on page {fmtNum(currentPage)} of {fmtNum(totalPages)}
-        </div>
+        </p>
 
         <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
           <table className="min-w-[720px] w-full text-xs" style={{ color: "#1A1A1A" }}>
@@ -506,7 +501,7 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
                   <td className="py-2 pr-3 font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
                   <td className="py-2 pr-3 text-center">
                     {!isExactOutput(p.surcharge_exposure)
-                      ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.unavailable} color="#71717A" />
+                      ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.unavailable} color={theme.textMuted} />
                       : (p.surcharge_exposure.n_applicable ?? 0) > 0
                       ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.flagged} color="#B45309" />
                       : <AlertBadge label={SUT_ALERT_BADGE_LABELS.clear} color={theme.accent} />
@@ -532,7 +527,7 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
             </tbody>
           </table>
         </div>
-      </div>
+      </Section>
     </div>
   );
 }
@@ -598,19 +593,15 @@ function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null
         />
       </div>
 
-      <div className="frost-panel p-5 rounded-2xl">
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: ACCENT }}>
-            Patient Alerts
-          </h3>
-          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#71717A" }}>
-            {getAlertStatusLabel(data.query.status)}
-          </div>
-        </div>
-
-        <div className="text-xs mb-2" style={{ color: "#A1A1AA" }}>
+      <Section
+        title="Patient Alerts"
+        trailing={<Chip variant="outline">{getAlertStatusLabel(data.query.status)}</Chip>}
+        padding="lg"
+        className="[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wider [&_h2]:text-[var(--gold)]"
+      >
+        <p className="mb-2 text-xs text-[var(--text-muted)]">
           Showing {fmtNum(rangeStart)}-{fmtNum(rangeEnd)} of {fmtNum(totalMatching)} patients on page {fmtNum(currentPage)} of {fmtNum(totalPages)}
-        </div>
+        </p>
 
         <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
           <table className="min-w-[720px] w-full text-xs" style={{ color: "#1A1A1A" }}>
@@ -629,7 +620,7 @@ function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null
                   <td className="py-2 pr-3 font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
                   <td className="py-2 pr-3 text-center">
                     {!isExactOutput(p.copay_rate_exposure)
-                      ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.unavailable} color="#71717A" />
+                      ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.unavailable} color={theme.textMuted} />
                       : (p.copay_rate_exposure.n_applicable ?? 0) > 0
                       ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.flagged} color="#B45309" />
                       : <AlertBadge label={SUT_ALERT_BADGE_LABELS.clear} color={theme.accent} />
@@ -655,7 +646,7 @@ function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null
             </tbody>
           </table>
         </div>
-      </div>
+      </Section>
     </div>
   );
 }
@@ -668,14 +659,14 @@ function MethodologyBadge({ text, label = "100% Gazette Data", warn = false }: {
   const color = warn ? "#F59E0B" : theme.accent;
   const colorLight = warn ? "rgba(245, 158, 11, 0.15)" : theme.accentAlpha(0.06);
   const borderColor = warn ? "rgba(245, 158, 11, 0.3)" : theme.accentAlpha(0.2);
-  const separatorColor = warn ? "rgba(245, 158, 11, 0.4)" : "#6EE7B7";
+  const separatorColor = warn ? "rgba(245, 158, 11, 0.4)" : theme.accentAlpha(0.35);
   return (
     <div
       className="rounded-lg px-3 py-2 text-xs leading-relaxed"
       style={{
         background: colorLight,
         border: `1px solid ${borderColor}`,
-        color: "#71717A",
+        color: theme.textMuted,
       }}
     >
       <span className="font-bold uppercase tracking-wider" style={{ color }}>
@@ -788,20 +779,24 @@ function ComplianceAlerts() {
 
   return (
     <div className="space-y-4">
-      <SyntheticDemoProvenance dataSource={currentData} />
-      <div className="flex gap-2 flex-wrap">
-        {ALERT_SUBS.map((sub) => (
-          <button
-            key={sub.id}
-            type="button"
-            onClick={() => handleCategoryChange(sub.id)}
-            className={`sut-section-btn ${activeSub === sub.id ? "sut-section-btn-active" : ""}`}
-          >
-            <sub.Icon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
-            <span className="text-sm font-semibold">{sub.label}</span>
-          </button>
-        ))}
-      </div>
+      <TabsRoot
+        value={activeSub}
+        onValueChange={(value) => handleCategoryChange(value as AlertSubId)}
+        className="gap-0"
+      >
+        <TabsList density="compact" aria-label="Compliance alert categories">
+          {ALERT_SUBS.map((sub) => (
+            <TabsTrigger
+              key={sub.id}
+              value={sub.id}
+              density="compact"
+              leading={<sub.Icon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />}
+            >
+              {sub.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </TabsRoot>
 
       <AlertQueryBar
         category={activeSub}
@@ -815,16 +810,21 @@ function ComplianceAlerts() {
       />
 
       {alertsError && (
-        <div
-          className="frost-panel sut-premium-error rounded-2xl p-4"
+        <Surface
+          variant="base"
+          padding="md"
+          className="border-[color-mix(in_srgb,var(--danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--danger)_4%,transparent)]"
         >
-          <p className="sut-premium-error-title text-sm font-medium">
+          <Chip variant="danger" className="mb-2">
+            Alert load failed
+          </Chip>
+          <p className="text-sm font-medium text-[var(--danger)]">
             {alertsErrorPresentation?.title}
           </p>
-          <p className="sut-premium-error-hint text-xs mt-1">
+          <p className="mt-1 text-xs text-[var(--text-muted)]">
             {alertsErrorPresentation?.hint}
           </p>
-        </div>
+        </Surface>
       )}
 
       {activeSub === "exemptions" && <CopayExemptionAlerts data={currentData} loading={currentLoading} />}
@@ -879,26 +879,35 @@ function RevenueRecoveryDashboard() {
 
   if (loading) {
     return (
-      <div className="frost-panel p-8 rounded-2xl text-center">
-        <div className="animate-pulse text-sm" style={{ color: "#71717A" }}>Loading revenue recovery data...</div>
-      </div>
+      <Surface variant="base" padding="lg" className="text-center">
+        <p className="animate-pulse text-sm text-[var(--text-muted)]">Loading revenue recovery data...</p>
+      </Surface>
     );
   }
 
   if (error) {
     return (
-      <div className="frost-panel p-6 rounded-2xl" style={{ borderColor: "rgba(185,28,28,0.3)", background: "rgba(185,28,28,0.04)" }}>
-        <p className="text-sm font-medium" style={{ color: "#B91C1C" }}>{error}</p>
-        <p className="text-xs mt-1" style={{ color: "#71717A" }}>Billing reports require the full pipeline. Start the API with <code>python -m uvicorn src.api:app</code>.</p>
-      </div>
+      <Surface
+        variant="base"
+        padding="lg"
+        className="border-[color-mix(in_srgb,var(--danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--danger)_4%,transparent)]"
+      >
+        <Chip variant="danger" className="mb-2">
+          Revenue recovery unavailable
+        </Chip>
+        <p className="text-sm font-medium text-[var(--danger)]">{error}</p>
+        <p className="mt-1 text-xs text-[var(--text-muted)]">
+          Billing reports require the full pipeline. Start the API with <code>python -m uvicorn src.api:app</code>.
+        </p>
+      </Surface>
     );
   }
 
   if (!data || data.n_patients === 0) {
     return (
-      <div className="frost-panel p-6 rounded-2xl text-center">
-        <p className="text-sm" style={{ color: "#A1A1AA" }}>No billing data available.</p>
-      </div>
+      <Surface variant="base" padding="lg" className="text-center">
+        <p className="text-sm text-[var(--text-muted)]">No billing data available.</p>
+      </Surface>
     );
   }
 
@@ -916,7 +925,6 @@ function RevenueRecoveryDashboard() {
 
   return (
     <div className="space-y-5">
-      <SyntheticDemoProvenance dataSources={[data, optData]} />
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {[
@@ -931,14 +939,14 @@ function RevenueRecoveryDashboard() {
           { label: "Strategy Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? data.total_strategy_savings : null) },
           { label: "Patients with Actions", value: fmtNum(data.n_patients) },
         ].map((kpi, i) => (
-          <div
+          <Surface
             key={i}
-            className="frost-panel p-4 rounded-2xl"
+            variant="base"
+            padding="md"
             style={kpi.accent ? { borderColor: `${ACCENT}40`, background: `${ACCENT}08` } : {}}
           >
-            <div className="text-xs uppercase tracking-wider font-bold mb-1" style={{ color: "#A1A1AA" }}>{kpi.label}</div>
-            <div className={`text-lg font-bold ${kpi.accent ? "" : ""}`} style={{ color: kpi.accent ? ACCENT : "#1A1A1A" }}>{kpi.value}</div>
-          </div>
+            <Stat label={kpi.label} value={kpi.value} display={kpi.accent ? "gold" : "default"} />
+          </Surface>
         ))}
       </div>
       {recoveryPartial ? (
@@ -964,8 +972,8 @@ function RevenueRecoveryDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Donut Chart */}
           {categoryData.length > 0 && (
-          <div className="frost-panel p-5 rounded-2xl">
-            <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT }}>Savings by Category</h3>
+          <Surface variant="base" padding="lg">
+            <Eyebrow tone="gold" as="h3" className="mb-3">Savings by Category</Eyebrow>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie data={categoryData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80}>
@@ -980,16 +988,16 @@ function RevenueRecoveryDashboard() {
               {categoryData.map((d, i) => (
                 <div key={i} className="flex items-center gap-1.5 text-xs">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
-                  <span style={{ color: "#71717A" }}>{d.name}</span>
+                  <span className="text-[var(--text-muted)]">{d.name}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </Surface>
           )}
 
         {/* Priority Distribution */}
-          <div className="frost-panel p-5 rounded-2xl">
-            <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT }}>Priority Distribution</h3>
+          <Surface variant="base" padding="lg">
+            <Eyebrow tone="gold" as="h3" className="mb-3">Priority Distribution</Eyebrow>
             <div className="space-y-3 mt-4">
               {priorityData.map((pd, i) => {
                 const total = priorityData.reduce((s, p) => s + p.value, 0);
@@ -997,8 +1005,8 @@ function RevenueRecoveryDashboard() {
                 return (
                   <div key={i}>
                     <div className="flex justify-between text-xs mb-1">
-                        <span className="font-semibold" style={{ color: priorityColors[pd.name] || "#71717A" }}>{pd.name}</span>
-                        <span style={{ color: "#71717A" }}>{fmtNum(pd.value)} patients ({fmtPct(pct / 100, 0)})</span>
+                        <span className="font-semibold" style={{ color: priorityColors[pd.name] || theme.textMuted }}>{pd.name}</span>
+                        <span className="text-[var(--text-muted)]">{fmtNum(pd.value)} patients ({fmtPct(pct / 100, 0)})</span>
                     </div>
                     <div className="w-full h-2 rounded-full" style={{ background: theme.accentAlpha(0.08) }}>
                       <div className="h-2 rounded-full" style={{ width: `${pct}%`, background: priorityColors[pd.name] || ACCENT }} />
@@ -1007,14 +1015,14 @@ function RevenueRecoveryDashboard() {
                 );
               })}
             </div>
-          </div>
+          </Surface>
         </div>
       )}
 
       {/* Top Patients Table */}
       {hasRecoveryBreakdown && (data.top_patients?.length ?? 0) > 0 && (
-        <div className="frost-panel p-5 rounded-2xl">
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT }}>Top-10 Highest-Impact Patients</h3>
+        <Surface variant="base" padding="lg">
+          <Eyebrow tone="gold" as="h3" className="mb-3">Top-10 Highest-Impact Patients</Eyebrow>
           <div className="overflow-x-auto">
             <table className="min-w-[640px] w-full text-sm">
               <thead>
@@ -1036,24 +1044,22 @@ function RevenueRecoveryDashboard() {
                     </td>
                     <td className="py-2 pr-4 font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY(p.total_recoverable_try)}</td>
                     <td className="py-2 pr-4">
-                      <AlertBadge label={fmtPriorityLabel(p.priority)} color={priorityColors[fmtPriorityLabel(p.priority)] || "#71717A"} />
+                      <AlertBadge label={fmtPriorityLabel(p.priority)} color={priorityColors[fmtPriorityLabel(p.priority)] || theme.textMuted} />
                     </td>
-                    <td className="py-2 pr-4" style={{ color: "#71717A" }}>{fmtNum(p.action_count)}</td>
-                    <td className="py-2 text-xs" style={{ color: "#71717A" }}>{fmtLabel(p.top_action_type)}</td>
+                    <td className="py-2 pr-4 text-[var(--text-muted)]">{fmtNum(p.action_count)}</td>
+                    <td className="py-2 text-xs text-[var(--text-muted)]">{fmtLabel(p.top_action_type)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </Surface>
       )}
 
       {/* Search Any Patient */}
-      <div className="frost-panel p-5 rounded-2xl">
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT }}>
-            Look Up Any Patient
-          </h3>
-        <p className="text-xs mb-3" style={{ color: "#71717A" }}>
+      <Surface variant="base" padding="lg">
+        <Eyebrow tone="gold" as="h3" className="mb-3">Look Up Any Patient</Eyebrow>
+        <p className="mb-3 text-xs text-[var(--text-muted)]">
           Search for any patient to view their individual billing report.
         </p>
         <div style={{ maxWidth: 400 }}>
@@ -1067,7 +1073,7 @@ function RevenueRecoveryDashboard() {
             searchFn={searchSutPatients}
           />
         </div>
-      </div>
+      </Surface>
 
       {/* Methodology Badge */}
       <div className="text-xs text-center py-2" style={{ color: "#A1A1AA" }}>
@@ -1168,8 +1174,6 @@ function DrugDiscountInline({ data }: { data: OptimizationSummary }) {
 export default function SUTOptimizer() {
   const [activeSection, setActiveSection] = useState<SectionId>("alerts");
   const { getRevealProps } = useStaggeredReveal(5, { baseDelayMs: 40, stepMs: 140, threshold: 0.15 });
-  const config = useConfig();
-  const sutDataSource = config.sut_data_source ?? config.sutDataSource ?? null;
 
   const r0 = getRevealProps(0);
   const r1 = getRevealProps(1);
@@ -1181,7 +1185,6 @@ export default function SUTOptimizer() {
   return (
     <div className="relative space-y-6">
       {/* (tab intro removed — description now in tab button) */}
-      <SyntheticDemoProvenance dataSource={sutDataSource} />
 
       {/* Section Nav */}
       <div
@@ -1189,24 +1192,28 @@ export default function SUTOptimizer() {
         style={r0.staggerStyle}
         {...r0.staggerAttrs}
       >
-        <div className="sut-section-bar">
-          {SECTIONS.map((sec) => (
-            <button
-              key={sec.id}
-              type="button"
-              onClick={() => setActiveSection(sec.id)}
-              className={`sut-section-btn ${activeSection === sec.id ? "sut-section-btn-active" : ""}`}
-            >
-              <sec.Icon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />
-              <span className="text-sm font-semibold">{sec.label}</span>
-            </button>
-          ))}
-        </div>
+        <TabsRoot
+          value={activeSection}
+          onValueChange={(value) => setActiveSection(value as SectionId)}
+          className="gap-0"
+        >
+          <TabsList density="comfortable" aria-label="Optimizer sections">
+            {SECTIONS.map((sec) => (
+              <TabsTrigger
+                key={sec.id}
+                value={sec.id}
+                leading={<sec.Icon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />}
+              >
+                {sec.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </TabsRoot>
       </div>
 
       {/* Section Description */}
       <p
-        className={`sut-section-description ${r1.staggerClass}`}
+        className={`text-sm leading-snug text-[var(--text-secondary)] ${r1.staggerClass}`}
         style={r1.staggerStyle}
         {...r1.staggerAttrs}
       >

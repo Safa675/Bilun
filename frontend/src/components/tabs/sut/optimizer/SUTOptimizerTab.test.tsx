@@ -1,10 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-const SYNTHETIC_DEMO_COPY = vi.hoisted(
-  () => "Synthetic demo claims — SUT rule calculations are exact for this generated claim-line fixture.",
-);
-
 vi.mock("@/hooks/useStaggeredReveal", () => ({
   default: () => ({
     getRevealProps: () => ({
@@ -33,11 +29,6 @@ vi.mock("@/lib/configContext", () => ({
 
 vi.mock("@/components/ui/PatientSearch", () => ({
   default: () => null,
-}));
-
-vi.mock("@/components/sut/SyntheticDemoProvenance", () => ({
-  SYNTHETIC_DEMO_COPY,
-  SyntheticDemoProvenance: () => <div>{SYNTHETIC_DEMO_COPY}</div>,
 }));
 
 vi.mock("@/components/skeletons/SutSkeletons", () => ({
@@ -106,11 +97,12 @@ vi.mock("next/link", () => ({
 
 import SUTOptimizer from "./SUTOptimizerTab";
 
-describe("SUTOptimizer provenance", () => {
-  it("renders synthetic-demo provenance on the optimizer shell", () => {
+describe("SUTOptimizer shell", () => {
+  it("renders section navigation without inline provenance banner", () => {
     const html = renderToStaticMarkup(<SUTOptimizer />);
 
-    expect(html).toContain(SYNTHETIC_DEMO_COPY);
+    expect(html).toContain("Compliance Alerts");
+    expect(html).not.toContain("Synthetic demo claims");
     expect(html).not.toContain("Actual reimbursement recovery");
     expect(html).not.toContain("Hospital-wide loss");
     expect(html).not.toContain("Production billing result");

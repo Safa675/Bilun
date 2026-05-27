@@ -14,6 +14,7 @@ import { DrugCatalogSection } from "./sections/DrugCatalogSection";
 import { SpecialtyMaterialSection } from "./sections/SpecialtyMaterialSection";
 import { LabPricesSection } from "./sections/LabPricesSection";
 import { CheckupPricingSection } from "./sections/CheckupPricingSection";
+import { Chip, Surface } from "@/components/primitives";
 
 export function ReferenceToolsContent() {
   return (
@@ -83,15 +84,15 @@ function BillingToolsSection() {
         optLoading ? (
           <SutReferenceSectionSkeleton title="Loading price history data" />
         ) : optError ? (
-          <div className="frost-panel sut-premium-error rounded-2xl p-6 text-center">
-            <p className="sut-premium-error-title text-sm">{optError}</p>
-          </div>
+          <Surface variant="base" padding="lg" className="text-center">
+            <Chip variant="danger">{optError}</Chip>
+          </Surface>
         ) : optData ? (
           <TemporalPriceSection data={optData} />
         ) : (
-          <div className="frost-panel rounded-2xl p-6 text-center">
-            <p className="sut-section-description text-sm">Price history data not available.</p>
-          </div>
+          <Surface variant="base" padding="lg" className="text-center">
+            <p className="text-sm text-[var(--text-secondary)]">Price history data not available.</p>
+          </Surface>
         )
       )}
       {activeSub === "visits" && <VisitPricingSection />}

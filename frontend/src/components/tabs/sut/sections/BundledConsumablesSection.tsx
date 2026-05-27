@@ -6,6 +6,7 @@ import type { SutBundledConsumablesResult } from "@/lib/api/sut";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import { ACCENT_LOCAL, fmtNum, KpiCard } from "../shared";
 import { useSutApi } from "../useSutApi";
+import { Chip, DataTable, Surface } from "@/components/primitives";
 
 export function BundledConsumablesSection() {
   const { data, loading, error } = useSutApi<SutBundledConsumablesResult>(
@@ -30,9 +31,9 @@ export function BundledConsumablesSection() {
 
   if (error) {
     return (
-      <div className="frost-panel p-4 rounded-2xl" style={{ borderColor: "rgba(185, 28, 28, 0.3)", background: "rgba(185, 28, 28, 0.04)" }}>
-        <p className="text-sm font-medium" style={{ color: "#B91C1C" }}>{error}</p>
-      </div>
+      <Surface variant="soft" padding="md">
+        <Chip variant="danger">{error}</Chip>
+      </Surface>
     );
   }
 
@@ -45,15 +46,15 @@ export function BundledConsumablesSection() {
         <KpiCard label="Exclusion Categories" value={fmtNum(data.exclusion_categories.count)} valueColor="#B45309" />
       </div>
 
-      <div className="frost-panel p-5 rounded-2xl">
+      <Surface variant="base" padding="lg">
         <div className="flex items-center justify-between gap-3 mb-3">
           <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: ACCENT_LOCAL }}>EK-3B-1 Bundled Consumables</h3>
           <input type="text" value={filterText} onChange={(e) => setFilterText(e.target.value)} className="sut-input max-w-[240px]" placeholder="Filter items..." />
         </div>
         <div className="text-xs mb-2" style={{ color: "#A1A1AA" }}>{fmtNum(filteredBundled.length)} of {fmtNum(data.bundled_consumables.count)} items</div>
-        <div className="overflow-x-auto max-h-[360px] overflow-y-auto">
-          <table className="frost-table w-full">
-            <thead className="sticky top-0">
+        <div className="max-h-[360px] overflow-y-auto">
+          <DataTable>
+            <thead>
               <tr>
                 <th className="text-left">#</th>
                 <th className="text-left">Item Name</th>
@@ -64,7 +65,7 @@ export function BundledConsumablesSection() {
             <tbody>
               {filteredBundled.map((item, i) => (
                 <tr key={i}>
-                  <td className="text-left text-xs" style={{ color: "#A1A1AA" }}>{fmtNum(i + 1)}</td>
+                  <td className="text-left text-xs tabular-nums" style={{ color: "#A1A1AA" }}>{fmtNum(i + 1)}</td>
                   <td className="text-left text-sm" style={{ color: "#1A1A1A" }}>{item.item_name}</td>
                   <td className="text-left text-xs" style={{ color: "#71717A" }}>{item.bundled_in}</td>
                   <td className="text-left text-xs font-mono" style={{ color: "#A1A1AA" }}>{item.effective_date}</td>
@@ -74,11 +75,11 @@ export function BundledConsumablesSection() {
                 <tr><td colSpan={4} className="text-center text-sm py-6" style={{ color: "#A1A1AA" }}>No items match the filter.</td></tr>
               )}
             </tbody>
-          </table>
+          </DataTable>
         </div>
-      </div>
+      </Surface>
 
-      <div className="frost-panel p-5 rounded-2xl">
+      <Surface variant="base" padding="lg">
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>EK-3B Non-Reimbursable Exclusion Categories</h3>
         <div className="space-y-2">
           {data.exclusion_categories.categories.map((cat, i) => (
@@ -88,7 +89,7 @@ export function BundledConsumablesSection() {
             </div>
           ))}
         </div>
-      </div>
+      </Surface>
     </div>
   );
 }

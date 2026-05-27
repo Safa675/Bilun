@@ -54,11 +54,3 @@ export function useAiDockPosition() {
 export function useSetAiDockPosition() {
   return useNavigationStore((state) => state.setAiDockPosition);
 }
-
-export function useWorkspaceEntered() {
-  return useNavigationStore((state) => state.workspaceEntered);
-}
-
-export function useSetWorkspaceEntered() {
-  return useNavigationStore((state) => state.setWorkspaceEntered);
-}

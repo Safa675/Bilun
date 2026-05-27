@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { Surface } from "@/components/primitives";
 import { buildSutHomeHref, SUT_BRAND } from "@/lib/constants";
 
 export default function SutError({
@@ -16,17 +17,19 @@ export default function SutError({
   }, [error]);
 
   return (
-    <main id="main-content" className="min-h-screen px-6 py-8" style={{ background: "#FAFAF9" }}>
+    <main id="main-content" className="min-h-screen bg-[var(--surface-base)] px-6 py-8">
       <section className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center">
-        <div className="frost-panel w-full rounded-3xl p-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em]" style={{ color: "#059669" }}>
+        <Surface variant="soft" padding="lg" className="w-full text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--gold)]">
             {SUT_BRAND.moduleLabel}
           </p>
-          <h1 className="mt-4 text-3xl font-bold text-slate-950">Something went wrong in the SUT workspace</h1>
-          <p className="mt-3 text-sm text-slate-600">
+          <h1 className="mt-4 font-[var(--font-display)] text-3xl font-medium text-[var(--text-primary)]">
+            Something went wrong in the SUT workspace
+          </h1>
+          <p className="mt-3 text-sm text-[var(--text-secondary)]">
             The current screen could not be rendered. Try again, or return to the main SUT workspace.
           </p>
-          <p className="mt-4 rounded-2xl px-4 py-3 text-left text-sm" style={{ background: "rgba(185, 28, 28, 0.04)", color: "#B91C1C" }}>
+          <p className="mt-4 rounded-[var(--r-md)] bg-[color-mix(in_srgb,var(--danger)_6%,transparent)] px-4 py-3 text-left text-sm text-[var(--danger)]">
             {error.message || "Unexpected SUT application error."}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -41,7 +44,7 @@ export default function SutError({
               Back to SUT workspace
             </Link>
           </div>
-        </div>
+        </Surface>
       </section>
     </main>
   );

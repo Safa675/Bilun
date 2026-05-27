@@ -4,6 +4,7 @@ import {
   getSutDataSource,
   isSyntheticDemoDataSource,
   SYNTHETIC_DEMO_COPY,
+  SyntheticDemoChip,
   SyntheticDemoProvenance,
 } from "./SyntheticDemoProvenance";
 import type { SUTDataSourceMetadata } from "@/lib/domains/sut";
@@ -39,6 +40,33 @@ describe("SyntheticDemoProvenance", () => {
   it("does not render a badge for real-claims provenance", () => {
     const html = renderToStaticMarkup(
       <SyntheticDemoProvenance
+        dataSource={{
+          mode: "real_claims",
+          label: "Hospital claim data",
+          is_synthetic: false,
+          notice: "Hospital claim data.",
+        }}
+      />,
+    );
+
+    expect(html).toBe("");
+  });
+});
+
+describe("SyntheticDemoChip", () => {
+  it("renders a compact chip for synthetic demo data", () => {
+    const html = renderToStaticMarkup(
+      <SyntheticDemoChip dataSource={SYNTHETIC_SOURCE} />,
+    );
+
+    expect(html).toContain("Synthetic demo");
+    expect(html).toContain('aria-label="Synthetic SUT demo provenance"');
+    expect(html).toContain(`title="${SYNTHETIC_DEMO_COPY}"`);
+  });
+
+  it("renders nothing for real-claims provenance", () => {
+    const html = renderToStaticMarkup(
+      <SyntheticDemoChip
         dataSource={{
           mode: "real_claims",
           label: "Hospital claim data",

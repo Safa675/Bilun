@@ -12,6 +12,7 @@ import {
   fmtTRY2,
   KpiCard,
 } from "../shared";
+import { Chip, Surface } from "@/components/primitives";
 
 export function CopaySimulatorSection() {
   const [facilityTier, setFacilityTier] = useState("2_3_basamak_ozel");
@@ -71,7 +72,7 @@ export function CopaySimulatorSection() {
 
   return (
     <div className="space-y-5">
-      <div className="frost-panel p-5 rounded-2xl">
+      <Surface variant="base" padding="lg">
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
           Patient Scenario
         </h3>
@@ -144,12 +145,12 @@ export function CopaySimulatorSection() {
             </button>
           </div>
         </div>
-      </div>
+      </Surface>
 
       {error && (
-        <div className="frost-panel p-4 rounded-2xl" style={{ borderColor: "rgba(185, 28, 28, 0.3)", background: "rgba(185, 28, 28, 0.04)" }}>
-          <p className="text-sm font-medium" style={{ color: "#B91C1C" }}>{error}</p>
-        </div>
+        <Surface variant="soft" padding="md">
+          <Chip variant="danger">{error}</Chip>
+        </Surface>
       )}
 
       {result && (
@@ -181,7 +182,7 @@ export function CopaySimulatorSection() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="frost-panel p-5 rounded-2xl">
+            <Surface variant="base" padding="lg">
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
                 Copayment Breakdown
               </h3>
@@ -226,11 +227,11 @@ export function CopaySimulatorSection() {
                   </div>
                 </div>
               ) : (
-                <p className="text-sm" style={{ color: "#A1A1AA" }}>No copayment components</p>
+                <p className="text-sm text-[var(--text-secondary)]">No copayment components</p>
               )}
-            </div>
+            </Surface>
 
-            <div className="frost-panel p-5 rounded-2xl">
+            <Surface variant="base" padding="lg">
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
                 Calculation Detail
               </h3>
@@ -262,7 +263,7 @@ export function CopaySimulatorSection() {
                   <span style={{ color: "#B91C1C" }}>{fmtTRY2(result.total_copay_mid)}</span>
                 </div>
               </div>
-            </div>
+            </Surface>
           </div>
         </>
       )}

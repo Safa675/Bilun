@@ -2,10 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { BillingActionReport } from "@/lib/domains/sut";
 
-const SYNTHETIC_DEMO_COPY = vi.hoisted(
-  () => "Synthetic demo claims — SUT rule calculations are exact for this generated claim-line fixture.",
-);
-
 vi.mock("next/link", () => ({
   default: ({ children }: { children: unknown }) => children,
 }));
@@ -33,11 +29,6 @@ vi.mock("@/stores/index", () => ({
 
 vi.mock("@/components/skeletons/SutSkeletons", () => ({
   SutBillingReportSkeleton: () => null,
-}));
-
-vi.mock("@/components/sut/SyntheticDemoProvenance", () => ({
-  SYNTHETIC_DEMO_COPY,
-  SyntheticDemoProvenance: () => <div>{SYNTHETIC_DEMO_COPY}</div>,
 }));
 
 vi.mock("@/lib/constants", () => ({
@@ -95,7 +86,7 @@ vi.mock("@/lib/api/sut", () => ({
   searchSutPatients: vi.fn(),
 }));
 
-import { BillingSummary } from "./page";
+import { BillingSummary } from "@/components/patient/SutBillingReportSections";
 
 const baseReport: BillingActionReport = {
   patient_id: "P-001",
@@ -145,12 +136,12 @@ const baseReport: BillingActionReport = {
   exactness_status: "exact",
 };
 
-describe("BillingSummary provenance", () => {
-  it("shows synthetic-demo provenance while preserving exact billing state", () => {
+describe("BillingSummary", () => {
+  it("shows exact billing state without inline provenance banner", () => {
     const html = renderToStaticMarkup(<BillingSummary billingReport={baseReport} />);
 
-    expect(html).toContain(SYNTHETIC_DEMO_COPY);
     expect(html).toContain("Rule-calculated opportunity");
+    expect(html).not.toContain("Synthetic demo claims");
     expect(html).not.toContain("Billing totals remain unavailable");
     expect(html).not.toContain("Actual reimbursement recovery");
     expect(html).not.toContain("Hospital-wide loss");
@@ -158,7 +149,7 @@ describe("BillingSummary provenance", () => {
     expect(html).not.toContain("Real savings");
   });
 
-  it("keeps unavailable billing state independent of synthetic provenance", () => {
+  it("keeps unavailable billing state independent of provenance placement", () => {
     const unavailableReport: BillingActionReport = {
       ...baseReport,
       exactness_status: "missing_exact_inputs",
@@ -167,9 +158,28 @@ describe("BillingSummary provenance", () => {
     };
     const html = renderToStaticMarkup(<BillingSummary billingReport={unavailableReport} />);
 
-    expect(html).toContain(SYNTHETIC_DEMO_COPY);
     expect(html).toContain("Needs exact claim sections.");
     expect(html).toContain("Unavailable");
+    expect(html).not.toContain("Synthetic demo claims");
+  });
+
+  it("applies the italic-gold serif treatment to the primary KPI money amount", () => {
+    const exactReport: BillingActionReport = {
+      ...baseReport,
+      exactness_status: "exact",
+      total_recoverable_try: 18450.5,
+      action_count: 12,
+      priority: "high",
+    };
+    const html = renderToStaticMarkup(<BillingSummary billingReport={exactReport} />);
+
+    // Italic-gold serif on the primary money amount (Stat display="gold")
+    expect(html).toMatch(/italic[^>]*var\(--gold\)[\s\S]*?18450\.50 TRY/);
+    expect(html).toContain("Rule-calculated opportunity");
+    // legacy chrome must be absent
+    expect(html).not.toContain("frost-panel");
+    expect(html).not.toContain("sut-premium-panel");
+    expect(html).not.toContain("sut-patient-id-title");
   });
 
   it("shows recoverable totals for partial exact reports", () => {

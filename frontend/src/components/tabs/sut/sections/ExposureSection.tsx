@@ -24,6 +24,7 @@ import {
   CATEGORY_COLORS,
   ACCENT_LOCAL,
 } from "../shared";
+import { DataTable, Surface } from "@/components/primitives";
 
 export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse }) {
   const sut = data.sut_summary;
@@ -68,7 +69,7 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
         />
       </div>
 
-      <div className="frost-panel p-5 rounded-2xl">
+      <Surface variant="base" padding="lg">
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-1" style={{ color: ACCENT_LOCAL }}>
           Cost Distribution (Per Patient)
         </h3>
@@ -101,10 +102,10 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
             );
           })()}
         </div>
-      </div>
+      </Surface>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="frost-panel p-5 rounded-2xl">
+        <Surface variant="base" padding="lg">
           <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
             Cost Tier Distribution
           </h3>
@@ -150,9 +151,9 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
               ))}
             </div>
           </div>
-        </div>
+        </Surface>
 
-        <div className="frost-panel p-5 rounded-2xl">
+        <Surface variant="base" padding="lg">
           <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
             Cost by Category (Midpoint)
           </h3>
@@ -177,24 +178,23 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </Surface>
       </div>
 
       {sut.top_5_high_cost && sut.top_5_high_cost.length > 0 && (
-        <div className="frost-panel p-5 rounded-2xl">
+        <Surface variant="base" padding="lg">
           <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>
             Top 5 Highest-Cost Patients
           </h3>
-          <div className="overflow-x-auto">
-            <table className="frost-table w-full">
+          <DataTable>
               <thead>
                 <tr>
                   <th className="text-left">Rank</th>
                   <th className="text-left">Patient ID</th>
-                  <th className="text-right">Est. Cost (Mid)</th>
+                  <th className="text-right tabular-nums">Est. Cost (Mid)</th>
                   <th className="text-center">Tier</th>
-                  <th className="text-right">Visits</th>
-                  <th className="text-right">Prescriptions</th>
+                  <th className="text-right tabular-nums">Visits</th>
+                  <th className="text-right tabular-nums">Prescriptions</th>
                 </tr>
               </thead>
               <tbody>
@@ -202,7 +202,7 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
                   <tr key={p.patient_id}>
                     <td className="text-left text-xs font-semibold" style={{ color: ACCENT_LOCAL }}>#{i + 1}</td>
                     <td className="text-left text-sm font-mono" style={{ color: "#1A1A1A" }}>{p.patient_id}</td>
-                    <td className="text-right text-sm font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(p.cost_mid)}</td>
+                    <td className="text-right text-sm font-semibold tabular-nums" style={{ color: "#1A1A1A" }}>{fmtTRY2(p.cost_mid)}</td>
                     <td className="text-center">
                       <span
                         className="inline-block rounded-full px-2 py-0.5 text-xs font-semibold"
@@ -214,24 +214,27 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
                         {p.cost_tier}
                       </span>
                     </td>
-                    <td className="text-right text-sm" style={{ color: "#71717A" }}>{p.n_visits}</td>
-                    <td className="text-right text-sm" style={{ color: "#71717A" }}>{p.n_prescriptions}</td>
+                    <td className="text-right text-sm tabular-nums" style={{ color: "#71717A" }}>{p.n_visits}</td>
+                    <td className="text-right text-sm tabular-nums" style={{ color: "#71717A" }}>{p.n_prescriptions}</td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
-        </div>
+          </DataTable>
+        </Surface>
       )}
 
-      <div className="frost-panel p-4 rounded-2xl" style={{ background: theme.accentAlpha(0.03), borderColor: theme.accentAlpha(0.12) }}>
-        <p className="text-xs leading-relaxed" style={{ color: "#A1A1AA" }}>
-          <strong style={{ color: "#71717A" }}>Methodology:</strong> SGK exposure is the midpoint of SUT min/max cost estimates per patient, aggregated across the cohort.
+      <Surface
+        variant="soft"
+        padding="md"
+        style={{ background: theme.accentAlpha(0.03), borderColor: theme.accentAlpha(0.12) }}
+      >
+        <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+          <strong className="text-[var(--text-secondary)]">Methodology:</strong> SGK exposure is the midpoint of SUT min/max cost estimates per patient, aggregated across the cohort.
           Lab and visit prices are from EK-2B gazette (7,129 procedures); material prices from EK-3 annexes (4,385 items).
           Drug costs use estimated tier ranges (basic/moderate/specialty) — not actual ITS/IEGM reference prices.
           Copayment rates are from gazette JSON. All figures are SUT-ceiling estimates, not actual hospital charges.
         </p>
-      </div>
+      </Surface>
     </div>
   );
 }

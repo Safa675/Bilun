@@ -1,0 +1,613 @@
+/* ─────────────────────────────────────────────────────────────────────
+   BILUN legacy stylesheet — TRANSITIONAL.
+
+   This file holds the subset of legacy class rules that are still
+   referenced by pages that have not yet been migrated to the new
+   primitive system (Phases 3–5 will burn this down).
+
+   Phase 2 contract enforced here:
+   - No backdrop-filter.
+   - No accent-tinted glow shadows.
+   - No translateY hover lifts.
+   - No pulse / border / regime / dashboard / sutPremium enter animations.
+   - Token-only colors (no inline hex except status palette).
+   - Flat surfaces; --shadow-1 or none.
+   ───────────────────────────────────────────────────────────────────── */
+
+/* ── Surfaces / panels ───────────────────────────────────────────────── */
+
+.frost-panel,
+.glass,
+.glass-panel {
+  background: var(--surface-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.glass-hover { transition: border-color var(--dur) var(--ease); }
+.glass-hover:hover { border-color: var(--gold-light); }
+
+.frost-tooltip {
+  background: var(--surface-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-2);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+.sut-premium-panel,
+.sut-premium-glass {
+  background: var(--surface-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.sut-panel-card {
+  padding: 1.25rem;
+  background: var(--surface-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.sut-panel-card-soft { background: var(--surface-tint); }
+
+.sut-premium-enter {
+  /* no-op — animation removed in Phase 2; class harmless until Phase 3 reskin */
+}
+
+/* ── Top-level shells ─────────────────────────────────────────────────── */
+
+.sut-app-main {
+  min-height: 100vh;
+  padding: 2rem 1.5rem;
+  background: var(--surface-base);
+}
+
+.app-main {
+  margin: 0 32px 80px;
+  padding: 22px 20px 26px;
+}
+
+@media (max-width: 1024px) {
+  .app-main { margin-left: 16px; margin-right: 16px; }
+}
+
+/* ── Landing hero (Phase 3 redesigns) ─────────────────────────────────── */
+
+.sut-landing-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2rem, 5vw, 3.5rem);
+  border-radius: var(--r-lg);
+}
+
+.sut-landing-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+}
+
+.sut-landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.sut-landing-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.sut-landing-card {
+  padding: 1rem;
+  background: var(--surface-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.sut-landing-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 0.75rem;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--gold-subtle);
+  color: var(--gold);
+}
+
+.sut-landing-card-title {
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.sut-landing-card-body {
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.sut-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .sut-landing-grid,
+  .sut-landing-card-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Eyebrows / labels / pills ────────────────────────────────────────── */
+
+.sut-premium-eyebrow {
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.sut-muted-label {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sut-premium-pill {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--surface-base);
+  color: var(--gold);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.sut-premium-pill-muted { color: var(--text-secondary); }
+
+/* ── Titles ───────────────────────────────────────────────────────────── */
+
+.sut-premium-title {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+}
+
+.sut-app-title {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+.sut-patient-id-title {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.sut-premium-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.94rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+/* ── Breadcrumb ───────────────────────────────────────────────────────── */
+
+.sut-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.sut-breadcrumb-link {
+  color: var(--gold);
+  font-weight: 600;
+  text-decoration: none;
+}
+.sut-breadcrumb-link:hover {
+  color: var(--gold-hover);
+  text-decoration: underline;
+}
+
+.sut-breadcrumb-separator { color: var(--text-muted); }
+.sut-breadcrumb-current { color: var(--text-primary); font-weight: 600; }
+
+/* ── Route search ─────────────────────────────────────────────────────── */
+
+.sut-route-search-panel { padding: 1.25rem; }
+
+.sut-route-search-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sut-route-search-control { width: 100%; }
+
+@media (min-width: 1024px) {
+  .sut-route-search-grid {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sut-route-search-control { max-width: 32rem; }
+}
+
+/* ── Status chip ──────────────────────────────────────────────────────── */
+
+.sut-status-chip {
+  --sut-chip-color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--sut-chip-color) 22%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sut-chip-color) 10%, transparent);
+  color: var(--sut-chip-color);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Notices / provenance ─────────────────────────────────────────────── */
+
+.sut-exactness-notice {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  background: var(--surface-base);
+  color: var(--text-secondary);
+  padding: 0.75rem 1rem;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+/* ── Accents ──────────────────────────────────────────────────────────── */
+
+.sut-icon-accent { color: var(--gold); }
+.sut-amount-accent { color: var(--gold); }
+.sut-note-muted { color: var(--text-muted); }
+
+/* ── Section helpers ──────────────────────────────────────────────────── */
+
+.sut-section-bar { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+.sut-section-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.sut-section-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.sut-section-divider::before,
+.sut-section-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--border-subtle);
+}
+.sut-section-divider-label {
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── KPI cards (Phase 4 replaces with Stat primitive) ─────────────────── */
+
+.metric-card,
+.frost-kpi-card {
+  padding: 16px 20px;
+  text-align: center;
+  border: none;
+  border-right: 1px solid var(--border-subtle);
+  background: transparent;
+}
+.frost-kpi-card:last-child { border-right: none; }
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 7px;
+}
+
+/* ── Badges (risk grades) ─────────────────────────────────────────────── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--r-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.badge-aaa { background: rgba(47, 110, 78, 0.10); color: var(--success); border: 1px solid rgba(47, 110, 78, 0.25); }
+.badge-aa  { background: rgba(47, 110, 78, 0.10); color: var(--success); border: 1px solid rgba(47, 110, 78, 0.25); }
+.badge-a   { background: rgba(180, 83, 9, 0.10); color: var(--warning); border: 1px solid rgba(180, 83, 9, 0.25); }
+.badge-bbb { background: rgba(234, 88, 12, 0.10); color: #C2410C; border: 1px solid rgba(234, 88, 12, 0.25); }
+.badge-bb  { background: rgba(185, 28, 28, 0.10); color: var(--danger); border: 1px solid rgba(185, 28, 28, 0.25); }
+.badge-bccc { background: rgba(124, 58, 237, 0.10); color: #6D28D9; border: 1px solid rgba(124, 58, 237, 0.25); }
+
+/* ── Inputs / buttons (Phase 5 migrates to primitives) ────────────────── */
+
+.sut-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-base);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--dur) var(--ease);
+}
+.sut-input::placeholder { color: var(--text-muted); }
+.sut-input:focus { border-color: var(--gold); }
+
+.sut-btn-primary {
+  padding: 8px 20px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--gold);
+  background: var(--gold);
+  color: var(--text-inverse);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  white-space: nowrap;
+}
+.sut-btn-primary:hover:not(:disabled) {
+  background: var(--gold-hover);
+  border-color: var(--gold-hover);
+}
+.sut-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.sut-btn-secondary {
+  padding: 8px 16px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-base);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+  white-space: nowrap;
+}
+.sut-btn-secondary:hover {
+  background: var(--gold-subtle);
+  border-color: var(--gold-light);
+  color: var(--gold-hover);
+}
+
+.sut-btn-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(185, 28, 28, 0.22);
+  background: rgba(185, 28, 28, 0.04);
+  color: var(--danger);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.sut-btn-icon:hover:not(:disabled) {
+  background: rgba(185, 28, 28, 0.10);
+  border-color: rgba(185, 28, 28, 0.35);
+}
+.sut-btn-icon:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.sut-section-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-base);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.sut-section-btn:hover {
+  border-color: var(--gold-light);
+  background: var(--gold-subtle);
+  color: var(--gold-hover);
+}
+
+.sut-section-btn-active {
+  border-color: var(--gold);
+  background: var(--gold-subtle);
+  color: var(--gold-hover);
+}
+
+.sut-section-btn-compact { padding: 6px 14px; }
+
+.sut-filter-control {
+  min-width: 240px;
+  width: 100%;
+  max-width: 360px;
+  font-size: 0.85rem;
+}
+
+.sut-page-jump-control {
+  width: 96px;
+  font-size: 0.8rem;
+  padding: 6px 10px;
+}
+
+/* ── app-* form controls (still used in 1–2 files; Phase 5 removes) ───── */
+
+.app-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-filter-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+}
+
+.app-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  background: var(--surface-base);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  min-width: 140px;
+  outline: none;
+  padding-right: 32px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--gold) 50%),
+    linear-gradient(135deg, var(--gold) 50%, transparent 50%);
+  background-position: calc(100% - 16px) calc(50% - 2px), calc(100% - 11px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.app-select:focus-visible {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 15%, transparent);
+}
+
+.app-tab-button {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  letter-spacing: 0.015em;
+}
+.app-tab-button:hover {
+  color: var(--text-primary);
+  background: var(--gold-subtle);
+}
+
+.tab-active {
+  border-bottom: 2px solid var(--gold);
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.tab-intro { margin-bottom: 24px; }
+.tab-intro-subtitle {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+/* ── Patient link ─────────────────────────────────────────────────────── */
+
+.patient-id-link {
+  color: var(--gold);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+.patient-id-link:hover { color: var(--gold-hover); text-decoration: underline; }
+
+/* ── States ───────────────────────────────────────────────────────────── */
+
+.loading-state,
+.empty-state {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--r-lg);
+  background: var(--surface-base);
+}
+
+.empty-state-text {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.loading-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--gold);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Premium messaging variants ───────────────────────────────────────── */
+
+.sut-premium-error {
+  border: 1px solid rgba(185, 28, 28, 0.22);
+  background: rgba(185, 28, 28, 0.045);
+  color: var(--danger);
+}
+.sut-premium-error .sut-premium-error-title { color: var(--danger); }
+.sut-premium-error .sut-premium-error-hint { color: var(--text-secondary); }
+
+.sut-premium-warn {
+  border: 1px solid rgba(180, 83, 9, 0.22);
+  background: rgba(180, 83, 9, 0.05);
+  color: var(--warning);
+}

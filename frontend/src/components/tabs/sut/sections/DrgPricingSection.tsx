@@ -2,6 +2,7 @@
 
 import { getDrgPricing } from "@/lib/api/sut";
 import { useSutApi } from "../useSutApi";
+import { DataTable, Surface } from "@/components/primitives";
 
 type DrgData = {
   chapters: { chapter: string; name: string; ek2c_group: string; median_price: number }[];
@@ -19,11 +20,11 @@ export function DrgPricingSection() {
   }
   if (!data) return <div className="loading-state"><div className="loading-spinner" /></div>;
   return (
-    <div className="frost-panel p-4 rounded-2xl">
+    <Surface variant="base" padding="md">
       <h4 className="text-sm font-bold mb-3" style={{ color: "#1A1A1A" }}>EK-2C DRG Package Pricing by ICD-10 Chapter</h4>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <div>
-          <table className="frost-table" style={{ fontSize: 11 }}>
+          <DataTable className="text-[11px]">
             <thead><tr><th>Ch.</th><th>Description</th><th>Group</th><th>Median (TL)</th></tr></thead>
             <tbody>
               {data.chapters.map(c => (
@@ -31,28 +32,28 @@ export function DrgPricingSection() {
                   <td style={{ fontWeight: 700 }}>{c.chapter}</td>
                   <td>{c.name}</td>
                   <td style={{ fontWeight: 600 }}>{c.ek2c_group}</td>
-                  <td className="num-col">{c.median_price.toLocaleString("tr-TR")}</td>
+                  <td className="tabular-nums text-right">{c.median_price.toLocaleString("tr-TR")}</td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </DataTable>
         </div>
         <div>
           <h5 className="text-xs font-semibold mb-2" style={{ color: "#71717A" }}>Group Price Ranges</h5>
-          <table className="frost-table" style={{ fontSize: 11 }}>
+          <DataTable className="text-[11px]">
             <thead><tr><th>Group</th><th>Min (TL)</th><th>Max (TL)</th></tr></thead>
             <tbody>
               {data.groups.map(g => (
                 <tr key={g.group}>
                   <td style={{ fontWeight: 700 }}>{g.group}</td>
-                  <td className="num-col">{g.min.toLocaleString("tr-TR")}</td>
-                  <td className="num-col">{g.max.toLocaleString("tr-TR")}</td>
+                  <td className="tabular-nums text-right">{g.min.toLocaleString("tr-TR")}</td>
+                  <td className="tabular-nums text-right">{g.max.toLocaleString("tr-TR")}</td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </DataTable>
         </div>
       </div>
-    </div>
+    </Surface>
   );
 }

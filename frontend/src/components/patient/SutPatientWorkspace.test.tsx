@@ -6,7 +6,6 @@ vi.mock("next/link", () => ({
 }));
 
 vi.mock("@/lib/constants", () => ({
-  buildSutBillingHref: (patientId: string) => `/patient/${patientId}/billing`,
   buildSutHomeHref: () => "/?tab=analytics",
 }));
 
@@ -41,15 +40,6 @@ vi.mock("@/lib/theme", () => ({
     accent: "#059669",
     accentAlpha: (opacity: number) => `rgba(5, 150, 105, ${opacity})`,
   },
-}));
-
-const SYNTHETIC_DEMO_COPY = vi.hoisted(
-  () => "Synthetic demo claims — SUT rule calculations are exact for this generated claim-line fixture.",
-);
-
-vi.mock("@/components/sut/SyntheticDemoProvenance", () => ({
-  SYNTHETIC_DEMO_COPY,
-  SyntheticDemoProvenance: () => <div>{SYNTHETIC_DEMO_COPY}</div>,
 }));
 
 import SutPatientWorkspace, { PatientOptimizationSnapshot } from "./SutPatientWorkspace";
@@ -109,6 +99,29 @@ describe("PatientOptimizationSnapshot", () => {
     expect(html).toContain("Missing exact inputs: itemized billed procedure lines.");
   });
 
+  it("renders the H1 with the italic-gold 'workspace' accent and the patient ID as a mono subtitle", () => {
+    const html = renderToStaticMarkup(
+      <SutPatientWorkspace
+        patientId="P-007"
+        outcome={null}
+        optimization={null}
+      />,
+    );
+
+    // H1 phrase
+    expect(html).toContain("Billing ");
+    // italic-gold accent on the single H1 word
+    expect(html).toMatch(/<em[^>]*italic[^>]*var\(--gold\)[^>]*>\s*Report\s*<\/em>/);
+    // patient ID rendered as mono subtitle (not as the H1 itself)
+    expect(html).toContain("font-mono");
+    expect(html).toContain("P-007");
+    // legacy chrome must be gone
+    expect(html).not.toContain("frost-panel");
+    expect(html).not.toContain("sut-premium-panel");
+    expect(html).not.toContain("sut-premium-glass");
+    expect(html).not.toContain("sut-patient-id-title");
+  });
+
   it("renders the surviving DRG workspace without estimate-backed panels", () => {
     const html = renderToStaticMarkup(
       <SutPatientWorkspace
@@ -141,9 +154,7 @@ describe("PatientOptimizationSnapshot", () => {
     );
 
     expect(html).toContain("DRGPanel");
-    expect(html).toContain(SYNTHETIC_DEMO_COPY);
     expect(html).toContain("Needs provenance review.");
-    expect(html).toContain("Exactness note: this page does not invent billing totals locally.");
     expect(html).not.toContain("Actual reimbursement recovery");
     expect(html).not.toContain("Hospital-wide loss");
     expect(html).not.toContain("Production billing result");

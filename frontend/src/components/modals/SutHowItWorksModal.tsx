@@ -116,7 +116,7 @@ export default function SutHowItWorksModal({
       onClick={handleClose}
     >
       <div
-        className="how-modal frost-panel"
+        className="how-modal"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="how-modal-head">

@@ -26,7 +26,8 @@ describe("SutHealthPanel", () => {
     const html = renderToStaticMarkup(<SutHealthPanel healthStatus={null} />);
 
     expect(html).toContain("unavailable");
-    expect(html).toContain("Patients: —");
+    expect(html).toContain("Patients:");
+    expect(html).toContain("—");
     expect(html).toContain("Build:");
   });
 });

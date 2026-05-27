@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getSutMaterialPricing } from "@/lib/api/sut";
 import type { SutMaterialPricingResult } from "@/lib/api/sut";
 import { ACCENT_LOCAL, fmtTRY2 } from "../shared";
+import { Chip, DataTable, Surface } from "@/components/primitives";
 
 export function MaterialPricingSection() {
   const [query, setQuery] = useState("");
@@ -45,7 +46,7 @@ export function MaterialPricingSection() {
 
   return (
     <div className="space-y-5">
-      <div className="frost-panel p-5 rounded-2xl">
+      <Surface variant="base" padding="lg">
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>
           Search Gazette Prices (4,407+ Materials)
         </h3>
@@ -55,16 +56,16 @@ export function MaterialPricingSection() {
             {loading ? "Searching..." : "Search"}
           </button>
         </div>
-      </div>
+      </Surface>
 
       {error && (
-        <div className="frost-panel p-4 rounded-2xl" style={{ borderColor: "rgba(185, 28, 28, 0.3)", background: "rgba(185, 28, 28, 0.04)" }}>
-          <p className="text-sm font-medium" style={{ color: "#B91C1C" }}>{error}</p>
-        </div>
+        <Surface variant="soft" padding="md">
+          <Chip variant="danger">{error}</Chip>
+        </Surface>
       )}
 
       {result && (
-        <div className="frost-panel p-5 rounded-2xl">
+        <Surface variant="base" padding="lg">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: ACCENT_LOCAL }}>Results</h3>
             <span className="text-xs font-medium" style={{ color: "#A1A1AA" }}>
@@ -75,13 +76,13 @@ export function MaterialPricingSection() {
           {result.n_matches === 0 ? (
             <p className="text-sm" style={{ color: "#71717A" }}>No gazette entries found. Try a different code or partial name.</p>
           ) : (
-            <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
-              <table className="frost-table w-full">
-                <thead className="sticky top-0">
+            <div className="max-h-[420px] overflow-y-auto">
+              <DataTable>
+                <thead>
                   <tr>
                     <th className="text-left">Code</th>
                     <th className="text-left">Material Name</th>
-                    <th className="text-right">Gazette Price</th>
+                    <th className="text-right tabular-nums">Gazette Price</th>
                     <th className="text-left">Source</th>
                     <th className="text-left">Description</th>
                   </tr>
@@ -91,16 +92,16 @@ export function MaterialPricingSection() {
                     <tr key={i}>
                       <td className="text-left text-xs font-mono" style={{ color: ACCENT_LOCAL }}>{m.material_code}</td>
                       <td className="text-left text-sm" style={{ color: "#1A1A1A" }}>{m.material_name}</td>
-                      <td className="text-right text-sm font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(m.price_try)}</td>
+                      <td className="text-right text-sm font-semibold tabular-nums" style={{ color: "#1A1A1A" }}>{fmtTRY2(m.price_try)}</td>
                       <td className="text-left text-xs" style={{ color: "#A1A1AA" }}>{m.source}</td>
                       <td className="text-left text-xs" style={{ color: "#71717A" }}>{m.description}</td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </DataTable>
             </div>
           )}
-        </div>
+        </Surface>
       )}
     </div>
   );

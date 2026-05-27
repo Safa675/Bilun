@@ -1,0 +1,70 @@
+# Lessons
+
+Persistent lessons captured from corrections during work. Reviewed at the start of every session per AGENTS.md §1.
+
+Format per entry:
+- Date
+- Mistake pattern (not just the incident)
+- Rule that prevents recurrence
+
+---
+
+## 2026-05-27 — Plan before code (AGENTS.md §7)
+
+**Pattern:** Starting a refactor or rebuild by inspecting files and writing prose without first capturing the plan in `tasks/todo.md`.
+
+**Rule:** For any task that touches 3+ files or sets up a new system, the first artifact is `tasks/todo.md` with the structure from §7. Code writes wait until the plan is in place.
+
+## 2026-05-27 — Premium UI is quiet, not decorated
+
+**Pattern:** Defaulting to glassmorphism, accent-tinted glows, radial gradient backgrounds, marketing hero panels inside the product, and the brand color used for status + action + decoration simultaneously. This reads as "AI startup template", not premium SaaS.
+
+**Rule:** When asked for premium SaaS feel:
+1. One color reserved for action/focus only — never for backgrounds, never for status
+2. Status semantics are separate tokens, never the brand color
+3. No backdrop-blur, no glow shadows, no accent-tinted shadows, no radial gradient backgrounds
+4. Motion budget: one easing, one duration (~120ms), hover/focus only — no entry animations in workspaces
+5. Content over self-description: the product never explains itself inside itself
+6. No `premium` in class names. Real premium products don't label themselves premium.
+
+## 2026-05-27 — Verify font loading, don't just declare CSS variable
+
+**Pattern:** Declaring `--font-sans: "Plus Jakarta Sans"` in CSS without loading the font via `next/font`. Browsers fall back to system fonts and the designed font never renders, but it looks like it's wired up.
+
+**Rule:** Web font loading requires both: (1) `next/font/google` (or equivalent) import in `layout.tsx` that injects the `@font-face` and exposes a CSS variable, (2) the CSS variable referenced in `font-family` declarations. Verify by inspecting computed font in DevTools, not by reading the CSS.
+
+## 2026-05-27 — Inventory before deleting CSS
+
+**Pattern:** Estimating "this class is probably unused" and deleting it, then breaking a page in a corner of the app that was never opened during testing.
+
+**Rule:** Before deleting or rewriting CSS class rules at scale, build an evidence-based inventory: extract every `.class-name` from the stylesheets, grep every `.tsx/.ts/.css` (excluding the stylesheets themselves) for each name, and partition into used/unused. Delete only the unused set outright; for the used set, rewrite the rule without changing the selector. Never delete a selector that still has JSX references — move its rule into a clearly-labeled transitional file instead.
+
+## 2026-05-27 — `useSyncExternalStore` for browser-state subscriptions
+
+**Pattern:** Writing a React hook that subscribes to `localStorage` (or any browser-only store) with `useState` + a `useEffect` that calls `setState(read())` on mount. ESLint's `react-hooks/set-state-in-effect` correctly flags this — it forces a double render (SSR snapshot, then mount snapshot) and races with concurrent rendering.
+
+**Rule:** For any value that comes from a browser-only store (localStorage, sessionStorage, matchMedia, IndexedDB) and needs to drive React UI, use `useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)`. The server snapshot is `[]` / a stable empty value; the client snapshot reads the store on demand. Cache the snapshot by the underlying raw value to keep `getSnapshot` referentially stable (otherwise React tears).
+
+## 2026-05-27 — Style file collapse needs a transitional layer
+
+**Pattern:** Trying to delete a large legacy stylesheet (`sut-premium.css`) and reduce `globals.css` to <200 lines in a single phase while pages still reference the legacy classes — would break every page mid-phase.
+
+**Rule:** When collapsing stylesheets across multiple phases, the immediate phase deletes dead rules + strips chrome from live rules, but moves the live rules into a clearly-labeled `legacy.css` (transitional) that the global stylesheet imports. Subsequent phases burn down `legacy.css` by reskinning the pages that depend on its selectors. The legacy file is only deleted once its imports are gone from all JSX. This prevents a "big bang" CSS rewrite from breaking unrelated pages.
+
+## 2026-05-27 — Wrap legacy reskins, don't tear them open
+
+**Pattern:** Faced with a 6-section file (`BillingSectionShell` used by Lab/Drug/Copay/Strategy/Materials/SutOptimization), the temptation is to rewrite each call site to use `<Section>` directly. That's six dangerous diffs across an 880-line file, easy to miss a wrapper, easy to break tests that assert exact strings.
+
+**Rule:** When a private helper is reused by multiple call sites in the same file, **rewrite the helper's internals** rather than its call sites. Keep the helper's signature stable, and swap its body to wrap the new primitive. The diff stays small (~10 lines), every call site picks up the new chrome automatically, and the existing test fixture continues to validate the integration. Tear the wrapper open in a later phase only after confirming the new look is right.
+
+## 2026-05-27 — `next build` poisons the dev-mode cache; clear `.next` before probing
+
+**Pattern:** Running `npx next build` and then `npx next dev` against the same project produced HTTP 500 on every route with Turbopack panicking on "ArrayLengthMismatch / corrupted database" cache deserialization errors. Initial instinct was to debug the app — actual root cause was build/dev artifact conflict in `.next/`.
+
+**Rule:** When dev-mode 500s show Turbopack/Webpack internal errors mentioning "task data", "corrupted database", or "incompatible version" — kill all `next dev` processes, `rm -rf .next/`, then restart. Don't read application code looking for the bug. This is the disk-cache equivalent of AGENTS.md §5's zombie-process check: read the actual error message, kill the artifact, restart cleanly.
+
+## 2026-05-27 — Two-gold rule must be checked at the page level, not the component level
+
+**Pattern:** A component-by-component reskin can each apply "one italic-gold accent" honestly, but the page that composes those components ends up with five gold uses (H1 word + KPI value + section total + savings cells + status chips), violating the deck contract.
+
+**Rule:** The "max 2 italic-gold serif uses per screen" rule is a **page-level invariant**, not a component-level one. When a page composes multiple primitive instances, audit the rendered page for italic-gold uses and pick the two with the highest information value (typically: one H1 word + the single primary KPI money amount). All other "gold candidates" (table savings cells, section totals, secondary KPIs, success chips) must drop to navy tabular. Gold chip backgrounds (`<Chip variant="gold">`) and gold *tinted* backgrounds are not counted under this rule because they aren't Fraunces italic display type.

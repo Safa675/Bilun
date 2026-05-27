@@ -10,7 +10,6 @@ describe("createNavigationStore", () => {
       showHowItWorks: false,
       showAdmin: false,
       aiDockPosition: "center",
-      workspaceEntered: false,
     });
   });
 
@@ -20,13 +19,11 @@ describe("createNavigationStore", () => {
     store.getState().setShowHowItWorks(true);
     store.getState().setShowAdmin(true);
     store.getState().setAiDockPosition("right");
-    store.getState().setWorkspaceEntered(true);
 
     expect(store.getState()).toMatchObject({
       showHowItWorks: true,
       showAdmin: true,
       aiDockPosition: "right",
-      workspaceEntered: true,
     });
   });
 });
