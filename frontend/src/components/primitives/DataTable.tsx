@@ -20,12 +20,15 @@ import { cn } from "@/lib/cn";
 export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
   /** Minimum table width before horizontal scroll kicks in. */
   minWidth?: number;
+  /** Optional classes applied to the inner `<table>` element. */
+  tableClassName?: string;
   children?: ReactNode;
 }
 
 export function DataTable({
   minWidth = 720,
   className,
+  tableClassName,
   children,
   ...rest
 }: DataTableProps) {
@@ -38,7 +41,7 @@ export function DataTable({
       {...rest}
     >
       <table
-        className="w-full border-collapse text-sm text-[var(--text-secondary)]"
+        className={cn("bilun-data-table w-full border-collapse text-sm", tableClassName)}
         style={{ minWidth }}
       >
         {children}
@@ -76,7 +79,7 @@ export function DataTableHeaderCell({
       scope="col"
       className={cn(
         "sticky top-0 z-[1] whitespace-nowrap border-b border-[var(--border-subtle)] bg-[var(--surface-soft)] px-3 py-2.5 text-left text-[0.7rem] font-semibold uppercase tracking-[0.08em]",
-        numeric ? "text-right tabular-nums" : "",
+        numeric ? "num-col text-right tabular-nums lining-nums" : "",
         className,
       )}
       {...rest}
@@ -106,7 +109,7 @@ export function DataTableRow({
   return (
     <tr
       className={cn(
-        "border-b border-[var(--border-subtle)] last:border-b-0 transition-[background-color] duration-[var(--dur)] ease-[var(--ease)] hover:bg-[var(--surface-overlay)]",
+        "transition-[background-color] duration-[var(--dur)] ease-[var(--ease)] hover:bg-[var(--surface-overlay)]",
         className,
       )}
       {...rest}
@@ -126,7 +129,7 @@ export function DataTableCell({
     <td
       className={cn(
         "px-3 py-2.5 align-top",
-        numeric ? "text-right tabular-nums font-medium text-[var(--text-primary)]" : "",
+        numeric ? "num-col text-right tabular-nums lining-nums font-medium text-[var(--text-primary)]" : "",
         className,
       )}
       {...rest}

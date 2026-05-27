@@ -9,7 +9,7 @@ import useStaggeredReveal from "@/hooks/useStaggeredReveal";
 import PatientSearch from "@/components/ui/PatientSearch";
 import { searchSutPatients } from "@/lib/api/sut";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
-import { Chip, Eyebrow, Surface } from "@/components/primitives";
+import { Chip, DataTable, Eyebrow, Surface } from "@/components/primitives";
 import PatientInvoiceTable from "@/components/tables/PatientInvoiceTable";
 import {
   fmtNum,
@@ -257,33 +257,31 @@ export function ClaimSummaryPanel({ data }: { data: SutPatientOutcomeData }) {
           </div>
 
           {summary.top_procedures.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="min-w-[720px] w-full text-xs" style={{ color: "#1A1A1A" }}>
-                <thead>
-                  <tr className="border-b" style={{ borderColor: "rgba(122,139,122,0.15)" }}>
-                    <th className="pb-2 pr-3 text-left">Date</th>
-                    <th className="pb-2 pr-3 text-left">Procedure</th>
-                    <th className="pb-2 pr-3 text-right">Billed</th>
-                    <th className="pb-2 pr-3 text-center">Surcharge</th>
-                    <th className="pb-2 text-center">Copay Rate</th>
+            <DataTable minWidth={720} className="text-xs">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Procedure</th>
+                  <th className="num-col">Billed</th>
+                  <th className="text-center">Surcharge</th>
+                  <th className="text-center">Copay Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summary.top_procedures.slice(0, 6).map((procedure) => (
+                  <tr key={procedure.procedure_line_id}>
+                    <td className="font-mono">{procedure.procedure_date ?? "—"}</td>
+                    <td>
+                      <span className="font-semibold">{procedure.procedure_code}</span>
+                      <span className="ml-2 text-[var(--text-muted)]">{procedure.procedure_name}</span>
+                    </td>
+                    <td className="num-col font-medium">{fmtTRYOrUnavailable(procedure.billed_amount_try)}</td>
+                    <td className="text-center">{procedure.surcharge_applicable ? "Yes" : "No"}</td>
+                    <td className="text-center">{procedure.copay_rate_applicable ? "Yes" : "No"}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {summary.top_procedures.slice(0, 6).map((procedure) => (
-                    <tr key={procedure.procedure_line_id} className="border-b" style={{ borderColor: "rgba(122,139,122,0.08)" }}>
-                      <td className="py-2 pr-3 font-mono">{procedure.procedure_date ?? "—"}</td>
-                      <td className="py-2 pr-3">
-                        <span className="font-semibold">{procedure.procedure_code}</span>
-                        <span className="ml-2 text-slate-500">{procedure.procedure_name}</span>
-                      </td>
-                      <td className="py-2 pr-3 text-right">{fmtTRYOrUnavailable(procedure.billed_amount_try)}</td>
-                      <td className="py-2 pr-3 text-center">{procedure.surcharge_applicable ? "Yes" : "No"}</td>
-                      <td className="py-2 text-center">{procedure.copay_rate_applicable ? "Yes" : "No"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </DataTable>
           )}
         </>
       )}
@@ -337,51 +335,49 @@ export function DRGPanel({ data }: { data: DRGSummaryData }) {
           <span className="font-bold text-amber-800">{data.most_expensive_drg}</span>
         </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-slate-200 text-left text-slate-400">
-              <th className="pb-2 pr-3">#</th>
-              <th className="pb-2 pr-3">ICD-10</th>
-              <th className="pb-2 pr-3">Description</th>
-              <th className="pb-2 pr-3 text-center">Group</th>
-              <th className="pb-2 pr-3 text-right">LOS</th>
-              <th className="pb-2 pr-3 text-right">Lab</th>
-              <th className="pb-2 pr-3 text-right">Visit</th>
-              <th className="pb-2 pr-3 text-right">Rx</th>
-              <th className="pb-2 pr-3 text-right">Proc</th>
-              <th className="pb-2 pr-3 text-right">Itemized</th>
-              <th className="pb-2 pr-3 text-right">DRG Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.episodes.map((ep) => {
-              const episodeExact = isExactOutput(ep);
-              return (
-                <tr key={ep.episode_id} className="border-b border-slate-100 hover:bg-slate-50/50">
-                  <td className="py-1.5 pr-3 text-slate-500">{fmtNum(ep.episode_id + 1)}</td>
-                  <td className="py-1.5 pr-3 font-mono tabular-nums text-[var(--text-primary)]">{ep.primary_icd10}</td>
-                  <td className="py-1.5 pr-3 text-text-secondary">{ep.description}</td>
-                  <td className="py-1.5 pr-3 text-center">
-                    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
-                      {ep.ek2c_group || "—"}
-                    </span>
-                  </td>
-                  <td className="py-1.5 pr-3 text-right text-text-secondary">{fmtNum(ep.los_days)}</td>
-                  <td className="py-1.5 pr-3 text-right text-text-secondary">{fmtTRY(ep.lab_cost)}</td>
-                  <td className="py-1.5 pr-3 text-right text-text-secondary">{fmtTRY(ep.visit_cost)}</td>
-                  <td className="py-1.5 pr-3 text-right text-text-secondary">{fmtTRY(ep.rx_cost)}</td>
-                  <td className="py-1.5 pr-3 text-right text-text-secondary">{fmtTRY(ep.procedure_cost)}</td>
-                  <td className="py-1.5 pr-3 text-right font-semibold text-text-primary">{fmtTRY(ep.total_cost)}</td>
-                  <td className="py-1.5 pr-3 text-right font-semibold text-amber-800">
-                    {fmtTRYOrUnavailable(episodeExact ? ep.drg_package_price : null)}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <DataTable className="text-xs">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ICD-10</th>
+            <th>Description</th>
+            <th className="text-center">Group</th>
+            <th className="num-col">LOS</th>
+            <th className="num-col">Lab</th>
+            <th className="num-col">Visit</th>
+            <th className="num-col">Rx</th>
+            <th className="num-col">Proc</th>
+            <th className="num-col">Itemized</th>
+            <th className="num-col">DRG Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.episodes.map((ep) => {
+            const episodeExact = isExactOutput(ep);
+            return (
+              <tr key={ep.episode_id}>
+                <td className="text-[var(--text-muted)]">{fmtNum(ep.episode_id + 1)}</td>
+                <td className="font-mono tabular-nums">{ep.primary_icd10}</td>
+                <td>{ep.description}</td>
+                <td className="text-center">
+                  <span className="rounded bg-[var(--surface-tint)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--text-muted)]">
+                    {ep.ek2c_group || "—"}
+                  </span>
+                </td>
+                <td className="num-col">{fmtNum(ep.los_days)}</td>
+                <td className="num-col">{fmtTRY(ep.lab_cost)}</td>
+                <td className="num-col">{fmtTRY(ep.visit_cost)}</td>
+                <td className="num-col">{fmtTRY(ep.rx_cost)}</td>
+                <td className="num-col">{fmtTRY(ep.procedure_cost)}</td>
+                <td className="num-col font-semibold">{fmtTRY(ep.total_cost)}</td>
+                <td className="num-col font-semibold text-[var(--warning)]">
+                  {fmtTRYOrUnavailable(episodeExact ? ep.drg_package_price : null)}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </DataTable>
     </>
   );
 }

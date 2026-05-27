@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getRevenueRecovery, getSutPatients } from "@/lib/api/sut";
 import type { CohortRecoverySummary } from "@/lib/domains/sut";
@@ -8,6 +8,7 @@ import type { PatientMeta } from "@/lib/domains/patient";
 import { DataTable, Eyebrow, Surface } from "@/components/primitives";
 import { fmtTRY2, fmtPriorityLabel, fmtNum } from "@/components/tabs/sut/shared";
 import { buildSutPatientHref } from "@/lib/constants";
+import { cn } from "@/lib/cn";
 
 interface PatientRow {
   patient_id: string;
@@ -19,11 +20,22 @@ interface PatientRow {
   top_action_type: string | null;
 }
 
+const PAGE_SIZE = 10;
+
 export default function PatientInvoiceTable() {
   const router = useRouter();
   const [rows, setRows] = useState<PatientRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [jumpInput, setJumpInput] = useState("");
+
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(rows.length / PAGE_SIZE)), [rows.length]);
+  const currentPage = useMemo(() => Math.min(page, totalPages), [page, totalPages]);
+  const pageRows = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return rows.slice(start, start + PAGE_SIZE);
+  }, [rows, currentPage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +80,7 @@ export default function PatientInvoiceTable() {
         });
 
         setRows(merged);
+        setPage(1);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Failed to load patient data");
@@ -82,6 +95,22 @@ export default function PatientInvoiceTable() {
       cancelled = true;
     };
   }, []);
+
+  function handlePrev() {
+    setPage((p) => Math.max(1, p - 1));
+  }
+
+  function handleNext() {
+    setPage((p) => Math.min(totalPages, p + 1));
+  }
+
+  function handleJump() {
+    const n = Number(jumpInput);
+    if (!Number.isNaN(n) && n >= 1 && n <= totalPages) {
+      setPage(n);
+    }
+    setJumpInput("");
+  }
 
   if (loading) {
     return (
@@ -132,7 +161,7 @@ export default function PatientInvoiceTable() {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {pageRows.map((row) => (
             <tr
               key={row.patient_id}
               className="cursor-pointer hover:bg-[var(--surface-tint)] transition-colors"
@@ -177,6 +206,63 @@ export default function PatientInvoiceTable() {
           ))}
         </tbody>
       </DataTable>
+
+      {/* Pagination */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--border-subtle)]">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handlePrev}
+            disabled={currentPage <= 1}
+            className={cn(
+              "inline-flex items-center rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
+              currentPage <= 1
+                ? "border-[var(--border-subtle)] text-[var(--text-muted)] cursor-not-allowed opacity-50"
+                : "border-[var(--border-subtle)] text-[var(--text-primary)] hover:bg-[var(--surface-tint)]",
+            )}
+          >
+            Prev
+          </button>
+          <span className="text-xs text-[var(--text-secondary)] tabular-nums">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={currentPage >= totalPages}
+            className={cn(
+              "inline-flex items-center rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
+              currentPage >= totalPages
+                ? "border-[var(--border-subtle)] text-[var(--text-muted)] cursor-not-allowed opacity-50"
+                : "border-[var(--border-subtle)] text-[var(--text-primary)] hover:bg-[var(--surface-tint)]",
+            )}
+          >
+            Next
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-[var(--text-muted)]">Jump to page</span>
+          <input
+            type="number"
+            min={1}
+            max={totalPages}
+            value={jumpInput}
+            onChange={(e) => setJumpInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleJump();
+            }}
+            className="w-16 rounded-md border border-[var(--border-subtle)] bg-[var(--surface-base)] px-2 py-1 text-xs text-[var(--text-primary)] text-center tabular-nums outline-none focus:border-[var(--gold)]"
+          />
+          <button
+            type="button"
+            onClick={handleJump}
+            className="inline-flex items-center rounded-md border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface-tint)] transition-colors"
+          >
+            Go
+          </button>
+        </div>
+      </div>
     </Surface>
   );
 }

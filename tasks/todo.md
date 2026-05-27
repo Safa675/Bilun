@@ -1,35 +1,19 @@
-## Task: UI Fixes + Patient Invoice Table on Home
+## Task: Fix awful table styling
 
 ### Goal
-Fix remaining UI issues (dock shift, logo size, remove status), then add a patient invoice table to the SUT Analytics home view.
+Restore professional table appearance across the frontend after frost-table CSS removal.
+
+### Root cause
+Phase 6 migrated wrappers to `<DataTable>` but deleted `.frost-table` CSS. Call sites still use raw `<thead>/<tr>/<th>/<td>` without sub-components — cells lost padding, headers, borders, sticky behavior, and `.num-col` alignment.
 
 ### Subtasks
-
-#### Quick Fixes (no ambiguity)
-- [ ] **Fix docked chatbot content shift** — change `max-w-7xl` to a responsive calc when docked; or remove `mx-auto` and use `width: 100%` so padding actually creates space
-- [ ] **Bigger BILUN logo** — increase from `h-6` (~24px) to `h-8` (~32px) in `AppTopBar.tsx`
-- [ ] **Remove "Status unknown" indicator** — remove the health status polling UI from `AppTopBar.tsx` (keep SyntheticDemoChip)
-
-#### Patient Invoice Table (needs clarification)
-- [ ] **Explore available patient APIs** — what fields does `getSutPatients()` or `/api/patients` return?
-- [ ] **Design table columns** — patient ID, invoice count, total billed, total payable, priority tier, last updated?
-- [ ] **Decide placement** — replace the current patient-search empty state in `SUTAnalyticsShell`, or add as a new section?
-- [ ] **Implement table component** — reusable data table with sorting, pagination if needed
-- [ ] **Wire to API** — fetch patient list on mount, show loading skeleton
-- [ ] **Build and lint verify**
+- [x] Add `.bilun-data-table` descendant styles in globals.css
+- [x] Apply class in DataTable.tsx; restore `.num-col` on sub-components
+- [x] Wrap remaining raw `<table>` usages (PatientSection, TemporalPriceSection, SUTOptimizerTab)
+- [x] Verify: lint, tsc, vitest 62/62, build
 
 ### Out of Scope
-- Backend API changes (use existing endpoints)
-- Changes to patient detail page
+- Rewriting every table to DataTableHeaderCell sub-components (CSS handles raw markup)
 
-### Clarification Needed
-What columns should the patient invoice table show? For example:
-- Patient ID
-- Number of invoices/claims
-- Total billed amount
-- Total payable amount
-- Priority tier (high/medium/low)
-- Last visit date
-- Copay exemption status
-
-Please confirm or suggest different columns.
+### Review (2026-05-27)
+Fixed by restoring table cell styling via `.bilun-data-table` on the inner `<table>`. All DataTable wrappers now inherit cream sticky headers, row padding/borders, hover tint, and numeric column alignment without touching 12+ call sites individually.

@@ -153,6 +153,74 @@ textarea:focus-visible {
   fill: var(--text-muted);
 }
 
+/* ── DataTable (composable + legacy raw markup) ───────────────────────── */
+
+.bilun-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-secondary);
+}
+
+.bilun-data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface-soft);
+  color: var(--text-primary);
+  padding: 0.65rem 0.875rem;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.bilun-data-table tbody td {
+  padding: 0.6rem 0.875rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  vertical-align: top;
+  line-height: 1.45;
+}
+
+.bilun-data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.bilun-data-table tbody tr {
+  transition: background-color var(--dur) var(--ease);
+}
+
+.bilun-data-table tbody tr:hover {
+  background: var(--surface-overlay);
+}
+
+.bilun-data-table tbody td:first-child {
+  color: var(--text-primary);
+}
+
+.bilun-data-table th.num-col,
+.bilun-data-table td.num-col,
+.bilun-data-table th.text-right,
+.bilun-data-table td.text-right {
+  text-align: right;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.bilun-data-table th.text-center,
+.bilun-data-table td.text-center {
+  text-align: center;
+}
+
+.bilun-data-table th.text-left,
+.bilun-data-table td.text-left {
+  text-align: left;
+}
+
 @keyframes sutChatCursorBlink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }

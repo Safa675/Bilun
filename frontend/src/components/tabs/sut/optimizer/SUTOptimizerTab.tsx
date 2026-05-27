@@ -63,6 +63,7 @@ import {
 } from "../shared";
 import {
   Chip,
+  DataTable,
   Eyebrow,
   Section,
   Stat,
@@ -374,40 +375,38 @@ function CopayExemptionAlerts({ data, loading }: { data: PatientAlertsResponse |
           Showing {fmtNum(rangeStart)}-{fmtNum(rangeEnd)} of {fmtNum(totalMatching)} patients on page {fmtNum(currentPage)} of {fmtNum(totalPages)}
         </p>
 
-        <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
-          <table className="min-w-[720px] w-full text-xs" style={{ color: "#1A1A1A" }}>
-            <thead className="sticky top-0" style={{ background: "#fff" }}>
-              <tr className="border-b" style={{ borderColor: "rgba(122,139,122,0.15)" }}>
-                <th className="text-left pb-2 pr-3">Patient ID</th>
-                <th className="text-center pb-2 pr-3">Status</th>
-                <th className="text-right pb-2 pr-3">Qualifying</th>
-                <th className="text-left pb-2 pr-3">Top Diagnosis</th>
-                <th className="text-left pb-2">Recommended Action</th>
+        <DataTable minWidth={720} className="max-h-[420px] overflow-y-auto text-xs">
+          <thead>
+            <tr>
+              <th>Patient ID</th>
+              <th className="text-center">Status</th>
+              <th className="num-col">Qualifying</th>
+              <th>Top Diagnosis</th>
+              <th>Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((p) => (
+              <tr key={p.patient_id}>
+                <td className="font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
+                <td className="text-center">
+                  {p.copay_exemption.exempt
+                    ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.exempt} color={theme.accent} />
+                    : <AlertBadge label={SUT_ALERT_BADGE_LABELS.notExempt} color="#A1A1AA" />
+                  }
+                </td>
+                <td className="num-col">{fmtNum(p.copay_exemption.n_qualifying)}</td>
+                <td className="truncate max-w-[200px]" title={p.copay_exemption.qualifying_diagnoses[0]?.disease}>
+                  {p.copay_exemption.qualifying_diagnoses[0]?.disease ?? "\u2014"}
+                </td>
+                <td><ActionBadge action={p.copay_exemption.action} /></td>
               </tr>
-            </thead>
-            <tbody>
-              {patients.map((p) => (
-                <tr key={p.patient_id} className="border-b" style={{ borderColor: "rgba(122,139,122,0.08)" }}>
-                  <td className="py-2 pr-3 font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
-                  <td className="py-2 pr-3 text-center">
-                    {p.copay_exemption.exempt
-                      ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.exempt} color={theme.accent} />
-                      : <AlertBadge label={SUT_ALERT_BADGE_LABELS.notExempt} color="#A1A1AA" />
-                    }
-                  </td>
-                  <td className="py-2 pr-3 text-right">{fmtNum(p.copay_exemption.n_qualifying)}</td>
-                  <td className="py-2 pr-3 truncate max-w-[200px]" title={p.copay_exemption.qualifying_diagnoses[0]?.disease}>
-                    {p.copay_exemption.qualifying_diagnoses[0]?.disease ?? "\u2014"}
-                  </td>
-                  <td className="py-2"><ActionBadge action={p.copay_exemption.action} /></td>
-                </tr>
-              ))}
-              {patients.length === 0 && (
-                <tr><td colSpan={5} className="text-center py-6" style={{ color: "#A1A1AA" }}>No patients match this filter.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {patients.length === 0 && (
+              <tr><td colSpan={5} className="text-center py-6 text-[var(--text-muted)]">No patients match this filter.</td></tr>
+            )}
+          </tbody>
+        </DataTable>
       </Section>
     </div>
   );
@@ -484,49 +483,47 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
           Showing {fmtNum(rangeStart)}-{fmtNum(rangeEnd)} of {fmtNum(totalMatching)} patients on page {fmtNum(currentPage)} of {fmtNum(totalPages)}
         </p>
 
-        <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
-          <table className="min-w-[720px] w-full text-xs" style={{ color: "#1A1A1A" }}>
-            <thead className="sticky top-0" style={{ background: "#fff" }}>
-              <tr className="border-b" style={{ borderColor: "rgba(122,139,122,0.15)" }}>
-                <th className="text-left pb-2 pr-3">Patient ID</th>
-                <th className="text-center pb-2 pr-3">Status</th>
-                <th className="text-right pb-2 pr-3">No-Surcharge Rules</th>
-                <th className="text-left pb-2 pr-3">Top Procedure</th>
-                <th className="text-left pb-2">Recommended Action</th>
+        <DataTable minWidth={720} className="max-h-[420px] overflow-y-auto text-xs">
+          <thead>
+            <tr>
+              <th>Patient ID</th>
+              <th className="text-center">Status</th>
+              <th className="num-col">No-Surcharge Rules</th>
+              <th>Top Procedure</th>
+              <th>Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((p) => (
+              <tr key={p.patient_id}>
+                <td className="font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
+                <td className="text-center">
+                  {!isExactOutput(p.surcharge_exposure)
+                    ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.unavailable} color={theme.textMuted} />
+                    : (p.surcharge_exposure.n_applicable ?? 0) > 0
+                    ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.flagged} color="#B45309" />
+                    : <AlertBadge label={SUT_ALERT_BADGE_LABELS.clear} color={theme.accent} />
+                  }
+                </td>
+                <td className="num-col font-bold" style={{ color: isExactOutput(p.surcharge_exposure) && (p.surcharge_exposure.n_applicable ?? 0) > 0 ? "#B45309" : "#A1A1AA" }}>
+                  {p.surcharge_exposure.n_applicable !== null ? fmtNum(p.surcharge_exposure.n_applicable) : "\u2014"}
+                </td>
+                <td className="truncate max-w-[200px]" title={p.surcharge_exposure.top_rules[0]?.name}>
+                  {p.surcharge_exposure.top_rules[0]?.name ?? (isExactOutput(p.surcharge_exposure) ? "\u2014" : "Exact procedure codes required")}
+                </td>
+                <td>
+                  {isExactOutput(p.surcharge_exposure)
+                    ? <ActionBadge action={p.surcharge_exposure.action} />
+                    : <span className="text-xs text-[var(--text-muted)]">Unavailable</span>
+                  }
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {patients.map((p) => (
-                <tr key={p.patient_id} className="border-b" style={{ borderColor: "rgba(122,139,122,0.08)" }}>
-                  <td className="py-2 pr-3 font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
-                  <td className="py-2 pr-3 text-center">
-                    {!isExactOutput(p.surcharge_exposure)
-                      ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.unavailable} color={theme.textMuted} />
-                      : (p.surcharge_exposure.n_applicable ?? 0) > 0
-                      ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.flagged} color="#B45309" />
-                      : <AlertBadge label={SUT_ALERT_BADGE_LABELS.clear} color={theme.accent} />
-                    }
-                  </td>
-                  <td className="py-2 pr-3 text-right font-bold" style={{ color: isExactOutput(p.surcharge_exposure) && (p.surcharge_exposure.n_applicable ?? 0) > 0 ? "#B45309" : "#A1A1AA" }}>
-                    {p.surcharge_exposure.n_applicable !== null ? fmtNum(p.surcharge_exposure.n_applicable) : "\u2014"}
-                  </td>
-                  <td className="py-2 pr-3 truncate max-w-[200px]" title={p.surcharge_exposure.top_rules[0]?.name}>
-                    {p.surcharge_exposure.top_rules[0]?.name ?? (isExactOutput(p.surcharge_exposure) ? "\u2014" : "Exact procedure codes required")}
-                  </td>
-                  <td className="py-2">
-                    {isExactOutput(p.surcharge_exposure)
-                      ? <ActionBadge action={p.surcharge_exposure.action} />
-                      : <span className="text-xs" style={{ color: "#A1A1AA" }}>Unavailable</span>
-                    }
-                  </td>
-                </tr>
-              ))}
-              {patients.length === 0 && (
-                <tr><td colSpan={5} className="text-center py-6" style={{ color: "#A1A1AA" }}>No patients match this filter.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {patients.length === 0 && (
+              <tr><td colSpan={5} className="text-center py-6 text-[var(--text-muted)]">No patients match this filter.</td></tr>
+            )}
+          </tbody>
+        </DataTable>
       </Section>
     </div>
   );
@@ -603,49 +600,47 @@ function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null
           Showing {fmtNum(rangeStart)}-{fmtNum(rangeEnd)} of {fmtNum(totalMatching)} patients on page {fmtNum(currentPage)} of {fmtNum(totalPages)}
         </p>
 
-        <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
-          <table className="min-w-[720px] w-full text-xs" style={{ color: "#1A1A1A" }}>
-            <thead className="sticky top-0" style={{ background: "#fff" }}>
-              <tr className="border-b" style={{ borderColor: "rgba(122,139,122,0.15)" }}>
-                <th className="text-left pb-2 pr-3">Patient ID</th>
-                <th className="text-center pb-2 pr-3">Status</th>
-                <th className="text-right pb-2 pr-3">Rate-Capped Procs</th>
-                <th className="text-right pb-2 pr-3">Mean Rate</th>
-                <th className="text-left pb-2">Recommended Action</th>
+        <DataTable minWidth={720} className="max-h-[420px] overflow-y-auto text-xs">
+          <thead>
+            <tr>
+              <th>Patient ID</th>
+              <th className="text-center">Status</th>
+              <th className="num-col">Rate-Capped Procs</th>
+              <th className="num-col">Mean Rate</th>
+              <th>Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((p) => (
+              <tr key={p.patient_id}>
+                <td className="font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
+                <td className="text-center">
+                  {!isExactOutput(p.copay_rate_exposure)
+                    ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.unavailable} color={theme.textMuted} />
+                    : (p.copay_rate_exposure.n_applicable ?? 0) > 0
+                    ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.flagged} color="#B45309" />
+                    : <AlertBadge label={SUT_ALERT_BADGE_LABELS.clear} color={theme.accent} />
+                  }
+                </td>
+                <td className="num-col font-bold" style={{ color: isExactOutput(p.copay_rate_exposure) && (p.copay_rate_exposure.n_applicable ?? 0) > 0 ? "#B45309" : "#A1A1AA" }}>
+                  {p.copay_rate_exposure.n_applicable !== null ? fmtNum(p.copay_rate_exposure.n_applicable) : "\u2014"}
+                </td>
+                <td className="num-col">
+                  {p.copay_rate_exposure.mean_rate !== null ? fmtPct(p.copay_rate_exposure.mean_rate / 100, 0) : "\u2014"}
+                </td>
+                <td>
+                  {isExactOutput(p.copay_rate_exposure)
+                    ? <ActionBadge action={p.copay_rate_exposure.action} />
+                    : <span className="text-xs text-[var(--text-muted)]">Unavailable</span>
+                  }
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {patients.map((p) => (
-                <tr key={p.patient_id} className="border-b" style={{ borderColor: "rgba(122,139,122,0.08)" }}>
-                  <td className="py-2 pr-3 font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
-                  <td className="py-2 pr-3 text-center">
-                    {!isExactOutput(p.copay_rate_exposure)
-                      ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.unavailable} color={theme.textMuted} />
-                      : (p.copay_rate_exposure.n_applicable ?? 0) > 0
-                      ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.flagged} color="#B45309" />
-                      : <AlertBadge label={SUT_ALERT_BADGE_LABELS.clear} color={theme.accent} />
-                    }
-                  </td>
-                  <td className="py-2 pr-3 text-right font-bold" style={{ color: isExactOutput(p.copay_rate_exposure) && (p.copay_rate_exposure.n_applicable ?? 0) > 0 ? "#B45309" : "#A1A1AA" }}>
-                    {p.copay_rate_exposure.n_applicable !== null ? fmtNum(p.copay_rate_exposure.n_applicable) : "\u2014"}
-                  </td>
-                  <td className="py-2 pr-3 text-right">
-                    {p.copay_rate_exposure.mean_rate !== null ? fmtPct(p.copay_rate_exposure.mean_rate / 100, 0) : "\u2014"}
-                  </td>
-                  <td className="py-2">
-                    {isExactOutput(p.copay_rate_exposure)
-                      ? <ActionBadge action={p.copay_rate_exposure.action} />
-                      : <span className="text-xs" style={{ color: "#A1A1AA" }}>Unavailable</span>
-                    }
-                  </td>
-                </tr>
-              ))}
-              {patients.length === 0 && (
-                <tr><td colSpan={5} className="text-center py-6" style={{ color: "#A1A1AA" }}>No patients match this filter.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {patients.length === 0 && (
+              <tr><td colSpan={5} className="text-center py-6 text-[var(--text-muted)]">No patients match this filter.</td></tr>
+            )}
+          </tbody>
+        </DataTable>
       </Section>
     </div>
   );
@@ -1023,36 +1018,34 @@ function RevenueRecoveryDashboard() {
       {hasRecoveryBreakdown && (data.top_patients?.length ?? 0) > 0 && (
         <Surface variant="base" padding="lg">
           <Eyebrow tone="gold" as="h3" className="mb-3">Top-10 Highest-Impact Patients</Eyebrow>
-          <div className="overflow-x-auto">
-            <table className="min-w-[640px] w-full text-sm">
-              <thead>
-                <tr className="text-left" style={{ color: "#A1A1AA" }}>
-                  <th className="pb-2 pr-4 font-medium text-xs uppercase">Patient ID</th>
-                  <th className="pb-2 pr-4 font-medium text-xs uppercase">Rule-calculated</th>
-                  <th className="pb-2 pr-4 font-medium text-xs uppercase">Priority</th>
-                  <th className="pb-2 pr-4 font-medium text-xs uppercase">Actions</th>
-                  <th className="pb-2 font-medium text-xs uppercase">Top Type</th>
+          <DataTable minWidth={640} className="text-sm">
+            <thead>
+              <tr>
+                <th>Patient ID</th>
+                <th className="num-col">Rule-calculated</th>
+                <th>Priority</th>
+                <th className="num-col">Actions</th>
+                <th>Top Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.top_patients.map((p, i) => (
+                <tr key={i}>
+                  <td className="font-mono text-xs">
+                    <Link href={buildSutBillingHref(p.patient_id)} className="patient-id-link" style={{ color: ACCENT }}>
+                      {p.patient_id}
+                    </Link>
+                  </td>
+                  <td className="num-col font-semibold text-[var(--text-primary)]">{fmtTRY(p.total_recoverable_try)}</td>
+                  <td>
+                    <AlertBadge label={fmtPriorityLabel(p.priority)} color={priorityColors[fmtPriorityLabel(p.priority)] || theme.textMuted} />
+                  </td>
+                  <td className="num-col text-[var(--text-muted)]">{fmtNum(p.action_count)}</td>
+                  <td className="text-xs text-[var(--text-muted)]">{fmtLabel(p.top_action_type)}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {data.top_patients.map((p, i) => (
-                  <tr key={i} className="border-t" style={{ borderColor: theme.accentAlpha(0.08) }}>
-                    <td className="py-2 pr-4 font-mono text-xs">
-                      <Link href={buildSutBillingHref(p.patient_id)} className="patient-id-link" style={{ color: ACCENT }}>
-                        {p.patient_id}
-                      </Link>
-                    </td>
-                    <td className="py-2 pr-4 font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY(p.total_recoverable_try)}</td>
-                    <td className="py-2 pr-4">
-                      <AlertBadge label={fmtPriorityLabel(p.priority)} color={priorityColors[fmtPriorityLabel(p.priority)] || theme.textMuted} />
-                    </td>
-                    <td className="py-2 pr-4 text-[var(--text-muted)]">{fmtNum(p.action_count)}</td>
-                    <td className="py-2 text-xs text-[var(--text-muted)]">{fmtLabel(p.top_action_type)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </DataTable>
         </Surface>
       )}
 

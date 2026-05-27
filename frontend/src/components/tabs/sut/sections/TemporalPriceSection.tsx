@@ -11,7 +11,7 @@ import {
   KpiCard,
   MethodologyBadge,
 } from "../shared";
-import { Surface } from "@/components/primitives";
+import { DataTable, Surface } from "@/components/primitives";
 
 export function TemporalPriceSection({ data }: { data: OptimizationSummary }) {
   const temporal = data.temporal_price_validation;
@@ -85,32 +85,30 @@ function PriceChangeTable({ title, items, direction }: { title: string; items: {
         {title}
       </div>
       {items.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs" style={{ color: "#1A1A1A" }}>
-            <thead>
-              <tr className="border-b" style={{ borderColor: "rgba(122,139,122,0.15)" }}>
-                <th className="text-left pb-1 pr-2">Code</th>
-                <th className="text-left pb-1 pr-2">Name</th>
-                <th className="text-right pb-1 pr-2">Price ({fmtDate(items[0]?.old_date)})</th>
-                <th className="text-right pb-1 pr-2">Price ({fmtDate(items[0]?.new_date)})</th>
-                <th className="text-right pb-1">Change</th>
+        <DataTable className="text-xs">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th className="num-col">Price ({fmtDate(items[0]?.old_date)})</th>
+              <th className="num-col">Price ({fmtDate(items[0]?.new_date)})</th>
+              <th className="num-col">Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.slice(0, 8).map((item, i) => (
+              <tr key={i}>
+                <td className="font-mono" style={{ color: ACCENT_LOCAL }}>{item.code}</td>
+                <td className="truncate max-w-[180px]" title={item.name}>{item.name}</td>
+                <td className="num-col">{fmtTRY2(item.old_price)}</td>
+                <td className="num-col">{fmtTRY2(item.new_price)}</td>
+                <td className="num-col font-bold" style={{ color }}>
+                  {direction === "up" ? "+" : ""}{fmtPct(item.delta_pct)}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {items.slice(0, 8).map((item, i) => (
-                <tr key={i} className="border-b" style={{ borderColor: "rgba(122,139,122,0.08)" }}>
-                  <td className="py-1 pr-2 font-mono" style={{ color: ACCENT_LOCAL }}>{item.code}</td>
-                  <td className="py-1 pr-2 truncate max-w-[180px]" title={item.name}>{item.name}</td>
-                  <td className="py-1 pr-2 text-right">{fmtTRY2(item.old_price)}</td>
-                  <td className="py-1 pr-2 text-right">{fmtTRY2(item.new_price)}</td>
-                  <td className="py-1 text-right font-bold" style={{ color }}>
-                    {direction === "up" ? "+" : ""}{fmtPct(item.delta_pct)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </DataTable>
       ) : (
         <p className="text-sm text-[var(--text-secondary)]">No {direction === "up" ? "increases" : "decreases"} detected</p>
       )}
