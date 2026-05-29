@@ -1,19 +1,21 @@
-## Task: Fix awful table styling
+## Task: Fix Documentation After Fact-Check
 
 ### Goal
-Restore professional table appearance across the frontend after frost-table CSS removal.
-
-### Root cause
-Phase 6 migrated wrappers to `<DataTable>` but deleted `.frost-table` CSS. Call sites still use raw `<thead>/<tr>/<th>/<td>` without sub-components — cells lost padding, headers, borders, sticky behavior, and `.num-col` alignment.
+Update all 12 docs in `docs/` to reflect current codebase structure and correct all factual errors found.
 
 ### Subtasks
-- [x] Add `.bilun-data-table` descendant styles in globals.css
-- [x] Apply class in DataTable.tsx; restore `.num-col` on sub-components
-- [x] Wrap remaining raw `<table>` usages (PatientSection, TemporalPriceSection, SUTOptimizerTab)
-- [x] Verify: lint, tsc, vitest 62/62, build
+- [ ] Phase 1: Global path rewrite (src/sut/ → src/bilun/domain/, src/api/ → src/bilun/api/, etc.)
+- [ ] Phase 2: sut.md — fix 60 exports, API prefix, row counts, unverifiable claims, path refs
+- [ ] Phase 3: gazette.md — fix row counts (117,285 → 115,568, EK-3 4,407 → 3,265)
+- [ ] Phase 4: algorithms_reference.md — fix HEMOGRAM_TESTS count, lab lookup description
+- [ ] Phase 5: Decision docs — remove nonexistent plan refs, fix filenames, fix env var names
+- [ ] Phase 6: External docs — fix broken wiki links in olive-ai-post-mortem.md
+- [ ] Phase 7: Verify — grep for old paths, spot-check
 
 ### Out of Scope
-- Rewriting every table to DataTableHeaderCell sub-components (CSS handles raw markup)
+- Creating missing plan files or wiki pages
+- Adding unverifiable analysis code to repo
+- Fixing empty EK-3 curated parquets
 
-### Review (2026-05-27)
-Fixed by restoring table cell styling via `.bilun-data-table` on the inner `<table>`. All DataTable wrappers now inherit cream sticky headers, row padding/borders, hover tint, and numeric column alignment without touching 12+ call sites individually.
+### Review
+Full fact-check report in `plans/docs-fact-check-fix.md`.
