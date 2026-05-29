@@ -63,6 +63,7 @@ class LabOptimization:
     exactness_status: str = EXACTNESS_STATUS_EXACT
     unavailable_reason: str | None = None
     required_inputs_missing: list[str] = field(default_factory=list)
+    rule_source: str = "EK-2B hemogram bundling hierarchy, EK-2B duplicate test rules"
 
     @property
     def total_savings(self) -> float:
@@ -82,6 +83,7 @@ class DrugOptimization:
     required_inputs_missing: list[str] = field(
         default_factory=lambda: list(DRUG_REQUIRED_INPUTS)
     )
+    rule_source: str = "EK-4A drug equivalence groups and discount tiers"
 
     @property
     def total_savings(self) -> float:
@@ -104,6 +106,7 @@ class CopayOptimization:
     required_inputs_missing: list[str] = field(
         default_factory=lambda: list(COPAY_REQUIRED_INPUTS)
     )
+    rule_source: str = "EK-1A chronic disease copay exemptions (98 ICD-10 ranges)"
 
 
 @dataclass
@@ -114,6 +117,7 @@ class BillingStrategyRecommendation:
     exactness_status: str = EXACTNESS_STATUS_EXACT
     unavailable_reason: str | None = None
     required_inputs_missing: list[str] = field(default_factory=list)
+    rule_source: str = "EK-2C DRG package pricing, EK-2B fee-for-service pricing"
 
     @property
     def total_savings(self) -> float:
@@ -132,6 +136,7 @@ class MaterialPreCheck:
     required_inputs_missing: list[str] = field(
         default_factory=lambda: list(MATERIALS_REQUIRED_INPUTS)
     )
+    rule_source: str = "EK-3C-1 sağlık kurulu pre-authorization, EK-3C-2 MIAT intervals"
 
 
 @dataclass
