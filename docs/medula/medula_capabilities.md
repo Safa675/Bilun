@@ -1,3 +1,13 @@
+---
+title: "MEDULA Reimbursement Capabilities Reference"
+aliases: ["medula-capabilities", "medula-reference"]
+tags: [reference, medula, sgk, turkish-healthcare, external]
+type: medula
+status: provisional
+source: "external: MEDULA Hastane Web Servisleri Kullanım Kılavuzu v3.1.1 (16.02.2026)"
+related: ["[[medula_bilun_overlap]]"]
+---
+
 # MEDULA Reimbursement Capabilities Reference
 
 > Source: SGK MEDULA Hastane Web Servisleri Kullanım Kılavuzu v3.1.1 (16.02.2026), 383 pages.

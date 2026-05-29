@@ -1,3 +1,12 @@
+---
+title: "BILUN Algorithm Reference"
+aliases: ["algorithms-reference", "algorithms"]
+tags: [core-system, algorithms, sut, billing, optimization]
+type: core-system
+status: provisional
+related: ["[[sut]]", "[[gazette]]"]
+---
+
 # BILUN Reimbursement Intelligence: Algorithm Reference
 
 ## Overview
@@ -205,7 +214,7 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
 
 **Hemogram (CBC) bundling:**
 1. The SUT gazette defines a complete blood count (hemogram) as a single billable code (L107020) regardless of how many sub-components are reported (hemoglobin, WBC, RBC, platelets, hematocrit, MCV, etc.).
-2. The algorithm maintains a set of ~20 known CBC sub-component test names (`HEMOGRAM_TESTS`).
+2. The algorithm maintains a set of 13 known CBC sub-component test names (`HEMOGRAM_TESTS`).
 3. It scans a patient's lab tests grouped by date. If multiple CBC sub-components appear on the same date, only one hemogram is reimbursable.
 4. The bundling savings = (total sub-components across all dates - number of dates with any sub-component) × hemogram gazette price.
 5. If the hospital billed each sub-component separately, the savings are flagged with the exact math: "X CBC subtests across Y dates should be billed as Y hemograms."
@@ -214,7 +223,7 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
 1. For non-hemogram tests, the algorithm counts how many times each test appears for a given patient.
 2. SUT rules typically allow one billing per test per encounter. Duplicates beyond the first are non-reimbursable.
 3. Duplicate savings = test price × (count - 1) for each duplicated test.
-4. The algorithm resolves each test name to its exact SUT gazette price using a 3-tier lookup (direct name match → SUT code lookup → fallback default).
+4. The algorithm resolves each test name to its exact SUT gazette price using a lookup cascade: if the test name is an L-code, it uses the 3-tier procedure code lookup; otherwise it checks a pre-built gazette price dictionary, falling back to a default price.
 
 **Output:** `LabOptimization` with normative cost (what the hospital should have billed), hemogram bundling savings, duplicate test savings, and a list of specific flagged tests with SUT codes and savings amounts.
 
