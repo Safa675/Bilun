@@ -60,7 +60,7 @@ def get_bilun_patients():
     meta_list = read_cache_patient_meta(reader, active_build)
     all_ids = [m["patient_id"] for m in meta_list]
     return {
-        "patients": all_ids[:20],
+        "patients": all_ids,
         "total": len(all_ids),
         "patient_meta": meta_list,
         "cache_mode": "bilun_canonical",

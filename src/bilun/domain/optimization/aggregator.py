@@ -272,10 +272,12 @@ def compute_optimization_summary(
                 "copayment (katılım payı) under SUT 1.8.1. "
                 "100% real gazette data."
             ),
+            "rule_source": "EK-1A chronic disease copay exemptions, SUT 1.8.1",
         },
         "surcharge_exposure": _aggregate_surcharge_exposure(patient_ids, claim_dataset),
         "copay_rate_exposure": _aggregate_copay_rate_exposure(patient_ids, claim_dataset),
         "temporal_price_validation": temporal,
         "drg_unbundling": _aggregate_drg_unbundling(patient_ids, claim_dataset),
         "drug_discount_validation": drug_discount,
+        "rule_source": "EK-1A (copay), EK-2G (surcharge), EK-2C-1 (copay rates), EK-2B/2C (pricing/DRG), EK-4A (drugs)",
     }

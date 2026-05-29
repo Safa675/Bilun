@@ -16,6 +16,7 @@ from src.bilun.shared.exceptions import RateLimitError
 from src.bilun.shared.state import _chat_rate_lock as _rate_lock, _chat_rate_window as _rate_window
 from src.bilun.chatbot import stream_chat_response
 from src.bilun.chatbot.context import build_bilun_runtime_context
+from src.bilun.chatbot.llm import stream_chat_response_with_tools
 
 import time as _time
 
@@ -56,6 +57,9 @@ def _encode_sse(kind: str, payload: str) -> str:
 
 from .optimization import get_optimization_summary, get_patient_optimization
 from .patients import get_bilun_patient_outcome
+from .billing import get_patient_billing_report
+
+from src.bilun.chatbot.medula_kb import search_medula
 
 router = APIRouter()
 
@@ -163,6 +167,53 @@ def _summarize_patient_optimization(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
+    lab = payload.get("lab", {}) or {}
+    drug = payload.get("drug", {}) or {}
+    copay = payload.get("copay", {}) or {}
+    strategy = payload.get("billing_strategy", {}) or {}
+    materials = payload.get("materials", {}) or {}
+    return {
+        "patient_id": payload.get("patient_id"),
+        "lab": {
+            "exactness_status": lab.get("exactness_status"),
+            "hemogram_bundling_savings": lab.get("hemogram_bundling_savings"),
+            "duplicate_test_savings": lab.get("duplicate_test_savings"),
+            "total_savings": lab.get("total_savings"),
+            "flagged_tests": lab.get("flagged_tests", []),
+            "rule_source": lab.get("rule_source", "EK-2B hemogram bundling, duplicate test rules"),
+        },
+        "drug": {
+            "exactness_status": drug.get("exactness_status"),
+            "n_generics_available": drug.get("n_generics_available"),
+            "passivated_drug_count": drug.get("passivated_drug_count"),
+            "generic_substitution_savings": drug.get("generic_substitution_savings"),
+            "rule_source": drug.get("rule_source", "EK-4A drug equivalence groups"),
+        },
+        "copay": {
+            "exactness_status": copay.get("exactness_status"),
+            "is_exempt": copay.get("is_exempt"),
+            "exemption_disease": copay.get("exemption_disease"),
+            "total_copay_savings_try": copay.get("total_copay_savings_try"),
+            "rule_source": copay.get("rule_source", "EK-1A chronic disease copay exemptions"),
+        },
+        "billing_strategy": {
+            "exactness_status": strategy.get("exactness_status"),
+            "rule_source": strategy.get("rule_source", "EK-2C DRG package, EK-2B fee-for-service"),
+        },
+        "materials": {
+            "exactness_status": materials.get("exactness_status"),
+            "pre_auth_required": materials.get("pre_auth_required", []),
+            "miat_restricted": materials.get("miat_restricted", []),
+            "rule_source": materials.get("rule_source", "EK-3C-1 pre-auth, EK-3C-2 MIAT"),
+        },
+        "total_recoverable_try": payload.get("total_recoverable_try"),
+        "action_count": payload.get("action_count"),
+        "priority": payload.get("priority"),
+        "exactness_status": payload.get("exactness_status"),
+    }
+
+
 def _safe_context_block(label: str, builder) -> dict[str, Any]:
     try:
         return {"status": "ready", "summary": builder()}
@@ -174,7 +225,11 @@ def _safe_context_block(label: str, builder) -> dict[str, Any]:
 # ── from sibling route modules)                                              ──
 
 
-def _fetch_runtime_data(active_tab: str, patient_id: str | None) -> dict[str, Any]:
+def _fetch_runtime_data(
+    active_tab: str,
+    patient_id: str | None,
+    user_message: str | None = None,
+) -> dict[str, Any]:
     """Fetch all data needed for context assembly.
 
     Returns a dict of pre-fetched data. Each value is wrapped via
@@ -199,6 +254,17 @@ def _fetch_runtime_data(active_tab: str, patient_id: str | None) -> dict[str, An
                 get_patient_optimization(patient_id)
             ),
         )
+        data["billing_report"] = _safe_context_block(
+            "Billing report",
+            lambda: _summarize_billing_report(
+                get_patient_billing_report(patient_id)
+            ),
+        )
+    if user_message:
+        data["medula_search"] = _safe_context_block(
+            "MEDULA knowledge base",
+            lambda: search_medula(user_message),
+        )
     return data
 
 
@@ -222,10 +288,17 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
     if not _check_rate_limit(client_ip):
         raise RateLimitError("Too many requests. Please wait a moment.")
 
+    user_message: str | None = None
+    for msg in reversed(req.messages):
+        if msg.role == "user":
+            user_message = msg.content
+            break
+
     raw_data = await asyncio.to_thread(
         _fetch_runtime_data,
         req.active_tab,
         req.patient_id,
+        user_message,
     )
     runtime_context = build_bilun_runtime_context(
         raw_data, req.active_tab, req.patient_id
@@ -236,16 +309,100 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
 
         async def _producer():
             try:
-                async for token in stream_chat_response(
+                user_msg_count = sum(1 for m in req.messages if m.role == "user")
+                stream_fn = stream_chat_response_with_tools if user_msg_count > 1 else stream_chat_response
+                async for token in stream_fn(
                     [message.model_dump() for message in req.messages],
                     runtime_context,
-                    extra_params={"reasoning": {"effort": "none"}},
                 ):
                     await queue.put(("data", token))
             except asyncio.CancelledError:
                 return
             except Exception as exc:
                 await queue.put(("error", f"BILUN chat stream failed: {exc}"))
+            finally:
+                await queue.put(None)
+
+        task = asyncio.create_task(_producer())
+        yield ": stream-start\n\n"
+
+        try:
+            while True:
+                try:
+                    item = await asyncio.wait_for(queue.get(), timeout=5.0)
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+                    continue
+                if item is None:
+                    break
+                kind, payload = item
+                yield _encode_sse(kind, payload)
+        finally:
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await task
+            yield _encode_sse("data", "[DONE]")
+
+    return StreamingResponse(
+        sse_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+# ── Weekly Brief ──────────────────────────────────────────────────────────────
+
+WEEKLY_BRIEF_PROMPT = (
+    "You are BILUN's weekly revenue recovery analyst. Generate a concise weekly"
+    " brief based on the provided cohort data. Structure your response as"
+    " follows:\n\n"
+    "1. TOP OPPORTUNITY: The single largest recovery category with TRY amount.\n"
+    "2. TOTAL RECOVERABLE: Grand total across all categories.\n"
+    "3. PRIORITY PATIENTS: Top 3 patients to review, with their recoverable"
+    " amounts.\n"
+    "4. RISK ALERT: Any exactness gaps or missing data that blocks action.\n"
+    "5. RECOMMENDED ACTION: One concrete next step for the billing team.\n\n"
+    "Write in natural paragraphs like a colleague on Slack. No markdown, no"
+    " bullet points. Use plain Turkish or English based on context. Always cite"
+    " exactness_status and rule_source when reporting amounts."
+)
+
+
+class WeeklyBriefRequest(BaseModel):
+    language: str = "tr"
+
+
+@router.post("/weekly-brief")
+async def weekly_brief(req: WeeklyBriefRequest, request: Request):
+    client_ip = request.client.host if request.client else "unknown"
+    if not _check_rate_limit(client_ip):
+        raise RateLimitError("Too many requests. Please wait a moment.")
+
+    raw_data = await asyncio.to_thread(
+        _fetch_runtime_data,
+        "SUT Analytics",
+        None,
+    )
+    runtime_context = build_bilun_runtime_context(
+        raw_data, "SUT Analytics", None
+    )
+
+    messages = [{"role": "user", "content": WEEKLY_BRIEF_PROMPT}]
+
+    async def sse_generator():
+        queue: asyncio.Queue = asyncio.Queue()
+
+        async def _producer():
+            try:
+                async for token in stream_chat_response(
+                    messages,
+                    runtime_context,
+                ):
+                    await queue.put(("data", token))
+            except asyncio.CancelledError:
+                return
+            except Exception as exc:
+                await queue.put(("error", f"Weekly brief generation failed: {exc}"))
             finally:
                 await queue.put(None)
 
