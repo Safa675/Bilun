@@ -43,7 +43,7 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
   return (
     <header
       className={cn(
-        "flex w-full items-center justify-between gap-4 px-6 py-3",
+        "sut-app-top-bar flex w-full items-center justify-between gap-4 px-6 py-3",
         "border-b border-[var(--border-subtle)] bg-[var(--surface-base)]",
         className,
       )}

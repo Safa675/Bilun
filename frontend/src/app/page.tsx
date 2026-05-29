@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import SutInlineAIPanel, { SUT_INLINE_CHAT_PANEL_WIDTH } from "@/components/chat/SutInlineAIPanel";
+import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
 import SutHealthPanel from "@/components/admin/SutHealthPanel";
 import SutHowItWorksModal from "@/components/modals/SutHowItWorksModal";
 import SutWorkspaceHeader from "@/components/shell/SutWorkspaceHeader";
@@ -68,14 +68,7 @@ function SutHomeContent() {
   const chatState = useSutChatSession(chatSessionKey);
   const setChatSession = useSetSutChatSession();
   const shouldRenderChat = isWorkspaceMode;
-  const CHAT_DOCK_MARGIN = 32;
-  const dockOffset = SUT_INLINE_CHAT_PANEL_WIDTH + CHAT_DOCK_MARGIN;
   const isDocked = shouldRenderChat && chatDock !== "center";
-  const dockPadding = isDocked
-    ? chatDock === "left"
-      ? { paddingLeft: `${dockOffset}px`, paddingRight: "1.5rem" }
-      : { paddingRight: `${dockOffset}px`, paddingLeft: "1.5rem" }
-    : undefined;
   const sectionClass = isDocked
     ? "w-full space-y-6"
     : "mx-auto max-w-7xl space-y-6";
@@ -113,7 +106,7 @@ function SutHomeContent() {
 
   return (
     <>
-      <main id="main-content" className="sut-app-main" style={dockPadding}>
+      <main id="main-content" className="sut-app-main">
         <section className={sectionClass}>
             <>
               <SutWorkspaceHeader />

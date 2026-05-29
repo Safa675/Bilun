@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Fraunces, Inter } from "next/font/google";
 import AppTopBar from "@/components/shell/AppTopBar";
+import ChatDockInsetSync from "@/components/shell/ChatDockInsetSync";
 import { ConfigProvider } from "@/lib/configContext";
 import { SUT_BRAND } from "@/lib/constants";
 import { ShellStateProviders } from "@/stores/providers";
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </a>
         <ConfigProvider>
           <ShellStateProviders>
+            <ChatDockInsetSync />
             <Suspense>
               <AppTopBar />
             </Suspense>
