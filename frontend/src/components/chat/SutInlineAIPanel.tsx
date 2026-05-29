@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
+  Check,
   Minimize2,
   PanelLeft,
   PanelRight,
@@ -73,6 +74,7 @@ export default function SutInlineAIPanel({
   const [isResponding, setIsResponding] = useState(false);
   const [followUpText, setFollowUpText] = useState("");
   const [followUpError, setFollowUpError] = useState<string | null>(null);
+  const [approvedIndices, setApprovedIndices] = useState<Set<number>>(new Set());
   const autoAbortRef = useRef<AbortController | null>(null);
   const followUpAbortRef = useRef<AbortController | null>(null);
   const autoFiredRef = useRef<string>(externalState?.autoFiredKey ?? "");
@@ -303,8 +305,18 @@ export default function SutInlineAIPanel({
             <div className="text-[0.95rem] font-bold leading-[1.35] text-[var(--text-primary)]">
               BILUN Analysis
             </div>
-            <p className="mt-[0.2rem] text-[0.78rem] leading-[1.4] text-[var(--text-muted)]">
-              {patientId ? `${activeTab} - ${patientId}` : activeTab}
+            <p className="mt-[0.2rem] flex items-center gap-1.5 text-[0.78rem] leading-[1.4] text-[var(--text-muted)]">
+              {patientId ? (
+                <>
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-success)]" aria-hidden="true" />
+                  <span className="truncate max-w-[240px]">Patient: {patientId}</span>
+                </>
+              ) : (
+                <>
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--gold)]" aria-hidden="true" />
+                  <span>Cohort overview</span>
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -394,21 +406,61 @@ export default function SutInlineAIPanel({
         )}
       </div>
 
+      {!patientId && !isAutoLoading && autoText && (
+        <div className="mt-2.5 rounded-[var(--r-md)] border border-[var(--gold-subtle)] bg-[var(--gold-subtle)]/20 px-3 py-2 text-[12px] leading-[1.5] text-[var(--text-muted)]">
+          <span className="font-medium text-[var(--gold)]">Tip:</span>{" "}
+          Select a patient from the cohort table to get detailed billing analysis, including copay savings, lab optimization, drug substitution, and billing strategy comparisons.
+        </div>
+      )}
+
       {messages.length > 2 && (
         <div className="mt-2.5 border-t border-[var(--border-subtle)] pt-2">
-          {messages.slice(2).map((message, index) => (
-            <div
-              key={`${message.role}-${index}-${message.content.slice(0, 24)}`}
-              className={cn(
-                "mb-2 whitespace-pre-wrap text-[13px] leading-[1.7]",
-                message.role === "user"
-                  ? "italic text-[var(--text-muted)]"
-                  : "text-[var(--text-primary)]",
-              )}
-            >
-              {message.role === "user" ? `You: ${message.content}` : message.content}
-            </div>
-          ))}
+          {messages.slice(2).map((message, index) => {
+            const globalIndex = index + 2;
+            const isApproved = approvedIndices.has(globalIndex);
+            const isAssistant = message.role === "assistant";
+            return (
+              <div
+                key={`${message.role}-${index}-${message.content.slice(0, 24)}`}
+                className={cn(
+                  "mb-2 whitespace-pre-wrap text-[13px] leading-[1.7]",
+                  isAssistant && isApproved && "border-l-2 border-[var(--color-success)] pl-2",
+                  message.role === "user"
+                    ? "italic text-[var(--text-muted)]"
+                    : "text-[var(--text-primary)]",
+                )}
+              >
+                {message.role === "user" ? `You: ${message.content}` : message.content}
+                {isAssistant && (
+                  <div className="mt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setApprovedIndices((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(globalIndex)) {
+                            next.delete(globalIndex);
+                          } else {
+                            next.add(globalIndex);
+                          }
+                          return next;
+                        });
+                      }}
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-[var(--r-sm)] border px-2 py-0.5 text-[11px] transition-colors",
+                        isApproved
+                          ? "border-[var(--color-success)] bg-[var(--color-success)]/10 text-[var(--color-success)]"
+                          : "border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--gold)] hover:text-[var(--gold)]",
+                      )}
+                    >
+                      <Check className="h-3 w-3" />
+                      {isApproved ? "Approved" : "Approve"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
