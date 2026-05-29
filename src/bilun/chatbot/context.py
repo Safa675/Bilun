@@ -290,6 +290,9 @@ def build_billing_context(data: dict[str, Any]) -> str:
             lab_exactness,
             exactness=lab_exactness,
         )
+        lab_source = lab.get("rule_source", "")
+        if lab_source:
+            lines.append(f"    Source: {lab_source}")
         hemogram = lab.get("hemogram_bundling_savings")
         if hemogram is not None:
             lines.append(f"    Hemogram bundling savings: {hemogram:.2f} TRY")
@@ -402,6 +405,66 @@ def build_catalog_context(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def build_medula_context(data: dict[str, Any]) -> str:
+    """Build MEDULA knowledge base context from search results.
+
+    Expects data keys: medula_search (dict with known_codes, rejection_categories,
+    workflow_stage).
+    """
+    search = data.get("medula_search", {}) or {}
+    if isinstance(search, dict) and "summary" in search:
+        search = search.get("summary") or {}
+    if not search:
+        return ""
+
+    has_content = (
+        (search.get("known_codes") or search.get("rejection_categories")
+         or search.get("workflow_stage"))
+    )
+    if not has_content:
+        return ""
+
+    lines: list[str] = ["--- MEDULA KNOWLEDGE BASE ---"]
+
+    known_codes = search.get("known_codes", []) or []
+    for entry in known_codes:
+        code = entry.get("code", "?")
+        meaning = entry.get("meaning_tr", entry.get("meaning_en", ""))
+        action = entry.get("action", "")
+        is_error = entry.get("is_error", True)
+        label = "HATA" if is_error else "UYARI / BAŞARILI"
+        lines.append(f"  Kod {code} ({label}): {meaning}")
+        if action:
+            lines.append(f"    Yapılması gereken: {action}")
+
+    workflow = search.get("workflow_stage")
+    if workflow:
+        lines.append(f"\n  İlgili MEDULA Aşaması: {workflow.get('name_tr', '')}")
+        desc = workflow.get("description_tr", workflow.get("description_en", ""))
+        if desc:
+            lines.append(f"    {desc}")
+
+    categories = search.get("rejection_categories", []) or []
+    for cat in categories:
+        stage = cat.get("stage", "")
+        stage_en = cat.get("stage_en", "")
+        category = cat.get("category", "")
+        problem = cat.get("problem", "")
+        causes = cat.get("causes", [])
+        resolution = cat.get("resolution", "")
+        lines.append(f"\n  [{stage} - {category}]")
+        if problem:
+            lines.append(f"    Sorun: {problem}")
+        if causes:
+            lines.append(f"    Nedenler:")
+            for c in causes:
+                lines.append(f"      - {c}")
+        if resolution:
+            lines.append(f"    Çözüm: {resolution}")
+
+    return "\n".join(lines)
+
+
 def build_bilun_runtime_context(
     data: dict[str, Any],
     active_tab: str,
@@ -442,6 +505,10 @@ def build_bilun_runtime_context(
     catalog = build_catalog_context(data)
     if catalog:
         context["catalog_context"] = catalog
+
+    medula = build_medula_context(data)
+    if medula:
+        context["medula_context"] = medula
 
     return (
         "BILUN runtime context for the BILUN assistant.\n"
