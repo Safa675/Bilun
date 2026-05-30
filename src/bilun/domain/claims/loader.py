@@ -6,6 +6,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from functools import lru_cache
 from math import isnan
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence, TypeVar
@@ -155,7 +156,13 @@ def load_sut_claim_dataset(
 ) -> "SUTClaimDataset":
     """Load an exact SUT claim dataset after data-source path guards."""
 
-    tables = read_claim_tables(claims_dir, mode=mode)
+    directory = resolve_sut_claims_dir(mode=mode, claims_dir=claims_dir)
+    return _load_sut_claim_dataset_cached(str(Path(directory).resolve()))
+
+
+@lru_cache(maxsize=4)
+def _load_sut_claim_dataset_cached(resolved_directory: str) -> "SUTClaimDataset":
+    tables = read_claim_tables(resolved_directory)
     return SUTClaimDataset.from_rows(
         claim_headers=tables.headers,
         diagnoses=tables.diagnoses,
