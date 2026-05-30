@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from decimal import Decimal
 from typing import Any
 
@@ -16,7 +17,34 @@ from src.bilun.domain.optimization.claim_context import (
     build_copay_rate_claim_context,
     build_surcharge_claim_context,
 )
+from src.bilun.domain.optimization.copay_exemption_context import build_copay_inputs_by_patient
+from src.bilun.domain.optimization.copay_exemption_types import CopayExemptionInput
 from src.bilun.domain.optimization.runtime_claim_context import ClaimContextManager
+
+logger = logging.getLogger("bilun.cache.sut_context")
+
+
+def _copay_exemption_action(result: dict[str, Any]) -> str | None:
+    if not result.get("exempt"):
+        return None
+    category = result.get("primary_exemption_category")
+    if category == "ek1a_chronic":
+        return "Waive outpatient copay (EK-1A)"
+    if category:
+        return f"Waive outpatient copay ({category})"
+    return "Waive outpatient copay"
+
+
+def _format_copay_exemption_payload(result: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "exempt": bool(result.get("exempt")),
+        "n_qualifying": int(result.get("n_qualifying") or 0),
+        "qualifying_diagnoses": list(result.get("qualifying_diagnoses", [])),
+        "exemption_sources": list(result.get("exemption_sources", [])),
+        "categories_not_evaluated": list(result.get("categories_not_evaluated", [])),
+        "primary_exemption_category": result.get("primary_exemption_category"),
+        "action": _copay_exemption_action(result),
+    }
 
 
 def _extract_icd10_chapters(diagnoses: list[str]) -> list[str]:
@@ -32,10 +60,11 @@ def build_sut_patient_alerts_cache(
     patient_ids: list[str],
     diagnoses_by_pid: dict[str, list[str]],
     *,
-    check_copay_exemptions_fn,
+    evaluate_copay_exemption_fn,
     analyze_surcharge_exposure_fn,
     analyze_copay_rate_exposure_fn,
     procedure_lines_by_patient: dict[str, Any] | None = None,
+    copay_inputs_by_pid: dict[str, CopayExemptionInput] | None = None,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     n_exempt_patients = 0
@@ -48,6 +77,7 @@ def build_sut_patient_alerts_cache(
     surcharge_probe = analyze_surcharge_exposure_fn(set())
     copay_rate_probe = analyze_copay_rate_exposure_fn(set())
     procedure_lines_by_patient = procedure_lines_by_patient or {}
+    copay_inputs_by_pid = copay_inputs_by_pid or {}
 
     for patient_id in patient_ids:
         diagnoses = diagnoses_by_pid.get(patient_id, [])
@@ -62,7 +92,11 @@ def build_sut_patient_alerts_cache(
             surcharge=surcharge_context,
             copay_rate=copay_rate_context,
         ):
-            copay_exemption = check_copay_exemptions_fn(diagnoses)
+            copay_input = copay_inputs_by_pid.get(
+                patient_id,
+                CopayExemptionInput(diagnoses=diagnoses),
+            )
+            copay_exemption = evaluate_copay_exemption_fn(copay_input)
             surcharge_exposure = analyze_surcharge_exposure_fn(chapter_set)
             copay_rate_exposure = analyze_copay_rate_exposure_fn(chapter_set)
 
@@ -103,14 +137,7 @@ def build_sut_patient_alerts_cache(
                 "patient_id": patient_id,
                 "n_diagnoses": len(diagnoses),
                 "icd10_chapters": chapters,
-                "copay_exemption": {
-                    "exempt": is_exempt,
-                    "n_qualifying": int(copay_exemption.get("n_qualifying") or 0),
-                    "qualifying_diagnoses": list(
-                        copay_exemption.get("qualifying_diagnoses", [])
-                    ),
-                    "action": "Waive outpatient copay" if is_exempt else None,
-                },
+                "copay_exemption": _format_copay_exemption_payload(copay_exemption),
                 "surcharge_exposure": {
                     **(
                         {"exactness_status": EXACTNESS_STATUS_EXACT}
@@ -353,7 +380,7 @@ def assemble_sut_context(
     patient_ids: list[str],
     diagnoses_by_pid: dict[str, list[str]],
     compute_optimization_summary_fn,
-    check_copay_exemptions_fn,
+    evaluate_copay_exemption_fn,
     analyze_surcharge_exposure_fn,
     analyze_copay_rate_exposure_fn,
     load_sut_claim_dataset_fn=None,
@@ -365,6 +392,11 @@ def assemble_sut_context(
         claim_dataset = loader()
     except Exception as exc:
         claim_dataset_error = exc
+        logger.warning(
+            "SUT claim dataset unavailable for cache build: %s",
+            exc,
+            exc_info=True,
+        )
 
     def _load_cached_claim_dataset():
         if claim_dataset_error is not None:
@@ -381,13 +413,22 @@ def assemble_sut_context(
         diagnoses_by_pid=diagnoses_by_pid,
         claim_dataset=claim_dataset,
     )
+    copay_inputs_by_pid = build_copay_inputs_by_patient(
+        patient_ids,
+        diagnoses_by_pid,
+        claims_by_patient=getattr(claim_dataset, "claims_by_patient", {}),
+        copay_profiles_by_patient=getattr(
+            claim_dataset, "copay_profiles_by_patient", {}
+        ),
+    )
     patient_alerts_cache = build_sut_patient_alerts_cache(
         patient_ids,
         diagnoses_by_pid,
-        check_copay_exemptions_fn=check_copay_exemptions_fn,
+        evaluate_copay_exemption_fn=evaluate_copay_exemption_fn,
         analyze_surcharge_exposure_fn=analyze_surcharge_exposure_fn,
         analyze_copay_rate_exposure_fn=analyze_copay_rate_exposure_fn,
         procedure_lines_by_patient=getattr(claim_dataset, "procedure_lines_by_patient", {}),
+        copay_inputs_by_pid=copay_inputs_by_pid,
     )
     claim_line_indexes = build_sut_claim_line_indexes(claim_dataset)
     return {

@@ -19,14 +19,21 @@ from src.bilun.shared.state import (
 )
 from src.bilun.db import (
     read_json_payload as read_cache_json_payload,
+    read_json_payload_rows as read_cache_json_payload_rows,
     read_patient_diagnoses as read_cache_patient_diagnoses,
+)
+from src.bilun.domain.billing.orchestrator import (
+    patient_recovery_summary_from_payload,
 )
 from src.bilun.domain.optimization import (
     _extract_patient_icd10_chapters,
     analyze_copay_rate_exposure,
     analyze_surcharge_exposure,
-    check_copay_exemptions,
     detect_drg_unbundling,
+    evaluate_copay_exemption,
+)
+from src.bilun.domain.optimization.copay_exemption_context import (
+    build_copay_exemption_input,
 )
 from src.bilun.domain.claims import load_sut_claim_dataset
 from src.bilun.domain.claims.patient_context import build_patient_claim_context
@@ -168,12 +175,27 @@ def get_patient_optimization(patient_id: str):
                     chapters,
                     patient_claim_context,
                 )
+                patient_claims = ()
+                patient_profile = None
+                if claim_dataset is not None:
+                    patient_claims = claim_dataset.claims_by_patient.get(
+                        patient_id,
+                        (),
+                    )
+                    patient_profile = claim_dataset.copay_profiles_by_patient.get(
+                        patient_id
+                    )
+                copay_input = build_copay_exemption_input(
+                    diagnoses=cached_diagnoses,
+                    patient_profile=patient_profile,
+                    patient_claims=patient_claims,
+                )
                 return {
                     "patient_id": patient_id,
                     "n_diagnoses": len(cached_diagnoses),
                     "diagnoses": cached_diagnoses,
                     "icd10_chapters": sorted(chapters),
-                    "copay_exemptions": check_copay_exemptions(cached_diagnoses),
+                    "copay_exemptions": evaluate_copay_exemption(copay_input),
                     "surcharge_exposure": surcharge_exposure,
                     "copay_rate_exposure": copay_rate_exposure,
                     "drg_unbundling": drg_unbundling,
@@ -202,8 +224,8 @@ def get_revenue_recovery():
 
     Returns aggregated savings across all patients from the 5 normative
     billing algorithms: total recoverable TRY by category (lab, drug,
-    copay, billing strategy), top-10 highest-impact patients, and
-    priority distribution.
+    copay, billing strategy), top-10 highest-impact patients, per-patient
+    summaries for cohort tables, and priority distribution.
     """
     mode = _pipeline_mode()
     if mode in {"hybrid", "persistent"}:
@@ -214,6 +236,20 @@ def get_revenue_recovery():
                 reader, "cohort_recovery_summary", active_build
             )
             if payload is not None:
+                if not payload.get("patient_summaries"):
+                    billing_rows = read_cache_json_payload_rows(
+                        reader, "patient_billing_report_rows", active_build
+                    )
+                    if billing_rows:
+                        summaries = [
+                            patient_recovery_summary_from_payload(report)
+                            for _, report in billing_rows
+                        ]
+                        summaries.sort(
+                            key=lambda row: row["total_recoverable_try"],
+                            reverse=True,
+                        )
+                        payload = {**payload, "patient_summaries": summaries}
                 return attach_bilun_data_source(payload)
         if mode == "persistent":
             raise ServiceUnavailableError(

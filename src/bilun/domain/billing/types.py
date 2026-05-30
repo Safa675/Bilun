@@ -171,6 +171,7 @@ class CohortRecoverySummary:
     total_material_flags: int = 0
     grand_total_recoverable: float = 0.0
     top_patients: list[dict[str, Any]] = field(default_factory=list)
+    patient_summaries: list[dict[str, Any]] = field(default_factory=list)
     savings_by_category: dict[str, float] = field(default_factory=dict)
     priority_distribution: dict[str, int] = field(default_factory=dict)
     exactness_status: str = EXACTNESS_STATUS_EXACT

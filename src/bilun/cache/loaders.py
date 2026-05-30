@@ -6,7 +6,11 @@ import polars as pl
 
 
 def _normalize_ana(ana_df: pl.DataFrame) -> pl.DataFrame:
-    rename_map = {"HASTA_ID": "patient_id", "EPISODE_TARIH": "visit_date"}
+    rename_map = {
+        "HASTA_ID": "patient_id",
+        "EPISODE_TARIH": "visit_date",
+        "TANI_YASI": "yas",
+    }
     columns = [c for c in rename_map if c in ana_df.columns]
     normalized = ana_df.rename({c: rename_map[c] for c in columns})
     keep = [c for c in normalized.columns if c != "SQ_EPISODE"]

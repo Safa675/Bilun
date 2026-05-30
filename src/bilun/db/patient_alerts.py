@@ -46,6 +46,9 @@ def _patient_alert_row_columns() -> list[str]:
         "copay_rate_mean_rate",
         "copay_rate_top_procedures_json",
         "copay_rate_action",
+        # Appended via ALTER on legacy caches — must stay last for INSERT SELECT * order.
+        "copay_exemption_sources_json",
+        "copay_categories_not_evaluated_json",
     ]
 
 
@@ -66,11 +69,25 @@ def _patient_alert_row_schema() -> dict[str, pl.DataType]:
         "copay_rate_mean_rate": pl.Float64,
         "copay_rate_top_procedures_json": pl.Utf8,
         "copay_rate_action": pl.Utf8,
+        "copay_exemption_sources_json": pl.Utf8,
+        "copay_categories_not_evaluated_json": pl.Utf8,
     }
 
 
 def _empty_patient_alert_rows_df() -> pl.DataFrame:
     return pl.DataFrame(schema=_patient_alert_row_schema())
+
+
+def _load_json_list(raw: Any) -> list[Any]:
+    if raw is None or raw == "":
+        return []
+    if isinstance(raw, list):
+        return raw
+    try:
+        parsed = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return []
+    return parsed if isinstance(parsed, list) else []
 
 
 def _normalize_patient_alert_row(patient: Any) -> dict[str, Any] | None:
@@ -88,6 +105,10 @@ def _normalize_patient_alert_row(patient: Any) -> dict[str, Any] | None:
         "copay_qualifying_json": _safe_json(
             normalize_qualifying_diagnoses(copay.get("qualifying_diagnoses"))
         ),
+        "copay_exemption_sources_json": _safe_json(copay.get("exemption_sources") or []),
+        "copay_categories_not_evaluated_json": _safe_json(
+            copay.get("categories_not_evaluated") or []
+        ),
         "copay_action": copay.get("action"),
         "surcharge_n_applicable": int(surcharge.get("n_applicable") or 0),
         "surcharge_exposure_rate": float(surcharge.get("exposure_rate") or 0.0),
@@ -100,6 +121,35 @@ def _normalize_patient_alert_row(patient: Any) -> dict[str, Any] | None:
         ),
         "copay_rate_action": copay_rate.get("action"),
     }
+
+
+def _write_patient_alert_row_frame(
+    con,
+    build_id: str,
+    frame: pl.DataFrame,
+    *,
+    append: bool,
+) -> None:
+    """Insert alert rows using explicit column names (stable across schema migrations)."""
+    columns = _patient_alert_row_columns()
+    work = frame.with_columns(pl.lit(build_id).alias("build_id")).select(
+        ["build_id", *columns]
+    )
+    col_sql = ", ".join(["build_id", *columns])
+    with transactional(con):
+        if not append:
+            _clear_build_rows(con, "patient_alert_rows", build_id)
+        con.register("_tmp_alert_rows", work)
+        try:
+            con.execute(
+                f"INSERT INTO patient_alert_rows ({col_sql}) "
+                f"SELECT {col_sql} FROM _tmp_alert_rows"
+            )
+        finally:
+            try:
+                con.unregister("_tmp_alert_rows")
+            except Exception:
+                pass
 
 
 def _write_patient_alert_row_batches(
@@ -121,9 +171,8 @@ def _write_patient_alert_row_batches(
         batch_rows.append(normalized)
         if len(batch_rows) < batch_size:
             continue
-        write_dataframe(
+        _write_patient_alert_row_frame(
             con,
-            "patient_alert_rows",
             build_id,
             pl.DataFrame(batch_rows, schema=schema, strict=False).select(
                 _patient_alert_row_columns()
@@ -135,9 +184,8 @@ def _write_patient_alert_row_batches(
         batch_rows = []
 
     if batch_rows:
-        write_dataframe(
+        _write_patient_alert_row_frame(
             con,
-            "patient_alert_rows",
             build_id,
             pl.DataFrame(batch_rows, schema=schema, strict=False).select(
                 _patient_alert_row_columns()
@@ -146,9 +194,8 @@ def _write_patient_alert_row_batches(
         )
         row_count += len(batch_rows)
     elif not wrote_any:
-        write_dataframe(
+        _write_patient_alert_row_frame(
             con,
-            "patient_alert_rows",
             build_id,
             _empty_patient_alert_rows_df().select(_patient_alert_row_columns()),
             append=False,
@@ -452,6 +499,8 @@ def read_patient_alert_rows_page(
             copay_exempt,
             copay_n_qualifying,
             copay_qualifying_json,
+            copay_exemption_sources_json,
+            copay_categories_not_evaluated_json,
             copay_action,
             surcharge_n_applicable,
             surcharge_exposure_rate,
@@ -476,26 +525,28 @@ def read_patient_alert_rows_page(
             {
                 "patient_id": row[0],
                 "n_diagnoses": int(row[1] or 0),
-                "icd10_chapters": json.loads(row[2]) if row[2] else [],
+                "icd10_chapters": _load_json_list(row[2]),
                 "copay_exemption": {
                     "exempt": bool(row[3]),
                     "n_qualifying": int(row[4] or 0),
                     "qualifying_diagnoses": normalize_qualifying_diagnoses(
-                        json.loads(row[5]) if row[5] else []
+                        _load_json_list(row[5])
                     ),
-                    "action": row[6],
+                    "exemption_sources": _load_json_list(row[6]),
+                    "categories_not_evaluated": _load_json_list(row[7]),
+                    "action": row[8],
                 },
                 "surcharge_exposure": {
-                    "n_applicable": int(row[7] or 0),
-                    "exposure_rate": float(row[8] or 0.0),
-                    "top_rules": json.loads(row[9]) if row[9] else [],
-                    "action": row[10],
+                    "n_applicable": int(row[9] or 0),
+                    "exposure_rate": float(row[10] or 0.0),
+                    "top_rules": _load_json_list(row[11]),
+                    "action": row[12],
                 },
                 "copay_rate_exposure": {
-                    "n_applicable": int(row[11] or 0),
-                    "mean_rate": float(row[12] or 0.0),
-                    "top_procedures": json.loads(row[13]) if row[13] else [],
-                    "action": row[14],
+                    "n_applicable": int(row[13] or 0),
+                    "mean_rate": float(row[14] or 0.0),
+                    "top_procedures": _load_json_list(row[15]),
+                    "action": row[16],
                 },
             }
         )

@@ -29,8 +29,8 @@ from src.bilun.domain.billing import compute_all_billing_reports
 from src.bilun.domain.optimization import (
     analyze_copay_rate_exposure,
     analyze_surcharge_exposure,
-    check_copay_exemptions,
     compute_optimization_summary,
+    evaluate_copay_exemption,
 )
 from src.bilun.shared.memory import memory_snapshot_message, read_current_rss_mb
 
@@ -54,7 +54,7 @@ def _build_sut_patient_alerts_cache(
     return build_sut_patient_alerts_cache(
         patient_ids,
         diagnoses_by_pid,
-        check_copay_exemptions_fn=check_copay_exemptions,
+        evaluate_copay_exemption_fn=evaluate_copay_exemption,
         analyze_surcharge_exposure_fn=analyze_surcharge_exposure,
         analyze_copay_rate_exposure_fn=analyze_copay_rate_exposure,
     )
@@ -84,7 +84,7 @@ def _assemble_sut_and_billing_context(
         patient_ids=patient_ids,
         diagnoses_by_pid=diagnoses_by_pid,
         compute_optimization_summary_fn=compute_optimization_summary,
-        check_copay_exemptions_fn=check_copay_exemptions,
+        evaluate_copay_exemption_fn=evaluate_copay_exemption,
         analyze_surcharge_exposure_fn=analyze_surcharge_exposure,
         analyze_copay_rate_exposure_fn=analyze_copay_rate_exposure,
         load_sut_claim_dataset_fn=lambda: load_sut_claim_dataset(

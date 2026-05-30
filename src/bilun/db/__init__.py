@@ -50,6 +50,7 @@ from .tables import (
     read_json_payload,
     read_json_payload_entry,
     read_json_payload_row,
+    read_json_payload_rows,
     read_validation_payload,
     upsert_single_json_table,
     write_json_payload_rows,
@@ -90,6 +91,7 @@ __all__ = [
     "has_json_payload_rows",
     "read_json_payload_entry",
     "read_json_payload_row",
+    "read_json_payload_rows",
     "write_json_payload_rows",
     "write_json_payload_rows_serialized",
     # Patient alerts

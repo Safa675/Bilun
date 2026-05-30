@@ -22,6 +22,7 @@ from src.bilun.domain.claims.models import (
     ExpectedRuleOutput,
     MaterialClaimLine,
     Money,
+    PatientCopayProfile,
     PatientSUTClaimTotals,
     ProcedureClaimLine,
 )
@@ -96,6 +97,7 @@ class ClaimTables:
     materials: tuple[Mapping[str, Any], ...]
     drugs: tuple[Mapping[str, Any], ...]
     expected_outputs: tuple[Mapping[str, Any], ...]
+    copay_profiles: tuple[Mapping[str, Any], ...] = ()
 
 
 def read_claim_tables(
@@ -120,6 +122,19 @@ def read_claim_tables(
         if frame.is_empty():
             errors.append(f"{path} is empty")
         tables[filename] = tuple(frame.to_dicts())
+    profiles: tuple[Mapping[str, Any], ...] = ()
+    profiles_path = directory / "patient_copay_profiles.parquet"
+    if profiles_path.exists():
+        profile_frame = pl.read_parquet(profiles_path)
+        required_profile = {"patient_id"}
+        missing_profile = sorted(required_profile - set(profile_frame.columns))
+        if missing_profile:
+            errors.append(f"{profiles_path} missing columns: {missing_profile}")
+        elif profile_frame.is_empty():
+            errors.append(f"{profiles_path} is empty")
+        else:
+            profiles = tuple(profile_frame.to_dicts())
+
     if errors:
         raise ClaimValidationError(errors)
     return ClaimTables(
@@ -129,6 +144,7 @@ def read_claim_tables(
         materials=tables["material_claim_lines.parquet"],
         drugs=tables["drug_claim_lines.parquet"],
         expected_outputs=tables["expected_rule_outputs.parquet"],
+        copay_profiles=profiles,
     )
 
 
@@ -147,6 +163,7 @@ def load_sut_claim_dataset(
         material_lines=tables.materials,
         drug_lines=tables.drugs,
         expected_outputs=tables.expected_outputs,
+        copay_profiles=tables.copay_profiles,
     )
 
 
@@ -174,6 +191,7 @@ class SUTClaimDataset:
     expected_outputs_by_line: dict[str, tuple[ExpectedRuleOutput, ...]]
     claim_totals: dict[str, ClaimTotals]
     patient_totals: dict[str, PatientSUTClaimTotals]
+    copay_profiles_by_patient: dict[str, PatientCopayProfile]
 
     @classmethod
     def from_rows(
@@ -185,6 +203,7 @@ class SUTClaimDataset:
         material_lines: Sequence[Mapping[str, Any]],
         drug_lines: Sequence[Mapping[str, Any]],
         expected_outputs: Sequence[Mapping[str, Any]],
+        copay_profiles: Sequence[Mapping[str, Any]] = (),
     ) -> "SUTClaimDataset":
         """Build a validated dataset from raw row dictionaries."""
 
@@ -225,6 +244,12 @@ class SUTClaimDataset:
             errors,
             "expected_rule_outputs",
         )
+        profiles = _index_rows(
+            (_copay_profile(row, errors) for row in copay_profiles),
+            "patient_id",
+            errors,
+            "patient_copay_profiles",
+        )
         if errors:
             raise ClaimValidationError(errors)
 
@@ -261,6 +286,7 @@ class SUTClaimDataset:
             expected_outputs_by_line=_index_non_blank(outputs.values(), "line_id"),
             claim_totals=claim_totals,
             patient_totals=_build_patient_totals(claims.values(), claim_totals),
+            copay_profiles_by_patient=profiles,
         )
 
     def claim_lines(
@@ -333,9 +359,46 @@ def _claim_header(row: Mapping[str, Any], errors: list[str]) -> ClaimHeader | No
             expected_total_payable_try=_money(row, "expected_total_payable_try", claim_id, errors),
             expected_denial_reason=_text(row, "expected_denial_reason"),
             scenario_tag=_text(row, "scenario_tag"),
+            occupational_context=_text(
+                {**row, "occupational_context": row.get("occupational_context") or "none"},
+                "occupational_context",
+            ),
         )
     except KeyError as exc:
         errors.append(f"claim_headers missing field {exc.args[0]}")
+        return None
+
+
+def _copay_profile(row: Mapping[str, Any], errors: list[str]) -> PatientCopayProfile | None:
+    try:
+        patient_id = _text(row, "patient_id")
+        birth_raw = row.get("birth_year")
+        birth_year: int | None = None
+        if birth_raw is not None and str(birth_raw).strip().lower() not in ("", "nan", "none"):
+            birth_year = _integer(birth_raw, "birth_year", patient_id, errors)
+        return PatientCopayProfile(
+            patient_id=patient_id,
+            sgk_benefit_class=_text(
+                {**row, "sgk_benefit_class": row.get("sgk_benefit_class") or "standard"},
+                "sgk_benefit_class",
+            ),
+            veteran_martyr_status=_text(
+                {**row, "veteran_martyr_status": row.get("veteran_martyr_status") or "none"},
+                "veteran_martyr_status",
+            ),
+            national_service_status=_text(
+                {
+                    **row,
+                    "national_service_status": row.get("national_service_status")
+                    or "none",
+                },
+                "national_service_status",
+            ),
+            elderly_allowance_2022=_bool(row.get("elderly_allowance_2022")),
+            birth_year=birth_year,
+        )
+    except KeyError as exc:
+        errors.append(f"patient_copay_profiles missing field {exc.args[0]}")
         return None
 
 

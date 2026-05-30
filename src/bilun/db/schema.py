@@ -181,10 +181,32 @@ def init_schema(con) -> None:
             copay_rate_n_applicable BIGINT NOT NULL,
             copay_rate_mean_rate DOUBLE NOT NULL,
             copay_rate_top_procedures_json TEXT NOT NULL,
-            copay_rate_action TEXT
+            copay_rate_action TEXT,
+            copay_exemption_sources_json TEXT NOT NULL DEFAULT '[]',
+            copay_categories_not_evaluated_json TEXT NOT NULL DEFAULT '[]'
         )
         """
     )
+    if not _has_column(con, "patient_alert_rows", "copay_exemption_sources_json"):
+        con.execute(
+            "ALTER TABLE patient_alert_rows "
+            "ADD COLUMN copay_exemption_sources_json TEXT"
+        )
+        con.execute(
+            "UPDATE patient_alert_rows "
+            "SET copay_exemption_sources_json = '[]' "
+            "WHERE copay_exemption_sources_json IS NULL"
+        )
+    if not _has_column(con, "patient_alert_rows", "copay_categories_not_evaluated_json"):
+        con.execute(
+            "ALTER TABLE patient_alert_rows "
+            "ADD COLUMN copay_categories_not_evaluated_json TEXT"
+        )
+        con.execute(
+            "UPDATE patient_alert_rows "
+            "SET copay_categories_not_evaluated_json = '[]' "
+            "WHERE copay_categories_not_evaluated_json IS NULL"
+        )
 
     con.execute(
         """

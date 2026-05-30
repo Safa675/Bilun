@@ -345,16 +345,10 @@ def compute_all_billing_reports(
     sorted_reports = sorted(
         reports.values(), key=lambda r: r.total_recoverable_try, reverse=True
     )
-    summary.top_patients = [
-        {
-            "patient_id": r.patient_id,
-            "total_recoverable_try": r.total_recoverable_try,
-            "priority": r.priority,
-            "action_count": r.action_count,
-            "top_action_type": _get_top_action_type(r),
-        }
-        for r in sorted_reports[:10]
+    summary.patient_summaries = [
+        patient_recovery_summary_entry(r) for r in sorted_reports
     ]
+    summary.top_patients = summary.patient_summaries[:10]
 
     summary.savings_by_category = {
         "lab": summary.total_lab_savings,
@@ -376,14 +370,47 @@ def compute_all_billing_reports(
     return reports, summary
 
 
-def _get_top_action_type(report: BillingActionReport) -> str:
-    """Determine the primary action type for a patient report."""
-    savings = {
-        "lab": report.lab.total_savings,
-        "drug": report.drug.total_savings,
-        "copay": report.copay.total_copay_savings_try,
-        "strategy": report.billing_strategy.total_savings,
-    }
+def _top_action_type_from_savings(savings: dict[str, float]) -> str:
     if not any(v > 0 for v in savings.values()):
         return "none"
     return max(savings, key=lambda k: savings[k])
+
+
+def _get_top_action_type(report: BillingActionReport) -> str:
+    """Determine the primary action type for a patient report."""
+    return _top_action_type_from_savings(
+        {
+            "lab": report.lab.total_savings,
+            "drug": report.drug.total_savings,
+            "copay": report.copay.total_copay_savings_try,
+            "strategy": report.billing_strategy.total_savings,
+        }
+    )
+
+
+def patient_recovery_summary_entry(report: BillingActionReport) -> dict[str, Any]:
+    """Compact per-patient recovery row for cohort tables."""
+    return {
+        "patient_id": report.patient_id,
+        "total_recoverable_try": report.total_recoverable_try,
+        "priority": report.priority,
+        "action_count": report.action_count,
+        "top_action_type": _get_top_action_type(report),
+    }
+
+
+def patient_recovery_summary_from_payload(report: dict[str, Any]) -> dict[str, Any]:
+    """Build a recovery summary dict from cached billing report JSON."""
+    savings = {
+        "lab": float((report.get("lab") or {}).get("total_savings") or 0),
+        "drug": float((report.get("drug") or {}).get("total_savings") or 0),
+        "copay": float((report.get("copay") or {}).get("total_copay_savings_try") or 0),
+        "strategy": float((report.get("billing_strategy") or {}).get("total_savings") or 0),
+    }
+    return {
+        "patient_id": str(report.get("patient_id") or ""),
+        "total_recoverable_try": float(report.get("total_recoverable_try") or 0),
+        "priority": str(report.get("priority") or "low"),
+        "action_count": int(report.get("action_count") or 0),
+        "top_action_type": _top_action_type_from_savings(savings),
+    }

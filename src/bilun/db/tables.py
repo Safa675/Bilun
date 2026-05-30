@@ -160,6 +160,35 @@ def has_json_payload_rows(con, table_name: str, build_id: str) -> bool:
     return row is not None
 
 
+def read_json_payload_rows(
+    con,
+    table_name: str,
+    build_id: str,
+) -> list[tuple[str, dict[str, Any]]]:
+    """Return (patient_id, payload) pairs for all rows in a per-patient payload table."""
+    _validate_table_name(table_name)
+    rows = con.execute(
+        f"""
+        SELECT patient_id, payload_json
+        FROM {table_name}
+        WHERE build_id = ?
+        ORDER BY patient_id
+        """,
+        [build_id],
+    ).fetchall()
+    parsed: list[tuple[str, dict[str, Any]]] = []
+    for patient_id, payload_json in rows:
+        if payload_json is None:
+            continue
+        try:
+            payload = json.loads(payload_json)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if isinstance(payload, dict):
+            parsed.append((str(patient_id), payload))
+    return parsed
+
+
 def read_json_payload_row(
     con,
     table_name: str,

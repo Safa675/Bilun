@@ -11,6 +11,16 @@ Money = Decimal
 
 
 @dataclass(frozen=True)
+class PatientCopayProfile:
+    patient_id: str
+    sgk_benefit_class: str = "standard"
+    veteran_martyr_status: str = "none"
+    national_service_status: str = "none"
+    elderly_allowance_2022: bool = False
+    birth_year: int | None = None
+
+
+@dataclass(frozen=True)
 class ClaimHeader:
     claim_id: str
     patient_id: str
@@ -29,6 +39,7 @@ class ClaimHeader:
     expected_total_payable_try: Money
     expected_denial_reason: str
     scenario_tag: str
+    occupational_context: str = "none"
 
 
 @dataclass(frozen=True)

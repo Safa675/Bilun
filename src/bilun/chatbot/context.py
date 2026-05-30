@@ -68,6 +68,7 @@ def build_cohort_context(data: dict[str, Any]) -> str:
     lines.append("--- COHORT OPTIMIZATION ---")
 
     copay = opt.get("copay_exemptions", {}) or {}
+    exemption_by_category = copay.get("exemption_by_category") or []
     n_exempt = copay.get("n_exempt_patients")
     n_total = copay.get("n_total_patients")
     rate = copay.get("exemption_rate")
@@ -78,10 +79,19 @@ def build_cohort_context(data: dict[str, Any]) -> str:
             f"({rate * 100:.1f}% rate)" if rate is not None
             else f"  Copay exemptions: {n_exempt}/{n_total} patients exempt"
         )
+    if exemption_by_category:
+        _format_list_section(
+            lines,
+            "Exemption by category",
+            exemption_by_category,
+            key="category",
+            fmt="{category} ({count} patients)",
+            max_items=6,
+        )
     if copay.get("top_diseases"):
         _format_list_section(
             lines,
-            "Top qualifying diseases",
+            "Top qualifying diseases (EK-1A)",
             copay["top_diseases"],
             key="disease",
             fmt="{disease} ({count} patients)",
