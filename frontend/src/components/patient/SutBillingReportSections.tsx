@@ -19,7 +19,9 @@ import {
 } from "@/lib/billingReportFields";
 import { theme } from "@/lib/theme";
 import { SUT_BRAND } from "@/lib/constants";
+import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { Chip, DataTable, Eyebrow, Section, Stat, Surface } from "@/components/primitives";
+import { getExemptionCategories } from "@/lib/copayExemption";
 import {
   fmtLabel,
   fmtNum,
@@ -574,13 +576,22 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Surface variant="soft" padding="md" className="space-y-2">
           <Eyebrow>Copay exemption</Eyebrow>
-          <Chip variant={optimization.copay_exemptions.exempt ? "success" : "neutral"}>
-            {optimization.copay_exemptions.exempt
-              ? SUT_ALERT_BADGE_LABELS.exempt
-              : SUT_ALERT_BADGE_LABELS.notExempt}
-          </Chip>
+          <div className="flex flex-wrap items-center gap-2">
+            <Chip variant={optimization.copay_exemptions.exempt ? "success" : "neutral"}>
+              {optimization.copay_exemptions.exempt
+                ? SUT_ALERT_BADGE_LABELS.exempt
+                : SUT_ALERT_BADGE_LABELS.notExempt}
+            </Chip>
+            {optimization.copay_exemptions.exempt && (
+              <ExemptionBasisChips copay={optimization.copay_exemptions} max={3} />
+            )}
+          </div>
           <p className="text-xs text-[var(--text-secondary)]">
-            {fmtNum(optimization.copay_exemptions.qualifying_diagnoses.length)} qualifying diagnoses
+            {getExemptionCategories(optimization.copay_exemptions).includes("ek1a_chronic")
+              ? `${fmtNum(optimization.copay_exemptions.qualifying_diagnoses.length)} EK-1A qualifying diagnoses`
+              : optimization.copay_exemptions.exempt
+                ? "Exempt on status or visit-type grounds"
+                : "No waiver grounds matched"}
           </p>
         </Surface>
 

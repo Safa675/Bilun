@@ -18,6 +18,8 @@ import {
   getOptimizationSummary,
   searchSutPatients,
 } from "@/lib/api/sut";
+import { formatExemptionCategory } from "@/lib/copayExemption";
+import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import type {
   PatientAlertsCategory,
   PatientAlertsStatus,
@@ -332,7 +334,15 @@ function getAlertSummaryExactness(
    SECTION A: COPAY EXEMPTION ALERTS (EK-1A)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-function CopayExemptionAlerts({ data, loading }: { data: PatientAlertsResponse | null; loading: boolean }) {
+function CopayExemptionAlerts({
+  data,
+  loading,
+  cohortCopay,
+}: {
+  data: PatientAlertsResponse | null;
+  loading: boolean;
+  cohortCopay: OptimizationSummary["copay_exemptions"] | null;
+}) {
   const { regulatory } = useConfig();
 
   if (loading) {
@@ -352,18 +362,65 @@ function CopayExemptionAlerts({ data, loading }: { data: PatientAlertsResponse |
   const totalPages = Math.max(1, Math.ceil(totalMatching / Math.max(limit, 1)));
 
   const exemptRate = summary.exemption_rate;
+  const ek1aExemptCount =
+    cohortCopay?.n_exempt_ek1a_patients ?? summary.n_exempt_patients;
+  const anyGroundExemptCount = summary.n_exempt_patients;
+  const statusOnlyCount = cohortCopay?.n_exempt_status_only_patients;
 
   return (
     <div className="space-y-5">
-      <MethodologyBadge text={`Cross-references patient ICD-10 diagnoses against ${regulatory.ek1a_exemption_count} chronic disease exemption ranges from gazette annex EK-1A. Official SUT gazette rule references.`} />
+      <MethodologyBadge
+        text={
+          cohortCopay?.exemption_by_category?.length
+            ? `Composable copay waiver: EK-1A (${regulatory.ek1a_exemption_count} chronic ranges) plus visit-type and patient-status rules when claim profiles are present. EK-2C-1 rate caps are evaluated separately.`
+            : `Cross-references patient ICD-10 diagnoses against ${regulatory.ek1a_exemption_count} chronic disease exemption ranges from gazette annex EK-1A. Rebuild the analytics cache to load status and visit-type exemption fields.`
+        }
+      />
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
         <KpiCard label="Total Patients" value={fmtNum(summary.n_total_patients)} />
-        <KpiCard label="Exempt Patients" value={fmtNum(summary.n_exempt_patients)} valueColor={theme.accent} sub="Should have copay waived" />
+        <KpiCard
+          label="Exempt (any ground)"
+          value={fmtNum(anyGroundExemptCount)}
+          valueColor={theme.accent}
+          sub="EK-1A, acil, status, or occupational"
+        />
+        <KpiCard
+          label="EK-1A exempt"
+          value={fmtNum(ek1aExemptCount)}
+          valueColor={ACCENT}
+          sub="Chronic ICD-10 only"
+        />
+        {typeof statusOnlyCount === "number" && (
+          <KpiCard
+            label="Status / visit only"
+            value={fmtNum(statusOnlyCount)}
+            sub="No EK-1A diagnosis"
+          />
+        )}
         <KpiCard label="Exemption Rate" value={fmtPct(exemptRate)} valueColor={ACCENT} />
-        <KpiCard label="Non-Exempt" value={fmtNum(summary.n_total_patients - summary.n_exempt_patients)} sub="Standard copay applies" />
+        <KpiCard
+          label="Non-Exempt"
+          value={fmtNum(summary.n_total_patients - summary.n_exempt_patients)}
+          sub="Standard copay applies"
+        />
       </div>
+
+      {cohortCopay?.exemption_by_category && cohortCopay.exemption_by_category.length > 0 && (
+        <Surface variant="soft" padding="md" className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--gold)]">
+            Exemption by category
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {cohortCopay.exemption_by_category.map((row) => (
+              <Chip key={row.category} variant="outline" className="text-xs">
+                {formatExemptionCategory(row.category)} ({fmtNum(row.count)})
+              </Chip>
+            ))}
+          </div>
+        </Surface>
+      )}
 
       <Section
         title="Patient Alerts"
@@ -375,13 +432,14 @@ function CopayExemptionAlerts({ data, loading }: { data: PatientAlertsResponse |
           Showing {fmtNum(rangeStart)}-{fmtNum(rangeEnd)} of {fmtNum(totalMatching)} patients on page {fmtNum(currentPage)} of {fmtNum(totalPages)}
         </p>
 
-        <DataTable minWidth={720} className="max-h-[420px] overflow-y-auto text-xs">
+        <DataTable minWidth={860} className="max-h-[420px] overflow-y-auto text-xs">
           <thead>
             <tr>
               <th>Patient ID</th>
               <th className="text-center">Status</th>
-              <th className="num-col">Qualifying</th>
-              <th>Top Diagnosis</th>
+              <th>Exemption basis</th>
+              <th className="num-col">EK-1A dx</th>
+              <th>Top EK-1A diagnosis</th>
               <th>Recommended Action</th>
             </tr>
           </thead>
@@ -395,6 +453,13 @@ function CopayExemptionAlerts({ data, loading }: { data: PatientAlertsResponse |
                     : <AlertBadge label={SUT_ALERT_BADGE_LABELS.notExempt} color="#A1A1AA" />
                   }
                 </td>
+                <td>
+                  {p.copay_exemption.exempt ? (
+                    <ExemptionBasisChips copay={p.copay_exemption} max={3} />
+                  ) : (
+                    <span className="text-[var(--text-muted)]">{"\u2014"}</span>
+                  )}
+                </td>
                 <td className="num-col">{fmtNum(p.copay_exemption.n_qualifying)}</td>
                 <td className="truncate max-w-[200px]" title={p.copay_exemption.qualifying_diagnoses[0]?.disease}>
                   {p.copay_exemption.qualifying_diagnoses[0]?.disease ?? "\u2014"}
@@ -403,7 +468,7 @@ function CopayExemptionAlerts({ data, loading }: { data: PatientAlertsResponse |
               </tr>
             ))}
             {patients.length === 0 && (
-              <tr><td colSpan={5} className="text-center py-6 text-[var(--text-muted)]">No patients match this filter.</td></tr>
+              <tr><td colSpan={6} className="text-center py-6 text-[var(--text-muted)]">No patients match this filter.</td></tr>
             )}
           </tbody>
         </DataTable>
@@ -703,8 +768,26 @@ function ComplianceAlerts() {
   const [alertsData, setAlertsData] = useState<PatientAlertsResponse | null>(null);
   const [alertsLoading, setAlertsLoading] = useState(true);
   const [alertsError, setAlertsError] = useState<Error | null>(null);
+  const [cohortCopay, setCohortCopay] = useState<
+    OptimizationSummary["copay_exemptions"] | null
+  >(null);
   const abortRef = useRef<AbortController | null>(null);
   const requestSeqRef = useRef(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const summary = await getOptimizationSummary({ signal: controller.signal });
+        if (!controller.signal.aborted) {
+          setCohortCopay(summary.copay_exemptions);
+        }
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
+    })();
+    return () => controller.abort();
+  }, []);
 
   const handleCategoryChange = (nextCategory: AlertSubId) => {
     setActiveSub(nextCategory);
@@ -822,7 +905,13 @@ function ComplianceAlerts() {
         </Surface>
       )}
 
-      {activeSub === "exemptions" && <CopayExemptionAlerts data={currentData} loading={currentLoading} />}
+      {activeSub === "exemptions" && (
+        <CopayExemptionAlerts
+          data={currentData}
+          loading={currentLoading}
+          cohortCopay={cohortCopay}
+        />
+      )}
       {activeSub === "surcharge" && <SurchargeComplianceAlerts data={currentData} loading={currentLoading} />}
       {activeSub === "copay_rates" && <CopayRateAlerts data={currentData} loading={currentLoading} />}
     </div>
@@ -1090,10 +1179,14 @@ function RevenueRecoveryDashboard() {
    DRG UNBUNDLING (merged from SUT Analytics)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
+export function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
   const drg = data.drg_unbundling;
   if (!drg) return null;
   const isUnavailable = !isExactOutput(drg);
+  const unavailableMessage = getUnavailableMessage(
+    drg,
+    "DRG unbundling risk is unavailable until exact itemized billed procedure lines and package eligibility context are present in the SUT claim inputs.",
+  );
 
   return (
     <>
@@ -1106,18 +1199,35 @@ function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
         <div className="h-px flex-1" style={{ background: theme.accentAlpha(0.15) }} />
       </div>
 
-      <UnavailableBadge
-        text={getUnavailableMessage(
-          drg,
-          "DRG unbundling risk is unavailable until exact itemized billed procedure lines and package eligibility context are present in the SUT claim inputs.",
-        )}
-      />
+      {isUnavailable ? (
+        <UnavailableBadge text={unavailableMessage} />
+      ) : (
+        <MethodologyBadge text={drg.methodology} />
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard label="Patients in Cohort" value={drg.n_patients_checked !== null ? fmtNum(drg.n_patients_checked) : "Unavailable"} />
-        <KpiCard label="Exact Risk Status" value={isUnavailable ? "Unavailable" : fmtNumOrUnavailable(drg.n_patients_with_risk)} valueColor="#B91C1C" sub="Exact-only results" />
-        <KpiCard label="Potential Savings" value={isUnavailable ? "Unavailable" : fmtTRY2OrUnavailable(drg.total_potential_savings)} valueColor="#B45309" sub="Needs exact claim lines" />
-        <KpiCard label="Risky Chapters" value={isUnavailable ? "Unavailable" : fmtNum(drg.top_risky_chapters.length)} sub="Requires dated package context" />
+        <KpiCard
+          label="Patients in Cohort"
+          value={drg.n_patients_checked !== null ? fmtNum(drg.n_patients_checked) : "Unavailable"}
+          sub={isUnavailable ? "Cohort size only until exact inputs land" : "Checked on exact claim lines"}
+        />
+        <KpiCard
+          label="Patients With Risk"
+          value={isUnavailable ? "Unavailable" : fmtNumOrUnavailable(drg.n_patients_with_risk)}
+          valueColor="#B91C1C"
+          sub={isUnavailable ? "Need exact claim lines" : "Exact unbundling findings"}
+        />
+        <KpiCard
+          label="Potential Savings"
+          value={isUnavailable ? "Unavailable" : fmtTRY2OrUnavailable(drg.total_potential_savings)}
+          valueColor="#B45309"
+          sub={isUnavailable ? "Amounts resume after exact inputs land" : "From exact claim-line analysis"}
+        />
+        <KpiCard
+          label="Risky Chapters"
+          value={isUnavailable ? "Unavailable" : fmtNum(drg.top_risky_chapters.length)}
+          sub={isUnavailable ? "Requires dated package context" : "ICD-10 chapters with repeated risk"}
+        />
       </div>
     </>
   );
@@ -1127,10 +1237,15 @@ function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
    DRUG DISCOUNT TIERS (merged from SUT Analytics)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-function DrugDiscountInline({ data }: { data: OptimizationSummary }) {
+export function DrugDiscountInline({ data }: { data: OptimizationSummary }) {
   const drug = data.drug_discount_validation;
   if (!drug) return null;
   const isUnavailable = !isExactOutput(drug);
+  const unavailableMessage = getUnavailableMessage(
+    drug,
+    "Drug discount validation is unavailable until exact dispensed-drug claim lines and billed drug amounts are present in the SUT claim inputs.",
+  );
+  const tierMismatches = drug.n_tier_mismatches ?? null;
 
   return (
     <>
@@ -1143,18 +1258,35 @@ function DrugDiscountInline({ data }: { data: OptimizationSummary }) {
         <div className="h-px flex-1" style={{ background: theme.accentAlpha(0.15) }} />
       </div>
 
-      <UnavailableBadge
-        text={getUnavailableMessage(
-          drug,
-          "Drug discount validation is unavailable until exact dispensed-drug claim lines and billed drug amounts are present in the SUT claim inputs.",
-        )}
-      />
+      {isUnavailable ? (
+        <UnavailableBadge text={unavailableMessage} />
+      ) : (
+        <MethodologyBadge text={drug.methodology} />
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard label="Validation State" value={isUnavailable ? "Unavailable" : fmtNumOrUnavailable(drug.n_active_drugs)} sub="Catalog-only reference removed from active findings" />
-        <KpiCard label="Drug Claims" value="Missing" valueColor="#B45309" sub="Dispensed line items required" />
-        <KpiCard label="Billed Amounts" value="Missing" valueColor="#B45309" sub="Actual claim amounts required" />
-        <KpiCard label="Patient Findings" value="Unavailable" sub="Exact claim inputs required" />
+        <KpiCard
+          label="Unique Drug Codes"
+          value={isUnavailable ? "Unavailable" : fmtNumOrUnavailable(drug.n_active_drugs)}
+          sub={isUnavailable ? "Catalog-only reference until claim lines land" : "Distinct EK-4A codes in claims"}
+        />
+        <KpiCard
+          label="Drug Claim Lines"
+          value={isUnavailable ? "Unavailable" : fmtNumOrUnavailable(drug.n_drugs_total)}
+          sub={isUnavailable ? "Dispensed line items required" : "Dispensed lines validated"}
+        />
+        <KpiCard
+          label="Tier Mismatches"
+          value={isUnavailable ? "Unavailable" : fmtNumOrUnavailable(tierMismatches)}
+          valueColor={!isUnavailable && tierMismatches && tierMismatches > 0 ? "#B45309" : undefined}
+          sub={isUnavailable ? "Actual claim amounts required" : "Payable vs tier expectation"}
+        />
+        <KpiCard
+          label="Discount Savings"
+          value={isUnavailable ? "Unavailable" : fmtTRY2OrUnavailable(drug.total_discount_savings_try ?? null)}
+          valueColor="#B45309"
+          sub={isUnavailable ? "Exact claim inputs required" : "Billed minus expected payable"}
+        />
       </div>
     </>
   );

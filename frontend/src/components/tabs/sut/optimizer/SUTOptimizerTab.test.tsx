@@ -77,7 +77,7 @@ vi.mock("@/components/tabs/sut/shared", () => ({
   fmtTRY: (value: number) => `${value} TRY`,
   fmtTRYOrUnavailable: (value: number | null | undefined) => value == null ? "Unavailable" : `${value} TRY`,
   fmtTRY2OrUnavailable: (value: number | null | undefined) => value == null ? "Unavailable" : `${value.toFixed(2)} TRY`,
-  KpiCard: ({ label, value }: { label: string; value: string }) => <div>{label}:{value}</div>,
+  KpiCard: ({ label, value }: { label: string; value: string; sub?: string }) => <div>{label}:{value}</div>,
 }));
 
 vi.mock("@/lib/constants", () => ({
@@ -95,7 +95,8 @@ vi.mock("next/link", () => ({
   default: ({ children }: { children: unknown }) => children,
 }));
 
-import SUTOptimizer from "./SUTOptimizerTab";
+import SUTOptimizer, { DrgUnbundlingInline, DrugDiscountInline } from "./SUTOptimizerTab";
+import type { OptimizationSummary } from "@/lib/domains/sut";
 
 describe("SUTOptimizer shell", () => {
   it("renders section navigation without inline provenance banner", () => {
@@ -107,5 +108,98 @@ describe("SUTOptimizer shell", () => {
     expect(html).not.toContain("Hospital-wide loss");
     expect(html).not.toContain("Production billing result");
     expect(html).not.toContain("Real savings");
+  });
+});
+
+describe("Revenue recovery optimization panels", () => {
+  it("shows methodology for exact DRG unbundling instead of unavailable banner", () => {
+    const data = {
+      drg_unbundling: {
+        exactness_status: "exact",
+        n_patients_checked: 50,
+        n_patients_with_risk: 19,
+        risk_rate: 0.38,
+        total_potential_savings: 121738.79,
+        top_risky_chapters: [{ chapter: "I", count: 3 }],
+        methodology: "Aggregated per-patient DRG unbundling findings from exact claim lines.",
+      },
+    } as OptimizationSummary;
+
+    const html = renderToStaticMarkup(<DrgUnbundlingInline data={data} />);
+
+    expect(html).toContain("Aggregated per-patient DRG unbundling findings from exact claim lines.");
+    expect(html).not.toContain("Unavailable:DRG unbundling risk is unavailable");
+    expect(html).toContain("Patients With Risk:19");
+    expect(html).toContain("Potential Savings:121738.79 TRY");
+  });
+
+  it("shows unavailable banner for missing DRG inputs", () => {
+    const data = {
+      drg_unbundling: {
+        exactness_status: "missing_exact_inputs",
+        unavailable_reason: "Missing itemized billed procedure lines.",
+        n_patients_checked: 50,
+        n_patients_with_risk: null,
+        risk_rate: null,
+        total_potential_savings: null,
+        top_risky_chapters: [],
+        methodology: "",
+      },
+    } as OptimizationSummary;
+
+    const html = renderToStaticMarkup(<DrgUnbundlingInline data={data} />);
+
+    expect(html).toContain("Missing itemized billed procedure lines.");
+    expect(html).toContain("Unavailable");
+    expect(html).toContain("Patients With Risk:Unavailable");
+  });
+
+  it("wires drug discount KPIs from exact claim validation", () => {
+    const data = {
+      drug_discount_validation: {
+        exactness_status: "exact",
+        n_drugs_total: 360,
+        n_active_drugs: 353,
+        n_tier_mismatches: 2,
+        total_discount_savings_try: 4821.5,
+        tier_distribution: {},
+        discount_status_distribution: {},
+        mean_discount_tier_1: 0.28,
+        sample_drugs: [],
+        methodology: "Validates discount tiers on exact drug claim lines.",
+      },
+    } as OptimizationSummary;
+
+    const html = renderToStaticMarkup(<DrugDiscountInline data={data} />);
+
+    expect(html).toContain("Validates discount tiers on exact drug claim lines.");
+    expect(html).not.toContain("Unavailable:Drug discount validation is unavailable");
+    expect(html).toContain("Unique Drug Codes:353");
+    expect(html).toContain("Drug Claim Lines:360");
+    expect(html).toContain("Tier Mismatches:2");
+    expect(html).toContain("Discount Savings:4821.50 TRY");
+  });
+
+  it("shows unavailable drug discount KPIs when claim lines are missing", () => {
+    const data = {
+      drug_discount_validation: {
+        exactness_status: "missing_exact_inputs",
+        unavailable_reason: "Missing dispensed drug claim lines.",
+        n_drugs_total: null,
+        n_active_drugs: null,
+        tier_distribution: {},
+        discount_status_distribution: {},
+        mean_discount_tier_1: null,
+        sample_drugs: [],
+        methodology: "",
+      },
+    } as OptimizationSummary;
+
+    const html = renderToStaticMarkup(<DrugDiscountInline data={data} />);
+
+    expect(html).toContain("Missing dispensed drug claim lines.");
+    expect(html).toContain("Unavailable");
+    expect(html).toContain("Drug Claim Lines:Unavailable");
+    expect(html).not.toContain("Drug Claim Lines:Missing");
   });
 });

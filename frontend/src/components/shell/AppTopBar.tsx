@@ -52,8 +52,8 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
       <Image
         src="/bilun-logo.png"
         alt="BILUN"
-        width={192}
-        height={48}
+        width={2836}
+        height={1504}
         className="h-12 w-auto object-contain"
         priority
       />

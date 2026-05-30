@@ -58,24 +58,31 @@ export default function PatientInvoiceTable() {
         });
 
         const recovery = recoveryData as CohortRecoverySummary | null;
-        const topMap = new Map<string, CohortRecoverySummary["top_patients"][number]>();
-        recovery?.top_patients?.forEach((p) => {
-          topMap.set(p.patient_id, p);
+        const summarySource =
+          recovery?.patient_summaries?.length
+            ? recovery.patient_summaries
+            : recovery?.top_patients ?? [];
+        const summaryMap = new Map<
+          string,
+          CohortRecoverySummary["top_patients"][number]
+        >();
+        summarySource.forEach((p) => {
+          summaryMap.set(p.patient_id, p);
         });
 
-        const allIds = patientsData?.patients ?? recovery?.top_patients?.map((p) => p.patient_id) ?? [];
+        const allIds = patientsData?.patients ?? summarySource.map((p) => p.patient_id);
 
         const merged: PatientRow[] = allIds.map((pid) => {
           const meta = metaLookup.get(pid);
-          const top = topMap.get(pid);
+          const summary = summaryMap.get(pid);
           return {
             patient_id: pid,
             age: meta?.age ?? null,
             sex: meta?.sex ?? null,
-            total_recoverable_try: top?.total_recoverable_try ?? null,
-            priority: top?.priority ?? null,
-            action_count: top?.action_count ?? null,
-            top_action_type: top?.top_action_type ?? null,
+            total_recoverable_try: summary?.total_recoverable_try ?? null,
+            priority: summary?.priority ?? null,
+            action_count: summary?.action_count ?? null,
+            top_action_type: summary?.top_action_type ?? null,
           };
         });
 

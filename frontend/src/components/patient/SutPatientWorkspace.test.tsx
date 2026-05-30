@@ -55,6 +55,7 @@ describe("PatientOptimizationSnapshot", () => {
           icd10_chapters: ["E", "I", "J"],
           copay_exemptions: {
             exempt: true,
+            exemption_sources: [{ category: "ek1a_chronic" }],
             n_qualifying: 1,
             qualifying_diagnoses: [
               { icd10: "E11.9", disease: "Diabetes", range: "E10-E14" },

@@ -17,7 +17,13 @@ import {
 } from "@/components/tabs/sut/shared";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
 import { theme } from "@/lib/theme";
+import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { Chip, Eyebrow, Stat, Surface } from "@/components/primitives";
+import {
+  formatExemptionBasisSummary,
+  getExemptionCategories,
+  hasEk1aExemption,
+} from "@/lib/copayExemption";
 function ExactnessNotice({
   block,
   fallback,
@@ -52,26 +58,40 @@ function OptimizationCard({
 
 function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
   const topMatch = copay.qualifying_diagnoses[0];
+  const categories = getExemptionCategories(copay);
+  const basisSummary = formatExemptionBasisSummary(categories);
+  const ek1aOnly =
+    copay.exempt && categories.length > 0 && categories.every((c) => c === "ek1a_chronic");
+
   return (
     <Surface variant="soft" padding="md" className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
           <Eyebrow>Copay exemption</Eyebrow>
           <p className="mt-2 font-[var(--font-display)] text-lg font-medium tracking-tight text-[var(--text-primary)]">
-            {copay.exempt ? "Eligible" : "No qualifying exemption found"}
+            {copay.exempt ? "Eligible" : "No exemption ground matched"}
           </p>
           <p className="mt-2 text-sm leading-snug text-[var(--text-secondary)]">
             {copay.exempt
-              ? `The patient currently matches ${fmtNum(copay.n_qualifying)} qualifying diagnosis${copay.n_qualifying === 1 ? "" : "es"} for outpatient copay waiver review.`
-              : "No qualifying exemption diagnosis is currently present in the cached SUT diagnosis set."}
+              ? ek1aOnly
+                ? `EK-1A chronic diagnosis: ${fmtNum(copay.n_qualifying)} qualifying code${copay.n_qualifying === 1 ? "" : "s"} for outpatient copay waiver.`
+                : basisSummary
+                  ? `Waiver grounds: ${basisSummary}.`
+                  : "Patient matches at least one evaluated copay waiver rule."
+              : "No EK-1A, visit-type, or status exemption matched with current claim and profile inputs."}
           </p>
+          {copay.exempt && categories.length > 0 && (
+            <div className="mt-3">
+              <ExemptionBasisChips copay={copay} />
+            </div>
+          )}
         </div>
         <Chip variant={copay.exempt ? "success" : "neutral"}>
           {copay.exempt ? "Actionable" : "Clear"}
         </Chip>
       </div>
 
-      {topMatch && (
+      {topMatch && hasEk1aExemption(categories) && (
         <Surface variant="base" padding="sm" className="text-sm">
           <p className="font-semibold text-[var(--text-primary)]">{topMatch.disease}</p>
           <p className="mt-1 text-xs text-[var(--text-secondary)]">
