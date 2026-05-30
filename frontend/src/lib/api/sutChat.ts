@@ -1,9 +1,14 @@
 import { buildApiUrl, extractSseFrames, parseSsePayload } from "../apiClient";
 import type { ChatMessage } from "../domains/common";
+import type { SutChatPageContext } from "../sutChatPageContext";
+
+export type SutChatIntent = "auto_brief" | "user_question";
 
 export interface SendSutChatMessageOptions {
   patientId?: string | null;
   activeTab: string;
+  intent?: SutChatIntent;
+  pageContext?: SutChatPageContext | null;
   onToken: (token: string) => void;
   signal?: AbortSignal;
 }
@@ -13,6 +18,8 @@ export async function sendSutChatMessage(
   {
     patientId,
     activeTab,
+    intent = "user_question",
+    pageContext = null,
     onToken,
     signal,
   }: SendSutChatMessageOptions,
@@ -53,6 +60,8 @@ export async function sendSutChatMessage(
         messages,
         patient_id: patientId ?? null,
         active_tab: activeTab,
+        intent,
+        page_context: pageContext,
       }),
       signal: requestController.signal,
     });

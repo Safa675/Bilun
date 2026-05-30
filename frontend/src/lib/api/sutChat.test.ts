@@ -39,7 +39,41 @@ describe("sendSutChatMessage", () => {
         messages: [{ role: "user", content: "Summarize the patient workspace." }],
         patient_id: "P-001",
         active_tab: "SUT Patient Workspace",
+        intent: "user_question",
+        page_context: null,
       }),
     );
+  });
+
+  it("sends intent and page_context when provided", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('data: "ok"\n\ndata: "[DONE]"\n\n', {
+        status: 200,
+        headers: { "Content-Type": "text/event-stream" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const pageContext = {
+      page: "patient_workspace" as const,
+      patient_id: "P-001",
+      sections: { billing_report: { patient_id: "P-001" } },
+    };
+
+    await sendSutChatMessage([{ role: "user", content: "Explain each section." }], {
+      patientId: "P-001",
+      activeTab: "SUT Patient Workspace",
+      intent: "user_question",
+      pageContext,
+      onToken: () => undefined,
+    });
+
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+      messages: [{ role: "user", content: "Explain each section." }],
+      patient_id: "P-001",
+      active_tab: "SUT Patient Workspace",
+      intent: "user_question",
+      page_context: pageContext,
+    });
   });
 });

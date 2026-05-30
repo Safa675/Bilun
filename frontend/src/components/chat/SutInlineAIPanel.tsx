@@ -12,13 +12,20 @@ import {
   Sparkles,
 } from "lucide-react";
 import { sendSutChatMessage } from "@/lib/api/sutChat";
+import {
+  buildSutChatContextKey,
+  formatSutChatContextPrompt,
+  visibleChatMessages,
+} from "@/lib/sutChatSession";
 import { cn } from "@/lib/cn";
 import type { ChatMessage } from "@/lib/domains/common";
+import type { SutChatPageContext } from "@/lib/sutChatPageContext";
 import type { SutChatDockPosition, SutInlineChatState } from "@/stores/storeInterfaces";
 
 interface SutInlineAIPanelProps {
   patientId?: string | null;
   activeTab: string;
+  pageContext?: SutChatPageContext | null;
   autoPrompt?: string;
   dock?: SutChatDockPosition;
   onDockChange?: (dock: SutChatDockPosition) => void;
@@ -40,10 +47,14 @@ const CHAT_ICON_BTN_CLASS =
 const DEFAULT_PROMPTS: Record<string, string> = {
   "SUT Workspace":
     "Summarize the current SUT workspace. Highlight the main rule-review workflows available here and what the user should inspect first.",
-  "SUT Analytics":
-    "Summarize the cohort's SUT analytics view. Focus on exposure, patient workflow, and any exactness caveats that matter before drilling into a patient.",
-  "SUT Optimizer":
-    "Summarize the SUT optimizer findings. Highlight copay exemption opportunities, recovery potential, and where exactness limitations block action.",
+  Patients:
+    "Summarize the patient cohort directory. Focus on recoverable totals, priority patients, and any exactness caveats before drilling into a patient.",
+  Compliance:
+    "Summarize compliance alerts for the filtered cohort. Highlight copay exemption gaps, surcharge flags, copay-rate issues, and where exactness blocks action.",
+  Revenue:
+    "Summarize revenue recovery for the filtered cohort. Highlight recoverable totals, top patients, and where exactness limitations block action.",
+  "Reference Tools":
+    "Explain which gazette reference tools are available and when a billing officer should use each lookup.",
   "SUT Patient Workspace":
     "Give a patient-level SUT briefing. Summarize the rule-calculation state, exactness-aware optimization findings, and what the billing review should confirm next.",
   "SUT Billing Review":
@@ -60,6 +71,7 @@ function isAbortError(err: unknown): boolean {
 export default function SutInlineAIPanel({
   patientId,
   activeTab,
+  pageContext = null,
   autoPrompt,
   dock = "center",
   onDockChange,
@@ -78,8 +90,16 @@ export default function SutInlineAIPanel({
   const autoAbortRef = useRef<AbortController | null>(null);
   const followUpAbortRef = useRef<AbortController | null>(null);
   const autoFiredRef = useRef<string>(externalState?.autoFiredKey ?? "");
+  const briefedContextKeysRef = useRef<string[]>(externalState?.briefedContextKeys ?? []);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  const autoInFlightRef = useRef(false);
+  const pageContextRef = useRef(pageContext);
+  const fireAutoAnalysisRef = useRef<(options?: { force?: boolean }) => void>(() => undefined);
+
+  useEffect(() => {
+    pageContextRef.current = pageContext;
+  }, [pageContext]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -88,101 +108,134 @@ export default function SutInlineAIPanel({
     };
   }, []);
 
+  useEffect(() => {
+    briefedContextKeysRef.current = externalState?.briefedContextKeys ?? briefedContextKeysRef.current;
+    autoFiredRef.current = externalState?.autoFiredKey ?? autoFiredRef.current;
+  }, [externalState?.briefedContextKeys, externalState?.autoFiredKey]);
+
   const messages = externalState?.messages ?? _messages;
-  const autoText = externalState?.autoText ?? _autoText;
-  const autoTextRef = useRef(_autoText);
-  const messagesRef = useRef(_messages);
+  const autoText = isAutoLoading ? _autoText : (externalState?.autoText ?? _autoText);
+  const autoTextRef = useRef(autoText);
+  const messagesRef = useRef(messages);
 
   useEffect(() => {
-    autoTextRef.current = _autoText;
-  }, [_autoText]);
+    autoTextRef.current = autoText;
+  }, [autoText]);
 
   useEffect(() => {
-    messagesRef.current = _messages;
-  }, [_messages]);
+    messagesRef.current = messages;
+  }, [messages]);
+
+  const persistChatState = useCallback((next: {
+    messages: ChatMessage[];
+    autoText: string;
+    autoFiredKey?: string;
+    briefedContextKeys?: string[];
+  }) => {
+    if (next.autoFiredKey !== undefined) {
+      autoFiredRef.current = next.autoFiredKey;
+    }
+    if (next.briefedContextKeys !== undefined) {
+      briefedContextKeysRef.current = next.briefedContextKeys;
+    }
+    _setMessages(next.messages);
+    messagesRef.current = next.messages;
+    _setAutoText(next.autoText);
+    autoTextRef.current = next.autoText;
+    onChatStateChange?.({
+      messages: next.messages,
+      autoText: next.autoText,
+      autoFiredKey: autoFiredRef.current,
+      briefedContextKeys: briefedContextKeysRef.current,
+    });
+  }, [onChatStateChange]);
 
   const setMessages = useCallback((nextMessages: ChatMessage[]) => {
-    _setMessages(nextMessages);
-    messagesRef.current = nextMessages;
-    onChatStateChange?.({
+    persistChatState({
       messages: nextMessages,
       autoText: autoTextRef.current,
-      autoFiredKey: autoFiredRef.current,
     });
-  }, [onChatStateChange]);
+  }, [persistChatState]);
 
-  const setAutoText = useCallback((nextText: string) => {
+  const setAutoTextStreaming = useCallback((nextText: string) => {
     _setAutoText(nextText);
     autoTextRef.current = nextText;
-    onChatStateChange?.({
-      messages: messagesRef.current,
-      autoText: nextText,
-      autoFiredKey: autoFiredRef.current,
-    });
-  }, [onChatStateChange]);
+  }, []);
 
-  const resetAutoAnalysis = useCallback(() => {
-    autoFiredRef.current = "";
-    setAutoText("");
+  const clearInFlightAuto = useCallback(() => {
+    setAutoTextStreaming("");
+    autoInFlightRef.current = false;
     setAutoError(null);
-    setMessages([]);
-  }, [setAutoText, setMessages]);
+  }, [setAutoTextStreaming]);
 
-  const fireAutoAnalysis = useCallback(() => {
-    const contextKey = `${patientId ?? "workspace"}_${activeTab}`;
-    if (autoFiredRef.current === contextKey && autoText) {
+  const fireAutoAnalysis = useCallback((options?: { force?: boolean }) => {
+    const force = options?.force ?? false;
+    const contextKey = buildSutChatContextKey(patientId, activeTab);
+    const briefedKeys = briefedContextKeysRef.current;
+
+    if (autoInFlightRef.current && !force) {
       return;
     }
 
     autoAbortRef.current?.abort();
     const controller = new AbortController();
     autoAbortRef.current = controller;
-    autoFiredRef.current = contextKey;
+    autoInFlightRef.current = true;
 
     const prompt = autoPrompt ?? DEFAULT_PROMPTS[activeTab] ?? DEFAULT_PROMPTS["SUT Workspace"];
+    const userMessage: ChatMessage = {
+      role: "user",
+      content: formatSutChatContextPrompt(activeTab, patientId, prompt),
+    };
+    const baseMessages = messagesRef.current;
+    const requestMessages = [...baseMessages, userMessage];
 
-    setAutoText("");
+    setAutoTextStreaming("");
     setAutoError(null);
     setIsAutoLoading(true);
     setFollowUpText("");
-    setMessages([]);
-
-    const initialMessages: ChatMessage[] = [
-      { role: "user", content: prompt },
-    ];
 
     let accumulated = "";
 
-    sendSutChatMessage(initialMessages, {
+    sendSutChatMessage(requestMessages, {
       patientId,
       activeTab,
+      intent: "auto_brief",
+      pageContext: pageContextRef.current,
       signal: controller.signal,
       onToken: (token: string) => {
         if (!mountedRef.current) {
           return;
         }
         accumulated += token;
-        setAutoText(accumulated);
+        setAutoTextStreaming(accumulated);
       },
     })
       .then(() => {
         if (!mountedRef.current) {
           return;
         }
-        setMessages([
-          ...initialMessages,
-          { role: "assistant", content: accumulated },
-        ]);
+        const nextBriefedKeys = [...new Set([...briefedKeys, contextKey])];
+        persistChatState({
+          messages: [
+            ...baseMessages,
+            { role: "assistant", content: accumulated },
+          ],
+          autoText: "",
+          autoFiredKey: contextKey,
+          briefedContextKeys: nextBriefedKeys,
+        });
+        setAutoTextStreaming("");
       })
       .catch((err) => {
         if (!mountedRef.current) {
           return;
         }
         if (isAbortError(err)) {
-          resetAutoAnalysis();
+          clearInFlightAuto();
           return;
         }
-        autoFiredRef.current = "";
+        setAutoTextStreaming("");
         setAutoError(
           err instanceof Error ? err.message : "Failed to get SUT analysis. Click regenerate to retry.",
         );
@@ -194,9 +247,12 @@ export default function SutInlineAIPanel({
         if (autoAbortRef.current === controller) {
           autoAbortRef.current = null;
         }
+        autoInFlightRef.current = false;
         setIsAutoLoading(false);
       });
-  }, [activeTab, autoPrompt, autoText, patientId, resetAutoAnalysis, setAutoText, setMessages]);
+  }, [activeTab, autoPrompt, clearInFlightAuto, patientId, persistChatState, setAutoTextStreaming]);
+
+  fireAutoAnalysisRef.current = fireAutoAnalysis;
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -204,19 +260,16 @@ export default function SutInlineAIPanel({
     }
 
     debounceRef.current = setTimeout(() => {
-      fireAutoAnalysis();
+      fireAutoAnalysisRef.current();
     }, 400);
 
     return () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
-      if (autoAbortRef.current) {
-        resetAutoAnalysis();
-        autoAbortRef.current.abort();
-      }
+      autoAbortRef.current?.abort();
+      autoAbortRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patientId, activeTab]);
 
   const handleSend = useCallback(() => {
@@ -244,6 +297,8 @@ export default function SutInlineAIPanel({
     sendSutChatMessage(nextMessages, {
       patientId,
       activeTab,
+      intent: "user_question",
+      pageContext: pageContextRef.current,
       signal: controller.signal,
       onToken: (token: string) => {
         if (!mountedRef.current) {
@@ -285,6 +340,9 @@ export default function SutInlineAIPanel({
       handleSend();
     }
   };
+
+  const displayedMessages = visibleChatMessages(messages);
+
   return (
     <div
       className={cn(
@@ -324,9 +382,8 @@ export default function SutInlineAIPanel({
           <button
             type="button"
             onClick={() => {
-              autoFiredRef.current = "";
               setAutoError(null);
-              fireAutoAnalysis();
+              fireAutoAnalysis({ force: true });
             }}
             aria-label="Regenerate analysis"
             title="Regenerate analysis"
@@ -377,15 +434,75 @@ export default function SutInlineAIPanel({
         </div>
       </div>
 
-      <div className={cn("min-h-6 overflow-y-auto whitespace-pre-wrap text-[13px] leading-[1.65] text-[var(--text-primary)]", dock === "center" ? "max-h-40" : "max-h-none")}>
-        {isAutoLoading && !autoText && (
-          <span className="italic text-[var(--text-muted)]">BILUN is analyzing...</span>
+      <div className={cn("min-h-6 overflow-y-auto whitespace-pre-wrap text-[13px] leading-[1.65] text-[var(--text-primary)]", dock === "center" ? "max-h-52" : "max-h-none")}>
+        {displayedMessages.length === 0 && !isAutoLoading && !autoError && (
+          <span className="italic text-[var(--text-muted)]">BILUN will brief each view and keep the full thread here.</span>
         )}
-        {autoText}
-        {isAutoLoading && autoText && (
-          <span className={CHAT_CURSOR_CLASS} />
+
+        {displayedMessages.map((message, index) => {
+          const isApproved = approvedIndices.has(index);
+          const isAssistant = message.role === "assistant";
+          return (
+            <div
+              key={`${message.role}-${index}-${message.content.slice(0, 24)}`}
+              className="mb-3"
+            >
+              <div className="mb-1 text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                {message.role === "user" ? "You" : "BILUN"}
+              </div>
+              <div
+                className={cn(
+                  "whitespace-pre-wrap text-[13px] leading-[1.7]",
+                  isAssistant && isApproved && "border-l-2 border-[var(--color-success)] pl-2",
+                  message.role === "user"
+                    ? "italic text-[var(--text-secondary)]"
+                    : "text-[var(--text-primary)]",
+                )}
+              >
+                {message.content}
+              </div>
+              {isAssistant && (
+                <div className="mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setApprovedIndices((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(index)) {
+                          next.delete(index);
+                        } else {
+                          next.add(index);
+                        }
+                        return next;
+                      });
+                    }}
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-[var(--r-sm)] border px-2 py-0.5 text-[11px] transition-colors",
+                      isApproved
+                        ? "border-[var(--color-success)] bg-[var(--color-success)]/10 text-[var(--color-success)]"
+                        : "border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--gold)] hover:text-[var(--gold)]",
+                    )}
+                  >
+                    <Check className="h-3 w-3" />
+                    {isApproved ? "Approved" : "Approve"}
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {isAutoLoading && (
+          <div className="mb-2 whitespace-pre-wrap text-[13px] leading-[1.7] text-[var(--text-primary)]">
+            {!autoText && (
+              <span className="italic text-[var(--text-muted)]">BILUN is analyzing...</span>
+            )}
+            {autoText}
+            {autoText && <span className={CHAT_CURSOR_CLASS} />}
+          </div>
         )}
-        {autoError && !autoText && (
+
+        {autoError && !isAutoLoading && (
           <div className="flex items-start gap-2 text-[var(--danger)]">
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>
@@ -393,9 +510,8 @@ export default function SutInlineAIPanel({
               <button
                 type="button"
                 onClick={() => {
-                  autoFiredRef.current = "";
                   setAutoError(null);
-                  fireAutoAnalysis();
+                  fireAutoAnalysis({ force: true });
                 }}
                 className="cursor-pointer border-none bg-transparent p-0 font-[inherit] text-[var(--gold)] underline"
               >
@@ -406,61 +522,10 @@ export default function SutInlineAIPanel({
         )}
       </div>
 
-      {!patientId && !isAutoLoading && autoText && (
+      {!patientId && !isAutoLoading && displayedMessages.length > 0 && (
         <div className="mt-2.5 rounded-[var(--r-md)] border border-[var(--gold-subtle)] bg-[var(--gold-subtle)]/20 px-3 py-2 text-[12px] leading-[1.5] text-[var(--text-muted)]">
           <span className="font-medium text-[var(--gold)]">Tip:</span>{" "}
           Select a patient from the cohort table to get detailed billing analysis, including copay savings, lab optimization, drug substitution, and billing strategy comparisons.
-        </div>
-      )}
-
-      {messages.length > 2 && (
-        <div className="mt-2.5 border-t border-[var(--border-subtle)] pt-2">
-          {messages.slice(2).map((message, index) => {
-            const globalIndex = index + 2;
-            const isApproved = approvedIndices.has(globalIndex);
-            const isAssistant = message.role === "assistant";
-            return (
-              <div
-                key={`${message.role}-${index}-${message.content.slice(0, 24)}`}
-                className={cn(
-                  "mb-2 whitespace-pre-wrap text-[13px] leading-[1.7]",
-                  isAssistant && isApproved && "border-l-2 border-[var(--color-success)] pl-2",
-                  message.role === "user"
-                    ? "italic text-[var(--text-muted)]"
-                    : "text-[var(--text-primary)]",
-                )}
-              >
-                {message.role === "user" ? `You: ${message.content}` : message.content}
-                {isAssistant && (
-                  <div className="mt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setApprovedIndices((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(globalIndex)) {
-                            next.delete(globalIndex);
-                          } else {
-                            next.add(globalIndex);
-                          }
-                          return next;
-                        });
-                      }}
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-[var(--r-sm)] border px-2 py-0.5 text-[11px] transition-colors",
-                        isApproved
-                          ? "border-[var(--color-success)] bg-[var(--color-success)]/10 text-[var(--color-success)]"
-                          : "border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--gold)] hover:text-[var(--gold)]",
-                      )}
-                    >
-                      <Check className="h-3 w-3" />
-                      {isApproved ? "Approved" : "Approve"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
         </div>
       )}
 

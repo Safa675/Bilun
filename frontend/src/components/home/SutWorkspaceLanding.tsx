@@ -94,8 +94,9 @@ export default function SutWorkspaceLanding({
   const recentPatients = useRecents("patient");
   const recentBilling = useRecents("billing");
 
-  const handleAnalytics = useCallback(() => onOpenTab("analytics"), [onOpenTab]);
-  const handleOptimizer = useCallback(() => onOpenTab("optimizer"), [onOpenTab]);
+  const handlePatients = useCallback(() => onOpenTab("patients"), [onOpenTab]);
+  const handleCompliance = useCallback(() => onOpenTab("compliance"), [onOpenTab]);
+  const handleRevenue = useCallback(() => onOpenTab("revenue"), [onOpenTab]);
 
   return (
     <div className="space-y-8">
@@ -136,24 +137,34 @@ export default function SutWorkspaceLanding({
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <Eyebrow tone="muted">Or jump straight into</Eyebrow>
           <a
-            href={buildSutHomeHref("analytics")}
+            href={buildSutHomeHref("patients")}
             onClick={(event) => {
               event.preventDefault();
-              handleAnalytics();
+              handlePatients();
             }}
             className="text-sm font-medium text-[var(--text-primary)] underline-offset-4 hover:underline hover:decoration-[var(--gold)] transition-colors"
           >
-            SUT Analytics
+            Patients
           </a>
           <a
-            href={buildSutHomeHref("optimizer")}
+            href={buildSutHomeHref("compliance")}
             onClick={(event) => {
               event.preventDefault();
-              handleOptimizer();
+              handleCompliance();
             }}
             className="text-sm font-medium text-[var(--text-primary)] underline-offset-4 hover:underline hover:decoration-[var(--gold)] transition-colors"
           >
-            SUT Optimizer
+            Compliance
+          </a>
+          <a
+            href={buildSutHomeHref("revenue")}
+            onClick={(event) => {
+              event.preventDefault();
+              handleRevenue();
+            }}
+            className="text-sm font-medium text-[var(--text-primary)] underline-offset-4 hover:underline hover:decoration-[var(--gold)] transition-colors"
+          >
+            Revenue
           </a>
           <button
             type="button"

@@ -64,10 +64,11 @@ describe("SutWorkspaceLanding", () => {
     expect(html).not.toContain("Restore the SUT shell around exact claim-line rule work");
   });
 
-  it("exposes Analytics, Optimizer, and How it works as tertiary nav", () => {
+  it("exposes Patients, Compliance, Revenue, and How it works as tertiary nav", () => {
     const html = renderHtml();
-    expect(html).toContain("SUT Analytics");
-    expect(html).toContain("SUT Optimizer");
+    expect(html).toContain("Patients");
+    expect(html).toContain("Compliance");
+    expect(html).toContain("Revenue");
     expect(html).toContain("How it works");
   });
 });
