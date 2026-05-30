@@ -1,21 +1,20 @@
-## Task: Fix Documentation After Fact-Check
+## Task: Patient invoices table recovery columns
 
 ### Goal
-Update all 12 docs in `docs/` to reflect current codebase structure and correct all factual errors found.
+All cohort patients show Recoverable, Priority, Actions, and Top action in PatientInvoiceTable — not only top-10 from revenue recovery.
 
 ### Subtasks
-- [ ] Phase 1: Global path rewrite (src/sut/ → src/bilun/domain/, src/api/ → src/bilun/api/, etc.)
-- [ ] Phase 2: sut.md — fix 60 exports, API prefix, row counts, unverifiable claims, path refs
-- [ ] Phase 3: gazette.md — fix row counts (117,285 → 115,568, EK-3 4,407 → 3,265)
-- [ ] Phase 4: algorithms_reference.md — fix HEMOGRAM_TESTS count, lab lookup description
-- [ ] Phase 5: Decision docs — remove nonexistent plan refs, fix filenames, fix env var names
-- [ ] Phase 6: External docs — fix broken wiki links in olive-ai-post-mortem.md
-- [ ] Phase 7: Verify — grep for old paths, spot-check
+- [x] Add `patient_summaries` to `CohortRecoverySummary` (all patients, sorted by recoverable)
+- [x] Populate in billing orchestrator; keep `top_patients` as first 10
+- [x] API fallback: hydrate `patient_summaries` from `patient_billing_report_rows` for old caches
+- [x] Update frontend types + `PatientInvoiceTable` to merge `patient_summaries`
+- [x] Unit test + verify frontend tsc
 
 ### Out of Scope
-- Creating missing plan files or wiki pages
-- Adding unverifiable analysis code to repo
-- Fixing empty EK-3 curated parquets
+- Changing billing algorithm outputs
+- New dedicated bulk billing API endpoint (reuse revenue-recovery payload)
 
 ### Review
-Full fact-check report in `plans/docs-fact-check-fix.md`.
+- Root cause: table joined only `revenue_recovery.top_patients` (hard cap 10); page 1 patients outside top 10 showed `—`.
+- Fix: full `patient_summaries` on cohort summary + API hydration from `patient_billing_report_rows` for existing builds.
+- No cache rebuild required for hydration path; rebuild still recommended to persist field in `cohort_recovery_summary`.

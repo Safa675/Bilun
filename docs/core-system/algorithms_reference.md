@@ -35,9 +35,9 @@ claim materials → [Bundling Rules] + [Exclusion Rules] → ClaimValidationResu
 
 ### 1.1 EK-3B-1 Bundling Rule
 
-**Gazette anchor:** EK-3/B-1 — 54 categories of consumables bundled into procedure prices.
+**Gazette anchor:** EK-3/B-1 — 54 consumable items bundled into procedure prices.
 
-**What it does:** Detects consumables that were billed as separate line items but should have been included in the procedure fee. These are simple, low-cost items (syringes, gloves, scalpel tips, antiseptic solutions, etc.) that the SUT explicitly says the hospital must supply at its own expense. SGK will not pay for them as separate items.
+**What it does:** Detects consumables that were billed as separate line items but should have been included in the procedure fee. These are simple, low-cost items (syringes, gloves, scalpel tips, antiseptic solutions, etc.) grouped into ~7 categories that the SUT explicitly says the hospital must supply at its own expense. SGK will not pay for them as separate items.
 
 **How it works:**
 1. Loads the 54 EK-3B-1 bundled consumable categories from the curated parquet catalog.
@@ -51,7 +51,7 @@ claim materials → [Bundling Rules] + [Exclusion Rules] → ClaimValidationResu
 
 ### 1.2 EK-3B-2 Exclusion Rule
 
-**Gazette anchor:** EK-3/B-2 — 13 categories of non-reimbursable materials.
+**Gazette anchor:** EK-3/B-2 — 15 entries of non-reimbursable materials.
 
 **What it does:** Detects materials in the claim that SGK will *never* reimburse, regardless of how they're billed. These are items like viscosupplementation products, sports prostheses, stem cell materials, etc.
 
@@ -99,7 +99,7 @@ There is a critical runtime concept: **exactness.** Each rule engine declares wh
 **How it works:**
 1. Loads the EK-1A exemption catalog: 98 ICD-10 ranges (32 multi-code ranges + 66 single-code entries) covering diseases like diabetes, hypertension, COPD, cancer, etc.
 2. **Pre-indexing optimization:** Groups the 98 ranges by ICD-10 chapter letter (A-Z) for O(1) lookup — only ranges matching the first letter of a diagnosis code are checked.
-3. **Precomputation phase:** Before running on the cohort, the system collects all unique ICD-10 codes across all patients and pre-matches them against EK-1A. The result is a lookup map: diagnosis code → (disease name, range). This means each unique code is checked exactly once, not once per patient.
+3. **Per-patient evaluation:** For each patient, their diagnoses are checked against the letter-indexed EK-1A catalog. The letter filter narrows the search to only the ranges matching each diagnosis code's chapter letter, then numeric range comparison determines a match.
 4. **ICD-10 range matching:** Uses a structured algorithm that compares numeric portions of codes within the same letter family. For example, range "A15-A19" matches codes A15, A16, A16.2, A17, A17.9, A18, A19. Single codes (e.g., "C34") match the exact code and all sub-codes (C34.1, C34.9, etc.).
 5. Per-patient: if any of the patient's diagnoses match, the patient is marked `exempt = True`.
 
@@ -278,7 +278,7 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
 
 ### 3.4 Algorithm 4: Package vs. Itemized Billing Strategy
 
-**What it does:** Compares DRG package billing against itemized (fee-for-service) billing for each claim and recommends the strategy that maximizes reimbursement.
+**What it does:** Compares DRG package billing against itemized (fee-for-service) billing for each claim and identifies cost-saving opportunities by recommending the lower-cost billing strategy.
 
 **How it works (when exact claim lines are available):**
 
@@ -288,14 +288,14 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
    - If no package total exists but an admission date is available, falls back to gazette DRG price lookup by ICD-10 chapter and date.
 
 2. Comparison:
-   - If `itemized_total > package_total`: recommends **itemized** billing. Savings = itemized - package.
-   - If `package_total > itemized_total`: recommends **package** billing. Savings = package - itemized.
+   - If `package_total <= itemized_total`: recommends **package** billing. Savings = itemized - package (the hospital avoids billing the higher itemized total).
+   - If `itemized_total < package_total`: recommends **itemized** billing. Savings = package - itemized (the hospital avoids billing the higher package total).
 
-3. Each claim gets a recommendation entry with the recommended strategy, both totals, and the dollar savings.
+3. The algorithm always recommends the **lower-cost** strategy. This is a conservative compliance-first approach: it helps the hospital avoid over-billing and audit risk rather than maximizing revenue. Billing the higher-total strategy at the lower strategy's rate would represent revenue the hospital is legally entitled to, but this variant prioritizes audit safety.
 
 **Heuristic mode (no claim lines):** Returns an empty recommendation with `missing_exact_inputs` status — this algorithm fundamentally requires line-level pricing data to be meaningful.
 
-**Output:** `BillingStrategyRecommendation` with per-claim recommendations (claim ID, strategy, package total, itemized total, savings).
+**Output:** `BillingStrategyRecommendation` with per-claim recommendations (claim ID, recommended lower-cost strategy, both totals, savings from choosing the cheaper option).
 
 ### 3.5 Algorithm 5: Material Reimbursability Pre-Check
 

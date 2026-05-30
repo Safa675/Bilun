@@ -35,8 +35,6 @@ related: ["[[sut]]", "[[sgk-sut-regulatory-context]]"]
 
 The gazette data source is a committed-in-repo copy of Turkey's **Sağlık Uygulama Tebliği** (SUT) regulatory tariff catalogs, sourced from SGK's Resmi Gazete publications and curated into queryable parquet files. It is the data foundation for the [[sut]] pricing and billing engine and is the only data layer in ILAY that requires no PHI.
 
-> [!note] Correct path
-> The gazette data lives under `data/gazette/`, not `data/sut/gazette/`. Some historical references in other wiki articles may use the older path.
 
 ## Directory layout
 
@@ -124,9 +122,3 @@ For a given `asof_date`, each annex's latest effective-date parquet is written i
 - **No PHI.** The gazette is publicly published regulatory data. This makes [[sut]] the only ILAY product layer that can be sold without a hospital data-sharing agreement.
 - **Temporal validity matters.** Prices change on gazette effective dates; billing decisions must use the tariff valid on the service date, not the latest. The `valid_from`/`valid_to` columns in curated catalogs and the raw effective-date partitioning both preserve this.
 - **Machine-readable on day one.** The ministry publishes the gazette as XLSX. The ETL pipeline exists so downstream code never touches XLSX directly.
-
-## See also
-
-- [[sut]] — the regulatory engine that queries these parquets at runtime
-- [[sgk-sut-regulatory-context]] — regulatory background and how SGK's billing system works
-- `scripts/sut/README.md` — full ETL script inventory and execution order
