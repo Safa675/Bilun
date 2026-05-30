@@ -1,18 +1,22 @@
-## Task: Chatbot context + MEDULA refactor
+## Task: Frontend EN/TR localization
 
 ### Goal
-Dedup billing formatters, externalize MEDULA KB data to JSON, add formatter and search tests.
+English default UI with Turkish toggle (🇬🇧/🇹🇷) in AppTopBar; ₺ formatting; chat re-brief on locale change.
+
+### Plan
+[plans/frontend-i18n-tr.md](../plans/frontend-i18n-tr.md)
 
 ### Subtasks
-- [x] Dedup `_append_billing_sections` in `context.py`
-- [x] Split MEDULA data → `data/medula/*.json`; slim `medula_kb.py`
-- [x] Add `test_medula_kb.py` and formatter snapshot tests
-- [x] Run pytest on chatbot tests (15 pass; 1 pre-existing async tools failure)
+- [x] Phase 0: i18n foundation (`LocaleProvider`, `useT`, formatters, `LocaleSwitcher`)
+- [x] Phase 1: Shell — AppTopBar, SkipToContent, error page, `SutHowItWorksModal`, fonts `latin-ext`
+- [x] Phase 2: Home landing, cohort filter bar, `PatientInvoiceTable`, `PatientSearch`
+- [x] Phase 3: Patient workspace, billing page, `SutBillingReportSections`
+- [x] Phase 4: Optimizer + all `sections/*` reference tools + `ToolsSection` + `PatientSection`
+- [x] Phase 5: Chat panel UI, TR/EN prompts, locale change clears thread + re-brief
+- [x] Phase 6 (partial): Admin/synthetic chips, message catalogs, build + core i18n tests pass
+- [x] Phase 6: `tr/sections.ts` full Turkish translations; test helper + locale-wrapped component tests
 
-### Out of Scope
-- Splitting `context.py` into multiple files
+### Review (2026-05-30)
+**Done:** Full UI migration across shell, home, patient/billing, optimizer, reference tools, modals, admin/synthetic. `npm run build` passes; all vitest suites pass with `renderToStaticMarkupWithLocale`.
 
-### Review
-- `context.py`: 723 → 642 LOC; billing logic unified via `_append_billing_sections(detail_level=...)`.
-- `medula_kb.py`: 574 → 103 LOC; editorial content in `data/medula/*.json`.
-- New tests: `test_medula_kb.py` (5), `test_context_formatters.py` (3).
+**Optional follow-up:** Add dedicated TR locale snapshot tests for key screens.
