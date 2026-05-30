@@ -331,7 +331,7 @@ async def execute_tool_call(
     try:
         func_name = _TOOL_FUNCTION_MAP[tool_name]
 
-        async def _exec() -> str:
+        def _exec() -> str:
             from src.bilun.api.routes.billing import (
                 get_drug_catalog,
                 get_patient_billing_report,

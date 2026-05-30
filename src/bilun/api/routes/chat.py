@@ -17,6 +17,7 @@ from src.bilun.shared.state import _chat_rate_lock as _rate_lock, _chat_rate_win
 from src.bilun.chatbot import stream_chat_response
 from src.bilun.chatbot.context import build_bilun_runtime_context
 from src.bilun.chatbot.llm import stream_chat_response_with_tools
+from src.bilun.chatbot.prompts import ChatIntent
 
 import time as _time
 
@@ -73,6 +74,8 @@ class BilunChatRequest(BaseModel):
     messages: list[BilunChatMessage] = Field(default_factory=list)
     active_tab: str = "BILUN Analytics"
     patient_id: str | None = None
+    intent: ChatIntent = "user_question"
+    page_context: dict[str, Any] | None = None
 
 
 # ── Summarizers (keep in chat.py — they depend on route imports) ──────────────
@@ -229,6 +232,8 @@ def _fetch_runtime_data(
     active_tab: str,
     patient_id: str | None,
     user_message: str | None = None,
+    *,
+    intent: ChatIntent = "user_question",
 ) -> dict[str, Any]:
     """Fetch all data needed for context assembly.
 
@@ -256,8 +261,12 @@ def _fetch_runtime_data(
         )
         data["billing_report"] = _safe_context_block(
             "Billing report",
-            lambda: _summarize_billing_report(
+            lambda: (
                 get_patient_billing_report(patient_id)
+                if intent == "user_question"
+                else _summarize_billing_report(
+                    get_patient_billing_report(patient_id)
+                )
             ),
         )
     if user_message:
@@ -299,9 +308,14 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
         req.active_tab,
         req.patient_id,
         user_message,
+        intent=req.intent,
     )
     runtime_context = build_bilun_runtime_context(
-        raw_data, req.active_tab, req.patient_id
+        raw_data,
+        req.active_tab,
+        req.patient_id,
+        page_context=req.page_context,
+        intent=req.intent,
     )
 
     async def sse_generator():
@@ -314,6 +328,7 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
                 async for token in stream_fn(
                     [message.model_dump() for message in req.messages],
                     runtime_context,
+                    intent=req.intent,
                 ):
                     await queue.put(("data", token))
             except asyncio.CancelledError:
@@ -382,9 +397,10 @@ async def weekly_brief(req: WeeklyBriefRequest, request: Request):
         _fetch_runtime_data,
         "SUT Analytics",
         None,
+        intent="auto_brief",
     )
     runtime_context = build_bilun_runtime_context(
-        raw_data, "SUT Analytics", None
+        raw_data, "SUT Analytics", None, intent="auto_brief"
     )
 
     messages = [{"role": "user", "content": WEEKLY_BRIEF_PROMPT}]
@@ -397,6 +413,7 @@ async def weekly_brief(req: WeeklyBriefRequest, request: Request):
                 async for token in stream_chat_response(
                     messages,
                     runtime_context,
+                    intent="auto_brief",
                 ):
                     await queue.put(("data", token))
             except asyncio.CancelledError:

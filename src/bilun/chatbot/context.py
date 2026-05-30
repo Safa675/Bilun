@@ -7,7 +7,13 @@ from api/routes/, domain/, or db/ — pure formatters only.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
+
+from .prompts import ChatIntent
+
+_FULL_BILLING_LIST_CAP = 50
+_SUMMARY_BILLING_LIST_CAP = 5
+BillingDetailLevel = Literal["summary", "full"]
 
 
 def _format_sut_section(
@@ -276,20 +282,26 @@ def build_patient_context(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def build_billing_context(data: dict[str, Any]) -> str:
-    """Build per-patient billing optimization context from pre-fetched data.
+def _billing_list_cap(detail_level: BillingDetailLevel) -> int:
+    return _FULL_BILLING_LIST_CAP if detail_level == "full" else _SUMMARY_BILLING_LIST_CAP
 
-    Expects data keys: billing_report.
-    """
-    lines: list[str] = []
+
+def _unwrap_billing_report(data: dict[str, Any]) -> dict[str, Any]:
     report = data.get("billing_report", {}) or {}
     if isinstance(report, dict) and "summary" in report:
-        report = report["summary"]
+        return report["summary"]
+    return report if isinstance(report, dict) else {}
 
-    if not report:
-        return ""
 
-    lines.append("--- BILLING OPTIMIZATION ---")
+def _append_billing_sections(
+    lines: list[str],
+    report: dict[str, Any],
+    *,
+    detail_level: BillingDetailLevel,
+) -> None:
+    """Append lab/drug/copay/strategy/materials blocks for summary or full detail."""
+    list_cap = _billing_list_cap(detail_level)
+    is_full = detail_level == "full"
 
     lab = report.get("lab", {}) or report.get("lab_optimization", {}) or {}
     if lab:
@@ -303,13 +315,21 @@ def build_billing_context(data: dict[str, Any]) -> str:
         lab_source = lab.get("rule_source", "")
         if lab_source:
             lines.append(f"    Source: {lab_source}")
+        if is_full:
+            normative = lab.get("normative_cost_try")
+            if normative is not None:
+                lines.append(f"    Normative cost: {normative:.2f} TRY")
         hemogram = lab.get("hemogram_bundling_savings")
         if hemogram is not None:
             lines.append(f"    Hemogram bundling savings: {hemogram:.2f} TRY")
         dup = lab.get("duplicate_test_savings")
         if dup is not None:
             lines.append(f"    Duplicate test savings: {dup:.2f} TRY")
-        total = lab.get("total_savings") or (hemogram or 0) + (dup or 0)
+        total = lab.get("total_savings")
+        if total is None and (hemogram is not None or dup is not None):
+            total = (hemogram or 0) + (dup or 0)
+        if not total and not is_full:
+            total = (hemogram or 0) + (dup or 0)
         if total:
             lines.append(f"    Total lab savings: {total:.2f} TRY")
         if lab.get("flagged_tests"):
@@ -320,13 +340,16 @@ def build_billing_context(data: dict[str, Any]) -> str:
                 key="test_name",
                 fmt="{test_name}: {flag_type} ({savings_try} TRY)",
                 exactness=lab_exactness,
-                max_items=5,
+                max_items=list_cap,
             )
 
     drug = report.get("drug", {}) or report.get("drug_optimization", {}) or {}
     if drug:
         drug_exactness = drug.get("exactness_status", "unknown")
         lines.append(f"\n  Drug optimization [exactness: {drug_exactness}]")
+        drug_source = drug.get("rule_source", "")
+        if is_full and drug_source:
+            lines.append(f"    Source: {drug_source}")
         generics = drug.get("n_generics_available")
         if generics is not None:
             lines.append(f"    Generics available: {generics}")
@@ -336,33 +359,78 @@ def build_billing_context(data: dict[str, Any]) -> str:
         sub = drug.get("generic_substitution_savings")
         if sub:
             lines.append(f"    Substitution savings: {sub:.2f} TRY")
+        if is_full and drug.get("drug_recommendations"):
+            _format_list_section(
+                lines,
+                "Drug recommendations",
+                drug["drug_recommendations"],
+                key="drug_name",
+                fmt="{drug_name}: {action} ({savings_try} TRY)",
+                exactness=drug_exactness,
+                max_items=list_cap,
+            )
 
     copay = report.get("copay", {}) or report.get("copay_optimization", {}) or {}
     if copay:
         copay_exactness = copay.get("exactness_status", "unknown")
         lines.append(f"\n  Copay optimization [exactness: {copay_exactness}]")
+        copay_source = copay.get("rule_source", "")
+        if is_full and copay_source:
+            lines.append(f"    Source: {copay_source}")
         exempt = copay.get("is_exempt")
         if exempt is not None:
             lines.append(f"    Exempt: {'YES' if exempt else 'NO'}")
         if copay.get("exemption_disease"):
             lines.append(f"    Qualifying disease: {copay['exemption_disease']}")
+        if is_full and copay.get("exemption_range"):
+            lines.append(f"    Exemption range: {copay['exemption_range']}")
+        if is_full:
+            visit = copay.get("visit_copay_savings_try")
+            if visit:
+                lines.append(f"    Visit copay savings: {visit:.2f} TRY")
+            rx = copay.get("rx_copay_savings_try")
+            if rx:
+                lines.append(f"    Rx copay savings: {rx:.2f} TRY")
         total_copay = copay.get("total_copay_savings_try")
         if total_copay:
-            lines.append(f"    Copay savings: {total_copay:.2f} TRY")
+            label = "Total copay savings" if is_full else "Copay savings"
+            lines.append(f"    {label}: {total_copay:.2f} TRY")
+        if is_full and copay.get("rate_corrections"):
+            _format_list_section(
+                lines,
+                "Rate corrections",
+                copay["rate_corrections"],
+                key="procedure_code",
+                fmt="{procedure_code}: {correct_rate_pct}% ({savings_try} TRY)",
+                exactness=copay_exactness,
+                max_items=list_cap,
+            )
 
-    strategy = report.get("strategy", {}) or report.get(
-        "billing_strategy", {}
-    ) or {}
+    strategy = report.get("strategy", {}) or report.get("billing_strategy", {}) or {}
     if strategy:
         strat_exactness = strategy.get("exactness_status", "unknown")
         lines.append(f"\n  Billing strategy [exactness: {strat_exactness}]")
+        strat_source = strategy.get("rule_source", "")
+        if is_full and strat_source:
+            lines.append(f"    Source: {strat_source}")
+        if is_full and strategy.get("recommendations"):
+            _format_list_section(
+                lines,
+                "Strategy recommendations",
+                strategy["recommendations"],
+                key="chapter",
+                fmt="{chapter}: {recommendation} ({savings_try} TRY)",
+                exactness=strat_exactness,
+                max_items=list_cap,
+            )
 
-    materials = report.get("materials", {}) or report.get(
-        "material_pre_check", {}
-    ) or {}
+    materials = report.get("materials", {}) or report.get("material_pre_check", {}) or {}
     if materials:
         mat_exactness = materials.get("exactness_status", "unknown")
         lines.append(f"\n  Material pre-check [exactness: {mat_exactness}]")
+        mat_source = materials.get("rule_source", "")
+        if is_full and mat_source:
+            lines.append(f"    Source: {mat_source}")
         pre_auth = materials.get("pre_auth_required", [])
         if pre_auth:
             _format_list_section(
@@ -371,7 +439,7 @@ def build_billing_context(data: dict[str, Any]) -> str:
                 pre_auth,
                 key="material_name",
                 fmt="{material_name}",
-                max_items=5,
+                max_items=list_cap,
             )
         miat = materials.get("miat_restricted", [])
         if miat:
@@ -381,16 +449,50 @@ def build_billing_context(data: dict[str, Any]) -> str:
                 miat,
                 key="material_name",
                 fmt="{material_name}",
-                max_items=5,
+                max_items=list_cap,
             )
+        if is_full:
+            ceilings = materials.get("gazette_ceiling_by_specialty", {}) or {}
+            if ceilings:
+                lines.append("  Gazette ceiling by specialty:")
+                for specialty, ceiling in list(ceilings.items())[:list_cap]:
+                    lines.append(f"    - {specialty}: {ceiling:.2f} TRY")
 
     total_recoverable = report.get("total_recoverable_try")
     if total_recoverable is not None:
         lines.append(f"\n  TOTAL RECOVERABLE: {total_recoverable:.2f} TRY")
+    if is_full:
+        action_count = report.get("action_count")
+        if action_count is not None:
+            lines.append(f"  Action count: {action_count}")
     priority = report.get("priority")
     if priority:
         lines.append(f"  Priority: {priority}")
+    if is_full:
+        report_exactness = report.get("exactness_status")
+        if report_exactness:
+            lines.append(f"  Report exactness: {report_exactness}")
 
+
+def build_full_billing_context(report: dict[str, Any]) -> str:
+    """Build full per-patient billing context with all detail rows (cap 50 per list)."""
+    if not report:
+        return ""
+
+    lines: list[str] = ["--- BILLING OPTIMIZATION (FULL) ---"]
+    _format_sut_section(lines, "Patient ID", report.get("patient_id", "?"))
+    _append_billing_sections(lines, report, detail_level="full")
+    return "\n".join(lines)
+
+
+def build_billing_context(data: dict[str, Any]) -> str:
+    """Build per-patient billing optimization context from pre-fetched data."""
+    report = _unwrap_billing_report(data)
+    if not report:
+        return ""
+
+    lines: list[str] = ["--- BILLING OPTIMIZATION ---"]
+    _append_billing_sections(lines, report, detail_level="summary")
     return "\n".join(lines)
 
 
@@ -479,6 +581,9 @@ def build_bilun_runtime_context(
     data: dict[str, Any],
     active_tab: str,
     patient_id: str | None = None,
+    *,
+    page_context: dict[str, Any] | None = None,
+    intent: ChatIntent = "user_question",
 ) -> str:
     """Build the complete BILUN runtime context string for the LLM.
 
@@ -488,6 +593,8 @@ def build_bilun_runtime_context(
             patient_optimization, billing_report, catalog_info.
         active_tab: Current workspace tab name.
         patient_id: Currently selected patient, if any.
+        page_context: Structured view of the current page (sections, labels, values).
+        intent: Chat intent — controls billing detail level.
 
     Returns:
         Formatted context string ready for the LLM system prompt.
@@ -497,6 +604,7 @@ def build_bilun_runtime_context(
     context: dict[str, Any] = {
         "product": "BILUN",
         "active_tab": active_tab,
+        "intent": intent,
         "assistant_rules": [
             "Answer only from BILUN financial, reimbursement, optimization, and patient-workspace context.",
             "If an exactness or pricing status is not exact, describe that surface as unavailable instead of inventing zero, clear, or low-risk values.",
@@ -506,11 +614,18 @@ def build_bilun_runtime_context(
         ],
     }
 
+    if page_context:
+        context["page_view"] = page_context
+
     context["cohort_context"] = build_cohort_context(data)
 
     if patient_id:
         context["patient_context"] = build_patient_context(data)
-        context["billing_context"] = build_billing_context(data)
+        report = _unwrap_billing_report(data)
+        if intent == "user_question":
+            context["billing_context"] = build_full_billing_context(report)
+        else:
+            context["billing_context"] = build_billing_context(data)
 
     catalog = build_catalog_context(data)
     if catalog:

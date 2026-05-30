@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
+
+ChatIntent = Literal["auto_brief", "user_question"]
 
 
-def build_system_prompt(model_context: dict[str, Any]) -> str:
+def build_system_prompt(
+    model_context: dict[str, Any],
+    intent: ChatIntent = "user_question",
+) -> str:
     """Build the system prompt from SUT build metadata."""
 
     lines = [
@@ -70,21 +75,42 @@ def build_system_prompt(model_context: dict[str, Any]) -> str:
         "- SUT Billing Review — lab optimization, drug optimization, copay savings, billing strategy, materials",
         "- If the workspace context is ambiguous, ask one short clarification.",
         "",
-        "RESPONSE RULES",
-        "- Write naturally like a colleague on Slack or Teams — no markdown, no bullet points, no headers.",
-        "- Never use **bold**, *italic*, `code`, bullet lists, or numbered lists. Just plain paragraphs.",
-        "- Short, conversational sentences. One idea per sentence. Vary sentence length.",
-        "- Start with the most important finding, then add context if needed.",
+    ]
+
+    shared_response_rules = [
         "- Always state the exactness_status when reporting amounts.",
         "- When a feature is gated, explain what claim data is needed in plain language.",
         "- Do not fabricate claim lines, procedure codes, or billing amounts.",
         "- Do not give medical or treatment advice.",
-        "- When comparing strategies, cite both sides with exactness warnings in natural sentences.",
-        "- If optional context is unavailable, say so conversationally — no need for a structured block.",
+        "- When comparing strategies, cite both sides with exactness warnings.",
+        "- If optional context is unavailable, say so clearly.",
         "- When reporting billing results, cite the rule_source field from the context block.",
         "  Example: \"Lab savings are 1,800 TRY under EK-2B hemogram bundling rules.\"",
         "  Example: \"Copay exemption applies under EK-1A chronic disease rules.\"",
         "- Every SUT claim must be traceable to its source annex. Never say \"per SUT rules\"",
         "  without naming the specific annex (e.g., EK-1A, EK-2G, EK-4A, EK-2C).",
     ]
+
+    if intent == "auto_brief":
+        lines.extend([
+            "RESPONSE RULES — AUTO BRIEF",
+            "- Write naturally like a colleague on Slack or Teams — no markdown, no bullet points, no headers.",
+            "- Never use **bold**, *italic*, `code`, bullet lists, or numbered lists. Just plain paragraphs.",
+            "- Short, conversational sentences. One idea per sentence. Vary sentence length.",
+            "- Start with the most important finding, then add context if needed.",
+            *shared_response_rules,
+        ])
+    else:
+        lines.extend([
+            "RESPONSE RULES — USER QUESTION",
+            "- Answer the user's question fully and directly.",
+            "- Use bullets, numbered lists, or short section headers when they improve clarity.",
+            "- When the user asks for a simple explanation (ELI5, \"explain like I'm 5\", plain language),",
+            "  use everyday language while keeping SUT annex names and exactness_status accurate.",
+            "- When page_view is present in runtime context, walk its sections in the order given",
+            "  and tie your answer to what the user is looking at on screen.",
+            "- Lead with the answer, then supporting detail from context blocks.",
+            *shared_response_rules,
+        ])
+
     return "\n".join(lines)

@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "source": "SGK SUT (Saglik Uygulama Tebligi) ve Resmi Gazete degisiklik tebligleri",
+    "description": "Islem puani → TL donusum katsayisi. Formul: Islem Bedeli (TL) = Puan × Katsayi. Virgulden sonra iki basamak, yuvarlama yapilmadan.",
+    "verification_status": "verified",
+    "research_date": "2026-05-30",
+    "cohort_floor": "2020-01-01",
+    "note": "2020-2026 arasinda katsayi degismedi (0.593). SUT degisiklik tebligleri EK-2B/EK-2C islem puanlarini guncelledi; katsayi ayni kaldi. TTB ozel hekimlik HUV katsayisi veya devlet memuru gosterge katsayisi ile karistirilmamalidir."
+  },
+  "coefficients": [
+    {
+      "katsayi": 0.593,
+      "effective_from": "2020-01-01",
+      "effective_to": null,
+      "origin_effective_from": "2010-03-25",
+      "resmi_gazete": "RG-25.03.2010/27532 (1. Mukerrer)",
+      "teblig_ref": "Sosyal Guvenlik Kurumu Saglik Uygulama Tebligi (ilk yayin)",
+      "change_type": "set",
+      "verified": true,
+      "verification_notes": "2010 SUT m.1.1(16) ve guncel konsolide metin (LEXPERA, son degisiklik RG-17.01.2026/33140) EK-2/B, EK-2/C, EK-2/C listeleri icin katsayi (0,593) der. 2016 islenmis SUT PDF de ayni ifadeyi tasir. data/gazette/curated/ek2b_catalog_history.parquet uzerinde 2020+ valid_from dilimlerinde price_try/puan orani ~0.593 civarinda."
+    }
+  ],
+  "reaffirmations": [
+    {
+      "katsayi": 0.593,
+      "resmi_gazete_date": "2020-03-11",
+      "note": "2020.03.11 SUT degisiklik tebligi; puan listesi guncellendi, katsayi 0,593"
+    },
+    {
+      "katsayi": 0.593,
+      "resmi_gazete_date": "2021-06-01",
+      "note": "2021.06.01 SUT degisiklik tebligi"
+    },
+    {
+      "katsayi": 0.593,
+      "resmi_gazete_date": "2022-08-25",
+      "resmi_gazete": "RG-25.08.2022/31934",
+      "note": "Buyuk SUT revizyonu; m.1.1(15) katsayi (0,593) olarak korundu"
+    },
+    {
+      "katsayi": 0.593,
+      "resmi_gazete_date": "2022-09-03",
+      "note": "Yururluk 02.09.2022; version_manifest effective_date 2022-09-03"
+    },
+    {
+      "katsayi": 0.593,
+      "resmi_gazete_date": "2024-05-09",
+      "resmi_gazete": "RG-09.05.2024/32541 (Mukerrer)",
+      "note": "EK-2B/EK-2C puan artislari (~%50-60); katsayi degismedi"
+    },
+    {
+      "katsayi": 0.593,
+      "resmi_gazete_date": "2025-10-17",
+      "resmi_gazete": "RG-17.10.2025/33050",
+      "note": "SUT degisiklik tebligi; katsayi 0,593"
+    },
+    {
+      "katsayi": 0.593,
+      "resmi_gazete_date": "2026-01-17",
+      "resmi_gazete": "RG-17.01.2026/33140",
+      "note": "Guncel SUT; sut_checkup_pricing.json meta referansi"
+    }
+  ],
+  "sources": [
+    {
+      "title": "2010 SUT Birlestirilmis Son Hali",
+      "url": "https://www.diader.org.tr/index.php/sgk-mevzuat/item/114-2010-sut-birlestirilmis-son-hali-06-01-2011",
+      "cites": "RG-25.03.2010/27532, katsayi (0,593)"
+    },
+    {
+      "title": "Sosyal Guvenlik Kurumu Saglik Uygulama Tebligi (konsolide)",
+      "url": "https://www.lexpera.com.tr/mevzuat/tebligler/sosyal-guvenlik-kurumu-saglik-uygulama-tebligi",
+      "cites": "RG-24.03.2013/28597 taban; son degisiklik RG-17.01.2026/33140"
+    },
+    {
+      "title": "SGK SUT arama sonuclari (2020-2026 tebligleri)",
+      "url": "https://www.sgk.gov.tr/Arama/Index/sut"
+    },
+    {
+      "title": "BILUN ek2b_catalog_history.parquet (empirik dogrulama)",
+      "path": "data/gazette/curated/ek2b_catalog_history.parquet"
+    }
+  ]
+}

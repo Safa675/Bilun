@@ -12,7 +12,7 @@ from typing import Any, AsyncIterator
 import httpx
 
 from .metadata import get_chat_model_context
-from .prompts import build_system_prompt
+from .prompts import ChatIntent, build_system_prompt
 from .tools import (
     ToolSession,
     execute_tool_call,
@@ -49,8 +49,9 @@ def _build_messages(
     runtime_context: str,
     *,
     model_context: dict[str, Any],
+    intent: ChatIntent = "user_question",
 ) -> list[dict]:
-    system_content = build_system_prompt(model_context)
+    system_content = build_system_prompt(model_context, intent=intent)
     if runtime_context:
         system_content += "\n\n" + runtime_context
     return [{"role": "system", "content": system_content}] + messages
@@ -65,9 +66,12 @@ def _build_headers() -> dict[str, str]:
     }
 
 
-def _validate_messages_for_llm(messages: list[dict]) -> tuple[list[dict], str | None]:
+def _validate_messages_for_llm(
+    messages: list[dict],
+    intent: ChatIntent = "user_question",
+) -> tuple[list[dict], str | None]:
     """Validate and truncate messages. Returns (messages, error_token)."""
-    max_msg_length = 2000
+    max_msg_length = 2000 if intent == "auto_brief" else 32000
     max_messages = 20
     if len(messages) > max_messages:
         messages = messages[-max_messages:]
@@ -197,6 +201,8 @@ def _extract_tool_calls(response: dict[str, Any]) -> list[dict[str, Any]] | None
 async def stream_chat_response_with_tools(
     messages: list[dict],
     runtime_context: str = "",
+    *,
+    intent: ChatIntent = "user_question",
 ) -> AsyncIterator[str]:
     """Stream text chunks from the LLM with tool-calling support.
 
@@ -214,7 +220,7 @@ async def stream_chat_response_with_tools(
     import copy
 
     msg_copy = copy.deepcopy(messages)
-    msg_copy, error_token = _validate_messages_for_llm(msg_copy)
+    msg_copy, error_token = _validate_messages_for_llm(msg_copy, intent=intent)
     if error_token:
         yield error_token
         return
@@ -223,6 +229,7 @@ async def stream_chat_response_with_tools(
         msg_copy,
         runtime_context,
         model_context=get_chat_model_context(),
+        intent=intent,
     )
     tools = get_tool_schemas()
     tool_session = ToolSession()
@@ -355,6 +362,8 @@ async def stream_chat_response(
     messages: list[dict],
     runtime_context: str = "",
     extra_params: dict | None = None,
+    *,
+    intent: ChatIntent = "user_question",
 ) -> AsyncIterator[str]:
     """Stream text chunks from the configured LLM endpoint."""
     api_key = _get_api_key()
@@ -363,30 +372,16 @@ async def stream_chat_response(
         yield "⚠️ LLM API key not found. Set LLM_API_KEY in your .env file."
         return
 
-    max_msg_length = 2000
-    max_messages = 20
-    if len(messages) > max_messages:
-        messages = messages[-max_messages:]
-
-    for message in messages:
-        if not isinstance(message.get("role"), str) or message["role"] not in (
-            "user",
-            "assistant",
-            "system",
-        ):
-            yield "⚠️ Invalid message format."
-            return
-        content = message.get("content", "")
-        if not isinstance(content, str):
-            yield "⚠️ Invalid message content."
-            return
-        if len(content) > max_msg_length:
-            message["content"] = content[:max_msg_length]
+    messages, error_token = _validate_messages_for_llm(messages, intent=intent)
+    if error_token:
+        yield error_token
+        return
 
     full_messages = _build_messages(
         messages,
         runtime_context,
         model_context=get_chat_model_context(),
+        intent=intent,
     )
     logger.info(
         "LLM REQUEST | model=%s | msgs=%d | context_chars=%d",
