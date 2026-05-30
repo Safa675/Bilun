@@ -16,7 +16,9 @@ from src.bilun.domain.claims.patient_context import build_cohort_claim_context
 from src.bilun.domain.claims.loader import SUTClaimDataset
 
 from .shared import _extract_diagnoses_bulk_pl, _extract_patient_icd10_chapters
-from .copay_exemptions import _get_ek1a_by_letter, _precompute_exemption_map
+from .copay_exemption_context import build_copay_inputs_by_patient
+from .copay_exemption_rules.ek1a import _get_ek1a_by_letter
+from .copay_exemptions import evaluate_copay_exemption
 from .temporal import audit_temporal_prices
 from .drugs import validate_drug_discount_tiers
 from .unbundling import (
@@ -211,34 +213,51 @@ def compute_optimization_summary(
 
     _get_ek1a_by_letter()
 
-    all_unique_codes: set[str] = set()
-    for diags in diagnoses_by_pid.values():
-        all_unique_codes.update(diags)
-    exemption_map = _precompute_exemption_map(all_unique_codes)
+    claims_by_patient = (
+        getattr(claim_dataset, "claims_by_patient", {}) if claim_dataset is not None else {}
+    )
+    profiles_by_patient = (
+        getattr(claim_dataset, "copay_profiles_by_patient", {})
+        if claim_dataset is not None
+        else {}
+    )
+    copay_inputs = build_copay_inputs_by_patient(
+        patient_ids,
+        diagnoses_by_pid,
+        claims_by_patient=claims_by_patient,
+        copay_profiles_by_patient=profiles_by_patient,
+    )
 
     n_exempt = 0
+    n_exempt_ek1a = 0
+    n_exempt_status_only = 0
+    n_exempt_both = 0
+    category_counts: Counter[str] = Counter()
     all_diseases: list[str] = []
+
     for pid in patient_ids:
-        diagnoses = diagnoses_by_pid.get(pid, [])
-
-        if not diagnoses:
+        result = evaluate_copay_exemption(copay_inputs[pid])
+        if not result.get("exempt"):
             continue
-
-        seen_diseases: set[str] = set()
-        patient_qualifying: list[dict[str, str]] = []
-        for diag in diagnoses:
-            match = exemption_map.get(diag)
-            if match is not None:
-                disease, range_str = match
-                if disease not in seen_diseases:
-                    seen_diseases.add(disease)
-                    patient_qualifying.append(
-                        {"icd10": diag, "disease": disease, "range": range_str}
-                    )
-        if patient_qualifying:
-            n_exempt += 1
-            for q in patient_qualifying:
-                all_diseases.append(q["disease"])
+        n_exempt += 1
+        categories = {
+            str(source.get("category") or "")
+            for source in result.get("exemption_sources", [])
+        }
+        has_ek1a = "ek1a_chronic" in categories
+        has_status = bool(categories - {"ek1a_chronic"})
+        if has_ek1a:
+            n_exempt_ek1a += 1
+        if has_status and not has_ek1a:
+            n_exempt_status_only += 1
+        if has_ek1a and has_status:
+            n_exempt_both += 1
+        for source in result.get("exemption_sources", []):
+            category_counts[str(source.get("category") or "unknown")] += 1
+        for diag in result.get("qualifying_diagnoses", []):
+            disease = str(diag.get("disease") or "")
+            if disease:
+                all_diseases.append(disease)
 
     n_total = len(patient_ids)
 
@@ -262,17 +281,24 @@ def compute_optimization_summary(
     return {
         "copay_exemptions": {
             "n_exempt_patients": n_exempt,
+            "n_exempt_ek1a_patients": n_exempt_ek1a,
+            "n_exempt_status_only_patients": n_exempt_status_only,
+            "n_exempt_ek1a_and_status_patients": n_exempt_both,
             "n_total_patients": n_total,
             "exemption_rate": round(n_exempt / n_total, 4) if n_total else 0.0,
+            "exemption_by_category": [
+                {"category": category, "count": count}
+                for category, count in category_counts.most_common()
+            ],
             "top_diseases": top_diseases,
             "methodology": (
-                "Cross-references patient ICD-10 diagnosis codes against 98 "
-                "chronic disease exemption ranges from gazette annex EK-1A. "
-                "Patients with qualifying diagnoses are exempt from outpatient "
-                "copayment (katılım payı) under SUT 1.8.1. "
-                "100% real gazette data."
+                "Composable copay exemption: EK-1A chronic ICD-10 ranges plus "
+                "status/visit rules when patient profiles and claim visit types "
+                "are available. EK-2C-1 copay rate ceilings are evaluated separately."
             ),
-            "rule_source": "EK-1A chronic disease copay exemptions, SUT 1.8.1",
+            "rule_source": (
+                "EK-1A, visit type (acil/koruyucu), SGK status, occupational context"
+            ),
         },
         "surcharge_exposure": _aggregate_surcharge_exposure(patient_ids, claim_dataset),
         "copay_rate_exposure": _aggregate_copay_rate_exposure(patient_ids, claim_dataset),

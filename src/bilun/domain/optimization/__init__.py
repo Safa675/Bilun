@@ -30,6 +30,9 @@ from .shared import (
 
 from .copay_exemptions import (
     check_copay_exemptions,
+    evaluate_copay_exemption,
+)
+from .copay_exemption_rules.ek1a import (
     _get_ek1a_by_letter,
     _precompute_exemption_map,
 )
@@ -53,6 +56,7 @@ __all__ = [
     "_extract_patient_icd10_chapters",
     "_ICD10_CHAPTER_TO_PROCEDURE_PREFIXES",
     "check_copay_exemptions",
+    "evaluate_copay_exemption",
     "_get_ek1a_by_letter",
     "_precompute_exemption_map",
     "analyze_surcharge_exposure",

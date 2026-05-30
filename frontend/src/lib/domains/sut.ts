@@ -246,6 +246,8 @@ export interface DrugSample {
 export interface DrugDiscountValidation extends ExactnessState {
   n_drugs_total: number | null;
   n_active_drugs: number | null;
+  n_tier_mismatches?: number | null;
+  total_discount_savings_try?: number | null;
   tier_distribution: Record<string, number>;
   discount_status_distribution: Record<string, number>;
   mean_discount_tier_1: number | null;
@@ -253,13 +255,34 @@ export interface DrugDiscountValidation extends ExactnessState {
   methodology: string;
 }
 
+export interface ExemptionCategoryCount {
+  category: string;
+  count: number;
+}
+
+export interface ExemptionSource {
+  category: string;
+  rule_source?: string;
+  evidence?: Record<string, unknown>;
+}
+
+export interface ExemptionCategoryGap {
+  category: string;
+  required_inputs_missing: string[];
+}
+
 export interface OptimizationSummary extends SUTDataSourceCarrier {
   copay_exemptions: {
     n_exempt_patients: number;
+    n_exempt_ek1a_patients?: number;
+    n_exempt_status_only_patients?: number;
+    n_exempt_ek1a_and_status_patients?: number;
     n_total_patients: number;
     exemption_rate: number;
+    exemption_by_category?: ExemptionCategoryCount[];
     top_diseases: TopDisease[];
     methodology: string;
+    rule_source?: string;
   };
   surcharge_exposure: ExactnessState & {
     n_total_ek2g: number | null;
@@ -290,6 +313,10 @@ export interface CopayExemptionResult {
   exempt: boolean;
   n_qualifying: number;
   qualifying_diagnoses: QualifyingDiagnosis[];
+  exemption_sources?: ExemptionSource[];
+  categories_not_evaluated?: ExemptionCategoryGap[];
+  primary_exemption_category?: string | null;
+  action?: string | null;
 }
 
 export interface SurchargeRule {
@@ -352,6 +379,9 @@ export interface PatientAlertCopay {
   exempt: boolean;
   n_qualifying: number;
   qualifying_diagnoses: QualifyingDiagnosis[];
+  exemption_sources?: ExemptionSource[];
+  categories_not_evaluated?: ExemptionCategoryGap[];
+  primary_exemption_category?: string | null;
   action: string | null;
 }
 
@@ -533,6 +563,13 @@ export interface CohortRecoverySummary extends ExactnessState, SUTDataSourceCarr
   total_material_flags: number;
   grand_total_recoverable: number;
   top_patients: Array<{
+    patient_id: string;
+    total_recoverable_try: number;
+    priority: string;
+    action_count: number;
+    top_action_type: string;
+  }>;
+  patient_summaries?: Array<{
     patient_id: string;
     total_recoverable_try: number;
     priority: string;

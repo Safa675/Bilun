@@ -53,12 +53,29 @@ def test_compute_optimization_summary_keeps_exact_exemptions_but_gates_non_exact
 ) -> None:
     import src.bilun.domain.optimization.aggregator as agg_mod
 
+    def _fake_evaluate(inp):
+        if "E11.9" in inp.diagnoses:
+            return {
+                "exempt": True,
+                "n_qualifying": 1,
+                "qualifying_diagnoses": [
+                    {"icd10": "E11.9", "disease": "Diabetes", "range": "E10-E14"}
+                ],
+                "exemption_sources": [{"category": "ek1a_chronic"}],
+                "categories_not_evaluated": [],
+                "primary_exemption_category": "ek1a_chronic",
+            }
+        return {
+            "exempt": False,
+            "n_qualifying": 0,
+            "qualifying_diagnoses": [],
+            "exemption_sources": [],
+            "categories_not_evaluated": [],
+            "primary_exemption_category": None,
+        }
+
     monkeypatch.setattr(agg_mod, "_get_ek1a_by_letter", lambda: {})
-    monkeypatch.setattr(
-        agg_mod,
-        "_precompute_exemption_map",
-        lambda _codes: {"E11.9": ("Diabetes", "E10-E14")},
-    )
+    monkeypatch.setattr(agg_mod, "evaluate_copay_exemption", _fake_evaluate)
     monkeypatch.setattr(
         agg_mod,
         "audit_temporal_prices",
