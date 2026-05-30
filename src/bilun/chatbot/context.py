@@ -7,6 +7,7 @@ from api/routes/, domain/, or db/ — pure formatters only.
 
 from __future__ import annotations
 
+import re
 from typing import Any, Literal
 
 from .prompts import ChatIntent
@@ -14,6 +15,17 @@ from .prompts import ChatIntent
 _FULL_BILLING_LIST_CAP = 50
 _SUMMARY_BILLING_LIST_CAP = 5
 BillingDetailLevel = Literal["summary", "full"]
+
+_PAGE_SECTION_SUMMARY_KEYS: dict[str, tuple[str, ...]] = {
+    "outcome": ("patient_id",),
+    "optimization_snapshot": ("patient_id", "n_diagnoses"),
+    "billing_report": (
+        "patient_id",
+        "total_recoverable_try",
+        "priority",
+        "exactness_status",
+    ),
+}
 
 
 def _format_sut_section(
@@ -48,7 +60,10 @@ def _format_list_section(
     for item in items[:max_items]:
         if isinstance(item, dict):
             label = item.get(key, item.get("name", "?"))
-            text = fmt.format(**{**item, key: label, "label": label})
+            values = {**item, key: label, "label": label}
+            for field in re.findall(r"\{(\w+)\}", fmt):
+                values.setdefault(field, "?")
+            text = fmt.format(**values)
             lines.append(f"    - {text}")
         else:
             lines.append(f"    - {item!s}")
@@ -577,6 +592,28 @@ def build_medula_context(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def slim_page_context(page_context: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Keep page_view metadata only — full patient data is fetched server-side."""
+    if not page_context:
+        return None
+    sections = page_context.get("sections")
+    if not isinstance(sections, dict):
+        return page_context
+
+    slim_sections: dict[str, Any] = {}
+    for section_key, value in sections.items():
+        if section_key in _PAGE_SECTION_SUMMARY_KEYS and isinstance(value, dict):
+            summary: dict[str, Any] = {"loaded": True}
+            for field in _PAGE_SECTION_SUMMARY_KEYS[section_key]:
+                if field in value:
+                    summary[field] = value[field]
+            slim_sections[section_key] = summary
+        else:
+            slim_sections[section_key] = value
+
+    return {**page_context, "sections": slim_sections}
+
+
 def build_bilun_runtime_context(
     data: dict[str, Any],
     active_tab: str,
@@ -614,18 +651,15 @@ def build_bilun_runtime_context(
         ],
     }
 
-    if page_context:
-        context["page_view"] = page_context
+    slim_view = slim_page_context(page_context)
+    if slim_view:
+        context["page_view"] = slim_view
 
     context["cohort_context"] = build_cohort_context(data)
 
     if patient_id:
         context["patient_context"] = build_patient_context(data)
-        report = _unwrap_billing_report(data)
-        if intent == "user_question":
-            context["billing_context"] = build_full_billing_context(report)
-        else:
-            context["billing_context"] = build_billing_context(data)
+        context["billing_context"] = build_billing_context(data)
 
     catalog = build_catalog_context(data)
     if catalog:

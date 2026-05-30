@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -264,8 +265,6 @@ async def stream_chat_response_with_tools(
 
         tool_calls = _extract_tool_calls(response)
         if tool_calls is None:
-            # No tool calls — LLM produced a text answer
-            # Extract the text and stream it via a fresh streaming call
             content = ""
             try:
                 content = response.get("choices", [{}])[0].get("message", {}).get("content", "")
@@ -273,13 +272,7 @@ async def stream_chat_response_with_tools(
                 pass
 
             if content:
-                # Stream the final response for a smooth UX
-                stream_payload = {
-                    **base_payload,
-                    "messages": full_messages,
-                }
-                async for token in _stream_text_from_llm(stream_payload):
-                    yield token
+                yield content
             else:
                 yield "\n\nI wasn't able to generate a response. Please try asking again."
             return
@@ -325,29 +318,33 @@ async def stream_chat_response_with_tools(
             "tool_calls": tool_calls,
         })
 
-        # Execute each tool call
-        for tc in tool_calls[:3]:
+        async def _run_tool(tc: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any] | None]:
             try:
                 tool_name = tc["function"]["name"]
                 arguments = json.loads(tc["function"]["arguments"])
             except (json.JSONDecodeError, KeyError) as exc:
-                full_messages.append({
+                return tc, {
                     "role": "tool",
                     "tool_call_id": tc.get("id", "unknown"),
                     "content": f"Error: invalid tool call arguments — {exc}",
-                })
-                continue
-
+                }
             result = await execute_tool_call(
                 tool_name,
                 arguments,
                 tool_session,
             )
-            full_messages.append({
+            return tc, {
                 "role": "tool",
                 "tool_call_id": tc["id"],
                 "content": result.content if result.success else f"Error: {result.error}",
-            })
+            }
+
+        tool_results = await asyncio.gather(
+            *(_run_tool(tc) for tc in tool_calls[:3])
+        )
+        for _tc, tool_message in tool_results:
+            if tool_message is not None:
+                full_messages.append(tool_message)
 
     # Should not reach here (handled above), but safety net
     stream_payload = {

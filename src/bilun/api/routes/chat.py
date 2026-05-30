@@ -5,8 +5,10 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import json
-from typing import Any
-from typing import Literal
+import logging
+import time
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Literal
 
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
@@ -19,9 +21,8 @@ from src.bilun.chatbot.context import build_bilun_runtime_context
 from src.bilun.chatbot.llm import stream_chat_response_with_tools
 from src.bilun.chatbot.prompts import ChatIntent
 
-import time as _time
+logger = logging.getLogger("bilun.api.chat")
 
-# Rate limiter constants
 RATE_LIMIT = 15  # max requests per window
 RATE_WINDOW_SEC = 60  # window size in seconds
 
@@ -40,7 +41,7 @@ def _prune_rate_windows(now: float) -> None:
 
 def _check_rate_limit(client_ip: str) -> bool:
     """Return True if request is allowed, False if rate-limited."""
-    now = _time.time()
+    now = time.time()
     with _rate_lock:
         _prune_rate_windows(now)
         _rate_window.setdefault(client_ip, [])
@@ -228,6 +229,17 @@ def _safe_context_block(label: str, builder) -> dict[str, Any]:
 # ── from sibling route modules)                                              ──
 
 
+def _should_use_chat_tools(
+    *,
+    patient_id: str | None,
+    intent: ChatIntent,
+) -> bool:
+    """Patient chats pre-fetch all context; tools are only useful on cohort/home views."""
+    if intent == "auto_brief":
+        return False
+    return patient_id is None
+
+
 def _fetch_runtime_data(
     active_tab: str,
     patient_id: str | None,
@@ -235,45 +247,61 @@ def _fetch_runtime_data(
     *,
     intent: ChatIntent = "user_question",
 ) -> dict[str, Any]:
-    """Fetch all data needed for context assembly.
+    """Fetch all data needed for context assembly (parallel where independent)."""
 
-    Returns a dict of pre-fetched data. Each value is wrapped via
-    _safe_context_block so context.py can handle unavailable blocks.
-    """
-    data: dict[str, Any] = {
-        "optimization_summary": _safe_context_block(
+    def _fetch_optimization_summary() -> dict[str, Any]:
+        return _safe_context_block(
             "Optimization summary",
             lambda: _summarize_optimization(get_optimization_summary()),
-        ),
-    }
-    if patient_id:
-        data["patient_outcome"] = _safe_context_block(
+        )
+
+    def _fetch_patient_outcome() -> dict[str, Any]:
+        return _safe_context_block(
             "Patient outcome",
             lambda: _summarize_patient_outcome(
-                get_bilun_patient_outcome(patient_id, include_expensive=True)
+                get_bilun_patient_outcome(patient_id, include_expensive=False)
             ),
         )
-        data["patient_optimization"] = _safe_context_block(
+
+    def _fetch_patient_optimization() -> dict[str, Any]:
+        return _safe_context_block(
             "Patient optimization",
             lambda: _summarize_patient_optimization(
                 get_patient_optimization(patient_id)
             ),
         )
-        data["billing_report"] = _safe_context_block(
+
+    def _fetch_billing_report() -> dict[str, Any]:
+        return _safe_context_block(
             "Billing report",
-            lambda: (
+            lambda: _summarize_billing_report(
                 get_patient_billing_report(patient_id)
-                if intent == "user_question"
-                else _summarize_billing_report(
-                    get_patient_billing_report(patient_id)
-                )
             ),
         )
-    if user_message:
-        data["medula_search"] = _safe_context_block(
+
+    def _fetch_medula_search() -> dict[str, Any]:
+        return _safe_context_block(
             "MEDULA knowledge base",
-            lambda: search_medula(user_message),
+            lambda: search_medula(user_message or ""),
         )
+
+    jobs: dict[str, Any] = {
+        "optimization_summary": _fetch_optimization_summary,
+    }
+    if patient_id:
+        jobs["patient_outcome"] = _fetch_patient_outcome
+        jobs["patient_optimization"] = _fetch_patient_optimization
+        jobs["billing_report"] = _fetch_billing_report
+    if user_message:
+        jobs["medula_search"] = _fetch_medula_search
+
+    data: dict[str, Any] = {}
+    max_workers = min(4, len(jobs))
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = {pool.submit(fn): key for key, fn in jobs.items()}
+        for future in futures:
+            key = futures[future]
+            data[key] = future.result()
     return data
 
 
@@ -303,6 +331,7 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
             user_message = msg.content
             break
 
+    t0 = time.perf_counter()
     raw_data = await asyncio.to_thread(
         _fetch_runtime_data,
         req.active_tab,
@@ -310,6 +339,7 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
         user_message,
         intent=req.intent,
     )
+    t_fetch = time.perf_counter()
     runtime_context = build_bilun_runtime_context(
         raw_data,
         req.active_tab,
@@ -317,14 +347,30 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
         page_context=req.page_context,
         intent=req.intent,
     )
+    use_tools = _should_use_chat_tools(
+        patient_id=req.patient_id,
+        intent=req.intent,
+    )
+    logger.info(
+        "CHAT PRE-LLM | intent=%s patient=%s fetch_ms=%.0f ctx_ms=%.0f ctx_chars=%d tools=%s",
+        req.intent,
+        req.patient_id or "-",
+        (t_fetch - t0) * 1000,
+        (time.perf_counter() - t_fetch) * 1000,
+        len(runtime_context),
+        use_tools,
+    )
 
     async def sse_generator():
         queue: asyncio.Queue = asyncio.Queue()
 
         async def _producer():
             try:
-                user_msg_count = sum(1 for m in req.messages if m.role == "user")
-                stream_fn = stream_chat_response_with_tools if user_msg_count > 1 else stream_chat_response
+                stream_fn = (
+                    stream_chat_response_with_tools
+                    if use_tools
+                    else stream_chat_response
+                )
                 async for token in stream_fn(
                     [message.model_dump() for message in req.messages],
                     runtime_context,

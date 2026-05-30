@@ -94,7 +94,7 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
     assert "visit_date" in runtime_context
 
 
-def test_sut_chat_user_question_fetches_full_billing_report(monkeypatch):
+def test_sut_chat_user_question_uses_summarized_billing_context(monkeypatch):
     import src.bilun.api.routes.chat as sut_chat_mod
     from src.bilun.api import app
 
@@ -124,7 +124,7 @@ def test_sut_chat_user_question_fetches_full_billing_report(monkeypatch):
     monkeypatch.setattr(
         sut_chat_mod,
         "get_bilun_patient_outcome",
-        lambda patient_id, include_expensive=True: {"patient_id": patient_id},
+        lambda patient_id, include_expensive=False: {"patient_id": patient_id},
     )
     monkeypatch.setattr(
         sut_chat_mod,
@@ -144,7 +144,7 @@ def test_sut_chat_user_question_fetches_full_billing_report(monkeypatch):
 
     monkeypatch.setattr(sut_chat_mod, "stream_chat_response", fake_stream)
 
-    page_context = {"sections": [{"id": "lab", "title": "Lab"}]}
+    page_context = {"sections": {"billing_report": {"loaded": True, "patient_id": "P-001"}}}
     with TestClient(app) as client:
         response = client.post(
             "/api/chat",
@@ -161,8 +161,67 @@ def test_sut_chat_user_question_fetches_full_billing_report(monkeypatch):
     assert captured["intent"] == "user_question"
     runtime_context = str(captured["runtime_context"])
     assert '"page_view"' in runtime_context
-    assert "Full-7" in runtime_context
-    assert "BILLING OPTIMIZATION (FULL)" in runtime_context
+    assert "Full-4" in runtime_context
+    assert "Full-7" not in runtime_context
+    assert "BILLING OPTIMIZATION (FULL)" not in runtime_context
+
+
+def test_sut_chat_patient_question_skips_tools_path(monkeypatch):
+    import src.bilun.api.routes.chat as sut_chat_mod
+    from src.bilun.api import app
+
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(sut_chat_mod, "_check_rate_limit", lambda _ip: True)
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_optimization_summary",
+        lambda: {"copay_exemptions": {}, "surcharge_exposure": {}},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_bilun_patient_outcome",
+        lambda patient_id, include_expensive=False: {"patient_id": patient_id},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_patient_optimization",
+        lambda patient_id: {"patient_id": patient_id},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_patient_billing_report",
+        lambda patient_id: {"patient_id": patient_id, "lab": {}},
+    )
+
+    async def fake_stream(messages, runtime_context="", intent="user_question"):
+        captured["stream"] = "fast"
+        yield "ok"
+
+    async def fake_tools(messages, runtime_context="", intent="user_question"):
+        captured["stream"] = "tools"
+        yield "ok"
+
+    monkeypatch.setattr(sut_chat_mod, "stream_chat_response", fake_stream)
+    monkeypatch.setattr(sut_chat_mod, "stream_chat_response_with_tools", fake_tools)
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/chat",
+            json={
+                "messages": [
+                    {"role": "user", "content": "First question"},
+                    {"role": "assistant", "content": "First answer"},
+                    {"role": "user", "content": "Follow up"},
+                ],
+                "patient_id": "P-001",
+                "active_tab": "SUT Patient Workspace",
+                "intent": "user_question",
+            },
+        )
+
+    assert response.status_code == 200
+    assert captured["stream"] == "fast"
 
 
 def test_sut_chat_auto_brief_uses_summarized_billing(monkeypatch):

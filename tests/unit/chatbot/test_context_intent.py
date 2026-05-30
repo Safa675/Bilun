@@ -91,13 +91,17 @@ def test_build_full_billing_context_includes_all_flagged_tests_up_to_cap():
     assert "TOTAL RECOVERABLE: 425.00 TRY" in text
 
 
-def test_build_bilun_runtime_context_merges_page_view_and_full_billing():
+def test_build_bilun_runtime_context_merges_slim_page_view_and_summarized_billing():
     report = _sample_full_report()
     page_context = {
-        "sections": [
-            {"id": "lab", "title": "Lab optimization"},
-            {"id": "drug", "title": "Drug optimization"},
-        ],
+        "page": "patient_workspace",
+        "sections": {
+            "billing_report": {
+                "loaded": True,
+                "patient_id": "P-001",
+                "total_recoverable_try": 425.0,
+            },
+        },
     }
     data = {
         "optimization_summary": {"status": "ready", "summary": {}},
@@ -113,9 +117,11 @@ def test_build_bilun_runtime_context_merges_page_view_and_full_billing():
         intent="user_question",
     )
     assert '"page_view"' in runtime
-    assert '"Lab optimization"' in runtime
-    assert "BILLING OPTIMIZATION (FULL)" in runtime
-    assert "Test-11" in runtime
+    assert '"total_recoverable_try": 425.0' in runtime
+    assert "BILLING OPTIMIZATION (FULL)" not in runtime
+    assert "--- BILLING OPTIMIZATION ---" in runtime
+    assert "Test-4" in runtime
+    assert "Test-11" not in runtime
 
 
 def test_build_bilun_runtime_context_auto_brief_uses_summarized_billing():
