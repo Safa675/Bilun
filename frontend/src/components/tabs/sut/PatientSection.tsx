@@ -6,8 +6,6 @@ import type {
 } from "@/lib/domains/sut";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
 import useStaggeredReveal from "@/hooks/useStaggeredReveal";
-import PatientSearch from "@/components/ui/PatientSearch";
-import { searchSutPatients } from "@/lib/api/sut";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
 import { Chip, DataTable, Eyebrow, Surface } from "@/components/primitives";
 import PatientInvoiceTable from "@/components/tables/PatientInvoiceTable";
@@ -27,6 +25,8 @@ export function PatientSUTContent({
   selectedPatientId,
   onPatientSelect,
   onRetry,
+  cohortPatientIds,
+  cohortFilterActive,
 }: {
   data: SutPatientOutcomeData | null;
   error: string | null;
@@ -35,6 +35,8 @@ export function PatientSUTContent({
   selectedPatientId: string | null;
   onPatientSelect: (patientId: string) => void;
   onRetry: () => void;
+  cohortPatientIds?: Set<string>;
+  cohortFilterActive?: boolean;
 }) {
   const outcomeState = getSutOutcomeViewState({
     selectedPatientId,
@@ -57,19 +59,6 @@ export function PatientSUTContent({
 
   return (
     <div>
-      <Surface variant="base" padding="lg" className="mb-6">
-        <div className="flex items-center gap-4">
-          <span className="font-semibold whitespace-nowrap">Patient:</span>
-          <PatientSearch
-            id="patient-sut-search"
-            selectedPatientId={selectedPatientId}
-            onSelect={onPatientSelect}
-            placeholder="Search patient ID for SUT analysis..."
-            searchFn={searchSutPatients}
-          />
-        </div>
-      </Surface>
-
       {selectedPatientId && (
         <Surface variant="base" padding="lg" className="mb-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -91,7 +80,10 @@ export function PatientSUTContent({
       )}
 
       {outcomeState === "idle" ? (
-        <PatientInvoiceTable />
+        <PatientInvoiceTable
+          cohortPatientIds={cohortPatientIds}
+          cohortFilterActive={cohortFilterActive}
+        />
       ) : outcomeState === "loading" ? (
         <SutPatientAnalyticsSkeleton patientId={selectedPatientId} />
       ) : outcomeState === "error" ? (
@@ -99,7 +91,7 @@ export function PatientSUTContent({
           <div>
             <Chip variant="danger">{error}</Chip>
             <p className="mt-2 text-xs text-[var(--text-secondary)]">
-              Retry this patient, or pick a different patient from the search box.
+              Retry this patient, or pick a different patient from the table.
             </p>
           </div>
           <div>

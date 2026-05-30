@@ -19,6 +19,7 @@ export function createUIStateStore(): StoreApi<UIStateStore> {
             messages: [...state.messages],
             autoText: state.autoText,
             autoFiredKey: state.autoFiredKey,
+            briefedContextKeys: [...(state.briefedContextKeys ?? [])],
           },
         },
       });

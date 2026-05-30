@@ -24,6 +24,8 @@ import {
   searchSutPatients,
 } from "@/lib/api/sut";
 import { buildSutHomeHref, buildSutPatientHref } from "@/lib/constants";
+import { buildPatientWorkspacePageContext } from "@/lib/sutChatPageContext";
+import { SUT_WORKSPACE_CHAT_SESSION_KEY } from "@/lib/sutChatSession";
 import { recordRecent } from "@/lib/recents";
 import type {
   BillingActionReport,
@@ -163,9 +165,25 @@ export default function SutPatientPage() {
     ? [outcomeError, optimizationError, billingError].filter(Boolean).join(" ")
     : null;
 
-  const chatSessionKey = useMemo(() => `patient:${patientId}`, [patientId]);
+  const chatSessionKey = SUT_WORKSPACE_CHAT_SESSION_KEY;
   const chatState = useSutChatSession(chatSessionKey);
   const setChatSession = useSetSutChatSession();
+  const handleChatStateChange = useCallback(
+    (state: Parameters<typeof setChatSession>[1]) => {
+      setChatSession(chatSessionKey, state);
+    },
+    [chatSessionKey, setChatSession],
+  );
+  const chatPageContext = useMemo(
+    () =>
+      buildPatientWorkspacePageContext({
+        patientId,
+        outcome,
+        optimization,
+        billingReport,
+      }),
+    [patientId, outcome, optimization, billingReport],
+  );
   const shouldRenderChat = !loading && !allFailed;
   const isDocked = shouldRenderChat && chatDock !== "center";
   const sectionClass = isDocked
@@ -182,7 +200,7 @@ export default function SutPatientPage() {
                 className="mb-4 flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--text-muted)]"
               >
                 <Link
-                  href={buildSutHomeHref("analytics")}
+                  href={buildSutHomeHref("patients")}
                   className="text-[var(--text-secondary)] transition-colors hover:text-[var(--gold-hover)]"
                 >
                   SUT workspace
@@ -214,10 +232,11 @@ export default function SutPatientPage() {
               <SutInlineAIPanel
                 patientId={patientId}
                 activeTab="SUT Patient Workspace"
+                pageContext={chatPageContext}
                 dock={chatDock}
                 onDockChange={setChatDock}
                 chatState={chatState}
-                onChatStateChange={(state) => setChatSession(chatSessionKey, state)}
+                onChatStateChange={handleChatStateChange}
               />
             )}
 
@@ -267,10 +286,11 @@ export default function SutPatientPage() {
         <SutInlineAIPanel
           patientId={patientId}
           activeTab="SUT Patient Workspace"
+          pageContext={chatPageContext}
           dock={chatDock}
           onDockChange={setChatDock}
           chatState={chatState}
-          onChatStateChange={(state) => setChatSession(chatSessionKey, state)}
+          onChatStateChange={handleChatStateChange}
         />
       )}
     </>

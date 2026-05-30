@@ -7,12 +7,15 @@ export interface SutInlineChatState {
   messages: ChatMessage[];
   autoText: string;
   autoFiredKey: string;
+  /** Context keys that already received an auto-briefing in this session. */
+  briefedContextKeys: string[];
 }
 
 export const EMPTY_SUT_INLINE_CHAT_STATE: SutInlineChatState = {
   messages: [],
   autoText: "",
   autoFiredKey: "",
+  briefedContextKeys: [],
 };
 
 export interface NavigationState {

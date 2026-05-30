@@ -1,14 +1,18 @@
 "use client";
 
-import { useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { CircleHelp } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
 import { SyntheticDemoChip } from "@/components/sut/SyntheticDemoProvenance";
 import { useConfig } from "@/lib/configContext";
 import { cn } from "@/lib/cn";
-import { SUT_HOME_TABS, type SutHomeTab } from "@/lib/constants";
+import {
+  buildSutHomeHref,
+  parseSutHomeTab,
+  SUT_HOME_TABS,
+  type SutHomeTab,
+} from "@/lib/constants";
 import { useSetShowHowItWorks } from "@/stores/index";
 
 interface AppTopBarProps {
@@ -19,26 +23,22 @@ interface AppTopBarProps {
 
 function useActiveHomeTab(): SutHomeTab {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  if (pathname !== "/") return "analytics";
-  const tab = searchParams.get("tab");
-  if (tab === "optimizer") return "optimizer";
-  if (tab === "reference-tools") return "reference-tools";
-  return "analytics";
+  return parseSutHomeTab(searchParams.get("tab"));
 }
 
 export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProps) {
   const setShowHowItWorks = useSetShowHowItWorks();
   const config = useConfig();
+  const searchParams = useSearchParams();
   const sutDataSource = config.sut_data_source ?? config.sutDataSource ?? null;
   const activeTab = useActiveHomeTab();
-  const handleOpenHowItWorks = useCallback(() => {
+  const handleOpenHowItWorks = () => {
     if (onOpenHowItWorks) {
       onOpenHowItWorks();
       return;
     }
     setShowHowItWorks(true);
-  }, [onOpenHowItWorks, setShowHowItWorks]);
+  };
 
   return (
     <header
@@ -67,7 +67,7 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
             return (
               <Link
                 key={tab.id}
-                href={`/?tab=${tab.id}`}
+                href={buildSutHomeHref(tab.id, searchParams)}
                 scroll={false}
                 title={tab.subtitle}
                 className={cn(

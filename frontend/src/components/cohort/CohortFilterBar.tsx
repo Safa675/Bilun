@@ -1,0 +1,162 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Filter } from "lucide-react";
+import { Chip, Eyebrow, Surface } from "@/components/primitives";
+import { useCohortFilter } from "@/hooks/useCohortFilter";
+import { fmtNum } from "@/components/tabs/sut/shared";
+import {
+  formatAgeRangeDisplay,
+  formatPatientFilterLabel,
+  parseAgeRangeInput,
+} from "@/lib/cohortFilter";
+import type { PatientMeta } from "@/lib/domains/patient";
+import { cn } from "@/lib/cn";
+
+interface CohortFilterBarProps {
+  matchedCount: number | null;
+  totalCount: number | null;
+  patients?: PatientMeta[];
+  className?: string;
+}
+
+export default function CohortFilterBar({
+  matchedCount,
+  totalCount,
+  patients = [],
+  className,
+}: CohortFilterBarProps) {
+  const { filter, isActive, setFilter, clearFilter } = useCohortFilter();
+  const [doctorDraft, setDoctorDraft] = useState(filter.doctor);
+  const [ageDraft, setAgeDraft] = useState(formatAgeRangeDisplay(filter));
+
+  const sortedPatients = useMemo(
+    () =>
+      [...patients].sort((a, b) =>
+        a.patient_id.localeCompare(b.patient_id, undefined, { numeric: true }),
+      ),
+    [patients],
+  );
+
+  const selectedPatientInList = sortedPatients.some(
+    (patient) => patient.patient_id === filter.q,
+  );
+
+  useEffect(() => {
+    setDoctorDraft(filter.doctor);
+    setAgeDraft(formatAgeRangeDisplay(filter));
+  }, [filter]);
+
+  function commitAgeRange() {
+    setFilter(parseAgeRangeInput(ageDraft));
+  }
+
+  return (
+    <Surface variant="base" padding="md" className={cn("space-y-3", className)}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <Eyebrow tone="muted" className="inline-flex items-center gap-1.5">
+            <Filter className="h-3.5 w-3.5" aria-hidden="true" />
+            Filtering
+          </Eyebrow>
+          <p className="mt-1 text-xs text-[var(--text-secondary)]">
+            Filters carry across Patients, Compliance, and Revenue.
+          </p>
+        </div>
+        {matchedCount !== null && totalCount !== null && (
+          <Chip variant={isActive ? "gold" : "neutral"}>
+            {fmtNum(matchedCount)} of {fmtNum(totalCount)} patients
+          </Chip>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="flex min-w-[220px] flex-1 flex-col gap-1">
+          <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            Patient
+          </span>
+          <select
+            value={filter.q && (selectedPatientInList || filter.q) ? filter.q : ""}
+            onChange={(event) => setFilter({ q: event.target.value })}
+            disabled={sortedPatients.length === 0}
+            className="sut-input app-select"
+          >
+            <option value="">
+              {sortedPatients.length === 0 ? "Loading patients…" : "All patients"}
+            </option>
+            {filter.q && !selectedPatientInList && (
+              <option value={filter.q}>{filter.q}</option>
+            )}
+            {sortedPatients.map((patient) => (
+              <option key={patient.patient_id} value={patient.patient_id}>
+                {formatPatientFilterLabel(patient)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="flex w-[120px] flex-col gap-1">
+          <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            Sex
+          </span>
+          <select
+            value={filter.sex}
+            onChange={(event) =>
+              setFilter({ sex: event.target.value as "" | "E" | "K" })
+            }
+            className="sut-input app-select"
+          >
+            <option value="">All</option>
+            <option value="E">E</option>
+            <option value="K">K</option>
+          </select>
+        </label>
+
+        <label className="flex w-[132px] flex-col gap-1">
+          <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            Age
+          </span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={ageDraft}
+            onChange={(event) => setAgeDraft(event.target.value)}
+            onBlur={commitAgeRange}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") commitAgeRange();
+            }}
+            placeholder="min - max"
+            className="sut-input tabular-nums"
+          />
+        </label>
+
+        <label className="flex min-w-[140px] flex-1 flex-col gap-1">
+          <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            Doctor code
+          </span>
+          <input
+            type="search"
+            value={doctorDraft}
+            onChange={(event) => setDoctorDraft(event.target.value)}
+            onBlur={() => setFilter({ doctor: doctorDraft.trim() })}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") setFilter({ doctor: doctorDraft.trim() });
+            }}
+            placeholder="Contains…"
+            className="sut-input"
+          />
+        </label>
+
+        {isActive && (
+          <button
+            type="button"
+            onClick={clearFilter}
+            className="sut-section-btn sut-section-btn-compact mb-0.5"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+    </Surface>
+  );
+}

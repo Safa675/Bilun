@@ -26,13 +26,15 @@ describe("createUIStateStore", () => {
     store.getState().setSutChatSession("patient:P-001", {
       messages: [{ role: "user", content: "hello" }],
       autoText: "analysis",
-      autoFiredKey: "patient:P-001_SUT Patient Workspace",
+      autoFiredKey: "cohort::Patients",
+      briefedContextKeys: ["cohort::Patients"],
     });
 
     expect(store.getState().sutChatSessions["patient:P-001"]).toEqual({
       messages: [{ role: "user", content: "hello" }],
       autoText: "analysis",
-      autoFiredKey: "patient:P-001_SUT Patient Workspace",
+      autoFiredKey: "cohort::Patients",
+      briefedContextKeys: ["cohort::Patients"],
     });
 
     store.getState().clearSutChatSession("patient:P-001");

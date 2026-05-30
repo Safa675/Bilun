@@ -23,7 +23,7 @@ vi.mock("@/components/chat/SutInlineAIPanel", () => ({
 vi.mock("@/stores/index", () => ({
   useAiDockPosition: () => "center",
   useSetAiDockPosition: () => vi.fn(),
-  useSutChatSession: () => ({ messages: [], autoText: "", autoFiredKey: "" }),
+  useSutChatSession: () => ({ messages: [], autoText: "", autoFiredKey: "", briefedContextKeys: [] }),
   useSetSutChatSession: () => vi.fn(),
 }));
 
@@ -33,7 +33,7 @@ vi.mock("@/components/skeletons/SutSkeletons", () => ({
 
 vi.mock("@/lib/constants", () => ({
   buildSutBillingHref: (patientId: string) => `/patient/${patientId}/billing`,
-  buildSutHomeHref: () => "/?tab=optimizer",
+  buildSutHomeHref: () => "/?tab=compliance",
   SUT_BRAND: {
     moduleLabel: "BILUN",
     billingTitle: "Patient billing report",

@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import {
-  BadgeDollarSign,
   ChartColumnBig,
   ShieldAlert,
   ShieldCheck,
@@ -16,7 +15,6 @@ import {
   getPatientAlerts,
   getRevenueRecovery,
   getOptimizationSummary,
-  searchSutPatients,
 } from "@/lib/api/sut";
 import { formatExemptionCategory } from "@/lib/copayExemption";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
@@ -42,10 +40,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import PatientSearch from "@/components/ui/PatientSearch";
 import {
   buildSutBillingHref,
 } from "@/lib/constants";
+import { useCohortFilter } from "@/hooks/useCohortFilter";
 import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
 import {
@@ -86,22 +84,18 @@ const PIE_COLORS = [theme.textPrimary, theme.gold, theme.warning, theme.danger];
 interface AlertQueryBarProps {
   category: PatientAlertsCategory;
   status: PatientAlertsStatus;
-  search: string;
   loading: boolean;
   pagination: PatientAlertsResponse["pagination"] | null;
   onStatusChange: (status: PatientAlertsStatus) => void;
-  onSearchChange: (search: string) => void;
   onPageChange: (page: number) => void;
 }
 
 function AlertQueryBar({
   category,
   status,
-  search,
   loading,
   pagination,
   onStatusChange,
-  onSearchChange,
   onPageChange,
 }: AlertQueryBarProps) {
   const totalMatching = pagination?.total_matching ?? 0;
@@ -137,18 +131,7 @@ function AlertQueryBar({
     <Surface variant="base" padding="lg">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <Eyebrow as="div">Search</Eyebrow>
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search patient ID..."
-            className="glass app-select patient-search-input sut-filter-control"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Eyebrow as="div">Filter</Eyebrow>
+          <Eyebrow as="div">Status</Eyebrow>
           <TabsRoot
             value={status}
             onValueChange={(value) => onStatusChange(value as PatientAlertsStatus)}
@@ -223,34 +206,6 @@ function AlertQueryBar({
     </Surface>
   );
 }
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   SECTION NAVIGATION (Single-Tier: Compliance Alerts + Revenue Recovery)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-type SectionId = "alerts" | "revenue";
-
-interface SectionMeta {
-  id: SectionId;
-  Icon: typeof ShieldAlert;
-  label: string;
-  description: string;
-}
-
-const SECTIONS: SectionMeta[] = [
-  {
-    id: "alerts",
-    Icon: ShieldAlert,
-    label: "Compliance Alerts",
-    description: "Per-patient actionable alerts combining exact copayment exemption findings (EK-1A) with explicit unavailable states for optimization checks that still require exact claim-line inputs.",
-  },
-  {
-    id: "revenue",
-    Icon: BadgeDollarSign,
-    label: "Revenue Recovery",
-    description: "Cohort-level recovery review dashboard for active billing algorithms, plus availability notices for optimization checks that remain blocked on exact claim-line data.",
-  },
-];
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SHARED ALERT TABLE HELPERS
@@ -760,11 +715,36 @@ const ALERT_CATEGORY_LABELS: Record<PatientAlertsCategory, string> = {
   copay_rates: "Copay Rate Compliance",
 };
 
-function ComplianceAlerts() {
+function filterAlertsByCohort(
+  data: PatientAlertsResponse | null,
+  cohortPatientIds: Set<string>,
+  cohortFilterActive: boolean,
+): PatientAlertsResponse | null {
+  if (!data || !cohortFilterActive) return data;
+  const patients = data.patients.filter((patient) => cohortPatientIds.has(patient.patient_id));
+  return {
+    ...data,
+    patients,
+    pagination: {
+      ...data.pagination,
+      total_matching: patients.length,
+      has_more: false,
+      offset: 0,
+    },
+  };
+}
+
+function ComplianceAlerts({
+  cohortPatientIds,
+  cohortFilterActive,
+}: {
+  cohortPatientIds: Set<string>;
+  cohortFilterActive: boolean;
+}) {
   const [activeSub, setActiveSub] = useState<AlertSubId>("exemptions");
   const [status, setStatus] = useState<PatientAlertsStatus>("all");
-  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const { filter: cohortFilter } = useCohortFilter();
   const [alertsData, setAlertsData] = useState<PatientAlertsResponse | null>(null);
   const [alertsLoading, setAlertsLoading] = useState(true);
   const [alertsError, setAlertsError] = useState<Error | null>(null);
@@ -792,7 +772,6 @@ function ComplianceAlerts() {
   const handleCategoryChange = (nextCategory: AlertSubId) => {
     setActiveSub(nextCategory);
     setStatus("all");
-    setSearch("");
     setPage(1);
   };
 
@@ -801,12 +780,7 @@ function ComplianceAlerts() {
     setPage(1);
   };
 
-  const handleSearchChange = (nextSearch: string) => {
-    setSearch(nextSearch);
-    setPage(1);
-  };
-
-  const normalizedSearch = search.trim();
+  const normalizedSearch = cohortFilter.q.trim();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -851,12 +825,23 @@ function ComplianceAlerts() {
     };
   }, [activeSub, status, normalizedSearch, page]);
 
-  const currentData = alertsData;
+  const currentData = filterAlertsByCohort(
+    alertsData,
+    cohortPatientIds,
+    cohortFilterActive,
+  );
   const currentLoading = alertsLoading && !currentData;
   const alertsErrorPresentation = alertsError ? getAlertsErrorPresentation(alertsError) : null;
 
   return (
     <div className="space-y-4">
+      {cohortFilterActive && (
+        <MethodologyBadge
+          warn
+          label="Active filters"
+          text="Alert tables reflect the active filters. Summary KPI cards still use full-cohort totals until filtered APIs are available."
+        />
+      )}
       <TabsRoot
         value={activeSub}
         onValueChange={(value) => handleCategoryChange(value as AlertSubId)}
@@ -879,11 +864,9 @@ function ComplianceAlerts() {
       <AlertQueryBar
         category={activeSub}
         status={status}
-        search={search}
         loading={currentLoading}
         pagination={currentData?.pagination ?? null}
         onStatusChange={handleStatusChange}
-        onSearchChange={handleSearchChange}
         onPageChange={setPage}
       />
 
@@ -922,7 +905,13 @@ function ComplianceAlerts() {
    SECTION F: REVENUE RECOVERY DASHBOARD (Cohort)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-function RevenueRecoveryDashboard() {
+function RevenueRecoveryDashboard({
+  cohortPatientIds,
+  cohortFilterActive,
+}: {
+  cohortPatientIds: Set<string>;
+  cohortFilterActive: boolean;
+}) {
   const [data, setData] = useState<CohortRecoverySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -995,14 +984,45 @@ function RevenueRecoveryDashboard() {
     );
   }
 
-  const recoveryExact = isExactOutput(data);
-  const recoveryPartial = data.exactness_status === "partial_exact";
+  const summarySource = (data.patient_summaries?.length
+    ? data.patient_summaries
+    : data.top_patients ?? []
+  ).filter(
+    (patient) => !cohortFilterActive || cohortPatientIds.has(patient.patient_id),
+  );
+
+  const filteredGrandTotal = summarySource.reduce(
+    (sum, patient) => sum + (patient.total_recoverable_try ?? 0),
+    0,
+  );
+
+  const displayData = cohortFilterActive
+    ? {
+        ...data,
+        n_patients: summarySource.length,
+        grand_total_recoverable: filteredGrandTotal,
+        top_patients: [...summarySource]
+          .sort((a, b) => b.total_recoverable_try - a.total_recoverable_try)
+          .slice(0, 10),
+      }
+    : data;
+
+  if (cohortFilterActive && summarySource.length === 0) {
+    return (
+      <Surface variant="base" padding="lg" className="text-center">
+        <p className="text-sm text-[var(--text-muted)]">No patients in the current filter have billing data.</p>
+      </Surface>
+    );
+  }
+
+  const recoveryExact = isExactOutput(displayData);
+  const recoveryPartial = displayData.exactness_status === "partial_exact";
   const hasRecoveryBreakdown = recoveryExact || recoveryPartial;
-  const categoryData = Object.entries(data.savings_by_category || {})
+  const categoryData = Object.entries(displayData.savings_by_category || {})
     .filter(([, v]) => hasRecoveryBreakdown && v > 0)
     .map(([key, value]) => ({ name: fmtLabel(key), value: Math.round(value) }));
 
-  const priorityData = Object.entries(hasRecoveryBreakdown ? (data.priority_distribution || {}) : {})
+  const priorityData = Object.entries(hasRecoveryBreakdown ? (displayData.priority_distribution || {}) : {})
     .map(([key, value]) => ({ name: fmtPriorityLabel(key), value }));
 
   const priorityColors: Record<string, string> = { High: "#B91C1C", Medium: "#B45309", Low: theme.accent };
@@ -1014,14 +1034,14 @@ function RevenueRecoveryDashboard() {
         {[
           {
             label: recoveryPartial ? "Partial rule-calculated total" : "Rule-calculated total",
-            value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? data.grand_total_recoverable : null),
+            value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.grand_total_recoverable : null),
             accent: true,
           },
-          { label: "Lab Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? data.total_lab_savings : null) },
-          { label: "Drug Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? data.total_drug_savings : null) },
-          { label: "Copay Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? data.total_copay_savings : null) },
-          { label: "Strategy Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? data.total_strategy_savings : null) },
-          { label: "Patients with Actions", value: fmtNum(data.n_patients) },
+          { label: "Lab Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_lab_savings : null) },
+          { label: "Drug Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_drug_savings : null) },
+          { label: "Copay Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_copay_savings : null) },
+          { label: "Strategy Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_strategy_savings : null) },
+          { label: "Patients with Actions", value: fmtNum(displayData.n_patients) },
         ].map((kpi, i) => (
           <Surface
             key={i}
@@ -1038,16 +1058,24 @@ function RevenueRecoveryDashboard() {
           warn
           label="Partial Exact"
           text={getUnavailableMessage(
-            data,
+            displayData,
             "Revenue recovery contains exact category-level findings, but aggregate totals are mixed because some billing sections still require exact inputs.",
           )}
         />
       ) : !recoveryExact && (
         <UnavailableBadge
           text={getUnavailableMessage(
-            data,
+            displayData,
             "Revenue recovery totals remain unavailable until every billing section is exact.",
           )}
+        />
+      )}
+
+      {cohortFilterActive && (
+        <MethodologyBadge
+          warn
+          label="Active filters"
+          text="Recoverable total and patient count reflect the active filters. Category savings charts still use full-cohort aggregates until filtered APIs are available."
         />
       )}
 
@@ -1104,9 +1132,11 @@ function RevenueRecoveryDashboard() {
       )}
 
       {/* Top Patients Table */}
-      {hasRecoveryBreakdown && (data.top_patients?.length ?? 0) > 0 && (
+      {hasRecoveryBreakdown && (displayData.top_patients?.length ?? 0) > 0 && (
         <Surface variant="base" padding="lg">
-          <Eyebrow tone="gold" as="h3" className="mb-3">Top-10 Highest-Impact Patients</Eyebrow>
+          <Eyebrow tone="gold" as="h3" className="mb-3">
+            {cohortFilterActive ? "Highest-Impact Patients in Slice" : "Top-10 Highest-Impact Patients"}
+          </Eyebrow>
           <DataTable minWidth={640} className="text-sm">
             <thead>
               <tr>
@@ -1118,7 +1148,7 @@ function RevenueRecoveryDashboard() {
               </tr>
             </thead>
             <tbody>
-              {data.top_patients.map((p, i) => (
+              {displayData.top_patients.map((p, i) => (
                 <tr key={i}>
                   <td className="font-mono text-xs">
                     <Link href={buildSutBillingHref(p.patient_id)} className="patient-id-link" style={{ color: ACCENT }}>
@@ -1137,25 +1167,6 @@ function RevenueRecoveryDashboard() {
           </DataTable>
         </Surface>
       )}
-
-      {/* Search Any Patient */}
-      <Surface variant="base" padding="lg">
-        <Eyebrow tone="gold" as="h3" className="mb-3">Look Up Any Patient</Eyebrow>
-        <p className="mb-3 text-xs text-[var(--text-muted)]">
-          Search for any patient to view their individual billing report.
-        </p>
-        <div style={{ maxWidth: 400 }}>
-          <PatientSearch
-            selectedPatientId={null}
-            onSelect={(pid) => {
-              window.location.href = buildSutBillingHref(pid);
-            }}
-            id="revenue-patient-search"
-            placeholder="Search patient ID for billing report..."
-            searchFn={searchSutPatients}
-          />
-        </div>
-      </Surface>
 
       {/* Methodology Badge */}
       <div className="text-xs text-center py-2" style={{ color: "#A1A1AA" }}>
@@ -1293,63 +1304,77 @@ export function DrugDiscountInline({ data }: { data: OptimizationSummary }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   MAIN COMPONENT — SUT Optimization Engine
+   TAB EXPORTS — Compliance and Revenue (Option A split)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-export default function SUTOptimizer() {
-  const [activeSection, setActiveSection] = useState<SectionId>("alerts");
-  const { getRevealProps } = useStaggeredReveal(5, { baseDelayMs: 40, stepMs: 140, threshold: 0.15 });
+const COMPLIANCE_TAB_DESCRIPTION =
+  "Per-patient actionable alerts combining exact copayment exemption findings (EK-1A) with explicit unavailable states for optimization checks that still require exact claim-line inputs.";
 
+const REVENUE_TAB_DESCRIPTION =
+  "Cohort-level recovery review dashboard for active billing algorithms, plus availability notices for optimization checks that remain blocked on exact claim-line data.";
+
+export function SUTComplianceTab({
+  cohortPatientIds,
+  cohortFilterActive,
+}: {
+  cohortPatientIds: Set<string>;
+  cohortFilterActive: boolean;
+}) {
+  const { getRevealProps } = useStaggeredReveal(2, { baseDelayMs: 40, stepMs: 140, threshold: 0.15 });
   const r0 = getRevealProps(0);
   const r1 = getRevealProps(1);
-  const r2 = getRevealProps(2);
-
-  // Look up description for active section
-  const activeDescription = SECTIONS.find((s) => s.id === activeSection)?.description ?? "";
 
   return (
     <div className="relative space-y-6">
-      {/* (tab intro removed — description now in tab button) */}
-
-      {/* Section Nav */}
-      <div
-        className={`${r0.staggerClass}`}
+      <p
+        className={`text-sm leading-snug text-[var(--text-secondary)] ${r0.staggerClass}`}
         style={r0.staggerStyle}
         {...r0.staggerAttrs}
       >
-        <TabsRoot
-          value={activeSection}
-          onValueChange={(value) => setActiveSection(value as SectionId)}
-          className="gap-0"
-        >
-          <TabsList density="comfortable" aria-label="Optimizer sections">
-            {SECTIONS.map((sec) => (
-              <TabsTrigger
-                key={sec.id}
-                value={sec.id}
-                leading={<sec.Icon className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />}
-              >
-                {sec.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </TabsRoot>
-      </div>
-
-      {/* Section Description */}
-      <p
-        className={`text-sm leading-snug text-[var(--text-secondary)] ${r1.staggerClass}`}
-        style={r1.staggerStyle}
-        {...r1.staggerAttrs}
-      >
-        {activeDescription}
+        {COMPLIANCE_TAB_DESCRIPTION}
       </p>
-
-      {/* Active Section */}
-      <div className={r2.staggerClass} style={r2.staggerStyle} {...r2.staggerAttrs}>
-        {activeSection === "alerts" && <ComplianceAlerts />}
-        {activeSection === "revenue" && <RevenueRecoveryDashboard />}
+      <div className={r1.staggerClass} style={r1.staggerStyle} {...r1.staggerAttrs}>
+        <ComplianceAlerts
+          cohortPatientIds={cohortPatientIds}
+          cohortFilterActive={cohortFilterActive}
+        />
       </div>
     </div>
   );
+}
+
+export function SUTRevenueTab({
+  cohortPatientIds,
+  cohortFilterActive,
+}: {
+  cohortPatientIds: Set<string>;
+  cohortFilterActive: boolean;
+}) {
+  const { getRevealProps } = useStaggeredReveal(2, { baseDelayMs: 40, stepMs: 140, threshold: 0.15 });
+  const r0 = getRevealProps(0);
+  const r1 = getRevealProps(1);
+
+  return (
+    <div className="relative space-y-6">
+      <p
+        className={`text-sm leading-snug text-[var(--text-secondary)] ${r0.staggerClass}`}
+        style={r0.staggerStyle}
+        {...r0.staggerAttrs}
+      >
+        {REVENUE_TAB_DESCRIPTION}
+      </p>
+      <div className={r1.staggerClass} style={r1.staggerStyle} {...r1.staggerAttrs}>
+        <RevenueRecoveryDashboard
+          cohortPatientIds={cohortPatientIds}
+          cohortFilterActive={cohortFilterActive}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** @deprecated Use SUTComplianceTab or SUTRevenueTab */
+export default function SUTOptimizer() {
+  const emptySet = new Set<string>();
+  return <SUTComplianceTab cohortPatientIds={emptySet} cohortFilterActive={false} />;
 }

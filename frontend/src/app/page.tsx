@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
@@ -12,6 +12,8 @@ import {
   parseSutHomeTab,
   SUT_HOME_TABS,
 } from "@/lib/constants";
+import { buildHomePageContext } from "@/lib/sutChatPageContext";
+import { SUT_WORKSPACE_CHAT_SESSION_KEY } from "@/lib/sutChatSession";
 import {
   SutAnalyticsShellSkeleton,
   SutOptimizerShellSkeleton,
@@ -31,10 +33,13 @@ import {
   useSutChatSession,
 } from "@/stores/index";
 
-const SUTAnalytics = dynamic(() => import("@/components/tabs/SUTAnalytics"), {
+const SUTPatients = dynamic(() => import("@/components/tabs/SUTPatients"), {
   loading: () => <SutAnalyticsShellSkeleton />,
 });
-const SUTOptimizer = dynamic(() => import("@/components/tabs/SUTOptimizer"), {
+const SUTCompliance = dynamic(() => import("@/components/tabs/SUTCompliance"), {
+  loading: () => <SutOptimizerShellSkeleton />,
+});
+const SUTRevenue = dynamic(() => import("@/components/tabs/SUTRevenue"), {
   loading: () => <SutOptimizerShellSkeleton />,
 });
 const SUTReferenceTools = dynamic(() => import("@/components/tabs/SUTReferenceTools"), {
@@ -64,9 +69,15 @@ function SutHomeContent() {
   }, [searchParams, setShowAdmin]);
 
   const activeMeta = SUT_HOME_TABS.find((tab) => tab.id === activeTab) ?? SUT_HOME_TABS[0];
-  const chatSessionKey = `home:${activeMeta.label}`;
+  const chatSessionKey = SUT_WORKSPACE_CHAT_SESSION_KEY;
   const chatState = useSutChatSession(chatSessionKey);
   const setChatSession = useSetSutChatSession();
+  const handleChatStateChange = useCallback(
+    (state: Parameters<typeof setChatSession>[1]) => {
+      setChatSession(chatSessionKey, state);
+    },
+    [chatSessionKey, setChatSession],
+  );
   const shouldRenderChat = isWorkspaceMode;
   const isDocked = shouldRenderChat && chatDock !== "center";
   const sectionClass = isDocked
@@ -118,15 +129,16 @@ function SutHomeContent() {
               {chatDock === "center" && (
                 <SutInlineAIPanel
                   activeTab={activeMeta.label}
+                  pageContext={chatPageContext}
                   dock={chatDock}
                   onDockChange={setChatDock}
                   chatState={chatState}
-                  onChatStateChange={(state) => setChatSession(chatSessionKey, state)}
+                  onChatStateChange={handleChatStateChange}
                 />
               )}
 
-              {activeTab === "analytics" ? (
-                <SUTAnalytics
+              {activeTab === "patients" ? (
+                <SUTPatients
                   data={null}
                   error={null}
                   loading={false}
@@ -134,10 +146,12 @@ function SutHomeContent() {
                   onPatientSelect={handlePatientSelect}
                   onRetryOutcome={() => undefined}
                 />
-              ) : activeTab === "reference-tools" ? (
-                <SUTReferenceTools />
+              ) : activeTab === "compliance" ? (
+                <SUTCompliance />
+              ) : activeTab === "revenue" ? (
+                <SUTRevenue />
               ) : (
-                <SUTOptimizer />
+                <SUTReferenceTools />
               )}
             </>
           </section>
@@ -146,10 +160,11 @@ function SutHomeContent() {
       {shouldRenderChat && chatDock !== "center" && (
         <SutInlineAIPanel
           activeTab={activeMeta.label}
+          pageContext={chatPageContext}
           dock={chatDock}
           onDockChange={setChatDock}
           chatState={chatState}
-          onChatStateChange={(state) => setChatSession(chatSessionKey, state)}
+          onChatStateChange={handleChatStateChange}
         />
       )}
     </>

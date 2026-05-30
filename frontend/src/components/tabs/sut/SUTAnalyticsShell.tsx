@@ -11,6 +11,8 @@ export interface SUTAnalyticsProps {
   selectedPatientId: string | null;
   onPatientSelect: (patientId: string) => void;
   onRetryOutcome: () => void;
+  cohortPatientIds?: Set<string>;
+  cohortFilterActive?: boolean;
 }
 
 export default function SUTAnalyticsShell({
@@ -20,6 +22,8 @@ export default function SUTAnalyticsShell({
   selectedPatientId,
   onPatientSelect,
   onRetryOutcome,
+  cohortPatientIds,
+  cohortFilterActive,
 }: SUTAnalyticsProps) {
   const reveal = useStaggeredReveal(5, { baseDelayMs: 40, stepMs: 140, threshold: 0.15 });
 
@@ -33,6 +37,8 @@ export default function SUTAnalyticsShell({
         selectedPatientId={selectedPatientId}
         onPatientSelect={onPatientSelect}
         onRetry={onRetryOutcome}
+        cohortPatientIds={cohortPatientIds}
+        cohortFilterActive={cohortFilterActive}
       />
     </div>
   );

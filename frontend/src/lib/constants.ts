@@ -9,7 +9,12 @@
 import { theme } from "@/lib/theme";
 
 export const ACCENT = theme.accent;
-export type SutHomeTab = "analytics" | "optimizer" | "reference-tools";
+export type SutHomeTab = "patients" | "compliance" | "revenue" | "reference-tools";
+
+export const LEGACY_SUT_HOME_TAB_ALIASES: Record<string, SutHomeTab> = {
+  analytics: "patients",
+  optimizer: "compliance",
+};
 
 export const SUT_BRAND = {
   productName: "BILUN",
@@ -23,30 +28,52 @@ export const SUT_BRAND = {
 
 export const SUT_HOME_TABS: { id: SutHomeTab; label: string; subtitle: string }[] = [
   {
-    id: "analytics",
-    label: "SUT Analytics",
-    subtitle: "Patient rule outcomes and exposure analysis",
+    id: "patients",
+    label: "Patients",
+    subtitle: "Who am I dealing with today? Cohort directory and recoverable summary.",
   },
   {
-    id: "optimizer",
-    label: "SUT Optimizer",
-    subtitle: "Compliance alerts, recovery review, and billing optimization",
+    id: "compliance",
+    label: "Compliance",
+    subtitle: "What's wrong? EK-1A exemptions, surcharge flags, and copay-rate alerts.",
+  },
+  {
+    id: "revenue",
+    label: "Revenue",
+    subtitle: "Where's the money? Recovery totals, top patients, DRG and drug audits.",
   },
   {
     id: "reference-tools",
     label: "Reference Tools",
-    subtitle: "Billing and gazette reference lookups, validators, and catalogs",
+    subtitle: "What does the rule say? Gazette lookups, validators, and catalogs.",
   },
 ];
 
 export function parseSutHomeTab(value: string | null | undefined): SutHomeTab {
-  if (value === "optimizer") return "optimizer";
+  if (value && value in LEGACY_SUT_HOME_TAB_ALIASES) {
+    return LEGACY_SUT_HOME_TAB_ALIASES[value];
+  }
+  if (value === "compliance") return "compliance";
+  if (value === "revenue") return "revenue";
   if (value === "reference-tools") return "reference-tools";
-  return "analytics";
+  if (value === "patients") return "patients";
+  return "patients";
 }
 
-export function buildSutHomeHref(tab: SutHomeTab): string {
-  return `/?tab=${tab}`;
+export function buildSutHomeHref(
+  tab: SutHomeTab,
+  preserveParams?: Pick<URLSearchParams, "get"> | null,
+): string {
+  const params = new URLSearchParams();
+  params.set("tab", tab);
+  if (preserveParams) {
+    for (const key of ["cohortQ", "cohortSex", "cohortAgeMin", "cohortAgeMax", "cohortDoctor", "admin"] as const) {
+      const value = preserveParams.get(key);
+      if (value) params.set(key, value);
+    }
+  }
+  const query = params.toString();
+  return query ? `/?${query}` : "/";
 }
 
 export function buildSutPatientHref(patientId: string): string {

@@ -40,7 +40,7 @@ export default function SutError({
             >
               Try again
             </button>
-            <Link href={buildSutHomeHref("analytics")} className="sut-section-btn">
+            <Link href={buildSutHomeHref("patients")} className="sut-section-btn">
               Back to SUT workspace
             </Link>
           </div>
