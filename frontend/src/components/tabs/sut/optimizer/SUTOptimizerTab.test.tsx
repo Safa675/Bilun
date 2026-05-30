@@ -1,5 +1,5 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 
 vi.mock("@/hooks/useStaggeredReveal", () => ({
   default: () => ({
@@ -95,14 +95,25 @@ vi.mock("next/link", () => ({
   default: ({ children }: { children: unknown }) => children,
 }));
 
+vi.mock("@/hooks/useCohortFilter", () => ({
+  useCohortFilter: () => ({
+    filter: { q: "", sex: "", ageMin: null, ageMax: null, doctor: "" },
+    isActive: false,
+    activeTab: "compliance",
+    setFilter: vi.fn(),
+    clearFilter: vi.fn(),
+  }),
+}));
+
 import SUTOptimizer, { DrgUnbundlingInline, DrugDiscountInline } from "./SUTOptimizerTab";
 import type { OptimizationSummary } from "@/lib/domains/sut";
 
 describe("SUTOptimizer shell", () => {
   it("renders section navigation without inline provenance banner", () => {
-    const html = renderToStaticMarkup(<SUTOptimizer />);
+    const html = renderToStaticMarkupWithLocale(<SUTOptimizer />);
 
-    expect(html).toContain("Compliance Alerts");
+    expect(html).toContain("Copay Exemptions");
+    expect(html).toContain("Surcharge Compliance");
     expect(html).not.toContain("Synthetic demo claims");
     expect(html).not.toContain("Actual reimbursement recovery");
     expect(html).not.toContain("Hospital-wide loss");
@@ -125,7 +136,7 @@ describe("Revenue recovery optimization panels", () => {
       },
     } as OptimizationSummary;
 
-    const html = renderToStaticMarkup(<DrgUnbundlingInline data={data} />);
+    const html = renderToStaticMarkupWithLocale(<DrgUnbundlingInline data={data} />);
 
     expect(html).toContain("Aggregated per-patient DRG unbundling findings from exact claim lines.");
     expect(html).not.toContain("Unavailable:DRG unbundling risk is unavailable");
@@ -147,7 +158,7 @@ describe("Revenue recovery optimization panels", () => {
       },
     } as OptimizationSummary;
 
-    const html = renderToStaticMarkup(<DrgUnbundlingInline data={data} />);
+    const html = renderToStaticMarkupWithLocale(<DrgUnbundlingInline data={data} />);
 
     expect(html).toContain("Missing itemized billed procedure lines.");
     expect(html).toContain("Unavailable");
@@ -170,7 +181,7 @@ describe("Revenue recovery optimization panels", () => {
       },
     } as OptimizationSummary;
 
-    const html = renderToStaticMarkup(<DrugDiscountInline data={data} />);
+    const html = renderToStaticMarkupWithLocale(<DrugDiscountInline data={data} />);
 
     expect(html).toContain("Validates discount tiers on exact drug claim lines.");
     expect(html).not.toContain("Unavailable:Drug discount validation is unavailable");
@@ -195,7 +206,7 @@ describe("Revenue recovery optimization panels", () => {
       },
     } as OptimizationSummary;
 
-    const html = renderToStaticMarkup(<DrugDiscountInline data={data} />);
+    const html = renderToStaticMarkupWithLocale(<DrugDiscountInline data={data} />);
 
     expect(html).toContain("Missing dispensed drug claim lines.");
     expect(html).toContain("Unavailable");

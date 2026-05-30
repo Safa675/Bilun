@@ -2,9 +2,14 @@
 
 import { Chip } from "@/components/primitives";
 import type { SUTDataSourceCarrier, SUTDataSourceMetadata } from "@/lib/domains/sut";
+import enMessages from "@/messages/en/index";
+import { useT } from "@/lib/i18n/useTranslations";
+import { translate } from "@/lib/i18n/translate";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
+import trMessages from "@/messages/tr/index";
 
-export const SYNTHETIC_DEMO_COPY =
-  "Synthetic demo claims — SUT rule calculations are exact for this generated claim-line fixture.";
+/** @deprecated Use synthetic.defaultNotice via i18n — kept for tests */
+export const SYNTHETIC_DEMO_COPY = enMessages.synthetic.defaultNotice;
 
 type ProvenanceInput =
   | SUTDataSourceMetadata
@@ -25,11 +30,23 @@ export function isSyntheticDemoDataSource(
   return dataSource?.mode === "synthetic_demo" || dataSource?.is_synthetic === true;
 }
 
+function localizedDefaultNotice(): string {
+  const messages = getModuleLocale() === "tr" ? trMessages : enMessages;
+  return translate(messages, "synthetic.defaultNotice");
+}
+
 function resolveSyntheticNotice(input: ProvenanceInput): string | null {
   const dataSource = getSutDataSource(input);
   if (!isSyntheticDemoDataSource(dataSource)) return null;
-  const notice = dataSource.notice?.trim() || SYNTHETIC_DEMO_COPY;
-  return notice.includes("Synthetic demo claims") ? notice : SYNTHETIC_DEMO_COPY;
+  const notice = dataSource.notice?.trim();
+  if (!notice) return localizedDefaultNotice();
+  if (
+    notice === enMessages.synthetic.defaultNotice
+    || notice === trMessages.synthetic.defaultNotice
+  ) {
+    return localizedDefaultNotice();
+  }
+  return notice;
 }
 
 /** Compact top-bar chip — Phase 6 replaces inline page banners. */
@@ -42,6 +59,7 @@ export function SyntheticDemoChip({
   title?: string;
   className?: string;
 }) {
+  const t = useT();
   const notice = resolveSyntheticNotice(dataSource);
   if (!notice) return null;
 
@@ -50,9 +68,9 @@ export function SyntheticDemoChip({
       variant="outline"
       className={className}
       title={title ?? notice}
-      aria-label="Synthetic SUT demo provenance"
+      aria-label={t("synthetic.chipAria")}
     >
-      Synthetic demo
+      {t("synthetic.chipLabel")}
     </Chip>
   );
 }
@@ -72,6 +90,7 @@ export function SyntheticDemoProvenance({
   compact?: boolean;
   className?: string;
 }) {
+  const t = useT();
   const inputs = [dataSource, ...(dataSources ?? [])];
   const notice = inputs.map(resolveSyntheticNotice).find(Boolean);
   if (!notice) return null;
@@ -87,10 +106,10 @@ export function SyntheticDemoProvenance({
         className,
       ].filter(Boolean).join(" ")}
       role="note"
-      aria-label="Synthetic SUT demo provenance"
+      aria-label={t("synthetic.bannerAria")}
     >
       <span className="font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
-        Synthetic demo claims
+        {t("synthetic.bannerTitle")}
       </span>
       <span className="ml-2 font-medium text-[var(--text-primary)]">{notice}</span>
     </div>

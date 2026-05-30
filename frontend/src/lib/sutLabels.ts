@@ -1,7 +1,20 @@
+import enMessages from "@/messages/en/index";
+import trMessages from "@/messages/tr/index";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
+import { translate } from "@/lib/i18n/translate";
+
+function activeMessages() {
+  return getModuleLocale() === "tr" ? trMessages : enMessages;
+}
+
+function t(key: string, params?: Record<string, string | number | undefined | null>): string {
+  return translate(activeMessages(), key, params);
+}
+
 function toTitleCase(value: string | null | undefined): string {
   const normalized = value?.trim();
   if (!normalized) {
-    return "Unknown";
+    return t("labels.sut.unknown");
   }
 
   return normalized
@@ -11,49 +24,46 @@ function toTitleCase(value: string | null | undefined): string {
     .join(" ");
 }
 
-export const SUT_ALERT_BADGE_LABELS = {
-  exempt: "Exempt",
-  notExempt: "Not exempt",
-  flagged: "Flagged",
-  clear: "Clear",
-  unavailable: "Unavailable",
-} as const;
+export function getSutAlertBadgeLabel(
+  key: keyof typeof enMessages.labels.sut.alertBadge,
+): string {
+  return t(`labels.sut.alertBadge.${key}`);
+}
 
-export const SUT_ACTION_LABELS = {
-  noActionNeeded: "No action needed",
-} as const;
+export function getSutActionLabel(key: "noActionNeeded"): string {
+  return t(`labels.sut.action.${key}`);
+}
 
-export const SUT_RISK_BUCKET_LABELS = {
-  atRisk: "At risk",
-  noRisk: "No risk",
-} as const;
-
-export const SUT_RISK_TIER_LABELS = {
-  low: "Low risk",
-  medium: "Medium risk",
-  high: "High risk",
-} as const;
-
-export const SUT_SEVERITY_LABELS = {
-  error: "Error",
-  warning: "Warning",
-  info: "Info",
-} as const;
+export function getSutRiskBucketLabel(key: keyof typeof enMessages.labels.sut.riskBucket): string {
+  return t(`labels.sut.riskBucket.${key}`);
+}
 
 export function getSutSeverityLabel(value: string | null | undefined): string {
   const normalized = value?.trim().toLowerCase();
   if (!normalized) {
-    return SUT_SEVERITY_LABELS.info;
+    return t("labels.sut.severity.info");
   }
 
-  return SUT_SEVERITY_LABELS[normalized as keyof typeof SUT_SEVERITY_LABELS] ?? toTitleCase(value);
+  const known = enMessages.labels.sut.severity[normalized as keyof typeof enMessages.labels.sut.severity];
+  return known ? t(`labels.sut.severity.${normalized}`) : toTitleCase(value);
 }
 
 export function getSutRiskTierLabel(value: string | null | undefined): string {
   const normalized = value?.trim().toLowerCase();
   if (!normalized) {
-    return "Unknown risk";
+    return t("labels.sut.unknownRisk");
   }
 
-  return SUT_RISK_TIER_LABELS[normalized as keyof typeof SUT_RISK_TIER_LABELS] ?? `${toTitleCase(value)} risk`;
+  const known = enMessages.labels.sut.riskTier[normalized as keyof typeof enMessages.labels.sut.riskTier];
+  if (known) {
+    return t(`labels.sut.riskTier.${normalized}`);
+  }
+  return t("labels.sut.dynamicRisk", { value: toTitleCase(value) });
 }
+
+/** @deprecated Use getSutAlertBadgeLabel — kept for tests importing constants */
+export const SUT_ALERT_BADGE_LABELS = enMessages.labels.sut.alertBadge;
+export const SUT_ACTION_LABELS = enMessages.labels.sut.action;
+export const SUT_RISK_BUCKET_LABELS = enMessages.labels.sut.riskBucket;
+export const SUT_RISK_TIER_LABELS = enMessages.labels.sut.riskTier;
+export const SUT_SEVERITY_LABELS = enMessages.labels.sut.severity;

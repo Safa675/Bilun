@@ -19,16 +19,20 @@ describe("sutChatPageContext", () => {
     });
   });
 
-  it("builds patient workspace context with loaded sections", () => {
+  it("builds patient workspace context with lightweight section metadata", () => {
     const outcome = { patient_id: "P-001" } as Parameters<
       typeof buildPatientWorkspacePageContext
     >[0]["outcome"];
-    const optimization = { patient_id: "P-001" } as Parameters<
-      typeof buildPatientWorkspacePageContext
-    >[0]["optimization"];
-    const billingReport = { patient_id: "P-001", lab: { total_savings: 100 } } as Parameters<
-      typeof buildPatientWorkspacePageContext
-    >[0]["billingReport"];
+    const optimization = {
+      patient_id: "P-001",
+      n_diagnoses: 3,
+    } as Parameters<typeof buildPatientWorkspacePageContext>[0]["optimization"];
+    const billingReport = {
+      patient_id: "P-001",
+      total_recoverable_try: 100,
+      priority: "high",
+      exactness_status: "exact",
+    } as Parameters<typeof buildPatientWorkspacePageContext>[0]["billingReport"];
 
     expect(
       buildPatientWorkspacePageContext({
@@ -47,9 +51,19 @@ describe("sutChatPageContext", () => {
           description:
             "Patient workspace with optimization snapshot and billing review sections",
         },
-        outcome,
-        optimization_snapshot: optimization,
-        billing_report: billingReport,
+        outcome: { loaded: true, patient_id: "P-001" },
+        optimization_snapshot: {
+          loaded: true,
+          patient_id: "P-001",
+          n_diagnoses: 3,
+        },
+        billing_report: {
+          loaded: true,
+          patient_id: "P-001",
+          total_recoverable_try: 100,
+          priority: "high",
+          exactness_status: "exact",
+        },
       },
     });
   });

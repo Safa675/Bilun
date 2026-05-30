@@ -1,5 +1,5 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import type { BillingActionReport } from "@/lib/domains/sut";
 
 vi.mock("next/link", () => ({
@@ -138,7 +138,7 @@ const baseReport: BillingActionReport = {
 
 describe("BillingSummary", () => {
   it("shows exact billing state without inline provenance banner", () => {
-    const html = renderToStaticMarkup(<BillingSummary billingReport={baseReport} />);
+    const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={baseReport} />);
 
     expect(html).toContain("Rule-calculated opportunity");
     expect(html).not.toContain("Synthetic demo claims");
@@ -156,7 +156,7 @@ describe("BillingSummary", () => {
       unavailable_reason: "Needs exact claim sections.",
       required_inputs_missing: ["billing_sections"],
     };
-    const html = renderToStaticMarkup(<BillingSummary billingReport={unavailableReport} />);
+    const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={unavailableReport} />);
 
     expect(html).toContain("Needs exact claim sections.");
     expect(html).toContain("Unavailable");
@@ -171,7 +171,7 @@ describe("BillingSummary", () => {
       action_count: 12,
       priority: "high",
     };
-    const html = renderToStaticMarkup(<BillingSummary billingReport={exactReport} />);
+    const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={exactReport} />);
 
     // Italic-gold serif on the primary money amount (Stat display="gold")
     expect(html).toMatch(/italic[^>]*var\(--gold\)[\s\S]*?18450\.50 TRY/);
@@ -192,7 +192,7 @@ describe("BillingSummary", () => {
       action_count: 28,
       priority: "medium",
     };
-    const html = renderToStaticMarkup(<BillingSummary billingReport={partialReport} />);
+    const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={partialReport} />);
 
     expect(html).toContain("22552.44 TRY");
     expect(html).toContain("Partial exact");

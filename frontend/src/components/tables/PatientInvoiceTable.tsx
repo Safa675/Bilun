@@ -9,6 +9,7 @@ import { DataTable, Eyebrow, Surface } from "@/components/primitives";
 import { fmtTRY2, fmtPriorityLabel, fmtNum } from "@/components/tabs/sut/shared";
 import { buildSutPatientHref } from "@/lib/constants";
 import { cn } from "@/lib/cn";
+import { useT } from "@/lib/i18n/useTranslations";
 
 interface PatientRow {
   patient_id: string;
@@ -29,6 +30,7 @@ export default function PatientInvoiceTable({
   cohortPatientIds?: Set<string>;
   cohortFilterActive?: boolean;
 } = {}) {
+  const t = useT();
   const router = useRouter();
   const [rows, setRows] = useState<PatientRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,7 +100,7 @@ export default function PatientInvoiceTable({
         setPage(1);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load patient data");
+          setError(err instanceof Error ? err.message : t("home.patientTable.loadFailed"));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -109,7 +111,7 @@ export default function PatientInvoiceTable({
     return () => {
       cancelled = true;
     };
-  }, [cohortFilterActive, cohortPatientIds]);
+  }, [cohortFilterActive, cohortPatientIds, t]);
 
   function handlePrev() {
     setPage((p) => Math.max(1, p - 1));
@@ -130,8 +132,8 @@ export default function PatientInvoiceTable({
   if (loading) {
     return (
       <Surface variant="base" padding="lg">
-        <Eyebrow tone="muted">Patient invoices</Eyebrow>
-        <p className="mt-3 text-sm text-[var(--text-secondary)]">Loading patient data…</p>
+        <Eyebrow tone="muted">{t("home.patientTable.eyebrow")}</Eyebrow>
+        <p className="mt-3 text-sm text-[var(--text-secondary)]">{t("home.patientTable.loading")}</p>
       </Surface>
     );
   }
@@ -139,7 +141,7 @@ export default function PatientInvoiceTable({
   if (error) {
     return (
       <Surface variant="base" padding="lg">
-        <Eyebrow tone="muted">Patient invoices</Eyebrow>
+        <Eyebrow tone="muted">{t("home.patientTable.eyebrow")}</Eyebrow>
         <p className="mt-3 text-sm text-[var(--text-danger)]">{error}</p>
       </Surface>
     );
@@ -148,31 +150,35 @@ export default function PatientInvoiceTable({
   if (rows.length === 0) {
     return (
       <Surface variant="base" padding="lg">
-        <Eyebrow tone="muted">Patient invoices</Eyebrow>
-        <p className="mt-3 text-sm text-[var(--text-secondary)]">No patients found in the current cohort.</p>
+        <Eyebrow tone="muted">{t("home.patientTable.eyebrow")}</Eyebrow>
+        <p className="mt-3 text-sm text-[var(--text-secondary)]">{t("home.patientTable.emptyCohort")}</p>
       </Surface>
     );
   }
 
+  const patientCountLabel = rows.length === 1
+    ? t("home.patientTable.patientCount", { count: rows.length })
+    : t("home.patientTable.patientCountPlural", { count: rows.length });
+
   return (
     <Surface variant="base" padding="lg" className="space-y-4">
       <div className="flex items-center justify-between">
-        <Eyebrow tone="muted">Patient invoices</Eyebrow>
+        <Eyebrow tone="muted">{t("home.patientTable.eyebrow")}</Eyebrow>
         <span className="text-xs text-[var(--text-muted)]">
-          {rows.length} patient{rows.length === 1 ? "" : "s"}
+          {patientCountLabel}
         </span>
       </div>
 
       <DataTable minWidth={720} className="text-[0.82rem]">
         <thead>
           <tr>
-            <th>Patient ID</th>
-            <th>Age</th>
-            <th>Sex</th>
-            <th className="num-col tabular-nums text-right">Recoverable</th>
-            <th>Priority</th>
-            <th className="num-col tabular-nums text-right">Actions</th>
-            <th>Top action</th>
+            <th>{t("home.patientTable.headers.patientId")}</th>
+            <th>{t("home.patientTable.headers.age")}</th>
+            <th>{t("home.patientTable.headers.sex")}</th>
+            <th className="num-col tabular-nums text-right">{t("home.patientTable.headers.recoverable")}</th>
+            <th>{t("home.patientTable.headers.priority")}</th>
+            <th className="num-col tabular-nums text-right">{t("home.patientTable.headers.actions")}</th>
+            <th>{t("home.patientTable.headers.topAction")}</th>
           </tr>
         </thead>
         <tbody>
@@ -236,10 +242,10 @@ export default function PatientInvoiceTable({
                 : "border-[var(--border-subtle)] text-[var(--text-primary)] hover:bg-[var(--surface-tint)]",
             )}
           >
-            Prev
+            {t("home.patientTable.pagination.prev")}
           </button>
           <span className="text-xs text-[var(--text-secondary)] tabular-nums">
-            Page {currentPage} of {totalPages}
+            {t("home.patientTable.pagination.pageOf", { current: currentPage, total: totalPages })}
           </span>
           <button
             type="button"
@@ -252,12 +258,12 @@ export default function PatientInvoiceTable({
                 : "border-[var(--border-subtle)] text-[var(--text-primary)] hover:bg-[var(--surface-tint)]",
             )}
           >
-            Next
+            {t("home.patientTable.pagination.next")}
           </button>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[var(--text-muted)]">Jump to page</span>
+          <span className="text-xs text-[var(--text-muted)]">{t("home.patientTable.pagination.jumpToPage")}</span>
           <input
             type="number"
             min={1}
@@ -274,7 +280,7 @@ export default function PatientInvoiceTable({
             onClick={handleJump}
             className="inline-flex items-center rounded-md border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface-tint)] transition-colors"
           >
-            Go
+            {t("home.patientTable.pagination.go")}
           </button>
         </div>
       </div>

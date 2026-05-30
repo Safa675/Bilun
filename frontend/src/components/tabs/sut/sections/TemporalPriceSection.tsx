@@ -12,14 +12,16 @@ import {
   MethodologyBadge,
 } from "../shared";
 import { DataTable, Surface } from "@/components/primitives";
+import { useT } from "@/lib/i18n/useTranslations";
 
 export function TemporalPriceSection({ data }: { data: OptimizationSummary }) {
+  const t = useT();
   const temporal = data.temporal_price_validation;
 
   if (!temporal) {
     return (
       <Surface variant="base" padding="lg" className="text-center">
-        <p className="text-sm text-[var(--text-secondary)]">Temporal price data not available.</p>
+        <p className="text-sm text-[var(--text-secondary)]">{t("sections.temporalPrice.notAvailable")}</p>
       </Surface>
     );
   }
@@ -29,29 +31,40 @@ export function TemporalPriceSection({ data }: { data: OptimizationSummary }) {
 
   return (
     <div className="space-y-5">
-      <MethodologyBadge text={temporal.methodology} />
+      <MethodologyBadge text={temporal.methodology} badgeLabel={t("sections.temporalPrice.gazetteDataBadge")} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard label="Procedure Codes" value={fmtNum(ek2b.n_codes)} sub={`${fmtNum(ek2b.n_effective_dates)} gazette dates`} />
-        <KpiCard label="Package Codes" value={fmtNum(ek2c.n_codes)} sub={`${fmtNum(ek2c.n_effective_dates)} gazette dates`} />
         <KpiCard
-          label="Codes With Changes"
-          value={fmtNum(ek2b.n_codes_with_changes + ek2c.n_codes_with_changes)}
-          valueColor="#B45309"
-          sub={`${fmtPctRatio(ek2b.price_change_rate)} proc, ${fmtPctRatio(ek2c.price_change_rate)} pkg`}
+          label={t("sections.temporalPrice.kpi.procedureCodes")}
+          value={fmtNum(ek2b.n_codes)}
+          sub={t("sections.temporalPrice.kpi.gazetteDatesSub", { count: fmtNum(ek2b.n_effective_dates) })}
         />
         <KpiCard
-          label="Mean Price Delta"
+          label={t("sections.temporalPrice.kpi.packageCodes")}
+          value={fmtNum(ek2c.n_codes)}
+          sub={t("sections.temporalPrice.kpi.gazetteDatesSub", { count: fmtNum(ek2c.n_effective_dates) })}
+        />
+        <KpiCard
+          label={t("sections.temporalPrice.kpi.codesWithChanges")}
+          value={fmtNum(ek2b.n_codes_with_changes + ek2c.n_codes_with_changes)}
+          valueColor="#B45309"
+          sub={t("sections.temporalPrice.kpi.changesSub", {
+            procRate: fmtPctRatio(ek2b.price_change_rate),
+            pkgRate: fmtPctRatio(ek2c.price_change_rate),
+          })}
+        />
+        <KpiCard
+          label={t("sections.temporalPrice.kpi.meanPriceDelta")}
           value={`${ek2b.mean_price_delta_pct > 0 ? "+" : ""}${fmtPct(ek2b.mean_price_delta_pct)}`}
           valueColor={ek2b.mean_price_delta_pct > 0 ? "#B91C1C" : theme.accent}
-          sub="Procedures (earliest vs latest)"
+          sub={t("sections.temporalPrice.kpi.meanDeltaSub")}
         />
       </div>
 
       {dateLabels.length > 0 && (
         <Surface variant="base" padding="md">
           <div className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "#A1A1AA" }}>
-            Gazette Amendment Timeline
+            {t("sections.temporalPrice.gazetteAmendmentTimeline")}
           </div>
           <div className="flex flex-wrap gap-2">
             {dateLabels.map((d: string) => (
@@ -64,21 +77,31 @@ export function TemporalPriceSection({ data }: { data: OptimizationSummary }) {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PriceChangeTable title="Top Procedure Price Increases (EK-2B)" items={ek2b.top_increases} direction="up" />
-        <PriceChangeTable title="Top Package Price Increases (EK-2C)" items={ek2c.top_increases} direction="up" />
+        <PriceChangeTable title={t("sections.temporalPrice.topProcedureIncreases")} items={ek2b.top_increases} direction="up" t={t} />
+        <PriceChangeTable title={t("sections.temporalPrice.topPackageIncreases")} items={ek2c.top_increases} direction="up" t={t} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PriceChangeTable title="Top Procedure Price Decreases (EK-2B)" items={ek2b.top_decreases} direction="down" />
-        <PriceChangeTable title="Top Package Price Decreases (EK-2C)" items={ek2c.top_decreases} direction="down" />
+        <PriceChangeTable title={t("sections.temporalPrice.topProcedureDecreases")} items={ek2b.top_decreases} direction="down" t={t} />
+        <PriceChangeTable title={t("sections.temporalPrice.topPackageDecreases")} items={ek2c.top_decreases} direction="down" t={t} />
       </div>
     </div>
   );
 }
 
-function PriceChangeTable({ title, items, direction }: { title: string; items: { code: string; name: string; old_price: number; new_price: number; delta_pct: number; old_date?: string; new_date?: string }[]; direction: "up" | "down" }) {
+function PriceChangeTable({
+  title,
+  items,
+  direction,
+  t,
+}: {
+  title: string;
+  items: { code: string; name: string; old_price: number; new_price: number; delta_pct: number; old_date?: string; new_date?: string }[];
+  direction: "up" | "down";
+  t: ReturnType<typeof useT>;
+}) {
   const color = direction === "up" ? "#B91C1C" : theme.accent;
-  const fmtDate = (d?: string) => d ? d.slice(0, 10) : "—";
+  const fmtDate = (d?: string) => d ? d.slice(0, 10) : t("sections.temporalPrice.missingDate");
   return (
     <Surface variant="base" padding="md">
       <div className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color }}>
@@ -88,11 +111,11 @@ function PriceChangeTable({ title, items, direction }: { title: string; items: {
         <DataTable className="text-xs">
           <thead>
             <tr>
-              <th>Code</th>
-              <th>Name</th>
-              <th className="num-col">Price ({fmtDate(items[0]?.old_date)})</th>
-              <th className="num-col">Price ({fmtDate(items[0]?.new_date)})</th>
-              <th className="num-col">Change</th>
+              <th>{t("sections.temporalPrice.table.code")}</th>
+              <th>{t("sections.temporalPrice.table.name")}</th>
+              <th className="num-col">{t("sections.temporalPrice.table.priceAtDate", { date: fmtDate(items[0]?.old_date) })}</th>
+              <th className="num-col">{t("sections.temporalPrice.table.priceAtDate", { date: fmtDate(items[0]?.new_date) })}</th>
+              <th className="num-col">{t("sections.temporalPrice.table.change")}</th>
             </tr>
           </thead>
           <tbody>
@@ -110,7 +133,9 @@ function PriceChangeTable({ title, items, direction }: { title: string; items: {
           </tbody>
         </DataTable>
       ) : (
-        <p className="text-sm text-[var(--text-secondary)]">No {direction === "up" ? "increases" : "decreases"} detected</p>
+        <p className="text-sm text-[var(--text-secondary)]">
+          {direction === "up" ? t("sections.temporalPrice.noIncreases") : t("sections.temporalPrice.noDecreases")}
+        </p>
       )}
     </Surface>
   );

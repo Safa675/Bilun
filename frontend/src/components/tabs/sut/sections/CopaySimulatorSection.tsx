@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { simulateCopay } from "@/lib/api/sut";
 import type { CopaySimulateRequest, CopaySimulateResult } from "@/lib/domains/sut";
@@ -13,8 +13,25 @@ import {
   KpiCard,
 } from "../shared";
 import { Chip, Surface } from "@/components/primitives";
+import { useT } from "@/lib/i18n/useTranslations";
+
+const FACILITY_TIER_KEYS: Record<string, string> = {
+  "1_basamak": "1Basamak",
+  "2_basamak_resmi": "2BasamakResmi",
+  "3_basamak_resmi": "3BasamakResmi",
+  egitim_arastirma: "egitimArastirma",
+  universite_devlet: "universiteDevlet",
+  universite_vakif: "universiteVakif",
+  "2_3_basamak_ozel": "2_3BasamakOzel",
+};
+
+const PATIENT_CATEGORY_KEYS: Record<string, string> = {
+  diger: "diger",
+  gelir_aylik_alan: "gelirAylikAlan",
+};
 
 export function CopaySimulatorSection() {
+  const t = useT();
   const [facilityTier, setFacilityTier] = useState("2_3_basamak_ozel");
   const [patientCategory, setPatientCategory] = useState("diger");
   const [nVisits, setNVisits] = useState(3);
@@ -47,14 +64,14 @@ export function CopaySimulatorSection() {
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      setError(err instanceof Error ? err.message : "Simulation failed");
+      setError(err instanceof Error ? err.message : t("sections.copaySimulator.errors.simulationFailed"));
     } finally {
       if (abortRef.current === controller) {
         setLoading(false);
         abortRef.current = null;
       }
     }
-  }, [facilityTier, patientCategory, nVisits, rxCost, nPrescriptions]);
+  }, [facilityTier, patientCategory, nVisits, rxCost, nPrescriptions, t]);
 
   useEffect(() => {
     return () => {
@@ -62,47 +79,52 @@ export function CopaySimulatorSection() {
     };
   }, []);
 
-  const breakdownData = result
-    ? [
-        { name: "Visit Copay", value: result.visit.copay_total, color: theme.accent },
-        { name: "Drug % Copay", value: result.drug.rx_copay_percentage, color: "#B45309" },
-        { name: "Drug Flat Fee", value: result.drug.rx_copay_flat, color: "#B91C1C" },
-      ].filter((d) => d.value > 0)
-    : [];
+  const breakdownData = useMemo(() => {
+    if (!result) return [];
+    return [
+      { name: t("sections.copaySimulator.breakdown.visitCopay"), value: result.visit.copay_total, color: theme.accent },
+      { name: t("sections.copaySimulator.breakdown.drugPercentCopay"), value: result.drug.rx_copay_percentage, color: "#B45309" },
+      { name: t("sections.copaySimulator.breakdown.drugFlatFee"), value: result.drug.rx_copay_flat, color: "#B91C1C" },
+    ].filter((d) => d.value > 0);
+  }, [result, t]);
 
   return (
     <div className="space-y-5">
       <Surface variant="base" padding="lg">
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
-          Patient Scenario
+          {t("sections.copaySimulator.patientScenario")}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>Facility Tier</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.copaySimulator.facilityTier")}</label>
             <select
               value={facilityTier}
               onChange={(e) => setFacilityTier(e.target.value)}
               className="sut-input"
             >
-              {FACILITY_TIERS.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+              {FACILITY_TIERS.map((tier) => (
+                <option key={tier.value} value={tier.value}>
+                  {t(`sections.copaySimulator.facilityTiers.${FACILITY_TIER_KEYS[tier.value] ?? tier.value}`)}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>Patient Category</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.copaySimulator.patientCategory")}</label>
             <select
               value={patientCategory}
               onChange={(e) => setPatientCategory(e.target.value)}
               className="sut-input"
             >
-              {PATIENT_CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
+              {PATIENT_CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {t(`sections.copaySimulator.patientCategories.${PATIENT_CATEGORY_KEYS[cat.value] ?? cat.value}`)}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>Number of Visits</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.copaySimulator.numberOfVisits")}</label>
             <input
               type="number"
               value={nVisits}
@@ -113,7 +135,7 @@ export function CopaySimulatorSection() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>Total Drug Cost (TRY)</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.copaySimulator.totalDrugCostTry")}</label>
             <input
               type="number"
               value={rxCost}
@@ -124,7 +146,7 @@ export function CopaySimulatorSection() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>Prescriptions</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.copaySimulator.prescriptions")}</label>
             <input
               type="number"
               value={nPrescriptions}
@@ -141,7 +163,7 @@ export function CopaySimulatorSection() {
               disabled={loading}
               className="sut-btn-primary w-full"
             >
-              {loading ? "Simulating..." : "Simulate"}
+              {loading ? t("sections.copaySimulator.simulating") : t("sections.copaySimulator.simulate")}
             </button>
           </div>
         </div>
@@ -157,34 +179,39 @@ export function CopaySimulatorSection() {
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <KpiCard
-              label="Total Out-of-Pocket"
+              label={t("sections.copaySimulator.kpi.totalOutOfPocket")}
               value={fmtTRY2(result.total_copay_mid)}
               valueColor="#B91C1C"
             />
             <KpiCard
-              label="Visit Copayment"
+              label={t("sections.copaySimulator.kpi.visitCopayment")}
               value={fmtTRY2(result.visit.copay_total)}
               valueColor={ACCENT_LOCAL}
-              sub={`${fmtTRY2(result.visit.copay_per_visit)} x ${result.n_visits} visits`}
+              sub={t("sections.copaySimulator.kpi.visitCopaySub", {
+                copayPerVisit: fmtTRY2(result.visit.copay_per_visit),
+                nVisits: result.n_visits,
+              })}
             />
             <KpiCard
-              label="Drug Copayment"
+              label={t("sections.copaySimulator.kpi.drugCopayment")}
               value={fmtTRY2(result.drug.rx_copay_total)}
               valueColor="#B45309"
-              sub={`${(result.drug.rx_copay_rate * 100).toFixed(0)}% rate`}
+              sub={t("sections.copaySimulator.kpi.drugCopayRateSub", {
+                rate: (result.drug.rx_copay_rate * 100).toFixed(0),
+              })}
             />
             <KpiCard
-              label="Copay Range"
+              label={t("sections.copaySimulator.kpi.copayRange")}
               value={`${fmtTRY2(result.total_copay_min)} - ${fmtTRY2(result.total_copay_max)}`}
               valueColor="#71717A"
-              sub="min - max"
+              sub={t("sections.copaySimulator.kpi.copayRangeSub")}
             />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <Surface variant="base" padding="lg">
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
-                Copayment Breakdown
+                {t("sections.copaySimulator.copaymentBreakdown")}
               </h3>
               {breakdownData.length > 0 ? (
                 <div className="flex items-center gap-4">
@@ -227,39 +254,39 @@ export function CopaySimulatorSection() {
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-[var(--text-secondary)]">No copayment components</p>
+                <p className="text-sm text-[var(--text-secondary)]">{t("sections.copaySimulator.noCopaymentComponents")}</p>
               )}
             </Surface>
 
             <Surface variant="base" padding="lg">
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
-                Calculation Detail
+                {t("sections.copaySimulator.calculationDetail")}
               </h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between" style={{ color: "#71717A" }}>
-                  <span>Visit copay per visit</span>
+                  <span>{t("sections.copaySimulator.detail.visitCopayPerVisit")}</span>
                   <span className="font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(result.visit.copay_per_visit)}</span>
                 </div>
                 <div className="flex justify-between" style={{ color: "#71717A" }}>
-                  <span>Visit copay ({result.n_visits} visits)</span>
+                  <span>{t("sections.copaySimulator.detail.visitCopayTotal", { nVisits: result.n_visits })}</span>
                   <span className="font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(result.visit.copay_total)}</span>
                 </div>
                 <hr style={{ borderColor: theme.accentAlpha(0.08) }} />
                 <div className="flex justify-between" style={{ color: "#71717A" }}>
-                  <span>Drug copay rate</span>
+                  <span>{t("sections.copaySimulator.detail.drugCopayRate")}</span>
                   <span className="font-semibold" style={{ color: "#1A1A1A" }}>{(result.drug.rx_copay_rate * 100).toFixed(0)}%</span>
                 </div>
                 <div className="flex justify-between" style={{ color: "#71717A" }}>
-                  <span>Drug % copay</span>
+                  <span>{t("sections.copaySimulator.detail.drugPercentCopay")}</span>
                   <span className="font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(result.drug.rx_copay_percentage)}</span>
                 </div>
                 <div className="flex justify-between" style={{ color: "#71717A" }}>
-                  <span>Drug flat fee ({nPrescriptions} Rx)</span>
+                  <span>{t("sections.copaySimulator.detail.drugFlatFee", { nPrescriptions })}</span>
                   <span className="font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(result.drug.rx_copay_flat)}</span>
                 </div>
                 <hr style={{ borderColor: theme.accentAlpha(0.08) }} />
                 <div className="flex justify-between font-bold" style={{ color: "#1A1A1A" }}>
-                  <span>Total OOP (Mid)</span>
+                  <span>{t("sections.copaySimulator.detail.totalOopMid")}</span>
                   <span style={{ color: "#B91C1C" }}>{fmtTRY2(result.total_copay_mid)}</span>
                 </div>
               </div>

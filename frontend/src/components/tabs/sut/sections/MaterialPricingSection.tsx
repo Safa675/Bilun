@@ -5,8 +5,10 @@ import { getSutMaterialPricing } from "@/lib/api/sut";
 import type { SutMaterialPricingResult } from "@/lib/api/sut";
 import { ACCENT_LOCAL, fmtTRY2 } from "../shared";
 import { Chip, DataTable, Surface } from "@/components/primitives";
+import { useT } from "@/lib/i18n/useTranslations";
 
 export function MaterialPricingSection() {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SutMaterialPricingResult | null>(null);
@@ -15,7 +17,10 @@ export function MaterialPricingSection() {
 
   const handleSearch = useCallback(async () => {
     const q = query.trim();
-    if (!q) { setError("Enter a material code or name to search."); return; }
+    if (!q) {
+      setError(t("sections.materialPricing.errors.enterQuery"));
+      return;
+    }
 
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -30,11 +35,11 @@ export function MaterialPricingSection() {
       if (!controller.signal.aborted) setResult(res);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      setError(err instanceof Error ? err.message : "Search failed");
+      setError(err instanceof Error ? err.message : t("sections.materialPricing.errors.searchFailed"));
     } finally {
       if (abortRef.current === controller) { setLoading(false); abortRef.current = null; }
     }
-  }, [query]);
+  }, [query, t]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearch();
@@ -48,12 +53,12 @@ export function MaterialPricingSection() {
     <div className="space-y-5">
       <Surface variant="base" padding="lg">
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>
-          Search Gazette Prices (4,407+ Materials)
+          {t("sections.materialPricing.searchTitle")}
         </h3>
         <div className="flex gap-2">
-          <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown} className="sut-input flex-1" placeholder="e.g. stent, protez, pacemaker, 090301" />
+          <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown} className="sut-input flex-1" placeholder={t("sections.materialPricing.searchPlaceholder")} />
           <button type="button" onClick={handleSearch} disabled={loading} className="sut-btn-primary">
-            {loading ? "Searching..." : "Search"}
+            {loading ? t("sections.materialPricing.searching") : t("sections.materialPricing.search")}
           </button>
         </div>
       </Surface>
@@ -67,24 +72,28 @@ export function MaterialPricingSection() {
       {result && (
         <Surface variant="base" padding="lg">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: ACCENT_LOCAL }}>Results</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: ACCENT_LOCAL }}>{t("sections.materialPricing.results")}</h3>
             <span className="text-xs font-medium" style={{ color: "#A1A1AA" }}>
-              {result.n_matches} match{result.n_matches !== 1 ? "es" : ""} for &ldquo;{result.query}&rdquo;
+              {t("sections.materialPricing.matchCount", {
+                count: result.n_matches,
+                plural: result.n_matches !== 1 ? "es" : "",
+                query: result.query,
+              })}
             </span>
           </div>
 
           {result.n_matches === 0 ? (
-            <p className="text-sm" style={{ color: "#71717A" }}>No gazette entries found. Try a different code or partial name.</p>
+            <p className="text-sm" style={{ color: "#71717A" }}>{t("sections.materialPricing.emptyState")}</p>
           ) : (
             <div className="max-h-[420px] overflow-y-auto">
               <DataTable>
                 <thead>
                   <tr>
-                    <th className="text-left">Code</th>
-                    <th className="text-left">Material Name</th>
-                    <th className="text-right tabular-nums">Gazette Price</th>
-                    <th className="text-left">Source</th>
-                    <th className="text-left">Description</th>
+                    <th className="text-left">{t("sections.materialPricing.table.code")}</th>
+                    <th className="text-left">{t("sections.materialPricing.table.materialName")}</th>
+                    <th className="text-right tabular-nums">{t("sections.materialPricing.table.gazettePrice")}</th>
+                    <th className="text-left">{t("sections.materialPricing.table.source")}</th>
+                    <th className="text-left">{t("sections.materialPricing.table.description")}</th>
                   </tr>
                 </thead>
                 <tbody>

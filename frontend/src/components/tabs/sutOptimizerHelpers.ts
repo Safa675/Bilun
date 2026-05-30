@@ -3,6 +3,10 @@ import type {
   PatientAlertsRequestParams,
   PatientAlertsStatus,
 } from "@/lib/domains/sut";
+import { translate } from "@/lib/i18n/translate";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
+import enMessages from "@/messages/en/index";
+import trMessages from "@/messages/tr/index";
 
 export const ALERT_PAGE_SIZE = 100;
 
@@ -12,20 +16,17 @@ const ALERT_STATUS_OPTIONS: Record<PatientAlertsCategory, readonly PatientAlerts
   copay_rates: ["all", "flagged", "clear"],
 } as const;
 
-const ALERT_STATUS_LABELS: Record<PatientAlertsStatus, string> = {
-  all: "All",
-  exempt: "Exempt",
-  not_exempt: "Not Exempt",
-  flagged: "Flagged",
-  clear: "Clear",
-};
+function t(key: string): string {
+  const messages = getModuleLocale() === "tr" ? trMessages : enMessages;
+  return translate(messages, key);
+}
 
 export function getAlertStatusOptions(category: PatientAlertsCategory): readonly PatientAlertsStatus[] {
   return ALERT_STATUS_OPTIONS[category];
 }
 
 export function getAlertStatusLabel(status: PatientAlertsStatus): string {
-  return ALERT_STATUS_LABELS[status];
+  return t(`optimizer.filters.status.${status}`);
 }
 
 export function buildPatientAlertsQuery(

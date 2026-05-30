@@ -42,13 +42,26 @@ export function buildPatientWorkspacePageContext(input: {
   };
 
   if (input.outcome) {
-    sections.outcome = input.outcome;
+    sections.outcome = {
+      loaded: true,
+      patient_id: input.outcome.patient_id,
+    };
   }
   if (input.optimization) {
-    sections.optimization_snapshot = input.optimization;
+    sections.optimization_snapshot = {
+      loaded: true,
+      patient_id: input.optimization.patient_id,
+      n_diagnoses: input.optimization.n_diagnoses,
+    };
   }
   if (input.billingReport) {
-    sections.billing_report = input.billingReport;
+    sections.billing_report = {
+      loaded: true,
+      patient_id: input.billingReport.patient_id,
+      total_recoverable_try: input.billingReport.total_recoverable_try,
+      priority: input.billingReport.priority,
+      exactness_status: input.billingReport.exactness_status,
+    };
   }
 
   return {

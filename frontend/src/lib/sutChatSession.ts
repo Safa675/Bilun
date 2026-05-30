@@ -6,9 +6,10 @@ export const SUT_WORKSPACE_CHAT_SESSION_KEY = "bilun:workspace";
 export function buildSutChatContextKey(
   patientId: string | null | undefined,
   activeTab: string,
+  locale = "en",
 ): string {
   const normalizedTab = activeTab.trim() || "SUT Workspace";
-  return `${patientId?.trim() || "cohort"}::${normalizedTab}`;
+  return `${patientId?.trim() || "cohort"}::${normalizedTab}::${locale}`;
 }
 
 export function formatSutChatContextPrompt(
@@ -24,7 +25,7 @@ export function formatSutChatContextPrompt(
 
 /** Auto-briefing prompts sent to the API but hidden from the chat UI. */
 export function isContextBriefingUserMessage(message: ChatMessage): boolean {
-  return message.role === "user" && /^\[[^\]]+\]\n\n/s.test(message.content);
+  return message.role === "user" && /^\[[^\]]+\]\n\n/.test(message.content);
 }
 
 export function visibleChatMessages(messages: ChatMessage[]): ChatMessage[] {

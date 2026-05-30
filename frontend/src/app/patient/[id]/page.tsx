@@ -38,8 +38,10 @@ import {
   useSetSutChatSession,
   useSutChatSession,
 } from "@/stores/index";
+import { useT } from "@/lib/i18n/useTranslations";
 
 export default function SutPatientPage() {
+  const t = useT();
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const patientId = useMemo(
@@ -106,7 +108,7 @@ export default function SutPatientPage() {
           setOutcomeError(
             outcomeResult.reason instanceof Error
               ? outcomeResult.reason.message
-              : "Failed to load patient SUT outcome.",
+              : t("patient.page.errors.outcome"),
           );
         }
 
@@ -116,7 +118,7 @@ export default function SutPatientPage() {
           setOptimizationError(
             optimizationResult.reason instanceof Error
               ? optimizationResult.reason.message
-              : "Failed to load patient optimization.",
+              : t("patient.page.errors.optimization"),
           );
         }
 
@@ -126,7 +128,7 @@ export default function SutPatientPage() {
           setBillingError(
             billingResult.reason instanceof Error
               ? billingResult.reason.message
-              : "Failed to load patient billing report.",
+              : t("patient.page.errors.billing"),
           );
         }
 
@@ -136,7 +138,7 @@ export default function SutPatientPage() {
         billingControllerRef.current = null;
       },
     );
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!patientId) {
@@ -196,34 +198,37 @@ export default function SutPatientPage() {
         <section className={sectionClass}>
             <Surface variant="base" padding="lg">
               <nav
-                aria-label="SUT patient breadcrumb"
+                aria-label={t("patient.page.breadcrumbAria")}
                 className="mb-4 flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--text-muted)]"
               >
                 <Link
                   href={buildSutHomeHref("patients")}
                   className="text-[var(--text-secondary)] transition-colors hover:text-[var(--gold-hover)]"
                 >
-                  SUT workspace
+                  {t("patient.page.workspace")}
                 </Link>
                 <span aria-hidden="true" className="text-[var(--border-strong)]">
                   /
                 </span>
-                <span className="text-[var(--text-primary)]">Patient {patientId || "unknown"}</span>
+                <span className="text-[var(--text-primary)]">
+                  {patientId
+                    ? t("patient.page.patient", { patientId })
+                    : t("patient.page.patientUnknown")}
+                </span>
               </nav>
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end">
                 <div>
-                  <Eyebrow className="mb-2">Patient search</Eyebrow>
+                  <Eyebrow className="mb-2">{t("patient.page.searchEyebrow")}</Eyebrow>
                   <PatientSearch
                     id="sut-patient-workspace-search"
                     selectedPatientId={patientId || null}
                     onSelect={handlePatientSelect}
-                    placeholder="Jump to a different patient workspace..."
+                    placeholder={t("patient.page.searchPlaceholder")}
                     searchFn={searchSutPatients}
                   />
                 </div>
                 <p className="text-sm leading-snug text-[var(--text-secondary)]">
-                  Patient selection routes into the dedicated SUT workspace instead of loading inline on
-                  home.
+                  {t("patient.page.searchDescription")}
                 </p>
               </div>
             </Surface>
@@ -245,7 +250,7 @@ export default function SutPatientPage() {
             ) : allFailed ? (
               <Surface variant="base" padding="lg">
                 <Eyebrow tone="primary" as="h1" className="text-base normal-case tracking-normal">
-                  Billing Report unavailable
+                  {t("patient.page.billingUnavailable")}
                 </Eyebrow>
                 <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{pageError}</p>
               </Surface>
@@ -273,8 +278,7 @@ export default function SutPatientPage() {
                     <MaterialsPreCheckSection materialsData={billingReport.materials} />
                     {optimization && <SutOptimizationSection optimization={optimization} />}
                     <p className="py-2 text-center text-xs text-[var(--text-muted)]">
-                      Normative analysis based on official SUT gazette rule references (EK-1A, EK-2B,
-                      EK-2C, EK-4A)
+                      {t("patient.page.footerNormative")}
                     </p>
                   </>
                 )}

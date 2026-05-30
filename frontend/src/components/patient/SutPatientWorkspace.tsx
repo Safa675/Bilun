@@ -7,14 +7,9 @@ import type {
   PatientOptimization,
   SutPatientOutcomeData,
 } from "@/lib/domains/sut";
-import {
-  buildSutHomeHref,
-} from "@/lib/constants";
+import { buildSutHomeHref } from "@/lib/constants";
 import { DRGPanel } from "@/components/tabs/sut/PatientSection";
-import {
-  fmtNum,
-  fmtPctRatio,
-} from "@/components/tabs/sut/shared";
+import { fmtNum, fmtPctRatio } from "@/components/tabs/sut/shared";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
 import { theme } from "@/lib/theme";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
@@ -24,6 +19,8 @@ import {
   getExemptionCategories,
   hasEk1aExemption,
 } from "@/lib/copayExemption";
+import { useT } from "@/lib/i18n/useTranslations";
+
 function ExactnessNotice({
   block,
   fallback,
@@ -57,28 +54,36 @@ function OptimizationCard({
 }
 
 function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
+  const t = useT();
   const topMatch = copay.qualifying_diagnoses[0];
   const categories = getExemptionCategories(copay);
   const basisSummary = formatExemptionBasisSummary(categories);
   const ek1aOnly =
     copay.exempt && categories.length > 0 && categories.every((c) => c === "ek1a_chronic");
+  const codeWord =
+    copay.n_qualifying === 1
+      ? t("patient.workspace.copayCodeSingular")
+      : t("patient.workspace.copayCodePlural");
 
   return (
     <Surface variant="soft" padding="md" className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Eyebrow>Copay exemption</Eyebrow>
+          <Eyebrow>{t("patient.workspace.copayEyebrow")}</Eyebrow>
           <p className="mt-2 font-[var(--font-display)] text-lg font-medium tracking-tight text-[var(--text-primary)]">
-            {copay.exempt ? "Eligible" : "No exemption ground matched"}
+            {copay.exempt ? t("patient.workspace.copayEligible") : t("patient.workspace.copayNoMatch")}
           </p>
           <p className="mt-2 text-sm leading-snug text-[var(--text-secondary)]">
             {copay.exempt
               ? ek1aOnly
-                ? `EK-1A chronic diagnosis: ${fmtNum(copay.n_qualifying)} qualifying code${copay.n_qualifying === 1 ? "" : "s"} for outpatient copay waiver.`
+                ? t("patient.workspace.copayEk1a", {
+                    count: fmtNum(copay.n_qualifying),
+                    codeWord,
+                  })
                 : basisSummary
-                  ? `Waiver grounds: ${basisSummary}.`
-                  : "Patient matches at least one evaluated copay waiver rule."
-              : "No EK-1A, visit-type, or status exemption matched with current claim and profile inputs."}
+                  ? t("patient.workspace.copayWaiverGrounds", { basis: basisSummary })
+                  : t("patient.workspace.copayGenericMatch")
+              : t("patient.workspace.copayNoInputs")}
           </p>
           {copay.exempt && categories.length > 0 && (
             <div className="mt-3">
@@ -87,7 +92,7 @@ function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
           )}
         </div>
         <Chip variant={copay.exempt ? "success" : "neutral"}>
-          {copay.exempt ? "Actionable" : "Clear"}
+          {copay.exempt ? t("patient.workspace.chipActionable") : t("patient.workspace.chipClear")}
         </Chip>
       </div>
 
@@ -95,7 +100,10 @@ function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
         <Surface variant="base" padding="sm" className="text-sm">
           <p className="font-semibold text-[var(--text-primary)]">{topMatch.disease}</p>
           <p className="mt-1 text-xs text-[var(--text-secondary)]">
-            ICD-10 {topMatch.icd10} &middot; Gazette range {topMatch.range}
+            {t("patient.workspace.topMatchDetail", {
+              icd10: topMatch.icd10,
+              range: topMatch.range,
+            })}
           </p>
         </Surface>
       )}
@@ -108,6 +116,7 @@ export function PatientOptimizationSnapshot({
 }: {
   optimization: PatientOptimization;
 }) {
+  const t = useT();
   const surchargeExact = isExactOutput(optimization.surcharge_exposure);
   const copayRateExact = isExactOutput(optimization.copay_rate_exposure);
   const drgExact = isExactOutput(optimization.drg_unbundling);
@@ -121,10 +130,10 @@ export function PatientOptimizationSnapshot({
         />
         <div>
           <h2 className="font-[var(--font-display)] text-lg font-medium tracking-tight text-[var(--text-primary)]">
-            Optimization snapshot
+            {t("patient.workspace.optimizationTitle")}
           </h2>
           <p className="mt-1 text-sm leading-snug text-[var(--text-secondary)]">
-            Patient-level SUT rule findings stay exactness-aware: unavailable inputs stay unavailable.
+            {t("patient.workspace.optimizationDescription")}
           </p>
         </div>
       </div>
@@ -132,69 +141,69 @@ export function PatientOptimizationSnapshot({
       <div className="grid gap-4 xl:grid-cols-2">
         <CopayExemptionSummary copay={optimization.copay_exemptions} />
 
-        <OptimizationCard title="Surcharge exposure">
+        <OptimizationCard title={t("patient.workspace.surchargeTitle")}>
           {surchargeExact ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <Stat
-                label="Applicable procedures"
+                label={t("patient.workspace.applicableProcedures")}
                 value={fmtNum(optimization.surcharge_exposure.n_applicable_procedures ?? 0)}
               />
               <Stat
-                label="Exposure rate"
+                label={t("patient.workspace.exposureRate")}
                 value={fmtPctRatio(optimization.surcharge_exposure.exposure_rate ?? 0, 1)}
               />
             </div>
           ) : (
             <ExactnessNotice
               block={optimization.surcharge_exposure}
-              fallback="Surcharge exposure stays unavailable until exact billed procedure lines are present."
+              fallback={t("patient.workspace.surchargeFallback")}
             />
           )}
         </OptimizationCard>
 
-        <OptimizationCard title="Copay-rate exposure">
+        <OptimizationCard title={t("patient.workspace.copayRateTitle")}>
           {copayRateExact ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <Stat
-                label="Applicable procedures"
+                label={t("patient.workspace.applicableProcedures")}
                 value={fmtNum(optimization.copay_rate_exposure.n_applicable_procedures ?? 0)}
               />
               <Stat
-                label="Mean rate"
+                label={t("patient.workspace.meanRate")}
                 value={fmtPctRatio((optimization.copay_rate_exposure.mean_rate ?? 0) / 100, 1)}
               />
             </div>
           ) : (
             <ExactnessNotice
               block={optimization.copay_rate_exposure}
-              fallback="Copay-rate exposure stays unavailable until exact billed procedure lines are present."
+              fallback={t("patient.workspace.copayRateFallback")}
             />
           )}
         </OptimizationCard>
 
-        <OptimizationCard title="DRG package review">
+        <OptimizationCard title={t("patient.workspace.drgTitle")}>
           {drgExact ? (
             <div className="space-y-3">
               <Stat
-                label="Chapters analyzed"
+                label={t("patient.workspace.chaptersAnalyzed")}
                 value={fmtNum(optimization.drg_unbundling?.n_chapters_analyzed ?? 0)}
               />
               <Stat
-                label="Risk state"
+                label={t("patient.workspace.riskState")}
                 value={
                   optimization.drg_unbundling?.has_unbundling_risk
-                    ? "Potential package opportunity"
-                    : "No risk flagged"
+                    ? t("patient.workspace.riskOpportunity")
+                    : t("patient.workspace.riskNone")
                 }
               />
               {optimization.drg_unbundling?.has_unbundling_risk ? (
-                <Chip variant="warning">Review package eligibility</Chip>
+                <Chip variant="warning">{t("patient.workspace.reviewPackage")}</Chip>
               ) : null}
             </div>
           ) : (
             <ExactnessNotice
               block={optimization.drg_unbundling}
-              fallback="DRG unbundling review stays unavailable until exact itemized claim lines exist."
+              fallback={t("patient.workspace.drgFallback")}
             />
           )}
         </OptimizationCard>
@@ -212,9 +221,10 @@ export default function SutPatientWorkspace({
   outcome: SutPatientOutcomeData | null;
   optimization: PatientOptimization | null;
 }) {
+  const t = useT();
   const primaryFocusLabel = optimization?.copay_exemptions.exempt
-    ? "Copay exemption"
-    : "Exactness review";
+    ? t("patient.workspace.focusCopay")
+    : t("patient.workspace.focusExactness");
   const primaryFocusColor = optimization?.copay_exemptions.exempt
     ? theme.accent
     : undefined;
@@ -224,24 +234,23 @@ export default function SutPatientWorkspace({
       <Surface variant="base" padding="lg">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
-            <Eyebrow>SUT patient workspace</Eyebrow>
+            <Eyebrow>{t("patient.workspace.eyebrow")}</Eyebrow>
             <h1 className="mt-2 font-[var(--font-display)] text-3xl font-medium leading-tight tracking-tight text-[var(--text-primary)] sm:text-4xl">
-              Billing{" "}
+              {t("patient.workspace.billingTitle")}{" "}
               <em className="not-italic font-[var(--font-display)] italic text-[var(--gold)]">
-                Report
+                {t("patient.workspace.billingEmphasis")}
               </em>
             </h1>
             <p className="mt-2 font-mono text-base text-[var(--text-secondary)]">{patientId}</p>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
-              A dedicated patient-level exact-only workspace that composes surviving SUT outcome and
-              optimization data before handing off to the deeper billing review.
+              {t("patient.workspace.description")}
             </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
             <Link href={buildSutHomeHref("patients")} className="sut-section-btn">
               <ArrowLeft className="h-4 w-4" />
-              Back to patients
+              {t("patient.workspace.backToPatients")}
             </Link>
           </div>
         </div>
@@ -251,20 +260,20 @@ export default function SutPatientWorkspace({
         <Surface variant="base" padding="lg" className="space-y-6">
           <div className="grid gap-6 sm:grid-cols-3">
             <Stat
-              label="Diagnoses"
+              label={t("patient.workspace.diagnoses")}
               value={fmtNum(optimization.n_diagnoses)}
               display="gold"
             />
             <Stat
-              label="ICD chapters"
+              label={t("patient.workspace.icdChapters")}
               value={
                 optimization.icd10_chapters.length > 0
                   ? optimization.icd10_chapters.join(", ")
-                  : "None"
+                  : t("patient.workspace.icdNone")
               }
             />
             <Stat
-              label="Primary focus"
+              label={t("patient.workspace.primaryFocus")}
               value={
                 <span style={primaryFocusColor ? { color: primaryFocusColor } : undefined}>
                   {primaryFocusLabel}
@@ -278,7 +287,7 @@ export default function SutPatientWorkspace({
 
       {outcome?.consistency_warnings && outcome.consistency_warnings.length > 0 && (
         <Surface variant="soft" padding="md" className="space-y-2">
-          <Eyebrow tone="primary">Consistency note</Eyebrow>
+          <Eyebrow tone="primary">{t("patient.workspace.consistencyEyebrow")}</Eyebrow>
           {outcome.consistency_warnings.map((warning, index) => (
             <p key={index} className="text-xs text-[var(--text-secondary)]">
               {warning}

@@ -1,77 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useT } from "@/lib/i18n/useTranslations";
 
-type SutPhase = {
-  number: string;
-  title: string;
-  description: string;
-  details: string[];
-  feedsInto: string;
-};
-
-const SUT_PHASES: SutPhase[] = [
-  {
-    number: "01",
-    title: "Gazette catalog assembly",
-    description:
-      "BILUN reads the curated gazette schedules that back current procedure pricing, DRG package pricing, and normative SUT controls.",
-    details: [
-      "Canonical SUT pricing uses dated gazette catalog lookups.",
-      "Procedure, DRG, material, and checkup references stay within SUT-owned routes.",
-      "Historical package availability is preserved instead of silently falling forward.",
-    ],
-    feedsInto: "SUT reference tools, pricing APIs, and billing review",
-  },
-  {
-    number: "02",
-    title: "Patient SUT rule assembly",
-    description:
-      "The patient workspace composes SUT outcome and optimization data to show cost, rule-calculation status, and exactness-aware patient findings.",
-    details: [
-      "Outcome data provides cost, DRG summary, and claim-line rule context.",
-      "Optimization data provides copay exemption and exactness-aware rule findings.",
-      "Home patient search now routes into the dedicated patient workspace.",
-    ],
-    feedsInto: "Patient workspace and billing handoff",
-  },
-  {
-    number: "03",
-    title: "Exactness-first optimization",
-    description:
-      "Unavailable optimization surfaces stay unavailable until the exact billed inputs exist, rather than being shown as low risk or zero impact.",
-    details: [
-      "Copay exemptions stay actionable when exact.",
-      "Surcharge, copay-rate, and DRG-unbundling findings respect missing exact inputs.",
-      "The patient workspace and optimizer share the same exactness semantics.",
-    ],
-    feedsInto: "Optimizer alerts and revenue recovery review",
-  },
-  {
-    number: "04",
-    title: "Dedicated billing handoff",
-    description:
-      "Patient-level financial review stays split across a high-level patient workspace and the deeper billing route, instead of pushing everything into home.",
-    details: [
-      "The new `/patient/[id]` page becomes the main patient shell.",
-      "Detailed section-by-section billing remains on `/patient/[id]/billing`.",
-      "The handoff keeps ownership and routing clear inside the split app.",
-    ],
-    feedsInto: "Patient route and dedicated billing route",
-  },
-  {
-    number: "05",
-    title: "Product-owned SUT assistant",
-    description:
-      "The restored chatbot is wired to SUT-only context so it can explain exposure, optimization, and patient SUT rule state without depending on IHP cache readiness.",
-    details: [
-      "Frontend chat requests use `/api/chat`.",
-      "Context assembly stays inside SUT exposure, optimization, and patient routes.",
-      "Unavailable exactness states are explained, not converted into fake numerics.",
-    ],
-    feedsInto: "SUT-owned assistant context",
-  },
-];
+const PHASE_KEYS = ["01", "02", "03", "04", "05"] as const;
 
 export default function SutHowItWorksModal({
   open,
@@ -80,7 +12,25 @@ export default function SutHowItWorksModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const t = useT();
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const phases = useMemo(
+    () =>
+      PHASE_KEYS.map((key) => ({
+        number: key,
+        title: t(`app.howItWorks.phases.${key}.title`),
+        description: t(`app.howItWorks.phases.${key}.description`),
+        details: [
+          t(`app.howItWorks.phases.${key}.detail1`),
+          t(`app.howItWorks.phases.${key}.detail2`),
+          t(`app.howItWorks.phases.${key}.detail3`),
+        ],
+        feedsInto: t(`app.howItWorks.phases.${key}.feedsInto`),
+      })),
+    [t],
+  );
+
   const handleClose = useCallback(() => {
     setActiveIndex(0);
     onClose();
@@ -105,14 +55,14 @@ export default function SutHowItWorksModal({
     return null;
   }
 
-  const phase = SUT_PHASES[activeIndex];
+  const phase = phases[activeIndex];
 
   return (
     <div
       className="how-modal-overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="How BILUN works"
+      aria-label={t("app.howItWorks.ariaLabel")}
       onClick={handleClose}
     >
       <div
@@ -122,22 +72,21 @@ export default function SutHowItWorksModal({
         <div className="how-modal-head">
           <div className="how-modal-title-block">
             <span className="how-modal-kicker">
-              BILUN
+              {t("app.howItWorks.kicker")}
             </span>
-            <h2>How the SUT workspace works</h2>
+            <h2>{t("app.howItWorks.title")}</h2>
             <p className="how-modal-intro">
-              The split SUT app focuses on billing rule analytics, exactness-aware optimization,
-              and patient financial review without reaching back into mixed legacy IHP surfaces.
+              {t("app.howItWorks.intro")}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <div className="how-phase-counter">
-              {activeIndex + 1} / {SUT_PHASES.length}
+              {activeIndex + 1} / {phases.length}
             </div>
             <button
               type="button"
               onClick={handleClose}
-              aria-label="Close how it works modal"
+              aria-label={t("app.howItWorks.closeAria")}
               className="how-modal-close"
             >
               &times;
@@ -147,8 +96,8 @@ export default function SutHowItWorksModal({
 
         <div className="how-modal-content">
           <div className="how-stepper-layout">
-            <nav className="how-phase-nav" aria-label="SUT methodology phases">
-              {SUT_PHASES.map((entry, index) => (
+            <nav className="how-phase-nav" aria-label={t("app.howItWorks.phaseNavAria")}>
+              {phases.map((entry, index) => (
                 <button
                   key={entry.number}
                   type="button"
@@ -166,7 +115,7 @@ export default function SutHowItWorksModal({
             <section className="how-phase-detail" key={activeIndex} aria-live="polite">
               <div className="how-phase-header">
                 <span className="how-phase-badge">
-                  Phase {phase.number}
+                  {t("app.howItWorks.phaseBadge", { number: phase.number })}
                 </span>
                 <h3 className="how-phase-title">{phase.title}</h3>
               </div>
@@ -183,7 +132,7 @@ export default function SutHowItWorksModal({
               </div>
 
               <div className="how-phase-feeds">
-                <span className="how-phase-feeds-label">Powers</span>
+                <span className="how-phase-feeds-label">{t("app.howItWorks.powersLabel")}</span>
                 <span className="how-phase-feeds-value">{phase.feedsInto}</span>
               </div>
 
@@ -194,12 +143,12 @@ export default function SutHowItWorksModal({
                   disabled={activeIndex === 0}
                   className="how-phase-btn"
                 >
-                  Previous
+                  {t("app.howItWorks.previous")}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    if (activeIndex < SUT_PHASES.length - 1) {
+                    if (activeIndex < phases.length - 1) {
                       setActiveIndex((current) => current + 1);
                       return;
                     }
@@ -207,7 +156,9 @@ export default function SutHowItWorksModal({
                   }}
                   className="how-phase-btn how-phase-btn-primary"
                 >
-                  {activeIndex < SUT_PHASES.length - 1 ? "Next Phase" : "Got It"}
+                  {activeIndex < phases.length - 1
+                    ? t("app.howItWorks.nextPhase")
+                    : t("app.howItWorks.gotIt")}
                 </button>
               </div>
             </section>

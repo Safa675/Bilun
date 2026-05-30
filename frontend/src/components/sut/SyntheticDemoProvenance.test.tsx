@@ -1,5 +1,5 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import {
   getSutDataSource,
   isSyntheticDemoDataSource,
@@ -26,8 +26,10 @@ describe("SyntheticDemoProvenance", () => {
   });
 
   it("renders demo-safe copy only for synthetic SUT provenance", () => {
-    const html = renderToStaticMarkup(
-      <SyntheticDemoProvenance dataSource={SYNTHETIC_SOURCE} />,
+    const html = renderToStaticMarkupWithLocale(
+      <SyntheticDemoProvenance
+        dataSource={{ ...SYNTHETIC_SOURCE, notice: undefined }}
+      />,
     );
 
     expect(html).toContain(SYNTHETIC_DEMO_COPY);
@@ -38,7 +40,7 @@ describe("SyntheticDemoProvenance", () => {
   });
 
   it("does not render a badge for real-claims provenance", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <SyntheticDemoProvenance
         dataSource={{
           mode: "real_claims",
@@ -55,8 +57,10 @@ describe("SyntheticDemoProvenance", () => {
 
 describe("SyntheticDemoChip", () => {
   it("renders a compact chip for synthetic demo data", () => {
-    const html = renderToStaticMarkup(
-      <SyntheticDemoChip dataSource={SYNTHETIC_SOURCE} />,
+    const html = renderToStaticMarkupWithLocale(
+      <SyntheticDemoChip
+        dataSource={{ ...SYNTHETIC_SOURCE, notice: undefined }}
+      />,
     );
 
     expect(html).toContain("Synthetic demo");
@@ -65,7 +69,7 @@ describe("SyntheticDemoChip", () => {
   });
 
   it("renders nothing for real-claims provenance", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <SyntheticDemoChip
         dataSource={{
           mode: "real_claims",

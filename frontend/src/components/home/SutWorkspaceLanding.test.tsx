@@ -1,5 +1,5 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 
 vi.mock("@/lib/constants", () => ({
   SUT_BRAND: {
@@ -28,7 +28,7 @@ import SutWorkspaceLanding from "./SutWorkspaceLanding";
 
 describe("SutWorkspaceLanding", () => {
   function renderHtml() {
-    return renderToStaticMarkup(
+    return renderToStaticMarkupWithLocale(
       <SutWorkspaceLanding
         onPatientSelect={() => undefined}
         onOpenBilling={() => undefined}

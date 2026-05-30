@@ -25,8 +25,10 @@ import {
   ACCENT_LOCAL,
 } from "../shared";
 import { DataTable, Surface } from "@/components/primitives";
+import { useT } from "@/lib/i18n/useTranslations";
 
 export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse }) {
+  const t = useT();
   const sut = data.sut_summary;
   const sgk = sut.sgk_exposure;
   const copay = sut.copayment;
@@ -45,37 +47,41 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
     <div className="space-y-5">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard
-          label="Total SGK Exposure"
+          label={t("sections.exposure.kpi.totalSgkExposure")}
           value={fmtTRY(sgk?.total_sgk_exposure_mid ?? 0)}
           valueColor="#B91C1C"
-          sub={`${fmtNum(sut.n_patients)} patients`}
+          sub={t("sections.exposure.kpi.patientsSub", { count: fmtNum(sut.n_patients) })}
         />
         <KpiCard
-          label="Mean SGK / Patient"
+          label={t("sections.exposure.kpi.meanSgkPerPatient")}
           value={fmtTRY(sgk?.mean_sgk_exposure_mid ?? 0)}
           valueColor={ACCENT_LOCAL}
         />
         <KpiCard
-          label="Total Copayment (OOP)"
+          label={t("sections.exposure.kpi.totalCopaymentOop")}
           value={fmtTRY(copay?.total_copay_mid ?? 0)}
           valueColor="#B45309"
-          sub={`${fmtTRY2(copay?.mean_copay_mid ?? 0)} / patient`}
+          sub={t("sections.exposure.kpi.meanCopayPerPatientSub", { amount: fmtTRY2(copay?.mean_copay_mid ?? 0) })}
         />
         <KpiCard
-          label="Top 10% Cost Share"
+          label={t("sections.exposure.kpi.top10CostShare")}
           value={fmtPct(conc?.top_10pct_cost_share ?? 0)}
           valueColor={conc && conc.top_10pct_cost_share > 50 ? "#B91C1C" : "#B45309"}
-          sub={`${conc?.top_10pct_patients ?? 0} patients`}
+          sub={t("sections.exposure.kpi.patientsSub", { count: fmtNum(conc?.top_10pct_patients ?? 0) })}
         />
       </div>
 
       <Surface variant="base" padding="lg">
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-1" style={{ color: ACCENT_LOCAL }}>
-          Cost Distribution (Per Patient)
+          {t("sections.exposure.costDistribution")}
         </h3>
         <p className="text-xs mb-4" style={{ color: "#A1A1AA" }}>
-          Median: {fmtTRY(sut.median_cost_mid)} &middot; Mean: {fmtTRY(sut.mean_cost_mid)} &middot;
-          P10: {fmtTRY(sut.cost_distribution?.p10 ?? 0)} &middot; P90: {fmtTRY(sut.cost_distribution?.p90 ?? 0)}
+          {t("sections.exposure.distributionStats", {
+            median: fmtTRY(sut.median_cost_mid),
+            mean: fmtTRY(sut.mean_cost_mid),
+            p10: fmtTRY(sut.cost_distribution?.p10 ?? 0),
+            p90: fmtTRY(sut.cost_distribution?.p90 ?? 0),
+          })}
         </p>
         <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: theme.accentAlpha(0.06) }}>
           {(() => {
@@ -107,7 +113,7 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <Surface variant="base" padding="lg">
           <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
-            Cost Tier Distribution
+            {t("sections.exposure.costTierDistribution")}
           </h3>
           <div className="flex items-center gap-4">
             <div style={{ width: 160, height: 160 }}>
@@ -127,7 +133,7 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => [`${value ?? 0} patients`, ""]}
+                    formatter={(value) => [t("sections.exposure.tooltip.patients", { count: Number(value ?? 0) }), ""]}
                     contentStyle={{
                       background: "rgba(255,255,255,0.95)",
                       border: `1px solid ${theme.accentAlpha(0.15)}`,
@@ -139,13 +145,13 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
               </ResponsiveContainer>
             </div>
             <div className="flex-1 space-y-1.5">
-              {tierData.map((t) => (
-                <div key={t.name} className="flex items-center gap-2 text-xs">
-                  <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: t.color }} />
-                  <span className="flex-1" style={{ color: "#71717A" }}>{t.name}</span>
-                  <span className="font-semibold" style={{ color: "#1A1A1A" }}>{t.value}</span>
+              {tierData.map((tier) => (
+                <div key={tier.name} className="flex items-center gap-2 text-xs">
+                  <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: tier.color }} />
+                  <span className="flex-1" style={{ color: "#71717A" }}>{tier.name}</span>
+                  <span className="font-semibold" style={{ color: "#1A1A1A" }}>{tier.value}</span>
                   <span style={{ color: "#A1A1AA" }}>
-                    ({sut.n_patients > 0 ? fmtPct((t.value / sut.n_patients) * 100) : "0%"})
+                    ({sut.n_patients > 0 ? fmtPct((tier.value / sut.n_patients) * 100) : "0%"})
                   </span>
                 </div>
               ))}
@@ -155,7 +161,7 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
 
         <Surface variant="base" padding="lg">
           <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
-            Cost by Category (Midpoint)
+            {t("sections.exposure.costByCategory")}
           </h3>
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={categoryData} layout="vertical" margin={{ left: 0, right: 8, top: 0, bottom: 0 }}>
@@ -163,7 +169,7 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
               <XAxis type="number" tick={{ fill: "#71717A", fontSize: 12 }} tickFormatter={(v: number) => fmtTRY(v)} />
               <YAxis type="category" dataKey="name" tick={{ fill: "#71717A", fontSize: 12 }} width={80} />
               <Tooltip
-                formatter={(value) => [fmtTRY2(Number(value ?? 0)), "Total (Cohort)"]}
+                formatter={(value) => [fmtTRY2(Number(value ?? 0)), t("sections.exposure.tooltip.totalCohort")]}
                 contentStyle={{
                   background: "rgba(255,255,255,0.95)",
                   border: `1px solid ${theme.accentAlpha(0.15)}`,
@@ -184,17 +190,17 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
       {sut.top_5_high_cost && sut.top_5_high_cost.length > 0 && (
         <Surface variant="base" padding="lg">
           <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>
-            Top 5 Highest-Cost Patients
+            {t("sections.exposure.top5HighCostPatients")}
           </h3>
           <DataTable>
               <thead>
                 <tr>
-                  <th className="text-left">Rank</th>
-                  <th className="text-left">Patient ID</th>
-                  <th className="text-right tabular-nums">Est. Cost (Mid)</th>
-                  <th className="text-center">Tier</th>
-                  <th className="text-right tabular-nums">Visits</th>
-                  <th className="text-right tabular-nums">Prescriptions</th>
+                  <th className="text-left">{t("sections.exposure.table.rank")}</th>
+                  <th className="text-left">{t("sections.exposure.table.patientId")}</th>
+                  <th className="text-right tabular-nums">{t("sections.exposure.table.estCostMid")}</th>
+                  <th className="text-center">{t("sections.exposure.table.tier")}</th>
+                  <th className="text-right tabular-nums">{t("sections.exposure.table.visits")}</th>
+                  <th className="text-right tabular-nums">{t("sections.exposure.table.prescriptions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -229,10 +235,8 @@ export function RevenueExposureSection({ data }: { data: ExposureSummaryResponse
         style={{ background: theme.accentAlpha(0.03), borderColor: theme.accentAlpha(0.12) }}
       >
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
-          <strong className="text-[var(--text-secondary)]">Methodology:</strong> SGK exposure is the midpoint of SUT min/max cost estimates per patient, aggregated across the cohort.
-          Lab and visit prices are from EK-2B gazette (7,129 procedures); material prices from EK-3 annexes (4,385 items).
-          Drug costs use estimated tier ranges (basic/moderate/specialty) — not actual ITS/IEGM reference prices.
-          Copayment rates are from gazette JSON. All figures are SUT-ceiling estimates, not actual hospital charges.
+          <strong className="text-[var(--text-secondary)]">{t("sections.exposure.methodology.label")}</strong>{" "}
+          {t("sections.exposure.methodology.body")}
         </p>
       </Surface>
     </div>

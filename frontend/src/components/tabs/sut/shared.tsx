@@ -2,55 +2,53 @@ import { theme } from "@/lib/theme";
 import { ACCENT } from "@/lib/constants";
 import type { SutMaterialItem } from "@/lib/api/sut";
 import { getSutRiskTierLabel } from "../../../lib/sutLabels";
+import { fmtNum as fmtNumLocale, fmtNumber, fmtPct as fmtPctLocale, fmtTRY as fmtTRYLocale, fmtTRY2 as fmtTRYLocale2 } from "@/lib/i18n/formatters";
+import { translate } from "@/lib/i18n/translate";
+import enMessages from "@/messages/en/index";
+import trMessages from "@/messages/tr/index";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
 
 export const ACCENT_LOCAL = theme.accent;
+/** @deprecated Use getModuleLocale() via i18n formatters */
 export const SUT_PRIMARY_LOCALE = "en-US";
 export const SUT_CURRENCY_CODE = "TRY";
 
-function formatLocaleNumber(
-  value: number,
-  options?: Intl.NumberFormatOptions,
-): string {
-  return new Intl.NumberFormat(SUT_PRIMARY_LOCALE, options).format(value);
+function unavailableLabel(): string {
+  const messages = getModuleLocale() === "tr" ? trMessages : enMessages;
+  return translate(messages, "common.unavailable");
+}
+
+function localizedUnknown(): string {
+  const messages = getModuleLocale() === "tr" ? trMessages : enMessages;
+  return translate(messages, "common.unknown");
 }
 
 export function fmtTRY(value: number): string {
-  return `${formatLocaleNumber(value, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  })} ${SUT_CURRENCY_CODE}`;
+  return fmtTRYLocale(value);
 }
 
 export function fmtTRY2(value: number): string {
-  return `${formatLocaleNumber(value, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })} ${SUT_CURRENCY_CODE}`;
+  return fmtTRYLocale2(value);
 }
 
 export function fmtTRYOrUnavailable(value: number | null | undefined): string {
-  return value == null ? "Unavailable" : fmtTRY(value);
+  return value == null ? unavailableLabel() : fmtTRY(value);
 }
 
 export function fmtTRY2OrUnavailable(value: number | null | undefined): string {
-  return value == null ? "Unavailable" : fmtTRY2(value);
+  return value == null ? unavailableLabel() : fmtTRY2(value);
 }
 
 export function fmtNumOrUnavailable(value: number | null | undefined): string {
-  return value == null ? "Unavailable" : fmtNum(value);
+  return value == null ? unavailableLabel() : fmtNum(value);
 }
 
 export function fmtPct(value: number, decimals = 1): string {
-  return `${formatLocaleNumber(value, {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  })}%`;
+  return fmtPctLocale(value, decimals);
 }
 
 export function fmtNum(value: number): string {
-  return formatLocaleNumber(Math.round(value), {
-    maximumFractionDigits: 0,
-  });
+  return fmtNumLocale(value);
 }
 
 export function fmtPctRatio(value: number, decimals = 1): string {
@@ -67,7 +65,7 @@ function titleCaseWord(word: string): string {
 export function fmtLabel(value: string | null | undefined): string {
   const normalized = value?.trim();
   if (!normalized) {
-    return "Unknown";
+    return localizedUnknown();
   }
   return normalized
     .replace(/[_-]+/g, " ")
@@ -164,7 +162,7 @@ export function ChartTooltipContent({
       {payload.map((entry, i) => (
         <p key={i} style={{ color: entry.fill || ACCENT }}>
           {typeof entry.value === "number"
-            ? formatLocaleNumber(entry.value, {
+            ? fmtNumber(entry.value, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })
@@ -232,7 +230,7 @@ export const PATIENT_CATEGORIES = [
   { value: "gelir_aylik_alan", label: "Pensioner / Income-Based" },
 ];
 
-export function MethodologyBadge({ text }: { text: string }) {
+export function MethodologyBadge({ text, badgeLabel = "100% Gazette Data" }: { text: string; badgeLabel?: string }) {
   return (
     <div
       className="rounded-lg px-3 py-2 text-xs leading-relaxed"
@@ -243,7 +241,7 @@ export function MethodologyBadge({ text }: { text: string }) {
       }}
     >
       <span className="font-bold uppercase tracking-wider" style={{ color: theme.accent }}>
-        100% Gazette Data
+        {badgeLabel}
       </span>
       <span className="mx-1.5 text-[var(--gold-light)]">|</span>
       {text}

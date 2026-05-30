@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Search } from "lucide-react";
 import { theme } from "@/lib/theme";
 import type { PatientSearchResponse, PatientSearchResult } from "@/lib/domains/patient";
+import { useT } from "@/lib/i18n/useTranslations";
 
 type PatientSearchFn = (
   q: string,
@@ -29,9 +30,11 @@ export default function PatientSearch({
   onSelect,
   disabled = false,
   id = "patient-search",
-  placeholder = "Search patient ID...",
+  placeholder,
   searchFn,
 }: Props) {
+  const t = useT();
+  const resolvedPlaceholder = placeholder ?? t("cohort.patientSearch.defaultPlaceholder");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PatientSearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -50,7 +53,6 @@ export default function PatientSearch({
     searchFnRef.current = searchFn;
   }, [searchFn]);
 
-  // Debounced search
   const doSearch = useCallback(
     (q: string) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -73,7 +75,7 @@ export default function PatientSearch({
         } catch (err) {
           if (controller.signal.aborted || (err instanceof DOMException && err.name === "AbortError")) return;
           setResults([]);
-          setError(err instanceof Error ? err.message : "Failed to search patients");
+          setError(err instanceof Error ? err.message : t("cohort.patientSearch.searchFailed"));
           setIsOpen(true);
         } finally {
           if (activeControllerRef.current === controller) {
@@ -82,21 +84,19 @@ export default function PatientSearch({
         }
       }, 200);
     },
-    [],
+    [t],
   );
 
   const retrySearch = useCallback(() => {
     doSearch(query);
   }, [doSearch, query]);
 
-  // On input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
     doSearch(val);
   };
 
-  // On selecting a result
   const handleSelect = (pid: string) => {
     setQuery("");
     setIsOpen(false);
@@ -104,7 +104,6 @@ export default function PatientSearch({
     onSelect(pid);
   };
 
-  // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen || results.length === 0) {
       if (e.key === "ArrowDown" || e.key === "Enter") {
@@ -128,7 +127,6 @@ export default function PatientSearch({
     }
   };
 
-  // Scroll highlighted item into view
   useEffect(() => {
     if (highlightIdx >= 0 && listRef.current) {
       const items = listRef.current.querySelectorAll("li");
@@ -136,7 +134,6 @@ export default function PatientSearch({
     }
   }, [highlightIdx]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
@@ -157,7 +154,9 @@ export default function PatientSearch({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const displayValue = selectedPatientId ? `Patient ${selectedPatientId}` : "";
+  const displayValue = selectedPatientId
+    ? t("cohort.patientSearch.selectedLabel", { patientId: selectedPatientId })
+    : "";
 
   return (
     <div ref={containerRef} style={{ position: "relative" }}>
@@ -187,7 +186,7 @@ export default function PatientSearch({
             doSearch("");
           }}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           disabled={disabled}
           autoComplete="off"
           role="combobox"
@@ -225,7 +224,7 @@ export default function PatientSearch({
         >
           {loading && (
             <li style={{ padding: "10px 14px", color: "#A1A1AA", fontSize: "0.82rem" }}>
-              Searching...
+              {t("cohort.patientSearch.searching")}
             </li>
           )}
           {!loading && results.length === 0 && (
@@ -240,11 +239,11 @@ export default function PatientSearch({
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={retrySearch}
                   >
-                    <span className="text-xs font-semibold">Retry search</span>
+                    <span className="text-xs font-semibold">{t("cohort.patientSearch.retry")}</span>
                   </button>
                 </div>
               ) : (
-                "No patients found"
+                t("cohort.patientSearch.noResults")
               )}
             </li>
           )}
@@ -274,9 +273,9 @@ export default function PatientSearch({
                 }}
                 onMouseEnter={() => setHighlightIdx(idx)}
               >
-                <span>Patient {r.patient_id}</span>
+                <span>{t("cohort.patientSearch.selectedLabel", { patientId: r.patient_id })}</span>
                 <span style={{ color: "#A1A1AA", fontSize: "0.75rem" }}>
-                  {r.age != null && `${r.age}y`}
+                  {r.age != null && t("cohort.patientSearch.ageSuffix", { age: r.age })}
                   {r.age != null && r.sex && " / "}
                   {r.sex}
                 </span>

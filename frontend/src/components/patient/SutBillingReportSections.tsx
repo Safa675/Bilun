@@ -2,7 +2,8 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import type { BillingActionReport, PatientOptimization } from "@/lib/domains/sut";
-import { SUT_ALERT_BADGE_LABELS } from "@/lib/sutLabels";
+import { getSutAlertBadgeLabel } from "@/lib/sutLabels";
+import { useT } from "@/lib/i18n/useTranslations";
 import { getUnavailableMessage, hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
 import {
   copayCorrectionBilledTry,
@@ -18,7 +19,6 @@ import {
   usesClaimStrategyShape,
 } from "@/lib/billingReportFields";
 import { theme } from "@/lib/theme";
-import { SUT_BRAND } from "@/lib/constants";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { Chip, DataTable, Eyebrow, Section, Stat, Surface } from "@/components/primitives";
 import { getExemptionCategories } from "@/lib/copayExemption";
@@ -111,25 +111,26 @@ export function TableWrap({
 }
 
 export function BillingSummary({ billingReport }: { billingReport: BillingActionReport }) {
+  const t = useT();
   const reportExact = isExactOutput(billingReport);
   const reportHasTotals = hasRecoverableBillingTotals(billingReport);
   const priorityColor = reportHasTotals ? PRIORITY_COLORS[billingReport.priority] : "#71717A";
   const statusLabel = reportExact
     ? fmtPriorityLabel(billingReport.priority)
     : reportHasTotals
-      ? "Partial exact"
-      : "Unavailable";
+      ? t("billing.summary.partialExact")
+      : t("common.unavailable");
 
   return (
     <Surface variant="base" padding="lg" className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <Eyebrow>{SUT_BRAND.billingTitle}</Eyebrow>
+          <Eyebrow>{t("billing.summary.title")}</Eyebrow>
           <p className="mt-1 font-mono text-base text-[var(--text-secondary)]">
             {billingReport.patient_id}
           </p>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
-            Normative SUT rule review across labs, drugs, copay policy, billing strategy, and materials controls.
+            {t("billing.summary.description")}
           </p>
         </div>
         <StatusChip label={statusLabel} color={priorityColor} />
@@ -137,23 +138,23 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
 
       <div className="grid gap-6 md:grid-cols-3">
         <Stat
-          label="Rule-calculated opportunity"
+          label={t("billing.summary.ruleCalculatedOpportunity")}
           value={
             reportHasTotals
               ? fmtTRY2(billingReport.total_recoverable_try)
-              : "Unavailable"
+              : t("common.unavailable")
           }
           display={reportHasTotals ? "gold" : "default"}
         />
         <Stat
-          label="Recommended actions"
-          value={reportHasTotals ? fmtNum(billingReport.action_count) : "Review sections"}
+          label={t("billing.summary.recommendedActions")}
+          value={reportHasTotals ? fmtNum(billingReport.action_count) : t("billing.summary.reviewSections")}
         />
         <Stat
-          label="Priority tier"
+          label={t("billing.summary.priorityTier")}
           value={
             <span style={{ color: priorityColor }}>
-              {reportHasTotals ? fmtPriorityLabel(billingReport.priority) : "Unavailable"}
+              {reportHasTotals ? fmtPriorityLabel(billingReport.priority) : t("common.unavailable")}
             </span>
           }
         />
@@ -161,13 +162,13 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
       {!reportExact && reportHasTotals && (
         <ExactnessNotice
           block={billingReport}
-          fallback="Section totals are exact where marked; review section-level exactness before treating the aggregate as fully exact."
+          fallback={t("billing.summary.partialTotalsNotice")}
         />
       )}
       {!reportHasTotals && (
         <ExactnessNotice
           block={billingReport}
-          fallback="Billing totals remain unavailable until every billing section is exact."
+          fallback={t("billing.summary.totalsUnavailableNotice")}
         />
       )}
     </Surface>
@@ -175,13 +176,11 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
 }
 
 export function LabOptimizationSection({ labData }: { labData: BillingActionReport["lab"] }) {
+  const t = useT();
   if (!isExactOutput(labData)) {
     return (
-      <BillingSectionShell title="Lab optimization">
-        <ExactnessNotice
-          block={labData}
-          fallback="Lab optimization findings are unavailable until the billing input contract is exact."
-        />
+      <BillingSectionShell title={t("billing.lab.title")}>
+        <ExactnessNotice block={labData} fallback={t("billing.lab.unavailable")} />
       </BillingSectionShell>
     );
   }
@@ -193,15 +192,15 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
   const combinedSavings = labData.hemogram_bundling_savings + labData.duplicate_test_savings;
 
   return (
-    <BillingSectionShell title="Lab optimization" total={fmtTRY2(combinedSavings)}>
+    <BillingSectionShell title={t("billing.lab.title")} total={fmtTRY2(combinedSavings)}>
       <TableWrap minWidth={820}>
         <thead>
           <tr>
-            <th>Test</th>
-            <th>SUT code</th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Gazette price</th>
-            <th>Flag</th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Savings</th>
+            <th>{t("billing.lab.test")}</th>
+            <th>{t("billing.lab.sutCode")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.lab.gazettePrice")}</th>
+            <th>{t("billing.lab.flag")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.lab.savings")}</th>
           </tr>
         </thead>
         <tbody>
@@ -228,13 +227,11 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
 }
 
 export function DrugOptimizationSection({ drugData }: { drugData: BillingActionReport["drug"] }) {
+  const t = useT();
   if (!isExactOutput(drugData)) {
     return (
-      <BillingSectionShell title="Drug optimization">
-        <ExactnessNotice
-          block={drugData}
-          fallback="Drug optimization savings require exact dispensed drug claim lines and billed drug amounts."
-        />
+      <BillingSectionShell title={t("billing.drug.title")}>
+        <ExactnessNotice block={drugData} fallback={t("billing.drug.unavailable")} />
       </BillingSectionShell>
     );
   }
@@ -244,14 +241,14 @@ export function DrugOptimizationSection({ drugData }: { drugData: BillingActionR
   }
 
   return (
-    <BillingSectionShell title="Drug optimization" total={fmtTRY2(drugData.generic_substitution_savings)}>
+    <BillingSectionShell title={t("billing.drug.title")} total={fmtTRY2(drugData.generic_substitution_savings)}>
       <TableWrap minWidth={860}>
         <thead>
           <tr>
-            <th style={WRAPPED_HEADER_STYLE}>Drug</th>
-            <th>Issue</th>
-            <th style={WRAPPED_HEADER_STYLE}>Alternative</th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Savings</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drug.drug")}</th>
+            <th>{t("billing.drug.issue")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drug.alternative")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.drug.savings")}</th>
           </tr>
         </thead>
         <tbody>
@@ -264,8 +261,8 @@ export function DrugOptimizationSection({ drugData }: { drugData: BillingActionR
                   color={recommendation.issue === "passivated" ? "#B91C1C" : "#D97706"}
                 />
               </td>
-              <td title={recommendation.issue === "discount_tier_applied" ? (recommendation.detail || "Tier correction on same drug") : recommendation.alternative}>
-                {recommendation.issue === "discount_tier_applied" ? "Tier correction" : recommendation.alternative}
+              <td title={recommendation.issue === "discount_tier_applied" ? (recommendation.detail || t("billing.drug.tierCorrectionSameDrug")) : recommendation.alternative}>
+                {recommendation.issue === "discount_tier_applied" ? t("billing.drug.tierCorrection") : recommendation.alternative}
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2(recommendation.savings_try)}
@@ -279,13 +276,11 @@ export function DrugOptimizationSection({ drugData }: { drugData: BillingActionR
 }
 
 export function CopayOptimizationSection({ copayData }: { copayData: BillingActionReport["copay"] }) {
+  const t = useT();
   if (!isExactOutput(copayData)) {
     return (
-      <BillingSectionShell title="Copay optimization">
-        <ExactnessNotice
-          block={copayData}
-          fallback="Copay optimization totals remain unavailable until both visit and prescription claim inputs are exact."
-        />
+      <BillingSectionShell title={t("billing.copay.title")}>
+        <ExactnessNotice block={copayData} fallback={t("billing.copay.unavailable")} />
       </BillingSectionShell>
     );
   }
@@ -293,11 +288,11 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
   const savingsColor = copayData.total_copay_savings_try > 0 ? ACCENT : "#71717A";
 
   return (
-    <BillingSectionShell title="Copay optimization" total={fmtTRY2(copayData.total_copay_savings_try)}>
+    <BillingSectionShell title={t("billing.copay.title")} total={fmtTRY2(copayData.total_copay_savings_try)}>
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           <StatusChip
-            label={copayData.is_exempt ? SUT_ALERT_BADGE_LABELS.exempt : SUT_ALERT_BADGE_LABELS.notExempt}
+            label={copayData.is_exempt ? getSutAlertBadgeLabel("exempt") : getSutAlertBadgeLabel("notExempt")}
             color={copayData.is_exempt ? ACCENT : "#A1A1AA"}
           />
           {copayData.exemption_disease && (
@@ -308,26 +303,26 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
         </div>
 
         <div className="grid gap-3 md:grid-cols-3">
-          <KpiCard label="Visit copay savings" value={fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
-          <KpiCard label="Rx copay savings" value={fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
-          <KpiCard label="Total copay savings" value={fmtTRY2(copayData.total_copay_savings_try)} valueColor={savingsColor} />
+          <KpiCard label={t("billing.copay.visitSavings")} value={fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
+          <KpiCard label={t("billing.copay.rxSavings")} value={fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
+          <KpiCard label={t("billing.copay.totalSavings")} value={fmtTRY2(copayData.total_copay_savings_try)} valueColor={savingsColor} />
         </div>
 
         {copayData.rate_corrections.length > 0 && (
           <TableWrap minWidth={760}>
             <thead>
               <tr>
-                <th>Procedure</th>
+                <th>{t("billing.copay.procedure")}</th>
                 {usesClaimCopayCorrectionShape(copayData.rate_corrections[0]) ? (
                   <>
-                    <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Billed</th>
-                    <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Payable</th>
-                    <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Copay component</th>
+                    <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.billed")}</th>
+                    <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.payable")}</th>
+                    <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.copayComponent")}</th>
                   </>
                 ) : (
                   <>
-                    <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Gazette rate</th>
-                    <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Correction</th>
+                    <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.gazetteRate")}</th>
+                    <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.correction")}</th>
                   </>
                 )}
               </tr>
@@ -369,16 +364,14 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
 }
 
 export function BillingStrategySection({ strategyData }: { strategyData: BillingActionReport["billing_strategy"] }) {
+  const t = useT();
   const strategyExact = isExactOutput(strategyData);
 
   if (!strategyExact) {
     return (
-      <BillingSectionShell title="Billing strategy">
+      <BillingSectionShell title={t("billing.strategy.title")}>
         <div className="sut-exactness-notice">
-          {getUnavailableMessage(
-            strategyData,
-            "Billing strategy recommendations require exact billed procedure lines.",
-          )}
+          {getUnavailableMessage(strategyData, t("billing.strategy.unavailable"))}
         </div>
       </BillingSectionShell>
     );
@@ -389,25 +382,25 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
   }
 
   return (
-    <BillingSectionShell title="Billing strategy">
+    <BillingSectionShell title={t("billing.strategy.title")}>
       <TableWrap minWidth={980}>
         <thead>
           <tr>
             {usesClaimStrategyShape(strategyData.recommendations[0]) ? (
               <>
-                <th style={WRAPPED_HEADER_STYLE}>Claim</th>
-                <th>Recommendation</th>
+                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.claim")}</th>
+                <th>{t("billing.strategy.recommendation")}</th>
               </>
             ) : (
               <>
-                <th style={WRAPPED_HEADER_STYLE}>Chapter</th>
-                <th>Group</th>
-                <th>Strategy</th>
+                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.chapter")}</th>
+                <th>{t("billing.strategy.group")}</th>
+                <th>{t("billing.strategy.strategy")}</th>
               </>
             )}
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Package total</th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Itemized total</th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Savings</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.packageTotal")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.itemizedTotal")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
           </tr>
         </thead>
         <tbody>
@@ -465,6 +458,7 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
 }
 
 export function MaterialsPreCheckSection({ materialsData }: { materialsData: BillingActionReport["materials"] }) {
+  const t = useT();
   const ceilingEntries = Object.entries(materialsData.gazette_ceiling_by_specialty);
   const materialsExact = isExactOutput(materialsData);
   const hasExactListData =
@@ -477,26 +471,23 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
   }
 
   return (
-    <BillingSectionShell title="Materials pre-check">
+    <BillingSectionShell title={t("billing.materials.title")}>
       <div className="space-y-4">
         {!materialsExact && (
-          <ExactnessNotice
-            block={materialsData}
-            fallback="Material ceiling estimates remain unavailable until this section is fully exact."
-          />
+          <ExactnessNotice block={materialsData} fallback={t("billing.materials.unavailable")} />
         )}
         {materialsData.pre_auth_required.length > 0 && (
           <div className="space-y-2">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#D97706" }}>
-              Pre-authorization required
+              {t("billing.materials.preAuth")}
             </p>
             <TableWrap minWidth={820}>
               <thead>
                 <tr>
-                  <th>SUT code</th>
-                  <th>Material</th>
-                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Gazette price</th>
-                  <th style={WRAPPED_HEADER_STYLE}>Note</th>
+                  <th>{t("billing.materials.sutCode")}</th>
+                  <th>{t("billing.materials.material")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.materials.gazettePrice")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -516,16 +507,16 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
         {materialsData.miat_restricted.length > 0 && (
           <div className="space-y-2">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#B91C1C" }}>
-              MIAT restricted
+              {t("billing.materials.miat")}
             </p>
             <TableWrap minWidth={900}>
               <thead>
                 <tr>
-                  <th>SUT code</th>
-                  <th>Material</th>
-                  <th style={WRAPPED_HEADER_STYLE}>MIAT period</th>
-                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>Gazette price</th>
-                  <th style={WRAPPED_HEADER_STYLE}>Note</th>
+                  <th>{t("billing.materials.sutCode")}</th>
+                  <th>{t("billing.materials.material")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.miatPeriod")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.materials.gazettePrice")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -545,7 +536,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
 
         {materialsExact && ceilingEntries.length > 0 && (
           <Surface variant="base" padding="md">
-            <Eyebrow>Gazette ceiling (p90) by specialty</Eyebrow>
+            <Eyebrow>{t("billing.materials.ceilingEyebrow")}</Eyebrow>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               {ceilingEntries.map(([specialty, amount]) => (
                 <Surface key={specialty} variant="soft" padding="sm">
@@ -564,6 +555,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
 }
 
 export function SutOptimizationSection({ optimization }: { optimization: PatientOptimization }) {
+  const t = useT();
   const surchargeExact = isExactOutput(optimization.surcharge_exposure);
   const rateExact = isExactOutput(optimization.copay_rate_exposure);
   const drgExact = isExactOutput(optimization.drg_unbundling);
@@ -572,15 +564,15 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
   const drgRiskLabel = optimization.drg_unbundling?.has_unbundling_risk ? fmtRiskLabel("high") : fmtRiskLabel("low");
 
   return (
-    <BillingSectionShell title="SUT optimization findings">
+    <BillingSectionShell title={t("billing.sutOptimization.title")}>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Surface variant="soft" padding="md" className="space-y-2">
-          <Eyebrow>Copay exemption</Eyebrow>
+          <Eyebrow>{t("billing.sutOptimization.copayEyebrow")}</Eyebrow>
           <div className="flex flex-wrap items-center gap-2">
             <Chip variant={optimization.copay_exemptions.exempt ? "success" : "neutral"}>
               {optimization.copay_exemptions.exempt
-                ? SUT_ALERT_BADGE_LABELS.exempt
-                : SUT_ALERT_BADGE_LABELS.notExempt}
+                ? getSutAlertBadgeLabel("exempt")
+                : getSutAlertBadgeLabel("notExempt")}
             </Chip>
             {optimization.copay_exemptions.exempt && (
               <ExemptionBasisChips copay={optimization.copay_exemptions} max={3} />
@@ -588,15 +580,17 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
           </div>
           <p className="text-xs text-[var(--text-secondary)]">
             {getExemptionCategories(optimization.copay_exemptions).includes("ek1a_chronic")
-              ? `${fmtNum(optimization.copay_exemptions.qualifying_diagnoses.length)} EK-1A qualifying diagnoses`
+              ? t("billing.sutOptimization.ek1aQualifying", {
+                  count: fmtNum(optimization.copay_exemptions.qualifying_diagnoses.length),
+                })
               : optimization.copay_exemptions.exempt
-                ? "Exempt on status or visit-type grounds"
-                : "No waiver grounds matched"}
+                ? t("billing.sutOptimization.exemptStatusVisit")
+                : t("billing.sutOptimization.noWaiver")}
           </p>
         </Surface>
 
         <Surface variant="soft" padding="md" className="space-y-2">
-          <Eyebrow>Surcharge compliance</Eyebrow>
+          <Eyebrow>{t("billing.sutOptimization.surchargeEyebrow")}</Eyebrow>
           <Chip
             variant={
               !surchargeExact
@@ -608,34 +602,34 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
           >
             {surchargeExact
               ? ((surchargeCount ?? 0) > 0
-                ? `${fmtNum(surchargeCount ?? 0)} flags`
-                : SUT_ALERT_BADGE_LABELS.clear)
-              : SUT_ALERT_BADGE_LABELS.unavailable}
+                ? t("billing.sutOptimization.flags", { count: fmtNum(surchargeCount ?? 0) })
+                : getSutAlertBadgeLabel("clear"))
+              : getSutAlertBadgeLabel("unavailable")}
           </Chip>
           {!surchargeExact && (
             <p className="text-xs text-[var(--text-secondary)]">
               {getUnavailableMessage(
                 optimization.surcharge_exposure,
-                "Surcharge compliance needs exact billed procedure codes and procedure dates.",
+                t("billing.sutOptimization.surchargeUnavailable"),
               )}
             </p>
           )}
         </Surface>
 
         <Surface variant="soft" padding="md" className="space-y-2">
-          <Eyebrow>Copay rate compliance</Eyebrow>
+          <Eyebrow>{t("billing.sutOptimization.copayRateEyebrow")}</Eyebrow>
           <p className="text-sm font-semibold text-[var(--text-primary)]">
             {rateExact
               ? ((rateCount ?? 0) > 0
-                ? `${fmtNum(rateCount ?? 0)} capped procedures`
-                : "No rate caps applicable")
-              : "Unavailable"}
+                ? t("billing.sutOptimization.cappedProcedures", { count: fmtNum(rateCount ?? 0) })
+                : t("billing.sutOptimization.noRateCaps"))
+              : t("common.unavailable")}
           </p>
           {!rateExact && (
             <p className="text-xs text-[var(--text-secondary)]">
               {getUnavailableMessage(
                 optimization.copay_rate_exposure,
-                "Copay rate compliance needs exact billed procedure codes and procedure dates.",
+                t("billing.sutOptimization.copayRateUnavailable"),
               )}
             </p>
           )}
@@ -643,7 +637,7 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
 
         {optimization.drg_unbundling && (
           <Surface variant="soft" padding="md" className="space-y-2">
-            <Eyebrow>DRG unbundling risk</Eyebrow>
+            <Eyebrow>{t("billing.sutOptimization.drgEyebrow")}</Eyebrow>
             <Chip
               variant={
                 !drgExact
@@ -653,17 +647,19 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
                     : "success"
               }
             >
-              {drgExact ? drgRiskLabel : SUT_ALERT_BADGE_LABELS.unavailable}
+              {drgExact ? drgRiskLabel : getSutAlertBadgeLabel("unavailable")}
             </Chip>
             {drgExact ? (
               <p className="text-xs text-[var(--text-secondary)]">
-                Potential savings: {fmtTRY2OrUnavailable(optimization.drg_unbundling.total_potential_savings)}
+                {t("billing.sutOptimization.potentialSavings", {
+                  amount: fmtTRY2OrUnavailable(optimization.drg_unbundling.total_potential_savings),
+                })}
               </p>
             ) : (
               <p className="text-xs text-[var(--text-secondary)]">
                 {getUnavailableMessage(
                   optimization.drg_unbundling,
-                  "DRG unbundling risk needs exact itemized billed procedure lines and package eligibility context.",
+                  t("billing.sutOptimization.drgUnavailable"),
                 )}
               </p>
             )}

@@ -1,5 +1,5 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 
 vi.mock("@/lib/theme", () => ({
   theme: {
@@ -11,7 +11,7 @@ import SutHealthPanel from "./SutHealthPanel";
 
 describe("SutHealthPanel", () => {
   it("renders the health status fields when data is present", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <SutHealthPanel healthStatus={{ status: "ready", patients: 18, build_id: "sut-build-1", message: "Healthy" }} />,
     );
 
@@ -23,7 +23,7 @@ describe("SutHealthPanel", () => {
   });
 
   it("shows an unavailable fallback while health data is absent", () => {
-    const html = renderToStaticMarkup(<SutHealthPanel healthStatus={null} />);
+    const html = renderToStaticMarkupWithLocale(<SutHealthPanel healthStatus={null} />);
 
     expect(html).toContain("unavailable");
     expect(html).toContain("Patients:");

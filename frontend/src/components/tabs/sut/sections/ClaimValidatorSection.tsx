@@ -22,8 +22,10 @@ import {
 } from "../shared";
 import { getSutSeverityLabel } from "@/lib/sutLabels";
 import { Chip, DataTable, Surface } from "@/components/primitives";
+import { useT } from "@/lib/i18n/useTranslations";
 
 export function ClaimValidatorSection() {
+  const t = useT();
   const [claimId, setClaimId] = useState("CLM-001");
   const [procedureCode, setProcedureCode] = useState("");
   const [materials, setMaterials] = useState<SutMaterialItem[]>([{ ...EMPTY_MATERIAL }]);
@@ -93,7 +95,7 @@ export function ClaimValidatorSection() {
   const handleValidate = useCallback(async () => {
     const validMaterials = materials.filter((m) => m.name.trim() !== "");
     if (validMaterials.length === 0) {
-      setError("Add at least one material with a name.");
+      setError(t("sections.claimValidator.errors.addAtLeastOneMaterial"));
       return;
     }
 
@@ -117,14 +119,14 @@ export function ClaimValidatorSection() {
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      setError(err instanceof Error ? err.message : "Validation failed");
+      setError(err instanceof Error ? err.message : t("sections.claimValidator.errors.validationFailed"));
     } finally {
       if (abortRef.current === controller) {
         setLoading(false);
         abortRef.current = null;
       }
     }
-  }, [materials, claimId, procedureCode]);
+  }, [materials, claimId, procedureCode, t]);
 
   useEffect(() => {
     return () => { abortRef.current?.abort(); };
@@ -134,19 +136,19 @@ export function ClaimValidatorSection() {
     <div className="space-y-5">
       <Surface variant="base" padding="lg">
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
-          Claim Details
+          {t("sections.claimValidator.claimDetails")}
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
           <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>Claim ID</label>
-            <input type="text" value={claimId} onChange={(e) => setClaimId(e.target.value)} className="sut-input" placeholder="CLM-001" />
+            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.claimId")}</label>
+            <input type="text" value={claimId} onChange={(e) => setClaimId(e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.claimIdPlaceholder")} />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>Procedure Code</label>
-            <input type="text" value={procedureCode} onChange={(e) => setProcedureCode(e.target.value)} className="sut-input" placeholder="e.g. 520.021" />
+            <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.procedureCode")}</label>
+            <input type="text" value={procedureCode} onChange={(e) => setProcedureCode(e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.procedureCodePlaceholder")} />
             {shouldShowProcedureLookup && procLookupLoading && (
-              <p className="mt-1 text-xs" style={{ color: "#94A3B8" }}>Looking up...</p>
+              <p className="mt-1 text-xs" style={{ color: "#94A3B8" }}>{t("sections.claimValidator.lookingUp")}</p>
             )}
             {shouldShowProcedureLookup && !procLookupLoading && procInfo && procInfo.entry && procInfo.match_type !== "prefix_search" && (
               <p className="mt-1 text-xs font-medium" style={{ color: theme.accent }}>
@@ -155,14 +157,17 @@ export function ClaimValidatorSection() {
                   <span style={{ color: "#94A3B8", fontWeight: 400 }}>{" "}({fmtTRY2(procInfo.entry.price_try)})</span>
                 )}
                 {procInfo.match_type === "prefix_stripped" && (
-                  <span style={{ color: "#94A3B8", fontWeight: 400 }}>{" "}(matched without P prefix)</span>
+                  <span style={{ color: "#94A3B8", fontWeight: 400 }}>{" "}{t("sections.claimValidator.matchedWithoutPPrefix")}</span>
                 )}
               </p>
             )}
             {shouldShowProcedureLookup && !procLookupLoading && procInfo && procInfo.match_type === "prefix_search" && procInfo.candidates.length > 0 && (
               <div className="mt-1.5 space-y-0.5">
                 <p className="text-xs" style={{ color: "#94A3B8" }}>
-                  {procInfo.candidates.length} matching procedure{procInfo.candidates.length > 1 ? "s" : ""}:
+                  {t("sections.claimValidator.matchingProcedures", {
+                    count: procInfo.candidates.length,
+                    plural: procInfo.candidates.length > 1 ? "s" : "",
+                  })}
                 </p>
                 {procInfo.candidates.map((c: SutProcedureEntry) => (
                   <button
@@ -183,40 +188,40 @@ export function ClaimValidatorSection() {
               </div>
             )}
             {shouldShowProcedureLookup && !procLookupLoading && procNotFound && (
-              <p className="mt-1 text-xs" style={{ color: "#B45309" }}>No matching procedure found. Try the full 6-digit SUT code.</p>
+              <p className="mt-1 text-xs" style={{ color: "#B45309" }}>{t("sections.claimValidator.noMatchingProcedure")}</p>
             )}
           </div>
         </div>
 
-        <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>Materials</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>{t("sections.claimValidator.materials")}</h3>
 
         <div className="space-y-2">
           {materials.map((mat, idx) => (
             <div key={idx} className="grid gap-2 items-end" style={{ gridTemplateColumns: "1fr 120px 80px 36px" }}>
               <div>
-                {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>Name</label>}
-                <input type="text" value={mat.name} onChange={(e) => updateMaterial(idx, "name", e.target.value)} className="sut-input" placeholder="e.g. Stent, Enjektör" />
+                {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.name")}</label>}
+                <input type="text" value={mat.name} onChange={(e) => updateMaterial(idx, "name", e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.namePlaceholder")} />
               </div>
               <div>
-                {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>Price (TRY)</label>}
-                <input type="number" value={mat.unit_price || ""} onChange={(e) => updateMaterial(idx, "unit_price", Number(e.target.value))} className="sut-input" placeholder="0.00" min="0" step="0.01" />
+                {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.priceTry")}</label>}
+                <input type="number" value={mat.unit_price || ""} onChange={(e) => updateMaterial(idx, "unit_price", Number(e.target.value))} className="sut-input" placeholder={t("sections.claimValidator.pricePlaceholder")} min="0" step="0.01" />
               </div>
               <div>
-                {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>Qty</label>}
-                <input type="number" value={mat.quantity || ""} onChange={(e) => updateMaterial(idx, "quantity", Number(e.target.value))} className="sut-input" placeholder="1" min="1" />
+                {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.qty")}</label>}
+                <input type="number" value={mat.quantity || ""} onChange={(e) => updateMaterial(idx, "quantity", Number(e.target.value))} className="sut-input" placeholder={t("sections.claimValidator.qtyPlaceholder")} min="1" />
               </div>
               <div>
                 {idx === 0 && <span className="block text-xs mb-1">&nbsp;</span>}
-                <button type="button" onClick={() => removeMaterial(idx)} className="sut-btn-icon" title="Remove" disabled={materials.length <= 1}>✕</button>
+                <button type="button" onClick={() => removeMaterial(idx)} className="sut-btn-icon" title={t("sections.claimValidator.remove")} disabled={materials.length <= 1}>✕</button>
               </div>
             </div>
           ))}
         </div>
 
         <div className="flex items-center gap-3 mt-4">
-          <button type="button" onClick={addMaterial} className="sut-btn-secondary">+ Add Material</button>
+          <button type="button" onClick={addMaterial} className="sut-btn-secondary">{t("sections.claimValidator.addMaterial")}</button>
           <button type="button" onClick={handleValidate} disabled={loading} className="sut-btn-primary">
-            {loading ? "Validating..." : "Validate Claim"}
+            {loading ? t("sections.claimValidator.validating") : t("sections.claimValidator.validateClaim")}
           </button>
         </div>
       </Surface>
@@ -227,30 +232,30 @@ export function ClaimValidatorSection() {
         </Surface>
       )}
 
-      {result && <ValidationResultPanel result={result} />}
+      {result && <ValidationResultPanel result={result} t={t} />}
     </div>
   );
 }
 
-function ValidationResultPanel({ result }: { result: SutValidationResult }) {
+function ValidationResultPanel({ result, t }: { result: SutValidationResult; t: ReturnType<typeof useT> }) {
   const statusColor = result.is_valid ? theme.accent : "#B91C1C";
-  const statusLabel = result.is_valid ? "VALID" : "INVALID";
+  const statusLabel = result.is_valid ? t("sections.claimValidator.statusValid") : t("sections.claimValidator.statusInvalid");
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <KpiCard label="Status" value={statusLabel} valueColor={statusColor} />
-        <KpiCard label="Claim Total" value={fmtTRY2(result.total_claim_amount)} />
-        <KpiCard label="Potential Savings" value={fmtTRY2(result.total_savings_try)} valueColor="#B45309" />
-        <KpiCard label="Violations" value={fmtNum(result.violations.length)} valueColor={result.violations.length > 0 ? "#B91C1C" : theme.accent} />
+        <KpiCard label={t("sections.claimValidator.kpi.status")} value={statusLabel} valueColor={statusColor} />
+        <KpiCard label={t("sections.claimValidator.kpi.claimTotal")} value={fmtTRY2(result.total_claim_amount)} />
+        <KpiCard label={t("sections.claimValidator.kpi.potentialSavings")} value={fmtTRY2(result.total_savings_try)} valueColor="#B45309" />
+        <KpiCard label={t("sections.claimValidator.kpi.violations")} value={fmtNum(result.violations.length)} valueColor={result.violations.length > 0 ? "#B91C1C" : theme.accent} />
       </div>
 
       {result.violations.length > 0 && (
         <Surface variant="base" padding="lg">
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>Rule Violations</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>{t("sections.claimValidator.ruleViolations")}</h3>
           <div className="space-y-2">
             {result.violations.map((v, i) => (
-              <ViolationRow key={i} violation={v} />
+              <ViolationRow key={i} violation={v} t={t} />
             ))}
           </div>
         </Surface>
@@ -258,22 +263,22 @@ function ValidationResultPanel({ result }: { result: SutValidationResult }) {
 
       {result.material_estimates.length > 0 && (
         <Surface variant="base" padding="lg">
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>Material Cost Estimates</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>{t("sections.claimValidator.materialCostEstimates")}</h3>
           <DataTable>
               <thead>
                 <tr>
-                  <th className="text-left">Material</th>
-                  <th className="text-right tabular-nums">Unit Price</th>
-                  <th className="text-right tabular-nums">Qty</th>
-                  <th className="text-right tabular-nums">Total</th>
-                  <th className="text-center">Reimbursable</th>
-                  <th className="text-center">Bundled</th>
-                  <th className="text-left">Source</th>
+                  <th className="text-left">{t("sections.claimValidator.table.material")}</th>
+                  <th className="text-right tabular-nums">{t("sections.claimValidator.table.unitPrice")}</th>
+                  <th className="text-right tabular-nums">{t("sections.claimValidator.table.qty")}</th>
+                  <th className="text-right tabular-nums">{t("sections.claimValidator.table.total")}</th>
+                  <th className="text-center">{t("sections.claimValidator.table.reimbursable")}</th>
+                  <th className="text-center">{t("sections.claimValidator.table.bundled")}</th>
+                  <th className="text-left">{t("sections.claimValidator.table.source")}</th>
                 </tr>
               </thead>
               <tbody>
                 {result.material_estimates.map((m, i) => (
-                  <MaterialEstimateRow key={i} estimate={m} />
+                  <MaterialEstimateRow key={i} estimate={m} t={t} />
                 ))}
               </tbody>
           </DataTable>
@@ -281,13 +286,16 @@ function ValidationResultPanel({ result }: { result: SutValidationResult }) {
       )}
 
       <div className="text-xs text-right" style={{ color: "#A1A1AA" }}>
-        Validated in {result.validation_time_ms.toFixed(1)}ms &middot; {result.summary}
+        {t("sections.claimValidator.validatedIn", {
+          ms: result.validation_time_ms.toFixed(1),
+          summary: result.summary,
+        })}
       </div>
     </div>
   );
 }
 
-function ViolationRow({ violation }: { violation: SutViolation }) {
+function ViolationRow({ violation, t }: { violation: SutViolation; t: ReturnType<typeof useT> }) {
   const sev = SEVERITY_COLORS[violation.severity] ?? SEVERITY_COLORS.info;
   return (
     <div className="rounded-xl p-3 flex items-start gap-3" style={{ background: sev.bg, border: `1px solid ${sev.border}` }}>
@@ -298,14 +306,16 @@ function ViolationRow({ violation }: { violation: SutViolation }) {
         <div className="text-sm font-semibold" style={{ color: "#1A1A1A" }}>{violation.material_name}</div>
         <div className="text-xs mt-0.5" style={{ color: "#71717A" }}>{violation.message}</div>
         {violation.savings_try > 0 && (
-          <div className="text-xs mt-1 font-medium" style={{ color: "#B45309" }}>Potential saving: {fmtTRY2(violation.savings_try)}</div>
+          <div className="text-xs mt-1 font-medium" style={{ color: "#B45309" }}>
+            {t("sections.claimValidator.potentialSaving", { amount: fmtTRY2(violation.savings_try) })}
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-function MaterialEstimateRow({ estimate }: { estimate: SutMaterialEstimate }) {
+function MaterialEstimateRow({ estimate, t }: { estimate: SutMaterialEstimate; t: ReturnType<typeof useT> }) {
   return (
     <tr>
       <td className="text-left">
@@ -315,8 +325,8 @@ function MaterialEstimateRow({ estimate }: { estimate: SutMaterialEstimate }) {
       <td className="text-right text-sm" style={{ color: "#71717A" }}>{fmtTRY2(estimate.unit_price)}</td>
       <td className="text-right text-sm" style={{ color: "#71717A" }}>{estimate.quantity}</td>
       <td className="text-right text-sm font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(estimate.total_price)}</td>
-      <td className="text-center"><StatusPill ok={estimate.is_reimbursable} yesLabel="Yes" noLabel="No" /></td>
-      <td className="text-center"><StatusPill ok={!estimate.is_bundled} yesLabel="No" noLabel="Bundled" invertColor /></td>
+      <td className="text-center"><StatusPill ok={estimate.is_reimbursable} yesLabel={t("sections.claimValidator.yes")} noLabel={t("sections.claimValidator.no")} /></td>
+      <td className="text-center"><StatusPill ok={!estimate.is_bundled} yesLabel={t("sections.claimValidator.no")} noLabel={t("sections.claimValidator.bundledStatus")} invertColor /></td>
       <td className="text-left text-xs" style={{ color: "#A1A1AA" }}>
         {estimate.source}
         {estimate.notes && <span className="block text-xs italic">{estimate.notes}</span>}

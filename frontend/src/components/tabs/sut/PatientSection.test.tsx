@@ -1,5 +1,5 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 
 vi.mock("@/hooks/useStaggeredReveal", () => ({
   default: () => ({}),
@@ -50,7 +50,7 @@ beforeAll(async () => {
 
 describe("ClaimSummaryPanel", () => {
   it("renders exact claim totals and procedure rule flags", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <ClaimSummaryPanel
         data={{
           patient_id: "SENTETIK-HASTA-001",
@@ -106,7 +106,7 @@ describe("ClaimSummaryPanel", () => {
 
 describe("DRGPanel exactness rendering", () => {
   it("renders unavailable package values when pricing is unresolved", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <DRGPanel
         data={{
           n_episodes: 1,
@@ -152,7 +152,7 @@ describe("DRGPanel exactness rendering", () => {
   });
 
   it("renders exact package values when pricing is exact", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <DRGPanel
         data={{
           n_episodes: 1,
@@ -194,7 +194,7 @@ describe("DRGPanel exactness rendering", () => {
   });
 
   it("keeps only exact-only patient outcome messaging", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <PatientSUTContent
         data={{
           patient_id: "P-001",

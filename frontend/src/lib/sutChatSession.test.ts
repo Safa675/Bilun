@@ -8,9 +8,9 @@ import {
 
 describe("sutChatSession", () => {
   it("builds stable context keys for cohort and patient views", () => {
-    expect(buildSutChatContextKey(null, "Patients")).toBe("cohort::Patients");
+    expect(buildSutChatContextKey(null, "Patients")).toBe("cohort::Patients::en");
     expect(buildSutChatContextKey("P-001", "SUT Patient Workspace")).toBe(
-      "P-001::SUT Patient Workspace",
+      "P-001::SUT Patient Workspace::en",
     );
   });
 

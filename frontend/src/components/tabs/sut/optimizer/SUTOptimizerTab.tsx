@@ -47,9 +47,14 @@ import { useCohortFilter } from "@/hooks/useCohortFilter";
 import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
 import {
-  SUT_ACTION_LABELS,
-  SUT_ALERT_BADGE_LABELS,
+  getSutActionLabel,
+  getSutAlertBadgeLabel,
 } from "@/lib/sutLabels";
+import { useT } from "@/lib/i18n/useTranslations";
+import { translate } from "@/lib/i18n/translate";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
+import enMessages from "@/messages/en/index";
+import trMessages from "@/messages/tr/index";
 import {
   fmtLabel,
   fmtNum,
@@ -81,6 +86,18 @@ const ACCENT = theme.accent;
 
 const PIE_COLORS = [theme.textPrimary, theme.gold, theme.warning, theme.danger];
 
+function optimizerT(
+  key: string,
+  params?: Record<string, string | number | undefined | null>,
+): string {
+  const messages = getModuleLocale() === "tr" ? trMessages : enMessages;
+  return translate(messages, key, params);
+}
+
+function getCategoryLabel(category: PatientAlertsCategory): string {
+  return optimizerT(`optimizer.categories.${category}`);
+}
+
 interface AlertQueryBarProps {
   category: PatientAlertsCategory;
   status: PatientAlertsStatus;
@@ -98,6 +115,7 @@ function AlertQueryBar({
   onStatusChange,
   onPageChange,
 }: AlertQueryBarProps) {
+  const t = useT();
   const totalMatching = pagination?.total_matching ?? 0;
   const limit = pagination?.limit ?? ALERT_PAGE_SIZE;
   const offset = pagination?.offset ?? 0;
@@ -131,13 +149,13 @@ function AlertQueryBar({
     <Surface variant="base" padding="lg">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <Eyebrow as="div">Status</Eyebrow>
+          <Eyebrow as="div">{t("optimizer.filters.statusEyebrow")}</Eyebrow>
           <TabsRoot
             value={status}
             onValueChange={(value) => onStatusChange(value as PatientAlertsStatus)}
             className="gap-0"
           >
-            <TabsList density="compact" aria-label="Alert status filter">
+            <TabsList density="compact" aria-label={t("optimizer.filters.statusAria")}>
               {getAlertStatusOptions(category).map((option) => (
                 <TabsTrigger key={option} value={option} density="compact">
                   {getAlertStatusLabel(option)}
@@ -148,7 +166,7 @@ function AlertQueryBar({
         </div>
 
         <div className="space-y-2 lg:text-right">
-          <Eyebrow as="div" className="lg:text-right">Pagination</Eyebrow>
+          <Eyebrow as="div" className="lg:text-right">{t("optimizer.pagination.eyebrow")}</Eyebrow>
           <div className="flex flex-col gap-2 sm:items-start lg:items-end">
             <div className="flex flex-wrap items-center gap-2 lg:justify-end">
               <button
@@ -157,10 +175,10 @@ function AlertQueryBar({
                 onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
                 disabled={!hasPrev || loading}
               >
-                Prev
+                {t("optimizer.pagination.prev")}
               </button>
               <span className="text-xs font-semibold text-[var(--text-secondary)]">
-                Page {fmtNum(currentPage)} of {fmtNum(totalPages)}
+                {t("optimizer.pagination.pageOf", { current: fmtNum(currentPage), total: fmtNum(totalPages) })}
               </span>
               <button
                 type="button"
@@ -168,7 +186,7 @@ function AlertQueryBar({
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={!hasNext || loading}
               >
-                Next
+                {t("optimizer.pagination.next")}
               </button>
             </div>
 
@@ -177,7 +195,7 @@ function AlertQueryBar({
                 htmlFor={`${category}-page-jump`}
                 className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]"
               >
-                Jump to page
+                {t("optimizer.pagination.jumpToPage")}
               </label>
               <input
                 id={`${category}-page-jump`}
@@ -194,14 +212,19 @@ function AlertQueryBar({
                 className="rounded-[var(--r-md)] border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] disabled:opacity-50"
                 disabled={loading || totalPages <= 1}
               >
-                Go
+                {t("optimizer.pagination.go")}
               </button>
             </form>
           </div>
         </div>
       </div>
       <p className="mt-3 text-xs text-[var(--text-secondary)]">
-        {totalMatching > 0 ? `Displaying the current ${ALERT_CATEGORY_LABELS[category]} page from ${fmtNum(totalMatching)} matching patients.` : "No matching patients for the current query."}
+        {totalMatching > 0
+          ? t("optimizer.pagination.displayingPage", {
+              category: getCategoryLabel(category),
+              total: fmtNum(totalMatching),
+            })
+          : t("optimizer.pagination.noMatching")}
       </p>
     </Surface>
   );
@@ -223,7 +246,7 @@ function AlertBadge({ label, color }: { label: string; color: string }) {
 }
 
 function ActionBadge({ action }: { action: string | null }) {
-  if (!action) return <span className="text-xs" style={{ color: "#A1A1AA" }}>{SUT_ACTION_LABELS.noActionNeeded}</span>;
+  if (!action) return <span className="text-xs" style={{ color: "#A1A1AA" }}>{getSutActionLabel("noActionNeeded")}</span>;
   return (
     <span className="text-xs font-medium" style={{ color: theme.accent }}>
       {action}
@@ -236,7 +259,7 @@ function getAlertsErrorPresentation(error: Error): { title: string; hint: string
     if (error.isNetworkError) {
       return {
         title: error.message,
-        hint: "Could not reach the API server. Start it with `python -m uvicorn src.api:app` and try again.",
+        hint: optimizerT("optimizer.errors.networkHint"),
       };
     }
 
@@ -246,25 +269,25 @@ function getAlertsErrorPresentation(error: Error): { title: string; hint: string
       && /analytics build|canonical build|pipeline/i.test(backendDetail)
     ) {
       return {
-        title: "SUT alerts are temporarily unavailable.",
+        title: optimizerT("optimizer.errors.alertsTemporarilyUnavailable"),
         hint: backendDetail,
       };
     }
 
     return {
       title: backendDetail,
-      hint: "The backend returned an error while loading patient alerts.",
+      hint: optimizerT("optimizer.errors.loadAlertsBackend"),
     };
   }
 
   return {
-    title: error.message || "Failed to load patient alerts",
-    hint: "The backend returned an unexpected response while loading patient alerts.",
+    title: error.message || optimizerT("optimizer.errors.loadAlerts"),
+    hint: optimizerT("optimizer.errors.loadAlertsUnexpected"),
   };
 }
 
 function UnavailableBadge({ text }: { text: string }) {
-  return <MethodologyBadge warn label="Unavailable" text={text} />;
+  return <MethodologyBadge warn label={optimizerT("optimizer.unavailable.badge")} text={text} />;
 }
 
 function getAlertSummaryExactness(
@@ -298,6 +321,7 @@ function CopayExemptionAlerts({
   loading: boolean;
   cohortCopay: OptimizationSummary["copay_exemptions"] | null;
 }) {
+  const t = useT();
   const { regulatory } = useConfig();
 
   if (loading) {
@@ -327,45 +351,49 @@ function CopayExemptionAlerts({
       <MethodologyBadge
         text={
           cohortCopay?.exemption_by_category?.length
-            ? `Composable copay waiver: EK-1A (${regulatory.ek1a_exemption_count} chronic ranges) plus visit-type and patient-status rules when claim profiles are present. EK-2C-1 rate caps are evaluated separately.`
-            : `Cross-references patient ICD-10 diagnoses against ${regulatory.ek1a_exemption_count} chronic disease exemption ranges from gazette annex EK-1A. Rebuild the analytics cache to load status and visit-type exemption fields.`
+            ? t("optimizer.methodology.copayComposableWithProfiles", {
+                ek1aCount: regulatory.ek1a_exemption_count,
+              })
+            : t("optimizer.methodology.copayEk1aOnly", {
+                ek1aCount: regulatory.ek1a_exemption_count,
+              })
         }
       />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-        <KpiCard label="Total Patients" value={fmtNum(summary.n_total_patients)} />
+        <KpiCard label={t("optimizer.kpis.totalPatients")} value={fmtNum(summary.n_total_patients)} />
         <KpiCard
-          label="Exempt (any ground)"
+          label={t("optimizer.kpis.exemptAnyGround")}
           value={fmtNum(anyGroundExemptCount)}
           valueColor={theme.accent}
-          sub="EK-1A, acil, status, or occupational"
+          sub={t("optimizer.kpis.exemptAnyGroundSub")}
         />
         <KpiCard
-          label="EK-1A exempt"
+          label={t("optimizer.kpis.ek1aExempt")}
           value={fmtNum(ek1aExemptCount)}
           valueColor={ACCENT}
-          sub="Chronic ICD-10 only"
+          sub={t("optimizer.kpis.ek1aExemptSub")}
         />
         {typeof statusOnlyCount === "number" && (
           <KpiCard
-            label="Status / visit only"
+            label={t("optimizer.kpis.statusVisitOnly")}
             value={fmtNum(statusOnlyCount)}
-            sub="No EK-1A diagnosis"
+            sub={t("optimizer.kpis.statusVisitOnlySub")}
           />
         )}
-        <KpiCard label="Exemption Rate" value={fmtPct(exemptRate)} valueColor={ACCENT} />
+        <KpiCard label={t("optimizer.kpis.exemptionRate")} value={fmtPct(exemptRate)} valueColor={ACCENT} />
         <KpiCard
-          label="Non-Exempt"
+          label={t("optimizer.kpis.nonExempt")}
           value={fmtNum(summary.n_total_patients - summary.n_exempt_patients)}
-          sub="Standard copay applies"
+          sub={t("optimizer.kpis.nonExemptSub")}
         />
       </div>
 
       {cohortCopay?.exemption_by_category && cohortCopay.exemption_by_category.length > 0 && (
         <Surface variant="soft" padding="md" className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--gold)]">
-            Exemption by category
+            {t("optimizer.sections.exemptionByCategory")}
           </p>
           <div className="flex flex-wrap gap-2">
             {cohortCopay.exemption_by_category.map((row) => (
@@ -378,24 +406,30 @@ function CopayExemptionAlerts({
       )}
 
       <Section
-        title="Patient Alerts"
+        title={t("optimizer.sections.patientAlerts")}
         trailing={<Chip variant="outline">{getAlertStatusLabel(data.query.status)}</Chip>}
         padding="lg"
         className="[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wider [&_h2]:text-[var(--gold)]"
       >
         <p className="mb-2 text-xs text-[var(--text-muted)]">
-          Showing {fmtNum(rangeStart)}-{fmtNum(rangeEnd)} of {fmtNum(totalMatching)} patients on page {fmtNum(currentPage)} of {fmtNum(totalPages)}
+          {t("optimizer.tables.showingRange", {
+            start: fmtNum(rangeStart),
+            end: fmtNum(rangeEnd),
+            total: fmtNum(totalMatching),
+            page: fmtNum(currentPage),
+            totalPages: fmtNum(totalPages),
+          })}
         </p>
 
         <DataTable minWidth={860} className="max-h-[420px] overflow-y-auto text-xs">
           <thead>
             <tr>
-              <th>Patient ID</th>
-              <th className="text-center">Status</th>
-              <th>Exemption basis</th>
-              <th className="num-col">EK-1A dx</th>
-              <th>Top EK-1A diagnosis</th>
-              <th>Recommended Action</th>
+              <th>{t("optimizer.tables.patientId")}</th>
+              <th className="text-center">{t("optimizer.tables.status")}</th>
+              <th>{t("optimizer.tables.exemptionBasis")}</th>
+              <th className="num-col">{t("optimizer.tables.ek1aDx")}</th>
+              <th>{t("optimizer.tables.topEk1aDiagnosis")}</th>
+              <th>{t("optimizer.tables.recommendedAction")}</th>
             </tr>
           </thead>
           <tbody>
@@ -404,26 +438,26 @@ function CopayExemptionAlerts({
                 <td className="font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
                 <td className="text-center">
                   {p.copay_exemption.exempt
-                    ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.exempt} color={theme.accent} />
-                    : <AlertBadge label={SUT_ALERT_BADGE_LABELS.notExempt} color="#A1A1AA" />
+                    ? <AlertBadge label={getSutAlertBadgeLabel("exempt")} color={theme.accent} />
+                    : <AlertBadge label={getSutAlertBadgeLabel("notExempt")} color="#A1A1AA" />
                   }
                 </td>
                 <td>
                   {p.copay_exemption.exempt ? (
                     <ExemptionBasisChips copay={p.copay_exemption} max={3} />
                   ) : (
-                    <span className="text-[var(--text-muted)]">{"\u2014"}</span>
+                    <span className="text-[var(--text-muted)]">{t("optimizer.emDash")}</span>
                   )}
                 </td>
                 <td className="num-col">{fmtNum(p.copay_exemption.n_qualifying)}</td>
                 <td className="truncate max-w-[200px]" title={p.copay_exemption.qualifying_diagnoses[0]?.disease}>
-                  {p.copay_exemption.qualifying_diagnoses[0]?.disease ?? "\u2014"}
+                  {p.copay_exemption.qualifying_diagnoses[0]?.disease ?? t("optimizer.emDash")}
                 </td>
                 <td><ActionBadge action={p.copay_exemption.action} /></td>
               </tr>
             ))}
             {patients.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-6 text-[var(--text-muted)]">No patients match this filter.</td></tr>
+              <tr><td colSpan={6} className="text-center py-6 text-[var(--text-muted)]">{t("optimizer.emptyStates.noPatientsMatchFilter")}</td></tr>
             )}
           </tbody>
         </DataTable>
@@ -437,6 +471,7 @@ function CopayExemptionAlerts({
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsResponse | null; loading: boolean }) {
+  const t = useT();
   if (loading) {
     return <SutAlertTableSkeleton />;
   }
@@ -449,7 +484,7 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
   const isUnavailable = !isExactOutput(summaryExactness);
   const unavailableMessage = getUnavailableMessage(
     summaryExactness,
-    "Surcharge compliance is unavailable until exact billed procedure codes and procedure dates are present in the SUT claim inputs.",
+    t("optimizer.unavailable.surchargeCompliance"),
   );
   const totalMatching = data.pagination?.total_matching ?? patients.length;
   const limit = data.pagination?.limit ?? ALERT_PAGE_SIZE;
@@ -464,53 +499,59 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
       {isUnavailable ? (
         <UnavailableBadge text={unavailableMessage} />
       ) : (
-        <MethodologyBadge text="Uses exact dated procedure claim lines and explicit surcharge rule flags from the active SUT runtime inputs." />
+        <MethodologyBadge text={t("optimizer.methodology.surchargeExact")} />
       )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Total Patients" value={fmtNum(summary.n_total_patients)} />
+        <KpiCard label={t("optimizer.kpis.totalPatients")} value={fmtNum(summary.n_total_patients)} />
         <KpiCard
-          label={isUnavailable ? "Unavailable Patients" : "Clear Patients"}
+          label={isUnavailable ? t("optimizer.kpis.unavailablePatients") : t("optimizer.kpis.clearPatients")}
           value={
             isUnavailable
               ? fmtNum(summary.n_patients_with_surcharge_unavailable ?? summary.n_total_patients)
               : fmtNum(summary.n_total_patients - (summary.n_patients_with_surcharge_flags ?? 0))
           }
           valueColor="#B45309"
-          sub={isUnavailable ? "Need exact claim lines" : "No surcharge flags"}
+          sub={isUnavailable ? t("optimizer.kpis.needExactClaimLines") : t("optimizer.kpis.noSurchargeFlags")}
         />
         <KpiCard
-          label="Patients Flagged"
-          value={isUnavailable ? "Unavailable" : fmtNum(summary.n_patients_with_surcharge_flags ?? 0)}
+          label={t("optimizer.kpis.patientsFlagged")}
+          value={isUnavailable ? t("optimizer.unavailable.badge") : fmtNum(summary.n_patients_with_surcharge_flags ?? 0)}
           valueColor="#B45309"
-          sub={isUnavailable ? "No exact surcharge findings yet" : "Exact claim-line findings"}
+          sub={isUnavailable ? t("optimizer.kpis.noExactSurchargeFindings") : t("optimizer.kpis.exactClaimLineFindings")}
         />
         <KpiCard
-          label="Total Flags"
-          value={isUnavailable ? "Unavailable" : fmtNum(summary.total_surcharge_flags ?? 0)}
+          label={t("optimizer.kpis.totalFlags")}
+          value={isUnavailable ? t("optimizer.unavailable.badge") : fmtNum(summary.total_surcharge_flags ?? 0)}
           valueColor="#B91C1C"
-          sub={isUnavailable ? "Counts resume after exact inputs land" : "Exact procedure flags"}
+          sub={isUnavailable ? t("optimizer.kpis.countsResumeAfterInputs") : t("optimizer.kpis.exactProcedureFlags")}
         />
       </div>
 
       <Section
-        title="Patient Alerts"
+        title={t("optimizer.sections.patientAlerts")}
         trailing={<Chip variant="outline">{getAlertStatusLabel(data.query.status)}</Chip>}
         padding="lg"
         className="[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wider [&_h2]:text-[var(--gold)]"
       >
         <p className="mb-2 text-xs text-[var(--text-muted)]">
-          Showing {fmtNum(rangeStart)}-{fmtNum(rangeEnd)} of {fmtNum(totalMatching)} patients on page {fmtNum(currentPage)} of {fmtNum(totalPages)}
+          {t("optimizer.tables.showingRange", {
+            start: fmtNum(rangeStart),
+            end: fmtNum(rangeEnd),
+            total: fmtNum(totalMatching),
+            page: fmtNum(currentPage),
+            totalPages: fmtNum(totalPages),
+          })}
         </p>
 
         <DataTable minWidth={720} className="max-h-[420px] overflow-y-auto text-xs">
           <thead>
             <tr>
-              <th>Patient ID</th>
-              <th className="text-center">Status</th>
-              <th className="num-col">No-Surcharge Rules</th>
-              <th>Top Procedure</th>
-              <th>Recommended Action</th>
+              <th>{t("optimizer.tables.patientId")}</th>
+              <th className="text-center">{t("optimizer.tables.status")}</th>
+              <th className="num-col">{t("optimizer.tables.noSurchargeRules")}</th>
+              <th>{t("optimizer.tables.topProcedure")}</th>
+              <th>{t("optimizer.tables.recommendedAction")}</th>
             </tr>
           </thead>
           <tbody>
@@ -519,28 +560,28 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
                 <td className="font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
                 <td className="text-center">
                   {!isExactOutput(p.surcharge_exposure)
-                    ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.unavailable} color={theme.textMuted} />
+                    ? <AlertBadge label={getSutAlertBadgeLabel("unavailable")} color={theme.textMuted} />
                     : (p.surcharge_exposure.n_applicable ?? 0) > 0
-                    ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.flagged} color="#B45309" />
-                    : <AlertBadge label={SUT_ALERT_BADGE_LABELS.clear} color={theme.accent} />
+                    ? <AlertBadge label={getSutAlertBadgeLabel("flagged")} color="#B45309" />
+                    : <AlertBadge label={getSutAlertBadgeLabel("clear")} color={theme.accent} />
                   }
                 </td>
                 <td className="num-col font-bold" style={{ color: isExactOutput(p.surcharge_exposure) && (p.surcharge_exposure.n_applicable ?? 0) > 0 ? "#B45309" : "#A1A1AA" }}>
-                  {p.surcharge_exposure.n_applicable !== null ? fmtNum(p.surcharge_exposure.n_applicable) : "\u2014"}
+                  {p.surcharge_exposure.n_applicable !== null ? fmtNum(p.surcharge_exposure.n_applicable) : t("optimizer.emDash")}
                 </td>
                 <td className="truncate max-w-[200px]" title={p.surcharge_exposure.top_rules[0]?.name}>
-                  {p.surcharge_exposure.top_rules[0]?.name ?? (isExactOutput(p.surcharge_exposure) ? "\u2014" : "Exact procedure codes required")}
+                  {p.surcharge_exposure.top_rules[0]?.name ?? (isExactOutput(p.surcharge_exposure) ? t("optimizer.emDash") : t("optimizer.unavailable.exactProcedureCodesRequired"))}
                 </td>
                 <td>
                   {isExactOutput(p.surcharge_exposure)
                     ? <ActionBadge action={p.surcharge_exposure.action} />
-                    : <span className="text-xs text-[var(--text-muted)]">Unavailable</span>
+                    : <span className="text-xs text-[var(--text-muted)]">{t("optimizer.unavailable.badge")}</span>
                   }
                 </td>
               </tr>
             ))}
             {patients.length === 0 && (
-              <tr><td colSpan={5} className="text-center py-6 text-[var(--text-muted)]">No patients match this filter.</td></tr>
+              <tr><td colSpan={5} className="text-center py-6 text-[var(--text-muted)]">{t("optimizer.emptyStates.noPatientsMatchFilter")}</td></tr>
             )}
           </tbody>
         </DataTable>
@@ -554,6 +595,7 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null; loading: boolean }) {
+  const t = useT();
   if (loading) {
     return <SutAlertTableSkeleton />;
   }
@@ -566,7 +608,7 @@ function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null
   const isUnavailable = !isExactOutput(summaryExactness);
   const unavailableMessage = getUnavailableMessage(
     summaryExactness,
-    "Copay rate compliance is unavailable until exact billed procedure codes and procedure dates are present in the SUT claim inputs.",
+    t("optimizer.unavailable.copayRateCompliance"),
   );
   const totalMatching = data.pagination?.total_matching ?? patients.length;
   const limit = data.pagination?.limit ?? ALERT_PAGE_SIZE;
@@ -581,53 +623,59 @@ function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null
       {isUnavailable ? (
         <UnavailableBadge text={unavailableMessage} />
       ) : (
-        <MethodologyBadge text="Uses exact dated procedure claim lines, explicit copay-rate rule flags, and billed/payable amounts from the active SUT runtime inputs." />
+        <MethodologyBadge text={t("optimizer.methodology.copayRateExact")} />
       )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Total Patients" value={fmtNum(summary.n_total_patients)} />
+        <KpiCard label={t("optimizer.kpis.totalPatients")} value={fmtNum(summary.n_total_patients)} />
         <KpiCard
-          label={isUnavailable ? "Unavailable Patients" : "Clear Patients"}
+          label={isUnavailable ? t("optimizer.kpis.unavailablePatients") : t("optimizer.kpis.clearPatients")}
           value={
             isUnavailable
               ? fmtNum(summary.n_patients_with_copay_rate_unavailable ?? summary.n_total_patients)
               : fmtNum(summary.n_total_patients - (summary.n_patients_with_copay_rate_flags ?? 0))
           }
           valueColor="#B45309"
-          sub={isUnavailable ? "Need exact claim lines" : "No copay-rate flags"}
+          sub={isUnavailable ? t("optimizer.kpis.needExactClaimLines") : t("optimizer.kpis.noCopayRateFlags")}
         />
         <KpiCard
-          label="Patients Flagged"
-          value={isUnavailable ? "Unavailable" : fmtNum(summary.n_patients_with_copay_rate_flags ?? 0)}
+          label={t("optimizer.kpis.patientsFlagged")}
+          value={isUnavailable ? t("optimizer.unavailable.badge") : fmtNum(summary.n_patients_with_copay_rate_flags ?? 0)}
           valueColor="#B45309"
-          sub={isUnavailable ? "No exact rate findings yet" : "Exact claim-line findings"}
+          sub={isUnavailable ? t("optimizer.kpis.noExactRateFindings") : t("optimizer.kpis.exactClaimLineFindings")}
         />
         <KpiCard
-          label="Total Flags"
-          value={isUnavailable ? "Unavailable" : fmtNum(summary.total_copay_rate_flags ?? 0)}
+          label={t("optimizer.kpis.totalFlags")}
+          value={isUnavailable ? t("optimizer.unavailable.badge") : fmtNum(summary.total_copay_rate_flags ?? 0)}
           valueColor="#B91C1C"
-          sub={isUnavailable ? "Counts resume after exact inputs land" : "Exact procedure flags"}
+          sub={isUnavailable ? t("optimizer.kpis.countsResumeAfterInputs") : t("optimizer.kpis.exactProcedureFlags")}
         />
       </div>
 
       <Section
-        title="Patient Alerts"
+        title={t("optimizer.sections.patientAlerts")}
         trailing={<Chip variant="outline">{getAlertStatusLabel(data.query.status)}</Chip>}
         padding="lg"
         className="[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wider [&_h2]:text-[var(--gold)]"
       >
         <p className="mb-2 text-xs text-[var(--text-muted)]">
-          Showing {fmtNum(rangeStart)}-{fmtNum(rangeEnd)} of {fmtNum(totalMatching)} patients on page {fmtNum(currentPage)} of {fmtNum(totalPages)}
+          {t("optimizer.tables.showingRange", {
+            start: fmtNum(rangeStart),
+            end: fmtNum(rangeEnd),
+            total: fmtNum(totalMatching),
+            page: fmtNum(currentPage),
+            totalPages: fmtNum(totalPages),
+          })}
         </p>
 
         <DataTable minWidth={720} className="max-h-[420px] overflow-y-auto text-xs">
           <thead>
             <tr>
-              <th>Patient ID</th>
-              <th className="text-center">Status</th>
-              <th className="num-col">Rate-Capped Procs</th>
-              <th className="num-col">Mean Rate</th>
-              <th>Recommended Action</th>
+              <th>{t("optimizer.tables.patientId")}</th>
+              <th className="text-center">{t("optimizer.tables.status")}</th>
+              <th className="num-col">{t("optimizer.tables.rateCappedProcs")}</th>
+              <th className="num-col">{t("optimizer.tables.meanRate")}</th>
+              <th>{t("optimizer.tables.recommendedAction")}</th>
             </tr>
           </thead>
           <tbody>
@@ -636,28 +684,28 @@ function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null
                 <td className="font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
                 <td className="text-center">
                   {!isExactOutput(p.copay_rate_exposure)
-                    ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.unavailable} color={theme.textMuted} />
+                    ? <AlertBadge label={getSutAlertBadgeLabel("unavailable")} color={theme.textMuted} />
                     : (p.copay_rate_exposure.n_applicable ?? 0) > 0
-                    ? <AlertBadge label={SUT_ALERT_BADGE_LABELS.flagged} color="#B45309" />
-                    : <AlertBadge label={SUT_ALERT_BADGE_LABELS.clear} color={theme.accent} />
+                    ? <AlertBadge label={getSutAlertBadgeLabel("flagged")} color="#B45309" />
+                    : <AlertBadge label={getSutAlertBadgeLabel("clear")} color={theme.accent} />
                   }
                 </td>
                 <td className="num-col font-bold" style={{ color: isExactOutput(p.copay_rate_exposure) && (p.copay_rate_exposure.n_applicable ?? 0) > 0 ? "#B45309" : "#A1A1AA" }}>
-                  {p.copay_rate_exposure.n_applicable !== null ? fmtNum(p.copay_rate_exposure.n_applicable) : "\u2014"}
+                  {p.copay_rate_exposure.n_applicable !== null ? fmtNum(p.copay_rate_exposure.n_applicable) : t("optimizer.emDash")}
                 </td>
                 <td className="num-col">
-                  {p.copay_rate_exposure.mean_rate !== null ? fmtPct(p.copay_rate_exposure.mean_rate / 100, 0) : "\u2014"}
+                  {p.copay_rate_exposure.mean_rate !== null ? fmtPct(p.copay_rate_exposure.mean_rate / 100, 0) : t("optimizer.emDash")}
                 </td>
                 <td>
                   {isExactOutput(p.copay_rate_exposure)
                     ? <ActionBadge action={p.copay_rate_exposure.action} />
-                    : <span className="text-xs text-[var(--text-muted)]">Unavailable</span>
+                    : <span className="text-xs text-[var(--text-muted)]">{t("optimizer.unavailable.badge")}</span>
                   }
                 </td>
               </tr>
             ))}
             {patients.length === 0 && (
-              <tr><td colSpan={5} className="text-center py-6 text-[var(--text-muted)]">No patients match this filter.</td></tr>
+              <tr><td colSpan={5} className="text-center py-6 text-[var(--text-muted)]">{t("optimizer.emptyStates.noPatientsMatchFilter")}</td></tr>
             )}
           </tbody>
         </DataTable>
@@ -670,7 +718,17 @@ function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null
    METHODOLOGY BADGE
    ═══════════════════════════════════════════════════════════════════════════ */
 
-function MethodologyBadge({ text, label = "100% Gazette Data", warn = false }: { text: string; label?: string; warn?: boolean }) {
+function MethodologyBadge({
+  text,
+  label,
+  warn = false,
+}: {
+  text: string;
+  label?: string;
+  warn?: boolean;
+}) {
+  const t = useT();
+  const badgeLabel = label ?? t("optimizer.methodology.gazetteData");
   const color = warn ? "#F59E0B" : theme.accent;
   const colorLight = warn ? "rgba(245, 158, 11, 0.15)" : theme.accentAlpha(0.06);
   const borderColor = warn ? "rgba(245, 158, 11, 0.3)" : theme.accentAlpha(0.2);
@@ -685,7 +743,7 @@ function MethodologyBadge({ text, label = "100% Gazette Data", warn = false }: {
       }}
     >
       <span className="font-bold uppercase tracking-wider" style={{ color }}>
-        {label}
+        {badgeLabel}
       </span>
       <span className="mx-1.5" style={{ color: separatorColor }}>|</span>
       {text}
@@ -702,18 +760,6 @@ function MethodologyBadge({ text, label = "100% Gazette Data", warn = false }: {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 type AlertSubId = "exemptions" | "surcharge" | "copay_rates";
-
-const ALERT_SUBS: { id: AlertSubId; label: string; Icon: typeof ShieldCheck }[] = [
-  { id: "exemptions", label: "Copay Exemptions", Icon: ShieldCheck },
-  { id: "surcharge", label: "Surcharge Compliance", Icon: ShieldAlert },
-  { id: "copay_rates", label: "Copay Rate Compliance", Icon: ChartColumnBig },
-];
-
-const ALERT_CATEGORY_LABELS: Record<PatientAlertsCategory, string> = {
-  exemptions: "Copay Exemptions",
-  surcharge: "Surcharge Compliance",
-  copay_rates: "Copay Rate Compliance",
-};
 
 function filterAlertsByCohort(
   data: PatientAlertsResponse | null,
@@ -741,6 +787,7 @@ function ComplianceAlerts({
   cohortPatientIds: Set<string>;
   cohortFilterActive: boolean;
 }) {
+  const t = useT();
   const [activeSub, setActiveSub] = useState<AlertSubId>("exemptions");
   const [status, setStatus] = useState<PatientAlertsStatus>("all");
   const [page, setPage] = useState(1);
@@ -807,7 +854,7 @@ function ComplianceAlerts({
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
         if (requestSeqRef.current === requestSeq) {
-          setAlertsError(err instanceof Error ? err : new Error("Failed to load patient alerts"));
+          setAlertsError(err instanceof Error ? err : new Error(optimizerT("optimizer.errors.loadAlerts")));
         }
       } finally {
         if (requestSeqRef.current === requestSeq) {
@@ -833,13 +880,19 @@ function ComplianceAlerts({
   const currentLoading = alertsLoading && !currentData;
   const alertsErrorPresentation = alertsError ? getAlertsErrorPresentation(alertsError) : null;
 
+  const alertSubs = [
+    { id: "exemptions" as const, label: t("optimizer.tabs.exemptions"), Icon: ShieldCheck },
+    { id: "surcharge" as const, label: t("optimizer.tabs.surcharge"), Icon: ShieldAlert },
+    { id: "copay_rates" as const, label: t("optimizer.tabs.copayRates"), Icon: ChartColumnBig },
+  ];
+
   return (
     <div className="space-y-4">
       {cohortFilterActive && (
         <MethodologyBadge
           warn
-          label="Active filters"
-          text="Alert tables reflect the active filters. Summary KPI cards still use full-cohort totals until filtered APIs are available."
+          label={t("optimizer.methodology.activeFilters")}
+          text={t("optimizer.methodology.cohortFilterAlertsHint")}
         />
       )}
       <TabsRoot
@@ -847,8 +900,8 @@ function ComplianceAlerts({
         onValueChange={(value) => handleCategoryChange(value as AlertSubId)}
         className="gap-0"
       >
-        <TabsList density="compact" aria-label="Compliance alert categories">
-          {ALERT_SUBS.map((sub) => (
+        <TabsList density="compact" aria-label={t("optimizer.tabs.categoriesAria")}>
+          {alertSubs.map((sub) => (
             <TabsTrigger
               key={sub.id}
               value={sub.id}
@@ -877,7 +930,7 @@ function ComplianceAlerts({
           className="border-[color-mix(in_srgb,var(--danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--danger)_4%,transparent)]"
         >
           <Chip variant="danger" className="mb-2">
-            Alert load failed
+            {t("optimizer.errors.alertLoadFailed")}
           </Chip>
           <p className="text-sm font-medium text-[var(--danger)]">
             {alertsErrorPresentation?.title}
@@ -912,6 +965,7 @@ function RevenueRecoveryDashboard({
   cohortPatientIds: Set<string>;
   cohortFilterActive: boolean;
 }) {
+  const t = useT();
   const [data, setData] = useState<CohortRecoverySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -930,7 +984,7 @@ function RevenueRecoveryDashboard({
         if (!controller.signal.aborted) setData(result);
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
-        setError(err instanceof Error ? err.message : "Failed to load revenue recovery");
+        setError(err instanceof Error ? err.message : optimizerT("optimizer.errors.loadRevenueRecovery"));
       } finally {
         setLoading(false);
       }
@@ -953,7 +1007,7 @@ function RevenueRecoveryDashboard({
   if (loading) {
     return (
       <Surface variant="base" padding="lg" className="text-center">
-        <p className="animate-pulse text-sm text-[var(--text-muted)]">Loading revenue recovery data...</p>
+        <p className="animate-pulse text-sm text-[var(--text-muted)]">{t("optimizer.loading.revenueRecovery")}</p>
       </Surface>
     );
   }
@@ -966,11 +1020,11 @@ function RevenueRecoveryDashboard({
         className="border-[color-mix(in_srgb,var(--danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--danger)_4%,transparent)]"
       >
         <Chip variant="danger" className="mb-2">
-          Revenue recovery unavailable
+          {t("optimizer.errors.revenueRecoveryUnavailable")}
         </Chip>
         <p className="text-sm font-medium text-[var(--danger)]">{error}</p>
         <p className="mt-1 text-xs text-[var(--text-muted)]">
-          Billing reports require the full pipeline. Start the API with <code>python -m uvicorn src.api:app</code>.
+          {t("optimizer.errors.revenueRecoveryApiHint")}
         </p>
       </Surface>
     );
@@ -979,7 +1033,7 @@ function RevenueRecoveryDashboard({
   if (!data || data.n_patients === 0) {
     return (
       <Surface variant="base" padding="lg" className="text-center">
-        <p className="text-sm text-[var(--text-muted)]">No billing data available.</p>
+        <p className="text-sm text-[var(--text-muted)]">{t("optimizer.emptyStates.noBillingData")}</p>
       </Surface>
     );
   }
@@ -1010,7 +1064,7 @@ function RevenueRecoveryDashboard({
   if (cohortFilterActive && summarySource.length === 0) {
     return (
       <Surface variant="base" padding="lg" className="text-center">
-        <p className="text-sm text-[var(--text-muted)]">No patients in the current filter have billing data.</p>
+        <p className="text-sm text-[var(--text-muted)]">{t("optimizer.emptyStates.noBillingDataInFilter")}</p>
       </Surface>
     );
   }
@@ -1033,15 +1087,15 @@ function RevenueRecoveryDashboard({
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {[
           {
-            label: recoveryPartial ? "Partial rule-calculated total" : "Rule-calculated total",
+            label: recoveryPartial ? t("optimizer.kpis.partialRuleCalculatedTotal") : t("optimizer.kpis.ruleCalculatedTotal"),
             value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.grand_total_recoverable : null),
             accent: true,
           },
-          { label: "Lab Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_lab_savings : null) },
-          { label: "Drug Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_drug_savings : null) },
-          { label: "Copay Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_copay_savings : null) },
-          { label: "Strategy Savings", value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_strategy_savings : null) },
-          { label: "Patients with Actions", value: fmtNum(displayData.n_patients) },
+          { label: t("optimizer.kpis.labSavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_lab_savings : null) },
+          { label: t("optimizer.kpis.drugSavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_drug_savings : null) },
+          { label: t("optimizer.kpis.copaySavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_copay_savings : null) },
+          { label: t("optimizer.kpis.strategySavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_strategy_savings : null) },
+          { label: t("optimizer.kpis.patientsWithActions"), value: fmtNum(displayData.n_patients) },
         ].map((kpi, i) => (
           <Surface
             key={i}
@@ -1056,26 +1110,20 @@ function RevenueRecoveryDashboard({
       {recoveryPartial ? (
         <MethodologyBadge
           warn
-          label="Partial Exact"
-          text={getUnavailableMessage(
-            displayData,
-            "Revenue recovery contains exact category-level findings, but aggregate totals are mixed because some billing sections still require exact inputs.",
-          )}
+          label={t("optimizer.methodology.partialExact")}
+          text={getUnavailableMessage(displayData, t("optimizer.methodology.revenuePartialExact"))}
         />
       ) : !recoveryExact && (
         <UnavailableBadge
-          text={getUnavailableMessage(
-            displayData,
-            "Revenue recovery totals remain unavailable until every billing section is exact.",
-          )}
+          text={getUnavailableMessage(displayData, t("optimizer.methodology.revenueUnavailable"))}
         />
       )}
 
       {cohortFilterActive && (
         <MethodologyBadge
           warn
-          label="Active filters"
-          text="Recoverable total and patient count reflect the active filters. Category savings charts still use full-cohort aggregates until filtered APIs are available."
+          label={t("optimizer.methodology.activeFilters")}
+          text={t("optimizer.methodology.cohortFilterRevenueHint")}
         />
       )}
 
@@ -1085,7 +1133,7 @@ function RevenueRecoveryDashboard({
         {/* Donut Chart */}
           {categoryData.length > 0 && (
           <Surface variant="base" padding="lg">
-            <Eyebrow tone="gold" as="h3" className="mb-3">Savings by Category</Eyebrow>
+            <Eyebrow tone="gold" as="h3" className="mb-3">{t("optimizer.sections.savingsByCategory")}</Eyebrow>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie data={categoryData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80}>
@@ -1109,7 +1157,7 @@ function RevenueRecoveryDashboard({
 
         {/* Priority Distribution */}
           <Surface variant="base" padding="lg">
-            <Eyebrow tone="gold" as="h3" className="mb-3">Priority Distribution</Eyebrow>
+            <Eyebrow tone="gold" as="h3" className="mb-3">{t("optimizer.sections.priorityDistribution")}</Eyebrow>
             <div className="space-y-3 mt-4">
               {priorityData.map((pd, i) => {
                 const total = priorityData.reduce((s, p) => s + p.value, 0);
@@ -1118,7 +1166,12 @@ function RevenueRecoveryDashboard({
                   <div key={i}>
                     <div className="flex justify-between text-xs mb-1">
                         <span className="font-semibold" style={{ color: priorityColors[pd.name] || theme.textMuted }}>{pd.name}</span>
-                        <span className="text-[var(--text-muted)]">{fmtNum(pd.value)} patients ({fmtPct(pct / 100, 0)})</span>
+                        <span className="text-[var(--text-muted)]">
+                          {t("optimizer.tables.patientsWithPct", {
+                            count: fmtNum(pd.value),
+                            pct: fmtPct(pct / 100, 0),
+                          })}
+                        </span>
                     </div>
                     <div className="w-full h-2 rounded-full" style={{ background: theme.accentAlpha(0.08) }}>
                       <div className="h-2 rounded-full" style={{ width: `${pct}%`, background: priorityColors[pd.name] || ACCENT }} />
@@ -1135,16 +1188,16 @@ function RevenueRecoveryDashboard({
       {hasRecoveryBreakdown && (displayData.top_patients?.length ?? 0) > 0 && (
         <Surface variant="base" padding="lg">
           <Eyebrow tone="gold" as="h3" className="mb-3">
-            {cohortFilterActive ? "Highest-Impact Patients in Slice" : "Top-10 Highest-Impact Patients"}
+            {cohortFilterActive ? t("optimizer.sections.topPatientsFiltered") : t("optimizer.sections.topPatientsDefault")}
           </Eyebrow>
           <DataTable minWidth={640} className="text-sm">
             <thead>
               <tr>
-                <th>Patient ID</th>
-                <th className="num-col">Rule-calculated</th>
-                <th>Priority</th>
-                <th className="num-col">Actions</th>
-                <th>Top Type</th>
+                <th>{t("optimizer.tables.patientId")}</th>
+                <th className="num-col">{t("optimizer.tables.ruleCalculated")}</th>
+                <th>{t("optimizer.tables.priority")}</th>
+                <th className="num-col">{t("optimizer.tables.actions")}</th>
+                <th>{t("optimizer.tables.topType")}</th>
               </tr>
             </thead>
             <tbody>
@@ -1171,10 +1224,10 @@ function RevenueRecoveryDashboard({
       {/* Methodology Badge */}
       <div className="text-xs text-center py-2" style={{ color: "#A1A1AA" }}>
         {recoveryExact
-          ? "Normative analysis based on official SUT gazette rule references (EK-1A, EK-2B, EK-2C, EK-4A)"
+          ? t("optimizer.methodology.revenueFooterExact")
           : recoveryPartial
-          ? "Partial-exact recovery review: exact category-level savings are shown while incomplete billing sections remain explicit required-input gaps."
-          : "Mixed exactness detected: recovery review totals stay unavailable until every billing section is exact."}
+          ? t("optimizer.methodology.revenueFooterPartial")
+          : t("optimizer.methodology.revenueFooterMixed")}
       </div>
 
       {/* ── DRG Unbundling (merged from SUT Analytics) ── */}
@@ -1191,13 +1244,15 @@ function RevenueRecoveryDashboard({
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
+  const t = useT();
   const drg = data.drg_unbundling;
   if (!drg) return null;
   const isUnavailable = !isExactOutput(drg);
   const unavailableMessage = getUnavailableMessage(
     drg,
-    "DRG unbundling risk is unavailable until exact itemized billed procedure lines and package eligibility context are present in the SUT claim inputs.",
+    t("optimizer.unavailable.drgUnbundling"),
   );
+  const unavailableLabel = t("common.unavailable");
 
   return (
     <>
@@ -1205,7 +1260,7 @@ export function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
       <div className="flex items-center gap-3 pt-2">
         <div className="h-px flex-1" style={{ background: theme.accentAlpha(0.15) }} />
         <span className="text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
-          DRG Unbundling Risk
+          {t("optimizer.sections.drgUnbundlingRisk")}
         </span>
         <div className="h-px flex-1" style={{ background: theme.accentAlpha(0.15) }} />
       </div>
@@ -1218,26 +1273,26 @@ export function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard
-          label="Patients in Cohort"
-          value={drg.n_patients_checked !== null ? fmtNum(drg.n_patients_checked) : "Unavailable"}
-          sub={isUnavailable ? "Cohort size only until exact inputs land" : "Checked on exact claim lines"}
+          label={t("optimizer.kpis.patientsInCohort")}
+          value={drg.n_patients_checked !== null ? fmtNum(drg.n_patients_checked) : unavailableLabel}
+          sub={isUnavailable ? t("optimizer.kpis.cohortSizeUntilInputs") : t("optimizer.kpis.checkedOnExactClaimLines")}
         />
         <KpiCard
-          label="Patients With Risk"
-          value={isUnavailable ? "Unavailable" : fmtNumOrUnavailable(drg.n_patients_with_risk)}
+          label={t("optimizer.kpis.patientsWithRisk")}
+          value={isUnavailable ? unavailableLabel : fmtNumOrUnavailable(drg.n_patients_with_risk)}
           valueColor="#B91C1C"
-          sub={isUnavailable ? "Need exact claim lines" : "Exact unbundling findings"}
+          sub={isUnavailable ? t("optimizer.kpis.needExactClaimLines") : t("optimizer.kpis.exactUnbundlingFindings")}
         />
         <KpiCard
-          label="Potential Savings"
-          value={isUnavailable ? "Unavailable" : fmtTRY2OrUnavailable(drg.total_potential_savings)}
+          label={t("optimizer.kpis.potentialSavings")}
+          value={isUnavailable ? unavailableLabel : fmtTRY2OrUnavailable(drg.total_potential_savings)}
           valueColor="#B45309"
-          sub={isUnavailable ? "Amounts resume after exact inputs land" : "From exact claim-line analysis"}
+          sub={isUnavailable ? t("optimizer.kpis.amountsResumeAfterInputs") : t("optimizer.kpis.fromExactClaimLineAnalysis")}
         />
         <KpiCard
-          label="Risky Chapters"
-          value={isUnavailable ? "Unavailable" : fmtNum(drg.top_risky_chapters.length)}
-          sub={isUnavailable ? "Requires dated package context" : "ICD-10 chapters with repeated risk"}
+          label={t("optimizer.kpis.riskyChapters")}
+          value={isUnavailable ? unavailableLabel : fmtNum(drg.top_risky_chapters.length)}
+          sub={isUnavailable ? t("optimizer.kpis.requiresDatedPackageContext") : t("optimizer.kpis.icd10ChaptersWithRepeatedRisk")}
         />
       </div>
     </>
@@ -1249,14 +1304,16 @@ export function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export function DrugDiscountInline({ data }: { data: OptimizationSummary }) {
+  const t = useT();
   const drug = data.drug_discount_validation;
   if (!drug) return null;
   const isUnavailable = !isExactOutput(drug);
   const unavailableMessage = getUnavailableMessage(
     drug,
-    "Drug discount validation is unavailable until exact dispensed-drug claim lines and billed drug amounts are present in the SUT claim inputs.",
+    t("optimizer.unavailable.drugDiscount"),
   );
   const tierMismatches = drug.n_tier_mismatches ?? null;
+  const unavailableLabel = t("common.unavailable");
 
   return (
     <>
@@ -1264,7 +1321,7 @@ export function DrugDiscountInline({ data }: { data: OptimizationSummary }) {
       <div className="flex items-center gap-3 pt-2">
         <div className="h-px flex-1" style={{ background: theme.accentAlpha(0.15) }} />
         <span className="text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
-          Drug Discount Audit (EK-4A)
+          {t("optimizer.sections.drugDiscountAudit")}
         </span>
         <div className="h-px flex-1" style={{ background: theme.accentAlpha(0.15) }} />
       </div>
@@ -1277,26 +1334,26 @@ export function DrugDiscountInline({ data }: { data: OptimizationSummary }) {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard
-          label="Unique Drug Codes"
-          value={isUnavailable ? "Unavailable" : fmtNumOrUnavailable(drug.n_active_drugs)}
-          sub={isUnavailable ? "Catalog-only reference until claim lines land" : "Distinct EK-4A codes in claims"}
+          label={t("optimizer.kpis.uniqueDrugCodes")}
+          value={isUnavailable ? unavailableLabel : fmtNumOrUnavailable(drug.n_active_drugs)}
+          sub={isUnavailable ? t("optimizer.kpis.catalogOnlyUntilClaimLines") : t("optimizer.kpis.distinctEk4aCodes")}
         />
         <KpiCard
-          label="Drug Claim Lines"
-          value={isUnavailable ? "Unavailable" : fmtNumOrUnavailable(drug.n_drugs_total)}
-          sub={isUnavailable ? "Dispensed line items required" : "Dispensed lines validated"}
+          label={t("optimizer.kpis.drugClaimLines")}
+          value={isUnavailable ? unavailableLabel : fmtNumOrUnavailable(drug.n_drugs_total)}
+          sub={isUnavailable ? t("optimizer.kpis.dispensedLineItemsRequired") : t("optimizer.kpis.dispensedLinesValidated")}
         />
         <KpiCard
-          label="Tier Mismatches"
-          value={isUnavailable ? "Unavailable" : fmtNumOrUnavailable(tierMismatches)}
+          label={t("optimizer.kpis.tierMismatches")}
+          value={isUnavailable ? unavailableLabel : fmtNumOrUnavailable(tierMismatches)}
           valueColor={!isUnavailable && tierMismatches && tierMismatches > 0 ? "#B45309" : undefined}
-          sub={isUnavailable ? "Actual claim amounts required" : "Payable vs tier expectation"}
+          sub={isUnavailable ? t("optimizer.kpis.actualClaimAmountsRequired") : t("optimizer.kpis.payableVsTierExpectation")}
         />
         <KpiCard
-          label="Discount Savings"
-          value={isUnavailable ? "Unavailable" : fmtTRY2OrUnavailable(drug.total_discount_savings_try ?? null)}
+          label={t("optimizer.kpis.discountSavings")}
+          value={isUnavailable ? unavailableLabel : fmtTRY2OrUnavailable(drug.total_discount_savings_try ?? null)}
           valueColor="#B45309"
-          sub={isUnavailable ? "Exact claim inputs required" : "Billed minus expected payable"}
+          sub={isUnavailable ? t("optimizer.kpis.exactClaimInputsRequired") : t("optimizer.kpis.billedMinusExpectedPayable")}
         />
       </div>
     </>
@@ -1307,12 +1364,6 @@ export function DrugDiscountInline({ data }: { data: OptimizationSummary }) {
    TAB EXPORTS — Compliance and Revenue (Option A split)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const COMPLIANCE_TAB_DESCRIPTION =
-  "Per-patient actionable alerts combining exact copayment exemption findings (EK-1A) with explicit unavailable states for optimization checks that still require exact claim-line inputs.";
-
-const REVENUE_TAB_DESCRIPTION =
-  "Cohort-level recovery review dashboard for active billing algorithms, plus availability notices for optimization checks that remain blocked on exact claim-line data.";
-
 export function SUTComplianceTab({
   cohortPatientIds,
   cohortFilterActive,
@@ -1320,6 +1371,7 @@ export function SUTComplianceTab({
   cohortPatientIds: Set<string>;
   cohortFilterActive: boolean;
 }) {
+  const t = useT();
   const { getRevealProps } = useStaggeredReveal(2, { baseDelayMs: 40, stepMs: 140, threshold: 0.15 });
   const r0 = getRevealProps(0);
   const r1 = getRevealProps(1);
@@ -1331,7 +1383,7 @@ export function SUTComplianceTab({
         style={r0.staggerStyle}
         {...r0.staggerAttrs}
       >
-        {COMPLIANCE_TAB_DESCRIPTION}
+        {t("optimizer.tabs.complianceDescription")}
       </p>
       <div className={r1.staggerClass} style={r1.staggerStyle} {...r1.staggerAttrs}>
         <ComplianceAlerts
@@ -1350,6 +1402,7 @@ export function SUTRevenueTab({
   cohortPatientIds: Set<string>;
   cohortFilterActive: boolean;
 }) {
+  const t = useT();
   const { getRevealProps } = useStaggeredReveal(2, { baseDelayMs: 40, stepMs: 140, threshold: 0.15 });
   const r0 = getRevealProps(0);
   const r1 = getRevealProps(1);
@@ -1361,7 +1414,7 @@ export function SUTRevenueTab({
         style={r0.staggerStyle}
         {...r0.staggerAttrs}
       >
-        {REVENUE_TAB_DESCRIPTION}
+        {t("optimizer.tabs.revenueDescription")}
       </p>
       <div className={r1.staggerClass} style={r1.staggerStyle} {...r1.staggerAttrs}>
         <RevenueRecoveryDashboard

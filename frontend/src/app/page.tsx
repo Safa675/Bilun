@@ -79,6 +79,7 @@ function SutHomeContent() {
     [chatSessionKey, setChatSession],
   );
   const shouldRenderChat = isWorkspaceMode;
+  const chatPageContext = useMemo(() => buildHomePageContext(activeTab), [activeTab]);
   const isDocked = shouldRenderChat && chatDock !== "center";
   const sectionClass = isDocked
     ? "w-full space-y-6"

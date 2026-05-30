@@ -7,6 +7,7 @@ import PatientSearch from "@/components/ui/PatientSearch";
 import { searchSutPatients } from "@/lib/api/sut";
 import { buildSutHomeHref, type SutHomeTab } from "@/lib/constants";
 import { useRecents, type RecentEntry } from "@/lib/recents";
+import { useT } from "@/lib/i18n/useTranslations";
 
 interface SutWorkspaceLandingProps {
   onPatientSelect: (patientId: string) => void;
@@ -15,26 +16,31 @@ interface SutWorkspaceLandingProps {
   onOpenHowItWorks: () => void;
 }
 
-function formatRelative(ts: number, now: number = Date.now()): string {
+function formatRelative(
+  ts: number,
+  t: ReturnType<typeof useT>,
+  now: number = Date.now(),
+): string {
   const diff = Math.max(0, now - ts);
   const minutes = Math.floor(diff / 60_000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t("home.workspaceLanding.relativeTime.justNow");
+  if (minutes < 60) return t("home.workspaceLanding.relativeTime.minutesAgo", { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t("home.workspaceLanding.relativeTime.hoursAgo", { count: hours });
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return t("home.workspaceLanding.relativeTime.daysAgo", { count: days });
   const months = Math.floor(days / 30);
-  if (months < 12) return `${months}mo ago`;
-  return `${Math.floor(months / 12)}y ago`;
+  if (months < 12) return t("home.workspaceLanding.relativeTime.monthsAgo", { count: months });
+  return t("home.workspaceLanding.relativeTime.yearsAgo", { count: Math.floor(months / 12) });
 }
 
 interface RecentRowProps {
   entry: RecentEntry;
   onSelect: (patientId: string) => void;
+  t: ReturnType<typeof useT>;
 }
 
-function RecentRow({ entry, onSelect }: RecentRowProps) {
+function RecentRow({ entry, onSelect, t }: RecentRowProps) {
   return (
     <li>
       <button
@@ -47,7 +53,7 @@ function RecentRow({ entry, onSelect }: RecentRowProps) {
             {entry.patientId}
           </span>
           <span className="text-xs text-[var(--text-muted)] tabular-nums">
-            {formatRelative(entry.openedAt)}
+            {formatRelative(entry.openedAt, t)}
           </span>
         </span>
         <ArrowUpRight
@@ -64,9 +70,10 @@ interface RecentColumnProps {
   entries: RecentEntry[];
   emptyHint: string;
   onSelect: (patientId: string) => void;
+  t: ReturnType<typeof useT>;
 }
 
-function RecentColumn({ title, entries, emptyHint, onSelect }: RecentColumnProps) {
+function RecentColumn({ title, entries, emptyHint, onSelect, t }: RecentColumnProps) {
   return (
     <Surface as="section" variant="base" padding="lg" aria-label={title}>
       <Eyebrow as="h2" tone="muted">
@@ -77,7 +84,7 @@ function RecentColumn({ title, entries, emptyHint, onSelect }: RecentColumnProps
       ) : (
         <ul className="mt-3 flex flex-col gap-1">
           {entries.map((entry) => (
-            <RecentRow key={entry.patientId} entry={entry} onSelect={onSelect} />
+            <RecentRow key={entry.patientId} entry={entry} onSelect={onSelect} t={t} />
           ))}
         </ul>
       )}
@@ -91,6 +98,7 @@ export default function SutWorkspaceLanding({
   onOpenTab,
   onOpenHowItWorks,
 }: SutWorkspaceLandingProps) {
+  const t = useT();
   const recentPatients = useRecents("patient");
   const recentBilling = useRecents("billing");
 
@@ -100,42 +108,41 @@ export default function SutWorkspaceLanding({
 
   return (
     <div className="space-y-8">
-      {/* ── Search ───────────────────────────────────────────────────── */}
       <Surface variant="base" padding="lg">
         <Eyebrow tone="muted" as="label" {...{ htmlFor: "sut-landing-search" }}>
-          Open a patient workspace
+          {t("home.workspaceLanding.openPatientWorkspace")}
         </Eyebrow>
         <div className="mt-3">
           <PatientSearch
             id="sut-landing-search"
             selectedPatientId={null}
             onSelect={onPatientSelect}
-            placeholder="Search a patient ID…"
+            placeholder={t("home.workspaceLanding.searchPlaceholder")}
             searchFn={searchSutPatients}
           />
         </div>
       </Surface>
 
-      {/* ── Recents ──────────────────────────────────────────────────── */}
       <div className="grid gap-4 md:grid-cols-2">
         <RecentColumn
-          title="Recent patients"
+          title={t("home.workspaceLanding.recentPatients")}
           entries={recentPatients}
-          emptyHint="No recent patients yet. Search above to open one."
+          emptyHint={t("home.workspaceLanding.recentPatientsEmpty")}
           onSelect={onPatientSelect}
+          t={t}
         />
         <RecentColumn
-          title="Recent billing reports"
+          title={t("home.workspaceLanding.recentBilling")}
           entries={recentBilling}
-          emptyHint="No recent billing reports yet. Open a patient, then the billing tab."
+          emptyHint={t("home.workspaceLanding.recentBillingEmpty")}
           onSelect={onOpenBilling}
+          t={t}
         />
       </div>
 
-      {/* ── Tertiary nav ─────────────────────────────────────────────── */}
       <Surface variant="tint" padding="lg">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <Eyebrow tone="muted">Or jump straight into</Eyebrow>
+          <Eyebrow tone="muted">{t("home.workspaceLanding.jumpInto")}</Eyebrow>
           <a
             href={buildSutHomeHref("patients")}
             onClick={(event) => {
@@ -144,7 +151,7 @@ export default function SutWorkspaceLanding({
             }}
             className="text-sm font-medium text-[var(--text-primary)] underline-offset-4 hover:underline hover:decoration-[var(--gold)] transition-colors"
           >
-            Patients
+            {t("home.workspaceLanding.tabPatients")}
           </a>
           <a
             href={buildSutHomeHref("compliance")}
@@ -154,7 +161,7 @@ export default function SutWorkspaceLanding({
             }}
             className="text-sm font-medium text-[var(--text-primary)] underline-offset-4 hover:underline hover:decoration-[var(--gold)] transition-colors"
           >
-            Compliance
+            {t("home.workspaceLanding.tabCompliance")}
           </a>
           <a
             href={buildSutHomeHref("revenue")}
@@ -164,7 +171,7 @@ export default function SutWorkspaceLanding({
             }}
             className="text-sm font-medium text-[var(--text-primary)] underline-offset-4 hover:underline hover:decoration-[var(--gold)] transition-colors"
           >
-            Revenue
+            {t("home.workspaceLanding.tabRevenue")}
           </a>
           <button
             type="button"
@@ -172,7 +179,7 @@ export default function SutWorkspaceLanding({
             className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--gold-hover)] transition-colors"
           >
             <CircleHelp className="h-3.5 w-3.5" aria-hidden="true" />
-            How it works
+            {t("home.workspaceLanding.howItWorks")}
           </button>
         </div>
       </Surface>

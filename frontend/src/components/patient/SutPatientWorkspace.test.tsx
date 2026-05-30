@@ -1,5 +1,5 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 
 vi.mock("next/link", () => ({
   default: ({ children }: { children: unknown }) => children,
@@ -46,7 +46,7 @@ import SutPatientWorkspace, { PatientOptimizationSnapshot } from "./SutPatientWo
 
 describe("PatientOptimizationSnapshot", () => {
   it("renders unavailable messaging for non-exact optimization blocks", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <PatientOptimizationSnapshot
         optimization={{
           patient_id: "P-001",
@@ -101,7 +101,7 @@ describe("PatientOptimizationSnapshot", () => {
   });
 
   it("renders the H1 with the italic-gold 'workspace' accent and the patient ID as a mono subtitle", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <SutPatientWorkspace
         patientId="P-007"
         outcome={null}
@@ -124,7 +124,7 @@ describe("PatientOptimizationSnapshot", () => {
   });
 
   it("renders the surviving DRG workspace without estimate-backed panels", () => {
-    const html = renderToStaticMarkup(
+    const html = renderToStaticMarkupWithLocale(
       <SutPatientWorkspace
         patientId="P-001"
         outcome={{

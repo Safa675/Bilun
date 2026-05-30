@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { getOptimizationSummary } from "@/lib/api/sut";
 import type { OptimizationSummary } from "@/lib/domains/sut";
 import { useSutApi } from "./useSutApi";
@@ -15,12 +15,15 @@ import { SpecialtyMaterialSection } from "./sections/SpecialtyMaterialSection";
 import { LabPricesSection } from "./sections/LabPricesSection";
 import { CheckupPricingSection } from "./sections/CheckupPricingSection";
 import { Chip, Surface } from "@/components/primitives";
+import { useT } from "@/lib/i18n/useTranslations";
 
 export function ReferenceToolsContent() {
+  const t = useT();
+
   return (
     <div>
       <div className="sut-section-divider mb-4">
-        <span className="sut-section-divider-label">Billing &amp; Gazette Tools</span>
+        <span className="sut-section-divider-label">{t("sections.tools.dividerLabel")}</span>
       </div>
       <BillingToolsSection />
     </div>
@@ -38,34 +41,56 @@ type BillingToolSubSection =
   | "lab_prices"
   | "checkup";
 
-const BILLING_SUBS: { id: BillingToolSubSection; label: string }[] = [
-  { id: "validator", label: "Claim Validator" },
-  { id: "search", label: "Material Search" },
-  { id: "bundled", label: "Bundled Items" },
-  { id: "price_history", label: "Price History" },
-  { id: "visits", label: "Visit Pricing" },
-  { id: "drugs", label: "Drug Catalog" },
-  { id: "specialty", label: "By Specialty" },
-  { id: "lab_prices", label: "Lab Prices" },
-  { id: "checkup", label: "Checkup" },
+const BILLING_SUB_IDS: BillingToolSubSection[] = [
+  "validator",
+  "search",
+  "bundled",
+  "price_history",
+  "visits",
+  "drugs",
+  "specialty",
+  "lab_prices",
+  "checkup",
 ];
 
+const BILLING_SUB_KEY = {
+  validator: "validator",
+  search: "search",
+  bundled: "bundled",
+  price_history: "priceHistory",
+  visits: "visits",
+  drugs: "drugs",
+  specialty: "specialty",
+  lab_prices: "labPrices",
+  checkup: "checkup",
+} as const satisfies Record<BillingToolSubSection, string>;
+
 function BillingToolsSection() {
+  const t = useT();
   const [activeSub, setActiveSub] = useState<BillingToolSubSection>("validator");
+
+  const billingSubs = useMemo(
+    () =>
+      BILLING_SUB_IDS.map((id) => ({
+        id,
+        label: t(`sections.tools.subs.${BILLING_SUB_KEY[id]}`),
+      })),
+    [t],
+  );
 
   const { data: optData, loading: optLoading, error: optError } = useSutApi<OptimizationSummary>(
     (opts) => getOptimizationSummary(opts),
     {
       enabled: activeSub === "price_history",
-      abortMessage: "Price history load was interrupted. Reopen the tab to retry.",
-      errorFallback: "Price history data not available.",
+      abortMessage: t("sections.tools.priceHistory.abortMessage"),
+      errorFallback: t("sections.tools.priceHistory.errorFallback"),
     },
   );
 
   return (
     <div className="space-y-4">
       <div className="flex gap-2 flex-wrap">
-        {BILLING_SUBS.map((sub) => (
+        {billingSubs.map((sub) => (
           <button
             key={sub.id}
             type="button"
@@ -82,7 +107,7 @@ function BillingToolsSection() {
       {activeSub === "bundled" && <BundledConsumablesSection />}
       {activeSub === "price_history" && (
         optLoading ? (
-          <SutReferenceSectionSkeleton title="Loading price history data" />
+          <SutReferenceSectionSkeleton title={t("sections.tools.priceHistory.loadingTitle")} />
         ) : optError ? (
           <Surface variant="base" padding="lg" className="text-center">
             <Chip variant="danger">{optError}</Chip>
@@ -91,7 +116,9 @@ function BillingToolsSection() {
           <TemporalPriceSection data={optData} />
         ) : (
           <Surface variant="base" padding="lg" className="text-center">
-            <p className="text-sm text-[var(--text-secondary)]">Price history data not available.</p>
+            <p className="text-sm text-[var(--text-secondary)]">
+              {t("sections.tools.priceHistory.emptyState")}
+            </p>
           </Surface>
         )
       )}

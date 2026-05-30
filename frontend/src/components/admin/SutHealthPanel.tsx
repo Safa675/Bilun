@@ -2,6 +2,7 @@
 
 import type { HealthStatus } from "@/lib/api/health";
 import { Chip, Eyebrow, Surface } from "@/components/primitives";
+import { useT } from "@/lib/i18n/useTranslations";
 
 function statusVariant(status: HealthStatus["status"] | "unavailable"): "success" | "warning" | "danger" | "neutral" {
   switch (status) {
@@ -18,7 +19,10 @@ function statusVariant(status: HealthStatus["status"] | "unavailable"): "success
 }
 
 export default function SutHealthPanel({ healthStatus }: { healthStatus: HealthStatus | null }) {
+  const t = useT();
   const resolvedStatus = healthStatus?.status ?? "unavailable";
+  const statusLabel = t(`admin.statuses.${resolvedStatus}`);
+  const empty = t("admin.empty");
 
   return (
     <Surface
@@ -26,21 +30,21 @@ export default function SutHealthPanel({ healthStatus }: { healthStatus: HealthS
       padding="md"
       className="flex flex-wrap items-center gap-4 text-xs text-[var(--text-secondary)]"
     >
-      <Eyebrow>Admin</Eyebrow>
+      <Eyebrow>{t("admin.eyebrow")}</Eyebrow>
       <span className="inline-flex items-center gap-2">
-        Status
-        <Chip variant={statusVariant(resolvedStatus)}>{resolvedStatus}</Chip>
+        {t("admin.status")}
+        <Chip variant={statusVariant(resolvedStatus)}>{statusLabel}</Chip>
       </span>
       <span>
-        Patients:{" "}
+        {t("admin.patients")}{" "}
         <strong className="font-semibold text-[var(--text-primary)] tabular-nums">
-          {healthStatus?.patients ?? "—"}
+          {healthStatus?.patients ?? empty}
         </strong>
       </span>
       <span>
-        Build:{" "}
+        {t("admin.build")}{" "}
         <code className="rounded bg-[var(--surface-base)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--text-primary)]">
-          {healthStatus?.build_id ?? "—"}
+          {healthStatus?.build_id ?? empty}
         </code>
       </span>
       {healthStatus?.message ? (
