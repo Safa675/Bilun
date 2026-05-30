@@ -1,0 +1,216 @@
+{
+  "claimValidator": {
+    "claimDetails": "Claim Details",
+    "materials": "Materials",
+    "claimId": "Claim ID",
+    "claimIdPlaceholder": "CLM-001",
+    "procedureCode": "Procedure Code",
+    "procedureCodePlaceholder": "e.g. 520.021",
+    "lookingUp": "Looking up...",
+    "matchedWithoutPPrefix": "(matched without P prefix)",
+    "matchingProcedures": "{count} matching procedure{plural}:",
+    "noMatchingProcedure": "No matching procedure found. Try the full 6-digit SUT code.",
+    "name": "Name",
+    "namePlaceholder": "e.g. Stent, Enjektör",
+    "priceTry": "Price (TRY)",
+    "pricePlaceholder": "0.00",
+    "qty": "Qty",
+    "qtyPlaceholder": "1",
+    "remove": "Remove",
+    "addMaterial": "+ Add Material",
+    "validating": "Validating...",
+    "validateClaim": "Validate Claim",
+    "errors": {
+      "addAtLeastOneMaterial": "Add at least one material with a name.",
+      "validationFailed": "Validation failed"
+    },
+    "statusValid": "VALID",
+    "statusInvalid": "INVALID",
+    "kpi": {
+      "status": "Status",
+      "claimTotal": "Claim Total",
+      "potentialSavings": "Potential Savings",
+      "violations": "Violations"
+    },
+    "ruleViolations": "Rule Violations",
+    "materialCostEstimates": "Material Cost Estimates",
+    "table": {
+      "material": "Material",
+      "unitPrice": "Unit Price",
+      "qty": "Qty",
+      "total": "Total",
+      "reimbursable": "Reimbursable",
+      "bundled": "Bundled",
+      "source": "Source"
+    },
+    "yes": "Yes",
+    "no": "No",
+    "bundledStatus": "Bundled",
+    "potentialSaving": "Potential saving: {amount}",
+    "validatedIn": "Validated in {ms}ms · {summary}"
+  },
+  "specialtyMaterial": {
+    "title": "EK-3 Materials by Specialty ({total} items)",
+    "allSpecialties": "All Specialties",
+    "loadingTitle": "Loading specialty materials",
+    "errors": { "loadFailed": "Failed to load specialty materials." },
+    "retry": "Retry",
+    "table": { "code": "Code", "name": "Name", "priceTl": "Price (TL)", "source": "Source" },
+    "emptyState": "No materials found for this specialty."
+  },
+  "drgPricing": {
+    "title": "EK-2C DRG Package Pricing by ICD-10 Chapter",
+    "errors": { "loadFailed": "Failed to load DRG pricing" },
+    "table": { "chapter": "Ch.", "description": "Description", "group": "Group", "medianTl": "Median (TL)" },
+    "groupPriceRanges": "Group Price Ranges",
+    "groupTable": { "group": "Group", "minTl": "Min (TL)", "maxTl": "Max (TL)" }
+  },
+  "copaySimulator": {
+    "patientScenario": "Patient Scenario",
+    "facilityTier": "Facility Tier",
+    "patientCategory": "Patient Category",
+    "numberOfVisits": "Number of Visits",
+    "totalDrugCostTry": "Total Drug Cost (TRY)",
+    "prescriptions": "Prescriptions",
+    "simulating": "Simulating...",
+    "simulate": "Simulate",
+    "errors": { "simulationFailed": "Simulation failed" },
+    "facilityTiers": {
+      "1Basamak": "1st Level (Family Doctor)",
+      "2BasamakResmi": "2nd Level Public",
+      "3BasamakResmi": "3rd Level Public",
+      "egitimArastirma": "Training & Research Hospital",
+      "universiteDevlet": "State University Hospital",
+      "universiteVakif": "Foundation University Hospital",
+      "2_3BasamakOzel": "2nd/3rd Level Private"
+    },
+    "patientCategories": {
+      "diger": "Standard (Other)",
+      "gelirAylikAlan": "Pensioner / Income-Based"
+    },
+    "kpi": {
+      "totalOutOfPocket": "Total Out-of-Pocket",
+      "visitCopayment": "Visit Copayment",
+      "drugCopayment": "Drug Copayment",
+      "copayRange": "Copay Range",
+      "visitCopaySub": "{copayPerVisit} x {nVisits} visits",
+      "drugCopayRateSub": "{rate}% rate",
+      "copayRangeSub": "min - max"
+    },
+    "copaymentBreakdown": "Copayment Breakdown",
+    "calculationDetail": "Calculation Detail",
+    "breakdown": {
+      "visitCopay": "Visit Copay",
+      "drugPercentCopay": "Drug % Copay",
+      "drugFlatFee": "Drug Flat Fee"
+    },
+    "noCopaymentComponents": "No copayment components",
+    "detail": {
+      "visitCopayPerVisit": "Visit copay per visit",
+      "visitCopayTotal": "Visit copay ({nVisits} visits)",
+      "drugCopayRate": "Drug copay rate",
+      "drugPercentCopay": "Drug % copay",
+      "drugFlatFee": "Drug flat fee ({nPrescriptions} Rx)",
+      "totalOopMid": "Total OOP (Mid)"
+    }
+  },
+  "bundledConsumables": {
+    "kpi": { "bundledItems": "Bundled Items", "exclusionCategories": "Exclusion Categories" },
+    "title": "EK-3B-1 Bundled Consumables",
+    "filterPlaceholder": "Filter items...",
+    "filteredCount": "{shown} of {total} items",
+    "loadingTitle": "Loading bundled consumables",
+    "errors": { "loadFailed": "Failed to load bundled consumables" },
+    "table": { "number": "#", "itemName": "Item Name", "category": "Category", "effectiveDate": "Effective Date" },
+    "noFilterMatches": "No items match the filter.",
+    "exclusionCategoriesTitle": "EK-3B Non-Reimbursable Exclusion Categories"
+  },
+  "drugCatalog": {
+    "title": "EK-4A Drug Reimbursement Catalog ({total} drugs)",
+    "titleLoading": "EK-4A Drug Reimbursement Catalog (... drugs)",
+    "searchPlaceholder": "Search by drug name...",
+    "loadingTitle": "Loading drug catalog",
+    "errors": { "loadFailed": "Failed to load drug catalog" },
+    "table": { "drugName": "Drug Name", "equivalence": "Equivalence", "status": "Status", "tier1": "Tier 1", "passivated": "Passivated" },
+    "pagination": { "prev": "Prev", "next": "Next", "page": "Page {page} / {totalPages}" },
+    "emptyState": "No drugs found.",
+    "notAvailable": "--"
+  },
+  "checkupPricing": {
+    "title": "Checkup Package Pricing (katsayi: {katsayi})",
+    "labTests": "Lab Tests ({count})",
+    "procedures": "Procedures ({count})",
+    "loadingTitle": "Loading checkup pricing",
+    "errors": { "loadFailed": "Failed to load checkup pricing" },
+    "labTable": { "test": "Test", "sutCode": "SUT Code", "tl": "TL" },
+    "procedureTable": { "procedure": "Procedure", "sutCode": "SUT Code", "tl": "TL" },
+    "notAvailable": "--"
+  },
+  "labPrices": {
+    "title": "BILUN Lab Test → SUT Code Mapping ({total} tests)",
+    "loadingTitle": "Loading lab prices",
+    "errors": { "loadFailed": "Failed to load lab prices" },
+    "table": { "testName": "Test Name", "sutCode": "SUT Code", "gazettePriceTl": "Gazette Price (TL)" }
+  },
+  "materialPricing": {
+    "searchTitle": "Search Gazette Prices (4,407+ Materials)",
+    "searchPlaceholder": "e.g. stent, protez, pacemaker, 090301",
+    "searching": "Searching...",
+    "search": "Search",
+    "errors": { "enterQuery": "Enter a material code or name to search.", "searchFailed": "Search failed" },
+    "results": "Results",
+    "matchCount": "{count} match{plural} for \"{query}\"",
+    "emptyState": "No gazette entries found. Try a different code or partial name.",
+    "table": { "code": "Code", "materialName": "Material Name", "gazettePrice": "Gazette Price", "source": "Source", "description": "Description" }
+  },
+  "exposure": {
+    "kpi": {
+      "totalSgkExposure": "Total SGK Exposure",
+      "meanSgkPerPatient": "Mean SGK / Patient",
+      "totalCopaymentOop": "Total Copayment (OOP)",
+      "top10CostShare": "Top 10% Cost Share",
+      "patientsSub": "{count} patients",
+      "meanCopayPerPatientSub": "{amount} / patient"
+    },
+    "costDistribution": "Cost Distribution (Per Patient)",
+    "distributionStats": "Median: {median} · Mean: {mean} · P10: {p10} · P90: {p90}",
+    "costTierDistribution": "Cost Tier Distribution",
+    "costByCategory": "Cost by Category (Midpoint)",
+    "tooltip": { "patients": "{count} patients", "totalCohort": "Total (Cohort)" },
+    "top5HighCostPatients": "Top 5 Highest-Cost Patients",
+    "table": { "rank": "Rank", "patientId": "Patient ID", "estCostMid": "Est. Cost (Mid)", "tier": "Tier", "visits": "Visits", "prescriptions": "Prescriptions" },
+    "methodology": {
+      "label": "Methodology:",
+      "body": "SGK exposure is the midpoint of SUT min/max cost estimates per patient, aggregated across the cohort. Lab and visit prices are from EK-2B gazette (7,129 procedures); material prices from EK-3 annexes (4,385 items). Drug costs use estimated tier ranges (basic/moderate/specialty) — not actual ITS/IEGM reference prices. Copayment rates are from gazette JSON. All figures are SUT-ceiling estimates, not actual hospital charges."
+    }
+  },
+  "visitPricing": {
+    "title": "EK-2A Outpatient Visit Pricing by Specialty",
+    "loadingTitle": "Loading visit pricing",
+    "errors": { "loadFailed": "Failed to load visit pricing" },
+    "table": { "code": "Code", "specialty": "Specialty", "tierA1": "A1", "tierA2": "A2", "tierB": "B", "tierC": "C", "tierD": "D", "tierE": "E" },
+    "notAvailable": "--"
+  },
+  "temporalPrice": {
+    "notAvailable": "Temporal price data not available.",
+    "gazetteDataBadge": "100% Gazette Data",
+    "kpi": {
+      "procedureCodes": "Procedure Codes",
+      "packageCodes": "Package Codes",
+      "codesWithChanges": "Codes With Changes",
+      "meanPriceDelta": "Mean Price Delta",
+      "gazetteDatesSub": "{count} gazette dates",
+      "changesSub": "{procRate} proc, {pkgRate} pkg",
+      "meanDeltaSub": "Procedures (earliest vs latest)"
+    },
+    "gazetteAmendmentTimeline": "Gazette Amendment Timeline",
+    "topProcedureIncreases": "Top Procedure Price Increases (EK-2B)",
+    "topPackageIncreases": "Top Package Price Increases (EK-2C)",
+    "topProcedureDecreases": "Top Procedure Price Decreases (EK-2B)",
+    "topPackageDecreases": "Top Package Price Decreases (EK-2C)",
+    "table": { "code": "Code", "name": "Name", "priceAtDate": "Price ({date})", "change": "Change" },
+    "noIncreases": "No increases detected",
+    "noDecreases": "No decreases detected",
+    "missingDate": "—"
+  }
+}

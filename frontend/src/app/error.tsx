@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Surface } from "@/components/primitives";
 import { buildSutHomeHref, SUT_BRAND } from "@/lib/constants";
+import { useT } from "@/lib/i18n/useTranslations";
 
 export default function SutError({
   error,
@@ -12,6 +13,8 @@ export default function SutError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useT();
+
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -24,13 +27,13 @@ export default function SutError({
             {SUT_BRAND.moduleLabel}
           </p>
           <h1 className="mt-4 font-[var(--font-display)] text-3xl font-medium text-[var(--text-primary)]">
-            Something went wrong in the SUT workspace
+            {t("app.error.title")}
           </h1>
           <p className="mt-3 text-sm text-[var(--text-secondary)]">
-            The current screen could not be rendered. Try again, or return to the main SUT workspace.
+            {t("app.error.description")}
           </p>
           <p className="mt-4 rounded-[var(--r-md)] bg-[color-mix(in_srgb,var(--danger)_6%,transparent)] px-4 py-3 text-left text-sm text-[var(--danger)]">
-            {error.message || "Unexpected SUT application error."}
+            {error.message || t("app.error.fallbackMessage")}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
@@ -38,10 +41,10 @@ export default function SutError({
               onClick={reset}
               className="sut-section-btn sut-section-btn-active"
             >
-              Try again
+              {t("app.error.tryAgain")}
             </button>
             <Link href={buildSutHomeHref("patients")} className="sut-section-btn">
-              Back to SUT workspace
+              {t("app.error.backToWorkspace")}
             </Link>
           </div>
         </Surface>

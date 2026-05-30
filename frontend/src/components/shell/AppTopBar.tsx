@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CircleHelp } from "lucide-react";
 import Image from "next/image";
 import { SyntheticDemoChip } from "@/components/sut/SyntheticDemoProvenance";
+import LocaleSwitcher from "@/components/shell/LocaleSwitcher";
 import { useConfig } from "@/lib/configContext";
 import { cn } from "@/lib/cn";
 import {
@@ -13,6 +14,7 @@ import {
   SUT_HOME_TABS,
   type SutHomeTab,
 } from "@/lib/constants";
+import { useT } from "@/lib/i18n/useTranslations";
 import { useSetShowHowItWorks } from "@/stores/index";
 
 interface AppTopBarProps {
@@ -27,6 +29,7 @@ function useActiveHomeTab(): SutHomeTab {
 }
 
 export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProps) {
+  const t = useT();
   const setShowHowItWorks = useSetShowHowItWorks();
   const config = useConfig();
   const searchParams = useSearchParams();
@@ -47,11 +50,11 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
         "border-b border-[var(--border-subtle)] bg-[var(--surface-base)]",
         className,
       )}
-      aria-label="BILUN application bar"
+      aria-label={t("shell.appTopBar.ariaApplicationBar")}
     >
       <Image
         src="/bilun-logo.png"
-        alt="BILUN"
+        alt={t("shell.appTopBar.logoAlt")}
         width={2836}
         height={1504}
         className="h-12 w-auto object-contain"
@@ -61,15 +64,16 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
       <div className="flex items-center gap-4">
         <SyntheticDemoChip dataSource={sutDataSource} />
 
-        <nav className="flex items-center gap-1" aria-label="SUT home tabs">
+        <nav className="flex items-center gap-1" aria-label={t("shell.appTopBar.ariaHomeTabs")}>
           {SUT_HOME_TABS.map((tab) => {
             const isActive = activeTab === tab.id;
+            const tabKey = tab.id === "reference-tools" ? "referenceTools" : tab.id;
             return (
               <Link
                 key={tab.id}
                 href={buildSutHomeHref(tab.id, searchParams)}
                 scroll={false}
-                title={tab.subtitle}
+                title={t(`constants.homeTabs.${tabKey}.subtitle`)}
                 className={cn(
                   "inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
                   isActive
@@ -78,11 +82,13 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
                 )}
                 aria-current={isActive ? "page" : undefined}
               >
-                {tab.label}
+                {t(`constants.homeTabs.${tabKey}.label`)}
               </Link>
             );
           })}
         </nav>
+
+        <LocaleSwitcher />
 
         <button
           type="button"
@@ -94,7 +100,7 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
           )}
         >
           <CircleHelp className="h-3.5 w-3.5" aria-hidden="true" />
-          How it works
+          {t("shell.appTopBar.howItWorks")}
         </button>
       </div>
     </header>
