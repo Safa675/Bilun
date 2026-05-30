@@ -1,20 +1,18 @@
-## Task: Patient invoices table recovery columns
+## Task: Chatbot context + MEDULA refactor
 
 ### Goal
-All cohort patients show Recoverable, Priority, Actions, and Top action in PatientInvoiceTable — not only top-10 from revenue recovery.
+Dedup billing formatters, externalize MEDULA KB data to JSON, add formatter and search tests.
 
 ### Subtasks
-- [x] Add `patient_summaries` to `CohortRecoverySummary` (all patients, sorted by recoverable)
-- [x] Populate in billing orchestrator; keep `top_patients` as first 10
-- [x] API fallback: hydrate `patient_summaries` from `patient_billing_report_rows` for old caches
-- [x] Update frontend types + `PatientInvoiceTable` to merge `patient_summaries`
-- [x] Unit test + verify frontend tsc
+- [x] Dedup `_append_billing_sections` in `context.py`
+- [x] Split MEDULA data → `data/medula/*.json`; slim `medula_kb.py`
+- [x] Add `test_medula_kb.py` and formatter snapshot tests
+- [x] Run pytest on chatbot tests (15 pass; 1 pre-existing async tools failure)
 
 ### Out of Scope
-- Changing billing algorithm outputs
-- New dedicated bulk billing API endpoint (reuse revenue-recovery payload)
+- Splitting `context.py` into multiple files
 
 ### Review
-- Root cause: table joined only `revenue_recovery.top_patients` (hard cap 10); page 1 patients outside top 10 showed `—`.
-- Fix: full `patient_summaries` on cohort summary + API hydration from `patient_billing_report_rows` for existing builds.
-- No cache rebuild required for hydration path; rebuild still recommended to persist field in `cohort_recovery_summary`.
+- `context.py`: 723 → 642 LOC; billing logic unified via `_append_billing_sections(detail_level=...)`.
+- `medula_kb.py`: 574 → 103 LOC; editorial content in `data/medula/*.json`.
+- New tests: `test_medula_kb.py` (5), `test_context_formatters.py` (3).

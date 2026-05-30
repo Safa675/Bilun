@@ -68,3 +68,9 @@ Format per entry:
 **Pattern:** A component-by-component reskin can each apply "one italic-gold accent" honestly, but the page that composes those components ends up with five gold uses (H1 word + KPI value + section total + savings cells + status chips), violating the deck contract.
 
 **Rule:** The "max 2 italic-gold serif uses per screen" rule is a **page-level invariant**, not a component-level one. When a page composes multiple primitive instances, audit the rendered page for italic-gold uses and pick the two with the highest information value (typically: one H1 word + the single primary KPI money amount). All other "gold candidates" (table savings cells, section totals, secondary KPIs, success chips) must drop to navy tabular. Gold chip backgrounds (`<Chip variant="gold">`) and gold *tinted* backgrounds are not counted under this rule because they aren't Fraunces italic display type.
+
+## 2026-05-30 — Chat auto-brief effect must not depend on streaming store writes
+
+**Pattern:** Removing briefing dedup while persisting every SSE token to Zustand recreated `onChatStateChange` each render, retriggered the auto-brief `useEffect`, aborted in-flight requests, and spammed `/api/chat` until 429 — UI stuck on the empty placeholder.
+
+**Rule:** Auto-brief triggers only on `[patientId, activeTab]` via a ref to `fireAutoAnalysis`. Stream tokens into local state; persist messages once on completion. Memoize `onChatStateChange` at the route level. Guard against concurrent in-flight auto requests.
