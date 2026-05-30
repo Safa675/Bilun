@@ -159,7 +159,18 @@ def _english_claim_exports(tables: dict[str, pd.DataFrame]) -> dict[str, pd.Data
             "beklenen_toplam_odenebilir_tutar_try": "expected_total_payable_try",
             "beklenen_red_nedeni": "expected_denial_reason",
             "senaryo_etiketi": "scenario_tag",
+            "mesleki_kontekst": "occupational_context",
         }),
+        "patient_copay_profiles.parquet": tables["hasta_katilim_payi_profilleri"].rename(
+            columns={
+                "hasta_id": "patient_id",
+                "sgk_yararlanma_sinifi": "sgk_benefit_class",
+                "gazi_sehit_durumu": "veteran_martyr_status",
+                "vatani_hizmet_durumu": "national_service_status",
+                "yasli_aylik_2022": "elderly_allowance_2022",
+                "dogum_yili": "birth_year",
+            }
+        ),
         "claim_diagnoses.parquet": diagnosis_claims.rename(columns={
             "tani_satiri_id": "diagnosis_id", "fatura_id": "claim_id",
             "hasta_id": "patient_id", "basvuru_id": "episode_id",

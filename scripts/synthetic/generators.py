@@ -32,6 +32,49 @@ from catalog import (
 )
 
 
+def _icd10_in_range(code: str, start: str, end: str) -> bool:
+    """Match domain optimization.shared._icd10_in_range for EK-1A checks."""
+    import re
+
+    if not code or not start:
+        return False
+    code = code.strip().upper()
+    start = start.strip().upper()
+    end = end.strip().upper()
+    if not code or not code[0].isalpha():
+        return False
+    if code[0] != start[0]:
+        return False
+    if "." in start and start == end:
+        return code == start or code.startswith(start + ".")
+    if "." in start:
+        return code.startswith(start.split(".")[0])
+    m_code = re.match(r"[A-Z](\d{2,3})", code)
+    m_start = re.match(r"[A-Z](\d{2,3})", start)
+    m_end = re.match(r"[A-Z](\d{2,3})", end)
+    if not m_code or not m_start or not m_end:
+        return False
+    return int(m_start.group(1)) <= int(m_code.group(1)) <= int(m_end.group(1))
+
+
+def _diagnosis_matches_ek1a(code: str) -> bool:
+    ek1a_df = _ek1a()
+    normalized = str(code or "").strip().upper()
+    if not normalized:
+        return False
+    if ek1a_df.empty:
+        return normalized.startswith(("E11", "C92", "I10", "E10", "B20"))
+    if not normalized[0].isalpha():
+        return False
+    letter = normalized[0]
+    for _, row in ek1a_df.iterrows():
+        start = str(row.get("icd10_start", "")).strip().upper()
+        end = str(row.get("icd10_end", "")).strip().upper()
+        if start and _icd10_in_range(normalized, start, end):
+            return True
+    return False
+
+
 # ── Patient generation ───────────────────────────────────────────────
 def _generate_patients(num_patients: int, rng: np.random.Generator) -> list[dict[str, Any]]:
     patients = []
@@ -45,15 +88,25 @@ def _generate_patients(num_patients: int, rng: np.random.Generator) -> list[dict
         record_month = rng.integers(1, 13)
         record_day = rng.integers(1, 29)
         record_date = f"{record_year}-{record_month:02d}-{record_day:02d}"
+        sgk_class = "yesil_kart" if rng.random() < 0.06 else "standard"
+        veteran_status = "none"
+        if rng.random() < 0.025:
+            veteran_status = str(rng.choice(["gazi", "sehit", "yakin"]))
+        national_service = "vatani_hizmet" if rng.random() < 0.015 else "none"
+        elderly_allowance = bool(birth_year <= 1959 and rng.random() < 0.12)
         patients.append({
             "hasta_id": f"SENTETIK-HASTA-{i:04d}",
             "cinsiyet": sex,
-            "dogum_yili": birth_year,
+            "dogum_yili": int(birth_year),
             "kohort": rng.choice(["checkup", "ex", "merged", "cancer", "chronic"]),
             "kayit_tarihi": record_date,
             "ana_senaryo": "",
             "veri_tamlik_yuzdesi": int(rng.integers(80, 99)),
             "sentetik_profil_notu": f"{name} {surname} - sentetik profil",
+            "sgk_yararlanma_sinifi": sgk_class,
+            "gazi_sehit_durumu": veteran_status,
+            "vatani_hizmet_durumu": national_service,
+            "yasli_aylik_2022": elderly_allowance,
         })
     return patients
 
@@ -76,7 +129,15 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
             secondary = list(rng.choice(template["secondary_codes"], size=n_secondary, replace=False))
             all_codes = [primary] + secondary
 
-            visit_type = rng.choice(template["visit_types"])
+            visit_roll = float(rng.random())
+            if visit_roll < 0.08:
+                visit_type = "acil"
+            elif visit_roll < 0.13:
+                visit_type = "koruyucu"
+            elif visit_roll < 0.17:
+                visit_type = str(rng.choice(["is_kazasi", "meslek_hastaligi"]))
+            else:
+                visit_type = rng.choice(template["visit_types"])
             department = rng.choice(template["departments"])
 
             visit_year = rng.integers(2023, 2025)
@@ -138,16 +199,7 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
             })
 
             for line_no, code in enumerate(all_codes, start=1):
-                exemption = False
-                if not _ek1a().empty:
-                    ek1a_df = _ek1a()
-                    for _, row in ek1a_df.iterrows():
-                        icd_range = str(row.get("icd10_range", ""))
-                        if icd_range and code.startswith(icd_range.split("-")[0][:3]):
-                            exemption = True
-                            break
-                if not exemption:
-                    exemption = code.startswith(("E11", "C92", "I10", "E10", "B20"))
+                exemption = _diagnosis_matches_ek1a(code)
 
                 diagnoses_out.append({
                     "tani_satiri_id": f"TANI-{pid}-{(ep_idx + 1):03d}-{line_no:03d}",
@@ -692,11 +744,16 @@ def _generate_claims_and_lines(
         total_billed = _money(total_billed)
         total_payable = _money(total_payable)
 
+        occupational_context = "none"
+        if visit_type in ("is_kazasi", "meslek_hastaligi"):
+            occupational_context = visit_type
+
         claims.append({
             "fatura_id": claim_id,
             "hasta_id": pid,
             "basvuru_id": eid,
             "fatura_tipi": visit_type,
+            "mesleki_kontekst": occupational_context,
             "kurum_basamagi": facility_tier,
             "saglayici_tipi": provider,
             "servis_adi": episode["servis_adi"],
@@ -858,9 +915,22 @@ def build_workbook_tables(
         "sentetik_uyari": SYNTHETIC_NOTICE,
     }])
 
+    copay_profiles = [
+        {
+            "hasta_id": p["hasta_id"],
+            "sgk_yararlanma_sinifi": p.get("sgk_yararlanma_sinifi", "standard"),
+            "gazi_sehit_durumu": p.get("gazi_sehit_durumu", "none"),
+            "vatani_hizmet_durumu": p.get("vatani_hizmet_durumu", "none"),
+            "yasli_aylik_2022": bool(p.get("yasli_aylik_2022", False)),
+            "dogum_yili": int(p.get("dogum_yili") or 1970),
+        }
+        for p in patients
+    ]
+
     return {
         "veri_seti_manifestosu": manifest,
         "hastalar": pd.DataFrame(patients),
+        "hasta_katilim_payi_profilleri": pd.DataFrame(copay_profiles),
         "basvurular": pd.DataFrame(episodes),
         "tani_satirlari": pd.DataFrame(diagnosis_rows),
         "fatura_basliklari": pd.DataFrame(claims),
