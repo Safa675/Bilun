@@ -5,7 +5,8 @@ generic table I/O, patient alerts subsystem, patient meta reads,
 and hashing utilities used for build identity.
 """
 
-from ._internal import (
+from .build_constants import (
+    BILUN_BUILD_SCOPE,
     BUILD_COMPLETE,
     BUILD_FAILED,
     BUILD_PENDING,
@@ -19,8 +20,10 @@ from .builds import (
     create_build,
     fail_build,
     get_active_build_id,
+    get_build_scope_and_status,
     get_previous_build_id,
     prune_old_builds,
+    require_complete_build,
     set_active_build,
 )
 from .connection import BuildInfo, connect
@@ -60,7 +63,8 @@ from .tables import (
 )
 
 __all__ = [
-    # Build status constants
+    # Build scope + status constants
+    "BILUN_BUILD_SCOPE",
     "BUILD_PENDING",
     "BUILD_RUNNING",
     "BUILD_COMPLETE",
@@ -79,8 +83,10 @@ __all__ = [
     "fail_build",
     "set_active_build",
     "get_active_build_id",
+    "get_build_scope_and_status",
     "get_previous_build_id",
     "prune_old_builds",
+    "require_complete_build",
     # Generic table I/O
     "upsert_single_json_table",
     "write_dataframe",

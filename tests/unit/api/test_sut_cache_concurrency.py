@@ -28,6 +28,7 @@ def _seed_sut_cache(
     include_data_source: bool = True,
 ) -> str:
     from src.bilun.db import (
+        BILUN_BUILD_SCOPE,
         complete_build,
         connect,
         create_build,
@@ -50,7 +51,7 @@ def _seed_sut_cache(
             feature_set_version="v1",
             benchmark_version="v1",
             nlp_version="test",
-            build_scope="sut",
+            build_scope=BILUN_BUILD_SCOPE,
         )
         build_id = build.build_id
 
@@ -237,7 +238,7 @@ def _seed_sut_cache(
             },
             checksums={},
         )
-        set_active_build(con, build_id, scope="sut")
+        set_active_build(con, build_id, scope=BILUN_BUILD_SCOPE)
         return build_id
     finally:
         con.close()

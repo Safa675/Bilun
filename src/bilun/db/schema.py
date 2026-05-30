@@ -8,8 +8,9 @@ the 500 LOC hygiene cap by design — splitting it would hurt readability.
 from __future__ import annotations
 
 from ._internal import _now_iso
+from .build_constants import BILUN_BUILD_SCOPE, SUPPORTED_BUILD_SCOPES
 
-_BUILD_SCOPES: tuple[str, ...] = ("bilun",)
+_BUILD_SCOPES: tuple[str, ...] = tuple(sorted(SUPPORTED_BUILD_SCOPES))
 
 
 def _has_column(con, table_name: str, column_name: str) -> bool:
@@ -19,7 +20,7 @@ def _has_column(con, table_name: str, column_name: str) -> bool:
 
 def init_schema(con) -> None:
     con.execute(
-        """
+        f"""
         CREATE TABLE IF NOT EXISTS build_meta (
             build_id TEXT PRIMARY KEY,
             status TEXT NOT NULL,
@@ -36,18 +37,18 @@ def init_schema(con) -> None:
             row_counts_json TEXT,
             checksums_json TEXT,
             error_message TEXT,
-            build_scope TEXT NOT NULL DEFAULT 'bilun'
+            build_scope TEXT NOT NULL DEFAULT '{BILUN_BUILD_SCOPE}'
         )
         """
     )
     if not _has_column(con, "build_meta", "build_scope"):
         con.execute(
-            "ALTER TABLE build_meta ADD COLUMN build_scope TEXT DEFAULT 'bilun'"
+            f"ALTER TABLE build_meta ADD COLUMN build_scope TEXT DEFAULT '{BILUN_BUILD_SCOPE}'"
         )
     con.execute(
-        """
+        f"""
         UPDATE build_meta
-        SET build_scope = 'bilun'
+        SET build_scope = '{BILUN_BUILD_SCOPE}'
         WHERE build_scope IS NULL OR TRIM(build_scope) = ''
         """
     )
@@ -72,10 +73,11 @@ def init_schema(con) -> None:
             """,
             [scope, _now_iso()],
         )
+    scope_literals = ", ".join(f"'{scope}'" for scope in _BUILD_SCOPES)
     con.execute(
-        """
+        f"""
         DELETE FROM build_pointer_scopes
-        WHERE scope NOT IN ('bilun')
+        WHERE scope NOT IN ({scope_literals})
         """
     )
 

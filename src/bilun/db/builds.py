@@ -6,30 +6,62 @@ from datetime import UTC, datetime, timedelta
 import uuid
 from pathlib import Path
 
+from .build_constants import (
+    BILUN_BUILD_SCOPE,
+    BUILD_COMPLETE,
+    BUILD_FAILED,
+    BUILD_PENDING,
+    BUILD_RUNNING,
+    BUILD_SUPERSEDED,
+    SQL_SELECT_ACTIVE_BUILD_ID,
+    SQL_SELECT_BUILD_SCOPE_STATUS,
+    normalize_build_scope,
+)
 from ._internal import (
     _ALLOWED_TABLES,
     _git_sha,
     _now_iso,
     _safe_json,
     transactional,
-    BUILD_COMPLETE,
-    BUILD_FAILED,
-    BUILD_RUNNING,
-    BUILD_SUPERSEDED,
 )
 from .connection import BuildInfo
 
-_SUPPORTED_BUILD_SCOPES = frozenset({"bilun"})
+_SUPPORTED_BUILD_SCOPES = frozenset({BILUN_BUILD_SCOPE})
 
 
 def _normalize_build_scope(scope: str | None) -> str:
-    normalized = str(scope or "bilun").strip().lower()
-    if normalized not in _SUPPORTED_BUILD_SCOPES:
-        raise ValueError(
-            f"Unsupported build scope '{scope}'. "
-            f"Expected one of: {sorted(_SUPPORTED_BUILD_SCOPES)}"
+    return normalize_build_scope(scope)
+
+
+def get_build_scope_and_status(con, build_id: str) -> tuple[str, str] | None:
+    row = con.execute(SQL_SELECT_BUILD_SCOPE_STATUS, [build_id]).fetchone()
+    if row is None:
+        return None
+    return str(row[0]), str(row[1])
+
+
+def require_complete_build(
+    con,
+    build_id: str,
+    *,
+    scope: str = BILUN_BUILD_SCOPE,
+) -> None:
+    meta = get_build_scope_and_status(con, build_id)
+    if meta is None:
+        raise ValueError(f"Unknown build_id '{build_id}'")
+    build_scope, status = meta
+    normalized_scope = normalize_build_scope(scope)
+    normalized_build_scope = normalize_build_scope(build_scope)
+    if normalized_build_scope != normalized_scope:
+        raise RuntimeError(
+            f"Build '{build_id}' belongs to scope '{normalized_build_scope}', "
+            f"expected '{normalized_scope}'."
         )
-    return normalized
+    if status != BUILD_COMPLETE:
+        raise RuntimeError(
+            f"Build '{build_id}' is not complete (status={status!r}). "
+            "Finish or activate a complete build before running expensive backfill."
+        )
 
 
 def _ensure_scope_pointer_row(con, scope: str) -> None:
@@ -85,7 +117,7 @@ def create_build(
     feature_set_version: str,
     benchmark_version: str,
     nlp_version: str | None,
-    build_scope: str = "bilun",
+    build_scope: str = BILUN_BUILD_SCOPE,
 ) -> BuildInfo:
     normalized_scope = _normalize_build_scope(build_scope)
     build_id = str(uuid.uuid4())
@@ -164,7 +196,7 @@ def complete_and_activate_build(
     *,
     row_counts: dict[str, int],
     checksums: dict[str, str],
-    scope: str = "ihp",
+    scope: str = BILUN_BUILD_SCOPE,
 ) -> None:
     """Mark a build complete and activate it in one transaction."""
     with transactional(con):
@@ -189,7 +221,7 @@ def fail_build(con, build_id: str, error_message: str) -> None:
     )
 
 
-def set_active_build(con, build_id: str, *, scope: str = "ihp") -> None:
+def set_active_build(con, build_id: str, *, scope: str = BILUN_BUILD_SCOPE) -> None:
     normalized_scope = _normalize_build_scope(scope)
     build_row = con.execute(
         "SELECT build_scope FROM build_meta WHERE build_id = ?",
@@ -231,11 +263,7 @@ def get_active_build_id(con, *, scope: str) -> str | None:
     normalized_scope = _normalize_build_scope(scope)
     _ensure_scope_pointer_row(con, normalized_scope)
     row = con.execute(
-        """
-        SELECT active_build_id
-        FROM build_pointer_scopes
-        WHERE scope = ?
-        """,
+        SQL_SELECT_ACTIVE_BUILD_ID,
         [normalized_scope],
     ).fetchone()
     if row and row[0]:
@@ -243,7 +271,7 @@ def get_active_build_id(con, *, scope: str) -> str | None:
     return None
 
 
-def get_previous_build_id(con, *, scope: str = "ihp") -> str | None:
+def get_previous_build_id(con, *, scope: str = BILUN_BUILD_SCOPE) -> str | None:
     """Get the build_id of the second-most-recent completed build."""
     normalized_scope = _normalize_build_scope(scope)
     rows = con.execute(
@@ -256,7 +284,7 @@ def get_previous_build_id(con, *, scope: str = "ihp") -> str | None:
     return rows[0][0] if rows else None
 
 
-def prune_old_builds(con, keep: int = 2, *, scope: str = "ihp") -> list[str]:
+def prune_old_builds(con, keep: int = 2, *, scope: str = BILUN_BUILD_SCOPE) -> list[str]:
     """Delete old build rows and return build_ids whose directories can be pruned."""
     normalized_scope = _normalize_build_scope(scope)
     active_build_id = get_active_build_id(con, scope=normalized_scope)

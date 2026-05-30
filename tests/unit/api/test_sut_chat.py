@@ -60,10 +60,11 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
         },
     )
 
-    async def fake_stream_chat_response(messages, runtime_context="", extra_params=None):
+    async def fake_stream_chat_response(messages, runtime_context="", extra_params=None, intent="user_question"):
         captured["messages"] = messages
         captured["runtime_context"] = runtime_context
         captured["extra_params"] = extra_params
+        captured["intent"] = intent
         yield "SUT "
         yield "ready"
 
@@ -91,6 +92,151 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
     assert "Copay exempt: YES" in runtime_context
     assert "[exactness: unknown_date]" in runtime_context
     assert "visit_date" in runtime_context
+
+
+def test_sut_chat_user_question_fetches_full_billing_report(monkeypatch):
+    import src.bilun.api.routes.chat as sut_chat_mod
+    from src.bilun.api import app
+
+    captured: dict[str, object] = {}
+    full_report = {
+        "patient_id": "P-001",
+        "lab": {
+            "exactness_status": "exact",
+            "flagged_tests": [
+                {"test_name": f"Full-{i}", "flag_type": "dup", "savings_try": i}
+                for i in range(8)
+            ],
+        },
+        "drug": {"exactness_status": "missing_exact_inputs"},
+        "copay": {"exactness_status": "missing_exact_inputs"},
+        "billing_strategy": {"exactness_status": "exact"},
+        "materials": {"exactness_status": "partial_exact"},
+        "total_recoverable_try": 100.0,
+    }
+
+    monkeypatch.setattr(sut_chat_mod, "_check_rate_limit", lambda _ip: True)
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_optimization_summary",
+        lambda: {"copay_exemptions": {}, "surcharge_exposure": {}},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_bilun_patient_outcome",
+        lambda patient_id, include_expensive=True: {"patient_id": patient_id},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_patient_optimization",
+        lambda patient_id: {"patient_id": patient_id},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_patient_billing_report",
+        lambda patient_id: full_report,
+    )
+
+    async def fake_stream(messages, runtime_context="", intent="user_question"):
+        captured["runtime_context"] = runtime_context
+        captured["intent"] = intent
+        yield "ok"
+
+    monkeypatch.setattr(sut_chat_mod, "stream_chat_response", fake_stream)
+
+    page_context = {"sections": [{"id": "lab", "title": "Lab"}]}
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/chat",
+            json={
+                "messages": [{"role": "user", "content": "Explain lab flags."}],
+                "patient_id": "P-001",
+                "active_tab": "SUT Billing Review",
+                "intent": "user_question",
+                "page_context": page_context,
+            },
+        )
+
+    assert response.status_code == 200
+    assert captured["intent"] == "user_question"
+    runtime_context = str(captured["runtime_context"])
+    assert '"page_view"' in runtime_context
+    assert "Full-7" in runtime_context
+    assert "BILLING OPTIMIZATION (FULL)" in runtime_context
+
+
+def test_sut_chat_auto_brief_uses_summarized_billing(monkeypatch):
+    import src.bilun.api.routes.chat as sut_chat_mod
+    from src.bilun.api import app
+
+    captured: dict[str, object] = {}
+    full_report = {
+        "patient_id": "P-001",
+        "lab": {
+            "exactness_status": "exact",
+            "hemogram_bundling_savings": 10.0,
+            "duplicate_test_savings": 5.0,
+            "flagged_tests": [
+                {"test_name": f"Brief-{i}", "flag_type": "dup", "savings_try": i}
+                for i in range(8)
+            ],
+            "rule_source": "EK-2B",
+        },
+        "drug": {"exactness_status": "missing_exact_inputs"},
+        "copay": {"exactness_status": "missing_exact_inputs"},
+        "billing_strategy": {"exactness_status": "exact", "rule_source": "EK-2C"},
+        "materials": {"exactness_status": "partial_exact", "rule_source": "EK-3"},
+        "total_recoverable_try": 15.0,
+        "action_count": 1,
+        "priority": "low",
+        "exactness_status": "partial_exact",
+    }
+
+    monkeypatch.setattr(sut_chat_mod, "_check_rate_limit", lambda _ip: True)
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_optimization_summary",
+        lambda: {"copay_exemptions": {}, "surcharge_exposure": {}},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_bilun_patient_outcome",
+        lambda patient_id, include_expensive=True: {"patient_id": patient_id},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_patient_optimization",
+        lambda patient_id: {"patient_id": patient_id},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_patient_billing_report",
+        lambda patient_id: full_report,
+    )
+
+    async def fake_stream(messages, runtime_context="", intent="user_question"):
+        captured["intent"] = intent
+        captured["runtime_context"] = runtime_context
+        yield "brief"
+
+    monkeypatch.setattr(sut_chat_mod, "stream_chat_response", fake_stream)
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/chat",
+            json={
+                "messages": [{"role": "user", "content": "[SUT Billing Review]\n\nBrief me."}],
+                "patient_id": "P-001",
+                "active_tab": "SUT Billing Review",
+                "intent": "auto_brief",
+            },
+        )
+
+    assert response.status_code == 200
+    assert captured["intent"] == "auto_brief"
+    runtime_context = str(captured["runtime_context"])
+    assert "BILLING OPTIMIZATION (FULL)" not in runtime_context
+    assert "Brief-7" not in runtime_context
 
 
 def test_removed_estimate_native_sut_routes_return_404():
