@@ -849,3 +849,12 @@ def rebuild_bilun_cache_offline(
         sut_clean_dir=sut_clean_dir,
     )
     return run_build(args)
+
+
+def main() -> None:
+    """CLI entry point for pyproject.toml console_scripts."""
+    import sys
+
+    build_id = run_build(parse_args())
+    print(f"Build complete: {build_id}")
+    sys.exit(0)

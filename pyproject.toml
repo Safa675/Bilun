@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bilun"
+version = "0.1.0"
+description = "BILUN — SUT billing optimization and analytics platform"
+requires-python = ">=3.14"
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = [
+    "duckdb>=1.0",
+    "fastapi>=0.100",
+    "httpx>=0.24",
+    "numpy>=1.24",
+    "openpyxl>=3.1",
+    "pandas>=2.0",
+    "polars>=1.0",
+    "pyarrow>=14.0",
+    "pydantic>=2.0",
+    "python-dotenv>=1.0",
+    "scikit-learn==1.7.2",
+    "scipy>=1.10",
+    "uvicorn>=0.23.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+]
+
+[project.scripts]
+bilun-build-cache = "src.bilun.cache.builder:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src", "src.*", "scripts", "scripts.*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
