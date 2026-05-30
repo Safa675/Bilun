@@ -22,7 +22,13 @@ interface PatientRow {
 
 const PAGE_SIZE = 10;
 
-export default function PatientInvoiceTable() {
+export default function PatientInvoiceTable({
+  cohortPatientIds,
+  cohortFilterActive = false,
+}: {
+  cohortPatientIds?: Set<string>;
+  cohortFilterActive?: boolean;
+} = {}) {
   const router = useRouter();
   const [rows, setRows] = useState<PatientRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +78,9 @@ export default function PatientInvoiceTable() {
 
         const allIds = patientsData?.patients ?? summarySource.map((p) => p.patient_id);
 
-        const merged: PatientRow[] = allIds.map((pid) => {
+        const merged: PatientRow[] = allIds
+          .filter((pid) => !cohortFilterActive || cohortPatientIds?.has(pid))
+          .map((pid) => {
           const meta = metaLookup.get(pid);
           const summary = summaryMap.get(pid);
           return {
@@ -101,7 +109,7 @@ export default function PatientInvoiceTable() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [cohortFilterActive, cohortPatientIds]);
 
   function handlePrev() {
     setPage((p) => Math.max(1, p - 1));

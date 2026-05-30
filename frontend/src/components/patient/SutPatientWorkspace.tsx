@@ -239,9 +239,9 @@ export default function SutPatientWorkspace({
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Link href={buildSutHomeHref("analytics")} className="sut-section-btn">
+            <Link href={buildSutHomeHref("patients")} className="sut-section-btn">
               <ArrowLeft className="h-4 w-4" />
-              Back to analytics
+              Back to patients
             </Link>
           </div>
         </div>

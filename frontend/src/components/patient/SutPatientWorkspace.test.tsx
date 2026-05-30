@@ -6,7 +6,7 @@ vi.mock("next/link", () => ({
 }));
 
 vi.mock("@/lib/constants", () => ({
-  buildSutHomeHref: () => "/?tab=analytics",
+  buildSutHomeHref: () => "/?tab=patients",
 }));
 
 vi.mock("@/components/tabs/sut/PatientSection", () => ({
