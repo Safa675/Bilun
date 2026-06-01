@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from ..materials import get_ek4a_drugs, lookup_drug_bulk, classify_drug_tier
+from ..materials import get_ek4a_drugs, lookup_drug_bulk
 from .types import DrugOptimization
 
 logger = logging.getLogger("ilay.sut_billing_optimizer")
@@ -60,7 +60,6 @@ def _optimize_drug_costs(
 
     drug_records = lookup_drug_bulk(unique_drugs)
     equiv_index = _get_ek4a_by_equiv_group()
-    all_ek4a = get_ek4a_drugs()
 
     recommendations: list[dict[str, Any]] = []
 
@@ -68,8 +67,6 @@ def _optimize_drug_costs(
         record = drug_records.get(drug_name)
         if record is None:
             continue
-
-        drug_tier = classify_drug_tier(record)
 
         pass_date = record.get("passivation_date", "")
         if pass_date and pass_date not in ("", "nan", "None"):
@@ -84,7 +81,7 @@ def _optimize_drug_costs(
                     "drug_name": drug_name,
                     "issue": "passivated",
                     "alternative": alt_name,
-                    "savings_try": 0.0,
+                    "savings_try": None,
                     "detail": f"Drug passivated on {pass_date}. Active alternative available.",
                 }
             )
@@ -115,24 +112,12 @@ def _optimize_drug_costs(
         if cheaper_alts:
             result.n_generics_available += 1
             best_alt = cheaper_alts[0]
-            current_tier_mid = {
-                "basic": 25.0,
-                "moderate": 95.0,
-                "specialty": 475.0,
-            }.get(drug_tier, 25.0)
-            alt_tier = classify_drug_tier(best_alt)
-            alt_tier_mid = {"basic": 25.0, "moderate": 95.0, "specialty": 475.0}.get(
-                alt_tier, 25.0
-            )
-            estimated_savings = max(0.0, current_tier_mid - alt_tier_mid)
-
-            result.generic_substitution_savings += estimated_savings
             recommendations.append(
                 {
                     "drug_name": drug_name,
                     "issue": "generic_available",
                     "alternative": best_alt["drug_name"],
-                    "savings_try": round(estimated_savings, 2),
+                    "savings_try": None,
                     "detail": (
                         f"Generic equivalent in group {eq_group}. "
                         f"Current: {current_status or 'N/A'}, "
@@ -141,6 +126,6 @@ def _optimize_drug_costs(
                 }
             )
 
-    result.generic_substitution_savings = round(result.generic_substitution_savings, 2)
+    result.generic_substitution_savings = 0.0
     result.drug_recommendations = recommendations
     return result

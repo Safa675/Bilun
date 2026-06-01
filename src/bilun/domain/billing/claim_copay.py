@@ -63,7 +63,7 @@ def optimize_copay_from_claims(
 
     result.visit_copay_savings_try = round(float(visit_savings), 2)
     result.rx_copay_savings_try = round(float(rx_savings), 2)
-    result.total_copay_savings_try = round(float(visit_savings + rx_savings), 2)
+    result.total_copay_savings_try = round(float(visit_savings), 2)
     result.exactness_status = EXACTNESS_STATUS_EXACT
     result.unavailable_reason = None
     result.required_inputs_missing = []

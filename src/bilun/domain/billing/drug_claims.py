@@ -11,7 +11,11 @@ from .drug import _optimize_drug_costs
 from .types import EXACTNESS_STATUS_EXACT, DrugOptimization
 
 
-def optimize_drug_from_claims(ctx: PatientClaimContext) -> DrugOptimization:
+def optimize_drug_from_claims(
+    ctx: PatientClaimContext,
+    *,
+    is_exempt: bool = False,
+) -> DrugOptimization:
     """Compute drug optimization using exact dispensed drug claim lines."""
 
     if not ctx.drug_lines:
@@ -22,6 +26,7 @@ def optimize_drug_from_claims(ctx: PatientClaimContext) -> DrugOptimization:
 
     total_billed = Decimal("0")
     total_payable = Decimal("0")
+    tier_discount_total = Decimal("0")
     recommendations: list[dict] = list(heuristic.drug_recommendations)
 
     records = lookup_drug_bulk(list({name for name in drug_names if name}))
@@ -32,7 +37,8 @@ def optimize_drug_from_claims(ctx: PatientClaimContext) -> DrugOptimization:
         total_billed += billed
         total_payable += payable
         tier_savings = billed - payable
-        if tier_savings > Decimal("0.01"):
+        if tier_savings > Decimal("0.01") and not is_exempt:
+            tier_discount_total += tier_savings
             recommendations.append(
                 {
                     "drug_name": line.drug_name,
@@ -50,7 +56,7 @@ def optimize_drug_from_claims(ctx: PatientClaimContext) -> DrugOptimization:
         if record is None and line.drug_code:
             record = records.get(line.drug_code)
 
-    discount_from_claims = total_billed - total_payable
+    discount_from_claims = tier_discount_total if is_exempt else total_billed - total_payable
     substitution_savings = max(
         Decimal(str(heuristic.generic_substitution_savings)),
         discount_from_claims,

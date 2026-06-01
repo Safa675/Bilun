@@ -33,6 +33,7 @@ from .patient_alerts import (
     ensure_patient_alert_tables,
     has_patient_alert_tables,
     read_patient_alert_rows_page,
+    read_patient_alert_row_by_id,
     read_patient_alerts_summary,
     write_patient_alert_tables,
 )
@@ -107,6 +108,7 @@ __all__ = [
     "has_patient_alert_tables",
     "ensure_patient_alert_tables",
     "read_patient_alert_rows_page",
+    "read_patient_alert_row_by_id",
     # Patient meta reads
     "read_patient_meta",
     "read_patient_meta_by_ids",

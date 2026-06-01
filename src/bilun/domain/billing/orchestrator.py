@@ -46,6 +46,21 @@ def _block_exactness_status(block: Any) -> str:
     return status or EXACTNESS_STATUS_MISSING_INPUTS
 
 
+def _sum_exact_recoverable_try(report: BillingActionReport) -> float:
+    """Sum savings only from billing blocks marked exact."""
+    total = 0.0
+    if _block_exactness_status(report.lab) == EXACTNESS_STATUS_EXACT:
+        total += report.lab.total_savings
+    if _block_exactness_status(report.drug) == EXACTNESS_STATUS_EXACT:
+        total += report.drug.total_savings
+    if _block_exactness_status(report.copay) == EXACTNESS_STATUS_EXACT:
+        total += report.copay.total_copay_savings_try
+        total += float(getattr(report.copay, "rx_copay_savings_try", 0.0) or 0.0)
+    if _block_exactness_status(report.billing_strategy) == EXACTNESS_STATUS_EXACT:
+        total += report.billing_strategy.total_savings
+    return round(total, 2)
+
+
 def _collect_required_inputs(blocks: list[Any]) -> list[str]:
     ordered: list[str] = []
     for block in blocks:
@@ -110,6 +125,7 @@ def compute_patient_billing_report(
     claim_context: PatientClaimContext | None = None,
     patient_lab_tests: list[str] | None = None,
     patient_lab_dates: list[str | None] | None = None,
+    patient_lab_visit_ids: list[str | None] | None = None,
     patient_drug_names: list[str] | None = None,
     copay_exemption: dict[str, Any] | None = None,
     chapters: set[str] | None = None,
@@ -130,7 +146,12 @@ def compute_patient_billing_report(
     """
     report = BillingActionReport(patient_id=pid)
 
-    report.lab = _optimize_lab_billing(pid, patient_lab_tests or [], patient_lab_dates)
+    report.lab = _optimize_lab_billing(
+        pid,
+        patient_lab_tests or [],
+        patient_lab_dates,
+        patient_lab_visit_ids,
+    )
 
     exemption = copay_exemption or {
         "exempt": False,
@@ -139,7 +160,7 @@ def compute_patient_billing_report(
     }
 
     if claim_context is not None and claim_context.drug_lines:
-        report.drug = optimize_drug_from_claims(claim_context)
+        report.drug = optimize_drug_from_claims(claim_context, is_exempt=bool(exemption.get("exempt")))
     else:
         report.drug = _optimize_drug_costs(pid, patient_drug_names or [])
 
@@ -160,13 +181,7 @@ def compute_patient_billing_report(
     else:
         report.materials = _precheck_materials(pid, chapters or set())
 
-    total = (
-        report.lab.total_savings
-        + report.drug.total_savings
-        + report.copay.total_copay_savings_try
-        + report.billing_strategy.total_savings
-    )
-    report.total_recoverable_try = round(total, 2)
+    report.total_recoverable_try = _sum_exact_recoverable_try(report)
 
     actions = (
         len(report.lab.flagged_tests)
@@ -178,7 +193,6 @@ def compute_patient_billing_report(
     )
     report.action_count = actions
 
-    report.priority = "medium" if total > 0 else "low"
     _finalize_report_exactness(report)
 
     return report
@@ -218,22 +232,30 @@ def compute_all_billing_reports(
 
     lab_tests_by_pid: dict[str, list[str]] = {}
     lab_dates_by_pid: dict[str, list[str | None]] = {}
+    lab_visit_ids_by_pid: dict[str, list[str | None]] = {}
     if not lab_df_pl.is_empty() and "patient_id" in lab_df_pl.columns:
         if "test_name" in lab_df_pl.columns:
             date_col = next(
                 (c for c in ("date", "test_date", "tarih") if c in lab_df_pl.columns),
                 None,
             )
+            visit_col = "visit_id" if "visit_id" in lab_df_pl.columns else None
             agg_exprs = [pl.col("test_name").cast(pl.Utf8).fill_null("").alias("tests")]
             if date_col:
                 agg_exprs.append(
                     pl.col(date_col).cast(pl.Utf8).fill_null("").alias("dates")
+                )
+            if visit_col:
+                agg_exprs.append(
+                    pl.col(visit_col).cast(pl.Utf8).fill_null("").alias("visit_ids")
                 )
             lab_agg = lab_df_pl.group_by("patient_id").agg(agg_exprs)
             for row in lab_agg.iter_rows(named=True):
                 lab_tests_by_pid[row["patient_id"]] = row["tests"]
                 if date_col and "dates" in row:
                     lab_dates_by_pid[row["patient_id"]] = row["dates"]
+                if visit_col and "visit_ids" in row:
+                    lab_visit_ids_by_pid[row["patient_id"]] = row["visit_ids"]
 
     drug_names_by_pid: dict[str, list[str]] = {}
     if not rec_df_pl.is_empty() and "patient_id" in rec_df_pl.columns:
@@ -280,6 +302,7 @@ def compute_all_billing_reports(
             claim_context=claim_context,
             patient_lab_tests=lab_tests_by_pid.get(pid, []),
             patient_lab_dates=lab_dates_by_pid.get(pid),
+            patient_lab_visit_ids=lab_visit_ids_by_pid.get(pid),
             patient_drug_names=drug_names_by_pid.get(pid, []),
             copay_exemption=copay_exemption,
             chapters=chapters,
@@ -322,7 +345,9 @@ def compute_all_billing_reports(
     for report in reports.values():
         summary.total_lab_savings += report.lab.total_savings
         summary.total_drug_savings += report.drug.total_savings
-        summary.total_copay_savings += report.copay.total_copay_savings_try
+        summary.total_copay_savings += (
+            report.copay.total_copay_savings_try + report.copay.rx_copay_savings_try
+        )
         summary.total_strategy_savings += report.billing_strategy.total_savings
         summary.total_material_flags += len(report.materials.pre_auth_required) + len(
             report.materials.miat_restricted

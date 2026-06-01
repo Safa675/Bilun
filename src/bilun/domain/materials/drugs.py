@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import pandas as pd
+import polars as pl
 
 from ..constants import EK4A_PARQUET_PATH
 from ..utils import _safe_float, turkish_lower
@@ -27,9 +27,9 @@ def _load_ek4a() -> list[dict[str, Any]]:
         logger.warning("EK-4A curated parquet not found: %s", EK4A_PARQUET_PATH)
         return []
     try:
-        df = pd.read_parquet(EK4A_PARQUET_PATH)
+        df = pl.read_parquet(EK4A_PARQUET_PATH)
         records: list[dict[str, Any]] = []
-        for _, row in df.iterrows():
+        for row in df.iter_rows(named=True):
             drug_name = str(row.get("drug_name", "")).strip()
             if not drug_name:
                 continue

@@ -99,7 +99,7 @@ class CopayOptimization:
     exemption_range: str = ""
     visit_copay_savings_try: float = 0.0
     rx_copay_savings_try: float = 0.0
-    total_copay_savings_try: float = 0.0
+    total_copay_savings_try: float = 0.0  # procedure/visit copay only; rx tracked separately
     rate_corrections: list[dict[str, Any]] = field(default_factory=list)
     exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
     unavailable_reason: str | None = COPAY_UNAVAILABLE_REASON
@@ -121,7 +121,12 @@ class BillingStrategyRecommendation:
 
     @property
     def total_savings(self) -> float:
-        return sum(r.get("savings_try", 0.0) for r in self.recommendations)
+        total = 0.0
+        for recommendation in self.recommendations:
+            savings = recommendation.get("savings_try")
+            if savings is not None:
+                total += float(savings)
+        return total
 
 
 @dataclass

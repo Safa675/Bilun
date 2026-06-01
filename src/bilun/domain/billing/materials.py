@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import pandas as pd
+import polars as pl
 
 from ..constants import _GAZETTE_CURATED_DIR
 from ..materials import get_all_specialty_materials
@@ -78,9 +78,9 @@ def _get_ek3c1_preauth() -> list[dict[str, Any]]:
         return _ek3c1_preauth
 
     try:
-        df = pd.read_parquet(path)
+        df = pl.read_parquet(path)
         items = []
-        for _, row in df.iterrows():
+        for row in df.iter_rows(named=True):
             items.append(
                 {
                     "sut_code": str(row.get("sut_code", "")).strip(),
@@ -112,9 +112,9 @@ def _get_ek3c2_miat() -> list[dict[str, Any]]:
         return _ek3c2_miat
 
     try:
-        df = pd.read_parquet(path)
+        df = pl.read_parquet(path)
         items = []
-        for _, row in df.iterrows():
+        for row in df.iter_rows(named=True):
             miat = row.get("miat_period") or row.get("miat") or ""
             if miat and str(miat) not in ("", "nan", "None"):
                 items.append(
@@ -167,32 +167,5 @@ def _precheck_materials(
         stats = specialty_stats.get(spec)
         if stats:
             result.gazette_ceiling_by_specialty[spec] = stats["p90"]
-
-    ek3c1_items = _get_ek3c1_preauth()
-    if ek3c1_items:
-        for item in ek3c1_items[:20]:
-            result.pre_auth_required.append(
-                {
-                    "sut_code": item["sut_code"],
-                    "material_name": item["material_name"],
-                    "price_try": item.get("price_try", 0.0),
-                    "note": "Requires medical board (sağlık kurulu) approval before SGK submission",
-                }
-            )
-        result.pre_auth_required = result.pre_auth_required[:5]
-
-    miat_items = _get_ek3c2_miat()
-    if miat_items:
-        for item in miat_items[:10]:
-            result.miat_restricted.append(
-                {
-                    "sut_code": item["sut_code"],
-                    "material_name": item["material_name"],
-                    "miat_period": item.get("miat_period", ""),
-                    "price_try": item.get("price_try", 0.0),
-                    "note": f"Minimum time between uses: {item.get('miat_period', 'N/A')}",
-                }
-            )
-        result.miat_restricted = result.miat_restricted[:5]
 
     return result

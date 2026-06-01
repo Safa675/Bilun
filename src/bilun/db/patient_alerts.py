@@ -552,3 +552,68 @@ def read_patient_alert_rows_page(
         )
 
     return payload_rows, total_matching
+
+
+def read_patient_alert_row_by_id(
+    con,
+    build_id: str,
+    patient_id: str,
+) -> dict[str, Any] | None:
+    """Return one patient alert row keyed by patient_id, or None if missing."""
+
+    row = con.execute(
+        """
+        SELECT
+            patient_id,
+            n_diagnoses,
+            icd10_chapters_json,
+            copay_exempt,
+            copay_n_qualifying,
+            copay_qualifying_json,
+            copay_exemption_sources_json,
+            copay_categories_not_evaluated_json,
+            copay_action,
+            surcharge_n_applicable,
+            surcharge_exposure_rate,
+            surcharge_top_rules_json,
+            surcharge_action,
+            copay_rate_n_applicable,
+            copay_rate_mean_rate,
+            copay_rate_top_procedures_json,
+            copay_rate_action
+        FROM patient_alert_rows
+        WHERE build_id = ? AND patient_id = ?
+        LIMIT 1
+        """,
+        [build_id, patient_id],
+    ).fetchone()
+    if row is None:
+        return None
+
+    return {
+        "patient_id": row[0],
+        "n_diagnoses": int(row[1] or 0),
+        "icd10_chapters": _load_json_list(row[2]),
+        "copay_exemption": {
+            "exempt": bool(row[3]),
+            "n_qualifying": int(row[4] or 0),
+            "qualifying_diagnoses": normalize_qualifying_diagnoses(
+                _load_json_list(row[5])
+            ),
+            "exemption_sources": _load_json_list(row[6]),
+            "categories_not_evaluated": _load_json_list(row[7]),
+            "action": row[8],
+        },
+        "surcharge_exposure": {
+            "n_applicable": int(row[9] or 0),
+            "exposure_rate": float(row[10] or 0.0),
+            "top_rules": _load_json_list(row[11]),
+            "action": row[12],
+        },
+        "copay_rate_exposure": {
+            "n_applicable": int(row[13] or 0),
+            "mean_rate": float(row[14] or 0.0),
+            "top_procedures": _load_json_list(row[15]),
+            "action": row[16],
+        },
+    }

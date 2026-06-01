@@ -13,12 +13,23 @@ pytestmark = pytest.mark.unit
 def test_billing_strategy_is_unavailable_without_exact_claim_inputs():
     from src.bilun.domain.billing.strategy import _recommend_billing_strategy
 
+    result = _recommend_billing_strategy("P1", None)
+
+    assert result.recommendations == []
+    assert result.exactness_status == "missing_exact_inputs"
+
+
+def test_billing_strategy_with_chapters_adds_review_flags() -> None:
+    from src.bilun.domain.billing.strategy import _recommend_billing_strategy
+
     result = _recommend_billing_strategy(
         "P1",
         {"I"},
     )
 
-    assert result.recommendations == []
+    assert len(result.recommendations) == 1
+    assert result.recommendations[0]["chapter"] == "I"
+    assert result.recommendations[0]["savings_try"] is None
     assert result.exactness_status == "missing_exact_inputs"
 
 
@@ -37,6 +48,8 @@ def test_copay_is_unavailable_without_exact_claim_inputs():
     assert result.exemption_disease == "Diabetes"
     assert result.total_copay_savings_try == 0.0
     assert result.exactness_status == "missing_exact_inputs"
+    assert len(result.rate_corrections) == 1
+    assert "EK-1A exemption may apply" in result.rate_corrections[0]["detail"]
     assert result.required_inputs_missing == [
         "billed_procedure_codes",
         "procedure_claim_dates",

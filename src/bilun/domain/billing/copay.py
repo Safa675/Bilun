@@ -36,4 +36,15 @@ def _optimize_copay(
             result.exemption_disease = qualifying[0].get("disease", "")
             result.exemption_range = qualifying[0].get("range", "")
 
+        disease = result.exemption_disease or "qualifying chronic condition"
+        icd_range = result.exemption_range or "EK-1A range"
+        result.rate_corrections.append(
+            {
+                "detail": (
+                    f"EK-1A exemption may apply for {disease} ({icd_range}). "
+                    "Verify billed copay components against exact claim lines."
+                ),
+            }
+        )
+
     return result

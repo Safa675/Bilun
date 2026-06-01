@@ -41,9 +41,6 @@ def _get_gazette_lab_prices() -> dict[str, float]:
     return _gazette_lab_prices
 
 
-logger = logging.getLogger("ilay.sut_billing_optimizer")
-
-
 def _resolve_lab_test_price(test_name: str, gazette: dict[str, float]) -> tuple[float, str, str]:
     """Resolve gazette price and SUT code for a lab test name or L-code."""
 
@@ -68,17 +65,38 @@ def _resolve_lab_test_price(test_name: str, gazette: dict[str, float]) -> tuple[
     return price, sut_code, tn
 
 
+def _encounter_key(
+    index: int,
+    *,
+    patient_lab_visit_ids: list[str | None] | None,
+    patient_lab_dates: list[str | None] | None,
+) -> str:
+    """Resolve encounter bucket: visit_id preferred, date fallback, else unknown."""
+
+    if patient_lab_visit_ids and index < len(patient_lab_visit_ids):
+        visit_id = patient_lab_visit_ids[index]
+        if visit_id:
+            return f"visit:{str(visit_id).strip()}"
+
+    if patient_lab_dates and index < len(patient_lab_dates) and patient_lab_dates[index]:
+        return f"date:{str(patient_lab_dates[index]).strip()}"
+
+    return "unknown"
+
+
 def _optimize_lab_billing(
     patient_id: str,
     patient_lab_tests: list[str],
     patient_lab_dates: list[str | None] | None = None,
+    patient_lab_visit_ids: list[str | None] | None = None,
 ) -> LabOptimization:
     """Algorithm 1: Normative lab billing with hemogram bundling + duplicate detection.
 
     Args:
         patient_id: Patient identifier.
         patient_lab_tests: List of test names for this patient.
-        patient_lab_dates: Optional parallel list of test dates (for duplicate detection).
+        patient_lab_dates: Optional parallel list of test dates (fallback encounter key).
+        patient_lab_visit_ids: Optional parallel list of visit IDs (preferred encounter key).
 
     Returns:
         LabOptimization with exact gazette-priced normative cost and savings.
@@ -95,8 +113,8 @@ def _optimize_lab_billing(
     )
     hemogram_sut_code = BILUN_TO_SUT_CODE.get("Hemoglobin", "L107020")
 
-    hemogram_by_date: dict[str, int] = {}
-    test_counts: dict[str, int] = {}
+    hemogram_by_encounter: dict[str, int] = {}
+    test_counts_by_encounter: dict[tuple[str, str], int] = {}
     normative_total = 0.0
     flagged: list[dict[str, Any]] = []
 
@@ -105,26 +123,32 @@ def _optimize_lab_billing(
         if not tn:
             continue
 
+        encounter_key = _encounter_key(
+            i,
+            patient_lab_visit_ids=patient_lab_visit_ids,
+            patient_lab_dates=patient_lab_dates,
+        )
+
         if tn in hemogram_set:
-            date_key = "unknown"
-            if patient_lab_dates and i < len(patient_lab_dates) and patient_lab_dates[i]:
-                date_key = str(patient_lab_dates[i]).strip()
-            hemogram_by_date[date_key] = hemogram_by_date.get(date_key, 0) + 1
+            hemogram_by_encounter[encounter_key] = (
+                hemogram_by_encounter.get(encounter_key, 0) + 1
+            )
             continue
 
-        test_counts[tn] = test_counts.get(tn, 0) + 1
+        count_key = (encounter_key, tn)
+        test_counts_by_encounter[count_key] = test_counts_by_encounter.get(count_key, 0) + 1
 
         price, sut_code, display_name = _resolve_lab_test_price(tn, gazette)
 
         normative_total += price
-        _ = display_name
+        _ = display_name, sut_code
 
-    total_hemogram_subtests = sum(hemogram_by_date.values())
-    n_hemogram_dates = len(hemogram_by_date)
+    total_hemogram_subtests = sum(hemogram_by_encounter.values())
+    n_hemogram_encounters = len(hemogram_by_encounter)
     if total_hemogram_subtests > 0:
-        normative_total += hemogram_price * n_hemogram_dates
+        normative_total += hemogram_price * n_hemogram_encounters
 
-        excess = total_hemogram_subtests - n_hemogram_dates
+        excess = total_hemogram_subtests - n_hemogram_encounters
         if excess > 0:
             bundling_savings = excess * hemogram_price
             result.hemogram_bundling_savings = round(bundling_savings, 2)
@@ -136,17 +160,19 @@ def _optimize_lab_billing(
                     "flag_type": "hemogram_unbundling",
                     "savings_try": round(bundling_savings, 2),
                     "detail": (
-                        f"{total_hemogram_subtests} CBC subtests across {n_hemogram_dates} date(s) "
-                        f"should be billed as {n_hemogram_dates} hemogram(s) (L107020)"
+                        f"{total_hemogram_subtests} CBC subtests across "
+                        f"{n_hemogram_encounters} encounter(s) "
+                        f"should be billed as {n_hemogram_encounters} hemogram(s) (L107020)"
                     ),
                 }
             )
 
-    for tn, count in test_counts.items():
+    for (encounter_key, tn), count in test_counts_by_encounter.items():
         if count > 1:
             price, sut_code, display_name = _resolve_lab_test_price(tn, gazette)
             dup_savings = price * (count - 1)
             result.duplicate_test_savings += dup_savings
+            encounter_label = encounter_key.removeprefix("visit:").removeprefix("date:")
             flagged.append(
                 {
                     "test_name": display_name or tn,
@@ -154,7 +180,10 @@ def _optimize_lab_billing(
                     "gazette_price": round(price, 2),
                     "flag_type": "duplicate_test",
                     "savings_try": round(dup_savings, 2),
-                    "detail": f"Test ordered {count}x — only 1 reimbursable per encounter",
+                    "detail": (
+                        f"Test ordered {count}x in encounter {encounter_label} "
+                        f"— only 1 reimbursable per encounter"
+                    ),
                 }
             )
 
