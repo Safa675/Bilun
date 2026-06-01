@@ -40,13 +40,25 @@ def _safe_float(val: Any) -> float | None:
 def _find_raw_parquet(parquet_root: Path, annex_code: str) -> Path | None:
     """Walk annex=<CODE>/ dir tree and return the latest .parquet file found.
 
-    Files are sorted by path (which contains effective_date=YYYY-MM-DD)
-    so the last entry is the most recent gazette version.
+    Files are sorted by effective_date (YYYY-MM-DD prefix). Directories
+    with ``effective_date=unknown`` are skipped — they are legacy dumps
+    with different column layouts that produce empty curated output.
     """
     annex_dir = parquet_root / "raw" / f"annex={annex_code}"
     if not annex_dir.exists():
         return None
-    found = sorted(annex_dir.rglob("*.parquet"))
+
+    def _date_sort_key(fp: Path) -> str:
+        # Extract effective_date from path components: .../effective_date=YYYY-MM-DD/...
+        for part in fp.parts:
+            if part.startswith("effective_date=") and not part.endswith("unknown"):
+                return part.removeprefix("effective_date=")
+        return ""
+
+    found = sorted(
+        (fp for fp in annex_dir.rglob("*.parquet") if _date_sort_key(fp)),
+        key=_date_sort_key,
+    )
     return found[-1] if found else None
 
 
