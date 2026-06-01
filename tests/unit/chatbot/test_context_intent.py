@@ -78,6 +78,39 @@ def test_build_system_prompt_user_question_allows_structure():
     assert "Use bullets" in prompt
 
 
+def test_build_full_billing_context_formats_claim_shaped_rows():
+    report = {
+        "patient_id": "P-002",
+        "copay": {
+            "exactness_status": "exact",
+            "rate_corrections": [
+                {
+                    "code": "500.010",
+                    "name": "Consultation",
+                    "billed_try": 100.0,
+                    "payable_try": 80.0,
+                    "copay_component_try": 20.0,
+                },
+            ],
+        },
+        "billing_strategy": {
+            "exactness_status": "exact",
+            "recommendations": [
+                {
+                    "claim_id": "CLM-99",
+                    "recommendation": "itemize",
+                    "savings_try": 30.0,
+                    "detail": "EK-2C group mismatch",
+                },
+            ],
+        },
+        "total_recoverable_try": 50.0,
+    }
+    text = build_full_billing_context(report)
+    assert "Consultation (500.010)" in text
+    assert "CLM-99: itemize (30.00 TRY)" in text
+
+
 def test_build_full_billing_context_includes_all_flagged_tests_up_to_cap():
     report = _sample_full_report()
     text = build_full_billing_context(report)
@@ -91,7 +124,7 @@ def test_build_full_billing_context_includes_all_flagged_tests_up_to_cap():
     assert "TOTAL RECOVERABLE: 425.00 TRY" in text
 
 
-def test_build_bilun_runtime_context_merges_slim_page_view_and_summarized_billing():
+def test_build_bilun_runtime_context_user_question_uses_full_billing():
     report = _sample_full_report()
     page_context = {
         "page": "patient_workspace",
@@ -118,10 +151,12 @@ def test_build_bilun_runtime_context_merges_slim_page_view_and_summarized_billin
     )
     assert '"page_view"' in runtime
     assert '"total_recoverable_try": 425.0' in runtime
-    assert "BILLING OPTIMIZATION (FULL)" not in runtime
-    assert "--- BILLING OPTIMIZATION ---" in runtime
+    assert "BILLING OPTIMIZATION (FULL)" in runtime
     assert "Test-4" in runtime
-    assert "Test-11" not in runtime
+    assert "Test-11" in runtime
+    assert "Drug recommendations" in runtime
+    assert "Rate corrections" in runtime
+    assert "Strategy recommendations" in runtime
 
 
 def test_build_bilun_runtime_context_auto_brief_uses_summarized_billing():

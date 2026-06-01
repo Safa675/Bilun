@@ -308,6 +308,102 @@ def _unwrap_billing_report(data: dict[str, Any]) -> dict[str, Any]:
     return report if isinstance(report, dict) else {}
 
 
+def _copay_correction_label(correction: dict[str, Any]) -> str:
+    name = (correction.get("name") or correction.get("procedure") or "").strip()
+    code = (
+        correction.get("code")
+        or correction.get("procedure_code")
+        or ""
+    ).strip()
+    if name and code:
+        return f"{name} ({code})"
+    return name or code or "?"
+
+
+def _copay_correction_savings_try(correction: dict[str, Any]) -> float | None:
+    for key in ("copay_component_try", "correction_try", "savings_try"):
+        value = correction.get(key)
+        if isinstance(value, (int, float)):
+            return float(value)
+    return None
+
+
+def _format_copay_correction_line(correction: dict[str, Any]) -> str:
+    label = _copay_correction_label(correction)
+    billed = correction.get("billed_try", correction.get("gazette_rate"))
+    payable = correction.get("payable_try")
+    savings = _copay_correction_savings_try(correction)
+    rate = correction.get("correct_rate_pct")
+
+    if billed is not None and payable is not None and savings is not None:
+        return (
+            f"{label}: billed {float(billed):.2f} TRY, "
+            f"payable {float(payable):.2f} TRY, copay {savings:.2f} TRY"
+        )
+    if rate is not None and savings is not None:
+        return f"{label}: {rate}% correction ({savings:.2f} TRY)"
+    if savings is not None:
+        return f"{label}: {savings:.2f} TRY"
+    return label
+
+
+def _strategy_primary_label(row: dict[str, Any]) -> str:
+    return (
+        (row.get("claim_id") or row.get("chapter") or row.get("chapter_description") or "")
+        .strip()
+        or "?"
+    )
+
+
+def _strategy_mode_label(row: dict[str, Any]) -> str:
+    return (row.get("recommendation") or row.get("strategy") or "unknown").strip()
+
+
+def _format_strategy_line(row: dict[str, Any]) -> str:
+    primary = _strategy_primary_label(row)
+    mode = _strategy_mode_label(row)
+    savings = row.get("savings_try")
+    savings_text = f" ({float(savings):.2f} TRY)" if isinstance(savings, (int, float)) else ""
+    detail = (row.get("detail") or row.get("ek2c_group") or "").strip()
+    if detail:
+        return f"{primary}: {mode}{savings_text} — {detail}"
+    return f"{primary}: {mode}{savings_text}"
+
+
+def _format_drug_recommendation_line(row: dict[str, Any]) -> str:
+    drug_name = (row.get("drug_name") or "?").strip()
+    issue = (row.get("issue") or row.get("action") or "finding").strip()
+    savings = row.get("savings_try")
+    alt = (row.get("alternative") or "").strip()
+    savings_text = f" ({float(savings):.2f} TRY)" if isinstance(savings, (int, float)) else ""
+    if alt:
+        return f"{drug_name}: {issue} → {alt}{savings_text}"
+    return f"{drug_name}: {issue}{savings_text}"
+
+
+def _append_list_lines(
+    lines: list[str],
+    header: str,
+    items: list[dict[str, Any]],
+    *,
+    formatter,
+    max_items: int,
+    exactness: str | None = None,
+) -> None:
+    if not items:
+        return
+    lines.append(f"  {header}:")
+    for item in items[:max_items]:
+        if isinstance(item, dict):
+            lines.append(f"    - {formatter(item)}")
+        else:
+            lines.append(f"    - {item!s}")
+    if len(items) > max_items:
+        lines.append(f"    ... and {len(items) - max_items} more")
+    if exactness:
+        lines.append(f"    [exactness: {exactness}]")
+
+
 def _append_billing_sections(
     lines: list[str],
     report: dict[str, Any],
@@ -343,9 +439,9 @@ def _append_billing_sections(
         total = lab.get("total_savings")
         if total is None and (hemogram is not None or dup is not None):
             total = (hemogram or 0) + (dup or 0)
-        if not total and not is_full:
+        if total is None and not is_full:
             total = (hemogram or 0) + (dup or 0)
-        if total:
+        if total is not None:
             lines.append(f"    Total lab savings: {total:.2f} TRY")
         if lab.get("flagged_tests"):
             _format_list_section(
@@ -369,20 +465,19 @@ def _append_billing_sections(
         if generics is not None:
             lines.append(f"    Generics available: {generics}")
         passivated = drug.get("passivated_drug_count")
-        if passivated:
+        if passivated is not None and passivated > 0:
             lines.append(f"    Passivated drugs: {passivated}")
         sub = drug.get("generic_substitution_savings")
-        if sub:
+        if sub is not None and sub > 0:
             lines.append(f"    Substitution savings: {sub:.2f} TRY")
-        if is_full and drug.get("drug_recommendations"):
-            _format_list_section(
+        if drug.get("drug_recommendations"):
+            _append_list_lines(
                 lines,
                 "Drug recommendations",
                 drug["drug_recommendations"],
-                key="drug_name",
-                fmt="{drug_name}: {action} ({savings_try} TRY)",
-                exactness=drug_exactness,
+                formatter=_format_drug_recommendation_line,
                 max_items=list_cap,
+                exactness=drug_exactness if is_full else None,
             )
 
     copay = report.get("copay", {}) or report.get("copay_optimization", {}) or {}
@@ -401,24 +496,23 @@ def _append_billing_sections(
             lines.append(f"    Exemption range: {copay['exemption_range']}")
         if is_full:
             visit = copay.get("visit_copay_savings_try")
-            if visit:
+            if visit is not None and visit > 0:
                 lines.append(f"    Visit copay savings: {visit:.2f} TRY")
             rx = copay.get("rx_copay_savings_try")
-            if rx:
+            if rx is not None and rx > 0:
                 lines.append(f"    Rx copay savings: {rx:.2f} TRY")
         total_copay = copay.get("total_copay_savings_try")
-        if total_copay:
+        if total_copay is not None:
             label = "Total copay savings" if is_full else "Copay savings"
             lines.append(f"    {label}: {total_copay:.2f} TRY")
-        if is_full and copay.get("rate_corrections"):
-            _format_list_section(
+        if copay.get("rate_corrections"):
+            _append_list_lines(
                 lines,
                 "Rate corrections",
                 copay["rate_corrections"],
-                key="procedure_code",
-                fmt="{procedure_code}: {correct_rate_pct}% ({savings_try} TRY)",
-                exactness=copay_exactness,
+                formatter=_format_copay_correction_line,
                 max_items=list_cap,
+                exactness=copay_exactness if is_full else None,
             )
 
     strategy = report.get("strategy", {}) or report.get("billing_strategy", {}) or {}
@@ -428,15 +522,14 @@ def _append_billing_sections(
         strat_source = strategy.get("rule_source", "")
         if is_full and strat_source:
             lines.append(f"    Source: {strat_source}")
-        if is_full and strategy.get("recommendations"):
-            _format_list_section(
+        if strategy.get("recommendations"):
+            _append_list_lines(
                 lines,
                 "Strategy recommendations",
                 strategy["recommendations"],
-                key="chapter",
-                fmt="{chapter}: {recommendation} ({savings_try} TRY)",
-                exactness=strat_exactness,
+                formatter=_format_strategy_line,
                 max_items=list_cap,
+                exactness=strat_exactness if is_full else None,
             )
 
     materials = report.get("materials", {}) or report.get("material_pre_check", {}) or {}
@@ -475,7 +568,7 @@ def _append_billing_sections(
 
     total_recoverable = report.get("total_recoverable_try")
     if total_recoverable is not None:
-        lines.append(f"\n  TOTAL RECOVERABLE: {total_recoverable:.2f} TRY")
+        lines.append(f"\n  MAX ADDITIONAL SGK REIMBURSEMENT: {total_recoverable:.2f} TRY")
     if is_full:
         action_count = report.get("action_count")
         if action_count is not None:
@@ -500,11 +593,18 @@ def build_full_billing_context(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def build_billing_context(data: dict[str, Any]) -> str:
+def build_billing_context(
+    data: dict[str, Any],
+    *,
+    detail_level: BillingDetailLevel = "summary",
+) -> str:
     """Build per-patient billing optimization context from pre-fetched data."""
     report = _unwrap_billing_report(data)
     if not report:
         return ""
+
+    if detail_level == "full":
+        return build_full_billing_context(report)
 
     lines: list[str] = ["--- BILLING OPTIMIZATION ---"]
     _append_billing_sections(lines, report, detail_level="summary")
@@ -621,6 +721,7 @@ def build_bilun_runtime_context(
     *,
     page_context: dict[str, Any] | None = None,
     intent: ChatIntent = "user_question",
+    billing_detail: BillingDetailLevel | None = None,
 ) -> str:
     """Build the complete BILUN runtime context string for the LLM.
 
@@ -631,7 +732,9 @@ def build_bilun_runtime_context(
         active_tab: Current workspace tab name.
         patient_id: Currently selected patient, if any.
         page_context: Structured view of the current page (sections, labels, values).
-        intent: Chat intent — controls billing detail level.
+        intent: Chat intent — ``user_question`` uses full billing detail by default;
+            ``auto_brief`` uses capped summary billing.
+        billing_detail: Optional override for billing context depth (chat uses summary).
 
     Returns:
         Formatted context string ready for the LLM system prompt.
@@ -659,7 +762,15 @@ def build_bilun_runtime_context(
 
     if patient_id:
         context["patient_context"] = build_patient_context(data)
-        context["billing_context"] = build_billing_context(data)
+        resolved_billing_detail: BillingDetailLevel = (
+            billing_detail
+            if billing_detail is not None
+            else ("full" if intent == "user_question" else "summary")
+        )
+        context["billing_context"] = build_billing_context(
+            data,
+            detail_level=resolved_billing_detail,
+        )
 
     catalog = build_catalog_context(data)
     if catalog:

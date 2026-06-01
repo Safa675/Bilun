@@ -62,6 +62,19 @@ from .patients import get_bilun_patient_outcome
 from .billing import get_patient_billing_report
 
 from src.bilun.chatbot.medula_kb import search_medula
+from src.bilun.db import read_patient_alert_row_by_id, read_patient_alerts_summary
+from src.bilun.domain.optimization.exactness import (
+    EXACTNESS_STATUS_EXACT,
+    is_exact_output,
+    unavailable_patient_alert_copay_rate,
+    unavailable_patient_alert_surcharge,
+    unavailable_patient_drg_unbundling,
+)
+from src.bilun.shared.state import (
+    _get_active_build_id_or_none,
+    _get_cache_reader,
+    get_pipeline_mode,
+)
 
 router = APIRouter()
 
@@ -177,6 +190,7 @@ def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
     copay = payload.get("copay", {}) or {}
     strategy = payload.get("billing_strategy", {}) or {}
     materials = payload.get("materials", {}) or {}
+    summary_cap = 5
     return {
         "patient_id": payload.get("patient_id"),
         "lab": {
@@ -184,7 +198,7 @@ def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
             "hemogram_bundling_savings": lab.get("hemogram_bundling_savings"),
             "duplicate_test_savings": lab.get("duplicate_test_savings"),
             "total_savings": lab.get("total_savings"),
-            "flagged_tests": lab.get("flagged_tests", []),
+            "flagged_tests": (lab.get("flagged_tests") or [])[:summary_cap],
             "rule_source": lab.get("rule_source", "EK-2B hemogram bundling, duplicate test rules"),
         },
         "drug": {
@@ -192,6 +206,7 @@ def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
             "n_generics_available": drug.get("n_generics_available"),
             "passivated_drug_count": drug.get("passivated_drug_count"),
             "generic_substitution_savings": drug.get("generic_substitution_savings"),
+            "drug_recommendations": (drug.get("drug_recommendations") or [])[:summary_cap],
             "rule_source": drug.get("rule_source", "EK-4A drug equivalence groups"),
         },
         "copay": {
@@ -199,16 +214,18 @@ def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
             "is_exempt": copay.get("is_exempt"),
             "exemption_disease": copay.get("exemption_disease"),
             "total_copay_savings_try": copay.get("total_copay_savings_try"),
+            "rate_corrections": (copay.get("rate_corrections") or [])[:summary_cap],
             "rule_source": copay.get("rule_source", "EK-1A chronic disease copay exemptions"),
         },
         "billing_strategy": {
             "exactness_status": strategy.get("exactness_status"),
+            "recommendations": (strategy.get("recommendations") or [])[:summary_cap],
             "rule_source": strategy.get("rule_source", "EK-2C DRG package, EK-2B fee-for-service"),
         },
         "materials": {
             "exactness_status": materials.get("exactness_status"),
-            "pre_auth_required": materials.get("pre_auth_required", []),
-            "miat_restricted": materials.get("miat_restricted", []),
+            "pre_auth_required": (materials.get("pre_auth_required") or [])[:summary_cap],
+            "miat_restricted": (materials.get("miat_restricted") or [])[:summary_cap],
             "rule_source": materials.get("rule_source", "EK-3C-1 pre-auth, EK-3C-2 MIAT"),
         },
         "total_recoverable_try": payload.get("total_recoverable_try"),
@@ -240,6 +257,67 @@ def _should_use_chat_tools(
     return patient_id is None
 
 
+def _cached_patient_optimization_payload(patient_id: str) -> dict[str, Any] | None:
+    """Read precomputed patient optimization from alert cache (fast path for chat)."""
+
+    mode = get_pipeline_mode()
+    if mode not in {"hybrid", "persistent"}:
+        return None
+
+    reader = _get_cache_reader()
+    active_build = _get_active_build_id_or_none(reader, scope="bilun")
+    if not active_build:
+        return None
+
+    row = read_patient_alert_row_by_id(reader, active_build, patient_id)
+    if row is None:
+        return None
+
+    summary = read_patient_alerts_summary(reader, active_build) or {}
+    copay_exemption = row.get("copay_exemption") or {}
+
+    if is_exact_output(
+        {"exactness_status": summary.get("surcharge_exactness_status")}
+    ):
+        surcharge_exposure = {
+            **dict(row.get("surcharge_exposure") or {}),
+            "exactness_status": EXACTNESS_STATUS_EXACT,
+        }
+    else:
+        surcharge_exposure = unavailable_patient_alert_surcharge()
+
+    if is_exact_output(
+        {"exactness_status": summary.get("copay_rate_exactness_status")}
+    ):
+        copay_rate_exposure = {
+            **dict(row.get("copay_rate_exposure") or {}),
+            "exactness_status": EXACTNESS_STATUS_EXACT,
+        }
+    else:
+        copay_rate_exposure = unavailable_patient_alert_copay_rate()
+
+    return {
+        "patient_id": row.get("patient_id"),
+        "n_diagnoses": row.get("n_diagnoses"),
+        "icd10_chapters": row.get("icd10_chapters"),
+        "copay_exemptions": {
+            "exempt": copay_exemption.get("exempt"),
+            "n_qualifying": copay_exemption.get("n_qualifying"),
+            "qualifying_diagnoses": copay_exemption.get("qualifying_diagnoses"),
+        },
+        "surcharge_exposure": surcharge_exposure,
+        "copay_rate_exposure": copay_rate_exposure,
+        "drg_unbundling": unavailable_patient_drg_unbundling(),
+    }
+
+
+def _get_patient_optimization_for_chat(patient_id: str) -> dict[str, Any]:
+    cached = _cached_patient_optimization_payload(patient_id)
+    if cached is not None:
+        return cached
+    return get_patient_optimization(patient_id)
+
+
 def _fetch_runtime_data(
     active_tab: str,
     patient_id: str | None,
@@ -267,7 +345,7 @@ def _fetch_runtime_data(
         return _safe_context_block(
             "Patient optimization",
             lambda: _summarize_patient_optimization(
-                get_patient_optimization(patient_id)
+                _get_patient_optimization_for_chat(patient_id)
             ),
         )
 
@@ -305,6 +383,46 @@ def _fetch_runtime_data(
     return data
 
 
+async def _sse_event_stream(
+    producer: Any,
+) -> Any:
+    """Wrap an async producer with immediate stream-start and keepalive comments."""
+
+    queue: asyncio.Queue = asyncio.Queue()
+
+    async def _run_producer() -> None:
+        try:
+            async for kind, payload in producer():
+                await queue.put((kind, payload))
+        except asyncio.CancelledError:
+            return
+        except Exception as exc:
+            logger.exception("Chat SSE producer failed")
+            await queue.put(("error", f"BILUN chat stream failed: {exc}"))
+        finally:
+            await queue.put(None)
+
+    task = asyncio.create_task(_run_producer())
+    yield ": stream-start\n\n"
+
+    try:
+        while True:
+            try:
+                item = await asyncio.wait_for(queue.get(), timeout=5.0)
+            except asyncio.TimeoutError:
+                yield ": keepalive\n\n"
+                continue
+            if item is None:
+                break
+            kind, payload = item
+            yield _encode_sse(kind, payload)
+    finally:
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+        yield _encode_sse("data", "[DONE]")
+
+
 # ── Endpoint ─────────────────────────────────────────────────────────────────
 
 
@@ -331,81 +449,56 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
             user_message = msg.content
             break
 
-    t0 = time.perf_counter()
-    raw_data = await asyncio.to_thread(
-        _fetch_runtime_data,
-        req.active_tab,
-        req.patient_id,
-        user_message,
-        intent=req.intent,
-    )
-    t_fetch = time.perf_counter()
-    runtime_context = build_bilun_runtime_context(
-        raw_data,
-        req.active_tab,
-        req.patient_id,
-        page_context=req.page_context,
-        intent=req.intent,
-    )
-    use_tools = _should_use_chat_tools(
-        patient_id=req.patient_id,
-        intent=req.intent,
-    )
-    logger.info(
-        "CHAT PRE-LLM | intent=%s patient=%s fetch_ms=%.0f ctx_ms=%.0f ctx_chars=%d tools=%s",
-        req.intent,
-        req.patient_id or "-",
-        (t_fetch - t0) * 1000,
-        (time.perf_counter() - t_fetch) * 1000,
-        len(runtime_context),
-        use_tools,
-    )
+    async def _producer():
+        t0 = time.perf_counter()
+        raw_data = await asyncio.to_thread(
+            _fetch_runtime_data,
+            req.active_tab,
+            req.patient_id,
+            user_message,
+            intent=req.intent,
+        )
+        t_fetch = time.perf_counter()
+        runtime_context = build_bilun_runtime_context(
+            raw_data,
+            req.active_tab,
+            req.patient_id,
+            page_context=req.page_context,
+            intent=req.intent,
+            billing_detail="summary",
+        )
+        use_tools = _should_use_chat_tools(
+            patient_id=req.patient_id,
+            intent=req.intent,
+        )
+        logger.info(
+            "CHAT PRE-LLM | intent=%s patient=%s fetch_ms=%.0f ctx_ms=%.0f ctx_chars=%d tools=%s",
+            req.intent,
+            req.patient_id or "-",
+            (t_fetch - t0) * 1000,
+            (time.perf_counter() - t_fetch) * 1000,
+            len(runtime_context),
+            use_tools,
+        )
 
-    async def sse_generator():
-        queue: asyncio.Queue = asyncio.Queue()
-
-        async def _producer():
-            try:
-                stream_fn = (
-                    stream_chat_response_with_tools
-                    if use_tools
-                    else stream_chat_response
-                )
-                async for token in stream_fn(
-                    [message.model_dump() for message in req.messages],
-                    runtime_context,
-                    intent=req.intent,
-                ):
-                    await queue.put(("data", token))
-            except asyncio.CancelledError:
-                return
-            except Exception as exc:
-                await queue.put(("error", f"BILUN chat stream failed: {exc}"))
-            finally:
-                await queue.put(None)
-
-        task = asyncio.create_task(_producer())
-        yield ": stream-start\n\n"
-
-        try:
-            while True:
-                try:
-                    item = await asyncio.wait_for(queue.get(), timeout=5.0)
-                except asyncio.TimeoutError:
-                    yield ": keepalive\n\n"
-                    continue
-                if item is None:
-                    break
-                kind, payload = item
-                yield _encode_sse(kind, payload)
-        finally:
-            task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await task
-            yield _encode_sse("data", "[DONE]")
+        stream_fn = (
+            stream_chat_response_with_tools
+            if use_tools
+            else stream_chat_response
+        )
+        async for item in stream_fn(
+            [message.model_dump() for message in req.messages],
+            runtime_context,
+            intent=req.intent,
+        ):
+            if isinstance(item, tuple):
+                kind, text = item
+                yield (kind, text)
+            else:
+                yield ("data", item)
 
     return StreamingResponse(
-        sse_generator(),
+        _sse_event_stream(_producer),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
@@ -439,58 +532,31 @@ async def weekly_brief(req: WeeklyBriefRequest, request: Request):
     if not _check_rate_limit(client_ip):
         raise RateLimitError("Too many requests. Please wait a moment.")
 
-    raw_data = await asyncio.to_thread(
-        _fetch_runtime_data,
-        "SUT Analytics",
-        None,
-        intent="auto_brief",
-    )
-    runtime_context = build_bilun_runtime_context(
-        raw_data, "SUT Analytics", None, intent="auto_brief"
-    )
-
     messages = [{"role": "user", "content": WEEKLY_BRIEF_PROMPT}]
 
-    async def sse_generator():
-        queue: asyncio.Queue = asyncio.Queue()
-
-        async def _producer():
-            try:
-                async for token in stream_chat_response(
-                    messages,
-                    runtime_context,
-                    intent="auto_brief",
-                ):
-                    await queue.put(("data", token))
-            except asyncio.CancelledError:
-                return
-            except Exception as exc:
-                await queue.put(("error", f"Weekly brief generation failed: {exc}"))
-            finally:
-                await queue.put(None)
-
-        task = asyncio.create_task(_producer())
-        yield ": stream-start\n\n"
-
-        try:
-            while True:
-                try:
-                    item = await asyncio.wait_for(queue.get(), timeout=5.0)
-                except asyncio.TimeoutError:
-                    yield ": keepalive\n\n"
-                    continue
-                if item is None:
-                    break
-                kind, payload = item
-                yield _encode_sse(kind, payload)
-        finally:
-            task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await task
-            yield _encode_sse("data", "[DONE]")
+    async def _producer():
+        raw_data = await asyncio.to_thread(
+            _fetch_runtime_data,
+            "SUT Analytics",
+            None,
+            intent="auto_brief",
+        )
+        runtime_context = build_bilun_runtime_context(
+            raw_data, "SUT Analytics", None, intent="auto_brief", billing_detail="summary"
+        )
+        async for item in stream_chat_response(
+            messages,
+            runtime_context,
+            intent="auto_brief",
+        ):
+            if isinstance(item, tuple):
+                kind, text = item
+                yield (kind, text)
+            else:
+                yield ("data", item)
 
     return StreamingResponse(
-        sse_generator(),
+        _sse_event_stream(_producer),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

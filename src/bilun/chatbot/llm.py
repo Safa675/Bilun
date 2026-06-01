@@ -122,8 +122,14 @@ async def _call_llm_non_streaming(
 
 async def _stream_text_from_llm(
     payload: dict[str, Any],
-) -> AsyncIterator[str]:
-    """Stream text tokens from the LLM endpoint."""
+) -> AsyncIterator[tuple[str, str] | str]:
+    """Stream text tokens from the LLM endpoint.
+
+    Yields ``("content", text)`` for visible answer tokens and
+    ``("reasoning", text)`` for thinking/reasoning deltas from models that
+    emit them (DeepSeek V4 Pro, Kimi K2.6, StepFun Flash, Qwen 3.7 Max, etc).
+    Error messages are yielded as plain strings for backward compatibility.
+    """
     api_key = _get_api_key()
     if not api_key:
         yield "⚠️ LLM API key not found."
@@ -161,10 +167,14 @@ async def _stream_text_from_llm(
                     try:
                         chunk = json.loads(data)
                         delta = chunk["choices"][0]["delta"]
-                        token = delta.get("content") or delta.get("reasoning_content")
-                        if token:
+                        content = delta.get("content")
+                        reasoning = delta.get("reasoning") or delta.get("reasoning_content")
+                        if reasoning:
                             token_count += 1
-                            yield token
+                            yield ("reasoning", reasoning)
+                        elif content:
+                            token_count += 1
+                            yield ("content", content)
                     except (json.JSONDecodeError, KeyError, IndexError):
                         pass
 
@@ -187,15 +197,14 @@ def _extract_tool_calls(response: dict[str, Any]) -> list[dict[str, Any]] | None
     """Extract tool calls from a non-streaming LLM response."""
     try:
         choice = response.get("choices", [{}])[0]
-        finish_reason = choice.get("finish_reason", "")
-        if finish_reason != "tool_calls":
-            return None
         message = choice.get("message", {})
-        tool_calls = message.get("tool_calls", [])
-        if not tool_calls:
+        tool_calls = message.get("tool_calls") or []
+        if tool_calls:
+            return tool_calls
+        if choice.get("finish_reason") == "tool_calls":
             return None
-        return tool_calls
-    except (KeyError, IndexError):
+        return None
+    except (KeyError, IndexError, TypeError):
         return None
 
 
@@ -307,8 +316,8 @@ async def stream_chat_response_with_tools(
                 **base_payload,
                 "messages": full_messages,
             }
-            async for token in _stream_text_from_llm(stream_payload):
-                yield token
+            async for item in _stream_text_from_llm(stream_payload):
+                yield item if isinstance(item, str) else item[1]
             return
 
         # Record assistant message with tool calls
@@ -351,8 +360,8 @@ async def stream_chat_response_with_tools(
         **base_payload,
         "messages": full_messages,
     }
-    async for token in _stream_text_from_llm(stream_payload):
-        yield token
+    async for item in _stream_text_from_llm(stream_payload):
+        yield item if isinstance(item, str) else item[1]
 
 
 async def stream_chat_response(
@@ -361,21 +370,28 @@ async def stream_chat_response(
     extra_params: dict | None = None,
     *,
     intent: ChatIntent = "user_question",
-) -> AsyncIterator[str]:
-    """Stream text chunks from the configured LLM endpoint."""
+) -> AsyncIterator[tuple[str, str] | str]:
+    """Stream text chunks from the configured LLM endpoint.
+
+    Yields ``("content", text)`` / ``("reasoning", text)`` tuples for
+    model tokens, or plain strings for error/metadata messages.
+    """
+    import copy
+
     api_key = _get_api_key()
     if not api_key:
         logger.error("LLM_API_KEY not set — cannot call LLM")
         yield "⚠️ LLM API key not found. Set LLM_API_KEY in your .env file."
         return
 
-    messages, error_token = _validate_messages_for_llm(messages, intent=intent)
+    msg_copy = copy.deepcopy(messages)
+    msg_copy, error_token = _validate_messages_for_llm(msg_copy, intent=intent)
     if error_token:
         yield error_token
         return
 
     full_messages = _build_messages(
-        messages,
+        msg_copy,
         runtime_context,
         model_context=get_chat_model_context(),
         intent=intent,
@@ -434,10 +450,14 @@ async def stream_chat_response(
                     try:
                         chunk = json.loads(data)
                         delta = chunk["choices"][0]["delta"]
-                        token = delta.get("content") or delta.get("reasoning_content")
-                        if token:
+                        content = delta.get("content")
+                        reasoning = delta.get("reasoning") or delta.get("reasoning_content")
+                        if reasoning:
                             token_count += 1
-                            yield token
+                            yield ("reasoning", reasoning)
+                        elif content:
+                            token_count += 1
+                            yield ("content", content)
                     except (json.JSONDecodeError, KeyError, IndexError) as exc:
                         logger.warning(
                             "LLM CHUNK PARSE ERROR | data=%r | error=%s",

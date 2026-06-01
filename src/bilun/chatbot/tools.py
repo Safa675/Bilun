@@ -162,8 +162,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                         "type": "string",
                         "description": (
                             "Alert category filter — one of: exemptions,"
-                            " surcharge-exposure, copay-rate, laboratory,"
-                            " drugs. Omit for all categories."
+                            " surcharge, copay_rates. Omit for exemptions (default)."
                         ),
                     },
                 },
@@ -189,6 +188,25 @@ RESPONSE_SIZE_CAP = 8192  # 8KB
 TOOL_TIMEOUT_SEC = 5.0
 MAX_TOOL_CALLS_PER_TURN = 3
 CIRCUIT_BREAKER_THRESHOLD = 3
+
+# Map legacy/alternate LLM category labels to API values (alerts.py).
+_ALERT_CATEGORY_ALIASES: dict[str, str] = {
+    "exemptions": "exemptions",
+    "exemption": "exemptions",
+    "surcharge": "surcharge",
+    "surcharge-exposure": "surcharge",
+    "surcharge_exposure": "surcharge",
+    "copay_rates": "copay_rates",
+    "copay-rates": "copay_rates",
+    "copay-rate": "copay_rates",
+    "copay_rate": "copay_rates",
+    "copay-rates-exposure": "copay_rates",
+}
+
+
+def _normalize_alert_category(raw: str | None) -> str:
+    normalized = (raw or "exemptions").strip().lower()
+    return _ALERT_CATEGORY_ALIASES.get(normalized, normalized)
 
 
 @dataclass
@@ -364,7 +382,7 @@ async def execute_tool_call(
                     arguments.get("q", ""), page=1, per_page=20
                 ),
                 "get_patient_alerts": lambda: get_patient_alerts(
-                    category=arguments.get("category", "exemptions"),
+                    category=_normalize_alert_category(arguments.get("category")),
                     status="all",
                     limit=100,
                     offset=0,

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -48,7 +50,7 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
     )
     monkeypatch.setattr(
         sut_chat_mod,
-        "get_patient_optimization",
+        "_get_patient_optimization_for_chat",
         lambda patient_id: {
             "patient_id": patient_id,
             "n_diagnoses": 2,
@@ -128,7 +130,7 @@ def test_sut_chat_user_question_uses_summarized_billing_context(monkeypatch):
     )
     monkeypatch.setattr(
         sut_chat_mod,
-        "get_patient_optimization",
+        "_get_patient_optimization_for_chat",
         lambda patient_id: {"patient_id": patient_id},
     )
     monkeypatch.setattr(
@@ -164,6 +166,7 @@ def test_sut_chat_user_question_uses_summarized_billing_context(monkeypatch):
     assert "Full-4" in runtime_context
     assert "Full-7" not in runtime_context
     assert "BILLING OPTIMIZATION (FULL)" not in runtime_context
+    assert "--- BILLING OPTIMIZATION ---" in runtime_context
 
 
 def test_sut_chat_patient_question_skips_tools_path(monkeypatch):
@@ -185,7 +188,7 @@ def test_sut_chat_patient_question_skips_tools_path(monkeypatch):
     )
     monkeypatch.setattr(
         sut_chat_mod,
-        "get_patient_optimization",
+        "_get_patient_optimization_for_chat",
         lambda patient_id: {"patient_id": patient_id},
     )
     monkeypatch.setattr(
@@ -264,7 +267,7 @@ def test_sut_chat_auto_brief_uses_summarized_billing(monkeypatch):
     )
     monkeypatch.setattr(
         sut_chat_mod,
-        "get_patient_optimization",
+        "_get_patient_optimization_for_chat",
         lambda patient_id: {"patient_id": patient_id},
     )
     monkeypatch.setattr(
@@ -296,6 +299,90 @@ def test_sut_chat_auto_brief_uses_summarized_billing(monkeypatch):
     runtime_context = str(captured["runtime_context"])
     assert "BILLING OPTIMIZATION (FULL)" not in runtime_context
     assert "Brief-7" not in runtime_context
+
+
+def test_get_patient_optimization_for_chat_uses_alert_cache(monkeypatch):
+    import src.bilun.api.routes.chat as sut_chat_mod
+
+    monkeypatch.setattr(sut_chat_mod, "get_pipeline_mode", lambda: "persistent")
+    monkeypatch.setattr(sut_chat_mod, "_get_cache_reader", lambda: object())
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "_get_active_build_id_or_none",
+        lambda _reader, scope="bilun": "build-1",
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "read_patient_alert_row_by_id",
+        lambda _reader, _build, patient_id: {
+            "patient_id": patient_id,
+            "n_diagnoses": 2,
+            "icd10_chapters": ["I"],
+            "copay_exemption": {
+                "exempt": True,
+                "n_qualifying": 1,
+                "qualifying_diagnoses": [{"disease": "HTN", "range": "I10-I15"}],
+            },
+            "surcharge_exposure": {"n_applicable": 3, "exposure_rate": 0.2, "top_rules": []},
+            "copay_rate_exposure": {"n_applicable": 2, "mean_rate": 0.15, "top_procedures": []},
+        },
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "read_patient_alerts_summary",
+        lambda _reader, _build: {
+            "surcharge_exactness_status": "exact",
+            "copay_rate_exactness_status": "exact",
+        },
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_patient_optimization",
+        lambda _patient_id: (_ for _ in ()).throw(AssertionError("should not recompute")),
+    )
+
+    payload = sut_chat_mod._get_patient_optimization_for_chat("P-001")
+
+    assert payload["patient_id"] == "P-001"
+    assert payload["copay_exemptions"]["exempt"] is True
+    assert payload["surcharge_exposure"]["exactness_status"] == "exact"
+
+
+def test_sut_chat_stream_start_precedes_tokens(monkeypatch):
+    import src.bilun.api.routes.chat as sut_chat_mod
+    from src.bilun.api import app
+
+    monkeypatch.setattr(sut_chat_mod, "_check_rate_limit", lambda _ip: True)
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "_fetch_runtime_data",
+        lambda *_args, **_kwargs: {"optimization_summary": {"status": "ready", "summary": {}}},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "build_bilun_runtime_context",
+        lambda *_args, **_kwargs: "ctx",
+    )
+
+    async def slow_stream(*_args, **_kwargs):
+        await asyncio.sleep(0.05)
+        yield "hi"
+
+    monkeypatch.setattr(sut_chat_mod, "stream_chat_response", slow_stream)
+
+    with TestClient(app) as client:
+        with client.stream(
+            "POST",
+            "/api/chat",
+            json={
+                "messages": [{"role": "user", "content": "Hello"}],
+                "patient_id": "P-001",
+                "active_tab": "SUT Patient Workspace",
+            },
+        ) as response:
+            assert response.status_code == 200
+            first_chunk = next(response.iter_bytes())
+            assert b"stream-start" in first_chunk
 
 
 def test_removed_estimate_native_sut_routes_return_404():
