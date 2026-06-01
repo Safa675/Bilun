@@ -20,6 +20,7 @@ def _normalize_ana(ana_df: pl.DataFrame) -> pl.DataFrame:
 def _normalize_lab(lab_df: pl.DataFrame) -> pl.DataFrame:
     rename_map = {
         "HASTA_ID": "patient_id",
+        "basvuru_id": "visit_id",
         "tarih": "date",
         "SUB_CODE": "test_name",
         "sonuc_sayisal": "value",
@@ -38,7 +39,15 @@ def _normalize_lab(lab_df: pl.DataFrame) -> pl.DataFrame:
         )
     keep = [
         c
-        for c in ["patient_id", "date", "test_name", "value", "ref_min", "ref_max"]
+        for c in [
+            "patient_id",
+            "visit_id",
+            "date",
+            "test_name",
+            "value",
+            "ref_min",
+            "ref_max",
+        ]
         if c in normalized.columns
     ]
     return normalized.select(keep)

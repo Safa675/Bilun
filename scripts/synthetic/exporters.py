@@ -58,6 +58,7 @@ def _clean_anadata(basvurular: pd.DataFrame) -> pd.DataFrame:
 def _clean_lab(labs: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame({
         "HASTA_ID": labs["hasta_id"],
+        "basvuru_id": labs["basvuru_id"],
         "SUB_CODE": labs["laboratuvar_kodu"],
         "sonuc_sayisal": labs["sayisal_sonuc"],
         "sonuc_nitel": labs["nitel_sonuc"],

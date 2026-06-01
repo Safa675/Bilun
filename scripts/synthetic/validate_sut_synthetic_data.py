@@ -42,7 +42,7 @@ REQUIRED_CLEAN_COLUMNS = {
         "GELIS_TIPI",
         "SERVISADI",
     },
-    "lab_clean.parquet": {"HASTA_ID", "SUB_CODE", "sonuc_sayisal", "tarih"},
+    "lab_clean.parquet": {"HASTA_ID", "basvuru_id", "SUB_CODE", "sonuc_sayisal", "tarih"},
     "recete_clean.parquet": {"HASTA_ID", "RECETE_TARIH", "RF_EPISODE", "ilac_adi"},
 }
 
