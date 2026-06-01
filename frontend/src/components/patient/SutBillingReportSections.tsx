@@ -17,6 +17,8 @@ import {
   strategySecondaryLabel,
   usesClaimCopayCorrectionShape,
   usesClaimStrategyShape,
+  usesHeuristicStrategyReviewShape,
+  usesInsightOnlyCopayCorrectionShape,
 } from "@/lib/billingReportFields";
 import { theme } from "@/lib/theme";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
@@ -228,7 +230,10 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
 
 export function DrugOptimizationSection({ drugData }: { drugData: BillingActionReport["drug"] }) {
   const t = useT();
-  if (!isExactOutput(drugData)) {
+  const drugExact = isExactOutput(drugData);
+  const hasRecommendations = drugData.drug_recommendations.length > 0;
+
+  if (!drugExact && !hasRecommendations) {
     return (
       <BillingSectionShell title={t("billing.drug.title")}>
         <ExactnessNotice block={drugData} fallback={t("billing.drug.unavailable")} />
@@ -236,12 +241,18 @@ export function DrugOptimizationSection({ drugData }: { drugData: BillingActionR
     );
   }
 
-  if (drugData.drug_recommendations.length === 0) {
+  if (!hasRecommendations) {
     return null;
   }
 
   return (
-    <BillingSectionShell title={t("billing.drug.title")} total={fmtTRY2(drugData.generic_substitution_savings)}>
+    <BillingSectionShell
+      title={t("billing.drug.title")}
+      total={drugExact ? fmtTRY2(drugData.generic_substitution_savings) : undefined}
+    >
+      {!drugExact && (
+        <ExactnessNotice block={drugData} fallback={t("billing.drug.unavailable")} />
+      )}
       <TableWrap minWidth={860}>
         <thead>
           <tr>
@@ -265,7 +276,7 @@ export function DrugOptimizationSection({ drugData }: { drugData: BillingActionR
                 {recommendation.issue === "discount_tier_applied" ? t("billing.drug.tierCorrection") : recommendation.alternative}
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                {fmtTRY2(recommendation.savings_try)}
+                {fmtTRY2OrUnavailable(recommendation.savings_try ?? null)}
               </td>
             </tr>
           ))}
@@ -277,7 +288,16 @@ export function DrugOptimizationSection({ drugData }: { drugData: BillingActionR
 
 export function CopayOptimizationSection({ copayData }: { copayData: BillingActionReport["copay"] }) {
   const t = useT();
-  if (!isExactOutput(copayData)) {
+  const copayExact = isExactOutput(copayData);
+  const hasInsight =
+    copayData.is_exempt ||
+    copayData.rate_corrections.some(
+      (correction) =>
+        usesClaimCopayCorrectionShape(correction) ||
+        usesInsightOnlyCopayCorrectionShape(correction),
+    );
+
+  if (!copayExact && !hasInsight) {
     return (
       <BillingSectionShell title={t("billing.copay.title")}>
         <ExactnessNotice block={copayData} fallback={t("billing.copay.unavailable")} />
@@ -286,10 +306,27 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
   }
 
   const savingsColor = copayData.total_copay_savings_try > 0 ? ACCENT : "#71717A";
+  const insightOnlyRows = copayData.rate_corrections.filter((correction) =>
+    usesInsightOnlyCopayCorrectionShape(correction),
+  );
+  const claimRows = copayData.rate_corrections.filter(
+    (correction) => !usesInsightOnlyCopayCorrectionShape(correction),
+  );
 
   return (
-    <BillingSectionShell title={t("billing.copay.title")} total={fmtTRY2(copayData.total_copay_savings_try)}>
+    <BillingSectionShell
+      title={t("billing.copay.title")}
+      total={
+        copayExact
+          ? fmtTRY2(copayData.visit_copay_savings_try + copayData.rx_copay_savings_try)
+          : undefined
+      }
+    >
       <div className="space-y-4">
+        {!copayExact && (
+          <ExactnessNotice block={copayData} fallback={t("billing.copay.unavailable")} />
+        )}
+
         <div className="flex flex-wrap items-center gap-3">
           <StatusChip
             label={copayData.is_exempt ? getSutAlertBadgeLabel("exempt") : getSutAlertBadgeLabel("notExempt")}
@@ -302,18 +339,30 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
           )}
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3">
-          <KpiCard label={t("billing.copay.visitSavings")} value={fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
-          <KpiCard label={t("billing.copay.rxSavings")} value={fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
-          <KpiCard label={t("billing.copay.totalSavings")} value={fmtTRY2(copayData.total_copay_savings_try)} valueColor={savingsColor} />
-        </div>
+        {copayExact && (
+          <div className="grid gap-3 md:grid-cols-3">
+            <KpiCard label={t("billing.copay.visitSavings")} value={fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
+            <KpiCard label={t("billing.copay.rxSavings")} value={fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
+            <KpiCard label={t("billing.copay.totalSavings")} value={fmtTRY2(copayData.total_copay_savings_try)} valueColor={savingsColor} />
+          </div>
+        )}
 
-        {copayData.rate_corrections.length > 0 && (
+        {insightOnlyRows.length > 0 && (
+          <div className="space-y-2">
+            {insightOnlyRows.map((correction, index) => (
+              <p key={`insight-${index}`} className="text-sm leading-relaxed text-[var(--text-secondary)]">
+                {correction.detail}
+              </p>
+            ))}
+          </div>
+        )}
+
+        {claimRows.length > 0 && (
           <TableWrap minWidth={760}>
             <thead>
               <tr>
                 <th>{t("billing.copay.procedure")}</th>
-                {usesClaimCopayCorrectionShape(copayData.rate_corrections[0]) ? (
+                {usesClaimCopayCorrectionShape(claimRows[0]) ? (
                   <>
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.billed")}</th>
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.payable")}</th>
@@ -328,7 +377,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
               </tr>
             </thead>
             <tbody>
-              {copayData.rate_corrections.map((correction, index) => (
+              {claimRows.map((correction, index) => (
                 <tr key={`${copayCorrectionProcedureLabel(correction)}-${index}`}>
                   <td>{copayCorrectionProcedureLabel(correction)}</td>
                   {usesClaimCopayCorrectionShape(correction) ? (
@@ -366,8 +415,9 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
 export function BillingStrategySection({ strategyData }: { strategyData: BillingActionReport["billing_strategy"] }) {
   const t = useT();
   const strategyExact = isExactOutput(strategyData);
+  const hasRecommendations = strategyData.recommendations.length > 0;
 
-  if (!strategyExact) {
+  if (!strategyExact && !hasRecommendations) {
     return (
       <BillingSectionShell title={t("billing.strategy.title")}>
         <div className="sut-exactness-notice">
@@ -377,36 +427,69 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
     );
   }
 
-  if (strategyData.recommendations.length === 0) {
+  if (!hasRecommendations) {
     return null;
   }
 
+  const heuristicOnly = strategyData.recommendations.every((item) =>
+    usesHeuristicStrategyReviewShape(item),
+  );
+
   return (
     <BillingSectionShell title={t("billing.strategy.title")}>
-      <TableWrap minWidth={980}>
+      {!strategyExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(strategyData, t("billing.strategy.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={heuristicOnly ? 760 : 980}>
         <thead>
           <tr>
-            {usesClaimStrategyShape(strategyData.recommendations[0]) ? (
+            {heuristicOnly ? (
+              <>
+                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.chapter")}</th>
+                <th>{t("billing.strategy.recommendation")}</th>
+                <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
+              </>
+            ) : usesClaimStrategyShape(strategyData.recommendations[0]) ? (
               <>
                 <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.claim")}</th>
                 <th>{t("billing.strategy.recommendation")}</th>
+                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.packageTotal")}</th>
+                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.itemizedTotal")}</th>
+                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
               </>
             ) : (
               <>
                 <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.chapter")}</th>
                 <th>{t("billing.strategy.group")}</th>
                 <th>{t("billing.strategy.strategy")}</th>
+                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.packageTotal")}</th>
+                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.itemizedTotal")}</th>
+                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
               </>
             )}
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.packageTotal")}</th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.itemizedTotal")}</th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
           </tr>
         </thead>
         <tbody>
           {strategyData.recommendations.map((item, index) => (
             <tr key={`${strategyPrimaryLabel(item)}-${index}`}>
-              {usesClaimStrategyShape(item) ? (
+              {usesHeuristicStrategyReviewShape(item) ? (
+                <>
+                  <td className="font-semibold text-slate-950">{item.chapter ?? "—"}</td>
+                  <td>
+                    <StatusChip
+                      label={t("patient.workspace.reviewPackage")}
+                      color="#2563EB"
+                    />
+                  </td>
+                  <td>{item.detail ?? strategySecondaryLabel(item)}</td>
+                  <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                    {fmtTRY2OrUnavailable(item.savings_try ?? null)}
+                  </td>
+                </>
+              ) : usesClaimStrategyShape(item) ? (
                 <>
                   <td>
                     <div className="font-semibold text-slate-950">{strategyPrimaryLabel(item)}</div>
@@ -421,6 +504,15 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
                       label={fmtLabel(strategyModeLabel(item))}
                       color={strategyModeLabel(item) === "package" ? ACCENT : "#2563EB"}
                     />
+                  </td>
+                  <td className="num-col tabular-nums text-right">
+                    {fmtTRY2OrUnavailable(strategyPackageTotalTry(item))}
+                  </td>
+                  <td className="num-col tabular-nums text-right">
+                    {fmtTRY2OrUnavailable(strategyItemizedTotalTry(item))}
+                  </td>
+                  <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                    {fmtTRY2OrUnavailable(item.savings_try ?? null)}
                   </td>
                 </>
               ) : (
@@ -438,17 +530,17 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
                       color={strategyModeLabel(item) === "package" ? ACCENT : "#2563EB"}
                     />
                   </td>
+                  <td className="num-col tabular-nums text-right">
+                    {fmtTRY2OrUnavailable(strategyPackageTotalTry(item))}
+                  </td>
+                  <td className="num-col tabular-nums text-right">
+                    {fmtTRY2OrUnavailable(strategyItemizedTotalTry(item))}
+                  </td>
+                  <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                    {fmtTRY2OrUnavailable(item.savings_try ?? null)}
+                  </td>
                 </>
               )}
-              <td className="num-col tabular-nums text-right">
-                {fmtTRY2OrUnavailable(strategyPackageTotalTry(item))}
-              </td>
-              <td className="num-col tabular-nums text-right">
-                {fmtTRY2OrUnavailable(strategyItemizedTotalTry(item))}
-              </td>
-              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                {fmtTRY2(item.savings_try)}
-              </td>
             </tr>
           ))}
         </tbody>

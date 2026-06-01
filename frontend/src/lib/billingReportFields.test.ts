@@ -1,50 +1,28 @@
 import { describe, expect, it } from "vitest";
 import {
-  copayCorrectionBilledTry,
-  copayCorrectionPayableTry,
   copayCorrectionProcedureLabel,
-  copayCorrectionSavingsTry,
-  strategyItemizedTotalTry,
-  strategyModeLabel,
-  strategyPackageTotalTry,
-  strategyPrimaryLabel,
-  usesClaimCopayCorrectionShape,
-  usesClaimStrategyShape,
+  usesHeuristicStrategyReviewShape,
+  usesInsightOnlyCopayCorrectionShape,
 } from "./billingReportFields";
 
-describe("billingReportFields", () => {
-  it("maps claim-based copay correction rows", () => {
-    const row = {
-      code: "700670",
-      name: "Kalıcı kalp pili takılması",
-      billed_try: 3861.96,
-      payable_try: 2510.28,
-      copay_component_try: 1351.68,
+describe("billingReportFields honest gaps", () => {
+  it("treats detail-only copay rows as insight-only", () => {
+    const correction = {
+      detail: "EK-1A exemption may apply for Diabetes (E10-E14).",
     };
 
-    expect(usesClaimCopayCorrectionShape(row)).toBe(true);
-    expect(copayCorrectionProcedureLabel(row)).toBe(
-      "Kalıcı kalp pili takılması (700670)",
-    );
-    expect(copayCorrectionBilledTry(row)).toBe(3861.96);
-    expect(copayCorrectionPayableTry(row)).toBe(2510.28);
-    expect(copayCorrectionSavingsTry(row)).toBe(1351.68);
+    expect(usesInsightOnlyCopayCorrectionShape(correction)).toBe(true);
+    expect(copayCorrectionProcedureLabel(correction)).toContain("EK-1A exemption");
   });
 
-  it("maps claim-based billing strategy rows", () => {
-    const row = {
-      claim_id: "F-SENTETIK-HASTA-0001-003",
-      recommendation: "itemized" as const,
-      package_total_try: 15428.95,
-      itemized_total_try: 609.74,
-      savings_try: 14819.21,
-      detail: "Itemized billing yields higher recovery.",
-    };
-
-    expect(usesClaimStrategyShape(row)).toBe(true);
-    expect(strategyPrimaryLabel(row)).toBe("F-SENTETIK-HASTA-0001-003");
-    expect(strategyModeLabel(row)).toBe("itemized");
-    expect(strategyPackageTotalTry(row)).toBe(15428.95);
-    expect(strategyItemizedTotalTry(row)).toBe(609.74);
+  it("detects heuristic strategy review rows", () => {
+    expect(
+      usesHeuristicStrategyReviewShape({
+        chapter: "I",
+        recommendation: "review_package_eligibility",
+        savings_try: null,
+        detail: "Review package eligibility for chapter I.",
+      }),
+    ).toBe(true);
   });
 });

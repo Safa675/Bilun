@@ -15,7 +15,13 @@ export function copayCorrectionProcedureLabel(
       ? `${correction.name} (${correction.code})`
       : correction.name;
   }
-  return correction.procedure?.trim() || correction.code?.trim() || "—";
+  if (correction.procedure?.trim()) {
+    return correction.procedure;
+  }
+  if (correction.code?.trim()) {
+    return correction.code;
+  }
+  return correction.detail?.trim() || "—";
 }
 
 export function copayCorrectionBilledTry(
@@ -57,8 +63,14 @@ export function usesClaimCopayCorrectionShape(
   return (
     typeof correction.copay_component_try === "number" ||
     typeof correction.billed_try === "number" ||
-    Boolean(correction.code?.trim())
+    Boolean(correction.code?.trim() && correction.name?.trim())
   );
+}
+
+export function usesInsightOnlyCopayCorrectionShape(
+  correction: CopayRateCorrectionRow,
+): boolean {
+  return Boolean(correction.detail?.trim()) && !usesClaimCopayCorrectionShape(correction);
 }
 
 export function strategyPrimaryLabel(row: BillingStrategyRow): string {
@@ -101,4 +113,11 @@ export function strategyItemizedTotalTry(row: BillingStrategyRow): number | null
 
 export function usesClaimStrategyShape(row: BillingStrategyRow): boolean {
   return Boolean(row.claim_id?.trim()) || typeof row.package_total_try === "number";
+}
+
+export function usesHeuristicStrategyReviewShape(row: BillingStrategyRow): boolean {
+  return (
+    row.recommendation === "review_package_eligibility" &&
+    !usesClaimStrategyShape(row)
+  );
 }

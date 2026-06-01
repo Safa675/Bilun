@@ -144,7 +144,7 @@ export default function DesignSandbox() {
         <Section title="Stat" titleAccent="primitive" variant="soft">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Stat
-              label="Rule-calculated opportunity"
+              label="Max additional SGK reimbursement"
               value="2 412 850 TL"
               display="gold"
               hint="Italic gold treatment — one per page"

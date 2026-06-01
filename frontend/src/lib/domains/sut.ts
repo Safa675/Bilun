@@ -479,7 +479,7 @@ export interface DrugOptimization extends ExactnessState {
     drug_name: string;
     issue: string;
     alternative: string;
-    savings_try: number;
+    savings_try: number | null;
     detail?: string;
   }>;
 }
@@ -512,13 +512,13 @@ export interface BillingStrategyRecommendation extends ExactnessState {
     strategy?: "package" | "itemized";
     package_price?: number;
     itemized_estimate?: number;
-    savings_try: number;
     confidence?: "high" | "medium" | "low";
     claim_id?: string;
-    recommendation?: "package" | "itemized";
+    recommendation?: "package" | "itemized" | "review_package_eligibility";
     package_total_try?: number;
     itemized_total_try?: number;
     detail?: string;
+    savings_try?: number | null;
   }>;
 }
 

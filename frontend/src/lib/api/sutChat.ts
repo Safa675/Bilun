@@ -9,7 +9,7 @@ export interface SendSutChatMessageOptions {
   activeTab: string;
   intent?: SutChatIntent;
   pageContext?: SutChatPageContext | null;
-  onToken: (token: string) => void;
+  onToken: (token: string, event?: string) => void;
   signal?: AbortSignal;
 }
 
@@ -42,7 +42,7 @@ export async function sendSutChatMessage(
   } else {
     signal?.addEventListener("abort", onCallerAbort);
   }
-  const timeoutId = setTimeout(() => abortRequest("timeout"), 45_000);
+  const timeoutId = setTimeout(() => abortRequest("timeout"), 120_000);
 
   const toAbortError = (err: DOMException) => {
     if (abortSource === "timeout") {
@@ -91,11 +91,15 @@ export async function sendSutChatMessage(
   const decoder = new TextDecoder();
   let buffer = "";
   let tokenCount = 0;
-  let lastTokenTime = Date.now();
+  let lastActivityTime = Date.now();
+  const idleTimeoutMs = 90_000;
 
   try {
     while (true) {
       const { done, value } = await reader.read();
+      if (value) {
+        lastActivityTime = Date.now();
+      }
       if (done) {
         buffer += decoder.decode();
       } else {
@@ -116,16 +120,16 @@ export async function sendSutChatMessage(
         if (frame.event === "error") {
           throw new Error(payload);
         }
-        onToken(payload);
+        onToken(payload, frame.event || undefined);
         tokenCount += 1;
-        lastTokenTime = Date.now();
+        lastActivityTime = Date.now();
       }
 
       if (done) {
         break;
       }
 
-      if (Date.now() - lastTokenTime > 30_000) {
+      if (Date.now() - lastActivityTime > idleTimeoutMs) {
         throw new Error("No response received from SUT chat. Please try again.");
       }
     }

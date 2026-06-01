@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
-  Check,
   Minimize2,
   PanelLeft,
   PanelRight,
@@ -80,13 +79,14 @@ export default function SutInlineAIPanel({
   const locale = useLocale();
   const [_messages, _setMessages] = useState<ChatMessage[]>(externalState?.messages ?? []);
   const [_autoText, _setAutoText] = useState(externalState?.autoText ?? "");
+  const [autoReasoningText, setAutoReasoningText] = useState("");
   const [isAutoLoading, setIsAutoLoading] = useState(false);
   const [autoError, setAutoError] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isResponding, setIsResponding] = useState(false);
   const [followUpText, setFollowUpText] = useState("");
+  const [followUpReasoningText, setFollowUpReasoningText] = useState("");
   const [followUpError, setFollowUpError] = useState<string | null>(null);
-  const [approvedIndices, setApprovedIndices] = useState<Set<number>>(new Set());
   const autoAbortRef = useRef<AbortController | null>(null);
   const followUpAbortRef = useRef<AbortController | null>(null);
   const autoFiredRef = useRef<string>(externalState?.autoFiredKey ?? "");
@@ -197,11 +197,13 @@ export default function SutInlineAIPanel({
     const requestMessages = [...baseMessages, userMessage];
 
     setAutoTextStreaming("");
+    setAutoReasoningText("");
     setAutoError(null);
     setIsAutoLoading(true);
     setFollowUpText("");
 
     let accumulated = "";
+    let accumulatedReasoning = "";
 
     sendSutChatMessage(requestMessages, {
       patientId,
@@ -209,12 +211,17 @@ export default function SutInlineAIPanel({
       intent: "auto_brief",
       pageContext: pageContextRef.current,
       signal: controller.signal,
-      onToken: (token: string) => {
+      onToken: (token: string, event?: string) => {
         if (!mountedRef.current) {
           return;
         }
-        accumulated += token;
-        setAutoTextStreaming(accumulated);
+        if (event === "reasoning") {
+          accumulatedReasoning += token;
+          setAutoReasoningText(accumulatedReasoning);
+        } else {
+          accumulated += token;
+          setAutoTextStreaming(accumulated);
+        }
       },
     })
       .then(() => {
@@ -232,6 +239,7 @@ export default function SutInlineAIPanel({
           briefedContextKeys: nextBriefedKeys,
         });
         setAutoTextStreaming("");
+        setAutoReasoningText("");
       })
       .catch((err) => {
         if (!mountedRef.current) {
@@ -242,6 +250,7 @@ export default function SutInlineAIPanel({
           return;
         }
         setAutoTextStreaming("");
+        setAutoReasoningText("");
         setAutoError(
           err instanceof Error ? err.message : t("chat.errors.failedAutoAnalysis"),
         );
@@ -272,8 +281,8 @@ export default function SutInlineAIPanel({
         briefedContextKeys: [],
       });
       setFollowUpText("");
+      setFollowUpReasoningText("");
       setFollowUpError(null);
-      setApprovedIndices(new Set());
       fireAutoAnalysisRef.current({ force: true });
     }
   }, [locale, persistChatState]);
@@ -313,10 +322,12 @@ export default function SutInlineAIPanel({
     setMessages(nextMessages);
     setInput("");
     setFollowUpText("");
+    setFollowUpReasoningText("");
     setFollowUpError(null);
     setIsResponding(true);
 
     let accumulated = "";
+    let accumulatedReasoning = "";
 
     sendSutChatMessage(nextMessages, {
       patientId,
@@ -324,12 +335,17 @@ export default function SutInlineAIPanel({
       intent: "user_question",
       pageContext: pageContextRef.current,
       signal: controller.signal,
-      onToken: (token: string) => {
+      onToken: (token: string, event?: string) => {
         if (!mountedRef.current) {
           return;
         }
-        accumulated += token;
-        setFollowUpText(accumulated);
+        if (event === "reasoning") {
+          accumulatedReasoning += token;
+          setFollowUpReasoningText(accumulatedReasoning);
+        } else {
+          accumulated += token;
+          setFollowUpText(accumulated);
+        }
       },
     })
       .then(() => {
@@ -341,6 +357,7 @@ export default function SutInlineAIPanel({
           { role: "assistant", content: accumulated },
         ]);
         setFollowUpText("");
+        setFollowUpReasoningText("");
       })
       .catch((err) => {
         if (!mountedRef.current || isAbortError(err)) {
@@ -464,8 +481,6 @@ export default function SutInlineAIPanel({
         )}
 
         {displayedMessages.map((message, index) => {
-          const isApproved = approvedIndices.has(index);
-          const isAssistant = message.role === "assistant";
           return (
             <div
               key={`${message.role}-${index}-${message.content.slice(0, 24)}`}
@@ -477,7 +492,6 @@ export default function SutInlineAIPanel({
               <div
                 className={cn(
                   "whitespace-pre-wrap text-[13px] leading-[1.7]",
-                  isAssistant && isApproved && "border-l-2 border-[var(--color-success)] pl-2",
                   message.role === "user"
                     ? "italic text-[var(--text-secondary)]"
                     : "text-[var(--text-primary)]",
@@ -485,45 +499,31 @@ export default function SutInlineAIPanel({
               >
                 {message.content}
               </div>
-              {isAssistant && (
-                <div className="mt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setApprovedIndices((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(index)) {
-                          next.delete(index);
-                        } else {
-                          next.add(index);
-                        }
-                        return next;
-                      });
-                    }}
-                    className={cn(
-                      "inline-flex items-center gap-1 rounded-[var(--r-sm)] border px-2 py-0.5 text-[11px] transition-colors",
-                      isApproved
-                        ? "border-[var(--color-success)] bg-[var(--color-success)]/10 text-[var(--color-success)]"
-                        : "border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--gold)] hover:text-[var(--gold)]",
-                    )}
-                  >
-                    <Check className="h-3 w-3" />
-                    {isApproved ? t("chat.approve.approved") : t("chat.approve.approve")}
-                  </button>
-                </div>
-              )}
             </div>
           );
         })}
 
         {isAutoLoading && (
-          <div className="mb-2 whitespace-pre-wrap text-[13px] leading-[1.7] text-[var(--text-primary)]">
-            {!autoText && (
-              <span className="italic text-[var(--text-muted)]">{t("chat.loading.analyzing")}</span>
+          <>
+            {autoReasoningText && (
+              <details className="mb-2 rounded-[var(--r-sm)] border border-[var(--border-subtle)] p-2 text-[12px] leading-[1.6]">
+                <summary className="cursor-pointer text-[var(--text-muted)] select-none">
+                  Thinking{" "}
+                  <span className="inline-block h-3 w-3 ml-1 align-text-bottom bg-[var(--text-muted)]/30 [animation:sutChatCursorBlink_1s_step-end_infinite]" />
+                </summary>
+                <div className="mt-1 whitespace-pre-wrap text-[var(--text-muted)]">
+                  {autoReasoningText}
+                </div>
+              </details>
             )}
-            {autoText}
-            {autoText && <span className={CHAT_CURSOR_CLASS} />}
-          </div>
+            <div className="mb-2 whitespace-pre-wrap text-[13px] leading-[1.7] text-[var(--text-primary)]">
+              {!autoText && !autoReasoningText && (
+                <span className="italic text-[var(--text-muted)]">{t("chat.loading.analyzing")}</span>
+              )}
+              {autoText}
+              {isAutoLoading && autoText && <span className={CHAT_CURSOR_CLASS} />}
+            </div>
+          </>
         )}
 
         {autoError && !isAutoLoading && (
@@ -553,11 +553,28 @@ export default function SutInlineAIPanel({
         </div>
       )}
 
-      {followUpText && (
-        <div className="mt-2 whitespace-pre-wrap text-[13px] leading-[1.7] text-[var(--text-primary)]">
-          {followUpText}
-          <span className={CHAT_CURSOR_CLASS} />
-        </div>
+      {isResponding && (
+        <>
+          {followUpReasoningText && (
+            <details className="mt-2 rounded-[var(--r-sm)] border border-[var(--border-subtle)] p-2 text-[12px] leading-[1.6]">
+              <summary className="cursor-pointer text-[var(--text-muted)] select-none">
+                Thinking
+                {!followUpText && (
+                  <span className="inline-block h-3 w-3 ml-1 align-text-bottom bg-[var(--text-muted)]/30 [animation:sutChatCursorBlink_1s_step-end_infinite]" />
+                )}
+              </summary>
+              <div className="mt-1 whitespace-pre-wrap text-[var(--text-muted)]">
+                {followUpReasoningText}
+              </div>
+            </details>
+          )}
+          {followUpText && (
+            <div className="mt-2 whitespace-pre-wrap text-[13px] leading-[1.7] text-[var(--text-primary)]">
+              {followUpText}
+              <span className={CHAT_CURSOR_CLASS} />
+            </div>
+          )}
+        </>
       )}
 
       {followUpError && (
