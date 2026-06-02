@@ -1,0 +1,54 @@
+{
+  "rule_set_id": "copay_general_1_8",
+  "title": "SUT §1.8 general copay rates",
+  "effective_date": "2026-01-17",
+  "sut_anchors": ["1.8.2", "1.8.3", "1.8.4"],
+  "rules": [
+    {
+      "rule_id": "1.8.2.(1)",
+      "sut_section": "1.8.2.(1)",
+      "service_type": "drug",
+      "rates": {
+        "sgk_income_recipient": 0.1,
+        "other": 0.2
+      }
+    },
+    {
+      "rule_id": "1.8.2.(2)",
+      "sut_section": "1.8.2.(2)",
+      "service_type": "drug_prescription_flat",
+      "effective_from": "2026-01-01",
+      "fees_try": {
+        "base_up_to_3_boxes": 3.76,
+        "per_extra_box": 1.25
+      },
+      "legacy_fees_try": {
+        "base_up_to_3_boxes": 3.0,
+        "per_extra_box": 1.0
+      }
+    },
+    {
+      "rule_id": "1.8.3.(2)",
+      "sut_section": "1.8.3.(2)",
+      "service_type": "material",
+      "rates": {
+        "sgk_income_recipient": 0.1,
+        "other": 0.2
+      }
+    },
+    {
+      "rule_id": "1.8.4.(1)",
+      "sut_section": "1.8.4.(1)",
+      "service_type": "ivf_treatment",
+      "rates_by_attempt": {
+        "1": {"sgk_income_recipient": 0.3, "other": 0.3},
+        "2": {"sgk_income_recipient": 0.25, "other": 0.25},
+        "3": {"sgk_income_recipient": 0.2, "other": 0.2}
+      }
+    }
+  ],
+  "exemptions_ref": {
+    "chronic_disease": "EK-1/A",
+    "copay_exempt_drugs": "EK-4/D"
+  }
+}

@@ -1,0 +1,439 @@
+{
+  "rule_set_id": "material_bundling_prose",
+  "title": "SUT §3.1 material payment / non-separate-billing prose (partial)",
+  "effective_date": "2026-01-17",
+  "coverage_note": "Gate B partial encode: EK-3B-1/2 annex lists plus 22 §3.1–3.2 prose rules (5 added this merge). Full SUT corpus not encoded.",
+  "sut_anchors": [
+    "3.1.1",
+    "3.1.1.(11)",
+    "3.1.2",
+    "3.1.2.(2)",
+    "3.1.2.c",
+    "3.1.3",
+    "3.1.3.(7)",
+    "3.1.3.(8)",
+    "3.1.3.(9)"
+  ],
+  "rules": [
+    {
+      "rule_id": "3.1.3.(7).serbest_kodsuz",
+      "sut_section": "3.1.3",
+      "deontic": "NO_PAY",
+      "condition": {
+        "material_name_any": [
+          "serbest kodsuz",
+          "kodsuz giriş",
+          "kodsuz giris"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Serbest/kodsuz malzeme girişi — Kurumca karşılanmaz (§3.1.3(7))."
+      }
+    },
+    {
+      "rule_id": "3.1.3.(8).demirbas",
+      "sut_section": "3.1.3",
+      "deontic": "NO_PAY",
+      "condition": {
+        "material_name_any": [
+          "demirbaş",
+          "demirbas",
+          "yedek parça",
+          "yedek parca",
+          "tamir bakım",
+          "tamir bakim"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Demirbaş / yedek parça / tamir-bakım — ayrıca faturalandırılamaz (§3.1.3(8))."
+      }
+    },
+    {
+      "rule_id": "3.1.3.(9).reusable_provider",
+      "sut_section": "3.1.3",
+      "deontic": "NO_PAY",
+      "condition": {
+        "material_name_any": [
+          "tekrar kullanılabilir",
+          "tekrar kullanilabilir",
+          "yeniden kullanılabilir",
+          "yeniden kullanilabilir"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Tekrar kullanılabilir malzeme — sunucu temini; ayrıca ödenmez (§3.1.3(9))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.c.warranty_maintenance",
+      "sut_section": "3.1.2",
+      "deontic": "MUST_NOT_BILL",
+      "condition": {
+        "material_name_any": [
+          "garanti kapsam",
+          "garanti süresi",
+          "garanti suresi",
+          "bakım onarım",
+          "bakim onarim",
+          "bakım ve onarım masrafları",
+          "bakim ve onarim masraflari",
+          "firma tarafından karşılan",
+          "firma tarafindan karsilan"
+        ]
+      },
+      "action": {
+        "material_outcome": "must_not_bill_separately",
+        "severity": "warning",
+        "message_tr": "Garanti kapsamındaki bakım/onarım — ayrıca faturalandırılamaz (§3.1.2(c))."
+      },
+      "gate_b_sources": [
+        "C002741"
+      ]
+    },
+    {
+      "rule_id": "3.1.1.(11).missing_material_code",
+      "sut_section": "3.1.1",
+      "deontic": "MUST_HAVE_CODE",
+      "condition": {
+        "requires_material_code": true,
+        "material_code_missing": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Malzeme SUT kodu eksik — EK-3/C eşlemesi ve işlem eşlemesi yapılamaz (§3.1.1(11))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(2).not_in_ek3c",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "condition": {
+        "material_not_in_ek3c": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Malzeme kodu EK-3/C listelerinde yok — Kurumca karşılanmaz (§3.1.2(2))."
+      },
+      "gate_b_sources": [
+        "C001648"
+      ]
+    },
+    {
+      "rule_id": "3.1.1.(11).procedure_pairing",
+      "sut_section": "3.1.1",
+      "deontic": "MUST_PAIR_PROCEDURE",
+      "condition": {
+        "material_in_ek3c": true,
+        "procedure_pairing_required": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "warning",
+        "message_tr": "EK-3/C malzemesi faturalı işlemle eşleşmiyor — işlem kodu veya procedure_line_id gerekli (§3.1.1(11))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(2).titubb_uts_incomplete",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001618",
+        "C001619",
+        "C002684",
+        "C001636",
+        "C002696"
+      ],
+      "condition": {
+        "titubb_uts_incomplete": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "TİTUBB/ÜTS kayıt-bildirim tamamlanmamış — Kurumca karşılanmaz (§3.1.1(2))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(17).barcode_sut_mismatch",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001637",
+        "C002697"
+      ],
+      "condition": {
+        "material_name_any": [
+          "barkod-sut uyumsuz",
+          "barkod sut uyumsuz",
+          "sut kodu eşleşme hatalı",
+          "sut kodu eslesme hatali"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Barkod–SUT kodu eşleştirme hatası — malzeme ödenmez (§3.1.1(17))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(9).non_reimbursed_procedure_material",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002691"
+      ],
+      "condition": {
+        "material_name_any": [
+          "karşılanmayan işlem malzemesi",
+          "karsilanmayan islem malzemesi",
+          "ödenmeyen işleme ait malzeme"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Bedeli karşılanmayan işleme ait malzeme — Kurumca karşılanmaz (§3.1.1(9))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(2).not_in_ek3",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001834",
+        "C001837",
+        "C001840",
+        "C001845",
+        "C001849",
+        "C002824",
+        "C002828",
+        "C002831"
+      ],
+      "condition": {
+        "material_not_in_ek3": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Malzeme kodu EK-3 uzmanlık listelerinde yok — Kurumca karşılanmaz (§3.2.1 / §3.1.2)."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(7).lost_stolen_miat",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001664",
+        "C002707",
+        "C002720"
+      ],
+      "condition": {
+        "material_name_any": [
+          "kaybolması",
+          "kaybolmasi",
+          "çalınması",
+          "calinmasi",
+          "çalıntı",
+          "calinti"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "warning",
+        "message_tr": "Kayıp/çalıntı sonrası MIAT dolana kadar yeni malzeme ödenmez (§3.1.2(7))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.c.onarim_not_covered",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002724"
+      ],
+      "condition": {
+        "material_name_any": [
+          "kullanım kurallarına uyulmaması",
+          "kullanim kurallarina uyulmamasi",
+          "onarım masraf",
+          "onarim masraf"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "warning",
+        "message_tr": "Kullanım kuralı ihlali onarım masrafı — Kurumca karşılanmaz (§3.1.2(c))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.ç.garanti_renewal_denied",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002742"
+      ],
+      "condition": {
+        "material_name_any": [
+          "garanti süresi içindeki yenilenme",
+          "garanti suresi icindeki yenilenme"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "warning",
+        "message_tr": "Garanti süresi içi yenileme talebi — Kurumca karşılanmaz (§3.1.2(ç))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.d.duplicate_function_garanty",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002743"
+      ],
+      "condition": {
+        "material_name_any": [
+          "aynı işlevi gören",
+          "ayni islevi goren",
+          "birden fazla ürün çeşidi"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "warning",
+        "message_tr": "Aynı işlevli alternatif ürün — garanti süresi dolana kadar diğerleri ödenmez (§3.1.2(d))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(17).device_consumable_excluded",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002749"
+      ],
+      "condition": {
+        "material_name_any": [
+          "karşılanmayan tıbbi cihaz",
+          "karsilanmayan tibbi cihaz",
+          "cihaza ait sarf",
+          "cihaz sarf"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Karşılanmayan cihaza ait sarf/bakım — Kurumca karşılanmaz (§3.1.2(17))."
+      }
+    },
+    {
+      "rule_id": "3.1.3.(2).branch_unlisted_material",
+      "sut_section": "3.1.3",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001762",
+        "C002789"
+      ],
+      "condition": {
+        "material_name_any": [
+          "listelerde yer almayan branş",
+          "listelerde yer almayan brans",
+          "branş listesinde yok"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Branş EK-3 listesinde olmayan malzeme — Kurumca karşılanmaz (§3.1.3(2))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(5).procurement_screen_incomplete",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001622"
+      ],
+      "condition": {
+        "procurement_record_incomplete": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "İhale/doğrudan temin sonuç bilgileri eksik — malzeme bedeli Kurumca karşılanmaz (§3.1.1(5))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(11).procedure_not_reimbursed_link",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001629"
+      ],
+      "condition": {
+        "procedure_not_reimbursed": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Bedeli karşılanmayan işleme ait malzeme — Kurumca karşılanmaz (§3.1.1(11)/(12))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(14).foreign_facility_overhead",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001633",
+        "C002694"
+      ],
+      "condition": {
+        "foreign_facility": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "warning",
+        "message_tr": "Yurt dışı sunucuda işletme/hazine/SHÇEK kesintileri — malzeme ek giderleri Kurumca karşılanmaz (§3.1.1(12)/(14))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(18).facility_procedure_restriction",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001639",
+        "C002698"
+      ],
+      "condition": {
+        "facility_procedure_restriction_violation": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Malzemedeki sunucu kısıtına uymayan işlem — bedel ödenmez (§3.1.1(16)/(18))."
+      }
+    },
+    {
+      "rule_id": "3.1.3.(11).diagnosis_bundled_medula",
+      "sut_section": "3.1.3",
+      "deontic": "MUST_NOT_BILL",
+      "gate_b_sources": [
+        "C001797",
+        "C002798"
+      ],
+      "condition": {
+        "diagnosis_bundled_no_separate_bill": true
+      },
+      "action": {
+        "material_outcome": "must_not_bill_separately",
+        "severity": "warning",
+        "message_tr": "Tanıya dayalı paket kapsamı — ayrıca faturalandırılamaz; MEDULA kaydı gerekir (§3.1.3(11))."
+      }
+    }
+  ]
+}

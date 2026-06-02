@@ -1,0 +1,156 @@
+{
+  "description": "Gate B golden fixtures — expected rule_id per synthetic material line",
+  "cases": [
+    {
+      "clause_id": "C001618",
+      "material": {
+        "name": "Protez",
+        "code": "100000",
+        "unit_price": 100.0,
+        "titubb_registered": false,
+        "uts_registered": true
+      },
+      "expected_rule_id": "3.1.1.(2).titubb_uts_incomplete"
+    },
+    {
+      "clause_id": "C001637",
+      "material": {
+        "name": "Barkod-SUT kodu eşleşme hatalı cihaz",
+        "code": "LOST1",
+        "unit_price": 50.0
+      },
+      "expected_rule_id": "3.1.1.(17).barcode_sut_mismatch"
+    },
+    {
+      "clause_id": "C002691",
+      "material": {
+        "name": "Karşılanmayan işlem malzemesi seti",
+        "code": "LOST2",
+        "unit_price": 20.0
+      },
+      "expected_rule_id": "3.1.1.(9).non_reimbursed_procedure_material"
+    },
+    {
+      "clause_id": "C001834",
+      "material": {
+        "name": "Liste dışı",
+        "code": "NOT-IN-ANY-EK3-99999",
+        "unit_price": 40.0
+      },
+      "expected_rule_id": "3.1.2.(2).not_in_ek3c"
+    },
+    {
+      "clause_id": "C001664",
+      "material": {
+        "name": "Malzeme kaybolması sonrası talep",
+        "code": "LOST3",
+        "unit_price": 30.0
+      },
+      "expected_rule_id": "3.1.2.(7).lost_stolen_miat"
+    },
+    {
+      "clause_id": "C002724",
+      "material": {
+        "name": "Kullanım kurallarına uyulmaması onarım",
+        "code": "LOST4",
+        "unit_price": 25.0
+      },
+      "expected_rule_id": "3.1.2.c.onarim_not_covered"
+    },
+    {
+      "clause_id": "C002742",
+      "material": {
+        "name": "Garanti süresi içindeki yenilenme",
+        "code": "LOST5",
+        "unit_price": 15.0
+      },
+      "expected_rule_id": "3.1.2.ç.garanti_renewal_denied"
+    },
+    {
+      "clause_id": "C002743",
+      "material": {
+        "name": "Aynı işlevi gören birden fazla ürün",
+        "code": "LOST6",
+        "unit_price": 15.0
+      },
+      "expected_rule_id": "3.1.2.d.duplicate_function_garanty"
+    },
+    {
+      "clause_id": "C002749",
+      "material": {
+        "name": "Karşılanmayan tıbbi cihaz sarf",
+        "code": "LOST7",
+        "unit_price": 15.0
+      },
+      "expected_rule_id": "3.1.2.(17).device_consumable_excluded"
+    },
+    {
+      "clause_id": "C001762",
+      "material": {
+        "name": "Branş listesinde yok malzeme",
+        "code": "LOST8",
+        "unit_price": 15.0
+      },
+      "expected_rule_id": "3.1.3.(2).branch_unlisted_material"
+    },
+    {
+      "clause_id": "C001797",
+      "material": {
+        "name": "Tanı paketi malzemesi",
+        "code": "DX1",
+        "unit_price": 25.0,
+        "diagnosis_bundled_no_separate_bill": true
+      },
+      "expected_rule_id": "3.1.3.(11).diagnosis_bundled_medula"
+    },
+    {
+      "clause_id": "C001622",
+      "material": {
+        "name": "Sözleşmeli kurum malzemesi",
+        "code": "P1",
+        "unit_price": 80.0,
+        "procurement_record_incomplete": true
+      },
+      "expected_rule_id": "3.1.1.(5).procurement_screen_incomplete"
+    },
+    {
+      "clause_id": "C001629",
+      "material": {
+        "name": "İşlem malzemesi",
+        "code": "PR1",
+        "unit_price": 60.0,
+        "procedure_not_reimbursed": true
+      },
+      "expected_rule_id": "3.1.1.(11).procedure_not_reimbursed_link"
+    },
+    {
+      "clause_id": "C001633",
+      "material": {
+        "name": "Yurt dışı malzeme",
+        "code": "AB1",
+        "unit_price": 90.0,
+        "foreign_facility": true
+      },
+      "expected_rule_id": "3.1.1.(14).foreign_facility_overhead"
+    },
+    {
+      "clause_id": "C001639",
+      "material": {
+        "name": "Kısıtlı sunucu malzemesi",
+        "code": "FC1",
+        "unit_price": 70.0,
+        "facility_procedure_restriction_violation": true
+      },
+      "expected_rule_id": "3.1.1.(18).facility_procedure_restriction"
+    },
+    {
+      "clause_id": "C002741",
+      "material": {
+        "name": "Bakım ve onarım masrafları garanti süresi içinde",
+        "code": "W1",
+        "unit_price": 35.0
+      },
+      "expected_rule_id": "3.1.2.c.warranty_maintenance"
+    }
+  ]
+}
