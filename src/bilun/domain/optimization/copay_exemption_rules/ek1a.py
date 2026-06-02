@@ -56,8 +56,12 @@ def _precompute_exemption_map(
     return result
 
 
-def evaluate_ek1a_exemption(diagnoses: list[str]) -> dict[str, Any] | None:
-    """Return an exemption source dict if any diagnosis matches EK-1A."""
+def evaluate_ek1a_exemption(
+    diagnoses: list[str],
+    *,
+    has_health_report: bool | None = None,
+) -> dict[str, Any] | None:
+    """Return an exemption source dict if any diagnosis matches EK-1/A."""
     ek1a_idx = _get_ek1a_by_letter()
     if not ek1a_idx or not diagnoses:
         return None
@@ -90,8 +94,17 @@ def evaluate_ek1a_exemption(diagnoses: list[str]) -> dict[str, Any] | None:
     if not qualifying:
         return None
 
-    return {
+    counts_toward_exempt = has_health_report is True
+    source: dict[str, Any] = {
         "category": "ek1a_chronic",
-        "rule_source": "EK-1A chronic disease copay exemptions, SUT 1.8.1",
+        "rule_source": "SUT §1.8.5(7) + EK-1/A chronic disease copay exemptions",
+        "counts_toward_exempt": counts_toward_exempt,
         "evidence": {"qualifying_diagnoses": qualifying},
     }
+    if has_health_report is False:
+        source["exemption_strength"] = "partial"
+        source["missing_requirements"] = ["chronic_health_report"]
+    elif has_health_report is None:
+        source["exemption_strength"] = "partial"
+        source["missing_requirements"] = ["chronic_health_report"]
+    return source

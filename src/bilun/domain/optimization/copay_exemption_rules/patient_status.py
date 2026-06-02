@@ -40,7 +40,8 @@ def evaluate_patient_status_exemptions(
         sources.append(
             {
                 "category": "yesil_kart",
-                "rule_source": "SGK green card benefit class",
+                "rule_source": "SUT §1.8.5(22)a — 5510 md.60(12) GSS beneficiary groups",
+                "counts_toward_exempt": True,
                 "evidence": {"sgk_benefit_class": profile.sgk_benefit_class},
             }
         )
@@ -50,7 +51,8 @@ def evaluate_patient_status_exemptions(
         sources.append(
             {
                 "category": "sehit_gazi",
-                "rule_source": "Martyr / veteran / relative status",
+                "rule_source": "SUT §1.8.5(13),(15),(16) — 2330 / 3713 / vazife malûlü",
+                "counts_toward_exempt": True,
                 "evidence": {"veteran_martyr_status": profile.veteran_martyr_status},
             }
         )
@@ -69,7 +71,8 @@ def evaluate_patient_status_exemptions(
         sources.append(
             {
                 "category": "vatani_hizmet",
-                "rule_source": "National service beneficiary status",
+                "rule_source": "SUT §1.8.5(11),(12) — Vatani Hizmet laws",
+                "counts_toward_exempt": True,
                 "evidence": {"national_service_status": profile.national_service_status},
             }
         )
@@ -83,7 +86,9 @@ def evaluate_patient_status_exemptions(
         sources.append(
             {
                 "category": "kanun_2022_65",
-                "rule_source": "Law 2022 elderly allowance (65+)",
+                "rule_source": "HEURISTIC — elderly allowance flag (not in §1.8 prose extract)",
+                "counts_toward_exempt": False,
+                "exemption_strength": "heuristic",
                 "evidence": {
                     "elderly_allowance_2022": True,
                     "age_at_latest_claim": age,

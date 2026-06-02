@@ -8,6 +8,7 @@ import { ACCENT_LOCAL, fmtNum, KpiCard } from "../shared";
 import { useSutApi } from "../useSutApi";
 import { Chip, DataTable, Surface } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
+import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 
 export function BundledConsumablesSection() {
   const t = useT();
@@ -43,6 +44,7 @@ export function BundledConsumablesSection() {
 
   return (
     <div className="space-y-5">
+      <MaterialBundlingScopeNotice scope={data.coverage_scope} />
       <div className="grid grid-cols-2 gap-3">
         <KpiCard label={t("sections.bundledConsumables.kpi.bundledItems")} value={fmtNum(data.bundled_consumables.count)} valueColor={ACCENT_LOCAL} />
         <KpiCard label={t("sections.bundledConsumables.kpi.exclusionCategories")} value={fmtNum(data.exclusion_categories.count)} valueColor="#B45309" />

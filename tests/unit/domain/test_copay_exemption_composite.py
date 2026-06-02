@@ -15,9 +15,10 @@ def test_evaluate_ek1a_only_diagnoses(monkeypatch) -> None:
     monkeypatch.setattr(
         copay_mod,
         "evaluate_ek1a_exemption",
-        lambda diagnoses: {
+        lambda diagnoses, **kwargs: {
             "category": "ek1a_chronic",
             "rule_source": "EK-1A",
+            "counts_toward_exempt": True,
             "evidence": {
                 "qualifying_diagnoses": [
                     {"icd10": "E11.9", "disease": "Diabetes", "range": "E10-E14"}

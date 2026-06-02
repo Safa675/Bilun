@@ -30,11 +30,19 @@ def evaluate_copay_exemption(inp: CopayExemptionInput) -> dict[str, Any]:
     sources: list[dict[str, Any]] = []
     not_evaluated: list[dict[str, Any]] = []
 
-    ek1a = evaluate_ek1a_exemption(inp.diagnoses)
+    ek1a = evaluate_ek1a_exemption(
+        inp.diagnoses,
+        has_health_report=inp.has_chronic_health_report,
+    )
     if ek1a is not None:
         sources.append(ek1a)
 
-    sources.extend(evaluate_visit_type_exemptions(inp.claim_visit_types))
+    sources.extend(
+        evaluate_visit_type_exemptions(
+            inp.claim_visit_types,
+            inp.claim_procedure_codes,
+        )
+    )
 
     occ = evaluate_occupational_exemption(
         inp.claim_visit_types,
@@ -54,13 +62,18 @@ def evaluate_copay_exemption(inp: CopayExemptionInput) -> dict[str, Any]:
     if ek1a is not None:
         qualifying = list(ek1a.get("evidence", {}).get("qualifying_diagnoses", []))
 
-    exempt = len(sources) > 0
-    primary = sources[0]["category"] if sources else None
+    exempt = any(bool(s.get("counts_toward_exempt", True)) for s in sources)
+    partial_exempt = bool(qualifying) and not exempt
+    primary = next(
+        (s["category"] for s in sources if s.get("counts_toward_exempt", True)),
+        sources[0]["category"] if sources else None,
+    )
 
     result = empty_copay_exemption_result()
     result.update(
         {
             "exempt": exempt,
+            "partial_exempt": partial_exempt,
             "n_qualifying": len(qualifying),
             "qualifying_diagnoses": qualifying,
             "exemption_sources": sources,
