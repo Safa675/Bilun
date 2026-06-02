@@ -2,17 +2,7 @@
 bundling_rules.py — Detect consumables billed separately that should be
 bundled into the procedure price per EK-3B-1.
 
-SUT Rule (EK-3/B-1):
-    54 categories of simple medical consumables are INCLUDED in the
-    procedure fee (EK-2B puan). Hospitals may NOT bill these separately.
-    If a claim line-item matches a bundled consumable, it is a billing
-    violation and the line-item cost represents potential savings.
-
-Examples of bundled items:
-    - Bistüri ucu (scalpel tips)
-    - Disposable enjektör (syringes)
-    - Eldiven (gloves, non-sterile surgical)
-    - Antiseptik solüsyonlar (antiseptic solutions)
+SUT annex EK-3B-1 (54 consumable categories) + supporting prose §3.1.4.
 """
 
 from __future__ import annotations
@@ -21,6 +11,7 @@ import logging
 from typing import Any
 
 from src.bilun.domain.materials import get_bundled_consumables
+from src.bilun.domain.materials.catalog_lookup import resolve_material_name_by_code
 from src.bilun.domain.utils import turkish_lower, fuzzy_match_name
 
 logger = logging.getLogger("ilay.sut_optimization.bundling")
@@ -31,33 +22,17 @@ def check_bundling_violations(
     procedure_code: str | None = None,
 ) -> list[dict[str, Any]]:
     """
-    Check a list of claim materials for bundling violations.
+    Check claim materials for EK-3B-1 bundling violations.
 
-    A bundling violation occurs when a material that is included in the
-    procedure price (per EK-3B-1) is billed as a separate line item.
-
-    Args:
-        materials: List of dicts, each with at least:
-            - "name" (str): Material/consumable name.
-            - "unit_price" (float, optional): Billed unit price.
-            - "quantity" (int, optional): Number of units.
-        procedure_code: Optional SUT procedure code for context.
-
-    Returns:
-        List of violation dicts, each with:
-            - rule: "bundling"
-            - severity: "warning" or "error"
-            - material_name: The offending material name.
-            - matched_bundled_item: The EK-3B-1 item it matched.
-            - billed_amount: Total billed amount for this line.
-            - savings_try: Potential savings (= billed_amount).
-            - message: Human-readable explanation.
+    Match priority:
+      1. SUT material code → catalog name → bundled list (error)
+      2. Exact / substring name match (error)
+      3. Fuzzy name-only match (warning)
     """
     bundled_items = get_bundled_consumables()
     if not bundled_items:
         return []
 
-    # Build Turkish-lowercased index for matching
     bundled_index: list[tuple[str, dict[str, Any]]] = []
     for item in bundled_items:
         item_name = turkish_lower((item.get("item_name") or "").strip())
@@ -68,25 +43,47 @@ def check_bundling_violations(
 
     for mat in materials:
         mat_name = str(mat.get("name", "")).strip()
-        if not mat_name:
+        mat_code = str(mat.get("code") or mat.get("material_code") or "").strip()
+        if not mat_name and not mat_code:
             continue
 
-        mat_lower = turkish_lower(mat_name)
         unit_price = float(mat.get("unit_price", 0.0))
         quantity = int(mat.get("quantity", 1))
         billed = round(unit_price * quantity, 2)
 
-        # Check against bundled items (substring match both directions)
-        for bundled_name, bundled_entry in bundled_index:
-            if mat_lower in bundled_name or bundled_name in mat_lower:
-                _add_bundling_violation(violations, bundled_entry, mat_name, billed,
-                                        procedure_code)
-                break
-        else:
-            fuzzy = fuzzy_match_name(mat_lower, bundled_index, threshold=0.80)
-            if fuzzy:
-                _add_bundling_violation(violations, fuzzy[1], mat_name, billed,
-                                        procedure_code)
+        matched: tuple[dict[str, Any], str, str] | None = None
+
+        if mat_code:
+            resolved_name = resolve_material_name_by_code(mat_code)
+            if resolved_name:
+                matched = _match_bundled_name(resolved_name, bundled_index)
+                if matched is not None:
+                    entry, match_kind = matched
+                    _add_bundling_violation(
+                        violations,
+                        entry,
+                        mat_name or resolved_name,
+                        billed,
+                        procedure_code,
+                        match_kind="code_resolved",
+                        severity="error",
+                    )
+                    continue
+
+        if mat_name:
+            matched = _match_bundled_name(mat_name, bundled_index)
+            if matched is not None:
+                entry, match_kind = matched
+                severity = "warning" if match_kind == "name_fuzzy" else "error"
+                _add_bundling_violation(
+                    violations,
+                    entry,
+                    mat_name,
+                    billed,
+                    procedure_code,
+                    match_kind=match_kind,
+                    severity=severity,
+                )
 
     if violations:
         logger.info(
@@ -100,29 +97,52 @@ def check_bundling_violations(
     return violations
 
 
+def _match_bundled_name(
+    material_name: str,
+    bundled_index: list[tuple[str, dict[str, Any]]],
+) -> tuple[dict[str, Any], str] | None:
+    needle = turkish_lower(material_name.strip())
+    if not needle:
+        return None
+
+    for bundled_name, bundled_entry in bundled_index:
+        if needle in bundled_name or bundled_name in needle:
+            return bundled_entry, "name_substring"
+
+    fuzzy = fuzzy_match_name(needle, bundled_index, threshold=0.80)
+    if fuzzy:
+        return fuzzy[1], "name_fuzzy"
+    return None
+
+
 def _add_bundling_violation(
     violations: list[dict[str, Any]],
     bundled_entry: dict[str, Any],
     mat_name: str,
     billed: float,
     procedure_code: str | None,
+    *,
+    match_kind: str,
+    severity: str,
 ) -> None:
     category = bundled_entry.get("description") or "Unknown"
+    savings = billed if billed > 0 else None
     violations.append(
         {
             "rule": "bundling",
-            "severity": "error" if billed > 50.0 else "warning",
+            "severity": severity,
             "material_name": mat_name,
             "matched_bundled_item": bundled_entry.get("item_name", ""),
             "bundled_category": category,
             "billed_amount": billed,
-            "savings_try": billed,
+            "savings_try": savings,
+            "match_kind": match_kind,
             "procedure_code": procedure_code or "",
             "message": (
                 f"'{mat_name}' is bundled into the procedure price "
-                f"(EK-3B-1: {category}). "
-                f"Cannot be billed separately. "
-                f"Potential savings: {billed:.2f} TRY."
+                f"(EK-3B-1: {category}, match={match_kind}). "
+                f"Cannot be billed separately."
+                + (f" Potential savings: {billed:.2f} TRY." if billed > 0 else "")
             ),
         }
     )

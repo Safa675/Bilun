@@ -82,6 +82,7 @@ def _optimize_drug_costs(
                     "issue": "passivated",
                     "alternative": alt_name,
                     "savings_try": None,
+                    "savings_basis": "heuristic",
                     "detail": f"Drug passivated on {pass_date}. Active alternative available.",
                 }
             )
@@ -118,6 +119,7 @@ def _optimize_drug_costs(
                     "issue": "generic_available",
                     "alternative": best_alt["drug_name"],
                     "savings_try": None,
+                    "savings_basis": "heuristic",
                     "detail": (
                         f"Generic equivalent in group {eq_group}. "
                         f"Current: {current_status or 'N/A'}, "

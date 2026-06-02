@@ -33,7 +33,32 @@ def test_billing_strategy_with_chapters_adds_review_flags() -> None:
     assert result.exactness_status == "missing_exact_inputs"
 
 
-def test_copay_is_unavailable_without_exact_claim_inputs():
+def test_billing_report_with_claim_context_uses_sut_strategy() -> None:
+    from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
+    from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
+
+    dataset = load_sut_claim_dataset()
+    ctx = build_patient_claim_context("SENTETIK-HASTA-0003", dataset)
+    assert ctx is not None
+
+    report = compute_patient_billing_report(
+        "SENTETIK-HASTA-0003",
+        claim_context=ctx,
+        chapters={"I"},
+    )
+
+    assert report.billing_strategy.exactness_status == "exact"
+    claim_recs = [
+        rec
+        for rec in report.billing_strategy.recommendations
+        if rec.get("claim_id") == "F-SENTETIK-HASTA-0003-011"
+        and "recommendation_kind" in rec
+    ]
+    assert claim_recs
+    assert claim_recs[0]["recommendation"] == "package"
+    assert claim_recs[0]["recommendation_kind"] == "mandatory_compliance"
+    assert "lower than" not in claim_recs[0]["detail"]
+
     from src.bilun.domain.billing.copay import _optimize_copay
 
     result = _optimize_copay(

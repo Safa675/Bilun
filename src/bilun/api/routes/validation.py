@@ -34,6 +34,7 @@ def validate_claim_endpoint(req: ClaimValidationRequest):
 
     return {
         "claim_id": result.claim_id,
+        "coverage_scope": result.coverage_scope,
         "is_valid": result.is_valid,
         "total_claim_amount": result.total_claim_amount,
         "total_savings_try": result.total_savings_try,
@@ -104,7 +105,10 @@ def get_bundled_consumables_endpoint():
         for item in exclusions
     ]
 
+    from src.bilun.domain.materials.coverage_scope import material_bundling_coverage_scope
+
     return {
+        "coverage_scope": material_bundling_coverage_scope(),
         "bundled_consumables": {
             "count": len(enriched_bundled),
             "items": enriched_bundled,

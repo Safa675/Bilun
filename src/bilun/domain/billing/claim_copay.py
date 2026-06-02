@@ -5,8 +5,16 @@ from __future__ import annotations
 from decimal import Decimal
 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.prose_rules.copay_general import (
+    resolve_drug_copay_rate,
+    resolve_material_copay_rate,
+)
 
 from .types import EXACTNESS_STATUS_EXACT, CopayOptimization
+
+_COPAY_RULE_SOURCE = (
+    "SUT §1.8.5(7)+EK-1/A exemptions; §1.8.2/§1.8.3 prose (copay_general_1_8)"
+)
 
 
 def _copay_component(billed: Decimal, payable: Decimal) -> Decimal:
@@ -25,6 +33,7 @@ def optimize_copay_from_claims(
 
     result = CopayOptimization()
     is_exempt = bool(copay_exemption.get("exempt"))
+    partial_exempt = bool(copay_exemption.get("partial_exempt"))
     result.is_exempt = is_exempt
 
     if is_exempt:
@@ -32,6 +41,20 @@ def optimize_copay_from_claims(
         if qualifying:
             result.exemption_disease = qualifying[0].get("disease", "")
             result.exemption_range = qualifying[0].get("range", "")
+    elif partial_exempt:
+        qualifying = copay_exemption.get("qualifying_diagnoses", [])
+        if qualifying:
+            result.exemption_disease = qualifying[0].get("disease", "")
+            result.exemption_range = qualifying[0].get("range", "")
+            result.rate_corrections.append(
+                {
+                    "detail": (
+                        "EK-1/A ICD match without chronic health report — "
+                        "§1.8.5(7) savings not asserted"
+                    ),
+                    "sut_section": "1.8.5(7)",
+                }
+            )
 
     if not ctx.procedure_lines and not ctx.drug_lines:
         return result
@@ -52,7 +75,7 @@ def optimize_copay_from_claims(
                     "billed_try": float(line.billed_amount_try),
                     "payable_try": float(line.expected_payable_try),
                     "copay_component_try": float(component),
-                    "detail": "EK-1A exemption may waive this copay component",
+                    "detail": "Copay exemption may waive this copay component",
                 }
             )
 
@@ -67,4 +90,31 @@ def optimize_copay_from_claims(
     result.exactness_status = EXACTNESS_STATUS_EXACT
     result.unavailable_reason = None
     result.required_inputs_missing = []
+    result.rule_source = _COPAY_RULE_SOURCE
+
+    expected_rx_rate = resolve_drug_copay_rate("other")
+    if ctx.drug_lines and not is_exempt:
+        result.rate_corrections.append(
+            {
+                "detail": (
+                    f"SUT §1.8.2 mandates {expected_rx_rate:.0%} drug copay for "
+                    "non-income-recipient patients when EK-1/A exemption does not apply."
+                ),
+                "expected_copay_rate_pct": round(expected_rx_rate * 100, 1),
+                "sut_section": "1.8.2.(1)",
+            }
+        )
+
+    if getattr(ctx, "material_lines", ()):
+        material_rate = resolve_material_copay_rate("other")
+        result.rate_corrections.append(
+            {
+                "detail": (
+                    f"SUT §1.8.3(2) material copay reference rate: {material_rate:.0%}"
+                ),
+                "expected_copay_rate_pct": round(material_rate * 100, 1),
+                "sut_section": "1.8.3.(2)",
+            }
+        )
+
     return result

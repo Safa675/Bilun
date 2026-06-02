@@ -144,6 +144,7 @@ def test_orchestrator_total_includes_only_exact_blocks(monkeypatch) -> None:
         lambda *_args, **_kwargs: SimpleNamespace(
             pre_auth_required=[],
             miat_restricted=[],
+            bundled_separate_billing=[],
             exactness_status="partial_exact",
             required_inputs_missing=["billed_material_codes"],
         ),

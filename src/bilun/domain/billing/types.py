@@ -6,6 +6,8 @@ Dataclasses for billing optimization results.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+
+from src.bilun.domain.materials.coverage_scope import material_bundling_coverage_scope
 from typing import Any
 
 EXACTNESS_STATUS_EXACT = "exact"
@@ -63,11 +65,14 @@ class LabOptimization:
     exactness_status: str = EXACTNESS_STATUS_EXACT
     unavailable_reason: str | None = None
     required_inputs_missing: list[str] = field(default_factory=list)
-    rule_source: str = "EK-2B hemogram bundling hierarchy, EK-2B duplicate test rules"
+    rule_source: str = (
+        "EK-2B L107020 hemogram bundling; duplicate repeats are clinical utilization review only"
+    )
 
     @property
     def total_savings(self) -> float:
-        return self.hemogram_bundling_savings + self.duplicate_test_savings
+        """Recoverable TRY — hemogram bundling only (duplicates are non-monetary review)."""
+        return self.hemogram_bundling_savings
 
 
 @dataclass
@@ -135,13 +140,19 @@ class MaterialPreCheck:
 
     pre_auth_required: list[dict[str, Any]] = field(default_factory=list)
     miat_restricted: list[dict[str, Any]] = field(default_factory=list)
+    miat_interval_violations: list[dict[str, Any]] = field(default_factory=list)
+    bundled_separate_billing: list[dict[str, Any]] = field(default_factory=list)
+    prose_bundling_violations: list[dict[str, Any]] = field(default_factory=list)
     gazette_ceiling_by_specialty: dict[str, float] = field(default_factory=dict)
     exactness_status: str = EXACTNESS_STATUS_PARTIAL
     unavailable_reason: str | None = MATERIALS_PARTIAL_REASON
     required_inputs_missing: list[str] = field(
         default_factory=lambda: list(MATERIALS_REQUIRED_INPUTS)
     )
-    rule_source: str = "EK-3C-1 sağlık kurulu pre-authorization, EK-3C-2 MIAT intervals"
+    rule_source: str = (
+        "EK-3 specialty price benchmarks (partial); EK-3C-1/2 on exact claim lines"
+    )
+    coverage_scope: dict[str, Any] = field(default_factory=material_bundling_coverage_scope)
 
 
 @dataclass

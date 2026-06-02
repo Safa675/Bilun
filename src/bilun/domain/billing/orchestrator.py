@@ -190,6 +190,8 @@ def compute_patient_billing_report(
         + len(report.billing_strategy.recommendations)
         + len(report.materials.pre_auth_required)
         + len(report.materials.miat_restricted)
+        + len(report.materials.bundled_separate_billing)
+        + len(report.materials.miat_interval_violations)
     )
     report.action_count = actions
 
@@ -343,14 +345,21 @@ def compute_all_billing_reports(
     priority_dist: dict[str, int] = {"high": 0, "medium": 0, "low": 0}
 
     for report in reports.values():
-        summary.total_lab_savings += report.lab.total_savings
-        summary.total_drug_savings += report.drug.total_savings
-        summary.total_copay_savings += (
-            report.copay.total_copay_savings_try + report.copay.rx_copay_savings_try
-        )
-        summary.total_strategy_savings += report.billing_strategy.total_savings
+        if _block_exactness_status(report.lab) == EXACTNESS_STATUS_EXACT:
+            summary.total_lab_savings += report.lab.total_savings
+        if _block_exactness_status(report.drug) == EXACTNESS_STATUS_EXACT:
+            summary.total_drug_savings += report.drug.total_savings
+        if _block_exactness_status(report.copay) == EXACTNESS_STATUS_EXACT:
+            summary.total_copay_savings += (
+                report.copay.total_copay_savings_try
+                + report.copay.rx_copay_savings_try
+            )
+        if _block_exactness_status(report.billing_strategy) == EXACTNESS_STATUS_EXACT:
+            summary.total_strategy_savings += report.billing_strategy.total_savings
         summary.total_material_flags += len(report.materials.pre_auth_required) + len(
             report.materials.miat_restricted
+        ) + len(report.materials.bundled_separate_billing) + len(
+            report.materials.miat_interval_violations
         )
         priority_dist[report.priority] = priority_dist.get(report.priority, 0) + 1
 
@@ -359,10 +368,7 @@ def compute_all_billing_reports(
     summary.total_copay_savings = round(summary.total_copay_savings, 2)
     summary.total_strategy_savings = round(summary.total_strategy_savings, 2)
     summary.grand_total_recoverable = round(
-        summary.total_lab_savings
-        + summary.total_drug_savings
-        + summary.total_copay_savings
-        + summary.total_strategy_savings,
+        sum(r.total_recoverable_try for r in reports.values()),
         2,
     )
     summary.priority_distribution = priority_dist

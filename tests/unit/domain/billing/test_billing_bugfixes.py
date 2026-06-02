@@ -26,14 +26,17 @@ def test_lab_duplicate_detection_groups_by_visit_not_patient_history() -> None:
     assert not any(flag["flag_type"] == "duplicate_test" for flag in result.flagged_tests)
 
 
-def test_lab_duplicate_detection_without_visit_ids_still_flags_global_bucket() -> None:
+def test_lab_duplicate_detection_without_visit_ids_skips_duplicate_review() -> None:
     from src.bilun.domain.billing.lab import _optimize_lab_billing
 
     tests = ["glucose", "glucose", "glucose", "glucose"]
 
     result = _optimize_lab_billing("P1", tests)
 
-    assert result.duplicate_test_savings > 0.0
+    assert result.duplicate_test_savings == 0.0
+    assert not any(
+        flag["flag_type"] == "clinical_review_duplicate" for flag in result.flagged_tests
+    )
 
 
 def test_lab_duplicate_detection_flags_within_same_visit() -> None:
@@ -48,10 +51,14 @@ def test_lab_duplicate_detection_flags_within_same_visit() -> None:
         patient_lab_visit_ids=visit_ids,
     )
 
-    assert result.duplicate_test_savings > 0.0
-    dup_flags = [flag for flag in result.flagged_tests if flag["flag_type"] == "duplicate_test"]
+    assert result.duplicate_test_savings == 0.0
+    dup_flags = [
+        flag for flag in result.flagged_tests if flag["flag_type"] == "clinical_review_duplicate"
+    ]
     assert len(dup_flags) == 1
+    assert dup_flags[0]["savings_try"] is None
     assert "encounter V1" in dup_flags[0]["detail"]
+    assert "clinical review" in dup_flags[0]["detail"].lower()
 
 
 def test_lab_hemogram_bundling_groups_by_visit_id() -> None:
@@ -188,6 +195,8 @@ def test_orchestrator_recoverable_total_counts_rx_once_with_visit_copay(monkeypa
         lambda *_args, **_kwargs: SimpleNamespace(
             pre_auth_required=[],
             miat_restricted=[],
+            miat_interval_violations=[],
+            bundled_separate_billing=[],
             exactness_status="partial_exact",
             required_inputs_missing=["billed_material_codes"],
         ),

@@ -97,8 +97,22 @@ class BilunCachePayloadResponse(BaseModel):
 # ── validation.py ───────────────────────────────────────────────────────────
 
 
+class MaterialBundlingCoverageScope(BaseModel):
+    prose_rule_id: str
+    prose_section_prefixes: list[str]
+    prose_engine_status: str
+    prose_coverage_tier: str | None = None
+    prose_rules_implemented: int | None = None
+    prose_effective_date: str | None = None
+    implemented_annexes: list[str]
+    ek3b1_row_count: int
+    ek3b2_row_count: int
+    p2_plan_path: str
+
+
 class ValidateClaimResponse(BaseModel):
     claim_id: str
+    coverage_scope: MaterialBundlingCoverageScope | dict[str, Any] | None = None
     is_valid: bool
     total_claim_amount: float
     total_savings_try: float
@@ -114,6 +128,7 @@ class ValidateClaimResponse(BaseModel):
 
 
 class BundledConsumablesResponse(BaseModel):
+    coverage_scope: MaterialBundlingCoverageScope | dict[str, Any] | None = None
     bundled_consumables: dict[str, Any]
     exclusion_categories: dict[str, Any]
 
@@ -308,7 +323,11 @@ class BillingStrategyResponse(BillingExactnessResponse):
 class MaterialPreCheckResponse(BillingExactnessResponse):
     pre_auth_required: list[dict[str, Any]] = Field(default_factory=list)
     miat_restricted: list[dict[str, Any]] = Field(default_factory=list)
+    miat_interval_violations: list[dict[str, Any]] = Field(default_factory=list)
+    bundled_separate_billing: list[dict[str, Any]] = Field(default_factory=list)
+    prose_bundling_violations: list[dict[str, Any]] = Field(default_factory=list)
     gazette_ceiling_by_specialty: dict[str, float] = Field(default_factory=dict)
+    coverage_scope: MaterialBundlingCoverageScope | dict[str, Any] | None = None
 
 
 class BilunPatientOutcomeResponse(BaseModel):

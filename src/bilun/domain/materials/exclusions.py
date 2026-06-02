@@ -91,33 +91,52 @@ def get_bundled_consumables() -> list[dict[str, Any]]:
         return _EK3B1_CACHE
 
 
-def is_material_reimbursable(material_name: str) -> bool:
-    """Check whether a material name appears in EK-3B-2 non-reimbursable list.
-
-    Args:
-        material_name: Material name to check.
-
-    Returns:
-        True if the material IS reimbursable, False if non-reimbursable.
-    """
-    exclusions = get_non_reimbursable_materials()
-    if not exclusions:
-        return True
+def match_exclusion_entry(
+    material_name: str,
+    exclusions: list[dict[str, Any]] | None = None,
+) -> dict[str, Any] | None:
+    """Return the EK-3B-2 entry matched by name, or None if reimbursable."""
+    catalog = exclusions if exclusions is not None else get_non_reimbursable_materials()
+    if not catalog:
+        return None
 
     needle = turkish_lower(material_name.strip())
-    for entry in exclusions:
+    if not needle:
+        return None
+
+    for entry in catalog:
         mat_name = turkish_lower((entry.get("material_name") or "").strip())
         if not mat_name:
             continue
         if needle in mat_name or mat_name in needle:
-            return False
+            return entry
 
     fuzzy_candidates = [
         (turkish_lower((e.get("material_name") or "").strip()), e)
-        for e in exclusions
+        for e in catalog
     ]
     fuzzy_candidates = [(n, e) for n, e in fuzzy_candidates if n]
-    if fuzzy_match_name(needle, fuzzy_candidates, threshold=0.80):
+    fuzzy = fuzzy_match_name(needle, fuzzy_candidates, threshold=0.80)
+    return fuzzy[1] if fuzzy else None
+
+
+def is_material_reimbursable(
+    material_name: str,
+    *,
+    material_code: str | None = None,
+) -> bool:
+    """Check whether a material is reimbursable (not on EK-3B-2 list)."""
+    from .catalog_lookup import resolve_material_name_by_code
+
+    lookup_name = material_name
+    if material_code:
+        resolved = resolve_material_name_by_code(material_code)
+        if resolved:
+            lookup_name = resolved
+
+    if match_exclusion_entry(lookup_name) is not None:
+        return False
+    if lookup_name != material_name and match_exclusion_entry(material_name) is not None:
         return False
     return True
 

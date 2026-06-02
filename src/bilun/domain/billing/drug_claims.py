@@ -45,6 +45,7 @@ def optimize_drug_from_claims(
                     "issue": "discount_tier_applied",
                     "alternative": line.drug_name,
                     "savings_try": round(float(tier_savings), 2),
+                    "savings_basis": "claim_line",
                     "detail": (
                         f"Claim line {line.drug_claim_line_id}: billed "
                         f"{float(billed):.2f} TRY, payable {float(payable):.2f} TRY "

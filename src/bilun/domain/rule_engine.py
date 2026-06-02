@@ -25,6 +25,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
+from src.bilun.domain.materials.coverage_scope import material_bundling_coverage_scope
+from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_prose
 from src.bilun.domain.rules.bundling_rules import check_bundling_violations
 from src.bilun.domain.rules.exclusion_rules import check_exclusion_violations
 from src.bilun.domain.analytics import MaterialCostEstimate, estimate_material_costs
@@ -74,17 +76,17 @@ class ClaimValidationResult:
     n_exclusion_violations: int = 0
     validation_time_ms: float = 0.0
     summary: str = ""
+    coverage_scope: dict[str, Any] = field(default_factory=material_bundling_coverage_scope)
 
 
 def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
     """
     Validate a healthcare claim against SUT bundling and exclusion rules.
 
-    Runs two rule checks in sequence:
-      1. Bundling rules (EK-3B-1): Flags consumables that are bundled into
-         procedure prices and should not be billed separately.
-      2. Exclusion rules (EK-3B): Flags materials that are non-reimbursable
-         by SGK.
+    Runs annex list checks plus partial §3.1 prose keywords (see coverage_scope):
+      1. Bundling rules (EK-3B-1, 54 rows): consumables bundled into procedure fee.
+      2. Exclusion rules (EK-3B-2, 13 rows): non-reimbursable materials.
+      3. Material bundling prose (partial JSON): keyword rules not in EK-3B-1.
 
     Additionally computes material cost estimates using gazette prices.
 
@@ -149,17 +151,50 @@ def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
         sum(v.risk_amount for v in result.violations if v.rule == "exclusion"), 2
     )
 
-    # ── 3. Compute material cost estimates ───────────────────────────
+    # ── 3. Partial §3.1 prose (keyword rules) ─────────────────────────
+    prose_violations = check_material_bundling_prose(
+        materials, procedure_code=procedure_code
+    )
+    for pv in prose_violations:
+        outcome = str(pv.get("material_outcome") or "")
+        savings = float(pv.get("savings_try") or 0.0)
+        risk = float(pv.get("risk_amount") or 0.0)
+        if outcome == "no_pay":
+            result.violations.append(
+                RuleViolation(
+                    rule="material_bundling_prose",
+                    severity=pv.get("severity", "error"),
+                    material_name=pv.get("material_name", ""),
+                    message=pv.get("message", ""),
+                    risk_amount=risk,
+                    details=pv,
+                )
+            )
+            result.total_risk_try = round(result.total_risk_try + risk, 2)
+        else:
+            result.violations.append(
+                RuleViolation(
+                    rule="material_bundling_prose",
+                    severity=pv.get("severity", "warning"),
+                    material_name=pv.get("material_name", ""),
+                    message=pv.get("message", ""),
+                    savings_try=savings or risk,
+                    details=pv,
+                )
+            )
+            result.total_savings_try = round(result.total_savings_try + (savings or risk), 2)
+
+    # ── 4. Compute material cost estimates ───────────────────────────
     result.material_estimates = estimate_material_costs(materials)
     result.total_claim_amount = round(
         sum(m.total_price for m in result.material_estimates), 2
     )
 
-    # ── 4. Determine validity ────────────────────────────────────────
+    # ── 5. Determine validity ────────────────────────────────────────
     has_errors = any(v.severity == "error" for v in result.violations)
     result.is_valid = not has_errors
 
-    # ── 5. Build summary ─────────────────────────────────────────────
+    # ── 6. Build summary ─────────────────────────────────────────────
     elapsed = round((time.perf_counter() - t0) * 1000, 2)
     result.validation_time_ms = elapsed
 
