@@ -33,7 +33,7 @@ def test_surcharge_exposure_uses_exact_claim_context() -> None:
 
 def test_copay_rate_exposure_uses_exact_claim_context() -> None:
     dataset = load_sut_claim_dataset()
-    patient_id = "SENTETIK-HASTA-0001"
+    patient_id = "SENTETIK-HASTA-0002"
     procedure_lines = dataset.procedure_lines_by_patient[patient_id]
     context = build_copay_rate_claim_context(patient_id, procedure_lines)
 

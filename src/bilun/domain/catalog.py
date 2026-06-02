@@ -309,6 +309,43 @@ def get_ek2a_visit_prices() -> dict[str, Any]:
     return get_cached_ek2a()
 
 
+def lookup_ek2a_visit_price_try(
+    specialty_code: str,
+    *,
+    facility_tier: str | None = None,
+    provider_type: str | None = None,
+) -> tuple[float | None, str]:
+    """Look up EK-2A visit price for specialty × facility tier.
+
+    Returns (price_try, methodology) where methodology is
+    ``ek2a_tier_row`` or ``unavailable``.
+    """
+    from src.bilun.domain.prose_rules.facility_tier import normalize_facility_tier
+
+    data = get_ek2a_visit_prices()
+    specialties = data.get("specialties", [])
+    code = str(specialty_code or "").strip()
+    if not code:
+        return None, "unavailable"
+
+    row = next((s for s in specialties if str(s.get("code", "")).strip() == code), None)
+    if row is None:
+        return None, "unavailable"
+
+    tier_ctx = normalize_facility_tier(facility_tier, provider_type=provider_type)
+    column = "U1" if tier_ctx.basamak == 3 and tier_ctx.is_university_eah else (
+        "A1" if tier_ctx.basamak == 3 else "B"
+    )
+    price = row.get("prices_try", {}).get(column)
+    if price is None:
+        prices = list(row.get("prices_try", {}).values())
+        if not prices:
+            return None, "unavailable"
+        price = sum(prices) / len(prices)
+        return round(float(price), 2), "ek2a_specialty_mean"
+    return round(float(price), 2), "ek2a_tier_row"
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Optimization annex accessors (EK-1A, EK-2G, EK-2C-1)
 # ═══════════════════════════════════════════════════════════════════════════

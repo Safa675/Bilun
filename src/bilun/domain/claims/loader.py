@@ -480,6 +480,17 @@ def _material_line(row: Mapping[str, Any], errors: list[str]) -> MaterialClaimLi
             requires_pre_auth=_bool(row.get("requires_pre_auth")),
             denial_reason_expected=_text(row, "denial_reason_expected"),
             rule_trace_expected=_text(row, "rule_trace_expected"),
+            titubb_registered=_optional_bool(row.get("titubb_registered")),
+            uts_registered=_optional_bool(row.get("uts_registered")),
+            procurement_record_incomplete=_bool(row.get("procurement_record_incomplete")),
+            procedure_not_reimbursed=_bool(row.get("procedure_not_reimbursed")),
+            foreign_facility=_bool(row.get("foreign_facility")),
+            facility_procedure_restriction_violation=_bool(
+                row.get("facility_procedure_restriction_violation")
+            ),
+            diagnosis_bundled_no_separate_bill=_bool(
+                row.get("diagnosis_bundled_no_separate_bill")
+            ),
         )
     except KeyError as exc:
         errors.append(f"material_claim_lines missing field {exc.args[0]}")
@@ -795,6 +806,12 @@ def _bool(value: Any) -> bool:
     if isinstance(value, (int, float)):
         return bool(value)
     return str(value).strip().casefold() in {"true", "1", "evet", "yes"}
+
+
+def _optional_bool(value: Any) -> bool | None:
+    if _is_missing(value):
+        return None
+    return _bool(value)
 
 
 def _integer(value: Any, field: str, row_id: str, errors: list[str]) -> int:

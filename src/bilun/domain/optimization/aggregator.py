@@ -221,11 +221,17 @@ def compute_optimization_summary(
         if claim_dataset is not None
         else {}
     )
+    procedure_lines_by_patient = (
+        getattr(claim_dataset, "procedure_lines_by_patient", {})
+        if claim_dataset is not None
+        else {}
+    )
     copay_inputs = build_copay_inputs_by_patient(
         patient_ids,
         diagnoses_by_pid,
         claims_by_patient=claims_by_patient,
         copay_profiles_by_patient=profiles_by_patient,
+        procedure_lines_by_patient=procedure_lines_by_patient,
     )
 
     n_exempt = 0

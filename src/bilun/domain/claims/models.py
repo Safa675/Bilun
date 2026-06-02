@@ -98,6 +98,13 @@ class MaterialClaimLine:
     requires_pre_auth: bool
     denial_reason_expected: str
     rule_trace_expected: str
+    titubb_registered: bool | None = None
+    uts_registered: bool | None = None
+    procurement_record_incomplete: bool = False
+    procedure_not_reimbursed: bool = False
+    foreign_facility: bool = False
+    facility_procedure_restriction_violation: bool = False
+    diagnosis_bundled_no_separate_bill: bool = False
 
 
 @dataclass(frozen=True)

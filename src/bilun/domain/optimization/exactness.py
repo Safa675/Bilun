@@ -95,7 +95,24 @@ def unavailable_surcharge_exposure() -> dict[str, Any]:
 
 
 def build_exact_surcharge_exposure(context: SurchargeClaimContext) -> dict[str, Any]:
-    applicable = [line for line in context.procedures if line.surcharge_applicable]
+    from .catalog_join import catalog_surcharge_eligible
+
+    applicable: list = []
+    flag_mismatches: list[dict[str, Any]] = []
+    for line in context.procedures:
+        catalog_eligible = catalog_surcharge_eligible(line.procedure_code)
+        if line.surcharge_applicable != catalog_eligible:
+            flag_mismatches.append(
+                {
+                    "code": line.procedure_code,
+                    "claim_flag": line.surcharge_applicable,
+                    "catalog_eligible": catalog_eligible,
+                    "procedure_date": line.procedure_date.isoformat(),
+                }
+            )
+        if catalog_eligible:
+            applicable.append(line)
+
     total_procedures = len(context.procedures)
     exposure_rate = len(applicable) / total_procedures if total_procedures else 0.0
     rules = [
@@ -106,6 +123,7 @@ def build_exact_surcharge_exposure(context: SurchargeClaimContext) -> dict[str, 
             "billed_amount_try": float(line.billed_amount_try),
             "expected_payable_try": float(line.expected_payable_try),
             "rule_trace": line.rule_trace_expected,
+            "catalog_validated": True,
             "matched_chapters": [],
         }
         for line in applicable
@@ -114,13 +132,17 @@ def build_exact_surcharge_exposure(context: SurchargeClaimContext) -> dict[str, 
         "exactness_status": EXACTNESS_STATUS_EXACT,
         "n_applicable_procedures": len(applicable),
         "n_total_ek2g": total_procedures,
+        "n_flag_catalog_mismatches": len(flag_mismatches),
+        "flag_catalog_mismatches": flag_mismatches[:25],
         "exposure_rate": round(exposure_rate, 4),
         "applicable_rules": rules,
         "methodology": (
-            "Uses exact dated procedure claim lines and their explicit "
-            "surcharge_applicable rule flags; unavailable if those claim lines "
-            "are absent."
+            "Uses exact dated procedure claim lines joined to EK-2/G "
+            "(ek2g_no_surcharge.parquet) for surcharge eligibility; "
+            "n_applicable_procedures counts catalog-eligible lines "
+            "(surcharge may apply). Claim-line flags are validated against the catalog."
         ),
+        "rule_source": "EK-2G (§1.9.3) catalog join",
     }
 
 
@@ -145,7 +167,44 @@ def unavailable_copay_rate_exposure() -> dict[str, Any]:
 
 
 def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str, Any]:
-    applicable = [line for line in context.procedures if line.copay_rate_applicable]
+    from .catalog_join import (
+        catalog_copay_rate_applicable,
+        copay_rate_matches_catalog,
+        get_ek2c1_mandated_copay_rate_pct,
+    )
+
+    applicable = []
+    flag_mismatches: list[dict[str, Any]] = []
+    rate_mismatches: list[dict[str, Any]] = []
+    for line in context.procedures:
+        catalog_applicable = catalog_copay_rate_applicable(line.procedure_code)
+        if line.copay_rate_applicable != catalog_applicable:
+            flag_mismatches.append(
+                {
+                    "code": line.procedure_code,
+                    "claim_flag": line.copay_rate_applicable,
+                    "catalog_applicable": catalog_applicable,
+                    "mandated_rate_pct": get_ek2c1_mandated_copay_rate_pct(
+                        line.procedure_code
+                    ),
+                    "procedure_date": line.procedure_date.isoformat(),
+                }
+            )
+        if catalog_applicable:
+            applicable.append(line)
+            billed_rate = procedure_rate_pct(line)
+            if not copay_rate_matches_catalog(billed_rate, line.procedure_code):
+                rate_mismatches.append(
+                    {
+                        "code": line.procedure_code,
+                        "billed_rate_pct": float(billed_rate),
+                        "mandated_rate_pct": get_ek2c1_mandated_copay_rate_pct(
+                            line.procedure_code
+                        ),
+                        "procedure_date": line.procedure_date.isoformat(),
+                    }
+                )
+
     rates = [procedure_rate_pct(line) for line in applicable]
     mean_rate = (
         (sum(rates, Decimal("0.00")) / Decimal(len(rates))).quantize(
@@ -159,15 +218,18 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
     for line, rate in zip(applicable, rates, strict=True):
         rate_key = f"{rate.normalize()}%"
         distribution[rate_key] = distribution.get(rate_key, 0) + 1
+        mandated = get_ek2c1_mandated_copay_rate_pct(line.procedure_code)
         procedures.append(
             {
                 "code": line.procedure_code,
                 "name": line.procedure_name or line.procedure_code,
                 "procedure_date": line.procedure_date.isoformat(),
                 "rate_pct": float(rate),
+                "mandated_rate_pct": mandated,
                 "billed_amount_try": float(line.billed_amount_try),
                 "expected_payable_try": float(line.expected_payable_try),
                 "rule_trace": line.rule_trace_expected,
+                "catalog_validated": True,
                 "matched_chapters": [],
             }
         )
@@ -175,14 +237,19 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
         "exactness_status": EXACTNESS_STATUS_EXACT,
         "n_applicable_procedures": len(applicable),
         "n_total_ek2c1": len(context.procedures),
+        "n_flag_catalog_mismatches": len(flag_mismatches),
+        "n_rate_catalog_mismatches": len(rate_mismatches),
+        "flag_catalog_mismatches": flag_mismatches[:25],
+        "rate_catalog_mismatches": rate_mismatches[:25],
         "mean_rate": float(mean_rate),
         "procedures_with_rates": procedures,
         "rate_distribution": distribution,
         "methodology": (
-            "Uses exact dated procedure claim lines, explicit "
-            "copay_rate_applicable flags, and billed/payable amounts encoded "
-            "on the claim lines; unavailable if those inputs are absent."
+            "Uses exact dated procedure claim lines joined to EK-2C-1 "
+            "(ek2c1_copay_rates.parquet) for mandated copay-rate procedures; "
+            "validates claim flags and billed/payable ratio vs catalog rate."
         ),
+        "rule_source": "EK-2C-1 catalog join",
     }
 
 
