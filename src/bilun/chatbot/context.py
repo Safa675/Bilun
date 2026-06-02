@@ -434,25 +434,41 @@ def _append_billing_sections(
         if hemogram is not None:
             lines.append(f"    Hemogram bundling savings: {hemogram:.2f} TRY")
         dup = lab.get("duplicate_test_savings")
-        if dup is not None:
+        if dup:
             lines.append(f"    Duplicate test savings: {dup:.2f} TRY")
+        clinical_dupes = sum(
+            1
+            for row in lab.get("flagged_tests") or []
+            if row.get("flag_type") == "clinical_review_duplicate"
+        )
+        if clinical_dupes:
+            lines.append(
+                f"    Clinical review flags (repeat tests, non-monetary): {clinical_dupes}"
+            )
         total = lab.get("total_savings")
-        if total is None and (hemogram is not None or dup is not None):
-            total = (hemogram or 0) + (dup or 0)
+        if total is None:
+            total = hemogram or 0
         if total is None and not is_full:
-            total = (hemogram or 0) + (dup or 0)
+            total = hemogram or 0
         if total is not None:
             lines.append(f"    Total lab savings: {total:.2f} TRY")
         if lab.get("flagged_tests"):
-            _format_list_section(
-                lines,
-                "Flagged tests",
-                lab["flagged_tests"],
-                key="test_name",
-                fmt="{test_name}: {flag_type} ({savings_try} TRY)",
-                exactness=lab_exactness,
-                max_items=list_cap,
-            )
+            lines.append("  Flagged tests:")
+            for row in (lab["flagged_tests"] or [])[:list_cap]:
+                savings = row.get("savings_try")
+                if savings is None:
+                    savings_part = "clinical review — no recoverable TRY"
+                else:
+                    savings_part = f"{float(savings):.2f} TRY"
+                lines.append(
+                    f"    - {row.get('test_name', '?')}: "
+                    f"{row.get('flag_type', '?')} ({savings_part})"
+                )
+            if len(lab["flagged_tests"]) > list_cap:
+                extra = len(lab["flagged_tests"]) - list_cap
+                lines.append(f"    ... and {extra} more")
+            if lab_exactness:
+                lines.append(f"    [exactness: {lab_exactness}]")
 
     drug = report.get("drug", {}) or report.get("drug_optimization", {}) or {}
     if drug:

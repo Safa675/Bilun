@@ -226,7 +226,11 @@ def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
             "exactness_status": materials.get("exactness_status"),
             "pre_auth_required": (materials.get("pre_auth_required") or [])[:summary_cap],
             "miat_restricted": (materials.get("miat_restricted") or [])[:summary_cap],
-            "rule_source": materials.get("rule_source", "EK-3C-1 pre-auth, EK-3C-2 MIAT"),
+            "prose_bundling_violations": (
+                materials.get("prose_bundling_violations") or []
+            )[:summary_cap],
+            "coverage_scope": materials.get("coverage_scope"),
+            "rule_source": materials.get("rule_source", "EK-3C-1 pre-auth, EK-3C-2 MIAT, partial §3.1 prose"),
         },
         "total_recoverable_try": payload.get("total_recoverable_try"),
         "action_count": payload.get("action_count"),

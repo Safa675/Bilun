@@ -24,10 +24,10 @@ BUILD_FAILED = "failed"
 BUILD_SUPERSEDED = "superseded"
 
 
-_ALLOWED_TABLES: frozenset[str] = frozenset(
+# Tables addressed with `DELETE ... WHERE build_id = ?` during build pruning.
+_BUILD_DATA_TABLES: frozenset[str] = frozenset(
     {
         "build_meta",
-        "build_pointer_scopes",
         "cohort_sut_summary",
         "validation_payload",
         "patient_meta",
@@ -45,6 +45,11 @@ _ALLOWED_TABLES: frozenset[str] = frozenset(
         "patient_outcome_expensive",
     }
 )
+
+# Scope → active_build_id pointer (not build_id keyed); kept for table name whitelist only.
+_POINTER_TABLES: frozenset[str] = frozenset({"build_pointer_scopes"})
+
+_ALLOWED_TABLES: frozenset[str] = _BUILD_DATA_TABLES | _POINTER_TABLES
 
 
 def _now_iso() -> str:

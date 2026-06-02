@@ -121,7 +121,7 @@ def test_build_full_billing_context_includes_all_flagged_tests_up_to_cap():
     assert "Rate corrections" in text
     assert "Strategy recommendations" in text
     assert "Stent-X" in text
-    assert "TOTAL RECOVERABLE: 425.00 TRY" in text
+    assert "MAX ADDITIONAL SGK REIMBURSEMENT: 425.00 TRY" in text
 
 
 def test_build_bilun_runtime_context_user_question_uses_full_billing():

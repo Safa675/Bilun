@@ -1,21 +1,17 @@
-## Task: Billing algorithm bugfixes (billing_bugfixes.md)
+## Task: L3.4 session itemized + prose_drg_locked catalog
 
 ### Goal
-Fix lab per-visit duplicate grouping, copay/drug double-counting on claim path, propagate visit_id through lab pipeline, relabel recoverable total in UI.
+Wire §2.2.2.B session factors into strategy itemized totals; move prose DRG lock to EK-2C catalog seed.
 
 ### Subtasks
-- [x] Phase 1: Add basvuru_id to lab export, visit_id in loader + orchestrator
-- [x] Phase 2: Per-visit hemogram bundling and duplicate detection in lab.py
-- [x] Phase 3: Copay total visit-only; drug_claims excludes exempt copay; orchestrator sums rx separately
-- [x] Phase 4: Relabel "Rule-calculated opportunity" in billing i18n + tests
-- [x] Phase 5: Unit tests, rebuild cache (alt db path), spot-check 0039
+- [x] `compute_session_adjusted_itemized_total()` + `claim_strategy` fields
+- [x] `ek2c_prose_drg_locked_codes.json` (51 codes) + `procedure_prose_drg_locked()`
+- [x] `payment_method.py` uses catalog flag
+- [x] Tests: session adjusted, prose locked mandatory, claim strategy suite
 
 ### Out of Scope
-- EK-1A exemption logic changes
-- Visit ID on drugs/procedures/materials
+- DuckDB `build_cache.py --activate` (run when billing cache refresh needed)
 
 ### Review
-- 19 billing unit tests pass (`tests/unit/domain/billing/`)
-- Synthetic data regenerated; `lab_clean.parquet` includes `basvuru_id`
-- Cache rebuilt to `.cache/bilun_build_test.duckdb` (live `.cache/bilun.duckdb` locked by uvicorn on :8001)
-- Run `scripts/bilun/build_cache.py --activate` after stopping API to activate on main cache
+- EK-2C rebuilt: `ek2c_catalog_history.parquet` — 26,412 rows, **51** `prose_drg_locked=True` on latest slice (matches seed).
+- Seed refresh: `python scripts/sut/catalogs/ek2c_prose_drg_locked_seed.py`

@@ -35,6 +35,7 @@ def build_system_prompt(
         "- EK-2C: DRG diagnosis-based package pricing by ICD-10 chapter group (A3, B, C, D, E)",
         "- EK-3B-1: bundled consumables — 54 categories included in procedure fee, cannot bill separately",
         "- EK-3B-2: non-reimbursable materials — 13 exclusion categories, SGK will not cover",
+        "- SUT §3.1–3.2 material bundling: EK-3B-1/EK-3B-2 annex lists plus prose engine (~17 Gate B rules: keywords, EK-3/C/EK-3 membership, pairing, TİTUBB/ÜTS flags when on claim line). prose_coverage_tier is partial — do not claim full §3.1–3.2 compliance",
         "- EK-4A: drug equivalence groups and discount tiers for generic substitution",
         "",
         "SUT TERMINOLOGY — Key Concepts",

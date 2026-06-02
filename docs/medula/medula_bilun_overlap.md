@@ -53,7 +53,7 @@ This means **there is no direct evidence in the manual that MEDULA explicitly en
 
 | MEDULA Mechanism | BILUN Algorithm | Relationship |
 |---|---|---|
-| Material blocking via ICU group rules (A/B/C group present → materials allowed; no procedure → no material invoice) | Bundling rules (EK-3B-1) + Exclusion rules (EK-3B-2) | MEDULA blocks materials via procedure-presence and ICU-group logic. BILUN checks against the EK-3B-1/3B-2 SUT annex catalogs. These are related but operate at different levels. The manual does not prove MEDULA reads EK-3B-1/3B-2 catalogs directly. |
+| Material blocking via ICU group rules (A/B/C group present → materials allowed; no procedure → no material invoice) | Bundling rules (EK-3B-1) + Exclusion rules (EK-3B-2) + §3.1 prose (`material_bundling_prose`, 17 rules, partial) | MEDULA blocks via ICU-group and procedure-presence. BILUN adds annex + prose pre-check. **ADDITIVE** for EK-3B and prose; **PARTIAL_OVERLAP** for procedure pairing and TİTUBB/ÜTS flags. See `material_bundling_medula_boundary.md`. |
 | Drug discount tier application at payment | Drug cost optimizer — generic substitution | MEDULA applies the discount. BILUN finds cheaper equivalents in the same equivalence group. Different functions. |
 | Drug payment codes returned by `IlacAra` (1=Paid, 2=Paid with report, 3=Not paid) | Drug cost optimizer | MEDULA tells you if a drug is paid in a given context. BILUN could use this as a pre-check input but currently doesn't. Not duplicative. |
 | Patient copay exemption flags (`katilimPayindanMuaf`) | Copay exemption checker (EK-1A) | MEDULA returns the exemption flag at admission. BILUN computes exemption eligibility from ICD-10 history. BILUN could feed its computed exemptions into MEDULA's flags but doesn't currently. |
@@ -116,9 +116,10 @@ The MEDULA manual is a web service DTO reference, not a SUT rule repository. Sev
 
 | Layer | Module | Verdict | Reason |
 |---|---|---|---|
-| Layer 1 | Bundling rules (EK-3B-1) | **HOLD — needs SUT rulebook confirmation** | Manual doesn't prove MEDULA enforces this, but also doesn't prove it doesn't. Until confirmed from SUT sources, do not delete. |
-| Layer 1 | Exclusion rules (EK-3B-2) | **HOLD — same reason** | Same uncertainty. |
-| Layer 1 | Rule engine | **HOLD** | Depends on above. |
+| Layer 1 | Bundling rules (EK-3B-1) | **KEEP — ADDITIVE** | Phase 5: manual has no EK-3B-1 by name; pre-MEDULA analytics (`medula_overlap_gaps.md`). |
+| Layer 1 | Exclusion rules (EK-3B-2) | **KEEP — ADDITIVE** | Same; ÜTS/UBB DTO ≠ EK-3B-2 category match. |
+| Layer 1 | §3.1 prose material bundling (L1.4) | **KEEP — ADDITIVE** | 17-rule partial engine; do not claim MEDULA-guaranteed savings from prose hits. |
+| Layer 1 | `validate_claim()` orchestrator | **KEEP — ADDITIVE** | Third pass: bundling + exclusion + prose. |
 | Layer 2 | All 6 optimization engines | **KEEP** | No MEDULA web service overlap. These are analytics/strategy, not validation. |
 | Layer 3 | Lab optimizer (Alg 1) | **KEEP** | Hemogram bundling + duplicate detection have no MEDULA equivalent. |
 | Layer 3 | Drug optimizer (Alg 2) | **KEEP** | Generic substitution is procurement optimization. |
@@ -129,4 +130,4 @@ The MEDULA manual is a web service DTO reference, not a SUT rule repository. Sev
 | Catalog | SUT catalog loader | **KEEP** | MEDULA's `guncelSutKodlari` is real-time lookup; BILUN's parquet catalogs enable historical queries and batch analysis. Different purpose. |
 | New | Pre-MEDULA compliance checks | **CONSIDER** | 9 potential features in Category D above — drug payment awareness, dose checks, MR/CT sequencing, sevk awareness, procedure conflicts, drug report matching, ICU material eligibility, barcode-SUT matching, procedure frequency. |
 
-**Bottom line, revised:** The original recommendation to "delete Layer 1" was based on an unverified assumption that MEDULA explicitly enforces EK-3B-1 and EK-3B-2. The manual does not prove this. The correct position is: **hold Layer 1 until SUT rulebook evidence confirms the overlap, keep all Layers 2-3, and consider adding 9 pre-MEDULA compliance features that use MEDULA's own query APIs to prevent rejections.**
+**Bottom line (2026-06-02, Phase 5):** Do not delete Layer 1. Classify EK-3B-1/2 and L1.4 prose as **ADDITIVE** vs MEDULA ICU/procedure/ÜTS blocking — see [`material_bundling_medula_boundary.md`](material_bundling_medula_boundary.md) and [`medula_overlap_gaps.md`](../../reports/sut-fact-check/medula_overlap_gaps.md). Keep Layers 2–3; optional Category D integrations (ICU-group pre-check, `barkodSutEslesmeSorgu`) remain backlog.

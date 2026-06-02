@@ -51,7 +51,7 @@ claim materials → [Bundling Rules] + [Exclusion Rules] → ClaimValidationResu
 
 ### 1.2 EK-3B-2 Exclusion Rule
 
-**Gazette anchor:** EK-3/B-2 — 15 entries of non-reimbursable materials.
+**Gazette anchor:** EK-3/B-2 — 13 entries of non-reimbursable materials (curated `ek3b2_non_reimbursable.parquet`).
 
 **What it does:** Detects materials in the claim that SGK will *never* reimburse, regardless of how they're billed. These are items like viscosupplementation products, sports prostheses, stem cell materials, etc.
 
@@ -64,11 +64,25 @@ claim materials → [Bundling Rules] + [Exclusion Rules] → ClaimValidationResu
 
 **Business meaning:** This is the strongest SUT enforcement rule. If a material is in EK-3B-2, SGK simply will not pay. The hospital must either absorb the cost or bill the patient directly (if legally permissible). The rule catches these *before* submission so the hospital can decide whether to proceed.
 
+### 1.4 §3.1–3.2 Material Bundling Prose (PARTIAL)
+
+**Registry:** `material_bundling_prose` — status **partial** (`data/gazette/prose_rules/material_bundling_prose.json`).
+
+SUT §3.1–3.2 contains hundreds of material payment and non-separate-billing clauses. BILUN runs a wired prose engine (`prose_engine_status: implemented`, `prose_coverage_tier: partial`) with keyword and claim-field rules — not the full 301+ clause engine. Product surfaces show a coverage version string; long tail is in `plans/billing/material-bundling-prose-p2-plan.md`.
+
+**Implemented today (17 rules):**
+- Keyword rules: §3.1.3(7)–(9), §3.1.2(c)/(ç)/(d), barcode mismatch, lost/stolen MIAT, non-reimbursed procedure materials, device consumable, branch-unlisted, etc.
+- Claim-field rules: missing code, `not_in_ek3c` / `not_in_ek3`, procedure pairing, TİTUBB/ÜTS incomplete flags.
+- `validate_claim()` third pass; `precheck_materials_from_claims()` → `prose_bundling_violations` (separate from EK-3B-1 `is_bundled`).
+- **MEDULA:** classified **additive** for prose + EK-3B paths (`docs/medula/material_bundling_medula_boundary.md`). Prose hits are pre-submission risk flags, not guaranteed SGK recovery.
+
+**What remains:** EK-3B-1/2 via annex modules (L1.1/L1.2); 12 Gate B deferred clauses; full §3.1–3.2 corpus; optional MEDULA ICU-group / barcode API integration.
+
 ### 1.3 Claim Validation Orchestrator
 
 **Entry point:** `rule_engine.py` — `validate_claim()`
 
-Runs both rules in sequence and aggregates results into a single `ClaimValidationResult`:
+Runs both annex list rules in sequence and aggregates results into a single `ClaimValidationResult` (not full §3.1–3.2 prose — see §1.4):
 - `is_valid`: False if any violation has "error" severity.
 - `total_savings_try`: Sum of bundling violation amounts (money being billed that shouldn't be).
 - `total_risk_try`: Sum of exclusion violation amounts (money SGK will not cover).
@@ -114,7 +128,7 @@ There is a critical runtime concept: **exactness.** Each rule engine declares wh
 **How it works:**
 1. Loads EK-2G: 213 procedures with surcharge prohibitions.
 2. Requires exact claim lines to operate (cannot be inferred from ICD-10 codes alone — needs procedure codes and service dates).
-3. When exact claim lines are available: iterates through each patient's procedure lines, checks the `surcharge_applicable` flag encoded on each claim line, and tallies which procedures carry surcharge exposure.
+3. When exact claim lines are available: joins procedure codes to EK-2G via `optimization/catalog_join.py` (catalog-authoritative prohibition list) and compares against the `surcharge_applicable` flag on each line.
 4. When exact data is unavailable: returns a structured "missing exact inputs" payload with the specific reason and what's needed.
 
 **Business meaning:** Many hospitals add surcharges to certain procedures to increase revenue. But EK-2G bans this for 213 specific procedures. Billing a surcharge on a prohibited procedure can trigger SGK audit penalties. The algorithm identifies exposure so the hospital can correct its billing.
@@ -128,7 +142,7 @@ There is a critical runtime concept: **exactness.** Each rule engine declares wh
 **How it works:**
 1. Loads EK-2C-1: 465 procedures with their mandated copay rate percentages.
 2. Like surcharge, requires exact claim lines with `copay_rate_applicable` flags and billed/payable amounts.
-3. When exact data is available: computes per-procedure the actual payable-to-billed ratio and compares it against the gazette-mandated rate, producing a rate distribution across the cohort.
+3. When exact data is available: joins billed procedure codes to EK-2C-1 via `catalog_join.py`, validates `copay_rate_applicable` flags and billed/payable ratios against gazette rates.
 4. Computes a cohort-level mean copay rate and distribution histogram.
 
 **Business meaning:** SUT mandates specific copay percentages for specific procedures. If a hospital bills a different copay rate, SGK may reject or adjust the payment. This rule engines identifies mismatches at scale.
@@ -158,8 +172,9 @@ There is a critical runtime concept: **exactness.** Each rule engine declares wh
 2. For each claim flagged as a package candidate:
    - **Bundled-line violations:** Identifies procedure lines marked `is_package_included` that were billed separately with a positive billed amount. These are services that the package price already covers. Savings = billed amount - expected payable.
    - **Package vs itemized comparison:** Computes the total expected payable if billed itemized vs. if billed as a package. If itemized > package, the hospital is losing money by staying itemized. If package > itemized, the hospital is over-billing and at audit risk.
-3. Aggregates findings by ICD-10 chapter for chapter-level risk analysis.
-4. Returns per-patient: whether there's unbundling risk, total potential savings, and chapter-level breakdown.
+3. **Same-session point factors (§2.2.2.B / §2.2.2.A(5)):** Flags secondary procedures billed above allowed fractions (25%/50% for EK-2/C-only sessions; 30%/50% for EK-2/B itemized; mixed-session fallback to A(5) when EK-2/B has highest puan). Optional `cross_specialty` adds +25 percentage points to secondary factors when callers supply it.
+4. Aggregates findings by ICD-10 chapter; `patient_icd10_chapters` from diagnoses union claim chapters for `n_chapters_analyzed`.
+5. Returns per-patient: unbundling risk, sourced vs heuristic savings split, and chapter breakdown.
 
 **Business meaning:** DRG packages are the SUT's way of controlling costs. The hospital gets a fixed payment for everything related to a diagnosis episode — no matter how many individual services were performed. If the hospital itemizes things that should be in the package, SGK rejects the extra lines. If the hospital uses the package when individual billing would pay more, they're losing revenue. This algorithm tells hospitals which direction to go.
 
@@ -242,18 +257,18 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
 2. If the drug's equivalence group has other active members, checks if any are cheaper. Two criteria qualify an alternative as cheaper:
    - **Status "ESDEGER":** The alternative is classified as a generic equivalent while the current drug isn't.
    - **Higher discount tier:** The alternative's discount_tier_1 is more than 5 percentage points higher than the current drug's (meaning SGK covers more of it).
-3. Estimates savings using tier midpoints: basic drugs ≈ 25 TRY, moderate ≈ 95 TRY, specialty ≈ 475 TRY. The savings estimate = current tier midpoint - alternative tier midpoint.
+3. Does **not** assert TRY savings on heuristic rows (`savings_try: null`, `savings_basis: heuristic`). Section total stays `0` until exact claim lines exist.
 
 **Passivation detection:**
 1. If a drug has a non-empty `passivation_date`, it's flagged. The algorithm searches the same equivalence group for active alternatives.
-2. The passivated count is tallied but carries no direct savings — it's a compliance alert.
+2. The passivated count is tallied but carries no direct savings — it's a compliance alert (`savings_try: null`).
 
 **Exact mode (when claim lines are available):**
-1. If exact drug claim lines exist, the algorithm computes actual savings from billed amounts vs. expected payable amounts per line.
-2. Discount tier savings (billed - payable on each line) are added as recommendations alongside generic substitution savings.
-3. Takes the maximum of heuristic-estimated savings and line-level computed savings.
+1. Merges heuristic catalog insights (still without TRY on generic/passivated rows).
+2. Per claim line: when `billed − payable > 0`, emits `discount_tier_applied` with numeric `savings_try` (`savings_basis: claim_line`).
+3. Section total `generic_substitution_savings` = max(0, sum of claim-line discount); excluded from cohort totals when `exactness_status` is not `exact`.
 
-**Output:** `DrugOptimization` with generic substitution savings estimate, count of generics available, passivated drug count, and a list of specific drug recommendations (current drug → suggested alternative with estimated savings).
+**Output:** `DrugOptimization` with claim-line savings total when exact, heuristic recommendations without fabricated TRY otherwise, plus counts for generics available and passivated drugs.
 
 ### 3.3 Algorithm 3: Copay Savings Calculator
 
@@ -278,24 +293,29 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
 
 ### 3.4 Algorithm 4: Package vs. Itemized Billing Strategy
 
-**What it does:** Compares DRG package billing against itemized (fee-for-service) billing for each claim and identifies cost-saving opportunities by recommending the lower-cost billing strategy.
+**What it does:** Determines the **legally mandated** payment method (DRG package vs. itemized fee-for-service) for each claim per SUT §2.2, using EK-2/B and EK-2/C catalog membership, facility tier, and EK-2/C star markers. Savings are **corrective** (wrong method today) or **optional** (tier-3 §2.2.2(2) override only) — never pure price minimization.
 
 **How it works (when exact claim lines are available):**
 
-1. For each claim flagged as a package candidate:
-   - Computes the **itemized total** from non-package, non-bundled procedure lines.
-   - Computes the **package total** from procedure lines with category "paket."
-   - If no package total exists but an admission date is available, falls back to gazette DRG price lookup by ICD-10 chapter and date.
+1. **Per procedure line** — `resolve_payment_method()` in `prose_rules/payment_method.py`:
+   - EK-2/C only or EK-2/C + tier-2 / starred (*) → `DRG_MANDATORY` (package)
+   - EK-2/B only → `ITEMIZED`
+   - EK-2/C + tier-3 + non-star + also in EK-2/B → `DRG_OVERRIDABLE` (§2.2.2(2)) unless `prose_drg_locked` on catalog (§2.2.2 proviso list)
+   - Uses `ClaimHeader.facility_tier` via `prose_rules/facility_tier.py`, `has_star`, and `procedure_prose_drg_locked()` from curated EK-2C + `ek2c_prose_drg_locked_codes.json`
 
-2. Comparison:
-   - If `package_total <= itemized_total`: recommends **package** billing. Savings = itemized - package (the hospital avoids billing the higher itemized total).
-   - If `itemized_total < package_total`: recommends **itemized** billing. Savings = package - itemized (the hospital avoids billing the higher package total).
+2. **Per claim** (when `package_candidate` is true):
+   - Computes **itemized total** via `compute_session_adjusted_itemized_total()` (§2.2.2.B / §2.2.2.A(5) session point factors on same-day procedures); exposes `itemized_raw_try` and `itemized_price_methodology` (`session_adjusted` vs `claim_lines`)
+   - Computes **package total** from `paket` category lines, or DRG chapter price lookup when no package lines exist
+   - Aggregates claim kind (strictest wins): `DRG_MANDATORY` > `DRG_OVERRIDABLE` > `ITEMIZED`
+   - Emits recommendation with `recommendation_kind`:
+     - `mandatory_compliance` — only one legal method; `savings_try` > 0 only if currently billed the wrong way
+     - `optional_override` — tier-3 §2.2.2(2); recommends the **higher-paying legal option**; `savings_try = abs(package − itemized)`
 
-3. The algorithm always recommends the **lower-cost** strategy. This is a conservative compliance-first approach: it helps the hospital avoid over-billing and audit risk rather than maximizing revenue. Billing the higher-total strategy at the lower strategy's rate would represent revenue the hospital is legally entitled to, but this variant prioritizes audit safety.
+3. **Compliance violations** — lines billed contrary to mandated method are flagged separately (`type: compliance_violation`) with `payment_method_kind` and `sut_section_id`.
 
-**Heuristic mode (no claim lines):** Returns an empty recommendation with `missing_exact_inputs` status — this algorithm fundamentally requires line-level pricing data to be meaningful.
+**Heuristic mode (no claim lines):** Returns chapter-level review flags with `missing_exact_inputs` status — line-level pricing and catalog membership are required.
 
-**Output:** `BillingStrategyRecommendation` with per-claim recommendations (claim ID, recommended lower-cost strategy, both totals, savings from choosing the cheaper option).
+**Output:** `BillingStrategyRecommendation` with per-claim fields: `recommendation`, `recommendation_kind`, `payment_method_kind`, `sut_section_id`, `rule_id`, both totals, corrective/override `savings_try`, and `current_billing`.
 
 ### 3.5 Algorithm 5: Material Reimbursability Pre-Check
 

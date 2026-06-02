@@ -18,7 +18,7 @@ from .build_constants import (
     normalize_build_scope,
 )
 from ._internal import (
-    _ALLOWED_TABLES,
+    _BUILD_DATA_TABLES,
     _git_sha,
     _now_iso,
     _safe_json,
@@ -98,10 +98,27 @@ def _parse_iso_utc(value: str | None) -> datetime | None:
         return None
 
 
+def _clear_active_build_pointers(con, build_ids: list[str]) -> None:
+    """Drop scope pointers that reference builds being pruned."""
+    if not build_ids:
+        return
+    updated_at = _now_iso()
+    for build_id in build_ids:
+        con.execute(
+            """
+            UPDATE build_pointer_scopes
+            SET active_build_id = NULL, updated_at = ?
+            WHERE active_build_id = ?
+            """,
+            [updated_at, build_id],
+        )
+
+
 def _delete_build_rows(con, build_ids: list[str]) -> None:
     if not build_ids:
         return
-    build_scoped_tables = sorted(_ALLOWED_TABLES)
+    _clear_active_build_pointers(con, build_ids)
+    build_scoped_tables = sorted(_BUILD_DATA_TABLES)
     for build_id in build_ids:
         for table_name in build_scoped_tables:
             con.execute(f"DELETE FROM {table_name} WHERE build_id = ?", [build_id])

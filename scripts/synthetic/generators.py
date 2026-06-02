@@ -670,7 +670,11 @@ def _generate_claims_and_lines(
         claim_id = f"F-{pid}-{(ep_idx + 1):03d}"
 
         is_university = rng.random() < 0.15
-        facility_tier = "3_basamak" if is_university else rng.choice(["2_3_basamak_ozel", "2_basamak_kamu"])
+        facility_tier = (
+            "egitim_arastirma"
+            if is_university
+            else rng.choice(["2_3_basamak_ozel", "2_basamak_kamu"])
+        )
         provider = "Universite" if is_university else rng.choice(["Ozel", "Kamu"])
 
         start_date = episode["basvuru_tarihi"]

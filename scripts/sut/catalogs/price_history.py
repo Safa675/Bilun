@@ -9,6 +9,7 @@ orchestrator concatenates and decorates with valid_from / valid_to ranges.
 from __future__ import annotations
 
 import re
+import unicodedata
 
 import pandas as pd
 
@@ -20,11 +21,22 @@ RE_EK2C_CODE = re.compile(r"^P\d{6}$")
 SUT_PUAN_COEFFICIENT = 0.593
 
 
+def _normalize_header_label(val: object) -> str:
+    text = str(val or "").strip()
+    if text == "*":
+        return "*"
+    text = text.upper()
+    normalized = unicodedata.normalize("NFKD", text)
+    return normalized.encode("ascii", "ignore").decode("ascii").strip()
+
+
 def _find_header_row(df: pd.DataFrame, required_labels: set[str]) -> int | None:
     probe = df.fillna("").astype(str)
     for idx in range(len(probe)):
         labels = {
-            str(x).strip().upper() for x in probe.iloc[idx].tolist() if str(x).strip()
+            _normalize_header_label(x)
+            for x in probe.iloc[idx].tolist()
+            if str(x).strip()
         }
         if required_labels.issubset(labels):
             return idx
@@ -34,12 +46,26 @@ def _find_header_row(df: pd.DataFrame, required_labels: set[str]) -> int | None:
 def _build_pos_map(header_row: pd.Series) -> dict[str, int]:
     mapping: dict[str, int] = {}
     for pos, val in enumerate(header_row.tolist()):
-        label = str(val).strip().upper()
+        label = _normalize_header_label(val)
         if not label:
             continue
         if label not in mapping:
             mapping[label] = pos
+    if "ISLEM GRUBU" in mapping and "GRUP" not in mapping:
+        mapping["GRUP"] = mapping["ISLEM GRUBU"]
+    if "ACIKLAMA" in mapping and "DESCRIPTION" not in mapping:
+        mapping["DESCRIPTION"] = mapping["ACIKLAMA"]
+    if "*" in mapping and "STAR" not in mapping:
+        mapping["STAR"] = mapping["*"]
     return mapping
+
+
+def _cell_text(series: pd.Series) -> pd.Series:
+    return series.apply(lambda x: str(x).strip() if pd.notna(x) else "")
+
+
+def _star_flag(series: pd.Series) -> pd.Series:
+    return series.apply(lambda x: "*" in str(x) if pd.notna(x) and str(x).strip() else False)
 
 
 def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
@@ -71,7 +97,7 @@ def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
-    required = {"ISLEM KODU", "ISLEM ADI", "ISLEM PUANI", "GRUP"}
+    required = {"ISLEM KODU", "ISLEM ADI", "ISLEM PUANI"}
 
     h_idx = _find_header_row(df, required)
     if h_idx is None:
@@ -82,23 +108,55 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
     body = df.iloc[h_idx + 1 :]
 
     out = pd.DataFrame()
-    out["package_code"] = body.iloc[:, pos["ISLEM KODU"]].apply(
-        lambda x: str(x).strip() if pd.notna(x) else ""
-    )
-    out["name"] = body.iloc[:, pos["ISLEM ADI"]].apply(
-        lambda x: str(x).strip() if pd.notna(x) else ""
-    )
-    out["group"] = body.iloc[:, pos["GRUP"]].apply(
-        lambda x: str(x).strip() if pd.notna(x) else ""
-    )
+    out["package_code"] = _cell_text(body.iloc[:, pos["ISLEM KODU"]])
+    out["name"] = _cell_text(body.iloc[:, pos["ISLEM ADI"]])
+    if "GRUP" in pos:
+        out["group"] = _cell_text(body.iloc[:, pos["GRUP"]])
+    else:
+        out["group"] = ""
+    if "DESCRIPTION" in pos:
+        out["description"] = _cell_text(body.iloc[:, pos["DESCRIPTION"]])
+    else:
+        out["description"] = ""
+    if "STAR" in pos:
+        out["has_star"] = _star_flag(body.iloc[:, pos["STAR"]])
+    else:
+        out["has_star"] = False
     out["puan"] = pd.to_numeric(
         body.iloc[:, pos["ISLEM PUANI"]], errors="coerce"
     )
 
     out = out[out["package_code"].str.match(RE_EK2C_CODE, na=False)]
     out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
+    out["prose_drg_locked"] = False
+    try:
+        from src.bilun.domain.prose_rules.ek2c_prose_drg_locked import (
+            load_prose_drg_locked_code_set,
+        )
+        from src.bilun.domain.prose_rules.catalog_membership import (
+            normalize_procedure_code,
+        )
+
+        locked = load_prose_drg_locked_code_set()
+        if locked:
+            out["prose_drg_locked"] = out["package_code"].map(
+                lambda code: normalize_procedure_code(str(code)) in locked
+            )
+    except Exception:
+        pass
     out = out.reset_index(drop=True)
-    return out[["package_code", "name", "group", "puan", "price_try"]]
+    return out[
+        [
+            "package_code",
+            "name",
+            "group",
+            "description",
+            "has_star",
+            "prose_drg_locked",
+            "puan",
+            "price_try",
+        ]
+    ]
 
 
 SPECS: list[dict] = [

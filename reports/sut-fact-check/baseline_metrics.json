@@ -1,0 +1,183 @@
+{
+  "generated_at": "2026-06-02T18:53:51Z",
+  "phase": "2-post-l1.4",
+  "clauses": {
+    "total": 8180
+  },
+  "coverage": {
+    "total_clause_rows": 8180,
+    "by_status": [
+      {
+        "coverage_status": "implemented",
+        "count": 3559
+      },
+      {
+        "coverage_status": "partial",
+        "count": 2683
+      },
+      {
+        "coverage_status": "missing",
+        "count": 1714
+      },
+      {
+        "coverage_status": "non_algorithmic",
+        "count": 150
+      },
+      {
+        "coverage_status": "needs_claim_lines",
+        "count": 74
+      }
+    ],
+    "algorithmic_gaps": 4471,
+    "algorithmic_gap_pct": 54.7,
+    "top_gap_categories": [
+      {
+        "primary_rule_category": "drug_reimbursement",
+        "count": 2430
+      },
+      {
+        "primary_rule_category": "unclassified",
+        "count": 1227
+      },
+      {
+        "primary_rule_category": "billing_admin",
+        "count": 487
+      },
+      {
+        "primary_rule_category": "copay_rate",
+        "count": 110
+      },
+      {
+        "primary_rule_category": "copay_exemption",
+        "count": 88
+      },
+      {
+        "primary_rule_category": "surcharge",
+        "count": 58
+      },
+      {
+        "primary_rule_category": "drug_discount",
+        "count": 36
+      },
+      {
+        "primary_rule_category": "material_miat",
+        "count": 29
+      },
+      {
+        "primary_rule_category": "material_preauth",
+        "count": 4
+      },
+      {
+        "primary_rule_category": "lab_billing",
+        "count": 2
+      }
+    ],
+    "material_bundling_prose": {
+      "classified_clause_rows": 733,
+      "implemented_rows": 733,
+      "partial_rows": 0,
+      "gap_rows": 0,
+      "prose_rules_on_disk": 17,
+      "gate_b": {
+        "total_rows": 48,
+        "p1_encode": 40,
+        "skip_annex_duplicate": 2,
+        "skip_already_encoded": 6,
+        "duplicate_ek3b1": 2,
+        "duplicate_ek3b2": 0
+      },
+      "encode_manifest": {
+        "rules_in_json": 17,
+        "rules_added": 10,
+        "gate_b_sources_encoded": [
+          "C001618",
+          "C001619",
+          "C001636",
+          "C001637",
+          "C001664",
+          "C001762",
+          "C001834",
+          "C001837",
+          "C001840",
+          "C001845",
+          "C001849",
+          "C002684",
+          "C002691",
+          "C002696",
+          "C002697",
+          "C002707",
+          "C002720",
+          "C002724",
+          "C002742",
+          "C002743",
+          "C002749",
+          "C002789",
+          "C002824",
+          "C002828",
+          "C002831"
+        ],
+        "gate_b_deferred_clause_ids": [
+          "C001622",
+          "C001629",
+          "C001630",
+          "C001633",
+          "C001639",
+          "C001648",
+          "C001797",
+          "C001823",
+          "C002692",
+          "C002694",
+          "C002698",
+          "C002741",
+          "C002798"
+        ]
+      }
+    }
+  },
+  "registry": {
+    "total_rules": 27,
+    "by_status": [
+      {
+        "registry_coverage_status": "implemented",
+        "count": 13
+      },
+      {
+        "registry_coverage_status": "partial",
+        "count": 7
+      },
+      {
+        "registry_coverage_status": "needs_claim_lines",
+        "count": 3
+      },
+      {
+        "registry_coverage_status": "missing",
+        "count": 2
+      },
+      {
+        "registry_coverage_status": "non_algorithmic",
+        "count": 2
+      }
+    ],
+    "zero_clause_matches": [
+      {
+        "rule_id": "claim_validation",
+        "description": "Pre-submission bundling + exclusion validation orchestrator"
+      }
+    ],
+    "implemented_rules": 13,
+    "partial_rules": 7,
+    "missing_rules": 2,
+    "material_bundling_prose_status": "implemented"
+  },
+  "medula_overlap": {
+    "source": "reports/sut-fact-check/medula_overlap_gaps.md",
+    "phase_5_updated": "2026-06-02",
+    "additive_review": 26,
+    "medula_duplicate_billing_recovery": 1,
+    "partial_overlap_relabel": 5,
+    "uncertain_hold": 0,
+    "not_applicable": 0,
+    "total_units": 28,
+    "phase_5_note": "L1.4 prose ADDITIVE; L3.5 partial includes prose precheck"
+  }
+}

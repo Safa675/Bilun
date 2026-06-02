@@ -420,6 +420,9 @@ def assemble_sut_context(
         copay_profiles_by_patient=getattr(
             claim_dataset, "copay_profiles_by_patient", {}
         ),
+        procedure_lines_by_patient=getattr(
+            claim_dataset, "procedure_lines_by_patient", {}
+        ),
     )
     patient_alerts_cache = build_sut_patient_alerts_cache(
         patient_ids,
