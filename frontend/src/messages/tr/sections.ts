@@ -69,6 +69,14 @@ const sections = {
     potentialSaving: "Potansiyel tasarruf: {amount}",
     validatedIn: "{ms}ms içinde doğrulandı · {summary}",
   },
+  materialBundlingScope: {
+    title: "Malzeme paketleme kapsamı",
+    body: "Kontroller yalnızca ek listeleri kullanır (EK-3B-1: {ek3b1} paket sarf kategorisi, EK-3B-2: {ek3b2} hariç satır). SUT §3.1–3.2 tam metin paketleme ve ödeme kuralları bu sürümde kodlanmamıştır.",
+    bodyPartial: "EK-3B-1 ({ek3b1}) ve EK-3B-2 ({ek3b2}) ek listeleri ile {proseRules} kısmi §3.1 kuralı. Tam §3.1–3.2 karar tabloları henüz kodlanmadı.",
+    bodyImplemented: "Kapsam v{effectiveDate}: EK-3B-1 ({ek3b1}), EK-3B-2 ({ek3b2}), §3.1 metin motoru ({proseRules} kural — anahtar kelime, EK-3/C, işlem eşlemesi). Tam §3.1–3.2 tabloları açık.",
+    medulaNote: "MEDULA öncesi uyumluluk uyarıları (MEDULA ile örtüşmez). Garanti SGK tahsilatı değildir — MEDULA yoğun bakım grubu, işlem veya ÜTS’yi gönderimde engelleyebilir.",
+    p2Plan: "Uzun kuyruk planı: {path}",
+  },
   specialtyMaterial: {
     title: "Branşa Göre EK-3 Malzemeler ({total} kalem)",
     allSpecialties: "Tüm Branşlar",
@@ -86,6 +94,7 @@ const sections = {
     emptyState: "Bu branş için malzeme bulunamadı.",
   },
   drgPricing: {
+    heuristicNotice: "Bölüm medyanları analitik EK-2C kıyaslarıdır — talep bazlı paket kodu fiyatı değildir.",
     title: "ICD-10 Bölümüne Göre EK-2C DRG Paket Fiyatlandırması",
     errors: {
       loadFailed: "DRG fiyatlandırması yüklenemedi",

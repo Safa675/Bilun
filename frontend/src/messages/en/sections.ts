@@ -69,6 +69,14 @@ const sections = {
     potentialSaving: "Potential saving: {amount}",
     validatedIn: "Validated in {ms}ms · {summary}",
   },
+  materialBundlingScope: {
+    title: "Material bundling scope",
+    body: "Checks use annex lists only (EK-3B-1: {ek3b1} bundled categories, EK-3B-2: {ek3b2} exclusion rows). Full SUT §3.1–3.2 prose bundling and payment rules are not encoded in this release.",
+    bodyPartial: "EK-3B-1 ({ek3b1}) and EK-3B-2 ({ek3b2}) annex lists plus {proseRules} partial §3.1 prose rules. Full §3.1–3.2 decision tables are not yet encoded.",
+    bodyImplemented: "Coverage v{effectiveDate}: EK-3B-1 ({ek3b1}), EK-3B-2 ({ek3b2}), §3.1 prose engine ({proseRules} rules — keywords, EK-3/C codes, procedure pairing). Full §3.1–3.2 tables remain open.",
+    medulaNote: "Pre-MEDULA compliance flags (MEDULA additive). Not guaranteed SGK recovery — MEDULA may still block ICU group, procedure, or ÜTS at submission.",
+    p2Plan: "Long-tail prose plan: {path}",
+  },
   specialtyMaterial: {
     title: "EK-3 Materials by Specialty ({total} items)",
     allSpecialties: "All Specialties",
@@ -86,6 +94,7 @@ const sections = {
     emptyState: "No materials found for this specialty.",
   },
   drgPricing: {
+    heuristicNotice: "Chapter medians are EK-2C benchmarks for analytics — not per-claim package code prices.",
     title: "EK-2C DRG Package Pricing by ICD-10 Chapter",
     errors: {
       loadFailed: "Failed to load DRG pricing",

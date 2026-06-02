@@ -17,7 +17,8 @@ const billing = {
     "sutCode": "SUT kodu",
     "gazettePrice": "Tebliğ fiyatı",
     "flag": "Bayrak",
-    "savings": "Tasarruf"
+    "savings": "Tasarruf",
+    "clinicalReviewDuplicate": "Klinik inceleme — tekrar gerekliliğini doğrulayın"
   },
   "drug": {
     "title": "İlaç optimizasyonu",
@@ -27,7 +28,9 @@ const billing = {
     "alternative": "Alternatif",
     "savings": "Tasarruf",
     "tierCorrection": "Kademe düzeltmesi",
-    "tierCorrectionSameDrug": "Aynı ilaçta kademe düzeltmesi"
+    "tierCorrectionSameDrug": "Aynı ilaçta kademe düzeltmesi",
+    "heuristicInsight": "Katalog içgörüsü",
+    "heuristicFootnote": "Eşdeğer ve pasifleştirilmiş ilaç satırları yalnızca EK-4A katalog içgörüsüdür — kesin dispense ilaç talep satırları olmadan tasarruf iddia edilmez."
   },
   "copay": {
     "title": "Katılım payı optimizasyonu",
@@ -54,13 +57,39 @@ const billing = {
     "strategy": "Strateji",
     "packageTotal": "Paket toplamı",
     "itemizedTotal": "Kalem toplamı",
-    "savings": "Tasarruf"
+    "savings": "Tasarruf",
+    "sutSection": "SUT bölümü",
+    "paymentMethodKind": "Yöntem türü",
+    "recommendationKind": "Kural türü",
+    "badgeMandatory": "Zorunlu faturalandırma — {section}",
+    "badgeOverride": "İsteğe bağlı seçim — {section}",
+    "kindMandatoryCompliance": "Zorunlu faturalandırma kuralı",
+    "kindOptionalOverride": "Kurum yöntem seçebilir",
+    "overrideScopeNotice": "“Kurum yöntem seçebilir” satırları §2.2.2(2) kapsamında paket ile kalem toplamlarını karşılaştırır; uyum ihlali değildir. “Zorunlu faturalandırma kuralı” yalnızca SGK’nın tek yöntem dayattığı durumlarda geçerlidir.",
+    "methodDrgMandatory": "DRG zorunlu",
+    "methodDrgOverridable": "DRG geçersiz kılınabilir",
+    "methodItemized": "Yalnızca kalem",
+    "methodNotInSut": "SUT listelerinde yok",
+    "compliant": "Uyumlu",
+    "correctiveSavings": "Düzeltici tasarruf",
+    "optionalSavings": "Alternatif yöntem farkı",
+    "complianceViolations": "Ödeme yöntemi uyum sorunları",
+    "procedure": "İşlem",
+    "mandatedMethod": "Zorunlu yöntem",
+    "catalogAsOf": "EK-2B/EK-2C katalog üyeliği {date} tarihi itibarıyla (hizmet tarihi).",
+    "packagePriceHeuristic": "Paket toplamı bölüm DRG medyan tahmini kullanır — talep EK-2/C kod fiyatı değil."
   },
   "materials": {
     "title": "Malzeme ön kontrolü",
     "unavailable": "Bu bölüm tam kesin olana kadar malzeme tavan tahminleri kullanılamaz.",
     "preAuth": "Ön onay gerekli",
     "miat": "MIAT kısıtlı",
+    "miatCatalog": "MIAT katalog (aralığı doğrulayın)",
+    "miatIntervalViolations": "MIAT aralığı — önceki kullanım çok yakın",
+    "lastUse": "Son kullanım",
+    "bundledSeparate": "Pakete dahil — ayrı faturalandırılmış (EK-3B-1)",
+    "scopeNotice": "Paketleme işaretleri yalnızca EK-3B-1 kataloğunu (54 kalem) kullanır — SUT §3.1–3.2 tam metin kuralları değil.",
+    "proseBundling": "§3.1 metin paketleme (kısmi motor)",
     "sutCode": "SUT kodu",
     "material": "Malzeme",
     "gazettePrice": "Tebliğ fiyatı",
@@ -83,7 +112,9 @@ const billing = {
     "potentialSavings": "Potansiyel tasarruf: {amount}",
     "surchargeUnavailable": "Fark ücreti uyumu kesin faturalandırılmış işlem kodları ve tarihleri gerektirir.",
     "copayRateUnavailable": "Katılım payı oranı uyumu kesin faturalandırılmış işlem kodları ve tarihleri gerektirir.",
-    "drgUnavailable": "DRG ayrıştırma riski kesin kalemlendirilmiş işlem satırları ve paket uygunluk bağlamı gerektirir."
+    "drgUnavailable": "DRG ayrıştırma riski kesin kalemlendirilmiş işlem satırları ve paket uygunluk bağlamı gerektirir.",
+    "drgHeuristicFootnote": "Sezgisel tutarlar içerir: pakete dahil talep bayrakları ve kalem-paket karşılaştırması — denetlenmiş SGK tahsili değildir.",
+    "drgSourcedSavings": "Metin kuralı ihlalleri (kaynaklı): {amount}"
   }
 } as const;
 

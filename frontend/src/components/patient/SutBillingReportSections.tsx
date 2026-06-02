@@ -10,18 +10,28 @@ import {
   copayCorrectionPayableTry,
   copayCorrectionProcedureLabel,
   copayCorrectionSavingsTry,
+  formatSutSectionLabel,
+  isClaimLevelStrategyRow,
+  isComplianceViolationRow,
+  strategyBadgeColor,
   strategyItemizedTotalTry,
   strategyModeLabel,
   strategyPackageTotalTry,
+  strategyPaymentMethodKindMessageKey,
   strategyPrimaryLabel,
+  strategyRecommendationKindMessageKey,
+  strategyCatalogAsOfFootnote,
+  strategySavingsHeaderKey,
+  strategySavingsTryDisplay,
   strategySecondaryLabel,
+  isHeuristicDrugRecommendation,
   usesClaimCopayCorrectionShape,
-  usesClaimStrategyShape,
   usesHeuristicStrategyReviewShape,
   usesInsightOnlyCopayCorrectionShape,
 } from "@/lib/billingReportFields";
 import { theme } from "@/lib/theme";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
+import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 import { Chip, DataTable, Eyebrow, Section, Stat, Surface } from "@/components/primitives";
 import { getExemptionCategories } from "@/lib/copayExemption";
 import {
@@ -191,7 +201,7 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
     return null;
   }
 
-  const combinedSavings = labData.hemogram_bundling_savings + labData.duplicate_test_savings;
+  const combinedSavings = labData.hemogram_bundling_savings;
 
   return (
     <BillingSectionShell title={t("billing.lab.title")} total={fmtTRY2(combinedSavings)}>
@@ -213,12 +223,22 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
               <td className="num-col tabular-nums text-right">{fmtTRY2(test.gazette_price)}</td>
               <td>
                 <StatusChip
-                  label={fmtLabel(test.flag_type)}
-                  color={test.flag_type === "hemogram_unbundling" ? "#D97706" : "#B91C1C"}
+                  label={
+                    test.flag_type === "clinical_review_duplicate"
+                      ? t("billing.lab.clinicalReviewDuplicate")
+                      : fmtLabel(test.flag_type)
+                  }
+                  color={
+                    test.flag_type === "hemogram_unbundling"
+                      ? "#D97706"
+                      : test.flag_type === "clinical_review_duplicate"
+                        ? "#4B5563"
+                        : "#B91C1C"
+                  }
                 />
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                {fmtTRY2(test.savings_try)}
+                {fmtTRY2OrUnavailable(test.savings_try ?? null)}
               </td>
             </tr>
           ))}
@@ -232,6 +252,9 @@ export function DrugOptimizationSection({ drugData }: { drugData: BillingActionR
   const t = useT();
   const drugExact = isExactOutput(drugData);
   const hasRecommendations = drugData.drug_recommendations.length > 0;
+  const hasHeuristicRows = drugData.drug_recommendations.some((row) =>
+    isHeuristicDrugRecommendation(row),
+  );
 
   if (!drugExact && !hasRecommendations) {
     return (
@@ -253,6 +276,11 @@ export function DrugOptimizationSection({ drugData }: { drugData: BillingActionR
       {!drugExact && (
         <ExactnessNotice block={drugData} fallback={t("billing.drug.unavailable")} />
       )}
+      {!drugExact && hasHeuristicRows && (
+        <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.drug.heuristicFootnote")}
+        </p>
+      )}
       <TableWrap minWidth={860}>
         <thead>
           <tr>
@@ -267,10 +295,18 @@ export function DrugOptimizationSection({ drugData }: { drugData: BillingActionR
             <tr key={`${recommendation.drug_name}-${index}`}>
               <td title={recommendation.drug_name}>{recommendation.drug_name}</td>
               <td>
-                <StatusChip
-                  label={fmtLabel(recommendation.issue)}
-                  color={recommendation.issue === "passivated" ? "#B91C1C" : "#D97706"}
-                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusChip
+                    label={fmtLabel(recommendation.issue)}
+                    color={recommendation.issue === "passivated" ? "#B91C1C" : "#D97706"}
+                  />
+                  {isHeuristicDrugRecommendation(recommendation) && (
+                    <StatusChip
+                      label={t("billing.drug.heuristicInsight")}
+                      color="#64748B"
+                    />
+                  )}
+                </div>
               </td>
               <td title={recommendation.issue === "discount_tier_applied" ? (recommendation.detail || t("billing.drug.tierCorrectionSameDrug")) : recommendation.alternative}>
                 {recommendation.issue === "discount_tier_applied" ? t("billing.drug.tierCorrection") : recommendation.alternative}
@@ -415,7 +451,19 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
 export function BillingStrategySection({ strategyData }: { strategyData: BillingActionReport["billing_strategy"] }) {
   const t = useT();
   const strategyExact = isExactOutput(strategyData);
-  const hasRecommendations = strategyData.recommendations.length > 0;
+  const heuristicRows = strategyData.recommendations.filter((item) =>
+    usesHeuristicStrategyReviewShape(item),
+  );
+  const claimLevelRows = strategyData.recommendations.filter((item) =>
+    isClaimLevelStrategyRow(item),
+  );
+  const complianceViolations = strategyData.recommendations.filter((item) =>
+    isComplianceViolationRow(item),
+  );
+  const hasRecommendations =
+    heuristicRows.length > 0 ||
+    claimLevelRows.length > 0 ||
+    complianceViolations.length > 0;
 
   if (!strategyExact && !hasRecommendations) {
     return (
@@ -431,9 +479,24 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
     return null;
   }
 
-  const heuristicOnly = strategyData.recommendations.every((item) =>
-    usesHeuristicStrategyReviewShape(item),
+  const heuristicOnly = heuristicRows.length > 0 && claimLevelRows.length === 0;
+  const usesClaimTable = claimLevelRows.length > 0;
+  const savingsHeaderKey = usesClaimTable
+    ? strategySavingsHeaderKey(claimLevelRows)
+    : "billing.strategy.savings";
+  const catalogAsOfFootnote = strategyCatalogAsOfFootnote(claimLevelRows);
+  const hasOptionalOverride = claimLevelRows.some(
+    (item) => item.recommendation_kind === "optional_override",
   );
+
+  const renderSutRuleBadge = (item: (typeof claimLevelRows)[number]) => {
+    const section = formatSutSectionLabel(item.sut_section_id ?? item.sut_section);
+    const label =
+      item.recommendation_kind === "optional_override"
+        ? t("billing.strategy.badgeOverride", { section })
+        : t("billing.strategy.badgeMandatory", { section });
+    return <StatusChip label={label} color={strategyBadgeColor(item)} />;
+  };
 
   return (
     <BillingSectionShell title={t("billing.strategy.title")}>
@@ -442,60 +505,73 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
           {getUnavailableMessage(strategyData, t("billing.strategy.unavailable"))}
         </div>
       )}
-      <TableWrap minWidth={heuristicOnly ? 760 : 980}>
-        <thead>
-          <tr>
-            {heuristicOnly ? (
-              <>
-                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.chapter")}</th>
-                <th>{t("billing.strategy.recommendation")}</th>
-                <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
-                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
-              </>
-            ) : usesClaimStrategyShape(strategyData.recommendations[0]) ? (
-              <>
-                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.claim")}</th>
-                <th>{t("billing.strategy.recommendation")}</th>
-                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.packageTotal")}</th>
-                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.itemizedTotal")}</th>
-                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
-              </>
-            ) : (
-              <>
-                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.chapter")}</th>
-                <th>{t("billing.strategy.group")}</th>
-                <th>{t("billing.strategy.strategy")}</th>
-                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.packageTotal")}</th>
-                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.itemizedTotal")}</th>
-                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
-              </>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {strategyData.recommendations.map((item, index) => (
-            <tr key={`${strategyPrimaryLabel(item)}-${index}`}>
-              {usesHeuristicStrategyReviewShape(item) ? (
+      {usesClaimTable && catalogAsOfFootnote && (
+        <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.strategy.catalogAsOf", { date: catalogAsOfFootnote })}
+        </p>
+      )}
+      {usesClaimTable && hasOptionalOverride && (
+        <p className="mb-3 text-xs leading-relaxed rounded-lg px-3 py-2" style={{ background: "rgba(37, 99, 235, 0.08)", color: "#1D4ED8" }}>
+          {t("billing.strategy.overrideScopeNotice")}
+        </p>
+      )}
+      {(heuristicOnly || usesClaimTable) && (
+        <TableWrap minWidth={heuristicOnly ? 760 : 1180}>
+          <thead>
+            <tr>
+              {heuristicOnly ? (
                 <>
-                  <td className="font-semibold text-slate-950">{item.chapter ?? "—"}</td>
-                  <td>
-                    <StatusChip
-                      label={t("patient.workspace.reviewPackage")}
-                      color="#2563EB"
-                    />
-                  </td>
-                  <td>{item.detail ?? strategySecondaryLabel(item)}</td>
-                  <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                    {fmtTRY2OrUnavailable(item.savings_try ?? null)}
-                  </td>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.chapter")}</th>
+                  <th>{t("billing.strategy.recommendation")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
                 </>
-              ) : usesClaimStrategyShape(item) ? (
+              ) : (
                 <>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.claim")}</th>
+                  <th>{t("billing.strategy.recommendation")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.recommendationKind")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.sutSection")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.paymentMethodKind")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.packageTotal")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.itemizedTotal")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t(savingsHeaderKey)}</th>
+                </>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {heuristicRows.map((item, index) => (
+              <tr key={`${strategyPrimaryLabel(item)}-${index}`}>
+                <td className="font-semibold text-slate-950">{item.chapter ?? "—"}</td>
+                <td>
+                  <StatusChip
+                    label={t("patient.workspace.reviewPackage")}
+                    color="#2563EB"
+                  />
+                </td>
+                <td>{item.detail ?? strategySecondaryLabel(item)}</td>
+                <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                  {fmtTRY2OrUnavailable(item.savings_try ?? null)}
+                </td>
+              </tr>
+            ))}
+            {claimLevelRows.map((item, index) => {
+              const savings = strategySavingsTryDisplay(item);
+              const kindKey = strategyRecommendationKindMessageKey(item);
+              const methodKey = strategyPaymentMethodKindMessageKey(item);
+              return (
+                <tr key={`${strategyPrimaryLabel(item)}-${index}`}>
                   <td>
                     <div className="font-semibold text-slate-950">{strategyPrimaryLabel(item)}</div>
                     {strategySecondaryLabel(item) && (
                       <div className="mt-1 text-xs" style={{ color: "#71717A" }}>
                         {strategySecondaryLabel(item)}
+                      </div>
+                    )}
+                    {item.package_price_methodology === "chapter_median_heuristic" && (
+                      <div className="mt-1 text-xs" style={{ color: "#71717A" }}>
+                        {t("billing.strategy.packagePriceHeuristic")}
                       </div>
                     )}
                   </td>
@@ -505,46 +581,71 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
                       color={strategyModeLabel(item) === "package" ? ACCENT : "#2563EB"}
                     />
                   </td>
+                  <td>
+                    {kindKey ? (
+                      <StatusChip label={t(kindKey)} color={strategyBadgeColor(item)} />
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td>{renderSutRuleBadge(item)}</td>
+                  <td>{methodKey ? t(methodKey) : "—"}</td>
                   <td className="num-col tabular-nums text-right">
                     {fmtTRY2OrUnavailable(strategyPackageTotalTry(item))}
                   </td>
                   <td className="num-col tabular-nums text-right">
                     {fmtTRY2OrUnavailable(strategyItemizedTotalTry(item))}
                   </td>
-                  <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                    {fmtTRY2OrUnavailable(item.savings_try ?? null)}
+                  <td
+                    className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]"
+                    style={savings.muted ? { color: "#71717A" } : undefined}
+                  >
+                    {savings.muted
+                      ? t("billing.strategy.compliant")
+                      : fmtTRY2OrUnavailable(savings.amount)}
                   </td>
-                </>
-              ) : (
-                <>
+                </tr>
+              );
+            })}
+          </tbody>
+        </TableWrap>
+      )}
+      {complianceViolations.length > 0 && (
+        <div className="mt-6 space-y-2">
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#B91C1C" }}>
+            {t("billing.strategy.complianceViolations")}
+          </p>
+          <TableWrap minWidth={920}>
+            <thead>
+              <tr>
+                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.claim")}</th>
+                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.procedure")}</th>
+                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.mandatedMethod")}</th>
+                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.sutSection")}</th>
+                <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {complianceViolations.map((item, index) => (
+                <tr key={`${item.claim_id}-${item.procedure_code}-${index}`}>
+                  <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
                   <td>
-                    <div className="font-semibold text-slate-950">{item.chapter_description}</div>
-                    <div className="mt-1 text-xs" style={{ color: "#71717A" }}>
-                      {item.chapter}
-                    </div>
+                    <div className="font-semibold text-slate-950">{item.procedure_name ?? item.procedure_code ?? "—"}</div>
+                    {item.procedure_code && item.procedure_name && (
+                      <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                        {item.procedure_code}
+                      </div>
+                    )}
                   </td>
-                  <td>{item.ek2c_group}</td>
-                  <td>
-                    <StatusChip
-                      label={fmtLabel(strategyModeLabel(item))}
-                      color={strategyModeLabel(item) === "package" ? ACCENT : "#2563EB"}
-                    />
-                  </td>
-                  <td className="num-col tabular-nums text-right">
-                    {fmtTRY2OrUnavailable(strategyPackageTotalTry(item))}
-                  </td>
-                  <td className="num-col tabular-nums text-right">
-                    {fmtTRY2OrUnavailable(strategyItemizedTotalTry(item))}
-                  </td>
-                  <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                    {fmtTRY2OrUnavailable(item.savings_try ?? null)}
-                  </td>
-                </>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </TableWrap>
+                  <td>{fmtLabel(item.mandated_method ?? "—")}</td>
+                  <td>{formatSutSectionLabel(item.sut_section_id ?? item.sut_section)}</td>
+                  <td>{item.detail ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </TableWrap>
+        </div>
+      )}
     </BillingSectionShell>
   );
 }
@@ -553,9 +654,15 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
   const t = useT();
   const ceilingEntries = Object.entries(materialsData.gazette_ceiling_by_specialty);
   const materialsExact = isExactOutput(materialsData);
+  const intervalViolations = materialsData.miat_interval_violations ?? [];
+  const bundledLines = materialsData.bundled_separate_billing ?? [];
+  const proseViolations = materialsData.prose_bundling_violations ?? [];
   const hasExactListData =
     materialsData.pre_auth_required.length > 0 ||
-    materialsData.miat_restricted.length > 0;
+    materialsData.miat_restricted.length > 0 ||
+    intervalViolations.length > 0 ||
+    bundledLines.length > 0 ||
+    proseViolations.length > 0;
   const hasAnyData = hasExactListData || ceilingEntries.length > 0;
 
   if (!hasAnyData && materialsExact) {
@@ -565,6 +672,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
   return (
     <BillingSectionShell title={t("billing.materials.title")}>
       <div className="space-y-4">
+        <MaterialBundlingScopeNotice scope={materialsData.coverage_scope} compact />
         {!materialsExact && (
           <ExactnessNotice block={materialsData} fallback={t("billing.materials.unavailable")} />
         )}
@@ -596,10 +704,40 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
           </div>
         )}
 
-        {materialsData.miat_restricted.length > 0 && (
+        {intervalViolations.length > 0 && (
           <div className="space-y-2">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#B91C1C" }}>
-              {t("billing.materials.miat")}
+              {t("billing.materials.miatIntervalViolations")}
+            </p>
+            <TableWrap minWidth={920}>
+              <thead>
+                <tr>
+                  <th>{t("billing.materials.sutCode")}</th>
+                  <th>{t("billing.materials.material")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.lastUse")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.miatPeriod")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {intervalViolations.map((material, index) => (
+                  <tr key={`miat-int-${material.sut_code}-${index}`}>
+                    <td className="font-mono text-xs">{material.sut_code}</td>
+                    <td>{material.material_name}</td>
+                    <td>{material.last_use_date ?? "—"}</td>
+                    <td>{material.miat_period}</td>
+                    <td>{material.note}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </TableWrap>
+          </div>
+        )}
+
+        {materialsData.miat_restricted.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#64748B" }}>
+              {t("billing.materials.miatCatalog")}
             </p>
             <TableWrap minWidth={900}>
               <thead>
@@ -619,6 +757,64 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
                     <td>{material.miat_period}</td>
                     <td className="num-col tabular-nums text-right">{fmtTRY2(material.price_try)}</td>
                     <td>{material.note}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </TableWrap>
+          </div>
+        )}
+
+        {bundledLines.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#D97706" }}>
+              {t("billing.materials.bundledSeparate")}
+            </p>
+            <TableWrap minWidth={820}>
+              <thead>
+                <tr>
+                  <th>{t("billing.materials.sutCode")}</th>
+                  <th>{t("billing.materials.material")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.materials.gazettePrice")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bundledLines.map((material, index) => (
+                  <tr key={`bundled-${material.sut_code}-${index}`}>
+                    <td className="font-mono text-xs">{material.sut_code}</td>
+                    <td>{material.material_name}</td>
+                    <td className="num-col tabular-nums text-right">{fmtTRY2(material.price_try)}</td>
+                    <td>{material.note}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </TableWrap>
+          </div>
+        )}
+
+        {proseViolations.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#B45309" }}>
+              {t("billing.materials.proseBundling")}
+            </p>
+            <TableWrap minWidth={820}>
+              <thead>
+                <tr>
+                  <th>{t("billing.materials.sutCode")}</th>
+                  <th>{t("billing.materials.material")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.materials.gazettePrice")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {proseViolations.map((hit, index) => (
+                  <tr key={`prose-${hit.rule_id ?? index}`}>
+                    <td className="font-mono text-xs">{hit.material_code || "—"}</td>
+                    <td>{hit.material_name || "—"}</td>
+                    <td className="num-col tabular-nums text-right">
+                      {hit.risk_amount != null ? fmtTRY2(hit.risk_amount) : "—"}
+                    </td>
+                    <td>{hit.message || hit.rule_id || "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -742,11 +938,25 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
               {drgExact ? drgRiskLabel : getSutAlertBadgeLabel("unavailable")}
             </Chip>
             {drgExact ? (
-              <p className="text-xs text-[var(--text-secondary)]">
-                {t("billing.sutOptimization.potentialSavings", {
-                  amount: fmtTRY2OrUnavailable(optimization.drg_unbundling.total_potential_savings),
-                })}
-              </p>
+              <>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {t("billing.sutOptimization.potentialSavings", {
+                    amount: fmtTRY2OrUnavailable(optimization.drg_unbundling.total_potential_savings),
+                  })}
+                </p>
+                {optimization.drg_unbundling.has_heuristic_savings && (
+                  <p className="text-xs leading-relaxed" style={{ color: "#B45309" }}>
+                    {t("billing.sutOptimization.drgHeuristicFootnote")}
+                  </p>
+                )}
+                {(optimization.drg_unbundling.total_sourced_savings ?? 0) > 0 && (
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    {t("billing.sutOptimization.drgSourcedSavings", {
+                      amount: fmtTRY2OrUnavailable(optimization.drg_unbundling.total_sourced_savings),
+                    })}
+                  </p>
+                )}
+              </>
             ) : (
               <p className="text-xs text-[var(--text-secondary)]">
                 {getUnavailableMessage(

@@ -56,6 +56,7 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("Generic-X");
     expect(html).toContain("Unavailable");
     expect(html).not.toContain("70.00 TRY");
+    expect(html).toContain("Catalog insight");
   });
 
   it("shows copay exemption insight when section is not exact", () => {
@@ -104,5 +105,101 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("Review package eligibility");
     expect(html).toContain("ICD-10 chapter I");
     expect(html).toContain("Unavailable");
+  });
+
+  it("shows SUT rule badges and compliant savings for claim-level strategy", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <BillingStrategySection
+        strategyData={{
+          exactness_status: "exact",
+          recommendations: [
+            {
+              claim_id: "F-SENTETIK-HASTA-0003-011",
+              recommendation: "package",
+              recommendation_kind: "mandatory_compliance",
+              payment_method_kind: "DRG_MANDATORY",
+              sut_section_id: "2.2.2.(1)",
+              package_total_try: 14637.06,
+              itemized_total_try: 208.7,
+              savings_try: 0,
+              detail: "SUT §2.2 mandates package billing for claim F-SENTETIK-HASTA-0003-011.",
+            },
+            {
+              type: "compliance_violation",
+              claim_id: "F-SENTETIK-HASTA-0003-011",
+              procedure_code: "P603430",
+              procedure_name: "Package procedure",
+              mandated_method: "package",
+              payment_method_kind: "DRG_MANDATORY",
+              sut_section_id: "2.2.2.(1)",
+              detail: "Procedure must use package billing.",
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(html).toContain("Mandatory billing — §2.2.2.(1)");
+    expect(html).toContain("Mandatory billing rule");
+    expect(html).toContain("DRG mandatory");
+    expect(html).toContain("Compliant");
+    expect(html).toContain("Payment method compliance issues");
+    expect(html).toContain("14637.06 TRY");
+    expect(html).not.toContain("0.00 TRY");
+  });
+
+  it("shows override badge and optional savings header", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <BillingStrategySection
+        strategyData={{
+          exactness_status: "exact",
+          recommendations: [
+            {
+              claim_id: "CLM-T3",
+              recommendation: "itemized",
+              recommendation_kind: "optional_override",
+              payment_method_kind: "DRG_OVERRIDABLE",
+              sut_section_id: "2.2.2.(2)",
+              package_total_try: 5000,
+              itemized_total_try: 6200,
+              savings_try: 1200,
+              detail: "Optional §2.2.2(2) override.",
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(html).toContain("Optional choice — §2.2.2.(2)");
+    expect(html).toContain("Provider may choose method");
+    expect(html).toContain("Difference if alternate method chosen");
+    expect(html).toContain("compare package vs itemized");
+    expect(html).toContain("1200.00 TRY");
+  });
+
+  it("shows catalog as-of footnote for claim-level strategy", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <BillingStrategySection
+        strategyData={{
+          exactness_status: "exact",
+          recommendations: [
+            {
+              claim_id: "CLM-DATE",
+              recommendation: "package",
+              recommendation_kind: "mandatory_compliance",
+              payment_method_kind: "DRG_MANDATORY",
+              sut_section_id: "2.2.2.(1)",
+              package_total_try: 1000,
+              itemized_total_try: 800,
+              savings_try: 0,
+              catalog_as_of_date: "2024-03-10",
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(html).toContain("2024-03-10");
+    expect(html).toContain("catalog membership");
   });
 });

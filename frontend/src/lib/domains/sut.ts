@@ -1,3 +1,5 @@
+import type { SutMaterialBundlingCoverageScope } from "@/lib/api/sut";
+
 export interface VisitPricingSpecialty {
   code: string;
   name: string;
@@ -232,6 +234,9 @@ export interface DrgUnbundlingSummary extends ExactnessState {
   n_patients_with_risk: number | null;
   risk_rate: number | null;
   total_potential_savings: number | null;
+  total_sourced_savings?: number | null;
+  total_heuristic_savings?: number | null;
+  has_heuristic_savings?: boolean;
   top_risky_chapters: ChapterRiskSummary[];
   methodology: string;
 }
@@ -362,6 +367,10 @@ export interface PatientDrgUnbundling extends ExactnessState {
   n_chapters_analyzed: number | null;
   chapter_analysis: ChapterUnbundlingDetail[];
   total_potential_savings: number | null;
+  total_sourced_savings?: number | null;
+  total_heuristic_savings?: number | null;
+  has_heuristic_savings?: boolean;
+  patient_icd10_chapters?: string[];
 }
 
 export interface PatientOptimization extends SUTDataSourceCarrier {
@@ -466,7 +475,7 @@ export interface LabOptimization extends ExactnessState {
     sut_code: string;
     gazette_price: number;
     flag_type: string;
-    savings_try: number;
+    savings_try: number | null;
     detail?: string;
   }>;
 }
@@ -480,6 +489,7 @@ export interface DrugOptimization extends ExactnessState {
     issue: string;
     alternative: string;
     savings_try: number | null;
+    savings_basis?: "heuristic" | "claim_line";
     detail?: string;
   }>;
 }
@@ -514,11 +524,29 @@ export interface BillingStrategyRecommendation extends ExactnessState {
     itemized_estimate?: number;
     confidence?: "high" | "medium" | "low";
     claim_id?: string;
+    procedure_code?: string;
+    procedure_name?: string;
     recommendation?: "package" | "itemized" | "review_package_eligibility";
+    recommendation_kind?: "mandatory_compliance" | "optional_override";
+    payment_method_kind?:
+      | "DRG_MANDATORY"
+      | "DRG_OVERRIDABLE"
+      | "ITEMIZED"
+      | "NOT_IN_SUT";
+    sut_section_id?: string;
+    sut_section?: string;
+    rule_id?: string;
+    mandated_method?: string;
     package_total_try?: number;
     itemized_total_try?: number;
     detail?: string;
     savings_try?: number | null;
+    savings_basis?: "heuristic" | "optional_override" | "claim_line";
+    current_billing?: "package" | "itemized";
+    catalog_as_of_date?: string | null;
+    package_price_methodology?: string;
+    type?: "compliance_violation";
+    billed_as_package?: boolean;
   }>;
 }
 
@@ -536,7 +564,33 @@ export interface MaterialPreCheck extends ExactnessState {
     price_try: number;
     note: string;
   }>;
+  miat_interval_violations?: Array<{
+    sut_code: string;
+    material_name: string;
+    miat_period: string;
+    last_use_date?: string;
+    days_since_last_use?: number;
+    minimum_interval_days?: number;
+    price_try: number;
+    savings_try: number | null;
+    note: string;
+  }>;
+  bundled_separate_billing?: Array<{
+    sut_code: string;
+    material_name: string;
+    price_try: number;
+    note: string;
+  }>;
+  prose_bundling_violations?: Array<{
+    rule_id?: string;
+    material_name?: string;
+    material_code?: string;
+    message?: string;
+    severity?: string;
+    risk_amount?: number;
+  }>;
   gazette_ceiling_by_specialty: Record<string, number>;
+  coverage_scope?: SutMaterialBundlingCoverageScope;
 }
 
 export interface BillingActionReport extends SUTDataSourceCarrier {

@@ -25,6 +25,9 @@ export function DrgPricingSection() {
   return (
     <Surface variant="base" padding="md">
       <h4 className="text-sm font-bold mb-3" style={{ color: "#1A1A1A" }}>{t("sections.drgPricing.title")}</h4>
+      <p className="mb-3 text-sm leading-relaxed" style={{ color: "#71717A" }}>
+        {t("sections.drgPricing.heuristicNotice")}
+      </p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <div>
           <DataTable className="text-[11px]">

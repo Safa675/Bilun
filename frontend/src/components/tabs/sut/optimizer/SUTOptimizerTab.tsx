@@ -1271,6 +1271,12 @@ export function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
         <MethodologyBadge text={drg.methodology} />
       )}
 
+      {!isUnavailable && drg.has_heuristic_savings && (
+        <p className="text-xs leading-relaxed rounded-lg px-3 py-2" style={{ background: "rgba(180, 83, 9, 0.08)", color: "#92400E" }}>
+          {t("billing.sutOptimization.drgHeuristicFootnote")}
+        </p>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KpiCard
           label={t("optimizer.kpis.patientsInCohort")}

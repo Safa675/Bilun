@@ -17,7 +17,8 @@ const billing = {
     "sutCode": "SUT code",
     "gazettePrice": "Gazette price",
     "flag": "Flag",
-    "savings": "Savings"
+    "savings": "Savings",
+    "clinicalReviewDuplicate": "Clinical review — verify repeat necessity"
   },
   "drug": {
     "title": "Drug optimization",
@@ -27,7 +28,9 @@ const billing = {
     "alternative": "Alternative",
     "savings": "Savings",
     "tierCorrection": "Tier correction",
-    "tierCorrectionSameDrug": "Tier correction on same drug"
+    "tierCorrectionSameDrug": "Tier correction on same drug",
+    "heuristicInsight": "Catalog insight",
+    "heuristicFootnote": "Generic and passivated-drug rows are EK-4A catalog insights only — savings are not asserted until exact dispensed drug claim lines are available."
   },
   "copay": {
     "title": "Copay optimization",
@@ -54,13 +57,39 @@ const billing = {
     "strategy": "Strategy",
     "packageTotal": "Package total",
     "itemizedTotal": "Itemized total",
-    "savings": "Savings"
+    "savings": "Savings",
+    "sutSection": "SUT section",
+    "paymentMethodKind": "Method kind",
+    "recommendationKind": "Rule type",
+    "badgeMandatory": "Mandatory billing — {section}",
+    "badgeOverride": "Optional choice — {section}",
+    "kindMandatoryCompliance": "Mandatory billing rule",
+    "kindOptionalOverride": "Provider may choose method",
+    "overrideScopeNotice": "Rows marked “Provider may choose method” compare package vs itemized totals under §2.2.2(2). They are not compliance violations — SGK mandates one method only when the rule type is “Mandatory billing rule”.",
+    "methodDrgMandatory": "DRG mandatory",
+    "methodDrgOverridable": "DRG overridable",
+    "methodItemized": "Itemized only",
+    "methodNotInSut": "Not in SUT lists",
+    "compliant": "Compliant",
+    "correctiveSavings": "Corrective savings",
+    "optionalSavings": "Difference if alternate method chosen",
+    "complianceViolations": "Payment method compliance issues",
+    "procedure": "Procedure",
+    "mandatedMethod": "Mandated method",
+    "catalogAsOf": "EK-2B/EK-2C catalog membership as of {date} (service date).",
+    "packagePriceHeuristic": "Package total uses chapter DRG median estimate — not claim EK-2/C code price."
   },
   "materials": {
     "title": "Materials pre-check",
     "unavailable": "Material ceiling estimates remain unavailable until this section is fully exact.",
     "preAuth": "Pre-authorization required",
     "miat": "MIAT restricted",
+    "miatCatalog": "MIAT catalog (verify interval)",
+    "miatIntervalViolations": "MIAT interval — prior use too soon",
+    "lastUse": "Last use",
+    "bundledSeparate": "Bundled — billed separately (EK-3B-1)",
+    "scopeNotice": "Bundling flags use the EK-3B-1 catalog (54 items) only — not full SUT §3.1–3.2 prose.",
+    "proseBundling": "§3.1 prose bundling (partial engine)",
     "sutCode": "SUT code",
     "material": "Material",
     "gazettePrice": "Gazette price",
@@ -83,7 +112,9 @@ const billing = {
     "potentialSavings": "Potential savings: {amount}",
     "surchargeUnavailable": "Surcharge compliance needs exact billed procedure codes and procedure dates.",
     "copayRateUnavailable": "Copay rate compliance needs exact billed procedure codes and procedure dates.",
-    "drgUnavailable": "DRG unbundling risk needs exact itemized billed procedure lines and package eligibility context."
+    "drgUnavailable": "DRG unbundling risk needs exact itemized billed procedure lines and package eligibility context.",
+    "drgHeuristicFootnote": "Includes heuristic amounts: package-included claim flags and itemized-vs-package comparison — not audited SGK recovery.",
+    "drgSourcedSavings": "Prose-rule violations (sourced): {amount}"
   }
 } as const;
 

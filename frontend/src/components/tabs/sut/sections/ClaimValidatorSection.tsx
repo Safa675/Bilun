@@ -23,6 +23,7 @@ import {
 import { getSutSeverityLabel } from "@/lib/sutLabels";
 import { Chip, DataTable, Surface } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
+import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 
 export function ClaimValidatorSection() {
   const t = useT();
@@ -134,6 +135,7 @@ export function ClaimValidatorSection() {
 
   return (
     <div className="space-y-5">
+      <MaterialBundlingScopeNotice compact />
       <Surface variant="base" padding="lg">
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: ACCENT_LOCAL }}>
           {t("sections.claimValidator.claimDetails")}
@@ -243,6 +245,7 @@ function ValidationResultPanel({ result, t }: { result: SutValidationResult; t: 
 
   return (
     <div className="space-y-4">
+      <MaterialBundlingScopeNotice scope={result.coverage_scope} />
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <KpiCard label={t("sections.claimValidator.kpi.status")} value={statusLabel} valueColor={statusColor} />
         <KpiCard label={t("sections.claimValidator.kpi.claimTotal")} value={fmtTRY2(result.total_claim_amount)} />
