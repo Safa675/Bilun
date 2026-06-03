@@ -95,7 +95,8 @@ const billing = {
     "gazettePrice": "Tebliğ fiyatı",
     "note": "Not",
     "miatPeriod": "MIAT süresi",
-    "ceilingEyebrow": "Uzmanlığa göre tebliğ tavanı (p90)"
+    "ceilingEyebrow": "EK-3 uzmanlık fiyat kıyası (P90)",
+    "partialBenchmarkNotice": "Kısmi mod: yalnızca EK-3 ekine göre P90 kıyasları. EK-3C-1 ön onay ve EK-3C-2 MIAT için faturalı malzeme satırları gerekir."
   },
   "sutOptimization": {
     "title": "SUT optimizasyon bulguları",

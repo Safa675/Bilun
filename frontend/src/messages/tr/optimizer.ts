@@ -160,7 +160,8 @@ const optimizer = {
     payableVsTierExpectation: "Ödenecek tutar vs kademe beklentisi",
     discountSavings: "İndirim Tasarrufu",
     exactClaimInputsRequired: "Kesin talep girdileri gerekli",
-    billedMinusExpectedPayable: "Faturalanan eksi beklenen ödenecek",
+    billedMinusExpectedPayable:
+      "Faturalanan eksi beklenen ödenecek (EK-1A muaf reçete katkı payı hariç — katkı payı tasarrufuna bakın)",
   },
   tables: {
     patientId: "Hasta Kimliği",

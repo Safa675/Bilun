@@ -95,7 +95,8 @@ const billing = {
     "gazettePrice": "Gazette price",
     "note": "Note",
     "miatPeriod": "MIAT period",
-    "ceilingEyebrow": "Gazette ceiling (p90) by specialty"
+    "ceilingEyebrow": "EK-3 specialty price benchmark (P90)",
+    "partialBenchmarkNotice": "Partial mode: P90 benchmarks by EK-3 annex only. EK-3C-1 pre-authorization and EK-3C-2 MIAT require billed material claim lines."
   },
   "sutOptimization": {
     "title": "SUT optimization findings",

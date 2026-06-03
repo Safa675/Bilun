@@ -822,7 +822,13 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
           </div>
         )}
 
-        {materialsExact && ceilingEntries.length > 0 && (
+        {!materialsExact && ceilingEntries.length > 0 && (
+          <p className="text-sm text-[var(--text-secondary)]">
+            {t("billing.materials.partialBenchmarkNotice")}
+          </p>
+        )}
+
+        {ceilingEntries.length > 0 && (
           <Surface variant="base" padding="md">
             <Eyebrow>{t("billing.materials.ceilingEyebrow")}</Eyebrow>
             <div className="mt-3 grid gap-3 md:grid-cols-2">

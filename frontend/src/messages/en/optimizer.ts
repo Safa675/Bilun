@@ -159,7 +159,8 @@ const optimizer = {
     payableVsTierExpectation: "Payable vs tier expectation",
     discountSavings: "Discount Savings",
     exactClaimInputsRequired: "Exact claim inputs required",
-    billedMinusExpectedPayable: "Billed minus expected payable",
+    billedMinusExpectedPayable:
+      "Billed minus expected payable (excludes EK-1A-exempt Rx copay — see copay savings)",
   },
   tables: {
     patientId: "Patient ID",
