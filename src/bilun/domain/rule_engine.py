@@ -27,6 +27,7 @@ from typing import Any
 
 from src.bilun.domain.materials.coverage_scope import material_bundling_coverage_scope
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_prose
+from src.bilun.domain.prose_rules.specialty_materials import check_specialty_materials_prose
 from src.bilun.domain.rules.bundling_rules import check_bundling_violations
 from src.bilun.domain.rules.exclusion_rules import check_exclusion_violations
 from src.bilun.domain.analytics import MaterialCostEstimate, estimate_material_costs
@@ -180,6 +181,37 @@ def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
                     message=pv.get("message", ""),
                     savings_try=savings or risk,
                     details=pv,
+                )
+            )
+            result.total_savings_try = round(result.total_savings_try + (savings or risk), 2)
+
+    # ── 3b. Partial §3.3 specialty annex prose ───────────────────────
+    specialty_violations = check_specialty_materials_prose(materials)
+    for sv in specialty_violations:
+        outcome = str(sv.get("material_outcome") or "")
+        savings = float(sv.get("savings_try") or 0.0)
+        risk = float(sv.get("risk_amount") or 0.0)
+        if outcome == "no_pay":
+            result.violations.append(
+                RuleViolation(
+                    rule="specialty_materials_prose",
+                    severity=sv.get("severity", "error"),
+                    material_name=sv.get("material_name", ""),
+                    message=sv.get("message", ""),
+                    risk_amount=risk,
+                    details=sv,
+                )
+            )
+            result.total_risk_try = round(result.total_risk_try + risk, 2)
+        else:
+            result.violations.append(
+                RuleViolation(
+                    rule="specialty_materials_prose",
+                    severity=sv.get("severity", "warning"),
+                    material_name=sv.get("material_name", ""),
+                    message=sv.get("message", ""),
+                    savings_try=savings or risk,
+                    details=sv,
                 )
             )
             result.total_savings_try = round(result.total_savings_try + (savings or risk), 2)

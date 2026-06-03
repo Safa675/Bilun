@@ -168,4 +168,10 @@ def _precheck_materials(
         if stats:
             result.gazette_ceiling_by_specialty[spec] = stats["p90"]
 
+    if result.gazette_ceiling_by_specialty:
+        result.rule_source = (
+            "EK-3 specialty price benchmarks (P90) by annex — partial mode; "
+            "EK-3C-1/2 on exact material claim lines only"
+        )
+
     return result

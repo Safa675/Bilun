@@ -559,8 +559,28 @@ def _append_billing_sections(
         if pre_auth:
             _format_list_section(
                 lines,
-                "Pre-auth required (saglik kurulu)",
+                "Pre-auth required (EK-3C-1 tibbi uygunluk)",
                 pre_auth,
+                key="material_name",
+                fmt="{material_name}",
+                max_items=list_cap,
+            )
+        miat_interval = materials.get("miat_interval_violations", [])
+        if miat_interval:
+            _format_list_section(
+                lines,
+                "MIAT interval violations",
+                miat_interval,
+                key="material_name",
+                fmt="{material_name}",
+                max_items=list_cap,
+            )
+        bundled = materials.get("bundled_separate_billing", [])
+        if bundled:
+            _format_list_section(
+                lines,
+                "Bundled — billed separately",
+                bundled,
                 key="material_name",
                 fmt="{material_name}",
                 max_items=list_cap,
@@ -569,7 +589,7 @@ def _append_billing_sections(
         if miat:
             _format_list_section(
                 lines,
-                "MIAT restricted",
+                "MIAT catalog (verify interval)",
                 miat,
                 key="material_name",
                 fmt="{material_name}",

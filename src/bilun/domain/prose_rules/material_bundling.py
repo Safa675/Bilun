@@ -10,6 +10,7 @@ from typing import Any
 from src.bilun.domain.materials.catalog_lookup import (
     is_material_in_ek3c_catalog,
     is_material_in_ek3_catalog,
+    is_separate_billing_allowed,
     resolve_material_name_by_code,
 )
 from .catalog_membership import normalize_procedure_code
@@ -47,6 +48,43 @@ def _rule_evaluation_priority(rule: dict[str, Any]) -> int:
             "foreign_facility",
             "facility_procedure_restriction_violation",
             "diagnosis_bundled_no_separate_bill",
+            "procurement_price_refs_insufficient",
+            "medula_code_undefined_on_date",
+            "barcode_sut_mismatch",
+            "diagnosis_bundled_material_scope",
+            "cross_branch_material_unauthorized",
+            "ortez_protez_contract_billing_invalid",
+            "maintenance_cost_exceeds_sut_cap",
+            "protez_repair_documentation_incomplete",
+            "warranty_maintenance_procedure_incomplete",
+            "ortez_protez_maintenance_unverified",
+            "ihale_dts_mandatory_fields_incomplete",
+            "supplier_contract_pricing_path",
+            "ek3c_inpatient_external_supply_invalid",
+            "ek3c_list_price_missing",
+            "ek3_quality_documentation_incomplete",
+            "ek3c_miat_early_renewal_unauthorized",
+            "ek3c_custom_order_billing_invalid",
+            "ek3c_medical_appropriateness_incomplete",
+            "ek3c_custom_garment_contract_invalid",
+            "ek3c_force_majeure_renewal_claim",
+            "ek3c_outpatient_material_scope",
+            "inpatient_material_facility_supply_violation",
+            "non_reimbursed_inpatient_patient_charge",
+            "lab_material_separate_billing",
+            "shared_consumable_wrong_branch_billing",
+            "material_prescription_quantity_exceeded",
+            "material_report_prescription_invalid",
+            "material_invoice_documentation_incomplete",
+            "diagnosis_package_material_unbundled",
+            "emergency_uncontracted_facility_material",
+            "unlisted_material_surcharge_billing",
+            "wheelchair_dual_prescription_invalid",
+            "outpatient_contract_center_supply_required",
+            "child_growth_miat_renewal_claim",
+            "facility_contract_material_supply_scope",
+            "ismarlama_device_component_titubb_incomplete",
+            "titubb_uts_barcode_documentation_missing",
         )
     ):
         return 4
@@ -56,6 +94,8 @@ def _rule_evaluation_priority(rule: dict[str, Any]) -> int:
         return 10
     if condition.get("procedure_pairing_required"):
         return 15
+    if condition.get("separate_billing_not_authorized"):
+        return 18
     if condition.get("material_not_in_ek3c"):
         return 20
     if condition.get("material_not_in_ek3"):
@@ -136,11 +176,87 @@ def _condition_matches(
     if condition.get("material_code_missing") and not code:
         return True
 
+    if condition.get("titubb_uts_incomplete"):
+        titubb = mat.get("titubb_registered") if "titubb_registered" in mat else None
+        uts = mat.get("uts_registered") if "uts_registered" in mat else None
+        if titubb is False or uts is False:
+            return True
+        return False
+
+    if condition.get("separate_billing_not_authorized"):
+        if not code or not is_material_in_ek3_catalog(code):
+            return False
+        if mat.get("is_bundled"):
+            return False
+        if unit_price <= 0:
+            return False
+        if is_separate_billing_allowed(code):
+            return False
+        if is_material_in_ek3c_catalog(code) and _procedure_pairing_satisfied(
+            code,
+            procedure_code=procedure_code,
+            procedure_line_id=procedure_line_id,
+            procedure_codes_on_claim=procedure_codes_on_claim,
+            billed_procedure_line_ids=billed_procedure_line_ids,
+        ):
+            return False
+        return True
+
+    claim_flags = (
+        "procurement_record_incomplete",
+        "procedure_not_reimbursed",
+        "foreign_facility",
+        "facility_procedure_restriction_violation",
+        "diagnosis_bundled_no_separate_bill",
+        "procurement_price_refs_insufficient",
+        "medula_code_undefined_on_date",
+        "barcode_sut_mismatch",
+        "diagnosis_bundled_material_scope",
+        "cross_branch_material_unauthorized",
+        "ortez_protez_contract_billing_invalid",
+        "maintenance_cost_exceeds_sut_cap",
+        "protez_repair_documentation_incomplete",
+        "warranty_maintenance_procedure_incomplete",
+        "ortez_protez_maintenance_unverified",
+        "ihale_dts_mandatory_fields_incomplete",
+        "supplier_contract_pricing_path",
+        "ek3c_inpatient_external_supply_invalid",
+        "ek3c_list_price_missing",
+        "ek3_quality_documentation_incomplete",
+        "ek3c_miat_early_renewal_unauthorized",
+        "ek3c_custom_order_billing_invalid",
+        "ek3c_medical_appropriateness_incomplete",
+        "ek3c_custom_garment_contract_invalid",
+        "ek3c_force_majeure_renewal_claim",
+        "ek3c_outpatient_material_scope",
+        "inpatient_material_facility_supply_violation",
+        "non_reimbursed_inpatient_patient_charge",
+        "lab_material_separate_billing",
+        "shared_consumable_wrong_branch_billing",
+        "material_prescription_quantity_exceeded",
+        "material_report_prescription_invalid",
+        "material_invoice_documentation_incomplete",
+        "diagnosis_package_material_unbundled",
+        "emergency_uncontracted_facility_material",
+        "unlisted_material_surcharge_billing",
+        "wheelchair_dual_prescription_invalid",
+        "outpatient_contract_center_supply_required",
+        "child_growth_miat_renewal_claim",
+        "facility_contract_material_supply_scope",
+        "ismarlama_device_component_titubb_incomplete",
+        "titubb_uts_barcode_documentation_missing",
+    )
+    for flag in claim_flags:
+        if condition.get(flag):
+            return mat.get(flag) is True
+
     keywords = condition.get("material_name_any") or []
     if keywords:
         return _material_name_matches(name, keywords)
 
     if condition.get("material_not_in_ek3c") and code:
+        if is_material_in_ek3_catalog(code) and not is_material_in_ek3c_catalog(code):
+            return False
         return not is_material_in_ek3c_catalog(code)
 
     if condition.get("material_not_in_ek3") and code:
@@ -160,24 +276,6 @@ def _condition_matches(
             procedure_codes_on_claim=procedure_codes_on_claim,
             billed_procedure_line_ids=billed_procedure_line_ids,
         )
-
-    if condition.get("titubb_uts_incomplete"):
-        titubb = mat.get("titubb_registered") if "titubb_registered" in mat else None
-        uts = mat.get("uts_registered") if "uts_registered" in mat else None
-        if titubb is False or uts is False:
-            return True
-        return False
-
-    claim_flags = (
-        "procurement_record_incomplete",
-        "procedure_not_reimbursed",
-        "foreign_facility",
-        "facility_procedure_restriction_violation",
-        "diagnosis_bundled_no_separate_bill",
-    )
-    for flag in claim_flags:
-        if condition.get(flag):
-            return mat.get(flag) is True
 
     return False
 
@@ -292,6 +390,44 @@ def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
             "foreign_facility",
             "facility_procedure_restriction_violation",
             "diagnosis_bundled_no_separate_bill",
+            "procurement_price_refs_insufficient",
+            "medula_code_undefined_on_date",
+            "barcode_sut_mismatch",
+            "diagnosis_bundled_material_scope",
+            "cross_branch_material_unauthorized",
+            "ortez_protez_contract_billing_invalid",
+            "maintenance_cost_exceeds_sut_cap",
+            "protez_repair_documentation_incomplete",
+            "warranty_maintenance_procedure_incomplete",
+            "ortez_protez_maintenance_unverified",
+            "ihale_dts_mandatory_fields_incomplete",
+            "supplier_contract_pricing_path",
+            "ek3c_inpatient_external_supply_invalid",
+            "ek3c_list_price_missing",
+            "ek3_quality_documentation_incomplete",
+            "ek3c_miat_early_renewal_unauthorized",
+            "ek3c_custom_order_billing_invalid",
+            "ek3c_medical_appropriateness_incomplete",
+            "ek3c_custom_garment_contract_invalid",
+            "ek3c_force_majeure_renewal_claim",
+            "ek3c_outpatient_material_scope",
+            "inpatient_material_facility_supply_violation",
+            "non_reimbursed_inpatient_patient_charge",
+            "lab_material_separate_billing",
+            "shared_consumable_wrong_branch_billing",
+            "material_prescription_quantity_exceeded",
+            "material_report_prescription_invalid",
+            "material_invoice_documentation_incomplete",
+            "diagnosis_package_material_unbundled",
+            "emergency_uncontracted_facility_material",
+            "unlisted_material_surcharge_billing",
+            "wheelchair_dual_prescription_invalid",
+            "outpatient_contract_center_supply_required",
+            "child_growth_miat_renewal_claim",
+            "facility_contract_material_supply_scope",
+            "ismarlama_device_component_titubb_incomplete",
+            "titubb_uts_barcode_documentation_missing",
+            "is_bundled",
         ):
             if hasattr(line, flag):
                 row[flag] = getattr(line, flag)

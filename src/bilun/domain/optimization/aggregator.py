@@ -275,7 +275,15 @@ def compute_optimization_summary(
     temporal = audit_temporal_prices()
     cohort_ctx = build_cohort_claim_context(claim_dataset)
     drug_lines = cohort_ctx.all_drug_lines if cohort_ctx is not None else None
-    drug_discount = validate_drug_discount_tiers(drug_lines)
+    exempt_patient_ids = {
+        pid
+        for pid in patient_ids
+        if evaluate_copay_exemption(copay_inputs[pid]).get("exempt")
+    }
+    drug_discount = validate_drug_discount_tiers(
+        drug_lines,
+        exempt_patient_ids=exempt_patient_ids,
+    )
 
     elapsed = time.perf_counter() - t0
     logger.info(

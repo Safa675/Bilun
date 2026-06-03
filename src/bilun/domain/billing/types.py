@@ -39,9 +39,9 @@ MATERIALS_REQUIRED_INPUTS = (
     "billed_material_codes",
 )
 MATERIALS_PARTIAL_REASON = (
-    "Materials pre-check findings mix exact pre-authorization and MIAT rules "
-    "with non-exact ceiling heuristics, so the section should not be treated "
-    "as fully exact."
+    "EK-3C-1 pre-authorization and EK-3C-2 MIAT require billed material claim lines. "
+    "Partial mode shows EK-3 specialty price benchmarks (P90) only — not catalog "
+    "pre-auth or MIAT flags."
 )
 BILLING_REPORT_PARTIAL_REASON = (
     "Billing report totals combine exact and non-exact sections. Use section-"
@@ -143,6 +143,8 @@ class MaterialPreCheck:
     miat_interval_violations: list[dict[str, Any]] = field(default_factory=list)
     bundled_separate_billing: list[dict[str, Any]] = field(default_factory=list)
     prose_bundling_violations: list[dict[str, Any]] = field(default_factory=list)
+    specialty_prose_violations: list[dict[str, Any]] = field(default_factory=list)
+    kdv_price_reviews: list[dict[str, Any]] = field(default_factory=list)
     gazette_ceiling_by_specialty: dict[str, float] = field(default_factory=dict)
     exactness_status: str = EXACTNESS_STATUS_PARTIAL
     unavailable_reason: str | None = MATERIALS_PARTIAL_REASON

@@ -326,6 +326,8 @@ class MaterialPreCheckResponse(BillingExactnessResponse):
     miat_interval_violations: list[dict[str, Any]] = Field(default_factory=list)
     bundled_separate_billing: list[dict[str, Any]] = Field(default_factory=list)
     prose_bundling_violations: list[dict[str, Any]] = Field(default_factory=list)
+    specialty_prose_violations: list[dict[str, Any]] = Field(default_factory=list)
+    kdv_price_reviews: list[dict[str, Any]] = Field(default_factory=list)
     gazette_ceiling_by_specialty: dict[str, float] = Field(default_factory=dict)
     coverage_scope: MaterialBundlingCoverageScope | dict[str, Any] | None = None
 

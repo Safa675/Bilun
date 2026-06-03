@@ -56,6 +56,17 @@ def gate_b_deferred_clause_count() -> int:
     return len(deferred) if isinstance(deferred, list) else 0
 
 
+def kdv_pricing_clause_count() -> int:
+    if not _MANIFEST.is_file():
+        return 0
+    try:
+        manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return 0
+    ids = manifest.get("kdv_pricing_clause_ids")
+    return len(ids) if isinstance(ids, list) else 0
+
+
 def material_bundling_coverage_scope() -> dict[str, Any]:
     """Machine-readable scope boundary for APIs and billing reports."""
     status = prose_engine_status()
@@ -81,4 +92,6 @@ def material_bundling_coverage_scope() -> dict[str, Any]:
             "(MEDULA may block ICU/procedure/ÜTS at Hizmet Kayıt)."
         ),
         "gate_b_deferred_clauses": gate_b_deferred_clause_count(),
+        "kdv_pricing_clauses": kdv_pricing_clause_count(),
+        "kdv_pricing_module": "src/bilun/domain/pricing/material_kdv.py",
     }

@@ -95,7 +95,7 @@ def unavailable_surcharge_exposure() -> dict[str, Any]:
 
 
 def build_exact_surcharge_exposure(context: SurchargeClaimContext) -> dict[str, Any]:
-    from .catalog_join import catalog_surcharge_eligible
+    from .catalog_join import catalog_surcharge_eligible, is_ek2g_surcharge_prohibited
 
     applicable: list = []
     flag_mismatches: list[dict[str, Any]] = []
@@ -110,7 +110,7 @@ def build_exact_surcharge_exposure(context: SurchargeClaimContext) -> dict[str, 
                     "procedure_date": line.procedure_date.isoformat(),
                 }
             )
-        if catalog_eligible:
+        if is_ek2g_surcharge_prohibited(line.procedure_code):
             applicable.append(line)
 
     total_procedures = len(context.procedures)
@@ -138,9 +138,10 @@ def build_exact_surcharge_exposure(context: SurchargeClaimContext) -> dict[str, 
         "applicable_rules": rules,
         "methodology": (
             "Uses exact dated procedure claim lines joined to EK-2/G "
-            "(ek2g_no_surcharge.parquet) for surcharge eligibility; "
-            "n_applicable_procedures counts catalog-eligible lines "
-            "(surcharge may apply). Claim-line flags are validated against the catalog."
+            "(ek2g_no_surcharge.parquet) for surcharge prohibitions; "
+            "n_applicable_procedures counts catalog-prohibited lines "
+            "(ilave ücret must not be charged). Claim-line flags are validated "
+            "against the catalog."
         ),
         "rule_source": "EK-2G (§1.9.3) catalog join",
     }

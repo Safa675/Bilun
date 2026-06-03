@@ -23,15 +23,19 @@ _drug_discount_cache: dict[str, Any] | None = None
 
 def validate_drug_discount_tiers(
     drug_lines: tuple[DrugClaimLine, ...] | None = None,
+    *,
+    exempt_patient_ids: set[str] | frozenset[str] | None = None,
 ) -> dict[str, Any]:
     """Validate EK-4A discount tiers against exact drug claim lines when present."""
 
     if not drug_lines:
         return unavailable_drug_discount_validation()
 
+    exempt_ids = frozenset(exempt_patient_ids or ())
     tier_counter: Counter[str] = Counter()
     mismatches = 0
     total_savings = Decimal("0")
+    exempt_patient_share = Decimal("0")
     sample_drugs: list[dict[str, Any]] = []
 
     for line in drug_lines:
@@ -43,7 +47,10 @@ def validate_drug_discount_tiers(
         if diff > Decimal("0.02"):
             mismatches += 1
         savings = line.billed_amount_try - line.expected_payable_try
-        total_savings += savings
+        if line.patient_id in exempt_ids:
+            exempt_patient_share += savings
+        else:
+            total_savings += savings
         if len(sample_drugs) < 10:
             sample_drugs.append(
                 {
@@ -62,6 +69,7 @@ def validate_drug_discount_tiers(
         "n_active_drugs": len({line.drug_code for line in drug_lines}),
         "n_tier_mismatches": mismatches,
         "total_discount_savings_try": round(float(total_savings), 2),
+        "exempt_patient_rx_share_try": round(float(exempt_patient_share), 2),
         "mean_discount_tier_1": round(
             sum(float(line.discount_tier_expected) for line in drug_lines) / len(drug_lines),
             4,
@@ -71,7 +79,9 @@ def validate_drug_discount_tiers(
         "sample_drugs": sample_drugs,
         "methodology": (
             "Validates discount_tier_expected and payable math on exact drug claim "
-            "lines from the active SUT claim dataset."
+            "lines. Discount savings exclude EK-1A-exempt patients because billed "
+            "minus payable on their drug lines reflects recoverable Rx copay (counted "
+            "under copay savings), not additional EK-4A tier recovery."
         ),
     }
 
