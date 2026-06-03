@@ -48,8 +48,33 @@ def test_surcharge_exposure_uses_catalog_not_misleading_flags(monkeypatch) -> No
     ctx = build_surcharge_claim_context("PT", [line])
     assert ctx is not None
     result = build_exact_surcharge_exposure(ctx)
-    assert result["n_applicable_procedures"] == 0
+    assert result["n_applicable_procedures"] == 1
     assert result["n_flag_catalog_mismatches"] == 1
+
+    eligible_line = ProcedureClaimLine(
+        procedure_line_id="P2",
+        claim_id="C1",
+        patient_id="PT",
+        episode_id="E1",
+        procedure_date=__import__("datetime").date(2026, 1, 2),
+        procedure_code="P603430",
+        procedure_name="Not on EK-2G",
+        procedure_category="islem",
+        quantity=1,
+        unit_price_try=Decimal("100"),
+        billed_amount_try=Decimal("100"),
+        expected_payable_try=Decimal("80"),
+        is_package_included=False,
+        package_code="",
+        surcharge_applicable=True,
+        copay_rate_applicable=False,
+        denial_reason_expected="",
+        rule_trace_expected="",
+    )
+    mixed_ctx = build_surcharge_claim_context("PT", [line, eligible_line])
+    assert mixed_ctx is not None
+    mixed = build_exact_surcharge_exposure(mixed_ctx)
+    assert mixed["n_applicable_procedures"] == 1
 
 
 def test_ek2c1_rate_match_tolerance() -> None:

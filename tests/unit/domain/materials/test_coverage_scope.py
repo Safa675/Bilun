@@ -20,7 +20,7 @@ def test_material_bundling_coverage_scope_implemented() -> None:
     scope = material_bundling_coverage_scope()
     assert scope["prose_engine_status"] == "implemented"
     assert scope["prose_coverage_tier"] == "partial"
-    assert scope["prose_rules_implemented"] >= 22
+    assert scope["prose_rules_implemented"] >= 59
     assert scope["prose_rule_id"] == "material_bundling_prose"
     assert "3.1" in scope["prose_section_prefixes"]
     assert scope["ek3b1_row_count"] == EK3B1_ROW_COUNT

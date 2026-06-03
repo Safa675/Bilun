@@ -77,8 +77,12 @@ def test_materials_heuristic_path_skips_global_preauth_dump() -> None:
 
     assert result.pre_auth_required == []
     assert result.miat_restricted == []
+    assert result.miat_interval_violations == []
+    assert result.bundled_separate_billing == []
     assert result.gazette_ceiling_by_specialty
     assert any(spec.startswith("EK-3") for spec in result.gazette_ceiling_by_specialty)
+    assert "P90" in result.rule_source
+    assert "partial mode" in result.rule_source.lower()
 
 
 def test_strategy_adds_chapter_review_without_try() -> None:
@@ -144,6 +148,7 @@ def test_orchestrator_total_includes_only_exact_blocks(monkeypatch) -> None:
         lambda *_args, **_kwargs: SimpleNamespace(
             pre_auth_required=[],
             miat_restricted=[],
+            miat_interval_violations=[],
             bundled_separate_billing=[],
             exactness_status="partial_exact",
             required_inputs_missing=["billed_material_codes"],

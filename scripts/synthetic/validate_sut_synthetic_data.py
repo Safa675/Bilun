@@ -70,6 +70,50 @@ REQUIRED_CLAIM_COLUMNS = {
         "patient_id",
         "material_code",
         "billed_amount_try",
+        "titubb_registered",
+        "uts_registered",
+        "procurement_record_incomplete",
+        "procedure_not_reimbursed",
+        "foreign_facility",
+        "facility_procedure_restriction_violation",
+        "diagnosis_bundled_no_separate_bill",
+        "procurement_price_refs_insufficient",
+        "medula_code_undefined_on_date",
+        "barcode_sut_mismatch",
+        "diagnosis_bundled_material_scope",
+        "cross_branch_material_unauthorized",
+        "ortez_protez_contract_billing_invalid",
+        "maintenance_cost_exceeds_sut_cap",
+        "protez_repair_documentation_incomplete",
+        "warranty_maintenance_procedure_incomplete",
+        "ortez_protez_maintenance_unverified",
+        "ihale_dts_mandatory_fields_incomplete",
+        "supplier_contract_pricing_path",
+        "ek3c_inpatient_external_supply_invalid",
+        "ek3c_list_price_missing",
+        "ek3_quality_documentation_incomplete",
+        "ek3c_miat_early_renewal_unauthorized",
+        "ek3c_custom_order_billing_invalid",
+        "ek3c_medical_appropriateness_incomplete",
+        "ek3c_custom_garment_contract_invalid",
+        "ek3c_force_majeure_renewal_claim",
+        "ek3c_outpatient_material_scope",
+        "inpatient_material_facility_supply_violation",
+        "non_reimbursed_inpatient_patient_charge",
+        "lab_material_separate_billing",
+        "shared_consumable_wrong_branch_billing",
+        "material_prescription_quantity_exceeded",
+        "material_report_prescription_invalid",
+        "material_invoice_documentation_incomplete",
+        "diagnosis_package_material_unbundled",
+        "emergency_uncontracted_facility_material",
+        "unlisted_material_surcharge_billing",
+        "wheelchair_dual_prescription_invalid",
+        "outpatient_contract_center_supply_required",
+        "child_growth_miat_renewal_claim",
+        "facility_contract_material_supply_scope",
+        "ismarlama_device_component_titubb_incomplete",
+        "titubb_uts_barcode_documentation_missing",
     },
     "drug_claim_lines.parquet": {
         "drug_claim_line_id",
@@ -302,6 +346,82 @@ def _validate_prescription_traceability(
         _error(errors, f"Drug claim lines reference unknown recete_id values: {unknown}")
 
 
+MATERIAL_PROSE_WORKBOOK_COLUMNS = (
+    "titubb_kayitli_mi",
+    "uts_kayitli_mi",
+    "ihale_ekrani_eksik_mi",
+    "bagli_islem_odenmez",
+    "yurtdisi_kurum",
+    "kurum_islem_kisiti_ihlali",
+    "tani_medula_paket_ayri_fatura_yok",
+    "ihale_fiyat_referansi_yetersiz",
+    "medula_kod_tarihte_tanimsiz",
+    "barkod_sut_uyumsuz",
+    "tani_paket_malzeme_kapsam",
+    "capraz_brans_fatura_ihlali",
+    "ortez_protez_sozlesme_ihlali",
+    "bakim_onarim_cap_asimi",
+    "protez_onarim_belge_eksik",
+    "garanti_bakim_prosedur_eksik",
+    "ortez_protez_bakim_dogrulanmadi",
+    "ihale_dts_zorunlu_alan_eksik",
+    "tedarikci_sozlesme_fiyat_yolu",
+    "ek3c_yatarak_dis_temin_ihlali",
+    "ek3c_liste_fiyati_yok",
+    "ek3_kalite_belge_eksik",
+    "ek3c_miat_erken_yenileme",
+    "ek3c_ismarlama_ihlali",
+    "ek3c_tibbi_uygunluk_eksik",
+    "ek3c_basi_giysi_sozlesme",
+    "ek3c_mucbir_sebep_yenileme",
+    "ek3c_ayakta_tedavi_kapsam",
+    "yatarak_kurum_temin_ihlali",
+    "karsilanmayan_yatarak_hasta",
+    "laboratuvar_ayri_fatura",
+    "cok_bransli_sarf_brans",
+    "recete_miktar_asimi",
+    "rapor_recete_gecersiz",
+    "fatura_belge_eksik",
+    "tani_paket_malzeme",
+    "acil_sozlesmesiz_kurum",
+    "listesiz_kesinti_fatura",
+    "cift_tekerlekli_recete",
+    "ayakta_sozlesmeli_temin",
+    "cocuk_buyume_miat",
+    "sozlesmeli_temin_kapsam",
+)
+
+
+def _validate_material_prose_flags(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    materials = tables.get("malzeme_fatura_satirlari")
+    if materials is None or materials.empty:
+        return
+
+    missing_cols = [
+        col for col in MATERIAL_PROSE_WORKBOOK_COLUMNS if col not in materials.columns
+    ]
+    if missing_cols:
+        _error(errors, f"malzeme_fatura_satirlari missing prose flag columns: {missing_cols}")
+        return
+
+    for col in MATERIAL_PROSE_WORKBOOK_COLUMNS:
+        if col in {"titubb_kayitli_mi", "uts_kayitli_mi"}:
+            if col == "titubb_kayitli_mi":
+                has_demo = (~_truthy(materials[col])).any()
+                label = "titubb_kayitli_mi=false (TİTUBB incomplete demo row)"
+            else:
+                has_demo = (~_truthy(materials[col])).any()
+                label = "uts_kayitli_mi=false (ÜTS incomplete demo row)"
+        else:
+            has_demo = _truthy(materials[col]).any()
+            label = f"{col}=true"
+        if not has_demo:
+            _error(errors, f"Expected at least one material line with {label}")
+
+
 def _validate_expected_outputs(
     tables: dict[str, pd.DataFrame],
     procedures: pd.DataFrame,
@@ -369,6 +489,7 @@ def main() -> None:
         _error(errors, f"Workbook validation skipped because {WORKBOOK_NAME} is missing or invalid")
     else:
         _validate_workbook(tables, errors)
+        _validate_material_prose_flags(tables, errors)
     _validate_parquet_dir(data_dir / "clean", REQUIRED_CLEAN_COLUMNS, errors)
     _validate_parquet_dir(data_dir / "claims", REQUIRED_CLAIM_COLUMNS, errors)
 

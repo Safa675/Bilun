@@ -22,10 +22,10 @@ def test_load_committed_v2_claim_fixture_with_exact_indexes_and_totals():
 
     assert len(dataset.claims) == 147
     assert len(dataset.diagnoses) >= 147
-    assert len(dataset.procedure_lines) == 830
-    assert len(dataset.material_lines) == 149
-    assert len(dataset.drug_lines) == 360
-    assert len(dataset.expected_outputs) == 637
+    assert len(dataset.procedure_lines) == 852
+    assert len(dataset.material_lines) == 147
+    assert len(dataset.drug_lines) == 347
+    assert len(dataset.expected_outputs) == 626
     assert len(dataset.patient_totals) == 50
 
     ctx = build_patient_claim_context("SENTETIK-HASTA-0001", dataset)
@@ -40,6 +40,18 @@ def test_load_committed_v2_claim_fixture_with_exact_indexes_and_totals():
     assert patient_totals.claim_count >= 1
     assert patient_totals.exactness_status == "exact"
     assert patient_totals.source == "claim_lines"
+
+
+def test_loaded_synthetic_materials_carry_prose_flags() -> None:
+    dataset = load_sut_claim_dataset()
+    flagged = [
+        line
+        for line in dataset.material_lines.values()
+        if line.foreign_facility
+        or line.procurement_record_incomplete
+        or line.titubb_registered is False
+    ]
+    assert flagged, "expected at least one material line with a prose demo flag"
 
 
 def test_loader_rejects_missing_drug_prescription_id():

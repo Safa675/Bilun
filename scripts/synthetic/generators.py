@@ -328,6 +328,129 @@ def _pick_procedures(
     return procs
 
 
+# ── Material prose flags (L1.4 claim-field rules) ───────────────────
+MATERIAL_PROSE_FLAG_COLUMNS: tuple[str, ...] = (
+    "titubb_kayitli_mi",
+    "uts_kayitli_mi",
+    "ihale_ekrani_eksik_mi",
+    "bagli_islem_odenmez",
+    "yurtdisi_kurum",
+    "kurum_islem_kisiti_ihlali",
+    "tani_medula_paket_ayri_fatura_yok",
+    "ihale_fiyat_referansi_yetersiz",
+    "medula_kod_tarihte_tanimsiz",
+    "barkod_sut_uyumsuz",
+    "tani_paket_malzeme_kapsam",
+    "capraz_brans_fatura_ihlali",
+    "ortez_protez_sozlesme_ihlali",
+    "bakim_onarim_cap_asimi",
+    "protez_onarim_belge_eksik",
+    "garanti_bakim_prosedur_eksik",
+    "ortez_protez_bakim_dogrulanmadi",
+    "ihale_dts_zorunlu_alan_eksik",
+    "tedarikci_sozlesme_fiyat_yolu",
+    "ek3c_yatarak_dis_temin_ihlali",
+    "ek3c_liste_fiyati_yok",
+    "ek3_kalite_belge_eksik",
+    "ek3c_miat_erken_yenileme",
+    "ek3c_ismarlama_ihlali",
+    "ek3c_tibbi_uygunluk_eksik",
+    "ek3c_basi_giysi_sozlesme",
+    "ek3c_mucbir_sebep_yenileme",
+    "ek3c_ayakta_tedavi_kapsam",
+    "yatarak_kurum_temin_ihlali",
+    "karsilanmayan_yatarak_hasta",
+    "laboratuvar_ayri_fatura",
+    "cok_bransli_sarf_brans",
+    "recete_miktar_asimi",
+    "rapor_recete_gecersiz",
+    "fatura_belge_eksik",
+    "tani_paket_malzeme",
+    "acil_sozlesmesiz_kurum",
+    "listesiz_kesinti_fatura",
+    "cift_tekerlekli_recete",
+    "ayakta_sozlesmeli_temin",
+    "cocuk_buyume_miat",
+    "sozlesmeli_temin_kapsam",
+    "ismarlama_bilesen_titubb_eksik",
+    "titubb_uts_barkod_belge_eksik",
+)
+
+
+def _default_prose_material_flags() -> dict[str, bool]:
+    return {
+        "titubb_kayitli_mi": True,
+        "uts_kayitli_mi": True,
+        "ihale_ekrani_eksik_mi": False,
+        "bagli_islem_odenmez": False,
+        "yurtdisi_kurum": False,
+        "kurum_islem_kisiti_ihlali": False,
+        "tani_medula_paket_ayri_fatura_yok": False,
+        "ihale_fiyat_referansi_yetersiz": False,
+        "medula_kod_tarihte_tanimsiz": False,
+        "barkod_sut_uyumsuz": False,
+        "tani_paket_malzeme_kapsam": False,
+        "capraz_brans_fatura_ihlali": False,
+        "ortez_protez_sozlesme_ihlali": False,
+        "bakim_onarim_cap_asimi": False,
+        "protez_onarim_belge_eksik": False,
+        "garanti_bakim_prosedur_eksik": False,
+        "ortez_protez_bakim_dogrulanmadi": False,
+        "ihale_dts_zorunlu_alan_eksik": False,
+        "tedarikci_sozlesme_fiyat_yolu": False,
+        "ek3c_yatarak_dis_temin_ihlali": False,
+        "ek3c_liste_fiyati_yok": False,
+        "ek3_kalite_belge_eksik": False,
+        "ek3c_miat_erken_yenileme": False,
+        "ek3c_ismarlama_ihlali": False,
+        "ek3c_tibbi_uygunluk_eksik": False,
+        "ek3c_basi_giysi_sozlesme": False,
+        "ek3c_mucbir_sebep_yenileme": False,
+        "ek3c_ayakta_tedavi_kapsam": False,
+        "yatarak_kurum_temin_ihlali": False,
+        "karsilanmayan_yatarak_hasta": False,
+        "laboratuvar_ayri_fatura": False,
+        "cok_bransli_sarf_brans": False,
+        "recete_miktar_asimi": False,
+        "rapor_recete_gecersiz": False,
+        "fatura_belge_eksik": False,
+        "tani_paket_malzeme": False,
+        "acil_sozlesmesiz_kurum": False,
+        "listesiz_kesinti_fatura": False,
+        "cift_tekerlekli_recete": False,
+        "ayakta_sozlesmeli_temin": False,
+        "cocuk_buyume_miat": False,
+        "sozlesmeli_temin_kapsam": False,
+        "ismarlama_bilesen_titubb_eksik": False,
+        "titubb_uts_barkod_belge_eksik": False,
+    }
+
+
+def _sample_prose_material_flags(*, bundled: bool) -> dict[str, bool]:
+    """Default flags only — coverage is applied deterministically after generation."""
+    return _default_prose_material_flags()
+
+
+def _ensure_prose_flag_coverage(materials: list[dict[str, Any]]) -> None:
+    """Guarantee at least one demo row per prose flag without touching RNG."""
+    if not materials:
+        return
+
+    candidates = [
+        row for row in materials if not row.get("pakete_dahil_mi")
+    ] or materials
+
+    for idx, col in enumerate(MATERIAL_PROSE_FLAG_COLUMNS[2:]):
+        if any(row.get(col) for row in materials):
+            continue
+        candidates[idx % len(candidates)][col] = True
+
+    if not any(row.get("titubb_kayitli_mi") is False for row in materials):
+        candidates[0]["titubb_kayitli_mi"] = False
+    if not any(row.get("uts_kayitli_mi") is False for row in materials):
+        candidates[min(1, len(candidates) - 1)]["uts_kayitli_mi"] = False
+
+
 # ── ClaimEpisodeContext ──────────────────────────────────────────────
 @dataclass
 class ClaimEpisodeContext:
@@ -496,6 +619,7 @@ def _append_material_lines_for_claim(ctx: ClaimEpisodeContext) -> tuple[float, f
         pre_auth = ctx.rng.random() < 0.5
 
         m_line_id = f"MLZ-{ctx.claim_id}-{(mat_idx + 1):03d}"
+        prose_flags = _sample_prose_material_flags(bundled=bundled)
         ctx.materials.append({
             "malzeme_satiri_id": m_line_id,
             "fatura_id": ctx.claim_id,
@@ -514,6 +638,7 @@ def _append_material_lines_for_claim(ctx: ClaimEpisodeContext) -> tuple[float, f
             "on_onay_gerekli_mi": pre_auth,
             "beklenen_red_nedeni": "Paket kapsamindaki sarf malzeme ayrica odenmez" if bundled else "",
             "beklenen_kural_izi": f"EK-3:{row.get('sut_code', '')}",
+            **prose_flags,
         })
         if bundled or pre_auth:
             ctx.expected.append({
@@ -894,6 +1019,7 @@ def build_workbook_tables(
     claims, procedure_rows, materials, drug_claims, expected, lab_billing_budget = (
         _generate_claims_and_lines(episodes, rng)
     )
+    _ensure_prose_flag_coverage(materials)
 
     prescriptions = _generate_prescriptions(drug_claims, patients)
     lab_rows = _generate_lab_results(episodes, lab_billing_budget, rng)
