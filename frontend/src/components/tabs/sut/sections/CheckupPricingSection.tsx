@@ -41,8 +41,8 @@ export function CheckupPricingSection() {
           <h5 className="text-xs font-semibold mb-2" style={{ color: "#71717A" }}>
             {t("sections.checkupPricing.labTests", { count: fmtNum(data.labs.length) })}
           </h5>
-          <div style={{ maxHeight: 350, overflowY: "auto" }}>
-            <DataTable className="text-[11px]">
+          <div style={{ maxHeight: 350, overflow: "auto" }}>
+            <DataTable minWidth={420} className="text-[11px]">
               <thead>
                 <tr>
                   <th>{t("sections.checkupPricing.labTable.test")}</th>
@@ -66,8 +66,8 @@ export function CheckupPricingSection() {
           <h5 className="text-xs font-semibold mb-2" style={{ color: "#71717A" }}>
             {t("sections.checkupPricing.procedures", { count: fmtNum(data.procedures.length) })}
           </h5>
-          <div style={{ maxHeight: 350, overflowY: "auto" }}>
-            <DataTable className="text-[11px]">
+          <div style={{ maxHeight: 350, overflow: "auto" }}>
+            <DataTable minWidth={420} className="text-[11px]">
               <thead>
                 <tr>
                   <th>{t("sections.checkupPricing.procedureTable.procedure")}</th>
