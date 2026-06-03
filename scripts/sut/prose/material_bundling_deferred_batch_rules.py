@@ -99,11 +99,5 @@ GATE_B_RULE_PATCHES: dict[str, dict[str, Any]] = {
     },
 }
 
-# Pricing / allow-list clauses — not encodable as line-level violations without a pricing engine.
-GATE_B_STILL_DEFERRED_CLAUSE_IDS: frozenset[str] = frozenset(
-    {
-        "C001630",  # KDV on EK-3 list prices
-        "C002692",  # KDV (duplicate section)
-        "C001823",  # EK-3 materials explicitly allowed separate billing
-    }
-)
+# KDV + allow-list moved to pricing/catalog (see material_bundling_tail_batch_rules.py).
+GATE_B_STILL_DEFERRED_CLAUSE_IDS: frozenset[str] = frozenset()

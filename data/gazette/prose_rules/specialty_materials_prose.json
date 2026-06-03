@@ -1,0 +1,957 @@
+{
+  "rule_set_id": "specialty_materials_prose",
+  "title": "SUT §3.3 specialty annex material prose (partial)",
+  "effective_date": "2026-06-02",
+  "coverage_note": "L4.4 partial encode: 49 §3.3 prose rules (4 added, 0 source patches). §3.3.1–3.3.8 partial batches.",
+  "sut_anchors": [
+    "3.3.1",
+    "3.3.11",
+    "3.3.12",
+    "3.3.14",
+    "3.3.16",
+    "3.3.2",
+    "3.3.3",
+    "3.3.3.A",
+    "3.3.3.B",
+    "3.3.3.C",
+    "3.3.34",
+    "3.3.35",
+    "3.3.36.B",
+    "3.3.36.C",
+    "3.3.36.D",
+    "3.3.37",
+    "3.3.4",
+    "3.3.4.A",
+    "3.3.4.B",
+    "3.3.4.C",
+    "3.3.6",
+    "3.3.6.A-1",
+    "3.3.7.B",
+    "3.3.8.A",
+    "3.3.8.B"
+  ],
+  "rules": [
+    {
+      "rule_id": "3.3.1.(10).wound_dressing_cover_no_pay",
+      "sut_section": "3.3.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001877"
+      ],
+      "condition": {
+        "material_name_any": [
+          "yara ort",
+          "yara ört",
+          "transparan film",
+          "yara temas tabak",
+          "yapisma",
+          "yapışma",
+          "temizlik urunu",
+          "temizlik ürün",
+          "bariyer krem",
+          "bariyer sprey"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Yara örtüsü / bakım yardımcısı — Kurumca karşılanmaz (§3.3.1(10))."
+      }
+    },
+    {
+      "rule_id": "3.3.1.(10).wound_hydrojel_additive_no_pay",
+      "sut_section": "3.3.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001877"
+      ],
+      "condition": {
+        "material_name_any": [
+          "hidrojel",
+          "yara nemlendir",
+          "kollagen",
+          "kolajen",
+          "buyume faktor",
+          "büyüme faktör",
+          "polisakkarid",
+          "hyaluronik",
+          "tibbi bal",
+          "tıbbi bal"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Hidrojel / katkılı yara ürünü — Kurumca karşılanmaz (§3.3.1(10))."
+      }
+    },
+    {
+      "rule_id": "3.3.1.(10).wound_debridman_no_pay",
+      "sut_section": "3.3.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001877"
+      ],
+      "condition": {
+        "material_name_any": [
+          "larva debridman",
+          "ultrasonik debridman",
+          "debridman sarf"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Debridman sarf malzemesi — Kurumca karşılanmaz (§3.3.1(10))."
+      }
+    },
+    {
+      "rule_id": "3.3.1.(10).wound_biostimulation_no_pay",
+      "sut_section": "3.3.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001877"
+      ],
+      "condition": {
+        "material_name_any": [
+          "biyostimul",
+          "topikal oksijen",
+          "wound biostim"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Biyostimulasyon / topikal oksijen malzemesi — Kurumca karşılanmaz (§3.3.1(10))."
+      }
+    },
+    {
+      "rule_id": "3.3.1.(10).skin_substitute_non_burn_flag",
+      "sut_section": "3.3.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001915",
+        "C002856"
+      ],
+      "condition": {
+        "skin_substitute_non_burn_use": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Deri taklidi/yedeği yalnızca yanık tedavisinde ödenir — diğer endikasyonlarda karşılanmaz (§3.3.1(9)/(10))."
+      }
+    },
+    {
+      "rule_id": "3.3.1.(10).skin_substitute_keyword_no_pay",
+      "sut_section": "3.3.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001877",
+        "C001915",
+        "C002856"
+      ],
+      "condition": {
+        "material_name_any": [
+          "deri esdeger",
+          "deri eşdeğer",
+          "deri taklit",
+          "skin substitute",
+          "deri taklid"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Deri taklidi/yedeği — yanık dışı kullanım şüphesi; yalnızca yanık tedavisinde ödenir (§3.3.1(9)/(10))."
+      }
+    },
+    {
+      "rule_id": "3.3.1.(13).immunobullous_patient_dispensed",
+      "sut_section": "3.3.1",
+      "deontic": "MUST_BILL",
+      "gate_b_sources": [
+        "C001923"
+      ],
+      "condition": {
+        "immunobullous_wound_care_patient_supply": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "İmmünobüllöz yara bakım malzemesi reçete karşılığı hastaya temin edilmiş — fatura tutarı mahsup/clawback (§3.3.1(13))."
+      }
+    },
+    {
+      "rule_id": "3.3.1.(13).immunobullous_non_moh_supply",
+      "sut_section": "3.3.1",
+      "deontic": "MUST_BILL",
+      "gate_b_sources": [
+        "C001923"
+      ],
+      "condition": {
+        "immunobullous_wound_care_non_moh_facility": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "İmmünobüllöz yara bakım malzemesi yalnızca Sağlık Bakanlığı sunucusunca temin/uygulanmalı (§3.3.1(13))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.(2).optical_access_deadline_missed",
+      "sut_section": "3.3.3",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001940",
+        "C001966",
+        "C002888"
+      ],
+      "condition": {
+        "optical_patient_access_deadline_missed": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Optik reçete/rapor — 10 işgünü müracaat veya sistem kayıt süresi aşıldı; karşılanmaz (§3.3.3(2))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.A.(1).emergency_poliklinik_glasses",
+      "sut_section": "3.3.3.A",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002890"
+      ],
+      "condition": {
+        "emergency_poliklinik_glasses_claim": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Acil poliklinik gözlük cam/çerçeve reçetesi — Kurumca karşılanmaz (§3.3.3.A(1))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.A.(4).ek3d_lens_upgrade_difference",
+      "sut_section": "3.3.3.A",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001945",
+        "C001971",
+        "C002893"
+      ],
+      "condition": {
+        "optical_lens_upgrade_difference_claim": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "EK-3/D listesi dışı cam özelliği fark ücreti — Kurum karşılamaz (§3.3.3.A(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.B.(4).teleskopik_with_cap_kep",
+      "sut_section": "3.3.3.B",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001952",
+        "C001978",
+        "C002907"
+      ],
+      "condition": {
+        "optical_telescopic_with_cap_claim": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Kapak kep reçeteli hastada yakın teleskopik gözlük — ayrıca karşılanmaz (§3.3.3.B(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.B.(4).teleskopic_keyword_no_pay",
+      "sut_section": "3.3.3.B",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001952",
+        "C001978",
+        "C002907"
+      ],
+      "condition": {
+        "material_name_any": [
+          "teleskopik gozluk",
+          "teleskopik gözlük",
+          "yakin teleskopik",
+          "yakın teleskopik"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "warning",
+        "message_tr": "Yakın teleskopik gözlük — kapak kep kapsamı dışında ayrı ödeme şüphesi (§3.3.3.B(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.C.(5).contact_lens_and_spectacles",
+      "sut_section": "3.3.3.C",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001962",
+        "C001988",
+        "C002917"
+      ],
+      "condition": {
+        "contact_lens_with_spectacle_billing": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Kontakt lens kullanan hastada ayrıca gözlük cam/çerçeve (konjenital afak hariç) — karşılanmaz (§3.3.3.C(5))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.C.(6).contact_lens_solution",
+      "sut_section": "3.3.3.C",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001963",
+        "C001989",
+        "C002918"
+      ],
+      "condition": {
+        "material_name_any": [
+          "kontakt lens sol",
+          "lens solusyon",
+          "lens solüsyon"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Kontakt lens solüsyonu — Kurumca karşılanmaz (§3.3.3.C(6))."
+      }
+    },
+    {
+      "rule_id": "3.3.34.(4).tv5680_combo_billing",
+      "sut_section": "3.3.34",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002475",
+        "C003279"
+      ],
+      "condition": {
+        "tv5680_with_tv1080_tv1090_combo": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "TV5680, TV1080/TV1090 ile birlikte faturalandırılamaz — karşılanmaz (§3.3.34(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.35.in_ear_hearing_aid_underage",
+      "sut_section": "3.3.35",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002480",
+        "C002481",
+        "C002590",
+        "C003289"
+      ],
+      "condition": {
+        "hearing_in_ear_under_age_limit": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Yaş sınırı altında kulak/kanal içi işitme cihazı — karşılanmaz (§3.3.35)."
+      }
+    },
+    {
+      "rule_id": "3.3.35.(6).hearing_ear_mold_first_fitting",
+      "sut_section": "3.3.35",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002605",
+        "C003302"
+      ],
+      "condition": {
+        "hearing_ear_mold_with_initial_device": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "İşitme cihazı ilk alımında kulak kalıbı — ayrıca karşılanmaz (§3.3.35(6))."
+      }
+    },
+    {
+      "rule_id": "3.3.36.B.(10).cochlear_implant_under_12_months",
+      "sut_section": "3.3.36.B",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002626",
+        "C003323",
+        "C003346"
+      ],
+      "condition": {
+        "cochlear_implant_under_12_months": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "12 ay altı koklear implant — Kurumca karşılanmaz (§3.3.36.B(10))."
+      }
+    },
+    {
+      "rule_id": "3.3.36.C.(3).speech_processor_under_5_years",
+      "sut_section": "3.3.36.C",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002645",
+        "C003363"
+      ],
+      "condition": {
+        "speech_processor_under_5_years": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "5 yaş altı konuşma işlemcisi (kafa bandı istisnası hariç) — karşılanmaz (§3.3.36.C(3))."
+      }
+    },
+    {
+      "rule_id": "3.3.36.D.(4).brainstem_implant_under_12_months",
+      "sut_section": "3.3.36.D",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002666",
+        "C003384"
+      ],
+      "condition": {
+        "brainstem_implant_under_12_months": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "12 ay altı beyin sapı implantı — Kurumca karşılanmaz (§3.3.36.D(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.37.(4).hydrophilic_catheter_diaper_only",
+      "sut_section": "3.3.37",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002677",
+        "C003394"
+      ],
+      "condition": {
+        "incontinence_hydrophilic_catheter_diaper_only": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Yalnızca alt bez ödemesi alan hastada hidrofilik sonda — karşılanmaz (§3.3.37(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.(2).tissue_bank_unauthorized_product",
+      "sut_section": "3.3.4",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002006",
+        "C002054"
+      ],
+      "condition": {
+        "tissue_bank_unauthorized_product": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Onaylı doku bankası/tek dağıtıcı kapsamı dışı ürün — Kurumca karşılanmaz (§3.3.4(2))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.(4).dermis_allograft_no_pay",
+      "sut_section": "3.3.4",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002008",
+        "C002056",
+        "C002934"
+      ],
+      "condition": {
+        "material_name_any": [
+          "dermis allogreft",
+          "epidermis allogreft",
+          "dermis xenogreft",
+          "sentetik greft dermis",
+          "allogreft dermis"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Dermis/epidermis allogreft-xenogreft-sentetik greft — Kurumca karşılanmaz (§3.3.4(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.A.(1).bone_stimulator_combined_use",
+      "sut_section": "3.3.4.A",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002011",
+        "C002087",
+        "C002964"
+      ],
+      "condition": {
+        "bone_stimulator_combined_use": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Kemik yapımını uyaran materyallerin kombine kullanımı — karşılanmaz (§3.3.4.A(1))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.A.(2).bone_stimulator_hypertrophic_nonunion",
+      "sut_section": "3.3.4.A",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002012",
+        "C002089",
+        "C002966"
+      ],
+      "condition": {
+        "bone_stimulator_hypertrophic_nonunion": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Hipertrofik nonunion/pseudoartrozda kemik uyarıcı malzeme — karşılanmaz (§3.3.4.A(2)/(3))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.A.(3).bone_stimulator_with_autograft",
+      "sut_section": "3.3.4.A",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002013",
+        "C002090",
+        "C002967"
+      ],
+      "condition": {
+        "bone_stimulator_with_autograft": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Otojen greft ile birlikte kemik uyarıcı malzeme — karşılanmaz (§3.3.4.A(3)/(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.A.(4).bone_stimulator_benign_tumor",
+      "sut_section": "3.3.4.A",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002014"
+      ],
+      "condition": {
+        "bone_stimulator_benign_tumor_use": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Agresif olmayan benign kemik tümöründe kemik uyarıcı — karşılanmaz (§3.3.4.A(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.(8).open_physis_primary_fracture_graft",
+      "sut_section": "3.3.4",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002027",
+        "C002061",
+        "C002936"
+      ],
+      "condition": {
+        "open_physis_primary_fracture_graft": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Açık epifiz hattı — patolojik olmayan primer kırıkta greft — karşılanmaz (§3.3.4(8))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.(9).adult_primary_fracture_bone_stimulator",
+      "sut_section": "3.3.4",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002028",
+        "C002093",
+        "C002970"
+      ],
+      "condition": {
+        "adult_primary_fracture_bone_stimulator": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Yetişkin primer kırıkta kemik uyarıcı malzeme — karşılanmaz (§3.3.4(9)/(7))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.(6).hip_arthroplasty_graft_no_pay",
+      "sut_section": "3.3.4",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002062",
+        "C002937"
+      ],
+      "condition": {
+        "hip_arthroplasty_graft_claim": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Tümör dışı kalça kırığı artroplastisinde greft — karşılanmaz (§3.3.4(6)/(9))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.(11).graft_allograft_xenograft_combined",
+      "sut_section": "3.3.4",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002064",
+        "C002939"
+      ],
+      "condition": {
+        "graft_allograft_xenograft_combined": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Sentetik/allogreft/xenogreft kombine kullanım — karşılanmaz (§3.3.4(11)/(8))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.A.(17).synthetic_tendon_graft",
+      "sut_section": "3.3.4.A",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002078",
+        "C002953"
+      ],
+      "condition": {
+        "material_name_any": [
+          "sentetik tendon",
+          "tendon greft",
+          "tendon yerine"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Tendon yerine sentetik greft — Kurumca karşılanmaz (§3.3.4.A(17)/(14))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.B.c.primary_ligament_tendon_graft",
+      "sut_section": "3.3.4.B",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002085",
+        "C002962"
+      ],
+      "condition": {
+        "primary_ligament_tendon_injury_graft": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Primer tekli bağ tendon yaralanmasında greft — hiçbir durumda karşılanmaz (§3.3.4.B(c))."
+      }
+    },
+    {
+      "rule_id": "3.3.2.b.glucose_meter_early_renewal",
+      "sut_section": "3.3.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001928",
+        "C002875"
+      ],
+      "condition": {
+        "glucose_meter_early_renewal": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Kan şekeri ölçüm cihazı yenilenme süresi 2 yıl — erken temin bedeli ödenmez (§3.3.2(b))."
+      }
+    },
+    {
+      "rule_id": "3.3.2.b.glucose_meter_early_renewal_keyword",
+      "sut_section": "3.3.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001928",
+        "C002875"
+      ],
+      "condition": {
+        "material_name_any": [
+          "kan sekeri olcum cihaz",
+          "kan şekeri ölçüm cihaz",
+          "glukometre",
+          "glucose meter"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Kan şekeri ölçüm cihazı — 2 yıllık MIAT kontrolü gerekli (§3.3.2(b))."
+      }
+    },
+    {
+      "rule_id": "3.3.7.B.(2).wheelchair_stand_device_duplicate",
+      "sut_section": "3.3.7.B",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C003072",
+        "C002225"
+      ],
+      "condition": {
+        "wheelchair_stand_device_duplicate_billing": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Tekerlekli sandalye ile birlikte ayakta dik konumlandırma cihazı ayrıca karşılanmaz (§3.3.7.B(2))."
+      }
+    },
+    {
+      "rule_id": "3.3.7.B.(3).stand_up_wheelchair_early_renewal",
+      "sut_section": "3.3.7.B",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C003073",
+        "C002208",
+        "C002226"
+      ],
+      "condition": {
+        "stand_up_wheelchair_early_renewal": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Stand up wheelchair MIAT 5 yıl — erken yenileme bedeli karşılanmaz (§3.3.7.B(3))."
+      }
+    },
+    {
+      "rule_id": "3.3.8.A.d.paraplegia_standing_table_over_age",
+      "sut_section": "3.3.8.A",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002195"
+      ],
+      "condition": {
+        "paraplegia_standing_table_over_age_limit": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Parapleji — 8 yaş üstü standing table bedeli karşılanmaz (§3.3.8.A(d))."
+      }
+    },
+    {
+      "rule_id": "3.3.8.A.(3).paraplegia_wheelchair_no_pay",
+      "sut_section": "3.3.8.A",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002198"
+      ],
+      "condition": {
+        "paraplegia_wheelchair_separate_billing": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Parapleji kapsamında ayrıca tekerlekli sandalye — karşılanmaz (§3.3.8.A(3))."
+      }
+    },
+    {
+      "rule_id": "3.3.8.B.(2).spinal_mobility_device_bundle_excluded",
+      "sut_section": "3.3.8.B",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002207",
+        "C002224"
+      ],
+      "condition": {
+        "spinal_mobility_device_duplicate_billing": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Tekerlekli sandalye / ayakta dik durma / parapodium ayrıca ödenmez (§3.3.8.B(2))."
+      }
+    },
+    {
+      "rule_id": "3.3.8.B.(2).spinal_mobility_device_keyword",
+      "sut_section": "3.3.8.B",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002207",
+        "C002224"
+      ],
+      "condition": {
+        "material_name_any": [
+          "parapodium",
+          "ayakta dik durma",
+          "ayakta dik konum"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Mobilite cihazı — §3.3.8.B kapsamında ayrı ödeme şüphesi."
+      }
+    },
+    {
+      "rule_id": "3.3.6.(2).returned_device_without_kurum_approval",
+      "sut_section": "3.3.6",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002119",
+        "C002997"
+      ],
+      "condition": {
+        "returned_device_without_kurum_approval": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "İade cihaz — Kurum stok/onay olmadan hasta temini; karşılanmaz (§3.3.6(2))."
+      }
+    },
+    {
+      "rule_id": "3.3.6.A-1.heated_humidifier_nimv_separate",
+      "sut_section": "3.3.6.A-1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002146",
+        "C003030"
+      ],
+      "condition": {
+        "nimv_heated_humidifier_separate_billing": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Isıtıcılı nemlendirici NİMV ünitesine dahil — ayrıca karşılanmaz (§3.3.6.A-1)."
+      }
+    },
+    {
+      "rule_id": "3.3.6.A-1.heated_humidifier_keyword",
+      "sut_section": "3.3.6.A-1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002146",
+        "C003030"
+      ],
+      "condition": {
+        "material_name_any": [
+          "isitici nemlendirici",
+          "ısıtıcılı nemlendirici",
+          "heated humidifier"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Isıtıcılı nemlendirici — NİMV dâhil mi kontrol edilmeli (§3.3.6.A-1)."
+      }
+    },
+    {
+      "rule_id": "3.3.12.(4).dental_prosthesis_adhesive_no_pay",
+      "sut_section": "3.3.12",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002323",
+        "C002328",
+        "C003146"
+      ],
+      "condition": {
+        "material_name_any": [
+          "protez yapistirici",
+          "protez yapıştırıcı",
+          "protez temizleme",
+          "ozel icerikli dis macun",
+          "özel içerikli diş macun",
+          "denture adhesive"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Protez yapıştırıcı / temizleme tableti / özel diş macunu — Kurumca karşılanmaz (§3.3.11–12)."
+      }
+    },
+    {
+      "rule_id": "3.3.12.(4).dental_prosthesis_adhesive_flag",
+      "sut_section": "3.3.12",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002323",
+        "C002328",
+        "C003146"
+      ],
+      "condition": {
+        "dental_prosthesis_adhesive_claim": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Protez bakım/yapıştırıcı malzemesi — Kurumca karşılanmaz (§3.3.11–12)."
+      }
+    },
+    {
+      "rule_id": "3.3.16.(4).dual_mesh_primary_hernia_no_pay",
+      "sut_section": "3.3.16",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002345",
+        "C003159"
+      ],
+      "condition": {
+        "dual_mesh_primary_hernia_repair": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Primer inguinal/femoral/umbilikal/epigastrik fıtık onarımında çift yüzlü mesh — karşılanmaz (§3.3.14/16(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.16.(4).dual_mesh_primary_hernia_keyword",
+      "sut_section": "3.3.16",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002345",
+        "C003159"
+      ],
+      "condition": {
+        "material_name_any": [
+          "cift yuzlu yama",
+          "çift yüzlü yama",
+          "dual mesh",
+          "hernia mesh"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Çift yüzlü mesh — primer fıtık onarımı kapsamı dışı şüphesi (§3.3.14/16(4))."
+      }
+    }
+  ]
+}

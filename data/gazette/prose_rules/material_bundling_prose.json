@@ -2,7 +2,7 @@
   "rule_set_id": "material_bundling_prose",
   "title": "SUT §3.1 material payment / non-separate-billing prose (partial)",
   "effective_date": "2026-01-17",
-  "coverage_note": "Gate B partial encode: EK-3B-1/2 annex lists plus 22 §3.1–3.2 prose rules (5 added this merge). Full SUT corpus not encoded.",
+  "coverage_note": "Gate B partial encode: EK-3B-1/2 annex lists plus 59 §3.1–3.2 prose rules (2 added this merge). Full SUT corpus not encoded.",
   "sut_anchors": [
     "3.1.1",
     "3.1.1.(11)",
@@ -123,7 +123,8 @@
         "message_tr": "Malzeme kodu EK-3/C listelerinde yok — Kurumca karşılanmaz (§3.1.2(2))."
       },
       "gate_b_sources": [
-        "C001648"
+        "C001648",
+        "C002707"
       ]
     },
     {
@@ -147,9 +148,7 @@
       "gate_b_sources": [
         "C001618",
         "C001619",
-        "C002684",
-        "C001636",
-        "C002696"
+        "C002684"
       ],
       "condition": {
         "titubb_uts_incomplete": true
@@ -174,7 +173,8 @@
           "barkod sut uyumsuz",
           "sut kodu eşleşme hatalı",
           "sut kodu eslesme hatali"
-        ]
+        ],
+        "barcode_sut_mismatch": true
       },
       "action": {
         "material_outcome": "no_pay",
@@ -207,11 +207,6 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001834",
-        "C001837",
-        "C001840",
-        "C001845",
-        "C001849",
         "C002824",
         "C002828",
         "C002831"
@@ -231,7 +226,6 @@
       "deontic": "NO_PAY",
       "gate_b_sources": [
         "C001664",
-        "C002707",
         "C002720"
       ],
       "condition": {
@@ -433,6 +427,666 @@
         "material_outcome": "must_not_bill_separately",
         "severity": "warning",
         "message_tr": "Tanıya dayalı paket kapsamı — ayrıca faturalandırılamaz; MEDULA kaydı gerekir (§3.1.3(11))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(15).separate_billing_not_authorized",
+      "sut_section": "3.1.1",
+      "deontic": "MUST_NOT_BILL",
+      "gate_b_sources": [
+        "C001635",
+        "C002695",
+        "C001823"
+      ],
+      "condition": {
+        "separate_billing_not_authorized": true
+      },
+      "action": {
+        "material_outcome": "must_not_bill_separately",
+        "severity": "warning",
+        "message_tr": "EK-3 listesinde olup SUT/eklerinde ayrıca faturalandırma izni belirtilmeyen malzeme — ilave faturalandırma riski (§3.1.1(15))."
+      }
+    },
+    {
+      "rule_id": "3.2.1.(2).procurement_price_refs_insufficient",
+      "sut_section": "3.2.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001834",
+        "C001837",
+        "C001845",
+        "C001849"
+      ],
+      "condition": {
+        "procurement_price_refs_insufficient": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "İhale/DTS ekranında son bir yıl içinde en az 3 hastane fiyat referansı yok — listesiz veya fiyatsız malzeme Kurumca karşılanmaz (§3.2.1(2))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(16).medula_code_undefined_on_date",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001636",
+        "C002696"
+      ],
+      "condition": {
+        "medula_code_undefined_on_date": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "SUT kodu işlem tarihinde MEDULA'da tanımlı değil — malzeme bedeli Kurumca karşılanmaz (§3.1.1(14)/(16))."
+      }
+    },
+    {
+      "rule_id": "3.1.4.(1).diagnosis_bundled_sut_rules_apply",
+      "sut_section": "3.1.4",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001799",
+        "C002800"
+      ],
+      "condition": {
+        "diagnosis_bundled_material_scope": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Tanıya dayalı paket dahil malzeme — §3.1–3.2 SUT kuralları geçerlidir (§3.1.4(1))."
+      }
+    },
+    {
+      "rule_id": "3.1.3.(4).cross_branch_billing_unauthorized",
+      "sut_section": "3.1.3",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001789",
+        "C002791"
+      ],
+      "condition": {
+        "cross_branch_material_unauthorized": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Branş listesinde olmayan malzeme — cross-list SUT kodu ve geri ödeme kurallarına uygun faturalandırılmalı (§3.1.3(4))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.b.ortez_protez_contract_billing_invalid",
+      "sut_section": "3.1.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002739",
+        "C002740"
+      ],
+      "condition": {
+        "ortez_protez_contract_billing_invalid": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Özel sözleşme yolu ortez/protez faturalandırması — komisyon tespiti ve sözleşme kapsamı doğrulanmalı (§3.1.2(b))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(11).maintenance_cost_cap_exceeded",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002732",
+        "C002733"
+      ],
+      "condition": {
+        "maintenance_cost_exceeds_sut_cap": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Bakım/onarım toplam bedeli malzeme bedelinin %75'ini geçemez (§3.1.2(11))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(8).protez_repair_documentation_incomplete",
+      "sut_section": "3.1.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002727",
+        "C002728",
+        "C002729",
+        "C002744"
+      ],
+      "condition": {
+        "protez_repair_documentation_incomplete": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Protez/ortez MIAT veya yenileme talebi — sağlık raporu/kurul belgesi gerekir (§3.1.2(8))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(8).warranty_maintenance_procedure_incomplete",
+      "sut_section": "3.1.2",
+      "deontic": "MANDATORY",
+      "gate_b_sources": [
+        "C002723"
+      ],
+      "condition": {
+        "warranty_maintenance_procedure_incomplete": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Garanti içi/dışı bakım-onarım başvuru prosedürü tamamlanmamış (§3.1.2(8)(b))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(8).ortez_protez_maintenance_unverified",
+      "sut_section": "3.1.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002721",
+        "C002722"
+      ],
+      "condition": {
+        "ortez_protez_maintenance_unverified": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Ortez/protez bakım-onarım — garanti kapsamı ve Kurum tespiti doğrulanmalı (§3.1.2(8))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(4).ihale_dts_mandatory_fields_incomplete",
+      "sut_section": "3.1.1",
+      "deontic": "MANDATORY",
+      "gate_b_sources": [
+        "C002686"
+      ],
+      "condition": {
+        "ihale_dts_mandatory_fields_incomplete": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "İhale/DTS ekranında İKN, TİTUBB/ÜTS, fiyat ve zorunlu alanlar eksik — malzeme bedeli karşılanmaz (§3.1.1(4))."
+      }
+    },
+    {
+      "rule_id": "3.2.1.A.(3).supplier_contract_pricing_path",
+      "sut_section": "3.2.1",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001842"
+      ],
+      "condition": {
+        "supplier_contract_pricing_path": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Tedarikçi sözleşmeli malzeme — ihale fiyatı ve SUT tavanı doğrulanmalı (§3.2.1.A(3))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(8).ek3c_inpatient_external_supply_invalid",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001626",
+        "C002751"
+      ],
+      "condition": {
+        "ek3c_inpatient_external_supply_invalid": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Yatarak tedavi sırasında EK-3/C malzemesi dışarıdan reçete yolu uygunsuz — sözleşmeli merkez/kurallara uygun temin gerekir (§3.1.1(8)/(19))."
+      }
+    },
+    {
+      "rule_id": "3.2.2.(2).ek3c_list_price_missing",
+      "sut_section": "3.2.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001852",
+        "C002834"
+      ],
+      "condition": {
+        "ek3c_list_price_missing": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "EK-3/C listesinde fiyatı olmayan malzeme — piyasa araştırması ve benzer ürün en düşük fiyat esas alınmalı (§3.2.2(2))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(13).ek3_quality_documentation_incomplete",
+      "sut_section": "3.1.1",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001631",
+        "C002693"
+      ],
+      "condition": {
+        "ek3_quality_documentation_incomplete": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "EK-3 malzemesi için kalite/ürün güvenliği belgeleri eksik — Kurum talep edebilir (§3.1.1(11)/(13))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(9).ek3c_miat_early_renewal_unauthorized",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002725"
+      ],
+      "condition": {
+        "ek3c_miat_early_renewal_unauthorized": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "EK-3/C-2/C-3 malzemesi MIAT süresi dolmadan yenilenemez (§3.1.2(9))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(4).ek3c_custom_order_billing_invalid",
+      "sut_section": "3.1.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001650",
+        "C002709"
+      ],
+      "condition": {
+        "ek3c_custom_order_billing_invalid": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "EK-3/C 'I' (ısmarlama) malzemesi — kişiye özel üretim kuralları doğrulanmalı (§3.1.2(4))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(5).ek3c_medical_appropriateness_incomplete",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001655",
+        "C002713"
+      ],
+      "condition": {
+        "ek3c_medical_appropriateness_incomplete": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "EK-3/C-1 malzemesi için tıbbi uygunluk/rapor takibi tamamlanmamış (§3.1.2(5))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.c.ek3c_custom_garment_contract_invalid",
+      "sut_section": "3.1.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001654",
+        "C002712"
+      ],
+      "condition": {
+        "ek3c_custom_garment_contract_invalid": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Lenfödem/yanık bası giysisi (ısmarlama) — sözleşme yolu doğrulanmalı (§3.1.2(c))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(13).ek3c_force_majeure_renewal_claim",
+      "sut_section": "3.1.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002735"
+      ],
+      "condition": {
+        "ek3c_force_majeure_renewal_claim": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Mücbir sebep belgeli EK-3/C yenileme — kullanım süresine bakılmaksızın yenileme yolu (§3.1.2(13))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(1).ek3c_outpatient_material_scope",
+      "sut_section": "3.1.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001641",
+        "C002700"
+      ],
+      "condition": {
+        "ek3c_outpatient_material_scope": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Ayakta tedavi EK-3/C listesi kapsamı — ilgili geri ödeme kuralları geçerlidir (§3.1.2(1))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(6).inpatient_facility_supply_violation",
+      "sut_section": "3.1.1",
+      "deontic": "MANDATORY",
+      "gate_b_sources": [
+        "C001623",
+        "C002687"
+      ],
+      "condition": {
+        "inpatient_material_facility_supply_violation": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Yatarak tedavide malzeme kurumca temin edilmeli — hastaya reçete ile dışarıdan temin uygunsuz (§3.1.1(5)/(6))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(7).non_reimbursed_inpatient_patient_charge",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001624"
+      ],
+      "condition": {
+        "non_reimbursed_inpatient_patient_charge": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "warning",
+        "message_tr": "Karşılanmayan yatarak malzeme — hasta bilgilendirme/mahsup kurallarına uygun faturalandırma (§3.1.1(7))."
+      }
+    },
+    {
+      "rule_id": "3.1.3.(10).lab_material_separate_billing",
+      "sut_section": "3.1.3",
+      "deontic": "MUST_NOT_BILL",
+      "gate_b_sources": [
+        "C001795"
+      ],
+      "condition": {
+        "lab_material_separate_billing": true
+      },
+      "action": {
+        "material_outcome": "must_not_bill_separately",
+        "severity": "error",
+        "message_tr": "Laboratuvar malzemesi işlem bedeline dahil — ayrıca faturalandırılamaz (§3.1.3(10))."
+      }
+    },
+    {
+      "rule_id": "3.1.3.(3).shared_consumable_wrong_branch_billing",
+      "sut_section": "3.1.3",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001788"
+      ],
+      "condition": {
+        "shared_consumable_wrong_branch_billing": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Çok branşlı sarf malzemesi kullanıldığı branştan faturalandırılmalı (§3.1.3(3))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(6).prescription_quantity_exceeded",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001663"
+      ],
+      "condition": {
+        "material_prescription_quantity_exceeded": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Reçete miktarı SUT limitini aşıyor — fazla adet Kurumca karşılanmaz (§3.1.2(6))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.report_prescription_invalid",
+      "sut_section": "3.1.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001668",
+        "C002759",
+        "C001670",
+        "C001731",
+        "C001732",
+        "C002719",
+        "C002753",
+        "C002760",
+        "C002764",
+        "C001733",
+        "C002761",
+        "C001790",
+        "C002792",
+        "C001791",
+        "C002793",
+        "C001730",
+        "C002758",
+        "C001735",
+        "C002762",
+        "C002734",
+        "C001725",
+        "C001726",
+        "C001727",
+        "C001728",
+        "C001729"
+      ],
+      "condition": {
+        "material_report_prescription_invalid": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Malzeme sağlık raporu/reçete süresi veya basamak şartı sağlanmıyor (§3.1.2 / §3.1.2.2)."
+      }
+    },
+    {
+      "rule_id": "3.1.2.b.material_invoice_documentation_incomplete",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001652",
+        "C002711"
+      ],
+      "condition": {
+        "material_invoice_documentation_incomplete": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Fatura eki belge eksik (ruhsatname/sorumlu müdür vb.) — malzeme ödenmez (§3.1.2(b))."
+      }
+    },
+    {
+      "rule_id": "3.1.4.diagnosis_package_material_unbundled",
+      "sut_section": "3.1.4",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001819",
+        "C002818",
+        "C002801"
+      ],
+      "condition": {
+        "diagnosis_package_material_unbundled": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Tanıya dayalı paket dışı malzeme — EK-2/C ve SUT paket kurallarına uygunluk doğrulanmalı (§3.1.4)."
+      }
+    },
+    {
+      "rule_id": "3.2.3.emergency_uncontracted_facility_material",
+      "sut_section": "3.2.3",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001854",
+        "C002836"
+      ],
+      "condition": {
+        "emergency_uncontracted_facility_material": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Sözleşmesiz kurumda acil malzeme — SUT 2.3 acil ödeme koşulları doğrulanmalı (§3.2.3(1))."
+      }
+    },
+    {
+      "rule_id": "3.2.1.unlisted_material_surcharge_billing",
+      "sut_section": "3.2.1",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001831",
+        "C001839",
+        "C002823",
+        "C002830",
+        "C001830",
+        "C001844",
+        "C002690",
+        "C002766",
+        "C002790",
+        "C002797",
+        "C002827"
+      ],
+      "condition": {
+        "unlisted_material_surcharge_billing": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Listesiz/fiyatsız malzeme — işletme gideri ve kesinti kurallarına uygun fiyat doğrulanmalı (§3.2.1)."
+      }
+    },
+    {
+      "rule_id": "3.1.2.g.wheelchair_dual_prescription_invalid",
+      "sut_section": "3.1.2",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002746"
+      ],
+      "condition": {
+        "wheelchair_dual_prescription_invalid": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Manuel ve akülü tekerlekli sandalye aynı anda reçete edilemez (§3.1.2(g))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.(16).outpatient_contract_center_supply_required",
+      "sut_section": "3.1.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002748"
+      ],
+      "condition": {
+        "outpatient_contract_center_supply_required": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Ayakta tedavi malzemesi sözleşmeli merkez/eczaneden temin edilmeli (§3.1.2(16))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.a.child_growth_miat_renewal_claim",
+      "sut_section": "3.1.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002726"
+      ],
+      "condition": {
+        "child_growth_miat_renewal_claim": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Çocuk büyüme-gelişme MIAT yenileme — sağlık raporu ile erken yenileme koşulları (§3.1.2(a))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.facility_contract_material_supply_scope",
+      "sut_section": "3.1.1",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001663",
+        "C001737",
+        "C002688",
+        "C001848",
+        "C002825",
+        "C001818",
+        "C002715",
+        "C001825"
+      ],
+      "condition": {
+        "facility_contract_material_supply_scope": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Sözleşmeli kurum malzeme temin kapsamı — ilgili SUT temin/teslim şartları geçerlidir."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(3).ismarlama_device_component_titubb_incomplete",
+      "sut_section": "3.1.1",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C001620"
+      ],
+      "condition": {
+        "ismarlama_device_component_titubb_incomplete": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Ismarlama cihaz bileşeni (Tıbbi Cihaz Yönetmeliği kapsamı) için ayrı TİTUBB kayıt/bildirim tamamlanmalı — nihai ürün muafiyeti bileşenlere uygulanmaz (§3.1.1(3))."
+      }
+    },
+    {
+      "rule_id": "3.1.1.(4).titubb_uts_barcode_documentation_missing",
+      "sut_section": "3.1.1",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C001621",
+        "C002685"
+      ],
+      "condition": {
+        "titubb_uts_barcode_documentation_missing": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "TİTUBB/ÜTS barkod bilgisi hasta dosyasında muhafaza/ibraz edilmeli (§3.1.1(3)/(4); EK-3/A <100 TL yatarak istisnası hariç)."
       }
     }
   ]

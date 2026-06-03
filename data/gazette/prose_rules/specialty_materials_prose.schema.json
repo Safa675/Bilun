@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bilun.local/schemas/specialty_materials_prose.schema.json",
+  "title": "SUT §3.3 specialty annex material prose decision table",
+  "type": "object",
+  "required": ["rule_set_id", "title", "effective_date", "rules"],
+  "additionalProperties": true,
+  "properties": {
+    "rule_set_id": { "type": "string", "const": "specialty_materials_prose" },
+    "title": { "type": "string" },
+    "effective_date": { "type": "string", "format": "date" },
+    "coverage_note": { "type": "string" },
+    "sut_anchors": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": ["rule_id", "sut_section", "deontic", "condition", "action"],
+      "additionalProperties": true,
+      "properties": {
+        "rule_id": { "type": "string" },
+        "sut_section": { "type": "string" },
+        "deontic": {
+          "type": "string",
+          "enum": [
+            "NO_PAY",
+            "MUST_BILL",
+            "MUST_NOT_BILL",
+            "REGULATORY_ACTION"
+          ]
+        },
+        "condition": { "$ref": "#/$defs/condition" },
+        "action": { "$ref": "#/$defs/action" }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "material_name_any": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "specialty_wound_care_excluded": { "type": "boolean" },
+        "skin_substitute_non_burn_use": { "type": "boolean" },
+        "immunobullous_wound_care_patient_supply": { "type": "boolean" },
+        "immunobullous_wound_care_non_moh_facility": { "type": "boolean" },
+        "optical_patient_access_deadline_missed": { "type": "boolean" },
+        "emergency_poliklinik_glasses_claim": { "type": "boolean" },
+        "optical_lens_upgrade_difference_claim": { "type": "boolean" },
+        "optical_telescopic_with_cap_claim": { "type": "boolean" },
+        "contact_lens_with_spectacle_billing": { "type": "boolean" },
+        "tv5680_with_tv1080_tv1090_combo": { "type": "boolean" },
+        "hearing_in_ear_under_age_limit": { "type": "boolean" },
+        "hearing_ear_mold_with_initial_device": { "type": "boolean" },
+        "cochlear_implant_under_12_months": { "type": "boolean" },
+        "speech_processor_under_5_years": { "type": "boolean" },
+        "brainstem_implant_under_12_months": { "type": "boolean" },
+        "incontinence_hydrophilic_catheter_diaper_only": { "type": "boolean" },
+        "tissue_bank_unauthorized_product": { "type": "boolean" },
+        "bone_stimulator_combined_use": { "type": "boolean" },
+        "bone_stimulator_hypertrophic_nonunion": { "type": "boolean" },
+        "bone_stimulator_with_autograft": { "type": "boolean" },
+        "bone_stimulator_benign_tumor_use": { "type": "boolean" },
+        "open_physis_primary_fracture_graft": { "type": "boolean" },
+        "adult_primary_fracture_bone_stimulator": { "type": "boolean" },
+        "hip_arthroplasty_graft_claim": { "type": "boolean" },
+        "graft_allograft_xenograft_combined": { "type": "boolean" },
+        "primary_ligament_tendon_injury_graft": { "type": "boolean" },
+        "glucose_meter_early_renewal": { "type": "boolean" },
+        "wheelchair_stand_device_duplicate_billing": { "type": "boolean" },
+        "stand_up_wheelchair_early_renewal": { "type": "boolean" },
+        "paraplegia_standing_table_over_age_limit": { "type": "boolean" },
+        "paraplegia_wheelchair_separate_billing": { "type": "boolean" },
+        "spinal_mobility_device_duplicate_billing": { "type": "boolean" },
+        "returned_device_without_kurum_approval": { "type": "boolean" },
+        "nimv_heated_humidifier_separate_billing": { "type": "boolean" },
+        "dental_prosthesis_adhesive_claim": { "type": "boolean" },
+        "dual_mesh_primary_hernia_repair": { "type": "boolean" }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["material_outcome", "severity", "message_tr"],
+      "additionalProperties": true,
+      "properties": {
+        "material_outcome": {
+          "type": "string",
+          "enum": ["no_pay", "review_required", "must_not_bill_separately"]
+        },
+        "severity": { "type": "string", "enum": ["error", "warning", "info"] },
+        "message_tr": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
