@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-02T18:53:51Z",
+  "generated_at": "2026-06-03T14:56:41Z",
   "phase": "2-post-l1.4",
   "clauses": {
     "total": 8180
@@ -77,7 +77,7 @@
       "implemented_rows": 733,
       "partial_rows": 0,
       "gap_rows": 0,
-      "prose_rules_on_disk": 17,
+      "prose_rules_on_disk": 34,
       "gate_b": {
         "total_rows": 48,
         "p1_encode": 40,
@@ -87,49 +87,72 @@
         "duplicate_ek3b2": 0
       },
       "encode_manifest": {
-        "rules_in_json": 17,
-        "rules_added": 10,
+        "rules_in_json": 34,
+        "rules_added": 6,
+        "rules_patched": 0,
         "gate_b_sources_encoded": [
           "C001618",
           "C001619",
+          "C001622",
+          "C001629",
+          "C001633",
+          "C001635",
           "C001636",
           "C001637",
+          "C001639",
+          "C001648",
           "C001664",
           "C001762",
+          "C001789",
+          "C001797",
+          "C001799",
+          "C001823",
           "C001834",
           "C001837",
-          "C001840",
+          "C001842",
           "C001845",
           "C001849",
           "C002684",
+          "C002686",
           "C002691",
+          "C002694",
+          "C002695",
           "C002696",
           "C002697",
+          "C002698",
           "C002707",
           "C002720",
+          "C002721",
+          "C002722",
+          "C002723",
           "C002724",
+          "C002727",
+          "C002728",
+          "C002729",
+          "C002732",
+          "C002733",
+          "C002739",
+          "C002740",
+          "C002741",
           "C002742",
           "C002743",
+          "C002744",
           "C002749",
           "C002789",
+          "C002791",
+          "C002798",
+          "C002800",
           "C002824",
           "C002828",
           "C002831"
         ],
-        "gate_b_deferred_clause_ids": [
-          "C001622",
-          "C001629",
+        "gate_b_deferred_clause_ids": [],
+        "kdv_pricing_clause_ids": [
           "C001630",
-          "C001633",
-          "C001639",
-          "C001648",
-          "C001797",
-          "C001823",
-          "C002692",
-          "C002694",
-          "C002698",
-          "C002741",
-          "C002798"
+          "C002692"
+        ],
+        "separate_billing_allowlist_clause_ids": [
+          "C001823"
         ]
       }
     }
@@ -170,14 +193,6 @@
     "material_bundling_prose_status": "implemented"
   },
   "medula_overlap": {
-    "source": "reports/sut-fact-check/medula_overlap_gaps.md",
-    "phase_5_updated": "2026-06-02",
-    "additive_review": 26,
-    "medula_duplicate_billing_recovery": 1,
-    "partial_overlap_relabel": 5,
-    "uncertain_hold": 0,
-    "not_applicable": 0,
-    "total_units": 28,
-    "phase_5_note": "L1.4 prose ADDITIVE; L3.5 partial includes prose precheck"
+    "note": "Unchanged by this script — see medula_overlap_gaps.md"
   }
 }

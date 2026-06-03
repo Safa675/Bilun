@@ -1,0 +1,25 @@
+{
+  "total_3_3_clauses": 1111,
+  "export_row_count": 84,
+  "encoded_in_manifest": 84,
+  "theme_counts": {
+    "specialty_3_3_4": 29,
+    "vision_optik": 16,
+    "implant_cochlear": 7,
+    "specialty_3_3_8": 7,
+    "hearing_aid": 6,
+    "specialty_3_3_6": 4,
+    "incontinence_urology": 3,
+    "dental_prosthetic": 3,
+    "wound_dressing": 2,
+    "glucose_meter": 2,
+    "specialty_3_3_7": 2,
+    "hernia_mesh": 2,
+    "other_3_3": 1
+  },
+  "deontic_counts": {
+    "NO_PAY": 83,
+    "MUST_BILL": 1
+  },
+  "note": "L4.4 keyword subset (NO_PAY | MUST_NOT_BILL | faturalandır). Separate from L1.4 material_bundling_prose (§3.1–3.2). Encode via specialty_materials_prose.json — not material_bundling_prose.json."
+}

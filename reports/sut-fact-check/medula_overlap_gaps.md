@@ -1,6 +1,6 @@
 # MEDULA Overlap Gap Report (Phase 0)
 
-**Generated:** 2026-06-02 (Phase 5 L1.4 / material MEDULA refresh)  
+**Generated:** 2026-06-02 (Phase 5 L1.4 / material MEDULA refresh; L1.4 tail doc sync)  
 **Scope:** All 28 fact-check units from `plans/billing/algorithm-sut-fact-check-plan.md`  
 **Sources:** `docs/medula/medula_capabilities.md`, `docs/medula/medula_bilun_overlap.md`, `docs/medula/material_bundling_medula_boundary.md`
 
@@ -55,7 +55,7 @@
 | L1.1 | EK-3B-1 bundling | **ADDITIVE** | Pre-submission bundling violations + savings | Manual: ICU/procedure rules only — **not** EK-3B-1 by name |
 | L1.2 | EK-3B-2 exclusion | **ADDITIVE** | Non-reimbursable material flags | Manual: ÜTS/UBB DTO — **not** EK-3B-2 by name |
 | L1.3 | `validate_claim()` orchestrator | **ADDITIVE** | L1.1 + L1.2 + L1.4 prose third pass | Pre-MEDULA dry-run; MEDULA still validates DTO |
-| L1.4 | §3 prose material bundling | **ADDITIVE** | 17-rule partial engine + `prose_bundling_violations` | **Not** MEDULA_DUPLICATE — prose not in manual; risk flags only |
+| L1.4 | §3 prose material bundling | **ADDITIVE** | 23-rule partial engine + `prose_bundling_violations`; KDV reviews + EK-3 allow-list | **Not** MEDULA_DUPLICATE — prose not in manual; risk flags only |
 
 ---
 
@@ -84,7 +84,7 @@
 | L3.2 | Drug — passivation | **PARTIAL_OVERLAP** | Compliance alert for passivated drugs | MEDULA `IlacAra` active/passive; rejects at submission — BILUN is advance warning (no false TRY if alert-only) |
 | L3.3 | Copay savings | **ADDITIVE** | Recoverable copay when EK-1A exempt | Different timing vs MEDULA invoice copay |
 | L3.4 | Billing strategy | **ADDITIVE** | §2.2 payment method recommendation | MEDULA computes payment for submitted strategy; no comparison |
-| L3.5 | Material pre-check | **PARTIAL_OVERLAP** | EK-3C-1/2 + MIAT + **prose_bundling_violations** + ceilings | MEDULA: ICU-group + ÜTS; BILUN adds annex + prose pre-check |
+| L3.5 | Material pre-check | **PARTIAL_OVERLAP** | EK-3C-1/2 + MIAT + **prose_bundling_violations** + **kdv_price_reviews** + ceilings | MEDULA: ICU-group + ÜTS; BILUN adds annex + prose + KDV ceiling pre-check |
 | L3.6 | Billing orchestrator | **ADDITIVE** | Exactness gating + cohort priority | No MEDULA equivalent |
 
 ---
@@ -127,9 +127,11 @@ Full boundary doc: [`docs/medula/material_bundling_medula_boundary.md`](../../do
 | ICU A/B/C group required for materials | No ICU-group gate | MEDULA-only blocking |
 | No procedure in takip → no material | `procedure_pairing_required` (EK-3/C) | **PARTIAL_OVERLAP** (intent) |
 | UBB/ÜTS / barcode DTO | `titubb_uts_incomplete`, barcode keyword | **PARTIAL_OVERLAP** |
-| *(not in manual)* | EK-3B-1, EK-3B-2, §3.1 prose (17 rules) | **ADDITIVE** |
+| *(not in manual)* | EK-3B-1, EK-3B-2, §3.1 prose (**23 rules**) | **ADDITIVE** |
+| EK-3 list price + KDV (§3.1.1(10)/(12)) | `material_kdv.py` → `kdv_price_reviews` (C001630, C002692) | **ADDITIVE** (pre-submission ceiling analytics) |
+| EK-3 explicit separate-billing allow list | `ek3_separate_billing_allowed_codes()` (C001823) | **ADDITIVE** |
 
-**L1.4:** `material_bundling_prose` is **implemented** with `prose_coverage_tier: partial`. Coverage matrix: 733 §3.1-classified clauses → registry `implemented` (legal tail still open). Do **not** count prose violations as MEDULA-guaranteed savings.
+**L1.4:** `material_bundling_prose` is **implemented** with `prose_coverage_tier: partial`. **0** Gate B deferred clauses (tail closed 2026-06-02). Coverage matrix: 733 §3.1-classified clauses → registry `implemented` (legal corpus tail still open). Do **not** count prose violations or KDV review deltas as MEDULA-guaranteed savings.
 
 ---
 

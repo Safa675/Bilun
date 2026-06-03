@@ -80,13 +80,25 @@
 |----|-------|--------|
 | **L2.3** | No runtime EK-2G join | **Done** — `optimization/catalog_join.py`; catalog-authoritative surcharge exposure |
 | **L2.4** | No runtime EK-2C-1 join | **Done** — EK-2C-1 rate + flag validation on exact lines |
-| **L1.4** | §3.1 prose engine | **Partial** — 17 rules + MEDULA additive classification; `validate_claim` + `prose_bundling_violations` |
+| **L1.4** | §3.1 prose engine | **Partial** — **23 rules** + MEDULA additive; `validate_claim` + `prose_bundling_violations` |
+| **L3.5** | MIAT interval + bundled taxonomy + partial P90 labeling | **Done** |
+| **L1.4-ingest** | Synthetic material prose flag columns | **Done** — `generators.py` + `material_claim_lines.parquet` |
+
+### L1.4 tail (2026-06-02) — Done
+
+| ID | Issue | Status |
+|----|-------|--------|
+| **L1.4-kdv** | C001630, C002692 — EK-3 list KDV pricing | **Done** — `src/bilun/domain/pricing/material_kdv.py`; `kdv_price_reviews` on `precheck_materials_from_claims()` |
+| **L1.4-allow** | C001823 — EK-3 explicit separate-billing allow list | **Done** — `ek3_separate_billing_allowed_codes()` catalog scan in `catalog_lookup.py` |
+| **L1.4-c001635** | §3.1.1(15) separate billing not authorized unless SUT says so | **Done** — rule `3.1.1.(15).separate_billing_not_authorized` (23rd prose rule) |
 
 ## P2 — Phase 3 findings (remaining)
 
 | ID | Issue | Target fix |
 |----|-------|------------|
-| **L1.4** | Full §3.1–3.2 prose + 12 Gate B deferred | Encode from `L1.4_material_bundling_prose.csv` / manifest (P2 plan phases 1–5 **done**) |
+| **L1.4** | §3.1–3.2 corpus tail (beyond Gate B p1_encode) | Next CSV batch from `L1.4_material_bundling_prose.csv` |
+| **L1.4-tier** | Care setting / facility tier in material prose | Wire `ClaimHeader` into `check_material_bundling_for_context` |
+| **L3.5** | MIAT vs MEDULA patient history | Category D when real claim ingest exists |
 
 ---
 

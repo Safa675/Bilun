@@ -1,8 +1,8 @@
 # SUT Algorithm Fact-Check — Master Report
 
 **Status:** Phase 3 complete — **28/28 reports**  
-**Last updated:** 2026-06-02 (Phase 5 MEDULA + L1.4 doc sync)  
-**Next:** L1.4 long tail (12 Gate B deferred + §3.1–3.2 corpus)
+**Last updated:** 2026-06-02 (L1.4 tail: 23 rules, 0 Gate B deferred, KDV + allow-list)  
+**Next:** L1.4 corpus CSV batches + tier wiring; doc-only deferrals (session fractions, MEDULA preference window)
 
 ---
 
@@ -18,7 +18,7 @@ Full fact-check of BILUN reimbursement algorithms against `sut_clauses.parquet` 
 | **P1** | ~~IVF copay helper WRONG (5%/10% vs §1.8.4 30/25/20%)~~ | **Fixed** P0.3 |
 | **P1** | ~~EK-1A missing health-report gate §1.8.5(7)~~ | **Fixed** L2.1, L3.3 |
 | **P1** | ~~Cohort `grand_total_recoverable` not exactness-gated~~ | **Fixed** L3.6 |
-| **P2** | §3.1–3.2 prose bundling — partial only (301+ clauses remain) | L1.4 |
+| **P2** | §3.1–3.2 prose bundling — partial (23 rules; 0 Gate B deferred; corpus tail) | L1.4 |
 
 ### Strengths
 
@@ -43,7 +43,7 @@ Full fact-check of BILUN reimbursement algorithms against `sut_clauses.parquet` 
 | L1.1 | EK-3B-1 bundling | PARTIAL | ADDITIVE |
 | L1.2 | EK-3B-2 exclusion | PARTIAL | ADDITIVE |
 | L1.3 | `validate_claim()` | PARTIAL | ADDITIVE |
-| L1.4 | §3 prose bundling | **PARTIAL** (22 rules: keywords, EK-3/C, claim flags) | ADDITIVE |
+| L1.4 | §3 prose bundling | **PARTIAL** (23 rules: keywords, EK-3/C, claim flags, §3.1.1(15) auth) | ADDITIVE |
 | L2.1 | Copay exemption EK-1A | PARTIAL | ADDITIVE |
 | L2.2 | Visit/status exemptions | PARTIAL | ADDITIVE |
 | L2.3 | Surcharge EK-2G | NEEDS_CLAIM_LINES | ADDITIVE |
@@ -56,7 +56,7 @@ Full fact-check of BILUN reimbursement algorithms against `sut_clauses.parquet` 
 | L3.2 | Drug optimizer | HEURISTIC / exact OK | ADDITIVE |
 | L3.3 | Copay savings | PARTIAL | ADDITIVE |
 | L3.4 | Billing strategy | PARTIAL | ADDITIVE |
-| L3.5 | Material pre-check | PARTIAL | PARTIAL_OVERLAP |
+| L3.5 | Material pre-check | PARTIAL (MIAT interval + bundled taxonomy fixed) | PARTIAL_OVERLAP |
 | L3.6 | Billing orchestrator | PARTIAL | ADDITIVE |
 | L4.1 | EK-2B FFS pricing | COMPLIANT | ADDITIVE |
 | L4.2 | EK-2C DRG pricing | HEURISTIC | ADDITIVE |
@@ -83,9 +83,9 @@ Full fact-check of BILUN reimbursement algorithms against `sut_clauses.parquet` 
 | Layer | Key takeaway |
 |-------|----------------|
 | **P0 Prose** | Payment method OK; session A(5)/specialty fixed; copay IVF §1.8.4 fixed |
-| **L1 Validation** | EK-3B lists + 17-rule §3 prose; MEDULA additive; corpus tail open |
+| **L1 Validation** | EK-3B lists + **23-rule** §3 prose + KDV/allow-list tail + synthetic claim-field columns; MEDULA additive; corpus tail open |
 | **L2 Cohort** | Exemptions partial; exactness honest; temporal audit solid |
-| **L3 Billing** | Strategy OK; lab dup fixed; drug heuristic; orchestrator cohort totals |
+| **L3 Billing** | Strategy OK; lab dup fixed; drug heuristic; **L3.5 MIAT interval**; orchestrator cohort totals |
 | **L4 Pricing** | EK-2B/C catalogs good; EK-2A mean heuristic; DRG chapter medians |
 
 ---
@@ -111,7 +111,7 @@ Detail: `medula_overlap_gaps.md`, materials: `docs/medula/material_bundling_medu
 | `payment_method_*` | implemented | partial |
 | `drg_unbundling` | implemented | partial |
 | `copay_exemption_ek1a` | implemented | partial |
-| `material_bundling_prose` | implemented | partial clause coverage (22 rules; MEDULA additive) |
+| `material_bundling_prose` | implemented | partial clause coverage (23 rules; 0 Gate B deferred; MEDULA additive) |
 | `copay_rate_ek2c1` | needs_claim_lines | confirmed |
 | `surcharge_ek2g` | needs_claim_lines | confirmed |
 
@@ -128,7 +128,10 @@ Detail: `medula_overlap_gaps.md`, materials: `docs/medula/material_bundling_medu
 | 5 P0 code fixes | ✅ |
 | 4 Synthesis | ✅ (this document) |
 | Material P2 Phase 5 MEDULA | ✅ |
-| Fix waves | ✅ P0/P1 + L1.4 partial engine (long tail open) |
+| L1.4 Phase 6 synthetic prose flags | ✅ |
+| L1.4 tail (KDV, allow-list, C001635 §3.1.1(15)) | ✅ |
+| L3.5 MIAT interval + partial-mode labeling | ✅ |
+| Fix waves | ✅ P0/P1 + L1.4 partial engine (corpus tail + tier wiring open) |
 
 ---
 

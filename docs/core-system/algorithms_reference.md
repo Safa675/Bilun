@@ -70,13 +70,16 @@ claim materials → [Bundling Rules] + [Exclusion Rules] → ClaimValidationResu
 
 SUT §3.1–3.2 contains hundreds of material payment and non-separate-billing clauses. BILUN runs a wired prose engine (`prose_engine_status: implemented`, `prose_coverage_tier: partial`) with keyword and claim-field rules — not the full 301+ clause engine. Product surfaces show a coverage version string; long tail is in `plans/billing/material-bundling-prose-p2-plan.md`.
 
-**Implemented today (17 rules):**
+**Implemented today (23 rules):**
 - Keyword rules: §3.1.3(7)–(9), §3.1.2(c)/(ç)/(d), barcode mismatch, lost/stolen MIAT, non-reimbursed procedure materials, device consumable, branch-unlisted, etc.
-- Claim-field rules: missing code, `not_in_ek3c` / `not_in_ek3`, procedure pairing, TİTUBB/ÜTS incomplete flags.
+- Claim-field rules: missing code, `not_in_ek3c` / `not_in_ek3`, procedure pairing, TİTUBB/ÜTS incomplete, procurement screen, foreign facility, facility restriction, diagnosis-bundled MEDULA, **`3.1.1.(15).separate_billing_not_authorized`** (C001635), etc.
+- **KDV pricing (tail):** `src/bilun/domain/pricing/material_kdv.py` — C001630, C002692; `kdv_price_reviews` on `precheck_materials_from_claims()`.
+- **EK-3 allow-list (tail):** `ek3_separate_billing_allowed_codes()` in `catalog_lookup.py` — C001823 catalog scan.
+- Synthetic demo ingest: prose flag columns on `material_claim_lines.parquet` (2026-06-03).
 - `validate_claim()` third pass; `precheck_materials_from_claims()` → `prose_bundling_violations` (separate from EK-3B-1 `is_bundled`).
 - **MEDULA:** classified **additive** for prose + EK-3B paths (`docs/medula/material_bundling_medula_boundary.md`). Prose hits are pre-submission risk flags, not guaranteed SGK recovery.
 
-**What remains:** EK-3B-1/2 via annex modules (L1.1/L1.2); 12 Gate B deferred clauses; full §3.1–3.2 corpus; optional MEDULA ICU-group / barcode API integration.
+**What remains:** full §3.1–3.2 corpus (beyond 23 encoded rules); tier/care-setting in prose evaluator; optional MEDULA ICU-group / barcode API integration.
 
 ### 1.3 Claim Validation Orchestrator
 
@@ -330,25 +333,24 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
    - Chapter "C" (neoplasms) → hematology-oncology (EK-3O)
 2. This narrows the material risk surface from 25 specialty catalogs to the 2-4 catalogs relevant to the patient's condition.
 
-**Gazette price ceilings:**
-1. Computes P10, P50, P90, and max price statistics for each specialty catalog.
-2. The **P90 price** is surfaced as the "gazette ceiling" — materials priced above this are likely flagged by SGK as excessive.
-3. This is a heuristic, not a hard rule, hence the `partial_exact` status when materials claim lines are absent.
+**Partial mode (no material claim lines):**
+1. Maps ICD-10 chapters to relevant EK-3 specialty annex ids only.
+2. Surfaces **P90 price benchmarks** per annex as `gazette_ceiling_by_specialty` — a heuristic, not EK-3C-1/2 coverage.
+3. Does **not** load EK-3C-1 or EK-3C-2 in this path (`partial_exact` status).
 
-**Pre-authorization checks (EK-3C-1):**
-1. Loads the EK-3C-1 catalog: materials that require medical board (sağlık kurulu) approval before SGK will reimburse.
-2. Summarizes the top 5 pre-auth materials by price.
+**Pre-authorization checks (EK-3C-1) — exact mode only:**
+1. Loads the EK-3C-1 catalog: materials requiring **tıbbi uygunluk** (§3.1.2) before SGK payment.
+2. Flags each billed line whose code is in EK-3C-1 or has `requires_pre_auth`.
 
-**MIAT period checks (EK-3C-2):**
-1. Loads the EK-3C-2 catalog: materials with minimum inter-application time (MIAT) restrictions — e.g., a specific implant that SGK will only reimburse once every 90 days.
-2. Summarizes the top 5 MIAT-restricted materials with their minimum periods.
+**MIAT checks (EK-3C-2) — exact mode only:**
+1. **Catalog advisory:** codes on EK-3C-2 with no prior use in patient material history → `miat_restricted`.
+2. **Interval violation:** compares `material_date` to prior uses of the same code; parses Turkish `miat_period` strings → `miat_interval_violations`.
 
-**Exact mode (when material claim lines are available):**
-1. Instead of diagnosis-based catalog association, directly checks every billed material line against the EK-3C-1 and EK-3C-2 catalogs.
-2. Adds checks for `is_bundled` flags on material lines — if a bundled material was billed separately, flags it.
-3. Uses actual billed amounts instead of catalog list prices.
+**Bundling (EK-3B-1):**
+1. `is_bundled` lines with positive billed amount → `bundled_separate_billing` (not the MIAT bucket).
+2. L1.4 prose engine may add `prose_bundling_violations`.
 
-**Output:** `MaterialPreCheck` with pre-auth required list, MIAT-restricted list, and gazette ceiling prices by specialty.
+**Output:** `MaterialPreCheck` with pre-auth list, MIAT catalog/interval lists, bundled-separate list, prose hits, and (partial mode) P90 benchmarks by specialty.
 
 ### 3.6 Billing Orchestrator
 

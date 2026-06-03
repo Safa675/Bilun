@@ -12,7 +12,7 @@ This document answers: *What does MEDULA block at Hizmet Kayıt, what does BILUN
 | Layer | MEDULA | BILUN |
 |-------|--------|-------|
 | **When** | Submission (Hizmet Kayıt / Fatura Kayıt) | Pre-submission analytics + `validate_claim()` |
-| **Material blocking** | ICU-group presence, procedure-in-takip, D/E ICU, UBB/ÜTS DTO rules | EK-3B-1 (54), EK-3B-2 (13), partial §3.1–3.2 prose (17 rules), EK-3C/MIAT on claim lines |
+| **Material blocking** | ICU-group presence, procedure-in-takip, D/E ICU, UBB/ÜTS DTO rules | EK-3B-1 (54), EK-3B-2 (13), partial §3.1–3.2 prose (**22 rules**), EK-3C/MIAT on claim lines |
 | **Overlap verdict** | **ADDITIVE** for annex + prose; **PARTIAL_OVERLAP** for TİTUBB/ÜTS/barcode (different mechanism) |
 | **Recoverable TRY** | Do not claim SGK recovery from prose hits — **risk flags** only unless audit-stage proof exists |
 
@@ -123,4 +123,4 @@ flowchart LR
 - `docs/medula/medula_capabilities.md` — Malzeme DTO, ICU material restrictions, invoice blocking
 - `docs/medula/medula_bilun_overlap.md` — full-stack overlap map
 - `reports/sut-fact-check/algorithms/L1.4_material_bundling_prose_gap.md`
-- `data/gazette/prose_rules/material_bundling_prose.json` — 17 rules
+- `data/gazette/prose_rules/material_bundling_prose.json` — **22 rules**

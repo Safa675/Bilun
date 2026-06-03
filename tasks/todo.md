@@ -1,17 +1,14 @@
-## Task: L3.4 session itemized + prose_drg_locked catalog
+## Task: L4.4 — other_3_3 tail (5 rows) — corpus complete
 
 ### Goal
-Wire §2.2.2.B session factors into strategy itemized totals; move prose DRG lock to EK-2C catalog seed.
+Encode final 5 untraced rows → **49 rules**, **84/84** L4.4 corpus traced.
 
 ### Subtasks
-- [x] `compute_session_adjusted_itemized_total()` + `claim_strategy` fields
-- [x] `ek2c_prose_drg_locked_codes.json` (51 codes) + `procedure_prose_drg_locked()`
-- [x] `payment_method.py` uses catalog flag
-- [x] Tests: session adjusted, prose locked mandatory, claim strategy suite
+- [x] `specialty_materials_other_3_3_tail_batch_rules.py` (4 rules, 5 clauses)
+- [x] Export themes: `dental_prosthetic`, `hernia_mesh`
+- [x] Tests + merge + re-export
 
-### Out of Scope
-- DuckDB `build_cache.py --activate` (run when billing cache refresh needed)
-
-### Review
-- EK-2C rebuilt: `ek2c_catalog_history.parquet` — 26,412 rows, **51** `prose_drg_locked=True` on latest slice (matches seed).
-- Seed refresh: `python scripts/sut/catalogs/ek2c_prose_drg_locked_seed.py`
+### Review (2026-06-02)
+- §3.3.11–12: protez yapıştırıcı / temizleme / diş macunu
+- §3.3.14/16: primer fıtıkta çift yüzlü mesh
+- **L4.4 84-row keyword corpus fully traced**

@@ -1,6 +1,6 @@
 # P2 Plan: SUT §3.1–3.2 Material Bundling Prose Engine
 
-**Status:** Phase 1–5 complete; Gate B deferred batch encoded (3 KDV/allow-list remain)  
+**Status:** Phase 1–7 complete (tail done 2026-06-02); **0** Gate B deferred  
 **Fact-check:** L1.4 — `reports/sut-fact-check/algorithms/L1.4_material_bundling_prose_gap.md`  
 **Registry:** `material_bundling_prose` — `coverage_status=implemented` (clause coverage still partial)
 
@@ -14,7 +14,7 @@ Encode executable decision logic for SUT §3.1–3.2 material payment and non-se
 |-------|----------|
 | EK-3B-1 list | `bundling_rules.py` — 54 consumable categories |
 | EK-3B-2 list | `exclusion_rules.py` — 13 non-reimbursable rows |
-| §3.1–3.2 prose | **PARTIAL** — 22 rules; 3 Gate B clauses deferred (KDV/allow-list) |
+| §3.1–3.2 prose | **PARTIAL** — 23 rules; KDV + EK-3 allow-list + §3.1.1(15) (C001635) wired |
 | MIAT / pre-auth | §3.1.2 via EK-3C-1/2 catalogs (`claim_materials.py`) — not full §3.1 prose |
 
 ## Clause inventory (baseline)
@@ -38,7 +38,7 @@ Classification: `scripts/sut/prose/classify.py` → `material_bundling_prose` wh
 
 ### Phase 2 — JSON artifact
 
-- [x] Add `data/gazette/prose_rules/material_bundling_prose.json` (17 rules after Gate B batch merge)
+- [x] Add `data/gazette/prose_rules/material_bundling_prose.json` (**23 rules** after Gate B + tail batch merge)
 - [x] Registry `coverage_status` → `implemented` (clause coverage partial)
 - [x] Encode manifest `evidence/clauses/L1.4_material_bundling_encoded_manifest.json`
 - [x] Rebuild coverage matrix (`scripts/sut/rebuild_baseline_metrics.py` → `baseline_metrics.json`)
@@ -65,6 +65,22 @@ Classification: `scripts/sut/prose/classify.py` → `material_bundling_prose` wh
 - [x] API `coverage_scope`: `medula_overlap_classification`, savings note, deferred clause count
 - [x] UI scope notice: MEDULA additive disclaimer (EN/TR)
 
+### Phase 6 — Synthetic prose flag ingest (2026-06-03)
+
+- [x] `generators.py` — seven prose flag columns on `malzeme_fatura_satirlari`
+- [x] `exporters.py` — Turkish → English parquet mapping for `material_claim_lines.parquet`
+- [x] `validate_sut_synthetic_data.py` — column + minimum coverage checks
+- [x] Regenerated `data/synthetic/sut/`; tests in `test_synthetic_material_prose_flags.py`
+
+### Phase 7 — L1.4 tail (2026-06-02)
+
+- [x] `material_kdv.py` — C001630, C002692 (EK-3 list KDV ceiling)
+- [x] `ek3_separate_billing_allowed_codes()` — C001823 catalog allow-list scan
+- [x] Prose rule `3.1.1.(15).separate_billing_not_authorized` — C001635 (23rd rule)
+- [x] `claim_materials.py` — `kdv_price_reviews` on material pre-check
+- [x] `gate_b_deferred_clause_ids: []` in encode manifest; `baseline_metrics.json` rebuilt
+- [x] Fact-check doc sync (MASTER, FIX_BACKLOG, L1.4 gap, MEDULA overlap, `algorithms_reference`)
+
 ## Dependencies
 
 - Prose extraction quality for §3.1–3.2
@@ -77,6 +93,17 @@ Classification: `scripts/sut/prose/classify.py` → `material_bundling_prose` wh
 2. Domain module has tests for all P1-priority decision rows (not in EK-3B-1).
 3. `validate_claim()` invokes prose evaluator; fact-check L1.4 verdict moves from OUT_OF_SCOPE to COMPLIANT/PARTIAL as appropriate.
 4. UI no longer shows §3.1–3.2 OUT_OF_SCOPE disclaimer (replaced by coverage version string).
+
+### Phase 8 — Corpus batch 2 (2026-06-02)
+
+- [x] Semantic splits: procurement 3-hospital price refs, MEDULA code-on-date, barcode claim flag
+- [x] **25 rules** after merge; manifest clause re-homing (C002707 → EK-3/C rule)
+- [x] Export `evidence/clauses/L1.4_material_bundling_corpus_batch2.csv` (204-row backlog)
+- [x] **Faturalandirma theme (6 clauses → 3 rules)** — 2026-06-02
+- [x] **Garanti/onarım (9 → 4 rules) + ihale/DTS (2 → 2 rules)** — 2026-06-02
+- [x] **ek3_list (99 → 9 rules + 76 annex headers in manifest)** — 2026-06-02
+- [x] **malzeme_general (85 → 14 rules + 25 headers)** — 2026-06-02
+- [x] **titubb_uts_barkod (3 → 2 rules)** — 2026-06-02; **59 rules**, **204/204** batch2 traced
 
 ## Out of scope for P2 plan
 
