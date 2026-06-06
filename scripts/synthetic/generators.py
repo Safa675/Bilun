@@ -294,6 +294,12 @@ def _pick_procedures(
             package_name = str(pkg_row["name"])
             package_price = _money(float(pkg_row.get("price_try", 0) or 0))
 
+    # Build set of all EK-2C package codes so we never sample them as general procedures
+    ek2c_all_codes: set[str] = set()
+    for pkg_df in ek2c_packages.values():
+        if not pkg_df.empty and "package_code" in pkg_df.columns:
+            ek2c_all_codes.update(pkg_df["package_code"].astype(str).tolist())
+
     remaining = num_procs - len(procs) - (1 if package_code else 0)
     general_pool = ek2b_procs.get("general", pd.DataFrame())
     if remaining > 0 and not general_pool.empty:
@@ -301,6 +307,9 @@ def _pick_procedures(
             general_pool["ISLEM_BEDELI_TL"].notna() &
             (general_pool["ISLEM_BEDELI_TL"] > 0)
         ]
+        # Exclude EK-2C package codes from general pool — they must only appear via the package path
+        if not gen_valid.empty and ek2c_all_codes:
+            gen_valid = gen_valid[~gen_valid["ISLEM_KODU"].astype(str).isin(ek2c_all_codes)]
         if not gen_valid.empty:
             n_sample = min(remaining, len(gen_valid))
             sample = gen_valid.sample(n_sample, random_state=rng.bit_generator)
@@ -815,8 +824,6 @@ def _generate_claims_and_lines(
             discharge = None
             claim_end = start_date
 
-        package_candidate = visit_type in ("yatis", "gunubirlik") and rng.random() < 0.5
-
         n_procs = rng.integers(3, 9)
         proc_specs = _pick_procedures(
             episode,
@@ -831,6 +838,9 @@ def _generate_claims_and_lines(
             if ps.get("is_package"):
                 package_code_for_claim = ps["code"]
                 break
+
+        # package_candidate must be True if the claim actually contains a package procedure
+        package_candidate = package_code_for_claim is not None
 
         ctx = ClaimEpisodeContext(
             pid=pid,
