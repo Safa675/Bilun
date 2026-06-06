@@ -4,7 +4,6 @@ import type { BillingActionReport } from "@/lib/domains/sut";
 import {
   BillingStrategySection,
   CopayOptimizationSection,
-  DrugOptimizationSection,
 } from "./SutBillingReportSections";
 
 vi.mock("@/lib/sutLabels", () => ({
@@ -31,33 +30,6 @@ vi.mock("@/components/tabs/sut/shared", () => ({
 }));
 
 describe("SutBillingReportSections honest gaps", () => {
-  it("shows drug recommendations without TRY when section is not exact", () => {
-    const html = renderToStaticMarkupWithLocale(
-      <DrugOptimizationSection
-        drugData={{
-          exactness_status: "missing_exact_inputs",
-          unavailable_reason: "Needs claim lines.",
-          generic_substitution_savings: 0,
-          n_generics_available: 1,
-          passivated_drug_count: 0,
-          drug_recommendations: [
-            {
-              drug_name: "Brand-X",
-              issue: "generic_available",
-              alternative: "Generic-X",
-              savings_try: null,
-            },
-          ],
-        }}
-      />,
-    );
-
-    expect(html).toContain("Brand-X");
-    expect(html).toContain("Generic-X");
-    expect(html).toContain("Unavailable");
-    expect(html).not.toContain("70.00 TRY");
-    expect(html).toContain("Catalog insight");
-  });
 
   it("shows copay exemption insight when section is not exact", () => {
     const html = renderToStaticMarkupWithLocale(
@@ -81,7 +53,43 @@ describe("SutBillingReportSections honest gaps", () => {
 
     expect(html).toContain("exempt");
     expect(html).toContain("EK-1A exemption may apply");
-    expect(html).not.toContain("Visit copay savings");
+    expect(html).not.toContain("exemption gap");
+    expect(html).not.toContain("katilimPayindanMuaf");
+  });
+
+  it("shows exemption gap KPIs, MEDULA chip, and dual-benefit footnote when exact and exempt", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <CopayOptimizationSection
+        copayData={{
+          exactness_status: "exact",
+          is_exempt: true,
+          exemption_disease: "Diabetes",
+          exemption_range: "E10-E14",
+          savings_beneficiary: "patient_and_sgk",
+          gap_kind: "exemption_correction",
+          visit_copay_savings_try: 100,
+          rx_copay_savings_try: 10,
+          total_copay_savings_try: 100,
+          patient_copay_waived_total_try: 110,
+          rate_corrections: [
+            {
+              code: "704100",
+              name: "Ear exam",
+              billed_try: 50,
+              payable_try: 40,
+              copay_component_try: 10,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(html).toContain("katilimPayindanMuaf=E");
+    expect(html).toContain("Procedure exemption gap");
+    expect(html).toContain("Total exemption gap");
+    expect(html).toContain("110.00 TRY");
+    expect(html).toContain("Compliance correction");
+    expect(html).toContain("Exemption gap");
   });
 
   it("shows strategy chapter review flags without TRY", () => {

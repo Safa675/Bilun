@@ -1092,7 +1092,6 @@ function RevenueRecoveryDashboard({
             accent: true,
           },
           { label: t("optimizer.kpis.labSavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_lab_savings : null) },
-          { label: t("optimizer.kpis.drugSavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_drug_savings : null) },
           { label: t("optimizer.kpis.copaySavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_copay_savings : null) },
           { label: t("optimizer.kpis.strategySavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_strategy_savings : null) },
           { label: t("optimizer.kpis.patientsWithActions"), value: fmtNum(displayData.n_patients) },
@@ -1232,9 +1231,6 @@ function RevenueRecoveryDashboard({
 
       {/* ── DRG Unbundling (merged from SUT Analytics) ── */}
       {!optLoading && optData && <DrgUnbundlingInline data={optData} />}
-
-      {/* ── Drug Discounts (merged from SUT Analytics) ── */}
-      {!optLoading && optData && <DrugDiscountInline data={optData} />}
     </div>
   );
 }
@@ -1299,67 +1295,6 @@ export function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
           label={t("optimizer.kpis.riskyChapters")}
           value={isUnavailable ? unavailableLabel : fmtNum(drg.top_risky_chapters.length)}
           sub={isUnavailable ? t("optimizer.kpis.requiresDatedPackageContext") : t("optimizer.kpis.icd10ChaptersWithRepeatedRisk")}
-        />
-      </div>
-    </>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   DRUG DISCOUNT TIERS (merged from SUT Analytics)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-export function DrugDiscountInline({ data }: { data: OptimizationSummary }) {
-  const t = useT();
-  const drug = data.drug_discount_validation;
-  if (!drug) return null;
-  const isUnavailable = !isExactOutput(drug);
-  const unavailableMessage = getUnavailableMessage(
-    drug,
-    t("optimizer.unavailable.drugDiscount"),
-  );
-  const tierMismatches = drug.n_tier_mismatches ?? null;
-  const unavailableLabel = t("common.unavailable");
-
-  return (
-    <>
-      {/* Section Divider */}
-      <div className="flex items-center gap-3 pt-2">
-        <div className="h-px flex-1" style={{ background: theme.accentAlpha(0.15) }} />
-        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: ACCENT }}>
-          {t("optimizer.sections.drugDiscountAudit")}
-        </span>
-        <div className="h-px flex-1" style={{ background: theme.accentAlpha(0.15) }} />
-      </div>
-
-      {isUnavailable ? (
-        <UnavailableBadge text={unavailableMessage} />
-      ) : (
-        <MethodologyBadge text={drug.methodology} />
-      )}
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KpiCard
-          label={t("optimizer.kpis.uniqueDrugCodes")}
-          value={isUnavailable ? unavailableLabel : fmtNumOrUnavailable(drug.n_active_drugs)}
-          sub={isUnavailable ? t("optimizer.kpis.catalogOnlyUntilClaimLines") : t("optimizer.kpis.distinctEk4aCodes")}
-        />
-        <KpiCard
-          label={t("optimizer.kpis.drugClaimLines")}
-          value={isUnavailable ? unavailableLabel : fmtNumOrUnavailable(drug.n_drugs_total)}
-          sub={isUnavailable ? t("optimizer.kpis.dispensedLineItemsRequired") : t("optimizer.kpis.dispensedLinesValidated")}
-        />
-        <KpiCard
-          label={t("optimizer.kpis.tierMismatches")}
-          value={isUnavailable ? unavailableLabel : fmtNumOrUnavailable(tierMismatches)}
-          valueColor={!isUnavailable && tierMismatches && tierMismatches > 0 ? "#B45309" : undefined}
-          sub={isUnavailable ? t("optimizer.kpis.actualClaimAmountsRequired") : t("optimizer.kpis.payableVsTierExpectation")}
-        />
-        <KpiCard
-          label={t("optimizer.kpis.discountSavings")}
-          value={isUnavailable ? unavailableLabel : fmtTRY2OrUnavailable(drug.total_discount_savings_try ?? null)}
-          valueColor="#B45309"
-          sub={isUnavailable ? t("optimizer.kpis.exactClaimInputsRequired") : t("optimizer.kpis.billedMinusExpectedPayable")}
         />
       </div>
     </>

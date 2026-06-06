@@ -135,7 +135,7 @@ const optimizer = {
     partialRuleCalculatedTotal: "Kısmi kural hesaplı toplam",
     labSavings: "Laboratuvar Tasarrufu",
     drugSavings: "İlaç Tasarrufu",
-    copaySavings: "Katılım Payı Tasarrufu",
+    copaySavings: "Muafiyet farkı (düzeltici)",
     strategySavings: "Strateji Tasarrufu",
     patientsWithActions: "Eylemli Hastalar",
     patientsInCohort: "Kohorttaki Hastalar",

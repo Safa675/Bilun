@@ -105,7 +105,7 @@ vi.mock("@/hooks/useCohortFilter", () => ({
   }),
 }));
 
-import SUTOptimizer, { DrgUnbundlingInline, DrugDiscountInline } from "./SUTOptimizerTab";
+import SUTOptimizer, { DrgUnbundlingInline } from "./SUTOptimizerTab";
 import type { OptimizationSummary } from "@/lib/domains/sut";
 
 describe("SUTOptimizer shell", () => {
@@ -165,52 +165,4 @@ describe("Revenue recovery optimization panels", () => {
     expect(html).toContain("Patients With Risk:Unavailable");
   });
 
-  it("wires drug discount KPIs from exact claim validation", () => {
-    const data = {
-      drug_discount_validation: {
-        exactness_status: "exact",
-        n_drugs_total: 360,
-        n_active_drugs: 353,
-        n_tier_mismatches: 2,
-        total_discount_savings_try: 4821.5,
-        tier_distribution: {},
-        discount_status_distribution: {},
-        mean_discount_tier_1: 0.28,
-        sample_drugs: [],
-        methodology: "Validates discount tiers on exact drug claim lines.",
-      },
-    } as OptimizationSummary;
-
-    const html = renderToStaticMarkupWithLocale(<DrugDiscountInline data={data} />);
-
-    expect(html).toContain("Validates discount tiers on exact drug claim lines.");
-    expect(html).not.toContain("Unavailable:Drug discount validation is unavailable");
-    expect(html).toContain("Unique Drug Codes:353");
-    expect(html).toContain("Drug Claim Lines:360");
-    expect(html).toContain("Tier Mismatches:2");
-    expect(html).toContain("Discount Savings:4821.50 TRY");
-  });
-
-  it("shows unavailable drug discount KPIs when claim lines are missing", () => {
-    const data = {
-      drug_discount_validation: {
-        exactness_status: "missing_exact_inputs",
-        unavailable_reason: "Missing dispensed drug claim lines.",
-        n_drugs_total: null,
-        n_active_drugs: null,
-        tier_distribution: {},
-        discount_status_distribution: {},
-        mean_discount_tier_1: null,
-        sample_drugs: [],
-        methodology: "",
-      },
-    } as OptimizationSummary;
-
-    const html = renderToStaticMarkupWithLocale(<DrugDiscountInline data={data} />);
-
-    expect(html).toContain("Missing dispensed drug claim lines.");
-    expect(html).toContain("Unavailable");
-    expect(html).toContain("Drug Claim Lines:Unavailable");
-    expect(html).not.toContain("Drug Claim Lines:Missing");
-  });
 });

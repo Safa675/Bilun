@@ -1,7 +1,6 @@
 import type {
   BillingStrategyRecommendation,
   CopayOptimization,
-  DrugOptimization,
 } from "./domains/sut";
 
 export type CopayRateCorrectionRow = CopayOptimization["rate_corrections"][number];
@@ -226,17 +225,3 @@ export function strategyCatalogAsOfFootnote(rows: BillingStrategyRow[]): string 
   return unique.join(", ");
 }
 
-export type DrugRecommendationRow = DrugOptimization["drug_recommendations"][number];
-
-export function isHeuristicDrugRecommendation(row: DrugRecommendationRow): boolean {
-  if (row.savings_basis === "heuristic") {
-    return true;
-  }
-  if (row.savings_basis === "claim_line") {
-    return false;
-  }
-  return (
-    row.savings_try == null &&
-    (row.issue === "passivated" || row.issue === "generic_available")
-  );
-}

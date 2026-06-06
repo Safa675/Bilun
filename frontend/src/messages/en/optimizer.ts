@@ -134,7 +134,7 @@ const optimizer = {
     partialRuleCalculatedTotal: "Partial rule-calculated total",
     labSavings: "Lab Savings",
     drugSavings: "Drug Savings",
-    copaySavings: "Copay Savings",
+    copaySavings: "Exemption gap (corrective)",
     strategySavings: "Strategy Savings",
     patientsWithActions: "Patients with Actions",
     patientsInCohort: "Patients in Cohort",

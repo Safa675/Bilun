@@ -102,7 +102,7 @@ export default function CohortFilterBar({
           </select>
         </label>
 
-        <label className="flex w-[120px] flex-col gap-1">
+        <label className="flex w-[148px] shrink-0 flex-col gap-1">
           <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
             {t("cohort.filterBar.sexLabel")}
           </span>
@@ -119,7 +119,7 @@ export default function CohortFilterBar({
           </select>
         </label>
 
-        <label className="flex w-[132px] flex-col gap-1">
+        <label className="flex w-[132px] shrink-0 flex-col gap-1">
           <span className="text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
             {t("cohort.filterBar.ageLabel")}
           </span>

@@ -6,7 +6,6 @@ import {
   isComplianceViolationRow,
   strategyCatalogAsOfFootnote,
   strategySavingsTryDisplay,
-  isHeuristicDrugRecommendation,
   usesHeuristicStrategyReviewShape,
   usesInsightOnlyCopayCorrectionShape,
 } from "./billingReportFields";
@@ -66,27 +65,6 @@ describe("billingReportFields honest gaps", () => {
         { catalog_as_of_date: "2024-02-01", claim_id: "C" },
       ]),
     ).toBe("2024-01-15, 2024-02-01");
-  });
-
-  it("detects heuristic drug recommendations", () => {
-    expect(
-      isHeuristicDrugRecommendation({
-        drug_name: "X",
-        issue: "generic_available",
-        alternative: "Y",
-        savings_try: null,
-        savings_basis: "heuristic",
-      }),
-    ).toBe(true);
-    expect(
-      isHeuristicDrugRecommendation({
-        drug_name: "X",
-        issue: "discount_tier_applied",
-        alternative: "X",
-        savings_try: 12,
-        savings_basis: "claim_line",
-      }),
-    ).toBe(false);
   });
 
   it("detects compliance violation rows", () => {
