@@ -38,6 +38,9 @@
 | ID | Issue | Status |
 |----|-------|--------|
 | **P0.1** | `as_of_date` unwired in payment method + catalog | **Done** — temporal `catalog_membership`; claim dates in `claim_strategy` |
+| **P0.1** | Prose-locked EK-2/C codes | **Done** — `ek2c_prose_drg_locked_seed.py` + `procedure_prose_drg_locked()` |
+| **P0.1** | Jan/Jul MEDULA tercih dönemi | **OUT_OF_SCOPE** — admin preference; closed 2026-06-04 |
+| **P0.2** | EK-2/B-only multi-procedure §2.2.2.A(5) | **Done** — verified 2026-06-04 |
 | **L3.4-ui** | Provisional strategy badges | **Done** — catalog-as-of footnote on claim-level rows |
 | **L3.2** | Heuristic drug savings / doc drift | **Done** — `savings_basis: heuristic`; UI chip + `algorithms_reference` |
 
@@ -102,13 +105,22 @@
 
 ---
 
+## Quick wins (2026-06-04) — Done
+
+| ID | Issue | Status |
+|----|-------|--------|
+| **P0.1-tercih** | Jan/Jul MEDULA tercih dönemi | **OUT_OF_SCOPE** — administrative MEDULA preference; not §2.2 package vs itemized logic |
+| **P0.1-prose-lock** | Prose-mandated EK-2/C package codes | **Done** — `ek2c_prose_drg_locked_codes.json` (51); `procedure_prose_drg_locked()` |
+| **P0.2-ek2b-only** | EK-2/B-only multi-procedure sessions | **Done** — verified COMPLIANT; `test_ek2b_only_multi_procedure_uses_itemized_a5` |
+
+---
+
 ## P2 — Document gaps
 
 | ID | Issue | Target |
 |----|-------|--------|
 | L3.1-hemo | §2.2.2.B session fractions | Document PARTIAL; defer full engine |
-| P0.1 | Jan/Jul MEDULA preference window | Document as admin / P2 |
-| P0.2 | 2.2.2.A(5) fallback, specialty +25 | P2 session engine |
+| ~~P0.2~~ | ~~Specialty +25 auto-detect~~ | **Done** — `session_specialty.py` (2026-06-04) |
 
 ---
 

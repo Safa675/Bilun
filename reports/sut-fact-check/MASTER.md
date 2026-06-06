@@ -1,8 +1,9 @@
 # SUT Algorithm Fact-Check — Master Report
 
 **Status:** Phase 3 complete — **28/28 reports**  
-**Last updated:** 2026-06-02 (L1.4 tail: 23 rules, 0 Gate B deferred, KDV + allow-list)  
-**Next:** L1.4 corpus CSV batches + tier wiring; doc-only deferrals (session fractions, MEDULA preference window)
+**Last updated:** 2026-06-04 (P0.1/P0.2 quick-win backlog sync)  
+**Next:** L1.4 corpus CSV batches + tier wiring  
+**Fix waves applied:** P0/P1 (2026-06-02), Sprint A-D (2026-06-02), Phase 1 remainder (2026-06-02), Phase 2 + L1.4 tail (2026-06-02)
 
 ---
 
@@ -117,6 +118,25 @@ Detail: `medula_overlap_gaps.md`, materials: `docs/medula/material_bundling_medu
 
 ---
 
+## Post-Fix Summary (2026-06-03 sync)
+
+All 28 algorithm reports now include post-fix status lines and Post-Fix Updates sections documenting what was fixed and when. Key fix categories:
+
+| Category | Reports affected | What was fixed |
+|----------|-----------------|----------------|
+| **WRONG → FIXED** | P0.2, P0.3, L2.1, L3.1 | Primary selection, IVF copay, rule_source citations, unknown bucket |
+| **PARTIAL → FIXED** | P0.1, P0.4, L1.1, L1.2, L1.3, L2.2, L2.3, L2.4, L2.5, L2.6, L3.3, L3.4, L3.5, L3.6, L4.1, L4.2, L4.3 | Temporal wiring, code matching, unit tests, exemption gates, MIAT interval, per-visit pricing, cohort gating |
+| **HEURISTIC → LABELED** | P0.4, L3.2 | heuristic_savings_try + UI footnote; savings_basis: heuristic |
+| **COMPLIANT (verified)** | P0.5, P0.6, L2.5, L2.8, L4.1-core | No fixes needed; confirmed post-audit |
+| **Ongoing (P2)** | L1.4, L4.4 | Corpus tail + tier wiring; 84/84 traced, more corpus to encode |
+
+**Remaining open items (P2):**
+- L1.4: §3.1–3.2 corpus tail (hundreds of clauses), facility tier wiring, real ETL flag derivation
+- L3.5: MIAT vs MEDULA patient history (Category D)
+- L4.4: §3.1–3.2 prose bundling enforcement beyond EK-3B-1
+
+**Closed (2026-06-04 quick wins):** P0.1 prose-locked EK-2/C seed (51 codes); P0.1 Jan/Jul MEDULA tercih dönemi **OUT_OF_SCOPE**; P0.2 EK-2/B-only multi-procedure sessions (verified COMPLIANT); P0.2 specialty +25 auto-detect (`session_specialty.py` + claim strategy).
+
 ## Phase completion
 
 | Phase | Status |
@@ -126,6 +146,7 @@ Detail: `medula_overlap_gaps.md`, materials: `docs/medula/material_bundling_medu
 | 2 P1 reports | ✅ |
 | 3 P2/P3 reports | ✅ |
 | 5 P0 code fixes | ✅ |
+| Post-fix report sync | ✅ (2026-06-03) |
 | 4 Synthesis | ✅ (this document) |
 | Material P2 Phase 5 MEDULA | ✅ |
 | L1.4 Phase 6 synthetic prose flags | ✅ |
