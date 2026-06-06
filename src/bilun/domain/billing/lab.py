@@ -1,6 +1,6 @@
 """
 src/bilun/domain/billing/lab.py
-Algorithm 1: Lab billing optimizer with hemogram bundling + duplicate detection.
+Algorithm 1: Lab billing optimizer with hemogram bundling.
 """
 
 from __future__ import annotations
@@ -123,7 +123,7 @@ def _optimize_lab_billing(
     patient_lab_dates: list[str | None] | None = None,
     patient_lab_visit_ids: list[str | None] | None = None,
 ) -> LabOptimization:
-    """Algorithm 1: Normative lab billing with hemogram bundling + duplicate detection.
+    """Algorithm 1: Normative lab billing with hemogram bundling.
 
     Args:
         patient_id: Patient identifier.
@@ -145,7 +145,6 @@ def _optimize_lab_billing(
 
     hemogram_by_encounter: dict[str, int] = {}
     encounter_asof: dict[str, Any | None] = {}
-    test_counts_by_encounter: dict[tuple[str, str], int] = {}
     normative_total = 0.0
     flagged: list[dict[str, Any]] = []
 
@@ -178,15 +177,8 @@ def _optimize_lab_billing(
             )
             continue
 
-        count_key = (encounter_key, tn)
-        test_counts_by_encounter[count_key] = test_counts_by_encounter.get(count_key, 0) + 1
-
-        price, sut_code, display_name = _resolve_lab_test_price(
-            tn, visit_date=service_date
-        )
-
+        price, _, _ = _resolve_lab_test_price(tn, visit_date=service_date)
         normative_total += price
-        _ = display_name, sut_code
 
     total_hemogram_subtests = sum(hemogram_by_encounter.values())
     n_hemogram_encounters = len(hemogram_by_encounter)
@@ -223,29 +215,6 @@ def _optimize_lab_billing(
                 }
             )
 
-    for (encounter_key, tn), count in test_counts_by_encounter.items():
-        if count <= 1:
-            continue
-        asof = encounter_asof.get(encounter_key)
-        price, sut_code, display_name = _resolve_lab_test_price(tn, visit_date=asof)
-        encounter_label = encounter_key.removeprefix("visit:").removeprefix("date:")
-        flagged.append(
-            {
-                "test_name": display_name or tn,
-                "sut_code": sut_code,
-                "gazette_price": round(price, 2),
-                "flag_type": "clinical_review_duplicate",
-                "savings_try": None,
-                "review_kind": "clinical_utilization",
-                "detail": (
-                    f"Test ordered {count}x in encounter {encounter_label} "
-                    f"— clinical review: verify repeat necessity "
-                    f"(not a recoverable billing adjustment; MEDULA does not reject duplicate SUT codes)"
-                ),
-            }
-        )
-
-    result.duplicate_test_savings = 0.0
     result.normative_cost_try = round(normative_total, 2)
     result.flagged_tests = flagged
     return result

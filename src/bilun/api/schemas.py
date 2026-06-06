@@ -295,24 +295,19 @@ class BillingExactnessResponse(BaseModel):
 class LabOptimizationResponse(BillingExactnessResponse):
     normative_cost_try: float = 0.0
     hemogram_bundling_savings: float = 0.0
-    duplicate_test_savings: float = 0.0
     flagged_tests: list[dict[str, Any]] = Field(default_factory=list)
-
-
-class DrugOptimizationResponse(BillingExactnessResponse):
-    generic_substitution_savings: float = 0.0
-    n_generics_available: int = 0
-    passivated_drug_count: int = 0
-    drug_recommendations: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class CopayOptimizationResponse(BillingExactnessResponse):
     is_exempt: bool = False
     exemption_disease: str = ""
     exemption_range: str = ""
+    savings_beneficiary: str = "patient_and_sgk"
+    gap_kind: str = "exemption_correction"
     visit_copay_savings_try: float = 0.0
     rx_copay_savings_try: float = 0.0
     total_copay_savings_try: float = 0.0
+    patient_copay_waived_total_try: float = 0.0
     rate_corrections: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -380,7 +375,6 @@ class BillingReportResponse(BaseModel):
 
     patient_id: str | None = None
     lab: LabOptimizationResponse = Field(default_factory=LabOptimizationResponse)
-    drug: DrugOptimizationResponse = Field(default_factory=DrugOptimizationResponse)
     copay: CopayOptimizationResponse = Field(default_factory=CopayOptimizationResponse)
     billing_strategy: BillingStrategyResponse = Field(
         default_factory=BillingStrategyResponse

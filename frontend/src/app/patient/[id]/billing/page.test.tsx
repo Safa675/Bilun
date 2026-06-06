@@ -100,15 +100,7 @@ const baseReport: BillingActionReport = {
     exactness_status: "exact",
     normative_cost_try: 0,
     hemogram_bundling_savings: 0,
-    duplicate_test_savings: 0,
     flagged_tests: [],
-  },
-  drug: {
-    exactness_status: "exact",
-    generic_substitution_savings: 0,
-    n_generics_available: 0,
-    passivated_drug_count: 0,
-    drug_recommendations: [],
   },
   copay: {
     exactness_status: "exact",

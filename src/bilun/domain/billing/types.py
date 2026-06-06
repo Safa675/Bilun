@@ -14,16 +14,6 @@ EXACTNESS_STATUS_EXACT = "exact"
 EXACTNESS_STATUS_PARTIAL = "partial_exact"
 EXACTNESS_STATUS_MISSING_INPUTS = "missing_exact_inputs"
 
-DRUG_REQUIRED_INPUTS = (
-    "dispensed_drug_claim_lines",
-    "drug_claim_dates",
-    "billed_drug_amounts",
-)
-DRUG_UNAVAILABLE_REASON = (
-    "Drug optimization savings remain estimate-based until exact dispensed drug "
-    "claim lines and billed drug amounts are available in the active SUT "
-    "runtime inputs."
-)
 COPAY_REQUIRED_INPUTS = (
     "billed_procedure_codes",
     "procedure_claim_dates",
@@ -60,51 +50,42 @@ class LabOptimization:
 
     normative_cost_try: float = 0.0
     hemogram_bundling_savings: float = 0.0
-    duplicate_test_savings: float = 0.0
     flagged_tests: list[dict[str, Any]] = field(default_factory=list)
     exactness_status: str = EXACTNESS_STATUS_EXACT
     unavailable_reason: str | None = None
     required_inputs_missing: list[str] = field(default_factory=list)
-    rule_source: str = (
-        "EK-2B L107020 hemogram bundling; duplicate repeats are clinical utilization review only"
-    )
+    rule_source: str = "EK-2B L107020 hemogram bundling"
 
     @property
     def total_savings(self) -> float:
-        """Recoverable TRY — hemogram bundling only (duplicates are non-monetary review)."""
+        """Recoverable TRY from hemogram (CBC) bundling."""
         return self.hemogram_bundling_savings
 
 
-@dataclass
-class DrugOptimization:
-    """Drug cost optimization analysis for a single patient."""
+COPAY_SAVINGS_BENEFICIARY_PATIENT_AND_SGK = "patient_and_sgk"
+"""Exemption gap: patient katılım waiver + SGK payable correction when flag was missing."""
 
-    generic_substitution_savings: float = 0.0
-    n_generics_available: int = 0
-    passivated_drug_count: int = 0
-    drug_recommendations: list[dict[str, Any]] = field(default_factory=list)
-    exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
-    unavailable_reason: str | None = DRUG_UNAVAILABLE_REASON
-    required_inputs_missing: list[str] = field(
-        default_factory=lambda: list(DRUG_REQUIRED_INPUTS)
-    )
-    rule_source: str = "EK-4A drug equivalence groups and discount tiers"
-
-    @property
-    def total_savings(self) -> float:
-        return self.generic_substitution_savings
+COPAY_GAP_KIND_EXEMPTION_CORRECTION = "exemption_correction"
 
 
 @dataclass
 class CopayOptimization:
-    """Copayment optimization analysis for a single patient."""
+    """Copayment exemption review for a single patient.
+
+    Monetary fields measure the **exemption gap** (billed − payable on claim lines)
+    when exemption may apply: corrects patient katılım payı and SGK payable if
+    ``katilimPayindanMuaf`` was missing in MEDULA — compliance correction, not repricing.
+    """
 
     is_exempt: bool = False
     exemption_disease: str = ""
     exemption_range: str = ""
-    visit_copay_savings_try: float = 0.0
-    rx_copay_savings_try: float = 0.0
-    total_copay_savings_try: float = 0.0  # procedure/visit copay only; rx tracked separately
+    savings_beneficiary: str = COPAY_SAVINGS_BENEFICIARY_PATIENT_AND_SGK
+    gap_kind: str = COPAY_GAP_KIND_EXEMPTION_CORRECTION
+    visit_copay_savings_try: float = 0.0  # procedure-line exemption gap (legacy name)
+    rx_copay_savings_try: float = 0.0  # prescription exemption gap (legacy name)
+    total_copay_savings_try: float = 0.0  # procedure gap only (legacy field name)
+    patient_copay_waived_total_try: float = 0.0  # total exemption gap (visit + rx)
     rate_corrections: list[dict[str, Any]] = field(default_factory=list)
     exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
     unavailable_reason: str | None = COPAY_UNAVAILABLE_REASON
@@ -163,7 +144,6 @@ class BillingActionReport:
 
     patient_id: str = ""
     lab: LabOptimization = field(default_factory=LabOptimization)
-    drug: DrugOptimization = field(default_factory=DrugOptimization)
     copay: CopayOptimization = field(default_factory=CopayOptimization)
     billing_strategy: BillingStrategyRecommendation = field(
         default_factory=BillingStrategyRecommendation
@@ -183,7 +163,6 @@ class CohortRecoverySummary:
 
     n_patients: int = 0
     total_lab_savings: float = 0.0
-    total_drug_savings: float = 0.0
     total_copay_savings: float = 0.0
     total_strategy_savings: float = 0.0
     total_material_flags: int = 0

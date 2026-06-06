@@ -352,9 +352,9 @@ grep -r "EK-" docs/core-system/algorithms_reference.md
 
 | ID | Issue | Target verdict / fix |
 |----|-------|---------------------|
-| L3.1-dup | Duplicate test cites "EK-2B duplicate test rules" — no general one-test-per-encounter clause | **HEURISTIC** — label "Clinical Review — verify repeat necessity"; `savings_try: null`; remove false citation |
-| L3.1-dup | MEDULA only rejects duplicate `hizmetSunucuRefNo`, not duplicate SUT codes | **MEDULA_DUPLICATE** for billing recovery; keep flag for utilization review |
-| L3.1-dup | Encounter key falls back to `"unknown"` → cross-date false positives | **WRONG** (implementation) — fix encounter grouping |
+| L3.1-dup | Duplicate test cites "EK-2B duplicate test rules" — no general one-test-per-encounter clause | **REMOVED** — feature deleted; no SUT basis for duplicate test recovery; MEDULA does not reject duplicate SUT codes |
+| L3.1-dup | MEDULA only rejects duplicate `hizmetSunucuRefNo`, not duplicate SUT codes | **REMOVED** — confirmed no billing recovery path; not just heuristic, fundamentally non-actionable for billing officers |
+| L3.1-dup | Encounter key falls back to `"unknown"` → cross-date false positives | **Moot** — feature removed; hemogram bundling uses same encounter logic and is correct |
 | L3.4 | Pre-Phase-4 price comparison for package vs itemized | **WRONG — fixed**; verify no residual paths + provisional UI still matches Gate C |
 | L3.1-hemo | Hemogram L107020 bundling | **COMPLIANT** core; **PARTIAL** gap for §2.2.2.B session-fraction (P2 enhancement, document unimplemented `2.2.2.B.a/b/c/ç`) |
 | L2.6 vs L3.4 | Cohort unbundling vs per-patient strategy may disagree | **PARTIAL** — align on `prose_rules` |
@@ -433,7 +433,7 @@ Detailed fix plan: `plans/billing/algorithm-sut-fix-wave.md` (create after Phase
 
 | # | Question | Decision |
 |---|----------|----------|
-| 1 | Duplicate tests | **Keep** as HEURISTIC clinical utilization review. MEDULA handles billable idempotency (`hizmetSunucuRefNo`). Flag repeats; **`savings_try: null`**; UI: "Clinical Review — verify repeat necessity". Billing officers cannot act; clinical directors can. |
+| 1 | Duplicate tests | **Removed entirely** (2026-06-06). Confirmed MEDULA does not reject duplicate SUT codes; no recoverable TRY; billing officers cannot act. Hemogram bundling (L107020) remains as the only lab optimization feature. |
 | 2 | Hemogram | **L107020-only** for fact-check wave. §2.2.2.B session-fraction engine is **P2 enhancement**; document gap in L3.1 report as PARTIAL with unimplemented section IDs. |
 | 3 | Report format | **Markdown only** in repo. MASTER.md + FIX_BACKLOG.md for non-technical summaries. No PDF. |
 | 4 | Fix authority | **Fix immediately** when verdict is WRONG or UNSOURCED. Wrong TRY to hospitals is legal risk; no product sign-off gate. |

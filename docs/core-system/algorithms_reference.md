@@ -175,42 +175,28 @@ There is a critical runtime concept: **exactness.** Each rule engine declares wh
 2. For each claim flagged as a package candidate:
    - **Bundled-line violations:** Identifies procedure lines marked `is_package_included` that were billed separately with a positive billed amount. These are services that the package price already covers. Savings = billed amount - expected payable.
    - **Package vs itemized comparison:** Computes the total expected payable if billed itemized vs. if billed as a package. If itemized > package, the hospital is losing money by staying itemized. If package > itemized, the hospital is over-billing and at audit risk.
-3. **Same-session point factors (§2.2.2.B / §2.2.2.A(5)):** Flags secondary procedures billed above allowed fractions (25%/50% for EK-2/C-only sessions; 30%/50% for EK-2/B itemized; mixed-session fallback to A(5) when EK-2/B has highest puan). Optional `cross_specialty` adds +25 percentage points to secondary factors when callers supply it.
+3. **Same-session point factors (§2.2.2.B / §2.2.2.A(5)):** Flags secondary procedures billed above allowed fractions (25%/50% for EK-2/C-only sessions; 30%/50% for EK-2/B itemized; mixed-session fallback to A(5) when EK-2/B has highest puan). `cross_specialty` adds +25 percentage points to secondary factors; billing strategy auto-detects different specialties per session from `procedure_specialty_code` and EK-2/C (or EK-2/B) catalog `group` (`session_specialty.py`).
 4. Aggregates findings by ICD-10 chapter; `patient_icd10_chapters` from diagnoses union claim chapters for `n_chapters_analyzed`.
 5. Returns per-patient: unbundling risk, sourced vs heuristic savings split, and chapter breakdown.
 
 **Business meaning:** DRG packages are the SUT's way of controlling costs. The hospital gets a fixed payment for everything related to a diagnosis episode — no matter how many individual services were performed. If the hospital itemizes things that should be in the package, SGK rejects the extra lines. If the hospital uses the package when individual billing would pay more, they're losing revenue. This algorithm tells hospitals which direction to go.
 
-### 2.6 Drug Discount Validation (EK-4A)
-
-**Gazette anchor:** EK-4A — drug reimbursement catalog with discount tier bands.
-
-**What it does:** Validates that drug claim lines reflect the correct SGK discount tiers and computes the correct payable amounts.
-
-**How it works:**
-1. Requires exact drug claim lines (dispensed drug codes, billed amounts, expected discount tiers, expected payable amounts).
-2. For each drug line: verifies that `expected_payable = billed_amount × (1 - discount_tier_expected)`. Flags lines where the difference exceeds 0.02 TRY as mismatches.
-3. Computes tier distribution: what percentage of drugs fall in each discount band (e.g., 10%, 20%, 28%, 41%, 54%).
-4. Tracks total discount savings (billed - payable) and mean discount tier across the cohort.
-5. Samples up to 10 drugs with their tier details for inspection.
-
-**Business meaning:** SGK applies mandatory discounts to drugs based on their EK-4A classification. If the pharmacy or billing system applies the wrong tier, the hospital either under-recovers (discount too high) or faces audit risk (discount too low). This validation catches systematic tier errors.
-
-### 2.7 Cohort Aggregator (`compute_optimization_summary`)
+### 2.6 Cohort Aggregator (`compute_optimization_summary`)
 
 **Entry point:** `optimization/aggregator.py`
 
-Runs all 6 features across a patient cohort in a single pass and produces a unified optimization summary:
+Runs all 5 features across a patient cohort in a single pass and produces a unified optimization summary:
 - **Copay exemptions:** Exemption rate, top diseases triggering exemptions.
 - **Surcharge exposure:** Total EK-2G procedures, surcharge application rate, patients with flags.
 - **Copay rate exposure:** Total EK-2C-1 procedures, procedure rate distribution, mean rate.
 - **Temporal prices:** Full EK-2B/2C price change audit (cached).
 - **DRG unbundling:** Patients with risk, total potential savings, riskiest ICD-10 chapters.
-- **Drug discounts:** Tier distribution, tier mismatch count, sample drugs.
+
+**Note:** EK-4A remains a catalog reference (`materials/drugs.py`, `/api/drugs`). Drug copay rules live in §1.8 + EK-4/D on claim lines — not a separate optimizer.
 
 ---
 
-## Layer 3: Billing Optimization Algorithms (5 Algorithms)
+## Layer 3: Billing Optimization Algorithms (4 Algorithms)
 
 These algorithms produce actionable, per-patient recommendations. They answer: **What should this specific hospital do differently for this specific patient?**
 
@@ -219,61 +205,30 @@ They run on the billing pipeline and feed into the revenue recovery dashboard.
 ### Architecture
 
 ```
-patient data (labs, drugs, diagnoses, claim lines) → 5 parallel algorithms → BillingActionReport → CohortRecoverySummary
+patient data (labs, diagnoses, claim lines) → 4 parallel algorithms → BillingActionReport → CohortRecoverySummary
 ```
 
 The orchestrator also assigns a **priority** (high/medium/low) to each patient based on their total recoverable amount relative to the cohort's P50 and P75 percentiles. Patients above P75 get "high" priority.
 
 ### 3.1 Algorithm 1: Lab Billing Optimizer
 
-**What it does:** Finds over-billing in lab tests through two mechanisms — hemogram bundling and duplicate test detection.
+**What it does:** Finds over-billing in lab tests through hemogram (CBC) bundling.
 
 **How it works:**
 
 **Hemogram (CBC) bundling:**
 1. The SUT gazette defines a complete blood count (hemogram) as a single billable code (L107020) regardless of how many sub-components are reported (hemoglobin, WBC, RBC, platelets, hematocrit, MCV, etc.).
 2. The algorithm maintains a set of 13 known CBC sub-component test names (`HEMOGRAM_TESTS`).
-3. It scans a patient's lab tests grouped by date. If multiple CBC sub-components appear on the same date, only one hemogram is reimbursable.
-4. The bundling savings = (total sub-components across all dates - number of dates with any sub-component) × hemogram gazette price.
-5. If the hospital billed each sub-component separately, the savings are flagged with the exact math: "X CBC subtests across Y dates should be billed as Y hemograms."
+3. It scans a patient's lab tests grouped by encounter (visit_id preferred, date fallback). If multiple CBC sub-components appear in the same encounter, only one hemogram is reimbursable.
+4. The bundling savings = (total sub-components across all encounters - number of encounters with any sub-component) × hemogram gazette price.
+5. If the hospital billed each sub-component separately, the savings are flagged with the exact math: "X CBC subtests across Y encounter(s) should be billed as Y hemograms."
 
-**Duplicate test detection:**
-1. For non-hemogram tests, the algorithm counts how many times each test appears for a given patient.
-2. SUT rules typically allow one billing per test per encounter. Duplicates beyond the first are non-reimbursable.
-3. Duplicate savings = test price × (count - 1) for each duplicated test.
-4. The algorithm resolves each test name to its exact SUT gazette price using a lookup cascade: if the test name is an L-code, it uses the 3-tier procedure code lookup; otherwise it checks a pre-built gazette price dictionary, falling back to a default price.
+**Non-hemogram tests:**
+The algorithm resolves each test name to its exact SUT gazette price using a lookup cascade: if the test name is an L-code, it uses the 3-tier procedure code lookup; otherwise it checks a pre-built gazette price dictionary, falling back to a default price. These contribute to the normative cost baseline but do not generate individual flags.
 
-**Output:** `LabOptimization` with normative cost (what the hospital should have billed), hemogram bundling savings, duplicate test savings, and a list of specific flagged tests with SUT codes and savings amounts.
+**Output:** `LabOptimization` with normative cost (what the hospital should have billed), hemogram bundling savings, and a list of specific flagged hemogram bundle tests with SUT codes and savings amounts.
 
-### 3.2 Algorithm 2: Drug Cost Optimizer
-
-**What it does:** Identifies cheaper generic alternatives for prescribed drugs and detects passivated (discontinued) drugs.
-
-**How it works:**
-
-**Equivalence group indexing:**
-1. Loads the EK-4A drug catalog and indexes all active drugs by their equivalence group — a gazette-defined grouping of therapeutically equivalent drugs.
-2. Filters out passivated drugs (drugs with a `passivation_date` — meaning SGK no longer reimburses them).
-
-**Generic substitution:**
-1. For each drug prescribed to the patient, looks up its EK-4A record.
-2. If the drug's equivalence group has other active members, checks if any are cheaper. Two criteria qualify an alternative as cheaper:
-   - **Status "ESDEGER":** The alternative is classified as a generic equivalent while the current drug isn't.
-   - **Higher discount tier:** The alternative's discount_tier_1 is more than 5 percentage points higher than the current drug's (meaning SGK covers more of it).
-3. Does **not** assert TRY savings on heuristic rows (`savings_try: null`, `savings_basis: heuristic`). Section total stays `0` until exact claim lines exist.
-
-**Passivation detection:**
-1. If a drug has a non-empty `passivation_date`, it's flagged. The algorithm searches the same equivalence group for active alternatives.
-2. The passivated count is tallied but carries no direct savings — it's a compliance alert (`savings_try: null`).
-
-**Exact mode (when claim lines are available):**
-1. Merges heuristic catalog insights (still without TRY on generic/passivated rows).
-2. Per claim line: when `billed − payable > 0`, emits `discount_tier_applied` with numeric `savings_try` (`savings_basis: claim_line`).
-3. Section total `generic_substitution_savings` = max(0, sum of claim-line discount); excluded from cohort totals when `exactness_status` is not `exact`.
-
-**Output:** `DrugOptimization` with claim-line savings total when exact, heuristic recommendations without fabricated TRY otherwise, plus counts for generics available and passivated drugs.
-
-### 3.3 Algorithm 3: Copay Savings Calculator
+### 3.2 Algorithm 2: Copay Savings Calculator
 
 **What it does:** Computes the actual copayment savings achievable if an EK-1A-exempt patient's copays are correctly waived.
 
@@ -294,7 +249,7 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
 
 **Output:** `CopayOptimization` with exemption status, exemption disease/range, visit copay savings, drug copay savings, total copay savings, and procedure-level rate corrections.
 
-### 3.4 Algorithm 4: Package vs. Itemized Billing Strategy
+### 3.3 Algorithm 3: Package vs. Itemized Billing Strategy
 
 **What it does:** Determines the **legally mandated** payment method (DRG package vs. itemized fee-for-service) for each claim per SUT §2.2, using EK-2/B and EK-2/C catalog membership, facility tier, and EK-2/C star markers. Savings are **corrective** (wrong method today) or **optional** (tier-3 §2.2.2(2) override only) — never pure price minimization.
 
@@ -320,7 +275,7 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
 
 **Output:** `BillingStrategyRecommendation` with per-claim fields: `recommendation`, `recommendation_kind`, `payment_method_kind`, `sut_section_id`, `rule_id`, both totals, corrective/override `savings_try`, and `current_billing`.
 
-### 3.5 Algorithm 5: Material Reimbursability Pre-Check
+### 3.4 Algorithm 4: Material Reimbursability Pre-Check
 
 **What it does:** Flags material reimbursement risks based on the patient's diagnosis profile, including pre-authorization requirements and minimum interval restrictions.
 

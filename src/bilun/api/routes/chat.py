@@ -100,7 +100,6 @@ def _summarize_optimization(payload: dict[str, Any]) -> dict[str, Any]:
     surcharge = payload.get("surcharge_exposure", {})
     copay_rate = payload.get("copay_rate_exposure", {})
     drg = payload.get("drg_unbundling", {})
-    drugs = payload.get("drug_discount_validation", {})
     return {
         "copay_exemptions": {
             "n_exempt_patients": copay.get("n_exempt_patients"),
@@ -121,11 +120,6 @@ def _summarize_optimization(payload: dict[str, Any]) -> dict[str, Any]:
             "exactness_status": drg.get("exactness_status"),
             "unavailable_reason": drg.get("unavailable_reason"),
             "required_inputs_missing": drg.get("required_inputs_missing"),
-        },
-        "drug_discount_validation": {
-            "exactness_status": drugs.get("exactness_status"),
-            "unavailable_reason": drugs.get("unavailable_reason"),
-            "required_inputs_missing": drugs.get("required_inputs_missing"),
         },
     }
 
@@ -186,7 +180,6 @@ def _summarize_patient_optimization(payload: dict[str, Any]) -> dict[str, Any]:
 
 def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
     lab = payload.get("lab", {}) or {}
-    drug = payload.get("drug", {}) or {}
     copay = payload.get("copay", {}) or {}
     strategy = payload.get("billing_strategy", {}) or {}
     materials = payload.get("materials", {}) or {}
@@ -196,18 +189,9 @@ def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
         "lab": {
             "exactness_status": lab.get("exactness_status"),
             "hemogram_bundling_savings": lab.get("hemogram_bundling_savings"),
-            "duplicate_test_savings": lab.get("duplicate_test_savings"),
             "total_savings": lab.get("total_savings"),
             "flagged_tests": (lab.get("flagged_tests") or [])[:summary_cap],
-            "rule_source": lab.get("rule_source", "EK-2B hemogram bundling, duplicate test rules"),
-        },
-        "drug": {
-            "exactness_status": drug.get("exactness_status"),
-            "n_generics_available": drug.get("n_generics_available"),
-            "passivated_drug_count": drug.get("passivated_drug_count"),
-            "generic_substitution_savings": drug.get("generic_substitution_savings"),
-            "drug_recommendations": (drug.get("drug_recommendations") or [])[:summary_cap],
-            "rule_source": drug.get("rule_source", "EK-4A drug equivalence groups"),
+            "rule_source": lab.get("rule_source", "EK-2B L107020 hemogram bundling"),
         },
         "copay": {
             "exactness_status": copay.get("exactness_status"),

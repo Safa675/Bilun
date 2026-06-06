@@ -166,14 +166,6 @@ def build_cohort_context(data: dict[str, Any]) -> str:
             f"[exactness: {drg_exactness or 'missing_exact_inputs'}]"
         )
 
-    drugs = opt.get("drug_discount_validation", {}) or {}
-    drug_exactness = drugs.get("exactness_status")
-    if drug_exactness != "exact":
-        lines.append(
-            f"  Drug discount validation: UNAVAILABLE "
-            f"[exactness: {drug_exactness or 'missing_exact_inputs'}]"
-        )
-
     temporal = opt.get("temporal_price_validation", {}) or {}
     if temporal.get("n_codes_with_changes"):
         lines.append("\n--- TEMPORAL PRICE AUDIT ---")
@@ -370,17 +362,6 @@ def _format_strategy_line(row: dict[str, Any]) -> str:
     return f"{primary}: {mode}{savings_text}"
 
 
-def _format_drug_recommendation_line(row: dict[str, Any]) -> str:
-    drug_name = (row.get("drug_name") or "?").strip()
-    issue = (row.get("issue") or row.get("action") or "finding").strip()
-    savings = row.get("savings_try")
-    alt = (row.get("alternative") or "").strip()
-    savings_text = f" ({float(savings):.2f} TRY)" if isinstance(savings, (int, float)) else ""
-    if alt:
-        return f"{drug_name}: {issue} → {alt}{savings_text}"
-    return f"{drug_name}: {issue}{savings_text}"
-
-
 def _append_list_lines(
     lines: list[str],
     header: str,
@@ -410,7 +391,7 @@ def _append_billing_sections(
     *,
     detail_level: BillingDetailLevel,
 ) -> None:
-    """Append lab/drug/copay/strategy/materials blocks for summary or full detail."""
+    """Append lab/copay/strategy/materials blocks for summary or full detail."""
     list_cap = _billing_list_cap(detail_level)
     is_full = detail_level == "full"
 
@@ -433,18 +414,6 @@ def _append_billing_sections(
         hemogram = lab.get("hemogram_bundling_savings")
         if hemogram is not None:
             lines.append(f"    Hemogram bundling savings: {hemogram:.2f} TRY")
-        dup = lab.get("duplicate_test_savings")
-        if dup:
-            lines.append(f"    Duplicate test savings: {dup:.2f} TRY")
-        clinical_dupes = sum(
-            1
-            for row in lab.get("flagged_tests") or []
-            if row.get("flag_type") == "clinical_review_duplicate"
-        )
-        if clinical_dupes:
-            lines.append(
-                f"    Clinical review flags (repeat tests, non-monetary): {clinical_dupes}"
-            )
         total = lab.get("total_savings")
         if total is None:
             total = hemogram or 0
@@ -470,32 +439,6 @@ def _append_billing_sections(
             if lab_exactness:
                 lines.append(f"    [exactness: {lab_exactness}]")
 
-    drug = report.get("drug", {}) or report.get("drug_optimization", {}) or {}
-    if drug:
-        drug_exactness = drug.get("exactness_status", "unknown")
-        lines.append(f"\n  Drug optimization [exactness: {drug_exactness}]")
-        drug_source = drug.get("rule_source", "")
-        if is_full and drug_source:
-            lines.append(f"    Source: {drug_source}")
-        generics = drug.get("n_generics_available")
-        if generics is not None:
-            lines.append(f"    Generics available: {generics}")
-        passivated = drug.get("passivated_drug_count")
-        if passivated is not None and passivated > 0:
-            lines.append(f"    Passivated drugs: {passivated}")
-        sub = drug.get("generic_substitution_savings")
-        if sub is not None and sub > 0:
-            lines.append(f"    Substitution savings: {sub:.2f} TRY")
-        if drug.get("drug_recommendations"):
-            _append_list_lines(
-                lines,
-                "Drug recommendations",
-                drug["drug_recommendations"],
-                formatter=_format_drug_recommendation_line,
-                max_items=list_cap,
-                exactness=drug_exactness if is_full else None,
-            )
-
     copay = report.get("copay", {}) or report.get("copay_optimization", {}) or {}
     if copay:
         copay_exactness = copay.get("exactness_status", "unknown")
@@ -513,14 +456,23 @@ def _append_billing_sections(
         if is_full:
             visit = copay.get("visit_copay_savings_try")
             if visit is not None and visit > 0:
-                lines.append(f"    Visit copay savings: {visit:.2f} TRY")
+                lines.append(f"    Procedure exemption gap: {visit:.2f} TRY")
             rx = copay.get("rx_copay_savings_try")
             if rx is not None and rx > 0:
-                lines.append(f"    Rx copay savings: {rx:.2f} TRY")
-        total_copay = copay.get("total_copay_savings_try")
-        if total_copay is not None:
-            label = "Total copay savings" if is_full else "Copay savings"
-            lines.append(f"    {label}: {total_copay:.2f} TRY")
+                lines.append(f"    Prescription exemption gap: {rx:.2f} TRY")
+        total_gap = copay.get("patient_copay_waived_total_try")
+        if total_gap is None:
+            visit_val = float(copay.get("visit_copay_savings_try") or 0)
+            rx_val = float(copay.get("rx_copay_savings_try") or 0)
+            total_gap = visit_val + rx_val
+        if total_gap is not None and float(total_gap) > 0:
+            label = "Total exemption gap" if is_full else "Exemption gap"
+            lines.append(f"    {label}: {float(total_gap):.2f} TRY")
+            if is_full:
+                lines.append(
+                    "    (Corrective: raises SGK payable and waives patient copay when "
+                    "katilimPayindanMuaf=E is set before invoice.)"
+                )
         if copay.get("rate_corrections"):
             _append_list_lines(
                 lines,

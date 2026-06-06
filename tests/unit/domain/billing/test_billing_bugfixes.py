@@ -10,36 +10,7 @@ import pytest
 pytestmark = pytest.mark.unit
 
 
-def test_lab_duplicate_detection_groups_by_visit_not_patient_history() -> None:
-    from src.bilun.domain.billing.lab import _optimize_lab_billing
-
-    tests = ["glucose", "glucose", "glucose", "glucose"]
-    visit_ids = ["V1", "V2", "V3", "V4"]
-
-    result = _optimize_lab_billing(
-        "P1",
-        tests,
-        patient_lab_visit_ids=visit_ids,
-    )
-
-    assert result.duplicate_test_savings == 0.0
-    assert not any(flag["flag_type"] == "duplicate_test" for flag in result.flagged_tests)
-
-
-def test_lab_duplicate_detection_without_visit_ids_skips_duplicate_review() -> None:
-    from src.bilun.domain.billing.lab import _optimize_lab_billing
-
-    tests = ["glucose", "glucose", "glucose", "glucose"]
-
-    result = _optimize_lab_billing("P1", tests)
-
-    assert result.duplicate_test_savings == 0.0
-    assert not any(
-        flag["flag_type"] == "clinical_review_duplicate" for flag in result.flagged_tests
-    )
-
-
-def test_lab_duplicate_detection_flags_within_same_visit() -> None:
+def test_lab_no_duplicate_flags_generated() -> None:
     from src.bilun.domain.billing.lab import _optimize_lab_billing
 
     tests = ["glucose", "glucose", "glucose"]
@@ -51,14 +22,9 @@ def test_lab_duplicate_detection_flags_within_same_visit() -> None:
         patient_lab_visit_ids=visit_ids,
     )
 
-    assert result.duplicate_test_savings == 0.0
-    dup_flags = [
-        flag for flag in result.flagged_tests if flag["flag_type"] == "clinical_review_duplicate"
-    ]
-    assert len(dup_flags) == 1
-    assert dup_flags[0]["savings_try"] is None
-    assert "encounter V1" in dup_flags[0]["detail"]
-    assert "clinical review" in dup_flags[0]["detail"].lower()
+    assert not any(
+        flag["flag_type"] == "clinical_review_duplicate" for flag in result.flagged_tests
+    )
 
 
 def test_lab_hemogram_bundling_groups_by_visit_id() -> None:
@@ -120,29 +86,9 @@ def test_copay_total_excludes_rx_component() -> None:
     assert result.visit_copay_savings_try == 20.0
     assert result.rx_copay_savings_try == 10.0
     assert result.total_copay_savings_try == 20.0
-
-
-def test_exempt_drug_claims_exclude_copay_waiver_from_tier_savings() -> None:
-    from src.bilun.domain.billing.drug_claims import optimize_drug_from_claims
-
-    ctx = SimpleNamespace(
-        patient_id="P1",
-        drug_lines=[
-            SimpleNamespace(
-                drug_name="Drug A",
-                drug_code="D001",
-                drug_claim_line_id="DL1",
-                billed_amount_try=Decimal("100"),
-                expected_payable_try=Decimal("80"),
-                discount_tier_expected=Decimal("0.20"),
-            )
-        ],
-    )
-
-    result = optimize_drug_from_claims(ctx, is_exempt=True)
-
-    assert result.generic_substitution_savings == 0.0
-    assert not any(rec.get("issue") == "discount_tier_applied" for rec in result.drug_recommendations)
+    assert result.patient_copay_waived_total_try == 30.0
+    assert result.savings_beneficiary == "patient_and_sgk"
+    assert result.gap_kind == "exemption_correction"
 
 
 def test_orchestrator_recoverable_total_counts_rx_once_with_visit_copay(monkeypatch) -> None:
@@ -154,16 +100,6 @@ def test_orchestrator_recoverable_total_counts_rx_once_with_visit_copay(monkeypa
         lambda *_args, **_kwargs: SimpleNamespace(
             total_savings=0.0,
             flagged_tests=[],
-            exactness_status="exact",
-            required_inputs_missing=[],
-        ),
-    )
-    monkeypatch.setattr(
-        billing_mod,
-        "optimize_drug_from_claims",
-        lambda *_args, **_kwargs: SimpleNamespace(
-            total_savings=0.0,
-            drug_recommendations=[],
             exactness_status="exact",
             required_inputs_missing=[],
         ),
@@ -204,4 +140,5 @@ def test_orchestrator_recoverable_total_counts_rx_once_with_visit_copay(monkeypa
 
     report = billing_mod.compute_patient_billing_report("P1", chapters={"I"})
 
-    assert report.total_recoverable_try == 30.0
+    assert report.total_recoverable_try == 0.0
+    assert report.copay.patient_copay_waived_total_try == 30.0

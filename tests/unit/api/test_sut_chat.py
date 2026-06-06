@@ -33,7 +33,6 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
             },
             "copay_rate_exposure": {"exactness_status": "missing_exact_inputs"},
             "drg_unbundling": {"exactness_status": "missing_exact_inputs"},
-            "drug_discount_validation": {"exactness_status": "missing_exact_inputs"},
         },
     )
     monkeypatch.setattr(
@@ -110,7 +109,6 @@ def test_sut_chat_user_question_uses_summarized_billing_context(monkeypatch):
                 for i in range(8)
             ],
         },
-        "drug": {"exactness_status": "missing_exact_inputs"},
         "copay": {"exactness_status": "missing_exact_inputs"},
         "billing_strategy": {"exactness_status": "exact"},
         "materials": {"exactness_status": "partial_exact"},
@@ -237,14 +235,12 @@ def test_sut_chat_auto_brief_uses_summarized_billing(monkeypatch):
         "lab": {
             "exactness_status": "exact",
             "hemogram_bundling_savings": 10.0,
-            "duplicate_test_savings": 5.0,
             "flagged_tests": [
-                {"test_name": f"Brief-{i}", "flag_type": "dup", "savings_try": i}
+                {"test_name": f"Brief-{i}", "flag_type": "hemogram_unbundling", "savings_try": i}
                 for i in range(8)
             ],
             "rule_source": "EK-2B",
         },
-        "drug": {"exactness_status": "missing_exact_inputs"},
         "copay": {"exactness_status": "missing_exact_inputs"},
         "billing_strategy": {"exactness_status": "exact", "rule_source": "EK-2C"},
         "materials": {"exactness_status": "partial_exact", "rule_source": "EK-3"},

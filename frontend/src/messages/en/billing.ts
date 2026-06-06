@@ -3,7 +3,9 @@ const billing = {
     "title": "Patient billing report",
     "description": "Normative SUT rule review across labs, drugs, copay policy, billing strategy, and materials controls.",
     "partialExact": "Partial exact",
-    "ruleCalculatedOpportunity": "Max additional SGK reimbursement",
+    "ruleCalculatedOpportunity": "Hospital SGK recoverable",
+    "exemptionGapCorrective": "Exemption gap (corrective)",
+    "dualTotalsFootnote": "Hospital recoverable covers lab and billing-strategy corrections only. Exemption gap is separate: katılım payı embedded in claims when MEDULA exemption may be missing.",
     "recommendedActions": "Recommended actions",
     "reviewSections": "Review sections",
     "priorityTier": "Priority tier",
@@ -17,8 +19,7 @@ const billing = {
     "sutCode": "SUT code",
     "gazettePrice": "Gazette price",
     "flag": "Flag",
-    "savings": "Savings",
-    "clinicalReviewDuplicate": "Clinical review — verify repeat necessity"
+    "savings": "Savings"
   },
   "drug": {
     "title": "Drug optimization",
@@ -33,19 +34,22 @@ const billing = {
     "heuristicFootnote": "Generic and passivated-drug rows are EK-4A catalog insights only — savings are not asserted until exact dispensed drug claim lines are available."
   },
   "copay": {
-    "title": "Copay optimization",
-    "unavailable": "Copay optimization totals remain unavailable until both visit and prescription claim inputs are exact.",
+    "title": "Copay exemption review",
+    "unavailable": "Exemption gap totals remain unavailable until both visit and prescription claim inputs are exact.",
     "exempt": "Exempt",
     "notExempt": "Not exempt",
-    "visitSavings": "Visit copay savings",
-    "rxSavings": "Rx copay savings",
-    "totalSavings": "Procedure copay total",
+    "medulaActionChip": "MEDULA: katilimPayindanMuaf=E",
+    "visitSavings": "Procedure exemption gap",
+    "rxSavings": "Prescription exemption gap",
+    "totalSavings": "Total exemption gap",
+    "tableIntro": "Lines still show billed minus SGK payable while exemption may apply.",
+    "exemptionGapFootnote": "Exemption gap is katılım payı embedded in claim lines when the patient appears eligible but MEDULA exemption may be missing. Setting katilimPayindanMuaf=E before invoice typically raises SGK payable and waives patient copay. Compliance correction — not optional repricing.",
     "procedure": "Procedure",
     "billed": "Billed",
-    "payable": "Payable",
-    "copayComponent": "Copay component",
+    "payable": "SGK payable (claim)",
+    "copayComponent": "Exemption gap",
     "gazetteRate": "Gazette rate",
-    "correction": "Correction"
+    "correction": "Note"
   },
   "strategy": {
     "title": "Billing strategy",

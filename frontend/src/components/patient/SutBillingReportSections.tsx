@@ -24,7 +24,6 @@ import {
   strategySavingsHeaderKey,
   strategySavingsTryDisplay,
   strategySecondaryLabel,
-  isHeuristicDrugRecommendation,
   usesClaimCopayCorrectionShape,
   usesHeuristicStrategyReviewShape,
   usesInsightOnlyCopayCorrectionShape,
@@ -126,6 +125,11 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
   const t = useT();
   const reportExact = isExactOutput(billingReport);
   const reportHasTotals = hasRecoverableBillingTotals(billingReport);
+  const copayExact = isExactOutput(billingReport.copay);
+  const exemptionGapTotal =
+    billingReport.copay.patient_copay_waived_total_try ??
+    billingReport.copay.visit_copay_savings_try + billingReport.copay.rx_copay_savings_try;
+  const showExemptionGap = copayExact && billingReport.copay.is_exempt && exemptionGapTotal > 0;
   const priorityColor = reportHasTotals ? PRIORITY_COLORS[billingReport.priority] : "#71717A";
   const statusLabel = reportExact
     ? fmtPriorityLabel(billingReport.priority)
@@ -148,7 +152,7 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
         <StatusChip label={statusLabel} color={priorityColor} />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <Stat
           label={t("billing.summary.ruleCalculatedOpportunity")}
           value={
@@ -157,6 +161,17 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
               : t("common.unavailable")
           }
           display={reportHasTotals ? "gold" : "default"}
+        />
+        <Stat
+          label={t("billing.summary.exemptionGapCorrective")}
+          value={
+            showExemptionGap
+              ? fmtTRY2(exemptionGapTotal)
+              : copayExact
+                ? fmtTRY2(0)
+                : t("common.unavailable")
+          }
+          display={showExemptionGap ? "default" : "default"}
         />
         <Stat
           label={t("billing.summary.recommendedActions")}
@@ -171,6 +186,11 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
           }
         />
       </div>
+      {showExemptionGap && reportHasTotals && (
+        <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.summary.dualTotalsFootnote")}
+        </p>
+      )}
       {!reportExact && reportHasTotals && (
         <ExactnessNotice
           block={billingReport}
@@ -223,96 +243,16 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
               <td className="num-col tabular-nums text-right">{fmtTRY2(test.gazette_price)}</td>
               <td>
                 <StatusChip
-                  label={
-                    test.flag_type === "clinical_review_duplicate"
-                      ? t("billing.lab.clinicalReviewDuplicate")
-                      : fmtLabel(test.flag_type)
-                  }
+                  label={fmtLabel(test.flag_type)}
                   color={
                     test.flag_type === "hemogram_unbundling"
                       ? "#D97706"
-                      : test.flag_type === "clinical_review_duplicate"
-                        ? "#4B5563"
-                        : "#B91C1C"
+                      : "#B91C1C"
                   }
                 />
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2OrUnavailable(test.savings_try ?? null)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </TableWrap>
-    </BillingSectionShell>
-  );
-}
-
-export function DrugOptimizationSection({ drugData }: { drugData: BillingActionReport["drug"] }) {
-  const t = useT();
-  const drugExact = isExactOutput(drugData);
-  const hasRecommendations = drugData.drug_recommendations.length > 0;
-  const hasHeuristicRows = drugData.drug_recommendations.some((row) =>
-    isHeuristicDrugRecommendation(row),
-  );
-
-  if (!drugExact && !hasRecommendations) {
-    return (
-      <BillingSectionShell title={t("billing.drug.title")}>
-        <ExactnessNotice block={drugData} fallback={t("billing.drug.unavailable")} />
-      </BillingSectionShell>
-    );
-  }
-
-  if (!hasRecommendations) {
-    return null;
-  }
-
-  return (
-    <BillingSectionShell
-      title={t("billing.drug.title")}
-      total={drugExact ? fmtTRY2(drugData.generic_substitution_savings) : undefined}
-    >
-      {!drugExact && (
-        <ExactnessNotice block={drugData} fallback={t("billing.drug.unavailable")} />
-      )}
-      {!drugExact && hasHeuristicRows && (
-        <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
-          {t("billing.drug.heuristicFootnote")}
-        </p>
-      )}
-      <TableWrap minWidth={860}>
-        <thead>
-          <tr>
-            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drug.drug")}</th>
-            <th>{t("billing.drug.issue")}</th>
-            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drug.alternative")}</th>
-            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.drug.savings")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {drugData.drug_recommendations.map((recommendation, index) => (
-            <tr key={`${recommendation.drug_name}-${index}`}>
-              <td title={recommendation.drug_name}>{recommendation.drug_name}</td>
-              <td>
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusChip
-                    label={fmtLabel(recommendation.issue)}
-                    color={recommendation.issue === "passivated" ? "#B91C1C" : "#D97706"}
-                  />
-                  {isHeuristicDrugRecommendation(recommendation) && (
-                    <StatusChip
-                      label={t("billing.drug.heuristicInsight")}
-                      color="#64748B"
-                    />
-                  )}
-                </div>
-              </td>
-              <td title={recommendation.issue === "discount_tier_applied" ? (recommendation.detail || t("billing.drug.tierCorrectionSameDrug")) : recommendation.alternative}>
-                {recommendation.issue === "discount_tier_applied" ? t("billing.drug.tierCorrection") : recommendation.alternative}
-              </td>
-              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                {fmtTRY2OrUnavailable(recommendation.savings_try ?? null)}
               </td>
             </tr>
           ))}
@@ -341,7 +281,10 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
     );
   }
 
-  const savingsColor = copayData.total_copay_savings_try > 0 ? ACCENT : "#71717A";
+  const exemptionGapTotal =
+    copayData.patient_copay_waived_total_try ??
+    copayData.visit_copay_savings_try + copayData.rx_copay_savings_try;
+  const savingsColor = exemptionGapTotal > 0 ? ACCENT : "#71717A";
   const insightOnlyRows = copayData.rate_corrections.filter((correction) =>
     usesInsightOnlyCopayCorrectionShape(correction),
   );
@@ -352,11 +295,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
   return (
     <BillingSectionShell
       title={t("billing.copay.title")}
-      total={
-        copayExact
-          ? fmtTRY2(copayData.visit_copay_savings_try + copayData.rx_copay_savings_try)
-          : undefined
-      }
+      total={copayExact ? fmtTRY2(exemptionGapTotal) : undefined}
     >
       <div className="space-y-4">
         {!copayExact && (
@@ -368,6 +307,9 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
             label={copayData.is_exempt ? getSutAlertBadgeLabel("exempt") : getSutAlertBadgeLabel("notExempt")}
             color={copayData.is_exempt ? ACCENT : "#A1A1AA"}
           />
+          {copayData.is_exempt && (
+            <StatusChip label={t("billing.copay.medulaActionChip")} color="#2563EB" />
+          )}
           {copayData.exemption_disease && (
             <span className="text-sm" style={{ color: "#71717A" }}>
               {copayData.exemption_disease} ({copayData.exemption_range})
@@ -376,11 +318,16 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
         </div>
 
         {copayExact && (
-          <div className="grid gap-3 md:grid-cols-3">
-            <KpiCard label={t("billing.copay.visitSavings")} value={fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
-            <KpiCard label={t("billing.copay.rxSavings")} value={fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
-            <KpiCard label={t("billing.copay.totalSavings")} value={fmtTRY2(copayData.total_copay_savings_try)} valueColor={savingsColor} />
-          </div>
+          <>
+            <div className="grid gap-3 md:grid-cols-3">
+              <KpiCard label={t("billing.copay.visitSavings")} value={fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
+              <KpiCard label={t("billing.copay.rxSavings")} value={fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
+              <KpiCard label={t("billing.copay.totalSavings")} value={fmtTRY2(exemptionGapTotal)} valueColor={savingsColor} />
+            </div>
+            <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+              {t("billing.copay.exemptionGapFootnote")}
+            </p>
+          </>
         )}
 
         {insightOnlyRows.length > 0 && (
@@ -394,6 +341,12 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
         )}
 
         {claimRows.length > 0 && (
+          <>
+          {copayExact && (
+            <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+              {t("billing.copay.tableIntro")}
+            </p>
+          )}
           <TableWrap minWidth={760}>
             <thead>
               <tr>
@@ -442,6 +395,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
               ))}
             </tbody>
           </TableWrap>
+          </>
         )}
       </div>
     </BillingSectionShell>

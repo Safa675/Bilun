@@ -3,7 +3,9 @@ const billing = {
     "title": "Hasta fatura raporu",
     "description": "Laboratuvar, ilaç, katılım payı politikası, fatura stratejisi ve malzeme kontrolleri genelinde normatif SUT kural incelemesi.",
     "partialExact": "Kısmi kesin",
-    "ruleCalculatedOpportunity": "Azami ek SGK geri ödemesi",
+    "ruleCalculatedOpportunity": "Hastane SGK geri kazanımı",
+    "exemptionGapCorrective": "Muafiyet farkı (düzeltici)",
+    "dualTotalsFootnote": "Hastane geri kazanımı yalnızca laboratuvar ve fatura stratejisi düzeltmelerini kapsar. Muafiyet farkı ayrıdır: MEDULA muafiyeti eksikken talepteki katılım payı.",
     "recommendedActions": "Önerilen işlemler",
     "reviewSections": "Bölümleri incele",
     "priorityTier": "Öncelik seviyesi",
@@ -17,8 +19,7 @@ const billing = {
     "sutCode": "SUT kodu",
     "gazettePrice": "Tebliğ fiyatı",
     "flag": "Bayrak",
-    "savings": "Tasarruf",
-    "clinicalReviewDuplicate": "Klinik inceleme — tekrar gerekliliğini doğrulayın"
+    "savings": "Tasarruf"
   },
   "drug": {
     "title": "İlaç optimizasyonu",
@@ -33,19 +34,22 @@ const billing = {
     "heuristicFootnote": "Eşdeğer ve pasifleştirilmiş ilaç satırları yalnızca EK-4A katalog içgörüsüdür — kesin dispense ilaç talep satırları olmadan tasarruf iddia edilmez."
   },
   "copay": {
-    "title": "Katılım payı optimizasyonu",
-    "unavailable": "Hem ziyaret hem reçete talep girdileri kesin olana kadar katılım payı toplamları kullanılamaz.",
+    "title": "Katılım payı muafiyeti incelemesi",
+    "unavailable": "Hem ziyaret hem reçete talep girdileri kesin olana kadar muafiyet farkı tutarları kullanılamaz.",
     "exempt": "Muaf",
     "notExempt": "Muaf değil",
-    "visitSavings": "Ziyaret katılım payı tasarrufu",
-    "rxSavings": "Reçete katılım payı tasarrufu",
-    "totalSavings": "Muayene katılım payı toplamı",
+    "medulaActionChip": "MEDULA: katilimPayindanMuaf=E",
+    "visitSavings": "İşlem muafiyet farkı",
+    "rxSavings": "Reçete muafiyet farkı",
+    "totalSavings": "Toplam muafiyet farkı",
+    "tableIntro": "Muafiyet geçerli olabilirken satırlarda hâlâ faturalanan eksi SGK ödenecek görünüyor.",
+    "exemptionGapFootnote": "Muafiyet farkı, hasta muaf görünürken MEDULA muafiyeti eksik olabileceği talep satırlarındaki katılım payıdır. Fatura öncesi katilimPayindanMuaf=E genelde SGK ödenecek tutarı artırır ve hasta katılım payını kaldırır. Uyumluluk düzeltmesidir — isteğe bağlı fiyatlandırma değil.",
     "procedure": "İşlem",
     "billed": "Faturalanan",
-    "payable": "Ödenecek",
-    "copayComponent": "Katılım payı bileşeni",
+    "payable": "SGK ödenecek (talep)",
+    "copayComponent": "Muafiyet farkı",
     "gazetteRate": "Tebliğ oranı",
-    "correction": "Düzeltme"
+    "correction": "Not"
   },
   "strategy": {
     "title": "Fatura stratejisi",

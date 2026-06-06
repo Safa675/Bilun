@@ -20,21 +20,11 @@ def _sample_full_report() -> dict:
         "lab": {
             "exactness_status": "exact",
             "hemogram_bundling_savings": 100.0,
-            "duplicate_test_savings": 50.0,
             "flagged_tests": [
-                {"test_name": f"Test-{i}", "flag_type": "duplicate", "savings_try": i}
+                {"test_name": f"Test-{i}", "flag_type": "hemogram_unbundling", "savings_try": i}
                 for i in range(12)
             ],
             "rule_source": "EK-2B hemogram bundling",
-        },
-        "drug": {
-            "exactness_status": "missing_exact_inputs",
-            "n_generics_available": 3,
-            "generic_substitution_savings": 200.0,
-            "drug_recommendations": [
-                {"drug_name": "Drug-A", "action": "substitute", "savings_try": 50.0},
-            ],
-            "rule_source": "EK-4A",
         },
         "copay": {
             "exactness_status": "exact",
@@ -117,7 +107,6 @@ def test_build_full_billing_context_includes_all_flagged_tests_up_to_cap():
     assert "BILLING OPTIMIZATION (FULL)" in text
     assert "Test-0" in text
     assert "Test-11" in text
-    assert "Drug recommendations" in text
     assert "Rate corrections" in text
     assert "Strategy recommendations" in text
     assert "Stent-X" in text
@@ -154,7 +143,6 @@ def test_build_bilun_runtime_context_user_question_uses_full_billing():
     assert "BILLING OPTIMIZATION (FULL)" in runtime
     assert "Test-4" in runtime
     assert "Test-11" in runtime
-    assert "Drug recommendations" in runtime
     assert "Rate corrections" in runtime
     assert "Strategy recommendations" in runtime
 

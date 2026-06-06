@@ -71,9 +71,8 @@ def _sample_billing_report() -> dict:
             "exactness_status": "exact",
             "rule_source": "EK-2B hemogram bundling",
             "hemogram_bundling_savings": 100.0,
-            "duplicate_test_savings": 50.0,
             "flagged_tests": [
-                {"test_name": f"Test-{index}", "flag_type": "duplicate", "savings_try": index}
+                {"test_name": f"Test-{index}", "flag_type": "hemogram_unbundling", "savings_try": index}
                 for index in range(8)
             ],
         },
