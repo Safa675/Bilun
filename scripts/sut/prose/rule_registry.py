@@ -265,24 +265,14 @@ RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
     RuleRegistryEntry(
         rule_id="drug_ek4a",
         rule_category="drug_reimbursement",
-        coverage_status="partial",
-        domain_modules=(
-            "src/bilun/domain/materials/drugs.py",
-            "src/bilun/domain/billing/drug.py",
-            "src/bilun/domain/optimization/drugs.py",
-        ),
+        coverage_status="non_algorithmic",
+        domain_modules=("src/bilun/domain/materials/drugs.py",),
         annex_refs=("EK-4/A",),
         sut_section_prefixes=("4.1", "4.4"),
-        description="Drug reimbursement catalog and substitution (EK-4A)",
-    ),
-    RuleRegistryEntry(
-        rule_id="drug_discount_prose",
-        rule_category="drug_discount",
-        coverage_status="needs_claim_lines",
-        domain_modules=("src/bilun/domain/optimization/drugs.py",),
-        sut_section_prefixes=("4.4",),
-        keywords=("indirim oran", "eşdeğer ilaç"),
-        description="Drug discount tier validation (§4.4 prose + EK-4A tiers)",
+        description=(
+            "EK-4/A catalog lookup (reference data). Drug copay rules live in "
+            "copay_general_1_8.json; EK-4/D in drugs/ek4d_exempt.py — not billing optimizers."
+        ),
     ),
     RuleRegistryEntry(
         rule_id="lab_billing",
@@ -291,7 +281,7 @@ RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         domain_modules=("src/bilun/domain/billing/lab.py",),
         annex_refs=("EK-2/B",),
         keywords=("hemogram", "L107020"),
-        description="Lab hemogram bundling and duplicate detection (inferred from EK-2B, not docx prose)",
+        description="Lab hemogram bundling only (EK-2B L107020; inferred from annex, not docx prose)",
     ),
     RuleRegistryEntry(
         rule_id="drg_unbundling",

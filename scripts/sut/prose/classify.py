@@ -118,7 +118,7 @@ def _fallback_rule_id(
         ("2.", "pricing_ek2b"),
         ("3.3", "specialty_materials"),
         ("3.", "material_bundling_prose"),
-        ("4.4", "drug_discount_prose"),
+        ("4.4", "drug_ek4a"),
         ("4.1", "drug_ek4a"),
         ("4.", "drug_ek4a"),
         ("5.", "billing_documents"),
