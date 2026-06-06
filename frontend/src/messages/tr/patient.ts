@@ -2,7 +2,7 @@ const patient = {
   "page": {
     "breadcrumbAria": "SUT hasta breadcrumb",
     "workspace": "SUT çalışma alanı",
-    "patient": "Hasta {patientId}",
+    "patient": "{patientId}",
     "patientUnknown": "Hasta bilinmiyor",
     "searchEyebrow": "Hasta arama",
     "searchPlaceholder": "Farklı bir hasta çalışma alanına geç…",
@@ -60,7 +60,7 @@ const patient = {
   "section": {
     "selectedPatient": {
       "eyebrow": "Seçili hasta",
-      "label": "Hasta {patientId}",
+      "label": "{patientId}",
       "statusLoading": "Kesin DRG analitiği yenileniyor…",
       "statusError": "Hasta analitiği yüklenemedi.",
       "statusEmpty": "Hasta düzeyinde DRG analitiği şu anda yüklü değil.",

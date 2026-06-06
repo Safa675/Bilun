@@ -2,7 +2,7 @@ const patient = {
   "page": {
     "breadcrumbAria": "SUT patient breadcrumb",
     "workspace": "SUT workspace",
-    "patient": "Patient {patientId}",
+    "patient": "{patientId}",
     "patientUnknown": "Patient unknown",
     "searchEyebrow": "Patient search",
     "searchPlaceholder": "Jump to a different patient workspace...",
@@ -60,7 +60,7 @@ const patient = {
   "section": {
     "selectedPatient": {
       "eyebrow": "Selected patient",
-      "label": "Patient {patientId}",
+      "label": "{patientId}",
       "statusLoading": "Refreshing exact DRG analytics...",
       "statusError": "Patient analytics could not be loaded.",
       "statusEmpty": "Patient-level DRG analytics are not currently loaded.",
