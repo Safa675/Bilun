@@ -4,11 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
+import SutHowItWorksModal from "@/components/modals/SutHowItWorksModal";
 import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
 import {
   BillingSummary,
   LabOptimizationSection,
-  DrugOptimizationSection,
   CopayOptimizationSection,
   BillingStrategySection,
   MaterialsPreCheckSection,
@@ -35,7 +35,9 @@ import type {
 import {
   useAiDockPosition,
   useSetAiDockPosition,
+  useSetShowHowItWorks,
   useSetSutChatSession,
+  useShowHowItWorks,
   useSutChatSession,
 } from "@/stores/index";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -58,6 +60,8 @@ export default function SutPatientPage() {
   const [billingError, setBillingError] = useState<string | null>(null);
   const chatDock = useAiDockPosition();
   const setChatDock = useSetAiDockPosition();
+  const showHowItWorks = useShowHowItWorks();
+  const setShowHowItWorks = useSetShowHowItWorks();
   const outcomeControllerRef = useRef<AbortController | null>(null);
   const optimizationControllerRef = useRef<AbortController | null>(null);
   const billingControllerRef = useRef<AbortController | null>(null);
@@ -272,7 +276,6 @@ export default function SutPatientPage() {
                   <>
                     <BillingSummary billingReport={billingReport} />
                     <LabOptimizationSection labData={billingReport.lab} />
-                    <DrugOptimizationSection drugData={billingReport.drug} />
                     <CopayOptimizationSection copayData={billingReport.copay} />
                     <BillingStrategySection strategyData={billingReport.billing_strategy} />
                     <MaterialsPreCheckSection materialsData={billingReport.materials} />
@@ -297,6 +300,7 @@ export default function SutPatientPage() {
           onChatStateChange={handleChatStateChange}
         />
       )}
+      <SutHowItWorksModal open={showHowItWorks} onClose={() => setShowHowItWorks(false)} />
     </>
   );
 }
