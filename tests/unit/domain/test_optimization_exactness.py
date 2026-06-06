@@ -21,7 +21,6 @@ def test_is_exact_output_requires_explicit_exact_status() -> None:
 
 def test_non_exact_optimization_features_return_missing_exact_inputs() -> None:
     from src.bilun.domain.optimization.copay_rates import analyze_copay_rate_exposure
-    from src.bilun.domain.optimization.drugs import validate_drug_discount_tiers
     from src.bilun.domain.optimization.surcharge import analyze_surcharge_exposure
     from src.bilun.domain.optimization.unbundling import detect_drg_unbundling
 
@@ -41,12 +40,6 @@ def test_non_exact_optimization_features_return_missing_exact_inputs() -> None:
     assert drg["exactness_status"] == "missing_exact_inputs"
     assert drg["has_unbundling_risk"] is None
     assert drg["chapter_analysis"] == []
-
-    drug = validate_drug_discount_tiers(None)
-    assert drug["exactness_status"] == "missing_exact_inputs"
-    assert drug["n_active_drugs"] is None
-    assert "catalog reference" in drug["methodology"].lower()
-
 
 def test_compute_optimization_summary_keeps_exact_exemptions_but_gates_non_exact_blocks(
     monkeypatch,
@@ -101,7 +94,4 @@ def test_compute_optimization_summary_keeps_exact_exemptions_but_gates_non_exact
     assert summary["drg_unbundling"]["n_patients_checked"] == 1
     assert summary["drg_unbundling"]["total_potential_savings"] is None
 
-    assert (
-        summary["drug_discount_validation"]["exactness_status"]
-        == "missing_exact_inputs"
-    )
+    assert "drug_discount_validation" not in summary

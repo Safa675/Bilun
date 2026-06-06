@@ -35,6 +35,6 @@ def test_optimization_summary_exact_with_claim_dataset() -> None:
 
     assert summary["surcharge_exposure"]["exactness_status"] == "exact"
     assert summary["copay_rate_exposure"]["exactness_status"] == "exact"
-    assert summary["drug_discount_validation"]["exactness_status"] == "exact"
     assert summary["drg_unbundling"]["exactness_status"] == "exact"
+    assert "drug_discount_validation" not in summary
     assert summary["surcharge_exposure"]["n_total_ek2g"] > 0

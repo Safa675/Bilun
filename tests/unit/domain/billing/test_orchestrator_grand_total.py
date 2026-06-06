@@ -12,10 +12,8 @@ pytestmark = pytest.mark.unit
 def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) -> None:
     import src.bilun.domain.billing.orchestrator as billing_mod
 
-    def _report(pid: str, lab_savings: float, drug_exact: bool) -> SimpleNamespace:
-        drug_status = "exact" if drug_exact else "missing_exact_inputs"
-        drug_savings = 100.0 if drug_exact else 999.0
-        recoverable = lab_savings + (drug_savings if drug_exact else 0.0)
+    def _report(pid: str, lab_savings: float) -> SimpleNamespace:
+        recoverable = lab_savings
         return SimpleNamespace(
             patient_id=pid,
             lab=SimpleNamespace(
@@ -23,12 +21,6 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
                 flagged_tests=[],
                 exactness_status="exact",
                 required_inputs_missing=[],
-            ),
-            drug=SimpleNamespace(
-                total_savings=drug_savings,
-                drug_recommendations=[],
-                exactness_status=drug_status,
-                required_inputs_missing=[] if drug_exact else ["drug_lines"],
             ),
             copay=SimpleNamespace(
                 total_copay_savings_try=0.0,
@@ -47,6 +39,7 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
                 pre_auth_required=[],
                 miat_restricted=[],
                 bundled_separate_billing=[],
+                miat_interval_violations=[],
                 exactness_status="exact",
                 required_inputs_missing=[],
             ),
@@ -68,8 +61,8 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
     }
 
     reports = {
-        "P1": _report("P1", 10.0, drug_exact=True),
-        "P2": _report("P2", 20.0, drug_exact=False),
+        "P1": _report("P1", 10.0),
+        "P2": _report("P2", 20.0),
     }
 
     monkeypatch.setattr(
@@ -81,5 +74,4 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
     _, summary = billing_mod.compute_all_billing_reports(cache)
 
     assert summary.total_lab_savings == 30.0
-    assert summary.total_drug_savings == 100.0
-    assert summary.grand_total_recoverable == 130.0
+    assert summary.grand_total_recoverable == 30.0

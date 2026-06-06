@@ -52,22 +52,6 @@ def sut_single_json_payloads() -> dict[str, dict[str, Any]]:
                 "top_risky_chapters": [],
                 "methodology": "seeded smoke payload",
             },
-            "drug_discount_validation": {
-                "n_drugs_total": 1,
-                "n_active_drugs": 1,
-                "tier_distribution": {"A": 1},
-                "discount_status_distribution": {"active": 1},
-                "mean_discount_tier_1": 0.0,
-                "sample_drugs": [
-                    {
-                        "drug_name": "drug-a",
-                        "tier": "A",
-                        "discount_status": "active",
-                        "discount_tier_1": 0.0,
-                    }
-                ],
-                "methodology": "seeded smoke payload",
-            },
         },
         "patient_alerts_payload": {
             "patients": [
@@ -124,19 +108,16 @@ def sut_single_json_payloads() -> dict[str, dict[str, Any]]:
             "P1": {
                 "patient_id": "P1",
                 "lab": {"normative_cost_try": 10.0, "flagged_tests": []},
-                "drug": {
-                    "generic_substitution_savings": 0.0,
-                    "n_generics_available": 0,
-                    "passivated_drug_count": 0,
-                    "drug_recommendations": [],
-                },
                 "copay": {
                     "is_exempt": True,
                     "exemption_disease": "Diabetes",
                     "exemption_range": "E10-E14",
                     "visit_copay_savings_try": 5.0,
                     "rx_copay_savings_try": 7.5,
-                    "total_copay_savings_try": 12.5,
+                    "total_copay_savings_try": 5.0,
+                    "patient_copay_waived_total_try": 12.5,
+                    "savings_beneficiary": "patient_and_sgk",
+                    "gap_kind": "exemption_correction",
                     "rate_corrections": [],
                 },
                 "billing_strategy": {"recommendations": []},
@@ -145,7 +126,7 @@ def sut_single_json_payloads() -> dict[str, dict[str, Any]]:
                     "miat_restricted": [],
                     "gazette_ceiling_by_specialty": {},
                 },
-                "total_recoverable_try": 12.5,
+                "total_recoverable_try": 0.0,
                 "action_count": 1,
                 "priority": "high",
             }
@@ -153,12 +134,11 @@ def sut_single_json_payloads() -> dict[str, dict[str, Any]]:
         "cohort_recovery_summary": {
             "n_patients": 1,
             "total_lab_savings": 0.0,
-            "total_drug_savings": 0.0,
             "total_copay_savings": 12.5,
             "total_strategy_savings": 0.0,
             "total_material_flags": 0,
-            "grand_total_recoverable": 12.5,
-            "top_patients": [{"patient_id": "P1", "total_recoverable_try": 12.5}],
+            "grand_total_recoverable": 0.0,
+            "top_patients": [{"patient_id": "P1", "total_recoverable_try": 0.0}],
             "savings_by_category": {"copay": 12.5},
             "priority_distribution": {"high": 1},
         },

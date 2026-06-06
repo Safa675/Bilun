@@ -10,7 +10,7 @@ from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_
 pytestmark = pytest.mark.unit
 
 
-def test_billing_report_uses_exact_drug_and_copay_from_claim_context() -> None:
+def test_billing_report_uses_exact_copay_from_claim_context() -> None:
     dataset = load_sut_claim_dataset()
     patient_id = "SENTETIK-HASTA-0001"
     ctx = build_patient_claim_context(patient_id, dataset)
@@ -26,13 +26,11 @@ def test_billing_report_uses_exact_drug_and_copay_from_claim_context() -> None:
         chapters={"I"},
     )
 
-    assert report.drug.exactness_status == "exact"
     assert report.copay.exactness_status == "exact"
     assert report.billing_strategy.exactness_status == "exact"
-    assert report.drug.generic_substitution_savings >= 0.0
 
 
-def test_exempt_patient_drug_and_rx_copay_not_double_counted_in_total() -> None:
+def test_exempt_patient_rx_copay_in_total() -> None:
     dataset = load_sut_claim_dataset()
     patient_id = "SENTETIK-HASTA-0001"
     ctx = build_patient_claim_context(patient_id, dataset)
@@ -50,10 +48,6 @@ def test_exempt_patient_drug_and_rx_copay_not_double_counted_in_total() -> None:
 
     rx = report.copay.rx_copay_savings_try
     visit = report.copay.total_copay_savings_try
-    drug = report.drug.generic_substitution_savings
-
-    if rx > 0:
-        assert drug == 0.0
 
     expected_floor = visit + rx + report.lab.total_savings
     if report.billing_strategy.exactness_status == "exact":

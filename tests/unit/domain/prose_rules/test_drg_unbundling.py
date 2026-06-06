@@ -182,12 +182,14 @@ class TestProseDrgUnbundling:
                 procedure_code="610070",
                 procedure_date=session_day,
                 billed_amount_try=Decimal("1000"),
+                procedure_specialty_code="cerrahi",
             ),
             _proc(
                 procedure_line_id="PL2",
                 procedure_code="609270",
                 procedure_date=session_day,
                 billed_amount_try=Decimal("1000"),
+                procedure_specialty_code="cerrahi",
             ),
         ]
         finding = analyze_claim_unbundling(claim, lines, same_incision=True)

@@ -9,45 +9,6 @@ import pytest
 pytestmark = pytest.mark.unit
 
 
-def test_drug_optimizer_does_not_fabricate_tier_savings(monkeypatch) -> None:
-    from src.bilun.domain.billing import drug as drug_mod
-
-    record = {
-        "drug_name": "Brand Drug 100 mg",
-        "equivalence_group": "EQ-001",
-        "discount_status": "REFERANS",
-        "discount_tier_1": 0.40,
-        "passivation_date": "",
-    }
-    cheaper_alt = {
-        "drug_name": "Generic Drug 100 mg",
-        "equivalence_group": "EQ-001",
-        "discount_status": "ESDEĞER",
-        "discount_tier_1": 0.10,
-        "passivation_date": "",
-    }
-
-    monkeypatch.setattr(
-        drug_mod,
-        "lookup_drug_bulk",
-        lambda names: {names[0]: record},
-    )
-    monkeypatch.setattr(
-        drug_mod,
-        "_get_ek4a_by_equiv_group",
-        lambda: {"EQ-001": [record, cheaper_alt]},
-    )
-
-    result = drug_mod._optimize_drug_costs("P1", ["Brand Drug 100 mg"])
-
-    assert result.generic_substitution_savings == 0.0
-    assert len(result.drug_recommendations) == 1
-    rec = result.drug_recommendations[0]
-    assert rec["issue"] == "generic_available"
-    assert rec["savings_try"] is None
-    assert rec["savings_try"] != 70.0  # old basic/specialty midpoint delta
-
-
 def test_copay_exemption_adds_non_monetary_insight() -> None:
     from src.bilun.domain.billing.copay import _optimize_copay
 
@@ -109,16 +70,6 @@ def test_orchestrator_total_includes_only_exact_blocks(monkeypatch) -> None:
             flagged_tests=[],
             exactness_status="exact",
             required_inputs_missing=[],
-        ),
-    )
-    monkeypatch.setattr(
-        billing_mod,
-        "_optimize_drug_costs",
-        lambda *_args, **_kwargs: SimpleNamespace(
-            total_savings=999.0,
-            drug_recommendations=[{"drug_name": "X"}],
-            exactness_status="missing_exact_inputs",
-            required_inputs_missing=["dispensed_drug_claim_lines"],
         ),
     )
     monkeypatch.setattr(
