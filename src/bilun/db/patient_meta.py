@@ -91,16 +91,16 @@ def read_all_patient_ids(con, build_id: str) -> list[str]:
     return [r[0] for r in rows]
 
 
-def search_patient_ids(con, build_id: str, prefix: str, limit: int = 20) -> list[str]:
-    """Prefix search on patient IDs within a build."""
+def search_patient_ids(con, build_id: str, query: str, limit: int = 20) -> list[str]:
+    """Substring search on patient IDs within a build (case-insensitive)."""
     rows = con.execute(
         """
         SELECT patient_id FROM patient_meta
-        WHERE build_id = ? AND patient_id LIKE ?
+        WHERE build_id = ? AND lower(patient_id) LIKE ?
         ORDER BY data_completeness DESC NULLS LAST
         LIMIT ?
         """,
-        [build_id, f"{prefix}%", limit],
+        [build_id, f"%{query.lower()}%", limit],
     ).fetchall()
     return [r[0] for r in rows]
 
