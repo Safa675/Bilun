@@ -23,6 +23,81 @@ interface PatientRow {
 
 const PAGE_SIZE = 10;
 
+type SortableColumn = keyof PatientRow;
+type SortDirection = "asc" | "desc";
+
+const PRIORITY_ORDER: Record<string, number> = {
+  high: 3,
+  medium: 2,
+  low: 1,
+};
+
+function compareRows(a: PatientRow, b: PatientRow, column: SortableColumn, direction: SortDirection): number {
+  const dir = direction === "asc" ? 1 : -1;
+
+  const aVal = a[column];
+  const bVal = b[column];
+
+  // Handle nulls — nulls always at bottom regardless of direction
+  if (aVal === null && bVal === null) return 0;
+  if (aVal === null) return 1;
+  if (bVal === null) return 1;
+
+  // Special: priority uses custom numeric order
+  if (column === "priority") {
+    const aPrio = PRIORITY_ORDER[(aVal as string).toLowerCase()] ?? 0;
+    const bPrio = PRIORITY_ORDER[(bVal as string).toLowerCase()] ?? 0;
+    return (aPrio - bPrio) * dir;
+  }
+
+  // Strings
+  if (typeof aVal === "string" && typeof bVal === "string") {
+    return aVal.localeCompare(bVal) * dir;
+  }
+
+  // Numbers
+  if (typeof aVal === "number" && typeof bVal === "number") {
+    return (aVal - bVal) * dir;
+  }
+
+  return 0;
+}
+
+function SortHeader({
+  label,
+  active,
+  direction,
+  onClick,
+  align,
+}: {
+  label: string;
+  active: boolean;
+  direction: SortDirection;
+  onClick: () => void;
+  align?: "left" | "right";
+}) {
+  return (
+    <th
+      onClick={onClick}
+      className={cn(
+        "cursor-pointer select-none transition-colors hover:bg-[var(--surface-tint)]",
+        align === "right" && "text-right",
+      )}
+      style={{ whiteSpace: "nowrap" }}
+      title={`Sort by ${label}`}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {active && (
+          <span className="text-[0.7rem] text-[var(--gold)]">
+            {direction === "desc" ? "▼" : "▲"}
+          </span>
+        )}
+      </span>
+    </th>
+  );
+}
+
 export default function PatientInvoiceTable({
   cohortPatientIds,
   cohortFilterActive = false,
@@ -37,13 +112,19 @@ export default function PatientInvoiceTable({
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [jumpInput, setJumpInput] = useState("");
+  const [sort, setSort] = useState<{ column: SortableColumn; direction: SortDirection } | null>(null);
 
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(rows.length / PAGE_SIZE)), [rows.length]);
+  const sortedRows = useMemo(() => {
+    if (!sort) return rows;
+    return [...rows].sort((a, b) => compareRows(a, b, sort.column, sort.direction));
+  }, [rows, sort]);
+
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(sortedRows.length / PAGE_SIZE)), [sortedRows.length]);
   const currentPage = useMemo(() => Math.min(page, totalPages), [page, totalPages]);
   const pageRows = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
-    return rows.slice(start, start + PAGE_SIZE);
-  }, [rows, currentPage]);
+    return sortedRows.slice(start, start + PAGE_SIZE);
+  }, [sortedRows, currentPage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,6 +179,7 @@ export default function PatientInvoiceTable({
 
         setRows(merged);
         setPage(1);
+        setSort(null);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : t("home.patientTable.loadFailed"));
@@ -112,6 +194,18 @@ export default function PatientInvoiceTable({
       cancelled = true;
     };
   }, [cohortFilterActive, cohortPatientIds, t]);
+
+  function handleSort(column: SortableColumn) {
+    setSort((prev) => {
+      if (prev?.column === column) {
+        // Same column: toggle direction
+        return { column, direction: prev.direction === "desc" ? "asc" : "desc" };
+      }
+      // New column: default to desc (highest first) per user request
+      return { column, direction: "desc" };
+    });
+    setPage(1);
+  }
 
   function handlePrev() {
     setPage((p) => Math.max(1, p - 1));
@@ -172,13 +266,50 @@ export default function PatientInvoiceTable({
       <DataTable minWidth={720} className="text-[0.82rem]">
         <thead>
           <tr>
-            <th>{t("home.patientTable.headers.patientId")}</th>
-            <th>{t("home.patientTable.headers.age")}</th>
-            <th>{t("home.patientTable.headers.sex")}</th>
-            <th className="num-col tabular-nums text-right">{t("home.patientTable.headers.recoverable")}</th>
-            <th>{t("home.patientTable.headers.priority")}</th>
-            <th className="num-col tabular-nums text-right">{t("home.patientTable.headers.actions")}</th>
-            <th>{t("home.patientTable.headers.topAction")}</th>
+            <SortHeader
+              label={t("home.patientTable.headers.patientId")}
+              active={sort?.column === "patient_id"}
+              direction={sort?.column === "patient_id" ? sort.direction : "desc"}
+              onClick={() => handleSort("patient_id")}
+            />
+            <SortHeader
+              label={t("home.patientTable.headers.age")}
+              active={sort?.column === "age"}
+              direction={sort?.column === "age" ? sort.direction : "desc"}
+              onClick={() => handleSort("age")}
+            />
+            <SortHeader
+              label={t("home.patientTable.headers.sex")}
+              active={sort?.column === "sex"}
+              direction={sort?.column === "sex" ? sort.direction : "desc"}
+              onClick={() => handleSort("sex")}
+            />
+            <SortHeader
+              label={t("home.patientTable.headers.recoverable")}
+              active={sort?.column === "total_recoverable_try"}
+              direction={sort?.column === "total_recoverable_try" ? sort.direction : "desc"}
+              onClick={() => handleSort("total_recoverable_try")}
+              align="right"
+            />
+            <SortHeader
+              label={t("home.patientTable.headers.priority")}
+              active={sort?.column === "priority"}
+              direction={sort?.column === "priority" ? sort.direction : "desc"}
+              onClick={() => handleSort("priority")}
+            />
+            <SortHeader
+              label={t("home.patientTable.headers.actions")}
+              active={sort?.column === "action_count"}
+              direction={sort?.column === "action_count" ? sort.direction : "desc"}
+              onClick={() => handleSort("action_count")}
+              align="right"
+            />
+            <SortHeader
+              label={t("home.patientTable.headers.topAction")}
+              active={sort?.column === "top_action_type"}
+              direction={sort?.column === "top_action_type" ? sort.direction : "desc"}
+              onClick={() => handleSort("top_action_type")}
+            />
           </tr>
         </thead>
         <tbody>
