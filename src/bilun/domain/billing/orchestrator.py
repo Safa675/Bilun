@@ -25,9 +25,7 @@ from src.bilun.domain.claims.patient_context import build_patient_claim_context
 from src.bilun.domain.billing.claim_copay import optimize_copay_from_claims
 from src.bilun.domain.billing.claim_materials import precheck_materials_from_claims
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
-from src.bilun.domain.billing.drug_claims import optimize_drug_from_claims
 from .lab import _optimize_lab_billing
-from .drug import _optimize_drug_costs
 from .copay import _optimize_copay
 from .strategy import _recommend_billing_strategy
 from .materials import _precheck_materials
@@ -47,15 +45,14 @@ def _block_exactness_status(block: Any) -> str:
 
 
 def _sum_exact_recoverable_try(report: BillingActionReport) -> float:
-    """Sum savings only from billing blocks marked exact."""
+    """Sum **hospital** SGK recovery from billing blocks marked exact.
+
+    Copay exemption amounts are patient katılım payı waivers — tracked separately
+    on ``CohortRecoverySummary.total_copay_savings`` but excluded here.
+    """
     total = 0.0
     if _block_exactness_status(report.lab) == EXACTNESS_STATUS_EXACT:
         total += report.lab.total_savings
-    if _block_exactness_status(report.drug) == EXACTNESS_STATUS_EXACT:
-        total += report.drug.total_savings
-    if _block_exactness_status(report.copay) == EXACTNESS_STATUS_EXACT:
-        total += report.copay.total_copay_savings_try
-        total += float(getattr(report.copay, "rx_copay_savings_try", 0.0) or 0.0)
     if _block_exactness_status(report.billing_strategy) == EXACTNESS_STATUS_EXACT:
         total += report.billing_strategy.total_savings
     return round(total, 2)
@@ -73,7 +70,6 @@ def _collect_required_inputs(blocks: list[Any]) -> list[str]:
 def _finalize_report_exactness(report: BillingActionReport) -> None:
     blocks = [
         report.lab,
-        report.drug,
         report.copay,
         report.billing_strategy,
         report.materials,
@@ -126,18 +122,16 @@ def compute_patient_billing_report(
     patient_lab_tests: list[str] | None = None,
     patient_lab_dates: list[str | None] | None = None,
     patient_lab_visit_ids: list[str | None] | None = None,
-    patient_drug_names: list[str] | None = None,
     copay_exemption: dict[str, Any] | None = None,
     chapters: set[str] | None = None,
 ) -> BillingActionReport:
     """Compute a full billing action report for a single patient.
 
-    Calls all 5 algorithms and assembles the combined report.
+    Calls lab, copay, billing strategy, and materials algorithms.
 
     Args:
         pid: Patient identifier.
         patient_lab_tests: List of lab test names.
-        patient_drug_names: List of drug names.
         copay_exemption: Pre-computed copay exemption result.
         chapters: Pre-computed ICD-10 chapter set.
 
@@ -158,11 +152,6 @@ def compute_patient_billing_report(
         "n_qualifying": 0,
         "qualifying_diagnoses": [],
     }
-
-    if claim_context is not None and claim_context.drug_lines:
-        report.drug = optimize_drug_from_claims(claim_context, is_exempt=bool(exemption.get("exempt")))
-    else:
-        report.drug = _optimize_drug_costs(pid, patient_drug_names or [])
 
     if claim_context is not None and (
         claim_context.procedure_lines or claim_context.drug_lines
@@ -185,7 +174,6 @@ def compute_patient_billing_report(
 
     actions = (
         len(report.lab.flagged_tests)
-        + len(report.drug.drug_recommendations)
         + (1 if report.copay.is_exempt else 0)
         + len(report.billing_strategy.recommendations)
         + len(report.materials.pre_auth_required)
@@ -215,8 +203,6 @@ def compute_all_billing_reports(
             - sut_by_pid: optional exact SUT claim-total payloads keyed by patient
             - patient_alerts_cache: dict with "patients" list
             - lab_df_pl: Polars DataFrame of lab tests
-            - rec_df_pl: Polars DataFrame of prescriptions
-
     Returns:
         Tuple of (billing_reports_by_pid, cohort_summary).
     """
@@ -226,7 +212,6 @@ def compute_all_billing_reports(
     claim_dataset: SUTClaimDataset | None = cache.get("sut_claim_dataset")
     alerts_cache = cache.get("patient_alerts_cache", {})
     lab_df_pl: pl.DataFrame = cache.get("lab_df_pl", pl.DataFrame())
-    rec_df_pl: pl.DataFrame = cache.get("rec_df_pl", pl.DataFrame())
 
     alerts_by_pid: dict[str, dict[str, Any]] = {}
     for alert in alerts_cache.get("patients", []):
@@ -259,20 +244,10 @@ def compute_all_billing_reports(
                 if visit_col and "visit_ids" in row:
                     lab_visit_ids_by_pid[row["patient_id"]] = row["visit_ids"]
 
-    drug_names_by_pid: dict[str, list[str]] = {}
-    if not rec_df_pl.is_empty() and "patient_id" in rec_df_pl.columns:
-        if "drug_name" in rec_df_pl.columns:
-            rx_agg = rec_df_pl.group_by("patient_id").agg(
-                pl.col("drug_name").cast(pl.Utf8).fill_null("").alias("drugs")
-            )
-            for row in rx_agg.iter_rows(named=True):
-                drug_names_by_pid[row["patient_id"]] = row["drugs"]
-
     reports: dict[str, BillingActionReport] = {}
     patient_id_set = set(sut_by_pid.keys()) if hasattr(sut_by_pid, "keys") else set()
     patient_id_set.update(alerts_by_pid.keys())
     patient_id_set.update(lab_tests_by_pid.keys())
-    patient_id_set.update(drug_names_by_pid.keys())
     patient_ids = sorted(patient_id_set)
     if not patient_ids:
         logger.warning("No SUT patient inputs in cache — billing reports will be empty")
@@ -305,7 +280,6 @@ def compute_all_billing_reports(
             patient_lab_tests=lab_tests_by_pid.get(pid, []),
             patient_lab_dates=lab_dates_by_pid.get(pid),
             patient_lab_visit_ids=lab_visit_ids_by_pid.get(pid),
-            patient_drug_names=drug_names_by_pid.get(pid, []),
             copay_exemption=copay_exemption,
             chapters=chapters,
         )
@@ -347,13 +321,16 @@ def compute_all_billing_reports(
     for report in reports.values():
         if _block_exactness_status(report.lab) == EXACTNESS_STATUS_EXACT:
             summary.total_lab_savings += report.lab.total_savings
-        if _block_exactness_status(report.drug) == EXACTNESS_STATUS_EXACT:
-            summary.total_drug_savings += report.drug.total_savings
         if _block_exactness_status(report.copay) == EXACTNESS_STATUS_EXACT:
-            summary.total_copay_savings += (
-                report.copay.total_copay_savings_try
-                + report.copay.rx_copay_savings_try
+            waived_total = float(
+                getattr(report.copay, "patient_copay_waived_total_try", 0.0) or 0.0
             )
+            if waived_total <= 0:
+                waived_total = (
+                    report.copay.total_copay_savings_try
+                    + report.copay.rx_copay_savings_try
+                )
+            summary.total_copay_savings += waived_total
         if _block_exactness_status(report.billing_strategy) == EXACTNESS_STATUS_EXACT:
             summary.total_strategy_savings += report.billing_strategy.total_savings
         summary.total_material_flags += len(report.materials.pre_auth_required) + len(
@@ -364,7 +341,6 @@ def compute_all_billing_reports(
         priority_dist[report.priority] = priority_dist.get(report.priority, 0) + 1
 
     summary.total_lab_savings = round(summary.total_lab_savings, 2)
-    summary.total_drug_savings = round(summary.total_drug_savings, 2)
     summary.total_copay_savings = round(summary.total_copay_savings, 2)
     summary.total_strategy_savings = round(summary.total_strategy_savings, 2)
     summary.grand_total_recoverable = round(
@@ -383,7 +359,6 @@ def compute_all_billing_reports(
 
     summary.savings_by_category = {
         "lab": summary.total_lab_savings,
-        "drug": summary.total_drug_savings,
         "copay": summary.total_copay_savings,
         "strategy": summary.total_strategy_savings,
     }
@@ -412,8 +387,13 @@ def _get_top_action_type(report: BillingActionReport) -> str:
     return _top_action_type_from_savings(
         {
             "lab": report.lab.total_savings,
-            "drug": report.drug.total_savings,
-            "copay": report.copay.total_copay_savings_try,
+            "copay": float(
+                getattr(report.copay, "patient_copay_waived_total_try", 0.0)
+                or (
+                    report.copay.total_copay_savings_try
+                    + report.copay.rx_copay_savings_try
+                )
+            ),
             "strategy": report.billing_strategy.total_savings,
         }
     )
@@ -434,8 +414,13 @@ def patient_recovery_summary_from_payload(report: dict[str, Any]) -> dict[str, A
     """Build a recovery summary dict from cached billing report JSON."""
     savings = {
         "lab": float((report.get("lab") or {}).get("total_savings") or 0),
-        "drug": float((report.get("drug") or {}).get("total_savings") or 0),
-        "copay": float((report.get("copay") or {}).get("total_copay_savings_try") or 0),
+        "copay": float(
+            (report.get("copay") or {}).get("patient_copay_waived_total_try")
+            or (
+                float((report.get("copay") or {}).get("total_copay_savings_try") or 0)
+                + float((report.get("copay") or {}).get("rx_copay_savings_try") or 0)
+            )
+        ),
         "strategy": float((report.get("billing_strategy") or {}).get("total_savings") or 0),
     }
     return {

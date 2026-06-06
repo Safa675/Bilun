@@ -74,13 +74,12 @@ def get_optimization_summary():
     """
     Cohort-level BILUN Optimization intelligence summary.
 
-    Returns pre-computed findings from 6 gazette-based rule engines:
+    Returns pre-computed findings from 5 gazette-based rule engines:
       1. Copayment Exemption Checker (EK-1A): chronic disease exemptions
       2. Surcharge Exposure Analyzer (EK-2G): unavailable without exact claim lines
       3. Copayment Rate Exposure (EK-2C-1): unavailable without exact claim lines
       4. Temporal Price Validation (EK-2B/2C): price changes across gazette dates
       5. DRG Package Unbundling (EK-2C): unavailable without exact itemized claims
-      6. Drug Discount Tier Validation (EK-4A): unavailable without exact drug claims
     """
     mode = _pipeline_mode()
     if mode in {"hybrid", "persistent"}:
@@ -114,8 +113,7 @@ def get_patient_optimization(patient_id: str):
       3. Copay rate exposure: unavailable without exact billed procedure lines
       5. DRG unbundling risk: unavailable without exact itemized claim lines
 
-      Features 4 (temporal) and 6 (drug discount) are system-level only — use
-      /api/optimization-summary for those.
+      Feature 4 (temporal) is system-level only — use /api/optimization-summary.
     """
     mode = _pipeline_mode()
     if mode in {"hybrid", "persistent"}:

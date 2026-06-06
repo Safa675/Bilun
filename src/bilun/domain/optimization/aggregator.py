@@ -20,7 +20,6 @@ from .copay_exemption_context import build_copay_inputs_by_patient
 from .copay_exemption_rules.ek1a import _get_ek1a_by_letter
 from .copay_exemptions import evaluate_copay_exemption
 from .temporal import audit_temporal_prices
-from .drugs import validate_drug_discount_tiers
 from .unbundling import (
     detect_drg_unbundling,
     unavailable_cohort_drg_unbundling_with_context,
@@ -273,18 +272,6 @@ def compute_optimization_summary(
     ]
 
     temporal = audit_temporal_prices()
-    cohort_ctx = build_cohort_claim_context(claim_dataset)
-    drug_lines = cohort_ctx.all_drug_lines if cohort_ctx is not None else None
-    exempt_patient_ids = {
-        pid
-        for pid in patient_ids
-        if evaluate_copay_exemption(copay_inputs[pid]).get("exempt")
-    }
-    drug_discount = validate_drug_discount_tiers(
-        drug_lines,
-        exempt_patient_ids=exempt_patient_ids,
-    )
-
     elapsed = time.perf_counter() - t0
     logger.info(
         "Optimization summary computed in %.1fs (single pass, %d patients)",
@@ -318,6 +305,5 @@ def compute_optimization_summary(
         "copay_rate_exposure": _aggregate_copay_rate_exposure(patient_ids, claim_dataset),
         "temporal_price_validation": temporal,
         "drg_unbundling": _aggregate_drg_unbundling(patient_ids, claim_dataset),
-        "drug_discount_validation": drug_discount,
-        "rule_source": "EK-1A (copay), EK-2G (surcharge), EK-2C-1 (copay rates), EK-2B/2C (pricing/DRG), EK-4A (drugs)",
+        "rule_source": "EK-1A (copay), EK-2G (surcharge), EK-2C-1 (copay rates), EK-2B/2C (pricing/DRG)",
     }

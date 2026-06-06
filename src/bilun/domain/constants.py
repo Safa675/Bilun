@@ -41,6 +41,10 @@ EK2A_PARQUET_PATH = _GAZETTE_CURATED_DIR / "ek2a_outpatient_visits.parquet"
 # Curated EK-4A drug reimbursement data
 EK4A_PARQUET_PATH = _GAZETTE_CURATED_DIR / "ek4a_drugs.parquet"
 
+# EK-4/D — copay-exempt drugs by disease (from SUT .doc annex)
+EK4D_SECTIONS_PATH = _GAZETTE_CURATED_DIR / "ek4d_sections.parquet"
+EK4D_ENTRIES_PATH = _GAZETTE_CURATED_DIR / "ek4d_copay_exempt_entries.parquet"
+
 # Curated optimization annexes (scripts/sut/catalogs/optimization.py)
 EK1A_CURATED_PATH = _GAZETTE_CURATED_DIR / "ek1a_chronic_exemptions.parquet"
 EK2G_CURATED_PATH = _GAZETTE_CURATED_DIR / "ek2g_no_surcharge.parquet"

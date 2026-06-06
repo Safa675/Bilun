@@ -29,8 +29,8 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             "name": "get_billing_report",
             "description": (
                 "Get a patient's billing action report with TRY-denominated"
-                " savings recommendations across 5 billing algorithms: lab"
-                " optimization, drug cost optimization, copay savings,"
+                " savings recommendations across 4 billing algorithms: lab"
+                " hemogram bundling, copay savings,"
                 " billing strategy (package vs itemized), and material"
                 " pre-check. Returns total_recoverable_try, priority, and"
                 " exactness_status."
@@ -53,7 +53,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             "name": "get_revenue_recovery",
             "description": (
                 "Get cohort-level revenue recovery summary. Returns total"
-                " savings across lab, drug, copay, and strategy categories,"
+                " savings across lab, copay, and strategy categories,"
                 " plus top patients ranked by recoverable amount and"
                 " priority distribution."
             ),
@@ -88,7 +88,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             "description": (
                 "Get cohort-level SUT optimization summary: copay exemption"
                 " rates, surcharge exposure, copay rate exposure, DRG"
-                " unbundling flags, drug discount validation, and temporal"
+                " unbundling flags, and temporal"
                 " price audit findings."
             ),
             "parameters": {"type": "object", "properties": {}},

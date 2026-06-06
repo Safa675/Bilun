@@ -453,6 +453,7 @@ def _procedure_line(row: Mapping[str, Any], errors: list[str]) -> ProcedureClaim
             rule_trace_expected=_text(row, "rule_trace_expected"),
             lab_result_id=_text(row, "lab_result_id"),
             lab_billing_status=_text(row, "lab_billing_status"),
+            procedure_specialty_code=_text(row, "procedure_specialty_code"),
         )
     except KeyError as exc:
         errors.append(f"procedure_claim_lines missing field {exc.args[0]}")

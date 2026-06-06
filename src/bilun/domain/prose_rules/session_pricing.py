@@ -13,10 +13,11 @@ from .catalog_membership import (
     procedure_annex_membership,
 )
 from .claim_utils import group_procedure_lines_by_session
+from .session_specialty import detect_cross_specialty_session
 from .types import ProseRuleTrace, SessionPricingResult, SessionProcedureFactor
 
 if TYPE_CHECKING:
-    from src.bilun.domain.claims.models import ProcedureClaimLine
+    from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 
 _RULE_SET_ID = "session_pricing_2_2_2_B"
 _RULES_PATH = _PROSE_RULES_DIR / "session_pricing_2_2_2_B.json"
@@ -278,13 +279,19 @@ def compute_session_adjusted_itemized_total(
     lines: list[ProcedureClaimLine],
     *,
     same_incision: bool = True,
-    cross_specialty: bool = False,
+    cross_specialty: bool | None = None,
+    claim: ClaimHeader | None = None,
     apply_blood_fraction: bool = True,
 ) -> tuple[float, dict[str, Any]]:
-    """Sum itemized payables with §2.2.2.B / §2.2.2.A(5) session point factors applied."""
+    """Sum itemized payables with §2.2.2.B / §2.2.2.A(5) session point factors applied.
+
+    When ``cross_specialty`` is ``None``, each session auto-detects different
+    specialties from line ``procedure_specialty_code`` and EK-2/C (or EK-2/B) ``group``.
+    """
     total = 0.0
     sessions_with_adjustment = 0
     lines_in_scope = 0
+    sessions_cross_specialty = 0
 
     for _session_date, session_lines in group_procedure_lines_by_session(lines).items():
         billable = [
@@ -311,10 +318,17 @@ def compute_session_adjusted_itemized_total(
             continue
 
         codes = [line.procedure_code for line in billable]
+        session_cross = (
+            detect_cross_specialty_session(billable, claim)
+            if cross_specialty is None
+            else cross_specialty
+        )
+        if session_cross:
+            sessions_cross_specialty += 1
         session = compute_session_point_factors(
             codes,
             same_incision=same_incision,
-            cross_specialty=cross_specialty,
+            cross_specialty=session_cross,
         )
         if session.rule_id != "single_procedure":
             sessions_with_adjustment += 1
@@ -352,9 +366,11 @@ def compute_session_adjusted_itemized_total(
     return _money(total), {
         "methodology": methodology,
         "sessions_with_adjustment": sessions_with_adjustment,
+        "sessions_cross_specialty": sessions_cross_specialty,
         "itemized_lines": lines_in_scope,
         "same_incision": same_incision,
         "cross_specialty": cross_specialty,
+        "cross_specialty_mode": "auto" if cross_specialty is None else "fixed",
     }
 
 

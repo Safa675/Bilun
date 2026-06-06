@@ -77,6 +77,7 @@ class ProcedureClaimLine:
     rule_trace_expected: str
     lab_result_id: str = ""
     lab_billing_status: str = ""
+    procedure_specialty_code: str = ""
 
 
 @dataclass(frozen=True)

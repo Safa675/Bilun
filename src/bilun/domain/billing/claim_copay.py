@@ -5,15 +5,22 @@ from __future__ import annotations
 from decimal import Decimal
 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.drugs.ek4d_exempt import match_ek4d_copay_exempt_drug
 from src.bilun.domain.prose_rules.copay_general import (
     resolve_drug_copay_rate,
     resolve_material_copay_rate,
 )
 
-from .types import EXACTNESS_STATUS_EXACT, CopayOptimization
+from .types import (
+    COPAY_GAP_KIND_EXEMPTION_CORRECTION,
+    COPAY_SAVINGS_BENEFICIARY_PATIENT_AND_SGK,
+    EXACTNESS_STATUS_EXACT,
+    CopayOptimization,
+)
 
 _COPAY_RULE_SOURCE = (
-    "SUT §1.8.5(7)+EK-1/A exemptions; §1.8.2/§1.8.3 prose (copay_general_1_8)"
+    "SUT §1.8.5(7)+EK-1/A exemptions; §1.8.2(3)+EK-4/D drug exemptions; "
+    "§1.8.2/§1.8.3 prose (copay_general_1_8)"
 )
 
 
@@ -34,7 +41,18 @@ def optimize_copay_from_claims(
     result = CopayOptimization()
     is_exempt = bool(copay_exemption.get("exempt"))
     partial_exempt = bool(copay_exemption.get("partial_exempt"))
+    has_health_report = copay_exemption.get("has_chronic_health_report")
     result.is_exempt = is_exempt
+
+    diagnosis_codes: list[str] = []
+    for diag in getattr(ctx, "diagnoses", ()) or ():
+        code = getattr(diag, "icd10_code", "")
+        if code:
+            diagnosis_codes.append(str(code))
+    for claim in getattr(ctx, "claims", ()) or ():
+        primary = getattr(claim, "primary_icd10", "")
+        if primary:
+            diagnosis_codes.append(str(primary))
 
     if is_exempt:
         qualifying = copay_exemption.get("qualifying_diagnoses", [])
@@ -83,10 +101,56 @@ def optimize_copay_from_claims(
         component = _copay_component(line.billed_amount_try, line.expected_payable_try)
         if is_exempt and component > 0:
             rx_savings += component
+            continue
 
-    result.visit_copay_savings_try = round(float(visit_savings), 2)
-    result.rx_copay_savings_try = round(float(rx_savings), 2)
-    result.total_copay_savings_try = round(float(visit_savings), 2)
+        ek4d = match_ek4d_copay_exempt_drug(
+            diagnosis_codes,
+            drug_name=str(getattr(line, "drug_name", "") or ""),
+            drug_code=str(getattr(line, "drug_code", "") or ""),
+            barkod=str(getattr(line, "barkod", "") or ""),
+            has_health_report=has_health_report,
+        )
+        if ek4d is None:
+            continue
+        if ek4d.get("partial_without_report"):
+            result.rate_corrections.append(
+                {
+                    "code": line.drug_code,
+                    "name": line.drug_name,
+                    "detail": (
+                        "EK-4/D drug match without health report — "
+                        "§1.8.2(3) savings not asserted"
+                    ),
+                    "sut_section": "1.8.2.(3)",
+                    "section_title": ek4d["evidence"].get("section_title"),
+                }
+            )
+            continue
+        if ek4d.get("counts_toward_exempt") and component > 0:
+            rx_savings += component
+            result.rate_corrections.append(
+                {
+                    "code": line.drug_code,
+                    "name": line.drug_name,
+                    "billed_try": float(line.billed_amount_try),
+                    "payable_try": float(line.expected_payable_try),
+                    "copay_component_try": float(component),
+                    "detail": (
+                        f"EK-4/D exempt drug ({ek4d['evidence'].get('drug_name_tr')}) "
+                        f"for {ek4d['evidence'].get('section_title', 'listed disease')}"
+                    ),
+                    "sut_section": "1.8.2.(3)",
+                }
+            )
+
+    visit_waived = round(float(visit_savings), 2)
+    rx_waived = round(float(rx_savings), 2)
+    result.savings_beneficiary = COPAY_SAVINGS_BENEFICIARY_PATIENT_AND_SGK
+    result.gap_kind = COPAY_GAP_KIND_EXEMPTION_CORRECTION
+    result.visit_copay_savings_try = visit_waived
+    result.rx_copay_savings_try = rx_waived
+    result.total_copay_savings_try = visit_waived  # legacy: procedure/visit only
+    result.patient_copay_waived_total_try = round(visit_waived + rx_waived, 2)
     result.exactness_status = EXACTNESS_STATUS_EXACT
     result.unavailable_reason = None
     result.required_inputs_missing = []

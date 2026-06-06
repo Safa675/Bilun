@@ -79,6 +79,7 @@ def evaluate_copay_exemption(inp: CopayExemptionInput) -> dict[str, Any]:
             "exemption_sources": sources,
             "categories_not_evaluated": not_evaluated,
             "primary_exemption_category": primary,
+            "has_chronic_health_report": inp.has_chronic_health_report,
         }
     )
     return result

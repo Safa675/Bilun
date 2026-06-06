@@ -248,7 +248,8 @@ def recommend_billing_strategy_from_claims(
         itemized_total, itemized_meta = compute_session_adjusted_itemized_total(
             claim_procs,
             same_incision=True,
-            cross_specialty=False,
+            cross_specialty=None,
+            claim=claim,
         )
         itemized_price_methodology = str(
             itemized_meta.get("methodology") or "claim_lines"

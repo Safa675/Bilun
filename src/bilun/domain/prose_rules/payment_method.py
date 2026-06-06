@@ -1,4 +1,10 @@
-"""SUT §2.2 payment method decision evaluator."""
+"""SUT §2.2 payment method decision evaluator.
+
+Ocak/Temmuz MEDULA ``tercih`` (preference) windows are administrative facility
+billing choices in MEDULA — not modeled here. BILUN resolves package vs itemized
+per §2.2.2 using annex membership, tier, star, and prose-locked EK-2/C codes
+(``ek2c_prose_drg_locked_codes.json``).
+"""
 
 from __future__ import annotations
 

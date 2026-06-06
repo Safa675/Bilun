@@ -44,18 +44,6 @@ DRG_UNBUNDLING_UNAVAILABLE_REASON = (
     "in the active SUT runtime inputs."
 )
 
-DRUG_DISCOUNT_REQUIRED_INPUTS = (
-    "dispensed_drug_claim_lines",
-    "drug_claim_dates",
-    "billed_drug_amounts",
-)
-DRUG_DISCOUNT_UNAVAILABLE_REASON = (
-    "Drug discount validation requires exact dispensed drug claim lines and "
-    "billed drug amounts, which are not available in the active SUT runtime "
-    "inputs."
-)
-
-
 def is_exact_output(payload: Mapping[str, Any] | None) -> bool:
     if payload is None:
         return False
@@ -287,19 +275,3 @@ def unavailable_cohort_drg_unbundling(*, n_total_patients: int) -> dict[str, Any
     )
 
 
-def unavailable_drug_discount_validation() -> dict[str, Any]:
-    return build_missing_exact_inputs_block(
-        unavailable_reason=DRUG_DISCOUNT_UNAVAILABLE_REASON,
-        required_inputs_missing=DRUG_DISCOUNT_REQUIRED_INPUTS,
-        null_fields=("n_drugs_total", "n_active_drugs", "mean_discount_tier_1"),
-        empty_list_fields=("sample_drugs",),
-        extra={
-            "tier_distribution": {},
-            "discount_status_distribution": {},
-            "methodology": (
-                "EK-4A remains a gazette catalog reference, but patient-specific "
-                "discount validation is unavailable until exact dispensed drug "
-                "claim lines are present in the active SUT runtime inputs."
-            ),
-        },
-    )

@@ -9,6 +9,7 @@ from .catalog_membership import normalize_procedure_code
 from .claim_utils import group_procedure_lines_by_session, infer_care_setting
 from .payment_method import check_payment_method_compliance, resolve_payment_method
 from .session_pricing import blood_component_billable_fraction, compute_session_point_factors
+from .session_specialty import detect_cross_specialty_session
 from .types import CareSetting
 
 if TYPE_CHECKING:
@@ -97,6 +98,8 @@ def detect_session_point_violations(
     lines: list[ProcedureClaimLine],
     *,
     same_incision: bool = True,
+    cross_specialty: bool | None = None,
+    claim: ClaimHeader | None = None,
 ) -> list[dict[str, Any]]:
     violations: list[dict[str, Any]] = []
 
@@ -110,7 +113,16 @@ def detect_session_point_violations(
             continue
 
         codes = [line.procedure_code for line in billable]
-        session = compute_session_point_factors(codes, same_incision=same_incision)
+        session_cross = (
+            detect_cross_specialty_session(billable, claim)
+            if cross_specialty is None
+            else cross_specialty
+        )
+        session = compute_session_point_factors(
+            codes,
+            same_incision=same_incision,
+            cross_specialty=session_cross,
+        )
         if session.rule_id == "single_procedure":
             continue
 
@@ -240,7 +252,9 @@ def analyze_claim_unbundling(
     finding.payment_method_violations = detect_payment_method_violations(claim, lines)
     if same_incision is not None:
         finding.session_violations = detect_session_point_violations(
-            lines, same_incision=same_incision
+            lines,
+            same_incision=same_incision,
+            claim=claim,
         )
     finding.blood_component_violations = detect_blood_component_violations(lines)
 

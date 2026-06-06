@@ -10,7 +10,6 @@ Modules:
 - copay_rates: Feature 3 — EK-2C-1 copay rate exposure
 - temporal: Feature 4 — EK-2B/2C temporal audit
 - unbundling: Feature 5 — DRG unbundling detection
-- drugs: Feature 6 — Drug discount tier validation
 - aggregator: Cohort-level aggregation
 
 Re-exports for backward compatibility.
@@ -45,8 +44,6 @@ from .temporal import audit_temporal_prices, _temporal_audit_cache
 
 from .unbundling import detect_drg_unbundling
 
-from .drugs import validate_drug_discount_tiers, _drug_discount_cache
-
 from .aggregator import compute_optimization_summary
 
 __all__ = [
@@ -64,7 +61,5 @@ __all__ = [
     "audit_temporal_prices",
     "_temporal_audit_cache",
     "detect_drg_unbundling",
-    "validate_drug_discount_tiers",
-    "_drug_discount_cache",
     "compute_optimization_summary",
 ]

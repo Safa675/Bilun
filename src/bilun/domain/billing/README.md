@@ -1,6 +1,6 @@
 # src/sut/billing
 
-Normative billing optimization engine — 5 algorithms + cohort aggregator.
+Normative billing optimization engine — 4 algorithms + cohort aggregator.
 
 ## Purpose
 
@@ -13,11 +13,10 @@ recovery amounts.
 
 | # | Algorithm | Gazette Annex | Description |
 |---|-----------|---------------|-------------|
-| 1 | Lab Billing Optimizer | Gazette prices | Hemogram bundling + duplicate detection |
-| 2 | Drug Cost Optimizer | EK-4A | Generic substitution + passivation detection |
-| 3 | Copay Savings Calculator | EK-1A | Exemption savings + rate corrections |
-| 4 | Package vs Itemized Recommender | EK-2C | Exact package vs itemized comparison when claim totals are supplied |
-| 5 | Material Reimbursability Pre-Check | EK-3C-1/3C-2 | Pre-auth flags + MIAT warnings |
+| 1 | Lab Billing Optimizer | EK-2B | Hemogram (CBC) bundling — L107020 |
+| 2 | Copay Savings Calculator | EK-1A, EK-4/D | Exemption savings + rate corrections on claim lines |
+| 3 | Package vs Itemized Recommender | EK-2C | Exact package vs itemized comparison when claim totals are supplied |
+| 4 | Material Reimbursability Pre-Check | EK-3C-1/3C-2 | Pre-auth flags + MIAT warnings |
 
 ## Public Surface
 
@@ -30,8 +29,7 @@ recovery amounts.
 
 | Class | Description |
 |-------|-------------|
-| `LabOptimization` | Lab billing analysis |
-| `DrugOptimization` | Drug cost optimization |
+| `LabOptimization` | Lab hemogram bundling analysis |
 | `CopayOptimization` | Copayment savings |
 | `BillingStrategyRecommendation` | Package vs itemized |
 | `MaterialPreCheck` | Material pre-check flags |
@@ -42,10 +40,9 @@ recovery amounts.
 
 - `types.py` — All dataclasses
 - `lab.py` — Algorithm 1
-- `drug.py` — Algorithm 2
-- `copay.py` — Algorithm 3
-- `strategy.py` — Algorithm 4
-- `materials.py` — Algorithm 5
+- `copay.py` — Algorithm 2
+- `strategy.py` — Algorithm 3
+- `materials.py` — Algorithm 4
 - `orchestrator.py` — Main entry points
 
 ## Example

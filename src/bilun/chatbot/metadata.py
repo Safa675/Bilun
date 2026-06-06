@@ -20,10 +20,9 @@ def get_chat_model_context(active_build_id: str | None = None) -> dict[str, Any]
                 "surcharge_eligibility",
                 "copay_rate_eligibility",
                 "drg_unbundling",
-                "drug_discount_validation",
             ],
         },
-        "billing_algorithms": ["lab", "drug", "copay", "strategy", "materials"],
+        "billing_algorithms": ["lab", "copay", "strategy", "materials"],
     }
 
 
