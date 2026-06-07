@@ -1,7 +1,7 @@
 # P2 Plan: SUT §3.1–3.2 Material Bundling Prose Engine
 
 **Status:** Phase 1–7 complete (tail done 2026-06-02); **0** Gate B deferred  
-**Fact-check:** L1.4 — `reports/sut-fact-check/algorithms/L1.4_material_bundling_prose_gap.md`  
+**Fact-check:** L1.4 — `docs/core-system/fact-check/algorithms/L1.4_material_bundling_prose_gap.md`  
 **Registry:** `material_bundling_prose` — `coverage_status=implemented` (clause coverage still partial)
 
 ## Goal
@@ -31,16 +31,16 @@ Classification: `scripts/sut/prose/classify.py` → `material_bundling_prose` wh
 
 ### Phase 1 — Extraction (Gate B)
 
-- [x] Export §3.1–3.2 candidates (48 rows: keyword ∪ NO_PAY/MUST_NOT_BILL) → `evidence/clauses/L1.4_material_bundling_prose.csv`
+- [x] Export §3.1–3.2 candidates (48 rows: keyword ∪ NO_PAY/MUST_NOT_BILL) → `data/gazette/prose_corpus/L1.4_material_bundling_prose.csv`
 - [x] Dedup vs EK-3B-1/2 (`duplicate_of`, `encode_priority` columns; `scripts/sut/prose/material_bundling_gate_b.py`)
-- [x] Human review sample (5 rows ≥10% of 40 `p1_encode`) + `evidence/clauses/L1.4_REVIEW_INSTRUCTIONS.md`
+- [x] Human review sample (5 rows ≥10% of 40 `p1_encode`) + `docs/gazette/prose-encoding.md`
 - [x] Decision table schema → `data/gazette/prose_rules/material_bundling_prose.schema.json`
 
 ### Phase 2 — JSON artifact
 
 - [x] Add `data/gazette/prose_rules/material_bundling_prose.json` (**23 rules** after Gate B + tail batch merge)
 - [x] Registry `coverage_status` → `implemented` (clause coverage partial)
-- [x] Encode manifest `evidence/clauses/L1.4_material_bundling_encoded_manifest.json`
+- [x] Encode manifest `data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json`
 - [x] Rebuild coverage matrix (`scripts/sut/rebuild_baseline_metrics.py` → `baseline_metrics.json`)
 
 ### Phase 3 — Domain module
@@ -98,7 +98,7 @@ Classification: `scripts/sut/prose/classify.py` → `material_bundling_prose` wh
 
 - [x] Semantic splits: procurement 3-hospital price refs, MEDULA code-on-date, barcode claim flag
 - [x] **25 rules** after merge; manifest clause re-homing (C002707 → EK-3/C rule)
-- [x] Export `evidence/clauses/L1.4_material_bundling_corpus_batch2.csv` (204-row backlog)
+- [x] Export `data/gazette/prose_corpus/L1.4_material_bundling_corpus_batch2.csv` (204-row backlog)
 - [x] **Faturalandirma theme (6 clauses → 3 rules)** — 2026-06-02
 - [x] **Garanti/onarım (9 → 4 rules) + ihale/DTS (2 → 2 rules)** — 2026-06-02
 - [x] **ek3_list (99 → 9 rules + 76 annex headers in manifest)** — 2026-06-02

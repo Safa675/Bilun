@@ -1,7 +1,7 @@
 # L4.4 Plan: §3.3 Specialty Annex Prose Engine
 
 **Status:** Phase 0–3 complete — **84/84** corpus traced, **49** rules (2026-06-02)  
-**Fact-check:** `reports/sut-fact-check/algorithms/L4.4_specialty_materials_ek3.md`  
+**Fact-check:** `docs/core-system/fact-check/algorithms/L4.4_specialty_materials_ek3.md`  
 **Registry:** `specialty_materials` (catalog **implemented**; prose **missing**)  
 **Sibling:** L1.4 `material_bundling_prose` — §3.1–3.2 only (**59 rules**, Phase 8 complete)
 
@@ -48,7 +48,7 @@ Largest encode clusters in the 84-row subset: **3.3.3** (33), **3.3.4** (29), **
 - [x] `specialty_materials_prose.json` — **8 rules** from §3.3.1 wound/dressing (4 deontic clauses)
 - [x] `src/bilun/domain/prose_rules/specialty_materials.py` evaluator
 - [x] Registry `specialty_materials_prose` → `partial`
-- [x] Manifest `evidence/clauses/L4.4_specialty_prose_encoded_manifest.json`
+- [x] Manifest `data/gazette/prose_manifests/L4.4_specialty_prose_encoded_manifest.json`
 
 ### Phase 2 — Domain integration
 

@@ -1,7 +1,7 @@
 ## Task: Fix billing strategy algorithm per actual SUT §2.2 rules
 
 **Status:** Phases 1–6 + L3.4 session/prose tails **complete** (2026-06-02); Phase 7 ops verify only  
-**Fact-check:** L3.4 — `reports/sut-fact-check/algorithms/L3.4_billing_strategy.md` (**PARTIAL**, core §2.2 fix shipped)
+**Fact-check:** L3.4 — `docs/core-system/fact-check/algorithms/L3.4_billing_strategy.md` (**PARTIAL**, core §2.2 fix shipped)
 
 ### Goal
 Replace the remaining "pick whichever pays more" logic in billing strategy with the SUT-mandated payment-method decision tree (§2.2.2 inpatient, §2.2.1.B-1 outpatient). Recommendations must always be **legally compliant first**; savings are **corrective** (wrong method today) or **optional** (tier-3 override only).

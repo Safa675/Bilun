@@ -16,8 +16,8 @@ Parallel streams for Phases 1–3. Each stream owns report files under `algorith
 
 **Exit:** 7 P0 reports + FIX_BACKLOG P0 section draft.
 
-**Stream A clause exports:** `evidence/clauses/section_2_2*.csv`  
-**Stream B clause exports:** `evidence/clauses/section_2_2_lab*.csv`, hemogram keywords
+**Stream A clause exports:** `docs/core-system/fact-check/evidence/clauses/section_2_2*.csv`  
+**Stream B clause exports:** `docs/core-system/fact-check/evidence/clauses/section_2_2_lab*.csv`, hemogram keywords
 
 ---
 

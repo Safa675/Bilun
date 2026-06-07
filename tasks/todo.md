@@ -301,12 +301,16 @@ Detect §2.2.2.B-1.e blood component under-billing and sum into `sgk_uplift_try`
 Move `reports/sut-fact-check/` → `docs/core-system/fact-check/` and root `evidence/` → `data/gazette/prose_{manifests,corpus}/`; eliminate orphan directories.
 
 ### Subtasks
-- [ ] Phase 0 — create target dirs; baseline `rg` file list
-- [ ] Phase 1 — `git mv` pipeline data; update `coverage_scope.py` + 8 scripts
-- [ ] Phase 2 — `git mv` fact-check docs; fix internal markdown paths
-- [ ] Phase 3 — update plans + medula doc links
-- [ ] Phase 4 — `reports/README.md` stub; archive WORKSTREAMS; migrate FIX_BACKLOG P2 rows
-- [ ] Phase 5 — `rg` clean; `rebuild_baseline_metrics.py`; material bundling tests
+- [x] Phase 0 — create target dirs; baseline `rg` file list
+- [x] Phase 1 — `git mv` pipeline data; update `coverage_scope.py` + 8 scripts
+- [x] Phase 2 — `git mv` fact-check docs; fix internal markdown paths
+- [x] Phase 3 — update plans + medula doc links
+- [x] Phase 4 — `reports/README.md` stub; archive WORKSTREAMS; migrate FIX_BACKLOG P2 rows
+- [x] Phase 5 — `rg` clean; `rebuild_baseline_metrics.py`; material bundling tests
+
+### Review
+- Relocated 2026-06-07: `docs/core-system/fact-check/`, `data/gazette/prose_{manifests,corpus}/`, `docs/medula/medula_overlap_gaps.md`.
+- `coverage_scope.py` uses `PROSE_MANIFESTS_DIR` from `constants.py` (repo-root anchored).
 
 ### Out of scope
 Re-auditing algorithms, L1.4 corpus expansion, `algorithms_reference.md` sync (separate plan).

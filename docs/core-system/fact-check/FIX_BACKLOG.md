@@ -95,13 +95,14 @@
 | **L1.4-allow** | C001823 — EK-3 explicit separate-billing allow list | **Done** — `ek3_separate_billing_allowed_codes()` catalog scan in `catalog_lookup.py` |
 | **L1.4-c001635** | §3.1.1(15) separate billing not authorized unless SUT says so | **Done** — rule `3.1.1.(15).separate_billing_not_authorized` (23rd prose rule) |
 
-## P2 — Phase 3 findings (remaining)
+## P2 — Phase 3 findings (remaining → owned by billing plans)
 
-| ID | Issue | Target fix |
-|----|-------|------------|
-| **L1.4** | §3.1–3.2 corpus tail (beyond Gate B p1_encode) | Next CSV batch from `L1.4_material_bundling_prose.csv` |
-| **L1.4-tier** | Care setting / facility tier in material prose | Wire `ClaimHeader` into `check_material_bundling_for_context` |
-| **L3.5** | MIAT vs MEDULA patient history | Category D when real claim ingest exists |
+| ID | Issue | Owner |
+|----|-------|-------|
+| **L1.4** | §3.1–3.2 corpus tail (beyond Gate B p1_encode) | `plans/billing/material-bundling-prose-p2-plan.md` — corpus: `data/gazette/prose_corpus/L1.4_material_bundling_corpus_batch2.csv` |
+| **L1.4-tier** | Care setting / facility tier in material prose | Same plan — wire `ClaimHeader` into `check_material_bundling_for_context` |
+| **L4.4** | Specialty §3.3 prose tail | `plans/billing/specialty-materials-prose-l4.4-plan.md` |
+| **L3.5** | MIAT vs MEDULA patient history | Deferred — real claim ingest (Category D) |
 
 ---
 

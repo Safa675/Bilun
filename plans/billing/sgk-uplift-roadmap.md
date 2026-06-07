@@ -4,7 +4,7 @@
 **Last updated:** 2026-06-06  
 **Context:** BILUN encodes substantial §2.2 / EK-2 / EK-3 mechanics, but headline KPIs and UI weighting make the product read as copay + compliance. This plan adds **Kurum ödemesi uplift** detectors and honest bucketing before expanding scope.
 
-**Fact-check anchors:** `reports/sut-fact-check/MASTER.md`, `docs/core-system/algorithms_reference.md`
+**Fact-check anchors:** `docs/core-system/fact-check/MASTER.md`, `docs/core-system/algorithms_reference.md`
 
 ---
 
@@ -59,7 +59,7 @@ Ship a defensible **SGK uplift** track: algorithms that increase legitimate Kuru
   - `savings_by_category`: split `sgk_uplift`, `compliance`, `copay_waiver`
   - `grand_total_recoverable` = uplift only (or rename to `grand_total_sgk_uplift_try`)
 - [ ] Frontend: Revenue Recovery / billing summary copy distinguishes the three KPI families.
-- [ ] Update `reports/sut-fact-check/algorithms/L3.6_billing_orchestrator.md` + `algorithms_reference.md` §3.6.
+- [ ] Update `docs/core-system/fact-check/algorithms/L3.6_billing_orchestrator.md` + `algorithms_reference.md` §3.6.
 
 ### Files
 
@@ -275,7 +275,7 @@ Mirror session under-billing:
 
 **Doc hygiene subtask:**
 
-- [ ] Mark `reports/sut-fact-check/algorithms/L3.2_drug_optimizer.md` and `L2.7_drug_discount_validation.md` as **archived / not in tree**.
+- [ ] Mark `docs/core-system/fact-check/algorithms/L3.2_drug_optimizer.md` and `L2.7_drug_discount_validation.md` as **archived / not in tree**.
 
 ---
 
