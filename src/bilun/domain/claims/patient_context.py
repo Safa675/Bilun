@@ -12,6 +12,8 @@ if TYPE_CHECKING:
         ClaimHeader,
         DrugClaimLine,
         MaterialClaimLine,
+        MedulaRejectionEvent,
+        PerformedProcedureLine,
         ProcedureClaimLine,
     )
 
@@ -26,6 +28,8 @@ class PatientClaimContext:
     material_lines: tuple[MaterialClaimLine, ...]
     drug_lines: tuple[DrugClaimLine, ...]
     diagnoses: tuple[ClaimDiagnosis, ...]
+    performed_procedure_lines: tuple[PerformedProcedureLine, ...] = ()
+    medula_rejection_events: tuple[MedulaRejectionEvent, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -50,8 +54,14 @@ def build_patient_claim_context(
     materials = tuple(dataset.material_lines_by_patient.get(patient_id, ()))
     drugs = tuple(dataset.drug_lines_by_patient.get(patient_id, ()))
     diagnoses = tuple(dataset.diagnoses_by_patient.get(patient_id, ()))
+    performed = tuple(
+        dataset.performed_procedure_lines_by_patient.get(patient_id, ())
+    )
+    medula_events = tuple(
+        dataset.medula_rejection_events_by_patient.get(patient_id, ())
+    )
 
-    if not any((claims, procedures, materials, drugs, diagnoses)):
+    if not any((claims, procedures, materials, drugs, diagnoses, performed, medula_events)):
         return None
 
     return PatientClaimContext(
@@ -61,6 +71,8 @@ def build_patient_claim_context(
         material_lines=materials,
         drug_lines=drugs,
         diagnoses=diagnoses,
+        performed_procedure_lines=performed,
+        medula_rejection_events=medula_events,
     )
 
 

@@ -25,6 +25,8 @@ from src.bilun.domain.claims.models import (
     Money,
     PatientCopayProfile,
     PatientSUTClaimTotals,
+    MedulaRejectionEvent,
+    PerformedProcedureLine,
     ProcedureClaimLine,
 )
 
@@ -99,6 +101,8 @@ class ClaimTables:
     drugs: tuple[Mapping[str, Any], ...]
     expected_outputs: tuple[Mapping[str, Any], ...]
     copay_profiles: tuple[Mapping[str, Any], ...] = ()
+    performed_procedures: tuple[Mapping[str, Any], ...] = ()
+    medula_rejections: tuple[Mapping[str, Any], ...] = ()
 
 
 def read_claim_tables(
@@ -136,6 +140,42 @@ def read_claim_tables(
         else:
             profiles = tuple(profile_frame.to_dicts())
 
+    performed: tuple[Mapping[str, Any], ...] = ()
+    performed_path = directory / "performed_procedure_lines.parquet"
+    if performed_path.exists():
+        performed_frame = pl.read_parquet(performed_path)
+        required_performed = {
+            "performed_line_id",
+            "claim_id",
+            "patient_id",
+            "episode_id",
+            "service_date",
+            "procedure_code",
+        }
+        missing_performed = sorted(required_performed - set(performed_frame.columns))
+        if missing_performed:
+            errors.append(f"{performed_path} missing columns: {missing_performed}")
+        else:
+            performed = tuple(performed_frame.to_dicts())
+
+    medula_rejections: tuple[Mapping[str, Any], ...] = ()
+    medula_path = directory / "medula_rejection_events.parquet"
+    if medula_path.exists():
+        medula_frame = pl.read_parquet(medula_path)
+        required_medula = {
+            "rejection_event_id",
+            "claim_id",
+            "patient_id",
+            "episode_id",
+            "medula_stage",
+            "sonuc_kodu",
+        }
+        missing_medula = sorted(required_medula - set(medula_frame.columns))
+        if missing_medula:
+            errors.append(f"{medula_path} missing columns: {missing_medula}")
+        else:
+            medula_rejections = tuple(medula_frame.to_dicts())
+
     if errors:
         raise ClaimValidationError(errors)
     return ClaimTables(
@@ -146,6 +186,8 @@ def read_claim_tables(
         drugs=tables["drug_claim_lines.parquet"],
         expected_outputs=tables["expected_rule_outputs.parquet"],
         copay_profiles=profiles,
+        performed_procedures=performed,
+        medula_rejections=medula_rejections,
     )
 
 
@@ -171,6 +213,8 @@ def _load_sut_claim_dataset_cached(resolved_directory: str) -> "SUTClaimDataset"
         drug_lines=tables.drugs,
         expected_outputs=tables.expected_outputs,
         copay_profiles=tables.copay_profiles,
+        performed_procedure_lines=tables.performed_procedures,
+        medula_rejection_events=tables.medula_rejections,
     )
 
 
@@ -183,6 +227,8 @@ class SUTClaimDataset:
     procedure_lines: dict[str, ProcedureClaimLine]
     material_lines: dict[str, MaterialClaimLine]
     drug_lines: dict[str, DrugClaimLine]
+    performed_procedure_lines: dict[str, PerformedProcedureLine]
+    medula_rejection_events: dict[str, MedulaRejectionEvent]
     expected_outputs: dict[str, ExpectedRuleOutput]
     claims_by_patient: dict[str, tuple[ClaimHeader, ...]]
     diagnoses_by_patient: dict[str, tuple[ClaimDiagnosis, ...]]
@@ -194,6 +240,10 @@ class SUTClaimDataset:
     procedure_lines_by_patient: dict[str, tuple[ProcedureClaimLine, ...]]
     material_lines_by_patient: dict[str, tuple[MaterialClaimLine, ...]]
     drug_lines_by_patient: dict[str, tuple[DrugClaimLine, ...]]
+    performed_procedure_lines_by_claim: dict[str, tuple[PerformedProcedureLine, ...]]
+    performed_procedure_lines_by_patient: dict[str, tuple[PerformedProcedureLine, ...]]
+    medula_rejection_events_by_claim: dict[str, tuple[MedulaRejectionEvent, ...]]
+    medula_rejection_events_by_patient: dict[str, tuple[MedulaRejectionEvent, ...]]
     expected_outputs_by_claim: dict[str, tuple[ExpectedRuleOutput, ...]]
     expected_outputs_by_line: dict[str, tuple[ExpectedRuleOutput, ...]]
     claim_totals: dict[str, ClaimTotals]
@@ -211,6 +261,8 @@ class SUTClaimDataset:
         drug_lines: Sequence[Mapping[str, Any]],
         expected_outputs: Sequence[Mapping[str, Any]],
         copay_profiles: Sequence[Mapping[str, Any]] = (),
+        performed_procedure_lines: Sequence[Mapping[str, Any]] = (),
+        medula_rejection_events: Sequence[Mapping[str, Any]] = (),
     ) -> "SUTClaimDataset":
         """Build a validated dataset from raw row dictionaries."""
 
@@ -257,10 +309,24 @@ class SUTClaimDataset:
             errors,
             "patient_copay_profiles",
         )
+        performed = _index_rows(
+            (_performed_procedure_line(row, errors) for row in performed_procedure_lines),
+            "performed_line_id",
+            errors,
+            "performed_procedure_lines",
+        )
+        medula_events = _index_rows(
+            (_medula_rejection_event(row, errors) for row in medula_rejection_events),
+            "rejection_event_id",
+            errors,
+            "medula_rejection_events",
+        )
         if errors:
             raise ClaimValidationError(errors)
 
         _validate_claim_links(claims, claim_diagnoses.values(), procedures.values(), materials.values(), drugs.values(), errors)
+        _validate_performed_links(claims, performed.values(), errors)
+        _validate_medula_rejection_links(claims, medula_events.values(), errors)
         _validate_line_dates(claims, procedures.values(), materials.values(), drugs.values(), errors)
         _validate_diagnosis_dates(claims, claim_diagnoses.values(), errors)
         _validate_prescription_ids(drugs.values(), errors)
@@ -278,6 +344,8 @@ class SUTClaimDataset:
             procedure_lines=procedures,
             material_lines=materials,
             drug_lines=drugs,
+            performed_procedure_lines=performed,
+            medula_rejection_events=medula_events,
             expected_outputs=outputs,
             claims_by_patient=_index_sequence(claims.values(), "patient_id"),
             diagnoses_by_patient=_index_sequence(claim_diagnoses.values(), "patient_id"),
@@ -289,6 +357,18 @@ class SUTClaimDataset:
             procedure_lines_by_patient=_index_sequence(procedures.values(), "patient_id"),
             material_lines_by_patient=_index_sequence(materials.values(), "patient_id"),
             drug_lines_by_patient=_index_sequence(drugs.values(), "patient_id"),
+            performed_procedure_lines_by_claim=_index_sequence(
+                performed.values(), "claim_id"
+            ),
+            performed_procedure_lines_by_patient=_index_sequence(
+                performed.values(), "patient_id"
+            ),
+            medula_rejection_events_by_claim=_index_sequence(
+                medula_events.values(), "claim_id"
+            ),
+            medula_rejection_events_by_patient=_index_sequence(
+                medula_events.values(), "patient_id"
+            ),
             expected_outputs_by_claim=_index_sequence(outputs.values(), "claim_id"),
             expected_outputs_by_line=_index_non_blank(outputs.values(), "line_id"),
             claim_totals=claim_totals,
@@ -426,6 +506,72 @@ def _diagnosis(row: Mapping[str, Any], errors: list[str]) -> ClaimDiagnosis | No
         )
     except KeyError as exc:
         errors.append(f"claim_diagnoses missing field {exc.args[0]}")
+        return None
+
+
+def _medula_rejection_event(
+    row: Mapping[str, Any], errors: list[str]
+) -> MedulaRejectionEvent | None:
+    try:
+        event_id = _text(row, "rejection_event_id")
+        rejection_ts = row.get("rejection_timestamp")
+        parsed_ts: date | None = None
+        if rejection_ts not in (None, ""):
+            parsed_ts = _required_date(row, "rejection_timestamp", event_id, errors)
+        return MedulaRejectionEvent(
+            rejection_event_id=event_id,
+            claim_id=_text(row, "claim_id"),
+            patient_id=_text(row, "patient_id"),
+            episode_id=_text(row, "episode_id"),
+            medula_stage=_text(row, "medula_stage"),
+            sonuc_kodu=_text(row, "sonuc_kodu"),
+            hata_kodu=_text({**row, "hata_kodu": row.get("hata_kodu") or ""}, "hata_kodu"),
+            hata_mesaji=_text(
+                {**row, "hata_mesaji": row.get("hata_mesaji") or ""},
+                "hata_mesaji",
+            ),
+            rejection_timestamp=parsed_ts,
+            related_procedure_code=_text(
+                {
+                    **row,
+                    "related_procedure_code": row.get("related_procedure_code") or "",
+                },
+                "related_procedure_code",
+            ),
+            related_procedure_line_id=_text(
+                {
+                    **row,
+                    "related_procedure_line_id": row.get("related_procedure_line_id")
+                    or "",
+                },
+                "related_procedure_line_id",
+            ),
+        )
+    except KeyError as exc:
+        errors.append(f"medula_rejection_events missing field {exc.args[0]}")
+        return None
+
+
+def _performed_procedure_line(
+    row: Mapping[str, Any], errors: list[str]
+) -> PerformedProcedureLine | None:
+    try:
+        line_id = _text(row, "performed_line_id")
+        return PerformedProcedureLine(
+            performed_line_id=line_id,
+            claim_id=_text(row, "claim_id"),
+            patient_id=_text(row, "patient_id"),
+            episode_id=_text(row, "episode_id"),
+            service_date=_required_date(row, "service_date", line_id, errors),
+            procedure_code=_text(row, "procedure_code"),
+            procedure_name=_text(
+                {**row, "procedure_name": row.get("procedure_name") or ""},
+                "procedure_name",
+            ),
+            source=_text({**row, "source": row.get("source") or "emr"}, "source"),
+        )
+    except KeyError as exc:
+        errors.append(f"performed_procedure_lines missing field {exc.args[0]}")
         return None
 
 
@@ -769,6 +915,65 @@ def _validate_claim_links(
             errors.append(f"{line.material_line_id} references unknown procedure_line_id: {line.procedure_line_id}")
         elif procedure.claim_id != line.claim_id or procedure.patient_id != line.patient_id:
             errors.append(f"{line.material_line_id} procedure link crosses claim or patient")
+
+
+def _validate_performed_links(
+    claims: Mapping[str, ClaimHeader],
+    performed_lines: Iterable[PerformedProcedureLine],
+    errors: list[str],
+) -> None:
+    for line in performed_lines:
+        claim = claims.get(line.claim_id)
+        if claim is None:
+            errors.append(
+                f"{line.performed_line_id} references unknown claim_id: {line.claim_id}"
+            )
+            continue
+        if line.patient_id != claim.patient_id:
+            errors.append(
+                f"{line.performed_line_id} patient_id does not match claim {line.claim_id}"
+            )
+        if line.episode_id != claim.episode_id:
+            errors.append(
+                f"{line.performed_line_id} episode_id does not match claim {line.claim_id}"
+            )
+        _date_within_claim(
+            line.performed_line_id,
+            line.claim_id,
+            line.service_date,
+            claims,
+            errors,
+        )
+
+
+def _validate_medula_rejection_links(
+    claims: Mapping[str, ClaimHeader],
+    events: Iterable[MedulaRejectionEvent],
+    errors: list[str],
+) -> None:
+    for event in events:
+        claim = claims.get(event.claim_id)
+        if claim is None:
+            errors.append(
+                f"{event.rejection_event_id} references unknown claim_id: {event.claim_id}"
+            )
+            continue
+        if event.patient_id != claim.patient_id:
+            errors.append(
+                f"{event.rejection_event_id} patient_id does not match claim {event.claim_id}"
+            )
+        if event.episode_id != claim.episode_id:
+            errors.append(
+                f"{event.rejection_event_id} episode_id does not match claim {event.claim_id}"
+            )
+        if event.rejection_timestamp is not None:
+            _date_within_claim(
+                event.rejection_event_id,
+                event.claim_id,
+                event.rejection_timestamp,
+                claims,
+                errors,
+            )
 
 
 def _validate_diagnosis_dates(

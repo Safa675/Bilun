@@ -81,6 +81,37 @@ class ProcedureClaimLine:
 
 
 @dataclass(frozen=True)
+class PerformedProcedureLine:
+    """EMR/OR log row for a procedure performed but not necessarily submitted."""
+
+    performed_line_id: str
+    claim_id: str
+    patient_id: str
+    episode_id: str
+    service_date: date
+    procedure_code: str
+    procedure_name: str
+    source: str = "emr"
+
+
+@dataclass(frozen=True)
+class MedulaRejectionEvent:
+    """MEDULA gateway rejection snapshot linked to a claim."""
+
+    rejection_event_id: str
+    claim_id: str
+    patient_id: str
+    episode_id: str
+    medula_stage: str
+    sonuc_kodu: str
+    hata_kodu: str = ""
+    hata_mesaji: str = ""
+    rejection_timestamp: date | None = None
+    related_procedure_code: str = ""
+    related_procedure_line_id: str = ""
+
+
+@dataclass(frozen=True)
 class MaterialClaimLine:
     material_line_id: str
     claim_id: str

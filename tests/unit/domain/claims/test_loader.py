@@ -20,12 +20,14 @@ pytestmark = pytest.mark.unit
 def test_load_committed_v2_claim_fixture_with_exact_indexes_and_totals():
     dataset = load_sut_claim_dataset()
 
-    assert len(dataset.claims) == 147
-    assert len(dataset.diagnoses) >= 147
-    assert len(dataset.procedure_lines) == 852
-    assert len(dataset.material_lines) == 147
-    assert len(dataset.drug_lines) == 347
-    assert len(dataset.expected_outputs) == 626
+    assert len(dataset.claims) == 134
+    assert len(dataset.diagnoses) >= 134
+    assert len(dataset.procedure_lines) == 721
+    assert len(dataset.material_lines) == 145
+    assert len(dataset.drug_lines) == 337
+    assert len(dataset.expected_outputs) == 597
+    assert len(dataset.performed_procedure_lines) == 1
+    assert len(dataset.medula_rejection_events) == 1
     assert len(dataset.patient_totals) == 50
 
     ctx = build_patient_claim_context("SENTETIK-HASTA-0001", dataset)

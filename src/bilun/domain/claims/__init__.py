@@ -27,6 +27,7 @@ from src.bilun.domain.claims.models import (
     ExpectedRuleOutput,
     MaterialClaimLine,
     PatientSUTClaimTotals,
+    PerformedProcedureLine,
     ProcedureClaimLine,
 )
 from src.bilun.domain.claims.patient_context import (
@@ -56,6 +57,7 @@ __all__ = [
     "MaterialClaimLine",
     "PatientSUTClaimTotals",
     "PatientClaimContext",
+    "PerformedProcedureLine",
     "ProcedureClaimLine",
     "REAL_CLAIMS_MODE",
     "SUTDataSourceConfig",
