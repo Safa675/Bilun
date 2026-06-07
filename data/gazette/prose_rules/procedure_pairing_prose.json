@@ -1,0 +1,35 @@
+{
+  "rule_set_id": "procedure_pairing_addon",
+  "title": "Same-session procedure add-on pairing uplift",
+  "effective_date": "2026-01-17",
+  "sut_anchors": ["2.2.2.A.(5)", "2.2.2.B"],
+  "rules": [
+    {
+      "rule_id": "pairing.701450_701460",
+      "sut_section": "2.2.2.A.(5)",
+      "trigger_procedure_codes": ["701450"],
+      "expected_addon_procedure_codes": ["701460"],
+      "addon_factor": 0.3,
+      "same_incision": true,
+      "message_tr": "Kolonoskopi (701450) ile aynı seansta kolonoskopik polipektomi (701460) eksik veya sıfır faturalanmış."
+    },
+    {
+      "rule_id": "pairing.701540_701410",
+      "sut_section": "2.2.2.A.(5)",
+      "trigger_procedure_codes": ["701540", "701550"],
+      "expected_addon_procedure_codes": ["701410"],
+      "addon_factor": 0.3,
+      "same_incision": true,
+      "message_tr": "ÖGD (701540/701550) ile aynı seansta gastroskopik polipektomi (701410) eksik veya sıfır faturalanmış."
+    },
+    {
+      "rule_id": "pairing.701530_701410",
+      "sut_section": "2.2.2.A.(5)",
+      "trigger_procedure_codes": ["701530"],
+      "expected_addon_procedure_codes": ["701410"],
+      "addon_factor": 0.3,
+      "same_incision": true,
+      "message_tr": "Özefagogastroskopi (701530) ile aynı seansta gastroskopik polipektomi (701410) eksik veya sıfır faturalanmış."
+    }
+  ]
+}

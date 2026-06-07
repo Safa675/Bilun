@@ -7,6 +7,41 @@ from pathlib import Path
 import pandas as pd
 
 
+def _medula_rejection_export(df: pd.DataFrame) -> pd.DataFrame:
+    columns = {
+        "medula_red_satir_id": "rejection_event_id",
+        "fatura_id": "claim_id",
+        "hasta_id": "patient_id",
+        "basvuru_id": "episode_id",
+        "medula_asamasi": "medula_stage",
+        "sonuc_kodu": "sonuc_kodu",
+        "hata_kodu": "hata_kodu",
+        "hata_mesaji": "hata_mesaji",
+        "red_zamani": "rejection_timestamp",
+        "ilgili_islem_kodu": "related_procedure_code",
+        "ilgili_islem_satiri_id": "related_procedure_line_id",
+    }
+    if df.empty:
+        return pd.DataFrame(columns=list(columns.values()))
+    return df.rename(columns=columns)
+
+
+def _performed_procedure_export(df: pd.DataFrame) -> pd.DataFrame:
+    columns = {
+        "gerceklestirilen_satir_id": "performed_line_id",
+        "fatura_id": "claim_id",
+        "hasta_id": "patient_id",
+        "basvuru_id": "episode_id",
+        "hizmet_tarihi": "service_date",
+        "islem_kodu": "procedure_code",
+        "islem_adi": "procedure_name",
+        "kaynak": "source",
+    }
+    if df.empty:
+        return pd.DataFrame(columns=list(columns.values()))
+    return df.rename(columns=columns)
+
+
 def _normalize_for_parquet(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     for col in out.columns:
@@ -180,6 +215,12 @@ def _english_claim_exports(tables: dict[str, pd.DataFrame]) -> dict[str, pd.Data
             "ek1a_muafiyet_iliskili_mi": "exemption_eligible",
         }),
         "procedure_claim_lines.parquet": proc_renamed,
+        "performed_procedure_lines.parquet": _performed_procedure_export(
+            tables.get("gerceklestirilen_islem_satirlari", pd.DataFrame())
+        ),
+        "medula_rejection_events.parquet": _medula_rejection_export(
+            tables.get("medula_red_satirlari", pd.DataFrame())
+        ),
         "material_claim_lines.parquet": tables["malzeme_fatura_satirlari"].rename(columns={
             "malzeme_satiri_id": "material_line_id", "fatura_id": "claim_id",
             "islem_satiri_id": "procedure_line_id", "hasta_id": "patient_id",

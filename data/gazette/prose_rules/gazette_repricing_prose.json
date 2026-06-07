@@ -1,0 +1,10 @@
+{
+  "rule_set_id": "gazette_repricing",
+  "title": "Prospective gazette repricing after tebliğ amendments",
+  "effective_date": "2026-01-17",
+  "sut_anchors": ["1.1", "2.2"],
+  "rebill_permitted_default": true,
+  "increase_only": true,
+  "excluded_procedure_categories": [],
+  "message_tr": "Hizmet tarihinden sonra yürürlüğe giren tebliğ ile liste fiyatı artmış; yeniden fatura/adjustment yasal izin gerektirir."
+}

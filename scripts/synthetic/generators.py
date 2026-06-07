@@ -118,7 +118,18 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
 
     for patient in patients:
         pid = patient["hasta_id"]
-        num_episodes = rng.integers(1, 6)
+        if pid in (
+            "SENTETIK-HASTA-0006",
+            "SENTETIK-HASTA-0007",
+            "SENTETIK-HASTA-0008",
+            "SENTETIK-HASTA-0009",
+            "SENTETIK-HASTA-0010",
+            "SENTETIK-HASTA-0011",
+            "SENTETIK-HASTA-0012",
+        ):
+            num_episodes = 1
+        else:
+            num_episodes = rng.integers(1, 6)
         birth_year = patient["dogum_yili"]
 
         for ep_idx in range(num_episodes):
@@ -161,7 +172,7 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
             cardiac = primary.startswith("I") and any(c.startswith("I") for c in secondary)
             blood_dis = primary.startswith("C9") or primary.startswith("D6")
 
-            episodes_out.append({
+            episode_row = {
                 "hasta_id": pid,
                 "basvuru_id": eid,
                 "basvuru_tarihi": visit_date,
@@ -196,7 +207,51 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
                 "donem": "2024",
                 "_template": template,
                 "_all_codes": all_codes,
-            })
+            }
+            if pid == "SENTETIK-HASTA-0002" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_optional_override_demo"] = "itemized_higher"
+            elif pid == "SENTETIK-HASTA-0003" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_optional_override_demo"] = "package_higher"
+            elif pid == "SENTETIK-HASTA-0004" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_blood_uplift_demo"] = True
+            elif pid == "SENTETIK-HASTA-0005" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_drg_uplift_demo"] = True
+            elif pid == "SENTETIK-HASTA-0006" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_material_uplift_demo"] = True
+            elif pid == "SENTETIK-HASTA-0007" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "gunubirlik"
+                episode_row["_sgk_care_setting_review_demo"] = True
+            elif pid == "SENTETIK-HASTA-0008" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "gunubirlik"
+                episode_row["_sgk_procedure_addon_demo"] = True
+            elif pid == "SENTETIK-HASTA-0009" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "gunubirlik"
+                episode_row["_sgk_procedure_capture_demo"] = True
+            elif pid == "SENTETIK-HASTA-0010" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_package_adequacy_demo"] = True
+            elif pid == "SENTETIK-HASTA-0011" and ep_idx == 0:
+                visit_date = "2024-06-01"
+                episode_row["gelis_tipi"] = "poliklinik"
+                episode_row["basvuru_tarihi"] = visit_date
+                episode_row["ilk_tani_tarihi"] = visit_date
+                episode_row["son_tani_tarihi"] = visit_date
+                episode_row["basvuru_yasi"] = int(visit_date[:4]) - birth_year
+                episode_row["_sgk_gazette_repricing_demo"] = True
+            elif pid == "SENTETIK-HASTA-0012" and ep_idx == 0:
+                visit_date = "2024-07-15"
+                episode_row["gelis_tipi"] = "poliklinik"
+                episode_row["basvuru_tarihi"] = visit_date
+                episode_row["ilk_tani_tarihi"] = visit_date
+                episode_row["son_tani_tarihi"] = visit_date
+                episode_row["basvuru_yasi"] = int(visit_date[:4]) - birth_year
+                episode_row["_sgk_medula_playbook_demo"] = True
+            episodes_out.append(episode_row)
 
             for line_no, code in enumerate(all_codes, start=1):
                 exemption = _diagnosis_matches_ek1a(code)
@@ -335,6 +390,386 @@ def _pick_procedures(
         })
 
     return procs
+
+
+def _lookup_ek2b_price(code: str, ek2b_procs: dict[str, pd.DataFrame]) -> tuple[str, float]:
+    general = ek2b_procs.get("general", pd.DataFrame())
+    if general.empty:
+        return code, 1000.0
+    match = general[general["ISLEM_KODU"].astype(str) == str(code)]
+    if match.empty:
+        return code, 1000.0
+    row = match.iloc[0]
+    return str(row["ISLEM_ADI"]), _money(float(row.get("ISLEM_BEDELI_TL", 0) or 1000))
+
+
+def _pick_blood_uplift_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§2.2.2.B-1.e demo: 705371 billed below 36% of reference payable."""
+    all_codes = episode.get("_all_codes", [])
+    drg_grp = _drg_group(all_codes)
+    name, _price = _lookup_ek2b_price("705371", ek2b_procs)
+
+    package_code = "609270"
+    package_name, package_price = _lookup_ek2b_price(package_code, ek2b_procs)
+    if drg_grp in ek2c_packages and not ek2c_packages[drg_grp].empty:
+        pkg_row = ek2c_packages[drg_grp].sample(1, random_state=rng.bit_generator).iloc[0]
+        package_code = str(pkg_row["package_code"])
+        package_name = str(pkg_row.get("name") or package_code)
+        package_price = _money(float(pkg_row.get("price_try", 0) or package_price))
+
+    reference_try = 1000.0
+    billed_try = 50.0
+    return [
+        {
+            "code": "705371",
+            "name": name or "Eritrosit süspansiyonu",
+            "price": reference_try,
+            "category": "islem",
+            "included_in_package": False,
+            "billed_override": billed_try,
+            "payable_override": reference_try,
+        },
+        {
+            "code": package_code,
+            "name": package_name,
+            "price": package_price,
+            "category": "paket",
+            "is_package": True,
+        },
+    ]
+
+
+def _pick_material_uplift_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§3.1 demo: procedure 600150 billed without expected material OR2640."""
+    _ = (episode, ek2c_packages, rng)
+    name, price = _lookup_ek2b_price("600150", ek2b_procs)
+    price = _money(max(price, 4500.0))
+    return [
+        {
+            "code": "600150",
+            "name": name,
+            "price": price,
+            "category": "islem",
+            "included_in_package": False,
+            "disable_surcharge": True,
+        },
+    ]
+
+
+def _pick_drg_uplift_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§2.2.2 DRG uplift demo: package_candidate=False, package billed, itemized higher."""
+    _ = (episode, ek2c_packages, rng)
+    disable_surcharge = {"disable_surcharge": True}
+    name_a, price_a = _lookup_ek2b_price("600150", ek2b_procs)
+    name_b, price_b = _lookup_ek2b_price("600160", ek2b_procs)
+    price_a = _money(max(price_a, 5000.0))
+    price_b = _money(max(price_b, 4000.0))
+    package_code = "609270"
+    package_name, package_price = _lookup_ek2b_price(package_code, ek2b_procs)
+    package_price = _money(min(package_price or 3500.0, 3500.0))
+    return [
+        {
+            "code": "600150",
+            "name": name_a,
+            "price": price_a,
+            "category": "islem",
+            "included_in_package": False,
+            "billed_override": 0.0,
+            "payable_override": price_a,
+            **disable_surcharge,
+        },
+        {
+            "code": "600160",
+            "name": name_b,
+            "price": price_b,
+            "category": "islem",
+            "included_in_package": False,
+            "billed_override": 0.0,
+            "payable_override": price_b,
+            **disable_surcharge,
+        },
+        {
+            "code": package_code,
+            "name": package_name,
+            "price": package_price,
+            "category": "paket",
+            "is_package": True,
+            "payable_override": package_price,
+            **disable_surcharge,
+        },
+    ]
+
+
+def _pick_optional_override_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§2.2.2(2) demo: tier-3 facility with package vs itemized choice."""
+    demo_kind = episode.get("_sgk_optional_override_demo")
+    _ = (ek2c_packages, rng)  # pinned overridable package; no DRG-group sampling
+
+    name_a, price_a = _lookup_ek2b_price("600150", ek2b_procs)
+    name_b, price_b = _lookup_ek2b_price("600160", ek2b_procs)
+    price_a = _money(max(price_a, 4500.0))
+    price_b = _money(max(price_b, 3500.0))
+
+    # 609270 is in EK-2B+EK-2C without (*) — always DRG_OVERRIDABLE at tier 3.
+    package_code = "609270"
+    package_name, catalog_pkg_price = _lookup_ek2b_price(package_code, ek2b_procs)
+
+    disable_surcharge = {"disable_surcharge": True}
+
+    if demo_kind == "package_higher":
+        item_a, item_b = 2200.0, 1800.0
+        package_price = _money(max(catalog_pkg_price, 9000.0))
+        return [
+            {
+                "code": "600150",
+                "name": name_a,
+                "price": item_a,
+                "category": "islem",
+                "included_in_package": False,
+                "payable_override": item_a,
+                **disable_surcharge,
+            },
+            {
+                "code": "600160",
+                "name": name_b,
+                "price": item_b,
+                "category": "islem",
+                "included_in_package": False,
+                "payable_override": item_b,
+                **disable_surcharge,
+            },
+            {
+                "code": package_code,
+                "name": package_name,
+                "price": package_price,
+                "category": "paket",
+                "is_package": True,
+                "billed_override": 0.0,
+                "payable_override": package_price,
+                **disable_surcharge,
+            },
+        ]
+
+    package_price = _money(min(catalog_pkg_price or 3500.0, 3500.0))
+    return [
+        {
+            "code": "600150",
+            "name": name_a,
+            "price": price_a,
+            "category": "islem",
+            "included_in_package": False,
+            "billed_override": 0.0,
+            "payable_override": price_a,
+            **disable_surcharge,
+        },
+        {
+            "code": "600160",
+            "name": name_b,
+            "price": price_b,
+            "category": "islem",
+            "included_in_package": False,
+            "billed_override": 0.0,
+            "payable_override": price_b,
+            **disable_surcharge,
+        },
+        {
+            "code": package_code,
+            "name": package_name,
+            "price": package_price,
+            "category": "paket",
+            "is_package": True,
+            "payable_override": package_price,
+            **disable_surcharge,
+        },
+    ]
+
+
+def _pick_gazette_repricing_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§3.3 demo: 600150 on 2024-06-01 priced at pre-2026 tebliğ gazette rate."""
+    _ = (episode, ek2c_packages, rng)
+    name, _price = _lookup_ek2b_price("600150", ek2b_procs)
+    stale_price = 449.73
+    return [
+        {
+            "code": "600150",
+            "name": name,
+            "price": stale_price,
+            "category": "islem",
+            "included_in_package": False,
+            "billed_override": stale_price,
+            "payable_override": stale_price,
+            "disable_surcharge": True,
+        },
+    ]
+
+
+def _pick_package_adequacy_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§3.2 demo: package 609270 billed while 600150+600160 support candidate 609300."""
+    _ = (episode, ek2c_packages, rng)
+    disable_surcharge = {"disable_surcharge": True}
+    name_a, price_a = _lookup_ek2b_price("600150", ek2b_procs)
+    name_b, price_b = _lookup_ek2b_price("600160", ek2b_procs)
+    price_a = _money(max(price_a, 5000.0))
+    price_b = _money(max(price_b, 4000.0))
+    package_code = "609270"
+    package_name, package_price = _lookup_ek2b_price(package_code, ek2b_procs)
+    package_price = _money(min(package_price or 3500.0, 3500.0))
+    return [
+        {
+            "code": "600150",
+            "name": name_a,
+            "price": price_a,
+            "category": "islem",
+            "included_in_package": False,
+            **disable_surcharge,
+        },
+        {
+            "code": "600160",
+            "name": name_b,
+            "price": price_b,
+            "category": "islem",
+            "included_in_package": False,
+            **disable_surcharge,
+        },
+        {
+            "code": package_code,
+            "name": package_name,
+            "price": package_price,
+            "category": "paket",
+            "is_package": True,
+            "payable_override": package_price,
+            **disable_surcharge,
+        },
+    ]
+
+
+def _pick_procedure_capture_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§3.1 demo: colonoscopy billed; polypectomy performed in EMR but not submitted."""
+    _ = (episode, ek2c_packages, rng)
+    return _pick_procedure_addon_demo_procedures(
+        episode,
+        ek2b_procs=ek2b_procs,
+        ek2c_packages=ek2c_packages,
+        rng=rng,
+    )
+
+
+def _pick_procedure_addon_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§2.2.2 demo: colonoscopy billed without expected polypectomy add-on."""
+    _ = (episode, ek2c_packages, rng)
+    name, price = _lookup_ek2b_price("701450", ek2b_procs)
+    price = _money(price)
+    return [
+        {
+            "code": "701450",
+            "name": name,
+            "price": price,
+            "category": "islem",
+            "included_in_package": False,
+            "disable_surcharge": True,
+        },
+    ]
+
+
+def _pick_care_setting_review_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§2.2 gunubirlik demo: outpatient mandatory package vs inpatient optional override."""
+    _ = (episode, ek2c_packages, rng)
+
+    name_a, price_a = _lookup_ek2b_price("600150", ek2b_procs)
+    name_b, price_b = _lookup_ek2b_price("600160", ek2b_procs)
+    price_a = _money(max(price_a, 4500.0))
+    price_b = _money(max(price_b, 3500.0))
+
+    package_code = "609270"
+    package_name, catalog_pkg_price = _lookup_ek2b_price(package_code, ek2b_procs)
+    package_price = _money(min(catalog_pkg_price or 3500.0, 3500.0))
+    disable_surcharge = {"disable_surcharge": True}
+
+    return [
+        {
+            "code": "600150",
+            "name": name_a,
+            "price": price_a,
+            "category": "islem",
+            "included_in_package": False,
+            "billed_override": 0.0,
+            "payable_override": price_a,
+            **disable_surcharge,
+        },
+        {
+            "code": "600160",
+            "name": name_b,
+            "price": price_b,
+            "category": "islem",
+            "included_in_package": False,
+            "billed_override": 0.0,
+            "payable_override": price_b,
+            **disable_surcharge,
+        },
+        {
+            "code": package_code,
+            "name": package_name,
+            "price": package_price,
+            "category": "paket",
+            "is_package": True,
+            "payable_override": package_price,
+            **disable_surcharge,
+        },
+    ]
 
 
 # ── Material prose flags (L1.4 claim-field rules) ───────────────────
@@ -511,6 +946,8 @@ def _append_procedure_lines_for_claim(
         qty = int(ps.get("quantity_override", 1))
         unit_price = ps["price"]
         billed = _money(unit_price * qty)
+        if "billed_override" in ps:
+            billed = _money(ps["billed_override"])
 
         included_in_package = ps.get("included_in_package", False)
 
@@ -521,7 +958,10 @@ def _append_procedure_lines_for_claim(
         else:
             base_payable = billed
 
-        surcharge_applicable = ps["code"] not in ctx.ek2g_no_surcharge
+        surcharge_applicable = (
+            not ps.get("disable_surcharge")
+            and ps["code"] not in ctx.ek2g_no_surcharge
+        )
         surcharge_rate = None
         if surcharge_applicable and not is_package_proc:
             if ctx.is_university:
@@ -540,6 +980,8 @@ def _append_procedure_lines_for_claim(
             expected_payable = _money(expected_payable * (1 + surcharge_rate))
         if copay_rate and copay_applicable:
             expected_payable = _money(expected_payable * (1 - copay_rate))
+        if "payable_override" in ps:
+            expected_payable = _money(ps["payable_override"])
 
         denial_reason = ""
         if included_in_package:
@@ -737,7 +1179,15 @@ def _append_drug_lines_for_claim(ctx: ClaimEpisodeContext) -> tuple[float, float
 def _generate_claims_and_lines(
     episodes: list[dict],
     rng: np.random.Generator,
-) -> tuple[list[dict], list[dict], list[dict], list[dict], list[dict], dict[tuple, dict]]:
+) -> tuple[
+    list[dict],
+    list[dict],
+    list[dict],
+    list[dict],
+    list[dict],
+    list[dict],
+    dict[tuple, dict],
+]:
     ek2b_df = _ek2b()
     ek2c_df = _ek2c_latest()
     ek2c1_df = _ek2c1()
@@ -788,6 +1238,8 @@ def _generate_claims_and_lines(
 
     claims: list[dict] = []
     procedure_rows: list[dict] = []
+    performed_rows: list[dict] = []
+    medula_rejection_rows: list[dict] = []
     materials: list[dict] = []
     drug_claims: list[dict] = []
     expected: list[dict] = []
@@ -797,13 +1249,56 @@ def _generate_claims_and_lines(
         pid = episode["hasta_id"]
         eid = episode["basvuru_id"]
         visit_type = episode["gelis_tipi"]
-        scenario_tag = f"{episode.get('_template', {}).get('specialty', 'genel')}_{visit_type}"
+        override_demo = episode.get("_sgk_optional_override_demo")
+        blood_demo = episode.get("_sgk_blood_uplift_demo")
+        drg_demo = episode.get("_sgk_drg_uplift_demo")
+        material_demo = episode.get("_sgk_material_uplift_demo")
+        care_setting_demo = episode.get("_sgk_care_setting_review_demo")
+        procedure_addon_demo = episode.get("_sgk_procedure_addon_demo")
+        procedure_capture_demo = episode.get("_sgk_procedure_capture_demo")
+        package_adequacy_demo = episode.get("_sgk_package_adequacy_demo")
+        gazette_repricing_demo = episode.get("_sgk_gazette_repricing_demo")
+        medula_playbook_demo = episode.get("_sgk_medula_playbook_demo")
+        scenario_tag = (
+            "medula_rejection_1688_molecular_microbiology"
+            if medula_playbook_demo
+            else "sgk_gazette_repricing_600150"
+            if gazette_repricing_demo
+            else "sgk_package_adequacy_undercoded"
+            if package_adequacy_demo
+            else "sgk_procedure_capture_kolonoskopi"
+            if procedure_capture_demo
+            else "sgk_procedure_addon_kolonoskopi"
+            if procedure_addon_demo
+            else "sgk_care_setting_review_gunubirlik"
+            if care_setting_demo
+            else "sgk_blood_uplift_yatis"
+            if blood_demo
+            else "sgk_material_uplift_yatis"
+            if material_demo
+            else "sgk_drg_uplift_yatis"
+            if drg_demo
+            else f"sgk_optional_override_{override_demo}"
+            if override_demo
+            else f"{episode.get('_template', {}).get('specialty', 'genel')}_{visit_type}"
+        )
         template = episode.get("_template", {})
         all_codes = episode.get("_all_codes", [])
 
         claim_id = f"F-{pid}-{(ep_idx + 1):03d}"
 
-        is_university = rng.random() < 0.15
+        is_university = bool(
+            override_demo
+            or blood_demo
+            or drg_demo
+            or material_demo
+            or care_setting_demo
+            or procedure_addon_demo
+            or procedure_capture_demo
+            or package_adequacy_demo
+            or gazette_repricing_demo
+            or medula_playbook_demo
+        ) or rng.random() < 0.15
         facility_tier = (
             "egitim_arastirma"
             if is_university
@@ -819,19 +1314,87 @@ def _generate_claims_and_lines(
             admission = start_date
             discharge = discharge_dt.isoformat()
             claim_end = discharge
+        elif care_setting_demo or visit_type == "gunubirlik":
+            admission = start_date
+            discharge = start_date
+            claim_end = start_date
         else:
             admission = None
             discharge = None
             claim_end = start_date
 
-        n_procs = rng.integers(3, 9)
-        proc_specs = _pick_procedures(
-            episode,
-            n_procs,
-            ek2b_procs=ek2b_procs,
-            ek2c_packages=ek2c_packages,
-            rng=rng,
-        )
+        if blood_demo:
+            proc_specs = _pick_blood_uplift_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
+        elif material_demo:
+            proc_specs = _pick_material_uplift_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
+        elif care_setting_demo:
+            proc_specs = _pick_care_setting_review_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
+        elif gazette_repricing_demo:
+            proc_specs = _pick_gazette_repricing_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
+        elif package_adequacy_demo:
+            proc_specs = _pick_package_adequacy_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
+        elif procedure_capture_demo:
+            proc_specs = _pick_procedure_capture_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
+        elif procedure_addon_demo:
+            proc_specs = _pick_procedure_addon_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
+        elif drg_demo:
+            proc_specs = _pick_drg_uplift_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
+        elif override_demo:
+            proc_specs = _pick_optional_override_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
+        else:
+            n_procs = rng.integers(3, 9)
+            proc_specs = _pick_procedures(
+                episode,
+                n_procs,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
 
         package_code_for_claim = None
         for ps in proc_specs:
@@ -839,8 +1402,10 @@ def _generate_claims_and_lines(
                 package_code_for_claim = ps["code"]
                 break
 
-        # package_candidate must be True if the claim actually contains a package procedure
-        package_candidate = package_code_for_claim is not None
+        # DRG uplift demo keeps package lines but package_candidate=False so strategy defers.
+        package_candidate = package_code_for_claim is not None and (
+            not drg_demo or package_adequacy_demo
+        )
 
         ctx = ClaimEpisodeContext(
             pid=pid,
@@ -873,7 +1438,44 @@ def _generate_claims_and_lines(
         )
 
         proc_billed, proc_payable = _append_procedure_lines_for_claim(ctx)
-        mat_billed, mat_payable = _append_material_lines_for_claim(ctx)
+        if procedure_capture_demo:
+            addon_name, _addon_price = _lookup_ek2b_price("701460", ek2b_procs)
+            performed_rows.append({
+                "gerceklestirilen_satir_id": f"EMR-{claim_id}-001",
+                "fatura_id": claim_id,
+                "hasta_id": pid,
+                "basvuru_id": eid,
+                "hizmet_tarihi": start_date,
+                "islem_kodu": "701460",
+                "islem_adi": addon_name,
+                "kaynak": "emr",
+            })
+        if medula_playbook_demo:
+            claim_proc_rows = [
+                row for row in procedure_rows if row["fatura_id"] == claim_id
+            ]
+            first_proc = claim_proc_rows[0] if claim_proc_rows else None
+            medula_rejection_rows.append({
+                "medula_red_satir_id": f"MEDULA-{claim_id}-001",
+                "fatura_id": claim_id,
+                "hasta_id": pid,
+                "basvuru_id": eid,
+                "medula_asamasi": "fatura_kayit",
+                "sonuc_kodu": "1688",
+                "hata_kodu": "1688",
+                "hata_mesaji": (
+                    "Moleküler mikrobiyoloji işlemi için zorunlu rapor eksik"
+                ),
+                "red_zamani": start_date,
+                "ilgili_islem_kodu": first_proc["islem_kodu"] if first_proc else "",
+                "ilgili_islem_satiri_id": (
+                    first_proc["islem_satiri_id"] if first_proc else ""
+                ),
+            })
+        if material_demo:
+            mat_billed, mat_payable = 0.0, 0.0
+        else:
+            mat_billed, mat_payable = _append_material_lines_for_claim(ctx)
         drug_billed, drug_payable = _append_drug_lines_for_claim(ctx)
 
         total_billed = proc_billed + mat_billed + drug_billed
@@ -901,7 +1503,7 @@ def _generate_claims_and_lines(
             "fatura_baslangic_tarihi": start_date,
             "fatura_bitis_tarihi": claim_end,
             "birincil_icd10": all_codes[0] if all_codes else "",
-            "paket_adayi_mi": package_code_for_claim is not None,
+            "paket_adayi_mi": package_candidate,
             "beklenen_toplam_fatura_tutari_try": _money(total_billed),
             "beklenen_toplam_odenebilir_tutar_try": _money(total_payable),
             "beklenen_red_nedeni": "Kismi paket ici satir reddi" if total_payable < total_billed else "",
@@ -924,7 +1526,16 @@ def _generate_claims_and_lines(
             "test_notu": "Fatura duzeyi sentetik beklenen cikti",
         })
 
-    return claims, procedure_rows, materials, drug_claims, expected, lab_billing_budget
+    return (
+        claims,
+        procedure_rows,
+        performed_rows,
+        medula_rejection_rows,
+        materials,
+        drug_claims,
+        expected,
+        lab_billing_budget,
+    )
 
 
 # ── Prescription generation ──────────────────────────────────────────
@@ -1026,9 +1637,16 @@ def build_workbook_tables(
         p["hasta_toplam_gelis_sayisi"] = n_eps
         p["ana_senaryo"] = ",".join(sorted(patient_scenarios.get(pid, {"genel"})))
 
-    claims, procedure_rows, materials, drug_claims, expected, lab_billing_budget = (
-        _generate_claims_and_lines(episodes, rng)
-    )
+    (
+        claims,
+        procedure_rows,
+        performed_rows,
+        medula_rejection_rows,
+        materials,
+        drug_claims,
+        expected,
+        lab_billing_budget,
+    ) = _generate_claims_and_lines(episodes, rng)
     _ensure_prose_flag_coverage(materials)
 
     prescriptions = _generate_prescriptions(drug_claims, patients)
@@ -1075,6 +1693,8 @@ def build_workbook_tables(
         "tani_satirlari": pd.DataFrame(diagnosis_rows),
         "fatura_basliklari": pd.DataFrame(claims),
         "islem_fatura_satirlari": pd.DataFrame(procedure_rows),
+        "gerceklestirilen_islem_satirlari": pd.DataFrame(performed_rows),
+        "medula_red_satirlari": pd.DataFrame(medula_rejection_rows),
         "malzeme_fatura_satirlari": pd.DataFrame(materials),
         "ilac_fatura_satirlari": pd.DataFrame(drug_claims),
         "receteler": pd.DataFrame(prescriptions),
