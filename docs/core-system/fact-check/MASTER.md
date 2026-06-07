@@ -1,8 +1,9 @@
 # SUT Algorithm Fact-Check — Master Report
 
+**Canonical path:** `docs/core-system/fact-check/` (relocated from `docs/core-system/fact-check/`, 2026-06-07)  
 **Status:** Phase 3 complete — **28/28 reports**  
 **Last updated:** 2026-06-04 (P0.1/P0.2 quick-win backlog sync)  
-**Next:** L1.4 corpus CSV batches + tier wiring  
+**Next:** L1.4 corpus CSV batches + tier wiring (`plans/billing/material-bundling-prose-p2-plan.md`)  
 **Fix waves applied:** P0/P1 (2026-06-02), Sprint A-D (2026-06-02), Phase 1 remainder (2026-06-02), Phase 2 + L1.4 tail (2026-06-02)
 
 ---
@@ -158,7 +159,7 @@ All 28 algorithm reports now include post-fix status lines and Post-Fix Updates 
 
 ## Report index
 
-All reports: `reports/sut-fact-check/algorithms/`
+All reports: `docs/core-system/fact-check/algorithms/`
 
 Phase 3 rollup: `PHASE3_VERDICT_TABLE.md`
 

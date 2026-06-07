@@ -1,5 +1,7 @@
 # Algorithm SUT Fact-Check Plan
 
+> **Deliverables live at** [`docs/core-system/fact-check/`](../../docs/core-system/fact-check/) (not `reports/`). Prose pipeline artifacts: `data/gazette/prose_manifests/`, `prose_corpus/`.
+
 **Status:** Approved — Safa review 2026-06-02  
 **Created:** 2026-06-02  
 **Prerequisite work:** SUT prose extraction (`sut_clauses.parquet`), prose rule JSON, `rule_registry.py`, coverage matrix, billing-strategy §2.2 fix (Phases 1–6)
@@ -24,10 +26,10 @@ Produce a **complete, evidence-backed fact-check** of every BILUN reimbursement 
 
 **Done looks like:**
 
-1. One **master report** (`reports/sut-fact-check/MASTER.md`) with executive summary, gap statistics, and fix priority queue.
+1. One **master report** (`docs/core-system/fact-check/MASTER.md`) with executive summary, gap statistics, and fix priority queue.
 2. One **per-algorithm report** for each inventoried algorithm (see §4), using the standard template in §7.
 3. Every factual claim in code, docs, and UI labeled with a **verdict** (§6).
-4. A **fix backlog** (`reports/sut-fact-check/FIX_BACKLOG.md`) derived from verdicts, ordered by legal/financial risk.
+4. A **fix backlog** (`docs/core-system/fact-check/FIX_BACKLOG.md`) derived from verdicts, ordered by legal/financial risk.
 5. No algorithm fix work starts until its fact-check report is written and reviewed.
 
 **Out of scope for this plan:**
@@ -123,7 +125,7 @@ Assign verdict (§6), severity, fix type, and test gaps. Link to specific file:l
 
 ## 4. Algorithm Inventory (Full Scope)
 
-Every row below gets its own report file under `reports/sut-fact-check/algorithms/`.
+Every row below gets its own report file under `docs/core-system/fact-check/algorithms/`.
 
 ### Layer 0 — Prose rule engine (shared infrastructure)
 
@@ -186,20 +188,20 @@ Every row below gets its own report file under `reports/sut-fact-check/algorithm
 
 ### Phase 0 — Setup (1 session)
 
-- [x] **MEDULA overlap gap report** — for all 28 units: does BILUN claim SUT enforcement when MEDULA already handles it? Output: `reports/sut-fact-check/medula_overlap_gaps.md` (counts by `MEDULA_DUPLICATE` vs additive review)
+- [x] **MEDULA overlap gap report** — for all 28 units: does BILUN claim SUT enforcement when MEDULA already handles it? Output: `docs/core-system/fact-check/medula_overlap_gaps.md` (counts by `MEDULA_DUPLICATE` vs additive review)
 - [x] Rebuild coverage: `python scripts/sut/build_sut_coverage.py`
-- [x] Snapshot baseline metrics into `reports/sut-fact-check/baseline_metrics.json` (clause counts, gap %, registry status counts, MEDULA overlap counts)
+- [x] Snapshot baseline metrics into `docs/core-system/fact-check/baseline_metrics.json` (clause counts, gap %, registry status counts, MEDULA overlap counts)
 - [x] Create report directory tree and empty templates
-- [x] Assign algorithm IDs to parallel workstreams → `reports/sut-fact-check/WORKSTREAMS.md`
+- [x] Assign algorithm IDs to parallel workstreams → `docs/core-system/fact-check/WORKSTREAMS.md`
 
 ### Phase 1 — P0 algorithms (legal/financial risk)
 
 - [x] Stream A: P0.1, P0.2, P0.4, L3.4, L2.6
 - [x] Stream B: L3.1, L4.1
 - [x] FIX_BACKLOG P0 section populated
-- [x] Clause exports: `evidence/clauses/section_2_2*.csv`
+- [x] Clause exports: `docs/core-system/fact-check/evidence/clauses/section_2_2*.csv`
 
-**Exit criteria met:** 7 P0 reports in `reports/sut-fact-check/algorithms/`
+**Exit criteria met:** 7 P0 reports in `docs/core-system/fact-check/algorithms/`
 
 ### Phase 2 — P1 algorithms (partial registry + high volume)
 
@@ -207,7 +209,7 @@ Every row below gets its own report file under `reports/sut-fact-check/algorithm
 - [x] Stream D: L2.1, L2.2, L3.3
 - [x] Stream E: L1.1, L1.2, L3.5, P0.5, P0.6, L4.2
 - [x] L1.1/L1.2 UNCERTAIN_HOLD → ADDITIVE (keep pre-MEDULA savings)
-- [x] Clause exports: `evidence/clauses/section_1_8*.csv`
+- [x] Clause exports: `docs/core-system/fact-check/evidence/clauses/section_1_8*.csv`
 
 **Exit criteria met:** 12 P1 reports (19/28 total with Phase 1)
 
@@ -253,7 +255,7 @@ Every finding gets exactly one primary verdict:
 
 ## 7. Per-Algorithm Report Template
 
-Save as: `reports/sut-fact-check/algorithms/{ID}_{slug}.md`
+Save as: `docs/core-system/fact-check/algorithms/{ID}_{slug}.md`
 
 ```markdown
 # {ID}: {Algorithm Name}
@@ -395,7 +397,7 @@ Each subagent delivers: completed report template + clause CSV extract + recomme
 ## 12. Deliverables Checklist
 
 ```
-reports/sut-fact-check/
+docs/core-system/fact-check/
 ├── MASTER.md
 ├── FIX_BACKLOG.md
 ├── baseline_metrics.json

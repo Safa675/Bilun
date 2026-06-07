@@ -1,42 +1,37 @@
-# SUT Algorithm Fact-Check Reports
+# SUT algorithm fact-check (reference)
 
-Engineering artifacts for the algorithm fact-check program (`plans/billing/algorithm-sut-fact-check-plan.md`).
+**Status:** Audit program closed 2026-06. Fix waves P0–P1 complete; P2 corpus tail owned by billing plans.  
+**Plan:** [`plans/billing/algorithm-sut-fact-check-plan.md`](../../plans/billing/algorithm-sut-fact-check-plan.md)
 
-## Structure
+Evidence-backed verdicts for 28 reimbursement algorithms vs `sut_clauses.parquet`, prose JSON, annex catalogs, and MEDULA overlap.
+
+## Layout
 
 ```
-reports/sut-fact-check/
-├── README.md                 ← this file
-├── MASTER.md                 ← rollup (Phase 4)
-├── FIX_BACKLOG.md            ← prioritized fixes (Phase 4)
-├── WORKSTREAMS.md            ← parallel assignment (Phase 0)
-├── baseline_metrics.json     ← coverage + MEDULA snapshot (Phase 0)
-├── medula_overlap_gaps.md    ← MEDULA vs BILUN classification (Phase 0)
-├── algorithms/
-│   ├── _TEMPLATE.md          ← per-algorithm report template
-│   └── {ID}_{slug}.md        ← one report per unit (Phases 1–3)
-└── evidence/
-    ├── clauses/              ← exported clause CSVs by section prefix
-    └── diffs/                ← optional decision-table snapshots
+docs/core-system/fact-check/
+├── README.md              ← this file
+├── MASTER.md              ← rollup (28/28 verdicts)
+├── FIX_BACKLOG.md         ← fix history; open P2 → billing plans
+├── baseline_metrics.json  ← coverage snapshot (regenerate via scripts/sut/rebuild_baseline_metrics.py)
+├── algorithms/            ← one report per unit (Gates A–F)
+└── evidence/clauses/      ← audit citation CSVs (§1.8, §2.2 section dumps)
+
+docs/medula/medula_overlap_gaps.md
+
+data/gazette/prose_manifests/   ← encode manifests (runtime + scripts)
+data/gazette/prose_corpus/      ← Gate B corpus exports (regenerable)
 ```
 
-## Status
+## Two “evidence” locations
 
-| Phase | Status | Deliverables |
-|-------|--------|--------------|
-| 0 | **Complete** | baseline_metrics, medula_overlap_gaps, directory tree, workstreams |
-| 1 | **Complete** | 7 P0 reports |
-| 2 | **Complete** | 12 P1 reports (L1.1–L1.2, L2.1–L2.2, L2.7, L3.2–L3.3, L3.5, P0.3, P0.5–P0.6, L4.2) |
-| 2b | **Complete** | Phase 5 P0 code fixes (session primary, lab dup, same_incision) |
-| 3 | **Complete** | 9 reports: L2.3–L2.5, L2.8, L3.6, L4.3–L4.4, L1.3, L1.4 gap |
-| 4 | **Complete** | MASTER.md full rollup (28/28) |
-| Fix | Pending | P1/P2 waves from FIX_BACKLOG.md |
-| 3 | Pending | P2/P3 algorithms |
-| 4 | Pending | MASTER.md, FIX_BACKLOG.md |
-| 5 | Pending | Fix wave |
+| Path | Purpose |
+|------|---------|
+| `docs/core-system/fact-check/evidence/clauses/` | Frozen clause excerpts cited in audit reports |
+| `data/gazette/prose_corpus/` | Regenerable §3.1–3.2 / L4.4 encoding candidates |
+| `data/gazette/prose_manifests/` | Which corpus rows became `prose_rules/*.json` |
 
-## How to add a report
+## Add a new report
 
 1. Copy `algorithms/_TEMPLATE.md` → `algorithms/{ID}_{slug}.md`
-2. Run Gates A–F from the plan
-3. Link evidence files under `evidence/clauses/` when exported
+2. Run Gates A–F from the fact-check plan
+3. Export audit CSVs to `evidence/clauses/`; corpus work goes to `data/gazette/prose_corpus/`

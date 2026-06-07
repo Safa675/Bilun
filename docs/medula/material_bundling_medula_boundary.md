@@ -1,7 +1,7 @@
 # Material billing: BILUN vs MEDULA boundary (Phase 5)
 
 **Last updated:** 2026-06-02  
-**Related:** `docs/medula/medula_bilun_overlap.md`, `reports/sut-fact-check/medula_overlap_gaps.md`, L1.4 fact-check
+**Related:** `docs/medula/medula_bilun_overlap.md`, `docs/medula/medula_overlap_gaps.md`, L1.4 fact-check
 
 This document answers: *What does MEDULA block at Hizmet Kayıt, what does BILUN check before submission, and where do they overlap without duplicating recoverable TRY?*
 
@@ -122,5 +122,5 @@ flowchart LR
 
 - `docs/medula/medula_capabilities.md` — Malzeme DTO, ICU material restrictions, invoice blocking
 - `docs/medula/medula_bilun_overlap.md` — full-stack overlap map
-- `reports/sut-fact-check/algorithms/L1.4_material_bundling_prose_gap.md`
+- `docs/core-system/fact-check/algorithms/L1.4_material_bundling_prose_gap.md`
 - `data/gazette/prose_rules/material_bundling_prose.json` — **22 rules**

@@ -1,9 +1,11 @@
 # L1.4 Gate B — Human review sample instructions
 
-**Artifacts**
-- Full export: `L1.4_material_bundling_prose.csv`
-- Review sample (≥10% of `p1_encode` rows): `L1.4_material_bundling_prose_review_sample.csv`
-- Summary counts: `L1.4_material_bundling_gate_b_summary.json`
+**Artifacts** (under `data/gazette/prose_corpus/`)
+
+- Full export: `data/gazette/prose_corpus/L1.4_material_bundling_prose.csv`
+- Review sample (≥10% of `p1_encode` rows): `data/gazette/prose_corpus/L1.4_material_bundling_prose_review_sample.csv`
+- Summary counts: `data/gazette/prose_corpus/L1.4_material_bundling_gate_b_summary.json`
+- Encode manifest: `data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json`
 
 ## Reviewer checklist (per row)
 
