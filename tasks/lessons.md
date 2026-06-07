@@ -45,6 +45,12 @@ Format per entry:
 
 **Rule:** For any value that comes from a browser-only store (localStorage, sessionStorage, matchMedia, IndexedDB) and needs to drive React UI, use `useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)`. The server snapshot is `[]` / a stable empty value; the client snapshot reads the store on demand. Cache the snapshot by the underlying raw value to keep `getSnapshot` referentially stable (otherwise React tears).
 
+## 2026-06-06 — Flatten filled PDFs when viewer focus changes appearance
+
+**Pattern:** Filling AcroForm text fields and only adjusting `/DA` font metadata can still fail because PDF viewers redraw editable field contents on focus using their own form-rendering behavior.
+
+**Rule:** When the deliverable is a final application PDF and the user reports font changes after clicking fields, generate a flattened copy: draw text directly onto the page with an embedded font that supports the required language, then remove form widgets. Do not keep editable fields unless editability is explicitly required.
+
 ## 2026-05-27 — Style file collapse needs a transitional layer
 
 **Pattern:** Trying to delete a large legacy stylesheet (`sut-premium.css`) and reduce `globals.css` to <200 lines in a single phase while pages still reference the legacy classes — would break every page mid-phase.
