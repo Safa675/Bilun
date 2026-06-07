@@ -1,6 +1,10 @@
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import type { PatientMeta } from "@/lib/domains/patient";
 import type { SutHomeTab } from "@/lib/constants";
+import enMessages from "@/messages/en/index";
+import trMessages from "@/messages/tr/index";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
+import { translate } from "@/lib/i18n/translate";
 
 export interface CohortFilter {
   /** Selected patient ID (exact match) */
@@ -67,12 +71,19 @@ export function formatAgeRangeDisplay(filter: Pick<CohortFilter, "ageMin" | "age
 }
 
 export function formatPatientFilterLabel(meta: PatientMeta): string {
+  const messages = getModuleLocale() === "tr" ? trMessages : enMessages;
   const details: string[] = [];
-  if (meta.age !== null) details.push(`${meta.age}y`);
+  if (meta.age !== null) {
+    details.push(translate(messages, "cohort.patientSearch.ageSuffix", { age: meta.age }));
+  }
   if (meta.sex) details.push(meta.sex);
-  return details.length > 0
-    ? `${meta.patient_id} · ${details.join(" · ")}`
-    : meta.patient_id;
+  if (details.length === 0) {
+    return meta.patient_id;
+  }
+  return translate(messages, "cohort.patientSearch.patientDetails", {
+    patientId: meta.patient_id,
+    details: details.join(" · "),
+  });
 }
 
 export function parseCohortFilter(

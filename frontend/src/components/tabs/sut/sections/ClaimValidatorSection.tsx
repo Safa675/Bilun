@@ -23,6 +23,8 @@ import {
 import { getSutSeverityLabel } from "@/lib/sutLabels";
 import { Chip, DataTable, Surface } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
+import { translateValidationMessage, translateValidationSummary } from "@/lib/apiMessages";
 import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 
 export function ClaimValidatorSection() {
@@ -168,7 +170,9 @@ export function ClaimValidatorSection() {
                 <p className="text-xs" style={{ color: "#94A3B8" }}>
                   {t("sections.claimValidator.matchingProcedures", {
                     count: procInfo.candidates.length,
-                    plural: procInfo.candidates.length > 1 ? "s" : "",
+                    ...(getModuleLocale() === "en"
+                      ? { plural: procInfo.candidates.length > 1 ? "s" : "" }
+                      : {}),
                   })}
                 </p>
                 {procInfo.candidates.map((c: SutProcedureEntry) => (
@@ -291,7 +295,7 @@ function ValidationResultPanel({ result, t }: { result: SutValidationResult; t: 
       <div className="text-xs text-right" style={{ color: "#A1A1AA" }}>
         {t("sections.claimValidator.validatedIn", {
           ms: result.validation_time_ms.toFixed(1),
-          summary: result.summary,
+          summary: translateValidationSummary(result.summary),
         })}
       </div>
     </div>
@@ -307,7 +311,9 @@ function ViolationRow({ violation, t }: { violation: SutViolation; t: ReturnType
       </span>
       <div className="min-w-0">
         <div className="text-sm font-semibold" style={{ color: "#1A1A1A" }}>{violation.material_name}</div>
-        <div className="text-xs mt-0.5" style={{ color: "#71717A" }}>{violation.message}</div>
+        <div className="text-xs mt-0.5" style={{ color: "#71717A" }}>
+          {translateValidationMessage(violation.message)}
+        </div>
         {violation.savings_try > 0 && (
           <div className="text-xs mt-1 font-medium" style={{ color: "#B45309" }}>
             {t("sections.claimValidator.potentialSaving", { amount: fmtTRY2(violation.savings_try) })}

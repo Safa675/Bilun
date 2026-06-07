@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable, Surface } from "@/components/primitives";
+import { useT } from "@/lib/i18n/useTranslations";
 
 function SkeletonBars({ count, widths }: { count: number; widths?: string[] }) {
   return (
@@ -73,6 +74,7 @@ export function SutAnalyticsShellSkeleton() {
 }
 
 export function SutPatientAnalyticsSkeleton({ patientId }: { patientId?: string | null }) {
+  const t = useT();
   return (
     <div className="space-y-5">
       <Surface variant="base" padding="lg">
@@ -80,7 +82,9 @@ export function SutPatientAnalyticsSkeleton({ patientId }: { patientId?: string 
       </Surface>
       <Surface variant="base" padding="lg">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-          {patientId ? `Loading patient ${patientId}` : "Loading patient analytics"}
+          {patientId
+            ? t("common.skeleton.patientAnalyticsWithId", { patientId })
+            : t("common.skeleton.patientAnalytics")}
         </p>
         <div className="mt-3">
           <SkeletonCardGrid count={3} />
@@ -155,11 +159,14 @@ export function SutReferenceSectionSkeleton({ title }: { title: string }) {
 }
 
 export function SutBillingReportSkeleton({ patientId }: { patientId?: string | null }) {
+  const t = useT();
   return (
     <div className="space-y-6">
       <Surface variant="base" padding="lg">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-          {patientId ? `Loading ${patientId}` : "Loading billing report"}
+          {patientId
+            ? t("common.skeleton.billingReportWithId", { patientId })
+            : t("common.skeleton.billingReport")}
         </p>
         <div className="mt-4">
           <SkeletonBars count={2} widths={["35%", "58%"]} />

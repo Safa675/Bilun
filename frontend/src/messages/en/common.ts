@@ -16,6 +16,12 @@ const common = {
   validating: "Validating…",
   prev: "Prev",
   go: "Go",
+  skeleton: {
+    patientAnalytics: "Loading patient analytics",
+    patientAnalyticsWithId: "Loading patient {patientId}",
+    billingReport: "Loading billing report",
+    billingReportWithId: "Loading {patientId}",
+  },
 } as const;
 
 export default common;

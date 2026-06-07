@@ -22,6 +22,31 @@ const labels = {
       "medium": "Medium risk",
       "high": "High risk"
     },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "very_high": "Very High"
+    },
+    "actionType": {
+      "lab": "Laboratory",
+      "copay": "Copay exemption",
+      "strategy": "Billing strategy",
+      "none": "None"
+    },
+    "savingsCategory": {
+      "lab": "Laboratory",
+      "copay": "Copay exemption",
+      "strategy": "Billing strategy"
+    },
+    "flagType": {
+      "hemogram_unbundling": "Hemogram unbundling"
+    },
+    "paymentMethod": {
+      "package": "Package",
+      "itemized": "Itemized",
+      "overridable": "Overridable"
+    },
     "severity": {
       "error": "Error",
       "warning": "Warning",

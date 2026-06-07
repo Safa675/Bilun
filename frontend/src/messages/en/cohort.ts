@@ -23,7 +23,8 @@ const cohort = {
     "noResults": "No patients found",
     "searchFailed": "Failed to search patients",
     "retry": "Retry search",
-    "ageSuffix": "{age}y"
+    "ageSuffix": "{age}y",
+    "patientDetails": "{patientId} · {details}"
   }
 } as const;
 

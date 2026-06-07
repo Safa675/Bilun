@@ -12,6 +12,8 @@ import sections from "./sections";
 import optimizer from "./optimizer";
 import synthetic from "./synthetic";
 import admin from "./admin";
+import api from "./api";
+import designSystem from "./designSystem";
 
 const trMessages = {
   shell,
@@ -28,6 +30,8 @@ const trMessages = {
   optimizer,
   synthetic,
   admin,
+  api,
+  designSystem,
 };
 
 export default trMessages;

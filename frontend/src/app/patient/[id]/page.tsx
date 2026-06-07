@@ -11,6 +11,17 @@ import {
   LabOptimizationSection,
   CopayOptimizationSection,
   BillingStrategySection,
+  OptionalOverrideSection,
+  SessionUpliftSection,
+  BloodComponentUpliftSection,
+  MaterialUpliftSection,
+  ProcedureAddonUpliftSection,
+  ProcedureCaptureGapSection,
+  DrgPackageAdequacyReviewSection,
+  GazetteRepricingSection,
+  MedulaRejectionPlaybookSection,
+  CareSettingReviewSection,
+  DrgUpliftSection,
   MaterialsPreCheckSection,
   SutOptimizationSection,
 } from "@/components/patient/SutBillingReportSections";
@@ -278,6 +289,39 @@ export default function SutPatientPage() {
                     <LabOptimizationSection labData={billingReport.lab} />
                     <CopayOptimizationSection copayData={billingReport.copay} />
                     <BillingStrategySection strategyData={billingReport.billing_strategy} />
+                    <OptionalOverrideSection strategyData={billingReport.billing_strategy} />
+                    {billingReport.session_uplift && (
+                      <SessionUpliftSection sessionData={billingReport.session_uplift} />
+                    )}
+                    {billingReport.blood_uplift && (
+                      <BloodComponentUpliftSection bloodData={billingReport.blood_uplift} />
+                    )}
+                    {billingReport.material_uplift && (
+                      <MaterialUpliftSection materialData={billingReport.material_uplift} />
+                    )}
+                    {billingReport.procedure_addon_uplift && (
+                      <ProcedureAddonUpliftSection addonData={billingReport.procedure_addon_uplift} />
+                    )}
+                    {billingReport.procedure_capture_gap && (
+                      <ProcedureCaptureGapSection captureData={billingReport.procedure_capture_gap} />
+                    )}
+                    {billingReport.drg_package_adequacy && (
+                      <DrgPackageAdequacyReviewSection reviewData={billingReport.drg_package_adequacy} />
+                    )}
+                    {billingReport.gazette_repricing && (
+                      <GazetteRepricingSection repricingData={billingReport.gazette_repricing} />
+                    )}
+                    {billingReport.medula_rejection_playbook && (
+                      <MedulaRejectionPlaybookSection
+                        playbookData={billingReport.medula_rejection_playbook}
+                      />
+                    )}
+                    {billingReport.care_setting_review && (
+                      <CareSettingReviewSection reviewData={billingReport.care_setting_review} />
+                    )}
+                    {billingReport.drg_uplift && (
+                      <DrgUpliftSection drgData={billingReport.drg_uplift} />
+                    )}
                     <MaterialsPreCheckSection materialsData={billingReport.materials} />
                     {optimization && <SutOptimizationSection optimization={optimization} />}
                     <p className="py-2 text-center text-xs text-[var(--text-muted)]">

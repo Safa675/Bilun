@@ -22,6 +22,31 @@ const labels = {
       "medium": "Orta risk",
       "high": "Yüksek risk"
     },
+    "priority": {
+      "low": "Düşük",
+      "medium": "Orta",
+      "high": "Yüksek",
+      "very_high": "Çok yüksek"
+    },
+    "actionType": {
+      "lab": "Laboratuvar",
+      "copay": "Katılım payı muafiyeti",
+      "strategy": "Fatura stratejisi",
+      "none": "Yok"
+    },
+    "savingsCategory": {
+      "lab": "Laboratuvar",
+      "copay": "Katılım payı muafiyeti",
+      "strategy": "Fatura stratejisi"
+    },
+    "flagType": {
+      "hemogram_unbundling": "Hemogram paketleme ihlali"
+    },
+    "paymentMethod": {
+      "package": "Paket",
+      "itemized": "Kalemli",
+      "overridable": "Geçersiz kılınabilir"
+    },
     "severity": {
       "error": "Hata",
       "warning": "Uyarı",

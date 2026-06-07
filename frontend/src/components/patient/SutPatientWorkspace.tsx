@@ -11,6 +11,7 @@ import { buildSutHomeHref } from "@/lib/constants";
 import { DRGPanel } from "@/components/tabs/sut/PatientSection";
 import { fmtNum, fmtPctRatio } from "@/components/tabs/sut/shared";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
+import { translateConsistencyWarning } from "@/lib/apiMessages";
 import { theme } from "@/lib/theme";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { Chip, Eyebrow, Stat, Surface } from "@/components/primitives";
@@ -290,7 +291,7 @@ export default function SutPatientWorkspace({
           <Eyebrow tone="primary">{t("patient.workspace.consistencyEyebrow")}</Eyebrow>
           {outcome.consistency_warnings.map((warning, index) => (
             <p key={index} className="text-xs text-[var(--text-secondary)]">
-              {warning}
+              {translateConsistencyWarning(warning)}
             </p>
           ))}
         </Surface>

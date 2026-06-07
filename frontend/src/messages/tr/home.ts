@@ -27,6 +27,8 @@ const home = {
     "emptyCohort": "Mevcut kohortta hasta bulunamadı.",
     "patientCount": "{count} hasta",
     "patientCountPlural": "{count} hasta",
+    "exemptionGapOnly": "muafiyet farkı",
+    "sortBy": "{label} sütununa göre sırala",
     "headers": {
       "patientId": "Hasta ID",
       "age": "Yaş",

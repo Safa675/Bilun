@@ -61,6 +61,53 @@ export function getSutRiskTierLabel(value: string | null | undefined): string {
   return t("labels.sut.dynamicRisk", { value: toTitleCase(value) });
 }
 
+function lookupDomainLabel(
+  group: keyof Pick<
+    typeof enMessages.labels.sut,
+    "priority" | "actionType" | "savingsCategory" | "flagType" | "paymentMethod"
+  >,
+  normalized: string,
+): string | null {
+  const map = enMessages.labels.sut[group] as Record<string, string>;
+  if (normalized in map) {
+    return t(`labels.sut.${group}.${normalized}`);
+  }
+  return null;
+}
+
+export function getSutPriorityLabel(value: string | null | undefined): string {
+  const normalized = value?.trim().toLowerCase().replace(/\s+/g, "_");
+  if (!normalized) {
+    return t("labels.sut.unknown");
+  }
+
+  const known = lookupDomainLabel("priority", normalized);
+  if (known) {
+    return known;
+  }
+  return toTitleCase(value);
+}
+
+export function getSutDomainLabel(value: string | null | undefined): string {
+  const normalized = value?.trim().toLowerCase().replace(/\s+/g, "_");
+  if (!normalized) {
+    return t("labels.sut.unknown");
+  }
+
+  if (normalized === "unknown") {
+    return t("labels.sut.unknown");
+  }
+
+  for (const group of ["savingsCategory", "actionType", "flagType", "paymentMethod", "priority"] as const) {
+    const known = lookupDomainLabel(group, normalized);
+    if (known) {
+      return known;
+    }
+  }
+
+  return toTitleCase(value);
+}
+
 /** @deprecated Use getSutAlertBadgeLabel — kept for tests importing constants */
 export const SUT_ALERT_BADGE_LABELS = enMessages.labels.sut.alertBadge;
 export const SUT_ACTION_LABELS = enMessages.labels.sut.action;

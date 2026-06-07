@@ -10,7 +10,7 @@ const sections = {
       drugs: "İlaç Kataloğu",
       specialty: "Branşa Göre",
       labPrices: "Laboratuvar Fiyatları",
-      checkup: "Check-up",
+      checkup: "Kontrol muayenesi",
     },
     priceHistory: {
       loadingTitle: "Fiyat geçmişi verisi yükleniyor",
@@ -28,7 +28,7 @@ const sections = {
     procedureCodePlaceholder: "örn. 520.021",
     lookingUp: "Aranıyor...",
     matchedWithoutPPrefix: "(P öneki olmadan eşleşti)",
-    matchingProcedures: "{count} eşleşen işlem{plural}:",
+    matchingProcedures: "{count} eşleşen işlem:",
     noMatchingProcedure: "Eşleşen işlem bulunamadı. 6 haneli tam SUT kodunu deneyin.",
     name: "Ad",
     namePlaceholder: "örn. Stent, Enjektör",
@@ -208,15 +208,15 @@ const sections = {
     notAvailable: "--",
   },
   checkupPricing: {
-    title: "Check-up Paket Fiyatlandırması (katsayı: {katsayi})",
-    labTests: "Laboratuvar Testleri ({count})",
+    title: "Kontrol muayenesi paket fiyatlandırması (katsayı: {katsayi})",
+    labTests: "Laboratuvar testleri ({count})",
     procedures: "İşlemler ({count})",
-    loadingTitle: "Check-up fiyatlandırması yükleniyor",
+    loadingTitle: "Kontrol muayenesi fiyatlandırması yükleniyor",
     errors: {
-      loadFailed: "Check-up fiyatlandırması yüklenemedi",
+      loadFailed: "Kontrol muayenesi fiyatlandırması yüklenemedi",
     },
     labTable: {
-      test: "Test",
+      test: "Tetkik",
       sutCode: "SUT Kodu",
       tl: "TL",
     },
@@ -228,15 +228,15 @@ const sections = {
     notAvailable: "--",
   },
   labPrices: {
-    title: "BILUN Laboratuvar Testi → SUT Kodu Eşlemesi ({total} test)",
+    title: "BILUN laboratuvar testi → SUT kodu eşlemesi ({total} test)",
     loadingTitle: "Laboratuvar fiyatları yükleniyor",
     errors: {
       loadFailed: "Laboratuvar fiyatları yüklenemedi",
     },
     table: {
-      testName: "Test Adı",
-      sutCode: "SUT Kodu",
-      gazettePriceTl: "Tebliğ Fiyatı (TL)",
+      testName: "Tetkik adı",
+      sutCode: "SUT kodu",
+      gazettePriceTl: "Tebliğ fiyatı (TL)",
     },
   },
   materialPricing: {
@@ -249,7 +249,7 @@ const sections = {
       searchFailed: "Arama başarısız",
     },
     results: "Sonuçlar",
-    matchCount: "\"{query}\" için {count} eşleşme{plural}",
+    matchCount: "\"{query}\" için {count} eşleşme",
     emptyState: "Tebliğ kaydı bulunamadı. Farklı bir kod veya kısmi ad deneyin.",
     table: {
       code: "Kod",

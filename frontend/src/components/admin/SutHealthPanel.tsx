@@ -1,6 +1,7 @@
 "use client";
 
 import type { HealthStatus } from "@/lib/api/health";
+import { translateHealthMessage } from "@/lib/apiMessages";
 import { Chip, Eyebrow, Surface } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 
@@ -48,7 +49,7 @@ export default function SutHealthPanel({ healthStatus }: { healthStatus: HealthS
         </code>
       </span>
       {healthStatus?.message ? (
-        <span className="text-[var(--text-muted)]">{healthStatus.message}</span>
+        <span className="text-[var(--text-muted)]">{translateHealthMessage(healthStatus.message)}</span>
       ) : null}
     </Surface>
   );

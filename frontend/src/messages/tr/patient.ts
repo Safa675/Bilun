@@ -1,6 +1,6 @@
 const patient = {
   "page": {
-    "breadcrumbAria": "SUT hasta breadcrumb",
+    "breadcrumbAria": "SUT hasta gezinme",
     "workspace": "SUT çalışma alanı",
     "patient": "{patientId}",
     "patientUnknown": "Hasta bilinmiyor",
@@ -84,16 +84,16 @@ const patient = {
       "body": "Bu hasta sonucu artık tahmine dayalı yedek bölümler içermez. Kesin DRG fiyatlandırma girdileri kullanılamıyorsa hasta burada kullanılamaz kalır."
     },
     "claimSummary": {
-      "title": "Kesin Talep Satırı Özeti",
+      "title": "Kesin talep satırı özeti",
       "description": "Hasta düzeyinde SUT toplamları kesin sentetik talep başlıkları ve talep satırlarından oluşturulur.",
-      "totalBilled": "Toplam Faturalanan",
-      "expectedPayable": "Beklenen Ödenecek",
+      "totalBilled": "Toplam faturalanan",
+      "expectedPayable": "Beklenen ödenecek",
       "claims": "Talepler",
-      "procedureLines": "İşlem Satırları",
-      "materialLines": "Malzeme Satırları",
-      "drugLines": "İlaç Satırları",
+      "procedureLines": "İşlem satırları",
+      "materialLines": "Malzeme satırları",
+      "drugLines": "İlaç satırları",
       "diagnoses": "Tanılar",
-      "ruleFlags": "Kural Bayrakları",
+      "ruleFlags": "Kural bayrakları",
       "ruleFlagsSub": "Görünen üst işlemler",
       "exactClaimLineAmount": "Kesin talep satırı tutarı",
       "syntheticExpectedOutput": "Sentetik beklenen çıktı",
@@ -101,31 +101,31 @@ const patient = {
         "date": "Tarih",
         "procedure": "İşlem",
         "billed": "Faturalanan",
-        "surcharge": "Fark Ücreti",
-        "copayRate": "Katılım Payı Oranı"
+        "surcharge": "Fark ücreti",
+        "copayRate": "Katılım payı oranı"
       }
     },
     "drgPanel": {
-      "title": "DRG Epizod Maliyet Modellemesi",
+      "title": "DRG epizod maliyet modellemesi",
       "description": "Kalemlendirilmiş epizod maliyetlerini SGK paket DRG fiyatlarıyla (EK-2C) karşılaştırır. Fazlalık, DRG paketinin kalemlendirilmiş maliyetlerden fazlasını karşıladığı anlamına gelir.",
       "unavailableFallback": "Her epizodun kesin yatış tarihi ve geçmiş paket fiyatı olana kadar DRG paket fiyatlandırması kullanılamaz.",
       "episodes": "Epizodlar:",
-      "itemizedCost": "Kalemlendirilmiş Maliyet:",
-      "drgPackagePrice": "DRG Paket Fiyatı:",
-      "meanEpisode": "Ort./Epizod:",
-      "costliest": "En Maliyetli:",
+      "itemizedCost": "Kalemlendirilmiş maliyet:",
+      "drgPackagePrice": "DRG paket fiyatı:",
+      "meanEpisode": "Ort./epizod:",
+      "costliest": "En maliyetli:",
       "table": {
         "index": "#",
         "icd10": "ICD-10",
         "description": "Açıklama",
         "group": "Grup",
         "los": "YBS",
-        "lab": "Lab",
+        "lab": "Laboratuvar",
         "visit": "Ziyaret",
         "rx": "Reçete",
         "proc": "İşlem",
         "itemized": "Kalemlendirilmiş",
-        "drgPrice": "DRG Fiyatı"
+        "drgPrice": "DRG fiyatı"
       }
     }
   }

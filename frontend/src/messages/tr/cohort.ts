@@ -11,7 +11,7 @@ const cohort = {
     "sexE": "E",
     "sexK": "K",
     "ageLabel": "Yaş",
-    "agePlaceholder": "min - max",
+    "agePlaceholder": "min - maks",
     "doctorCodeLabel": "Doktor kodu",
     "doctorPlaceholder": "İçerir…",
     "clearFilters": "Filtreleri temizle"
@@ -23,7 +23,8 @@ const cohort = {
     "noResults": "Hasta bulunamadı",
     "searchFailed": "Hasta araması başarısız",
     "retry": "Aramayı yeniden dene",
-    "ageSuffix": "{age}y"
+    "ageSuffix": "{age} yaş",
+    "patientDetails": "{patientId} · {details}"
   }
 } as const;
 

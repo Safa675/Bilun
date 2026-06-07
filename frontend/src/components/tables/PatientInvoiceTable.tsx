@@ -6,7 +6,7 @@ import { getRevenueRecovery, getSutPatients } from "@/lib/api/sut";
 import type { CohortRecoverySummary } from "@/lib/domains/sut";
 import type { PatientMeta } from "@/lib/domains/patient";
 import { DataTable, Eyebrow, Surface } from "@/components/primitives";
-import { fmtTRY2, fmtPriorityLabel, fmtNum } from "@/components/tabs/sut/shared";
+import { fmtTRY2, fmtPriorityLabel, fmtLabel, fmtNum } from "@/components/tabs/sut/shared";
 import { buildSutPatientHref } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -16,9 +16,28 @@ interface PatientRow {
   age: number | null;
   sex: string | null;
   total_recoverable_try: number | null;
+  exemption_gap_try: number | null;
+  total_opportunity_try: number | null;
   priority: string | null;
   action_count: number | null;
   top_action_type: string | null;
+}
+
+function resolveOpportunityTry(
+  summary: {
+    total_recoverable_try?: number;
+    exemption_gap_try?: number;
+    total_opportunity_try?: number;
+  } | undefined,
+): number | null {
+  if (!summary) return null;
+  if (summary.total_opportunity_try != null) {
+    return summary.total_opportunity_try;
+  }
+  if (summary.total_recoverable_try == null && summary.exemption_gap_try == null) {
+    return null;
+  }
+  return (summary.total_recoverable_try ?? 0) + (summary.exemption_gap_try ?? 0);
 }
 
 const PAGE_SIZE = 10;
@@ -65,12 +84,14 @@ function compareRows(a: PatientRow, b: PatientRow, column: SortableColumn, direc
 
 function SortHeader({
   label,
+  sortTitle,
   active,
   direction,
   onClick,
   align,
 }: {
   label: string;
+  sortTitle: string;
   active: boolean;
   direction: SortDirection;
   onClick: () => void;
@@ -84,7 +105,7 @@ function SortHeader({
         align === "right" && "text-right",
       )}
       style={{ whiteSpace: "nowrap" }}
-      title={`Sort by ${label}`}
+      title={sortTitle}
     >
       <span className="inline-flex items-center gap-1">
         {label}
@@ -106,6 +127,7 @@ export default function PatientInvoiceTable({
   cohortFilterActive?: boolean;
 } = {}) {
   const t = useT();
+  const sortByTitle = (label: string) => t("home.patientTable.sortBy", { label });
   const router = useRouter();
   const [rows, setRows] = useState<PatientRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,11 +188,16 @@ export default function PatientInvoiceTable({
           .map((pid) => {
           const meta = metaLookup.get(pid);
           const summary = summaryMap.get(pid);
+          const hospital = summary?.total_recoverable_try ?? null;
+          const gap = summary?.exemption_gap_try ?? null;
+          const opportunity = resolveOpportunityTry(summary ?? undefined);
           return {
             patient_id: pid,
             age: meta?.age ?? null,
             sex: meta?.sex ?? null,
-            total_recoverable_try: summary?.total_recoverable_try ?? null,
+            total_recoverable_try: hospital,
+            exemption_gap_try: gap,
+            total_opportunity_try: opportunity,
             priority: summary?.priority ?? null,
             action_count: summary?.action_count ?? null,
             top_action_type: summary?.top_action_type ?? null,
@@ -268,37 +295,43 @@ export default function PatientInvoiceTable({
           <tr>
             <SortHeader
               label={t("home.patientTable.headers.patientId")}
+              sortTitle={sortByTitle(t("home.patientTable.headers.patientId"))}
               active={sort?.column === "patient_id"}
               direction={sort?.column === "patient_id" ? sort.direction : "desc"}
               onClick={() => handleSort("patient_id")}
             />
             <SortHeader
               label={t("home.patientTable.headers.age")}
+              sortTitle={sortByTitle(t("home.patientTable.headers.age"))}
               active={sort?.column === "age"}
               direction={sort?.column === "age" ? sort.direction : "desc"}
               onClick={() => handleSort("age")}
             />
             <SortHeader
               label={t("home.patientTable.headers.sex")}
+              sortTitle={sortByTitle(t("home.patientTable.headers.sex"))}
               active={sort?.column === "sex"}
               direction={sort?.column === "sex" ? sort.direction : "desc"}
               onClick={() => handleSort("sex")}
             />
             <SortHeader
               label={t("home.patientTable.headers.recoverable")}
-              active={sort?.column === "total_recoverable_try"}
-              direction={sort?.column === "total_recoverable_try" ? sort.direction : "desc"}
-              onClick={() => handleSort("total_recoverable_try")}
+              sortTitle={sortByTitle(t("home.patientTable.headers.recoverable"))}
+              active={sort?.column === "total_opportunity_try"}
+              direction={sort?.column === "total_opportunity_try" ? sort.direction : "desc"}
+              onClick={() => handleSort("total_opportunity_try")}
               align="right"
             />
             <SortHeader
               label={t("home.patientTable.headers.priority")}
+              sortTitle={sortByTitle(t("home.patientTable.headers.priority"))}
               active={sort?.column === "priority"}
               direction={sort?.column === "priority" ? sort.direction : "desc"}
               onClick={() => handleSort("priority")}
             />
             <SortHeader
               label={t("home.patientTable.headers.actions")}
+              sortTitle={sortByTitle(t("home.patientTable.headers.actions"))}
               active={sort?.column === "action_count"}
               direction={sort?.column === "action_count" ? sort.direction : "desc"}
               onClick={() => handleSort("action_count")}
@@ -306,6 +339,7 @@ export default function PatientInvoiceTable({
             />
             <SortHeader
               label={t("home.patientTable.headers.topAction")}
+              sortTitle={sortByTitle(t("home.patientTable.headers.topAction"))}
               active={sort?.column === "top_action_type"}
               direction={sort?.column === "top_action_type" ? sort.direction : "desc"}
               onClick={() => handleSort("top_action_type")}
@@ -323,7 +357,18 @@ export default function PatientInvoiceTable({
               <td>{row.age ?? "—"}</td>
               <td className="capitalize">{row.sex ?? "—"}</td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                {row.total_recoverable_try !== null ? fmtTRY2(row.total_recoverable_try) : "—"}
+                {row.total_opportunity_try !== null ? (
+                  <div className="flex flex-col items-end gap-0.5">
+                    <span>{fmtTRY2(row.total_opportunity_try)}</span>
+                    {(row.exemption_gap_try ?? 0) > 0 && (row.total_recoverable_try ?? 0) === 0 ? (
+                      <span className="text-[0.65rem] font-normal text-[var(--text-muted)]">
+                        {t("home.patientTable.exemptionGapOnly")}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : (
+                  "—"
+                )}
               </td>
               <td>
                 {row.priority ? (
@@ -353,7 +398,9 @@ export default function PatientInvoiceTable({
               <td className="num-col tabular-nums text-right">
                 {row.action_count !== null ? fmtNum(row.action_count) : "—"}
               </td>
-              <td className="text-[var(--text-secondary)]">{row.top_action_type ?? "—"}</td>
+              <td className="text-[var(--text-secondary)]">
+                {row.top_action_type ? fmtLabel(row.top_action_type) : "—"}
+              </td>
             </tr>
           ))}
         </tbody>

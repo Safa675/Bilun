@@ -486,6 +486,7 @@ export interface CopayOptimization extends ExactnessState {
 }
 
 export interface BillingStrategyRecommendation extends ExactnessState {
+  optional_override_uplift_try?: number;
   recommendations: Array<{
     chapter?: string;
     chapter_description?: string;
@@ -564,12 +565,260 @@ export interface MaterialPreCheck extends ExactnessState {
   coverage_scope?: SutMaterialBundlingCoverageScope;
 }
 
+export interface ProcedureCaptureGap extends ExactnessState {
+  opportunities: Array<{
+    type?: string;
+    claim_id?: string;
+    performed_line_id?: string;
+    procedure_code?: string;
+    procedure_name?: string;
+    service_date?: string;
+    source?: string;
+    actual_billed_try?: number;
+    list_price_try?: number;
+    recoverable_gap_try?: number;
+    price_methodology?: string;
+    savings_basis?: string;
+    savings_category?: string;
+    included_in_sgk_total?: boolean;
+    sut_section_id?: string;
+    detail?: string;
+  }>;
+  total_gap_try?: number;
+  confirmed_gap_try?: number;
+}
+
+export interface ProcedureAddonUplift extends ExactnessState {
+  opportunities: Array<{
+    type?: string;
+    claim_id?: string;
+    trigger_procedure_code?: string;
+    trigger_procedure_name?: string;
+    expected_addon_procedure_code?: string;
+    expected_addon_procedure_name?: string;
+    session_date?: string;
+    addon_factor?: number;
+    list_price_try?: number;
+    actual_billed_try?: number;
+    recoverable_uplift_try?: number;
+    price_methodology?: string;
+    savings_basis?: string;
+    savings_category?: string;
+    sut_section_id?: string;
+    detail?: string;
+  }>;
+  total_uplift_try?: number;
+  confirmed_uplift_try?: number;
+}
+
+export interface MaterialUplift extends ExactnessState {
+  opportunities: Array<{
+    type?: string;
+    claim_id?: string;
+    procedure_line_id?: string;
+    procedure_code?: string;
+    procedure_name?: string;
+    material_code?: string;
+    material_name?: string;
+    actual_billed_try?: number;
+    recoverable_uplift_try?: number;
+    list_price_try?: number;
+    price_methodology?: string;
+    savings_basis?: string;
+    savings_category?: string;
+    sut_section_id?: string;
+    detail?: string;
+  }>;
+  total_uplift_try?: number;
+  confirmed_uplift_try?: number;
+}
+
+export interface BloodComponentUplift extends ExactnessState {
+  opportunities: Array<{
+    type?: string;
+    claim_id?: string;
+    procedure_code?: string;
+    procedure_name?: string;
+    allowed_fraction?: number;
+    max_billable_try?: number;
+    actual_billed_try?: number;
+    recoverable_uplift_try?: number;
+    savings_basis?: string;
+    savings_category?: string;
+    sut_section_id?: string;
+    detail?: string;
+  }>;
+  total_uplift_try?: number;
+  confirmed_uplift_try?: number;
+}
+
+export interface DrgUpliftRecommendation extends ExactnessState {
+  opportunities: Array<{
+    type?: string;
+    claim_id?: string;
+    payment_method_kind?: string;
+    current_billing?: string;
+    itemized_total_try?: number;
+    package_total_try?: number;
+    recoverable_uplift_try?: number;
+    savings_basis?: string;
+    savings_category?: string;
+    sut_section_id?: string;
+    detail?: string;
+  }>;
+  total_uplift_try?: number;
+  confirmed_uplift_try?: number;
+}
+
+export interface MedulaRejectionPlaybook extends ExactnessState {
+  entries: Array<{
+    playbook_id?: string;
+    rejection_event_id?: string;
+    claim_id?: string;
+    medula_stage?: string;
+    sonuc_kodu?: string;
+    hata_kodu?: string;
+    hata_mesaji?: string;
+    related_procedure_code?: string;
+    related_procedure_line_id?: string;
+    sut_anchor?: string;
+    problem_summary_tr?: string;
+    problem_summary_en?: string;
+    corrective_steps_tr?: string[];
+    corrective_steps_en?: string[];
+    rebill_permitted?: boolean;
+    rebill_stage?: string;
+    recommendation_kind?: string;
+    included_in_sgk_total?: boolean;
+    savings_category?: string;
+  }>;
+  entry_count?: number;
+  rebill_permitted_count?: number;
+}
+
+export interface GazetteRepricingOpportunity extends ExactnessState {
+  opportunities: Array<{
+    claim_id?: string;
+    procedure_line_id?: string;
+    procedure_code?: string;
+    procedure_name?: string;
+    service_date?: string;
+    amendment_effective_date?: string;
+    catalog?: string;
+    quantity?: number;
+    price_at_service_try?: number;
+    amended_list_price_try?: number;
+    actual_payable_per_unit_try?: number;
+    recoverable_repricing_try?: number;
+    recommendation_kind?: string;
+    review_kind?: string;
+    included_in_sgk_total?: boolean;
+    savings_category?: string;
+    sut_section_id?: string;
+    detail?: string;
+  }>;
+  total_repricing_try?: number;
+  confirmed_repricing_try?: number;
+  review_repricing_try?: number;
+}
+
+export interface DrgPackageAdequacyReview extends ExactnessState {
+  opportunities: Array<{
+    claim_id?: string;
+    primary_icd10?: string;
+    clinical_procedure_codes?: string[];
+    current_package_code?: string;
+    current_package_footprint?: string[];
+    candidate_package_code?: string;
+    candidate_package_footprint?: string[];
+    current_package_price_try?: number;
+    candidate_package_price_try?: number;
+    recoverable_uplift_try?: number;
+    recommendation_kind?: string;
+    review_kind?: string;
+    included_in_sgk_total?: boolean;
+    savings_category?: string;
+    sut_section_id?: string;
+    detail?: string;
+  }>;
+  total_uplift_try?: number;
+  confirmed_uplift_try?: number;
+  review_uplift_try?: number;
+  review_opportunity_count?: number;
+}
+
+export interface CareSettingReview extends ExactnessState {
+  opportunities: Array<{
+    claim_id?: string;
+    claim_type?: string;
+    ambiguity_reason?: string;
+    actual_care_setting?: string;
+    alternate_care_setting?: string;
+    actual_best_try?: number;
+    alternate_best_try?: number;
+    actual_payment_method_kind?: string;
+    alternate_payment_method_kind?: string;
+    package_total_try?: number;
+    itemized_total_try?: number;
+    recoverable_uplift_try?: number;
+    recommendation_kind?: string;
+    review_kind?: string;
+    included_in_sgk_total?: boolean;
+    savings_category?: string;
+    sut_section_id?: string;
+    detail?: string;
+  }>;
+  total_uplift_try?: number;
+  confirmed_uplift_try?: number;
+  review_uplift_try?: number;
+  review_opportunity_count?: number;
+}
+
+export interface SessionPricingUplift extends ExactnessState {
+  opportunities: Array<{
+    type?: string;
+    claim_id?: string;
+    procedure_code?: string;
+    procedure_name?: string;
+    session_date?: string;
+    primary_procedure_code?: string;
+    expected_billed_try?: number;
+    actual_billed_try?: number;
+    recoverable_uplift_try?: number;
+    review_kind?: string | null;
+    included_in_sgk_total?: boolean;
+    sut_section_id?: string;
+    detail?: string;
+  }>;
+  total_uplift_try?: number;
+  confirmed_uplift_try?: number;
+  review_uplift_try?: number;
+  review_opportunity_count?: number;
+}
+
 export interface BillingActionReport extends SUTDataSourceCarrier {
   patient_id: string;
   lab: LabOptimization;
   copay: CopayOptimization;
   billing_strategy: BillingStrategyRecommendation;
+  session_uplift?: SessionPricingUplift;
+  drg_uplift?: DrgUpliftRecommendation;
+  blood_uplift?: BloodComponentUplift;
+  material_uplift?: MaterialUplift;
+  care_setting_review?: CareSettingReview;
+  procedure_addon_uplift?: ProcedureAddonUplift;
+  procedure_capture_gap?: ProcedureCaptureGap;
+  drg_package_adequacy?: DrgPackageAdequacyReview;
+  gazette_repricing?: GazetteRepricingOpportunity;
+  medula_rejection_playbook?: MedulaRejectionPlaybook;
   materials: MaterialPreCheck;
+  sgk_uplift_try?: number;
+  compliance_adjustment_try?: number;
+  audit_exposure_try?: number;
+  capture_gap_try?: number;
+  package_adequacy_review_try?: number;
+  gazette_repricing_try?: number;
+  medula_playbook_entry_count?: number;
   total_recoverable_try: number;
   action_count: number;
   priority: "high" | "medium" | "low";
@@ -578,27 +827,46 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
   required_inputs_missing?: string[];
 }
 
+export interface PatientRecoverySummaryRow {
+  patient_id: string;
+  total_recoverable_try: number;
+  sgk_uplift_try?: number;
+  compliance_adjustment_try?: number;
+  exemption_gap_try?: number;
+  total_opportunity_try?: number;
+  priority: string;
+  action_count: number;
+  top_action_type: string;
+}
+
 export interface CohortRecoverySummary extends ExactnessState, SUTDataSourceCarrier {
   n_patients: number;
   total_lab_savings: number;
   total_copay_savings: number;
   total_strategy_savings: number;
+  total_session_uplift?: number;
+  total_drg_uplift?: number;
+  total_blood_uplift?: number;
+  total_optional_override_uplift?: number;
+  n_optional_override_patients?: number;
+  n_drg_uplift_patients?: number;
+  n_blood_uplift_patients?: number;
+  total_material_uplift?: number;
+  n_material_uplift_patients?: number;
+  total_procedure_addon_uplift?: number;
+  n_procedure_addon_patients?: number;
+  total_strategy_uplift?: number;
+  total_compliance_adjustment?: number;
+  total_sgk_uplift?: number;
+  total_audit_exposure?: number;
+  total_capture_gap?: number;
+  total_package_adequacy_review?: number;
+  total_gazette_repricing?: number;
+  total_medula_playbook_entries?: number;
   total_material_flags: number;
   grand_total_recoverable: number;
-  top_patients: Array<{
-    patient_id: string;
-    total_recoverable_try: number;
-    priority: string;
-    action_count: number;
-    top_action_type: string;
-  }>;
-  patient_summaries?: Array<{
-    patient_id: string;
-    total_recoverable_try: number;
-    priority: string;
-    action_count: number;
-    top_action_type: string;
-  }>;
+  top_patients: Array<PatientRecoverySummaryRow>;
+  patient_summaries?: Array<PatientRecoverySummaryRow>;
   savings_by_category: Record<string, number>;
   priority_distribution: Record<string, number>;
 }

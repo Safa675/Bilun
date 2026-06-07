@@ -16,6 +16,12 @@ const common = {
   validating: "Doğrulanıyor…",
   prev: "Önceki",
   go: "Git",
+  skeleton: {
+    patientAnalytics: "Hasta analitiği yükleniyor…",
+    patientAnalyticsWithId: "{patientId} hasta analitiği yükleniyor…",
+    billingReport: "Fatura raporu yükleniyor…",
+    billingReportWithId: "{patientId} fatura raporu yükleniyor…",
+  },
 } as const;
 
 export default common;

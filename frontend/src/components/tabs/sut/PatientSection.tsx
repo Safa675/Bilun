@@ -5,6 +5,7 @@ import type {
   SutPatientOutcomeData,
 } from "@/lib/domains/sut";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
+import { translateConsistencyWarning } from "@/lib/apiMessages";
 import useStaggeredReveal from "@/hooks/useStaggeredReveal";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
 import { Chip, DataTable, Eyebrow, Surface } from "@/components/primitives";
@@ -151,7 +152,7 @@ export function PatientSUTContent({
             >
               {data.consistency_warnings.map((warning, index) => (
                 <p key={index} className="text-xs text-amber-800">
-                  {warning}
+                  {translateConsistencyWarning(warning)}
                 </p>
               ))}
             </div>

@@ -1,11 +1,8 @@
+"use client";
+
 /**
  * Design system verification sandbox.
- *
- * Renders every Phase 1 primitive in every variant against the locked
- * BILUN palette. Used only for visual smoke-testing the design system
- * before existing pages are reskinned (Phase 2+).
- *
- * NOT linked from product navigation. Visit directly at `/design-system`.
+ * Visit directly at `/design-system`.
  */
 
 import BilunMark from "@/components/brand/BilunMark";
@@ -28,52 +25,52 @@ import {
   TabsTrigger,
   Toolbar,
 } from "@/components/primitives";
+import { useT } from "@/lib/i18n/useTranslations";
 
-const PALETTE = [
-  { label: "Primary navy", token: "--text-primary", value: "#1A2638" },
-  { label: "Secondary navy", token: "--text-secondary", value: "#3A4456" },
-  { label: "Muted slate", token: "--text-muted", value: "#8590A4" },
-  { label: "Disabled", token: "--text-disabled", value: "#98A0AC" },
-  { label: "Surface base", token: "--surface-base", value: "#FFFFFF" },
-  { label: "Surface soft", token: "--surface-soft", value: "#E5E2DA" },
-  { label: "Surface tint", token: "--surface-tint", value: "#EFEAD8" },
-  { label: "Gold", token: "--gold", value: "#9C7A3E" },
-  { label: "Gold hover", token: "--gold-hover", value: "#8B6A33" },
-  { label: "Gold light", token: "--gold-light", value: "#C9B27E" },
-  { label: "Success", token: "--success", value: "#2F6E4E" },
-  { label: "Warning", token: "--warning", value: "#B45309" },
-  { label: "Danger", token: "--danger", value: "#B91C1C" },
-];
+const PALETTE_TOKENS = [
+  { key: "primaryNavy", token: "--text-primary", value: "#1A2638" },
+  { key: "secondaryNavy", token: "--text-secondary", value: "#3A4456" },
+  { key: "mutedSlate", token: "--text-muted", value: "#8590A4" },
+  { key: "disabled", token: "--text-disabled", value: "#98A0AC" },
+  { key: "surfaceBase", token: "--surface-base", value: "#FFFFFF" },
+  { key: "surfaceSoft", token: "--surface-soft", value: "#E5E2DA" },
+  { key: "surfaceTint", token: "--surface-tint", value: "#EFEAD8" },
+  { key: "gold", token: "--gold", value: "#9C7A3E" },
+  { key: "goldHover", token: "--gold-hover", value: "#8B6A33" },
+  { key: "goldLight", token: "--gold-light", value: "#C9B27E" },
+  { key: "success", token: "--success", value: "#2F6E4E" },
+  { key: "warning", token: "--warning", value: "#B45309" },
+  { key: "danger", token: "--danger", value: "#B91C1C" },
+] as const;
+
+const SURFACE_VARIANTS = ["base", "soft", "tint", "inset", "raised"] as const;
 
 export default function DesignSandbox() {
+  const t = useT();
+
   return (
     <main className="min-h-screen bg-[var(--surface-base)] px-6 py-10">
       <div className="mx-auto max-w-6xl space-y-10">
         <header className="flex items-end justify-between gap-6">
           <div className="space-y-3">
-            <Eyebrow tone="gold">Design system · Phase 1</Eyebrow>
+            <Eyebrow tone="gold">{t("designSystem.eyebrow")}</Eyebrow>
             <h1 className="font-[var(--font-display)] text-4xl font-medium tracking-tight text-[var(--text-primary)]">
-              BILUN <em className="text-[var(--gold)]">primitives</em>
+              {t("designSystem.title")} <em className="text-[var(--gold)]">{t("designSystem.titleAccent")}</em>
             </h1>
             <p className="max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">
-              Locked palette and typography from{" "}
-              <code className="rounded bg-[var(--surface-soft)] px-1.5 py-0.5 font-[var(--font-mono)] text-xs">
-                BILUN_EN.pptx
-              </code>{" "}
-              — verify renderer fidelity before reskinning real pages.
+              {t("designSystem.intro")}
             </p>
           </div>
           <BilunWordmark size={28} />
         </header>
 
-        {/* Palette */}
         <Section
-          title="Palette"
-          titleAccent="tokens"
-          description="Every color used in the system. Status (success/warning/danger) is intentionally separate from brand (gold)."
+          title={t("designSystem.palette.title")}
+          titleAccent={t("designSystem.palette.titleAccent")}
+          description={t("designSystem.palette.description")}
         >
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {PALETTE.map((entry) => (
+            {PALETTE_TOKENS.map((entry) => (
               <div
                 key={entry.token}
                 className="rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)]"
@@ -84,7 +81,7 @@ export default function DesignSandbox() {
                 />
                 <div className="px-3 py-2">
                   <p className="text-xs font-semibold text-[var(--text-primary)]">
-                    {entry.label}
+                    {t(`designSystem.paletteLabels.${entry.key}`)}
                   </p>
                   <p className="font-[var(--font-mono)] text-[0.7rem] text-[var(--text-muted)]">
                     {entry.token} · {entry.value}
@@ -95,134 +92,131 @@ export default function DesignSandbox() {
           </div>
         </Section>
 
-        {/* Type */}
         <Section
-          title="Typography"
-          titleAccent="Fraunces × Inter"
-          description="Display serif Fraunces with italic-gold emphasis. Body sans Inter with tabular numerics for tables."
+          title={t("designSystem.typography.title")}
+          titleAccent={t("designSystem.typography.titleAccent")}
+          description={t("designSystem.typography.description")}
         >
           <div className="space-y-3">
             <p className="font-[var(--font-display)] text-5xl tracking-tight text-[var(--text-primary)]">
-              Recovered <em className="text-[var(--gold)]">2 412 850</em> TL
+              {t("designSystem.typography.heroRecovered")}{" "}
+              <em className="text-[var(--gold)]">{t("designSystem.typography.heroAmount")}</em>{" "}
+              {t("designSystem.typography.heroCurrency")}
             </p>
             <p className="font-[var(--font-display)] text-3xl text-[var(--text-primary)]">
-              For Turkish Hospitals
+              {t("designSystem.typography.heroHospitals")}
             </p>
             <p className="font-[var(--font-display)] text-2xl italic text-[var(--gold)]">
-              Reimbursement
+              {t("designSystem.typography.heroReimbursement")}
             </p>
-            <p className="text-base text-[var(--text-primary)]">
-              Inter body — the quick brown fox jumps over the lazy dog 0123456789
-            </p>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Inter secondary — supporting copy stays in `--text-secondary`.
-            </p>
-            <p className="text-xs text-[var(--text-muted)]">
-              Inter muted — captions and axis labels stay in `--text-muted`.
-            </p>
+            <p className="text-base text-[var(--text-primary)]">{t("designSystem.typography.bodySample")}</p>
+            <p className="text-sm text-[var(--text-secondary)]">{t("designSystem.typography.secondarySample")}</p>
+            <p className="text-xs text-[var(--text-muted)]">{t("designSystem.typography.mutedSample")}</p>
             <p className="tabular-nums lining-nums font-medium text-[var(--text-primary)]">
-              1,234,567.89 · 0.001 · 999,999 · 42.0%
+              {t("designSystem.typography.numericSample")}
             </p>
           </div>
         </Section>
 
-        {/* Surface variants */}
-        <Section title="Surface" titleAccent="variants">
+        <Section title={t("designSystem.surface.title")} titleAccent={t("designSystem.surface.titleAccent")}>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {(["base", "soft", "tint", "inset", "raised"] as const).map((variant) => (
+            {SURFACE_VARIANTS.map((variant) => (
               <Surface key={variant} variant={variant}>
                 <Eyebrow>{variant}</Eyebrow>
                 <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                  Surface variant `{variant}`.
+                  {t("designSystem.surface.variantDescription", { variant })}
                 </p>
               </Surface>
             ))}
           </div>
         </Section>
 
-        {/* Stats */}
-        <Section title="Stat" titleAccent="primitive" variant="soft">
+        <Section title={t("designSystem.stat.title")} titleAccent={t("designSystem.stat.titleAccent")} variant="soft">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Stat
-              label="Max additional SGK reimbursement"
-              value="2 412 850 TL"
+              label={t("designSystem.stat.maxReimbursement")}
+              value={t("designSystem.stat.maxReimbursementValue")}
               display="gold"
-              hint="Italic gold treatment — one per page"
+              hint={t("designSystem.stat.maxReimbursementHint")}
             />
-            <Stat label="Recommended actions" value="34" delta="+6" />
-            <Stat label="Priority tier" value="High" />
-            <Stat label="Cohort patients" value="1 248" delta="+12%" />
+            <Stat
+              label={t("designSystem.stat.recommendedActions")}
+              value={t("designSystem.stat.recommendedActionsValue")}
+              delta={t("designSystem.stat.recommendedActionsDelta")}
+            />
+            <Stat label={t("designSystem.stat.priorityTier")} value={t("designSystem.stat.priorityTierValue")} />
+            <Stat
+              label={t("designSystem.stat.cohortPatients")}
+              value={t("designSystem.stat.cohortPatientsValue")}
+              delta={t("designSystem.stat.cohortPatientsDelta")}
+            />
           </div>
         </Section>
 
-        {/* Chip */}
-        <Section title="Chip" titleAccent="variants">
+        <Section title={t("designSystem.chip.title")} titleAccent={t("designSystem.chip.titleAccent")}>
           <div className="flex flex-wrap gap-2">
-            <Chip variant="neutral">Neutral</Chip>
-            <Chip variant="success">Exact</Chip>
-            <Chip variant="warning">Partial</Chip>
-            <Chip variant="danger">Unavailable</Chip>
-            <Chip variant="gold">Gold</Chip>
-            <Chip variant="outline">Outline</Chip>
+            <Chip variant="neutral">{t("designSystem.chip.neutral")}</Chip>
+            <Chip variant="success">{t("designSystem.chip.exact")}</Chip>
+            <Chip variant="warning">{t("designSystem.chip.partial")}</Chip>
+            <Chip variant="danger">{t("designSystem.chip.unavailable")}</Chip>
+            <Chip variant="gold">{t("designSystem.chip.gold")}</Chip>
+            <Chip variant="outline">{t("designSystem.chip.outline")}</Chip>
           </div>
         </Section>
 
-        {/* Tabs */}
-        <Section title="Tabs" titleAccent="primitive">
+        <Section title={t("designSystem.tabs.title")} titleAccent={t("designSystem.tabs.titleAccent")}>
           <TabsRoot defaultValue="patient">
             <TabsList>
-              <TabsTrigger value="patient">Patient SUT</TabsTrigger>
-              <TabsTrigger value="tools">Reference Tools</TabsTrigger>
-              <TabsTrigger value="opt">Optimizer</TabsTrigger>
+              <TabsTrigger value="patient">{t("designSystem.tabs.patient")}</TabsTrigger>
+              <TabsTrigger value="tools">{t("designSystem.tabs.tools")}</TabsTrigger>
+              <TabsTrigger value="opt">{t("designSystem.tabs.optimizer")}</TabsTrigger>
             </TabsList>
             <TabsContent value="patient" className="pt-4 text-sm text-[var(--text-secondary)]">
-              Active tab content area for `patient`.
+              {t("designSystem.tabs.contentFor", { tab: "patient" })}
             </TabsContent>
             <TabsContent value="tools" className="pt-4 text-sm text-[var(--text-secondary)]">
-              Active tab content area for `tools`.
+              {t("designSystem.tabs.contentFor", { tab: "tools" })}
             </TabsContent>
             <TabsContent value="opt" className="pt-4 text-sm text-[var(--text-secondary)]">
-              Active tab content area for `opt`.
+              {t("designSystem.tabs.contentFor", { tab: "opt" })}
             </TabsContent>
           </TabsRoot>
         </Section>
 
-        {/* Toolbar */}
-        <Section title="Toolbar" titleAccent="primitive">
+        <Section title={t("designSystem.toolbar.title")} titleAccent={t("designSystem.toolbar.titleAccent")}>
           <Toolbar
             leading={
               <input
                 className="rounded-[var(--r-sm)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-1.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--gold)] focus:outline-none"
-                placeholder="Search claims…"
+                placeholder={t("designSystem.toolbar.searchPlaceholder")}
               />
             }
             trailing={
               <>
-                <Chip variant="outline">120 of 4,328</Chip>
+                <Chip variant="outline">{t("designSystem.toolbar.matchCount")}</Chip>
                 <button className="rounded-[var(--r-sm)] bg-[var(--gold)] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[var(--gold-hover)]">
-                  Apply
+                  {t("designSystem.toolbar.apply")}
                 </button>
               </>
             }
           >
             <select className="rounded-[var(--r-sm)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-2 py-1.5 text-sm text-[var(--text-primary)]">
-              <option>All categories</option>
-              <option>Materials</option>
-              <option>Labs</option>
+              <option>{t("designSystem.toolbar.allCategories")}</option>
+              <option>{t("designSystem.toolbar.materials")}</option>
+              <option>{t("designSystem.toolbar.labs")}</option>
             </select>
           </Toolbar>
         </Section>
 
-        {/* DataTable */}
-        <Section title="DataTable" titleAccent="primitive">
+        <Section title={t("designSystem.dataTable.title")} titleAccent={t("designSystem.dataTable.titleAccent")}>
           <DataTable minWidth={640}>
             <DataTableHeader>
               <DataTableRow>
-                <DataTableHeaderCell>Patient</DataTableHeaderCell>
-                <DataTableHeaderCell>Claim</DataTableHeaderCell>
-                <DataTableHeaderCell>Status</DataTableHeaderCell>
-                <DataTableHeaderCell numeric>Billed</DataTableHeaderCell>
-                <DataTableHeaderCell numeric>Recovered</DataTableHeaderCell>
+                <DataTableHeaderCell>{t("designSystem.dataTable.patient")}</DataTableHeaderCell>
+                <DataTableHeaderCell>{t("designSystem.dataTable.claim")}</DataTableHeaderCell>
+                <DataTableHeaderCell>{t("designSystem.dataTable.status")}</DataTableHeaderCell>
+                <DataTableHeaderCell numeric>{t("designSystem.dataTable.billed")}</DataTableHeaderCell>
+                <DataTableHeaderCell numeric>{t("designSystem.dataTable.recovered")}</DataTableHeaderCell>
               </DataTableRow>
             </DataTableHeader>
             <DataTableBody>
@@ -230,7 +224,7 @@ export default function DesignSandbox() {
                 <DataTableCell>SENTETIK-0001</DataTableCell>
                 <DataTableCell>F-001-021</DataTableCell>
                 <DataTableCell>
-                  <Chip variant="success">Exact</Chip>
+                  <Chip variant="success">{t("designSystem.chip.exact")}</Chip>
                 </DataTableCell>
                 <DataTableCell numeric>12 480,00</DataTableCell>
                 <DataTableCell numeric>1 240,00</DataTableCell>
@@ -239,7 +233,7 @@ export default function DesignSandbox() {
                 <DataTableCell>SENTETIK-0007</DataTableCell>
                 <DataTableCell>F-007-008</DataTableCell>
                 <DataTableCell>
-                  <Chip variant="warning">Partial</Chip>
+                  <Chip variant="warning">{t("designSystem.chip.partial")}</Chip>
                 </DataTableCell>
                 <DataTableCell numeric>4 992,50</DataTableCell>
                 <DataTableCell numeric>820,00</DataTableCell>
@@ -248,7 +242,7 @@ export default function DesignSandbox() {
                 <DataTableCell>SENTETIK-0019</DataTableCell>
                 <DataTableCell>F-019-002</DataTableCell>
                 <DataTableCell>
-                  <Chip variant="danger">Unavailable</Chip>
+                  <Chip variant="danger">{t("designSystem.chip.unavailable")}</Chip>
                 </DataTableCell>
                 <DataTableCell numeric>—</DataTableCell>
                 <DataTableCell numeric>—</DataTableCell>
@@ -257,10 +251,9 @@ export default function DesignSandbox() {
           </DataTable>
         </Section>
 
-        {/* Brand */}
-        <Section title="Brand" titleAccent="mark">
+        <Section title={t("designSystem.brand.title")} titleAccent={t("designSystem.brand.titleAccent")}>
           <div className="flex flex-wrap items-center gap-8 text-[var(--text-primary)]">
-            <BilunMark size={48} title="BILUN mark" />
+            <BilunMark size={48} title={t("designSystem.brand.markTitle")} />
             <BilunWordmark size={32} />
             <BilunWordmark size={20} />
             <div className="rounded-[var(--r-lg)] bg-[var(--text-primary)] p-4 text-white">
@@ -269,26 +262,25 @@ export default function DesignSandbox() {
           </div>
         </Section>
 
-        {/* Focus demo */}
         <Section
-          title="Focus state"
-          titleAccent="audit"
-          description="Tab through the inputs and buttons — gold ring should appear on every interactive element."
+          title={t("designSystem.focus.title")}
+          titleAccent={t("designSystem.focus.titleAccent")}
+          description={t("designSystem.focus.description")}
         >
           <div className="flex flex-wrap items-center gap-3">
             <input
               className="rounded-[var(--r-sm)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)]/30"
-              placeholder="Focus me"
+              placeholder={t("designSystem.focus.placeholder")}
             />
             <button
               className="rounded-[var(--r-sm)] bg-[var(--gold)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--gold-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)]/40 focus:ring-offset-2 focus:ring-offset-[var(--surface-base)]"
             >
-              Primary action
+              {t("designSystem.focus.primary")}
             </button>
             <button
               className="rounded-[var(--r-sm)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:border-[var(--gold)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)]/40"
             >
-              Secondary
+              {t("designSystem.focus.secondary")}
             </button>
           </div>
         </Section>

@@ -1,12 +1,48 @@
 import { theme } from "@/lib/theme";
 import { ACCENT } from "@/lib/constants";
 import type { SutMaterialItem } from "@/lib/api/sut";
-import { getSutRiskTierLabel } from "../../../lib/sutLabels";
+import { translateMethodology } from "@/lib/apiMessages";
+import { getSutDomainLabel, getSutPriorityLabel, getSutRiskTierLabel } from "../../../lib/sutLabels";
 import { fmtNum as fmtNumLocale, fmtNumber, fmtPct as fmtPctLocale, fmtTRY as fmtTRYLocale, fmtTRY2 as fmtTRYLocale2 } from "@/lib/i18n/formatters";
 import { translate } from "@/lib/i18n/translate";
 import enMessages from "@/messages/en/index";
 import trMessages from "@/messages/tr/index";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
+
+const FACILITY_TIER_OPTIONS = [
+  { value: "1_basamak", key: "1Basamak" },
+  { value: "2_basamak_resmi", key: "2BasamakResmi" },
+  { value: "3_basamak_resmi", key: "3BasamakResmi" },
+  { value: "egitim_arastirma", key: "egitimArastirma" },
+  { value: "universite_devlet", key: "universiteDevlet" },
+  { value: "universite_vakif", key: "universiteVakif" },
+  { value: "2_3_basamak_ozel", key: "2_3BasamakOzel" },
+] as const;
+
+const PATIENT_CATEGORY_OPTIONS = [
+  { value: "diger", key: "diger" },
+  { value: "gelir_aylik_alan", key: "gelirAylikAlan" },
+] as const;
+
+function localizedMessages() {
+  return getModuleLocale() === "tr" ? trMessages : enMessages;
+}
+
+export function getFacilityTiers(): Array<{ value: string; label: string }> {
+  const messages = localizedMessages();
+  return FACILITY_TIER_OPTIONS.map(({ value, key }) => ({
+    value,
+    label: translate(messages, `sections.copaySimulator.facilityTiers.${key}`),
+  }));
+}
+
+export function getPatientCategories(): Array<{ value: string; label: string }> {
+  const messages = localizedMessages();
+  return PATIENT_CATEGORY_OPTIONS.map(({ value, key }) => ({
+    value,
+    label: translate(messages, `sections.copaySimulator.patientCategories.${key}`),
+  }));
+}
 
 export const ACCENT_LOCAL = theme.accent;
 /** @deprecated Use getModuleLocale() via i18n formatters */
@@ -55,23 +91,8 @@ export function fmtPctRatio(value: number, decimals = 1): string {
   return fmtPct(value * 100, decimals);
 }
 
-function titleCaseWord(word: string): string {
-  if (!word) {
-    return "";
-  }
-  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-}
-
 export function fmtLabel(value: string | null | undefined): string {
-  const normalized = value?.trim();
-  if (!normalized) {
-    return localizedUnknown();
-  }
-  return normalized
-    .replace(/[_-]+/g, " ")
-    .split(/\s+/)
-    .map(titleCaseWord)
-    .join(" ");
+  return getSutDomainLabel(value);
 }
 
 export function fmtTierLabel(value: string | null | undefined): string {
@@ -79,7 +100,7 @@ export function fmtTierLabel(value: string | null | undefined): string {
 }
 
 export function fmtPriorityLabel(value: string | null | undefined): string {
-  return fmtLabel(value);
+  return getSutPriorityLabel(value);
 }
 
 export function fmtRiskLabel(value: string | null | undefined): string {
@@ -215,22 +236,9 @@ export const EMPTY_MATERIAL: SutMaterialItem = {
   quantity: 1,
 };
 
-export const FACILITY_TIERS = [
-  { value: "1_basamak", label: "1st Level (Family Doctor)" },
-  { value: "2_basamak_resmi", label: "2nd Level Public" },
-  { value: "3_basamak_resmi", label: "3rd Level Public" },
-  { value: "egitim_arastirma", label: "Training & Research Hospital" },
-  { value: "universite_devlet", label: "State University Hospital" },
-  { value: "universite_vakif", label: "Foundation University Hospital" },
-  { value: "2_3_basamak_ozel", label: "2nd/3rd Level Private" },
-];
-
-export const PATIENT_CATEGORIES = [
-  { value: "diger", label: "Standard (Other)" },
-  { value: "gelir_aylik_alan", label: "Pensioner / Income-Based" },
-];
-
-export function MethodologyBadge({ text, badgeLabel = "100% Gazette Data" }: { text: string; badgeLabel?: string }) {
+export function MethodologyBadge({ text, badgeLabel }: { text: string; badgeLabel?: string }) {
+  const resolvedBadgeLabel =
+    badgeLabel ?? translate(localizedMessages(), "optimizer.methodology.gazetteData");
   return (
     <div
       className="rounded-lg px-3 py-2 text-xs leading-relaxed"
@@ -241,10 +249,10 @@ export function MethodologyBadge({ text, badgeLabel = "100% Gazette Data" }: { t
       }}
     >
       <span className="font-bold uppercase tracking-wider" style={{ color: theme.accent }}>
-        {badgeLabel}
+        {resolvedBadgeLabel}
       </span>
       <span className="mx-1.5 text-[var(--gold-light)]">|</span>
-      {text}
+      {translateMethodology(text)}
     </div>
   );
 }

@@ -27,6 +27,8 @@ const home = {
     "emptyCohort": "No patients found in the current cohort.",
     "patientCount": "{count} patient",
     "patientCountPlural": "{count} patients",
+    "exemptionGapOnly": "exemption gap",
+    "sortBy": "Sort by {label}",
     "headers": {
       "patientId": "Patient ID",
       "age": "Age",

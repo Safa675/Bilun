@@ -4,7 +4,13 @@ import type { CSSProperties, ReactNode } from "react";
 import type { BillingActionReport, PatientOptimization } from "@/lib/domains/sut";
 import { getSutAlertBadgeLabel } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
-import { getUnavailableMessage, hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
+import {
+  getUnavailableMessage,
+  hasRecoverableBillingTotals,
+  isExactOutput,
+  isOptionalIngestPending,
+} from "@/lib/sutExactness";
 import {
   copayCorrectionBilledTry,
   copayCorrectionPayableTry,
@@ -130,6 +136,28 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
     billingReport.copay.patient_copay_waived_total_try ??
     billingReport.copay.visit_copay_savings_try + billingReport.copay.rx_copay_savings_try;
   const showExemptionGap = copayExact && billingReport.copay.is_exempt && exemptionGapTotal > 0;
+  const sgkUplift =
+    billingReport.sgk_uplift_try ?? billingReport.total_recoverable_try ?? 0;
+  const complianceAdjustment = billingReport.compliance_adjustment_try ?? 0;
+  const auditExposure = billingReport.audit_exposure_try ?? 0;
+  const captureGap = billingReport.capture_gap_try ?? 0;
+  const packageAdequacyReview = billingReport.package_adequacy_review_try ?? 0;
+  const gazetteRepricing = billingReport.gazette_repricing_try ?? 0;
+  const medulaPlaybookCount = billingReport.medula_playbook_entry_count ?? 0;
+  const showCompliance = reportHasTotals && complianceAdjustment > 0;
+  const showAuditExposure = reportHasTotals && auditExposure > 0;
+  const showCaptureGap = reportHasTotals && captureGap > 0;
+  const showPackageAdequacy = reportHasTotals && packageAdequacyReview > 0;
+  const showGazetteRepricing = reportHasTotals && gazetteRepricing > 0;
+  const showMedulaPlaybook = reportHasTotals && medulaPlaybookCount > 0;
+  const extraSummaryStats = [
+    showCompliance,
+    showAuditExposure,
+    showCaptureGap,
+    showPackageAdequacy,
+    showGazetteRepricing,
+    showMedulaPlaybook,
+  ].filter(Boolean).length;
   const priorityColor = reportHasTotals ? PRIORITY_COLORS[billingReport.priority] : "#71717A";
   const statusLabel = reportExact
     ? fmtPriorityLabel(billingReport.priority)
@@ -152,16 +180,52 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
         <StatusChip label={statusLabel} color={priorityColor} />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div
+        className={`grid gap-6 md:grid-cols-2 ${
+          extraSummaryStats >= 2 ? "xl:grid-cols-6" : extraSummaryStats >= 1 ? "xl:grid-cols-5" : "xl:grid-cols-4"
+        }`}
+      >
         <Stat
           label={t("billing.summary.ruleCalculatedOpportunity")}
-          value={
-            reportHasTotals
-              ? fmtTRY2(billingReport.total_recoverable_try)
-              : t("common.unavailable")
-          }
+          value={reportHasTotals ? fmtTRY2(sgkUplift) : t("common.unavailable")}
           display={reportHasTotals ? "gold" : "default"}
         />
+        {showCompliance && (
+          <Stat
+            label={t("billing.summary.complianceAdjustment")}
+            value={fmtTRY2(complianceAdjustment)}
+          />
+        )}
+        {showAuditExposure && (
+          <Stat
+            label={t("billing.summary.auditExposure")}
+            value={fmtTRY2(auditExposure)}
+          />
+        )}
+        {showCaptureGap && (
+          <Stat
+            label={t("billing.summary.captureGap")}
+            value={fmtTRY2(captureGap)}
+          />
+        )}
+        {showPackageAdequacy && (
+          <Stat
+            label={t("billing.summary.packageAdequacyReview")}
+            value={fmtTRY2(packageAdequacyReview)}
+          />
+        )}
+        {showGazetteRepricing && (
+          <Stat
+            label={t("billing.summary.gazetteRepricing")}
+            value={fmtTRY2(gazetteRepricing)}
+          />
+        )}
+        {showMedulaPlaybook && (
+          <Stat
+            label={t("billing.summary.medulaPlaybook")}
+            value={String(medulaPlaybookCount)}
+          />
+        )}
         <Stat
           label={t("billing.summary.exemptionGapCorrective")}
           value={
@@ -408,8 +472,9 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
   const heuristicRows = strategyData.recommendations.filter((item) =>
     usesHeuristicStrategyReviewShape(item),
   );
-  const claimLevelRows = strategyData.recommendations.filter((item) =>
-    isClaimLevelStrategyRow(item),
+  const claimLevelRows = strategyData.recommendations.filter(
+    (item) =>
+      isClaimLevelStrategyRow(item) && item.recommendation_kind !== "optional_override",
   );
   const complianceViolations = strategyData.recommendations.filter((item) =>
     isComplianceViolationRow(item),
@@ -600,6 +665,1039 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
           </TableWrap>
         </div>
       )}
+    </BillingSectionShell>
+  );
+}
+
+export function OptionalOverrideSection({
+  strategyData,
+}: {
+  strategyData: BillingActionReport["billing_strategy"];
+}) {
+  const t = useT();
+  const strategyExact = isExactOutput(strategyData);
+  const rows = strategyData.recommendations.filter(
+    (item) =>
+      isClaimLevelStrategyRow(item) &&
+      item.recommendation_kind === "optional_override" &&
+      (item.savings_try ?? 0) > 0,
+  );
+
+  if (!strategyExact && rows.length === 0) {
+    return null;
+  }
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const totalUplift =
+    strategyData.optional_override_uplift_try ??
+    rows.reduce((sum, row) => sum + (row.savings_try ?? 0), 0);
+
+  return (
+    <BillingSectionShell
+      title={t("billing.optionalOverride.title")}
+      total={fmtTRY2(totalUplift)}
+    >
+      <p
+        className="mb-3 text-xs leading-relaxed rounded-lg px-3 py-2"
+        style={{ background: "rgba(37, 99, 235, 0.08)", color: "#1D4ED8" }}
+      >
+        {t("billing.strategy.overrideScopeNotice")}
+      </p>
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.optionalOverride.scopeFootnote")}
+      </p>
+      {!strategyExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(strategyData, t("billing.optionalOverride.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1080}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.optionalOverride.claim")}</th>
+            <th>{t("billing.optionalOverride.recommended")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.optionalOverride.currentBilling")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.optionalOverride.packageTotal")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.optionalOverride.itemizedTotal")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.optionalOverride.uplift")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.optionalOverride.sutSection")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.optionalOverride.note")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((item, index) => (
+            <tr key={`${item.claim_id}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>
+                <StatusChip
+                  label={fmtLabel(strategyModeLabel(item))}
+                  color={strategyBadgeColor(item)}
+                />
+              </td>
+              <td>{item.current_billing ?? "—"}</td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(strategyPackageTotalTry(item) ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(strategyItemizedTotalTry(item) ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                {fmtTRY2OrUnavailable(strategySavingsTryDisplay(item) ?? null)}
+              </td>
+              <td>{formatSutSectionLabel(item.sut_section_id)}</td>
+              <td>{item.detail ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+export function MaterialUpliftSection({
+  materialData,
+}: {
+  materialData: NonNullable<BillingActionReport["material_uplift"]>;
+}) {
+  const t = useT();
+  const materialExact = isExactOutput(materialData);
+  const opportunities = materialData.opportunities ?? [];
+
+  if (!materialExact && opportunities.length === 0) {
+    return null;
+  }
+  if (opportunities.length === 0) {
+    return null;
+  }
+
+  const confirmedUplift = materialData.confirmed_uplift_try ?? 0;
+
+  return (
+    <BillingSectionShell
+      title={t("billing.materialUplift.title")}
+      total={fmtTRY2(confirmedUplift)}
+    >
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.materialUplift.scopeFootnote")}
+      </p>
+      {!materialExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(materialData, t("billing.materialUplift.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1040}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.materialUplift.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.materialUplift.procedure")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.materialUplift.material")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.materialUplift.actualBilled")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.materialUplift.uplift")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.materialUplift.sutSection")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.materialUplift.note")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {opportunities.map((item, index) => (
+            <tr key={`${item.claim_id}-${item.material_code}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>
+                <div className="font-semibold text-slate-950">
+                  {item.procedure_name ?? item.procedure_code ?? "—"}
+                </div>
+                {item.procedure_code && item.procedure_name && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {item.procedure_code}
+                  </div>
+                )}
+              </td>
+              <td>
+                <div className="font-semibold text-slate-950">
+                  {item.material_name ?? item.material_code ?? "—"}
+                </div>
+                {item.material_code && item.material_name && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {item.material_code}
+                  </div>
+                )}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.actual_billed_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>{formatSutSectionLabel(item.sut_section_id)}</td>
+              <td>{item.detail ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+function localizedCorrectiveSteps(
+  item: {
+    corrective_steps_tr?: string[];
+    corrective_steps_en?: string[];
+  },
+): string[] {
+  const locale = getModuleLocale();
+  if (locale === "en") {
+    return item.corrective_steps_en ?? item.corrective_steps_tr ?? [];
+  }
+  return item.corrective_steps_tr ?? item.corrective_steps_en ?? [];
+}
+
+export function ProcedureCaptureGapSection({
+  captureData,
+}: {
+  captureData: NonNullable<BillingActionReport["procedure_capture_gap"]>;
+}) {
+  const t = useT();
+  const captureExact = isExactOutput(captureData);
+  const opportunities = captureData.opportunities ?? [];
+
+  if (isOptionalIngestPending(captureData)) {
+    return (
+      <BillingSectionShell title={t("billing.procedureCaptureGap.title")}>
+        <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.procedureCaptureGap.scopeFootnote")}
+        </p>
+        <div className="sut-exactness-notice">
+          {getUnavailableMessage(captureData, t("billing.procedureCaptureGap.unavailable"))}
+        </div>
+      </BillingSectionShell>
+    );
+  }
+
+  if (!captureExact && opportunities.length === 0) {
+    return null;
+  }
+  if (opportunities.length === 0) {
+    return null;
+  }
+
+  const gapTotal = captureData.confirmed_gap_try ?? captureData.total_gap_try ?? 0;
+
+  return (
+    <BillingSectionShell title={t("billing.procedureCaptureGap.title")} total={fmtTRY2(gapTotal)}>
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.procedureCaptureGap.scopeFootnote")}
+      </p>
+      {!captureExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(captureData, t("billing.procedureCaptureGap.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1040}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureCaptureGap.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureCaptureGap.procedure")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureCaptureGap.serviceDate")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureCaptureGap.source")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.procedureCaptureGap.listPrice")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.procedureCaptureGap.actualBilled")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.procedureCaptureGap.gap")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureCaptureGap.note")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {opportunities.map((item, index) => (
+            <tr key={`${item.claim_id}-${item.procedure_code}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>
+                <div className="font-semibold text-slate-950">
+                  {item.procedure_name ?? item.procedure_code ?? "—"}
+                </div>
+                {item.procedure_code && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {item.procedure_code}
+                  </div>
+                )}
+              </td>
+              <td>{item.service_date ?? "—"}</td>
+              <td>{item.source ?? "—"}</td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.list_price_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.actual_billed_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                {fmtTRY2OrUnavailable(item.recoverable_gap_try ?? null)}
+              </td>
+              <td>{item.detail ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+export function ProcedureAddonUpliftSection({
+  addonData,
+}: {
+  addonData: NonNullable<BillingActionReport["procedure_addon_uplift"]>;
+}) {
+  const t = useT();
+  const addonExact = isExactOutput(addonData);
+  const opportunities = addonData.opportunities ?? [];
+
+  if (!addonExact && opportunities.length === 0) {
+    return null;
+  }
+  if (opportunities.length === 0) {
+    return null;
+  }
+
+  const confirmedUplift = addonData.confirmed_uplift_try ?? 0;
+
+  return (
+    <BillingSectionShell
+      title={t("billing.procedureAddonUplift.title")}
+      total={fmtTRY2(confirmedUplift)}
+    >
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.procedureAddonUplift.scopeFootnote")}
+      </p>
+      {!addonExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(addonData, t("billing.procedureAddonUplift.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1120}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureAddonUplift.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureAddonUplift.triggerProcedure")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureAddonUplift.expectedAddon")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.procedureAddonUplift.addonFactor")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.procedureAddonUplift.listPrice")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.procedureAddonUplift.actualBilled")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.procedureAddonUplift.uplift")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureAddonUplift.sutSection")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureAddonUplift.note")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {opportunities.map((item, index) => (
+            <tr key={`${item.claim_id}-${item.expected_addon_procedure_code}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>
+                <div className="font-semibold text-slate-950">
+                  {item.trigger_procedure_name ?? item.trigger_procedure_code ?? "—"}
+                </div>
+                {item.trigger_procedure_code && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {item.trigger_procedure_code}
+                  </div>
+                )}
+              </td>
+              <td>
+                <div className="font-semibold text-slate-950">
+                  {item.expected_addon_procedure_name ?? item.expected_addon_procedure_code ?? "—"}
+                </div>
+                {item.expected_addon_procedure_code && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {item.expected_addon_procedure_code}
+                  </div>
+                )}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {item.addon_factor != null ? `${Math.round(item.addon_factor * 100)}%` : "—"}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.list_price_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.actual_billed_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>{formatSutSectionLabel(item.sut_section_id)}</td>
+              <td>{item.detail ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+export function GazetteRepricingSection({
+  repricingData,
+}: {
+  repricingData: NonNullable<BillingActionReport["gazette_repricing"]>;
+}) {
+  const t = useT();
+  const repricingExact = isExactOutput(repricingData);
+  const opportunities = repricingData.opportunities ?? [];
+
+  if (!repricingExact && opportunities.length === 0) {
+    return null;
+  }
+  if (opportunities.length === 0) {
+    return null;
+  }
+
+  const reviewTotal =
+    repricingData.review_repricing_try ?? repricingData.total_repricing_try ?? 0;
+
+  return (
+    <BillingSectionShell
+      title={t("billing.gazetteRepricing.title")}
+      total={fmtTRY2(reviewTotal)}
+    >
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.gazetteRepricing.scopeFootnote")}
+      </p>
+      {!repricingExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(repricingData, t("billing.gazetteRepricing.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1180}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.procedure")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.serviceDate")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.amendmentDate")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.gazetteRepricing.priceAtService")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.gazetteRepricing.amendedPrice")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.gazetteRepricing.payablePerUnit")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.gazetteRepricing.repricingDelta")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.note")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {opportunities.map((item, index) => (
+            <tr key={`${item.claim_id}-${item.procedure_line_id}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>
+                <div className="font-semibold text-slate-950">
+                  {item.procedure_name ?? item.procedure_code ?? "—"}
+                </div>
+                {item.procedure_code && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {item.procedure_code}
+                  </div>
+                )}
+              </td>
+              <td>{item.service_date ?? "—"}</td>
+              <td>{item.amendment_effective_date ?? "—"}</td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.price_at_service_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.amended_list_price_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.actual_payable_per_unit_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                {fmtTRY2OrUnavailable(item.recoverable_repricing_try ?? null)}
+              </td>
+              <td>{item.detail ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+export function MedulaRejectionPlaybookSection({
+  playbookData,
+}: {
+  playbookData: NonNullable<BillingActionReport["medula_rejection_playbook"]>;
+}) {
+  const t = useT();
+  const playbookExact = isExactOutput(playbookData);
+  const entries = playbookData.entries ?? [];
+
+  if (isOptionalIngestPending(playbookData)) {
+    return (
+      <BillingSectionShell title={t("billing.medulaPlaybook.title")}>
+        <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.medulaPlaybook.scopeFootnote")}
+        </p>
+        <div className="sut-exactness-notice">
+          {getUnavailableMessage(playbookData, t("billing.medulaPlaybook.unavailable"))}
+        </div>
+      </BillingSectionShell>
+    );
+  }
+
+  if (!playbookExact && entries.length === 0) {
+    return null;
+  }
+  if (entries.length === 0) {
+    return null;
+  }
+
+  const entryCount = playbookData.entry_count ?? entries.length;
+
+  return (
+    <BillingSectionShell
+      title={t("billing.medulaPlaybook.title")}
+      total={String(entryCount)}
+    >
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.medulaPlaybook.scopeFootnote")}
+      </p>
+      {!playbookExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(playbookData, t("billing.medulaPlaybook.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1180}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.medulaPlaybook.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.medulaPlaybook.stage")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.medulaPlaybook.code")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.medulaPlaybook.message")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.medulaPlaybook.procedure")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.medulaPlaybook.sutAnchor")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.medulaPlaybook.rebill")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.medulaPlaybook.steps")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {entries.map((item, index) => (
+            <tr key={`${item.claim_id}-${item.rejection_event_id}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>{item.medula_stage ?? "—"}</td>
+              <td className="font-mono text-xs">{item.sonuc_kodu ?? "—"}</td>
+              <td>{item.hata_mesaji ?? "—"}</td>
+              <td>
+                <div className="font-mono text-xs">{item.related_procedure_code ?? "—"}</div>
+              </td>
+              <td>{item.sut_anchor ?? "—"}</td>
+              <td>{item.rebill_permitted ? t("billing.medulaPlaybook.yes") : t("billing.medulaPlaybook.no")}</td>
+              <td>
+                <ul className="list-disc space-y-1 pl-4 text-sm">
+                  {localizedCorrectiveSteps(item).map((step, stepIndex) => (
+                    <li key={`${item.playbook_id}-step-${stepIndex}`}>{step}</li>
+                  ))}
+                </ul>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+export function DrgPackageAdequacyReviewSection({
+  reviewData,
+}: {
+  reviewData: NonNullable<BillingActionReport["drg_package_adequacy"]>;
+}) {
+  const t = useT();
+  const reviewExact = isExactOutput(reviewData);
+  const opportunities = reviewData.opportunities ?? [];
+
+  if (!reviewExact && opportunities.length === 0) {
+    return null;
+  }
+  if (opportunities.length === 0) {
+    return null;
+  }
+
+  const reviewUplift = reviewData.review_uplift_try ?? reviewData.total_uplift_try ?? 0;
+
+  return (
+    <BillingSectionShell title={t("billing.packageAdequacyReview.title")}>
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.packageAdequacyReview.scopeFootnote")}
+      </p>
+      {reviewUplift > 0 && (
+        <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.careSettingReview.reviewTotal")}: {fmtTRY2(reviewUplift)}
+        </p>
+      )}
+      {!reviewExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(reviewData, t("billing.packageAdequacyReview.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1200}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.packageAdequacyReview.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.packageAdequacyReview.primaryIcd10")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.packageAdequacyReview.clinicalProcedures")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.packageAdequacyReview.currentPackage")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.packageAdequacyReview.candidatePackage")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.packageAdequacyReview.currentPrice")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.packageAdequacyReview.candidatePrice")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.packageAdequacyReview.reviewDelta")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.packageAdequacyReview.note")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {opportunities.map((item, index) => (
+            <tr key={`${item.claim_id}-${item.candidate_package_code}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td className="font-mono text-xs">{item.primary_icd10 ?? "—"}</td>
+              <td className="font-mono text-xs">
+                {(item.clinical_procedure_codes ?? []).join(", ") || "—"}
+              </td>
+              <td>
+                <div className="font-semibold text-slate-950">{item.current_package_code ?? "—"}</div>
+                {(item.current_package_footprint ?? []).length > 0 && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {(item.current_package_footprint ?? []).join(", ")}
+                  </div>
+                )}
+              </td>
+              <td>
+                <div className="font-semibold text-slate-950">{item.candidate_package_code ?? "—"}</div>
+                {(item.candidate_package_footprint ?? []).length > 0 && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {(item.candidate_package_footprint ?? []).join(", ")}
+                  </div>
+                )}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.current_package_price_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.candidate_package_price_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>{item.detail ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+export function CareSettingReviewSection({
+  reviewData,
+}: {
+  reviewData: NonNullable<BillingActionReport["care_setting_review"]>;
+}) {
+  const t = useT();
+  const reviewExact = isExactOutput(reviewData);
+  const opportunities = reviewData.opportunities ?? [];
+
+  if (!reviewExact && opportunities.length === 0) {
+    return null;
+  }
+  if (opportunities.length === 0) {
+    return null;
+  }
+
+  const reviewUplift = reviewData.review_uplift_try ?? reviewData.total_uplift_try ?? 0;
+
+  return (
+    <BillingSectionShell title={t("billing.careSettingReview.title")}>
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.careSettingReview.scopeFootnote")}
+      </p>
+      {reviewUplift > 0 && (
+        <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.careSettingReview.reviewTotal")}: {fmtTRY2(reviewUplift)}
+        </p>
+      )}
+      {!reviewExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(reviewData, t("billing.careSettingReview.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1120}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.careSettingReview.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.careSettingReview.claimType")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.careSettingReview.actualSetting")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.careSettingReview.alternateSetting")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.careSettingReview.actualBest")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.careSettingReview.alternateBest")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.careSettingReview.uplift")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.careSettingReview.sutSection")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.careSettingReview.note")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {opportunities.map((item, index) => (
+            <tr key={`${item.claim_id}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>{item.claim_type ?? "—"}</td>
+              <td>
+                <div>{item.actual_care_setting ?? "—"}</div>
+                {item.actual_payment_method_kind && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {item.actual_payment_method_kind}
+                  </div>
+                )}
+              </td>
+              <td>
+                <div>{item.alternate_care_setting ?? "—"}</div>
+                {item.alternate_payment_method_kind && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {item.alternate_payment_method_kind}
+                  </div>
+                )}
+                {item.review_kind === "needs_clinical_review" && (
+                  <div className="mt-2">
+                    <StatusChip
+                      label={t("billing.careSettingReview.reviewBadge")}
+                      color="#D97706"
+                    />
+                  </div>
+                )}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.actual_best_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.alternate_best_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>{formatSutSectionLabel(item.sut_section_id)}</td>
+              <td>{item.detail ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+export function BloodComponentUpliftSection({
+  bloodData,
+}: {
+  bloodData: NonNullable<BillingActionReport["blood_uplift"]>;
+}) {
+  const t = useT();
+  const bloodExact = isExactOutput(bloodData);
+  const opportunities = bloodData.opportunities ?? [];
+
+  if (!bloodExact && opportunities.length === 0) {
+    return null;
+  }
+  if (opportunities.length === 0) {
+    return null;
+  }
+
+  const confirmedUplift = bloodData.confirmed_uplift_try ?? 0;
+
+  return (
+    <BillingSectionShell
+      title={t("billing.bloodUplift.title")}
+      total={fmtTRY2(confirmedUplift)}
+    >
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.bloodUplift.scopeFootnote")}
+      </p>
+      {!bloodExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(bloodData, t("billing.bloodUplift.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1040}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.bloodUplift.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.bloodUplift.procedure")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.bloodUplift.allowedFraction")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.bloodUplift.maxBillable")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.bloodUplift.actualBilled")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.bloodUplift.uplift")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.bloodUplift.sutSection")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.bloodUplift.note")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {opportunities.map((item, index) => (
+            <tr key={`${item.claim_id}-${item.procedure_code}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>
+                <div className="font-semibold text-slate-950">
+                  {item.procedure_name ?? item.procedure_code ?? "—"}
+                </div>
+                {item.procedure_code && item.procedure_name && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {item.procedure_code}
+                  </div>
+                )}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {item.allowed_fraction != null
+                  ? `${Math.round(item.allowed_fraction * 100)}%`
+                  : "—"}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.max_billable_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.actual_billed_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>{formatSutSectionLabel(item.sut_section_id)}</td>
+              <td>{item.detail ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+export function DrgUpliftSection({
+  drgData,
+}: {
+  drgData: NonNullable<BillingActionReport["drg_uplift"]>;
+}) {
+  const t = useT();
+  const drgExact = isExactOutput(drgData);
+  const opportunities = drgData.opportunities ?? [];
+
+  if (!drgExact && opportunities.length === 0) {
+    return (
+      <BillingSectionShell title={t("billing.drgUplift.title")}>
+        <div className="sut-exactness-notice">
+          {getUnavailableMessage(drgData, t("billing.drgUplift.unavailable"))}
+        </div>
+      </BillingSectionShell>
+    );
+  }
+
+  if (opportunities.length === 0) {
+    return null;
+  }
+
+  const confirmedUplift = drgData.confirmed_uplift_try ?? 0;
+
+  return (
+    <BillingSectionShell title={t("billing.drgUplift.title")} total={fmtTRY2(confirmedUplift)}>
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.drgUplift.scopeFootnote")}
+      </p>
+      {!drgExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(drgData, t("billing.drgUplift.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={960}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drgUplift.claim")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.drgUplift.itemizedTotal")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.drgUplift.packageTotal")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.drgUplift.uplift")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drgUplift.basis")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drgUplift.sutSection")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drgUplift.note")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {opportunities.map((item, index) => (
+            <tr key={`${item.claim_id}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.itemized_total_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.package_total_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>{item.savings_basis ?? "—"}</td>
+              <td>{formatSutSectionLabel(item.sut_section_id)}</td>
+              <td>{item.detail ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+export function SessionUpliftSection({
+  sessionData,
+}: {
+  sessionData: NonNullable<BillingActionReport["session_uplift"]>;
+}) {
+  const t = useT();
+  const sessionExact = isExactOutput(sessionData);
+  const opportunities = sessionData.opportunities ?? [];
+
+  if (!sessionExact && opportunities.length === 0) {
+    return (
+      <BillingSectionShell title={t("billing.sessionUplift.title")}>
+        <div className="sut-exactness-notice">
+          {getUnavailableMessage(sessionData, t("billing.sessionUplift.unavailable"))}
+        </div>
+      </BillingSectionShell>
+    );
+  }
+
+  if (opportunities.length === 0) {
+    return null;
+  }
+
+  const confirmedUplift =
+    sessionData.confirmed_uplift_try ??
+    opportunities
+      .filter((row) => row.included_in_sgk_total !== false)
+      .reduce((sum, row) => sum + (row.recoverable_uplift_try ?? 0), 0);
+  const reviewUplift = sessionData.review_uplift_try ?? 0;
+
+  return (
+    <BillingSectionShell
+      title={t("billing.sessionUplift.title")}
+      total={fmtTRY2(confirmedUplift)}
+    >
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.sessionUplift.scopeFootnote")}
+      </p>
+      {reviewUplift > 0 && (
+        <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.sessionUplift.reviewTotal")}: {fmtTRY2(reviewUplift)}
+        </p>
+      )}
+      {!sessionExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(sessionData, t("billing.sessionUplift.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1080}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.sessionUplift.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.sessionUplift.procedure")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.sessionUplift.primaryProcedure")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.sessionUplift.expectedBilled")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.sessionUplift.actualBilled")}
+            </th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.sessionUplift.uplift")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.sessionUplift.sutSection")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.sessionUplift.note")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {opportunities.map((item, index) => (
+            <tr key={`${item.claim_id}-${item.procedure_code}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>
+                <div className="font-semibold text-slate-950">
+                  {item.procedure_name ?? item.procedure_code ?? "—"}
+                </div>
+                {item.procedure_code && item.procedure_name && (
+                  <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                    {item.procedure_code}
+                  </div>
+                )}
+                {item.review_kind === "needs_clinical_review" && (
+                  <div className="mt-2">
+                    <StatusChip
+                      label={t("billing.sessionUplift.reviewBadge")}
+                      color="#D97706"
+                    />
+                  </div>
+                )}
+              </td>
+              <td className="font-mono text-xs">{item.primary_procedure_code ?? "—"}</td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.expected_billed_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right">
+                {fmtTRY2OrUnavailable(item.actual_billed_try ?? null)}
+              </td>
+              <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>{formatSutSectionLabel(item.sut_section_id)}</td>
+              <td>{item.detail ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
     </BillingSectionShell>
   );
 }

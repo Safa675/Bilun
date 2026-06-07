@@ -1072,14 +1072,27 @@ function RevenueRecoveryDashboard({
   const recoveryExact = isExactOutput(displayData);
   const recoveryPartial = displayData.exactness_status === "partial_exact";
   const hasRecoveryBreakdown = recoveryExact || recoveryPartial;
+  const savingsCategoryLabel = (key: string) => {
+    const labelKey = `optimizer.savingsCategory.${key}` as const;
+    const translated = t(labelKey);
+    return translated === labelKey ? fmtLabel(key) : translated;
+  };
   const categoryData = Object.entries(displayData.savings_by_category || {})
-    .filter(([, v]) => hasRecoveryBreakdown && v > 0)
-    .map(([key, value]) => ({ name: fmtLabel(key), value: Math.round(value) }));
+    .filter(
+      ([key, v]) =>
+        hasRecoveryBreakdown
+        && v > 0
+        && key !== "copay"
+        && key !== "lab"
+        && key !== "strategy"
+        && key !== "medula_playbook",
+    )
+    .map(([key, value]) => ({ name: savingsCategoryLabel(key), value: Math.round(value) }));
 
   const priorityData = Object.entries(hasRecoveryBreakdown ? (displayData.priority_distribution || {}) : {})
-    .map(([key, value]) => ({ name: fmtPriorityLabel(key), value }));
+    .map(([key, value]) => ({ key: key.toLowerCase(), name: fmtPriorityLabel(key), value }));
 
-  const priorityColors: Record<string, string> = { High: "#B91C1C", Medium: "#B45309", Low: theme.accent };
+  const priorityColors: Record<string, string> = { high: "#B91C1C", medium: "#B45309", low: theme.accent };
 
   return (
     <div className="space-y-5">
@@ -1095,6 +1108,48 @@ function RevenueRecoveryDashboard({
           { label: t("optimizer.kpis.copaySavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_copay_savings : null) },
           { label: t("optimizer.kpis.strategySavings"), value: fmtTRYOrUnavailable(hasRecoveryBreakdown ? displayData.total_strategy_savings : null) },
           { label: t("optimizer.kpis.patientsWithActions"), value: fmtNum(displayData.n_patients) },
+          {
+            label: t("optimizer.kpis.optionalOverridePatients"),
+            value: fmtNum(displayData.n_optional_override_patients ?? 0),
+          },
+          {
+            label: t("optimizer.kpis.drgUpliftPatients"),
+            value: fmtNum(displayData.n_drg_uplift_patients ?? 0),
+          },
+          {
+            label: t("optimizer.kpis.bloodUpliftPatients"),
+            value: fmtNum(displayData.n_blood_uplift_patients ?? 0),
+          },
+          {
+            label: t("optimizer.kpis.materialUpliftPatients"),
+            value: fmtNum(displayData.n_material_uplift_patients ?? 0),
+          },
+          {
+            label: t("optimizer.kpis.procedureAddonPatients"),
+            value: fmtNum(displayData.n_procedure_addon_patients ?? 0),
+          },
+          {
+            label: t("optimizer.kpis.captureGapTotal"),
+            value: fmtTRYOrUnavailable(
+              hasRecoveryBreakdown ? displayData.total_capture_gap ?? 0 : null,
+            ),
+          },
+          {
+            label: t("optimizer.kpis.packageAdequacyReviewTotal"),
+            value: fmtTRYOrUnavailable(
+              hasRecoveryBreakdown ? displayData.total_package_adequacy_review ?? 0 : null,
+            ),
+          },
+          {
+            label: t("optimizer.kpis.gazetteRepricingTotal"),
+            value: fmtTRYOrUnavailable(
+              hasRecoveryBreakdown ? displayData.total_gazette_repricing ?? 0 : null,
+            ),
+          },
+          {
+            label: t("optimizer.kpis.medulaPlaybookEntries"),
+            value: fmtNum(displayData.total_medula_playbook_entries ?? 0),
+          },
         ].map((kpi, i) => (
           <Surface
             key={i}
@@ -1164,7 +1219,7 @@ function RevenueRecoveryDashboard({
                 return (
                   <div key={i}>
                     <div className="flex justify-between text-xs mb-1">
-                        <span className="font-semibold" style={{ color: priorityColors[pd.name] || theme.textMuted }}>{pd.name}</span>
+                        <span className="font-semibold" style={{ color: priorityColors[pd.key] || theme.textMuted }}>{pd.name}</span>
                         <span className="text-[var(--text-muted)]">
                           {t("optimizer.tables.patientsWithPct", {
                             count: fmtNum(pd.value),
@@ -1173,7 +1228,7 @@ function RevenueRecoveryDashboard({
                         </span>
                     </div>
                     <div className="w-full h-2 rounded-full" style={{ background: theme.accentAlpha(0.08) }}>
-                      <div className="h-2 rounded-full" style={{ width: `${pct}%`, background: priorityColors[pd.name] || ACCENT }} />
+                      <div className="h-2 rounded-full" style={{ width: `${pct}%`, background: priorityColors[pd.key] || ACCENT }} />
                     </div>
                   </div>
                 );
@@ -1207,9 +1262,14 @@ function RevenueRecoveryDashboard({
                       {p.patient_id}
                     </Link>
                   </td>
-                  <td className="num-col font-semibold text-[var(--text-primary)]">{fmtTRY(p.total_recoverable_try)}</td>
+                  <td className="num-col font-semibold text-[var(--text-primary)]">
+                    {fmtTRY(p.total_opportunity_try ?? p.total_recoverable_try)}
+                  </td>
                   <td>
-                    <AlertBadge label={fmtPriorityLabel(p.priority)} color={priorityColors[fmtPriorityLabel(p.priority)] || theme.textMuted} />
+                    <AlertBadge
+                      label={fmtPriorityLabel(p.priority)}
+                      color={priorityColors[p.priority?.toLowerCase() ?? ""] || theme.textMuted}
+                    />
                   </td>
                   <td className="num-col text-[var(--text-muted)]">{fmtNum(p.action_count)}</td>
                   <td className="text-xs text-[var(--text-muted)]">{fmtLabel(p.top_action_type)}</td>

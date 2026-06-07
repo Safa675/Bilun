@@ -6,6 +6,7 @@ import type { SutMaterialPricingResult } from "@/lib/api/sut";
 import { ACCENT_LOCAL, fmtTRY2 } from "../shared";
 import { Chip, DataTable, Surface } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
 
 export function MaterialPricingSection() {
   const t = useT();
@@ -76,8 +77,10 @@ export function MaterialPricingSection() {
             <span className="text-xs font-medium" style={{ color: "#A1A1AA" }}>
               {t("sections.materialPricing.matchCount", {
                 count: result.n_matches,
-                plural: result.n_matches !== 1 ? "es" : "",
                 query: result.query,
+                ...(getModuleLocale() === "en"
+                  ? { plural: result.n_matches !== 1 ? "es" : "" }
+                  : {}),
               })}
             </span>
           </div>
