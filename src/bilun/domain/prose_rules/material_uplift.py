@@ -1,0 +1,231 @@
+"""SUT §3.1 missing billable material detector (inverse EK-3B-1 bundling)."""
+
+from __future__ import annotations
+
+import json
+from functools import lru_cache
+from typing import TYPE_CHECKING, Any
+
+from src.bilun.domain.constants import _PROSE_RULES_DIR
+from src.bilun.domain.materials.catalog_lookup import (
+    is_material_in_ek3_catalog,
+    is_material_in_ek3c_catalog,
+    is_separate_billing_allowed,
+    lookup_ek3_list_price_try,
+    resolve_material_name_by_code,
+)
+from src.bilun.domain.materials.exclusions import (
+    is_consumable_bundled,
+    is_material_reimbursable,
+)
+from src.bilun.domain.pricing.material_kdv import ek3_payable_ceiling_try
+from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
+
+from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
+
+if TYPE_CHECKING:
+    from src.bilun.domain.claims.models import ClaimHeader, MaterialClaimLine, ProcedureClaimLine
+
+_RULES_PATH = _PROSE_RULES_DIR / "material_pairing_uplift.json"
+_OPPORTUNITY_TYPE = "missing_billable_material"
+_BILLING_TOLERANCE = 0.02
+
+
+def _money(value: float | int) -> float:
+    return round(float(value), 2)
+
+
+@lru_cache(maxsize=1)
+def load_material_pairing_rules() -> dict[str, Any]:
+    with _RULES_PATH.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _rules_by_procedure() -> dict[str, list[dict[str, Any]]]:
+    index: dict[str, list[dict[str, Any]]] = {}
+    for rule in load_material_pairing_rules().get("rules", []):
+        for code in rule.get("procedure_codes", []):
+            normalized = normalize_procedure_code(str(code))
+            if not normalized:
+                continue
+            index.setdefault(normalized, []).append(rule)
+    return index
+
+
+def _line_billed(line: ProcedureClaimLine) -> bool:
+    return float(line.billed_amount_try) > 0
+
+
+def _material_billed_amount(
+    material_lines: list[MaterialClaimLine],
+    *,
+    procedure_line_id: str,
+    material_code: str,
+) -> float:
+    code = str(material_code or "").strip().upper()
+    linked = [
+        line
+        for line in material_lines
+        if line.procedure_line_id == procedure_line_id
+        and str(line.material_code or "").strip().upper() == code
+    ]
+    if not linked:
+        return 0.0
+    return max(float(line.billed_amount_try) for line in linked)
+
+
+def _claim_foreign_facility(
+    claim: ClaimHeader,
+    claim_materials: list[MaterialClaimLine],
+) -> bool:
+    if any(line.foreign_facility for line in claim_materials):
+        return True
+    provider = str(getattr(claim, "provider_type", "") or "").casefold()
+    return "yurtdisi" in provider or "foreign" in provider
+
+
+def _rule_pairing_mode(rule: dict[str, Any]) -> str:
+    mode = str(rule.get("pairing_mode") or "").strip().lower()
+    if mode in {"separate_billing", "specialty_annex"}:
+        return mode
+    if rule.get("require_separate_billing_allowed") is False:
+        return "specialty_annex"
+    return "separate_billing"
+
+
+def _material_eligible_for_uplift(
+    material_code: str,
+    *,
+    pairing_mode: str,
+) -> tuple[bool, str | None]:
+    code = str(material_code or "").strip().upper()
+    if not code:
+        return False, "missing_material_code"
+    if not is_material_in_ek3_catalog(code):
+        return False, "not_in_ek3"
+    if not is_material_reimbursable("", material_code=code):
+        return False, "not_reimbursable"
+    name = resolve_material_name_by_code(code) or code
+    if is_consumable_bundled(name):
+        return False, "ek3b1_bundled_consumable"
+    if pairing_mode == "separate_billing":
+        if not is_separate_billing_allowed(code) and not is_material_in_ek3c_catalog(code):
+            return False, "separate_billing_not_allowed"
+    return True, None
+
+
+def _price_material_uplift(
+    material_code: str,
+    *,
+    foreign_facility: bool,
+) -> tuple[float | None, str]:
+    ex_vat = lookup_ek3_list_price_try(material_code)
+    if ex_vat is None or float(ex_vat) <= 0:
+        return None, "catalog_price_missing"
+    ceiling = ek3_payable_ceiling_try(
+        float(ex_vat),
+        foreign_facility=foreign_facility,
+    )
+    if ceiling is None or ceiling <= 0:
+        return None, "catalog_price_missing"
+    return _money(ceiling), "ek3_list_price_with_kdv"
+
+
+def detect_missing_billable_material_opportunities(
+    claim: ClaimHeader,
+    procedure_lines: list[ProcedureClaimLine],
+    material_lines: list[MaterialClaimLine],
+) -> list[dict[str, Any]]:
+    """Flag performed procedures with expected separately billable materials absent."""
+    rules_index = _rules_by_procedure()
+    if not rules_index:
+        return []
+
+    claim_materials = [line for line in material_lines if line.claim_id == claim.claim_id]
+    foreign_facility = _claim_foreign_facility(claim, claim_materials)
+    opportunities: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+
+    for proc in procedure_lines:
+        if proc.claim_id != claim.claim_id:
+            continue
+        if proc.is_package_included or not _line_billed(proc):
+            continue
+
+        proc_code = normalize_procedure_code(proc.procedure_code)
+        for rule in rules_index.get(proc_code, []):
+            pairing_mode = _rule_pairing_mode(rule)
+            for material_code in rule.get("expected_material_codes", []):
+                code = str(material_code or "").strip().upper()
+                dedupe_key = (claim.claim_id, proc_code, code)
+                if dedupe_key in seen:
+                    continue
+
+                billed = _material_billed_amount(
+                    claim_materials,
+                    procedure_line_id=proc.procedure_line_id,
+                    material_code=code,
+                )
+
+                eligible, _skip_reason = _material_eligible_for_uplift(
+                    code,
+                    pairing_mode=pairing_mode,
+                )
+                if not eligible:
+                    continue
+
+                ceiling, price_methodology = _price_material_uplift(
+                    code,
+                    foreign_facility=foreign_facility,
+                )
+                if ceiling is None or ceiling <= 0:
+                    continue
+                if billed >= ceiling - _BILLING_TOLERANCE:
+                    continue
+
+                recoverable = _money(ceiling - billed)
+                if recoverable <= _BILLING_TOLERANCE:
+                    continue
+
+                seen.add(dedupe_key)
+                material_name = resolve_material_name_by_code(code) or code
+                message = str(rule.get("message_tr") or "").strip()
+                detail = message or (
+                    f"Procedure {proc.procedure_code} billed with material {code} "
+                    f"under-billed ({billed:.2f} TRY vs ceiling {ceiling:.2f} TRY); "
+                    f"{recoverable:.2f} TRY may be recoverable per "
+                    f"SUT §{rule.get('sut_section', '3.1.1')}."
+                    if billed > 0
+                    else (
+                        f"Procedure {proc.procedure_code} billed without separately "
+                        f"billable material {code}; EK-3 list ceiling "
+                        f"{recoverable:.2f} TRY may be recoverable per "
+                        f"SUT §{rule.get('sut_section', '3.1.1')}."
+                    )
+                )
+                opportunities.append(
+                    {
+                        "type": _OPPORTUNITY_TYPE,
+                        "claim_id": claim.claim_id,
+                        "procedure_line_id": proc.procedure_line_id,
+                        "procedure_code": proc.procedure_code,
+                        "procedure_name": proc.procedure_name,
+                        "material_code": code,
+                        "material_name": material_name,
+                        "actual_billed_try": _money(billed),
+                        "recoverable_uplift_try": recoverable,
+                        "ceiling_try": ceiling,
+                        "list_price_try": lookup_ek3_list_price_try(code),
+                        "price_methodology": price_methodology,
+                        "included_in_sgk_total": True,
+                        "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                        "savings_basis": SAVINGS_BASIS_SOURCED,
+                        "pairing_mode": pairing_mode,
+                        "specialty_annex": rule.get("specialty_annex"),
+                        "sut_section_id": str(rule.get("sut_section") or "3.1.1"),
+                        "rule_id": str(rule.get("rule_id") or "material_pairing_uplift"),
+                        "detail": detail,
+                    }
+                )
+
+    return opportunities
