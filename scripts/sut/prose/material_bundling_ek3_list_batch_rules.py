@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-_EK3_HEADER_IDS_PATH = Path("evidence/clauses/L1.4_ek3_annex_header_clause_ids.json")
+_EK3_HEADER_IDS_PATH = Path("data/gazette/prose_manifests/L1.4_ek3_annex_header_clause_ids.json")
 
 # §3.2.2(1) — list-price ceiling handled in kdv_price_reviews + catalog lookup.
 EK3C_LIST_PRICE_CEILING_CLAUSE_IDS: frozenset[str] = frozenset(

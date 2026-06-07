@@ -49,7 +49,7 @@ from scripts.sut.prose.material_bundling_tail_batch_rules import (  # noqa: E402
 
 _PROSE_PATH = _PROJECT_ROOT / "data/gazette/prose_rules/material_bundling_prose.json"
 _MANIFEST_PATH = (
-    _PROJECT_ROOT / "evidence/clauses/L1.4_material_bundling_encoded_manifest.json"
+    _PROJECT_ROOT / "data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json"
 )
 
 

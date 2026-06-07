@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Any
 
-from src.bilun.domain.constants import _PROSE_RULES_DIR
+from src.bilun.domain.constants import PROSE_MANIFESTS_DIR, _PROSE_RULES_DIR
 
 EK3B1_ROW_COUNT = 54
 EK3B2_ROW_COUNT = 13
@@ -16,7 +15,7 @@ P2_PLAN_PATH = "plans/billing/material-bundling-prose-p2-plan.md"
 MEDULA_BOUNDARY_DOC = "docs/medula/material_bundling_medula_boundary.md"
 MEDULA_OVERLAP_CLASSIFICATION = "additive"
 _PROSE_JSON = _PROSE_RULES_DIR / "material_bundling_prose.json"
-_MANIFEST = Path("evidence/clauses/L1.4_material_bundling_encoded_manifest.json")
+_MANIFEST = PROSE_MANIFESTS_DIR / "L1.4_material_bundling_encoded_manifest.json"
 
 
 def _load_prose_payload() -> dict[str, Any] | None:

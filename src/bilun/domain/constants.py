@@ -19,6 +19,8 @@ _DATA_DIR = _PROJECT_ROOT / "data"
 _GAZETTE_DIR = _DATA_DIR / "gazette"
 _GAZETTE_CURATED_DIR = _GAZETTE_DIR / "curated"
 _PROSE_RULES_DIR = _GAZETTE_DIR / "prose_rules"
+PROSE_MANIFESTS_DIR = _GAZETTE_DIR / "prose_manifests"
+PROSE_CORPUS_DIR = _GAZETTE_DIR / "prose_corpus"
 _LEGACY_DIR = _DATA_DIR / "legacy"
 
 # New primary data sources (compiled from 72 gazette documents)

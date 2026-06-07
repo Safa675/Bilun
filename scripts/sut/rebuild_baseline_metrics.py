@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild reports/sut-fact-check/baseline_metrics.json from sut_clauses + registry."""
+"""Rebuild docs/core-system/fact-check/baseline_metrics.json from sut_clauses + registry."""
 
 from __future__ import annotations
 
@@ -150,23 +150,23 @@ def main() -> None:
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path("reports/sut-fact-check/baseline_metrics.json"),
+        default=Path("docs/core-system/fact-check/baseline_metrics.json"),
     )
     parser.add_argument(
         "--coverage-dir",
         type=Path,
-        default=Path("evidence/coverage"),
+        default=Path("data/gazette"),
         help="Optional parquet outputs for sut_clause_coverage etc.",
     )
     parser.add_argument(
         "--manifest",
         type=Path,
-        default=Path("evidence/clauses/L1.4_material_bundling_encoded_manifest.json"),
+        default=Path("data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json"),
     )
     parser.add_argument(
         "--gate-b-summary",
         type=Path,
-        default=Path("evidence/clauses/L1.4_material_bundling_gate_b_summary.json"),
+        default=Path("data/gazette/prose_corpus/L1.4_material_bundling_gate_b_summary.json"),
     )
     args = parser.parse_args()
 

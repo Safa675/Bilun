@@ -40,7 +40,7 @@ from scripts.sut.prose.specialty_materials_other_3_3_tail_batch_rules import (  
 )
 
 _PROSE_PATH = _PROJECT_ROOT / "data/gazette/prose_rules/specialty_materials_prose.json"
-_MANIFEST_PATH = _PROJECT_ROOT / "evidence/clauses/L4.4_specialty_prose_encoded_manifest.json"
+_MANIFEST_PATH = _PROJECT_ROOT / "data/gazette/prose_manifests/L4.4_specialty_prose_encoded_manifest.json"
 
 
 def _bootstrap_payload() -> dict:

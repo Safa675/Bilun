@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-_HEADER_IDS_PATH = Path("evidence/clauses/L1.4_malzeme_general_header_clause_ids.json")
+_HEADER_IDS_PATH = Path("data/gazette/prose_manifests/L1.4_malzeme_general_header_clause_ids.json")
 
 SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS: frozenset[str] = frozenset(
     {

@@ -77,7 +77,7 @@ def build_corpus_batch2(clauses_path: Path, prose_json_path: Path) -> pl.DataFra
         for rule in payload.get("rules") or []:
             encoded_sources.update(rule.get("gate_b_sources") or [])
 
-    manifest_path = Path("evidence/clauses/L1.4_material_bundling_encoded_manifest.json")
+    manifest_path = Path("data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json")
     if manifest_path.is_file():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         for key in (
@@ -125,12 +125,12 @@ def main() -> None:
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path("evidence/clauses/L1.4_material_bundling_corpus_batch2.csv"),
+        default=Path("data/gazette/prose_corpus/L1.4_material_bundling_corpus_batch2.csv"),
     )
     parser.add_argument(
         "--summary-out",
         type=Path,
-        default=Path("evidence/clauses/L1.4_material_bundling_corpus_batch2_summary.json"),
+        default=Path("data/gazette/prose_corpus/L1.4_material_bundling_corpus_batch2_summary.json"),
     )
     args = parser.parse_args()
 

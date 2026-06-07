@@ -35,17 +35,17 @@ def main() -> None:
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path("evidence/clauses/L1.4_material_bundling_prose.csv"),
+        default=Path("data/gazette/prose_corpus/L1.4_material_bundling_prose.csv"),
     )
     parser.add_argument(
         "--review-out",
         type=Path,
-        default=Path("evidence/clauses/L1.4_material_bundling_prose_review_sample.csv"),
+        default=Path("data/gazette/prose_corpus/L1.4_material_bundling_prose_review_sample.csv"),
     )
     parser.add_argument(
         "--summary-out",
         type=Path,
-        default=Path("evidence/clauses/L1.4_material_bundling_gate_b_summary.json"),
+        default=Path("data/gazette/prose_corpus/L1.4_material_bundling_gate_b_summary.json"),
     )
     parser.add_argument("--review-fraction", type=float, default=0.1)
     parser.add_argument("--review-min", type=int, default=5)

@@ -17,9 +17,9 @@ if str(_PROJECT_ROOT) not in sys.path:
 from scripts.sut.prose.material_bundling_gate_b import _normalize_tr  # noqa: E402
 
 _DEFAULT_CLAUSES = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
-_DEFAULT_OUT_CSV = _PROJECT_ROOT / "evidence/clauses/L4.4_specialty_prose.csv"
-_DEFAULT_OUT_SUMMARY = _PROJECT_ROOT / "evidence/clauses/L4.4_specialty_prose_summary.json"
-_MANIFEST_PATH = _PROJECT_ROOT / "evidence/clauses/L4.4_specialty_prose_encoded_manifest.json"
+_DEFAULT_OUT_CSV = _PROJECT_ROOT / "data/gazette/prose_corpus/L4.4_specialty_prose.csv"
+_DEFAULT_OUT_SUMMARY = _PROJECT_ROOT / "data/gazette/prose_corpus/L4.4_specialty_prose_summary.json"
+_MANIFEST_PATH = _PROJECT_ROOT / "data/gazette/prose_manifests/L4.4_specialty_prose_encoded_manifest.json"
 
 
 def _is_section_3_3_1(section_id: str) -> bool:
