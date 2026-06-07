@@ -234,20 +234,26 @@ def get_revenue_recovery():
                 reader, "cohort_recovery_summary", active_build
             )
             if payload is not None:
-                if not payload.get("patient_summaries"):
-                    billing_rows = read_cache_json_payload_rows(
-                        reader, "patient_billing_report_rows", active_build
+                billing_rows = read_cache_json_payload_rows(
+                    reader, "patient_billing_report_rows", active_build
+                )
+                needs_summary_refresh = not payload.get("patient_summaries") or any(
+                    "total_opportunity_try" not in row
+                    for row in (payload.get("patient_summaries") or [])
+                )
+                if needs_summary_refresh and billing_rows:
+                    summaries = [
+                        patient_recovery_summary_from_payload(report)
+                        for _, report in billing_rows
+                    ]
+                    summaries.sort(
+                        key=lambda row: row["total_opportunity_try"],
+                        reverse=True,
                     )
-                    if billing_rows:
-                        summaries = [
-                            patient_recovery_summary_from_payload(report)
-                            for _, report in billing_rows
-                        ]
-                        summaries.sort(
-                            key=lambda row: row["total_recoverable_try"],
-                            reverse=True,
-                        )
-                        payload = {**payload, "patient_summaries": summaries}
+                    payload = {**payload, "patient_summaries": summaries}
+                    top = summaries[:10]
+                    if top != payload.get("top_patients"):
+                        payload = {**payload, "top_patients": top}
                 return attach_bilun_data_source(payload)
         if mode == "persistent":
             raise ServiceUnavailableError(

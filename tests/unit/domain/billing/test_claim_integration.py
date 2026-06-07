@@ -49,11 +49,17 @@ def test_exempt_patient_rx_copay_in_total() -> None:
     rx = report.copay.rx_copay_savings_try
     visit = report.copay.total_copay_savings_try
 
-    expected_floor = visit + rx + report.lab.total_savings
-    if report.billing_strategy.exactness_status == "exact":
-        expected_floor += report.billing_strategy.total_savings
-
-    assert report.total_recoverable_try == round(expected_floor, 2)
+    assert report.total_recoverable_try == report.sgk_uplift_try
+    assert report.sgk_uplift_try == round(
+        report.billing_strategy.uplift_savings_try
+        + report.session_uplift.confirmed_uplift_try
+        + report.drg_uplift.confirmed_uplift_try
+        + report.blood_uplift.confirmed_uplift_try
+        + report.material_uplift.confirmed_uplift_try
+        + report.procedure_addon_uplift.confirmed_uplift_try,
+        2,
+    )
+    assert report.copay.patient_copay_waived_total_try == round(visit + rx, 2)
     assert report.copay.total_copay_savings_try == report.copay.visit_copay_savings_try
 
 

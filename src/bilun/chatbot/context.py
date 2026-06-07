@@ -166,6 +166,72 @@ def build_cohort_context(data: dict[str, Any]) -> str:
             f"[exactness: {drg_exactness or 'missing_exact_inputs'}]"
         )
 
+    recovery = data.get("revenue_recovery", {}) or {}
+    if isinstance(recovery, dict) and recovery.get("status") == "ready":
+        recovery = recovery.get("summary") or {}
+    elif isinstance(recovery, dict) and recovery.get("summary") and "status" not in recovery:
+        recovery = recovery["summary"]
+    if recovery:
+        lines.append("\n--- COHORT REVENUE RECOVERY ---")
+        n_override = recovery.get("n_optional_override_patients")
+        override_uplift = recovery.get("total_optional_override_uplift")
+        n_drg = recovery.get("n_drg_uplift_patients")
+        drg_uplift = recovery.get("total_drg_uplift")
+        n_blood = recovery.get("n_blood_uplift_patients")
+        blood_uplift = recovery.get("total_blood_uplift")
+        n_material = recovery.get("n_material_uplift_patients")
+        material_uplift = recovery.get("total_material_uplift")
+        sgk_uplift = recovery.get("total_sgk_uplift")
+        if sgk_uplift is not None:
+            lines.append(f"  SGK uplift (headline): {float(sgk_uplift):.2f} TRY")
+        if n_override is not None:
+            lines.append(
+                f"  Optional §2.2.2(2) override: {int(n_override)} patients"
+                + (
+                    f", {float(override_uplift):.2f} TRY uplift"
+                    if override_uplift is not None
+                    else ""
+                )
+            )
+        if n_drg is not None:
+            lines.append(
+                f"  DRG itemized-vs-package uplift: {int(n_drg)} patients"
+                + (
+                    f", {float(drg_uplift):.2f} TRY uplift"
+                    if drg_uplift is not None
+                    else ""
+                )
+            )
+        if n_blood is not None:
+            lines.append(
+                f"  Blood component uplift: {int(n_blood)} patients"
+                + (
+                    f", {float(blood_uplift):.2f} TRY uplift"
+                    if blood_uplift is not None
+                    else ""
+                )
+            )
+        if n_material is not None:
+            lines.append(
+                f"  Missing billable materials: {int(n_material)} patients"
+                + (
+                    f", {float(material_uplift):.2f} TRY uplift"
+                    if material_uplift is not None
+                    else ""
+                )
+            )
+        n_addon = recovery.get("n_procedure_addon_patients")
+        addon_uplift = recovery.get("total_procedure_addon_uplift")
+        if n_addon is not None:
+            lines.append(
+                f"  Missing procedure add-ons: {int(n_addon)} patients"
+                + (
+                    f", {float(addon_uplift):.2f} TRY uplift"
+                    if addon_uplift is not None
+                    else ""
+                )
+            )
+
     temporal = opt.get("temporal_price_validation", {}) or {}
     if temporal.get("n_codes_with_changes"):
         lines.append("\n--- TEMPORAL PRICE AUDIT ---")
@@ -487,6 +553,11 @@ def _append_billing_sections(
     if strategy:
         strat_exactness = strategy.get("exactness_status", "unknown")
         lines.append(f"\n  Billing strategy [exactness: {strat_exactness}]")
+        override_uplift = strategy.get("optional_override_uplift_try")
+        if override_uplift is not None and float(override_uplift) > 0:
+            lines.append(
+                f"    Optional §2.2.2(2) override uplift: {float(override_uplift):.2f} TRY"
+            )
         strat_source = strategy.get("rule_source", "")
         if is_full and strat_source:
             lines.append(f"    Source: {strat_source}")
@@ -633,8 +704,10 @@ def build_medula_context(data: dict[str, Any]) -> str:
         return ""
 
     has_content = (
-        (search.get("known_codes") or search.get("rejection_categories")
-         or search.get("workflow_stage"))
+        search.get("known_codes")
+        or search.get("rejection_categories")
+        or search.get("workflow_stage")
+        or search.get("playbook_entries")
     )
     if not has_content:
         return ""
@@ -676,6 +749,23 @@ def build_medula_context(data: dict[str, Any]) -> str:
                 lines.append(f"      - {c}")
         if resolution:
             lines.append(f"    Çözüm: {resolution}")
+
+    playbook_entries = search.get("playbook_entries", []) or []
+    for entry in playbook_entries:
+        lines.append(f"\n  [Playbook — {entry.get('playbook_key', '')}]")
+        lines.append(f"    SUT: {entry.get('sut_anchor', '')}")
+        lines.append(f"    Sorun: {entry.get('problem_summary_tr', '')}")
+        steps = entry.get("corrective_steps_tr", []) or []
+        if steps:
+            lines.append("    Düzeltici adımlar:")
+            for step in steps:
+                lines.append(f"      - {step}")
+        if entry.get("rebill_permitted"):
+            lines.append(
+                f"    Yeniden fatura: izinli ({entry.get('rebill_stage', '')})"
+            )
+        else:
+            lines.append("    Yeniden fatura: önce ön koşulu giderin")
 
     return "\n".join(lines)
 

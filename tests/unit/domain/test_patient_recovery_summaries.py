@@ -17,7 +17,7 @@ def test_patient_recovery_summary_from_payload_maps_nested_savings() -> None:
         "action_count": 3,
         "lab": {"total_savings": 1.0},
         "drug": {"total_savings": 0.0},
-        "copay": {"total_copay_savings_try": 0.0},
+        "copay": {"total_copay_savings_try": 0.0, "exactness_status": "exact", "is_exempt": False},
         "billing_strategy": {"total_savings": 41.5},
     }
 
@@ -26,6 +26,8 @@ def test_patient_recovery_summary_from_payload_maps_nested_savings() -> None:
     assert summary == {
         "patient_id": "P1",
         "total_recoverable_try": 42.5,
+        "exemption_gap_try": 0.0,
+        "total_opportunity_try": 42.5,
         "priority": "high",
         "action_count": 3,
         "top_action_type": "strategy",
@@ -44,6 +46,8 @@ def test_patient_recovery_summary_entry_uses_report_fields() -> None:
 
     assert summary["patient_id"] == "P2"
     assert summary["total_recoverable_try"] == 0.0
+    assert summary["exemption_gap_try"] == 0.0
+    assert summary["total_opportunity_try"] == 0.0
     assert summary["priority"] == "low"
     assert summary["action_count"] == 0
     assert summary["top_action_type"] == "none"

@@ -16,7 +16,12 @@ from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 from src.bilun.domain.prose_rules.session_pricing import (
     compute_session_adjusted_itemized_total,
 )
-from src.bilun.domain.prose_rules.types import PaymentMethodKind, PaymentMethodResult
+from src.bilun.domain.prose_rules.types import (
+    SAVINGS_BASIS_OPTIONAL_OVERRIDE,
+    SAVINGS_CATEGORY_SGK_UPLIFT,
+    PaymentMethodKind,
+    PaymentMethodResult,
+)
 
 from .types import EXACTNESS_STATUS_EXACT, BillingStrategyRecommendation
 
@@ -67,6 +72,41 @@ def _resolve_line_payment_method(
     )
 
 
+def resolve_package_total_try(
+    claim: ClaimHeader,
+    claim_procs: list[ProcedureClaimLine],
+) -> tuple[float, str]:
+    """Resolve package total using claim-line payables, then EK-2C, then chapter median."""
+    package_lines = [
+        line for line in claim_procs if line.procedure_category == "paket"
+    ]
+    package_total = sum(float(line.expected_payable_try) for line in package_lines)
+    package_price_methodology = "claim_lines"
+
+    if package_total <= 0 and package_lines:
+        for line in package_lines:
+            as_of = _line_as_of_date(line, claim)
+            entry = get_ek2c_entry(line.procedure_code, as_of_date=as_of)
+            price_try = entry.get("price_try") if entry else None
+            if price_try is not None and float(price_try) > 0:
+                package_total = float(price_try)
+                package_price_methodology = "ek2c_code"
+                break
+
+    if package_total <= 0 and claim.admission_date is not None:
+        chapter = (claim.primary_icd10 or "R69")[:1].upper()
+        drg_price = get_drg_package_price_for_date(
+            chapter,
+            claim.admission_date,
+            icd10_code=claim.primary_icd10,
+        )
+        if drg_price is not None:
+            package_total = float(drg_price)
+            package_price_methodology = "chapter_median_heuristic"
+
+    return _money(package_total), package_price_methodology
+
+
 def _infer_current_billing(claim_procs: list[ProcedureClaimLine]) -> str:
     billed_package = any(
         line.procedure_category == "paket" and float(line.billed_amount_try) > 0
@@ -107,6 +147,8 @@ def _compute_claim_savings(
     itemized_total: float,
 ) -> float:
     if claim_kind == "DRG_OVERRIDABLE":
+        if current_billing == recommendation:
+            return 0.0
         return _money(abs(package_total - itemized_total))
 
     if recommendation == "package":
@@ -255,32 +297,10 @@ def recommend_billing_strategy_from_claims(
             itemized_meta.get("methodology") or "claim_lines"
         )
 
-        package_lines = [
-            line for line in claim_procs if line.procedure_category == "paket"
-        ]
-        package_total = sum(float(line.expected_payable_try) for line in package_lines)
-        package_price_methodology = "claim_lines"
-
-        if package_total <= 0 and package_lines:
-            for line in package_lines:
-                as_of = _line_as_of_date(line, claim)
-                entry = get_ek2c_entry(line.procedure_code, as_of_date=as_of)
-                price_try = entry.get("price_try") if entry else None
-                if price_try is not None and float(price_try) > 0:
-                    package_total = float(price_try)
-                    package_price_methodology = "ek2c_code"
-                    break
-
-        if package_total <= 0 and claim.admission_date is not None:
-            chapter = (claim.primary_icd10 or "R69")[:1].upper()
-            drg_price = get_drg_package_price_for_date(
-                chapter,
-                claim.admission_date,
-                icd10_code=claim.primary_icd10,
-            )
-            if drg_price is not None:
-                package_total = float(drg_price)
-                package_price_methodology = "chapter_median_heuristic"
+        package_total, package_price_methodology = resolve_package_total_try(
+            claim,
+            claim_procs,
+        )
 
         if package_total <= 0 and itemized_total <= 0:
             continue
@@ -327,9 +347,15 @@ def recommend_billing_strategy_from_claims(
         if package_price_methodology == "chapter_median_heuristic":
             savings_basis = "heuristic"
         elif recommendation_kind == "optional_override":
-            savings_basis = "optional_override"
+            savings_basis = SAVINGS_BASIS_OPTIONAL_OVERRIDE
         else:
             savings_basis = "claim_line"
+
+        savings_category = (
+            SAVINGS_CATEGORY_SGK_UPLIFT
+            if recommendation_kind == "optional_override" and savings > 0
+            else None
+        )
 
         recommendations.append(
             {
@@ -342,7 +368,10 @@ def recommend_billing_strategy_from_claims(
                 "package_total_try": _money(package_total),
                 "itemized_total_try": _money(itemized_total),
                 "savings_try": savings,
+                "recoverable_uplift_try": savings,
                 "savings_basis": savings_basis,
+                "savings_category": savings_category,
+                "included_in_sgk_total": bool(savings_category),
                 "current_billing": current_billing,
                 "detail": detail,
                 "catalog_as_of_date": catalog_dates[-1] if catalog_dates else None,

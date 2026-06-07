@@ -94,10 +94,49 @@ def search_workflow_stage(query: str) -> dict[str, Any] | None:
     return None
 
 
+def rejection_playbook() -> dict[str, Any]:
+    return _load_json("rejection_playbook.json")
+
+
+def search_playbook_entries(
+    query: str,
+    *,
+    sonuc_kodu: str | None = None,
+    top_n: int = 3,
+) -> list[dict[str, Any]]:
+    """Keyword- and code-match playbook templates for chat or billing assist."""
+    tokens = _tokenize(query)
+    if sonuc_kodu:
+        tokens.add(_normalize(sonuc_kodu))
+    code_hits = {entry.get("code", "") for entry in search_known_codes(query)}
+    if sonuc_kodu:
+        code_hits.add(sonuc_kodu)
+
+    scored: list[tuple[int, dict[str, Any]]] = []
+    for entry in rejection_playbook().get("entries", []):
+        score = 0
+        entry_code = str(entry.get("sonuc_kodu", ""))
+        if entry_code and entry_code in code_hits:
+            score += 5
+        keyword_tokens: set[str] = set()
+        for keyword in entry.get("hata_mesaji_keywords", []):
+            keyword_tokens |= _tokenize(keyword)
+        for step in entry.get("corrective_steps_tr", []):
+            keyword_tokens |= _tokenize(str(step))
+        overlap = len(tokens & keyword_tokens)
+        if overlap:
+            score += overlap
+        if score > 0:
+            scored.append((score, entry))
+    scored.sort(key=lambda item: item[0], reverse=True)
+    return [item for _, item in scored[:top_n]]
+
+
 def search_medula(query: str) -> dict[str, Any]:
     """Main MEDULA search entry point for chat context assembly."""
     return {
         "known_codes": search_known_codes(query),
         "rejection_categories": search_rejection_categories(query, top_n=3),
         "workflow_stage": search_workflow_stage(query),
+        "playbook_entries": search_playbook_entries(query, top_n=3),
     }

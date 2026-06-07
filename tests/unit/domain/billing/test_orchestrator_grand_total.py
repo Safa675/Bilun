@@ -13,7 +13,6 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
     import src.bilun.domain.billing.orchestrator as billing_mod
 
     def _report(pid: str, lab_savings: float) -> SimpleNamespace:
-        recoverable = lab_savings
         return SimpleNamespace(
             patient_id=pid,
             lab=SimpleNamespace(
@@ -34,7 +33,88 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
                 exactness_status="exact",
                 required_inputs_missing=[],
                 total_savings=0.0,
+                uplift_savings_try=0.0,
+                optional_override_uplift_try=0.0,
             ),
+            session_uplift=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                total_uplift_try=0.0,
+                confirmed_uplift_try=0.0,
+            ),
+            drg_uplift=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                total_uplift_try=0.0,
+                confirmed_uplift_try=0.0,
+            ),
+            blood_uplift=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                total_uplift_try=0.0,
+                confirmed_uplift_try=0.0,
+            ),
+            material_uplift=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                total_uplift_try=0.0,
+                confirmed_uplift_try=0.0,
+            ),
+            care_setting_review=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                total_uplift_try=0.0,
+                confirmed_uplift_try=0.0,
+            ),
+            procedure_addon_uplift=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                total_uplift_try=0.0,
+                confirmed_uplift_try=0.0,
+            ),
+            procedure_capture_gap=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                total_gap_try=0.0,
+                confirmed_gap_try=0.0,
+            ),
+            capture_gap_try=0.0,
+            drg_package_adequacy=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                total_uplift_try=0.0,
+                confirmed_uplift_try=0.0,
+                review_uplift_try=0.0,
+            ),
+            package_adequacy_review_try=0.0,
+            gazette_repricing=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                total_repricing_try=0.0,
+                confirmed_repricing_try=0.0,
+                review_repricing_try=0.0,
+            ),
+            gazette_repricing_try=0.0,
+            medula_rejection_playbook=SimpleNamespace(
+                entries=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                entry_count=0,
+                rebill_permitted_count=0,
+            ),
+            medula_playbook_entry_count=0,
+            sgk_uplift_try=0.0,
+            audit_exposure_try=0.0,
+            compliance_adjustment_try=lab_savings,
             materials=SimpleNamespace(
                 pre_auth_required=[],
                 miat_restricted=[],
@@ -43,7 +123,7 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
                 exactness_status="exact",
                 required_inputs_missing=[],
             ),
-            total_recoverable_try=recoverable,
+            total_recoverable_try=0.0,
             action_count=0,
             priority="low",
         )
@@ -74,4 +154,6 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
     _, summary = billing_mod.compute_all_billing_reports(cache)
 
     assert summary.total_lab_savings == 30.0
-    assert summary.grand_total_recoverable == 30.0
+    assert summary.total_compliance_adjustment == 30.0
+    assert summary.grand_total_recoverable == 0.0
+    assert summary.total_sgk_uplift == 0.0

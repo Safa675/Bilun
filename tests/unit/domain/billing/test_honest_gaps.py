@@ -108,4 +108,6 @@ def test_orchestrator_total_includes_only_exact_blocks(monkeypatch) -> None:
 
     report = billing_mod.compute_patient_billing_report("P1", chapters={"I"})
 
-    assert report.total_recoverable_try == 15.0
+    assert report.compliance_adjustment_try == 10.0
+    assert report.sgk_uplift_try == 0.0
+    assert report.total_recoverable_try == 0.0

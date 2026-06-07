@@ -17,13 +17,39 @@ from .types import (
     COHORT_RECOVERY_PARTIAL_REASON,
     EXACTNESS_STATUS_EXACT,
     EXACTNESS_STATUS_MISSING_INPUTS,
+    EXACTNESS_STATUS_NOT_APPLICABLE,
     EXACTNESS_STATUS_PARTIAL,
     BillingActionReport,
     CohortRecoverySummary,
+    ProcedureAddonUplift,
+    ProcedureCaptureGap,
 )
 from src.bilun.domain.claims.patient_context import build_patient_claim_context
 from src.bilun.domain.billing.claim_copay import optimize_copay_from_claims
 from src.bilun.domain.billing.claim_materials import precheck_materials_from_claims
+from src.bilun.domain.billing.claim_audit_exposure import compute_audit_exposure_from_claims
+from src.bilun.domain.billing.claim_blood_uplift import recommend_blood_uplift_from_claims
+from src.bilun.domain.billing.claim_care_setting_review import (
+    recommend_care_setting_review_from_claims,
+)
+from src.bilun.domain.billing.claim_procedure_addon_uplift import (
+    recommend_procedure_addon_uplift_from_claims,
+)
+from src.bilun.domain.billing.claim_procedure_capture_gap import (
+    recommend_procedure_capture_gap_from_claims,
+)
+from src.bilun.domain.billing.claim_drg_package_adequacy import (
+    recommend_drg_package_adequacy_from_claims,
+)
+from src.bilun.domain.billing.claim_gazette_repricing import (
+    recommend_gazette_repricing_from_claims,
+)
+from src.bilun.domain.billing.claim_medula_rejection import (
+    recommend_medula_rejection_playbook_from_claims,
+)
+from src.bilun.domain.billing.claim_material_uplift import recommend_material_uplift_from_claims
+from src.bilun.domain.billing.claim_drg_uplift import recommend_drg_uplift_from_claims
+from src.bilun.domain.billing.claim_session_uplift import recommend_session_uplift_from_claims
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
 from .lab import _optimize_lab_billing
 from .copay import _optimize_copay
@@ -44,18 +70,171 @@ def _block_exactness_status(block: Any) -> str:
     return status or EXACTNESS_STATUS_MISSING_INPUTS
 
 
-def _sum_exact_recoverable_try(report: BillingActionReport) -> float:
-    """Sum **hospital** SGK recovery from billing blocks marked exact.
+def _exemption_gap_try(report: BillingActionReport) -> float:
+    """Patient katılım payı exemption gap when copay block is exact."""
+    copay = report.copay
+    if _block_exactness_status(copay) != EXACTNESS_STATUS_EXACT or not copay.is_exempt:
+        return 0.0
+    waived = float(getattr(copay, "patient_copay_waived_total_try", 0.0) or 0.0)
+    if waived <= 0:
+        waived = copay.total_copay_savings_try + copay.rx_copay_savings_try
+    return round(waived, 2)
 
-    Copay exemption amounts are patient katılım payı waivers — tracked separately
-    on ``CohortRecoverySummary.total_copay_savings`` but excluded here.
-    """
-    total = 0.0
-    if _block_exactness_status(report.lab) == EXACTNESS_STATUS_EXACT:
-        total += report.lab.total_savings
-    if _block_exactness_status(report.billing_strategy) == EXACTNESS_STATUS_EXACT:
-        total += report.billing_strategy.total_savings
+
+def _total_opportunity_try(report: BillingActionReport) -> float:
+    """Hospital SGK recoverable plus exemption gap (cohort ranking / directory display)."""
+    return round(report.total_recoverable_try + _exemption_gap_try(report), 2)
+
+
+def _sum_compliance_adjustment_try(report: BillingActionReport) -> float:
+    """Over-billing corrections (e.g. lab hemogram bundling) — not SGK uplift."""
+    if _block_exactness_status(report.lab) != EXACTNESS_STATUS_EXACT:
+        return 0.0
+    return round(report.lab.total_savings, 2)
+
+
+def _sum_strategy_uplift_try(report: BillingActionReport) -> float:
+    if _block_exactness_status(report.billing_strategy) != EXACTNESS_STATUS_EXACT:
+        return 0.0
+    return report.billing_strategy.uplift_savings_try
+
+
+def _sum_session_uplift_try(report: BillingActionReport) -> float:
+    if _block_exactness_status(report.session_uplift) != EXACTNESS_STATUS_EXACT:
+        return 0.0
+    return report.session_uplift.confirmed_uplift_try
+
+
+def _sum_drg_uplift_try(report: BillingActionReport) -> float:
+    if _block_exactness_status(report.drg_uplift) != EXACTNESS_STATUS_EXACT:
+        return 0.0
+    return report.drg_uplift.confirmed_uplift_try
+
+
+def _sum_blood_uplift_try(report: BillingActionReport) -> float:
+    if _block_exactness_status(report.blood_uplift) != EXACTNESS_STATUS_EXACT:
+        return 0.0
+    return report.blood_uplift.confirmed_uplift_try
+
+
+def _sum_material_uplift_try(report: BillingActionReport) -> float:
+    if _block_exactness_status(report.material_uplift) != EXACTNESS_STATUS_EXACT:
+        return 0.0
+    return report.material_uplift.confirmed_uplift_try
+
+
+def _sum_procedure_addon_uplift_try(report: BillingActionReport) -> float:
+    if _block_exactness_status(report.procedure_addon_uplift) != EXACTNESS_STATUS_EXACT:
+        return 0.0
+    return report.procedure_addon_uplift.confirmed_uplift_try
+
+
+def _procedure_date_key(value: Any) -> str:
+    text = str(value or "").strip()
+    return text[:10] if text else ""
+
+
+def _capture_gap_keys(capture: ProcedureCaptureGap) -> set[tuple[str, str, str]]:
+    return {
+        (
+            str(row.get("claim_id") or ""),
+            str(row.get("procedure_code") or ""),
+            _procedure_date_key(row.get("service_date")),
+        )
+        for row in capture.opportunities
+    }
+
+
+def _dedupe_addon_against_capture(
+    addon: ProcedureAddonUplift,
+    capture: ProcedureCaptureGap,
+) -> ProcedureAddonUplift:
+    """Suppress add-on uplift when EMR capture already flags the same code/date."""
+    capture_keys = _capture_gap_keys(capture)
+    if not capture_keys:
+        return addon
+
+    filtered = [
+        row
+        for row in addon.opportunities
+        if (
+            str(row.get("claim_id") or ""),
+            str(row.get("expected_addon_procedure_code") or ""),
+            _procedure_date_key(
+                row.get("service_date") or row.get("session_date")
+            ),
+        )
+        not in capture_keys
+    ]
+    if len(filtered) == len(addon.opportunities):
+        return addon
+
+    return ProcedureAddonUplift(
+        opportunities=filtered,
+        exactness_status=addon.exactness_status,
+        unavailable_reason=addon.unavailable_reason,
+        required_inputs_missing=list(addon.required_inputs_missing),
+        rule_source=addon.rule_source,
+    )
+
+
+def _sum_sgk_uplift_try(report: BillingActionReport) -> float:
+    """Legitimate Kurum ödemesi uplift; excludes compliance lab savings."""
+    total = (
+        _sum_strategy_uplift_try(report)
+        + _sum_session_uplift_try(report)
+        + _sum_drg_uplift_try(report)
+        + _sum_blood_uplift_try(report)
+        + _sum_material_uplift_try(report)
+        + _sum_procedure_addon_uplift_try(report)
+    )
     return round(total, 2)
+
+
+def _sum_exact_recoverable_try(report: BillingActionReport) -> float:
+    """Alias for ``sgk_uplift_try`` (backward-compatible headline)."""
+    return _sum_sgk_uplift_try(report)
+
+
+def _finalize_report_totals(
+    report: BillingActionReport,
+    *,
+    claim_context: PatientClaimContext | None = None,
+) -> None:
+    report.compliance_adjustment_try = _sum_compliance_adjustment_try(report)
+    report.sgk_uplift_try = _sum_sgk_uplift_try(report)
+    report.total_recoverable_try = report.sgk_uplift_try
+    if claim_context is not None and claim_context.procedure_lines:
+        report.audit_exposure_try = compute_audit_exposure_from_claims(claim_context)
+    else:
+        report.audit_exposure_try = 0.0
+    if (
+        _block_exactness_status(report.procedure_capture_gap) == EXACTNESS_STATUS_EXACT
+    ):
+        report.capture_gap_try = report.procedure_capture_gap.confirmed_gap_try
+    else:
+        report.capture_gap_try = 0.0
+    if (
+        _block_exactness_status(report.drg_package_adequacy) == EXACTNESS_STATUS_EXACT
+    ):
+        report.package_adequacy_review_try = (
+            report.drg_package_adequacy.review_uplift_try
+        )
+    else:
+        report.package_adequacy_review_try = 0.0
+    if _block_exactness_status(report.gazette_repricing) == EXACTNESS_STATUS_EXACT:
+        report.gazette_repricing_try = report.gazette_repricing.review_repricing_try
+    else:
+        report.gazette_repricing_try = 0.0
+    if (
+        _block_exactness_status(report.medula_rejection_playbook)
+        == EXACTNESS_STATUS_EXACT
+    ):
+        report.medula_playbook_entry_count = (
+            report.medula_rejection_playbook.entry_count
+        )
+    else:
+        report.medula_playbook_entry_count = 0
 
 
 def _collect_required_inputs(blocks: list[Any]) -> list[str]:
@@ -72,10 +251,23 @@ def _finalize_report_exactness(report: BillingActionReport) -> None:
         report.lab,
         report.copay,
         report.billing_strategy,
+        report.session_uplift,
+        report.drg_uplift,
+        report.blood_uplift,
+        report.material_uplift,
+        report.care_setting_review,
+        report.procedure_addon_uplift,
+        report.procedure_capture_gap,
+        report.drg_package_adequacy,
+        report.gazette_repricing,
+        report.medula_rejection_playbook,
         report.materials,
     ]
     non_exact_blocks = [
-        block for block in blocks if _block_exactness_status(block) != EXACTNESS_STATUS_EXACT
+        block
+        for block in blocks
+        if _block_exactness_status(block)
+        not in (EXACTNESS_STATUS_EXACT, EXACTNESS_STATUS_NOT_APPLICABLE)
     ]
     if not non_exact_blocks:
         report.exactness_status = EXACTNESS_STATUS_EXACT
@@ -165,17 +357,63 @@ def compute_patient_billing_report(
     else:
         report.billing_strategy = _recommend_billing_strategy(pid, chapters or set())
 
+    if claim_context is not None and (
+        claim_context.procedure_lines or claim_context.performed_procedure_lines
+    ):
+        report.procedure_capture_gap = recommend_procedure_capture_gap_from_claims(
+            claim_context
+        )
+
+    if claim_context is not None and claim_context.procedure_lines:
+        report.session_uplift = recommend_session_uplift_from_claims(claim_context)
+        report.drg_uplift = recommend_drg_uplift_from_claims(
+            claim_context,
+            session_opportunities=report.session_uplift.opportunities,
+            strategy_recommendations=report.billing_strategy.recommendations,
+        )
+        report.blood_uplift = recommend_blood_uplift_from_claims(claim_context)
+        report.material_uplift = recommend_material_uplift_from_claims(claim_context)
+        report.care_setting_review = recommend_care_setting_review_from_claims(
+            claim_context
+        )
+        report.drg_package_adequacy = recommend_drg_package_adequacy_from_claims(
+            claim_context
+        )
+        report.gazette_repricing = recommend_gazette_repricing_from_claims(
+            claim_context
+        )
+        report.procedure_addon_uplift = _dedupe_addon_against_capture(
+            recommend_procedure_addon_uplift_from_claims(
+                claim_context,
+                session_uplift_opportunities=report.session_uplift.opportunities,
+            ),
+            report.procedure_capture_gap,
+        )
+
     if claim_context is not None:
+        report.medula_rejection_playbook = (
+            recommend_medula_rejection_playbook_from_claims(claim_context)
+        )
         report.materials = precheck_materials_from_claims(claim_context)
     else:
         report.materials = _precheck_materials(pid, chapters or set())
 
-    report.total_recoverable_try = _sum_exact_recoverable_try(report)
+    _finalize_report_totals(report, claim_context=claim_context)
 
     actions = (
         len(report.lab.flagged_tests)
         + (1 if report.copay.is_exempt else 0)
         + len(report.billing_strategy.recommendations)
+        + len(report.session_uplift.opportunities)
+        + len(report.drg_uplift.opportunities)
+        + len(report.blood_uplift.opportunities)
+        + len(report.material_uplift.opportunities)
+        + len(report.care_setting_review.opportunities)
+        + len(report.procedure_addon_uplift.opportunities)
+        + len(report.procedure_capture_gap.opportunities)
+        + len(report.drg_package_adequacy.opportunities)
+        + len(report.gazette_repricing.opportunities)
+        + len(report.medula_rejection_playbook.entries)
         + len(report.materials.pre_auth_required)
         + len(report.materials.miat_restricted)
         + len(report.materials.bundled_separate_billing)
@@ -295,20 +533,17 @@ def compute_all_billing_reports(
         reports[pid] = report
 
     recoverables = sorted(
-        [
-            r.total_recoverable_try
-            for r in reports.values()
-            if r.total_recoverable_try > 0
-        ]
+        [r.sgk_uplift_try for r in reports.values() if r.sgk_uplift_try > 0]
     )
     if recoverables:
         n = len(recoverables)
         p75 = recoverables[min(n - 1, int(n * 0.75))]
         p50 = recoverables[min(n - 1, int(n * 0.50))]
         for report in reports.values():
-            if report.total_recoverable_try >= p75:
+            opportunity = report.sgk_uplift_try
+            if opportunity >= p75:
                 report.priority = "high"
-            elif report.total_recoverable_try >= p50:
+            elif opportunity >= p50:
                 report.priority = "medium"
             else:
                 report.priority = "low"
@@ -321,6 +556,37 @@ def compute_all_billing_reports(
     for report in reports.values():
         if _block_exactness_status(report.lab) == EXACTNESS_STATUS_EXACT:
             summary.total_lab_savings += report.lab.total_savings
+            summary.total_compliance_adjustment += report.compliance_adjustment_try
+        if _block_exactness_status(report.billing_strategy) == EXACTNESS_STATUS_EXACT:
+            uplift = report.billing_strategy.uplift_savings_try
+            summary.total_strategy_savings += uplift
+            summary.total_strategy_uplift += uplift
+            override_uplift = report.billing_strategy.optional_override_uplift_try
+            summary.total_optional_override_uplift += override_uplift
+            if override_uplift > 0:
+                summary.n_optional_override_patients += 1
+        if _block_exactness_status(report.session_uplift) == EXACTNESS_STATUS_EXACT:
+            summary.total_session_uplift += report.session_uplift.confirmed_uplift_try
+        if _block_exactness_status(report.drg_uplift) == EXACTNESS_STATUS_EXACT:
+            drg_uplift = report.drg_uplift.confirmed_uplift_try
+            summary.total_drg_uplift += drg_uplift
+            if drg_uplift > 0:
+                summary.n_drg_uplift_patients += 1
+        if _block_exactness_status(report.blood_uplift) == EXACTNESS_STATUS_EXACT:
+            blood_uplift = report.blood_uplift.confirmed_uplift_try
+            summary.total_blood_uplift += blood_uplift
+            if blood_uplift > 0:
+                summary.n_blood_uplift_patients += 1
+        if _block_exactness_status(report.material_uplift) == EXACTNESS_STATUS_EXACT:
+            material_uplift = report.material_uplift.confirmed_uplift_try
+            summary.total_material_uplift += material_uplift
+            if material_uplift > 0:
+                summary.n_material_uplift_patients += 1
+        if _block_exactness_status(report.procedure_addon_uplift) == EXACTNESS_STATUS_EXACT:
+            addon_uplift = report.procedure_addon_uplift.confirmed_uplift_try
+            summary.total_procedure_addon_uplift += addon_uplift
+            if addon_uplift > 0:
+                summary.n_procedure_addon_patients += 1
         if _block_exactness_status(report.copay) == EXACTNESS_STATUS_EXACT:
             waived_total = float(
                 getattr(report.copay, "patient_copay_waived_total_try", 0.0) or 0.0
@@ -331,8 +597,24 @@ def compute_all_billing_reports(
                     + report.copay.rx_copay_savings_try
                 )
             summary.total_copay_savings += waived_total
-        if _block_exactness_status(report.billing_strategy) == EXACTNESS_STATUS_EXACT:
-            summary.total_strategy_savings += report.billing_strategy.total_savings
+        summary.total_audit_exposure += report.audit_exposure_try
+        if (
+            _block_exactness_status(report.procedure_capture_gap)
+            == EXACTNESS_STATUS_EXACT
+        ):
+            summary.total_capture_gap += report.capture_gap_try
+        if (
+            _block_exactness_status(report.drg_package_adequacy)
+            == EXACTNESS_STATUS_EXACT
+        ):
+            summary.total_package_adequacy_review += report.package_adequacy_review_try
+        if _block_exactness_status(report.gazette_repricing) == EXACTNESS_STATUS_EXACT:
+            summary.total_gazette_repricing += report.gazette_repricing_try
+        if (
+            _block_exactness_status(report.medula_rejection_playbook)
+            == EXACTNESS_STATUS_EXACT
+        ):
+            summary.total_medula_playbook_entries += report.medula_playbook_entry_count
         summary.total_material_flags += len(report.materials.pre_auth_required) + len(
             report.materials.miat_restricted
         ) + len(report.materials.bundled_separate_billing) + len(
@@ -343,14 +625,28 @@ def compute_all_billing_reports(
     summary.total_lab_savings = round(summary.total_lab_savings, 2)
     summary.total_copay_savings = round(summary.total_copay_savings, 2)
     summary.total_strategy_savings = round(summary.total_strategy_savings, 2)
-    summary.grand_total_recoverable = round(
-        sum(r.total_recoverable_try for r in reports.values()),
+    summary.total_session_uplift = round(summary.total_session_uplift, 2)
+    summary.total_drg_uplift = round(summary.total_drg_uplift, 2)
+    summary.total_blood_uplift = round(summary.total_blood_uplift, 2)
+    summary.total_material_uplift = round(summary.total_material_uplift, 2)
+    summary.total_procedure_addon_uplift = round(summary.total_procedure_addon_uplift, 2)
+    summary.total_optional_override_uplift = round(summary.total_optional_override_uplift, 2)
+    summary.total_strategy_uplift = round(summary.total_strategy_uplift, 2)
+    summary.total_compliance_adjustment = round(summary.total_compliance_adjustment, 2)
+    summary.total_sgk_uplift = round(
+        sum(r.sgk_uplift_try for r in reports.values()),
         2,
     )
+    summary.total_audit_exposure = round(summary.total_audit_exposure, 2)
+    summary.total_capture_gap = round(summary.total_capture_gap, 2)
+    summary.total_package_adequacy_review = round(
+        summary.total_package_adequacy_review, 2
+    )
+    summary.grand_total_recoverable = summary.total_sgk_uplift
     summary.priority_distribution = priority_dist
 
     sorted_reports = sorted(
-        reports.values(), key=lambda r: r.total_recoverable_try, reverse=True
+        reports.values(), key=_total_opportunity_try, reverse=True
     )
     summary.patient_summaries = [
         patient_recovery_summary_entry(r) for r in sorted_reports
@@ -358,9 +654,23 @@ def compute_all_billing_reports(
     summary.top_patients = summary.patient_summaries[:10]
 
     summary.savings_by_category = {
-        "lab": summary.total_lab_savings,
+        "sgk_uplift": summary.total_sgk_uplift,
+        "session_uplift": summary.total_session_uplift,
+        "drg_uplift": summary.total_drg_uplift,
+        "blood_uplift": summary.total_blood_uplift,
+        "material_uplift": summary.total_material_uplift,
+        "procedure_addon_uplift": summary.total_procedure_addon_uplift,
+        "optional_override": summary.total_optional_override_uplift,
+        "strategy_uplift": summary.total_strategy_uplift,
+        "compliance": summary.total_compliance_adjustment,
+        "copay_waiver": summary.total_copay_savings,
+        "audit_exposure": summary.total_audit_exposure,
+        "capture_gap": summary.total_capture_gap,
+        "package_adequacy_review": summary.total_package_adequacy_review,
+        "gazette_repricing": summary.total_gazette_repricing,
+        "lab": summary.total_compliance_adjustment,
         "copay": summary.total_copay_savings,
-        "strategy": summary.total_strategy_savings,
+        "strategy": summary.total_strategy_uplift,
     }
     _finalize_summary_exactness(summary, reports)
 
@@ -386,7 +696,17 @@ def _get_top_action_type(report: BillingActionReport) -> str:
     """Determine the primary action type for a patient report."""
     return _top_action_type_from_savings(
         {
-            "lab": report.lab.total_savings,
+            "session_uplift": report.session_uplift.total_uplift_try,
+            "drg_uplift": report.drg_uplift.confirmed_uplift_try,
+            "blood_uplift": report.blood_uplift.confirmed_uplift_try,
+            "material_uplift": report.material_uplift.confirmed_uplift_try,
+            "procedure_addon_uplift": report.procedure_addon_uplift.confirmed_uplift_try,
+            "strategy": report.billing_strategy.uplift_savings_try,
+            "capture_gap": report.capture_gap_try,
+            "package_adequacy_review": report.package_adequacy_review_try,
+            "gazette_repricing": report.gazette_repricing_try,
+            "medula_playbook": float(report.medula_playbook_entry_count),
+            "lab": report.compliance_adjustment_try,
             "copay": float(
                 getattr(report.copay, "patient_copay_waived_total_try", 0.0)
                 or (
@@ -394,38 +714,68 @@ def _get_top_action_type(report: BillingActionReport) -> str:
                     + report.copay.rx_copay_savings_try
                 )
             ),
-            "strategy": report.billing_strategy.total_savings,
         }
     )
 
 
 def patient_recovery_summary_entry(report: BillingActionReport) -> dict[str, Any]:
     """Compact per-patient recovery row for cohort tables."""
+    gap = _exemption_gap_try(report)
     return {
         "patient_id": report.patient_id,
         "total_recoverable_try": report.total_recoverable_try,
+        "sgk_uplift_try": report.sgk_uplift_try,
+        "compliance_adjustment_try": report.compliance_adjustment_try,
+        "exemption_gap_try": gap,
+        "total_opportunity_try": _total_opportunity_try(report),
         "priority": report.priority,
         "action_count": report.action_count,
         "top_action_type": _get_top_action_type(report),
     }
 
 
+def _exemption_gap_from_copay_payload(copay: dict[str, Any] | None) -> float:
+    if not copay or str(copay.get("exactness_status") or "") != EXACTNESS_STATUS_EXACT:
+        return 0.0
+    if not copay.get("is_exempt"):
+        return 0.0
+    waived = float(copay.get("patient_copay_waived_total_try") or 0)
+    if waived <= 0:
+        waived = float(copay.get("total_copay_savings_try") or 0) + float(
+            copay.get("rx_copay_savings_try") or 0
+        )
+    return round(waived, 2)
+
+
 def patient_recovery_summary_from_payload(report: dict[str, Any]) -> dict[str, Any]:
     """Build a recovery summary dict from cached billing report JSON."""
+    copay_payload = report.get("copay") or {}
+    hospital = float(report.get("total_recoverable_try") or 0)
+    gap = _exemption_gap_from_copay_payload(copay_payload)
     savings = {
-        "lab": float((report.get("lab") or {}).get("total_savings") or 0),
-        "copay": float(
-            (report.get("copay") or {}).get("patient_copay_waived_total_try")
-            or (
-                float((report.get("copay") or {}).get("total_copay_savings_try") or 0)
-                + float((report.get("copay") or {}).get("rx_copay_savings_try") or 0)
-            )
+        "session_uplift": float(
+            (report.get("session_uplift") or {}).get("total_uplift_try") or 0
         ),
-        "strategy": float((report.get("billing_strategy") or {}).get("total_savings") or 0),
+        "drg_uplift": float(
+            (report.get("drg_uplift") or {}).get("confirmed_uplift_try") or 0
+        ),
+        "blood_uplift": float(
+            (report.get("blood_uplift") or {}).get("confirmed_uplift_try") or 0
+        ),
+        "material_uplift": float(
+            (report.get("material_uplift") or {}).get("confirmed_uplift_try") or 0
+        ),
+        "lab": float(report.get("compliance_adjustment_try") or 0),
+        "copay": gap,
+        "strategy": float((report.get("billing_strategy") or {}).get("uplift_savings_try") or 0),
     }
     return {
         "patient_id": str(report.get("patient_id") or ""),
-        "total_recoverable_try": float(report.get("total_recoverable_try") or 0),
+        "total_recoverable_try": hospital,
+        "sgk_uplift_try": float(report.get("sgk_uplift_try") or hospital),
+        "compliance_adjustment_try": float(report.get("compliance_adjustment_try") or 0),
+        "exemption_gap_try": gap,
+        "total_opportunity_try": round(hospital + gap, 2),
         "priority": str(report.get("priority") or "low"),
         "action_count": int(report.get("action_count") or 0),
         "top_action_type": _top_action_type_from_savings(savings),

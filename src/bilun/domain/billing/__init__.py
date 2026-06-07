@@ -26,6 +26,7 @@ from .types import (
     CopayOptimization,
     BillingStrategyRecommendation,
     MaterialPreCheck,
+    SessionPricingUplift,
     BillingActionReport,
     CohortRecoverySummary,
 )
@@ -54,6 +55,7 @@ __all__ = [
     "CopayOptimization",
     "BillingStrategyRecommendation",
     "MaterialPreCheck",
+    "SessionPricingUplift",
     "BillingActionReport",
     "CohortRecoverySummary",
     "compute_patient_billing_report",

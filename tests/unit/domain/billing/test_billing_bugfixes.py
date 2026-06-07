@@ -110,6 +110,7 @@ def test_orchestrator_recoverable_total_counts_rx_once_with_visit_copay(monkeypa
         lambda *_args, **_kwargs: SimpleNamespace(
             total_copay_savings_try=20.0,
             rx_copay_savings_try=10.0,
+            patient_copay_waived_total_try=30.0,
             is_exempt=True,
             exactness_status="exact",
             required_inputs_missing=[],

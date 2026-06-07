@@ -49,5 +49,14 @@ def test_search_medula_composes_all_result_keys():
     assert "known_codes" in payload
     assert "rejection_categories" in payload
     assert "workflow_stage" in payload
+    assert "playbook_entries" in payload
     assert payload["known_codes"]
     assert payload["rejection_categories"]
+
+
+def test_search_playbook_entries_matches_molecular_microbiology():
+    from src.bilun.chatbot.medula_kb import search_playbook_entries
+
+    matches = search_playbook_entries("1688 moleküler mikrobiyoloji rapor eksik")
+    assert matches
+    assert matches[0]["playbook_key"] == "1688_molecular_microbiology"

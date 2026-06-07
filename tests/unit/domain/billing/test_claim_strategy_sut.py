@@ -176,18 +176,18 @@ class TestClaimStrategySut:
         assert len(violations) == 1
         assert violations[0]["payment_method_kind"] == "DRG_MANDATORY"
 
-    def test_spot_check_sentetik_0003_011_no_price_comparison(self) -> None:
+    def test_spot_check_sentetik_0001_001_no_price_comparison(self) -> None:
         from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
 
         dataset = load_sut_claim_dataset()
-        ctx = build_patient_claim_context("SENTETIK-HASTA-0003", dataset)
+        ctx = build_patient_claim_context("SENTETIK-HASTA-0001", dataset)
         assert ctx is not None
 
         result = recommend_billing_strategy_from_claims(ctx)
         claim_rec = next(
             rec
             for rec in result.recommendations
-            if rec.get("claim_id") == "F-SENTETIK-HASTA-0003-011"
+            if rec.get("claim_id") == "F-SENTETIK-HASTA-0001-001"
             and "recommendation_kind" in rec
         )
         assert claim_rec["recommendation"] == "package"

@@ -57,7 +57,7 @@ def _encode_sse(kind: str, payload: str) -> str:
         return f"{data}\n"
     return f"event: {kind}\n{data}\n"
 
-from .optimization import get_optimization_summary, get_patient_optimization
+from .optimization import get_optimization_summary, get_patient_optimization, get_revenue_recovery
 from .patients import get_bilun_patient_outcome
 from .billing import get_patient_billing_report
 
@@ -330,6 +330,12 @@ def _fetch_runtime_data(
             lambda: _summarize_optimization(get_optimization_summary()),
         )
 
+    def _fetch_revenue_recovery() -> dict[str, Any]:
+        return _safe_context_block(
+            "Revenue recovery",
+            lambda: get_revenue_recovery(),
+        )
+
     def _fetch_patient_outcome() -> dict[str, Any]:
         return _safe_context_block(
             "Patient outcome",
@@ -362,6 +368,7 @@ def _fetch_runtime_data(
 
     jobs: dict[str, Any] = {
         "optimization_summary": _fetch_optimization_summary,
+        "revenue_recovery": _fetch_revenue_recovery,
     }
     if patient_id:
         jobs["patient_outcome"] = _fetch_patient_outcome

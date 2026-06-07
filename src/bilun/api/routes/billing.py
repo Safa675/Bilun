@@ -49,7 +49,54 @@ def _get_active_bilun_build_id(reader) -> str | None:
 def _serialize_billing_report(report: BillingActionReport | dict[str, Any]) -> dict[str, Any]:
     """Serialize a BillingActionReport to a JSON-safe dict."""
     if dataclasses.is_dataclass(report):
-        return dataclasses.asdict(report)
+        payload = dataclasses.asdict(report)
+        strategy = payload.get("billing_strategy")
+        if isinstance(strategy, dict):
+            strategy["uplift_savings_try"] = report.billing_strategy.uplift_savings_try
+            strategy["optional_override_uplift_try"] = (
+                report.billing_strategy.optional_override_uplift_try
+            )
+        session = payload.get("session_uplift")
+        if isinstance(session, dict):
+            session["total_uplift_try"] = report.session_uplift.total_uplift_try
+            session["confirmed_uplift_try"] = report.session_uplift.confirmed_uplift_try
+            session["review_uplift_try"] = report.session_uplift.review_uplift_try
+            session["review_opportunity_count"] = (
+                report.session_uplift.review_opportunity_count
+            )
+        drg = payload.get("drg_uplift")
+        if isinstance(drg, dict):
+            drg["total_uplift_try"] = report.drg_uplift.total_uplift_try
+            drg["confirmed_uplift_try"] = report.drg_uplift.confirmed_uplift_try
+        blood = payload.get("blood_uplift")
+        if isinstance(blood, dict):
+            blood["total_uplift_try"] = report.blood_uplift.total_uplift_try
+            blood["confirmed_uplift_try"] = report.blood_uplift.confirmed_uplift_try
+        material = payload.get("material_uplift")
+        if isinstance(material, dict):
+            material["total_uplift_try"] = report.material_uplift.total_uplift_try
+            material["confirmed_uplift_try"] = report.material_uplift.confirmed_uplift_try
+        procedure_addon = payload.get("procedure_addon_uplift")
+        if isinstance(procedure_addon, dict):
+            procedure_addon["total_uplift_try"] = (
+                report.procedure_addon_uplift.total_uplift_try
+            )
+            procedure_addon["confirmed_uplift_try"] = (
+                report.procedure_addon_uplift.confirmed_uplift_try
+            )
+        care_setting = payload.get("care_setting_review")
+        if isinstance(care_setting, dict):
+            care_setting["total_uplift_try"] = report.care_setting_review.total_uplift_try
+            care_setting["confirmed_uplift_try"] = (
+                report.care_setting_review.confirmed_uplift_try
+            )
+            care_setting["review_uplift_try"] = (
+                report.care_setting_review.review_uplift_try
+            )
+            care_setting["review_opportunity_count"] = (
+                report.care_setting_review.review_opportunity_count
+            )
+        return payload
     if isinstance(report, dict):
         return report
     raise TypeError(f"Unsupported billing report payload type: {type(report)!r}")

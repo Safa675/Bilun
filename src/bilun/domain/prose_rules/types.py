@@ -67,3 +67,16 @@ class SessionPricingResult:
     rule_id: str
     sut_section: str
     metadata: dict[str, Any] = field(default_factory=dict)
+
+
+SAVINGS_CATEGORY_SGK_UPLIFT = "sgk_uplift"
+SAVINGS_CATEGORY_COMPLIANCE = "compliance_adjustment"
+SAVINGS_CATEGORY_COPAY_WAIVER = "patient_copay_waiver"
+SAVINGS_CATEGORY_AUDIT_EXPOSURE = "audit_exposure"
+SAVINGS_CATEGORY_CAPTURE_GAP = "capture_gap"
+SAVINGS_CATEGORY_PACKAGE_ADEQUACY = "package_adequacy_review"
+SAVINGS_CATEGORY_GAZETTE_REPRICING = "gazette_repricing"
+SAVINGS_CATEGORY_MEDULA_PLAYBOOK = "medula_playbook"
+SAVINGS_BASIS_SOURCED = "sourced"
+SAVINGS_BASIS_OPTIONAL_OVERRIDE = "optional_override"
+SAVINGS_BASIS_HEURISTIC = "heuristic"

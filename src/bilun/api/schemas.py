@@ -313,6 +313,75 @@ class CopayOptimizationResponse(BillingExactnessResponse):
 
 class BillingStrategyResponse(BillingExactnessResponse):
     recommendations: list[dict[str, Any]] = Field(default_factory=list)
+    uplift_savings_try: float = 0.0
+    optional_override_uplift_try: float = 0.0
+
+
+class SessionPricingUpliftResponse(BillingExactnessResponse):
+    opportunities: list[dict[str, Any]] = Field(default_factory=list)
+    total_uplift_try: float = 0.0
+    confirmed_uplift_try: float = 0.0
+    review_uplift_try: float = 0.0
+    review_opportunity_count: int = 0
+
+
+class DrgUpliftRecommendationResponse(BillingExactnessResponse):
+    opportunities: list[dict[str, Any]] = Field(default_factory=list)
+    total_uplift_try: float = 0.0
+    confirmed_uplift_try: float = 0.0
+
+
+class BloodComponentUpliftResponse(BillingExactnessResponse):
+    opportunities: list[dict[str, Any]] = Field(default_factory=list)
+    total_uplift_try: float = 0.0
+    confirmed_uplift_try: float = 0.0
+
+
+class MaterialUpliftResponse(BillingExactnessResponse):
+    opportunities: list[dict[str, Any]] = Field(default_factory=list)
+    total_uplift_try: float = 0.0
+    confirmed_uplift_try: float = 0.0
+
+
+class ProcedureAddonUpliftResponse(BillingExactnessResponse):
+    opportunities: list[dict[str, Any]] = Field(default_factory=list)
+    total_uplift_try: float = 0.0
+    confirmed_uplift_try: float = 0.0
+
+
+class CareSettingReviewResponse(BillingExactnessResponse):
+    opportunities: list[dict[str, Any]] = Field(default_factory=list)
+    total_uplift_try: float = 0.0
+    confirmed_uplift_try: float = 0.0
+    review_uplift_try: float = 0.0
+    review_opportunity_count: int = 0
+
+
+class ProcedureCaptureGapResponse(BillingExactnessResponse):
+    opportunities: list[dict[str, Any]] = Field(default_factory=list)
+    total_gap_try: float = 0.0
+    confirmed_gap_try: float = 0.0
+
+
+class DrgPackageAdequacyReviewResponse(BillingExactnessResponse):
+    opportunities: list[dict[str, Any]] = Field(default_factory=list)
+    total_uplift_try: float = 0.0
+    confirmed_uplift_try: float = 0.0
+    review_uplift_try: float = 0.0
+    review_opportunity_count: int = 0
+
+
+class GazetteRepricingOpportunityResponse(BillingExactnessResponse):
+    opportunities: list[dict[str, Any]] = Field(default_factory=list)
+    total_repricing_try: float = 0.0
+    confirmed_repricing_try: float = 0.0
+    review_repricing_try: float = 0.0
+
+
+class MedulaRejectionPlaybookResponse(BillingExactnessResponse):
+    entries: list[dict[str, Any]] = Field(default_factory=list)
+    entry_count: int = 0
+    rebill_permitted_count: int = 0
 
 
 class MaterialPreCheckResponse(BillingExactnessResponse):
@@ -379,7 +448,44 @@ class BillingReportResponse(BaseModel):
     billing_strategy: BillingStrategyResponse = Field(
         default_factory=BillingStrategyResponse
     )
+    session_uplift: SessionPricingUpliftResponse = Field(
+        default_factory=SessionPricingUpliftResponse
+    )
+    drg_uplift: DrgUpliftRecommendationResponse = Field(
+        default_factory=DrgUpliftRecommendationResponse
+    )
+    blood_uplift: BloodComponentUpliftResponse = Field(
+        default_factory=BloodComponentUpliftResponse
+    )
+    material_uplift: MaterialUpliftResponse = Field(
+        default_factory=MaterialUpliftResponse
+    )
+    care_setting_review: CareSettingReviewResponse = Field(
+        default_factory=CareSettingReviewResponse
+    )
+    procedure_addon_uplift: ProcedureAddonUpliftResponse = Field(
+        default_factory=ProcedureAddonUpliftResponse
+    )
+    procedure_capture_gap: ProcedureCaptureGapResponse = Field(
+        default_factory=ProcedureCaptureGapResponse
+    )
+    drg_package_adequacy: DrgPackageAdequacyReviewResponse = Field(
+        default_factory=DrgPackageAdequacyReviewResponse
+    )
+    gazette_repricing: GazetteRepricingOpportunityResponse = Field(
+        default_factory=GazetteRepricingOpportunityResponse
+    )
+    medula_rejection_playbook: MedulaRejectionPlaybookResponse = Field(
+        default_factory=MedulaRejectionPlaybookResponse
+    )
     materials: MaterialPreCheckResponse = Field(default_factory=MaterialPreCheckResponse)
+    sgk_uplift_try: float = 0.0
+    compliance_adjustment_try: float = 0.0
+    audit_exposure_try: float = 0.0
+    capture_gap_try: float = 0.0
+    package_adequacy_review_try: float = 0.0
+    gazette_repricing_try: float = 0.0
+    medula_playbook_entry_count: int = 0
     total_recoverable_try: float = 0.0
     action_count: int = 0
     priority: str = "low"
