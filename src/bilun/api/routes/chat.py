@@ -219,7 +219,11 @@ def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
             "prose_bundling_violations": (
                 materials.get("prose_bundling_violations") or []
             )[:summary_cap],
+            "specialty_prose_violations": (
+                materials.get("specialty_prose_violations") or []
+            )[:summary_cap],
             "coverage_scope": materials.get("coverage_scope"),
+            "specialty_coverage_scope": materials.get("specialty_coverage_scope"),
             "rule_source": materials.get(
                 "rule_source",
                 "EK-3C-1 tıbbi uygunluk, EK-3C-2 MIAT intervals, partial §3.1 prose",

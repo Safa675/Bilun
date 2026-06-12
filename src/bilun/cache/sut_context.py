@@ -105,8 +105,13 @@ def build_sut_patient_alerts_cache(
             if is_exact_output(surcharge_exposure)
             else 0
         )
-        copay_rate_count = (
+        copay_listed_count = (
             int(copay_rate_exposure.get("n_applicable_procedures") or 0)
+            if is_exact_output(copay_rate_exposure)
+            else 0
+        )
+        copay_violation_count = (
+            int(copay_rate_exposure.get("n_violations") or 0)
             if is_exact_output(copay_rate_exposure)
             else 0
         )
@@ -118,11 +123,11 @@ def build_sut_patient_alerts_cache(
         else:
             n_patients_with_surcharge_unavailable += 1
         if is_exact_output(copay_rate_exposure):
-            n_patients_with_copay_rate_flags += int(copay_rate_count > 0)
+            n_patients_with_copay_rate_flags += int(copay_violation_count > 0)
         else:
             n_patients_with_copay_rate_unavailable += 1
         total_surcharge_flags += surcharge_count
-        total_copay_rate_flags += copay_rate_count
+        total_copay_rate_flags += copay_violation_count
 
         top_procedures = sorted(
             list(copay_rate_exposure.get("procedures_with_rates", [])),
@@ -183,7 +188,10 @@ def build_sut_patient_alerts_cache(
                         else {}
                     ),
                     "n_applicable": (
-                        copay_rate_count if is_exact_output(copay_rate_exposure) else None
+                        copay_listed_count if is_exact_output(copay_rate_exposure) else None
+                    ),
+                    "n_violations": (
+                        copay_violation_count if is_exact_output(copay_rate_exposure) else None
                     ),
                     "mean_rate": (
                         float(copay_rate_exposure.get("mean_rate") or 0.0)
@@ -195,7 +203,7 @@ def build_sut_patient_alerts_cache(
                     ),
                     "action": (
                         "Apply capped copay rate"
-                        if is_exact_output(copay_rate_exposure) and copay_rate_count > 0
+                        if is_exact_output(copay_rate_exposure) and copay_violation_count > 0
                         else None
                     ),
                     **(

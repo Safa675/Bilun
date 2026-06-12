@@ -10,6 +10,7 @@ from src.bilun.domain.pricing.material_kdv import (
     should_apply_kdv_to_material,
 )
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_for_context
+from src.bilun.domain.materials.specialty_coverage_scope import specialty_materials_coverage_scope
 from src.bilun.domain.prose_rules.specialty_materials import check_specialty_materials_for_context
 
 from .materials import _get_ek3c1_preauth, _get_ek3c2_miat
@@ -135,6 +136,7 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
 
     result.prose_bundling_violations = check_material_bundling_for_context(ctx)
     result.specialty_prose_violations = check_specialty_materials_for_context(ctx)
+    result.specialty_coverage_scope = specialty_materials_coverage_scope()
     _append_kdv_price_reviews(result, ctx)
 
     result.exactness_status = EXACTNESS_STATUS_EXACT
@@ -142,6 +144,7 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
     result.required_inputs_missing = []
     result.rule_source = (
         "EK-3C-1 tıbbi uygunluk (§3.1.2), EK-3C-2 MIAT intervals, EK-3B-1 bundling (54-row list), "
-        "§3.1.1(12) KDV on EK-3 list prices, partial §3.1 prose (keywords + EK-3/C membership + pairing)"
+        "§3.1.1(12) KDV on EK-3 list prices, partial §3.1 prose (keywords + EK-3/C membership + pairing), "
+        "partial §3.3 specialty annex prose (L4.4)"
     )
     return result

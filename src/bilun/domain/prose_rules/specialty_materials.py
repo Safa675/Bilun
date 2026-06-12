@@ -11,7 +11,7 @@ from ..constants import _PROSE_RULES_DIR
 
 _RULES_PATH = _PROSE_RULES_DIR / "specialty_materials_prose.json"
 
-_CLAIM_FLAGS = (
+SPECIALTY_CLAIM_FLAGS: tuple[str, ...] = (
     "specialty_wound_care_excluded",
     "skin_substitute_non_burn_use",
     "immunobullous_wound_care_patient_supply",
@@ -81,7 +81,7 @@ def _material_name_matches(material_name: str, keywords: list[str]) -> bool:
 
 def _rule_evaluation_priority(rule: dict[str, Any]) -> int:
     condition = rule.get("condition") or {}
-    if any(condition.get(flag) for flag in _CLAIM_FLAGS):
+    if any(condition.get(flag) for flag in SPECIALTY_CLAIM_FLAGS):
         return 2
     if condition.get("material_name_any"):
         return 5
@@ -101,7 +101,7 @@ def _condition_matches(
     keywords = condition.get("material_name_any") or []
     name_hit = bool(keywords) and _material_name_matches(name, keywords)
 
-    active_flags = [flag for flag in _CLAIM_FLAGS if condition.get(flag)]
+    active_flags = [flag for flag in SPECIALTY_CLAIM_FLAGS if condition.get(flag)]
     if active_flags:
         if not all(mat.get(flag) is True for flag in active_flags):
             return False
@@ -193,7 +193,7 @@ def check_specialty_materials_for_context(ctx: Any) -> list[dict[str, Any]]:
             "code": line.material_code,
             "unit_price": float(line.billed_amount_try),
         }
-        for flag in _CLAIM_FLAGS:
+        for flag in SPECIALTY_CLAIM_FLAGS:
             if hasattr(line, flag):
                 row[flag] = getattr(line, flag)
         materials.append(row)

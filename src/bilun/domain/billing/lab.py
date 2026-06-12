@@ -1,11 +1,12 @@
 """
 src/bilun/domain/billing/lab.py
-Algorithm 1: Lab billing optimizer with hemogram bundling.
+Algorithm 1: Lab billing optimizer with hemogram bundling and §2.2.2.B session factors.
 """
 
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass, field
 from typing import Any
 
 from ..constants import HEMOGRAM_TESTS, BILUN_TO_SUT_CODE
@@ -16,6 +17,13 @@ from .types import LabOptimization
 logger = logging.getLogger("ilay.sut_billing_optimizer")
 
 _gazette_lab_prices_by_asof: dict[str, dict[str, float]] = {}
+
+
+@dataclass
+class _EncounterLabBucket:
+    hemogram_subtests: int = 0
+    entries: list[tuple[str, str, float]] = field(default_factory=list)
+    service_date: Any | None = None
 
 
 def _service_date_for_index(
@@ -117,13 +125,70 @@ def _hemogram_price_for_encounter(
     return gazette.get("Hemoglobin", SUT_LAB_DEFAULT[0])
 
 
+def _apply_session_fractions_to_encounter(
+    billable: list[tuple[str, str, float]],
+    *,
+    flagged: list[dict[str, Any]],
+) -> tuple[float, float]:
+    """Return (normative_total, session_fraction_savings) for one encounter's billable lines."""
+    from src.bilun.domain.prose_rules.session_pricing import compute_session_point_factors
+
+    naive_total = sum(price for _, _, price in billable)
+    if len(billable) < 2:
+        return naive_total, 0.0
+
+    codes = [code for _, code, _ in billable]
+    session = compute_session_point_factors(
+        codes,
+        same_incision=True,
+        cross_specialty=False,
+    )
+    if session.rule_id == "single_procedure" or not session.factors:
+        return naive_total, 0.0
+
+    adjusted_total = 0.0
+    session_savings = 0.0
+    primary_code = ""
+    for (test_name, sut_code, price), factor in zip(
+        billable, session.factors, strict=True
+    ):
+        line_amount = round(price * factor.point_factor, 2)
+        adjusted_total += line_amount
+        if factor.is_primary:
+            primary_code = sut_code
+        elif factor.point_factor < 1.0:
+            line_savings = round(price * (1.0 - factor.point_factor), 2)
+            if line_savings > 0:
+                session_savings += line_savings
+                flagged.append(
+                    {
+                        "test_name": test_name,
+                        "sut_code": sut_code,
+                        "gazette_price": round(price, 2),
+                        "flag_type": "session_fraction_overbilling",
+                        "savings_try": line_savings,
+                        "expected_point_factor": factor.point_factor,
+                        "primary_sut_code": primary_code,
+                        "rule_id": session.rule_id,
+                        "sut_section": session.sut_section,
+                        "detail": (
+                            f"Secondary lab billed at full list price; SUT §{session.sut_section} "
+                            f"requires {factor.point_factor:.0%} point factor in same session "
+                            f"(primary: {primary_code})."
+                        ),
+                    }
+                )
+
+    return round(adjusted_total, 2), round(session_savings, 2)
+
+
 def _optimize_lab_billing(
     patient_id: str,
     patient_lab_tests: list[str],
     patient_lab_dates: list[str | None] | None = None,
     patient_lab_visit_ids: list[str | None] | None = None,
 ) -> LabOptimization:
-    """Algorithm 1: Normative lab billing with hemogram bundling.
+    """Algorithm 1: Normative lab billing with hemogram bundling and session fractions.
 
     Args:
         patient_id: Patient identifier.
@@ -143,9 +208,9 @@ def _optimize_lab_billing(
     hemogram_set = HEMOGRAM_TESTS
     hemogram_sut_code = BILUN_TO_SUT_CODE.get("Hemoglobin", "L107020")
 
-    hemogram_by_encounter: dict[str, int] = {}
+    encounters: dict[str, _EncounterLabBucket] = {}
     encounter_asof: dict[str, Any | None] = {}
-    normative_total = 0.0
+    orphan_normative = 0.0
     flagged: list[dict[str, Any]] = []
 
     for i, test_name in enumerate(patient_lab_tests):
@@ -161,39 +226,55 @@ def _optimize_lab_billing(
         )
         if encounter_key is None:
             if tn in hemogram_set:
-                normative_total += _resolve_lab_test_price(
+                orphan_normative += _resolve_lab_test_price(
                     "Hemoglobin", visit_date=service_date
                 )[0]
             else:
-                normative_total += _resolve_lab_test_price(tn, visit_date=service_date)[0]
+                orphan_normative += _resolve_lab_test_price(tn, visit_date=service_date)[0]
             continue
 
-        if encounter_key not in encounter_asof and service_date is not None:
+        bucket = encounters.setdefault(encounter_key, _EncounterLabBucket())
+        if bucket.service_date is None and service_date is not None:
+            bucket.service_date = service_date
             encounter_asof[encounter_key] = service_date
 
         if tn in hemogram_set:
-            hemogram_by_encounter[encounter_key] = (
-                hemogram_by_encounter.get(encounter_key, 0) + 1
-            )
+            bucket.hemogram_subtests += 1
             continue
 
-        price, _, _ = _resolve_lab_test_price(tn, visit_date=service_date)
-        normative_total += price
+        price, sut_code, display_name = _resolve_lab_test_price(tn, visit_date=service_date)
+        if sut_code:
+            bucket.entries.append((display_name, sut_code, price))
 
-    total_hemogram_subtests = sum(hemogram_by_encounter.values())
-    n_hemogram_encounters = len(hemogram_by_encounter)
+    normative_total = orphan_normative
+    session_fraction_savings = 0.0
+
+    for enc_key, bucket in encounters.items():
+        billable: list[tuple[str, str, float]] = []
+        if bucket.hemogram_subtests > 0:
+            hem_price = _hemogram_price_for_encounter(enc_key, encounter_asof)
+            billable.append(("Hemogram (CBC)", hemogram_sut_code, hem_price))
+        billable.extend(bucket.entries)
+
+        enc_normative, enc_session_savings = _apply_session_fractions_to_encounter(
+            billable,
+            flagged=flagged,
+        )
+        normative_total += enc_normative
+        session_fraction_savings += enc_session_savings
+
+    total_hemogram_subtests = sum(b.hemogram_subtests for b in encounters.values())
+    n_hemogram_encounters = sum(1 for b in encounters.values() if b.hemogram_subtests > 0)
     if total_hemogram_subtests > 0:
-        for enc_key in hemogram_by_encounter:
-            normative_total += _hemogram_price_for_encounter(enc_key, encounter_asof)
-
         excess = total_hemogram_subtests - n_hemogram_encounters
         if excess > 0:
             weighted_price = 0.0
             if n_hemogram_encounters > 0:
-                for enc_key in hemogram_by_encounter:
-                    weighted_price += _hemogram_price_for_encounter(
-                        enc_key, encounter_asof
-                    )
+                for enc_key, bucket in encounters.items():
+                    if bucket.hemogram_subtests > 0:
+                        weighted_price += _hemogram_price_for_encounter(
+                            enc_key, encounter_asof
+                        )
                 weighted_price /= n_hemogram_encounters
             else:
                 weighted_price = SUT_LAB_DEFAULT[0]
@@ -216,5 +297,6 @@ def _optimize_lab_billing(
             )
 
     result.normative_cost_try = round(normative_total, 2)
+    result.session_fraction_savings = round(session_fraction_savings, 2)
     result.flagged_tests = flagged
     return result

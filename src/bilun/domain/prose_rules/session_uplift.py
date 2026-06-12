@@ -6,7 +6,10 @@ from typing import TYPE_CHECKING, Any
 
 from .catalog_membership import normalize_procedure_code
 from .claim_utils import group_procedure_lines_by_session
-from .session_pricing import compute_session_point_factors
+from .session_pricing import (
+    compute_session_point_factors,
+    expected_session_billed_try,
+)
 from .session_specialty import detect_cross_specialty_session
 from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
 
@@ -115,7 +118,10 @@ def detect_session_underbilling_opportunities(
             if factor is None or factor.point_factor >= primary_factor:
                 continue
 
-            expected_billed = primary_billed * (factor.point_factor / primary_factor)
+            expected_billed = expected_session_billed_try(
+                line,
+                point_factor=factor.point_factor,
+            )
             actual_billed = _line_billed(line)
             if actual_billed >= expected_billed * (1.0 - _BILLING_TOLERANCE):
                 continue

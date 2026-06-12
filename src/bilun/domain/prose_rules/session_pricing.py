@@ -244,6 +244,45 @@ def _money(value: float | int) -> float:
     return round(float(value), 2)
 
 
+def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float:
+    """Gazette list-line amount (unit × qty) used for §2.2.2 session factor math."""
+    qty = max(int(line.quantity), 1)
+    unit = float(line.unit_price_try)
+    if unit > 0:
+        return _money(unit * qty)
+
+    billed = float(line.billed_amount_try)
+    if billed > 0:
+        return billed
+
+    normalized = normalize_procedure_code(line.procedure_code)
+    if not normalized:
+        return 0.0
+
+    try:
+        from ..catalog import lookup_procedure_code
+
+        lookup = lookup_procedure_code(normalized)
+        entry = lookup.get("entry") if lookup else None
+        if entry is not None:
+            price = float(entry.get("price_try") or 0)
+            if price > 0:
+                return _money(price * qty)
+    except Exception:
+        pass
+
+    return 0.0
+
+
+def expected_session_billed_try(
+    line: ProcedureClaimLine,
+    *,
+    point_factor: float,
+) -> float:
+    """Expected billed TRY for a line at its §2.2.2 session point factor (list × factor)."""
+    return _money(line_gazette_list_billed_try(line) * point_factor)
+
+
 def _line_itemized_payable(line: ProcedureClaimLine) -> float:
     payable = float(line.expected_payable_try)
     if payable > 0:

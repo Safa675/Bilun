@@ -459,9 +459,9 @@ def _patient_alert_filters(category: str, status: str) -> tuple[str, list[Any], 
         order_by = "surcharge_n_applicable DESC, patient_id ASC"
     else:
         if status == "flagged":
-            filters.append("copay_rate_n_applicable > 0")
+            filters.append("copay_rate_action IS NOT NULL")
         elif status == "clear":
-            filters.append("copay_rate_n_applicable = 0")
+            filters.append("copay_rate_action IS NULL")
         order_by = (
             "copay_rate_n_applicable DESC, copay_rate_mean_rate DESC, patient_id ASC"
         )

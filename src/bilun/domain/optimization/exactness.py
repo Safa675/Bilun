@@ -161,13 +161,20 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
         copay_rate_matches_catalog,
         get_ek2c1_mandated_copay_rate_pct,
     )
+    from .claim_context import (
+        copay_rate_evaluable_line,
+        procedure_implied_copay_rate_pct,
+        procedure_sgk_share_pct,
+    )
 
     applicable = []
     flag_mismatches: list[dict[str, Any]] = []
     rate_mismatches: list[dict[str, Any]] = []
     for line in context.procedures:
+        if not copay_rate_evaluable_line(line):
+            continue
         catalog_applicable = catalog_copay_rate_applicable(line.procedure_code)
-        if line.copay_rate_applicable != catalog_applicable:
+        if catalog_applicable and not line.copay_rate_applicable:
             flag_mismatches.append(
                 {
                     "code": line.procedure_code,
@@ -181,12 +188,13 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
             )
         if catalog_applicable:
             applicable.append(line)
-            billed_rate = procedure_rate_pct(line)
-            if not copay_rate_matches_catalog(billed_rate, line.procedure_code):
+            implied_copay = procedure_implied_copay_rate_pct(line)
+            if not copay_rate_matches_catalog(implied_copay, line.procedure_code):
                 rate_mismatches.append(
                     {
                         "code": line.procedure_code,
-                        "billed_rate_pct": float(billed_rate),
+                        "implied_copay_rate_pct": float(implied_copay),
+                        "sgk_share_pct": float(procedure_sgk_share_pct(line)),
                         "mandated_rate_pct": get_ek2c1_mandated_copay_rate_pct(
                             line.procedure_code
                         ),
@@ -194,7 +202,7 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
                     }
                 )
 
-    rates = [procedure_rate_pct(line) for line in applicable]
+    rates = [procedure_implied_copay_rate_pct(line) for line in applicable]
     mean_rate = (
         (sum(rates, Decimal("0.00")) / Decimal(len(rates))).quantize(
             Decimal("0.01"), rounding=ROUND_HALF_UP
@@ -215,19 +223,24 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
                 "procedure_date": line.procedure_date.isoformat(),
                 "rate_pct": float(rate),
                 "mandated_rate_pct": mandated,
+                "sgk_share_pct": float(procedure_sgk_share_pct(line)),
                 "billed_amount_try": float(line.billed_amount_try),
                 "expected_payable_try": float(line.expected_payable_try),
                 "rule_trace": line.rule_trace_expected,
-                "catalog_validated": True,
+                "catalog_validated": copay_rate_matches_catalog(
+                    rate, line.procedure_code
+                ),
                 "matched_chapters": [],
             }
         )
+    n_violations = len(flag_mismatches) + len(rate_mismatches)
     return {
         "exactness_status": EXACTNESS_STATUS_EXACT,
         "n_applicable_procedures": len(applicable),
         "n_total_ek2c1": len(context.procedures),
         "n_flag_catalog_mismatches": len(flag_mismatches),
         "n_rate_catalog_mismatches": len(rate_mismatches),
+        "n_violations": n_violations,
         "flag_catalog_mismatches": flag_mismatches[:25],
         "rate_catalog_mismatches": rate_mismatches[:25],
         "mean_rate": float(mean_rate),
@@ -235,8 +248,8 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
         "rate_distribution": distribution,
         "methodology": (
             "Uses exact dated procedure claim lines joined to EK-2C-1 "
-            "(ek2c1_copay_rates.parquet) for mandated copay-rate procedures; "
-            "validates claim flags and billed/payable ratio vs catalog rate."
+            "(ek2c1_copay_rates.parquet); compares implied copay % "
+            "(100 - SGK payable/billed) to the catalog mandated rate."
         ),
         "rule_source": "EK-2C-1 catalog join",
     }

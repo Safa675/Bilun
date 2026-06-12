@@ -8,7 +8,11 @@ from typing import TYPE_CHECKING, Any
 from .catalog_membership import normalize_procedure_code
 from .claim_utils import group_procedure_lines_by_session, infer_care_setting
 from .payment_method import check_payment_method_compliance, resolve_payment_method
-from .session_pricing import blood_component_billable_fraction, compute_session_point_factors
+from .session_pricing import (
+    blood_component_billable_fraction,
+    compute_session_point_factors,
+    expected_session_billed_try,
+)
 from .session_specialty import detect_cross_specialty_session
 from .types import CareSetting
 
@@ -141,8 +145,6 @@ def detect_session_point_violations(
         if primary_line is None or _line_billed(primary_line) <= 0:
             continue
 
-        primary_billed = _line_billed(primary_line)
-
         for line in billable:
             if line.procedure_line_id == primary_line.procedure_line_id:
                 continue
@@ -150,7 +152,10 @@ def detect_session_point_violations(
             if factor is None or factor.point_factor >= primary_factor:
                 continue
 
-            expected_billed = primary_billed * (factor.point_factor / primary_factor)
+            expected_billed = expected_session_billed_try(
+                line,
+                point_factor=factor.point_factor,
+            )
             actual_billed = _line_billed(line)
             if actual_billed <= expected_billed * (1.0 + _BILLING_TOLERANCE):
                 continue

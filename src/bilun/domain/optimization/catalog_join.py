@@ -65,10 +65,11 @@ def catalog_copay_rate_applicable(procedure_code: str) -> bool:
 
 
 def copay_rate_matches_catalog(
-    billed_rate_pct: Decimal,
+    implied_copay_rate_pct: Decimal,
     procedure_code: str,
 ) -> bool:
+    """True when implied copay % (from payable/billed) matches EK-2C-1 catalog."""
     mandated = get_ek2c1_mandated_copay_rate_pct(procedure_code)
     if mandated is None:
         return True
-    return abs(billed_rate_pct - Decimal(str(mandated))) <= _RATE_TOLERANCE_PCT
+    return abs(implied_copay_rate_pct - Decimal(str(mandated))) <= _RATE_TOLERANCE_PCT

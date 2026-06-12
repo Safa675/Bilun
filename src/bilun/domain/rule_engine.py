@@ -26,6 +26,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from src.bilun.domain.materials.coverage_scope import material_bundling_coverage_scope
+from src.bilun.domain.materials.specialty_coverage_scope import specialty_materials_coverage_scope
 from src.bilun.domain.prose_rules.material_bundling import check_material_bundling_prose
 from src.bilun.domain.prose_rules.specialty_materials import check_specialty_materials_prose
 from src.bilun.domain.rules.bundling_rules import check_bundling_violations
@@ -78,16 +79,20 @@ class ClaimValidationResult:
     validation_time_ms: float = 0.0
     summary: str = ""
     coverage_scope: dict[str, Any] = field(default_factory=material_bundling_coverage_scope)
+    specialty_coverage_scope: dict[str, Any] = field(
+        default_factory=specialty_materials_coverage_scope
+    )
 
 
 def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
     """
     Validate a healthcare claim against SUT bundling and exclusion rules.
 
-    Runs annex list checks plus partial §3.1 prose keywords (see coverage_scope):
+    Runs annex list checks plus partial §3.1 / §3.3 prose (see coverage_scope):
       1. Bundling rules (EK-3B-1, 54 rows): consumables bundled into procedure fee.
       2. Exclusion rules (EK-3B-2, 13 rows): non-reimbursable materials.
       3. Material bundling prose (partial JSON): keyword rules not in EK-3B-1.
+      4. Specialty annex prose (partial JSON): §3.3 branch rules (L4.4).
 
     Additionally computes material cost estimates using gazette prices.
 

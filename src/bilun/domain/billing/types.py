@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from src.bilun.domain.materials.coverage_scope import material_bundling_coverage_scope
+from src.bilun.domain.materials.specialty_coverage_scope import specialty_materials_coverage_scope
 from typing import Any
 
 EXACTNESS_STATUS_EXACT = "exact"
@@ -129,16 +130,19 @@ class LabOptimization:
 
     normative_cost_try: float = 0.0
     hemogram_bundling_savings: float = 0.0
+    session_fraction_savings: float = 0.0
     flagged_tests: list[dict[str, Any]] = field(default_factory=list)
     exactness_status: str = EXACTNESS_STATUS_EXACT
     unavailable_reason: str | None = None
     required_inputs_missing: list[str] = field(default_factory=list)
-    rule_source: str = "EK-2B L107020 hemogram bundling"
+    rule_source: str = (
+        "EK-2B L107020 hemogram bundling; SUT §2.2.2.B / §2.2.2.A(5) session point factors"
+    )
 
     @property
     def total_savings(self) -> float:
-        """Recoverable TRY from hemogram (CBC) bundling."""
-        return self.hemogram_bundling_savings
+        """Recoverable TRY from hemogram bundling and session-fraction over-billing."""
+        return round(self.hemogram_bundling_savings + self.session_fraction_savings, 2)
 
 
 COPAY_SAVINGS_BENEFICIARY_PATIENT_AND_SGK = "patient_and_sgk"
@@ -289,6 +293,9 @@ class MaterialPreCheck:
     bundled_separate_billing: list[dict[str, Any]] = field(default_factory=list)
     prose_bundling_violations: list[dict[str, Any]] = field(default_factory=list)
     specialty_prose_violations: list[dict[str, Any]] = field(default_factory=list)
+    specialty_coverage_scope: dict[str, Any] = field(
+        default_factory=specialty_materials_coverage_scope
+    )
     kdv_price_reviews: list[dict[str, Any]] = field(default_factory=list)
     gazette_ceiling_by_specialty: dict[str, float] = field(default_factory=dict)
     exactness_status: str = EXACTNESS_STATUS_PARTIAL

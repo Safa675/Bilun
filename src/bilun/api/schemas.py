@@ -113,6 +113,7 @@ class MaterialBundlingCoverageScope(BaseModel):
 class ValidateClaimResponse(BaseModel):
     claim_id: str
     coverage_scope: MaterialBundlingCoverageScope | dict[str, Any] | None = None
+    specialty_coverage_scope: dict[str, Any] | None = None
     is_valid: bool
     total_claim_amount: float
     total_savings_try: float
@@ -129,6 +130,7 @@ class ValidateClaimResponse(BaseModel):
 
 class BundledConsumablesResponse(BaseModel):
     coverage_scope: MaterialBundlingCoverageScope | dict[str, Any] | None = None
+    specialty_coverage_scope: dict[str, Any] | None = None
     bundled_consumables: dict[str, Any]
     exclusion_categories: dict[str, Any]
 
@@ -295,6 +297,7 @@ class BillingExactnessResponse(BaseModel):
 class LabOptimizationResponse(BillingExactnessResponse):
     normative_cost_try: float = 0.0
     hemogram_bundling_savings: float = 0.0
+    session_fraction_savings: float = 0.0
     flagged_tests: list[dict[str, Any]] = Field(default_factory=list)
 
 
@@ -391,6 +394,7 @@ class MaterialPreCheckResponse(BillingExactnessResponse):
     bundled_separate_billing: list[dict[str, Any]] = Field(default_factory=list)
     prose_bundling_violations: list[dict[str, Any]] = Field(default_factory=list)
     specialty_prose_violations: list[dict[str, Any]] = Field(default_factory=list)
+    specialty_coverage_scope: dict[str, Any] | None = None
     kdv_price_reviews: list[dict[str, Any]] = Field(default_factory=list)
     gazette_ceiling_by_specialty: dict[str, float] = Field(default_factory=dict)
     coverage_scope: MaterialBundlingCoverageScope | dict[str, Any] | None = None

@@ -49,14 +49,35 @@ def build_copay_rate_claim_context(
     return CopayRateClaimContext(patient_id=patient_id, procedures=procedures)
 
 
-def procedure_rate_pct(line: ProcedureClaimLine) -> Decimal:
-    """Calculate the exact payable/billed percentage encoded on a claim line."""
+def procedure_sgk_share_pct(line: ProcedureClaimLine) -> Decimal:
+    """SGK payable share of billed amount (capped at 100%)."""
 
     if line.billed_amount_try == 0:
         return Decimal("0.00")
-    return (line.expected_payable_try / line.billed_amount_try * Decimal("100")).quantize(
+    share = line.expected_payable_try / line.billed_amount_try * Decimal("100")
+    if share > Decimal("100"):
+        share = Decimal("100")
+    return share.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def procedure_implied_copay_rate_pct(line: ProcedureClaimLine) -> Decimal:
+    """Implied patient copay % from billed vs SGK payable (100 - SGK share)."""
+
+    return (Decimal("100") - procedure_sgk_share_pct(line)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     )
+
+
+def procedure_rate_pct(line: ProcedureClaimLine) -> Decimal:
+    """Backward-compatible alias for SGK payable share percentage."""
+
+    return procedure_sgk_share_pct(line)
+
+
+def copay_rate_evaluable_line(line: ProcedureClaimLine) -> bool:
+    """EK-2C-1 rate/flag checks apply only to billable, non-package lines."""
+
+    return not line.is_package_included and line.billed_amount_try > 0
 
 
 def _sorted_procedure_lines(

@@ -127,13 +127,15 @@ def _aggregate_copay_rate_exposure(
             exposure = analyze_copay_rate_exposure(chapters)
         if not is_exact_output(exposure):
             continue
-        n_app = int(exposure.get("n_applicable_procedures") or 0)
+        n_violations = int(exposure.get("n_violations") or 0)
         n_total = int(exposure.get("n_total_ek2c1") or 0)
-        total_applicable += n_app
+        total_applicable += n_violations
         total_procedures += n_total
-        if n_app > 0:
+        if n_violations > 0:
             patients_with_flags += 1
         for procedure in exposure.get("procedures_with_rates", []):
+            if procedure.get("catalog_validated") is False:
+                continue
             rate_key = f"{procedure.get('rate_pct')}%"
             rate_counter[rate_key] += 1
             rate_sum += float(procedure.get("rate_pct") or 0.0)
@@ -148,8 +150,8 @@ def _aggregate_copay_rate_exposure(
         "rate_distribution": dict(rate_counter),
         "n_patients_with_copay_rate_flags": patients_with_flags,
         "methodology": (
-            "Aggregated exact copay_rate_applicable procedure flags from claim lines "
-            "across the active cohort."
+            "Aggregated EK-2C-1 catalog violations (flag or implied-rate mismatch) "
+            "from exact claim lines across the active cohort."
         ),
     }
 
