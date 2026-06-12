@@ -1,0 +1,20 @@
+{
+  "fatura_kayit": {
+    "name_tr": "Fatura Kayıt",
+    "name_en": "Invoice Registration",
+    "description_tr": "Fatura kayıt aşamasında MEDULA fatura doğrulaması ve ödeme hesaplaması yapılır.",
+    "description_en": "MEDULA validates the invoice and computes payment during invoice registration."
+  },
+  "hizmet_kayit": {
+    "name_tr": "Hizmet Kayıt",
+    "name_en": "Service Registration",
+    "description_tr": "Hizmet satırlarının MEDULA'ya kaydı.",
+    "description_en": "Registration of service lines to MEDULA."
+  },
+  "provizyon": {
+    "name_tr": "Provizyon",
+    "name_en": "Provision",
+    "description_tr": "Hasta kabul ve provizyon aşaması.",
+    "description_en": "Patient admission and provision stage."
+  }
+}

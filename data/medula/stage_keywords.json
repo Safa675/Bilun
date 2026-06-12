@@ -1,0 +1,20 @@
+{
+  "fatura_kayit": [
+    "fatura",
+    "kayıt",
+    "fatura kayıt",
+    "105 gün",
+    "ödeme",
+    "kesinti"
+  ],
+  "hizmet_kayit": [
+    "hizmet",
+    "hizmet kayıt",
+    "işlem kaydı"
+  ],
+  "provizyon": [
+    "provizyon",
+    "kabul",
+    "müstehaklık"
+  ]
+}

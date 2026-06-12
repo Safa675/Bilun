@@ -1,0 +1,14 @@
+[
+  {
+    "category": "Müstehaklık / Entitlement",
+    "stage": "Provizyon",
+    "stage_en": "Provision",
+    "problem": "Hasta müstehaklık sorgusu başarısız veya geçersiz",
+    "causes": [
+      "GSS kapsamı dışı hasta",
+      "Yanlış TCKN veya sigorta bilgisi"
+    ],
+    "resolution": "Müstehaklık sorgusunu yenileyin ve doğru sigorta bilgileriyle tekrar deneyin.",
+    "keywords": ["müstehaklık", "entitlement", "provizyon", "gss", "sigorta"]
+  }
+]

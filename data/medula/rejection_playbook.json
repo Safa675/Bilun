@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "description": "MEDULA rejection → corrective rebill playbook templates",
+  "entries": [
+    {
+      "playbook_key": "1688_molecular_microbiology",
+      "sonuc_kodu": "1688",
+      "medula_stages": ["fatura_kayit"],
+      "hata_mesaji_keywords": [
+        "moleküler",
+        "mikrobiyoloji",
+        "rapor",
+        "eksik"
+      ],
+      "sut_anchor": "EK-2 / moleküler mikrobiyoloji rapor gerekliliği",
+      "problem_summary_tr": "Moleküler mikrobiyoloji işlemi için zorunlu rapor eksik.",
+      "problem_summary_en": "Required molecular microbiology report is missing.",
+      "corrective_steps_tr": [
+        "Eksik raporu tamamlayın veya doğru işlem kodunu kullanın.",
+        "Faturadaki ilgili işlem satırını düzeltin.",
+        "Fatura kayıt aşamasında yeniden gönderin."
+      ],
+      "corrective_steps_en": [
+        "Complete the missing report or use the correct procedure code.",
+        "Correct the related invoice line.",
+        "Resubmit during invoice registration."
+      ],
+      "rebill_permitted": true,
+      "rebill_stage": "fatura_kayit"
+    }
+  ]
+}

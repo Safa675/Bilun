@@ -1,0 +1,14 @@
+{
+  "9000": {
+    "meaning_tr": "Provizyon başarılı — uyarı veya bilgilendirme kodu",
+    "meaning_en": "Provision successful — warning or informational code",
+    "action": "İşleme devam edilebilir; mesajı kayıt altına alın.",
+    "is_error": false
+  },
+  "1688": {
+    "meaning_tr": "Moleküler mikrobiyoloji işlemi için zorunlu rapor eksik",
+    "meaning_en": "Required report missing for molecular microbiology procedure",
+    "action": "İlgili raporu tamamlayıp faturayı düzeltin ve yeniden gönderin.",
+    "is_error": true
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "description": "L4.4 golden fixtures — expected rule_id per synthetic material line",
+  "cases": [
+    {
+      "clause_id": "C001877",
+      "material": {
+        "name": "Transparan film yara örtüsü",
+        "code": "W1",
+        "unit_price": 85.0
+      },
+      "expected_rule_id": "3.3.1.(10).wound_dressing_cover_no_pay"
+    },
+    {
+      "clause_id": "C001877",
+      "material": {
+        "name": "Hidrojel yara nemlendirici",
+        "code": "W2",
+        "unit_price": 120.0
+      },
+      "expected_rule_id": "3.3.1.(10).wound_hydrojel_additive_no_pay"
+    },
+    {
+      "clause_id": "C001877",
+      "material": {
+        "name": "Deri taklidi yedek",
+        "code": "SS2",
+        "unit_price": 300.0
+      },
+      "expected_rule_id": "3.3.1.(10).skin_substitute_keyword_no_pay"
+    },
+    {
+      "clause_id": "C001877",
+      "material": {
+        "name": "Malzeme",
+        "code": "SS1",
+        "unit_price": 200.0,
+        "skin_substitute_non_burn_use": true
+      },
+      "expected_rule_id": "3.3.1.(10).skin_substitute_non_burn_flag"
+    },
+    {
+      "clause_id": "C001877",
+      "material": {
+        "name": "Kontakt lens solüsyonu",
+        "code": "CL1",
+        "unit_price": 15.0
+      },
+      "expected_rule_id": "3.3.3.C.(6).contact_lens_solution"
+    },
+    {
+      "clause_id": "C001877",
+      "material": {
+        "name": "Gözlük camı",
+        "code": "G1",
+        "unit_price": 100.0,
+        "optical_lens_upgrade_difference_claim": true
+      },
+      "expected_rule_id": "3.3.3.A.(4).ek3d_lens_upgrade_difference"
+    },
+    {
+      "clause_id": "C001877",
+      "material": {
+        "name": "Kemik stimülatörü",
+        "code": "BS1",
+        "unit_price": 500.0,
+        "bone_stimulator_combined_use": true
+      },
+      "expected_rule_id": "3.3.4.A.(1).bone_stimulator_combined_use"
+    },
+    {
+      "clause_id": "C001877",
+      "material": {
+        "name": "Koklear implant",
+        "code": "KI1",
+        "unit_price": 8000.0,
+        "cochlear_implant_under_12_months": true
+      },
+      "expected_rule_id": "3.3.36.B.(10).cochlear_implant_under_12_months"
+    }
+  ]
+}
