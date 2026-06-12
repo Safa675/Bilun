@@ -39,6 +39,8 @@ data/*
 !data/synthetic/
 !data/gazette/
 !data/legacy/
+!data/medula/
+!data/medula/**
 
 # Node.js / Frontend
 node_modules/
