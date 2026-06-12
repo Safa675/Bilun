@@ -114,6 +114,10 @@ REQUIRED_CLAIM_COLUMNS = {
         "facility_contract_material_supply_scope",
         "ismarlama_device_component_titubb_incomplete",
         "titubb_uts_barcode_documentation_missing",
+        "skin_substitute_non_burn_use",
+        "bone_stimulator_combined_use",
+        "cochlear_implant_under_12_months",
+        "optical_lens_upgrade_difference_claim",
     },
     "drug_claim_lines.parquet": {
         "drug_claim_line_id",
@@ -392,6 +396,36 @@ MATERIAL_PROSE_WORKBOOK_COLUMNS = (
 )
 
 
+def _validate_specialty_prose_flags(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    import sys
+
+    synth_dir = PROJECT_ROOT / "scripts" / "synthetic"
+    if str(synth_dir) not in sys.path:
+        sys.path.insert(0, str(synth_dir))
+    from generators import SPECIALTY_PROSE_FLAG_COLUMNS  # noqa: E402
+
+    materials = tables.get("malzeme_fatura_satirlari")
+    if materials is None or materials.empty:
+        return
+
+    missing_cols = [
+        col for col in SPECIALTY_PROSE_FLAG_COLUMNS if col not in materials.columns
+    ]
+    if missing_cols:
+        _error(
+            errors,
+            f"malzeme_fatura_satirlari missing L4.4 specialty flag columns: {missing_cols}",
+        )
+        return
+
+    for col in SPECIALTY_PROSE_FLAG_COLUMNS:
+        if not _truthy(materials[col]).any():
+            _error(errors, f"Expected at least one material line with {col}=true")
+
+
 def _validate_material_prose_flags(
     tables: dict[str, pd.DataFrame],
     errors: list[str],
@@ -490,6 +524,7 @@ def main() -> None:
     else:
         _validate_workbook(tables, errors)
         _validate_material_prose_flags(tables, errors)
+        _validate_specialty_prose_flags(tables, errors)
     _validate_parquet_dir(data_dir / "clean", REQUIRED_CLEAN_COLUMNS, errors)
     _validate_parquet_dir(data_dir / "claims", REQUIRED_CLAIM_COLUMNS, errors)
 

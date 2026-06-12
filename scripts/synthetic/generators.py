@@ -251,6 +251,9 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
                 episode_row["son_tani_tarihi"] = visit_date
                 episode_row["basvuru_yasi"] = int(visit_date[:4]) - birth_year
                 episode_row["_sgk_medula_playbook_demo"] = True
+            elif pid == "SENTETIK-HASTA-0013" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "gunubirlik"
+                episode_row["_sgk_session_uplift_demo"] = True
             episodes_out.append(episode_row)
 
             for line_no, code in enumerate(all_codes, start=1):
@@ -696,6 +699,43 @@ def _pick_procedure_capture_demo_procedures(
     )
 
 
+def _pick_session_uplift_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§2.2.2 session demo: secondary cerrahi line under-billed vs list × point factor."""
+    _ = (episode, ek2c_packages, rng)
+    primary_name, primary_price = _lookup_ek2b_price("609270", ek2b_procs)
+    secondary_name, secondary_price = _lookup_ek2b_price("610070", ek2b_procs)
+    primary_price = _money(primary_price)
+    secondary_price = _money(secondary_price)
+    underbilled = _money(secondary_price * 0.10)
+    disable_surcharge = {"disable_surcharge": True}
+    return [
+        {
+            "code": "609270",
+            "name": primary_name,
+            "price": primary_price,
+            "category": "islem",
+            "included_in_package": False,
+            **disable_surcharge,
+        },
+        {
+            "code": "610070",
+            "name": secondary_name,
+            "price": secondary_price,
+            "category": "islem",
+            "included_in_package": False,
+            "billed_override": underbilled,
+            "payable_override": underbilled,
+            **disable_surcharge,
+        },
+    ]
+
+
 def _pick_procedure_addon_demo_procedures(
     episode: dict,
     *,
@@ -820,6 +860,46 @@ MATERIAL_PROSE_FLAG_COLUMNS: tuple[str, ...] = (
     "titubb_uts_barkod_belge_eksik",
 )
 
+# L4.4 §3.3 specialty annex prose — keep in sync with specialty_materials.SPECIALTY_CLAIM_FLAGS
+SPECIALTY_PROSE_FLAG_COLUMNS: tuple[str, ...] = (
+    "specialty_wound_care_excluded",
+    "skin_substitute_non_burn_use",
+    "immunobullous_wound_care_patient_supply",
+    "immunobullous_wound_care_non_moh_facility",
+    "optical_patient_access_deadline_missed",
+    "emergency_poliklinik_glasses_claim",
+    "optical_lens_upgrade_difference_claim",
+    "optical_telescopic_with_cap_claim",
+    "contact_lens_with_spectacle_billing",
+    "tv5680_with_tv1080_tv1090_combo",
+    "hearing_in_ear_under_age_limit",
+    "hearing_ear_mold_with_initial_device",
+    "cochlear_implant_under_12_months",
+    "speech_processor_under_5_years",
+    "brainstem_implant_under_12_months",
+    "incontinence_hydrophilic_catheter_diaper_only",
+    "tissue_bank_unauthorized_product",
+    "bone_stimulator_combined_use",
+    "bone_stimulator_hypertrophic_nonunion",
+    "bone_stimulator_with_autograft",
+    "bone_stimulator_benign_tumor_use",
+    "open_physis_primary_fracture_graft",
+    "adult_primary_fracture_bone_stimulator",
+    "hip_arthroplasty_graft_claim",
+    "graft_allograft_xenograft_combined",
+    "primary_ligament_tendon_injury_graft",
+    "glucose_meter_early_renewal",
+    "wheelchair_stand_device_duplicate_billing",
+    "stand_up_wheelchair_early_renewal",
+    "paraplegia_standing_table_over_age_limit",
+    "paraplegia_wheelchair_separate_billing",
+    "spinal_mobility_device_duplicate_billing",
+    "returned_device_without_kurum_approval",
+    "nimv_heated_humidifier_separate_billing",
+    "dental_prosthesis_adhesive_claim",
+    "dual_mesh_primary_hernia_repair",
+)
+
 
 def _default_prose_material_flags() -> dict[str, bool]:
     return {
@@ -870,9 +950,118 @@ def _default_prose_material_flags() -> dict[str, bool]:
     }
 
 
+def _default_specialty_prose_flags() -> dict[str, bool]:
+    return {flag: False for flag in SPECIALTY_PROSE_FLAG_COLUMNS}
+
+
 def _sample_prose_material_flags(*, bundled: bool) -> dict[str, bool]:
     """Default flags only — coverage is applied deterministically after generation."""
-    return _default_prose_material_flags()
+    return {**_default_prose_material_flags(), **_default_specialty_prose_flags()}
+
+
+def _ensure_specialty_flag_coverage(materials: list[dict[str, Any]]) -> None:
+    """Guarantee at least one demo row per L4.4 specialty prose claim flag."""
+    if not materials:
+        return
+
+    candidates = [row for row in materials if not row.get("pakete_dahil_mi")] or materials
+
+    for idx, col in enumerate(SPECIALTY_PROSE_FLAG_COLUMNS):
+        if any(row.get(col) for row in materials):
+            continue
+        row = candidates[idx % len(candidates)]
+        row[col] = True
+        if float(row.get("fatura_tutari_try") or 0) <= 0:
+            row["fatura_tutari_try"] = 100.0
+            row["birim_fiyat_try"] = 100.0
+
+
+def _reconcile_claim_header_totals(
+    claims: list[dict[str, Any]],
+    procedure_rows: list[dict[str, Any]],
+    materials: list[dict[str, Any]],
+    drug_rows: list[dict[str, Any]],
+    expected: list[dict[str, Any]] | None = None,
+) -> None:
+    """Recompute claim header billed/payable totals from line sums (post L4.4 inject)."""
+    billed_by_claim: dict[str, float] = defaultdict(float)
+    payable_by_claim: dict[str, float] = defaultdict(float)
+
+    for rows in (procedure_rows, materials, drug_rows):
+        for row in rows:
+            claim_id = str(row.get("fatura_id", ""))
+            if not claim_id:
+                continue
+            billed_by_claim[claim_id] += float(row.get("fatura_tutari_try") or 0)
+            payable_by_claim[claim_id] += float(row.get("beklenen_odenebilir_tutar_try") or 0)
+
+    claim_level_expected = {
+        str(row.get("fatura_id", "")): row
+        for row in (expected or [])
+        if str(row.get("satir_tipi", "")) == "fatura" and not str(row.get("satir_id", ""))
+    }
+
+    for claim in claims:
+        claim_id = str(claim.get("fatura_id", ""))
+        billed = billed_by_claim.get(claim_id, 0.0)
+        payable = payable_by_claim.get(claim_id, 0.0)
+        claim["beklenen_toplam_fatura_tutari_try"] = _money(billed)
+        claim["beklenen_toplam_odenebilir_tutar_try"] = _money(payable)
+
+        expected_row = claim_level_expected.get(claim_id)
+        if expected_row is not None:
+            expected_row["beklenen_odenebilir_tutar_try"] = _money(payable)
+            expected_row["beklenen_tasarruf_try"] = _money(billed - payable)
+            expected_row["beklenen_durum"] = (
+                "kismi_red" if payable < billed else "odenebilir"
+            )
+
+
+def _inject_specialty_keyword_demo_rows(
+    materials: list[dict[str, Any]],
+    claims: list[dict[str, Any]],
+) -> None:
+    """Append billed lines that trigger keyword-only §3.3 rules (no claim flags)."""
+    if not claims:
+        return
+
+    claim = claims[0]
+    claim_id = str(claim.get("fatura_id", ""))
+    patient_id = str(claim.get("hasta_id", ""))
+    service_date = claim.get("fatura_baslangic_tarihi") or claim.get("fatura_tarihi") or "2024-06-01"
+
+    keyword_demos = (
+        ("DEMO-L44-W1", "Transparan film yara örtüsü", 85.0),
+        ("DEMO-L44-W2", "Hidrojel yara nemlendirici", 120.0),
+        ("DEMO-L44-CL1", "Kontakt lens solüsyonu", 35.0),
+        ("DEMO-L44-SS1", "Deri taklidi yedek", 250.0),
+    )
+
+    for idx, (code, name, price) in enumerate(keyword_demos):
+        line_id = f"MLZ-{claim_id}-L44-{idx + 1:02d}"
+        materials.append(
+            {
+                "malzeme_satiri_id": line_id,
+                "fatura_id": claim_id,
+                "islem_satiri_id": f"ISL-{claim_id}-001",
+                "hasta_id": patient_id,
+                "malzeme_tarihi": service_date,
+                "malzeme_kodu": code,
+                "malzeme_adi": name,
+                "malzeme_tipi": "uzmanlik",
+                "uzmanlik_kategorisi": "wound",
+                "adet": 1,
+                "birim_fiyat_try": price,
+                "fatura_tutari_try": price,
+                "beklenen_odenebilir_tutar_try": price,
+                "pakete_dahil_mi": False,
+                "on_onay_gerekli_mi": False,
+                "beklenen_red_nedeni": "",
+                "beklenen_kural_izi": f"L4.4:{code}",
+                **_default_prose_material_flags(),
+                **_default_specialty_prose_flags(),
+            }
+        )
 
 
 def _ensure_prose_flag_coverage(materials: list[dict[str, Any]]) -> None:
@@ -934,12 +1123,201 @@ class ClaimEpisodeContext:
     proc_specs: list[dict] = field(default_factory=list)
 
 
+def _build_normalized_ek2c1_copay_rates(ek2c1_df: pd.DataFrame) -> dict[str, float]:
+    """EK-2C-1 mandated copay fractions keyed by normalized procedure code."""
+    from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
+
+    rates: dict[str, float] = {}
+    if ek2c1_df.empty:
+        return rates
+    for _, row in ek2c1_df.iterrows():
+        norm = normalize_procedure_code(str(row["procedure_code"]))
+        if norm:
+            rates[norm] = float(row["copay_rate_pct"]) / 100.0
+    return rates
+
+
+def _reconcile_ek2c1_procedure_lines(
+    rows: list[dict[str, Any]],
+    ek2c1_copay_rates: dict[str, float],
+) -> None:
+    """Align EK-2C-1 listed lines: flag on + payable = billed × (1 − mandated copay %)."""
+    from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
+
+    for row in rows:
+        if row.get("pakete_dahil_mi"):
+            code = normalize_procedure_code(str(row.get("islem_kodu") or ""))
+            if code in ek2c1_copay_rates:
+                row["katilim_payi_orani_uygulanabilir_mi"] = False
+                row["katilim_payi_orani"] = None
+            continue
+        code = normalize_procedure_code(str(row.get("islem_kodu") or ""))
+        if not code or code not in ek2c1_copay_rates:
+            continue
+        billed = float(row.get("fatura_tutari_try") or 0)
+        if billed <= 0:
+            continue
+        copay_frac = ek2c1_copay_rates[code]
+        row["katilim_payi_orani_uygulanabilir_mi"] = True
+        row["katilim_payi_orani"] = copay_frac
+        payable = _money(billed * (1 - copay_frac))
+        row["beklenen_odenebilir_tutar_try"] = min(payable, billed)
+
+
+def _ensure_ek2c1_violation_demos(
+    procedure_rows: list[dict[str, Any]],
+    ek2c1_copay_rates: dict[str, float],
+) -> None:
+    """Inject a small fixed set of deliberate EK-2C-1 violations for optimizer demos."""
+    from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
+
+    catalog_lines: list[dict[str, Any]] = []
+    for row in procedure_rows:
+        if row.get("pakete_dahil_mi"):
+            continue
+        code = normalize_procedure_code(str(row.get("islem_kodu") or ""))
+        billed = float(row.get("fatura_tutari_try") or 0)
+        if code in ek2c1_copay_rates and billed > 0:
+            catalog_lines.append(row)
+
+    if len(catalog_lines) < 3:
+        return
+
+    row_rate_1 = catalog_lines[0]
+    billed_1 = float(row_rate_1["fatura_tutari_try"])
+    row_rate_1["katilim_payi_orani_uygulanabilir_mi"] = True
+    row_rate_1["beklenen_odenebilir_tutar_try"] = billed_1
+
+    row_rate_2 = catalog_lines[1]
+    billed_2 = float(row_rate_2["fatura_tutari_try"])
+    code_2 = normalize_procedure_code(str(row_rate_2["islem_kodu"]))
+    mandated_2 = ek2c1_copay_rates[code_2]
+    wrong_frac = mandated_2 + 0.20 if mandated_2 <= 0.60 else mandated_2 - 0.20
+    if abs(wrong_frac - mandated_2) < 0.01:
+        wrong_frac = 0.20
+    row_rate_2["katilim_payi_orani_uygulanabilir_mi"] = True
+    row_rate_2["katilim_payi_orani"] = wrong_frac
+    row_rate_2["beklenen_odenebilir_tutar_try"] = _money(billed_2 * (1 - wrong_frac))
+
+    row_flag = catalog_lines[2]
+    row_flag["katilim_payi_orani_uygulanabilir_mi"] = False
+    row_flag["katilim_payi_orani"] = None
+
+
+def _procedure_row_as_claim_line(row: dict) -> "ProcedureClaimLine":
+    from datetime import date
+    from decimal import Decimal
+
+    from src.bilun.domain.claims.models import ProcedureClaimLine
+
+    return ProcedureClaimLine(
+        procedure_line_id=str(row["islem_satiri_id"]),
+        claim_id=str(row["fatura_id"]),
+        patient_id=str(row["hasta_id"]),
+        episode_id=str(row["basvuru_id"]),
+        procedure_date=date.fromisoformat(str(row["islem_tarihi"])[:10]),
+        procedure_code=str(row["islem_kodu"]),
+        procedure_name=str(row.get("islem_adi") or ""),
+        procedure_category=str(row.get("islem_kategorisi") or "islem"),
+        quantity=int(row.get("adet") or 1),
+        unit_price_try=Decimal(str(row.get("birim_fiyat_try") or 0)),
+        billed_amount_try=Decimal(str(row.get("fatura_tutari_try") or 0)),
+        expected_payable_try=Decimal(str(row.get("beklenen_odenebilir_tutar_try") or 0)),
+        is_package_included=bool(row.get("pakete_dahil_mi")),
+        package_code="",
+        surcharge_applicable=False,
+        copay_rate_applicable=False,
+        denial_reason_expected="",
+        rule_trace_expected="",
+    )
+
+
+def _apply_session_point_billed_factors(
+    rows: list[dict],
+    *,
+    locked_procedure_codes: set[str] | None = None,
+) -> tuple[float, float]:
+    """Scale secondary same-day billed lines per SUT §2.2.2; returns billed/payable deltas."""
+    from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
+    from src.bilun.domain.prose_rules.session_pricing import compute_session_point_factors
+    from src.bilun.domain.prose_rules.session_specialty import detect_cross_specialty_session
+
+    locked = {
+        normalize_procedure_code(code)
+        for code in (locked_procedure_codes or set())
+    }
+
+    old_billed = sum(float(row.get("fatura_tutari_try") or 0) for row in rows)
+    old_payable = sum(float(row.get("beklenen_odenebilir_tutar_try") or 0) for row in rows)
+
+    billable = [
+        row
+        for row in rows
+        if not row.get("pakete_dahil_mi")
+        and float(row.get("fatura_tutari_try") or 0) > 0
+        and normalize_procedure_code(str(row.get("islem_kodu") or "")) not in locked
+    ]
+    if len(billable) < 2:
+        return 0.0, 0.0
+
+    by_date: dict[str, list[dict]] = defaultdict(list)
+    for row in billable:
+        by_date[str(row.get("islem_tarihi") or "")].append(row)
+
+    for session_rows in by_date.values():
+        if len(session_rows) < 2:
+            continue
+
+        codes = [str(row["islem_kodu"]) for row in session_rows]
+        stub_lines = [_procedure_row_as_claim_line(row) for row in session_rows]
+        cross_specialty = detect_cross_specialty_session(stub_lines, None)
+        session = compute_session_point_factors(
+            codes,
+            same_incision=True,
+            cross_specialty=cross_specialty,
+        )
+        if session.rule_id == "single_procedure":
+            continue
+
+        factors = {
+            normalize_procedure_code(factor.procedure_code): factor
+            for factor in session.factors
+        }
+        primary_factor = 1.0
+        for row in session_rows:
+            factor = factors.get(normalize_procedure_code(str(row["islem_kodu"])))
+            if factor is not None and factor.is_primary:
+                primary_factor = factor.point_factor
+                break
+
+        for row in session_rows:
+            factor = factors.get(normalize_procedure_code(str(row["islem_kodu"])))
+            if (
+                factor is None
+                or factor.is_primary
+                or factor.point_factor >= primary_factor
+            ):
+                continue
+
+            billed = float(row["fatura_tutari_try"])
+            payable = float(row["beklenen_odenebilir_tutar_try"])
+            adjusted_billed = _money(billed * factor.point_factor)
+            ratio = adjusted_billed / billed if billed > 0 else 1.0
+            row["fatura_tutari_try"] = adjusted_billed
+            row["beklenen_odenebilir_tutar_try"] = _money(payable * ratio)
+
+    new_billed = sum(float(row.get("fatura_tutari_try") or 0) for row in rows)
+    new_payable = sum(float(row.get("beklenen_odenebilir_tutar_try") or 0) for row in rows)
+    return _money(new_billed - old_billed), _money(new_payable - old_payable)
+
+
 # ── Per-claim line builders ──────────────────────────────────────────
 def _append_procedure_lines_for_claim(
     ctx: ClaimEpisodeContext,
 ) -> tuple[float, float]:
     total_billed = 0.0
     total_payable = 0.0
+    row_start = len(ctx.procedure_rows)
 
     for line_idx, ps in enumerate(ctx.proc_specs, start=1):
         is_package_proc = (ps["category"] == "paket")
@@ -969,17 +1347,25 @@ def _append_procedure_lines_for_claim(
             else:
                 surcharge_rate = round(float(ctx.rng.choice([0.20, 0.30, 0.50, 0.75, 1.00])), 2)
 
-        copay_applicable = ps["code"] in ctx.ek2c1_copay_rates
-        copay_rate = ctx.ek2c1_copay_rates.get(ps["code"]) if copay_applicable else None
-        if not copay_applicable and ctx.visit_type in ("poliklinik", "gunubirlik") and not is_package_proc:
+        from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
+
+        norm_code = normalize_procedure_code(ps["code"])
+        copay_applicable = norm_code in ctx.ek2c1_copay_rates
+        copay_rate = ctx.ek2c1_copay_rates.get(norm_code) if copay_applicable else None
+        if (
+            not copay_applicable
+            and ctx.visit_type in ("poliklinik", "gunubirlik")
+            and not is_package_proc
+        ):
             copay_applicable = True
             copay_rate = float(ctx.rng.choice([0.20, 0.40, 0.50]))
 
+        # SGK payable: copay reduces kurum payi; ilave ucret is patient-side only.
         expected_payable = base_payable
-        if surcharge_rate and surcharge_applicable:
-            expected_payable = _money(expected_payable * (1 + surcharge_rate))
         if copay_rate and copay_applicable:
             expected_payable = _money(expected_payable * (1 - copay_rate))
+        if expected_payable > billed:
+            expected_payable = billed
         if "payable_override" in ps:
             expected_payable = _money(ps["payable_override"])
 
@@ -1037,6 +1423,18 @@ def _append_procedure_lines_for_claim(
 
         total_billed += billed
         total_payable += expected_payable
+
+    claim_rows = ctx.procedure_rows[row_start:]
+    locked_codes = {
+        str(ps["code"]) for ps in ctx.proc_specs if "billed_override" in ps
+    }
+    delta_billed, delta_payable = _apply_session_point_billed_factors(
+        claim_rows,
+        locked_procedure_codes=locked_codes,
+    )
+    _reconcile_ek2c1_procedure_lines(claim_rows, ctx.ek2c1_copay_rates)
+    total_billed = _money(total_billed + delta_billed)
+    total_payable = _money(total_payable + delta_payable)
 
     return total_billed, total_payable
 
@@ -1198,10 +1596,7 @@ def _generate_claims_and_lines(
     if not ek2g_df.empty:
         ek2g_no_surcharge = set(ek2g_df["procedure_code"].astype(str).tolist())
 
-    ek2c1_copay_rates: dict[str, float] = {}
-    if not ek2c1_df.empty:
-        for _, row in ek2c1_df.iterrows():
-            ek2c1_copay_rates[str(row["procedure_code"])] = float(row["copay_rate_pct"]) / 100.0
+    ek2c1_copay_rates = _build_normalized_ek2c1_copay_rates(ek2c1_df)
 
     ek2c_packages: dict[str, pd.DataFrame] = {}
     if not ek2c_df.empty:
@@ -1259,9 +1654,12 @@ def _generate_claims_and_lines(
         package_adequacy_demo = episode.get("_sgk_package_adequacy_demo")
         gazette_repricing_demo = episode.get("_sgk_gazette_repricing_demo")
         medula_playbook_demo = episode.get("_sgk_medula_playbook_demo")
+        session_uplift_demo = episode.get("_sgk_session_uplift_demo")
         scenario_tag = (
             "medula_rejection_1688_molecular_microbiology"
             if medula_playbook_demo
+            else "sgk_session_uplift_cerrahi"
+            if session_uplift_demo
             else "sgk_gazette_repricing_600150"
             if gazette_repricing_demo
             else "sgk_package_adequacy_undercoded"
@@ -1298,6 +1696,7 @@ def _generate_claims_and_lines(
             or package_adequacy_demo
             or gazette_repricing_demo
             or medula_playbook_demo
+            or session_uplift_demo
         ) or rng.random() < 0.15
         facility_tier = (
             "egitim_arastirma"
@@ -1367,6 +1766,13 @@ def _generate_claims_and_lines(
             )
         elif procedure_addon_demo:
             proc_specs = _pick_procedure_addon_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
+        elif session_uplift_demo:
+            proc_specs = _pick_session_uplift_demo_procedures(
                 episode,
                 ek2b_procs=ek2b_procs,
                 ek2c_packages=ek2c_packages,
@@ -1648,6 +2054,14 @@ def build_workbook_tables(
         lab_billing_budget,
     ) = _generate_claims_and_lines(episodes, rng)
     _ensure_prose_flag_coverage(materials)
+    _ensure_specialty_flag_coverage(materials)
+    _inject_specialty_keyword_demo_rows(materials, claims)
+    ek2c1_copay_rates = _build_normalized_ek2c1_copay_rates(_ek2c1())
+    _reconcile_ek2c1_procedure_lines(procedure_rows, ek2c1_copay_rates)
+    _ensure_ek2c1_violation_demos(procedure_rows, ek2c1_copay_rates)
+    _reconcile_claim_header_totals(
+        claims, procedure_rows, materials, drug_claims, expected
+    )
 
     prescriptions = _generate_prescriptions(drug_claims, patients)
     lab_rows = _generate_lab_results(episodes, lab_billing_budget, rng)

@@ -247,11 +247,11 @@ RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
     RuleRegistryEntry(
         rule_id="specialty_materials_prose",
         rule_category="specialty_materials",
-        coverage_status="partial",
+        coverage_status="implemented",
         domain_modules=("src/bilun/domain/prose_rules/specialty_materials.py",),
         sut_section_prefixes=("3.3",),
         keywords=("karşılanmaz", "yara örtü", "deri taklit"),
-        description="§3.3 specialty annex prose engine (L4.4 pilot §3.3.1 wound/dressing)",
+        description="§3.3 specialty annex prose engine (L4.4 — 49 rules, partial corpus)",
     ),
     RuleRegistryEntry(
         rule_id="material_bundling_prose",
