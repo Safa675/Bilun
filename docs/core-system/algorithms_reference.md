@@ -224,9 +224,16 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
 5. If the hospital billed each sub-component separately, the savings are flagged with the exact math: "X CBC subtests across Y encounter(s) should be billed as Y hemograms."
 
 **Non-hemogram tests:**
-The algorithm resolves each test name to its exact SUT gazette price using a lookup cascade: if the test name is an L-code, it uses the 3-tier procedure code lookup; otherwise it checks a pre-built gazette price dictionary, falling back to a default price. These contribute to the normative cost baseline but do not generate individual flags.
+The algorithm resolves each test name to its exact SUT gazette price using a lookup cascade: if the test name is an L-code, it uses the 3-tier procedure code lookup; otherwise it checks a pre-built gazette price dictionary, falling back to a default price.
 
-**Output:** `LabOptimization` with normative cost (what the hospital should have billed), hemogram bundling savings, and a list of specific flagged hemogram bundle tests with SUT codes and savings amounts.
+**§2.2.2.B / §2.2.2.A(5) session fractions (same encounter):**
+1. Tests are grouped by encounter (visit_id preferred, date fallback).
+2. Each encounter builds a billable code list: one collapsed L107020 if any CBC subtests are present, plus distinct non-hemogram L-codes.
+3. When ≥2 billable codes exist, `compute_session_point_factors()` applies EK-2/B itemized secondary factors (30% same-session default).
+4. Normative cost uses session-adjusted list prices; secondary labs billed at full list price are flagged as `session_fraction_overbilling`.
+5. Savings roll into compliance adjustment (`session_fraction_savings`), not SGK uplift.
+
+**Output:** `LabOptimization` with normative cost, hemogram bundling savings, session-fraction savings, and flagged tests (hemogram unbundling + session fraction over-billing).
 
 ### 3.2 Algorithm 2: Copay Savings Calculator
 

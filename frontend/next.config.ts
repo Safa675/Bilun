@@ -3,7 +3,8 @@ import path from "node:path";
 
 const backendOrigin = (process.env.API_PROXY_TARGET ?? "http://localhost:8001").replace(/\/$/, "");
 
-const REPO_ROOT = path.resolve(__dirname, "..", "..");
+// Bilun repo root (frontend/..) — not Documents/ (frontend/../..)
+const REPO_ROOT = path.resolve(__dirname, "..");
 
 const nextConfig: NextConfig = {
   devIndicators: false,

@@ -1,8 +1,8 @@
 # L4.4 Plan: §3.3 Specialty Annex Prose Engine
 
-**Status:** Phase 0–3 complete — **84/84** corpus traced, **49** rules (2026-06-02)  
+**Status:** L4.4 v1 complete — **84/84** corpus traced, **49** rules; Phase 2 integration shipped (2026-06-11)  
 **Fact-check:** `docs/core-system/fact-check/algorithms/L4.4_specialty_materials_ek3.md`  
-**Registry:** `specialty_materials` (catalog **implemented**; prose **missing**)  
+**Registry:** `specialty_materials` (catalog **implemented**); `specialty_materials_prose` (**implemented**, partial corpus)  
 **Sibling:** L1.4 `material_bundling_prose` — §3.1–3.2 only (**59 rules**, Phase 8 complete)
 
 ## Goal
@@ -52,10 +52,11 @@ Largest encode clusters in the 84-row subset: **3.3.3** (33), **3.3.4** (29), **
 
 ### Phase 2 — Domain integration
 
-- [ ] `validate_claim()` fourth pass (after material bundling) — additive hits only
-- [ ] `claim_materials.precheck` — optional `specialty_prose_reviews` + code-first price lookup (L4.4-3)
-- [ ] Claim-line flags for branch-specific conditions (synthetic + loader)
-- [ ] Golden tests + coverage matrix row
+- [x] `validate_claim()` fourth pass (after material bundling) — additive hits only
+- [x] `claim_materials.precheck` — `specialty_prose_violations` + `specialty_coverage_scope`
+- [x] Claim-line flags for branch-specific conditions (synthetic + loader + parquet export)
+- [x] Golden tests + coverage matrix row + UI surfacing (EN/TR)
+- [ ] Code-first price lookup (L4.4-3) — deferred to Phase 4
 
 ### Phase 3 — Thematic batches (mirror L1.4 Phase 8)
 

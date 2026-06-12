@@ -120,7 +120,7 @@
 
 | ID | Issue | Target |
 |----|-------|--------|
-| L3.1-hemo | §2.2.2.B session fractions | Document PARTIAL; defer full engine |
+| L3.1-hemo | §2.2.2.B session fractions | **Done** — `lab.py` + `compute_session_point_factors` (2026-06-11) |
 | ~~P0.2~~ | ~~Specialty +25 auto-detect~~ | **Done** — `session_specialty.py` (2026-06-04) |
 
 ---
