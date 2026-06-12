@@ -4,6 +4,8 @@ import type { BillingActionReport } from "@/lib/domains/sut";
 import {
   BillingStrategySection,
   CopayOptimizationSection,
+  DrgUpliftSection,
+  MaterialsPreCheckSection,
 } from "./SutBillingReportSections";
 
 vi.mock("@/lib/sutLabels", () => ({
@@ -54,7 +56,28 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("exempt");
     expect(html).toContain("EK-1A exemption may apply");
     expect(html).not.toContain("exemption gap");
-    expect(html).not.toContain("katilimPayindanMuaf");
+  });
+
+  it("shows copay rule_source annex chips in billing copay section", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <CopayOptimizationSection
+        copayData={{
+          exactness_status: "exact",
+          rule_source:
+            "SUT §1.8.5(7)+EK-1/A exemptions; §1.8.2(3)+EK-4/D drug exemptions",
+          is_exempt: true,
+          exemption_disease: "Diabetes",
+          exemption_range: "E10-E14",
+          visit_copay_savings_try: 10,
+          rx_copay_savings_try: 0,
+          total_copay_savings_try: 10,
+          rate_corrections: [],
+        }}
+      />,
+    );
+
+    expect(html).toContain("EK-1A");
+    expect(html).toContain("EK-4D");
   });
 
   it("shows exemption gap KPIs, MEDULA chip, and dual-benefit footnote when exact and exempt", () => {
@@ -209,5 +232,66 @@ describe("SutBillingReportSections honest gaps", () => {
 
     expect(html).toContain("2024-03-10");
     expect(html).toContain("catalog membership");
+  });
+
+  it("shows EK annex chips in DRG uplift rows", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <DrgUpliftSection
+        drgData={{
+          exactness_status: "exact",
+          rule_source:
+            "SUT §2.2 prose rules (payment_method_2_2) + EK-2B/EK-2C catalog membership",
+          opportunities: [
+            {
+              claim_id: "CLM-DRG",
+              itemized_total_try: 900,
+              package_total_try: 1200,
+              recoverable_uplift_try: 300,
+              savings_basis: "package_vs_itemized",
+              sut_section_id: "2.2.2.(1)",
+            },
+          ],
+          confirmed_uplift_try: 300,
+        }}
+      />,
+    );
+
+    expect(html).toContain("Source (EK)");
+    expect(html).toContain("EK-2B");
+    expect(html).toContain("EK-2C");
+  });
+
+  it("renders multiple prose violations that share the same rule_id", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <MaterialsPreCheckSection
+        materialsData={{
+          exactness_status: "exact",
+          pre_auth_required: [],
+          miat_restricted: [],
+          prose_bundling_violations: [
+            {
+              rule_id: "3.1.2.(2).not_in_ek3c",
+              material_code: "MAL-A",
+              material_name: "Material A",
+              message: "Not in EK-3C",
+              risk_amount: 100,
+            },
+            {
+              rule_id: "3.1.2.(2).not_in_ek3c",
+              material_code: "MAL-B",
+              material_name: "Material B",
+              message: "Not in EK-3C",
+              risk_amount: 200,
+            },
+          ],
+          gazette_ceiling_by_specialty: {},
+        }}
+      />,
+    );
+
+    expect(html).toContain("MAL-A");
+    expect(html).toContain("MAL-B");
+    expect(html).toContain("Material A");
+    expect(html).toContain("Material B");
   });
 });

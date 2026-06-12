@@ -99,8 +99,9 @@ describe("ClaimSummaryPanel", () => {
     expect(html).toContain("Exact Claim-Line Summary");
     expect(html).toContain("132 TRY");
     expect(html).toContain("520030");
-    expect(html).toContain("Copay Rate");
-    expect(html).toContain("Yes");
+    expect(html).toContain("EK-2C-1 add-on rate");
+    expect(html).toContain("EK-2C-1");
+    expect(html).not.toContain(">Yes<");
   });
 });
 
@@ -147,6 +148,8 @@ describe("DRGPanel exactness rendering", () => {
 
     expect(html).toContain("Missing admission date");
     expect(html).toContain("DRG Package Price:");
+    expect(html).toContain("EK-2C");
+    expect(html).toContain("A3");
     expect(html).not.toContain("Reimbursement Gap:");
     expect(html).toContain("Unavailable");
   });

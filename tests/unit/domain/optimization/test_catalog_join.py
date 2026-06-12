@@ -81,4 +81,5 @@ def test_ek2c1_rate_match_tolerance() -> None:
     if not catalog_copay_rate_applicable("P552001"):
         pytest.skip("P552001 not in local EK-2C-1 parquet")
     assert copay_rate_matches_catalog(Decimal("100"), "P552001") is True
-    assert copay_rate_matches_catalog(Decimal("50"), "P552001") is False
+    assert copay_rate_matches_catalog(Decimal("99.6"), "P552001") is True
+    assert copay_rate_matches_catalog(Decimal("60"), "P552001") is False

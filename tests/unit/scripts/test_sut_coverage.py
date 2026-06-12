@@ -124,3 +124,16 @@ class TestFullCoverageBuild:
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
         assert RULE_BY_ID["material_bundling_prose"].coverage_status == "implemented"
+
+    def test_specialty_materials_prose_implemented_not_false_gap(self, coverage: pd.DataFrame) -> None:
+        prose_json = _REPO_ROOT / "data/gazette/prose_rules/specialty_materials_prose.json"
+        assert prose_json.is_file(), "specialty_materials_prose.json must exist on disk"
+
+        specialty = coverage[coverage["primary_rule_id"] == "specialty_materials_prose"]
+        assert not specialty.empty
+        assert (specialty["coverage_status"] == "implemented").all()
+        assert specialty["has_algorithmic_gap"].sum() == 0
+
+        from scripts.sut.prose.rule_registry import RULE_BY_ID
+
+        assert RULE_BY_ID["specialty_materials_prose"].coverage_status == "implemented"

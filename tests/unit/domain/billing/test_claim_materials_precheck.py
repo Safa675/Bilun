@@ -19,6 +19,7 @@ def _material_line(
     is_bundled: bool = False,
     requires_pre_auth: bool = False,
     billed: str = "100",
+    material_name: str = "Test material",
 ) -> "MaterialClaimLine":
     from src.bilun.domain.claims.models import MaterialClaimLine
 
@@ -29,7 +30,7 @@ def _material_line(
         patient_id="PT1",
         material_date=material_date,
         material_code=code,
-        material_name="Test material",
+        material_name=material_name,
         material_type="ortez",
         specialty_category="ortho",
         quantity=1,
@@ -71,6 +72,27 @@ def test_bundled_separate_billing_not_miat_only_bucket(monkeypatch: pytest.Monke
     assert result.bundled_separate_billing[0]["sut_code"] == "EK3B99"
     assert result.miat_restricted == []
     assert result.miat_interval_violations == []
+
+
+def test_specialty_prose_violation_on_wound_keyword(monkeypatch: pytest.MonkeyPatch) -> None:
+    from src.bilun.domain.billing import claim_materials as cm
+
+    monkeypatch.setattr(cm, "_get_ek3c1_preauth", lambda: [])
+    monkeypatch.setattr(cm, "_get_ek3c2_miat", lambda: [])
+    monkeypatch.setattr(cm, "check_material_bundling_for_context", lambda _ctx: [])
+
+    line = _material_line(
+        code="DEMO-W1",
+        billed="85",
+        material_name="Transparan film yara örtüsü",
+    )
+    result = cm.precheck_materials_from_claims(_ctx(line))
+
+    assert len(result.specialty_prose_violations) == 1
+    assert result.specialty_prose_violations[0]["rule_id"] == (
+        "3.3.1.(10).wound_dressing_cover_no_pay"
+    )
+    assert result.specialty_coverage_scope["prose_engine_status"] == "implemented"
 
 
 def test_preauth_note_uses_tibbi_uygunluk(monkeypatch: pytest.MonkeyPatch) -> None:

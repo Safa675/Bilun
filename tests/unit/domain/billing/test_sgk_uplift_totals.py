@@ -23,12 +23,16 @@ pytestmark = pytest.mark.unit
 def test_lab_savings_are_compliance_not_sgk_uplift() -> None:
     report = BillingActionReport(
         patient_id="P1",
-        lab=LabOptimization(hemogram_bundling_savings=42.0, exactness_status="exact"),
+        lab=LabOptimization(
+            hemogram_bundling_savings=42.0,
+            session_fraction_savings=8.0,
+            exactness_status="exact",
+        ),
         billing_strategy=BillingStrategyRecommendation(exactness_status="exact"),
         session_uplift=SessionPricingUplift(exactness_status="exact"),
     )
     _finalize_report_totals(report)
-    assert report.compliance_adjustment_try == 42.0
+    assert report.compliance_adjustment_try == 50.0
     assert report.sgk_uplift_try == 0.0
     assert report.total_recoverable_try == 0.0
 

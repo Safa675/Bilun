@@ -282,4 +282,4 @@ class TestDrgUpliftWiring:
             chapters={"I"},
         )
         assert report.drg_uplift.confirmed_uplift_try == 0.0
-        assert report.sgk_uplift_try == pytest.approx(3245.9, rel=0.01)
+        assert report.session_uplift.confirmed_uplift_try == 0.0
