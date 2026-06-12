@@ -36,7 +36,10 @@ import {
 } from "@/lib/billingReportFields";
 import { theme } from "@/lib/theme";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
+import { EkAnnexChips, RuleSourceAttribution } from "@/components/sut/RegulatorySourceChips";
+import { resolveBillingEkAnnexLabels } from "@/lib/sutRegulatorySources";
 import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
+import { SpecialtyProseScopeNotice } from "@/components/sut/SpecialtyProseScopeNotice";
 import { Chip, DataTable, Eyebrow, Section, Stat, Surface } from "@/components/primitives";
 import { getExemptionCategories } from "@/lib/copayExemption";
 import {
@@ -70,6 +73,20 @@ export function StatusChip({ label, color }: { label: string; color: string }) {
       {label}
     </span>
   );
+}
+
+function BillingRegulatorySourceCell({
+  ruleSource,
+  rowCatalog,
+}: {
+  ruleSource?: string | null;
+  rowCatalog?: string | null;
+}) {
+  const labels = resolveBillingEkAnnexLabels(ruleSource, rowCatalog);
+  if (labels.length === 0) {
+    return <span className="text-[var(--text-muted)]">—</span>;
+  }
+  return <EkAnnexChips labels={labels} />;
 }
 
 type ExactnessBlock = Parameters<typeof getUnavailableMessage>[0];
@@ -285,7 +302,8 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
     return null;
   }
 
-  const combinedSavings = labData.hemogram_bundling_savings;
+  const combinedSavings =
+    labData.hemogram_bundling_savings + (labData.session_fraction_savings ?? 0);
 
   return (
     <BillingSectionShell title={t("billing.lab.title")} total={fmtTRY2(combinedSavings)}>
@@ -311,7 +329,9 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
                   color={
                     test.flag_type === "hemogram_unbundling"
                       ? "#D97706"
-                      : "#B91C1C"
+                      : test.flag_type === "session_fraction_overbilling"
+                        ? "#B45309"
+                        : "#B91C1C"
                   }
                 />
               </td>
@@ -379,6 +399,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
               {copayData.exemption_disease} ({copayData.exemption_range})
             </span>
           )}
+          <RuleSourceAttribution ruleSource={copayData.rule_source} />
         </div>
 
         {copayExact && (
@@ -805,6 +826,7 @@ export function MaterialUpliftSection({
             <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
               {t("billing.materialUplift.uplift")}
             </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.common.regulatorySource")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.materialUplift.sutSection")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.materialUplift.note")}</th>
           </tr>
@@ -838,6 +860,9 @@ export function MaterialUpliftSection({
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>
+                <BillingRegulatorySourceCell ruleSource={materialData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
               <td>{item.detail ?? "—"}</td>
@@ -1005,6 +1030,7 @@ export function ProcedureAddonUpliftSection({
             <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
               {t("billing.procedureAddonUplift.uplift")}
             </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.common.regulatorySource")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureAddonUplift.sutSection")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.procedureAddonUplift.note")}</th>
           </tr>
@@ -1044,6 +1070,9 @@ export function ProcedureAddonUpliftSection({
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>
+                <BillingRegulatorySourceCell ruleSource={addonData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
               <td>{item.detail ?? "—"}</td>
@@ -1106,6 +1135,7 @@ export function GazetteRepricingSection({
             <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
               {t("billing.gazetteRepricing.repricingDelta")}
             </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.common.regulatorySource")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.gazetteRepricing.note")}</th>
           </tr>
         </thead>
@@ -1136,6 +1166,12 @@ export function GazetteRepricingSection({
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2OrUnavailable(item.recoverable_repricing_try ?? null)}
+              </td>
+              <td>
+                <BillingRegulatorySourceCell
+                  ruleSource={repricingData.rule_source}
+                  rowCatalog={item.catalog}
+                />
               </td>
               <td>{item.detail ?? "—"}</td>
             </tr>
@@ -1280,6 +1316,7 @@ export function DrgPackageAdequacyReviewSection({
             <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
               {t("billing.packageAdequacyReview.reviewDelta")}
             </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.common.regulatorySource")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.packageAdequacyReview.note")}</th>
           </tr>
         </thead>
@@ -1315,6 +1352,9 @@ export function DrgPackageAdequacyReviewSection({
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>
+                <BillingRegulatorySourceCell ruleSource={reviewData.rule_source} />
               </td>
               <td>{item.detail ?? "—"}</td>
             </tr>
@@ -1374,6 +1414,7 @@ export function CareSettingReviewSection({
             <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
               {t("billing.careSettingReview.uplift")}
             </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.common.regulatorySource")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.careSettingReview.sutSection")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.careSettingReview.note")}</th>
           </tr>
@@ -1415,6 +1456,9 @@ export function CareSettingReviewSection({
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>
+                <BillingRegulatorySourceCell ruleSource={reviewData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
               <td>{item.detail ?? "—"}</td>
@@ -1474,6 +1518,7 @@ export function BloodComponentUpliftSection({
             <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
               {t("billing.bloodUplift.uplift")}
             </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.common.regulatorySource")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.bloodUplift.sutSection")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.bloodUplift.note")}</th>
           </tr>
@@ -1505,6 +1550,9 @@ export function BloodComponentUpliftSection({
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+              </td>
+              <td>
+                <BillingRegulatorySourceCell ruleSource={bloodData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
               <td>{item.detail ?? "—"}</td>
@@ -1565,6 +1613,7 @@ export function DrgUpliftSection({
               {t("billing.drgUplift.uplift")}
             </th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.drgUplift.basis")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.common.regulatorySource")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.drgUplift.sutSection")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.drgUplift.note")}</th>
           </tr>
@@ -1583,6 +1632,9 @@ export function DrgUpliftSection({
                 {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
               </td>
               <td>{item.savings_basis ?? "—"}</td>
+              <td>
+                <BillingRegulatorySourceCell ruleSource={drgData.rule_source} />
+              </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
               <td>{item.detail ?? "—"}</td>
             </tr>
@@ -1656,6 +1708,7 @@ export function SessionUpliftSection({
             <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
               {t("billing.sessionUplift.uplift")}
             </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.common.regulatorySource")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.sessionUplift.sutSection")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.sessionUplift.note")}</th>
           </tr>
@@ -1692,6 +1745,9 @@ export function SessionUpliftSection({
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
               </td>
+              <td>
+                <BillingRegulatorySourceCell ruleSource={sessionData.rule_source} />
+              </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
               <td>{item.detail ?? "—"}</td>
             </tr>
@@ -1709,12 +1765,14 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
   const intervalViolations = materialsData.miat_interval_violations ?? [];
   const bundledLines = materialsData.bundled_separate_billing ?? [];
   const proseViolations = materialsData.prose_bundling_violations ?? [];
+  const specialtyProseViolations = materialsData.specialty_prose_violations ?? [];
   const hasExactListData =
     materialsData.pre_auth_required.length > 0 ||
     materialsData.miat_restricted.length > 0 ||
     intervalViolations.length > 0 ||
     bundledLines.length > 0 ||
-    proseViolations.length > 0;
+    proseViolations.length > 0 ||
+    specialtyProseViolations.length > 0;
   const hasAnyData = hasExactListData || ceilingEntries.length > 0;
 
   if (!hasAnyData && materialsExact) {
@@ -1725,6 +1783,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
     <BillingSectionShell title={t("billing.materials.title")}>
       <div className="space-y-4">
         <MaterialBundlingScopeNotice scope={materialsData.coverage_scope} compact />
+        <SpecialtyProseScopeNotice scope={materialsData.specialty_coverage_scope} compact />
         {!materialsExact && (
           <ExactnessNotice block={materialsData} fallback={t("billing.materials.unavailable")} />
         )}
@@ -1860,7 +1919,39 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
               </thead>
               <tbody>
                 {proseViolations.map((hit, index) => (
-                  <tr key={`prose-${hit.rule_id ?? index}`}>
+                  <tr key={`prose-${hit.material_code ?? "row"}-${hit.rule_id ?? "rule"}-${index}`}>
+                    <td className="font-mono text-xs">{hit.material_code || "—"}</td>
+                    <td>{hit.material_name || "—"}</td>
+                    <td className="num-col tabular-nums text-right">
+                      {hit.risk_amount != null ? fmtTRY2(hit.risk_amount) : "—"}
+                    </td>
+                    <td>{hit.message || hit.rule_id || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </TableWrap>
+          </div>
+        )}
+
+        {specialtyProseViolations.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#7C3AED" }}>
+              {t("billing.materials.specialtyProse")}
+            </p>
+            <TableWrap minWidth={820}>
+              <thead>
+                <tr>
+                  <th>{t("billing.materials.sutCode")}</th>
+                  <th>{t("billing.materials.material")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.materials.gazettePrice")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {specialtyProseViolations.map((hit, index) => (
+                  <tr
+                    key={`specialty-prose-${hit.material_code ?? "row"}-${hit.rule_id ?? "rule"}-${index}`}
+                  >
                     <td className="font-mono text-xs">{hit.material_code || "—"}</td>
                     <td>{hit.material_name || "—"}</td>
                     <td className="num-col tabular-nums text-right">

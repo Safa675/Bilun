@@ -11,7 +11,9 @@ const labels = {
       "unavailable": "Unavailable"
     },
     "action": {
-      "noActionNeeded": "No action needed"
+      "noActionNeeded": "No action needed",
+      "doNotChargeSurcharge": "Do not charge surcharge",
+      "applyEk2c1ListedRate": "Apply EK-2C-1 listed rate"
     },
     "riskBucket": {
       "atRisk": "At risk",
@@ -40,7 +42,8 @@ const labels = {
       "strategy": "Billing strategy"
     },
     "flagType": {
-      "hemogram_unbundling": "Hemogram unbundling"
+      "hemogram_unbundling": "Hemogram unbundling",
+      "session_fraction_overbilling": "Session fraction over-billing"
     },
     "paymentMethod": {
       "package": "Package",

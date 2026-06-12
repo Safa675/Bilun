@@ -69,6 +69,12 @@ const sections = {
     potentialSaving: "Potential saving: {amount}",
     validatedIn: "Validated in {ms}ms · {summary}",
   },
+  specialtyProseScope: {
+    bodyImplemented:
+      "Coverage v{effectiveDate}: §3.3 specialty annex prose engine ({proseRules} rules — wound/optical/orthobiologic branches). Full §3.3 long tail remains open.",
+    medulaNote:
+      "Pre-MEDULA §3.3 compliance flags (MEDULA additive). Not guaranteed SGK recovery.",
+  },
   materialBundlingScope: {
     title: "Material bundling scope",
     body: "Checks use annex lists only (EK-3B-1: {ek3b1} bundled categories, EK-3B-2: {ek3b2} exclusion rows). Full SUT §3.1–3.2 prose bundling and payment rules are not encoded in this release.",

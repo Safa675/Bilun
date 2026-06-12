@@ -43,7 +43,7 @@ const patient = {
     "chipClear": "Temiz",
     "topMatchDetail": "ICD-10 {icd10} · Tebliğ aralığı {range}",
     "surchargeTitle": "Fark ücreti maruziyeti",
-    "copayRateTitle": "Katılım payı oranı maruziyeti",
+    "copayRateTitle": "EK-2C-1 katılım payı oranı",
     "drgTitle": "DRG paket incelemesi",
     "applicableProcedures": "Uygulanabilir işlemler",
     "exposureRate": "Maruziyet oranı",
@@ -54,7 +54,7 @@ const patient = {
     "riskNone": "Risk işaretlenmedi",
     "reviewPackage": "Paket uygunluğunu incele",
     "surchargeFallback": "Kesin faturalandırılmış işlem satırları olmadan fark ücreti maruziyeti kullanılamaz.",
-    "copayRateFallback": "Kesin faturalandırılmış işlem satırları olmadan katılım payı oranı maruziyeti kullanılamaz.",
+    "copayRateFallback": "Kesin faturalandırılmış işlem satırları olmadan EK-2C-1 katılım payı oranı kullanılamaz.",
     "drgFallback": "Kesin kalemlendirilmiş talep satırları olmadan DRG paket ayrıştırma incelemesi kullanılamaz."
   },
   "section": {
@@ -102,7 +102,7 @@ const patient = {
         "procedure": "İşlem",
         "billed": "Faturalanan",
         "surcharge": "Fark ücreti",
-        "copayRate": "Katılım payı oranı"
+        "copayRate": "EK-2C-1 katılım payı oranı"
       }
     },
     "drgPanel": {

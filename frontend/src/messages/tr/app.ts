@@ -39,7 +39,7 @@ const app = {
         "title": "Kesinlik öncelikli optimizasyon",
         "description": "Kullanılamayan optimizasyon yüzeyleri, kesin faturalandırılmış girdiler olana kadar düşük risk veya sıfır etki olarak gösterilmez.",
         "detail1": "Katılım payı muafiyetleri kesin olduklarında uygulanabilir kalır.",
-        "detail2": "Ek ücret, katılım payı oranı ve DRG ayrıştırma bulguları eksik kesin girdilere saygı gösterir.",
+        "detail2": "Fark ücreti (EK-2G), EK-2C-1 katılım payı oranı ve DRG ayrıştırma bulguları eksik kesin girdilere saygı gösterir.",
         "detail3": "Hasta çalışma alanı ve optimizör aynı kesinlik semantiğini paylaşır.",
         "feedsInto": "Optimizör uyarıları ve gelir kurtarma incelemesi"
       },

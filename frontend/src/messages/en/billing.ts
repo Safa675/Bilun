@@ -1,4 +1,7 @@
 const billing = {
+  "common": {
+    "regulatorySource": "Source (EK)",
+  },
   "summary": {
     "title": "Patient billing report",
     "description": "Normative SUT rule review across labs, drugs, copay policy, billing strategy, and materials controls.",
@@ -255,6 +258,7 @@ const billing = {
     "bundledSeparate": "Bundled — billed separately (EK-3B-1)",
     "scopeNotice": "Bundling flags use the EK-3B-1 catalog (54 items) only — not full SUT §3.1–3.2 prose.",
     "proseBundling": "§3.1 prose bundling (partial engine)",
+    "specialtyProse": "§3.3 specialty annex prose (L4.4)",
     "sutCode": "SUT code",
     "material": "Material",
     "gazettePrice": "Gazette price",
@@ -271,13 +275,13 @@ const billing = {
     "noWaiver": "No waiver grounds matched",
     "surchargeEyebrow": "Surcharge compliance",
     "flags": "{count} flags",
-    "copayRateEyebrow": "Copay rate compliance",
+    "copayRateEyebrow": "EK-2C-1 copay rate compliance",
     "cappedProcedures": "{count} capped procedures",
     "noRateCaps": "No rate caps applicable",
     "drgEyebrow": "DRG unbundling risk",
     "potentialSavings": "Potential savings: {amount}",
     "surchargeUnavailable": "Surcharge compliance needs exact billed procedure codes and procedure dates.",
-    "copayRateUnavailable": "Copay rate compliance needs exact billed procedure codes and procedure dates.",
+    "copayRateUnavailable": "EK-2C-1 copay rate compliance needs exact billed procedure codes and procedure dates.",
     "drgUnavailable": "DRG unbundling risk needs exact itemized billed procedure lines and package eligibility context.",
     "drgHeuristicFootnote": "Includes heuristic amounts: package-included claim flags and itemized-vs-package comparison — not audited SGK recovery.",
     "drgSourcedSavings": "Prose-rule violations (sourced): {amount}"

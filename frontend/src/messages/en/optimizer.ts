@@ -1,12 +1,12 @@
 const optimizer = {
   tabs: {
     complianceDescription:
-      "Per-patient actionable alerts combining exact copayment exemption findings (EK-1A) with explicit unavailable states for optimization checks that still require exact claim-line inputs.",
+      "Per-patient compliance alerts: copay exemptions (EK-1A and other grounds), surcharge prohibitions (EK-2G, §1.9.3), and the EK-2C-1 copay rate list. Checks that need exact procedure lines show an explicit Unavailable state.",
     revenueDescription:
       "Cohort-level recovery review dashboard for active billing algorithms, plus availability notices for optimization checks that remain blocked on exact claim-line data.",
     exemptions: "Copay Exemptions",
     surcharge: "Surcharge Compliance",
-    copayRates: "Copay Rate Compliance",
+    copayRates: "EK-2C-1 Copay Rate Compliance",
     categoriesAria: "Compliance alert categories",
   },
   filters: {
@@ -33,7 +33,7 @@ const optimizer = {
   categories: {
     exemptions: "Copay Exemptions",
     surcharge: "Surcharge Compliance",
-    copay_rates: "Copay Rate Compliance",
+    copay_rates: "EK-2C-1 Copay Rate Compliance",
   },
   errors: {
     loadAlerts: "Failed to load patient alerts",
@@ -77,13 +77,13 @@ const optimizer = {
     cohortFilterRevenueHint:
       "Recoverable total and patient count reflect the active filters. Category savings charts still use full-cohort aggregates until filtered APIs are available.",
     copayComposableWithProfiles:
-      "Composable copay waiver: EK-1A ({ek1aCount} chronic ranges) plus visit-type and patient-status rules when claim profiles are present. EK-2C-1 rate caps are evaluated separately.",
+      "Composable copay waiver: EK-1A ({ek1aCount} chronic ranges) plus visit-type and patient-status rules when claim profiles are present. The EK-2C-1 copay rate list (§2.2) is evaluated separately.",
     copayEk1aOnly:
       "Cross-references patient ICD-10 diagnoses against {ek1aCount} chronic disease exemption ranges from gazette annex EK-1A. Rebuild the analytics cache to load status and visit-type exemption fields.",
     surchargeExact:
       "Uses exact dated procedure claim lines and explicit surcharge rule flags from the active SUT runtime inputs.",
     copayRateExact:
-      "Uses exact dated procedure claim lines, explicit copay-rate rule flags, and billed/payable amounts from the active SUT runtime inputs.",
+      "Uses exact dated claim lines for EK-2C-1 listed procedures (§2.2); compares implied copay % (100 − SGK payable/billed) to the gazette mandated rate — not §1.8 general copay.",
     revenuePartialExact:
       "Revenue recovery contains exact category-level findings, but aggregate totals are mixed because some billing sections still require exact inputs.",
     revenueUnavailable:
@@ -100,7 +100,7 @@ const optimizer = {
     surchargeCompliance:
       "Surcharge compliance is unavailable until exact billed procedure codes and procedure dates are present in the SUT claim inputs.",
     copayRateCompliance:
-      "Copay rate compliance is unavailable until exact billed procedure codes and procedure dates are present in the SUT claim inputs.",
+      "EK-2C-1 copay rate compliance is unavailable until exact billed procedure codes and procedure dates are present in the SUT claim inputs.",
     exactProcedureCodesRequired: "Exact procedure codes required",
     drgUnbundling:
       "DRG unbundling risk is unavailable until exact itemized billed procedure lines and package eligibility context are present in the SUT claim inputs.",
@@ -122,7 +122,7 @@ const optimizer = {
     clearPatients: "Clear Patients",
     needExactClaimLines: "Need exact claim lines",
     noSurchargeFlags: "No surcharge flags",
-    noCopayRateFlags: "No copay-rate flags",
+    noCopayRateFlags: "No EK-2C-1 procedures",
     patientsFlagged: "Patients Flagged",
     noExactSurchargeFindings: "No exact surcharge findings yet",
     noExactRateFindings: "No exact rate findings yet",
@@ -204,7 +204,15 @@ const optimizer = {
     recommendedAction: "Recommended Action",
     noSurchargeRules: "No-Surcharge Rules",
     topProcedure: "Top Procedure",
-    rateCappedProcs: "Rate-Capped Procs",
+    procedureCode: "Procedure Code",
+    procedureName: "Procedure Name",
+    regulatorySource: "Source",
+    sutSection: "SUT",
+    billedRate: "Observed copay rate",
+    mandatedRate: "Gazette mandated rate",
+    surchargeProcedureDetails: "No-surcharge procedures (EK-2G)",
+    copayRateProcedureDetails: "EK-2C-1 listed procedures",
+    rateCappedProcs: "EK-2C-1 Procs",
     meanRate: "Mean Rate",
     ruleCalculated: "Rule-calculated",
     priority: "Priority",

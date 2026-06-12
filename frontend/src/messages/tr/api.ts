@@ -49,7 +49,7 @@ const api = {
     surchargeExposureUnavailable:
       "Fark ücreti uyumu; faturalandırılmış işlem kodları ve işlem tarihleri gibi kesin girdiler gerektirir. Bunlar aktif SUT çalışma zamanı girdilerinde mevcut değil.",
     copayRateExposureUnavailable:
-      "Katılım payı oranı uyumu; faturalandırılmış işlem kodları ve talep tarihleri gibi kesin girdiler gerektirir. Bunlar aktif SUT çalışma zamanı girdilerinde mevcut değil.",
+      "EK-2C-1 katılım payı oranı uyumu; faturalandırılmış işlem kodları ve talep tarihleri gibi kesin girdiler gerektirir. Bunlar aktif SUT çalışma zamanı girdilerinde mevcut değil.",
     drgUnbundlingUnavailable:
       "DRG paket ayrıştırma riski; kesin faturalandırılmış işlem satırları, paket uygunluk bağlamı ve tarihli paket fiyatlandırması gerektirir. Bunlar aktif SUT çalışma zamanı girdilerinde mevcut değil.",
     missingExactnessMetadata: "BILUN yükünde kesinlik meta verisi sağlanmadı.",
@@ -71,13 +71,13 @@ const api = {
     surchargeExposureExact:
       "Fark ücreti yasakları için EK-2/G (ek2g_no_surcharge.parquet) ile birleştirilmiş kesin tarihli işlem talep satırlarını kullanır; n_applicable_procedures katalog yasaklı satırları sayar (ilave ücret alınamaz). Talep satırı bayrakları kataloga karşı doğrulanır.",
     copayRateExposureExact:
-      "Zorunlu katılım payı oranı işlemleri için EK-2C-1 (ek2c1_copay_rates.parquet) ile birleştirilmiş kesin tarihli işlem talep satırlarını kullanır; talep bayraklarını ve faturalanan/ödenecek oranını katalog oranıyla karşılaştırır.",
+      "EK-2C-1 listedeki işlemler için (ek2c1_copay_rates.parquet) kesin tarihli talep satırlarını kullanır; örtük katılım payı oranını (100 − SGK payı) tebliğdeki oranla karşılaştırır (§2.2; §1.8 genel katılım payı değil).",
     copayExemptionsCohort:
-      "Birleştirilebilir katılım payı muafiyeti: EK-1A kronik ICD-10 aralıkları; hasta profilleri ve talep ziyaret türleri mevcut olduğunda statü/ziyaret kuralları da eklenir. EK-2C-1 katılım payı tavanları ayrı değerlendirilir.",
+      "Birleştirilebilir katılım payı muafiyeti: EK-1A kronik ICD-10 aralıkları; hasta profilleri ve talep ziyaret türleri mevcut olduğunda statü/ziyaret kuralları da eklenir. EK-2C-1 katılım payı oranı listesi ayrı değerlendirilir.",
     surchargeExposureCohortExact:
       "Aktif kohort genelinde talep satırlarından toplanan kesin fark ücreti uygun işlem bayrakları.",
     copayRateExposureCohortExact:
-      "Aktif kohort genelinde talep satırlarından toplanan kesin katılım payı oranı uygun işlem bayrakları.",
+      "Aktif kohort genelinde talep satırlarından toplanan kesin EK-2C-1 listesi işlem bayrakları.",
     drgUnbundlingPatient:
       "SUT §2.2 metin kurallarıyla kesin talep satırlarını kullanır: pakete dahil paketleme, ödeme yöntemi uyumu (EK-2/B ve EK-2/C), aynı seans puan faktörleri (§2.2.2.B) ve kan bileşeni kısmi faturalandırma sınırları.",
     drgUnbundlingCohort:

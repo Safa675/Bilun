@@ -18,13 +18,25 @@ import {
 } from "@/lib/api/sut";
 import { formatExemptionCategory } from "@/lib/copayExemption";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
+import {
+  PatientExemptionRuleSourceAttribution,
+  RegulatorySourceChips,
+  RuleSourceAttribution,
+} from "@/components/sut/RegulatorySourceChips";
 import type {
+  CopayRateProcedure,
   PatientAlertsCategory,
   PatientAlertsStatus,
   PatientAlertsResponse,
+  PatientAlertRow,
   CohortRecoverySummary,
   OptimizationSummary,
+  SurchargeRule,
 } from "@/lib/domains/sut";
+import {
+  COPAY_RATE_REGULATORY_SOURCE,
+  SURCHARGE_REGULATORY_SOURCE,
+} from "@/lib/sutRegulatorySources";
 import {
   ALERT_PAGE_SIZE,
   buildPatientAlertsQuery,
@@ -47,8 +59,8 @@ import { useCohortFilter } from "@/hooks/useCohortFilter";
 import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
 import {
-  getSutActionLabel,
   getSutAlertBadgeLabel,
+  getSutRecommendedActionLabel,
 } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
 import { translate } from "@/lib/i18n/translate";
@@ -83,6 +95,55 @@ import {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const ACCENT = theme.accent;
+
+function fmtPctPoints(value: number | null | undefined, emDash: string): string {
+  if (value == null || Number.isNaN(value)) {
+    return emDash;
+  }
+  return `${fmtNum(value)}%`;
+}
+
+type SurchargeProcedureRow = {
+  patient: PatientAlertRow;
+  rule: SurchargeRule | null;
+};
+
+function flattenSurchargeProcedureRows(patients: PatientAlertRow[]): SurchargeProcedureRow[] {
+  const rows: SurchargeProcedureRow[] = [];
+  for (const patient of patients) {
+    if (!isExactOutput(patient.surcharge_exposure)) {
+      rows.push({ patient, rule: null });
+      continue;
+    }
+    const rules = patient.surcharge_exposure.top_rules ?? [];
+    if (rules.length === 0) {
+      rows.push({ patient, rule: null });
+      continue;
+    }
+    for (const rule of rules) {
+      rows.push({ patient, rule });
+    }
+  }
+  return rows;
+}
+
+type CopayRateProcedureRow = {
+  patient: PatientAlertRow;
+  procedure: CopayRateProcedure;
+};
+
+function flattenCopayRateProcedureRows(patients: PatientAlertRow[]): CopayRateProcedureRow[] {
+  const rows: CopayRateProcedureRow[] = [];
+  for (const patient of patients) {
+    if (!isExactOutput(patient.copay_rate_exposure)) {
+      continue;
+    }
+    for (const procedure of patient.copay_rate_exposure.top_procedures ?? []) {
+      rows.push({ patient, procedure });
+    }
+  }
+  return rows;
+}
 
 const PIE_COLORS = [theme.textPrimary, theme.gold, theme.warning, theme.danger];
 
@@ -246,10 +307,13 @@ function AlertBadge({ label, color }: { label: string; color: string }) {
 }
 
 function ActionBadge({ action }: { action: string | null }) {
-  if (!action) return <span className="text-xs" style={{ color: "#A1A1AA" }}>{getSutActionLabel("noActionNeeded")}</span>;
+  const label = getSutRecommendedActionLabel(action);
+  if (!action) {
+    return <span className="text-xs" style={{ color: "#A1A1AA" }}>{label}</span>;
+  }
   return (
     <span className="text-xs font-medium" style={{ color: theme.accent }}>
-      {action}
+      {label}
     </span>
   );
 }
@@ -348,17 +412,27 @@ function CopayExemptionAlerts({
 
   return (
     <div className="space-y-5">
-      <MethodologyBadge
-        text={
-          cohortCopay?.exemption_by_category?.length
-            ? t("optimizer.methodology.copayComposableWithProfiles", {
-                ek1aCount: regulatory.ek1a_exemption_count,
-              })
-            : t("optimizer.methodology.copayEk1aOnly", {
-                ek1aCount: regulatory.ek1a_exemption_count,
-              })
-        }
-      />
+      <div className="space-y-2">
+        <MethodologyBadge
+          text={
+            cohortCopay?.exemption_by_category?.length
+              ? t("optimizer.methodology.copayComposableWithProfiles", {
+                  ek1aCount: regulatory.ek1a_exemption_count,
+                })
+              : t("optimizer.methodology.copayEk1aOnly", {
+                  ek1aCount: regulatory.ek1a_exemption_count,
+                })
+          }
+        />
+        {cohortCopay?.rule_source ? (
+          <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
+            <span className="font-semibold uppercase tracking-wider text-[var(--gold)]">
+              {t("optimizer.tables.regulatorySource")}
+            </span>
+            <RuleSourceAttribution ruleSource={cohortCopay.rule_source} />
+          </div>
+        ) : null}
+      </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
@@ -444,7 +518,10 @@ function CopayExemptionAlerts({
                 </td>
                 <td>
                   {p.copay_exemption.exempt ? (
-                    <ExemptionBasisChips copay={p.copay_exemption} max={3} />
+                    <span className="inline-flex flex-col items-start gap-1">
+                      <ExemptionBasisChips copay={p.copay_exemption} max={3} />
+                      <PatientExemptionRuleSourceAttribution copay={p.copay_exemption} />
+                    </span>
                   ) : (
                     <span className="text-[var(--text-muted)]">{t("optimizer.emDash")}</span>
                   )}
@@ -529,7 +606,7 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
       </div>
 
       <Section
-        title={t("optimizer.sections.patientAlerts")}
+        title={t("optimizer.tables.surchargeProcedureDetails")}
         trailing={<Chip variant="outline">{getAlertStatusLabel(data.query.status)}</Chip>}
         padding="lg"
         className="[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wider [&_h2]:text-[var(--gold)]"
@@ -544,44 +621,51 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
           })}
         </p>
 
-        <DataTable minWidth={720} className="max-h-[420px] overflow-y-auto text-xs">
+        <DataTable minWidth={880} className="max-h-[420px] overflow-y-auto text-xs">
           <thead>
             <tr>
               <th>{t("optimizer.tables.patientId")}</th>
               <th className="text-center">{t("optimizer.tables.status")}</th>
-              <th className="num-col">{t("optimizer.tables.noSurchargeRules")}</th>
-              <th>{t("optimizer.tables.topProcedure")}</th>
+              <th>{t("optimizer.tables.procedureCode")}</th>
+              <th>{t("optimizer.tables.procedureName")}</th>
+              <th>{t("optimizer.tables.regulatorySource")}</th>
               <th>{t("optimizer.tables.recommendedAction")}</th>
             </tr>
           </thead>
           <tbody>
-            {patients.map((p) => (
-              <tr key={p.patient_id}>
-                <td className="font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
+            {flattenSurchargeProcedureRows(patients).map(({ patient, rule }, index) => (
+              <tr key={`${patient.patient_id}-${rule?.code ?? "none"}-${index}`}>
+                <td className="font-mono" style={{ color: ACCENT }}>{patient.patient_id}</td>
                 <td className="text-center">
-                  {!isExactOutput(p.surcharge_exposure)
+                  {!isExactOutput(patient.surcharge_exposure)
                     ? <AlertBadge label={getSutAlertBadgeLabel("unavailable")} color={theme.textMuted} />
-                    : (p.surcharge_exposure.n_applicable ?? 0) > 0
+                    : (patient.surcharge_exposure.n_applicable ?? 0) > 0
                     ? <AlertBadge label={getSutAlertBadgeLabel("flagged")} color="#B45309" />
                     : <AlertBadge label={getSutAlertBadgeLabel("clear")} color={theme.accent} />
                   }
                 </td>
-                <td className="num-col font-bold" style={{ color: isExactOutput(p.surcharge_exposure) && (p.surcharge_exposure.n_applicable ?? 0) > 0 ? "#B45309" : "#A1A1AA" }}>
-                  {p.surcharge_exposure.n_applicable !== null ? fmtNum(p.surcharge_exposure.n_applicable) : t("optimizer.emDash")}
+                <td className="font-mono">
+                  {rule?.code ?? (isExactOutput(patient.surcharge_exposure) ? t("optimizer.emDash") : t("optimizer.unavailable.exactProcedureCodesRequired"))}
                 </td>
-                <td className="truncate max-w-[200px]" title={p.surcharge_exposure.top_rules[0]?.name}>
-                  {p.surcharge_exposure.top_rules[0]?.name ?? (isExactOutput(p.surcharge_exposure) ? t("optimizer.emDash") : t("optimizer.unavailable.exactProcedureCodesRequired"))}
+                <td className="truncate max-w-[220px]" title={rule?.name}>
+                  {rule?.name ?? (isExactOutput(patient.surcharge_exposure) ? t("optimizer.emDash") : t("optimizer.unavailable.exactProcedureCodesRequired"))}
                 </td>
                 <td>
-                  {isExactOutput(p.surcharge_exposure)
-                    ? <ActionBadge action={p.surcharge_exposure.action} />
+                  {rule
+                    ? <RegulatorySourceChips source={SURCHARGE_REGULATORY_SOURCE} />
+                    : <span className="text-[var(--text-muted)]">{t("optimizer.emDash")}</span>
+                  }
+                </td>
+                <td>
+                  {isExactOutput(patient.surcharge_exposure)
+                    ? <ActionBadge action={patient.surcharge_exposure.action} />
                     : <span className="text-xs text-[var(--text-muted)]">{t("optimizer.unavailable.badge")}</span>
                   }
                 </td>
               </tr>
             ))}
             {patients.length === 0 && (
-              <tr><td colSpan={5} className="text-center py-6 text-[var(--text-muted)]">{t("optimizer.emptyStates.noPatientsMatchFilter")}</td></tr>
+              <tr><td colSpan={6} className="text-center py-6 text-[var(--text-muted)]">{t("optimizer.emptyStates.noPatientsMatchFilter")}</td></tr>
             )}
           </tbody>
         </DataTable>
@@ -591,7 +675,7 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SECTION C: COPAY RATE COMPLIANCE ALERTS (EK-2C-1)
+   SECTION C: EK-2C-1 ADD-ON RATE COMPLIANCE ALERTS
    ═══════════════════════════════════════════════════════════════════════════ */
 
 function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null; loading: boolean }) {
@@ -685,12 +769,12 @@ function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null
                 <td className="text-center">
                   {!isExactOutput(p.copay_rate_exposure)
                     ? <AlertBadge label={getSutAlertBadgeLabel("unavailable")} color={theme.textMuted} />
-                    : (p.copay_rate_exposure.n_applicable ?? 0) > 0
+                    : (p.copay_rate_exposure.n_violations ?? 0) > 0 || p.copay_rate_exposure.action
                     ? <AlertBadge label={getSutAlertBadgeLabel("flagged")} color="#B45309" />
                     : <AlertBadge label={getSutAlertBadgeLabel("clear")} color={theme.accent} />
                   }
                 </td>
-                <td className="num-col font-bold" style={{ color: isExactOutput(p.copay_rate_exposure) && (p.copay_rate_exposure.n_applicable ?? 0) > 0 ? "#B45309" : "#A1A1AA" }}>
+                <td className="num-col font-bold" style={{ color: isExactOutput(p.copay_rate_exposure) && ((p.copay_rate_exposure.n_violations ?? 0) > 0 || p.copay_rate_exposure.action) ? "#B45309" : "#A1A1AA" }}>
                   {p.copay_rate_exposure.n_applicable !== null ? fmtNum(p.copay_rate_exposure.n_applicable) : t("optimizer.emDash")}
                 </td>
                 <td className="num-col">
@@ -710,6 +794,41 @@ function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null
           </tbody>
         </DataTable>
       </Section>
+
+      {!isUnavailable && flattenCopayRateProcedureRows(patients).length > 0 && (
+        <Section
+          title={t("optimizer.tables.copayRateProcedureDetails")}
+          padding="lg"
+          className="[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wider [&_h2]:text-[var(--gold)]"
+        >
+          <DataTable minWidth={880} className="max-h-[420px] overflow-y-auto text-xs">
+            <thead>
+              <tr>
+                <th>{t("optimizer.tables.patientId")}</th>
+                <th>{t("optimizer.tables.procedureCode")}</th>
+                <th>{t("optimizer.tables.procedureName")}</th>
+                <th className="num-col">{t("optimizer.tables.billedRate")}</th>
+                <th className="num-col">{t("optimizer.tables.mandatedRate")}</th>
+                <th>{t("optimizer.tables.regulatorySource")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {flattenCopayRateProcedureRows(patients).map(({ patient, procedure }, index) => (
+                <tr key={`${patient.patient_id}-${procedure.code}-${index}`}>
+                  <td className="font-mono" style={{ color: ACCENT }}>{patient.patient_id}</td>
+                  <td className="font-mono">{procedure.code}</td>
+                  <td className="truncate max-w-[220px]" title={procedure.name}>{procedure.name}</td>
+                  <td className="num-col">{fmtPctPoints(procedure.rate_pct, t("optimizer.emDash"))}</td>
+                  <td className="num-col">{fmtPctPoints(procedure.mandated_rate_pct ?? null, t("optimizer.emDash"))}</td>
+                  <td>
+                    <RegulatorySourceChips source={COPAY_RATE_REGULATORY_SOURCE} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </DataTable>
+        </Section>
+      )}
     </div>
   );
 }

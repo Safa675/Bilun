@@ -9,6 +9,11 @@ import { translateConsistencyWarning } from "@/lib/apiMessages";
 import useStaggeredReveal from "@/hooks/useStaggeredReveal";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
 import { Chip, DataTable, Eyebrow, Surface } from "@/components/primitives";
+import {
+  DrgEk2cGroupCell,
+  ProcedureCopayRateSourceCell,
+  ProcedureSurchargeSourceCell,
+} from "@/components/sut/RegulatorySourceChips";
 import PatientInvoiceTable from "@/components/tables/PatientInvoiceTable";
 import { useT } from "@/lib/i18n/useTranslations";
 import {
@@ -278,10 +283,16 @@ export function ClaimSummaryPanel({ data }: { data: SutPatientOutcomeData }) {
                     </td>
                     <td className="num-col font-medium">{fmtTRYOrUnavailable(procedure.billed_amount_try)}</td>
                     <td className="text-center">
-                      {procedure.surcharge_applicable ? t("common.yes") : t("common.no")}
+                      <ProcedureSurchargeSourceCell
+                        applicable={procedure.surcharge_applicable}
+                        emDash={t("common.dash")}
+                      />
                     </td>
                     <td className="text-center">
-                      {procedure.copay_rate_applicable ? t("common.yes") : t("common.no")}
+                      <ProcedureCopayRateSourceCell
+                        applicable={procedure.copay_rate_applicable}
+                        emDash={t("common.dash")}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -360,9 +371,7 @@ export function DRGPanel({ data }: { data: DRGSummaryData }) {
                 <td className="font-mono tabular-nums">{ep.primary_icd10}</td>
                 <td>{ep.description}</td>
                 <td className="text-center">
-                  <span className="rounded bg-[var(--surface-tint)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--text-muted)]">
-                    {ep.ek2c_group || t("common.dash")}
-                  </span>
+                  <DrgEk2cGroupCell group={ep.ek2c_group} emDash={t("common.dash")} />
                 </td>
                 <td className="num-col">{fmtNum(ep.los_days)}</td>
                 <td className="num-col">{fmtTRY(ep.lab_cost)}</td>

@@ -49,7 +49,7 @@ const api = {
     surchargeExposureUnavailable:
       "Surcharge compliance requires exact billed procedure codes and procedure dates, which are not available in the active SUT runtime inputs.",
     copayRateExposureUnavailable:
-      "Copay rate compliance requires exact billed procedure codes and claim dates, which are not available in the active SUT runtime inputs.",
+      "EK-2C-1 copay rate compliance requires exact billed procedure codes and claim dates, which are not available in the active SUT runtime inputs.",
     drgUnbundlingUnavailable:
       "DRG unbundling risk requires exact billed procedure lines, package eligibility context, and dated package pricing, which are not available in the active SUT runtime inputs.",
     missingExactnessMetadata: "Exactness metadata was not provided by the bilun payload.",
@@ -71,13 +71,13 @@ const api = {
     surchargeExposureExact:
       "Uses exact dated procedure claim lines joined to EK-2/G (ek2g_no_surcharge.parquet) for surcharge prohibitions; n_applicable_procedures counts catalog-prohibited lines (ilave ücret must not be charged). Claim-line flags are validated against the catalog.",
     copayRateExposureExact:
-      "Uses exact dated procedure claim lines joined to EK-2C-1 (ek2c1_copay_rates.parquet) for mandated copay-rate procedures; validates claim flags and billed/payable ratio vs catalog rate.",
+      "Uses exact dated claim lines for EK-2C-1 listed procedures (ek2c1_copay_rates.parquet); compares implied copay % (100 − SGK payable/billed) to the gazette mandated rate (§2.2, not §1.8 general copay).",
     copayExemptionsCohort:
-      "Composable copay exemption: EK-1A chronic ICD-10 ranges plus status/visit rules when patient profiles and claim visit types are available. EK-2C-1 copay rate ceilings are evaluated separately.",
+      "Composable copay exemption: EK-1A chronic ICD-10 ranges plus status/visit rules when patient profiles and claim visit types are available. The EK-2C-1 copay rate list is evaluated separately.",
     surchargeExposureCohortExact:
       "Aggregated exact surcharge_applicable procedure flags from claim lines across the active cohort.",
     copayRateExposureCohortExact:
-      "Aggregated exact copay_rate_applicable procedure flags from claim lines across the active cohort.",
+      "Aggregated exact EK-2C-1 list procedure flags from claim lines across the active cohort.",
     drgUnbundlingPatient:
       "Uses exact claim lines with SUT §2.2 prose rules: package-included bundling, payment-method compliance (EK-2/B vs EK-2/C), same-session point factors (§2.2.2.B), and blood-component partial billing limits.",
     drgUnbundlingCohort:

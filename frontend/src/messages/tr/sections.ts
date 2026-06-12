@@ -69,6 +69,12 @@ const sections = {
     potentialSaving: "Potansiyel tasarruf: {amount}",
     validatedIn: "{ms}ms içinde doğrulandı · {summary}",
   },
+  specialtyProseScope: {
+    bodyImplemented:
+      "Kapsam v{effectiveDate}: §3.3 uzmanlık eki metin motoru ({proseRules} kural — yara/optik/ortobiyolojik dallar). §3.3 uzun kuyruk açık.",
+    medulaNote:
+      "MEDULA öncesi §3.3 uyum işaretleri (MEDULA'ya ek). Garanti SGK tahsilatı değil.",
+  },
   materialBundlingScope: {
     title: "Malzeme paketleme kapsamı",
     body: "Kontroller yalnızca ek listeleri kullanır (EK-3B-1: {ek3b1} paket sarf kategorisi, EK-3B-2: {ek3b2} hariç satır). SUT §3.1–3.2 tam metin paketleme ve ödeme kuralları bu sürümde kodlanmamıştır.",

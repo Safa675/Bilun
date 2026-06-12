@@ -14,6 +14,7 @@ import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
 import { translateConsistencyWarning } from "@/lib/apiMessages";
 import { theme } from "@/lib/theme";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
+import { PatientExemptionRuleSourceAttribution } from "@/components/sut/RegulatorySourceChips";
 import { Chip, Eyebrow, Stat, Surface } from "@/components/primitives";
 import {
   formatExemptionBasisSummary,
@@ -87,8 +88,9 @@ function CopayExemptionSummary({ copay }: { copay: CopayExemptionResult }) {
               : t("patient.workspace.copayNoInputs")}
           </p>
           {copay.exempt && categories.length > 0 && (
-            <div className="mt-3">
+            <div className="mt-3 space-y-2">
               <ExemptionBasisChips copay={copay} />
+              <PatientExemptionRuleSourceAttribution copay={copay} />
             </div>
           )}
         </div>

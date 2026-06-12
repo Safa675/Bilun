@@ -35,7 +35,7 @@ export const SUT_HOME_TABS: { id: SutHomeTab; label: string; subtitle: string }[
   {
     id: "compliance",
     label: "Compliance",
-    subtitle: "What's wrong? EK-1A exemptions, surcharge flags, and copay-rate alerts.",
+    subtitle: "What's wrong? EK-1A exemptions, surcharge flags (EK-2G), and EK-2C-1 add-on rate alerts.",
   },
   {
     id: "revenue",

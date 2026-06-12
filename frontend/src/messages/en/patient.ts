@@ -43,7 +43,7 @@ const patient = {
     "chipClear": "Clear",
     "topMatchDetail": "ICD-10 {icd10} · Gazette range {range}",
     "surchargeTitle": "Surcharge exposure",
-    "copayRateTitle": "Copay-rate exposure",
+    "copayRateTitle": "EK-2C-1 copay rate",
     "drgTitle": "DRG package review",
     "applicableProcedures": "Applicable procedures",
     "exposureRate": "Exposure rate",
@@ -54,7 +54,7 @@ const patient = {
     "riskNone": "No risk flagged",
     "reviewPackage": "Review package eligibility",
     "surchargeFallback": "Surcharge exposure stays unavailable until exact billed procedure lines are present.",
-    "copayRateFallback": "Copay-rate exposure stays unavailable until exact billed procedure lines are present.",
+    "copayRateFallback": "EK-2C-1 copay rate stays unavailable until exact billed procedure lines are present.",
     "drgFallback": "DRG unbundling review stays unavailable until exact itemized claim lines exist."
   },
   "section": {
@@ -102,7 +102,7 @@ const patient = {
         "procedure": "Procedure",
         "billed": "Billed",
         "surcharge": "Surcharge",
-        "copayRate": "Copay Rate"
+        "copayRate": "EK-2C-1 copay rate"
       }
     },
     "drgPanel": {

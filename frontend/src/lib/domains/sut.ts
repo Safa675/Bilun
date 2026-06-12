@@ -307,6 +307,8 @@ export interface CopayExemptionResult {
 export interface SurchargeRule {
   code: string;
   name: string;
+  procedure_date?: string;
+  rule_trace?: string;
   matched_chapters: string[];
 }
 
@@ -321,6 +323,9 @@ export interface CopayRateProcedure {
   code: string;
   name: string;
   rate_pct: number;
+  mandated_rate_pct?: number | null;
+  procedure_date?: string;
+  rule_trace?: string;
   matched_chapters: string[];
 }
 
@@ -383,6 +388,7 @@ export interface PatientAlertSurcharge extends ExactnessState {
 
 export interface PatientAlertCopayRate extends ExactnessState {
   n_applicable: number | null;
+  n_violations?: number | null;
   mean_rate: number | null;
   top_procedures: CopayRateProcedure[];
   action: string | null;
@@ -449,6 +455,7 @@ export interface PatientAlertsResponse extends SUTDataSourceCarrier {
 export interface LabOptimization extends ExactnessState {
   normative_cost_try: number;
   hemogram_bundling_savings: number;
+  session_fraction_savings?: number;
   flagged_tests: Array<{
     test_name: string;
     sut_code: string;
@@ -460,6 +467,7 @@ export interface LabOptimization extends ExactnessState {
 }
 
 export interface CopayOptimization extends ExactnessState {
+  rule_source?: string;
   is_exempt: boolean;
   exemption_disease: string;
   exemption_range: string;
@@ -561,8 +569,18 @@ export interface MaterialPreCheck extends ExactnessState {
     severity?: string;
     risk_amount?: number;
   }>;
+  specialty_prose_violations?: Array<{
+    rule_id?: string;
+    material_name?: string;
+    material_code?: string;
+    message?: string;
+    severity?: string;
+    risk_amount?: number;
+    material_outcome?: string;
+  }>;
   gazette_ceiling_by_specialty: Record<string, number>;
   coverage_scope?: SutMaterialBundlingCoverageScope;
+  specialty_coverage_scope?: import("@/lib/api/sut").SutSpecialtyProseCoverageScope;
 }
 
 export interface ProcedureCaptureGap extends ExactnessState {
@@ -589,6 +607,7 @@ export interface ProcedureCaptureGap extends ExactnessState {
 }
 
 export interface ProcedureAddonUplift extends ExactnessState {
+  rule_source?: string;
   opportunities: Array<{
     type?: string;
     claim_id?: string;
@@ -612,6 +631,7 @@ export interface ProcedureAddonUplift extends ExactnessState {
 }
 
 export interface MaterialUplift extends ExactnessState {
+  rule_source?: string;
   opportunities: Array<{
     type?: string;
     claim_id?: string;
@@ -634,6 +654,7 @@ export interface MaterialUplift extends ExactnessState {
 }
 
 export interface BloodComponentUplift extends ExactnessState {
+  rule_source?: string;
   opportunities: Array<{
     type?: string;
     claim_id?: string;
@@ -653,6 +674,7 @@ export interface BloodComponentUplift extends ExactnessState {
 }
 
 export interface DrgUpliftRecommendation extends ExactnessState {
+  rule_source?: string;
   opportunities: Array<{
     type?: string;
     claim_id?: string;
@@ -697,6 +719,7 @@ export interface MedulaRejectionPlaybook extends ExactnessState {
 }
 
 export interface GazetteRepricingOpportunity extends ExactnessState {
+  rule_source?: string;
   opportunities: Array<{
     claim_id?: string;
     procedure_line_id?: string;
@@ -723,6 +746,7 @@ export interface GazetteRepricingOpportunity extends ExactnessState {
 }
 
 export interface DrgPackageAdequacyReview extends ExactnessState {
+  rule_source?: string;
   opportunities: Array<{
     claim_id?: string;
     primary_icd10?: string;
@@ -748,6 +772,7 @@ export interface DrgPackageAdequacyReview extends ExactnessState {
 }
 
 export interface CareSettingReview extends ExactnessState {
+  rule_source?: string;
   opportunities: Array<{
     claim_id?: string;
     claim_type?: string;
@@ -775,6 +800,7 @@ export interface CareSettingReview extends ExactnessState {
 }
 
 export interface SessionPricingUplift extends ExactnessState {
+  rule_source?: string;
   opportunities: Array<{
     type?: string;
     claim_id?: string;

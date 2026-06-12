@@ -1,4 +1,7 @@
 const billing = {
+  "common": {
+    "regulatorySource": "Kaynak (EK)",
+  },
   "summary": {
     "title": "Hasta fatura raporu",
     "description": "Laboratuvar, ilaç, katılım payı politikası, fatura stratejisi ve malzeme kontrolleri genelinde normatif SUT kural incelemesi.",
@@ -255,6 +258,7 @@ const billing = {
     "bundledSeparate": "Pakete dahil — ayrı faturalandırılmış (EK-3B-1)",
     "scopeNotice": "Paketleme işaretleri yalnızca EK-3B-1 kataloğunu (54 kalem) kullanır — SUT §3.1–3.2 tam metin kuralları değil.",
     "proseBundling": "§3.1 metin paketleme (kısmi motor)",
+    "specialtyProse": "§3.3 uzmanlık eki metin (L4.4)",
     "sutCode": "SUT kodu",
     "material": "Malzeme",
     "gazettePrice": "Tebliğ fiyatı",
@@ -271,13 +275,13 @@ const billing = {
     "noWaiver": "Muafiyet gerekçesi eşleşmedi",
     "surchargeEyebrow": "Fark ücreti uyumu",
     "flags": "{count} bayrak",
-    "copayRateEyebrow": "Katılım payı oranı uyumu",
+    "copayRateEyebrow": "EK-2C-1 katılım payı oranı uyumu",
     "cappedProcedures": "{count} tavanlı işlem",
     "noRateCaps": "Oran tavanı uygulanmıyor",
     "drgEyebrow": "DRG ayrıştırma riski",
     "potentialSavings": "Potansiyel tasarruf: {amount}",
     "surchargeUnavailable": "Fark ücreti uyumu kesin faturalandırılmış işlem kodları ve tarihleri gerektirir.",
-    "copayRateUnavailable": "Katılım payı oranı uyumu kesin faturalandırılmış işlem kodları ve tarihleri gerektirir.",
+    "copayRateUnavailable": "EK-2C-1 katılım payı oranı uyumu kesin faturalandırılmış işlem kodları ve tarihleri gerektirir.",
     "drgUnavailable": "DRG ayrıştırma riski kesin kalemlendirilmiş işlem satırları ve paket uygunluk bağlamı gerektirir.",
     "drgHeuristicFootnote": "Sezgisel tutarlar içerir: pakete dahil talep bayrakları ve kalem-paket karşılaştırması — denetlenmiş SGK tahsili değildir.",
     "drgSourcedSavings": "Metin kuralı ihlalleri (kaynaklı): {amount}"

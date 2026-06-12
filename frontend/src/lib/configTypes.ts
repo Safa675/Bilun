@@ -100,7 +100,7 @@ export interface RegulatoryConfig {
   ek1a_exemption_count: number;
   /** EK-2G no-surcharge procedures */
   ek2g_procedure_count: number;
-  /** EK-2C-1 copayment rate-capped procedures */
+  /** EK-2C-1 add-on rate list procedures (§2.2) */
   ek2c1_procedure_count: number;
 }
 

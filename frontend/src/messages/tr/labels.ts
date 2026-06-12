@@ -11,7 +11,9 @@ const labels = {
       "unavailable": "Kullanılamıyor"
     },
     "action": {
-      "noActionNeeded": "İşlem gerekmez"
+      "noActionNeeded": "İşlem gerekmez",
+      "doNotChargeSurcharge": "Fark ücreti alınmamalı",
+      "applyEk2c1ListedRate": "EK-2C-1 katılım payı oranını uygula"
     },
     "riskBucket": {
       "atRisk": "Riskli",
@@ -40,7 +42,8 @@ const labels = {
       "strategy": "Fatura stratejisi"
     },
     "flagType": {
-      "hemogram_unbundling": "Hemogram paketleme ihlali"
+      "hemogram_unbundling": "Hemogram paketleme ihlali",
+      "session_fraction_overbilling": "Seans kesir oranı fazla faturalama"
     },
     "paymentMethod": {
       "package": "Paket",

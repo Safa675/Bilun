@@ -80,9 +80,24 @@ export interface SutMaterialBundlingCoverageScope {
   gate_b_deferred_clauses?: number;
 }
 
+export interface SutSpecialtyProseCoverageScope {
+  prose_rule_id: string;
+  prose_section_prefixes: string[];
+  prose_engine_status: string;
+  prose_coverage_tier?: string;
+  prose_rules_implemented?: number;
+  prose_effective_date?: string;
+  encoded_corpus_rows?: number;
+  implemented_annexes?: string[];
+  l44_plan_path?: string;
+  medula_overlap_classification?: string;
+  medula_savings_note?: string;
+}
+
 export interface SutValidationResult {
   claim_id: string;
   coverage_scope?: SutMaterialBundlingCoverageScope;
+  specialty_coverage_scope?: SutSpecialtyProseCoverageScope;
   is_valid: boolean;
   total_claim_amount: number;
   total_savings_try: number;
@@ -126,6 +141,7 @@ export interface SutExclusionCategory {
 
 export interface SutBundledConsumablesResult {
   coverage_scope?: SutMaterialBundlingCoverageScope;
+  specialty_coverage_scope?: SutSpecialtyProseCoverageScope;
   bundled_consumables: { count: number; items: SutBundledItem[] };
   exclusion_categories: { count: number; categories: SutExclusionCategory[] };
 }

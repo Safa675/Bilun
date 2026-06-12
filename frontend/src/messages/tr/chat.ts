@@ -42,7 +42,7 @@ const chat = {
     patients:
       "Hasta kohort dizinini özetleyin. Bir hastaya girmeden önce geri kazanılabilir toplamlara, öncelikli hastalara ve kesinlik uyarılarına odaklanın. Türkçe yanıt verin.",
     compliance:
-      "Filtrelenmiş kohort için uyumluluk uyarılarını özetleyin. Katılım payı muafiyeti boşlukları, fark ücreti bayrakları, katılım payı oranı sorunları ve kesinlik engellerini vurgulayın. Türkçe yanıt verin.",
+      "Filtrelenmiş kohort için uyumluluk uyarılarını özetleyin. Katılım payı muafiyeti (EK-1A), fark ücreti bayrakları (EK-2G), EK-2C-1 katılım payı oranı uyumsuzlukları ve kesinlik engellerini vurgulayın. Türkçe yanıt verin.",
     revenue:
       "Filtrelenmiş kohort için gelir geri kazanımını özetleyin. Geri kazanılabilir toplamları, öncelikli hastaları ve kesinlik sınırlamalarını vurgulayın. Türkçe yanıt verin.",
     referenceTools:

@@ -39,7 +39,7 @@ const app = {
         "title": "Exactness-first optimization",
         "description": "Unavailable optimization surfaces stay unavailable until the exact billed inputs exist, rather than being shown as low risk or zero impact.",
         "detail1": "Copay exemptions stay actionable when exact.",
-        "detail2": "Surcharge, copay-rate, and DRG-unbundling findings respect missing exact inputs.",
+        "detail2": "Surcharge, EK-2C-1 copay rate, and DRG-unbundling findings respect missing exact inputs.",
         "detail3": "The patient workspace and optimizer share the same exactness semantics.",
         "feedsInto": "Optimizer alerts and revenue recovery review"
       },

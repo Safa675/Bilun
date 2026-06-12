@@ -1,12 +1,12 @@
 const optimizer = {
   tabs: {
     complianceDescription:
-      "Kesin katılım payı muafiyeti bulgularını (EK-1A) birleştiren hasta düzeyinde uygulanabilir uyarılar; kesin talep satırı girdisi gerektiren optimizasyon kontrolleri için açık kullanılamaz durumları da gösterir.",
+      "Hasta bazında uyumluluk uyarıları: katılım payı muafiyeti (EK-1A ve diğer gerekçeler), fark ücreti yasağı (EK-2G, §1.9.3) ve EK-2C-1 katılım payı oranı listesi. Kesin işlem satırı olmayan kontroller açıkça Kullanılamıyor olarak işaretlenir.",
     revenueDescription:
       "Aktif fatura algoritmaları için kohort düzeyinde geri kazanım inceleme panosu; kesin talep satırı verisine bağlı kalan optimizasyon kontrolleri için kullanılabilirlik bildirimleri.",
     exemptions: "Katılım payı muafiyetleri",
     surcharge: "Fark ücreti uyumu",
-    copayRates: "Katılım payı oranı uyumu",
+    copayRates: "EK-2C-1 katılım payı oranı uyumu",
     categoriesAria: "Uyum uyarı kategorileri",
   },
   filters: {
@@ -34,7 +34,7 @@ const optimizer = {
   categories: {
     exemptions: "Katılım payı muafiyetleri",
     surcharge: "Fark ücreti uyumu",
-    copay_rates: "Katılım payı oranı uyumu",
+    copay_rates: "EK-2C-1 katılım payı oranı uyumu",
   },
   errors: {
     loadAlerts: "Hasta uyarıları yüklenemedi",
@@ -78,13 +78,13 @@ const optimizer = {
     cohortFilterRevenueHint:
       "Geri kazanılabilir toplam ve hasta sayısı aktif filtreleri yansıtır. Kategori tasarruf grafikleri filtreli API'ler hazır olana kadar tam kohort toplamlarını kullanır.",
     copayComposableWithProfiles:
-      "Birleştirilebilir katılım payı muafiyeti: EK-1A ({ek1aCount} kronik aralık) artı talep profilleri mevcutsa ziyaret türü ve hasta statüsü kuralları. EK-2C-1 oran tavanları ayrı değerlendirilir.",
+      "Birleştirilebilir katılım payı muafiyeti: EK-1A ({ek1aCount} kronik aralık) artı talep profilleri mevcutsa ziyaret türü ve hasta statüsü kuralları. EK-2C-1 katılım payı oranı listesi (§2.2) ayrı değerlendirilir.",
     copayEk1aOnly:
       "Hasta ICD-10 tanılarını tebliğ eki EK-1A'daki {ek1aCount} kronik hastalık muafiyet aralığıyla çapraz referanslar. Statü ve ziyaret türü muafiyet alanları için analitik önbelleğini yeniden oluşturun.",
     surchargeExact:
       "Aktif SUT çalışma zamanı girdilerinden kesin tarihli işlem talep satırları ve açık fark ücreti kural bayrakları kullanılır.",
     copayRateExact:
-      "Aktif SUT çalışma zamanı girdilerinden kesin tarihli işlem talep satırları, açık katılım payı oranı kural bayrakları ve faturalanan/ödenecek tutarlar kullanılır.",
+      "§2.2 EK-2C-1 listesindeki işlemler için kesin tarihli talep satırları kullanılır; örtük katılım payı oranı (100 − SGK payı) tebliğdeki oranla karşılaştırılır (§1.8 genel katılım payı değil).",
     revenuePartialExact:
       "Gelir geri kazanımında kesin kategori düzeyinde bulgular var; ancak bazı fatura bölümleri hâlâ kesin girdi gerektirdiği için toplam tutarlar karışık.",
     revenueUnavailable:
@@ -101,7 +101,7 @@ const optimizer = {
     surchargeCompliance:
       "SUT talep girdilerinde kesin faturalandırılmış işlem kodları ve işlem tarihleri olmadan fark ücreti uyumu kullanılamaz.",
     copayRateCompliance:
-      "SUT talep girdilerinde kesin faturalandırılmış işlem kodları ve işlem tarihleri olmadan katılım payı oranı uyumu kullanılamaz.",
+      "SUT talep girdilerinde kesin faturalandırılmış işlem kodları ve işlem tarihleri olmadan EK-2C-1 katılım payı oranı uyumu kullanılamaz.",
     exactProcedureCodesRequired: "Kesin işlem kodları gerekli",
     drgUnbundling:
       "SUT talep girdilerinde kesin kalemlendirilmiş faturalandırılmış işlem satırları ve paket uygunluk bağlamı olmadan DRG paket ayrıştırma riski kullanılamaz.",
@@ -123,7 +123,7 @@ const optimizer = {
     clearPatients: "Temiz Hastalar",
     needExactClaimLines: "Kesin talep satırları gerekli",
     noSurchargeFlags: "Fark ücreti bayrağı yok",
-    noCopayRateFlags: "Katılım payı oranı bayrağı yok",
+    noCopayRateFlags: "EK-2C-1 işlemi yok",
     patientsFlagged: "İşaretli Hastalar",
     noExactSurchargeFindings: "Henüz kesin fark ücreti bulgusu yok",
     noExactRateFindings: "Henüz kesin oran bulgusu yok",
@@ -205,7 +205,15 @@ const optimizer = {
     recommendedAction: "Önerilen Eylem",
     noSurchargeRules: "Farksız Kurallar",
     topProcedure: "En Üst İşlem",
-    rateCappedProcs: "Oran Tavanlı İşlemler",
+    procedureCode: "İşlem Kodu",
+    procedureName: "İşlem Adı",
+    regulatorySource: "Kaynak",
+    sutSection: "SUT",
+    billedRate: "Gözlemlenen katılım payı oranı",
+    mandatedRate: "Tebliğdeki oran",
+    surchargeProcedureDetails: "Farksız işlemler (EK-2G)",
+    copayRateProcedureDetails: "EK-2C-1 listedeki işlemler",
+    rateCappedProcs: "EK-2C-1 İşlemleri",
     meanRate: "Ortalama Oran",
     ruleCalculated: "Kural hesaplı",
     priority: "Öncelik",

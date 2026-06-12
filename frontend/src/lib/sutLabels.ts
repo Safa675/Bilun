@@ -30,8 +30,24 @@ export function getSutAlertBadgeLabel(
   return t(`labels.sut.alertBadge.${key}`);
 }
 
-export function getSutActionLabel(key: "noActionNeeded"): string {
+export function getSutActionLabel(
+  key: keyof typeof enMessages.labels.sut.action,
+): string {
   return t(`labels.sut.action.${key}`);
+}
+
+const RECOMMENDED_ACTION_LABEL_KEYS: Record<string, keyof typeof enMessages.labels.sut.action> = {
+  "Do not charge surcharge": "doNotChargeSurcharge",
+  "Apply capped copay rate": "applyEk2c1ListedRate",
+};
+
+export function getSutRecommendedActionLabel(action: string | null | undefined): string {
+  const trimmed = action?.trim();
+  if (!trimmed) {
+    return getSutActionLabel("noActionNeeded");
+  }
+  const key = RECOMMENDED_ACTION_LABEL_KEYS[trimmed];
+  return key ? getSutActionLabel(key) : trimmed;
 }
 
 export function getSutRiskBucketLabel(key: keyof typeof enMessages.labels.sut.riskBucket): string {

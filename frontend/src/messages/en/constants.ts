@@ -17,7 +17,7 @@ const constants = {
     },
     compliance: {
       label: "Compliance",
-      subtitle: "What's wrong? EK-1A exemptions, surcharge flags, and copay-rate alerts.",
+      subtitle: "What's wrong? EK-1A exemptions, surcharge flags (EK-2G), and EK-2C-1 copay rate alerts.",
     },
     revenue: {
       label: "Revenue",
