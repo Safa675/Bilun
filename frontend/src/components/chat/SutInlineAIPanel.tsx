@@ -52,6 +52,7 @@ function resolvePromptKey(activeTab: string): string {
     Compliance: "compliance",
     Revenue: "revenue",
     "Reference Tools": "referenceTools",
+    "Rule Database": "ruleDatabase",
     "SUT Patient Workspace": "sutPatientWorkspace",
     "SUT Billing Review": "sutBillingReview",
   };

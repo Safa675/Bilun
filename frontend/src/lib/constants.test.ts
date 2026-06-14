@@ -28,6 +28,7 @@ describe("sut constants", () => {
     expect(parseSutHomeTab("compliance")).toBe("compliance");
     expect(parseSutHomeTab("revenue")).toBe("revenue");
     expect(parseSutHomeTab("reference-tools")).toBe("reference-tools");
+    expect(parseSutHomeTab("rule-database")).toBe("rule-database");
     expect(parseSutHomeTab("analytics")).toBe("patients");
     expect(parseSutHomeTab("optimizer")).toBe("compliance");
     expect(parseSutHomeTab("unknown")).toBe("patients");
@@ -39,6 +40,7 @@ describe("sut constants", () => {
     expect(buildSutHomeHref("compliance")).toBe("/?tab=compliance");
     expect(buildSutHomeHref("revenue")).toBe("/?tab=revenue");
     expect(buildSutHomeHref("reference-tools")).toBe("/?tab=reference-tools");
+    expect(buildSutHomeHref("rule-database")).toBe("/?tab=rule-database");
     expect(buildSutPatientHref("A 123/45")).toBe("/patient/A%20123%2F45");
     expect(buildSutBillingHref("A 123/45")).toBe("/patient/A%20123%2F45");
   });
@@ -56,6 +58,7 @@ describe("sut constants", () => {
       "compliance",
       "revenue",
       "reference-tools",
+      "rule-database",
     ]);
   });
 });

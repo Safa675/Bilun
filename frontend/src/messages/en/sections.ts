@@ -1,4 +1,61 @@
 const sections = {
+  ruleDatabase: {
+    title: "SUT Rule Database",
+    subtitle: "{total} extracted SUT rules — drill into any rule to read its source clauses.",
+    loading: "Loading rule catalog",
+    empty: "No SUT rules available.",
+    noMatches: "No rules match the current filter.",
+    searchPlaceholder: "Search rules, categories, annexes, keywords…",
+    artifactsUnavailable:
+      "Source clause text is unavailable — the SUT clause corpus has not been built. Rules and coverage are still shown.",
+    errors: {
+      loadFailed: "Rule database could not be loaded.",
+    },
+    filters: {
+      all: "All",
+    },
+    status: {
+      implemented: "Implemented",
+      partial: "Partial",
+      needsClaimLines: "Needs claim lines",
+      missing: "Missing",
+      nonAlgorithmic: "Reference only",
+    },
+    factCheck: {
+      banner:
+        "Algorithm fact-check audit closed {closed} — {total} units reviewed against SUT clauses and MEDULA overlap.",
+      auditUnits: "Audit units: {units}",
+      medula: "MEDULA: {tag}",
+      verdict: {
+        compliant: "Compliant",
+        partial: "Partial",
+        heuristic: "Heuristic",
+        needsClaimLines: "Needs claim lines",
+        wrong: "Wrong",
+        outOfScope: "Out of scope",
+      },
+    },
+    list: {
+      clauseCount: "{count} clauses",
+    },
+    detail: {
+      selectPrompt: "Select a rule to view its source clauses.",
+      loading: "Loading rule clauses",
+      sourcesLabel: "Sources",
+      implementedIn: "Implemented in: {modules}",
+      clausesTitle: "Source clauses ({total})",
+      primaryBadge: "Primary",
+      noClauses: "No SUT clauses are mapped to this rule.",
+      noArtifacts: "Clause text unavailable until the SUT clause corpus is built.",
+      effectiveDate: "Effective {date}",
+      amendments: "Amendments: {refs}",
+    },
+    pagination: {
+      prev: "Prev",
+      next: "Next",
+      page: "Page {page} / {totalPages}",
+    },
+  },
   tools: {
     dividerLabel: "Billing & Gazette Tools",
     subs: {

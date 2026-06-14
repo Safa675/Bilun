@@ -67,7 +67,12 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
         <nav className="flex items-center gap-1" aria-label={t("shell.appTopBar.ariaHomeTabs")}>
           {SUT_HOME_TABS.map((tab) => {
             const isActive = activeTab === tab.id;
-            const tabKey = tab.id === "reference-tools" ? "referenceTools" : tab.id;
+            const tabKey =
+              tab.id === "reference-tools"
+                ? "referenceTools"
+                : tab.id === "rule-database"
+                  ? "ruleDatabase"
+                  : tab.id;
             return (
               <Link
                 key={tab.id}

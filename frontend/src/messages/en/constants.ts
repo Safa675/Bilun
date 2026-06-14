@@ -27,6 +27,10 @@ const constants = {
       label: "Reference Tools",
       subtitle: "What does the rule say? Gazette lookups, validators, and catalogs.",
     },
+    ruleDatabase: {
+      label: "Rule Database",
+      subtitle: "Where is it written? Every extracted SUT rule with its source clauses and coverage.",
+    },
   },
 } as const;
 

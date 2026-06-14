@@ -47,6 +47,8 @@ const chat = {
       "Filtrelenmiş kohort için gelir geri kazanımını özetleyin. Geri kazanılabilir toplamları, öncelikli hastaları ve kesinlik sınırlamalarını vurgulayın. Türkçe yanıt verin.",
     referenceTools:
       "Hangi tebliğ referans araçlarının mevcut olduğunu ve bir fatura görevlisinin her sorguyu ne zaman kullanması gerektiğini açıklayın. Türkçe yanıt verin.",
+    ruleDatabase:
+      "SUT kural veritabanını özetleyin. Kuralların kaynak hükümlere ve EK listelere nasıl eşlendiğini, kapsam durumlarının ne anlama geldiğini ve hangi kurallarda hâlâ boşluk olduğunu açıklayın. Türkçe yanıt verin.",
     sutPatientWorkspace:
       "Hasta düzeyinde SUT brifingi verin. Kural hesaplama durumunu, kesinlik odaklı optimizasyon bulgularını ve fatura incelemesinde doğrulanması gerekenleri özetleyin. Türkçe yanıt verin.",
     sutBillingReview:

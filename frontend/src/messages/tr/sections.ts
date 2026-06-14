@@ -1,4 +1,61 @@
 const sections = {
+  ruleDatabase: {
+    title: "SUT Kural Veritabanı",
+    subtitle: "Çıkarılan {total} SUT kuralı — kaynak hükümlerini okumak için herhangi bir kurala girin.",
+    loading: "Kural kataloğu yükleniyor",
+    empty: "Kullanılabilir SUT kuralı yok.",
+    noMatches: "Mevcut filtreyle eşleşen kural yok.",
+    searchPlaceholder: "Kural, kategori, ek liste, anahtar kelime ara…",
+    artifactsUnavailable:
+      "Kaynak hüküm metni kullanılamıyor — SUT hüküm derlemi oluşturulmamış. Kurallar ve kapsam yine de gösteriliyor.",
+    errors: {
+      loadFailed: "Kural veritabanı yüklenemedi.",
+    },
+    filters: {
+      all: "Tümü",
+    },
+    status: {
+      implemented: "Uygulandı",
+      partial: "Kısmi",
+      needsClaimLines: "Talep satırı gerekli",
+      missing: "Eksik",
+      nonAlgorithmic: "Yalnızca referans",
+    },
+    factCheck: {
+      banner:
+        "Algoritma fact-check denetimi {closed} tarihinde kapatıldı — {total} birim SUT hükümleri ve MEDULA örtüşmesine göre incelendi.",
+      auditUnits: "Denetim birimleri: {units}",
+      medula: "MEDULA: {tag}",
+      verdict: {
+        compliant: "Uyumlu",
+        partial: "Kısmi",
+        heuristic: "Sezgisel",
+        needsClaimLines: "Talep satırı gerekli",
+        wrong: "Hatalı",
+        outOfScope: "Kapsam dışı",
+      },
+    },
+    list: {
+      clauseCount: "{count} hüküm",
+    },
+    detail: {
+      selectPrompt: "Kaynak hükümlerini görmek için bir kural seçin.",
+      loading: "Kural hükümleri yükleniyor",
+      sourcesLabel: "Kaynaklar",
+      implementedIn: "Uygulandığı yer: {modules}",
+      clausesTitle: "Kaynak hükümler ({total})",
+      primaryBadge: "Birincil",
+      noClauses: "Bu kurala eşlenmiş SUT hükmü yok.",
+      noArtifacts: "SUT hüküm derlemi oluşturulana kadar hüküm metni kullanılamaz.",
+      effectiveDate: "Yürürlük {date}",
+      amendments: "Değişiklikler: {refs}",
+    },
+    pagination: {
+      prev: "Önceki",
+      next: "Sonraki",
+      page: "Sayfa {page} / {totalPages}",
+    },
+  },
   tools: {
     dividerLabel: "Fatura ve Tebliğ Araçları",
     subs: {

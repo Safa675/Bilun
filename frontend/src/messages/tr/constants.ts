@@ -27,6 +27,10 @@ const constants = {
       label: "Referans Araçları",
       subtitle: "Kural ne diyor? Tebliğ sorguları, doğrulayıcılar ve kataloglar.",
     },
+    ruleDatabase: {
+      label: "Kural Veritabanı",
+      subtitle: "Nerede yazıyor? Çıkarılan her SUT kuralı, kaynak hükümleri ve kapsamı ile.",
+    },
   },
 } as const;
 

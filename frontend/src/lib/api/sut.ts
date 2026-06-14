@@ -320,6 +320,128 @@ export async function getDrugCatalog(
   );
 }
 
+export type RuleCoverageStatus =
+  | "implemented"
+  | "partial"
+  | "missing"
+  | "needs_claim_lines"
+  | "non_algorithmic";
+
+export type FactCheckVerdict =
+  | "COMPLIANT"
+  | "PARTIAL"
+  | "HEURISTIC"
+  | "NEEDS_CLAIM_LINES"
+  | "WRONG"
+  | "OUT_OF_SCOPE";
+
+export type MedulaOverlap =
+  | "ADDITIVE"
+  | "PARTIAL_OVERLAP"
+  | "MEDULA_DUPLICATE"
+  | "NOT_APPLICABLE";
+
+export interface RuleSources {
+  sut_sections: string[];
+  annexes: string[];
+}
+
+export interface RuleCatalogEntry {
+  rule_id: string;
+  rule_category: string;
+  coverage_status: RuleCoverageStatus;
+  description: string;
+  sources: RuleSources;
+  keywords: string[];
+  domain_modules: string[];
+  matched_clause_count: number;
+  has_clause_mapping: boolean;
+  fact_check_verdict?: FactCheckVerdict | null;
+  medula_overlap?: MedulaOverlap | null;
+  fact_check_units?: string[];
+  fact_check_note?: string | null;
+}
+
+export interface RuleClause {
+  clause_id: string | null;
+  section_id: string | null;
+  section_title: string | null;
+  section_path: string | null;
+  chapter: string | null;
+  clause_type: string | null;
+  text_tr: string | null;
+  annex_refs: string[];
+  procedure_codes: string[];
+  percentages: number[];
+  amendment_refs: string[];
+  deontic_modality: string | null;
+  source_effective_date: string | null;
+  coverage_status: string | null;
+  is_primary: boolean;
+  match_score: number;
+}
+
+export interface FactCheckVerdictCounts {
+  COMPLIANT: number;
+  PARTIAL: number;
+  HEURISTIC: number;
+  NEEDS_CLAIM_LINES: number;
+  WRONG: number;
+  OUT_OF_SCOPE: number;
+}
+
+export interface FactCheckAuditUnitSummary {
+  unit_id: string;
+  title: string;
+  verdict: FactCheckVerdict;
+  medula_overlap: MedulaOverlap;
+  linked_rule_ids: string[];
+  note?: string | null;
+}
+
+export interface FactCheckRollup {
+  audit_closed: string;
+  total_units: number;
+  by_verdict: FactCheckVerdictCounts;
+  units: FactCheckAuditUnitSummary[];
+}
+
+export interface RuleCatalogResponse {
+  rules: RuleCatalogEntry[];
+  total: number;
+  artifacts_available: boolean;
+  fact_check: FactCheckRollup;
+}
+
+export interface RuleDetailResponse {
+  rule: RuleCatalogEntry;
+  clauses: RuleClause[];
+  clause_total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+  artifacts_available: boolean;
+}
+
+export async function getRuleCatalog(options?: RequestInit): Promise<RuleCatalogResponse> {
+  return requestJSON<RuleCatalogResponse>("/api/rules", options);
+}
+
+export async function getRuleDetail(
+  ruleId: string,
+  params?: { page?: number; per_page?: number },
+  options?: RequestInit,
+): Promise<RuleDetailResponse> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.per_page) qs.set("per_page", String(params.per_page));
+  const query = qs.toString();
+  return requestJSON<RuleDetailResponse>(
+    `/api/rules/${encodeURIComponent(ruleId)}${query ? `?${query}` : ""}`,
+    options,
+  );
+}
+
 export interface SpecialtyMeta {
   label: string;
   name: string;

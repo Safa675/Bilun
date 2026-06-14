@@ -47,6 +47,8 @@ const chat = {
       "Summarize revenue recovery for the filtered cohort. Highlight recoverable totals, top patients, and where exactness limitations block action. Reply in English.",
     referenceTools:
       "Explain which gazette reference tools are available and when a billing officer should use each lookup. Reply in English.",
+    ruleDatabase:
+      "Summarize the SUT rule database. Explain how rules map to source clauses and EK annexes, what the coverage statuses mean, and which rules still have gaps. Reply in English.",
     sutPatientWorkspace:
       "Give a patient-level SUT briefing. Summarize the rule-calculation state, exactness-aware optimization findings, and what the billing review should confirm next. Reply in English.",
     sutBillingReview:

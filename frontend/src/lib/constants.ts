@@ -9,7 +9,12 @@
 import { theme } from "@/lib/theme";
 
 export const ACCENT = theme.accent;
-export type SutHomeTab = "patients" | "compliance" | "revenue" | "reference-tools";
+export type SutHomeTab =
+  | "patients"
+  | "compliance"
+  | "revenue"
+  | "reference-tools"
+  | "rule-database";
 
 export const LEGACY_SUT_HOME_TAB_ALIASES: Record<string, SutHomeTab> = {
   analytics: "patients",
@@ -47,6 +52,11 @@ export const SUT_HOME_TABS: { id: SutHomeTab; label: string; subtitle: string }[
     label: "Reference Tools",
     subtitle: "What does the rule say? Gazette lookups, validators, and catalogs.",
   },
+  {
+    id: "rule-database",
+    label: "Rule Database",
+    subtitle: "Where is it written? Every extracted SUT rule with its source clauses and coverage.",
+  },
 ];
 
 export function parseSutHomeTab(value: string | null | undefined): SutHomeTab {
@@ -56,6 +66,7 @@ export function parseSutHomeTab(value: string | null | undefined): SutHomeTab {
   if (value === "compliance") return "compliance";
   if (value === "revenue") return "revenue";
   if (value === "reference-tools") return "reference-tools";
+  if (value === "rule-database") return "rule-database";
   if (value === "patients") return "patients";
   return "patients";
 }

@@ -45,6 +45,9 @@ const SUTRevenue = dynamic(() => import("@/components/tabs/SUTRevenue"), {
 const SUTReferenceTools = dynamic(() => import("@/components/tabs/SUTReferenceTools"), {
   loading: () => <SutOptimizerShellSkeleton />,
 });
+const SUTRuleDatabase = dynamic(() => import("@/components/tabs/SUTRuleDatabase"), {
+  loading: () => <SutOptimizerShellSkeleton />,
+});
 
 function SutHomeContent() {
   const router = useRouter();
@@ -151,8 +154,10 @@ function SutHomeContent() {
                 <SUTCompliance />
               ) : activeTab === "revenue" ? (
                 <SUTRevenue />
-              ) : (
+              ) : activeTab === "reference-tools" ? (
                 <SUTReferenceTools />
+              ) : (
+                <SUTRuleDatabase />
               )}
             </>
           </section>
