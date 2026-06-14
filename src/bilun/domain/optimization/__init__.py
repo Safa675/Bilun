@@ -44,6 +44,8 @@ from .temporal import audit_temporal_prices, _temporal_audit_cache
 
 from .unbundling import detect_drg_unbundling
 
+from .drug_discounts import validate_drug_discount_tiers
+
 from .aggregator import compute_optimization_summary
 
 __all__ = [
@@ -61,5 +63,6 @@ __all__ = [
     "audit_temporal_prices",
     "_temporal_audit_cache",
     "detect_drg_unbundling",
+    "validate_drug_discount_tiers",
     "compute_optimization_summary",
 ]

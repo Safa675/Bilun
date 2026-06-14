@@ -40,6 +40,7 @@ from .claim_context import (
 from .runtime_claim_context import ClaimContextManager
 from .surcharge import analyze_surcharge_exposure
 from .copay_rates import analyze_copay_rate_exposure
+from .drug_discounts import validate_drug_discount_tiers
 
 logger = logging.getLogger("bilun.domain.optimization")
 
@@ -198,6 +199,21 @@ def _aggregate_drg_unbundling(
     )
 
 
+def _aggregate_drug_discount_validation(
+    patient_ids: list[str],
+    claim_dataset: SUTClaimDataset | None,
+) -> dict[str, Any]:
+    drug_lines = (
+        getattr(claim_dataset, "drug_lines", {}).values()
+        if claim_dataset is not None
+        else None
+    )
+    return validate_drug_discount_tiers(
+        drug_lines,
+        n_total_patients=len(patient_ids),
+    )
+
+
 def compute_optimization_summary(
     ana_df: pl.DataFrame,
     patient_ids: list[str],
@@ -307,5 +323,9 @@ def compute_optimization_summary(
         "copay_rate_exposure": _aggregate_copay_rate_exposure(patient_ids, claim_dataset),
         "temporal_price_validation": temporal,
         "drg_unbundling": _aggregate_drg_unbundling(patient_ids, claim_dataset),
+        "drug_discount_validation": _aggregate_drug_discount_validation(
+            patient_ids,
+            claim_dataset,
+        ),
         "rule_source": "EK-1A (copay), EK-2G (surcharge), EK-2C-1 (copay rates), EK-2B/2C (pricing/DRG)",
     }
