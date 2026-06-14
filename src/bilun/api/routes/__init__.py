@@ -15,13 +15,15 @@ Submodule split:
                     revenue-recovery dashboard
     billing       — per-patient billing report, drug catalog,
                     materials-by-specialty browser
+    rules         — SUT rule database: catalog index + extracted-clause
+                    source drill-down
 """
 
 from __future__ import annotations
 
 from fastapi import APIRouter
 
-from . import alerts, billing, chat, optimization, patients, pricing, validation
+from . import alerts, billing, chat, optimization, patients, pricing, rules, validation
 
 # Public function re-exports — flat surface for tests and external callers
 # that prefer ``from src.bilun.api.routes import <fn>`` over reaching into a
@@ -51,6 +53,7 @@ from .pricing import (  # noqa: F401, E402
     get_procedure_info,
     get_visit_pricing,
 )
+from .rules import get_rule_catalog, get_rule_detail  # noqa: F401, E402
 from .validation import (  # noqa: F401, E402
     get_bundled_consumables_endpoint,
     validate_claim_endpoint,
@@ -64,3 +67,4 @@ router.include_router(pricing.router)
 router.include_router(alerts.router)
 router.include_router(optimization.router)
 router.include_router(billing.router)
+router.include_router(rules.router)

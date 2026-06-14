@@ -23,6 +23,11 @@ PROSE_MANIFESTS_DIR = _GAZETTE_DIR / "prose_manifests"
 PROSE_CORPUS_DIR = _GAZETTE_DIR / "prose_corpus"
 _LEGACY_DIR = _DATA_DIR / "legacy"
 
+# SUT prose corpus — extracted clauses + rule-coverage matrix (rule database)
+SUT_CLAUSES_PATH = _GAZETTE_DIR / "sut_clauses.parquet"
+SUT_CLAUSE_COVERAGE_PATH = _GAZETTE_DIR / "sut_clause_coverage.parquet"
+SUT_REGISTRY_COVERAGE_PATH = _GAZETTE_DIR / "sut_registry_coverage.parquet"
+
 # New primary data sources (compiled from 72 gazette documents)
 CHECKUP_JSON_PATH = _GAZETTE_DIR / "sut_checkup_pricing.json"
 EK2B_PARQUET_PATH = _GAZETTE_DIR / "ek2b_islem_puan_listesi.parquet"

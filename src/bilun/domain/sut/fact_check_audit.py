@@ -1,0 +1,352 @@
+"""
+2026-06 SUT algorithm fact-check audit — frozen rollup migrated from
+``docs/core-system/fact-check/MASTER.md``.
+
+The audit program is **closed**. This module is the canonical home for:
+- 28 audit unit verdicts (P0.* / L*.* IDs from the fact-check project)
+- Per-rule fact-check metadata derived for :data:`RULE_REGISTRY`
+- Aggregate verdict counts for the Rule Database API / UI
+
+Ongoing implementation status lives in each rule's ``coverage_status`` field;
+``fact_check_verdict`` captures the June 2026 audit outcome (may differ).
+"""
+
+from __future__ import annotations
+
+from collections import Counter
+from dataclasses import dataclass
+from typing import Any, Literal
+
+FactCheckVerdict = Literal[
+    "COMPLIANT",
+    "PARTIAL",
+    "HEURISTIC",
+    "NEEDS_CLAIM_LINES",
+    "WRONG",
+    "OUT_OF_SCOPE",
+]
+
+MedulaOverlap = Literal[
+    "ADDITIVE",
+    "PARTIAL_OVERLAP",
+    "MEDULA_DUPLICATE",
+    "NOT_APPLICABLE",
+]
+
+AUDIT_CLOSED = "2026-06"
+AUDIT_TOTAL_UNITS = 28
+
+
+@dataclass(frozen=True)
+class FactCheckAuditUnit:
+    unit_id: str
+    title: str
+    verdict: FactCheckVerdict
+    medula_overlap: MedulaOverlap
+    linked_rule_ids: tuple[str, ...] = ()
+    note: str = ""
+
+
+# Frozen audit table — source: MASTER.md Full Verdict Table (28 units).
+FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
+    FactCheckAuditUnit(
+        "P0.1",
+        "Payment method",
+        "PARTIAL",
+        "ADDITIVE",
+        ("payment_method_package", "payment_method_itemized", "payment_method_tier_override"),
+    ),
+    FactCheckAuditUnit(
+        "P0.2",
+        "Session pricing",
+        "PARTIAL",
+        "PARTIAL_OVERLAP",
+        ("drg_unbundling",),
+    ),
+    FactCheckAuditUnit(
+        "P0.3",
+        "Copay general §1.8",
+        "PARTIAL",
+        "ADDITIVE",
+        ("copay_rate_general",),
+        "IVF §1.8.4 rates fixed 2026-06-02",
+    ),
+    FactCheckAuditUnit(
+        "P0.4",
+        "DRG unbundling prose",
+        "PARTIAL",
+        "ADDITIVE",
+        ("drg_unbundling",),
+    ),
+    FactCheckAuditUnit(
+        "P0.5",
+        "Facility tier",
+        "COMPLIANT",
+        "ADDITIVE",
+        ("payment_method_tier_override",),
+    ),
+    FactCheckAuditUnit(
+        "P0.6",
+        "Catalog membership",
+        "COMPLIANT",
+        "ADDITIVE",
+        (
+            "payment_method_package",
+            "payment_method_itemized",
+            "pricing_ek2b",
+            "pricing_ek2c",
+        ),
+        "Cross-cutting catalog_membership infrastructure",
+    ),
+    FactCheckAuditUnit(
+        "L1.1",
+        "EK-3B-1 bundling",
+        "PARTIAL",
+        "ADDITIVE",
+        ("bundling_ek3b1",),
+    ),
+    FactCheckAuditUnit(
+        "L1.2",
+        "EK-3B-2 exclusion",
+        "PARTIAL",
+        "ADDITIVE",
+        ("exclusion_ek3b2",),
+    ),
+    FactCheckAuditUnit(
+        "L1.3",
+        "validate_claim()",
+        "PARTIAL",
+        "ADDITIVE",
+        ("claim_validation",),
+    ),
+    FactCheckAuditUnit(
+        "L1.4",
+        "§3 prose bundling",
+        "PARTIAL",
+        "ADDITIVE",
+        ("material_bundling_prose",),
+        "23 prose rules wired; corpus tail open",
+    ),
+    FactCheckAuditUnit(
+        "L2.1",
+        "Copay exemption EK-1A",
+        "PARTIAL",
+        "ADDITIVE",
+        ("copay_exemption_ek1a",),
+    ),
+    FactCheckAuditUnit(
+        "L2.2",
+        "Visit/status exemptions",
+        "PARTIAL",
+        "ADDITIVE",
+        ("copay_exemption_visit_type",),
+    ),
+    FactCheckAuditUnit(
+        "L2.3",
+        "Surcharge EK-2G",
+        "NEEDS_CLAIM_LINES",
+        "ADDITIVE",
+        ("surcharge_ek2g",),
+    ),
+    FactCheckAuditUnit(
+        "L2.4",
+        "Copay rate EK-2C-1",
+        "NEEDS_CLAIM_LINES",
+        "ADDITIVE",
+        ("copay_rate_ek2c1",),
+    ),
+    FactCheckAuditUnit(
+        "L2.5",
+        "Temporal price audit",
+        "COMPLIANT",
+        "ADDITIVE",
+        ("pricing_ek2b", "pricing_ek2c"),
+    ),
+    FactCheckAuditUnit(
+        "L2.6",
+        "DRG unbundling cohort",
+        "PARTIAL",
+        "ADDITIVE",
+        ("drg_unbundling",),
+    ),
+    FactCheckAuditUnit(
+        "L2.7",
+        "Drug discount validation",
+        "NEEDS_CLAIM_LINES",
+        "PARTIAL_OVERLAP",
+        ("drug_ek4a",),
+    ),
+    FactCheckAuditUnit(
+        "L2.8",
+        "Cohort aggregator",
+        "COMPLIANT",
+        "ADDITIVE",
+        (),
+        "Orchestration layer — no dedicated registry rule",
+    ),
+    FactCheckAuditUnit(
+        "L3.1",
+        "Lab optimizer",
+        "PARTIAL",
+        "ADDITIVE",
+        ("lab_billing",),
+        "Duplicate detection HEURISTIC; hemogram core fixed",
+    ),
+    FactCheckAuditUnit(
+        "L3.2",
+        "Drug optimizer",
+        "HEURISTIC",
+        "ADDITIVE",
+        ("drug_ek4a",),
+        "Exact when claim lines present; substitution savings heuristic",
+    ),
+    FactCheckAuditUnit(
+        "L3.3",
+        "Copay savings",
+        "PARTIAL",
+        "ADDITIVE",
+        ("copay_exemption_ek1a",),
+    ),
+    FactCheckAuditUnit(
+        "L3.4",
+        "Billing strategy",
+        "PARTIAL",
+        "ADDITIVE",
+        (
+            "payment_method_package",
+            "payment_method_itemized",
+            "payment_method_tier_override",
+        ),
+    ),
+    FactCheckAuditUnit(
+        "L3.5",
+        "Material pre-check",
+        "PARTIAL",
+        "PARTIAL_OVERLAP",
+        ("material_preauth_ek3c1", "material_miat_ek3c2", "material_bundling_prose"),
+        "MIAT interval + bundled taxonomy fixed",
+    ),
+    FactCheckAuditUnit(
+        "L3.6",
+        "Billing orchestrator",
+        "PARTIAL",
+        "ADDITIVE",
+        (),
+        "Cross-cutting orchestrator — no dedicated registry rule",
+    ),
+    FactCheckAuditUnit(
+        "L4.1",
+        "EK-2B FFS pricing",
+        "COMPLIANT",
+        "ADDITIVE",
+        ("pricing_ek2b",),
+    ),
+    FactCheckAuditUnit(
+        "L4.2",
+        "EK-2C DRG pricing",
+        "HEURISTIC",
+        "ADDITIVE",
+        ("pricing_ek2c",),
+    ),
+    FactCheckAuditUnit(
+        "L4.3",
+        "EK-2A outpatient",
+        "PARTIAL",
+        "ADDITIVE",
+        ("pricing_ek2a",),
+    ),
+    FactCheckAuditUnit(
+        "L4.4",
+        "Specialty materials EK-3",
+        "PARTIAL",
+        "ADDITIVE",
+        ("specialty_materials_prose", "specialty_materials"),
+    ),
+)
+
+_VERDICT_RANK: dict[FactCheckVerdict, int] = {
+    "WRONG": 0,
+    "NEEDS_CLAIM_LINES": 1,
+    "PARTIAL": 2,
+    "HEURISTIC": 3,
+    "COMPLIANT": 4,
+    "OUT_OF_SCOPE": 5,
+}
+
+_MEDULA_RANK: dict[MedulaOverlap, int] = {
+    "MEDULA_DUPLICATE": 0,
+    "PARTIAL_OVERLAP": 1,
+    "ADDITIVE": 2,
+    "NOT_APPLICABLE": 3,
+}
+
+
+def _worst_verdict(verdicts: list[FactCheckVerdict]) -> FactCheckVerdict:
+    return min(verdicts, key=lambda v: _VERDICT_RANK[v])
+
+
+def _worst_medula(overlaps: list[MedulaOverlap]) -> MedulaOverlap:
+    return min(overlaps, key=lambda o: _MEDULA_RANK[o])
+
+
+def build_rule_fact_check_index() -> dict[str, dict[str, Any]]:
+    """Map rule_id -> fact-check fields for :class:`RuleRegistryEntry` enrichment."""
+    bucket: dict[str, dict[str, Any]] = {}
+
+    for unit in FACT_CHECK_AUDIT_UNITS:
+        for rule_id in unit.linked_rule_ids:
+            row = bucket.setdefault(
+                rule_id,
+                {
+                    "fact_check_units": [],
+                    "verdicts": [],
+                    "medula_overlaps": [],
+                    "notes": [],
+                },
+            )
+            row["fact_check_units"].append(unit.unit_id)
+            row["verdicts"].append(unit.verdict)
+            row["medula_overlaps"].append(unit.medula_overlap)
+            if unit.note:
+                row["notes"].append(f"{unit.unit_id}: {unit.note}")
+
+    index: dict[str, dict[str, Any]] = {}
+    for rule_id, row in bucket.items():
+        index[rule_id] = {
+            "fact_check_verdict": _worst_verdict(row["verdicts"]),
+            "medula_overlap": _worst_medula(row["medula_overlaps"]),
+            "fact_check_units": tuple(row["fact_check_units"]),
+            "fact_check_note": "; ".join(row["notes"]),
+        }
+    return index
+
+
+RULE_FACT_CHECK_INDEX: dict[str, dict[str, Any]] = build_rule_fact_check_index()
+
+
+def fact_check_rollup() -> dict[str, Any]:
+    """Aggregate verdict counts for API / UI summary banner."""
+    by_verdict = dict(Counter(unit.verdict for unit in FACT_CHECK_AUDIT_UNITS))
+    return {
+        "audit_closed": AUDIT_CLOSED,
+        "total_units": AUDIT_TOTAL_UNITS,
+        "by_verdict": {
+            "COMPLIANT": by_verdict.get("COMPLIANT", 0),
+            "PARTIAL": by_verdict.get("PARTIAL", 0),
+            "HEURISTIC": by_verdict.get("HEURISTIC", 0),
+            "NEEDS_CLAIM_LINES": by_verdict.get("NEEDS_CLAIM_LINES", 0),
+            "WRONG": by_verdict.get("WRONG", 0),
+            "OUT_OF_SCOPE": by_verdict.get("OUT_OF_SCOPE", 0),
+        },
+        "units": [
+            {
+                "unit_id": unit.unit_id,
+                "title": unit.title,
+                "verdict": unit.verdict,
+                "medula_overlap": unit.medula_overlap,
+                "linked_rule_ids": list(unit.linked_rule_ids),
+                "note": unit.note or None,
+            }
+            for unit in FACT_CHECK_AUDIT_UNITS
+        ],
+    }

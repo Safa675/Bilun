@@ -560,3 +560,138 @@ class MaterialsBySpecialtyResponse(BaseModel):
     specialties: list[dict[str, Any]]
 
     model_config = ConfigDict(extra="allow")
+
+
+# ── rules.py (SUT rule database) ────────────────────────────────────────────
+
+RuleCoverageStatus = Literal[
+    "implemented",
+    "partial",
+    "missing",
+    "needs_claim_lines",
+    "non_algorithmic",
+]
+
+FactCheckVerdict = Literal[
+    "COMPLIANT",
+    "PARTIAL",
+    "HEURISTIC",
+    "NEEDS_CLAIM_LINES",
+    "WRONG",
+    "OUT_OF_SCOPE",
+]
+
+MedulaOverlap = Literal[
+    "ADDITIVE",
+    "PARTIAL_OVERLAP",
+    "MEDULA_DUPLICATE",
+    "NOT_APPLICABLE",
+]
+
+
+class RuleSources(BaseModel):
+    """Regulatory provenance for a rule: SUT sections (§-prefixed) + EK annexes."""
+
+    sut_sections: list[str] = Field(default_factory=list)
+    annexes: list[str] = Field(default_factory=list)
+
+
+class RuleCatalogEntry(BaseModel):
+    """One rule in the catalog index."""
+
+    rule_id: str
+    rule_category: str
+    coverage_status: RuleCoverageStatus
+    description: str
+    sources: RuleSources
+    keywords: list[str] = Field(default_factory=list)
+    domain_modules: list[str] = Field(default_factory=list)
+    matched_clause_count: int = 0
+    has_clause_mapping: bool = False
+    fact_check_verdict: FactCheckVerdict | None = None
+    medula_overlap: MedulaOverlap | None = None
+    fact_check_units: list[str] = Field(default_factory=list)
+    fact_check_note: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class FactCheckVerdictCounts(BaseModel):
+    COMPLIANT: int = 0
+    PARTIAL: int = 0
+    HEURISTIC: int = 0
+    NEEDS_CLAIM_LINES: int = 0
+    WRONG: int = 0
+    OUT_OF_SCOPE: int = 0
+
+    model_config = ConfigDict(extra="allow")
+
+
+class FactCheckAuditUnitSummary(BaseModel):
+    unit_id: str
+    title: str
+    verdict: FactCheckVerdict
+    medula_overlap: MedulaOverlap
+    linked_rule_ids: list[str] = Field(default_factory=list)
+    note: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class FactCheckRollup(BaseModel):
+    """June 2026 algorithm fact-check audit summary (28 units, program closed)."""
+
+    audit_closed: str
+    total_units: int
+    by_verdict: FactCheckVerdictCounts
+    units: list[FactCheckAuditUnitSummary] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class RuleCatalogResponse(BaseModel):
+    """GET /api/rules — full rule index with coverage + sources."""
+
+    rules: list[RuleCatalogEntry]
+    total: int
+    artifacts_available: bool
+    fact_check: FactCheckRollup
+
+    model_config = ConfigDict(extra="allow")
+
+
+class RuleClause(BaseModel):
+    """One extracted SUT clause mapped to a rule, with provenance."""
+
+    clause_id: str | None = None
+    section_id: str | None = None
+    section_title: str | None = None
+    section_path: str | None = None
+    chapter: str | None = None
+    clause_type: str | None = None
+    text_tr: str | None = None
+    annex_refs: list[str] = Field(default_factory=list)
+    procedure_codes: list[str] = Field(default_factory=list)
+    percentages: list[float] = Field(default_factory=list)
+    amendment_refs: list[str] = Field(default_factory=list)
+    deontic_modality: str | None = None
+    source_effective_date: str | None = None
+    coverage_status: str | None = None
+    is_primary: bool = False
+    match_score: int = 0
+
+    model_config = ConfigDict(extra="allow")
+
+
+class RuleDetailResponse(BaseModel):
+    """GET /api/rules/{rule_id} — rule metadata + extracted-clause drill-down."""
+
+    rule: RuleCatalogEntry
+    clauses: list[RuleClause]
+    clause_total: int
+    page: int
+    per_page: int
+    total_pages: int
+    artifacts_available: bool
+
+    model_config = ConfigDict(extra="allow")
