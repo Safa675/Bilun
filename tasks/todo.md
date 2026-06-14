@@ -1,3 +1,76 @@
+## Task: Rule Database tab — SUT rule catalog + clause-source drill-down (2026-06-13)
+
+### Goal
+A new top-level "Rule Database" tab that lists every SUT rule (catalog index, with honest coverage status) and drills each rule down into the actual extracted SUT clause text + regulatory sources, served by a purpose-built backend API.
+
+### Design decisions (confirmed with Safa)
+1. Layout = **catalog-as-index** (rule list → drill into source clauses).
+2. Sources = **actual SUT clause text** (Turkish `text_tr` from the extracted corpus), not just section/annex labels.
+3. **Full honesty** about coverage — expose `implemented` / `partial` / `missing` / `needs_claim_lines` / `non_algorithmic` openly.
+4. Backend served **from the ground up** (new endpoints, not reusing existing optimizer routes).
+
+### Architecture decisions (agent defaults — flag if you disagree)
+- Promote the rule catalog into the production domain layer: canonical `src/bilun/domain/sut/rule_registry.py`; turn `scripts/sut/prose/rule_registry.py` into a thin re-export so existing golden tests keep passing. (API importing from `scripts/` is architecturally wrong.)
+- Serve clause drill-down from the **precomputed** `data/gazette/sut_clause_coverage.parquet` (classify already ran offline), read with **Polars**, filtered by `matched_rule_ids` containing the rule_id (many-to-many, not just `primary_rule_id`).
+- Reference data, **not** the DuckDB cache: module-level lazy load like `domain/materials/drugs.py`; never touch `startup.py` / `cache/builder.py`.
+- New top-level tab (id `rule-database`), not a Reference Tools sub-section.
+
+### Subtasks
+
+#### Phase 0 — Data artifact prerequisite
+- [x] Confirm/generate `data/gazette/sut_clauses.parquet` via `scripts/sut/extract_sut_prose.py` (8,180 clauses, 545 sections)
+- [x] Generate `data/gazette/sut_clause_coverage.parquet` + `sut_registry_coverage.parquet` via `scripts/sut/build_sut_coverage.py`
+- [x] Verify row counts and that every `RULE_REGISTRY.rule_id` resolves (26/27 map clauses; only `claim_validation` orchestrator = 0, expected)
+
+#### Phase 1 — Backend domain layer
+- [x] Create `src/bilun/domain/sut/rule_registry.py` (canonical `RULE_REGISTRY` + `RuleRegistryEntry`); re-export shim in `scripts/sut/prose/rule_registry.py`
+- [x] Add path constants to `src/bilun/domain/constants.py`: `SUT_CLAUSES_PATH`, `SUT_CLAUSE_COVERAGE_PATH`, `SUT_REGISTRY_COVERAGE_PATH`
+- [x] Create `src/bilun/domain/sut/rules_catalog.py`: lazy Polars loader + `list_rules()` + `get_rule_clauses(rule_id)` (drill-down via `matched_rule_ids`, primary-first), graceful-degrade if parquet missing
+- [x] Unit tests: catalog completeness, clause join + pagination, missing-artifact degradation (`tests/unit/domain/sut/test_rules_catalog.py`)
+
+#### Phase 2 — Backend API
+- [x] Add schemas to `src/bilun/api/schemas.py`: `RuleCatalogResponse`, `RuleDetailResponse`, `RuleCatalogEntry`, `RuleClause`, `RuleSources`
+- [x] Create `src/bilun/api/routes/rules.py`: `GET /api/rules` (index), `GET /api/rules/{rule_id}` (detail + paginated clauses); 404 unknown id, 400 bad pagination
+- [x] Register router + re-export handlers in `src/bilun/api/routes/__init__.py`
+- [x] API tests (`tests/unit/api/test_sut_rules_api.py`): index, detail drill-down, pagination, 404, 400, graceful degradation
+
+### Backend Review (Phase 0–2 complete, 2026-06-13)
+- **Design deviation (intentional):** chose **graceful degradation + `artifacts_available` flag** over a hard 503 when clause artifacts are absent. The catalog still lists every rule (from the registry) with sources + coverage status; only clause text drops out. Matches the `domain/materials/drugs.py` empty-on-missing pattern and is more honest/robust for the UI (banner instead of dead tab).
+- **Verification:** 34/34 new tests pass; live HTTP smoke (mounted router) returns 200 for `/api/rules` (27 rules) and `/api/rules/{id}` (62 clauses for `copay_rate_ek2c1`, paginated), 404 for unknown id, 400 for bad pagination.
+- **Data note:** regenerating parquets produced byte-identical clause data (only pyarrow metadata differed), so committed parquets were kept to avoid a noisy binary diff.
+- **Pre-existing failures (NOT introduced here):** `test_sut_cache_concurrency.py`, `test_sut_patient_alerts_api.py`, `test_sut_schema_exactness.py` all fail with `ModuleNotFoundError: No module named 'src.api'` (stale ILAY→BILUN import path); `test_material_bundling_golden.py[C001637]` is a pre-existing classify mismatch (fails on original committed parquets too).
+- **PAUSED for review before Phase 3 (frontend)** per Safa's instruction.
+
+#### Phase 3 — Frontend tab
+- [x] `frontend/src/lib/constants.ts`: extend `SutHomeTab`, add `rule-database` to `SUT_HOME_TABS`, handle in `parseSutHomeTab`
+- [x] `frontend/src/components/shell/AppTopBar.tsx`: add `rule-database` → `ruleDatabase` tabKey mapping
+- [x] `frontend/src/app/page.tsx`: `dynamic()` import + render branch
+- [x] `frontend/src/lib/api/sut.ts`: `getRuleCatalog()` + `getRuleDetail(ruleId)` types/fns via `requestJSON`
+- [x] Create `SUTRuleDatabase.tsx` (thin shell) + `sut/sections/RuleDatabaseSection.tsx` (master-detail list + clause drill-down; reuses `EkAnnexChips`, `Section`, `Chip`, `Surface`; coverage chips use status tokens, gold reserved for active-row focus only)
+- [x] i18n EN+TR: `homeTabs.ruleDatabase` in `messages/{en,tr}/constants.ts`; `sections.ruleDatabase.*` in `messages/{en,tr}/sections.ts`
+- [x] Chat wiring: `defaultPrompts.ruleDatabase` in `messages/{en,tr}/chat.ts` + `resolvePromptKey` entry in `SutInlineAIPanel.tsx`; English `label` "Rule Database" matches the prompt-key map
+- [x] Update `frontend/src/lib/constants.test.ts` for the new tab
+
+#### Phase 4 — Verify
+- [x] Backend: `pytest` new domain + api tests (34 pass); HTTP smoke via mounted router (200/404/400)
+- [~] Frontend: IDE lints clean on all changed files; manual review of imports/props/exhaustiveness. **`vitest`/`tsc`/`next build` NOT run — no Node runtime in this environment.** Safa must run `cd frontend && npm install && npx tsc --noEmit && npx vitest run && npm run build` and load the tab in EN+TR.
+- [ ] CI green before any push (AGENTS.md §10)
+
+### Frontend Review (Phase 3 complete, 2026-06-13)
+- **Tab:** new top-level `rule-database` ("Rule Database" / "Kural Veritabanı") after Reference Tools. Master-detail UI: searchable + coverage-status-filtered rule list on the left, clause drill-down on the right showing each rule's source SUT clauses (Turkish `text_tr`), section, EK annex chips, deontic modality, effective date, and Resmî Gazete amendment refs. Paginated (25/page).
+- **Honesty surfaced:** coverage status chip on every rule (success/warning/danger/neutral status tokens — never gold), an `artifacts_available=false` banner, and an explicit "no clauses mapped" state.
+- **Design adherence (lessons.md):** gold used only for active-row focus border; status uses separate tokens; no glassmorphism/glow/entry animation; reuses existing primitives + source chips.
+- **LIMITATION:** Node toolchain unavailable in this environment, so type-check/tests/build were not executed here — verified by IDE linter + manual review only. Needs a local `tsc`/`vitest`/`build` pass before merge.
+
+### Out of Scope
+- Editing/authoring rules from the UI (read-only catalog)
+- Surfacing the full raw clause corpus as a browser (only clauses matched to a rule)
+- Resmi Gazete amendment-history timeline per clause (could be a later enhancement)
+- Re-running the prose extractor as part of API runtime (artifacts built offline)
+- Replacing the existing `/bundled-consumables` coverage-scope blobs
+
+---
+
 ## Task: L3.1 §2.2.2.B session fractions (2026-06-11)
 
 ### Goal
