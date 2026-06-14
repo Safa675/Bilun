@@ -4,9 +4,11 @@ import Link from "next/link";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 import type {
   CopayExemptionResult,
+  BillingActionReport,
   PatientOptimization,
   SutPatientOutcomeData,
 } from "@/lib/domains/sut";
+import { PatientFinancialSummary } from "@/components/patient/PatientFinancialSummary";
 import { buildSutHomeHref } from "@/lib/constants";
 import { DRGPanel } from "@/components/tabs/sut/PatientSection";
 import { fmtNum, fmtPctRatio } from "@/components/tabs/sut/shared";
@@ -219,10 +221,14 @@ export default function SutPatientWorkspace({
   patientId,
   outcome,
   optimization,
+  billingReport,
+  claimCount,
 }: {
   patientId: string;
   outcome: SutPatientOutcomeData | null;
   optimization: PatientOptimization | null;
+  billingReport?: BillingActionReport | null;
+  claimCount?: number;
 }) {
   const t = useT();
   const primaryFocusLabel = optimization?.copay_exemptions.exempt
@@ -259,8 +265,20 @@ export default function SutPatientWorkspace({
         </div>
       </Surface>
 
+      <PatientFinancialSummary
+        outcome={outcome}
+        billingReport={billingReport ?? null}
+        claimCount={claimCount}
+      />
+
       {optimization && (
-        <Surface variant="base" padding="lg" className="space-y-6">
+        <Surface variant="soft" padding="lg" className="space-y-6">
+          <div>
+            <Eyebrow>{t("patient.workspace.clinicalSnapshotEyebrow")}</Eyebrow>
+            <p className="mt-1 text-sm leading-snug text-[var(--text-secondary)]">
+              {t("patient.workspace.clinicalSnapshotDescription")}
+            </p>
+          </div>
           <div className="grid gap-6 sm:grid-cols-3">
             <Stat
               label={t("patient.workspace.diagnoses")}

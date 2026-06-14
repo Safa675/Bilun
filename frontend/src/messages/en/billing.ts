@@ -4,7 +4,12 @@ const billing = {
   },
   "summary": {
     "title": "Patient billing report",
+    "billTitle": "Bill billing report",
     "description": "Normative SUT rule review across labs, drugs, copay policy, billing strategy, and materials controls.",
+    "billDescription": "Normative SUT rule review for this bill only — labs, drugs, copay policy, billing strategy, and materials controls.",
+    "scopeAllBills": "Optimization below reflects all bills combined for this patient.",
+    "scopeBill": "Optimization below is scoped to bill {claimId} ({date}).",
+    "scopedLoading": "Loading bill-scoped optimization…",
     "partialExact": "Partial exact",
     "ruleCalculatedOpportunity": "SGK uplift (Kurum ödemesi)",
     "complianceAdjustment": "Compliance adjustment",

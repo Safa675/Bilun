@@ -28,7 +28,7 @@ describe("SyntheticDemoProvenance", () => {
   it("renders demo-safe copy only for synthetic SUT provenance", () => {
     const html = renderToStaticMarkupWithLocale(
       <SyntheticDemoProvenance
-        dataSource={{ ...SYNTHETIC_SOURCE, notice: undefined }}
+        dataSource={{ ...SYNTHETIC_SOURCE, notice: "" }}
       />,
     );
 
@@ -59,7 +59,7 @@ describe("SyntheticDemoChip", () => {
   it("renders a compact chip for synthetic demo data", () => {
     const html = renderToStaticMarkupWithLocale(
       <SyntheticDemoChip
-        dataSource={{ ...SYNTHETIC_SOURCE, notice: undefined }}
+        dataSource={{ ...SYNTHETIC_SOURCE, notice: "" }}
       />,
     );
 

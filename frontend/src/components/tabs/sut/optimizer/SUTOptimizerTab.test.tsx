@@ -134,7 +134,7 @@ describe("Revenue recovery optimization panels", () => {
         top_risky_chapters: [{ chapter: "I", count: 3 }],
         methodology: "Aggregated per-patient DRG unbundling findings from exact claim lines.",
       },
-    } as OptimizationSummary;
+    } as unknown as OptimizationSummary;
 
     const html = renderToStaticMarkupWithLocale(<DrgUnbundlingInline data={data} />);
 
@@ -156,7 +156,7 @@ describe("Revenue recovery optimization panels", () => {
         top_risky_chapters: [],
         methodology: "",
       },
-    } as OptimizationSummary;
+    } as unknown as OptimizationSummary;
 
     const html = renderToStaticMarkupWithLocale(<DrgUnbundlingInline data={data} />);
 

@@ -6,6 +6,7 @@ import {
   CopayOptimizationSection,
   DrgUpliftSection,
   MaterialsPreCheckSection,
+  OptionalOverrideSection,
 } from "./SutBillingReportSections";
 
 vi.mock("@/lib/sutLabels", () => ({
@@ -181,7 +182,7 @@ describe("SutBillingReportSections honest gaps", () => {
 
   it("shows override badge and optional savings header", () => {
     const html = renderToStaticMarkupWithLocale(
-      <BillingStrategySection
+      <OptionalOverrideSection
         strategyData={{
           exactness_status: "exact",
           recommendations: [
@@ -201,10 +202,9 @@ describe("SutBillingReportSections honest gaps", () => {
       />,
     );
 
-    expect(html).toContain("Optional choice — §2.2.2.(2)");
-    expect(html).toContain("Provider may choose method");
-    expect(html).toContain("Difference if alternate method chosen");
+    expect(html).toContain("§2.2.2(2) optional billing method");
     expect(html).toContain("compare package vs itemized");
+    expect(html).toContain("Recoverable uplift");
     expect(html).toContain("1200.00 TRY");
   });
 

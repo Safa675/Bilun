@@ -286,6 +286,20 @@ export interface OptimizationSummary extends SUTDataSourceCarrier {
   };
   temporal_price_validation?: TemporalPriceValidation;
   drg_unbundling?: DrgUnbundlingSummary;
+  drug_discount_validation?: ExactnessState & {
+    n_total_patients: number;
+    n_drug_lines: number | null;
+    n_evaluable_lines?: number | null;
+    n_discounted_lines: number | null;
+    n_violations: number | null;
+    total_billed_try: number | null;
+    total_expected_payable_try: number | null;
+    total_expected_discount_try: number | null;
+    mean_expected_discount_pct: number | null;
+    top_violations: Record<string, unknown>[];
+    methodology: string;
+    rule_source?: string;
+  };
 }
 
 export interface QualifyingDiagnosis {
@@ -367,6 +381,9 @@ export interface PatientOptimization extends SUTDataSourceCarrier {
   surcharge_exposure: SurchargeExposureResult;
   copay_rate_exposure: CopayRateExposureResult;
   drg_unbundling?: PatientDrgUnbundling;
+  /** Present when the payload is scoped to a single bill. */
+  claim_id?: string;
+  scope?: "bill";
 }
 
 export interface PatientAlertCopay {
@@ -851,6 +868,9 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
   exactness_status?: ExactnessStatus;
   unavailable_reason?: string | null;
   required_inputs_missing?: string[];
+  /** Present when the payload is scoped to a single bill. */
+  claim_id?: string;
+  scope?: "bill";
 }
 
 export interface PatientRecoverySummaryRow {
@@ -897,4 +917,103 @@ export interface CohortRecoverySummary extends ExactnessState, SUTDataSourceCarr
   priority_distribution: Record<string, number>;
 }
 
+// ── Patient claim selector / invoice detail ──────────────────────────────────
+
+export interface PatientClaimSummary extends SUTDataSourceCarrier {
+  claim_id: string;
+  episode_id: string;
+  claim_type: string;
+  admission_date: string | null;
+  discharge_date: string | null;
+  claim_start_date: string;
+  claim_end_date: string;
+  primary_icd10: string;
+  expected_total_billed_try: number;
+  expected_total_payable_try: number;
+  expected_denial_reason?: string;
+  scenario_tag?: string;
+  /** Per-bill recoverable amount from cache; null when rollups unavailable. */
+  recoverable_try?: number | null;
+  priority?: "high" | "medium" | "low" | null;
+}
+
+export interface ClaimProcedureLine {
+  procedure_line_id: string;
+  procedure_date: string;
+  procedure_code: string;
+  procedure_name: string;
+  procedure_category: string;
+  quantity: number;
+  unit_price_try: number;
+  billed_amount_try: number;
+  expected_payable_try: number;
+  is_package_included: boolean;
+  package_code?: string;
+  denial_reason_expected?: string;
+  rule_trace_expected?: string;
+}
+
+export interface ClaimMaterialLine {
+  material_line_id: string;
+  material_date: string;
+  material_code: string;
+  material_name: string;
+  material_type: string;
+  specialty_category: string;
+  quantity: number;
+  unit_price_try: number;
+  billed_amount_try: number;
+  expected_payable_try: number;
+  is_bundled: boolean;
+  requires_pre_auth: boolean;
+  denial_reason_expected?: string;
+  rule_trace_expected?: string;
+}
+
+export interface ClaimDrugLine {
+  drug_claim_line_id: string;
+  prescription_id: string;
+  drug_claim_date: string;
+  drug_name: string;
+  drug_code: string;
+  barkod: string;
+  equivalence_group: string;
+  quantity: number;
+  unit_price_try: number;
+  billed_amount_try: number;
+  expected_payable_try: number;
+  discount_tier_expected: number;
+  denial_reason_expected?: string;
+  rule_trace_expected?: string;
+}
+
+export interface PatientClaimDetail extends SUTDataSourceCarrier {
+  claim_id: string;
+  patient_id: string;
+  episode_id: string;
+  claim_type: string;
+  facility_tier: string;
+  provider_type: string;
+  department: string;
+  admission_date: string | null;
+  discharge_date: string | null;
+  claim_start_date: string;
+  claim_end_date: string;
+  primary_icd10: string;
+  package_candidate: boolean;
+  expected_total_billed_try: number;
+  expected_total_payable_try: number;
+  expected_denial_reason?: string;
+  scenario_tag?: string;
+  occupational_context?: string;
+  procedures: ClaimProcedureLine[];
+  materials: ClaimMaterialLine[];
+  drugs: ClaimDrugLine[];
+}
+
+export interface PatientClaimsListResponse extends SUTDataSourceCarrier {
+  patient_id: string;
+  claims: PatientClaimSummary[];
+  total: number;
+}
 

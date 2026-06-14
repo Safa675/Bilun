@@ -25,11 +25,17 @@ import {
   MaterialsPreCheckSection,
   SutOptimizationSection,
 } from "@/components/patient/SutBillingReportSections";
+import BillPicker, { defaultSelectedClaimId } from "@/components/patient/BillPicker";
+import OriginalBillView from "@/components/patient/OriginalBillView";
 import { Eyebrow, Surface } from "@/components/primitives";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
 import PatientSearch from "@/components/ui/PatientSearch";
 import {
+  getBillBillingReport,
+  getBillOptimization,
   getPatientBillingReport,
+  getPatientClaimDetail,
+  getPatientClaims,
   getPatientOptimization,
   getSutPatientOutcome,
   searchSutPatients,
@@ -40,6 +46,8 @@ import { SUT_WORKSPACE_CHAT_SESSION_KEY } from "@/lib/sutChatSession";
 import { recordRecent } from "@/lib/recents";
 import type {
   BillingActionReport,
+  PatientClaimDetail,
+  PatientClaimSummary,
   PatientOptimization,
   SutPatientOutcomeData,
 } from "@/lib/domains/sut";
@@ -65,6 +73,13 @@ export default function SutPatientPage() {
   const [outcome, setOutcome] = useState<SutPatientOutcomeData | null>(null);
   const [optimization, setOptimization] = useState<PatientOptimization | null>(null);
   const [billingReport, setBillingReport] = useState<BillingActionReport | null>(null);
+  const [claims, setClaims] = useState<PatientClaimSummary[]>([]);
+  const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
+  const [claimDetail, setClaimDetail] = useState<PatientClaimDetail | null>(null);
+  const [claimsLoading, setClaimsLoading] = useState(false);
+  const [claimsError, setClaimsError] = useState<string | null>(null);
+  const [claimDetailLoading, setClaimDetailLoading] = useState(false);
+  const [claimDetailError, setClaimDetailError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [outcomeError, setOutcomeError] = useState<string | null>(null);
   const [optimizationError, setOptimizationError] = useState<string | null>(null);
@@ -76,6 +91,15 @@ export default function SutPatientPage() {
   const outcomeControllerRef = useRef<AbortController | null>(null);
   const optimizationControllerRef = useRef<AbortController | null>(null);
   const billingControllerRef = useRef<AbortController | null>(null);
+  const claimsControllerRef = useRef<AbortController | null>(null);
+  const claimDetailControllerRef = useRef<AbortController | null>(null);
+  const scopedControllerRef = useRef<AbortController | null>(null);
+
+  const [billBillingReport, setBillBillingReport] = useState<BillingActionReport | null>(null);
+  const [billOptimization, setBillOptimization] = useState<PatientOptimization | null>(null);
+  const [scopedLoading, setScopedLoading] = useState(false);
+  const [scopedBillingError, setScopedBillingError] = useState<string | null>(null);
+  const [scopedOptimizationError, setScopedOptimizationError] = useState<string | null>(null);
 
   const loadWorkspace = useCallback((nextPatientId: string) => {
     outcomeControllerRef.current?.abort();
@@ -171,6 +195,166 @@ export default function SutPatientPage() {
     };
   }, [loadWorkspace, patientId]);
 
+  const loadClaims = useCallback((nextPatientId: string) => {
+    claimsControllerRef.current?.abort();
+    const controller = new AbortController();
+    claimsControllerRef.current = controller;
+
+    setClaimsLoading(true);
+    setClaimsError(null);
+    setClaims([]);
+    setSelectedClaimId(null);
+    setClaimDetail(null);
+
+    getPatientClaims(nextPatientId, { signal: controller.signal })
+      .then((response) => {
+        if (controller.signal.aborted) return;
+        setClaims(response.claims);
+        setSelectedClaimId(defaultSelectedClaimId(response.claims));
+      })
+      .catch((reason) => {
+        if (controller.signal.aborted) return;
+        setClaimsError(
+          reason instanceof Error ? reason.message : t("patient.page.errors.claims"),
+        );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setClaimsLoading(false);
+          claimsControllerRef.current = null;
+        }
+      });
+  }, [t]);
+
+  const loadClaimDetail = useCallback((nextPatientId: string, claimId: string | null) => {
+    claimDetailControllerRef.current?.abort();
+    const controller = new AbortController();
+    claimDetailControllerRef.current = controller;
+
+    setClaimDetailLoading(true);
+    setClaimDetailError(null);
+    setClaimDetail(null);
+
+    if (!claimId) {
+      setClaimDetailLoading(false);
+      claimDetailControllerRef.current = null;
+      return;
+    }
+
+    getPatientClaimDetail(nextPatientId, claimId, { signal: controller.signal })
+      .then((response) => {
+        if (controller.signal.aborted) return;
+        setClaimDetail(response);
+      })
+      .catch((reason) => {
+        if (controller.signal.aborted) return;
+        setClaimDetailError(
+          reason instanceof Error ? reason.message : t("patient.page.errors.claims"),
+        );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setClaimDetailLoading(false);
+          claimDetailControllerRef.current = null;
+        }
+      });
+  }, [t]);
+
+  useEffect(() => {
+    if (!patientId) {
+      return;
+    }
+    loadClaims(patientId);
+    return () => {
+      claimsControllerRef.current?.abort();
+    };
+  }, [loadClaims, patientId]);
+
+  useEffect(() => {
+    if (!patientId) {
+      return;
+    }
+    loadClaimDetail(patientId, selectedClaimId);
+    return () => {
+      claimDetailControllerRef.current?.abort();
+    };
+  }, [loadClaimDetail, patientId, selectedClaimId]);
+
+  const loadScopedReports = useCallback(
+    (nextPatientId: string, claimId: string | null) => {
+      scopedControllerRef.current?.abort();
+
+      if (!claimId) {
+        setBillBillingReport(null);
+        setBillOptimization(null);
+        setScopedLoading(false);
+        setScopedBillingError(null);
+        setScopedOptimizationError(null);
+        scopedControllerRef.current = null;
+        return;
+      }
+
+      const controller = new AbortController();
+      scopedControllerRef.current = controller;
+      setScopedLoading(true);
+      setScopedBillingError(null);
+      setScopedOptimizationError(null);
+      setBillBillingReport(null);
+      setBillOptimization(null);
+
+      void Promise.allSettled([
+        getBillBillingReport(nextPatientId, claimId, { signal: controller.signal }),
+        getBillOptimization(nextPatientId, claimId, { signal: controller.signal }),
+      ]).then(([billingResult, optimizationResult]) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        if (billingResult.status === "fulfilled") {
+          setBillBillingReport(billingResult.value);
+        } else {
+          setScopedBillingError(
+            billingResult.reason instanceof Error
+              ? billingResult.reason.message
+              : t("patient.page.errors.billing"),
+          );
+        }
+
+        if (optimizationResult.status === "fulfilled") {
+          setBillOptimization(optimizationResult.value);
+        } else {
+          setScopedOptimizationError(
+            optimizationResult.reason instanceof Error
+              ? optimizationResult.reason.message
+              : t("patient.page.errors.optimization"),
+          );
+        }
+
+        setScopedLoading(false);
+        scopedControllerRef.current = null;
+      });
+    },
+    [t],
+  );
+
+  useEffect(() => {
+    if (!patientId || loading) {
+      return;
+    }
+    loadScopedReports(patientId, selectedClaimId);
+    return () => {
+      scopedControllerRef.current?.abort();
+    };
+  }, [loadScopedReports, loading, patientId, selectedClaimId]);
+
+  const isBillScoped = selectedClaimId !== null;
+  const activeBillingReport = isBillScoped ? billBillingReport : billingReport;
+  const activeOptimization = isBillScoped ? billOptimization : optimization;
+  const selectedClaimSummary = useMemo(
+    () => claims.find((claim) => claim.claim_id === selectedClaimId) ?? null,
+    [claims, selectedClaimId],
+  );
+
   const handlePatientSelect = useCallback((selectedPatientId: string) => {
     router.push(buildSutPatientHref(selectedPatientId));
   }, [router]);
@@ -196,10 +380,10 @@ export default function SutPatientPage() {
       buildPatientWorkspacePageContext({
         patientId,
         outcome,
-        optimization,
-        billingReport,
+        optimization: activeOptimization ?? optimization,
+        billingReport: activeBillingReport ?? billingReport,
       }),
-    [patientId, outcome, optimization, billingReport],
+    [patientId, outcome, optimization, billingReport, activeOptimization, activeBillingReport],
   );
   const shouldRenderChat = !loading && !allFailed;
   const isDocked = shouldRenderChat && chatDock !== "center";
@@ -282,48 +466,100 @@ export default function SutPatientPage() {
                   patientId={patientId}
                   outcome={outcome}
                   optimization={optimization}
+                  billingReport={billingReport}
+                  claimCount={claims.length > 0 ? claims.length : undefined}
                 />
-                {billingReport && (
-                  <>
-                    <BillingSummary billingReport={billingReport} />
-                    <LabOptimizationSection labData={billingReport.lab} />
-                    <CopayOptimizationSection copayData={billingReport.copay} />
-                    <BillingStrategySection strategyData={billingReport.billing_strategy} />
-                    <OptionalOverrideSection strategyData={billingReport.billing_strategy} />
-                    {billingReport.session_uplift && (
-                      <SessionUpliftSection sessionData={billingReport.session_uplift} />
-                    )}
-                    {billingReport.blood_uplift && (
-                      <BloodComponentUpliftSection bloodData={billingReport.blood_uplift} />
-                    )}
-                    {billingReport.material_uplift && (
-                      <MaterialUpliftSection materialData={billingReport.material_uplift} />
-                    )}
-                    {billingReport.procedure_addon_uplift && (
-                      <ProcedureAddonUpliftSection addonData={billingReport.procedure_addon_uplift} />
-                    )}
-                    {billingReport.procedure_capture_gap && (
-                      <ProcedureCaptureGapSection captureData={billingReport.procedure_capture_gap} />
-                    )}
-                    {billingReport.drg_package_adequacy && (
-                      <DrgPackageAdequacyReviewSection reviewData={billingReport.drg_package_adequacy} />
-                    )}
-                    {billingReport.gazette_repricing && (
-                      <GazetteRepricingSection repricingData={billingReport.gazette_repricing} />
-                    )}
-                    {billingReport.medula_rejection_playbook && (
-                      <MedulaRejectionPlaybookSection
-                        playbookData={billingReport.medula_rejection_playbook}
+                {(claims.length > 0 || claimsLoading || claimsError) && (
+                  <Surface variant="base" padding="md">
+                    {claimsError ? (
+                      <p className="text-sm text-[var(--text-secondary)]">{claimsError}</p>
+                    ) : (
+                      <BillPicker
+                        claims={claims}
+                        selectedClaimId={selectedClaimId}
+                        onSelectClaim={setSelectedClaimId}
+                        disabled={claimsLoading}
                       />
                     )}
-                    {billingReport.care_setting_review && (
-                      <CareSettingReviewSection reviewData={billingReport.care_setting_review} />
+                  </Surface>
+                )}
+                {claimDetailLoading && (
+                  <Surface variant="soft" padding="md">
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      {t("patient.claimDetail.loading")}
+                    </p>
+                  </Surface>
+                )}
+                {claimDetailError && (
+                  <Surface variant="soft" padding="md">
+                    <p className="text-sm text-[var(--text-secondary)]">{claimDetailError}</p>
+                  </Surface>
+                )}
+                {claimDetail && selectedClaimId && <OriginalBillView claim={claimDetail} />}
+                {isBillScoped && scopedLoading && (
+                  <Surface variant="soft" padding="md">
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      {t("billing.summary.scopedLoading")}
+                    </p>
+                  </Surface>
+                )}
+                {(scopedBillingError || scopedOptimizationError) && (
+                  <Surface variant="soft" padding="md" className="space-y-1 text-sm text-[var(--text-secondary)]">
+                    {scopedBillingError && <p>{scopedBillingError}</p>}
+                    {scopedOptimizationError && <p>{scopedOptimizationError}</p>}
+                  </Surface>
+                )}
+                {!claimsLoading && activeBillingReport && !scopedLoading && (
+                  <>
+                    <Surface variant="soft" padding="md">
+                      <p className="text-sm text-[var(--text-secondary)]">
+                        {isBillScoped
+                          ? t("billing.summary.scopeBill", {
+                              claimId: selectedClaimId ?? "",
+                              date: selectedClaimSummary?.claim_start_date ?? "",
+                            })
+                          : t("billing.summary.scopeAllBills")}
+                      </p>
+                    </Surface>
+                    <BillingSummary billingReport={activeBillingReport} />
+                    <LabOptimizationSection labData={activeBillingReport.lab} />
+                    <CopayOptimizationSection copayData={activeBillingReport.copay} />
+                    <BillingStrategySection strategyData={activeBillingReport.billing_strategy} />
+                    <OptionalOverrideSection strategyData={activeBillingReport.billing_strategy} />
+                    {activeBillingReport.session_uplift && (
+                      <SessionUpliftSection sessionData={activeBillingReport.session_uplift} />
                     )}
-                    {billingReport.drg_uplift && (
-                      <DrgUpliftSection drgData={billingReport.drg_uplift} />
+                    {activeBillingReport.blood_uplift && (
+                      <BloodComponentUpliftSection bloodData={activeBillingReport.blood_uplift} />
                     )}
-                    <MaterialsPreCheckSection materialsData={billingReport.materials} />
-                    {optimization && <SutOptimizationSection optimization={optimization} />}
+                    {activeBillingReport.material_uplift && (
+                      <MaterialUpliftSection materialData={activeBillingReport.material_uplift} />
+                    )}
+                    {activeBillingReport.procedure_addon_uplift && (
+                      <ProcedureAddonUpliftSection addonData={activeBillingReport.procedure_addon_uplift} />
+                    )}
+                    {activeBillingReport.procedure_capture_gap && (
+                      <ProcedureCaptureGapSection captureData={activeBillingReport.procedure_capture_gap} />
+                    )}
+                    {activeBillingReport.drg_package_adequacy && (
+                      <DrgPackageAdequacyReviewSection reviewData={activeBillingReport.drg_package_adequacy} />
+                    )}
+                    {activeBillingReport.gazette_repricing && (
+                      <GazetteRepricingSection repricingData={activeBillingReport.gazette_repricing} />
+                    )}
+                    {activeBillingReport.medula_rejection_playbook && (
+                      <MedulaRejectionPlaybookSection
+                        playbookData={activeBillingReport.medula_rejection_playbook}
+                      />
+                    )}
+                    {activeBillingReport.care_setting_review && (
+                      <CareSettingReviewSection reviewData={activeBillingReport.care_setting_review} />
+                    )}
+                    {activeBillingReport.drg_uplift && (
+                      <DrgUpliftSection drgData={activeBillingReport.drg_uplift} />
+                    )}
+                    <MaterialsPreCheckSection materialsData={activeBillingReport.materials} />
+                    {activeOptimization && <SutOptimizationSection optimization={activeOptimization} />}
                     <p className="py-2 text-center text-xs text-[var(--text-muted)]">
                       {t("patient.page.footerNormative")}
                     </p>

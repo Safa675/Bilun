@@ -12,8 +12,72 @@ const patient = {
     "errors": {
       "outcome": "Failed to load patient SUT outcome.",
       "optimization": "Failed to load patient optimization.",
-      "billing": "Failed to load patient billing report."
+      "billing": "Failed to load patient billing report.",
+      "claims": "Failed to load patient claims."
     }
+  },
+  "financialSummary": {
+    "eyebrow": "Financial profile",
+    "title": "All bills at a glance",
+    "description": "Patient-level totals across every claim: what was billed, what SUT expects to pay, and how much BILUN can still recover.",
+    "totalBilled": "Total billed",
+    "expectedPayable": "Expected payable",
+    "totalRecoverable": "Total recoverable",
+    "billCount": "Bills",
+    "overallPriority": "Overall priority"
+  },
+  "claimSelector": {
+    "label": "Invoice / Claim",
+    "allClaims": "All claims",
+    "claimCount": "{count}",
+    "claimSingular": " claim",
+    "claimPlural": " claims"
+  },
+  "billPicker": {
+    "label": "Bills",
+    "allBills": "All bills (summary)",
+    "recoverable": "recoverable",
+    "billed": "billed",
+    "claimSingular": " bill",
+    "claimPlural": " bills",
+    "billMeta": "{claimType} · {amount}"
+  },
+  "originalBill": {
+    "eyebrow": "As submitted",
+    "title": "Original invoice",
+    "description": "Full-fidelity view of this bill's line items: what was billed versus what SUT expects to pay on each row.",
+    "proceduresTitle": "Procedures",
+    "labsTitle": "Laboratory",
+    "materialsTitle": "Materials",
+    "drugsTitle": "Drugs",
+    "asSubmitted": "Billed",
+    "sutExpected": "SUT expected",
+    "sectionSubtotal": "{section} subtotal",
+    "linesSubtotal": "Line items subtotal",
+    "variance": "Header vs lines",
+    "noLabs": "No laboratory lines in this bill.",
+    "facility": "Facility tier",
+    "optimizationHint": "Per-bill optimization sections below show how this invoice could be billed under SUT."
+  },
+  "claimDetail": {
+    "loading": "Loading claim details…",
+    "eyebrow": "Selected claim",
+    "period": "Period",
+    "totalBilled": "Total billed",
+    "totalPayable": "Expected payable",
+    "lines": "Lines",
+    "proceduresTitle": "Procedures",
+    "materialsTitle": "Materials",
+    "drugsTitle": "Drugs",
+    "noProcedures": "No procedure lines in this claim.",
+    "noMaterials": "No material lines in this claim.",
+    "noDrugs": "No drug lines in this claim.",
+    "date": "Date",
+    "code": "Code",
+    "name": "Name",
+    "quantity": "Qty",
+    "billed": "Billed",
+    "payable": "Payable"
   },
   "workspace": {
     "eyebrow": "SUT patient workspace",
@@ -28,6 +92,8 @@ const patient = {
     "focusCopay": "Copay exemption",
     "focusExactness": "Exactness review",
     "consistencyEyebrow": "Consistency note",
+    "clinicalSnapshotEyebrow": "Clinical & rule snapshot",
+    "clinicalSnapshotDescription": "Diagnosis-driven SUT rule findings for this patient. Select a bill below for claim-scoped optimization.",
     "optimizationTitle": "Optimization snapshot",
     "optimizationDescription": "Patient-level SUT rule findings stay exactness-aware: unavailable inputs stay unavailable.",
     "copayEyebrow": "Copay exemption",

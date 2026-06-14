@@ -23,6 +23,10 @@ vi.mock("@/components/tabs/sut/shared", () => ({
 vi.mock("@/lib/sutExactness", () => ({
   isExactOutput: (block: { exactness_status?: string | null; pricing_status?: string | null } | null | undefined) =>
     block?.exactness_status === "exact" || block?.pricing_status === "exact",
+  hasRecoverableBillingTotals: (block: { exactness_status?: string | null; pricing_status?: string | null } | null | undefined) =>
+    block?.exactness_status === "exact" ||
+    block?.pricing_status === "exact" ||
+    block?.exactness_status === "partial_exact",
   getUnavailableMessage: (
     block: { unavailable_reason?: string | null; required_inputs_missing?: string[] | null } | null | undefined,
     fallback: string,

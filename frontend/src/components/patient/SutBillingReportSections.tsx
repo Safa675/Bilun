@@ -146,6 +146,7 @@ export function TableWrap({
 
 export function BillingSummary({ billingReport }: { billingReport: BillingActionReport }) {
   const t = useT();
+  const isBillScope = billingReport.scope === "bill" && Boolean(billingReport.claim_id);
   const reportExact = isExactOutput(billingReport);
   const reportHasTotals = hasRecoverableBillingTotals(billingReport);
   const copayExact = isExactOutput(billingReport.copay);
@@ -186,12 +187,14 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
     <Surface variant="base" padding="lg" className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <Eyebrow>{t("billing.summary.title")}</Eyebrow>
+          <Eyebrow>
+            {isBillScope ? t("billing.summary.billTitle") : t("billing.summary.title")}
+          </Eyebrow>
           <p className="mt-1 font-mono text-base text-[var(--text-secondary)]">
-            {billingReport.patient_id}
+            {isBillScope ? billingReport.claim_id : billingReport.patient_id}
           </p>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
-            {t("billing.summary.description")}
+            {isBillScope ? t("billing.summary.billDescription") : t("billing.summary.description")}
           </p>
         </div>
         <StatusChip label={statusLabel} color={priorityColor} />
@@ -771,7 +774,13 @@ export function OptionalOverrideSection({
                 {fmtTRY2OrUnavailable(strategyItemizedTotalTry(item) ?? null)}
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                {fmtTRY2OrUnavailable(strategySavingsTryDisplay(item) ?? null)}
+                {(() => {
+                  const display = strategySavingsTryDisplay(item);
+                  if (display.muted) {
+                    return <span className="text-[var(--text-muted)]">—</span>;
+                  }
+                  return fmtTRY2OrUnavailable(display.amount);
+                })()}
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
               <td>{item.detail ?? "—"}</td>

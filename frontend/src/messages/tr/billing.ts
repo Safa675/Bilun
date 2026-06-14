@@ -4,7 +4,12 @@ const billing = {
   },
   "summary": {
     "title": "Hasta fatura raporu",
+    "billTitle": "Seçili fatura raporu",
     "description": "Laboratuvar, ilaç, katılım payı politikası, fatura stratejisi ve malzeme kontrolleri genelinde normatif SUT kural incelemesi.",
+    "billDescription": "Yalnızca bu fatura için normatif SUT kural incelemesi — laboratuvar, ilaç, katılım payı, fatura stratejisi ve malzeme kontrolleri.",
+    "scopeAllBills": "Aşağıdaki optimizasyon bu hastanın tüm faturaları birleştirilmiş olarak gösterilir.",
+    "scopeBill": "Aşağıdaki optimizasyon yalnızca {claimId} ({date}) faturasına özeldir.",
+    "scopedLoading": "Fatura kapsamlı optimizasyon yükleniyor…",
     "partialExact": "Kısmi kesin",
     "ruleCalculatedOpportunity": "SGK artışı (Kurum ödemesi)",
     "complianceAdjustment": "Uyumluluk düzeltmesi",

@@ -12,8 +12,72 @@ const patient = {
     "errors": {
       "outcome": "Hasta SUT sonucu yüklenemedi.",
       "optimization": "Hasta optimizasyonu yüklenemedi.",
-      "billing": "Hasta fatura raporu yüklenemedi."
+      "billing": "Hasta fatura raporu yüklenemedi.",
+      "claims": "Hasta fatura/talepleri yüklenemedi."
     }
+  },
+  "financialSummary": {
+    "eyebrow": "Finansal profil",
+    "title": "Tüm faturalar özeti",
+    "description": "Her talep için hasta düzeyinde toplamlar: faturalanan, SUT'un ödemesini beklediği tutar ve BILUN'un hâlâ kurtarabileceği miktar.",
+    "totalBilled": "Toplam faturalanan",
+    "expectedPayable": "Beklenen ödenecek",
+    "totalRecoverable": "Toplam kurtarılabilir",
+    "billCount": "Fatura sayısı",
+    "overallPriority": "Genel öncelik"
+  },
+  "claimSelector": {
+    "label": "Fatura / Talep",
+    "allClaims": "Tüm talepler",
+    "claimCount": "{count}",
+    "claimSingular": " talep",
+    "claimPlural": " talep"
+  },
+  "billPicker": {
+    "label": "Faturalar",
+    "allBills": "Tüm faturalar (özet)",
+    "recoverable": "kurtarılabilir",
+    "billed": "faturalanan",
+    "claimSingular": " fatura",
+    "claimPlural": " fatura",
+    "billMeta": "{claimType} · {amount}"
+  },
+  "originalBill": {
+    "eyebrow": "Sunulan fatura",
+    "title": "Orijinal fatura",
+    "description": "Bu faturanın tam kalem görünümü: her satırda faturalanan tutar ile SUT'un beklediği ödeme yan yana.",
+    "proceduresTitle": "Tedavi işlemleri",
+    "labsTitle": "Laboratuvar",
+    "materialsTitle": "Malzemeler",
+    "drugsTitle": "İlaçlar",
+    "asSubmitted": "Faturalanan",
+    "sutExpected": "SUT beklenen",
+    "sectionSubtotal": "{section} ara toplam",
+    "linesSubtotal": "Kalem ara toplamı",
+    "variance": "Başlık vs kalemler",
+    "noLabs": "Bu faturada laboratuvar kalemi yok.",
+    "facility": "Tesis düzeyi",
+    "optimizationHint": "Aşağıdaki fatura kapsamlı optimizasyon bölümleri, bu faturanın SUT altında nasıl faturalandırılabileceğini gösterir."
+  },
+  "claimDetail": {
+    "loading": "Talep detayları yükleniyor…",
+    "eyebrow": "Seçili talep",
+    "period": "Dönem",
+    "totalBilled": "Toplam faturalanan",
+    "totalPayable": "Beklenen ödenecek",
+    "lines": "Kalem",
+    "proceduresTitle": "Tedavi işlemleri",
+    "materialsTitle": "Malzemeler",
+    "drugsTitle": "İlaçlar",
+    "noProcedures": "Bu talepte tedavi işlemi kalemi yok.",
+    "noMaterials": "Bu talepte malzeme kalemi yok.",
+    "noDrugs": "Bu talepte ilaç kalemi yok.",
+    "date": "Tarih",
+    "code": "Kod",
+    "name": "Ad",
+    "quantity": "Adet",
+    "billed": "Faturalanan",
+    "payable": "Ödenecek"
   },
   "workspace": {
     "eyebrow": "SUT hasta çalışma alanı",
@@ -28,6 +92,8 @@ const patient = {
     "focusCopay": "Katılım payı muafiyeti",
     "focusExactness": "Kesinlik incelemesi",
     "consistencyEyebrow": "Tutarlılık notu",
+    "clinicalSnapshotEyebrow": "Klinik ve kural özeti",
+    "clinicalSnapshotDescription": "Bu hasta için tanı temelli SUT kural bulguları. Talep kapsamlı optimizasyon için aşağıdan bir fatura seçin.",
     "optimizationTitle": "Optimizasyon özeti",
     "optimizationDescription": "Hasta düzeyinde SUT kural bulguları kesinlik odaklı kalır: eksik girdiler kullanılamaz olarak gösterilir.",
     "copayEyebrow": "Katılım payı muafiyeti",

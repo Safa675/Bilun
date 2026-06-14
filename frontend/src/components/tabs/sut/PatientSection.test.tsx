@@ -99,7 +99,7 @@ describe("ClaimSummaryPanel", () => {
     expect(html).toContain("Exact Claim-Line Summary");
     expect(html).toContain("132 TRY");
     expect(html).toContain("520030");
-    expect(html).toContain("EK-2C-1 add-on rate");
+    expect(html).toContain("EK-2C-1 copay rate");
     expect(html).toContain("EK-2C-1");
     expect(html).not.toContain(">Yes<");
   });

@@ -132,7 +132,7 @@ describe("BillingSummary", () => {
   it("shows exact billing state without inline provenance banner", () => {
     const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={baseReport} />);
 
-    expect(html).toContain("Max additional SGK reimbursement");
+    expect(html).toContain("SGK uplift (Kurum ödemesi)");
     expect(html).not.toContain("Synthetic demo claims");
     expect(html).not.toContain("Billing totals remain unavailable");
     expect(html).not.toContain("Actual reimbursement recovery");
@@ -167,7 +167,7 @@ describe("BillingSummary", () => {
 
     // Italic-gold serif on the primary money amount (Stat display="gold")
     expect(html).toMatch(/italic[^>]*var\(--gold\)[\s\S]*?18450\.50 TRY/);
-    expect(html).toContain("Max additional SGK reimbursement");
+    expect(html).toContain("SGK uplift (Kurum ödemesi)");
     // legacy chrome must be absent
     expect(html).not.toContain("frost-panel");
     expect(html).not.toContain("sut-premium-panel");
