@@ -50,6 +50,15 @@ const sections = {
       effectiveDate: "Effective {date}",
       amendments: "Amendments: {refs}",
     },
+    deontic: {
+      MUST_BILL: "Billed",
+      MAY_BILL: "May be billed",
+      MUST_NOT_BILL: "Must not be billed separately",
+      NO_PAY: "Not reimbursable",
+      NO_COPAY: "No copay",
+      COPAY_REQUIRED: "Copay required",
+      unknown: "{modality}",
+    },
     pagination: {
       prev: "Prev",
       next: "Next",

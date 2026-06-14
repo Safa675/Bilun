@@ -17,6 +17,7 @@ import { Chip, Section, Surface } from "@/components/primitives";
 import { EkAnnexChips } from "@/components/sut/RegulatorySourceChips";
 import { useSutApi } from "../useSutApi";
 import { fmtNum } from "../shared";
+import { useLocale } from "@/lib/i18n";
 import { useT } from "@/lib/i18n/useTranslations";
 
 const COVERAGE_VARIANT: Record<RuleCoverageStatus, "success" | "warning" | "danger" | "neutral"> = {
@@ -66,6 +67,34 @@ const STATUS_FILTERS: (RuleCoverageStatus | "all")[] = [
 ];
 
 const CLAUSES_PER_PAGE = 25;
+
+function useLocalizedRule(rule: RuleCatalogEntry | null | undefined) {
+  const locale = useLocale();
+  if (!rule) {
+    return { category: "", description: "" };
+  }
+  return {
+    category: locale === "tr" && rule.rule_category_tr ? rule.rule_category_tr : rule.rule_category,
+    description: locale === "tr" && rule.description_tr ? rule.description_tr : rule.description,
+  };
+}
+
+function useDeonticLabel(modality: string | null | undefined) {
+  const t = useT();
+  if (!modality) return null;
+  const key = `sections.ruleDatabase.deontic.${modality}`;
+  const translated = t(key, { modality });
+  return translated === key ? modality : translated;
+}
+
+function RuleDescription({ rule }: { rule: RuleCatalogEntry }) {
+  const { description } = useLocalizedRule(rule);
+  return (
+    <p className="text-[11px] leading-snug text-[var(--text-secondary)]">
+      {description}
+    </p>
+  );
+}
 
 function CoverageChip({ status }: { status: RuleCoverageStatus }) {
   const t = useT();
@@ -312,9 +341,7 @@ function RuleList({
                   <CoverageChip status={rule.coverage_status} />
                 </span>
               </div>
-              <p className="text-[11px] leading-snug text-[var(--text-secondary)]">
-                {rule.description}
-              </p>
+              <RuleDescription rule={rule} />
               <div className="flex items-center justify-between gap-2">
                 <RuleSourceChips rule={rule} />
                 <span className="shrink-0 text-[10px] tabular-nums text-[var(--text-muted)]">
@@ -376,6 +403,8 @@ function RuleDetailPanel({
     };
   }, [ruleId, page, t]);
 
+  const { category, description } = useLocalizedRule(detail?.rule);
+
   if (loading && !detail) {
     return <SutReferenceSectionSkeleton title={t("sections.ruleDatabase.detail.loading")} />;
   }
@@ -404,7 +433,8 @@ function RuleDetailPanel({
             <CoverageChip status={rule.coverage_status} />
           </span>
         </div>
-        <p className="text-sm leading-snug text-[var(--text-secondary)]">{rule.description}</p>
+        <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{category}</p>
+        <p className="text-sm leading-snug text-[var(--text-secondary)]">{description}</p>
         {rule.fact_check_units && rule.fact_check_units.length > 0 && (
           <p className="text-[10px] text-[var(--text-muted)]">
             {t("sections.ruleDatabase.factCheck.auditUnits", {
@@ -487,6 +517,7 @@ function RuleDetailPanel({
 function ClauseCard({ clause }: { clause: RuleClause }) {
   const t = useT();
   const sectionLabel = [clause.section_id, clause.section_title].filter(Boolean).join(" · ");
+  const deonticLabel = useDeonticLabel(clause.deontic_modality);
 
   return (
     <li className="rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-soft)] p-3">
@@ -507,8 +538,8 @@ function ClauseCard({ clause }: { clause: RuleClause }) {
         {clause.text_tr}
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-[var(--text-muted)]">
-        {clause.deontic_modality && (
-          <span className="font-mono uppercase tracking-wide">{clause.deontic_modality}</span>
+        {deonticLabel && (
+          <span className="font-mono uppercase tracking-wide">{deonticLabel}</span>
         )}
         {clause.source_effective_date && (
           <span>

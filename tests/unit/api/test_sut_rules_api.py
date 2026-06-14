@@ -34,6 +34,12 @@ class TestCatalogEndpoint:
         assert len(model.rules) == len(RULE_REGISTRY)
         assert model.fact_check.total_units == 28
         assert model.fact_check.by_verdict.PARTIAL == 18
+        ek1a = next(r for r in model.rules if r.rule_id == "copay_exemption_ek1a")
+        assert ek1a.rule_category_tr == "Katılım Payı Muafiyeti"
+        assert ek1a.description_tr == "EK-1/A kronik hastalık katılım payı muafiyetleri"
+        drug_discount = next(r for r in model.rules if r.rule_id == "drug_discount_prose")
+        assert drug_discount.coverage_status == "needs_claim_lines"
+        assert drug_discount.fact_check_verdict == "NEEDS_CLAIM_LINES"
 
     @_needs_coverage
     def test_artifacts_flag_true_with_data(self) -> None:

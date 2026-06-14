@@ -140,13 +140,31 @@ def _rule_sources(entry: RuleRegistryEntry) -> dict[str, list[str]]:
     }
 
 
+def _rule_clause_mapping_from_coverage(rule_id: str) -> dict[str, Any]:
+    """Fallback mapping count when registry summary artifact lacks a rule row."""
+
+    frame = _load_coverage()
+    if frame is None:
+        return {"matched_clause_count": 0, "has_clause_mapping": False}
+
+    count = frame.filter(pl.col("_matched_rule_ids_list").list.contains(rule_id)).height
+    return {
+        "matched_clause_count": count,
+        "has_clause_mapping": count > 0,
+    }
+
+
 def _rule_summary(entry: RuleRegistryEntry) -> dict[str, Any]:
     coverage = _load_registry_coverage().get(entry.rule_id, {})
+    if not coverage:
+        coverage = _rule_clause_mapping_from_coverage(entry.rule_id)
     summary: dict[str, Any] = {
         "rule_id": entry.rule_id,
         "rule_category": entry.rule_category,
+        "rule_category_tr": entry.rule_category_tr,
         "coverage_status": entry.coverage_status,
         "description": entry.description,
+        "description_tr": entry.description_tr,
         "sources": _rule_sources(entry),
         "keywords": list(entry.keywords),
         "domain_modules": list(entry.domain_modules),

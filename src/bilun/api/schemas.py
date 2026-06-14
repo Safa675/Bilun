@@ -8,6 +8,7 @@ and several pricing endpoints pass through gazette-derived dicts.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Literal
 from typing import Any
 
@@ -544,6 +545,136 @@ class PatientSearchResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+# ── patients.py (claim selector) ────────────────────────────────────────────
+
+
+class PatientClaimSummary(BaseModel):
+    """Lightweight claim header shown in the patient claim selector."""
+
+    claim_id: str
+    episode_id: str
+    claim_type: str
+    admission_date: date | None
+    discharge_date: date | None
+    claim_start_date: date
+    claim_end_date: date
+    primary_icd10: str
+    expected_total_billed_try: float
+    expected_total_payable_try: float
+    expected_denial_reason: str = ""
+    scenario_tag: str = ""
+    recoverable_try: float | None = None
+    priority: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ClaimProcedureLine(BaseModel):
+    """One procedure line surfaced inside a claim detail panel."""
+
+    procedure_line_id: str
+    procedure_date: date
+    procedure_code: str
+    procedure_name: str
+    procedure_category: str
+    quantity: int
+    unit_price_try: float
+    billed_amount_try: float
+    expected_payable_try: float
+    is_package_included: bool
+    package_code: str = ""
+    denial_reason_expected: str = ""
+    rule_trace_expected: str = ""
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ClaimMaterialLine(BaseModel):
+    """One material line surfaced inside a claim detail panel."""
+
+    material_line_id: str
+    material_date: date
+    material_code: str
+    material_name: str
+    material_type: str
+    specialty_category: str
+    quantity: int
+    unit_price_try: float
+    billed_amount_try: float
+    expected_payable_try: float
+    is_bundled: bool
+    requires_pre_auth: bool
+    denial_reason_expected: str = ""
+    rule_trace_expected: str = ""
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ClaimDrugLine(BaseModel):
+    """One drug line surfaced inside a claim detail panel."""
+
+    drug_claim_line_id: str
+    prescription_id: str
+    drug_claim_date: date
+    drug_name: str
+    drug_code: str
+    barkod: str
+    equivalence_group: str
+    quantity: int
+    unit_price_try: float
+    billed_amount_try: float
+    expected_payable_try: float
+    discount_tier_expected: float
+    denial_reason_expected: str = ""
+    rule_trace_expected: str = ""
+
+    model_config = ConfigDict(extra="allow")
+
+
+class PatientClaimDetailResponse(BaseModel):
+    """Full claim snapshot for the patient billing detail panel."""
+
+    claim_id: str
+    patient_id: str
+    episode_id: str
+    claim_type: str
+    facility_tier: str
+    provider_type: str
+    department: str
+    admission_date: date | None
+    discharge_date: date | None
+    claim_start_date: date
+    claim_end_date: date
+    primary_icd10: str
+    package_candidate: bool
+    expected_total_billed_try: float
+    expected_total_payable_try: float
+    expected_denial_reason: str = ""
+    scenario_tag: str = ""
+    occupational_context: str = "none"
+    procedures: list[ClaimProcedureLine]
+    materials: list[ClaimMaterialLine]
+    drugs: list[ClaimDrugLine]
+    data_source: BILUNDataSourceMetadata = Field(
+        default_factory=default_bilun_data_source_metadata
+    )
+
+    model_config = ConfigDict(extra="allow")
+
+
+class PatientClaimsListResponse(BaseModel):
+    """Response for GET /api/patients/{patient_id}/claims."""
+
+    patient_id: str
+    claims: list[PatientClaimSummary]
+    total: int
+    data_source: BILUNDataSourceMetadata = Field(
+        default_factory=default_bilun_data_source_metadata
+    )
+
+    model_config = ConfigDict(extra="allow")
+
+
 class DrugCatalogResponse(BaseModel):
     drugs: list[dict[str, Any]]
     total: int
@@ -601,8 +732,10 @@ class RuleCatalogEntry(BaseModel):
 
     rule_id: str
     rule_category: str
+    rule_category_tr: str = ""
     coverage_status: RuleCoverageStatus
     description: str
+    description_tr: str = ""
     sources: RuleSources
     keywords: list[str] = Field(default_factory=list)
     domain_modules: list[str] = Field(default_factory=list)

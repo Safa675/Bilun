@@ -50,6 +50,15 @@ const sections = {
       effectiveDate: "Yürürlük {date}",
       amendments: "Değişiklikler: {refs}",
     },
+    deontic: {
+      MUST_BILL: "Faturalandırılır",
+      MAY_BILL: "Faturalandırılabilir",
+      MUST_NOT_BILL: "Ayrıca faturalandırılamaz",
+      NO_PAY: "Bedeli ödenmez",
+      NO_COPAY: "Katılım payı alınmaz",
+      COPAY_REQUIRED: "Katılım payı alınır",
+      unknown: "{modality}",
+    },
     pagination: {
       prev: "Önceki",
       next: "Sonraki",

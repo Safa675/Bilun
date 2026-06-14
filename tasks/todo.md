@@ -1,3 +1,190 @@
+## Task: Patient profile per-bill redesign — Phase 6 segmented BillPicker
+
+### Goal
+Replace the claim dropdown with a segmented bill picker on `/patient/[id]` and default-select the highest-recoverable bill.
+
+### Subtasks
+- [x] Create `frontend/src/components/patient/BillPicker.tsx`
+- [x] Replace `ClaimSelector` with `BillPicker` in patient page
+- [x] Implement default selection (highest `recoverable_try`, tiebreak most recent)
+- [x] Add EN/TR i18n keys
+- [x] Verify frontend lint and build
+- [x] Fix pre-existing patient-alert row-column test regression
+
+### Verification
+- `npm run lint`: no new errors (6 errors / 3 warnings pre-date this work)
+- `npm run build`: succeeds
+- `.venv/bin/python -m pytest -q`: `500 passed`
+
+---
+
+## Task: Claim-line wiring for SUT exactness
+
+### Goal
+Use the existing synthetic claim-line data consistently across SUT optimization, billing, API, and Rule Database explanations so claim-line rules become exact when invoices are available and remain honestly unavailable only when inputs are truly missing.
+
+### Subtasks
+- [x] Verify synthetic `SUTClaimDataset` loads procedure, drug, material, claim, and patient context rows end-to-end
+- [x] Add regression tests proving claim-backed optimization summaries stay exact when `claim_dataset` is present
+- [x] Audit API/cache response layers for false `missing_exact_inputs` degradation and fix patient-alert summary/row exactness overwrites
+- [x] Implement missing drug-discount validation from `DrugClaimLine` data
+- [x] Wire drug-discount output into cohort optimization summary without fabricating results when drug lines are absent
+- [x] Verify billing report and cohort revenue recovery aggregation preserve exact claim-backed sections
+- [x] Clarify `needs_claim_lines` vs runtime `missing_exact_inputs` by adding canonical `drug_discount_prose` Rule Registry metadata
+- [x] Run focused unit/API tests and a synthetic-demo smoke check
+
+### Results
+- Existing claim-line plumbing was already healthy: synthetic demo loads 753 procedure lines, 336 drug lines, 151 material lines, and 134 claim headers; surcharge, EK-2/C-1 copay-rate, and DRG cohort summaries are exact with claim data.
+- Added `src/bilun/domain/optimization/drug_discounts.py` and wired `drug_discount_validation` into `compute_optimization_summary`.
+- Added canonical `drug_discount_prose` registry metadata and linked L2.7 fact-check metadata to it.
+- Rule Database now reports `drug_discount_prose` as `needs_claim_lines` with 438 mapped clauses; runtime synthetic-demo summary reports exact validation over 336 drug lines with 0 violations.
+- Fixed patient-alert false degradation: mixed exact/missing cohorts now produce `partial_exact`, preserve exact row outputs through DuckDB, and category filters only treat exact rows as flagged/clear.
+- Added a cohort billing-flow regression proving `SUTClaimDataset` builds `PatientClaimContext` inside `compute_all_billing_reports` and propagates exact sections into `CohortRecoverySummary`.
+- Verification: focused backend suite passed (`33 passed`), broader SUT backend slice passed (`73 passed`), patient-alert regression passed (`13 passed`), cohort billing-flow test passed, edited backend modules compile, and smoke summary confirmed exact drug-discount output.
+
+### Out of Scope
+Regenerating synthetic data, changing the meaning of the `needs_claim_lines` rule status, re-ingesting SUT DOCX/EK annexes, or building real Medula ingestion beyond the existing claim-loader path.
+
+---
+
+## Task: Localize Rule Database tab content for Turkish locale
+
+### Goal
+Make the Rule Database tab feel Turkish when the locale is TR by adding Turkish rule metadata to the backend and translating modality/category tokens in the frontend.
+
+### Subtasks
+- [x] Backend: add `description_tr` + `rule_category_tr` to `RuleRegistryEntry` and populate all 27 rules
+- [x] Backend: surface new fields through `rules_catalog.py` and `schemas.py`
+- [x] Backend tests: update schema/catalog tests for new fields
+- [x] Frontend API types: add `description_tr` + `rule_category_tr` to `RuleCatalogEntry`
+- [x] Frontend i18n: add deontic-modality keys to `messages/{en,tr}/sections.ts`
+- [x] Frontend component: use locale-aware metadata + translate modality in `RuleDatabaseSection.tsx`
+- [x] Run backend tests; frontend type-check pending (no Node runtime)
+
+### Changes
+- `src/bilun/domain/sut/rule_registry.py`: `RuleRegistryEntry` now has `rule_category_tr` and `description_tr`; all 27 rules populated with Turkish category labels and descriptions.
+- `src/bilun/domain/sut/rules_catalog.py`: `_rule_summary()` surfaces the new TR fields.
+- `src/bilun/api/schemas.py`: `RuleCatalogEntry` schema accepts the new fields.
+- `frontend/src/lib/api/sut.ts`: TypeScript `RuleCatalogEntry` type updated.
+- `frontend/src/messages/{en,tr}/sections.ts`: Added `sections.ruleDatabase.deontic.*` translations for `MUST_BILL`, `MAY_BILL`, `MUST_NOT_BILL`, `NO_PAY`, `NO_COPAY`, `COPAY_REQUIRED`.
+- `frontend/src/components/tabs/sut/sections/RuleDatabaseSection.tsx`: Added `useLocalizedRule` hook (switches description/category to TR when locale is `tr`), `useDeonticLabel` hook (translates modality tokens), `RuleDescription` component, and displays the localized category in the detail header.
+
+### Verification
+- `tests/unit/domain/sut/test_rules_catalog.py`: added assertions that every rule exposes non-empty `description_tr` and `rule_category_tr`.
+- `tests/unit/api/test_sut_rules_api.py`: added assertions that `copay_exemption_ek1a` returns the expected Turkish fields.
+- Full Python suite: `478 passed in 39.88s` (was 466 before).
+- Schema exactness + prose golden tests pass.
+- Frontend: Node v22.16.0 / npm 10.9.2 are installed at `/home/safa/.local/node-v22.16.0-linux-x64/bin` (not on PATH). With PATH exported:
+  - `npx tsc --noEmit`: 5 pre-existing errors in unrelated files (`SutBillingReportSections.tsx`, `SyntheticDemoProvenance.test.tsx`, `SUTOptimizerTab.test.tsx`). `RuleDatabaseSection.tsx` is clean.
+  - `npx vitest run`: 4 pre-existing failures in unrelated test files (`SutBillingReportSections.test.tsx`, `PatientSection.test.tsx`, `page.test.tsx`). All other 110 tests pass.
+
+### Limitations
+- The pre-existing frontend TypeScript errors and test failures are not introduced by this change; they appear in patient/billing components unrelated to the Rule Database tab.
+
+---
+
+---
+
+## Task: Evaluate Rule Database tab — Turkish i18n gaps and design divergence
+
+### Goal
+Explain why the Rule Database tab appears mostly English under Turkish locale and why its design differs from the other tabs, with actionable recommendations.
+
+### Subtasks
+- [x] Inspect Rule Database frontend component + i18n files
+- [x] Trace backend data sources (rule registry, clause corpus, fact-check audit)
+- [x] Compare layout/interaction model with other home tabs / Reference Tools sub-sections
+- [x] Identify every untranslated or English-only data surface
+- [x] Document recommendations
+
+### Findings
+
+#### 1. It looks English in Turkish settings because the *content* is English data, not translated UI text
+The UI chrome **is** fully translated in `frontend/src/messages/tr/sections.ts` (title, subtitle, search placeholder, status chips, pagination, error messages, etc.) and `frontend/src/messages/tr/constants.ts` (tab label "Kural Veritabanı").
+
+What remains English is the **rule catalog data itself**, which comes from the backend and has no localization layer:
+
+| Field | Example | Source |
+|-------|---------|--------|
+| `rule_id` | `copay_exemption_ek1a`, `material_bundling_prose` | `src/bilun/domain/sut/rule_registry.py:51` |
+| `rule_category` | `copay_exemption`, `bundling`, `material_exclusion` | `rule_registry.py:52` |
+| `description` | `"EK-1A chronic disease copay exemptions"` | `rule_registry.py:62` |
+| `keywords` | `"katılım payı alınmaz"` (TR) mixed with English tokens | `rule_registry.py:61` |
+| `domain_modules` | `src/bilun/domain/optimization/copay_exemptions.py` | `rule_registry.py:55` |
+| `fact_check_units` | `P0.1`, `L1.4` | `src/bilun/domain/sut/fact_check_audit.py:53` |
+| `fact_check_note` | `"IVF §1.8.4 rates fixed 2026-06-02"` | `fact_check_audit.py:72` |
+| `clause.section_title` | mixed / English depending on DOCX extraction | `src/bilun/domain/sut/rules_catalog.py:39` |
+| `clause.deontic_modality` | `MUST_BILL`, `MAY_BILL`, `COPAY_REQUIRED` | rendered raw at `RuleDatabaseSection.tsx:511` |
+| `clause.text_tr` | Turkish prose — the only localized content | `rules_catalog.py:43` |
+
+So the tab *chrome* is Turkish, but the rule descriptions, categories, module paths, audit notes, and clause modality tokens are stored and served in English.
+
+#### 2. It is designed differently because it was intentionally built as a master-detail catalog, not a table lookup
+The previous implementation plan (`tasks/todo.md` 2026-06-13) records the confirmed design decisions:
+
+- **Layout = catalog-as-index** (rule list → drill into source clauses).
+- Promoted to a **new top-level tab** (`rule-database`) rather than a Reference Tools sub-section.
+- Sources = actual extracted SUT clause text (`text_tr`), not just section/annex labels.
+- Full coverage-honesty UI with status chips and `artifacts_available` banner.
+
+Concrete differences from other tabs:
+
+| Aspect | Rule Database | Other Reference Tools (e.g. Lab Prices, Checkup) |
+|--------|---------------|--------------------------------------------------|
+| Layout | 2-column master-detail (`340px + 1fr`) | single `Surface` + `DataTable` |
+| Navigation | searchable + status-filtered selectable list | none (static table) |
+| Detail | paginated clause cards with provenance | none |
+| Interaction | click rule → drill into clauses | none |
+| Primitives | custom list items, `Chip`, `Surface`, pagination buttons | `DataTable` |
+
+#### 3. Why it was made a top-level tab instead of living under Reference Tools
+The prior plan explicitly chose a top-level tab because the Rule Database is not a calculator/validator like the other Reference Tools; it is a **source-of-truth catalog** of every extracted SUT rule with coverage status and clause provenance. That is a different mental model from "Billing & Gazette Tools" (`sections.tools.dividerLabel`).
+
+### Recommendations
+1. **Add localized rule metadata** — either store `description_tr` / `category_tr` in `rule_registry.py` or add a display-name mapping in the frontend. This is the biggest reason the tab feels English.
+2. **Translate `deontic_modality` tokens** in the UI (`MUST_BILL` → "Faturalandırılmak zorunda", `MAY_BILL` → "Faturalandırılabilir", etc.) via a key map + i18n strings.
+3. **Consider mapping `rule_category` slugs** to Turkish labels in `sections.ts` (e.g. `copay_exemption` → "Katılım Payı Muafiyeti").
+4. **Keep the top-level tab** — the decision is documented and defensible; moving it under Reference Tools would collapse a catalog into a toolbox.
+5. **Keep the master-detail layout** — it matches the task requirement to "drill into source clauses"; a single table would not work for clause text.
+
+### Out of Scope for this evaluation
+- Actually implementing the localization fixes above.
+- Changing the tab placement or layout.
+
+---
+
+## Task: Add invoice/claim selector to patient billing page
+
+### Goal
+Let users choose a specific invoice/claim on `/patient/[id]` and view its raw claim-line details.
+
+### Plan
+See `plans/frontend/patient-claim-invoice-selector-plan.md`.
+
+### Subtasks
+- [x] Phase 1: backend API to list patient claims
+- [x] Phase 2: backend API to get single claim detail
+- [x] Phase 3: frontend API client + types
+- [x] Phase 4: ClaimSelector component
+- [x] Phase 5: ClaimDetailPanel component
+- [x] Phase 6: wire selector + panel into patient page
+- [x] Phase 7: i18n EN+TR
+- [x] Phase 8: verify tests + type-check
+
+### Verification
+- Python: `484 passed`
+- Frontend lint: no new errors introduced (remaining 6 errors / 3 warnings pre-date this task)
+- Frontend build: `next build` succeeds
+
+### Also fixed while verifying
+- `RuleDatabaseSection.tsx`: moved `useLocalizedRule` before early returns to fix React hooks-order runtime error (`RuleDetailPanel`).
+
+### Out of Scope
+- Claim-scoped billing report (re-running billing algorithms per claim)
+- Editing/creating claims from UI
+
+---
+
 ## Task: Fix all Python test failures (23 failed + 22 errors)
 
 ### Goal

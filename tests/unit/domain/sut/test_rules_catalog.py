@@ -37,6 +37,10 @@ class TestCatalogIndex:
                 "non_algorithmic",
             }
             assert set(rule["sources"]) == {"sut_sections", "annexes"}
+            assert rule["description"]
+            assert rule["description_tr"]
+            assert rule["rule_category"]
+            assert rule["rule_category_tr"]
             if rule.get("fact_check_verdict"):
                 assert rule["fact_check_verdict"] in {
                     "COMPLIANT",
@@ -63,6 +67,8 @@ class TestCatalogIndex:
         by_id = {r["rule_id"]: r for r in rc.list_rules()}
         assert by_id["copay_rate_ek2c1"]["matched_clause_count"] > 0
         assert by_id["copay_rate_ek2c1"]["has_clause_mapping"] is True
+        assert by_id["drug_discount_prose"]["matched_clause_count"] > 0
+        assert by_id["drug_discount_prose"]["has_clause_mapping"] is True
         # Orchestrator rule has no clause text mapping.
         assert by_id["claim_validation"]["has_clause_mapping"] is False
 

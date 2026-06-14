@@ -11,6 +11,8 @@ import type {
   MaterialsBySpecialtyResponse,
   CheckupPricingResponse,
   SutPatientOutcomeData,
+  PatientClaimDetail,
+  PatientClaimsListResponse,
 } from "../domains/sut";
 import type { PatientMeta, PatientSearchResponse } from "../domains/patient";
 
@@ -263,6 +265,17 @@ export async function getPatientOptimization(
   );
 }
 
+export async function getBillOptimization(
+  patientId: string,
+  claimId: string,
+  options?: RequestInit,
+): Promise<PatientOptimization> {
+  return requestJSON<PatientOptimization>(
+    `/api/patient/${encodeURIComponent(patientId)}/bills/${encodeURIComponent(claimId)}/optimization`,
+    options,
+  );
+}
+
 export async function getPatientAlerts(
   params: PatientAlertsRequestParams = {},
   options?: RequestInit,
@@ -279,6 +292,38 @@ export async function getPatientBillingReport(
 ): Promise<BillingActionReport> {
   return requestJSON<BillingActionReport>(
     `/api/billing-report/${encodeURIComponent(patientId)}`,
+    options,
+  );
+}
+
+export async function getBillBillingReport(
+  patientId: string,
+  claimId: string,
+  options?: RequestInit,
+): Promise<BillingActionReport> {
+  return requestJSON<BillingActionReport>(
+    `/api/billing-report/${encodeURIComponent(patientId)}/bills/${encodeURIComponent(claimId)}`,
+    options,
+  );
+}
+
+export async function getPatientClaims(
+  patientId: string,
+  options?: RequestInit,
+): Promise<PatientClaimsListResponse> {
+  return requestJSON<PatientClaimsListResponse>(
+    `/api/patients/${encodeURIComponent(patientId)}/claims`,
+    options,
+  );
+}
+
+export async function getPatientClaimDetail(
+  patientId: string,
+  claimId: string,
+  options?: RequestInit,
+): Promise<PatientClaimDetail> {
+  return requestJSON<PatientClaimDetail>(
+    `/api/patients/${encodeURIComponent(patientId)}/claims/${encodeURIComponent(claimId)}`,
     options,
   );
 }
@@ -349,8 +394,10 @@ export interface RuleSources {
 export interface RuleCatalogEntry {
   rule_id: string;
   rule_category: string;
+  rule_category_tr: string;
   coverage_status: RuleCoverageStatus;
   description: string;
+  description_tr: string;
   sources: RuleSources;
   keywords: string[];
   domain_modules: string[];
