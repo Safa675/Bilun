@@ -64,11 +64,30 @@ BILUN is a standalone healthcare reimbursement intelligence system. It analyzes,
 
 ## Environment Variables
 
-| Variable               | Default                  | Description              |
-| ---------------------- | ------------------------ | ------------------------ |
-| `BILUN_CACHE_DB_PATH`  | `.cache/bilun.duckdb`    | DuckDB analytics cache   |
-| `BILUN_STARTUP_POLICY` | `load-only`              | `load-only` or `rebuild` |
-| `LLM_API_KEY`          | —                        | OpenRouter API key       |
+| Variable               | Default                       | Description                                                        |
+| ---------------------- | ----------------------------- | ------------------------------------------------------------------ |
+| `BILUN_CACHE_DB_PATH`  | `.cache/bilun.duckdb`         | DuckDB analytics cache                                             |
+| `BILUN_STARTUP_POLICY` | `load-only`                   | `load-only` or `rebuild`                                          |
+| `LLM_API_KEY`          | —                             | OpenRouter API key (chat)                                          |
+| `EMBEDDING_PROVIDER`   | `auto`                        | SUT clause embeddings: `auto` \| `openai` \| `local`              |
+| `EMBEDDING_API_KEY`    | — (falls back to `OPENAI_API_KEY`) | OpenAI key for embeddings (OpenRouter does **not** serve `/embeddings`) |
+| `EMBEDDING_MODEL`      | `text-embedding-3-large`      | Embedding model when provider is OpenAI                            |
+| `EMBEDDING_DIMS`       | `1024`                        | Embedding dimensionality (OpenAI `text-embedding-3-*`)            |
+| `EMBEDDING_BASE_URL`   | `https://api.openai.com/v1`   | OpenAI-compatible embeddings base URL                             |
+
+### SUT clause retrieval (chatbot)
+
+The chatbot can answer free-text SUT questions via the `search_sut_clauses` tool, which retrieves cited, in-force clauses from `data/gazette/sut_clauses.parquet`. Build the embeddings sidecar after extracting clauses:
+
+```bash
+# Production quality (needs an OpenAI key):
+EMBEDDING_PROVIDER=openai EMBEDDING_API_KEY=sk-... bilun-build-clause-embeddings
+
+# Offline fallback (deterministic, no key/network, lower quality):
+python scripts/sut/build_clause_embeddings.py --provider local
+```
+
+Run order: `extract_sut_prose.py` → `build_clause_embeddings.py`. If the sidecar is absent, the tool degrades gracefully (returns no clauses).
 
 ## Testing
 

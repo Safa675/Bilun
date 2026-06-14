@@ -1,0 +1,15 @@
+{"query": "yol gündelik ve refakatçi giderleri", "expected_section_prefix": "2.5.1"}
+{"query": "yurt dışı tedavi giderleri", "expected_section_prefix": "2.5.3"}
+{"query": "fizik tedavi ve rehabilitasyon uygulamaları", "expected_section_prefix": "2.4.4.F"}
+{"query": "acil sağlık hizmetleri", "expected_section_prefix": "2.2.1.B"}
+{"query": "evde sağlık hizmetleri", "expected_section_prefix": "2.2.1.B"}
+{"query": "diş tedavisi kapsamı", "expected_section_prefix": "2.4.1"}
+{"query": "trafik kazası sağlık giderleri", "expected_section_prefix": "1.7"}
+{"query": "ilave ücret alınamayacak sağlık hizmetleri", "expected_section_prefix": "1.9"}
+{"query": "gözlük cam ve çerçeve bedelleri", "expected_section_prefix": "3.3.3"}
+{"query": "katılım payı tutarları", "expected_section_prefix": "1.8"}
+{"query": "hemodiyaliz tedavisi", "expected_section_prefix": "2.4.4"}
+{"query": "ayakta tedavide hekim muayenesi katılım payı", "expected_section_prefix": "1.8"}
+{"query": "organ ve doku nakli yurt dışı", "expected_section_prefix": "2.5.3"}
+{"query": "tıbbi malzeme temin esasları", "expected_section_prefix": "3.1"}
+{"query": "kemik iliği nakli", "expected_section_prefix": "2.4.2"}
