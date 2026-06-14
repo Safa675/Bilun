@@ -39,6 +39,7 @@ _BUILD_DATA_TABLES: frozenset[str] = frozenset(
         "patient_diagnoses",
         "patient_billing_reports",
         "patient_billing_report_rows",
+        "patient_bill_billing_report_rows",
         "cohort_recovery_summary",
         "patient_detail_cache",
         "patient_outcome_base",

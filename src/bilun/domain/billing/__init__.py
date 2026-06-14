@@ -47,6 +47,7 @@ from .materials import (
 from .orchestrator import (
     compute_patient_billing_report,
     compute_all_billing_reports,
+    compute_all_bill_billing_reports,
     _get_top_action_type,
 )
 
@@ -60,6 +61,7 @@ __all__ = [
     "CohortRecoverySummary",
     "compute_patient_billing_report",
     "compute_all_billing_reports",
+    "compute_all_bill_billing_reports",
     "_optimize_lab_billing",
     "_get_gazette_lab_prices",
     "_optimize_copay",

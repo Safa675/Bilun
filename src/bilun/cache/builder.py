@@ -292,6 +292,19 @@ def run_build(args: argparse.Namespace) -> str:
                 for patient_id, report in billing_reports.items()
             },
         )
+        bill_billing_reports = json_ready(ctx.get("bill_billing_reports", {}))
+        write_json_payload_rows(
+            con,
+            "patient_bill_billing_report_rows",
+            build.build_id,
+            {
+                bill_key: attach_bilun_data_source_metadata(
+                    report,
+                    sut_data_source_metadata,
+                )
+                for bill_key, report in bill_billing_reports.items()
+            },
+        )
         upsert_single_json_table(
             con,
             "cohort_recovery_summary",
@@ -384,6 +397,9 @@ def run_build(args: argparse.Namespace) -> str:
             "patient_alerts_summary": 1,
             "patient_alert_rows": int(alert_row_count),
             "patient_billing_report_rows": int(len(ctx.get("billing_reports", {}))),
+            "patient_bill_billing_report_rows": int(
+                len(ctx.get("bill_billing_reports", {}))
+            ),
             "cohort_recovery_summary": 1,
             "patient_eci_rank": int(rank_storage_df.height),
             "patient_detail_cache": int(detail_rows),

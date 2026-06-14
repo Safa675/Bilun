@@ -30,12 +30,14 @@ from . import alerts, billing, chat, optimization, patients, pricing, rules, val
 # specific submodule. Endpoint handlers only — no private helpers.
 from .alerts import get_patient_alerts  # noqa: F401, E402
 from .billing import (  # noqa: F401, E402
+    get_bill_billing_report,
     get_drug_catalog,
     get_materials_by_specialty,
     get_patient_billing_report,
 )
 from .chat import bilun_chat  # noqa: F401, E402
 from .optimization import (  # noqa: F401, E402
+    get_bill_optimization,
     get_optimization_summary,
     get_patient_optimization,
     get_revenue_recovery,

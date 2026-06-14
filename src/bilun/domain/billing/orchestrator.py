@@ -24,7 +24,10 @@ from .types import (
     ProcedureAddonUplift,
     ProcedureCaptureGap,
 )
-from src.bilun.domain.claims.patient_context import build_patient_claim_context
+from src.bilun.domain.claims.patient_context import (
+    build_bill_claim_context,
+    build_patient_claim_context,
+)
 from src.bilun.domain.billing.claim_copay import optimize_copay_from_claims
 from src.bilun.domain.billing.claim_materials import precheck_materials_from_claims
 from src.bilun.domain.billing.claim_audit_exposure import compute_audit_exposure_from_claims
@@ -426,6 +429,130 @@ def compute_patient_billing_report(
     _finalize_report_exactness(report)
 
     return report
+
+
+def _group_lab_by_patient_visit(
+    lab_df_pl: pl.DataFrame,
+) -> dict[str, dict[str | None, tuple[list[str], list[str | None] | None, list[str | None] | None]]]:
+    """Group the normalized lab feed by (patient_id, visit_id).
+
+    ``visit_id`` equals ``episode_id`` (see ``cache/loaders._normalize_lab``).
+    Returns patient_id -> visit_id -> (tests, dates, visit_ids).
+    """
+    out: dict[str, dict[str | None, tuple]] = {}
+    if (
+        lab_df_pl.is_empty()
+        or "patient_id" not in lab_df_pl.columns
+        or "test_name" not in lab_df_pl.columns
+    ):
+        return out
+    has_visit = "visit_id" in lab_df_pl.columns
+    date_col = next(
+        (c for c in ("date", "test_date", "tarih") if c in lab_df_pl.columns), None
+    )
+    group_cols = ["patient_id"] + (["visit_id"] if has_visit else [])
+    agg_exprs = [pl.col("test_name").cast(pl.Utf8).fill_null("").alias("tests")]
+    if date_col:
+        agg_exprs.append(pl.col(date_col).cast(pl.Utf8).fill_null("").alias("dates"))
+    if has_visit:
+        agg_exprs.append(pl.col("visit_id").cast(pl.Utf8).fill_null("").alias("vids"))
+    grouped = lab_df_pl.group_by(group_cols).agg(agg_exprs)
+    for row in grouped.iter_rows(named=True):
+        pid = row["patient_id"]
+        vid = row.get("visit_id") if has_visit else None
+        out.setdefault(pid, {})[vid] = (
+            row["tests"],
+            row.get("dates") if date_col else None,
+            row.get("vids") if has_visit else None,
+        )
+    return out
+
+
+def _assign_priority_by_percentile(reports: list[BillingActionReport]) -> None:
+    """Tier reports high/medium/low by sgk_uplift percentile (in place)."""
+    recoverables = sorted(r.sgk_uplift_try for r in reports if r.sgk_uplift_try > 0)
+    if not recoverables:
+        return
+    n = len(recoverables)
+    p75 = recoverables[min(n - 1, int(n * 0.75))]
+    p50 = recoverables[min(n - 1, int(n * 0.50))]
+    for report in reports:
+        opportunity = report.sgk_uplift_try
+        if opportunity >= p75:
+            report.priority = "high"
+        elif opportunity >= p50:
+            report.priority = "medium"
+        else:
+            report.priority = "low"
+
+
+def compute_all_bill_billing_reports(
+    cache: dict[str, Any],
+    *,
+    max_workers: int = 1,
+) -> dict[str, BillingActionReport]:
+    """Compute one billing report per (patient, claim) bill.
+
+    Mirrors :func:`compute_all_billing_reports` but scopes each report to a
+    single ``claim_id`` via ``build_bill_claim_context``, with the clinical lab
+    feed filtered to the claim's episode (``visit_id``). Reuses the same
+    patient-level ``copay_exemption`` (exemption is a patient property). Keyed
+    by ``f"{patient_id}::{claim_id}"`` so it stores in the generic payload-rows
+    table. Returns ``{}`` when no claim dataset is present.
+    """
+    claim_dataset: SUTClaimDataset | None = cache.get("sut_claim_dataset")
+    if claim_dataset is None:
+        return {}
+
+    alerts_cache = cache.get("patient_alerts_cache", {})
+    lab_df_pl: pl.DataFrame = cache.get("lab_df_pl", pl.DataFrame())
+    alerts_by_pid = {a["patient_id"]: a for a in alerts_cache.get("patients", [])}
+    lab_by_pid_visit = _group_lab_by_patient_visit(lab_df_pl)
+
+    tasks: list[tuple[str, str, str]] = [
+        (pid, claim.claim_id, claim.episode_id)
+        for pid, claims in claim_dataset.claims_by_patient.items()
+        for claim in claims
+    ]
+    if not tasks:
+        return {}
+
+    def _one(task: tuple[str, str, str]) -> tuple[str, BillingActionReport | None]:
+        pid, claim_id, episode_id = task
+        key = f"{pid}::{claim_id}"
+        bill_context = build_bill_claim_context(pid, claim_id, claim_dataset)
+        if bill_context is None:
+            return key, None
+        alert = alerts_by_pid.get(pid, {})
+        copay_exemption = alert.get(
+            "copay_exemption",
+            {"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []},
+        )
+        chapters = set(alert.get("icd10_chapters", []))
+        tests, dates, vids = lab_by_pid_visit.get(pid, {}).get(
+            episode_id, ([], None, None)
+        )
+        report = compute_patient_billing_report(
+            pid,
+            claim_context=bill_context,
+            patient_lab_tests=tests,
+            patient_lab_dates=dates,
+            patient_lab_visit_ids=vids,
+            copay_exemption=copay_exemption,
+            chapters=chapters,
+        )
+        return key, report
+
+    worker_count = max(1, min(int(max_workers), len(tasks)))
+    if worker_count == 1:
+        results = [_one(task) for task in tasks]
+    else:
+        with ThreadPoolExecutor(max_workers=worker_count) as executor:
+            results = list(executor.map(_one, tasks))
+
+    reports = {key: report for key, report in results if report is not None}
+    _assign_priority_by_percentile(list(reports.values()))
+    return reports
 
 
 def compute_all_billing_reports(

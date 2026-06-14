@@ -76,6 +76,45 @@ def build_patient_claim_context(
     )
 
 
+def build_bill_claim_context(
+    patient_id: str,
+    claim_id: str,
+    dataset: SUTClaimDataset,
+) -> PatientClaimContext | None:
+    """Scope a patient's claim context down to a single bill (``claim_id``).
+
+    Every line-item model carries ``claim_id`` (see ``claims/models.py``), so
+    the patient bundle filters cleanly to one bill. Returns ``None`` when the
+    claim does not belong to the patient. The resulting context still has
+    ``patient_id`` set so downstream algorithms behave identically to a
+    single-claim patient. Callers that also scope the clinical lab feed should
+    use ``bill.claims[0].episode_id`` (lab rows carry ``visit_id == episode_id``).
+    """
+
+    base = build_patient_claim_context(patient_id, dataset)
+    if base is None:
+        return None
+
+    claims = tuple(c for c in base.claims if c.claim_id == claim_id)
+    if not claims:
+        return None
+
+    return PatientClaimContext(
+        patient_id=patient_id,
+        claims=claims,
+        procedure_lines=tuple(p for p in base.procedure_lines if p.claim_id == claim_id),
+        material_lines=tuple(m for m in base.material_lines if m.claim_id == claim_id),
+        drug_lines=tuple(d for d in base.drug_lines if d.claim_id == claim_id),
+        diagnoses=tuple(dg for dg in base.diagnoses if dg.claim_id == claim_id),
+        performed_procedure_lines=tuple(
+            p for p in base.performed_procedure_lines if p.claim_id == claim_id
+        ),
+        medula_rejection_events=tuple(
+            e for e in base.medula_rejection_events if e.claim_id == claim_id
+        ),
+    )
+
+
 def build_cohort_claim_context(dataset: SUTClaimDataset | None) -> CohortClaimContext | None:
     """Build cohort indexes from a loaded claim dataset."""
 

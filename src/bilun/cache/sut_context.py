@@ -241,6 +241,14 @@ def build_sut_patient_alerts_cache(
         summary["surcharge_exactness_status"] = EXACTNESS_STATUS_EXACT
         summary["surcharge_unavailable_reason"] = None
         summary["surcharge_required_inputs_missing"] = []
+    elif n_patients_with_surcharge_unavailable < n_total_patients:
+        summary["surcharge_exactness_status"] = "partial_exact"
+        summary["surcharge_unavailable_reason"] = surcharge_probe.get(
+            "unavailable_reason"
+        )
+        summary["surcharge_required_inputs_missing"] = list(
+            surcharge_probe.get("required_inputs_missing", [])
+        )
     else:
         summary.update(
             {
@@ -259,6 +267,14 @@ def build_sut_patient_alerts_cache(
         summary["copay_rate_exactness_status"] = EXACTNESS_STATUS_EXACT
         summary["copay_rate_unavailable_reason"] = None
         summary["copay_rate_required_inputs_missing"] = []
+    elif n_patients_with_copay_rate_unavailable < n_total_patients:
+        summary["copay_rate_exactness_status"] = "partial_exact"
+        summary["copay_rate_unavailable_reason"] = copay_rate_probe.get(
+            "unavailable_reason"
+        )
+        summary["copay_rate_required_inputs_missing"] = list(
+            copay_rate_probe.get("required_inputs_missing", [])
+        )
     else:
         summary.update(
             {

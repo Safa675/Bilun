@@ -25,7 +25,10 @@ from src.bilun.domain.claims import (
     load_sut_claim_dataset,
     resolve_sut_data_source,
 )
-from src.bilun.domain.billing import compute_all_billing_reports
+from src.bilun.domain.billing import (
+    compute_all_bill_billing_reports,
+    compute_all_billing_reports,
+)
 from src.bilun.domain.optimization import (
     analyze_copay_rate_exposure,
     analyze_surcharge_exposure,
@@ -110,6 +113,7 @@ def _assemble_sut_and_billing_context(
         billing_workers=billing_workers,
         compute_all_billing_reports_fn=compute_all_billing_reports,
         sut_claim_dataset=sut_ctx.get("sut_claim_dataset"),
+        compute_all_bill_billing_reports_fn=compute_all_bill_billing_reports,
     )
     _log_memory_snapshot(
         "analytics_context:after_billing",
@@ -142,6 +146,7 @@ def _assemble_sut_and_billing_context(
         "optimization_summary": sut_ctx["optimization_summary"],
         "billing_reports": billing_ctx["billing_reports"],
         "revenue_recovery": billing_ctx["revenue_recovery"],
+        "bill_billing_reports": billing_ctx.get("bill_billing_reports", {}),
     }
 
 

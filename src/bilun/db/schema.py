@@ -180,10 +180,16 @@ def init_schema(con) -> None:
             surcharge_exposure_rate DOUBLE NOT NULL,
             surcharge_top_rules_json TEXT NOT NULL,
             surcharge_action TEXT,
+            surcharge_exactness_status TEXT,
+            surcharge_unavailable_reason TEXT,
+            surcharge_required_inputs_missing_json TEXT NOT NULL DEFAULT '[]',
             copay_rate_n_applicable BIGINT NOT NULL,
             copay_rate_mean_rate DOUBLE NOT NULL,
             copay_rate_top_procedures_json TEXT NOT NULL,
             copay_rate_action TEXT,
+            copay_rate_exactness_status TEXT,
+            copay_rate_unavailable_reason TEXT,
+            copay_rate_required_inputs_missing_json TEXT NOT NULL DEFAULT '[]',
             copay_exemption_sources_json TEXT NOT NULL DEFAULT '[]',
             copay_categories_not_evaluated_json TEXT NOT NULL DEFAULT '[]'
         )
@@ -209,6 +215,21 @@ def init_schema(con) -> None:
             "SET copay_categories_not_evaluated_json = '[]' "
             "WHERE copay_categories_not_evaluated_json IS NULL"
         )
+    for column, ddl, default in (
+        ("surcharge_exactness_status", "TEXT", None),
+        ("surcharge_unavailable_reason", "TEXT", None),
+        ("surcharge_required_inputs_missing_json", "TEXT", "'[]'"),
+        ("copay_rate_exactness_status", "TEXT", None),
+        ("copay_rate_unavailable_reason", "TEXT", None),
+        ("copay_rate_required_inputs_missing_json", "TEXT", "'[]'"),
+    ):
+        if not _has_column(con, "patient_alert_rows", column):
+            con.execute(f"ALTER TABLE patient_alert_rows ADD COLUMN {column} {ddl}")
+            if default is not None:
+                con.execute(
+                    f"UPDATE patient_alert_rows SET {column} = {default} "
+                    f"WHERE {column} IS NULL"
+                )
 
     con.execute(
         """
@@ -222,6 +243,18 @@ def init_schema(con) -> None:
     con.execute(
         """
         CREATE TABLE IF NOT EXISTS patient_billing_report_rows (
+            build_id TEXT NOT NULL,
+            patient_id TEXT NOT NULL,
+            payload_json TEXT NOT NULL
+        )
+        """
+    )
+
+    # Per-bill (claim-scoped) billing reports. The generic payload-rows schema
+    # reuses the `patient_id` column as the composite key "{patient_id}::{claim_id}".
+    con.execute(
+        """
+        CREATE TABLE IF NOT EXISTS patient_bill_billing_report_rows (
             build_id TEXT NOT NULL,
             patient_id TEXT NOT NULL,
             payload_json TEXT NOT NULL

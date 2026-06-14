@@ -94,4 +94,5 @@ def test_compute_optimization_summary_keeps_exact_exemptions_but_gates_non_exact
     assert summary["drg_unbundling"]["n_patients_checked"] == 1
     assert summary["drg_unbundling"]["total_potential_savings"] is None
 
-    assert "drug_discount_validation" not in summary
+    assert summary["drug_discount_validation"]["exactness_status"] == "missing_exact_inputs"
+    assert summary["drug_discount_validation"]["n_drug_lines"] is None

@@ -42,10 +42,16 @@ def _patient_alert_row_columns() -> list[str]:
         "surcharge_exposure_rate",
         "surcharge_top_rules_json",
         "surcharge_action",
+        "surcharge_exactness_status",
+        "surcharge_unavailable_reason",
+        "surcharge_required_inputs_missing_json",
         "copay_rate_n_applicable",
         "copay_rate_mean_rate",
         "copay_rate_top_procedures_json",
         "copay_rate_action",
+        "copay_rate_exactness_status",
+        "copay_rate_unavailable_reason",
+        "copay_rate_required_inputs_missing_json",
         # Appended via ALTER on legacy caches — must stay last for INSERT SELECT * order.
         "copay_exemption_sources_json",
         "copay_categories_not_evaluated_json",
@@ -65,10 +71,16 @@ def _patient_alert_row_schema() -> dict[str, pl.DataType]:
         "surcharge_exposure_rate": pl.Float64,
         "surcharge_top_rules_json": pl.Utf8,
         "surcharge_action": pl.Utf8,
+        "surcharge_exactness_status": pl.Utf8,
+        "surcharge_unavailable_reason": pl.Utf8,
+        "surcharge_required_inputs_missing_json": pl.Utf8,
         "copay_rate_n_applicable": pl.Int64,
         "copay_rate_mean_rate": pl.Float64,
         "copay_rate_top_procedures_json": pl.Utf8,
         "copay_rate_action": pl.Utf8,
+        "copay_rate_exactness_status": pl.Utf8,
+        "copay_rate_unavailable_reason": pl.Utf8,
+        "copay_rate_required_inputs_missing_json": pl.Utf8,
         "copay_exemption_sources_json": pl.Utf8,
         "copay_categories_not_evaluated_json": pl.Utf8,
     }
@@ -114,12 +126,22 @@ def _normalize_patient_alert_row(patient: Any) -> dict[str, Any] | None:
         "surcharge_exposure_rate": float(surcharge.get("exposure_rate") or 0.0),
         "surcharge_top_rules_json": _safe_json(surcharge.get("top_rules") or []),
         "surcharge_action": surcharge.get("action"),
+        "surcharge_exactness_status": surcharge.get("exactness_status"),
+        "surcharge_unavailable_reason": surcharge.get("unavailable_reason"),
+        "surcharge_required_inputs_missing_json": _safe_json(
+            surcharge.get("required_inputs_missing") or []
+        ),
         "copay_rate_n_applicable": int(copay_rate.get("n_applicable") or 0),
         "copay_rate_mean_rate": float(copay_rate.get("mean_rate") or 0.0),
         "copay_rate_top_procedures_json": _safe_json(
             copay_rate.get("top_procedures") or []
         ),
         "copay_rate_action": copay_rate.get("action"),
+        "copay_rate_exactness_status": copay_rate.get("exactness_status"),
+        "copay_rate_unavailable_reason": copay_rate.get("unavailable_reason"),
+        "copay_rate_required_inputs_missing_json": _safe_json(
+            copay_rate.get("required_inputs_missing") or []
+        ),
     }
 
 
@@ -453,14 +475,18 @@ def _patient_alert_filters(category: str, status: str) -> tuple[str, list[Any], 
         order_by = "copay_exempt DESC, copay_n_qualifying DESC, patient_id ASC"
     elif category == "surcharge":
         if status == "flagged":
+            filters.append("surcharge_exactness_status = 'exact'")
             filters.append("surcharge_n_applicable > 0")
         elif status == "clear":
+            filters.append("surcharge_exactness_status = 'exact'")
             filters.append("surcharge_n_applicable = 0")
         order_by = "surcharge_n_applicable DESC, patient_id ASC"
     else:
         if status == "flagged":
+            filters.append("copay_rate_exactness_status = 'exact'")
             filters.append("copay_rate_action IS NOT NULL")
         elif status == "clear":
+            filters.append("copay_rate_exactness_status = 'exact'")
             filters.append("copay_rate_action IS NULL")
         order_by = (
             "copay_rate_n_applicable DESC, copay_rate_mean_rate DESC, patient_id ASC"
@@ -506,10 +532,16 @@ def read_patient_alert_rows_page(
             surcharge_exposure_rate,
             surcharge_top_rules_json,
             surcharge_action,
+            surcharge_exactness_status,
+            surcharge_unavailable_reason,
+            surcharge_required_inputs_missing_json,
             copay_rate_n_applicable,
             copay_rate_mean_rate,
             copay_rate_top_procedures_json,
-            copay_rate_action
+            copay_rate_action,
+            copay_rate_exactness_status,
+            copay_rate_unavailable_reason,
+            copay_rate_required_inputs_missing_json
         FROM patient_alert_rows
         WHERE {where_sql}
         ORDER BY {order_by}
@@ -541,12 +573,18 @@ def read_patient_alert_rows_page(
                     "exposure_rate": float(row[10] or 0.0),
                     "top_rules": _load_json_list(row[11]),
                     "action": row[12],
+                    "exactness_status": row[13],
+                    "unavailable_reason": row[14],
+                    "required_inputs_missing": _load_json_list(row[15]),
                 },
                 "copay_rate_exposure": {
-                    "n_applicable": int(row[13] or 0),
-                    "mean_rate": float(row[14] or 0.0),
-                    "top_procedures": _load_json_list(row[15]),
-                    "action": row[16],
+                    "n_applicable": int(row[16] or 0),
+                    "mean_rate": float(row[17] or 0.0),
+                    "top_procedures": _load_json_list(row[18]),
+                    "action": row[19],
+                    "exactness_status": row[20],
+                    "unavailable_reason": row[21],
+                    "required_inputs_missing": _load_json_list(row[22]),
                 },
             }
         )
@@ -577,10 +615,16 @@ def read_patient_alert_row_by_id(
             surcharge_exposure_rate,
             surcharge_top_rules_json,
             surcharge_action,
+            surcharge_exactness_status,
+            surcharge_unavailable_reason,
+            surcharge_required_inputs_missing_json,
             copay_rate_n_applicable,
             copay_rate_mean_rate,
             copay_rate_top_procedures_json,
-            copay_rate_action
+            copay_rate_action,
+            copay_rate_exactness_status,
+            copay_rate_unavailable_reason,
+            copay_rate_required_inputs_missing_json
         FROM patient_alert_rows
         WHERE build_id = ? AND patient_id = ?
         LIMIT 1
@@ -609,11 +653,17 @@ def read_patient_alert_row_by_id(
             "exposure_rate": float(row[10] or 0.0),
             "top_rules": _load_json_list(row[11]),
             "action": row[12],
+            "exactness_status": row[13],
+            "unavailable_reason": row[14],
+            "required_inputs_missing": _load_json_list(row[15]),
         },
         "copay_rate_exposure": {
-            "n_applicable": int(row[13] or 0),
-            "mean_rate": float(row[14] or 0.0),
-            "top_procedures": _load_json_list(row[15]),
-            "action": row[16],
+            "n_applicable": int(row[16] or 0),
+            "mean_rate": float(row[17] or 0.0),
+            "top_procedures": _load_json_list(row[18]),
+            "action": row[19],
+            "exactness_status": row[20],
+            "unavailable_reason": row[21],
+            "required_inputs_missing": _load_json_list(row[22]),
         },
     }

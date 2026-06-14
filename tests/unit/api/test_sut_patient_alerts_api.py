@@ -218,6 +218,144 @@ def _seed_legacy_patient_alert_cache(db_path: Path) -> str:
         con.close()
 
 
+def _mixed_exact_alert_payload() -> dict:
+    unavailable_reason = "Exact procedure claim lines are missing for this patient."
+    required_inputs = ["billed_procedure_codes", "procedure_dates"]
+    return {
+        "patients": [
+            {
+                "patient_id": "PAT-EXACT",
+                "n_diagnoses": 1,
+                "icd10_chapters": ["I"],
+                "copay_exemption": {
+                    "exempt": False,
+                    "n_qualifying": 0,
+                    "qualifying_diagnoses": [],
+                    "action": None,
+                },
+                "surcharge_exposure": {
+                    "exactness_status": "exact",
+                    "n_applicable": 2,
+                    "exposure_rate": 1.0,
+                    "top_rules": [{"code": "S1", "name": "Surcharge rule"}],
+                    "action": "Do not charge surcharge",
+                },
+                "copay_rate_exposure": {
+                    "exactness_status": "exact",
+                    "n_applicable": 0,
+                    "n_violations": 0,
+                    "mean_rate": 0.0,
+                    "top_procedures": [],
+                    "action": None,
+                },
+            },
+            {
+                "patient_id": "PAT-MISSING",
+                "n_diagnoses": 1,
+                "icd10_chapters": ["M"],
+                "copay_exemption": {
+                    "exempt": False,
+                    "n_qualifying": 0,
+                    "qualifying_diagnoses": [],
+                    "action": None,
+                },
+                "surcharge_exposure": {
+                    "exactness_status": "missing_exact_inputs",
+                    "unavailable_reason": unavailable_reason,
+                    "required_inputs_missing": required_inputs,
+                    "n_applicable": None,
+                    "exposure_rate": None,
+                    "top_rules": [],
+                    "action": None,
+                },
+                "copay_rate_exposure": {
+                    "exactness_status": "missing_exact_inputs",
+                    "unavailable_reason": unavailable_reason,
+                    "required_inputs_missing": required_inputs,
+                    "n_applicable": None,
+                    "n_violations": None,
+                    "mean_rate": None,
+                    "top_procedures": [],
+                    "action": None,
+                },
+            },
+        ],
+        "summary": {
+            "n_total_patients": 2,
+            "n_exempt_patients": 0,
+            "exemption_rate": 0.0,
+            "n_patients_with_surcharge_flags": 1,
+            "total_surcharge_flags": 2,
+            "n_patients_with_surcharge_unavailable": 1,
+            "surcharge_exactness_status": "partial_exact",
+            "surcharge_unavailable_reason": unavailable_reason,
+            "surcharge_required_inputs_missing": required_inputs,
+            "n_patients_with_copay_rate_flags": 0,
+            "total_copay_rate_flags": 0,
+            "n_patients_with_copay_rate_unavailable": 1,
+            "copay_rate_exactness_status": "partial_exact",
+            "copay_rate_unavailable_reason": unavailable_reason,
+            "copay_rate_required_inputs_missing": required_inputs,
+        },
+    }
+
+
+def _seed_patient_alert_tables(db_path: Path, payload: dict) -> str:
+    from src.bilun.db import (
+        BILUN_BUILD_SCOPE,
+        complete_build,
+        connect,
+        create_build,
+        init_schema,
+        set_active_build,
+        upsert_single_json_table,
+    )
+    from src.bilun.db.patient_alerts import write_patient_alert_tables
+
+    con = connect(db_path)
+    try:
+        init_schema(con)
+        build = create_build(
+            con,
+            project_root=db_path.parent,
+            source_hash="sut-alerts-mixed",
+            config_hash="sut-alerts-mixed",
+            schema_version="v1",
+            feature_set_version="v1",
+            benchmark_version="v1",
+            nlp_version="test",
+            build_scope=BILUN_BUILD_SCOPE,
+        )
+        build_id = build.build_id
+        upsert_single_json_table(
+            con,
+            "cohort_optimization_summary",
+            build_id,
+            {"copay_exemptions": {"n_total_patients": 2}},
+        )
+        upsert_single_json_table(
+            con,
+            "cohort_recovery_summary",
+            build_id,
+            {"n_patients": 2, "grand_total_recoverable": 0.0},
+        )
+        write_patient_alert_tables(con, build_id, payload)
+        complete_build(
+            con,
+            build_id,
+            row_counts={
+                "cohort_optimization_summary": 1,
+                "cohort_recovery_summary": 1,
+                "patient_alerts_payload": 1,
+            },
+            checksums={},
+        )
+        set_active_build(con, build_id, scope=BILUN_BUILD_SCOPE)
+        return build_id
+    finally:
+        con.close()
+
+
 @pytest.fixture
 def legacy_alert_cache(monkeypatch, tmp_path):
     import src.bilun.api.routes.chat as chat_mod
@@ -240,6 +378,38 @@ def legacy_alert_cache(monkeypatch, tmp_path):
     monkeypatch.setattr(runtime, "pipeline_mode", "hybrid")
     monkeypatch.setattr(sut_mod, "PIPELINE_MODE", "hybrid")
     monkeypatch.setattr(chat_mod, "_rate_window", {})
+
+    yield {"build_id": build_id, "db_path": db_path}
+
+    new_con = runtime.cache_con
+    if new_con is not None:
+        try:
+            new_con.close()
+        except Exception:
+            pass
+    runtime.cache_con = None
+
+
+@pytest.fixture
+def mixed_alert_cache(monkeypatch, tmp_path):
+    import src.bilun.api.routes.alerts as sut_mod
+    from src.bilun.shared.runtime import get_api_runtime
+
+    db_path = tmp_path / "sut-alerts-mixed.duckdb"
+    build_id = _seed_patient_alert_tables(db_path, _mixed_exact_alert_payload())
+
+    runtime = get_api_runtime()
+    old_con = runtime.cache_con
+    if old_con is not None:
+        try:
+            old_con.close()
+        except Exception:
+            pass
+
+    monkeypatch.setattr(runtime, "canonical_cache_db_path", db_path)
+    monkeypatch.setattr(runtime, "cache_con", None)
+    monkeypatch.setattr(runtime, "pipeline_mode", "hybrid")
+    monkeypatch.setattr(sut_mod, "PIPELINE_MODE", "hybrid")
 
     yield {"build_id": build_id, "db_path": db_path}
 
@@ -392,6 +562,33 @@ def test_patient_alerts_support_category_status_search_limit_and_offset(
     assert [patient["patient_id"] for patient in searched["patients"]] == ["PAT-DELTA"]
     assert gated["pagination"]["total_matching"] == 0
     assert gated["patients"] == []
+
+
+def test_patient_alerts_preserve_exact_rows_in_partial_exact_summary(
+    mixed_alert_cache,
+):
+    import src.bilun.api.routes.alerts as sut_mod
+
+    response = sut_mod.get_patient_alerts(category="surcharge", status="all")
+
+    assert response["summary"]["surcharge_exactness_status"] == "partial_exact"
+    assert response["summary"]["n_patients_with_surcharge_flags"] == 1
+    assert response["summary"]["total_surcharge_flags"] == 2
+    by_pid = {patient["patient_id"]: patient for patient in response["patients"]}
+    assert by_pid["PAT-EXACT"]["surcharge_exposure"]["exactness_status"] == "exact"
+    assert by_pid["PAT-EXACT"]["surcharge_exposure"]["n_applicable"] == 2
+    assert by_pid["PAT-MISSING"]["surcharge_exposure"]["exactness_status"] == (
+        "missing_exact_inputs"
+    )
+    assert by_pid["PAT-MISSING"]["surcharge_exposure"]["n_applicable"] is None
+
+    flagged = sut_mod.get_patient_alerts(category="surcharge", status="flagged")
+    clear = sut_mod.get_patient_alerts(category="surcharge", status="clear")
+
+    assert flagged["pagination"]["total_matching"] == 1
+    assert [patient["patient_id"] for patient in flagged["patients"]] == ["PAT-EXACT"]
+    assert clear["pagination"]["total_matching"] == 0
+    assert clear["patients"] == []
 
 
 @pytest.mark.parametrize(

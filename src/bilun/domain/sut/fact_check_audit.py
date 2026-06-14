@@ -174,7 +174,7 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
         "Drug discount validation",
         "NEEDS_CLAIM_LINES",
         "PARTIAL_OVERLAP",
-        ("drug_ek4a",),
+        ("drug_discount_prose", "drug_ek4a"),
     ),
     FactCheckAuditUnit(
         "L2.8",

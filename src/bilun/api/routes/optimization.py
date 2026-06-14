@@ -36,7 +36,10 @@ from src.bilun.domain.optimization.copay_exemption_context import (
     build_copay_exemption_input,
 )
 from src.bilun.domain.claims import load_sut_claim_dataset
-from src.bilun.domain.claims.patient_context import build_patient_claim_context
+from src.bilun.domain.claims.patient_context import (
+    build_bill_claim_context,
+    build_patient_claim_context,
+)
 from src.bilun.domain.claims.config import SUTDataSourceConfigError
 from src.bilun.domain.claims.errors import ClaimValidationError
 from src.bilun.domain.optimization.claim_context import (
@@ -67,6 +70,101 @@ def _pipeline_mode() -> str:
 
 def _get_active_bilun_build_id(reader) -> str | None:
     return _get_active_build_id_or_none(reader, scope="bilun")
+
+
+def _safe_load_claim_dataset(patient_id: str):
+    """Load the exact claim dataset, returning ``None`` when unavailable."""
+    try:
+        return load_sut_claim_dataset()
+    except (
+        ClaimValidationError,
+        FileNotFoundError,
+        OSError,
+        SUTDataSourceConfigError,
+        ValueError,
+    ) as exc:
+        logger.warning(
+            "Exact BILUN claim context unavailable for patient %s: %s",
+            patient_id,
+            exc,
+        )
+        return None
+
+
+def _compute_optimization_payload(
+    patient_id: str,
+    cached_diagnoses: list,
+    claim_dataset,
+    data_source,
+    *,
+    claim_id: str | None = None,
+) -> dict:
+    """Compute the BILUN optimization findings, optionally scoped to one bill.
+
+    When ``claim_id`` is given, procedure-line analyses (surcharge, copay-rate,
+    DRG unbundling) and the claim context are scoped to that bill. Copay
+    exemption stays patient-level because chronic-disease exemption is a patient
+    property, not a per-bill one.
+    """
+    chapters = _extract_patient_icd10_chapters(cached_diagnoses)
+
+    def _scope(rows):
+        if claim_id is None:
+            return rows
+        return tuple(r for r in rows if getattr(r, "claim_id", None) == claim_id)
+
+    procedure_lines = ()
+    patient_claim_context = None
+    patient_claims = ()
+    patient_profile = None
+    if claim_dataset is not None:
+        procedure_lines = _scope(
+            claim_dataset.procedure_lines_by_patient.get(patient_id, ())
+        )
+        if claim_id is None:
+            patient_claim_context = build_patient_claim_context(
+                patient_id, claim_dataset
+            )
+        else:
+            patient_claim_context = build_bill_claim_context(
+                patient_id, claim_id, claim_dataset
+            )
+        patient_claims = _scope(claim_dataset.claims_by_patient.get(patient_id, ()))
+        patient_profile = claim_dataset.copay_profiles_by_patient.get(patient_id)
+
+    surcharge_context = None
+    copay_rate_context = None
+    if claim_dataset is not None:
+        surcharge_context = build_surcharge_claim_context(patient_id, procedure_lines)
+        copay_rate_context = build_copay_rate_claim_context(patient_id, procedure_lines)
+    with ClaimContextManager(
+        surcharge=surcharge_context,
+        copay_rate=copay_rate_context,
+    ):
+        surcharge_exposure = analyze_surcharge_exposure(chapters)
+        copay_rate_exposure = analyze_copay_rate_exposure(chapters)
+
+    drg_unbundling = detect_drg_unbundling(chapters, patient_claim_context)
+    copay_input = build_copay_exemption_input(
+        diagnoses=cached_diagnoses,
+        patient_profile=patient_profile,
+        patient_claims=patient_claims,
+    )
+    payload = {
+        "patient_id": patient_id,
+        "n_diagnoses": len(cached_diagnoses),
+        "diagnoses": cached_diagnoses,
+        "icd10_chapters": sorted(chapters),
+        "copay_exemptions": evaluate_copay_exemption(copay_input),
+        "surcharge_exposure": surcharge_exposure,
+        "copay_rate_exposure": copay_rate_exposure,
+        "drg_unbundling": drg_unbundling,
+        "data_source": data_source,
+    }
+    if claim_id is not None:
+        payload["claim_id"] = claim_id
+        payload["scope"] = "bill"
+    return payload
 
 
 @router.get("/optimization-summary", response_model=BilunCachePayloadResponse)
@@ -124,81 +222,14 @@ def get_patient_optimization(patient_id: str):
                 reader, active_build, patient_id
             )
             if cached_diagnoses is not None:
-                chapters = _extract_patient_icd10_chapters(cached_diagnoses)
                 data_source = read_active_bilun_data_source(reader, active_build)
-                surcharge_context = None
-                copay_rate_context = None
-                try:
-                    claim_dataset = load_sut_claim_dataset()
-                except (
-                    ClaimValidationError,
-                    FileNotFoundError,
-                    OSError,
-                    SUTDataSourceConfigError,
-                    ValueError,
-                ) as exc:
-                    logger.warning(
-                        "Exact BILUN claim context unavailable for patient %s: %s",
-                        patient_id,
-                        exc,
-                    )
-                    claim_dataset = None
-                if claim_dataset is not None:
-                    procedure_lines = claim_dataset.procedure_lines_by_patient.get(
-                        patient_id,
-                        (),
-                    )
-                    surcharge_context = build_surcharge_claim_context(
-                        patient_id,
-                        procedure_lines,
-                    )
-                    copay_rate_context = build_copay_rate_claim_context(
-                        patient_id,
-                        procedure_lines,
-                    )
-                with ClaimContextManager(
-                    surcharge=surcharge_context,
-                    copay_rate=copay_rate_context,
-                ):
-                    surcharge_exposure = analyze_surcharge_exposure(chapters)
-                    copay_rate_exposure = analyze_copay_rate_exposure(chapters)
-
-                patient_claim_context = None
-                if claim_dataset is not None:
-                    patient_claim_context = build_patient_claim_context(
-                        patient_id,
-                        claim_dataset,
-                    )
-                drg_unbundling = detect_drg_unbundling(
-                    chapters,
-                    patient_claim_context,
+                claim_dataset = _safe_load_claim_dataset(patient_id)
+                return _compute_optimization_payload(
+                    patient_id,
+                    cached_diagnoses,
+                    claim_dataset,
+                    data_source,
                 )
-                patient_claims = ()
-                patient_profile = None
-                if claim_dataset is not None:
-                    patient_claims = claim_dataset.claims_by_patient.get(
-                        patient_id,
-                        (),
-                    )
-                    patient_profile = claim_dataset.copay_profiles_by_patient.get(
-                        patient_id
-                    )
-                copay_input = build_copay_exemption_input(
-                    diagnoses=cached_diagnoses,
-                    patient_profile=patient_profile,
-                    patient_claims=patient_claims,
-                )
-                return {
-                    "patient_id": patient_id,
-                    "n_diagnoses": len(cached_diagnoses),
-                    "diagnoses": cached_diagnoses,
-                    "icd10_chapters": sorted(chapters),
-                    "copay_exemptions": evaluate_copay_exemption(copay_input),
-                    "surcharge_exposure": surcharge_exposure,
-                    "copay_rate_exposure": copay_rate_exposure,
-                    "drg_unbundling": drg_unbundling,
-                    "data_source": data_source,
-                }
             # Patient not in cache — could be unknown patient
             if mode == "persistent":
                 raise PatientNotFound(
@@ -212,6 +243,58 @@ def get_patient_optimization(patient_id: str):
     # Legacy fallback removed - requires active build
     raise ServiceUnavailableError(
         "Patient optimization requires an active analytics build."
+    )
+
+
+@router.get(
+    "/patient/{patient_id}/bills/{claim_id}/optimization",
+    response_model=PatientOptimizationResponse,
+)
+def get_bill_optimization(patient_id: str, claim_id: str):
+    """Claim-scoped BILUN optimization findings for a single bill.
+
+    Procedure-line analyses (surcharge, copay-rate, DRG unbundling) reflect only
+    the selected ``claim_id``; copay exemption remains patient-level. Computed
+    live, mirroring the per-patient endpoint.
+    """
+    mode = _pipeline_mode()
+    if mode in {"hybrid", "persistent"}:
+        reader = _get_cache_reader()
+        active_build = _get_active_bilun_build_id(reader)
+        if active_build is not None:
+            cached_diagnoses = read_cache_patient_diagnoses(
+                reader, active_build, patient_id
+            )
+            if cached_diagnoses is not None:
+                data_source = read_active_bilun_data_source(reader, active_build)
+                claim_dataset = _safe_load_claim_dataset(patient_id)
+                if claim_dataset is not None:
+                    claim_ids = {
+                        c.claim_id
+                        for c in claim_dataset.claims_by_patient.get(patient_id, ())
+                    }
+                    if claim_id not in claim_ids:
+                        raise PatientNotFound(
+                            f"Bill {claim_id} not found for patient {patient_id}"
+                        )
+                return _compute_optimization_payload(
+                    patient_id,
+                    cached_diagnoses,
+                    claim_dataset,
+                    data_source,
+                    claim_id=claim_id,
+                )
+            if mode == "persistent":
+                raise PatientNotFound(
+                    f"Patient {patient_id} not found in canonical cache"
+                )
+        if mode == "persistent":
+            raise ServiceUnavailableError(
+                "No active BILUN build. Run scripts/bilun/build_cache.py --activate"
+            )
+
+    raise ServiceUnavailableError(
+        "Per-bill optimization requires an active analytics build."
     )
 
 

@@ -169,6 +169,53 @@ def get_patient_billing_report(patient_id: str):
     )
 
 
+@router.get(
+    "/billing-report/{patient_id}/bills/{claim_id}",
+    response_model=BillingReportResponse,
+)
+def get_bill_billing_report(patient_id: str, claim_id: str):
+    """Claim-scoped billing action report for a single bill (``claim_id``).
+
+    Same algorithm family as the per-patient report, but every section reflects
+    only the selected bill. Served from the precomputed
+    ``patient_bill_billing_report_rows`` table (key ``{patient_id}::{claim_id}``).
+    """
+    mode = _pipeline_mode()
+    if mode in {"hybrid", "persistent"}:
+        reader = _get_cache_reader()
+        active_build = _get_active_bilun_build_id(reader)
+        if active_build is not None:
+            report = read_cache_json_payload_row(
+                reader,
+                "patient_bill_billing_report_rows",
+                active_build,
+                f"{patient_id}::{claim_id}",
+            )
+            if report is not None:
+                payload = _serialize_billing_report(report)
+                payload["patient_id"] = patient_id
+                payload["claim_id"] = claim_id
+                payload["scope"] = "bill"
+                return attach_bilun_data_source(
+                    payload,
+                    read_active_bilun_data_source(reader, active_build),
+                )
+            if mode == "persistent" and cache_json_payload_rows_exist(
+                reader, "patient_bill_billing_report_rows", active_build
+            ):
+                raise PatientNotFound(
+                    f"Bill {claim_id} for patient {patient_id} not found in canonical cache"
+                )
+        if mode == "persistent":
+            raise ServiceUnavailableError(
+                "No active BILUN build. Run scripts/bilun/build_cache.py --activate"
+            )
+
+    raise ServiceUnavailableError(
+        "Per-bill billing report requires an active analytics build."
+    )
+
+
 @router.get("/drugs", response_model=DrugCatalogResponse)
 def get_drug_catalog(q: str = "", page: int = 1, per_page: int = 50):
     """Browse or search the EK-4A drug reimbursement list."""

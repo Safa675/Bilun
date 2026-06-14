@@ -48,9 +48,8 @@ _MAX_PATIENT_ALERT_LIMIT = 100
 def _sanitize_patient_alert_summary(summary: dict[str, object]) -> dict[str, object]:
     total_patients = int(summary.get("n_total_patients") or 0)
     sanitized = dict(summary)
-    if not is_exact_output(
-        {"exactness_status": summary.get("surcharge_exactness_status")}
-    ):
+    surcharge_status = str(summary.get("surcharge_exactness_status") or "").strip()
+    if not surcharge_status:
         surcharge = unavailable_patient_alert_surcharge()
         sanitized.update(
             {
@@ -64,9 +63,18 @@ def _sanitize_patient_alert_summary(summary: dict[str, object]) -> dict[str, obj
                 ],
             }
         )
-    if not is_exact_output(
-        {"exactness_status": summary.get("copay_rate_exactness_status")}
-    ):
+    elif surcharge_status == "partial_exact":
+        surcharge = unavailable_patient_alert_surcharge()
+        sanitized.setdefault(
+            "surcharge_unavailable_reason",
+            surcharge["unavailable_reason"],
+        )
+        sanitized.setdefault(
+            "surcharge_required_inputs_missing",
+            surcharge["required_inputs_missing"],
+        )
+    copay_rate_status = str(summary.get("copay_rate_exactness_status") or "").strip()
+    if not copay_rate_status:
         copay_rate = unavailable_patient_alert_copay_rate()
         sanitized.update(
             {
@@ -79,6 +87,16 @@ def _sanitize_patient_alert_summary(summary: dict[str, object]) -> dict[str, obj
                     "required_inputs_missing"
                 ],
             }
+        )
+    elif copay_rate_status == "partial_exact":
+        copay_rate = unavailable_patient_alert_copay_rate()
+        sanitized.setdefault(
+            "copay_rate_unavailable_reason",
+            copay_rate["unavailable_reason"],
+        )
+        sanitized.setdefault(
+            "copay_rate_required_inputs_missing",
+            copay_rate["required_inputs_missing"],
         )
     return sanitized
 
@@ -108,32 +126,50 @@ def _sanitize_patient_alert_rows(
     return patients
 
 
+def _attach_exactness_or_unavailable(
+    payload: dict[str, object],
+    unavailable: dict[str, object],
+    *,
+    assume_exact: bool,
+) -> dict[str, object]:
+    status = str(payload.get("exactness_status") or "").strip()
+    if status == EXACTNESS_STATUS_EXACT:
+        return payload
+    if not status and assume_exact:
+        return {**payload, "exactness_status": EXACTNESS_STATUS_EXACT}
+    return unavailable
+
+
 def _attach_patient_alert_exactness(
     category: str,
     patients: list[dict[str, object]],
     summary: dict[str, object],
 ) -> list[dict[str, object]]:
-    if not _patient_alert_summary_exact(summary, category):
-        return _sanitize_patient_alert_rows(category, patients)
     if category == "surcharge":
+        assume_exact = _patient_alert_summary_exact(summary, category)
+        unavailable = unavailable_patient_alert_surcharge()
         return [
             {
                 **patient,
-                "surcharge_exposure": {
-                    **dict(patient.get("surcharge_exposure") or {}),
-                    "exactness_status": EXACTNESS_STATUS_EXACT,
-                },
+                "surcharge_exposure": _attach_exactness_or_unavailable(
+                    dict(patient.get("surcharge_exposure") or {}),
+                    unavailable,
+                    assume_exact=assume_exact,
+                ),
             }
             for patient in patients
         ]
     if category == "copay_rates":
+        assume_exact = _patient_alert_summary_exact(summary, category)
+        unavailable = unavailable_patient_alert_copay_rate()
         return [
             {
                 **patient,
-                "copay_rate_exposure": {
-                    **dict(patient.get("copay_rate_exposure") or {}),
-                    "exactness_status": EXACTNESS_STATUS_EXACT,
-                },
+                "copay_rate_exposure": _attach_exactness_or_unavailable(
+                    dict(patient.get("copay_rate_exposure") or {}),
+                    unavailable,
+                    assume_exact=assume_exact,
+                ),
             }
             for patient in patients
         ]
@@ -215,28 +251,20 @@ def get_patient_alerts(
                     "Run the patient-alerts backfill or rebuild the analytics cache."
                 )
             sanitized_summary = _sanitize_patient_alert_summary(summary)
-            if (
-                category in {"surcharge", "copay_rates"}
-                and status != "all"
-                and not _patient_alert_summary_exact(sanitized_summary, category)
-            ):
-                patients = []
-                total_matching = 0
-            else:
-                patients, total_matching = read_patient_alert_rows_page(
-                    reader,
-                    active_build,
-                    category=category,
-                    status=status,
-                    search=search,
-                    limit=limit,
-                    offset=offset,
-                )
-                patients = _attach_patient_alert_exactness(
-                    category,
-                    patients,
-                    sanitized_summary,
-                )
+            patients, total_matching = read_patient_alert_rows_page(
+                reader,
+                active_build,
+                category=category,
+                status=status,
+                search=search,
+                limit=limit,
+                offset=offset,
+            )
+            patients = _attach_patient_alert_exactness(
+                category,
+                patients,
+                sanitized_summary,
+            )
             return {
                 "patients": patients,
                 "summary": sanitized_summary,

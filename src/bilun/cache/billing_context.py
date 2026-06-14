@@ -33,6 +33,7 @@ def assemble_billing_context(
     billing_workers: int | None,
     compute_all_billing_reports_fn,
     sut_claim_dataset: Any | None = None,
+    compute_all_bill_billing_reports_fn=None,
 ) -> dict[str, Any]:
     billing_cache = _build_billing_cache(
         sut_by_pid=sut_by_pid,
@@ -48,7 +49,19 @@ def assemble_billing_context(
             billing_cache,
             max_workers=billing_workers,
         )
+
+    bill_billing_reports: dict[str, Any] = {}
+    if compute_all_bill_billing_reports_fn is not None:
+        if billing_workers is None:
+            bill_billing_reports = compute_all_bill_billing_reports_fn(billing_cache)
+        else:
+            bill_billing_reports = compute_all_bill_billing_reports_fn(
+                billing_cache,
+                max_workers=billing_workers,
+            )
+
     return {
         "billing_reports": billing_reports,
         "revenue_recovery": revenue_recovery,
+        "bill_billing_reports": bill_billing_reports,
     }
