@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "bilun"
 version = "0.1.0"
 description = "BILUN — SUT billing optimization and analytics platform"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 readme = "README.md"
 license = {text = "MIT"}
 dependencies = [
@@ -32,6 +32,7 @@ dev = [
 
 [project.scripts]
 bilun-build-cache = "src.bilun.cache.builder:main"
+bilun-build-clause-embeddings = "scripts.sut.build_clause_embeddings:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
