@@ -414,12 +414,12 @@ def compute_patient_billing_report(
         + len(report.drg_package_adequacy.opportunities)
         + len(report.gazette_repricing.opportunities)
         + len(report.medula_rejection_playbook.entries)
-        + len(report.materials.pre_auth_required)
-        + len(report.materials.miat_restricted)
-        + len(report.materials.bundled_separate_billing)
-        + len(report.materials.miat_interval_violations)
-        + len(report.materials.prose_bundling_violations)
-        + len(report.materials.specialty_prose_violations)
+        + len(getattr(report.materials, "pre_auth_required", []))
+        + len(getattr(report.materials, "miat_restricted", []))
+        + len(getattr(report.materials, "bundled_separate_billing", []))
+        + len(getattr(report.materials, "miat_interval_violations", []))
+        + len(getattr(report.materials, "prose_bundling_violations", []))
+        + len(getattr(report.materials, "specialty_prose_violations", []))
     )
     report.action_count = actions
 
@@ -618,12 +618,12 @@ def compute_all_billing_reports(
         ):
             summary.total_medula_playbook_entries += report.medula_playbook_entry_count
         summary.total_material_flags += (
-            len(report.materials.pre_auth_required)
-            + len(report.materials.miat_restricted)
-            + len(report.materials.bundled_separate_billing)
-            + len(report.materials.miat_interval_violations)
-            + len(report.materials.prose_bundling_violations)
-            + len(report.materials.specialty_prose_violations)
+            len(getattr(report.materials, "pre_auth_required", []))
+            + len(getattr(report.materials, "miat_restricted", []))
+            + len(getattr(report.materials, "bundled_separate_billing", []))
+            + len(getattr(report.materials, "miat_interval_violations", []))
+            + len(getattr(report.materials, "prose_bundling_violations", []))
+            + len(getattr(report.materials, "specialty_prose_violations", []))
         )
         priority_dist[report.priority] = priority_dist.get(report.priority, 0) + 1
 
