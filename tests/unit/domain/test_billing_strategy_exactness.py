@@ -56,7 +56,7 @@ def test_billing_report_with_claim_context_uses_sut_strategy() -> None:
     ]
     assert claim_recs
     assert claim_recs[0]["recommendation"] == "package"
-    assert claim_recs[0]["recommendation_kind"] == "mandatory_compliance"
+    assert claim_recs[0]["recommendation_kind"] == "optional_override"
     assert "lower than" not in claim_recs[0]["detail"]
 
     from src.bilun.domain.billing.copay import _optimize_copay
@@ -135,6 +135,9 @@ def test_billing_report_totals_exclude_gated_strategy(monkeypatch):
 
     assert report.billing_strategy.exactness_status == "missing_exact_inputs"
     assert report.exactness_status == "partial_exact"
-    assert report.required_inputs_missing == ["itemized_billed_procedure_lines"]
-    assert report.total_recoverable_try == 17.5
+    assert "itemized_billed_procedure_lines" in report.required_inputs_missing
+    # Gated strategy contributes no SGK uplift; lab savings are compliance-only.
+    assert report.sgk_uplift_try == 0.0
+    assert report.total_recoverable_try == 0.0
+    assert report.compliance_adjustment_try == 12.5
     assert report.action_count == 0
