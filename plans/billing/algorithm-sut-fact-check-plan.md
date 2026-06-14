@@ -1,6 +1,6 @@
 # Algorithm SUT Fact-Check Plan
 
-> **Deliverables live at** [`docs/core-system/fact-check/`](../../docs/core-system/fact-check/) (not `reports/`). Prose pipeline artifacts: `data/gazette/prose_manifests/`, `prose_corpus/`.
+> **Status: CLOSED 2026-06.** Live rollup: `src/bilun/domain/sut/fact_check_audit.py` + Rule Database (`GET /api/rules`). Archived summary: [`tasks/archive/sut-fact-check-2026-06/SUMMARY.md`](../../tasks/archive/sut-fact-check-2026-06/SUMMARY.md). Prose pipeline artifacts: `data/gazette/prose_manifests/`, `prose_corpus/`.
 
 **Status:** Approved — Safa review 2026-06-02  
 **Created:** 2026-06-02  

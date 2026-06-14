@@ -4,7 +4,7 @@
 **Last updated:** 2026-06-06  
 **Context:** BILUN encodes substantial §2.2 / EK-2 / EK-3 mechanics, but headline KPIs and UI weighting make the product read as copay + compliance. This plan adds **Kurum ödemesi uplift** detectors and honest bucketing before expanding scope.
 
-**Fact-check anchors:** `docs/core-system/fact-check/MASTER.md`, `docs/core-system/algorithms_reference.md`
+**Fact-check anchors:** `tasks/archive/sut-fact-check-2026-06/SUMMARY.md`, `src/bilun/domain/sut/fact_check_audit.py`, `docs/core-system/algorithms_reference.md`
 
 ---
 

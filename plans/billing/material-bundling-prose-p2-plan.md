@@ -1,7 +1,7 @@
 # P2 Plan: SUT §3.1–3.2 Material Bundling Prose Engine
 
 **Status:** Phase 1–7 complete (tail done 2026-06-02); **0** Gate B deferred  
-**Fact-check:** L1.4 — `docs/core-system/fact-check/algorithms/L1.4_material_bundling_prose_gap.md`  
+**Fact-check:** L1.4 — archived **PARTIAL** verdict; live in `fact_check_audit.py` / Rule Database  
 **Registry:** `material_bundling_prose` — `coverage_status=implemented` (clause coverage still partial)
 
 ## Goal

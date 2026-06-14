@@ -1,7 +1,7 @@
 # L4.4 Plan: §3.3 Specialty Annex Prose Engine
 
 **Status:** L4.4 v1 complete — **84/84** corpus traced, **49** rules; Phase 2 integration shipped (2026-06-11)  
-**Fact-check:** `docs/core-system/fact-check/algorithms/L4.4_specialty_materials_ek3.md`  
+**Fact-check:** L4.4 — archived **PARTIAL** verdict; live in `fact_check_audit.py` / Rule Database  
 **Registry:** `specialty_materials` (catalog **implemented**); `specialty_materials_prose` (**implemented**, partial corpus)  
 **Sibling:** L1.4 `material_bundling_prose` — §3.1–3.2 only (**59 rules**, Phase 8 complete)
 

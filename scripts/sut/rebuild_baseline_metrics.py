@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild docs/core-system/fact-check/baseline_metrics.json from sut_clauses + registry."""
+"""Rebuild tasks/archive/sut-fact-check-2026-06/baseline_metrics.json from sut_clauses + registry."""
 
 from __future__ import annotations
 
@@ -150,7 +150,7 @@ def main() -> None:
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path("docs/core-system/fact-check/baseline_metrics.json"),
+        default=Path("tasks/archive/sut-fact-check-2026-06/baseline_metrics.json"),
     )
     parser.add_argument(
         "--coverage-dir",

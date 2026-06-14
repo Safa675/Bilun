@@ -122,5 +122,5 @@ flowchart LR
 
 - `docs/medula/medula_capabilities.md` — Malzeme DTO, ICU material restrictions, invoice blocking
 - `docs/medula/medula_bilun_overlap.md` — full-stack overlap map
-- `docs/core-system/fact-check/algorithms/L1.4_material_bundling_prose_gap.md`
+- `src/bilun/domain/sut/fact_check_audit.py` (L1.4 unit **PARTIAL**)
 - `data/gazette/prose_rules/material_bundling_prose.json` — **22 rules**
