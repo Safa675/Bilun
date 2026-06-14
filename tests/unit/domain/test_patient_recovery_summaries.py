@@ -13,12 +13,14 @@ def test_patient_recovery_summary_from_payload_maps_nested_savings() -> None:
     payload = {
         "patient_id": "P1",
         "total_recoverable_try": 42.5,
+        "sgk_uplift_try": 42.5,
+        "compliance_adjustment_try": 0.0,
         "priority": "high",
         "action_count": 3,
         "lab": {"total_savings": 1.0},
         "drug": {"total_savings": 0.0},
         "copay": {"total_copay_savings_try": 0.0, "exactness_status": "exact", "is_exempt": False},
-        "billing_strategy": {"total_savings": 41.5},
+        "billing_strategy": {"uplift_savings_try": 41.5},
     }
 
     summary = patient_recovery_summary_from_payload(payload)
@@ -26,6 +28,8 @@ def test_patient_recovery_summary_from_payload_maps_nested_savings() -> None:
     assert summary == {
         "patient_id": "P1",
         "total_recoverable_try": 42.5,
+        "sgk_uplift_try": 42.5,
+        "compliance_adjustment_try": 0.0,
         "exemption_gap_try": 0.0,
         "total_opportunity_try": 42.5,
         "priority": "high",
