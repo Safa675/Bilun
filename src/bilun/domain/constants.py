@@ -28,6 +28,9 @@ SUT_CLAUSES_PATH = _GAZETTE_DIR / "sut_clauses.parquet"
 SUT_CLAUSE_COVERAGE_PATH = _GAZETTE_DIR / "sut_clause_coverage.parquet"
 SUT_REGISTRY_COVERAGE_PATH = _GAZETTE_DIR / "sut_registry_coverage.parquet"
 
+# SUT clause embeddings — sidecar vectors for semantic clause retrieval (chatbot)
+SUT_CLAUSE_EMBEDDINGS_PATH = _GAZETTE_DIR / "sut_clause_embeddings.parquet"
+
 # New primary data sources (compiled from 72 gazette documents)
 CHECKUP_JSON_PATH = _GAZETTE_DIR / "sut_checkup_pricing.json"
 EK2B_PARQUET_PATH = _GAZETTE_DIR / "ek2b_islem_puan_listesi.parquet"

@@ -67,6 +67,41 @@ def test_execute_tool_call_get_patient_alerts_normalizes_category(monkeypatch):
     assert captured["category"] == "surcharge"
 
 
+def test_execute_tool_call_search_sut_clauses_routes_to_retrieval(monkeypatch):
+    captured: dict = {}
+
+    def fake_search_clauses(query, *, top_k, annex, section_prefix):
+        captured.update(query=query, top_k=top_k, annex=annex, section_prefix=section_prefix)
+        return [{"clause_id": "C000001", "section_id": "1.8", "text_tr": "x", "score": 0.9}]
+
+    monkeypatch.setattr(
+        "src.bilun.domain.sut.clause_retrieval.search_clauses",
+        fake_search_clauses,
+    )
+
+    result = asyncio.run(
+        execute_tool_call(
+            "search_sut_clauses",
+            {"query": "katılım payı", "annex": "EK-2/C"},
+            ToolSession(),
+        )
+    )
+
+    assert result.success is True
+    assert captured["query"] == "katılım payı"
+    assert captured["annex"] == "EK-2/C"
+    assert captured["top_k"] == 5
+    assert "C000001" in result.content
+
+
+def test_search_sut_clauses_rejects_unknown_param():
+    result = asyncio.run(
+        execute_tool_call("search_sut_clauses", {"qry": "typo"}, ToolSession())
+    )
+    assert result.success is False
+    assert result.error is not None
+
+
 def test_execute_tool_call_returns_string_content(monkeypatch):
     monkeypatch.setattr(
         "src.bilun.api.routes.optimization.get_revenue_recovery",

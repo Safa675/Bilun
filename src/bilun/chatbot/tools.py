@@ -149,6 +149,46 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "type": "function",
         "function": {
+            "name": "search_sut_clauses",
+            "description": (
+                "Search the official SUT (Sağlık Uygulama Tebliği) regulatory"
+                " text for clauses relevant to a free-text question. Use this"
+                " for any question about what the SUT rules SAY — coverage,"
+                " conditions, copay, surcharge, materials, procedures, annex"
+                " (EK) references, sections (§). Returns non-superseded clauses"
+                " with section_id, annex_refs, and source_effective_date for"
+                " citation. Answer only from returned clauses; cite them."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": (
+                            "The SUT question or topic in Turkish (e.g."
+                            " 'yoğun bakım ilave ücret', 'EK-2/C katılım payı')."
+                        ),
+                    },
+                    "annex": {
+                        "type": "string",
+                        "description": (
+                            "Optional annex filter, e.g. 'EK-2/C', 'EK-1/A'."
+                        ),
+                    },
+                    "section_prefix": {
+                        "type": "string",
+                        "description": (
+                            "Optional SUT section filter, e.g. '3.1', '1.8.5'."
+                        ),
+                    },
+                },
+                "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "get_patient_alerts",
             "description": (
                 "Get SUT alerts for patients: exemptions, surcharge"
@@ -182,6 +222,7 @@ _TOOL_FUNCTION_MAP: dict[str, str] = {
     "list_patients": "get_bilun_patients",
     "search_drugs": "get_drug_catalog",
     "get_patient_alerts": "get_patient_alerts",
+    "search_sut_clauses": "search_sut_clauses",
 }
 
 RESPONSE_SIZE_CAP = 8192  # 8KB
@@ -214,7 +255,7 @@ class ToolCallResult:
     tool_name: str
     arguments: dict[str, Any]
     success: bool
-    content: str
+    content: str = ""
     error: str | None = None
     elapsed_ms: float = 0.0
 
@@ -364,6 +405,7 @@ async def execute_tool_call(
                 get_bilun_patients,
                 search_bilun_patients,
             )
+            from src.bilun.domain.sut.clause_retrieval import search_clauses
 
             namespace = {
                 "get_patient_billing_report": lambda: get_patient_billing_report(
@@ -387,6 +429,15 @@ async def execute_tool_call(
                     limit=100,
                     offset=0,
                 ),
+                "search_sut_clauses": lambda: {
+                    "query": arguments["query"],
+                    "clauses": search_clauses(
+                        arguments["query"],
+                        top_k=5,
+                        annex=arguments.get("annex"),
+                        section_prefix=arguments.get("section_prefix"),
+                    ),
+                },
             }
             func = namespace.get(func_name)
             if func is None:
