@@ -7,14 +7,20 @@ Restore a green Python test suite: `0 failed, 0 errors` when running `.venv/bin/
 See `plans/testing/fix-all-test-failures-plan.md`.
 
 ### Subtasks
-- [ ] Phase 1: fix stale `src.api.*` imports + missing `api_client` fixture
-- [ ] Phase 2: make billing orchestrator defensive against partial material stubs
-- [ ] Phase 3: fix claims config messages + loader mode handling + fixture counts
-- [ ] Phase 4: fix `validate_claim` tests against prose side effects
-- [ ] Phase 5: fix billing strategy recommendation kind mismatch
-- [ ] Phase 6: fix patient recovery summary payload mapping
-- [ ] Phase 7: resolve `C001637` material bundling golden mismatch
-- [ ] Phase 8: full-suite verification + task close-out
+- [x] Phase 1: fix stale `src.api.*` imports + missing `api_client` fixture
+- [x] Phase 2: make billing orchestrator defensive against partial material stubs
+- [x] Phase 3: fix claims config messages + loader mode handling + fixture counts
+- [x] Phase 4: fix `validate_claim` tests against prose side effects
+- [x] Phase 5: fix billing strategy recommendation kind mismatch
+- [x] Phase 6: fix patient recovery summary payload mapping
+- [x] Phase 7: resolve `C001637` material bundling golden mismatch
+- [x] Phase 8: full-suite verification + task close-out
+
+### Verification
+```
+.venv/bin/python -m pytest -q
+466 passed in 34.14s
+```
 
 ### Out of Scope
 - Frontend type-check/test/build failures
@@ -22,7 +28,7 @@ See `plans/testing/fix-all-test-failures-plan.md`.
 
 ### Notes
 - Supersedes the narrower `plans/testing/fix-pre-existing-test-failures-plan.md` (4 failures only).
-- Several phases require domain decisions; plan flags them explicitly.
+- Phase 7 decision: chose Option A (update golden expectation to `3.1.2.(2).not_in_ek3c`).
 
 ---
 
