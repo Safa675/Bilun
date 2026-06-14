@@ -29,6 +29,14 @@ def test_validate_claim_bundling_violation(monkeypatch) -> None:
         "src.bilun.domain.rule_engine.estimate_material_costs",
         lambda materials: [],
     )
+    monkeypatch.setattr(
+        "src.bilun.domain.rule_engine.check_material_bundling_prose",
+        lambda materials, procedure_code=None: [],
+    )
+    monkeypatch.setattr(
+        "src.bilun.domain.rule_engine.check_specialty_materials_prose",
+        lambda materials: [],
+    )
 
     result = validate_claim(
         {
@@ -62,6 +70,14 @@ def test_validate_claim_exclusion_makes_invalid(monkeypatch) -> None:
     )
     monkeypatch.setattr(
         "src.bilun.domain.rule_engine.estimate_material_costs",
+        lambda materials: [],
+    )
+    monkeypatch.setattr(
+        "src.bilun.domain.rule_engine.check_material_bundling_prose",
+        lambda materials, procedure_code=None: [],
+    )
+    monkeypatch.setattr(
+        "src.bilun.domain.rule_engine.check_specialty_materials_prose",
         lambda materials: [],
     )
 
