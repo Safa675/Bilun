@@ -8,6 +8,8 @@ from pathlib import Path
 import pytest
 from fastapi import HTTPException
 
+from src.bilun.db import patient_alerts as cache_store
+
 pytestmark = pytest.mark.unit
 
 
@@ -218,7 +220,7 @@ def _seed_legacy_patient_alert_cache(db_path: Path) -> str:
 
 @pytest.fixture
 def legacy_alert_cache(monkeypatch, tmp_path):
-    import src.api.routes.chat as chat_mod
+    import src.bilun.api.routes.chat as chat_mod
     import src.bilun.api.routes.alerts as sut_mod
     from src.bilun.shared.runtime import get_api_runtime
 
@@ -299,7 +301,6 @@ def test_patient_alerts_backfills_legacy_blob_and_returns_paginated_response(
 def test_patient_alert_summary_backfill_avoids_fetching_legacy_payload_json(
     legacy_alert_cache,
 ):
-    from src import storage as cache_store
     import src.bilun.shared.state as state_mod
 
     con = state_mod._get_cache_con()
@@ -323,7 +324,6 @@ def test_patient_alert_summary_backfill_avoids_fetching_legacy_payload_json(
 def test_patient_alerts_backfill_avoids_fetching_legacy_payload_json(
     legacy_alert_cache,
 ):
-    from src import storage as cache_store
     import src.bilun.shared.state as state_mod
 
     con = state_mod._get_cache_con()
@@ -433,15 +433,20 @@ def test_patient_alerts_raise_503_when_no_backfill_source_exists(legacy_alert_ca
     assert "backfill" in exc_info.value.message.lower()
 
 
-def test_optimizer_chat_context_reads_patient_alerts_summary_without_row_backfill(
+def test_optimizer_chat_context_reads_runtime_data_without_row_backfill(
     legacy_alert_cache,
 ):
-    import src.api.routes.chat as chat_mod
+    # Original test checked `_fetch_db_context`; chat context was refactored to
+    # `_fetch_runtime_data`, which no longer includes patient_alerts_summary.
+    # This regression guard now verifies the runtime-data fetch does not
+    # trigger patient_alert_rows backfill.
+    import src.bilun.api.routes.chat as chat_mod
     import src.bilun.shared.state as state_mod
 
-    ctx = chat_mod._fetch_db_context("SUT Optimizer", None)
+    ctx = chat_mod._fetch_runtime_data("SUT Optimizer", None)
 
-    assert ctx["patient_alerts_summary"]["n_total_patients"] == 4
+    assert "optimization_summary" in ctx
+    assert ctx["optimization_summary"]["summary"]["copay_exemptions"]["n_total_patients"] == 4
 
     con = state_mod._get_cache_con()
     row_count = con.execute(

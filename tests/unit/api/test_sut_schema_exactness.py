@@ -3,12 +3,11 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from src.api.schemas.patients import PatientOutcomeResponse
 from src.bilun.api.schemas import (
+    BILUNDataSourceMetadata,
+    BilunCachePayloadResponse,
+    BilunPatientOutcomeResponse,
     BillingReportResponse,
-    SUTDataSourceMetadata,
-    SutCachePayloadResponse,
-    SutPatientOutcomeResponse,
 )
 
 pytestmark = pytest.mark.unit
@@ -31,11 +30,11 @@ def test_sut_patient_outcome_schema_requires_drg_pricing_status() -> None:
     }
 
     with pytest.raises(ValidationError):
-        SutPatientOutcomeResponse.model_validate(payload)
+        BilunPatientOutcomeResponse.model_validate(payload)
 
 
 def test_sut_data_source_schema_preserves_synthetic_demo_metadata() -> None:
-    parsed = SUTDataSourceMetadata.model_validate(SYNTHETIC_DATA_SOURCE)
+    parsed = BILUNDataSourceMetadata.model_validate(SYNTHETIC_DATA_SOURCE)
 
     assert parsed.mode == "synthetic_demo"
     assert parsed.is_synthetic is True
@@ -43,21 +42,21 @@ def test_sut_data_source_schema_preserves_synthetic_demo_metadata() -> None:
 
 
 def test_sut_cache_schema_defaults_missing_provenance_to_unavailable_not_real() -> None:
-    parsed = SutCachePayloadResponse.model_validate({"total": 1})
+    parsed = BilunCachePayloadResponse.model_validate({"total": 1})
 
     assert parsed.data_source.mode == "unavailable"
     assert parsed.data_source.is_synthetic is None
     assert parsed.data_source.required_inputs_missing == ["data_source"]
 
 
-def test_patient_outcome_schema_requires_drg_pricing_status() -> None:
+def test_bilun_patient_outcome_schema_requires_drg_pricing_status() -> None:
     payload = {
         "drg_summary": {"total_drg_cost": 123.4},
         "expensive_analytics": {"state": "ready", "included": True},
     }
 
     with pytest.raises(ValidationError):
-        PatientOutcomeResponse.model_validate(payload)
+        BilunPatientOutcomeResponse.model_validate(payload)
 
 
 def test_sut_patient_outcome_schema_preserves_explicit_exact_drg_status() -> None:
@@ -70,7 +69,7 @@ def test_sut_patient_outcome_schema_preserves_explicit_exact_drg_status() -> Non
         "expensive_analytics": {"state": "ready", "included": True},
     }
 
-    parsed = SutPatientOutcomeResponse.model_validate(payload)
+    parsed = BilunPatientOutcomeResponse.model_validate(payload)
 
     assert parsed.drg_summary is not None
     assert parsed.drg_summary.pricing_status == "exact"
@@ -97,7 +96,7 @@ def test_sut_patient_outcome_schema_preserves_unavailable_drg_status() -> None:
         },
     }
 
-    parsed = SutPatientOutcomeResponse.model_validate(payload)
+    parsed = BilunPatientOutcomeResponse.model_validate(payload)
 
     assert parsed.drg_summary is not None
     assert parsed.drg_summary.pricing_status == "unknown_date"
@@ -122,7 +121,7 @@ def test_sut_patient_outcome_schema_rejects_unavailable_drg_without_inputs() -> 
     }
 
     with pytest.raises(ValidationError):
-        SutPatientOutcomeResponse.model_validate(payload)
+        BilunPatientOutcomeResponse.model_validate(payload)
 
 
 def test_billing_report_schema_missing_exactness_defaults_to_unavailable() -> None:
@@ -135,7 +134,7 @@ def test_billing_report_schema_missing_exactness_defaults_to_unavailable() -> No
     parsed = BillingReportResponse.model_validate(payload)
 
     assert parsed.exactness_status == "missing_exact_inputs"
-    assert parsed.unavailable_reason == "Exactness metadata was not provided by the SUT payload."
+    assert parsed.unavailable_reason == "Exactness metadata was not provided by the bilun payload."
     assert parsed.required_inputs_missing == ["exactness_status"]
     assert parsed.billing_strategy.exactness_status == "missing_exact_inputs"
     assert parsed.billing_strategy.required_inputs_missing == ["exactness_status"]
@@ -161,7 +160,7 @@ def test_billing_report_schema_preserves_explicit_exact_status() -> None:
     assert parsed.billing_strategy.required_inputs_missing == []
 
 
-def test_billing_report_schema_rejects_explicit_unavailable_without_inputs() -> None:
+def test_billing_report_schema_populates_missing_inputs_for_partial_exact() -> None:
     payload = {
         "patient_id": "P1",
         "billing_strategy": {
@@ -170,8 +169,10 @@ def test_billing_report_schema_rejects_explicit_unavailable_without_inputs() -> 
         },
         "total_recoverable_try": 12.5,
         "exactness_status": "partial_exact",
-        "required_inputs_missing": ["itemized_billed_procedure_lines"],
+        "required_inputs_missing": [],
     }
 
-    with pytest.raises(ValidationError):
-        BillingReportResponse.model_validate(payload)
+    parsed = BillingReportResponse.model_validate(payload)
+    assert parsed.exactness_status == "partial_exact"
+    assert parsed.required_inputs_missing == ["exactness_status"]
+    assert parsed.unavailable_reason == "Exactness metadata was not provided by the bilun payload."

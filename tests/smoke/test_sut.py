@@ -54,10 +54,15 @@ class TestSutClaimValidation:
                 "claim_id": "TEST-CLEAN-001",
                 "procedure_code": "520.021",
                 "materials": [
-                    {"name": "Koroner stent", "unit_price": 800, "quantity": 1},
+                    {
+                        "name": "STENT, KORONER, BALONA MONTE EDİLMİŞ ÇIPLAK",
+                        "code": "KR1150",
+                        "unit_price": 800,
+                        "quantity": 1,
+                    },
                 ],
             }
-            res = _get_json(api_client.post("/api/sut/validate-claim", json=body))
+            res = _get_json(api_client.post("/api/validate-claim", json=body))
             assert res["claim_id"] == "TEST-CLEAN-001"
             assert res["is_valid"] is True
             assert isinstance(res["violations"], list)
@@ -74,7 +79,7 @@ class TestSutClaimValidation:
                     {"name": "Eldiven", "unit_price": 3, "quantity": 20},
                 ],
             }
-            res = _get_json(api_client.post("/api/sut/validate-claim", json=body))
+            res = _get_json(api_client.post("/api/validate-claim", json=body))
             assert res["claim_id"] == "TEST-BUNDLE-001"
             assert len(res["violations"]) >= 1
             assert any(v["severity"] in ("warning", "error") for v in res["violations"])
@@ -87,7 +92,7 @@ class TestSutClaimValidation:
                 "procedure_code": "GENERIC",
                 "materials": [],
             }
-            res = _get_json(api_client.post("/api/sut/validate-claim", json=body))
+            res = _get_json(api_client.post("/api/validate-claim", json=body))
             assert res["is_valid"] is True
             assert len(res["violations"]) == 0
 
@@ -100,7 +105,7 @@ class TestSutClaimValidation:
                     {"name": "Bistüri", "unit_price": 15, "quantity": 5},
                 ],
             }
-            res = _get_json(api_client.post("/api/sut/validate-claim", json=body))
+            res = _get_json(api_client.post("/api/validate-claim", json=body))
             _assert_keys(
                 res,
                 {
@@ -134,7 +139,7 @@ class TestSutClaimValidation:
                     },
                 ],
             }
-            res = _get_json(api_client.post("/api/sut/validate-claim", json=body))
+            res = _get_json(api_client.post("/api/validate-claim", json=body))
             if len(res["material_estimates"]) > 0:
                 est = res["material_estimates"][0]
                 _assert_keys(
@@ -158,7 +163,7 @@ class TestSutClaimValidation:
 class TestSutMaterialPricing:
     def test_search_stent(self, api_client):
         with _skip_if_unavailable():
-            res = _get_json(api_client.get("/api/sut/material/stent/pricing"))
+            res = _get_json(api_client.get("/api/material/stent/pricing"))
             assert res["n_matches"] > 0
             assert isinstance(res["materials"], list)
             first = res["materials"][0]
@@ -168,14 +173,14 @@ class TestSutMaterialPricing:
     def test_search_nonexistent(self, api_client):
         with _skip_if_unavailable():
             res = _get_json(
-                api_client.get("/api/sut/material/zzz_no_such_item/pricing")
+                api_client.get("/api/material/zzz_no_such_item/pricing")
             )
             assert res["n_matches"] == 0
             assert len(res["materials"]) == 0
 
     def test_search_by_code(self, api_client):
         with _skip_if_unavailable():
-            res = _get_json(api_client.get("/api/sut/material/0903/pricing"))
+            res = _get_json(api_client.get("/api/material/0903/pricing"))
             assert isinstance(res["materials"], list)
             assert "n_matches" in res
             assert "query" in res
@@ -185,7 +190,7 @@ class TestSutMaterialPricing:
 class TestSutBundledConsumables:
     def test_loads_catalog(self, api_client):
         with _skip_if_unavailable():
-            res = _get_json(api_client.get("/api/sut/bundled-consumables"))
+            res = _get_json(api_client.get("/api/bundled-consumables"))
             bc = res["bundled_consumables"]
             ec = res["exclusion_categories"]
             assert bc["count"] > 0
@@ -196,7 +201,7 @@ class TestSutBundledConsumables:
 
     def test_count_matches_items_length(self, api_client):
         with _skip_if_unavailable():
-            res = _get_json(api_client.get("/api/sut/bundled-consumables"))
+            res = _get_json(api_client.get("/api/bundled-consumables"))
             bc = res["bundled_consumables"]
             assert bc["count"] == len(bc["items"])
             ec = res["exclusion_categories"]

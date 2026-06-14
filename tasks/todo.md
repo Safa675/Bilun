@@ -1,3 +1,31 @@
+## Task: Fix all Python test failures (23 failed + 22 errors)
+
+### Goal
+Restore a green Python test suite: `0 failed, 0 errors` when running `.venv/bin/python -m pytest`.
+
+### Plan
+See `plans/testing/fix-all-test-failures-plan.md`.
+
+### Subtasks
+- [ ] Phase 1: fix stale `src.api.*` imports + missing `api_client` fixture
+- [ ] Phase 2: make billing orchestrator defensive against partial material stubs
+- [ ] Phase 3: fix claims config messages + loader mode handling + fixture counts
+- [ ] Phase 4: fix `validate_claim` tests against prose side effects
+- [ ] Phase 5: fix billing strategy recommendation kind mismatch
+- [ ] Phase 6: fix patient recovery summary payload mapping
+- [ ] Phase 7: resolve `C001637` material bundling golden mismatch
+- [ ] Phase 8: full-suite verification + task close-out
+
+### Out of Scope
+- Frontend type-check/test/build failures
+- CI workflow addition (follow-up after suite is green)
+
+### Notes
+- Supersedes the narrower `plans/testing/fix-pre-existing-test-failures-plan.md` (4 failures only).
+- Several phases require domain decisions; plan flags them explicitly.
+
+---
+
 ## Task: Rule Database tab — SUT rule catalog + clause-source drill-down (2026-06-13)
 
 ### Goal

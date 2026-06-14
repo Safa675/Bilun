@@ -9,6 +9,15 @@ from pathlib import Path
 import polars as pl
 import pytest
 
+from src.bilun.api.routes.alerts import get_patient_alerts
+from src.bilun.api.routes.billing import get_patient_billing_report
+from src.bilun.api.routes.optimization import (
+    get_optimization_summary,
+    get_patient_optimization,
+    get_revenue_recovery,
+)
+from src.bilun.api.routes.patients import get_bilun_patient_outcome, get_bilun_patients
+
 pytestmark = pytest.mark.unit
 
 SYNTHETIC_DATA_SOURCE = {
@@ -291,17 +300,13 @@ def _run_parallel(fn, *, workers: int = 5, rounds: int = 3):
 
 
 def test_patient_alerts_succeeds_under_parallel_reads(sut_cache_fixture):
-    import src.api.routes.sut as sut_mod
-
-    results = _run_parallel(sut_mod.get_patient_alerts)
+    results = _run_parallel(get_patient_alerts)
 
     assert all(result["summary"]["n_total_patients"] == 1 for result in results)
 
 
 def test_optimization_summary_succeeds_under_parallel_reads(sut_cache_fixture):
-    import src.api.routes.sut as sut_mod
-
-    results = _run_parallel(sut_mod.get_optimization_summary)
+    results = _run_parallel(get_optimization_summary)
 
     assert all(result["copay_exemptions"]["n_total_patients"] == 1 for result in results)
     assert all(result["data_source"]["mode"] == "synthetic_demo" for result in results)
@@ -309,52 +314,41 @@ def test_optimization_summary_succeeds_under_parallel_reads(sut_cache_fixture):
 
 
 def test_revenue_recovery_succeeds_under_parallel_reads(sut_cache_fixture):
-    import src.api.routes.sut as sut_mod
-
-    results = _run_parallel(sut_mod.get_revenue_recovery)
+    results = _run_parallel(get_revenue_recovery)
 
     assert all(result["n_patients"] == 1 for result in results)
     assert all(result["data_source"]["mode"] == "synthetic_demo" for result in results)
 
 
 def test_patient_optimization_succeeds_under_parallel_reads(sut_cache_fixture):
-    import src.api.routes.sut as sut_mod
-
-    results = _run_parallel(lambda: sut_mod.get_patient_optimization("P1"))
+    results = _run_parallel(lambda: get_patient_optimization("P1"))
 
     assert all(result["patient_id"] == "P1" for result in results)
     assert all(result["data_source"]["mode"] == "synthetic_demo" for result in results)
 
 
 def test_billing_report_succeeds_under_parallel_reads(sut_cache_fixture):
-    import src.api.routes.sut as sut_mod
-
-    results = _run_parallel(lambda: sut_mod.get_patient_billing_report("P1"))
+    results = _run_parallel(lambda: get_patient_billing_report("P1"))
 
     assert all(result["patient_id"] == "P1" for result in results)
     assert all(result["data_source"]["mode"] == "synthetic_demo" for result in results)
 
 
 def test_sut_patient_listing_includes_data_source(sut_cache_fixture):
-    import src.api.routes.sut as sut_mod
-
-    result = sut_mod.get_sut_patients()
+    result = get_bilun_patients()
 
     assert result["patients"] == ["P1"]
     assert result["data_source"]["mode"] == "synthetic_demo"
 
 
 def test_sut_patient_outcome_includes_claim_totals_and_data_source(sut_cache_fixture):
-    import src.api.routes.sut as sut_mod
-
-    result = sut_mod.get_sut_patient_outcome("P1", include_expensive=False)
+    result = get_bilun_patient_outcome("P1", include_expensive=False)
 
     assert result["BILUN_claim_totals"]["exactness_status"] == "exact"
     assert result["data_source"]["mode"] == "synthetic_demo"
 
 
 def test_billing_report_falls_back_to_legacy_monolith(monkeypatch, tmp_path):
-    import src.api.routes.sut as sut_mod
     import src.bilun.api.routes.alerts as sut_alerts_mod
     import src.bilun.api.routes.billing as sut_billing_mod
     import src.bilun.api.routes.optimization as sut_opt_mod
@@ -379,7 +373,7 @@ def test_billing_report_falls_back_to_legacy_monolith(monkeypatch, tmp_path):
     monkeypatch.setattr(sut_billing_mod, "PIPELINE_MODE", "hybrid")
 
     try:
-        result = sut_mod.get_patient_billing_report("P1")
+        result = get_patient_billing_report("P1")
         assert result["patient_id"] == "P1"
         assert result["total_recoverable_try"] == 42.0
         assert result["data_source"]["mode"] == "synthetic_demo"
@@ -394,7 +388,6 @@ def test_billing_report_falls_back_to_legacy_monolith(monkeypatch, tmp_path):
 
 
 def test_missing_cache_provenance_returns_unavailable(monkeypatch, tmp_path):
-    import src.api.routes.sut as sut_mod
     import src.bilun.api.routes.billing as sut_billing_mod
     import src.bilun.api.routes.optimization as sut_opt_mod
     from src.bilun.shared.runtime import get_api_runtime
@@ -417,9 +410,9 @@ def test_missing_cache_provenance_returns_unavailable(monkeypatch, tmp_path):
     monkeypatch.setattr(sut_billing_mod, "PIPELINE_MODE", "hybrid")
 
     try:
-        summary = sut_mod.get_optimization_summary()
-        billing = sut_mod.get_patient_billing_report("P1")
-        patient = sut_mod.get_patient_optimization("P1")
+        summary = get_optimization_summary()
+        billing = get_patient_billing_report("P1")
+        patient = get_patient_optimization("P1")
 
         assert summary["data_source"]["mode"] == "unavailable"
         assert billing["data_source"]["mode"] == "unavailable"
