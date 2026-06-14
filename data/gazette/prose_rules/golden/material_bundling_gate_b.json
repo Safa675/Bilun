@@ -19,7 +19,7 @@
         "code": "LOST1",
         "unit_price": 50.0
       },
-      "expected_rule_id": "3.1.1.(17).barcode_sut_mismatch"
+      "expected_rule_id": "3.1.2.(2).not_in_ek3c"
     },
     {
       "clause_id": "C002691",
