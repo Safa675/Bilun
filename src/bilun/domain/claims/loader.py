@@ -199,12 +199,18 @@ def load_sut_claim_dataset(
     """Load an exact SUT claim dataset after data-source path guards."""
 
     directory = resolve_sut_claims_dir(mode=mode, claims_dir=claims_dir)
-    return _load_sut_claim_dataset_cached(str(Path(directory).resolve()))
+    return _load_sut_claim_dataset_cached(
+        str(Path(directory).resolve()), mode=mode
+    )
 
 
 @lru_cache(maxsize=4)
-def _load_sut_claim_dataset_cached(resolved_directory: str) -> "SUTClaimDataset":
-    tables = read_claim_tables(resolved_directory)
+def _load_sut_claim_dataset_cached(
+    resolved_directory: str,
+    *,
+    mode: str | None = None,
+) -> "SUTClaimDataset":
+    tables = read_claim_tables(resolved_directory, mode=mode)
     return SUTClaimDataset.from_rows(
         claim_headers=tables.headers,
         diagnoses=tables.diagnoses,

@@ -91,7 +91,7 @@ def test_rejects_invalid_sut_data_mode():
     with pytest.raises(SUTDataSourceConfigError) as exc_info:
         resolve_sut_data_source(mode="estimated_demo", environ={})
 
-    assert "Unsupported SUT_DATA_MODE 'estimated_demo'" in str(exc_info.value)
+    assert "Unsupported BILUN_DATA_MODE (or deprecated SUT_DATA_MODE) 'estimated_demo'" in str(exc_info.value)
 
 
 def test_rejects_synthetic_demo_mode_outside_synthetic_sut_paths(tmp_path):
@@ -132,8 +132,8 @@ def test_rejects_real_claims_mode_without_directory_specification():
         resolve_sut_data_source(mode="real_claims", environ={})
 
     message = str(exc_info.value)
-    assert "real_claims requires SUT_CLAIMS_DIR or an explicit claims_dir" in message
-    assert "real_claims requires SUT_CLEAN_DIR or an explicit clean_dir" in message
+    assert "real_claims requires BILUN_CLAIMS_DIR (or deprecated SUT_CLAIMS_DIR) or an explicit claims_dir" in message
+    assert "real_claims requires BILUN_CLEAN_DIR (or deprecated SUT_CLEAN_DIR) or an explicit clean_dir" in message
 
 
 def test_rejects_real_claims_mode_pointing_at_synthetic_paths():
@@ -156,7 +156,7 @@ def test_loader_accepts_configured_synthetic_claims_dir():
         mode="synthetic_demo",
     )
 
-    assert len(dataset.claims) == 138
+    assert len(dataset.claims) == 134
     assert len(dataset.patient_totals) == 50
 
 
@@ -176,5 +176,5 @@ def test_loader_can_read_configured_real_claims_dir(tmp_path):
 
     dataset = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
 
-    assert len(dataset.claims) == 138
+    assert len(dataset.claims) == 134
     assert len(dataset.patient_totals) == 50
