@@ -15,7 +15,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "synthetic" / "sut"
 GAZETTE_DIR = PROJECT_ROOT / "data" / "gazette"
 CURATED_DIR = GAZETTE_DIR / "curated"
-EK2B_PATH = GAZETTE_DIR / "ek2b_islem_puan_listesi.parquet"
 
 # ── ICD-10 Chapter → DRG group mapping ───────────────────────────────
 ICD10_CHAPTER_TO_DRG_GROUP: dict[str, str] = {

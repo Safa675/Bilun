@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from constants import CURATED_DIR, EK2B_PATH
+from constants import CURATED_DIR
 
 _GAZETTE_CACHE: dict[str, pd.DataFrame] = {}
 
@@ -24,7 +24,20 @@ def _gazette(name: str, path: Path) -> pd.DataFrame:
 
 
 def _ek2b() -> pd.DataFrame:
-    return _gazette("ek2b", EK2B_PATH)
+    """Load the latest EK-2B catalog snapshot from curated history.
+
+    Returns a DataFrame with one row per procedure code using the most recent
+    effective_date, with columns: code, name, puan, description, price_try.
+    """
+    df = _gazette("ek2b", CURATED_DIR / "ek2b_catalog_history.parquet")
+    if df.empty:
+        return df
+    work = df.copy()
+    work["effective_date_dt"] = pd.to_datetime(work["effective_date"], errors="coerce")
+    work = work.sort_values("effective_date_dt").drop_duplicates(
+        subset=["code"], keep="last"
+    )
+    return work
 
 
 def _ek2c_latest() -> pd.DataFrame:

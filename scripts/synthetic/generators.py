@@ -298,26 +298,26 @@ def _pick_procedures(
 
     if not ek2b_procs.get("muayene", pd.DataFrame()).empty:
         exam_pool = ek2b_procs["muayene"]
-        exam_valid = exam_pool[exam_pool["ISLEM_BEDELI_TL"].notna() & (exam_pool["ISLEM_BEDELI_TL"] > 0)]
+        exam_valid = exam_pool[exam_pool["price_try"].notna() & (exam_pool["price_try"] > 0)]
         if not exam_valid.empty:
             row = exam_valid.sample(1, random_state=rng.bit_generator).iloc[0]
             procs.append({
-                "code": str(row["ISLEM_KODU"]),
-                "name": str(row["ISLEM_ADI"]),
-                "price": _money(float(row.get("ISLEM_BEDELI_TL", 0) or 0)),
+                "code": str(row["code"]),
+                "name": str(row["name"]),
+                "price": _money(float(row.get("price_try", 0) or 0)),
                 "category": "muayene",
             })
 
     if visit_type == "yatis" and not ek2b_procs.get("yatak", pd.DataFrame()).empty:
         bed_pool = ek2b_procs["yatak"]
-        bed_valid = bed_pool[bed_pool["ISLEM_BEDELI_TL"].notna() & (bed_pool["ISLEM_BEDELI_TL"] > 0)]
+        bed_valid = bed_pool[bed_pool["price_try"].notna() & (bed_pool["price_try"] > 0)]
         if not bed_valid.empty:
             row = bed_valid.sample(1, random_state=rng.bit_generator).iloc[0]
             days = int(rng.integers(1, 21))
             procs.append({
-                "code": str(row["ISLEM_KODU"]),
-                "name": str(row["ISLEM_ADI"]),
-                "price": _money(float(row.get("ISLEM_BEDELI_TL", 0) or 0)),
+                "code": str(row["code"]),
+                "name": str(row["name"]),
+                "price": _money(float(row.get("price_try", 0) or 0)),
                 "category": "yatak",
                 "quantity_override": days,
             })
@@ -326,17 +326,17 @@ def _pick_procedures(
     lab_pool = ek2b_procs.get("lab", pd.DataFrame())
     if not lab_pool.empty:
         lab_pool_valid = lab_pool[
-            lab_pool["ISLEM_BEDELI_TL"].notna() &
-            (lab_pool["ISLEM_BEDELI_TL"] > 0)
+            lab_pool["price_try"].notna() &
+            (lab_pool["price_try"] > 0)
         ]
         if not lab_pool_valid.empty:
             n_sample = min(n_labs, len(lab_pool_valid))
             lab_sample = lab_pool_valid.sample(n_sample, random_state=rng.bit_generator)
             for _, row in lab_sample.iterrows():
                 procs.append({
-                    "code": str(row["ISLEM_KODU"]),
-                    "name": str(row["ISLEM_ADI"]),
-                    "price": _money(float(row.get("ISLEM_BEDELI_TL", 0) or 0)),
+                    "code": str(row["code"]),
+                    "name": str(row["name"]),
+                    "price": _money(float(row.get("price_try", 0) or 0)),
                     "category": "laboratuvar",
                 })
 
@@ -362,12 +362,12 @@ def _pick_procedures(
     general_pool = ek2b_procs.get("general", pd.DataFrame())
     if remaining > 0 and not general_pool.empty:
         gen_valid = general_pool[
-            general_pool["ISLEM_BEDELI_TL"].notna() &
-            (general_pool["ISLEM_BEDELI_TL"] > 0)
+            general_pool["price_try"].notna() &
+            (general_pool["price_try"] > 0)
         ]
         # Exclude EK-2C package codes from general pool — they must only appear via the package path
         if not gen_valid.empty and ek2c_all_codes:
-            gen_valid = gen_valid[~gen_valid["ISLEM_KODU"].astype(str).isin(ek2c_all_codes)]
+            gen_valid = gen_valid[~gen_valid["code"].astype(str).isin(ek2c_all_codes)]
         if not gen_valid.empty:
             n_sample = min(remaining, len(gen_valid))
             sample = gen_valid.sample(n_sample, random_state=rng.bit_generator)
@@ -376,9 +376,9 @@ def _pick_procedures(
                 if package_code:
                     included_in_pkg = rng.random() < 0.45
                 procs.append({
-                    "code": str(row["ISLEM_KODU"]),
-                    "name": str(row["ISLEM_ADI"]),
-                    "price": _money(float(row.get("ISLEM_BEDELI_TL", 0) or 0)),
+                    "code": str(row["code"]),
+                    "name": str(row["name"]),
+                    "price": _money(float(row.get("price_try", 0) or 0)),
                     "category": "islem",
                     "included_in_package": included_in_pkg,
                 })
@@ -399,11 +399,11 @@ def _lookup_ek2b_price(code: str, ek2b_procs: dict[str, pd.DataFrame]) -> tuple[
     general = ek2b_procs.get("general", pd.DataFrame())
     if general.empty:
         return code, 1000.0
-    match = general[general["ISLEM_KODU"].astype(str) == str(code)]
+    match = general[general["code"].astype(str) == str(code)]
     if match.empty:
         return code, 1000.0
     row = match.iloc[0]
-    return str(row["ISLEM_ADI"]), _money(float(row.get("ISLEM_BEDELI_TL", 0) or 1000))
+    return str(row["name"]), _money(float(row.get("price_try", 0) or 1000))
 
 
 def _pick_blood_uplift_demo_procedures(
@@ -1619,16 +1619,16 @@ def _generate_claims_and_lines(
 
     ek2b_procs: dict[str, pd.DataFrame] = {}
     if not ek2b_df.empty:
-        ek2b_df["code_str"] = ek2b_df["ISLEM_KODU"].astype(str)
+        ek2b_df["code_str"] = ek2b_df["code"].astype(str)
         ek2b_procs["general"] = ek2b_df[
             ~ek2b_df["code_str"].str.startswith("L1") &
             ~ek2b_df["code_str"].str.startswith("P")
         ]
         ek2b_procs["lab"] = ek2b_df[ek2b_df["code_str"].str.startswith("L1")]
-        ek2b_procs["yatak"] = ek2b_df[ek2b_df["ISLEM_ADI"].str.contains("yatak", case=False, na=False)]
+        ek2b_procs["yatak"] = ek2b_df[ek2b_df["name"].str.contains("yatak", case=False, na=False)]
         ek2b_procs["muayene"] = ek2b_df[
-            ek2b_df["ISLEM_ADI"].str.contains("muayene", case=False, na=False) |
-            ek2b_df["ISLEM_ADI"].str.contains("konsültasyon", case=False, na=False)
+            ek2b_df["name"].str.contains("muayene", case=False, na=False) |
+            ek2b_df["name"].str.contains("konsültasyon", case=False, na=False)
         ]
 
     claims: list[dict] = []
