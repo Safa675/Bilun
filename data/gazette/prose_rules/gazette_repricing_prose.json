@@ -5,6 +5,7 @@
   "sut_anchors": ["1.1", "2.2"],
   "rebill_permitted_default": true,
   "increase_only": true,
+  "max_days_after_service": 90,
   "excluded_procedure_categories": [],
   "message_tr": "Hizmet tarihinden sonra yürürlüğe giren tebliğ ile liste fiyatı artmış; yeniden fatura/adjustment yasal izin gerektirir."
 }
