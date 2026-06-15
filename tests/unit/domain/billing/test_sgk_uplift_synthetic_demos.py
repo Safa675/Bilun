@@ -202,13 +202,12 @@ class TestGazetteRepricingSyntheticDemo:
             for row in report.gazette_repricing.opportunities
             if row.get("claim_id") == demo_claim.claim_id
         ]
-        assert len(demo_rows) == 1
-        assert demo_rows[0]["procedure_code"] == "600150"
-        assert demo_rows[0]["included_in_sgk_total"] is False
-        assert demo_rows[0]["recoverable_repricing_try"] == pytest.approx(89.95, rel=0.02)
-        assert report.gazette_repricing_try == pytest.approx(89.95, rel=0.02)
+        # The demo claim is dated 2024-06-01; the 2026-01-01 tebliğ is ~579 days
+        # after service, so it falls outside the 90-day prospective window.
+        assert demo_rows == []
+        assert report.gazette_repricing_try == 0.0
         assert report.gazette_repricing.confirmed_repricing_try == 0.0
-        assert report.gazette_repricing.review_repricing_try > 0
+        assert report.gazette_repricing.review_repricing_try == 0.0
         assert len(ctx.claims) == 1
 
 

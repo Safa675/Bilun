@@ -44,7 +44,9 @@ def test_compute_all_billing_reports_builds_claim_context_from_dataset() -> None
     assert report.copay.exactness_status == "exact"
     assert report.billing_strategy.exactness_status == "exact"
     assert report.session_uplift.exactness_status == "exact"
+    assert report.medula_rejection_ingest_available is True
     assert summary.n_patients == 1
+    assert summary.medula_rejection_ingest_available is True
     assert summary.total_sgk_uplift == round(
         sum(item.sgk_uplift_try for item in reports.values()),
         2,

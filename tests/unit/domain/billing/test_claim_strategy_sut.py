@@ -188,7 +188,7 @@ class TestClaimStrategySut:
             rec
             for rec in result.recommendations
             if rec.get("claim_id") == "F-SENTETIK-HASTA-0001-001"
-            and rec.get("procedure_code") == "607890"
+            and rec.get("procedure_code") == "609150"
             and rec.get("payment_method_kind") == "DRG_MANDATORY"
         )
         assert claim_rec["mandated_method"] == "package"

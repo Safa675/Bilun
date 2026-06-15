@@ -18,7 +18,16 @@ pytestmark = pytest.mark.unit
 
 def test_surcharge_exposure_uses_exact_claim_context() -> None:
     dataset = load_sut_claim_dataset()
-    patient_id = "SENTETIK-HASTA-0003"
+    patient_id = ""
+    for pid in sorted(dataset.procedure_lines_by_patient.keys()):
+        procedure_lines = dataset.procedure_lines_by_patient[pid]
+        context = build_surcharge_claim_context(pid, procedure_lines)
+        with ClaimContextManager(surcharge=context):
+            result = analyze_surcharge_exposure(set())
+        if result["n_applicable_procedures"] >= 1:
+            patient_id = pid
+            break
+    assert patient_id, "expected at least one patient with surcharge-exposed procedures"
     procedure_lines = dataset.procedure_lines_by_patient[patient_id]
     context = build_surcharge_claim_context(patient_id, procedure_lines)
 

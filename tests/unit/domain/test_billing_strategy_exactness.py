@@ -88,16 +88,6 @@ def test_billing_report_totals_exclude_gated_strategy(monkeypatch):
 
     monkeypatch.setattr(
         billing_mod,
-        "_optimize_lab_billing",
-        lambda *_args, **_kwargs: SimpleNamespace(
-            total_savings=12.5,
-            flagged_tests=[],
-            exactness_status="exact",
-            required_inputs_missing=[],
-        ),
-    )
-    monkeypatch.setattr(
-        billing_mod,
         "_optimize_copay",
         lambda *_args, **_kwargs: SimpleNamespace(
             total_copay_savings_try=5.0,
@@ -136,8 +126,8 @@ def test_billing_report_totals_exclude_gated_strategy(monkeypatch):
     assert report.billing_strategy.exactness_status == "missing_exact_inputs"
     assert report.exactness_status == "partial_exact"
     assert "itemized_billed_procedure_lines" in report.required_inputs_missing
-    # Gated strategy contributes no SGK uplift; lab savings are compliance-only.
+    # Gated strategy contributes no SGK uplift; without claim lines lab is empty.
     assert report.sgk_uplift_try == 0.0
     assert report.total_recoverable_try == 0.0
-    assert report.compliance_adjustment_try == 12.5
+    assert report.compliance_adjustment_try == 0.0
     assert report.action_count == 0

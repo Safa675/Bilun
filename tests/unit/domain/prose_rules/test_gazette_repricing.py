@@ -12,6 +12,8 @@ from src.bilun.domain.prose_rules.gazette_repricing import (
 
 
 def _claim(**overrides) -> ClaimHeader:
+    # Service date is kept within 90 days of the 2026-01-01 tebliğ so the
+    # line is still flagged as a prospective repricing opportunity.
     base = {
         "claim_id": "F-DEMO-001",
         "patient_id": "P1",
@@ -22,8 +24,8 @@ def _claim(**overrides) -> ClaimHeader:
         "department": "Genel",
         "admission_date": None,
         "discharge_date": None,
-        "claim_start_date": date(2024, 6, 1),
-        "claim_end_date": date(2024, 6, 1),
+        "claim_start_date": date(2025, 12, 1),
+        "claim_end_date": date(2025, 12, 1),
         "primary_icd10": "L98.9",
         "package_candidate": False,
         "expected_total_billed_try": Decimal("449.73"),
@@ -41,7 +43,7 @@ def _proc_line(**overrides) -> ProcedureClaimLine:
         "claim_id": "F-DEMO-001",
         "patient_id": "P1",
         "episode_id": "E1",
-        "procedure_date": date(2024, 6, 1),
+        "procedure_date": date(2025, 12, 1),
         "procedure_code": "600150",
         "procedure_name": "Proc",
         "procedure_category": "islem",
@@ -84,5 +86,16 @@ class TestGazetteRepricing:
                     unit_price_try=Decimal("539.68"),
                 )
             ],
+        )
+        assert rows == []
+
+    def test_skips_when_amendment_is_beyond_window(self) -> None:
+        # 2024-06-01 → 2026-01-01 is ~579 days, well beyond the 90-day window.
+        rows = detect_gazette_repricing_opportunities(
+            _claim(
+                claim_start_date=date(2024, 6, 1),
+                claim_end_date=date(2024, 6, 1),
+            ),
+            [_proc_line(procedure_date=date(2024, 6, 1))],
         )
         assert rows == []

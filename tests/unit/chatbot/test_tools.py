@@ -114,3 +114,36 @@ def test_execute_tool_call_returns_string_content(monkeypatch):
     assert isinstance(result.content, str)
     assert "123.45" in result.content
     assert len(result.content) > 0
+
+
+def test_execute_tool_call_search_medula_playbook_routes_to_kb(monkeypatch):
+    captured: dict = {}
+
+    def fake_search_playbook_entries(query, *, sonuc_kodu, top_n):
+        captured.update(query=query, sonuc_kodu=sonuc_kodu, top_n=top_n)
+        return [
+            {
+                "playbook_key": "1688_molecular_microbiology",
+                "sonuc_kodu": "1688",
+                "sut_anchor": "EK-2",
+            }
+        ]
+
+    monkeypatch.setattr(
+        "src.bilun.chatbot.medula_kb.search_playbook_entries",
+        fake_search_playbook_entries,
+    )
+
+    result = asyncio.run(
+        execute_tool_call(
+            "search_medula_playbook",
+            {"query": "moleküler mikrobiyoloji rapor eksik", "sonuc_kodu": "1688"},
+            ToolSession(),
+        )
+    )
+
+    assert result.success is True
+    assert captured["query"] == "moleküler mikrobiyoloji rapor eksik"
+    assert captured["sonuc_kodu"] == "1688"
+    assert captured["top_n"] == 5
+    assert "1688_molecular_microbiology" in result.content

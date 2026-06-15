@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import shutil
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
@@ -13,6 +15,7 @@ from src.bilun.domain.claims import (
     load_sut_claim_dataset,
     read_claim_tables,
 )
+from src.bilun.domain.claims.config import DEFAULT_SYNTHETIC_CLAIMS_DIR
 
 pytestmark = pytest.mark.unit
 
@@ -22,12 +25,13 @@ def test_load_committed_v2_claim_fixture_with_exact_indexes_and_totals():
 
     assert len(dataset.claims) == 134
     assert len(dataset.diagnoses) >= 134
-    assert len(dataset.procedure_lines) == 753
-    assert len(dataset.material_lines) == 151
-    assert len(dataset.drug_lines) == 336
-    assert len(dataset.expected_outputs) == 579
+    assert len(dataset.procedure_lines) == 742
+    assert len(dataset.material_lines) == 152
+    assert len(dataset.drug_lines) == 366
+    assert len(dataset.expected_outputs) == 619
     assert len(dataset.performed_procedure_lines) == 1
     assert len(dataset.medula_rejection_events) == 1
+    assert dataset.medula_rejection_ingest_available is True
     assert len(dataset.patient_totals) == 50
 
     ctx = build_patient_claim_context("SENTETIK-HASTA-0001", dataset)
@@ -72,3 +76,23 @@ def test_loader_rejects_missing_drug_prescription_id():
         )
 
     assert "missing prescription_id" in str(exc_info.value)
+
+
+def test_read_claim_tables_marks_medula_ingest_unavailable_when_parquet_missing(
+    tmp_path: Path,
+) -> None:
+    """When medula_rejection_events.parquet is absent the flag must be False."""
+    required = [
+        "claim_headers.parquet",
+        "claim_diagnoses.parquet",
+        "procedure_claim_lines.parquet",
+        "material_claim_lines.parquet",
+        "drug_claim_lines.parquet",
+        "expected_rule_outputs.parquet",
+    ]
+    for name in required:
+        shutil.copy(DEFAULT_SYNTHETIC_CLAIMS_DIR / name, tmp_path / name)
+
+    tables = read_claim_tables(claims_dir=tmp_path, mode="real_claims")
+    assert tables.medula_rejection_ingest_available is False
+    assert tables.medula_rejections == ()

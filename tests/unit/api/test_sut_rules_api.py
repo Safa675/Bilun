@@ -5,7 +5,12 @@ from __future__ import annotations
 import pytest
 
 from src.bilun.api.routes import rules as rules_route
-from src.bilun.api.schemas import RuleCatalogResponse, RuleDetailResponse
+from src.bilun.api.schemas import (
+    ProseInventoryResponse,
+    RuleCatalogResponse,
+    RuleDetailResponse,
+    SectionRollupResponse,
+)
 from src.bilun.domain.constants import SUT_CLAUSE_COVERAGE_PATH
 from src.bilun.domain.sut import rules_catalog
 from src.bilun.domain.sut.rule_registry import RULE_REGISTRY
@@ -45,6 +50,15 @@ class TestCatalogEndpoint:
     def test_artifacts_flag_true_with_data(self) -> None:
         payload = rules_route.get_rule_catalog()
         assert payload["artifacts_available"] is True
+
+    @_needs_coverage
+    def test_coverage_summary_included_and_valid(self) -> None:
+        payload = rules_route.get_rule_catalog()
+        summary = payload["coverage_summary"]
+        assert summary["meta"]["artifacts_available"] is True
+        assert summary["clauses"]["total_extracted"] > 0
+        assert summary["registry"]["total_rules"] == len(RULE_REGISTRY)
+        assert summary["meta"]["generated_at"] is not None
 
 
 @_needs_coverage
@@ -103,3 +117,46 @@ class TestGracefulDegradation:
         assert detail["artifacts_available"] is False
         assert detail["clauses"] == []
         assert detail["clause_total"] == 0
+
+
+class TestSectionRollupEndpoint:
+    def test_returns_paginated_section_rollup(self) -> None:
+        payload = rules_route.get_rule_sections(page=1, per_page=5)
+        model = SectionRollupResponse.model_validate(payload)
+        assert model.artifacts_available is True
+        assert len(model.sections) <= 5
+        if model.sections:
+            first = model.sections[0]
+            assert first.section_id is not None
+            assert first.clause_count >= 0
+            assert first.gap_clause_count >= 0
+
+    def test_min_gap_count_filters_sections(self) -> None:
+        payload = rules_route.get_rule_sections(page=1, per_page=100, min_gap_count=10)
+        model = SectionRollupResponse.model_validate(payload)
+        for section in model.sections:
+            assert section.gap_clause_count >= 10
+
+    @pytest.mark.parametrize("page", [0, -1])
+    def test_invalid_page_raises_400(self, page: int) -> None:
+        with pytest.raises(ValidationError) as exc:
+            rules_route.get_rule_sections(page=page)
+        assert exc.value.status_code == 400
+
+    @pytest.mark.parametrize("per_page", [0, 201])
+    def test_invalid_per_page_raises_400(self, per_page: int) -> None:
+        with pytest.raises(ValidationError) as exc:
+            rules_route.get_rule_sections(per_page=per_page)
+        assert exc.value.status_code == 400
+
+
+class TestProseInventoryEndpoint:
+    def test_returns_prose_engine_manifest(self) -> None:
+        payload = rules_route.get_prose_inventory()
+        model = ProseInventoryResponse.model_validate(payload)
+        assert model.artifacts_available is True
+        assert model.total > 0
+        assert len(model.engines) == model.total
+        first = model.engines[0]
+        assert first.rule_set_id
+        assert first.file_name.endswith(".json")

@@ -64,16 +64,6 @@ def test_orchestrator_total_includes_only_exact_blocks(monkeypatch) -> None:
 
     monkeypatch.setattr(
         billing_mod,
-        "_optimize_lab_billing",
-        lambda *_args, **_kwargs: SimpleNamespace(
-            total_savings=10.0,
-            flagged_tests=[],
-            exactness_status="exact",
-            required_inputs_missing=[],
-        ),
-    )
-    monkeypatch.setattr(
-        billing_mod,
         "_optimize_copay",
         lambda *_args, **_kwargs: SimpleNamespace(
             total_copay_savings_try=5.0,
@@ -108,6 +98,7 @@ def test_orchestrator_total_includes_only_exact_blocks(monkeypatch) -> None:
 
     report = billing_mod.compute_patient_billing_report("P1", chapters={"I"})
 
-    assert report.compliance_adjustment_try == 10.0
+    # Without claim lines the lab block is empty, so only exact copay counts.
+    assert report.compliance_adjustment_try == 0.0
     assert report.sgk_uplift_try == 0.0
     assert report.total_recoverable_try == 0.0

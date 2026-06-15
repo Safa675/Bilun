@@ -1,4 +1,4 @@
-"""Tests for billing bugfixes: per-visit lab grouping and copay/drug dedupe."""
+"""Tests for billing bugfixes: copay/drug dedupe and orchestrator totals."""
 
 from __future__ import annotations
 
@@ -8,53 +8,6 @@ from types import SimpleNamespace
 import pytest
 
 pytestmark = pytest.mark.unit
-
-
-def test_lab_no_duplicate_flags_generated() -> None:
-    from src.bilun.domain.billing.lab import _optimize_lab_billing
-
-    tests = ["glucose", "glucose", "glucose"]
-    visit_ids = ["V1", "V1", "V1"]
-
-    result = _optimize_lab_billing(
-        "P1",
-        tests,
-        patient_lab_visit_ids=visit_ids,
-    )
-
-    assert not any(
-        flag["flag_type"] == "clinical_review_duplicate" for flag in result.flagged_tests
-    )
-
-
-def test_lab_hemogram_bundling_groups_by_visit_id() -> None:
-    from src.bilun.domain.billing.lab import _optimize_lab_billing
-
-    tests = ["Hemoglobin", "Hematokrit", "Hemoglobin", "Hematokrit"]
-    visit_ids = ["V1", "V2", "V3", "V4"]
-
-    result = _optimize_lab_billing(
-        "P1",
-        tests,
-        patient_lab_visit_ids=visit_ids,
-    )
-
-    assert result.hemogram_bundling_savings == 0.0
-
-
-def test_lab_hemogram_bundling_flags_excess_within_visit() -> None:
-    from src.bilun.domain.billing.lab import _optimize_lab_billing
-
-    tests = ["Hemoglobin", "Hematokrit", "Hemoglobin"]
-    visit_ids = ["V1", "V1", "V1"]
-
-    result = _optimize_lab_billing(
-        "P1",
-        tests,
-        patient_lab_visit_ids=visit_ids,
-    )
-
-    assert result.hemogram_bundling_savings > 0.0
 
 
 def test_copay_total_excludes_rx_component() -> None:
@@ -94,16 +47,6 @@ def test_copay_total_excludes_rx_component() -> None:
 def test_orchestrator_recoverable_total_counts_rx_once_with_visit_copay(monkeypatch) -> None:
     import src.bilun.domain.billing.orchestrator as billing_mod
 
-    monkeypatch.setattr(
-        billing_mod,
-        "_optimize_lab_billing",
-        lambda *_args, **_kwargs: SimpleNamespace(
-            total_savings=0.0,
-            flagged_tests=[],
-            exactness_status="exact",
-            required_inputs_missing=[],
-        ),
-    )
     monkeypatch.setattr(
         billing_mod,
         "_optimize_copay",

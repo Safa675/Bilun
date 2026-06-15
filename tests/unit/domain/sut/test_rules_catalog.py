@@ -123,6 +123,38 @@ class TestClauseDrilldown:
         assert rc.get_rule_clauses("claim_validation")[1] == 0
 
 
+class TestCoverageSummary:
+    @_needs_coverage
+    def test_coverage_summary_returns_pipeline_health(self) -> None:
+        summary = rc.coverage_summary()
+        assert summary["meta"]["artifacts_available"] is True
+        assert summary["clauses"]["total_extracted"] > 0
+        assert summary["clauses"]["algorithmic_gaps"] >= 0
+        assert 0 <= summary["clauses"]["algorithmic_gap_pct"] <= 100
+        assert summary["registry"]["total_rules"] == len(RULE_REGISTRY)
+        assert sum(s["count"] for s in summary["registry"]["by_status"]) == len(RULE_REGISTRY)
+        assert summary["meta"]["generated_at"] is not None
+
+    @_needs_coverage
+    def test_coverage_summary_exposes_zero_clause_matches(self) -> None:
+        summary = rc.coverage_summary()
+        for rule in summary["registry"]["zero_clause_matches"]:
+            assert rule["coverage_status"] in {"implemented", "partial"}
+            assert rule["rule_id"]
+
+    def test_coverage_summary_degrades_when_artifacts_missing(self, monkeypatch, tmp_path) -> None:
+        missing = tmp_path / "absent.parquet"
+        monkeypatch.setattr(rc, "SUT_CLAUSE_COVERAGE_PATH", missing)
+        monkeypatch.setattr(rc, "SUT_REGISTRY_COVERAGE_PATH", missing)
+        rc.reset_cache()
+
+        summary = rc.coverage_summary()
+        assert summary["meta"]["artifacts_available"] is False
+        assert summary["clauses"]["total_extracted"] == 0
+        assert summary["registry"]["total_rules"] == len(RULE_REGISTRY)
+        assert summary["meta"]["unavailable_reason"]
+
+
 class TestMissingArtifactDegradation:
     def test_catalog_still_lists_rules_without_artifacts(self, monkeypatch, tmp_path) -> None:
         missing = tmp_path / "absent.parquet"
