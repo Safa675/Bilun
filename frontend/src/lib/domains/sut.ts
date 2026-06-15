@@ -909,6 +909,7 @@ export interface CohortRecoverySummary extends ExactnessState, SUTDataSourceCarr
   total_package_adequacy_review?: number;
   total_gazette_repricing?: number;
   total_medula_playbook_entries?: number;
+  medula_rejection_ingest_available?: boolean;
   total_material_flags: number;
   grand_total_recoverable: number;
   top_patients: Array<PatientRecoverySummaryRow>;
@@ -1015,5 +1016,36 @@ export interface PatientClaimsListResponse extends SUTDataSourceCarrier {
   patient_id: string;
   claims: PatientClaimSummary[];
   total: number;
+}
+
+// ── MEDULA rejection queue ───────────────────────────────────────────────────
+
+export interface MedulaRejectionQueueRow {
+  rejection_event_id: string;
+  patient_id: string;
+  claim_id: string;
+  episode_id: string;
+  medula_stage: string;
+  sonuc_kodu: string;
+  hata_mesaji: string;
+  related_procedure_code?: string | null;
+  rejection_timestamp?: string | null;
+  playbook_matched: boolean;
+  playbook_key?: string | null;
+  sut_anchor?: string | null;
+  rebill_permitted?: boolean | null;
+  corrective_steps_tr: string[];
+}
+
+export interface MedulaRejectionQueueResponse extends SUTDataSourceCarrier {
+  ingest_available: boolean;
+  rows: MedulaRejectionQueueRow[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface MedulaRejectionIngestStatus {
+  ingest_available: boolean;
 }
 

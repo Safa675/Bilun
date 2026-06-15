@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CircleHelp } from "lucide-react";
@@ -16,6 +17,8 @@ import {
 } from "@/lib/constants";
 import { useT } from "@/lib/i18n/useTranslations";
 import { useSetShowHowItWorks } from "@/stores/index";
+import { getMedulaRejectionIngestStatus } from "@/lib/api/sut";
+import { useUserRole } from "@/lib/userRole";
 
 interface AppTopBarProps {
   /** Optional override; defaults to wiring the global `showHowItWorks` store. */
@@ -35,6 +38,36 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
   const searchParams = useSearchParams();
   const sutDataSource = config.sut_data_source ?? config.sutDataSource ?? null;
   const activeTab = useActiveHomeTab();
+  const userRole = useUserRole();
+  const [medulaIngestAvailable, setMedulaIngestAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getMedulaRejectionIngestStatus()
+      .then((status) => {
+        if (!cancelled) {
+          setMedulaIngestAvailable(status.ingest_available);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMedulaIngestAvailable(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visibleTabs = SUT_HOME_TABS.filter((tab) => {
+    if (tab.id !== "operations") return true;
+    if (activeTab === "operations") return true;
+    return medulaIngestAvailable === true;
+  }).filter((tab) => {
+    if (!tab.requiredRole) return true;
+    return tab.requiredRole.includes(userRole);
+  });
+
   const handleOpenHowItWorks = () => {
     if (onOpenHowItWorks) {
       onOpenHowItWorks();
@@ -65,7 +98,7 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
         <SyntheticDemoChip dataSource={sutDataSource} />
 
         <nav className="flex items-center gap-1" aria-label={t("shell.appTopBar.ariaHomeTabs")}>
-          {SUT_HOME_TABS.map((tab) => {
+          {visibleTabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const tabKey =
               tab.id === "reference-tools"

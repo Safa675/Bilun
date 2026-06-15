@@ -7,12 +7,14 @@
  */
 
 import { theme } from "@/lib/theme";
+import type { UserRole } from "@/lib/userRole";
 
 export const ACCENT = theme.accent;
 export type SutHomeTab =
   | "patients"
   | "compliance"
   | "revenue"
+  | "operations"
   | "reference-tools"
   | "rule-database";
 
@@ -31,7 +33,14 @@ export const SUT_BRAND = {
   moduleLabel: "BILUN",
 } as const;
 
-export const SUT_HOME_TABS: { id: SutHomeTab; label: string; subtitle: string }[] = [
+export interface SutHomeTabMeta {
+  id: SutHomeTab;
+  label: string;
+  subtitle: string;
+  requiredRole?: UserRole[];
+}
+
+export const SUT_HOME_TABS: SutHomeTabMeta[] = [
   {
     id: "patients",
     label: "Patients",
@@ -48,6 +57,11 @@ export const SUT_HOME_TABS: { id: SutHomeTab; label: string; subtitle: string }[
     subtitle: "Where's the money? Recovery totals, top patients, DRG and drug audits.",
   },
   {
+    id: "operations",
+    label: "Operations",
+    subtitle: "MEDULA rejection queue and operational follow-up workflows.",
+  },
+  {
     id: "reference-tools",
     label: "Reference Tools",
     subtitle: "What does the rule say? Gazette lookups, validators, and catalogs.",
@@ -56,6 +70,7 @@ export const SUT_HOME_TABS: { id: SutHomeTab; label: string; subtitle: string }[
     id: "rule-database",
     label: "Rule Database",
     subtitle: "Where is it written? Every extracted SUT rule with its source clauses and coverage.",
+    requiredRole: ["compliance_engineer", "dev", "admin"],
   },
 ];
 
@@ -65,6 +80,7 @@ export function parseSutHomeTab(value: string | null | undefined): SutHomeTab {
   }
   if (value === "compliance") return "compliance";
   if (value === "revenue") return "revenue";
+  if (value === "operations") return "operations";
   if (value === "reference-tools") return "reference-tools";
   if (value === "rule-database") return "rule-database";
   if (value === "patients") return "patients";
@@ -87,12 +103,23 @@ export function buildSutHomeHref(
   return query ? `/?${query}` : "/";
 }
 
-export function buildSutPatientHref(patientId: string): string {
-  return `/patient/${encodeURIComponent(patientId)}`;
+export function buildSutPatientHref(
+  patientId: string,
+  params?: { claimId?: string; section?: string },
+): string {
+  const path = `/patient/${encodeURIComponent(patientId)}`;
+  const query = new URLSearchParams();
+  if (params?.claimId) query.set("claim", params.claimId);
+  if (params?.section) query.set("section", params.section);
+  const queryString = query.toString();
+  return queryString ? `${path}?${queryString}` : path;
 }
 
-export function buildSutBillingHref(patientId: string): string {
-  return buildSutPatientHref(patientId);
+export function buildSutBillingHref(
+  patientId: string,
+  params?: { claimId?: string; section?: string },
+): string {
+  return buildSutPatientHref(patientId, params);
 }
 
 export const TAB_BACKGROUNDS = ["", "", "", "", "", ""];

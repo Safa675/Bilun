@@ -23,6 +23,10 @@ const constants = {
       label: "Revenue",
       subtitle: "Where's the money? Recovery totals, top patients, DRG and drug audits.",
     },
+    operations: {
+      label: "Operations",
+      subtitle: "MEDULA rejection queue and operational follow-up workflows.",
+    },
     referenceTools: {
       label: "Reference Tools",
       subtitle: "What does the rule say? Gazette lookups, validators, and catalogs.",

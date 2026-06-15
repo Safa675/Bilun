@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
 import SutHowItWorksModal from "@/components/modals/SutHowItWorksModal";
 import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
@@ -65,6 +65,9 @@ export default function SutPatientPage() {
   const t = useT();
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const claimQuery = searchParams.get("claim");
+  const sectionQuery = searchParams.get("section");
   const patientId = useMemo(
     () => decodeURIComponent(Array.isArray(params?.id) ? params.id[0] : params?.id ?? ""),
     [params],
@@ -195,7 +198,7 @@ export default function SutPatientPage() {
     };
   }, [loadWorkspace, patientId]);
 
-  const loadClaims = useCallback((nextPatientId: string) => {
+  const loadClaims = useCallback((nextPatientId: string, initialClaimId?: string | null) => {
     claimsControllerRef.current?.abort();
     const controller = new AbortController();
     claimsControllerRef.current = controller;
@@ -210,7 +213,10 @@ export default function SutPatientPage() {
       .then((response) => {
         if (controller.signal.aborted) return;
         setClaims(response.claims);
-        setSelectedClaimId(defaultSelectedClaimId(response.claims));
+        const requestedClaim = initialClaimId
+          ? response.claims.find((c) => c.claim_id === initialClaimId)?.claim_id ?? null
+          : null;
+        setSelectedClaimId(requestedClaim ?? defaultSelectedClaimId(response.claims));
       })
       .catch((reason) => {
         if (controller.signal.aborted) return;
@@ -264,11 +270,11 @@ export default function SutPatientPage() {
     if (!patientId) {
       return;
     }
-    loadClaims(patientId);
+    loadClaims(patientId, claimQuery);
     return () => {
       claimsControllerRef.current?.abort();
     };
-  }, [loadClaims, patientId]);
+  }, [loadClaims, patientId, claimQuery]);
 
   useEffect(() => {
     if (!patientId) {
@@ -349,6 +355,16 @@ export default function SutPatientPage() {
 
   const isBillScoped = selectedClaimId !== null;
   const activeBillingReport = isBillScoped ? billBillingReport : billingReport;
+
+  useEffect(() => {
+    if (sectionQuery !== "medula-playbook" || !activeBillingReport?.medula_rejection_playbook?.entries?.length) {
+      return;
+    }
+    const element = document.getElementById("medula-playbook");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [sectionQuery, activeBillingReport]);
   const activeOptimization = isBillScoped ? billOptimization : optimization;
   const selectedClaimSummary = useMemo(
     () => claims.find((claim) => claim.claim_id === selectedClaimId) ?? null,

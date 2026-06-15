@@ -1191,6 +1191,7 @@ function RevenueRecoveryDashboard({
   const recoveryExact = isExactOutput(displayData);
   const recoveryPartial = displayData.exactness_status === "partial_exact";
   const hasRecoveryBreakdown = recoveryExact || recoveryPartial;
+  const showMedulaPlaybookKpi = displayData.medula_rejection_ingest_available === true;
   const savingsCategoryLabel = (key: string) => {
     const labelKey = `optimizer.savingsCategory.${key}` as const;
     const translated = t(labelKey);
@@ -1265,10 +1266,14 @@ function RevenueRecoveryDashboard({
               hasRecoveryBreakdown ? displayData.total_gazette_repricing ?? 0 : null,
             ),
           },
-          {
-            label: t("optimizer.kpis.medulaPlaybookEntries"),
-            value: fmtNum(displayData.total_medula_playbook_entries ?? 0),
-          },
+          ...(showMedulaPlaybookKpi
+            ? [
+                {
+                  label: t("optimizer.kpis.medulaPlaybookEntries"),
+                  value: fmtNum(displayData.total_medula_playbook_entries ?? 0),
+                },
+              ]
+            : []),
         ].map((kpi, i) => (
           <Surface
             key={i}

@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
-import type { BillingActionReport } from "@/lib/domains/sut";
 import {
   BillingStrategySection,
   CopayOptimizationSection,
   DrgUpliftSection,
   MaterialsPreCheckSection,
+  MedulaRejectionPlaybookSection,
   OptionalOverrideSection,
 } from "./SutBillingReportSections";
 
@@ -293,5 +293,71 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("MAL-B");
     expect(html).toContain("Material A");
     expect(html).toContain("Material B");
+  });
+});
+
+describe("MedulaRejectionPlaybookSection", () => {
+  it("renders nothing when exactness_status is not_applicable", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <MedulaRejectionPlaybookSection
+        playbookData={{
+          exactness_status: "not_applicable",
+          entries: [],
+          entry_count: 0,
+          rebill_permitted_count: 0,
+        }}
+      />,
+    );
+    expect(html).toBe("");
+  });
+
+  it("renders nothing when exact with no entries", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <MedulaRejectionPlaybookSection
+        playbookData={{
+          exactness_status: "exact",
+          entries: [],
+          entry_count: 0,
+          rebill_permitted_count: 0,
+        }}
+      />,
+    );
+    expect(html).toBe("");
+  });
+
+  it("renders the playbook table when entries exist", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <MedulaRejectionPlaybookSection
+        playbookData={{
+          exactness_status: "exact",
+          entries: [
+            {
+              playbook_id: "1688_molecular_microbiology",
+              rejection_event_id: "MEDULA-F-001-001",
+              claim_id: "F-001",
+              medula_stage: "fatura_kayit",
+              sonuc_kodu: "1688",
+              hata_kodu: "1688",
+              hata_mesaji:
+                "Moleküler mikrobiyoloji işlemi için zorunlu rapor eksik",
+              related_procedure_code: "700390",
+              related_procedure_line_id: "ISL-001",
+              sut_anchor: "EK-2 / moleküler mikrobiyoloji rapor gerekliliği",
+              problem_summary_tr: "Rapor eksik.",
+              problem_summary_en: "Report missing.",
+              corrective_steps_tr: ["Adım 1", "Adım 2"],
+              corrective_steps_en: ["Step 1", "Step 2"],
+              rebill_permitted: true,
+              rebill_stage: "fatura_kayit",
+            },
+          ],
+          entry_count: 1,
+          rebill_permitted_count: 1,
+        }}
+      />,
+    );
+    expect(html).toContain("1688");
+    expect(html).toContain("Moleküler mikrobiyoloji");
+    expect(html).toContain("Step 1");
   });
 });

@@ -16,7 +16,7 @@ const billing = {
     "exemptionGapCorrective": "Exemption gap (corrective)",
     "dualTotalsFootnote": "SGK uplift is legitimate Kurum ödemesi increase (session fractions, billing strategy). Compliance adjustment covers over-billing corrections such as lab bundling. Exemption gap is separate patient katılım payı.",
     "auditExposure": "Audit exposure (over-billing risk)",
-    "captureGap": "Procedure capture gap (EMR vs claim)",
+    "captureGap": "Capture gap (EMR and clinical lab vs claim)",
     "packageAdequacyReview": "Package adequacy review (coding)",
     "gazetteRepricing": "Gazette repricing (prospective)",
     "medulaPlaybook": "MEDULA rebill playbook",
@@ -27,7 +27,7 @@ const billing = {
     "totalsUnavailableNotice": "Billing totals remain unavailable until every billing section is exact."
   },
   "lab": {
-    "title": "Lab optimization",
+    "title": "Lab optimization (from billed claim lines)",
     "unavailable": "Lab optimization findings are unavailable until the billing input contract is exact.",
     "test": "Test",
     "sutCode": "SUT code",
@@ -124,9 +124,9 @@ const billing = {
     "note": "Note"
   },
   "procedureCaptureGap": {
-    "title": "Procedure capture gap (EMR vs claim)",
-    "scopeFootnote": "When EMR/OR logs show a procedure was performed but the claim submission has no billed line (or zero TRY), the gap is priced from EK-2B/EK-2C list price. Display-only until ingest is validated — not included in SGK uplift headline.",
-    "unavailable": "Procedure capture gap requires optional EMR performed-procedure log rows.",
+    "title": "Capture gap (EMR and clinical lab vs claim)",
+    "scopeFootnote": "When EMR/OR logs or clinical lab results show a procedure/test was performed but the claim submission has no billed line (or zero TRY), the gap is priced from EK-2B/EK-2C list price. Display-only until ingest is validated — not included in SGK uplift headline.",
+    "unavailable": "Capture gap requires optional EMR performed-procedure log rows or clinical lab data.",
     "claim": "Claim",
     "procedure": "Performed procedure",
     "serviceDate": "Service date",

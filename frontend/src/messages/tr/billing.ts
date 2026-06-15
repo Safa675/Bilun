@@ -16,7 +16,7 @@ const billing = {
     "exemptionGapCorrective": "Muafiyet farkı (düzeltici)",
     "dualTotalsFootnote": "SGK artışı meşru Kurum ödemesi artışıdır (seans oranları, fatura stratejisi). Uyumluluk düzeltmesi aşırı faturalama düzeltmelerini (ör. lab paketleme) kapsar. Muafiyet farkı hasta katılım payıdır.",
     "auditExposure": "Denetim riski (aşırı faturalama)",
-    "captureGap": "İşlem yakalama boşluğu (EMR vs fatura)",
+    "captureGap": "Yakalama boşluğu (EMR ve klinik lab vs fatura)",
     "packageAdequacyReview": "Paket yeterlilik incelemesi (kodlama)",
     "gazetteRepricing": "Gazete yeniden fiyatlama (prospektif)",
     "medulaPlaybook": "MEDULA yeniden fatura rehberi",
@@ -27,7 +27,7 @@ const billing = {
     "totalsUnavailableNotice": "Her fatura bölümü kesin olana kadar fatura toplamları kullanılamaz."
   },
   "lab": {
-    "title": "Laboratuvar optimizasyonu",
+    "title": "Laboratuvar optimizasyonu (fatura satırlarına göre)",
     "unavailable": "Fatura girdi sözleşmesi kesin olana kadar laboratuvar optimizasyon bulguları kullanılamaz.",
     "test": "Tetkik",
     "sutCode": "SUT kodu",
@@ -124,9 +124,9 @@ const billing = {
     "note": "Not"
   },
   "procedureCaptureGap": {
-    "title": "İşlem yakalama boşluğu (EMR vs fatura)",
-    "scopeFootnote": "EMR/OR kaydı işlemin yapıldığını gösterirken fatura gönderiminde satır yoksa (veya sıfır TRY), boşluk EK-2B/EK-2C liste fiyatından hesaplanır. Doğrulama öncesi yalnızca gösterim — SGK artış başlığına dahil değildir.",
-    "unavailable": "İşlem yakalama boşluğu için isteğe bağlı EMR gerçekleştirilen işlem kayıtları gerekir.",
+    "title": "Yakalama boşluğu (EMR ve klinik lab vs fatura)",
+    "scopeFootnote": "EMR/OR kaydı veya klinik lab sonuçları bir işlemin/tetkikin yapıldığını gösterirken fatura gönderiminde satır yoksa (veya sıfır TRY), boşluk EK-2B/EK-2C liste fiyatından hesaplanır. Doğrulama öncesi yalnızca gösterim — SGK artış başlığına dahil değildir.",
+    "unavailable": "Yakalama boşluğu için isteğe bağlı EMR gerçekleştirilen işlem kayıtları veya klinik lab verisi gerekir.",
     "claim": "Fatura",
     "procedure": "Gerçekleştirilen işlem",
     "serviceDate": "Hizmet tarihi",

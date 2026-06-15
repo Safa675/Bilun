@@ -13,6 +13,8 @@ import type {
   SutPatientOutcomeData,
   PatientClaimDetail,
   PatientClaimsListResponse,
+  MedulaRejectionIngestStatus,
+  MedulaRejectionQueueResponse,
 } from "../domains/sut";
 import type { PatientMeta, PatientSearchResponse } from "../domains/patient";
 
@@ -255,6 +257,42 @@ export async function getOptimizationSummary(
   );
 }
 
+export async function getMedulaRejectionIngestStatus(
+  options?: RequestInit,
+): Promise<MedulaRejectionIngestStatus> {
+  return requestJSON<MedulaRejectionIngestStatus>(
+    "/api/medula-rejections/ingest-status",
+    options,
+  );
+}
+
+export async function getMedulaRejectionQueue(
+  params?: {
+    page?: number;
+    page_size?: number;
+    sonuc_kodu?: string;
+    medula_stage?: string;
+    rebill_permitted?: boolean;
+    q?: string;
+  },
+  options?: RequestInit,
+): Promise<MedulaRejectionQueueResponse> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.page_size) query.set("page_size", String(params.page_size));
+  if (params?.sonuc_kodu) query.set("sonuc_kodu", params.sonuc_kodu);
+  if (params?.medula_stage) query.set("medula_stage", params.medula_stage);
+  if (params?.rebill_permitted !== undefined) {
+    query.set("rebill_permitted", String(params.rebill_permitted));
+  }
+  if (params?.q) query.set("q", params.q);
+  const queryString = query.toString();
+  return requestJSON<MedulaRejectionQueueResponse>(
+    `/api/medula-rejections/queue${queryString ? `?${queryString}` : ""}`,
+    options,
+  );
+}
+
 export async function getPatientOptimization(
   patientId: string,
   options?: RequestInit,
@@ -453,11 +491,63 @@ export interface FactCheckRollup {
   units: FactCheckAuditUnitSummary[];
 }
 
+export interface CoverageStatusCount {
+  status: string;
+  count: number;
+}
+
+export interface TopGapCategory {
+  category: string;
+  count: number;
+}
+
+export interface ClauseCoverageSummary {
+  total_extracted: number;
+  by_status: CoverageStatusCount[];
+  algorithmic_gaps: number;
+  algorithmic_gap_pct: number;
+  top_gap_categories: TopGapCategory[];
+}
+
+export interface ZeroClauseMatch {
+  rule_id: string;
+  coverage_status: string;
+  rule_category: string;
+  rule_category_tr: string;
+  description_tr: string;
+}
+
+export interface RegistryCoverageSummary {
+  total_rules: number;
+  by_status: CoverageStatusCount[];
+  implemented_rules: number;
+  partial_rules: number;
+  missing_rules: number;
+  needs_claim_lines_rules: number;
+  non_algorithmic_rules: number;
+  zero_clause_matches: ZeroClauseMatch[];
+  rules_without_mapping: ZeroClauseMatch[];
+}
+
+export interface CoverageSummaryMeta {
+  generated_at: string | null;
+  artifacts_available: boolean;
+  clauses_source_available: boolean;
+  unavailable_reason: string | null;
+}
+
+export interface CoverageSummary {
+  clauses: ClauseCoverageSummary;
+  registry: RegistryCoverageSummary;
+  meta: CoverageSummaryMeta;
+}
+
 export interface RuleCatalogResponse {
   rules: RuleCatalogEntry[];
   total: number;
   artifacts_available: boolean;
   fact_check: FactCheckRollup;
+  coverage_summary: CoverageSummary;
 }
 
 export interface RuleDetailResponse {
@@ -468,6 +558,41 @@ export interface RuleDetailResponse {
   per_page: number;
   total_pages: number;
   artifacts_available: boolean;
+}
+
+export interface ProseInventoryEngine {
+  rule_set_id: string;
+  file_name: string;
+  effective_date: string | null;
+  rule_count: number | null;
+  sut_section_prefixes: string[];
+  sut_anchors: string[];
+}
+
+export interface ProseInventoryResponse {
+  engines: ProseInventoryEngine[];
+  total: number;
+  artifacts_available: boolean;
+  unavailable_reason: string | null;
+}
+
+export interface SectionRollupEntry {
+  section_id: string | null;
+  section_title: string | null;
+  clause_count: number;
+  worst_coverage_status: string | null;
+  gap_clause_count: number;
+  primary_categories: string[];
+}
+
+export interface SectionRollupResponse {
+  sections: SectionRollupEntry[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+  artifacts_available: boolean;
+  unavailable_reason: string | null;
 }
 
 export async function getRuleCatalog(options?: RequestInit): Promise<RuleCatalogResponse> {
@@ -487,6 +612,26 @@ export async function getRuleDetail(
     `/api/rules/${encodeURIComponent(ruleId)}${query ? `?${query}` : ""}`,
     options,
   );
+}
+
+export async function getRuleSections(
+  params?: { page?: number; per_page?: number; q?: string; min_gap_count?: number },
+  options?: RequestInit,
+): Promise<SectionRollupResponse> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.per_page) qs.set("per_page", String(params.per_page));
+  if (params?.q) qs.set("q", params.q);
+  if (params?.min_gap_count !== undefined) qs.set("min_gap_count", String(params.min_gap_count));
+  const query = qs.toString();
+  return requestJSON<SectionRollupResponse>(
+    `/api/rules/sections${query ? `?${query}` : ""}`,
+    options,
+  );
+}
+
+export async function getProseInventory(options?: RequestInit): Promise<ProseInventoryResponse> {
+  return requestJSON<ProseInventoryResponse>("/api/rules/prose-inventory", options);
 }
 
 export interface SpecialtyMeta {

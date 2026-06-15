@@ -106,16 +106,19 @@ export function ExactnessNotice({
 }
 
 export function BillingSectionShell({
+  id,
   title,
   total,
   children,
 }: {
+  id?: string;
   title: string;
   total?: string;
   children: ReactNode;
 }) {
   return (
     <Section
+      id={id}
       title={title}
       trailing={
         total ? (
@@ -1200,22 +1203,6 @@ export function MedulaRejectionPlaybookSection({
   const playbookExact = isExactOutput(playbookData);
   const entries = playbookData.entries ?? [];
 
-  if (isOptionalIngestPending(playbookData)) {
-    return (
-      <BillingSectionShell title={t("billing.medulaPlaybook.title")}>
-        <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
-          {t("billing.medulaPlaybook.scopeFootnote")}
-        </p>
-        <div className="sut-exactness-notice">
-          {getUnavailableMessage(playbookData, t("billing.medulaPlaybook.unavailable"))}
-        </div>
-      </BillingSectionShell>
-    );
-  }
-
-  if (!playbookExact && entries.length === 0) {
-    return null;
-  }
   if (entries.length === 0) {
     return null;
   }
@@ -1224,6 +1211,7 @@ export function MedulaRejectionPlaybookSection({
 
   return (
     <BillingSectionShell
+      id="medula-playbook"
       title={t("billing.medulaPlaybook.title")}
       total={String(entryCount)}
     >

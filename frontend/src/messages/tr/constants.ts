@@ -23,6 +23,10 @@ const constants = {
       label: "Gelir",
       subtitle: "Para nerede? Geri kazanım toplamları, öncelikli hastalar, DRG ve ilaç denetimleri.",
     },
+    operations: {
+      label: "Operasyonlar",
+      subtitle: "MEDULA red kuyruğu ve operasyonel takip iş akışları.",
+    },
     referenceTools: {
       label: "Referans Araçları",
       subtitle: "Kural ne diyor? Tebliğ sorguları, doğrulayıcılar ve kataloglar.",

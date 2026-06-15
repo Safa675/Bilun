@@ -57,8 +57,18 @@ describe("sut constants", () => {
       "patients",
       "compliance",
       "revenue",
+      "operations",
       "reference-tools",
       "rule-database",
+    ]);
+  });
+
+  it("gates rule-database tab behind expert roles", () => {
+    const ruleDb = SUT_HOME_TABS.find((tab) => tab.id === "rule-database");
+    expect(ruleDb?.requiredRole).toEqual([
+      "compliance_engineer",
+      "dev",
+      "admin",
     ]);
   });
 });

@@ -10,6 +10,7 @@ import billing from "./billing";
 import patient from "./patient";
 import sections from "./sections";
 import optimizer from "./optimizer";
+import operations from "./operations";
 import synthetic from "./synthetic";
 import admin from "./admin";
 import api from "./api";
@@ -28,6 +29,7 @@ const trMessages = {
   patient,
   sections,
   optimizer,
+  operations,
   synthetic,
   admin,
   api,

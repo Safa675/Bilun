@@ -42,6 +42,9 @@ const SUTCompliance = dynamic(() => import("@/components/tabs/SUTCompliance"), {
 const SUTRevenue = dynamic(() => import("@/components/tabs/SUTRevenue"), {
   loading: () => <SutOptimizerShellSkeleton />,
 });
+const SUTOperations = dynamic(() => import("@/components/tabs/sut/operations/SUTOperationsTab"), {
+  loading: () => <SutOptimizerShellSkeleton />,
+});
 const SUTReferenceTools = dynamic(() => import("@/components/tabs/SUTReferenceTools"), {
   loading: () => <SutOptimizerShellSkeleton />,
 });
@@ -154,6 +157,8 @@ function SutHomeContent() {
                 <SUTCompliance />
               ) : activeTab === "revenue" ? (
                 <SUTRevenue />
+              ) : activeTab === "operations" ? (
+                <SUTOperations />
               ) : activeTab === "reference-tools" ? (
                 <SUTReferenceTools />
               ) : (
