@@ -73,6 +73,7 @@ def _price_for_service(
 def _latest_increase_after_service(
     line: ProcedureClaimLine,
     service_date: date,
+    max_days: int | None = None,
 ) -> dict[str, Any] | None:
     catalog = _catalog_for_line(line)
     code = _history_code(line)
@@ -100,6 +101,13 @@ def _latest_increase_after_service(
         amendment_date = str(amendment_raw)[:10]
         if amendment_date <= service_key:
             continue
+        if max_days is not None:
+            try:
+                delta = (_parse_date(amendment_date) - service_date).days
+            except Exception:
+                continue
+            if delta > max_days or delta < 0:
+                continue
         new_price = float(row.get("price_try") or 0.0)
         if new_price <= price_at_service + _PRICE_TOLERANCE:
             continue
@@ -128,6 +136,17 @@ def _rebill_permitted(rules: dict[str, Any]) -> bool:
     return bool(rules.get("rebill_permitted_default", True))
 
 
+def _max_days_after_service(rules: dict[str, Any]) -> int | None:
+    value = rules.get("max_days_after_service")
+    if value is None:
+        return None
+    try:
+        days = int(value)
+    except (TypeError, ValueError):
+        return None
+    return days if days > 0 else None
+
+
 def _category_excluded(line: ProcedureClaimLine, rules: dict[str, Any]) -> bool:
     excluded = {
         str(category)
@@ -146,6 +165,7 @@ def detect_gazette_repricing_opportunities(
     if not _rebill_permitted(rules):
         return []
 
+    max_days = _max_days_after_service(rules)
     opportunities: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
 
@@ -161,7 +181,9 @@ def detect_gazette_repricing_opportunities(
         if service_date is None:
             continue
 
-        increase = _latest_increase_after_service(line, _parse_date(service_date))
+        increase = _latest_increase_after_service(
+            line, _parse_date(service_date), max_days=max_days
+        )
         if increase is None:
             continue
 

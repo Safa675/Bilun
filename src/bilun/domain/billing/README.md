@@ -39,7 +39,7 @@ recovery amounts.
 ## Modules
 
 - `types.py` — All dataclasses
-- `lab.py` — Algorithm 1
+- `claim_lab.py` — Algorithm 1 (claim-line based)
 - `copay.py` — Algorithm 2
 - `strategy.py` — Algorithm 3
 - `materials.py` — Algorithm 4
@@ -48,13 +48,15 @@ recovery amounts.
 ## Example
 
 ```python
-from src.sut.billing import compute_patient_billing_report
+from src.bilun.domain.billing import compute_patient_billing_report
+from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
+
+dataset = load_sut_claim_dataset("data/synthetic/sut/claims")
+claim_context = build_patient_claim_context("SENTETIK-HASTA-0001", dataset)
 
 report = compute_patient_billing_report(
-    "P1",
-    patient_lab_tests=["Hemoglobin", "Glucose"],
-    patient_drug_names=["Aspirin"],
-    chapters={"I", "E"},
+    "SENTETIK-HASTA-0001",
+    claim_context=claim_context,
 )
 print(report.exactness_status, report.required_inputs_missing)
 ```

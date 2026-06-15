@@ -26,7 +26,17 @@ from typing import Any
 
 import polars as pl
 
-from ..constants import SUT_CLAUSE_COVERAGE_PATH, SUT_REGISTRY_COVERAGE_PATH
+from datetime import datetime
+from pathlib import Path
+
+from ..constants import (
+    _PROSE_RULES_DIR,
+    SUT_CLAUSES_PATH,
+    SUT_CLAUSE_COVERAGE_PATH,
+    SUT_REGISTRY_COVERAGE_PATH,
+    SUT_COVERAGE_BY_RULE_PATH,
+    SUT_COVERAGE_BY_SECTION_PATH,
+)
 from .fact_check_audit import fact_check_rollup
 from .rule_registry import RULE_BY_ID, RULE_REGISTRY, RuleRegistryEntry
 
@@ -52,11 +62,17 @@ _CLAUSE_COLUMNS: tuple[str, ...] = (
     "matched_rule_ids",
     "match_scores",
     "paragraph_index",
+    "has_algorithmic_gap",
+    "primary_rule_category",
 )
 
 _coverage_cache: pl.DataFrame | None = None
 _coverage_loaded = False
 _registry_coverage_cache: dict[str, dict[str, Any]] | None = None
+
+# Cache for the computed coverage summary keyed by max parquet mtime.
+_coverage_summary_cache: dict[str, Any] | None = None
+_coverage_summary_mtime: float | None = None
 
 
 def _load_coverage() -> pl.DataFrame | None:
@@ -127,9 +143,12 @@ def artifacts_available() -> bool:
 def reset_cache() -> None:
     """Clear module caches (test seam)."""
     global _coverage_cache, _coverage_loaded, _registry_coverage_cache
+    global _coverage_summary_cache, _coverage_summary_mtime
     _coverage_cache = None
     _coverage_loaded = False
     _registry_coverage_cache = None
+    _coverage_summary_cache = None
+    _coverage_summary_mtime = None
 
 
 def _rule_sources(entry: RuleRegistryEntry) -> dict[str, list[str]]:
@@ -185,6 +204,205 @@ def list_rules() -> list[dict[str, Any]]:
     return [_rule_summary(entry) for entry in RULE_REGISTRY]
 
 
+def _coverage_artifact_paths() -> list[Path]:
+    """Parquet files that feed the coverage summary."""
+    return [
+        SUT_CLAUSE_COVERAGE_PATH,
+        SUT_REGISTRY_COVERAGE_PATH,
+        SUT_COVERAGE_BY_RULE_PATH,
+        SUT_COVERAGE_BY_SECTION_PATH,
+    ]
+
+
+def _max_artifact_mtime() -> float | None:
+    """Newest mtime among existing coverage artifacts (honest staleness signal)."""
+    mtimes = [
+        path.stat().st_mtime
+        for path in _coverage_artifact_paths()
+        if path.exists()
+    ]
+    return max(mtimes) if mtimes else None
+
+
+def _iso_generated_at(mtime: float | None) -> str | None:
+    if mtime is None:
+        return None
+    return datetime.fromtimestamp(mtime).isoformat()
+
+
+def coverage_summary() -> dict[str, Any]:
+    """Live pipeline-health summary derived from coverage parquets.
+
+    Returns empty counts with ``artifacts_available: false`` when the required
+    parquets are missing so the UI never fabricates numbers.
+    """
+    global _coverage_summary_cache, _coverage_summary_mtime
+
+    required = [SUT_CLAUSE_COVERAGE_PATH, SUT_REGISTRY_COVERAGE_PATH]
+    artifacts_available = all(path.exists() for path in required)
+    unavailable_reason: str | None = None
+    if not artifacts_available:
+        unavailable_reason = (
+            "Coverage parquets are missing. Run: "
+            "python scripts/sut/build_sut_coverage.py"
+        )
+        return {
+            "clauses": {
+                "total_extracted": 0,
+                "by_status": [],
+                "algorithmic_gaps": 0,
+                "algorithmic_gap_pct": 0.0,
+                "top_gap_categories": [],
+            },
+            "registry": {
+                "total_rules": len(RULE_REGISTRY),
+                "by_status": [],
+                "implemented_rules": 0,
+                "partial_rules": 0,
+                "missing_rules": 0,
+                "needs_claim_lines_rules": 0,
+                "non_algorithmic_rules": 0,
+                "zero_clause_matches": [],
+                "rules_without_mapping": [],
+            },
+            "meta": {
+                "generated_at": None,
+                "artifacts_available": False,
+                "clauses_source_available": SUT_CLAUSES_PATH.exists(),
+                "unavailable_reason": unavailable_reason,
+            },
+        }
+
+    current_mtime = _max_artifact_mtime()
+    if (
+        _coverage_summary_cache is not None
+        and _coverage_summary_mtime is not None
+        and current_mtime is not None
+        and current_mtime <= _coverage_summary_mtime
+    ):
+        return _coverage_summary_cache
+
+    clause_frame = _load_coverage()
+    if clause_frame is None:
+        # Defensive: artifacts existed at the start of the function but failed to load.
+        return coverage_summary()
+
+    registry_coverage = _load_registry_coverage()
+
+    # --- clauses block --------------------------------------------------------
+    total_extracted = clause_frame.height
+
+    status_counts = (
+        clause_frame.group_by("coverage_status")
+        .agg(pl.len().alias("count"))
+        .sort("count", descending=True)
+    )
+    by_status = [
+        {"status": row["coverage_status"], "count": int(row["count"])}
+        for row in status_counts.iter_rows(named=True)
+        if row["coverage_status"]
+    ]
+
+    algorithmic_gaps = (
+        clause_frame.filter(pl.col("has_algorithmic_gap") == True).height
+        if "has_algorithmic_gap" in clause_frame.columns
+        else 0
+    )
+    algorithmic_gap_pct = round(algorithmic_gaps / total_extracted * 100, 1) if total_extracted else 0.0
+
+    top_gap_categories: list[dict[str, Any]] = []
+    if "primary_rule_category" in clause_frame.columns:
+        top_gap_categories = [
+            {"category": row["primary_rule_category"], "count": int(row["count"])}
+            for row in (
+                clause_frame.filter(pl.col("has_algorithmic_gap") == True)
+                .group_by("primary_rule_category")
+                .agg(pl.len().alias("count"))
+                .sort("count", descending=True)
+                .head(10)
+                .iter_rows(named=True)
+            )
+            if row["primary_rule_category"]
+        ]
+
+    # --- registry block -------------------------------------------------------
+    registry_status_counts: dict[str, int] = {}
+    implemented_rules = partial_rules = missing_rules = needs_claim_lines_rules = non_algorithmic_rules = 0
+    zero_clause_matches: list[dict[str, Any]] = []
+    rules_without_mapping: list[dict[str, Any]] = []
+
+    for entry in RULE_REGISTRY:
+        status = entry.coverage_status
+        registry_status_counts[status] = registry_status_counts.get(status, 0) + 1
+        if status == "implemented":
+            implemented_rules += 1
+        elif status == "partial":
+            partial_rules += 1
+        elif status == "missing":
+            missing_rules += 1
+        elif status == "needs_claim_lines":
+            needs_claim_lines_rules += 1
+        elif status == "non_algorithmic":
+            non_algorithmic_rules += 1
+
+        cov = registry_coverage.get(entry.rule_id, {})
+        matched_count = cov.get("matched_clause_count", 0)
+        has_mapping = cov.get("has_clause_mapping", False)
+
+        if status in ("implemented", "partial") and matched_count == 0:
+            zero_clause_matches.append({
+                "rule_id": entry.rule_id,
+                "coverage_status": status,
+                "rule_category": entry.rule_category,
+                "rule_category_tr": entry.rule_category_tr,
+                "description_tr": entry.description_tr,
+            })
+        if not has_mapping:
+            rules_without_mapping.append({
+                "rule_id": entry.rule_id,
+                "coverage_status": status,
+                "rule_category": entry.rule_category,
+                "rule_category_tr": entry.rule_category_tr,
+                "description_tr": entry.description_tr,
+            })
+
+    by_registry_status = [
+        {"status": status, "count": count}
+        for status, count in sorted(registry_status_counts.items(), key=lambda x: -x[1])
+    ]
+
+    result: dict[str, Any] = {
+        "clauses": {
+            "total_extracted": total_extracted,
+            "by_status": by_status,
+            "algorithmic_gaps": algorithmic_gaps,
+            "algorithmic_gap_pct": algorithmic_gap_pct,
+            "top_gap_categories": top_gap_categories,
+        },
+        "registry": {
+            "total_rules": len(RULE_REGISTRY),
+            "by_status": by_registry_status,
+            "implemented_rules": implemented_rules,
+            "partial_rules": partial_rules,
+            "missing_rules": missing_rules,
+            "needs_claim_lines_rules": needs_claim_lines_rules,
+            "non_algorithmic_rules": non_algorithmic_rules,
+            "zero_clause_matches": zero_clause_matches,
+            "rules_without_mapping": rules_without_mapping,
+        },
+        "meta": {
+            "generated_at": _iso_generated_at(current_mtime),
+            "artifacts_available": True,
+            "clauses_source_available": SUT_CLAUSES_PATH.exists(),
+            "unavailable_reason": None,
+        },
+    }
+
+    _coverage_summary_cache = result
+    _coverage_summary_mtime = current_mtime
+    return result
+
+
 def fact_check_summary() -> dict[str, Any]:
     """June 2026 audit rollup (28 units) for catalog banner."""
     return fact_check_rollup()
@@ -219,6 +437,145 @@ def _json_obj(raw: Any) -> dict[str, Any]:
         return parsed if isinstance(parsed, dict) else {}
     except (TypeError, json.JSONDecodeError):
         return {}
+
+
+def _sections_available() -> bool:
+    return SUT_COVERAGE_BY_SECTION_PATH.exists()
+
+
+def list_sections(
+    *,
+    page: int = 1,
+    per_page: int = 50,
+    query: str | None = None,
+    min_gap_count: int | None = None,
+) -> dict[str, Any]:
+    """Paginated SUT section rollup from offline-built coverage summary.
+
+    Returns empty result with ``artifacts_available: false`` when the section
+    coverage parquet is missing.
+    """
+    if not _sections_available():
+        return {
+            "sections": [],
+            "total": 0,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": 0,
+            "artifacts_available": False,
+            "unavailable_reason": (
+                "Section coverage parquet is missing. Run: "
+                "python scripts/sut/build_sut_coverage.py"
+            ),
+        }
+
+    try:
+        frame = pl.read_parquet(SUT_COVERAGE_BY_SECTION_PATH)
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.warning("Failed to load section coverage: %s", exc)
+        return {
+            "sections": [],
+            "total": 0,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": 0,
+            "artifacts_available": False,
+            "unavailable_reason": "Failed to load section coverage parquet.",
+        }
+
+    if query:
+        q = query.strip().lower()
+        frame = frame.filter(
+            pl.col("section_id").str.to_lowercase().str.contains(q)
+            | pl.col("section_title").str.to_lowercase().str.contains(q)
+        )
+
+    if min_gap_count is not None and min_gap_count > 0:
+        frame = frame.filter(pl.col("gap_clause_count") >= min_gap_count)
+
+    total = frame.height
+    total_pages = (total + per_page - 1) // per_page if total else 0
+    page = max(1, page)
+    offset = (page - 1) * per_page
+    if offset:
+        frame = frame.slice(offset, None)
+    frame = frame.head(per_page)
+
+    sections: list[dict[str, Any]] = []
+    for row in frame.iter_rows(named=True):
+        sections.append({
+            "section_id": row.get("section_id"),
+            "section_title": row.get("section_title"),
+            "clause_count": int(row.get("clause_count") or 0),
+            "worst_coverage_status": row.get("worst_coverage_status"),
+            "gap_clause_count": int(row.get("gap_clause_count") or 0),
+            "primary_categories": _json_list(row.get("primary_categories")),
+        })
+
+    return {
+        "sections": sections,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages,
+        "artifacts_available": True,
+        "unavailable_reason": None,
+    }
+
+
+def _prose_rule_files() -> list[Path]:
+    """JSON prose rule engine files (excluding schema files)."""
+    if not _PROSE_RULES_DIR.exists():
+        return []
+    return sorted(
+        p for p in _PROSE_RULES_DIR.glob("*.json")
+        if not p.name.endswith(".schema.json")
+    )
+
+
+def prose_inventory() -> dict[str, Any]:
+    """Lightweight manifest of prose rule engines under ``data/gazette/prose_rules``.
+
+    Each entry exposes file-level metadata so expert users can audit which
+    SUT sections are backed by a prose JSON engine.
+    """
+    files = _prose_rule_files()
+    if not files:
+        return {
+            "engines": [],
+            "total": 0,
+            "artifacts_available": False,
+            "unavailable_reason": "No prose rule JSON files found.",
+        }
+
+    engines: list[dict[str, Any]] = []
+    for path in files:
+        try:
+            with path.open("r", encoding="utf-8") as fh:
+                data = json.load(fh)
+        except Exception as exc:
+            logger.warning("Failed to parse prose rule file %s: %s", path, exc)
+            continue
+
+        rule_set_id = data.get("rule_set_id") or path.stem
+        effective_date = data.get("effective_date")
+        rules = data.get("rules", [])
+        rule_count = len(rules) if isinstance(rules, list) else None
+        engines.append({
+            "rule_set_id": rule_set_id,
+            "file_name": path.name,
+            "effective_date": effective_date,
+            "rule_count": rule_count,
+            "sut_section_prefixes": data.get("sut_section_prefixes", []),
+            "sut_anchors": data.get("sut_anchors", []),
+        })
+
+    return {
+        "engines": engines,
+        "total": len(engines),
+        "artifacts_available": True,
+        "unavailable_reason": None,
+    }
 
 
 def _clause_payload(row: dict[str, Any], rule_id: str) -> dict[str, Any]:
