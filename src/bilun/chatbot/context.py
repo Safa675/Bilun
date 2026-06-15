@@ -854,6 +854,15 @@ def build_bilun_runtime_context(
     if catalog:
         context["catalog_context"] = catalog
 
+    medula_queue = data.get("medula_queue_count")
+    if isinstance(medula_queue, dict) and medula_queue.get("status") == "ready":
+        queue_summary = medula_queue.get("summary") or {}
+        if queue_summary.get("ingest_available"):
+            context["medula_queue"] = {
+                "ingest_available": True,
+                "total": queue_summary.get("total", 0),
+            }
+
     medula = build_medula_context(data)
     if medula:
         context["medula_context"] = medula

@@ -8,7 +8,7 @@ per-patient revenue leakage/recovery recommendations.
 
 Modules:
 - types: Dataclasses for billing optimization results
-- lab: Algorithm 1 — Lab hemogram bundling (EK-2B L107020)
+- claim_lab: Algorithm 1 — Lab hemogram bundling from claim lines (EK-2B L107020)
 - copay: Algorithm 2 — Copay savings calculator
 - strategy: Algorithm 3 — Package vs itemized recommender
 - materials: Algorithm 4 — Material reimbursability pre-check
@@ -30,8 +30,6 @@ from .types import (
     BillingActionReport,
     CohortRecoverySummary,
 )
-
-from .lab import _optimize_lab_billing, _get_gazette_lab_prices
 
 from .copay import _optimize_copay
 
@@ -62,8 +60,6 @@ __all__ = [
     "compute_patient_billing_report",
     "compute_all_billing_reports",
     "compute_all_bill_billing_reports",
-    "_optimize_lab_billing",
-    "_get_gazette_lab_prices",
     "_optimize_copay",
     "_recommend_billing_strategy",
     "_precheck_materials",

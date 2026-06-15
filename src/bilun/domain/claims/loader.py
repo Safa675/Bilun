@@ -103,6 +103,7 @@ class ClaimTables:
     copay_profiles: tuple[Mapping[str, Any], ...] = ()
     performed_procedures: tuple[Mapping[str, Any], ...] = ()
     medula_rejections: tuple[Mapping[str, Any], ...] = ()
+    medula_rejection_ingest_available: bool = False
 
 
 def read_claim_tables(
@@ -159,8 +160,10 @@ def read_claim_tables(
             performed = tuple(performed_frame.to_dicts())
 
     medula_rejections: tuple[Mapping[str, Any], ...] = ()
+    medula_rejection_ingest_available = False
     medula_path = directory / "medula_rejection_events.parquet"
     if medula_path.exists():
+        medula_rejection_ingest_available = True
         medula_frame = pl.read_parquet(medula_path)
         required_medula = {
             "rejection_event_id",
@@ -188,6 +191,7 @@ def read_claim_tables(
         copay_profiles=profiles,
         performed_procedures=performed,
         medula_rejections=medula_rejections,
+        medula_rejection_ingest_available=medula_rejection_ingest_available,
     )
 
 
@@ -221,6 +225,7 @@ def _load_sut_claim_dataset_cached(
         copay_profiles=tables.copay_profiles,
         performed_procedure_lines=tables.performed_procedures,
         medula_rejection_events=tables.medula_rejections,
+        medula_rejection_ingest_available=tables.medula_rejection_ingest_available,
     )
 
 
@@ -235,6 +240,7 @@ class SUTClaimDataset:
     drug_lines: dict[str, DrugClaimLine]
     performed_procedure_lines: dict[str, PerformedProcedureLine]
     medula_rejection_events: dict[str, MedulaRejectionEvent]
+    medula_rejection_ingest_available: bool
     expected_outputs: dict[str, ExpectedRuleOutput]
     claims_by_patient: dict[str, tuple[ClaimHeader, ...]]
     diagnoses_by_patient: dict[str, tuple[ClaimDiagnosis, ...]]
@@ -269,6 +275,7 @@ class SUTClaimDataset:
         copay_profiles: Sequence[Mapping[str, Any]] = (),
         performed_procedure_lines: Sequence[Mapping[str, Any]] = (),
         medula_rejection_events: Sequence[Mapping[str, Any]] = (),
+        medula_rejection_ingest_available: bool = False,
     ) -> "SUTClaimDataset":
         """Build a validated dataset from raw row dictionaries."""
 
@@ -352,6 +359,7 @@ class SUTClaimDataset:
             drug_lines=drugs,
             performed_procedure_lines=performed,
             medula_rejection_events=medula_events,
+            medula_rejection_ingest_available=medula_rejection_ingest_available,
             expected_outputs=outputs,
             claims_by_patient=_index_sequence(claims.values(), "patient_id"),
             diagnoses_by_patient=_index_sequence(claim_diagnoses.values(), "patient_id"),

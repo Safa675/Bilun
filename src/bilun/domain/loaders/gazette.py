@@ -14,7 +14,6 @@ import pandas as pd
 from ..constants import (
     EK2A_PARQUET_PATH,
     EK2B_CURATED_HISTORY_PATH,
-    EK2B_PARQUET_PATH,
     EK2C_CURATED_HISTORY_PATH,
     EK3H_PARQUET_PATH,
     EK3I_PARQUET_PATH,
@@ -24,59 +23,9 @@ from ..utils import _safe_float, _safe_str
 
 logger = logging.getLogger("ilay.sut_catalog")
 
-_parquet_by_code: dict[str, dict[str, Any]] = {}
-_parquet_loaded: bool = False
-
 _ek2a_cache: dict[str, Any] | None = None
 _ek3h_cache: list[dict[str, Any]] | None = None
 _ek3i_cache: list[dict[str, Any]] | None = None
-
-
-def _load_parquet_ek2b() -> dict[str, dict[str, Any]]:
-    """Load the compiled EK-2B parquet file into a code -> entry dict."""
-    global _parquet_by_code, _parquet_loaded
-    if _parquet_loaded:
-        return _parquet_by_code
-
-    if not EK2B_PARQUET_PATH.exists():
-        logger.warning("EK-2B parquet not found: %s", EK2B_PARQUET_PATH)
-        _parquet_loaded = True
-        return _parquet_by_code
-
-    try:
-        df = pd.read_parquet(EK2B_PARQUET_PATH)
-        by_code: dict[str, dict[str, Any]] = {}
-        for _, row in df.iterrows():
-            code = str(row.get("ISLEM_KODU", "")).strip()
-            if not code:
-                continue
-            name = str(row.get("ISLEM_ADI", "")).strip() or None
-            desc_val = row.get("ACIKLAMA")
-            description = str(desc_val).strip() if pd.notna(desc_val) else None
-            puan = _safe_float(row.get("ISLEM_PUANI"))
-            price = _safe_float(row.get("ISLEM_BEDELI_TL"))
-            if name and price is not None:
-                by_code[code] = {
-                    "code": code,
-                    "name": name,
-                    "description": description,
-                    "puan": puan,
-                    "price_try": round(price, 2),
-                }
-        logger.info(
-            "Loaded EK-2B parquet: %d procedures (price range %.2f-%.2f TRY)",
-            len(by_code),
-            min(e["price_try"] for e in by_code.values()) if by_code else 0,
-            max(e["price_try"] for e in by_code.values()) if by_code else 0,
-        )
-        _parquet_by_code = by_code
-        _parquet_loaded = True
-        return _parquet_by_code
-    except Exception as e:
-        logger.warning("Failed to load EK-2B parquet: %s", e)
-        _parquet_by_code = {}
-        _parquet_loaded = True
-        return _parquet_by_code
 
 
 def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:

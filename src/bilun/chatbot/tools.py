@@ -209,6 +209,37 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_medula_playbook",
+            "description": (
+                "Search the MEDULA rejection playbook. Use when the user asks"
+                " about a MEDULA sonuç kodu, rejection message, or corrective"
+                " rebill steps. Returns matched playbook templates with SUT"
+                " anchor, problem summary, and corrective steps."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": (
+                            "The MEDULA rejection message, sonuç kodu, or"
+                            " free-text question in Turkish."
+                        ),
+                    },
+                    "sonuc_kodu": {
+                        "type": "string",
+                        "description": (
+                            "Optional numeric MEDULA sonuç kodu, e.g. '1688'."
+                        ),
+                    },
+                },
+                "required": ["query"],
+            },
+        },
+    },
 ]
 
 # ── Endpoint allowlist — maps tool name to executor ───────────────────────────
@@ -223,6 +254,7 @@ _TOOL_FUNCTION_MAP: dict[str, str] = {
     "search_drugs": "get_drug_catalog",
     "get_patient_alerts": "get_patient_alerts",
     "search_sut_clauses": "search_sut_clauses",
+    "search_medula_playbook": "search_medula_playbook_entries",
 }
 
 RESPONSE_SIZE_CAP = 8192  # 8KB
@@ -406,6 +438,7 @@ async def execute_tool_call(
                 search_bilun_patients,
             )
             from src.bilun.domain.sut.clause_retrieval import search_clauses
+            from src.bilun.chatbot.medula_kb import search_playbook_entries
 
             namespace = {
                 "get_patient_billing_report": lambda: get_patient_billing_report(
@@ -438,6 +471,11 @@ async def execute_tool_call(
                         section_prefix=arguments.get("section_prefix"),
                     ),
                 },
+                "search_medula_playbook_entries": lambda: search_playbook_entries(
+                    arguments["query"],
+                    sonuc_kodu=arguments.get("sonuc_kodu"),
+                    top_n=5,
+                ),
             }
             func = namespace.get(func_name)
             if func is None:

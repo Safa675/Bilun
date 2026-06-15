@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from . import alerts, billing, chat, optimization, patients, pricing, rules, validation
+from . import alerts, billing, chat, medula_rejections, optimization, patients, pricing, rules, validation
 
 # Public function re-exports — flat surface for tests and external callers
 # that prefer ``from src.bilun.api.routes import <fn>`` over reaching into a
@@ -69,4 +69,5 @@ router.include_router(pricing.router)
 router.include_router(alerts.router)
 router.include_router(optimization.router)
 router.include_router(billing.router)
+router.include_router(medula_rejections.router)
 router.include_router(rules.router)

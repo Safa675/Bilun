@@ -21,10 +21,12 @@ from .types import (
     EXACTNESS_STATUS_PARTIAL,
     BillingActionReport,
     CohortRecoverySummary,
+    LabOptimization,
     ProcedureAddonUplift,
     ProcedureCaptureGap,
 )
 from src.bilun.domain.claims.patient_context import (
+    PatientClaimContext,
     build_bill_claim_context,
     build_patient_claim_context,
 )
@@ -54,7 +56,7 @@ from src.bilun.domain.billing.claim_material_uplift import recommend_material_up
 from src.bilun.domain.billing.claim_drg_uplift import recommend_drg_uplift_from_claims
 from src.bilun.domain.billing.claim_session_uplift import recommend_session_uplift_from_claims
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
-from .lab import _optimize_lab_billing
+from .claim_lab import _optimize_lab_billing_from_claims
 from .copay import _optimize_copay
 from .strategy import _recommend_billing_strategy
 from .materials import _precheck_materials
@@ -314,33 +316,33 @@ def compute_patient_billing_report(
     pid: str,
     *,
     claim_context: PatientClaimContext | None = None,
-    patient_lab_tests: list[str] | None = None,
-    patient_lab_dates: list[str | None] | None = None,
-    patient_lab_visit_ids: list[str | None] | None = None,
     copay_exemption: dict[str, Any] | None = None,
     chapters: set[str] | None = None,
+    lab_df_pl: pl.DataFrame | None = None,
 ) -> BillingActionReport:
-    """Compute a full billing action report for a single patient.
+    """Compute a full billing action report for a single patient or bill.
 
-    Calls lab, copay, billing strategy, and materials algorithms.
+    Lab optimization requires claim lines (procedure_category == "laboratuvar");
+    if no claim_context is provided the lab block remains empty.
 
     Args:
         pid: Patient identifier.
-        patient_lab_tests: List of lab test names.
+        claim_context: Patient-level or bill-level claim context. Required for
+            exact lab, copay, strategy, and uplift algorithms.
         copay_exemption: Pre-computed copay exemption result.
         chapters: Pre-computed ICD-10 chapter set.
+        lab_df_pl: Normalized clinical lab feed for lab capture-gap detection.
 
     Returns:
         BillingActionReport with all algorithm results.
     """
     report = BillingActionReport(patient_id=pid)
 
-    report.lab = _optimize_lab_billing(
-        pid,
-        patient_lab_tests or [],
-        patient_lab_dates,
-        patient_lab_visit_ids,
-    )
+    if claim_context is not None:
+        report.lab, report.procedure_capture_gap = _compute_lab_and_capture_gap_from_claims(
+            claim_context,
+            lab_df_pl=lab_df_pl,
+        )
 
     exemption = copay_exemption or {
         "exempt": False,
@@ -359,13 +361,6 @@ def compute_patient_billing_report(
         report.billing_strategy = recommend_billing_strategy_from_claims(claim_context)
     else:
         report.billing_strategy = _recommend_billing_strategy(pid, chapters or set())
-
-    if claim_context is not None and (
-        claim_context.procedure_lines or claim_context.performed_procedure_lines
-    ):
-        report.procedure_capture_gap = recommend_procedure_capture_gap_from_claims(
-            claim_context
-        )
 
     if claim_context is not None and claim_context.procedure_lines:
         report.session_uplift = recommend_session_uplift_from_claims(claim_context)
@@ -396,6 +391,9 @@ def compute_patient_billing_report(
     if claim_context is not None:
         report.medula_rejection_playbook = (
             recommend_medula_rejection_playbook_from_claims(claim_context)
+        )
+        report.medula_rejection_ingest_available = (
+            claim_context.medula_rejection_ingest_available
         )
         report.materials = precheck_materials_from_claims(claim_context)
     else:
@@ -468,6 +466,80 @@ def _group_lab_by_patient_visit(
     return out
 
 
+def _compute_lab_and_capture_gap_from_claims(
+    claim_context: PatientClaimContext,
+    lab_df_pl: pl.DataFrame | None,
+) -> tuple[LabOptimization, ProcedureCaptureGap]:
+    """Compute lab optimization and capture gap by summing per-bill results.
+
+    Each claim is treated as its own bill for lab purposes. Lab optimization
+    uses billed lab claim lines; capture gap compares the clinical lab feed
+    against those billed lines per episode.
+    """
+    merged_lab = LabOptimization()
+    merged_gap = ProcedureCaptureGap()
+
+    if not claim_context.claims:
+        return merged_lab, merged_gap
+
+    # Index lab feed by visit_id for quick per-episode scoping.
+    lab_by_visit: dict[str | None, pl.DataFrame] = {}
+    if lab_df_pl is not None and not lab_df_pl.is_empty() and "visit_id" in lab_df_pl.columns:
+        for vid, group in lab_df_pl.group_by("visit_id"):
+            lab_by_visit[str(vid[0]) if isinstance(vid, tuple) else str(vid)] = group
+
+    for claim in claim_context.claims:
+        bill_context = PatientClaimContext(
+            patient_id=claim_context.patient_id,
+            claims=(claim,),
+            procedure_lines=tuple(
+                p for p in claim_context.procedure_lines if p.claim_id == claim.claim_id
+            ),
+            material_lines=tuple(
+                m for m in claim_context.material_lines if m.claim_id == claim.claim_id
+            ),
+            drug_lines=tuple(
+                d for d in claim_context.drug_lines if d.claim_id == claim.claim_id
+            ),
+            diagnoses=tuple(
+                dg for dg in claim_context.diagnoses if dg.claim_id == claim.claim_id
+            ),
+            performed_procedure_lines=tuple(
+                p for p in claim_context.performed_procedure_lines if p.claim_id == claim.claim_id
+            ),
+            medula_rejection_events=tuple(
+                e for e in claim_context.medula_rejection_events if e.claim_id == claim.claim_id
+            ),
+        )
+
+        lab_result = _optimize_lab_billing_from_claims(bill_context)
+        merged_lab.normative_cost_try = round(
+            merged_lab.normative_cost_try + lab_result.normative_cost_try, 2
+        )
+        merged_lab.session_fraction_savings = round(
+            merged_lab.session_fraction_savings + lab_result.session_fraction_savings, 2
+        )
+        merged_lab.hemogram_bundling_savings = round(
+            merged_lab.hemogram_bundling_savings + lab_result.hemogram_bundling_savings, 2
+        )
+        merged_lab.flagged_tests.extend(lab_result.flagged_tests)
+
+        lab_for_claim = lab_by_visit.get(claim.episode_id)
+        if lab_for_claim is not None or bill_context.performed_procedure_lines:
+            gap_result = recommend_procedure_capture_gap_from_claims(
+                bill_context,
+                lab_df_pl=lab_for_claim,
+            )
+            merged_gap.opportunities.extend(gap_result.opportunities)
+
+    # Preserve exactness metadata when any source contributed.
+    if merged_lab.flagged_tests or merged_gap.opportunities:
+        merged_lab.exactness_status = EXACTNESS_STATUS_EXACT
+        merged_gap.exactness_status = EXACTNESS_STATUS_EXACT
+
+    return merged_lab, merged_gap
+
+
 def _assign_priority_by_percentile(reports: list[BillingActionReport]) -> None:
     """Tier reports high/medium/low by sgk_uplift percentile (in place)."""
     recoverables = sorted(r.sgk_uplift_try for r in reports if r.sgk_uplift_try > 0)
@@ -529,17 +601,12 @@ def compute_all_bill_billing_reports(
             {"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []},
         )
         chapters = set(alert.get("icd10_chapters", []))
-        tests, dates, vids = lab_by_pid_visit.get(pid, {}).get(
-            episode_id, ([], None, None)
-        )
         report = compute_patient_billing_report(
             pid,
             claim_context=bill_context,
-            patient_lab_tests=tests,
-            patient_lab_dates=dates,
-            patient_lab_visit_ids=vids,
             copay_exemption=copay_exemption,
             chapters=chapters,
+            lab_df_pl=lab_df_pl,
         )
         return key, report
 
@@ -584,37 +651,11 @@ def compute_all_billing_reports(
     for alert in alerts_cache.get("patients", []):
         alerts_by_pid[alert["patient_id"]] = alert
 
-    lab_tests_by_pid: dict[str, list[str]] = {}
-    lab_dates_by_pid: dict[str, list[str | None]] = {}
-    lab_visit_ids_by_pid: dict[str, list[str | None]] = {}
-    if not lab_df_pl.is_empty() and "patient_id" in lab_df_pl.columns:
-        if "test_name" in lab_df_pl.columns:
-            date_col = next(
-                (c for c in ("date", "test_date", "tarih") if c in lab_df_pl.columns),
-                None,
-            )
-            visit_col = "visit_id" if "visit_id" in lab_df_pl.columns else None
-            agg_exprs = [pl.col("test_name").cast(pl.Utf8).fill_null("").alias("tests")]
-            if date_col:
-                agg_exprs.append(
-                    pl.col(date_col).cast(pl.Utf8).fill_null("").alias("dates")
-                )
-            if visit_col:
-                agg_exprs.append(
-                    pl.col(visit_col).cast(pl.Utf8).fill_null("").alias("visit_ids")
-                )
-            lab_agg = lab_df_pl.group_by("patient_id").agg(agg_exprs)
-            for row in lab_agg.iter_rows(named=True):
-                lab_tests_by_pid[row["patient_id"]] = row["tests"]
-                if date_col and "dates" in row:
-                    lab_dates_by_pid[row["patient_id"]] = row["dates"]
-                if visit_col and "visit_ids" in row:
-                    lab_visit_ids_by_pid[row["patient_id"]] = row["visit_ids"]
-
     reports: dict[str, BillingActionReport] = {}
     patient_id_set = set(sut_by_pid.keys()) if hasattr(sut_by_pid, "keys") else set()
     patient_id_set.update(alerts_by_pid.keys())
-    patient_id_set.update(lab_tests_by_pid.keys())
+    if not lab_df_pl.is_empty() and "patient_id" in lab_df_pl.columns:
+        patient_id_set.update(lab_df_pl["patient_id"].unique().to_list())
     patient_ids = sorted(patient_id_set)
     if not patient_ids:
         logger.warning("No SUT patient inputs in cache — billing reports will be empty")
@@ -644,11 +685,9 @@ def compute_all_billing_reports(
         report = compute_patient_billing_report(
             pid,
             claim_context=claim_context,
-            patient_lab_tests=lab_tests_by_pid.get(pid, []),
-            patient_lab_dates=lab_dates_by_pid.get(pid),
-            patient_lab_visit_ids=lab_visit_ids_by_pid.get(pid),
             copay_exemption=copay_exemption,
             chapters=chapters,
+            lab_df_pl=lab_df_pl,
         )
         return report
 
@@ -679,6 +718,9 @@ def compute_all_billing_reports(
 
     summary = CohortRecoverySummary()
     summary.n_patients = len(reports)
+    summary.medula_rejection_ingest_available = bool(
+        claim_dataset is not None and claim_dataset.medula_rejection_ingest_available
+    )
 
     priority_dist: dict[str, int] = {"high": 0, "medium": 0, "low": 0}
 

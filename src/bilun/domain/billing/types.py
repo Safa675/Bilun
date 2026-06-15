@@ -634,6 +634,7 @@ class BillingActionReport:
     medula_rejection_playbook: MedulaRejectionPlaybook = field(
         default_factory=MedulaRejectionPlaybook
     )
+    medula_rejection_ingest_available: bool = False
     sgk_uplift_try: float = 0.0
     compliance_adjustment_try: float = 0.0
     audit_exposure_try: float = 0.0
@@ -676,6 +677,7 @@ class CohortRecoverySummary:
     total_package_adequacy_review: float = 0.0
     total_gazette_repricing: float = 0.0
     total_medula_playbook_entries: int = 0
+    medula_rejection_ingest_available: bool = False
     total_material_flags: int = 0
     grand_total_recoverable: float = 0.0
     top_patients: list[dict[str, Any]] = field(default_factory=list)

@@ -60,6 +60,7 @@ def _encode_sse(kind: str, payload: str) -> str:
 from .optimization import get_optimization_summary, get_patient_optimization, get_revenue_recovery
 from .patients import get_bilun_patient_outcome
 from .billing import get_patient_billing_report
+from .medula_rejections import get_medula_rejection_queue
 
 from src.bilun.chatbot.medula_kb import search_medula
 from src.bilun.db import read_patient_alert_row_by_id, read_patient_alerts_summary
@@ -325,6 +326,7 @@ def _fetch_runtime_data(
     user_message: str | None = None,
     *,
     intent: ChatIntent = "user_question",
+    page_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Fetch all data needed for context assembly (parallel where independent)."""
 
@@ -370,6 +372,17 @@ def _fetch_runtime_data(
             lambda: search_medula(user_message or ""),
         )
 
+    def _fetch_medula_queue_count() -> dict[str, Any]:
+        return _safe_context_block(
+            "MEDULA rejection queue",
+            lambda: {
+                "ingest_available": queue.get("ingest_available", False),
+                "total": queue.get("total", 0),
+            }
+            if (queue := get_medula_rejection_queue()) is not None
+            else {"ingest_available": False, "total": 0},
+        )
+
     jobs: dict[str, Any] = {
         "optimization_summary": _fetch_optimization_summary,
         "revenue_recovery": _fetch_revenue_recovery,
@@ -378,8 +391,13 @@ def _fetch_runtime_data(
         jobs["patient_outcome"] = _fetch_patient_outcome
         jobs["patient_optimization"] = _fetch_patient_optimization
         jobs["billing_report"] = _fetch_billing_report
-    if user_message:
-        jobs["medula_search"] = _fetch_medula_search
+    else:
+        # MEDULA playbook context is cohort/home only; do not inject into
+        # patient workspace chat where the playbook section may be hidden.
+        if user_message:
+            jobs["medula_search"] = _fetch_medula_search
+        if page_context and page_context.get("tab") == "operations":
+            jobs["medula_queue_count"] = _fetch_medula_queue_count
 
     data: dict[str, Any] = {}
     max_workers = min(4, len(jobs))
@@ -465,6 +483,7 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
             req.patient_id,
             user_message,
             intent=req.intent,
+            page_context=req.page_context,
         )
         t_fetch = time.perf_counter()
         runtime_context = build_bilun_runtime_context(
@@ -548,6 +567,7 @@ async def weekly_brief(req: WeeklyBriefRequest, request: Request):
             "SUT Analytics",
             None,
             intent="auto_brief",
+            page_context=None,
         )
         runtime_context = build_bilun_runtime_context(
             raw_data, "SUT Analytics", None, intent="auto_brief", billing_detail="summary"

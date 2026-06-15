@@ -30,6 +30,7 @@ class PatientClaimContext:
     diagnoses: tuple[ClaimDiagnosis, ...]
     performed_procedure_lines: tuple[PerformedProcedureLine, ...] = ()
     medula_rejection_events: tuple[MedulaRejectionEvent, ...] = ()
+    medula_rejection_ingest_available: bool = False
 
 
 @dataclass(frozen=True)
@@ -73,6 +74,7 @@ def build_patient_claim_context(
         diagnoses=diagnoses,
         performed_procedure_lines=performed,
         medula_rejection_events=medula_events,
+        medula_rejection_ingest_available=dataset.medula_rejection_ingest_available,
     )
 
 
@@ -112,6 +114,7 @@ def build_bill_claim_context(
         medula_rejection_events=tuple(
             e for e in base.medula_rejection_events if e.claim_id == claim_id
         ),
+        medula_rejection_ingest_available=base.medula_rejection_ingest_available,
     )
 
 

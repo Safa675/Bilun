@@ -484,6 +484,7 @@ class BillingReportResponse(BaseModel):
         default_factory=MedulaRejectionPlaybookResponse
     )
     materials: MaterialPreCheckResponse = Field(default_factory=MaterialPreCheckResponse)
+    medula_rejection_ingest_available: bool = False
     sgk_uplift_try: float = 0.0
     compliance_adjustment_try: float = 0.0
     audit_exposure_try: float = 0.0
@@ -782,6 +783,85 @@ class FactCheckRollup(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class CoverageStatusCount(BaseModel):
+    """One coverage status bucket and its count."""
+
+    status: str
+    count: int
+
+    model_config = ConfigDict(extra="allow")
+
+
+class TopGapCategory(BaseModel):
+    """One rule category among algorithmic gaps and its frequency."""
+
+    category: str
+    count: int
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ClauseCoverageSummary(BaseModel):
+    """Pipeline-health summary for the extracted SUT clause corpus."""
+
+    total_extracted: int = 0
+    by_status: list[CoverageStatusCount] = Field(default_factory=list)
+    algorithmic_gaps: int = 0
+    algorithmic_gap_pct: float = 0.0
+    top_gap_categories: list[TopGapCategory] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ZeroClauseMatch(BaseModel):
+    """A rule marked implemented/partial that has no mapped SUT clauses."""
+
+    rule_id: str
+    coverage_status: str
+    rule_category: str = ""
+    rule_category_tr: str = ""
+    description_tr: str = ""
+
+    model_config = ConfigDict(extra="allow")
+
+
+class RegistryCoverageSummary(BaseModel):
+    """Pipeline-health summary for the rule registry."""
+
+    total_rules: int = 0
+    by_status: list[CoverageStatusCount] = Field(default_factory=list)
+    implemented_rules: int = 0
+    partial_rules: int = 0
+    missing_rules: int = 0
+    needs_claim_lines_rules: int = 0
+    non_algorithmic_rules: int = 0
+    zero_clause_matches: list[ZeroClauseMatch] = Field(default_factory=list)
+    rules_without_mapping: list[ZeroClauseMatch] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CoverageSummaryMeta(BaseModel):
+    """Staleness and availability metadata for the coverage summary."""
+
+    generated_at: str | None = None
+    artifacts_available: bool = False
+    clauses_source_available: bool = False
+    unavailable_reason: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CoverageSummary(BaseModel):
+    """Live pipeline-health summary for the Rule Database expert surface."""
+
+    clauses: ClauseCoverageSummary = Field(default_factory=ClauseCoverageSummary)
+    registry: RegistryCoverageSummary = Field(default_factory=RegistryCoverageSummary)
+    meta: CoverageSummaryMeta = Field(default_factory=CoverageSummaryMeta)
+
+    model_config = ConfigDict(extra="allow")
+
+
 class RuleCatalogResponse(BaseModel):
     """GET /api/rules — full rule index with coverage + sources."""
 
@@ -789,6 +869,7 @@ class RuleCatalogResponse(BaseModel):
     total: int
     artifacts_available: bool
     fact_check: FactCheckRollup
+    coverage_summary: CoverageSummary = Field(default_factory=CoverageSummary)
 
     model_config = ConfigDict(extra="allow")
 
@@ -826,5 +907,89 @@ class RuleDetailResponse(BaseModel):
     per_page: int
     total_pages: int
     artifacts_available: bool
+
+    model_config = ConfigDict(extra="allow")
+
+
+class SectionRollupEntry(BaseModel):
+    """One SUT section with coverage gap rollup."""
+
+    section_id: str | None = None
+    section_title: str | None = None
+    clause_count: int = 0
+    worst_coverage_status: str | None = None
+    gap_clause_count: int = 0
+    primary_categories: list[str] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class SectionRollupResponse(BaseModel):
+    """GET /api/rules/sections — paginated SUT section coverage rollup."""
+
+    sections: list[SectionRollupEntry] = Field(default_factory=list)
+    total: int = 0
+    page: int = 1
+    per_page: int = 50
+    total_pages: int = 0
+    artifacts_available: bool = False
+    unavailable_reason: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ProseInventoryEngine(BaseModel):
+    """One prose rule engine manifest entry."""
+
+    rule_set_id: str
+    file_name: str
+    effective_date: str | None = None
+    rule_count: int | None = None
+    sut_section_prefixes: list[str] = Field(default_factory=list)
+    sut_anchors: list[str] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ProseInventoryResponse(BaseModel):
+    """GET /api/rules/prose-inventory — prose rule engine manifest."""
+
+    engines: list[ProseInventoryEngine] = Field(default_factory=list)
+    total: int = 0
+    artifacts_available: bool = False
+    unavailable_reason: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class MedulaRejectionQueueRow(BaseModel):
+    """One row in the MEDULA rejection triage queue."""
+
+    rejection_event_id: str
+    patient_id: str
+    claim_id: str
+    episode_id: str
+    medula_stage: str
+    sonuc_kodu: str
+    hata_mesaji: str
+    related_procedure_code: str | None = None
+    rejection_timestamp: str | None = None
+    playbook_matched: bool
+    playbook_key: str | None = None
+    sut_anchor: str | None = None
+    rebill_permitted: bool | None = None
+    corrective_steps_tr: list[str] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class MedulaRejectionQueueResponse(BaseModel):
+    """GET /api/medula-rejections/queue — cohort rejection triage queue."""
+
+    ingest_available: bool
+    rows: list[MedulaRejectionQueueRow] = Field(default_factory=list)
+    total: int = 0
+    page: int = 1
+    page_size: int = 50
 
     model_config = ConfigDict(extra="allow")
