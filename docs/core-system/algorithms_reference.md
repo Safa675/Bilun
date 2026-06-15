@@ -226,14 +226,15 @@ The orchestrator also assigns a **priority** (high/medium/low) to each patient b
 **Non-hemogram tests:**
 The algorithm resolves each test name to its exact SUT gazette price using a lookup cascade: if the test name is an L-code, it uses the 3-tier procedure code lookup; otherwise it checks a pre-built gazette price dictionary, falling back to a default price.
 
-**§2.2.2.B / §2.2.2.A(5) session fractions (same encounter):**
-1. Tests are grouped by encounter (visit_id preferred, date fallback).
-2. Each encounter builds a billable code list: one collapsed L107020 if any CBC subtests are present, plus distinct non-hemogram L-codes.
-3. When ≥2 billable codes exist, `compute_session_point_factors()` applies EK-2/B itemized secondary factors (30% same-session default).
-4. Normative cost uses session-adjusted list prices; secondary labs billed at full list price are flagged as `session_fraction_overbilling`.
-5. Savings roll into compliance adjustment (`session_fraction_savings`), not SGK uplift.
+**Claim-line input (source of truth):**
+1. Algorithm 1 now reads `procedure_claim_lines` where `procedure_category == "laboratuvar"`.
+2. Each claim line is treated as one billed lab test; clinical lab result rows are only used for capture-gap detection ("performed but not billed").
+3. This eliminates phantom duplicates from raw clinical lab feeds.
 
-**Output:** `LabOptimization` with normative cost, hemogram bundling savings, session-fraction savings, and flagged tests (hemogram unbundling + session fraction over-billing).
+**Session fractions:**
+Session-fraction / seans kesir oranı rules are **not** applied to laboratory tests. SUT §2.2.2.A(5) targets surgical/medical "işlemler" with "kesi" (incision), not laboratory "tetkikler". Therefore `session_fraction_savings` remains zero for lab optimization.
+
+**Output:** `LabOptimization` with hemogram bundling savings, zero session-fraction savings, and flagged tests (hemogram unbundling only).
 
 ### 3.2 Algorithm 2: Copay Savings Calculator
 
