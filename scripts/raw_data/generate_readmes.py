@@ -9,7 +9,7 @@ from pathlib import Path
 import pandas as pd
 
 RAW = Path(__file__).resolve().parents[2] / "raw data"
-TODAY = "2026-06-12"
+TODAY = "2026-06-15"
 
 EK_META: dict[str, dict[str, str]] = {
     "EK-1A": {
@@ -507,6 +507,56 @@ def describe_file(path: Path) -> dict:
     }
 
 
+def _is_mulga_dir(path: Path) -> bool:
+    upper = path.name.upper()
+    return "MÜLGA" in upper or "MULGA" in upper
+
+
+def render_mulga_section(mulga_dirs: list[Path]) -> list[str]:
+    """Document archived (MÜLGA) annex versions under an EK-* folder."""
+    if not mulga_dirs:
+        return []
+
+    all_files: list[Path] = []
+    for directory in mulga_dirs:
+        all_files.extend(
+            p
+            for p in sorted(directory.rglob("*"))
+            if p.is_file() and not p.name.startswith(".")
+        )
+    if not all_files:
+        return []
+
+    lines: list[str] = [
+        "## MÜLGA — tarihsel sürümler",
+        "",
+        "Yürürlükten kalkmış EK listeleri (SGK konsolide tebliğ içindeki arşiv). "
+        "BILUN fiyat geçmişi (`ek2b_catalog_history`, `ek2c_catalog_history`, …) için "
+        "`scripts/sut/convert_xlsx_to_parquet.py --include-mulga` ile `data/gazette/raw/` "
+        "altına dönüştürülür; varsayılan dönüşüm MÜLGA dosyalarını atlar.",
+        "",
+        f"Toplam **{len(all_files)}** dosya:",
+        "",
+    ]
+
+    by_ek: dict[str, list[dict]] = {}
+    for path in all_files:
+        info = describe_file(path)
+        ek = info["ek"] or "Diğer"
+        by_ek.setdefault(ek, []).append(info)
+
+    for ek in sorted(by_ek):
+        entries = sorted(by_ek[ek], key=lambda x: x.get("effective") or "")
+        lines.append(f"### {ek} ({len(entries)} sürüm)")
+        for info in entries:
+            eff = f" — yür. `{info['effective']}`" if info["effective"] else ""
+            rows = f", ~{info['rows']:,} satır" if info["rows"] is not None else ""
+            lines.append(f"- `{info['name']}`{eff}{rows}")
+        lines.append("")
+
+    return lines
+
+
 def render_ek_entry(info: dict) -> str:
     meta = info["meta"]
     lines = [f"### {info['ek'] or info['name']}"]
@@ -609,17 +659,46 @@ def render_folder_readme(folder: Path, rel: str) -> str:
         return "\n".join(lines)
 
     if "Değişiklik Tebliği" in folder.name and folder.parent == RAW:
+        total_files = sum(
+            1
+            for f in folder.rglob("*")
+            if f.is_file() and not f.name.startswith(".") and f.name != "README.md"
+        )
+        mulga_files = sum(
+            1
+            for f in folder.rglob("*")
+            if f.is_file()
+            and not f.name.startswith(".")
+            and f.name != "README.md"
+            and any(_is_mulga_dir(parent) for parent in f.parents)
+        )
         lines += [
-            "SGK **işlenmiş güncel 2013 SUT** tebliğ paketi. Ana metin + dört EK klasörü.",
+            "SGK **işlenmiş güncel 2013 SUT** tebliğ paketi. Ana metin + dört EK klasörü "
+            f"(**{total_files}** kaynak dosya; bunların **{mulga_files}** tanesi MÜLGA arşivi).",
             "",
         ]
         docx = [f for f in files if f.suffix.lower() == ".docx" and "SUT" in f.name]
         if docx:
             lines.append(f"Ana tebliğ metni: `{docx[0].name}`")
             lines.append("")
-        lines += ["## Alt klasörler", ""]
+        lines += [
+            "Her EK klasöründe güncel listeler ile birlikte `MÜLGA …` alt klasörleri bulunur; "
+            "tarihsel fiyat/malzeme sürümleri buradadır.",
+            "",
+            "## Alt klasörler",
+            "",
+        ]
         for d in children_dirs:
-            lines.append(f"- [{d.name}]({d.name}/README.md) — {GROUP_INTRO.get(d.name, '')}")
+            if _is_mulga_dir(d):
+                continue
+            subcount = sum(
+                1
+                for f in d.rglob("*")
+                if f.is_file() and not f.name.startswith(".") and f.name != "README.md"
+            )
+            lines.append(
+                f"- [{d.name}]({d.name}/README.md) — {GROUP_INTRO.get(d.name, '')} ({subcount} dosya)"
+            )
         lines.append("")
         return "\n".join(lines)
 
@@ -668,6 +747,7 @@ def render_folder_readme(folder: Path, rel: str) -> str:
         return "\n".join(lines)
 
     if folder.name in GROUP_INTRO:
+        mulga_dirs = [d for d in children_dirs if _is_mulga_dir(d)]
         lines.append(GROUP_INTRO[folder.name])
         lines.append("")
         if folder.name == "EK-3 LİSTELERİ":
@@ -678,16 +758,18 @@ def render_folder_readme(folder: Path, rel: str) -> str:
             info = describe_file(f)
             (spreadsheets if info["ftype"] == "spreadsheet" else forms).append(info)
         if spreadsheets:
-            lines += ["## Tarife / katalog tabloları", ""]
+            lines += ["## Tarife / katalog tabloları (güncel)", ""]
             for info in spreadsheets:
                 lines.append(render_ek_entry(info))
         if forms:
             lines += ["## Formlar ve açıklama belgeleri", ""]
             for info in forms:
                 lines.append(render_ek_entry(info))
+        lines.extend(render_mulga_section(mulga_dirs))
         lines += [
             "---",
-            "BILUN pipeline: `scripts/sut/convert_xlsx_to_parquet.py` → `data/gazette/raw/` → `data/gazette/curated/`",
+            "BILUN pipeline: `scripts/sut/convert_xlsx_to_parquet.py --include-mulga` → "
+            "`data/gazette/raw/` → `data/gazette/curated/`",
             "",
         ]
         return "\n".join(lines)
@@ -703,6 +785,8 @@ def main() -> None:
         if p.is_dir() and not any(part.startswith(".") for part in p.parts)
     ]
     for folder in sorted(folders):
+        if _is_mulga_dir(folder):
+            continue
         rel = str(folder.relative_to(RAW))
         content = render_folder_readme(folder, rel if rel != "." else "")
         if not content.strip():

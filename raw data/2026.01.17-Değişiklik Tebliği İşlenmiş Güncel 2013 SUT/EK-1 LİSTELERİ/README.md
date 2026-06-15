@@ -1,11 +1,11 @@
 # EK-1 LİSTELERİ
 
 Konum: `raw data/2026.01.17-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ`
-Son güncelleme: 2026-06-12
+Son güncelleme: 2026-06-15
 
 EK-1 — Hasta hakları, katılım payı muafiyetleri ve istisnai hizmetler (SUT Bölüm 1).
 
-## Tarife / katalog tabloları
+## Tarife / katalog tabloları (güncel)
 
 ### EK-1A
 **Ayakta tedavide hekim / diş hekimi muayenesinde katılım payı alınmayacak kronik hastalıklar listesi**
@@ -45,5 +45,14 @@ EK-1 — Hasta hakları, katılım payı muafiyetleri ve istisnai hizmetler (SUT
 - Dosya: `EK-1E SÖZLEŞMESİZ SAĞ.HİZ.SUN.ACİL HAL.SUN.SAĞ.HİZ.İL.BİL.FORMU (Yür.15.03.2025).docx`
 - Tür: Word formu / prose (makine okumalı tarife tablosu değil)
 
+## MÜLGA — tarihsel sürümler
+
+Yürürlükten kalkmış EK listeleri (SGK konsolide tebliğ içindeki arşiv). BILUN fiyat geçmişi (`ek2b_catalog_history`, `ek2c_catalog_history`, …) için `scripts/sut/convert_xlsx_to_parquet.py --include-mulga` ile `data/gazette/raw/` altına dönüştürülür; varsayılan dönüşüm MÜLGA dosyalarını atlar.
+
+Toplam **1** dosya:
+
+### Diğer (1 sürüm)
+- `MÜLGA EK-1B - HAST. SUN.  HİZM. VE İLAVE ÜCR. GÖST. BELGE(Yürürlük 01.05.2013).docx` — yür. `01.05.2013`
+
 ---
-BILUN pipeline: `scripts/sut/convert_xlsx_to_parquet.py` → `data/gazette/raw/` → `data/gazette/curated/`
+BILUN pipeline: `scripts/sut/convert_xlsx_to_parquet.py --include-mulga` → `data/gazette/raw/` → `data/gazette/curated/`

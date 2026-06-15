@@ -1,7 +1,7 @@
 # Ek İzlemeye Tabi İlaçlar Listesi 
 
 Konum: `raw data/Ek İzlemeye Tabi İlaçlar Listesi `
-Son güncelleme: 2026-06-12
+Son güncelleme: 2026-06-15
 
 **Ek izlemeye tabi ilaçlar** — ruhsatlı ilaçların SGK izlem/recete kısıt listesi.
 
