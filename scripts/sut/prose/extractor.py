@@ -63,6 +63,7 @@ _SECTION_HEADING_RE = re.compile(
 )
 
 _FIKRA_RE = re.compile(r"^\((\d+)\)")
+_NUMBERED_ITEM_RE = re.compile(r"^\d+\)\s")
 _BENT_RE = re.compile(r"^([a-zçğıöşü])\)\s*", re.IGNORECASE)
 _AMENDMENT_RE = re.compile(r"^\((Değişik|Mülga|Ek|Değişiklik|Mülga:)", re.IGNORECASE)
 
@@ -224,6 +225,11 @@ def _parse_section_heading(text: str) -> tuple[str, str] | None:
         parts.append(bent)
 
     section_id = ".".join(parts)
+
+    if _FIKRA_RE.match(text) or _NUMBERED_ITEM_RE.match(text):
+        return None
+    if re.fullmatch(r"\d+", section_id):
+        return None
 
     # Require plausible heading: has title or is short standalone id line
     if not title and len(text) > 40:

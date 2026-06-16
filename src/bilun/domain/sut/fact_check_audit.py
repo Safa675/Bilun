@@ -66,10 +66,10 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
     FactCheckAuditUnit(
         "P0.3",
         "Copay general §1.8",
-        "PARTIAL",
+        "COMPLIANT",
         "ADDITIVE",
         ("copay_rate_general",),
-        "IVF §1.8.4 rates fixed 2026-06-02",
+        "copay_general_1_8.json — 4 rules wired (drug, material, IVF, Rx flat fee)",
     ),
     FactCheckAuditUnit(
         "P0.4",
@@ -145,7 +145,7 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
     FactCheckAuditUnit(
         "L2.2",
         "Visit/status exemptions",
-        "PARTIAL",
+        "COMPLIANT",
         "ADDITIVE",
         ("copay_exemption_visit_type",),
     ),

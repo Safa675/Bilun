@@ -8,6 +8,7 @@ from decimal import Decimal
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.prose_rules.gazette_repricing import (
     detect_gazette_repricing_opportunities,
+    load_gazette_repricing_rules,
 )
 
 
@@ -99,3 +100,10 @@ class TestGazetteRepricing:
             [_proc_line(procedure_date=date(2024, 6, 1))],
         )
         assert rows == []
+
+
+def test_gazette_repricing_rules_corpus_seeded() -> None:
+    rules = load_gazette_repricing_rules()
+    assert len(rules.get("rules", [])) >= 2
+    codes = {code for rule in rules["rules"] for code in rule.get("procedure_codes", [])}
+    assert "600150" in codes

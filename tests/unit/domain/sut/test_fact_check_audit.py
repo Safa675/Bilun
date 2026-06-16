@@ -22,8 +22,8 @@ def test_audit_has_28_units() -> None:
 def test_rollup_verdict_counts_match_master() -> None:
     rollup = fact_check_rollup()
     counts = rollup["by_verdict"]
-    assert counts["COMPLIANT"] == 10
-    assert counts["PARTIAL"] == 17
+    assert counts["COMPLIANT"] == 12
+    assert counts["PARTIAL"] == 15
     assert counts["HEURISTIC"] == 1
     assert counts["NEEDS_CLAIM_LINES"] == 0
     assert counts["WRONG"] == 0

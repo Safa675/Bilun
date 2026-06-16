@@ -54,7 +54,7 @@ class TestCatalogIndex:
     def test_fact_check_summary_present(self) -> None:
         summary = rc.fact_check_summary()
         assert summary["total_units"] == 28
-        assert summary["by_verdict"]["PARTIAL"] == 17
+        assert summary["by_verdict"]["PARTIAL"] == 15
 
     def test_sections_are_prefixed_and_annexes_passthrough(self) -> None:
         by_id = {r["rule_id"]: r for r in rc.list_rules()}

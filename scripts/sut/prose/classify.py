@@ -13,6 +13,7 @@ from .rule_registry import RULE_REGISTRY, RuleRegistryEntry
 _MATCH_SCORE_ANNEX = 100
 _MATCH_SCORE_SECTION = 50
 _MATCH_SCORE_KEYWORD = 20
+_BARE_SECTION_ID_RE = re.compile(r"^\d+$")
 
 
 def _json_list(raw: str) -> list[str]:
@@ -32,7 +33,24 @@ def _as_optional_str(value: object) -> str | None:
     return text or None
 
 
+def _sanitize_section_refs(
+    section_path: str | None,
+    section_id: str | None,
+) -> tuple[str | None, str | None]:
+    """Drop bogus extractor artifacts like section_path='1' from fikra '1) …' lines."""
+    path = section_path.strip() if section_path else None
+    sid = section_id.strip() if section_id else None
+    if path and _BARE_SECTION_ID_RE.fullmatch(path):
+        path = None
+    if sid and _BARE_SECTION_ID_RE.fullmatch(sid):
+        sid = None
+    return path, sid
+
+
 def _section_matches(section_path: str | None, section_id: str | None, prefix: str) -> bool:
+    section_path, section_id = _sanitize_section_refs(section_path, section_id)
+    if section_id and _BARE_SECTION_ID_RE.fullmatch(section_id):
+        return False
     if section_path:
         parts = section_path.split("/")
         if any(part == prefix or part.startswith(prefix + ".") for part in parts):
@@ -147,6 +165,7 @@ def classify_clause_row(row: pd.Series) -> dict[str, Any]:
     annex_refs = _json_list(row.get("annex_refs", "[]"))
     section_path = _as_optional_str(row.get("section_path"))
     section_id = _as_optional_str(row.get("section_id"))
+    section_path, section_id = _sanitize_section_refs(section_path, section_id)
     deontic_modality = _as_optional_str(row.get("deontic_modality"))
     clause_type = str(row.get("clause_type") or "")
 

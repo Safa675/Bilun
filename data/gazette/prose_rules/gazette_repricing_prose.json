@@ -7,5 +7,21 @@
   "increase_only": true,
   "max_days_after_service": 90,
   "excluded_procedure_categories": [],
-  "message_tr": "Hizmet tarihinden sonra yürürlüğe giren tebliğ ile liste fiyatı artmış; yeniden fatura/adjustment yasal izin gerektirir."
+  "message_tr": "Hizmet tarihinden sonra yürürlüğe giren tebliğ ile liste fiyatı artmış; yeniden fatura/adjustment yasal izin gerektirir.",
+  "rules": [
+    {
+      "rule_id": "repricing.600150",
+      "procedure_codes": ["600150"],
+      "catalog": "ek2b",
+      "sut_section": "2.2",
+      "message_tr": "600150 işlemi 2026-01-17 tebliğ öncesi hizmet tarihinde eski EK-2/B list fiyatı ile faturalanmış olabilir."
+    },
+    {
+      "rule_id": "repricing.609270",
+      "procedure_codes": ["609270"],
+      "catalog": "ek2c",
+      "sut_section": "2.2",
+      "message_tr": "609270 paket kodu tebliğ sonrası EK-2/C list artışı için prospektif repricing gözden geçirmesi."
+    }
+  ]
 }

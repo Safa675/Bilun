@@ -134,6 +134,16 @@ class TestClassify:
         matched = json.loads(result["matched_rule_ids"])
         assert "gazette_repricing" not in matched
 
+    def test_bogus_section_path_does_not_match_copay(self) -> None:
+        row = _sample_row(
+            section_id="1",
+            section_path="1",
+            text_tr="1) Bünyesinde birinci basamak sağlık hizmeti sunan kurum.",
+            deontic_modality="MUST_BILL",
+        )
+        result = classify_clause_row(row)
+        assert result["primary_rule_id"] != "copay_rate_general"
+
     def test_copay_exemption_ek4d_annex_match(self) -> None:
         row = _sample_row(
             section_id="1.8.2",
@@ -163,7 +173,7 @@ class TestCoverage:
     def test_enriches_status_from_registry(self) -> None:
         clauses = pd.DataFrame([_sample_row()])
         coverage, _, _, _ = build_sut_coverage(clauses)
-        assert coverage.iloc[0]["coverage_status"] == "partial"
+        assert coverage.iloc[0]["coverage_status"] == "implemented"
         assert "billing/claim_copay.py" in coverage.iloc[0]["domain_modules"]
 
     def test_non_algorithmic_primary_has_no_gap(self) -> None:
@@ -341,3 +351,23 @@ class TestFullCoverageBuild:
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
         assert RULE_BY_ID["medula_rejection_playbook"].coverage_status == "partial"
+
+    def test_ek2c_prose_drg_locked_implemented_has_mapping(self, coverage: pd.DataFrame) -> None:
+        prose_json = _REPO_ROOT / "data/gazette/prose_rules/ek2c_prose_drg_locked_codes.json"
+        assert prose_json.is_file()
+
+        matched = coverage[coverage["matched_rule_ids"].str.contains("ek2c_prose_drg_locked", regex=False)]
+        assert not matched.empty
+
+        from scripts.sut.prose.rule_registry import RULE_BY_ID
+
+        assert RULE_BY_ID["ek2c_prose_drg_locked"].coverage_status == "implemented"
+        primary = coverage[coverage["primary_rule_id"] == "ek2c_prose_drg_locked"]
+        if not primary.empty:
+            assert primary["has_algorithmic_gap"].sum() == 0
+
+    def test_copay_rate_general_implemented_not_false_gap(self, coverage: pd.DataFrame) -> None:
+        rows = coverage[coverage["primary_rule_id"] == "copay_rate_general"]
+        assert not rows.empty
+        assert (rows["coverage_status"] == "implemented").all()
+        assert rows["has_algorithmic_gap"].sum() == 0

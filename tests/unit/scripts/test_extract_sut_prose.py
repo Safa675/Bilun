@@ -39,6 +39,10 @@ class TestParsingHelpers:
         prose = "(1) " + "x" * 50
         assert _parse_section_heading(prose) is None
 
+    def test_parse_section_heading_rejects_numbered_fikra(self) -> None:
+        assert _parse_section_heading("1) Bünyesinde birinci basamak sağlık hizmeti sunan kurum.") is None
+        assert _parse_section_heading("(1) Katılım payı alınır.") is None
+
     def test_extract_annex_refs(self) -> None:
         text = 'SUT eki "EK-2/C Listesinde" ve EK-1/A listesinde'
         refs = _extract_annex_refs(text)
@@ -106,6 +110,10 @@ class TestDocxExtraction:
 
     def test_deontic_hits(self, clauses: pd.DataFrame) -> None:
         assert (clauses["deontic_markers"] != "[]").sum() > 100
+
+    def test_no_bare_digit_section_path(self, clauses: pd.DataFrame) -> None:
+        assert (clauses["section_path"] == "1").sum() == 0
+        assert (clauses["section_id"] == "1").sum() == 0
 
     def test_annex_refs_in_payment_section(self, clauses: pd.DataFrame) -> None:
         section = clauses[clauses["section_path"].str.contains("2.2", na=False)]
