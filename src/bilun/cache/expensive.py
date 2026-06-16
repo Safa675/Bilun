@@ -145,6 +145,7 @@ def _compute_patient_expensive_sections(
                 patient_id,
                 ana_df_input,
                 sut_estimate,
+                claim_dataset=ctx.get("sut_claim_dataset"),
             )
             drg_status, drg_unavailable_reason, drg_required_inputs = (
                 _pricing_status_or_unavailable(drg)
@@ -157,6 +158,7 @@ def _compute_patient_expensive_sections(
                 episode_payloads.append(
                     {
                         "episode_id": ep.episode_id,
+                        "claim_id": getattr(ep, "claim_id", ep.episode_id),
                         "primary_icd10": ep.primary_icd10,
                         "primary_icd10_chapter": ep.primary_icd10_chapter,
                         "description": ep.description,
@@ -167,6 +169,7 @@ def _compute_patient_expensive_sections(
                         "procedure_cost": ep.procedure_cost,
                         "total_cost": ep.total_cost,
                         "drg_package_price": ep.drg_package_price,
+                        "package_code": getattr(ep, "package_code", None),
                         "ek2c_group": ep.ek2c_group,
                         "admission_date": ep.admission_date,
                         "discharge_date": ep.discharge_date,

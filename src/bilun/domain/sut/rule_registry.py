@@ -58,7 +58,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         domain_modules=(
             "src/bilun/domain/optimization/copay_exemptions.py",
             "src/bilun/domain/optimization/copay_exemption_rules/ek1a.py",
-            "src/bilun/domain/billing/copay.py",
+            "src/bilun/domain/billing/claim_copay.py",
         ),
         sut_section_prefixes=("1.8.5",),
         annex_refs=("EK-1/A",),
@@ -88,7 +88,6 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         coverage_status="partial",
         domain_modules=(
             "src/bilun/domain/prose_rules/copay_general.py",
-            "src/bilun/domain/billing/copay.py",
             "src/bilun/domain/billing/claim_copay.py",
         ),
         sut_section_prefixes=("1.8.2", "1.8.3", "1.8.4"),

@@ -276,23 +276,6 @@ SUT_COMORBIDITY_PROCEDURE_COSTS: dict[str, tuple[float, float]] = {
     "Ameliyat Geçmişi": (1000.0, 15000.0),
 }
 
-# ICD-10 chapter -> estimated procedure cost range
-SUT_ICD10_PROCEDURE_COSTS: dict[str, tuple[float, float]] = {
-    "I": (500.0, 8000.0),
-    "C": (1000.0, 25000.0),
-    "J": (200.0, 3000.0),
-    "K": (300.0, 5000.0),
-    "G": (400.0, 6000.0),
-    "E": (150.0, 1500.0),
-    "M": (200.0, 4000.0),
-    "N": (300.0, 4000.0),
-    "L": (100.0, 1000.0),
-    "F": (100.0, 800.0),
-    "H": (150.0, 2000.0),
-    "R": (50.0, 300.0),
-    "Z": (50.0, 200.0),
-}
-
 # ICD-10 Chapter -> EK-2C Group Mapping
 _ICD10_CHAPTER_TO_EK2C_GROUP: dict[str, str] = {
     "I": "A3",
@@ -373,7 +356,9 @@ _HOSPITAL_MARKUP: dict[str, float] = {
     "procedure": 2.0,
 }
 
-# Default LOS values
-_DEFAULT_INPATIENT_LOS = 4.0
-_DEFAULT_ICU_LOS = 3.0
 _MAX_SINGLE_VISIT_LOS = 90
+
+# Runtime policy: when True, all billing surfaces require SUT claim lines.
+# Missing claim context returns explicit "missing_exact_inputs" instead of
+# falling back to ICD-chapter heuristics, medians, or hardcoded defaults.
+SUT_REQUIRE_CLAIM_LINES = True

@@ -22,9 +22,9 @@ def validate_claim_endpoint(req: ClaimValidationRequest):
       - Exclusion violations (EK-3B): non-reimbursable materials
       - Partial §3.1 prose bundling (material_bundling_prose)
       - Partial §3.3 specialty annex prose (specialty_materials_prose, L4.4)
-      - Gazette price lookup (EK-3H/3I): official SUT material prices
+      - Material line pricing from billed amounts or exact EK-3 code lookup
 
-    Returns validation result with violations, savings, and cost estimates.
+    Returns validation result with violations, savings, and priced material lines.
     """
     claim_dict = {
         "claim_id": req.claim_id,
@@ -57,19 +57,20 @@ def validate_claim_endpoint(req: ClaimValidationRequest):
             }
             for v in result.violations
         ],
-        "material_estimates": [
+        "material_lines": [
             {
-                "material_code": m.material_code,
-                "material_name": m.material_name,
-                "unit_price": m.unit_price,
-                "quantity": m.quantity,
-                "total_price": m.total_price,
-                "is_reimbursable": m.is_reimbursable,
-                "is_bundled": m.is_bundled,
-                "source": m.source,
-                "notes": m.notes,
+                "material_code": line.material_code,
+                "material_name": line.material_name,
+                "unit_price": line.unit_price,
+                "quantity": line.quantity,
+                "total_price": line.total_price,
+                "is_reimbursable": line.is_reimbursable,
+                "is_bundled": line.is_bundled,
+                "source": line.source,
+                "exactness_status": line.exactness_status,
+                "notes": line.notes,
             }
-            for m in result.material_estimates
+            for line in result.material_lines
         ],
     }
 

@@ -39,7 +39,7 @@ class ClaimUnbundlingFinding:
 
     @property
     def has_risk(self) -> bool:
-        return self.potential_savings_try > 0 or bool(
+        return self.sourced_savings_try > 0 or bool(
             self.bundled_violations
             or self.payment_method_violations
             or self.session_violations
@@ -244,7 +244,7 @@ def analyze_claim_unbundling(
             "billed_amount_try": _money(_line_billed(line)),
             "expected_payable_try": _money(_line_payable(line)),
             "risk_amount_try": _money(max(0.0, _line_billed(line) - _line_payable(line))),
-            "savings_basis": "heuristic",
+            "savings_basis": "audit_flag",
             "detail": (
                 "HEURISTIC — package-included flag on claim line; "
                 "not verified against SUT §2.2 prose."
@@ -309,7 +309,7 @@ def analyze_claim_unbundling(
     finding.sourced_savings_try = _money(sourced)
     finding.heuristic_savings_try = _money(heuristic_bundled + heuristic_uplift)
     finding.itemized_package_uplift_try = _money(heuristic_uplift)
-    finding.potential_savings_try = _money(sourced + heuristic_bundled + heuristic_uplift)
+    finding.potential_savings_try = finding.sourced_savings_try
     return finding
 
 

@@ -73,6 +73,8 @@ def backfill_expensive_sections(
     compute_ctx = {"ana_by_pid": ana_by_pid}
     if ana_df_pl is not None:
         compute_ctx["ana_df"] = ana_df_pl
+    if ctx.get("sut_claim_dataset") is not None:
+        compute_ctx["sut_claim_dataset"] = ctx["sut_claim_dataset"]
     sut_by_pid = ctx.get("sut_by_pid", {})
 
     write_json_payload_rows_serialized(

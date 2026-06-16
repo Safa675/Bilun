@@ -11,9 +11,10 @@ class MaterialItem(BaseModel):
     """A single material line item in a claim."""
 
     name: str
+    code: str = ""
     unit_price: float = 0.0
     quantity: int = 1
-    code: str = ""
+    billed_amount: float = 0.0
 
 
 class ClaimValidationRequest(BaseModel):

@@ -77,6 +77,10 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
         "PARTIAL",
         "ADDITIVE",
         ("drg_unbundling",),
+        note=(
+            "UI-facing potential_savings_try is sourced-only; heuristic_savings_try "
+            "retained in chapter_analysis audit fields only (2026-06)."
+        ),
     ),
     FactCheckAuditUnit(
         "P0.5",
@@ -118,6 +122,10 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
         "PARTIAL",
         "ADDITIVE",
         ("claim_validation",),
+        note=(
+            "Material lines priced via price_material_lines (billed amount or exact EK-3 code); "
+            "fuzzy name-match removed 2026-06. Bundling/exclusion rules still name-based."
+        ),
     ),
     FactCheckAuditUnit(
         "L1.4",
@@ -217,6 +225,10 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
             "payment_method_itemized",
             "payment_method_tier_override",
         ),
+        note=(
+            "Claim-exact only: recommend_billing_strategy_from_claims with claim_lines / "
+            "ek2c_code methodology; legacy chapter-median estimator removed 2026-06."
+        ),
     ),
     FactCheckAuditUnit(
         "L3.5",
@@ -224,7 +236,10 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
         "PARTIAL",
         "PARTIAL_OVERLAP",
         ("material_preauth_ek3c1", "material_miat_ek3c2", "material_bundling_prose"),
-        "MIAT interval + bundled taxonomy fixed",
+        note=(
+            "MIAT interval + bundled taxonomy fixed. Pricing via price_material_lines "
+            "(billed or exact EK-3 code); fuzzy estimate_material_costs removed 2026-06."
+        ),
     ),
     FactCheckAuditUnit(
         "L3.6",
@@ -232,7 +247,11 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
         "PARTIAL",
         "ADDITIVE",
         (),
-        "Cross-cutting orchestrator — no dedicated registry rule",
+        note=(
+            "Cross-cutting orchestrator — no dedicated registry rule. "
+            "SUT_REQUIRE_CLAIM_LINES fail-closed: missing claim context yields "
+            "missing_exact_inputs blocks with zero fabricated ₺ (2026-06)."
+        ),
     ),
     FactCheckAuditUnit(
         "L4.1",
@@ -247,6 +266,11 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
         "HEURISTIC",
         "ADDITIVE",
         ("pricing_ek2c",),
+        note=(
+            "Patient DRG panel is now claim-exact (billed package lines + dated EK-2C catalog). "
+            "L4.2 remains HEURISTIC because it covers the deprecated median helper in pricing.drg, "
+            "which is no longer called from product paths."
+        ),
     ),
     FactCheckAuditUnit(
         "L4.3",
@@ -254,6 +278,10 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
         "PARTIAL",
         "ADDITIVE",
         ("pricing_ek2a",),
+        note=(
+            "enrich_visit_prices_from_claim_header uses exact EK-2A tier row only; "
+            "cohort-mean fallback removed 2026-06."
+        ),
     ),
     FactCheckAuditUnit(
         "L4.4",

@@ -124,7 +124,7 @@ class ValidateClaimResponse(BaseModel):
     validation_time_ms: float | None = None
     summary: Any  # rule_engine returns either a one-liner string or a dict
     violations: list[dict[str, Any]]
-    material_estimates: list[dict[str, Any]]
+    material_lines: list[dict[str, Any]]
 
     model_config = ConfigDict(extra="allow")
 
@@ -211,7 +211,8 @@ class ExpensiveAnalyticsState(BaseModel):
 
 
 class DRGEpisodeResponse(BaseModel):
-    episode_id: int | None = None
+    episode_id: str | int | None = None
+    claim_id: str | int | None = None
     primary_icd10: str = ""
     primary_icd10_chapter: str = ""
     description: str = ""
@@ -222,6 +223,7 @@ class DRGEpisodeResponse(BaseModel):
     procedure_cost: float = 0.0
     total_cost: float = 0.0
     drg_package_price: float | None = None
+    package_code: str | None = None
     ek2c_group: str = ""
     admission_date: str | None = None
     discharge_date: str | None = None

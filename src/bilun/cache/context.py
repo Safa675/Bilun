@@ -238,16 +238,18 @@ def _assemble_sut_expensive_context(
         lab_df_pl=lab_df,
         rec_df_pl=rec_df,
     )
+    claim_dataset = load_sut_claim_dataset(
+        claims_dir=sut_data_source.claims_dir,
+        mode=sut_data_source.mode,
+    )
     sut_by_pid = build_exact_sut_patient_totals(
         patient_ids,
-        load_sut_claim_dataset_fn=lambda: load_sut_claim_dataset(
-            claims_dir=sut_data_source.claims_dir,
-            mode=sut_data_source.mode,
-        ),
+        load_sut_claim_dataset_fn=lambda: claim_dataset,
     )
     _log_memory_snapshot(
         "analytics_context:after_sut_expensive",
         sut_by_pid=sut_by_pid,
+        claim_dataset=claim_dataset,
     )
     return {
         "patient_ids": patient_ids,
@@ -255,6 +257,7 @@ def _assemble_sut_expensive_context(
         "ana_df_pl": ana_df,
         "ana_by_pid": _partition_by_patient(ana_df),
         "sut_by_pid": sut_by_pid,
+        "sut_claim_dataset": claim_dataset,
     }
 
 

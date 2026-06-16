@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 
-from .catalog import get_ek2a_visit_prices, lookup_ek2a_visit_price_try
+from .catalog import lookup_ek2a_visit_price_try
 from .constants import _FALLBACK_LAB_PRICES, _FALLBACK_VISIT_PRICES
 from .loaders import _load_gazette_lab_prices, _load_gazette_visit_prices
 from .runtime_state import get_sut_runtime_state
@@ -45,7 +45,6 @@ def _ensure_enrichment() -> None:
     state.sut_visit_prices.clear()
     state.sut_visit_prices.update(visit_prices)
 
-    _enrich_visit_prices_from_ek2a()
     logger.info("Gazette price lookup enrichment completed")
 
 
@@ -66,47 +65,40 @@ def get_sut_lab_default() -> tuple[float, float]:
     return _RUNTIME_STATE.sut_lab_default
 
 
-def _enrich_visit_prices_from_ek2a(
+def enrich_visit_prices_from_claim_header(
     *,
-    specialty_code: str | None = None,
+    specialty_code: str | None,
     facility_tier: str | None = None,
     provider_type: str | None = None,
-) -> None:
-    """Update visit prices from EK-2A when tier + specialty are known; else cohort mean."""
+) -> bool:
+    """Update outpatient/emergency visit prices from EK-2A when tier + specialty are known.
+
+    Returns True when an exact EK-2A tier row was applied; False when inputs are
+    incomplete or no tier-specific price exists (gazette fallbacks remain).
+    """
+    code = str(specialty_code or "").strip()
+    if not code or not (facility_tier or provider_type):
+        return False
+
     try:
-        if specialty_code:
-            price, method = lookup_ek2a_visit_price_try(
-                specialty_code,
-                facility_tier=facility_tier,
-                provider_type=provider_type,
-            )
-            if price is not None and method in {"ek2a_tier_row", "ek2a_specialty_mean"}:
-                SUT_VISIT_PRICES["outpatient"] = (price, price)
-                SUT_VISIT_PRICES["emergency"] = (price, price)
-                logger.info(
-                    "Visit prices enriched from EK-2A %s: %.2f TRY (%s)",
-                    specialty_code,
-                    price,
-                    method,
-                )
-                return
-
-        ek2a_data = get_ek2a_visit_prices()
-        specialties = ek2a_data.get("specialties", [])
-        if not specialties:
-            return
-
-        all_prices = []
-        for specialty in specialties:
-            all_prices.extend(specialty.get("prices_try", {}).values())
-
-        if all_prices:
-            outpatient_price = round(sum(all_prices) / len(all_prices), 2)
-            SUT_VISIT_PRICES["outpatient"] = (outpatient_price, outpatient_price)
-            SUT_VISIT_PRICES["emergency"] = (outpatient_price, outpatient_price)
-            logger.info(
-                "Visit prices enriched from EK-2A cohort mean (heuristic): %.2f TRY",
-                outpatient_price,
-            )
+        price, method = lookup_ek2a_visit_price_try(
+            code,
+            facility_tier=facility_tier,
+            provider_type=provider_type,
+        )
     except Exception as exc:
-        logger.debug("EK-2A enrichment skipped: %s", exc)
+        logger.debug("EK-2A visit enrichment skipped: %s", exc)
+        return False
+
+    if price is None or method != "ek2a_tier_row":
+        return False
+
+    SUT_VISIT_PRICES["outpatient"] = (price, price)
+    SUT_VISIT_PRICES["emergency"] = (price, price)
+    logger.info(
+        "Visit prices enriched from EK-2A %s: %.2f TRY (%s)",
+        code,
+        price,
+        method,
+    )
+    return True

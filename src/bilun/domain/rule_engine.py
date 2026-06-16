@@ -31,7 +31,8 @@ from src.bilun.domain.prose_rules.material_bundling import check_material_bundli
 from src.bilun.domain.prose_rules.specialty_materials import check_specialty_materials_prose
 from src.bilun.domain.rules.bundling_rules import check_bundling_violations
 from src.bilun.domain.rules.exclusion_rules import check_exclusion_violations
-from src.bilun.domain.analytics import MaterialCostEstimate, estimate_material_costs
+from src.bilun.domain.analytics import MaterialLinePricing, price_material_lines
+from src.bilun.domain.billing.types import EXACTNESS_STATUS_EXACT
 
 logger = logging.getLogger("ilay.sut_optimization.rule_engine")
 
@@ -57,7 +58,7 @@ class ClaimValidationResult:
         claim_id: The claim being validated.
         is_valid: True if no error-severity violations found.
         violations: List of rule violations found.
-        material_estimates: Cost estimates for each material line item.
+        material_lines: Priced material lines from billed amounts or EK-3 code lookup.
         total_claim_amount: Sum of all material line items.
         total_savings_try: Potential savings from bundling violations.
         total_risk_try: Amount at risk from exclusion violations.
@@ -70,7 +71,7 @@ class ClaimValidationResult:
     claim_id: str = ""
     is_valid: bool = True
     violations: list[RuleViolation] = field(default_factory=list)
-    material_estimates: list[MaterialCostEstimate] = field(default_factory=list)
+    material_lines: list[MaterialLinePricing] = field(default_factory=list)
     total_claim_amount: float = 0.0
     total_savings_try: float = 0.0
     total_risk_try: float = 0.0
@@ -94,17 +95,18 @@ def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
       3. Material bundling prose (partial JSON): keyword rules not in EK-3B-1.
       4. Specialty annex prose (partial JSON): §3.3 branch rules (L4.4).
 
-    Additionally computes material cost estimates using gazette prices.
+    Additionally prices material lines from billed amounts or exact EK-3 codes.
 
     Args:
         claim: Dict with:
             - "claim_id" (str): Claim identifier.
             - "procedure_code" (str, optional): SUT procedure code.
             - "materials" (list[dict]): Material line items, each with
-              "name", optional "unit_price", optional "quantity", optional "code".
+              "name", "code" (required for exact pricing), optional "unit_price",
+              optional "quantity", optional "billed_amount".
 
     Returns:
-        ClaimValidationResult with aggregated violations and cost estimates.
+        ClaimValidationResult with aggregated violations and material line pricing.
     """
     t0 = time.perf_counter()
 
@@ -221,10 +223,15 @@ def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
             )
             result.total_savings_try = round(result.total_savings_try + (savings or risk), 2)
 
-    # ── 4. Compute material cost estimates ───────────────────────────
-    result.material_estimates = estimate_material_costs(materials)
+    # ── 4. Price material lines (billed amount or exact EK-3 code) ─────
+    result.material_lines = price_material_lines(materials)
     result.total_claim_amount = round(
-        sum(m.total_price for m in result.material_estimates), 2
+        sum(
+            line.total_price
+            for line in result.material_lines
+            if line.exactness_status == EXACTNESS_STATUS_EXACT
+        ),
+        2,
     )
 
     # ── 5. Determine validity ────────────────────────────────────────
