@@ -7,6 +7,7 @@ import { CircleHelp } from "lucide-react";
 import Image from "next/image";
 import { SyntheticDemoChip } from "@/components/sut/SyntheticDemoProvenance";
 import LocaleSwitcher from "@/components/shell/LocaleSwitcher";
+import RoleSwitcher from "@/components/shell/RoleSwitcher";
 import { useConfig } from "@/lib/configContext";
 import { cn } from "@/lib/cn";
 import {
@@ -18,7 +19,7 @@ import {
 import { useT } from "@/lib/i18n/useTranslations";
 import { useSetShowHowItWorks } from "@/stores/index";
 import { getMedulaRejectionIngestStatus } from "@/lib/api/sut";
-import { useUserRole } from "@/lib/userRole";
+import { useUserRole } from "@/components/shell/RoleProvider";
 
 interface AppTopBarProps {
   /** Optional override; defaults to wiring the global `showHowItWorks` store. */
@@ -127,6 +128,8 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
         </nav>
 
         <LocaleSwitcher />
+
+        <RoleSwitcher />
 
         <button
           type="button"

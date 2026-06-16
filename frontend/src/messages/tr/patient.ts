@@ -22,7 +22,7 @@ const patient = {
     "description": "Her talep için hasta düzeyinde toplamlar: faturalanan, SUT'un ödemesini beklediği tutar ve BILUN'un hâlâ kurtarabileceği miktar.",
     "totalBilled": "Toplam faturalanan",
     "expectedPayable": "Beklenen ödenecek",
-    "totalRecoverable": "Toplam kurtarılabilir",
+    "totalRecoverable": "Toplam kurtarılabilir (talep destekli)",
     "billCount": "Fatura sayısı",
     "overallPriority": "Genel öncelik"
   },
@@ -173,8 +173,8 @@ const patient = {
     },
     "drgPanel": {
       "title": "DRG epizod maliyet modellemesi",
-      "description": "Kalemlendirilmiş epizod maliyetlerini SGK paket DRG fiyatlarıyla (EK-2C) karşılaştırır. Fazlalık, DRG paketinin kalemlendirilmiş maliyetlerden fazlasını karşıladığı anlamına gelir.",
-      "unavailableFallback": "Her epizodun kesin yatış tarihi ve geçmiş paket fiyatı olana kadar DRG paket fiyatlandırması kullanılamaz.",
+      "description": "Kalemlendirilmiş yatış maliyetleri ile faturalanan SGK DRG paket fiyatlarını (EK-2C) gerçek fatura satırlarına göre karşılaştırır. YBS ve paket fiyatları tahmine dayalı değil, fatura verilerinden gelir.",
+      "unavailableFallback": "Yatış faturasında faturalanan paket (P#####) satırı veya eksik yatış/taburcu tarihi varsa DRG paket fiyatlandırması kullanılamaz.",
       "episodes": "Epizodlar:",
       "itemizedCost": "Kalemlendirilmiş maliyet:",
       "drgPackagePrice": "DRG paket fiyatı:",
@@ -182,9 +182,11 @@ const patient = {
       "costliest": "En maliyetli:",
       "table": {
         "index": "#",
+        "claimId": "Fatura",
         "icd10": "ICD-10",
         "description": "Açıklama",
         "group": "Grup",
+        "packageCode": "Paket",
         "los": "YBS",
         "lab": "Laboratuvar",
         "visit": "Ziyaret",

@@ -162,7 +162,9 @@ const sections = {
       violations: "İhlaller",
     },
     ruleViolations: "Kural İhlalleri",
+    materialLines: "Malzeme Satırları",
     materialCostEstimates: "Malzeme Maliyet Tahminleri",
+    missingExactInputs: "Kesin malzeme kodu veya faturalanan tutar gerekli",
     table: {
       material: "Malzeme",
       unitPrice: "Birim Fiyat",

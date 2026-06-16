@@ -55,7 +55,7 @@ export interface SutViolation {
   risk_amount: number;
 }
 
-export interface SutMaterialEstimate {
+export interface SutMaterialLine {
   material_code: string;
   material_name: string;
   unit_price: number;
@@ -64,6 +64,7 @@ export interface SutMaterialEstimate {
   is_reimbursable: boolean;
   is_bundled: boolean;
   source: string;
+  exactness_status: string;
   notes: string;
 }
 
@@ -111,7 +112,7 @@ export interface SutValidationResult {
   validation_time_ms: number;
   summary: string;
   violations: SutViolation[];
-  material_estimates: SutMaterialEstimate[];
+  material_lines: SutMaterialLine[];
 }
 
 export interface SutMaterialPricing {

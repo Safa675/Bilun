@@ -69,7 +69,8 @@ export interface CheckupPricingResponse {
 }
 
 export interface DRGEpisodeData {
-  episode_id: number;
+  episode_id: string | number;
+  claim_id?: string;
   primary_icd10: string;
   primary_icd10_chapter: string;
   description: string;
@@ -80,6 +81,7 @@ export interface DRGEpisodeData {
   procedure_cost: number;
   total_cost: number;
   drg_package_price: number | null;
+  package_code?: string | null;
   ek2c_group: string;
   admission_date: string | null;
   discharge_date: string | null;
@@ -235,8 +237,6 @@ export interface DrgUnbundlingSummary extends ExactnessState {
   risk_rate: number | null;
   total_potential_savings: number | null;
   total_sourced_savings?: number | null;
-  total_heuristic_savings?: number | null;
-  has_heuristic_savings?: boolean;
   top_risky_chapters: ChapterRiskSummary[];
   methodology: string;
 }
@@ -269,6 +269,14 @@ export interface OptimizationSummary extends SUTDataSourceCarrier {
     top_diseases: TopDisease[];
     methodology: string;
     rule_source?: string;
+    /** Bill-scoped exemption counts (present when claim data is available). */
+    n_total_bills?: number;
+    n_exempt_bills?: number;
+    n_exempt_ek1a_bills?: number;
+    n_exempt_status_only_bills?: number;
+    n_exempt_ek1a_and_status_bills?: number;
+    exemption_rate_bills?: number;
+    exemption_by_category_bills?: ExemptionCategoryCount[];
   };
   surcharge_exposure: ExactnessState & {
     n_total_ek2g: number | null;
@@ -367,8 +375,6 @@ export interface PatientDrgUnbundling extends ExactnessState {
   chapter_analysis: ChapterUnbundlingDetail[];
   total_potential_savings: number | null;
   total_sourced_savings?: number | null;
-  total_heuristic_savings?: number | null;
-  has_heuristic_savings?: boolean;
   patient_icd10_chapters?: string[];
 }
 

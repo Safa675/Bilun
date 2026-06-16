@@ -22,7 +22,7 @@ const patient = {
     "description": "Patient-level totals across every claim: what was billed, what SUT expects to pay, and how much BILUN can still recover.",
     "totalBilled": "Total billed",
     "expectedPayable": "Expected payable",
-    "totalRecoverable": "Total recoverable",
+    "totalRecoverable": "Total recoverable (claim-backed)",
     "billCount": "Bills",
     "overallPriority": "Overall priority"
   },
@@ -173,8 +173,8 @@ const patient = {
     },
     "drgPanel": {
       "title": "DRG Episode Cost Modeling",
-      "description": "Compares itemized episode costs against SGK bundled DRG package prices (EK-2C). Surplus means the DRG package covers more than itemized costs.",
-      "unavailableFallback": "DRG package pricing remains unavailable until every episode has an exact admission date and historical package price.",
+      "description": "Claim-exact comparison of itemized inpatient costs against billed SGK DRG package prices (EK-2C). LOS and package prices come from real claim lines, not estimates.",
+      "unavailableFallback": "DRG package pricing is unavailable when an inpatient claim has no billed package (P#####) line or missing admission/discharge dates.",
       "episodes": "Episodes:",
       "itemizedCost": "Itemized Cost:",
       "drgPackagePrice": "DRG Package Price:",
@@ -182,9 +182,11 @@ const patient = {
       "costliest": "Costliest:",
       "table": {
         "index": "#",
+        "claimId": "Claim",
         "icd10": "ICD-10",
         "description": "Description",
         "group": "Group",
+        "packageCode": "Package",
         "los": "LOS",
         "lab": "Lab",
         "visit": "Visit",

@@ -62,6 +62,9 @@ const optimizer = {
   sections: {
     patientAlerts: "Hasta uyarıları",
     exemptionByCategory: "Kategoriye göre muafiyet",
+    exemptionByCategoryBills: "Fatura bazında muafiyet gerekçeleri",
+    billLevelSummary: "Fatura bazında özet",
+    patientLevelSummary: "Hasta bazında özet",
     savingsByCategory: "Kategoriye göre tasarruf",
     priorityDistribution: "Öncelik dağılımı",
     topPatientsDefault: "En yüksek etkili ilk 10 hasta",
@@ -81,6 +84,8 @@ const optimizer = {
       "Birleştirilebilir katılım payı muafiyeti: EK-1A ({ek1aCount} kronik aralık) artı talep profilleri mevcutsa ziyaret türü ve hasta statüsü kuralları. EK-2C-1 katılım payı oranı listesi (§2.2) ayrı değerlendirilir.",
     copayEk1aOnly:
       "Hasta ICD-10 tanılarını tebliğ eki EK-1A'daki {ek1aCount} kronik hastalık muafiyet aralığıyla çapraz referanslar. Statü ve ziyaret türü muafiyet alanları için analitik önbelleğini yeniden oluşturun.",
+    billLevelOverlapNote:
+      "Tek bir fatura birden fazla muafiyet gerekçesini karşılayabilir; bu nedenle kategori toplamları muaf fatura sayısından fazla olabilir. Kronik hastalık muafiyeti hasta özelliği olduğundan, etkilenen hastanın her faturasına uygulanır.",
     surchargeExact:
       "Aktif SUT çalışma zamanı girdilerinden kesin tarihli işlem talep satırları ve açık fark ücreti kural bayrakları kullanılır.",
     copayRateExact:
@@ -95,6 +100,8 @@ const optimizer = {
       "Kısmi-kesin geri kazanım incelemesi: eksik fatura bölümleri açık gerekli-girdi boşlukları olarak kalırken kesin kategori düzeyinde tasarruflar gösterilir.",
     revenueFooterMixed:
       "Karışık kesinlik algılandı: her fatura bölümü kesin olana kadar geri kazanım inceleme toplamları kullanılamaz.",
+    drgAuditFlagsOnly:
+      "Denetim bayrakları algılandı (ör. pakete dahil satırlar); bu kohort diliminde talep destekli kurtarılabilir tutar yok.",
   },
   unavailable: {
     badge: "Kullanılamıyor",
@@ -110,6 +117,7 @@ const optimizer = {
   },
   kpis: {
     totalPatients: "Toplam Hasta",
+    totalBills: "Toplam Fatura",
     exemptAnyGround: "Muaf (herhangi bir gerekçe)",
     exemptAnyGroundSub: "EK-1A, acil, statü veya meslek",
     ek1aExempt: "EK-1A muaf",
@@ -117,6 +125,10 @@ const optimizer = {
     statusVisitOnly: "Yalnızca statü / ziyaret",
     statusVisitOnlySub: "EK-1A tanısı yok",
     exemptionRate: "Muafiyet Oranı",
+    exemptBills: "Muaf Fatura",
+    nonExemptBills: "Muaf Değil Fatura",
+    nonExemptBillsSub: "Standart katılım payı uygulanır",
+    exemptionRateBills: "Muafiyet Oranı (fatura)",
     nonExempt: "Muaf değil",
     nonExemptSub: "Standart katılım payı uygulanır",
     unavailablePatients: "Kullanılamayan Hastalar",
@@ -156,9 +168,9 @@ const optimizer = {
     checkedOnExactClaimLines: "Kesin talep satırlarında kontrol edildi",
     patientsWithRisk: "Riskli Hastalar",
     exactUnbundlingFindings: "Kesin ayrıştırma bulguları",
-    potentialSavings: "Potansiyel Tasarruf",
+    potentialSavings: "Talep destekli tasarruf",
     amountsResumeAfterInputs: "Kesin girdiler gelince tutarlar devam eder",
-    fromExactClaimLineAnalysis: "Kesin talep satırı analizinden",
+    fromExactClaimLineAnalysis: "Yalnızca kesin talep satırı prose ihlallerinden",
     riskyChapters: "Riskli Bölümler",
     requiresDatedPackageContext: "Tarihli paket bağlamı gerekir",
     icd10ChaptersWithRepeatedRisk: "Tekrarlayan riskli ICD-10 bölümleri",

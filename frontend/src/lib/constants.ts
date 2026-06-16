@@ -70,7 +70,7 @@ export const SUT_HOME_TABS: SutHomeTabMeta[] = [
     id: "rule-database",
     label: "Rule Database",
     subtitle: "Where is it written? Every extracted SUT rule with its source clauses and coverage.",
-    requiredRole: ["compliance_engineer", "dev", "admin"],
+    requiredRole: ["dev"],
   },
 ];
 

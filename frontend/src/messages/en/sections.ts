@@ -162,7 +162,9 @@ const sections = {
       violations: "Violations",
     },
     ruleViolations: "Rule Violations",
+    materialLines: "Material Lines",
     materialCostEstimates: "Material Cost Estimates",
+    missingExactInputs: "Exact material code or billed amount required",
     table: {
       material: "Material",
       unitPrice: "Unit Price",

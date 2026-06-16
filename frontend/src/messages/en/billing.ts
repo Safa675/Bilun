@@ -284,12 +284,13 @@ const billing = {
     "cappedProcedures": "{count} capped procedures",
     "noRateCaps": "No rate caps applicable",
     "drgEyebrow": "DRG unbundling risk",
-    "potentialSavings": "Potential savings: {amount}",
+    "potentialSavings": "Claim-backed recoverable: {amount}",
+    "recoverableSavings": "Claim-backed recoverable: {amount}",
     "surchargeUnavailable": "Surcharge compliance needs exact billed procedure codes and procedure dates.",
     "copayRateUnavailable": "EK-2C-1 copay rate compliance needs exact billed procedure codes and procedure dates.",
     "drgUnavailable": "DRG unbundling risk needs exact itemized billed procedure lines and package eligibility context.",
-    "drgHeuristicFootnote": "Includes heuristic amounts: package-included claim flags and itemized-vs-package comparison — not audited SGK recovery.",
-    "drgSourcedSavings": "Prose-rule violations (sourced): {amount}"
+    "drgSourcedSavings": "Prose-rule violations (sourced): {amount}",
+    "recoverableFootnote": "Recoverable totals include only claim-backed Kurum ödemesi uplift — not heuristic estimates or clinical-review flags."
   }
 } as const;
 

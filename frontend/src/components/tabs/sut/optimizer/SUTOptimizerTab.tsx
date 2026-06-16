@@ -434,35 +434,106 @@ function CopayExemptionAlerts({
         ) : null}
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-        <KpiCard label={t("optimizer.kpis.totalPatients")} value={fmtNum(summary.n_total_patients)} />
-        <KpiCard
-          label={t("optimizer.kpis.exemptAnyGround")}
-          value={fmtNum(anyGroundExemptCount)}
-          valueColor={theme.accent}
-          sub={t("optimizer.kpis.exemptAnyGroundSub")}
-        />
-        <KpiCard
-          label={t("optimizer.kpis.ek1aExempt")}
-          value={fmtNum(ek1aExemptCount)}
-          valueColor={ACCENT}
-          sub={t("optimizer.kpis.ek1aExemptSub")}
-        />
-        {typeof statusOnlyCount === "number" && (
+      {/* Bill-level KPIs (primary) */}
+      {typeof cohortCopay?.n_total_bills === "number" && (
+        <div className="space-y-2">
+          <Eyebrow as="div" className="text-[var(--gold)]">
+            {t("optimizer.sections.billLevelSummary")}
+          </Eyebrow>
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+            <KpiCard
+              label={t("optimizer.kpis.totalBills")}
+              value={fmtNum(cohortCopay.n_total_bills)}
+            />
+            <KpiCard
+              label={t("optimizer.kpis.exemptBills")}
+              value={fmtNum(cohortCopay.n_exempt_bills ?? 0)}
+              valueColor={theme.accent}
+            />
+            {typeof cohortCopay.n_exempt_ek1a_bills === "number" && (
+              <KpiCard
+                label={t("optimizer.kpis.ek1aExempt")}
+                value={fmtNum(cohortCopay.n_exempt_ek1a_bills)}
+                valueColor={ACCENT}
+                sub={t("optimizer.kpis.ek1aExemptSub")}
+              />
+            )}
+            {typeof cohortCopay.n_exempt_status_only_bills === "number" && (
+              <KpiCard
+                label={t("optimizer.kpis.statusVisitOnly")}
+                value={fmtNum(cohortCopay.n_exempt_status_only_bills)}
+                sub={t("optimizer.kpis.statusVisitOnlySub")}
+              />
+            )}
+            <KpiCard
+              label={t("optimizer.kpis.exemptionRateBills")}
+              value={fmtPct(cohortCopay.exemption_rate_bills ?? 0)}
+              valueColor={ACCENT}
+            />
+            <KpiCard
+              label={t("optimizer.kpis.nonExemptBills")}
+              value={fmtNum(
+                (cohortCopay.n_total_bills ?? 0) - (cohortCopay.n_exempt_bills ?? 0),
+              )}
+              sub={t("optimizer.kpis.nonExemptBillsSub")}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Patient-level KPIs (secondary context) */}
+      <div className="space-y-2">
+        <Eyebrow as="div" className="text-[var(--text-muted)]">
+          {t("optimizer.sections.patientLevelSummary")}
+        </Eyebrow>
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          <KpiCard label={t("optimizer.kpis.totalPatients")} value={fmtNum(summary.n_total_patients)} />
           <KpiCard
-            label={t("optimizer.kpis.statusVisitOnly")}
-            value={fmtNum(statusOnlyCount)}
-            sub={t("optimizer.kpis.statusVisitOnlySub")}
+            label={t("optimizer.kpis.exemptAnyGround")}
+            value={fmtNum(anyGroundExemptCount)}
+            valueColor={theme.accent}
+            sub={t("optimizer.kpis.exemptAnyGroundSub")}
           />
-        )}
-        <KpiCard label={t("optimizer.kpis.exemptionRate")} value={fmtPct(exemptRate)} valueColor={ACCENT} />
-        <KpiCard
-          label={t("optimizer.kpis.nonExempt")}
-          value={fmtNum(summary.n_total_patients - summary.n_exempt_patients)}
-          sub={t("optimizer.kpis.nonExemptSub")}
-        />
+          <KpiCard
+            label={t("optimizer.kpis.ek1aExempt")}
+            value={fmtNum(ek1aExemptCount)}
+            valueColor={ACCENT}
+            sub={t("optimizer.kpis.ek1aExemptSub")}
+          />
+          {typeof statusOnlyCount === "number" && (
+            <KpiCard
+              label={t("optimizer.kpis.statusVisitOnly")}
+              value={fmtNum(statusOnlyCount)}
+              sub={t("optimizer.kpis.statusVisitOnlySub")}
+            />
+          )}
+          <KpiCard label={t("optimizer.kpis.exemptionRate")} value={fmtPct(exemptRate)} valueColor={ACCENT} />
+          <KpiCard
+            label={t("optimizer.kpis.nonExempt")}
+            value={fmtNum(summary.n_total_patients - summary.n_exempt_patients)}
+            sub={t("optimizer.kpis.nonExemptSub")}
+          />
+        </div>
       </div>
+
+      {/* Bill-level reason breakdown */}
+      {cohortCopay?.exemption_by_category_bills && cohortCopay.exemption_by_category_bills.length > 0 && (
+        <Surface variant="soft" padding="md" className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--gold)]">
+            {t("optimizer.sections.exemptionByCategoryBills")}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {cohortCopay.exemption_by_category_bills.map((row) => (
+              <Chip key={row.category} variant="outline" className="text-xs">
+                {formatExemptionCategory(row.category)} ({fmtNum(row.count)})
+              </Chip>
+            ))}
+          </div>
+          <p className="text-xs text-[var(--text-muted)]">
+            {t("optimizer.methodology.billLevelOverlapNote")}
+          </p>
+        </Surface>
+      )}
 
       {cohortCopay?.exemption_by_category && cohortCopay.exemption_by_category.length > 0 && (
         <Surface variant="soft" padding="md" className="space-y-2">
@@ -1451,9 +1522,9 @@ export function DrgUnbundlingInline({ data }: { data: OptimizationSummary }) {
         <MethodologyBadge text={drg.methodology} />
       )}
 
-      {!isUnavailable && drg.has_heuristic_savings && (
+      {!isUnavailable && (drg.n_patients_with_risk ?? 0) > 0 && (drg.total_potential_savings ?? 0) === 0 && (
         <p className="text-xs leading-relaxed rounded-lg px-3 py-2" style={{ background: "rgba(180, 83, 9, 0.08)", color: "#92400E" }}>
-          {t("billing.sutOptimization.drgHeuristicFootnote")}
+          {t("optimizer.methodology.drgAuditFlagsOnly")}
         </p>
       )}
 

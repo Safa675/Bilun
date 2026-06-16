@@ -615,11 +615,6 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
                         {strategySecondaryLabel(item)}
                       </div>
                     )}
-                    {item.package_price_methodology === "chapter_median_heuristic" && (
-                      <div className="mt-1 text-xs" style={{ color: "#71717A" }}>
-                        {t("billing.strategy.packagePriceHeuristic")}
-                      </div>
-                    )}
                   </td>
                   <td>
                     <StatusChip
@@ -1740,7 +1735,9 @@ export function SessionUpliftSection({
                 {fmtTRY2OrUnavailable(item.actual_billed_try ?? null)}
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
-                {fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
+                {item.review_kind === "needs_clinical_review"
+                  ? "—"
+                  : fmtTRY2OrUnavailable(item.recoverable_uplift_try ?? null)}
               </td>
               <td>
                 <BillingRegulatorySourceCell ruleSource={sessionData.rule_source} />
@@ -2086,15 +2083,10 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
             {drgExact ? (
               <>
                 <p className="text-xs text-[var(--text-secondary)]">
-                  {t("billing.sutOptimization.potentialSavings", {
+                  {t("billing.sutOptimization.recoverableSavings", {
                     amount: fmtTRY2OrUnavailable(optimization.drg_unbundling.total_potential_savings),
                   })}
                 </p>
-                {optimization.drg_unbundling.has_heuristic_savings && (
-                  <p className="text-xs leading-relaxed" style={{ color: "#B45309" }}>
-                    {t("billing.sutOptimization.drgHeuristicFootnote")}
-                  </p>
-                )}
                 {(optimization.drg_unbundling.total_sourced_savings ?? 0) > 0 && (
                   <p className="text-xs text-[var(--text-secondary)]">
                     {t("billing.sutOptimization.drgSourcedSavings", {

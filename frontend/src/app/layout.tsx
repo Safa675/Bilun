@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { Fraunces, Inter } from "next/font/google";
 import AppTopBar from "@/components/shell/AppTopBar";
@@ -6,6 +7,15 @@ import ChatDockInsetSync from "@/components/shell/ChatDockInsetSync";
 import SkipToContent from "@/components/shell/SkipToContent";
 import { ConfigProvider } from "@/lib/configContext";
 import { SUT_BRAND } from "@/lib/constants";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/types";
+
+type UserRole = "billing_officer" | "dev";
+
+const ROLE_COOKIE_KEY = "bilun:role";
+
+function parseRole(value: string | undefined): UserRole {
+  return value === "billing_officer" ? "billing_officer" : "dev";
+}
 import { ShellStateProviders } from "@/stores/providers";
 import "./globals.css";
 import "./styles/sut-how-modal.css";
@@ -34,12 +44,22 @@ export const viewport: Viewport = {
   themeColor: "#FFFFFF",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+function parseLocale(value: string | undefined): Locale {
+  return value === "tr" ? "tr" : DEFAULT_LOCALE;
+}
+
+export default async function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const cookieStore = await cookies();
+  const initialLocale = parseLocale(cookieStore.get("bilun:locale")?.value);
+  const initialRole: UserRole = parseRole(cookieStore.get(ROLE_COOKIE_KEY)?.value);
+
   return (
-    <html lang="en" className={`${fontDisplay.variable} ${fontSans.variable}`}>
+    <html lang={initialLocale} className={`${fontDisplay.variable} ${fontSans.variable}`}>
       <body className="antialiased" suppressHydrationWarning>
         <ConfigProvider>
-          <ShellStateProviders>
+          <ShellStateProviders initialLocale={initialLocale} initialRole={initialRole}>
             <SkipToContent />
             <ChatDockInsetSync />
             <Suspense>

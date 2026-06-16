@@ -11,9 +11,10 @@ import {
 } from "react";
 import enMessages from "@/messages/en/index";
 import trMessages from "@/messages/tr/index";
+import { setCookie } from "@/lib/cookies";
 import { setModuleLocale } from "./localeModule";
 import type { Locale, MessageTree } from "./types";
-import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY } from "./types";
+import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, LOCALE_COOKIE_KEY } from "./types";
 
 interface LocaleContextValue {
   locale: Locale;
@@ -65,6 +66,7 @@ export function LocaleProvider({
     setLocaleState(next);
     setModuleLocale(next);
     window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
+    setCookie(LOCALE_COOKIE_KEY, next);
     document.documentElement.lang = next;
   }, []);
 

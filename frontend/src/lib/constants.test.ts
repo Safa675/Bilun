@@ -63,13 +63,9 @@ describe("sut constants", () => {
     ]);
   });
 
-  it("gates rule-database tab behind expert roles", () => {
+  it("gates rule-database tab behind dev only", () => {
     const ruleDb = SUT_HOME_TABS.find((tab) => tab.id === "rule-database");
-    expect(ruleDb?.requiredRole).toEqual([
-      "compliance_engineer",
-      "dev",
-      "admin",
-    ]);
+    expect(ruleDb?.requiredRole).toEqual(["dev"]);
   });
 });
 

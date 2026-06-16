@@ -61,6 +61,9 @@ const optimizer = {
   sections: {
     patientAlerts: "Patient Alerts",
     exemptionByCategory: "Exemption by category",
+    exemptionByCategoryBills: "Exemption reasons (bill-level)",
+    billLevelSummary: "Bill-level summary",
+    patientLevelSummary: "Patient-level summary",
     savingsByCategory: "Savings by Category",
     priorityDistribution: "Priority Distribution",
     topPatientsDefault: "Top-10 Highest-Impact Patients",
@@ -80,6 +83,8 @@ const optimizer = {
       "Composable copay waiver: EK-1A ({ek1aCount} chronic ranges) plus visit-type and patient-status rules when claim profiles are present. The EK-2C-1 copay rate list (§2.2) is evaluated separately.",
     copayEk1aOnly:
       "Cross-references patient ICD-10 diagnoses against {ek1aCount} chronic disease exemption ranges from gazette annex EK-1A. Rebuild the analytics cache to load status and visit-type exemption fields.",
+    billLevelOverlapNote:
+      "A single bill can satisfy multiple exemption grounds, so category totals may exceed the number of exempt bills. Chronic-disease exemption is a patient property, so it applies to every bill of an affected patient.",
     surchargeExact:
       "Uses exact dated procedure claim lines and explicit surcharge rule flags from the active SUT runtime inputs.",
     copayRateExact:
@@ -94,6 +99,8 @@ const optimizer = {
       "Partial-exact recovery review: exact category-level savings are shown while incomplete billing sections remain explicit required-input gaps.",
     revenueFooterMixed:
       "Mixed exactness detected: recovery review totals stay unavailable until every billing section is exact.",
+    drgAuditFlagsOnly:
+      "Audit flags detected (e.g. package-included lines) with no claim-backed recoverable amount in this cohort slice.",
   },
   unavailable: {
     badge: "Unavailable",
@@ -109,6 +116,7 @@ const optimizer = {
   },
   kpis: {
     totalPatients: "Total Patients",
+    totalBills: "Total Bills",
     exemptAnyGround: "Exempt (any ground)",
     exemptAnyGroundSub: "EK-1A, acil, status, or occupational",
     ek1aExempt: "EK-1A exempt",
@@ -116,6 +124,10 @@ const optimizer = {
     statusVisitOnly: "Status / visit only",
     statusVisitOnlySub: "No EK-1A diagnosis",
     exemptionRate: "Exemption Rate",
+    exemptBills: "Exempt Bills",
+    nonExemptBills: "Non-Exempt Bills",
+    nonExemptBillsSub: "Standard copay applies",
+    exemptionRateBills: "Exemption Rate (bills)",
     nonExempt: "Non-Exempt",
     nonExemptSub: "Standard copay applies",
     unavailablePatients: "Unavailable Patients",
@@ -155,9 +167,9 @@ const optimizer = {
     checkedOnExactClaimLines: "Checked on exact claim lines",
     patientsWithRisk: "Patients With Risk",
     exactUnbundlingFindings: "Exact unbundling findings",
-    potentialSavings: "Potential Savings",
+    potentialSavings: "Claim-backed savings",
     amountsResumeAfterInputs: "Amounts resume after exact inputs land",
-    fromExactClaimLineAnalysis: "From exact claim-line analysis",
+    fromExactClaimLineAnalysis: "Sourced from exact claim-line prose violations only",
     riskyChapters: "Risky Chapters",
     requiresDatedPackageContext: "Requires dated package context",
     icd10ChaptersWithRepeatedRisk: "ICD-10 chapters with repeated risk",

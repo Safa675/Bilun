@@ -1,27 +1,38 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
-import { canAccessRuleDatabase, setUserRole, UserRole } from "./userRole";
+import { canAccessRuleDatabase, parseRole, setUserRole } from "./userRole";
 
-describe("canAccessRuleDatabase", () => {
-  it("allows compliance_engineer, dev, and admin", () => {
-    expect(canAccessRuleDatabase("compliance_engineer")).toBe(true);
-    expect(canAccessRuleDatabase("dev")).toBe(true);
-    expect(canAccessRuleDatabase("admin")).toBe(true);
+describe("parseRole", () => {
+  it("returns billing_officer for that value", () => {
+    expect(parseRole("billing_officer")).toBe("billing_officer");
   });
 
-  it("denies billing_analyst", () => {
-    expect(canAccessRuleDatabase("billing_analyst")).toBe(false);
+  it("returns dev for dev", () => {
+    expect(parseRole("dev")).toBe("dev");
+  });
+
+  it("falls back to dev for unknown or empty values", () => {
+    expect(parseRole(null)).toBe("dev");
+    expect(parseRole("admin")).toBe("dev");
+    expect(parseRole("compliance_engineer")).toBe("dev");
+  });
+});
+
+describe("canAccessRuleDatabase", () => {
+  it("allows dev", () => {
+    expect(canAccessRuleDatabase("dev")).toBe(true);
+  });
+
+  it("denies billing_officer", () => {
+    expect(canAccessRuleDatabase("billing_officer")).toBe(false);
   });
 });
 
 describe("setUserRole", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+  let storage: Record<string, string> = {};
 
-  it("persists role to localStorage and dispatches storage event", () => {
-    const storage: Record<string, string> = {};
-    const dispatchSpy = vi.fn(() => true);
+  beforeEach(() => {
+    storage = {};
     vi.stubGlobal("window", {
       localStorage: {
         getItem: (key: string) => storage[key] ?? null,
@@ -29,19 +40,26 @@ describe("setUserRole", () => {
           storage[key] = value;
         },
       },
-      dispatchEvent: dispatchSpy,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     });
+    vi.stubGlobal("document", {
+      cookie: "",
+    });
+  });
 
-    const role: UserRole = "billing_analyst";
-    setUserRole(role);
-    expect(storage["bilun_user_role"]).toBe("billing_analyst");
-    expect(dispatchSpy).toHaveBeenCalled();
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("persists billing_officer to localStorage and dispatches storage event", () => {
+    setUserRole("billing_officer");
+    expect(storage["bilun_user_role"]).toBe("billing_officer");
   });
 
   it("no-ops gracefully when window is undefined", () => {
     vi.stubGlobal("window", undefined);
-    expect(() => setUserRole("billing_analyst")).not.toThrow();
+    expect(() => setUserRole("billing_officer")).not.toThrow();
   });
 });

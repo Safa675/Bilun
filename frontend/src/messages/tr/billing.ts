@@ -284,12 +284,13 @@ const billing = {
     "cappedProcedures": "{count} tavanlı işlem",
     "noRateCaps": "Oran tavanı uygulanmıyor",
     "drgEyebrow": "DRG ayrıştırma riski",
-    "potentialSavings": "Potansiyel tasarruf: {amount}",
+    "potentialSavings": "Talep destekli kurtarılabilir: {amount}",
+    "recoverableSavings": "Talep destekli kurtarılabilir: {amount}",
     "surchargeUnavailable": "Fark ücreti uyumu kesin faturalandırılmış işlem kodları ve tarihleri gerektirir.",
     "copayRateUnavailable": "EK-2C-1 katılım payı oranı uyumu kesin faturalandırılmış işlem kodları ve tarihleri gerektirir.",
     "drgUnavailable": "DRG ayrıştırma riski kesin kalemlendirilmiş işlem satırları ve paket uygunluk bağlamı gerektirir.",
-    "drgHeuristicFootnote": "Sezgisel tutarlar içerir: pakete dahil talep bayrakları ve kalem-paket karşılaştırması — denetlenmiş SGK tahsili değildir.",
-    "drgSourcedSavings": "Metin kuralı ihlalleri (kaynaklı): {amount}"
+    "drgSourcedSavings": "Metin kuralı ihlalleri (kaynaklı): {amount}",
+    "recoverableFootnote": "Kurtarılabilir toplamlar yalnızca talep destekli Kurum ödemesi artışını içerir — sezgisel tahminler veya klinik inceleme bayrakları değil."
   }
 } as const;
 

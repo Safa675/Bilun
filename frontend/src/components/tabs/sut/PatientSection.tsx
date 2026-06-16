@@ -350,9 +350,11 @@ export function DRGPanel({ data }: { data: DRGSummaryData }) {
         <thead>
           <tr>
             <th>{t("patient.section.drgPanel.table.index")}</th>
+            <th>{t("patient.section.drgPanel.table.claimId")}</th>
             <th>{t("patient.section.drgPanel.table.icd10")}</th>
             <th>{t("patient.section.drgPanel.table.description")}</th>
             <th className="text-center">{t("patient.section.drgPanel.table.group")}</th>
+            <th>{t("patient.section.drgPanel.table.packageCode")}</th>
             <th className="num-col">{t("patient.section.drgPanel.table.los")}</th>
             <th className="num-col">{t("patient.section.drgPanel.table.lab")}</th>
             <th className="num-col">{t("patient.section.drgPanel.table.visit")}</th>
@@ -363,16 +365,18 @@ export function DRGPanel({ data }: { data: DRGSummaryData }) {
           </tr>
         </thead>
         <tbody>
-          {data.episodes.map((ep) => {
+          {data.episodes.map((ep, idx) => {
             const episodeExact = isExactOutput(ep);
             return (
               <tr key={ep.episode_id}>
-                <td className="text-[var(--text-muted)]">{fmtNum(ep.episode_id + 1)}</td>
+                <td className="text-[var(--text-muted)]">{fmtNum(idx + 1)}</td>
+                <td className="font-mono text-[var(--text-muted)]">{ep.claim_id ?? "—"}</td>
                 <td className="font-mono tabular-nums">{ep.primary_icd10}</td>
                 <td>{ep.description}</td>
                 <td className="text-center">
                   <DrgEk2cGroupCell group={ep.ek2c_group} emDash={t("common.dash")} />
                 </td>
+                <td className="font-mono tabular-nums">{ep.package_code ?? "—"}</td>
                 <td className="num-col">{fmtNum(ep.los_days)}</td>
                 <td className="num-col">{fmtTRY(ep.lab_cost)}</td>
                 <td className="num-col">{fmtTRY(ep.visit_cost)}</td>

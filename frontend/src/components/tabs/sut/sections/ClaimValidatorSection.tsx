@@ -10,7 +10,7 @@ import type {
   SutProcedureInfo,
   SutProcedureEntry,
   SutViolation,
-  SutMaterialEstimate,
+  SutMaterialLine,
 } from "@/lib/api/sut";
 import {
   ACCENT_LOCAL,
@@ -271,9 +271,9 @@ function ValidationResultPanel({ result, t }: { result: SutValidationResult; t: 
         </Surface>
       )}
 
-      {result.material_estimates.length > 0 && (
+      {result.material_lines.length > 0 && (
         <Surface variant="base" padding="lg">
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>{t("sections.claimValidator.materialCostEstimates")}</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: ACCENT_LOCAL }}>{t("sections.claimValidator.materialLines")}</h3>
           <DataTable>
               <thead>
                 <tr>
@@ -287,8 +287,8 @@ function ValidationResultPanel({ result, t }: { result: SutValidationResult; t: 
                 </tr>
               </thead>
               <tbody>
-                {result.material_estimates.map((m, i) => (
-                  <MaterialEstimateRow key={i} estimate={m} t={t} />
+                {result.material_lines.map((line, i) => (
+                  <MaterialLineRow key={i} line={line} t={t} />
                 ))}
               </tbody>
           </DataTable>
@@ -327,21 +327,24 @@ function ViolationRow({ violation, t }: { violation: SutViolation; t: ReturnType
   );
 }
 
-function MaterialEstimateRow({ estimate, t }: { estimate: SutMaterialEstimate; t: ReturnType<typeof useT> }) {
+function MaterialLineRow({ line, t }: { line: SutMaterialLine; t: ReturnType<typeof useT> }) {
   return (
     <tr>
       <td className="text-left">
-        <div className="text-sm font-medium" style={{ color: "#1A1A1A" }}>{estimate.material_name}</div>
-        {estimate.material_code && <div className="text-xs" style={{ color: "#A1A1AA" }}>{estimate.material_code}</div>}
+        <div className="text-sm font-medium" style={{ color: "#1A1A1A" }}>{line.material_name}</div>
+        {line.material_code && <div className="text-xs" style={{ color: "#A1A1AA" }}>{line.material_code}</div>}
       </td>
-      <td className="text-right text-sm" style={{ color: "#71717A" }}>{fmtTRY2(estimate.unit_price)}</td>
-      <td className="text-right text-sm" style={{ color: "#71717A" }}>{estimate.quantity}</td>
-      <td className="text-right text-sm font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(estimate.total_price)}</td>
-      <td className="text-center"><StatusPill ok={estimate.is_reimbursable} yesLabel={t("sections.claimValidator.yes")} noLabel={t("sections.claimValidator.no")} /></td>
-      <td className="text-center"><StatusPill ok={!estimate.is_bundled} yesLabel={t("sections.claimValidator.no")} noLabel={t("sections.claimValidator.bundledStatus")} invertColor /></td>
+      <td className="text-right text-sm" style={{ color: "#71717A" }}>{fmtTRY2(line.unit_price)}</td>
+      <td className="text-right text-sm" style={{ color: "#71717A" }}>{line.quantity}</td>
+      <td className="text-right text-sm font-semibold" style={{ color: "#1A1A1A" }}>{fmtTRY2(line.total_price)}</td>
+      <td className="text-center"><StatusPill ok={line.is_reimbursable} yesLabel={t("sections.claimValidator.yes")} noLabel={t("sections.claimValidator.no")} /></td>
+      <td className="text-center"><StatusPill ok={!line.is_bundled} yesLabel={t("sections.claimValidator.no")} noLabel={t("sections.claimValidator.bundledStatus")} invertColor /></td>
       <td className="text-left text-xs" style={{ color: "#A1A1AA" }}>
-        {estimate.source}
-        {estimate.notes && <span className="block text-xs italic">{estimate.notes}</span>}
+        {line.source}
+        {line.exactness_status === "missing_exact_inputs" && (
+          <span className="block text-xs italic">{t("sections.claimValidator.missingExactInputs")}</span>
+        )}
+        {line.notes && <span className="block text-xs italic">{line.notes}</span>}
       </td>
     </tr>
   );
