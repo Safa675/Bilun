@@ -45,7 +45,6 @@ def detect_drg_unbundling(
     chapter_analysis: list[dict[str, Any]] = []
     total_potential_savings = 0.0
     total_sourced_savings = 0.0
-    total_heuristic_savings = 0.0
     has_risk = False
     payment_method_violations = 0
     session_violations = 0
@@ -68,9 +67,8 @@ def detect_drg_unbundling(
             continue
 
         has_risk = True
-        total_potential_savings += finding.potential_savings_try
+        total_potential_savings += finding.sourced_savings_try
         total_sourced_savings += finding.sourced_savings_try
-        total_heuristic_savings += finding.heuristic_savings_try
         bundled_violations += len(finding.bundled_violations)
         payment_method_violations += len(finding.payment_method_violations)
         session_violations += len(finding.session_violations)
@@ -92,8 +90,6 @@ def detect_drg_unbundling(
             "patient_icd10_chapters": sorted(patient_chapters),
             "total_potential_savings": 0.0,
             "total_sourced_savings": 0.0,
-            "total_heuristic_savings": 0.0,
-            "has_heuristic_savings": False,
             "chapter_analysis": [],
             "payment_method_violations": 0,
             "session_violations": 0,
@@ -112,8 +108,6 @@ def detect_drg_unbundling(
         "patient_icd10_chapters": sorted(patient_chapters),
         "total_potential_savings": round(total_potential_savings, 2),
         "total_sourced_savings": round(total_sourced_savings, 2),
-        "total_heuristic_savings": round(total_heuristic_savings, 2),
-        "has_heuristic_savings": total_heuristic_savings > 0,
         "chapter_analysis": chapter_analysis,
         "payment_method_violations": payment_method_violations,
         "session_violations": session_violations,

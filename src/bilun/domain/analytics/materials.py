@@ -1,6 +1,5 @@
 """
-src/bilun/domain/analytics/materials.py
-Material cost estimation.
+Claim-line material pricing for validation and analytics surfaces.
 """
 
 from __future__ import annotations
@@ -8,12 +7,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from ..utils import turkish_lower, fuzzy_match_name
+from src.bilun.domain.billing.types import (
+    EXACTNESS_STATUS_EXACT,
+    EXACTNESS_STATUS_MISSING_INPUTS,
+)
 
 
 @dataclass
-class MaterialCostEstimate:
-    """Cost estimate for a single material item against SUT rules."""
+class MaterialLinePricing:
+    """Exact or unavailable pricing for a single billed material line."""
 
     material_code: str = ""
     material_name: str = ""
@@ -23,59 +25,35 @@ class MaterialCostEstimate:
     is_reimbursable: bool = True
     is_bundled: bool = False
     source: str = ""
+    exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
     notes: str = ""
 
 
-def estimate_material_costs(
-    materials: list[dict[str, Any]],
-) -> list[MaterialCostEstimate]:
-    """Estimate costs for a list of material items using SUT rules."""
-    from ..materials import (
-        get_all_specialty_materials,
-        is_consumable_bundled,
-        is_material_reimbursable,
+def price_material_lines(materials: list[dict[str, Any]]) -> list[MaterialLinePricing]:
+    """Price material lines from billed amounts or exact EK-3 code lookup.
+
+    No fuzzy name matching. Lines without a SUT material code are marked
+    ``missing_exact_inputs`` and excluded from exact totals.
+    """
+    from src.bilun.domain.materials import is_consumable_bundled, is_material_reimbursable
+    from src.bilun.domain.materials.catalog_lookup import (
+        lookup_ek3_list_price_try,
+        resolve_material_name_by_code,
     )
 
-    ek3_price_index: dict[str, tuple[float, str]] = {}
-    for mat in get_all_specialty_materials():
-        mat_name = (mat.get("name") or mat.get("material_name") or "").strip()
-        mat_name_lower = turkish_lower(mat_name) if mat_name else ""
-        price = mat.get("price_try", 0.0)
-        if mat_name_lower and price and price > 0:
-            ek3_price_index[mat_name_lower] = (price, mat.get("source", "ek3"))
-
-    results: list[MaterialCostEstimate] = []
+    results: list[MaterialLinePricing] = []
 
     for item in materials:
         name = str(item.get("name", "")).strip()
-        code = str(item.get("code", "")).strip()
-        qty = int(item.get("quantity", 1))
-        hospital_price = float(item.get("unit_price", 0.0))
+        code = str(item.get("code", "")).strip().upper()
+        qty = max(1, int(item.get("quantity", 1) or 1))
+        billed_unit = round(float(item.get("unit_price", 0) or 0), 2)
+        billed_total = round(float(item.get("billed_amount", 0) or 0), 2)
+        if billed_total <= 0 and billed_unit > 0:
+            billed_total = round(billed_unit * qty, 2)
 
         reimbursable = is_material_reimbursable(name)
         bundled = is_consumable_bundled(name)
-
-        unit_price = hospital_price
-        source = "hospital"
-        name_lower = turkish_lower(name)
-        if name_lower in ek3_price_index:
-            unit_price, source = ek3_price_index[name_lower]
-        else:
-            for idx_name, (idx_price, idx_src) in ek3_price_index.items():
-                if name_lower in idx_name or idx_name in name_lower:
-                    unit_price = idx_price
-                    source = idx_src
-                    break
-            else:
-                fuzzy = fuzzy_match_name(name_lower, list(ek3_price_index.items()), threshold=0.80)
-                if fuzzy:
-                    unit_price, source = fuzzy[1]
-
-        if unit_price <= 0:
-            unit_price = hospital_price
-            source = "hospital" if hospital_price > 0 else "catalog_miss"
-
-        total = round(unit_price * qty, 2)
 
         notes_parts: list[str] = []
         if not reimbursable:
@@ -83,17 +61,56 @@ def estimate_material_costs(
         if bundled:
             notes_parts.append("bundled into procedure price (EK-3B-1)")
 
+        if not code:
+            notes_parts.append("material code required for exact EK-3 pricing")
+            results.append(
+                MaterialLinePricing(
+                    material_code="",
+                    material_name=name,
+                    unit_price=billed_unit,
+                    quantity=qty,
+                    total_price=billed_total,
+                    is_reimbursable=reimbursable,
+                    is_bundled=bundled,
+                    source="missing_code",
+                    exactness_status=EXACTNESS_STATUS_MISSING_INPUTS,
+                    notes="; ".join(notes_parts),
+                )
+            )
+            continue
+
+        canonical_name = resolve_material_name_by_code(code) or name
+        catalog_unit = lookup_ek3_list_price_try(code)
+
+        if billed_unit > 0:
+            unit_price = billed_unit
+            total_price = billed_total
+            source = "billed_amount"
+            exactness = EXACTNESS_STATUS_EXACT
+        elif catalog_unit is not None:
+            unit_price = round(float(catalog_unit), 2)
+            total_price = round(unit_price * qty, 2)
+            source = "ek3_code"
+            exactness = EXACTNESS_STATUS_EXACT
+        else:
+            unit_price = 0.0
+            total_price = 0.0
+            source = "ek3_catalog_miss"
+            exactness = EXACTNESS_STATUS_MISSING_INPUTS
+            notes_parts.append(f"no EK-3 list price for code {code}")
+
         results.append(
-            MaterialCostEstimate(
+            MaterialLinePricing(
                 material_code=code,
-                material_name=name,
-                unit_price=round(unit_price, 2),
+                material_name=canonical_name,
+                unit_price=unit_price,
                 quantity=qty,
-                total_price=total,
+                total_price=total_price,
                 is_reimbursable=reimbursable,
                 is_bundled=bundled,
                 source=source,
-                notes="; ".join(notes_parts) if notes_parts else "",
+                exactness_status=exactness,
+                notes="; ".join(notes_parts),
             )
         )
 

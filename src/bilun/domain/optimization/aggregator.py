@@ -16,7 +16,11 @@ from src.bilun.domain.claims.patient_context import build_cohort_claim_context
 from src.bilun.domain.claims.loader import SUTClaimDataset
 
 from .shared import _extract_diagnoses_bulk_pl, _extract_patient_icd10_chapters
-from .copay_exemption_context import build_copay_inputs_by_patient
+from .copay_exemption_context import (
+    build_copay_exemption_input,
+    build_copay_inputs_by_patient,
+)
+from .copay_exemption_types import CopayExemptionInput
 from .copay_exemption_rules.ek1a import _get_ek1a_by_letter
 from .copay_exemptions import evaluate_copay_exemption
 from .temporal import audit_temporal_prices
@@ -214,6 +218,95 @@ def _aggregate_drug_discount_validation(
     )
 
 
+def _aggregate_copay_exemptions_by_bill(
+    patient_ids: list[str],
+    copay_inputs: dict[str, CopayExemptionInput],
+    claim_dataset: SUTClaimDataset | None,
+) -> dict[str, Any] | None:
+    """Return bill-scoped copay exemption counts when claim data is available."""
+    if claim_dataset is None:
+        return None
+
+    claims_by_patient = getattr(claim_dataset, "claims_by_patient", {}) or {}
+    procedure_lines_by_patient = (
+        getattr(claim_dataset, "procedure_lines_by_patient", {}) or {}
+    )
+
+    n_total_bills = 0
+    n_exempt_bills = 0
+    n_exempt_ek1a = 0
+    n_exempt_status_only = 0
+    n_exempt_both = 0
+    category_counts: Counter[str] = Counter()
+
+    for pid in patient_ids:
+        patient_input = copay_inputs.get(pid)
+        if patient_input is None:
+            continue
+        claims = claims_by_patient.get(pid, ())
+        if not claims:
+            continue
+
+        codes_by_claim: dict[str, list[str]] = {}
+        for line in procedure_lines_by_patient.get(pid, ()):
+            cid = getattr(line, "claim_id", None)
+            if not cid:
+                continue
+            code = str(getattr(line, "procedure_code", "") or "").strip()
+            if code:
+                codes_by_claim.setdefault(cid, []).append(code)
+
+        for claim in claims:
+            cid = getattr(claim, "claim_id", None)
+            if not cid:
+                continue
+            n_total_bills += 1
+            bill_input = build_copay_exemption_input(
+                diagnoses=list(patient_input.diagnoses),
+                patient_profile=patient_input.patient_profile,
+                patient_claims=(claim,),
+                claim_procedure_codes=tuple(codes_by_claim.get(cid, [])),
+                age_at_latest_claim=None,
+                has_chronic_health_report=patient_input.has_chronic_health_report,
+            )
+            result = evaluate_copay_exemption(bill_input)
+            if not result.get("exempt"):
+                continue
+            n_exempt_bills += 1
+            categories = {
+                str(source.get("category") or "")
+                for source in result.get("exemption_sources", [])
+            }
+            has_ek1a = "ek1a_chronic" in categories
+            has_status = bool(categories - {"ek1a_chronic"})
+            if has_ek1a:
+                n_exempt_ek1a += 1
+            if has_status and not has_ek1a:
+                n_exempt_status_only += 1
+            if has_ek1a and has_status:
+                n_exempt_both += 1
+            for source in result.get("exemption_sources", []):
+                category_counts[str(source.get("category") or "unknown")] += 1
+
+    if n_total_bills == 0:
+        return None
+
+    return {
+        "n_total_bills": n_total_bills,
+        "n_exempt_bills": n_exempt_bills,
+        "n_exempt_ek1a_bills": n_exempt_ek1a,
+        "n_exempt_status_only_bills": n_exempt_status_only,
+        "n_exempt_ek1a_and_status_bills": n_exempt_both,
+        "exemption_rate_bills": (
+            round(n_exempt_bills / n_total_bills, 4) if n_total_bills else 0.0
+        ),
+        "exemption_by_category_bills": [
+            {"category": category, "count": count}
+            for category, count in category_counts.most_common()
+        ],
+    }
+
+
 def compute_optimization_summary(
     ana_df: pl.DataFrame,
     patient_ids: list[str],
@@ -290,6 +383,9 @@ def compute_optimization_summary(
     ]
 
     temporal = audit_temporal_prices()
+    bill_level = _aggregate_copay_exemptions_by_bill(
+        patient_ids, copay_inputs, claim_dataset
+    )
     elapsed = time.perf_counter() - t0
     logger.info(
         "Optimization summary computed in %.1fs (single pass, %d patients)",
@@ -297,28 +393,32 @@ def compute_optimization_summary(
         n_total,
     )
 
+    copay_exemptions: dict[str, Any] = {
+        "n_exempt_patients": n_exempt,
+        "n_exempt_ek1a_patients": n_exempt_ek1a,
+        "n_exempt_status_only_patients": n_exempt_status_only,
+        "n_exempt_ek1a_and_status_patients": n_exempt_both,
+        "n_total_patients": n_total,
+        "exemption_rate": round(n_exempt / n_total, 4) if n_total else 0.0,
+        "exemption_by_category": [
+            {"category": category, "count": count}
+            for category, count in category_counts.most_common()
+        ],
+        "top_diseases": top_diseases,
+        "methodology": (
+            "Composable copay exemption: EK-1A chronic ICD-10 ranges plus "
+            "status/visit rules when patient profiles and claim visit types "
+            "are available. EK-2C-1 copay rate ceilings are evaluated separately."
+        ),
+        "rule_source": (
+            "EK-1A, visit type (acil/koruyucu), SGK status, occupational context"
+        ),
+    }
+    if bill_level is not None:
+        copay_exemptions.update(bill_level)
+
     return {
-        "copay_exemptions": {
-            "n_exempt_patients": n_exempt,
-            "n_exempt_ek1a_patients": n_exempt_ek1a,
-            "n_exempt_status_only_patients": n_exempt_status_only,
-            "n_exempt_ek1a_and_status_patients": n_exempt_both,
-            "n_total_patients": n_total,
-            "exemption_rate": round(n_exempt / n_total, 4) if n_total else 0.0,
-            "exemption_by_category": [
-                {"category": category, "count": count}
-                for category, count in category_counts.most_common()
-            ],
-            "top_diseases": top_diseases,
-            "methodology": (
-                "Composable copay exemption: EK-1A chronic ICD-10 ranges plus "
-                "status/visit rules when patient profiles and claim visit types "
-                "are available. EK-2C-1 copay rate ceilings are evaluated separately."
-            ),
-            "rule_source": (
-                "EK-1A, visit type (acil/koruyucu), SGK status, occupational context"
-            ),
-        },
+        "copay_exemptions": copay_exemptions,
         "surcharge_exposure": _aggregate_surcharge_exposure(patient_ids, claim_dataset),
         "copay_rate_exposure": _aggregate_copay_rate_exposure(patient_ids, claim_dataset),
         "temporal_price_validation": temporal,

@@ -1,26 +1,24 @@
 """
 src/bilun/domain/analytics/drg.py
-DRG episode cost modeling.
+Claim-exact DRG episode cost modeling.
+
+This module no longer uses ICD-chapter median heuristics or default LOS
+estimates. Episodes are built from inpatient ClaimHeader rows; LOS comes
+from real admission/discharge dates; package prices come from billed
+paket lines or the dated EK-2C catalog entry for the billed code.
 """
 
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import Decimal
 
-import numpy as np
-import polars as pl
-
-from ..constants import (
-    _DEFAULT_ICU_LOS,
-    _DEFAULT_INPATIENT_LOS,
-    _ICD10_CHAPTER_DESC,
-    _ICD10_CHAPTER_TO_EK2C_GROUP,
-)
 from ..claims import PatientSUTClaimTotals, SUTClaimDataset
-from ..pricing import get_drg_package_price_for_date
-from .shared import _select_patient_rows
+from ..constants import _ICD10_CHAPTER_DESC, _ICD10_CHAPTER_TO_EK2C_GROUP
+from ..pricing.temporal import get_ek2c_price_for_date
+from ..prose_rules.catalog_membership import get_ek2c_entry
 
 logger = logging.getLogger("ilay.sut_pricing")
 
@@ -36,75 +34,12 @@ DRG_COST_UNAVAILABLE_REASON = (
 )
 
 
-def _normalize_diag_codes(patient_data: pl.DataFrame) -> pl.Series:
-    if "TANIKODU" not in patient_data.columns:
-        return pl.Series("diag_code", ["R69"] * patient_data.height)
-    return (
-        patient_data["TANIKODU"]
-        .cast(pl.Utf8)
-        .fill_null("")
-        .str.strip_chars()
-        .replace("", "R69")
-        .replace("nan", "R69")
-    )
-
-
-def _classify_visit_types_vectorized(patient_data: pl.DataFrame) -> pl.Series:
-    n_rows = patient_data.height
-    if n_rows == 0:
-        return pl.Series("visit_type", [], dtype=pl.Utf8)
-
-    has_gelis = "GELIS_TIPI" in patient_data.columns
-    has_servis = "SERVISADI" in patient_data.columns
-
-    if has_gelis:
-        gt = pl.col("GELIS_TIPI").cast(pl.Utf8).fill_null("").str.strip_chars().str.to_lowercase()
-        visit_type_expr = (
-            pl.when(gt.str.contains("yatış"))
-            .then(pl.lit("inpatient_day"))
-            .when(gt.str.contains("yoğun bakım"))
-            .then(pl.lit("icu_day"))
-            .when(gt.str.contains("acil"))
-            .then(pl.lit("emergency"))
-            .when(gt.str.contains("kontrol"))
-            .then(pl.lit("follow_up"))
-            .when(gt.str.len_chars() > 0)
-            .then(pl.lit("outpatient"))
-            .otherwise(pl.lit("__servis_fallback__"))
-        )
-    else:
-        visit_type_expr = pl.lit("__servis_fallback__")
-
-    patient_data = patient_data.with_columns(visit_type_expr.alias("visit_type"))
-
-    if has_servis:
-        sv = pl.col("SERVISADI").cast(pl.Utf8).fill_null("").str.strip_chars().str.to_lowercase()
-        patient_data = patient_data.with_columns(
-            pl.when(pl.col("visit_type") != "__servis_fallback__")
-            .then(pl.col("visit_type"))
-            .when(sv.str.contains("yoğun bakım"))
-            .then(pl.lit("icu_day"))
-            .when(sv.str.contains("acil"))
-            .then(pl.lit("emergency"))
-            .otherwise(pl.lit("outpatient"))
-            .alias("visit_type")
-        )
-    else:
-        patient_data = patient_data.with_columns(
-            pl.when(pl.col("visit_type") == "__servis_fallback__")
-            .then(pl.lit("outpatient"))
-            .otherwise(pl.col("visit_type"))
-            .alias("visit_type")
-        )
-
-    return patient_data["visit_type"]
-
-
 @dataclass
 class DRGEpisode:
-    """A single DRG care episode."""
+    """A single DRG care episode, now aligned to one inpatient claim."""
 
-    episode_id: int
+    episode_id: str
+    claim_id: str
     primary_icd10: str
     primary_icd10_chapter: str
     description: str
@@ -115,10 +50,11 @@ class DRGEpisode:
     procedure_cost: float
     total_cost: float
     drg_package_price: float | None = None
+    package_code: str | None = None
     ek2c_group: str = ""
     admission_date: str | None = None
     discharge_date: str | None = None
-    pricing_status: str = "unknown_date"
+    pricing_status: str = "missing_exact_inputs"
     pricing_date: str | None = None
     unavailable_reason: str | None = None
     required_inputs_missing: list[str] = field(default_factory=list)
@@ -163,14 +99,6 @@ def _empty_drg_summary(patient_id: str) -> DRGSummary:
     )
 
 
-def _ordered_unique(values: list[str] | tuple[str, ...]) -> list[str]:
-    ordered: list[str] = []
-    for value in values:
-        if value and value not in ordered:
-            ordered.append(value)
-    return ordered
-
-
 def _money_to_float(value: object) -> float:
     if isinstance(value, Decimal):
         return float(value)
@@ -192,236 +120,227 @@ def _is_exact_patient_totals(
     )
 
 
-def _claim_dataset_costs_by_diag(
-    patient_id: str,
-    claim_dataset: SUTClaimDataset | None,
-) -> dict[str, dict[str, float]] | None:
-    if claim_dataset is None:
+def _icd10_chapter(icd10_code: str) -> str:
+    code = (icd10_code or "R69").strip().upper()
+    if not code or code == "NAN":
+        code = "R69"
+    return code[0]
+
+
+def _chapter_description(chapter: str) -> str:
+    return _ICD10_CHAPTER_DESC.get(chapter, "Other")
+
+
+def _format_date(value: date | None) -> str | None:
+    if value is None:
         return None
+    return value.isoformat()
 
-    costs: dict[str, dict[str, float]] = {}
-    for claim in claim_dataset.claims_by_patient.get(patient_id, ()):
-        diag = claim.primary_icd10 or "R69"
-        bucket = costs.setdefault(
-            diag,
-            {"lab": 0.0, "visit": 0.0, "rx": 0.0, "procedure": 0.0, "total": 0.0},
-        )
-        procedures, materials, drugs = claim_dataset.claim_lines(claim.claim_id)
-        for line in procedures:
-            amount = _money_to_float(line.billed_amount_try)
-            category = (line.procedure_category or "").lower()
-            if line.lab_billing_status or "lab" in category:
-                bucket["lab"] += amount
-            elif "visit" in category or "muayene" in category:
-                bucket["visit"] += amount
-            else:
-                bucket["procedure"] += amount
-            bucket["total"] += amount
-        for line in materials:
-            amount = _money_to_float(line.billed_amount_try)
+
+def _claim_costs(
+    claim_id: str,
+    claim_dataset: SUTClaimDataset,
+) -> dict[str, float]:
+    bucket = {"lab": 0.0, "visit": 0.0, "rx": 0.0, "procedure": 0.0, "total": 0.0}
+    procedures, materials, drugs = claim_dataset.claim_lines(claim_id)
+    for line in procedures:
+        amount = _money_to_float(line.billed_amount_try)
+        category = (line.procedure_category or "").lower()
+        if line.lab_billing_status or "lab" in category:
+            bucket["lab"] += amount
+        elif "visit" in category or "muayene" in category:
+            bucket["visit"] += amount
+        else:
             bucket["procedure"] += amount
-            bucket["total"] += amount
-        for line in drugs:
-            amount = _money_to_float(line.billed_amount_try)
-            bucket["rx"] += amount
-            bucket["total"] += amount
+        bucket["total"] += amount
+    for line in materials:
+        amount = _money_to_float(line.billed_amount_try)
+        bucket["procedure"] += amount
+        bucket["total"] += amount
+    for line in drugs:
+        amount = _money_to_float(line.billed_amount_try)
+        bucket["rx"] += amount
+        bucket["total"] += amount
+    return bucket
 
-    return costs if costs else None
 
+def _resolve_package_pricing(
+    claim_id: str,
+    admission_date: date | None,
+    claim_dataset: SUTClaimDataset,
+) -> tuple[float | None, str | None, str, list[str]]:
+    """Return (price, package_code, status, missing_inputs) for a claim.
 
-def _resolve_episode_pricing(
-    *,
-    chapter: str,
-    diag_code: str,
-    admission_date: str | None,
-) -> tuple[float | None, str, str | None, list[str]]:
-    if not admission_date:
+    Price priority:
+      1. Sum of expected_payable_try on billed paket lines.
+      2. EK-2C catalog price for the billed package code on admission_date.
+      3. Unavailable.
+    """
+    if admission_date is None:
         return (
             None,
-            "unknown_date",
-            "Missing admission date",
-            ["visit_date"],
+            None,
+            "missing_exact_inputs",
+            ["admission_date"],
         )
 
-    drg_package_price = get_drg_package_price_for_date(
-        chapter,
-        admission_date,
-        icd10_code=diag_code,
+    procedures = claim_dataset.procedure_lines_by_claim.get(claim_id, [])
+    package_lines = [line for line in procedures if line.procedure_category == "paket"]
+
+    if package_lines:
+        package_code = package_lines[0].procedure_code
+        payable_total = sum(_money_to_float(line.expected_payable_try) for line in package_lines)
+        if payable_total > 0:
+            return payable_total, package_code, "exact", []
+        # payable is zero / missing → fall back to catalog price for the billed code
+        catalog_price = get_ek2c_price_for_date(package_code, admission_date.isoformat())
+        if catalog_price is not None:
+            return float(catalog_price), package_code, "exact", []
+        return (
+            None,
+            package_code,
+            "missing_exact_inputs",
+            ["ek2c_package_price"],
+        )
+
+    return (
+        None,
+        None,
+        "missing_exact_inputs",
+        ["billed_package_line"],
     )
-    if drg_package_price is None:
-        return (
-            None,
-            "unknown_date",
-            f"No exact historical DRG price available for admission date {admission_date}",
-            [],
-        )
 
-    drg_package_price = round(float(drg_package_price), 2)
-    return drg_package_price, "exact", None, []
+
+def _episode_for_claim(
+    claim,
+    claim_dataset: SUTClaimDataset,
+) -> DRGEpisode:
+    chapter = _icd10_chapter(claim.primary_icd10)
+    description = f"{_chapter_description(chapter)} ({claim.primary_icd10})"
+
+    admission_date = claim.admission_date
+    discharge_date = claim.discharge_date
+
+    if admission_date is not None and discharge_date is not None:
+        los_days = float((discharge_date - admission_date).days + 1)
+    else:
+        los_days = 0.0
+
+    costs = _claim_costs(claim.claim_id, claim_dataset)
+
+    price, package_code, pricing_status, required_inputs = _resolve_package_pricing(
+        claim.claim_id,
+        admission_date,
+        claim_dataset,
+    )
+
+    unavailable_reason = None
+    if pricing_status != "exact":
+        if "admission_date" in required_inputs:
+            unavailable_reason = "Inpatient claim is missing an admission date."
+        elif "billed_package_line" in required_inputs:
+            unavailable_reason = "Inpatient claim has no billed package (P#####) line."
+        elif "ek2c_package_price" in required_inputs:
+            unavailable_reason = (
+                f"No EK-2C catalog price available for package {package_code} on admission date."
+            )
+
+    pricing_date = _format_date(admission_date)
+
+    # ek2c_group from the billed package catalog entry when possible,
+    # otherwise fall back to the ICD-10 chapter map.
+    ek2c_group = _ICD10_CHAPTER_TO_EK2C_GROUP.get(chapter, "C")
+    if package_code and admission_date is not None:
+        entry = get_ek2c_entry(package_code, as_of_date=admission_date.isoformat())
+        if entry and entry.get("ek2c_group"):
+            ek2c_group = entry["ek2c_group"]
+
+    return DRGEpisode(
+        episode_id=claim.claim_id,
+        claim_id=claim.claim_id,
+        primary_icd10=claim.primary_icd10 or "R69",
+        primary_icd10_chapter=chapter,
+        description=description,
+        los_days=round(los_days, 1),
+        lab_cost=round(costs["lab"], 2),
+        visit_cost=round(costs["visit"], 2),
+        rx_cost=round(costs["rx"], 2),
+        procedure_cost=round(costs["procedure"], 2),
+        total_cost=round(costs["total"], 2),
+        drg_package_price=round(price, 2) if price is not None else None,
+        package_code=package_code,
+        ek2c_group=ek2c_group,
+        admission_date=pricing_date,
+        discharge_date=_format_date(discharge_date),
+        pricing_status=pricing_status,
+        pricing_date=pricing_date,
+        unavailable_reason=unavailable_reason,
+        required_inputs_missing=required_inputs,
+    )
+
+
+def _is_inpatient_claim(claim) -> bool:
+    if claim.admission_date is not None:
+        return True
+    if getattr(claim, "package_candidate", False):
+        return True
+    claim_type = (getattr(claim, "claim_type", "") or "").lower()
+    return claim_type in ("yatış", "yatis")
 
 
 def compute_drg_summary(
     patient_id: str,
-    ana_df: pl.DataFrame,
+    ana_df,
     claim_totals: PatientSUTClaimTotals | None = None,
-    ana_group_idx: dict[str, np.ndarray] | None = None,
+    ana_group_idx: dict[str, object] | None = None,
     *,
     claim_dataset: SUTClaimDataset | None = None,
 ) -> DRGSummary:
-    """Build DRG episode cost model for a patient."""
+    """Build a claim-exact DRG episode cost model for a patient.
+
+    The ``ana_df`` and ``ana_group_idx`` parameters are deprecated and kept
+    only for backward-compatible signatures. All pricing, LOS, and episode
+    grain now come from ``claim_dataset``.
+    """
+    _ = ana_df
     _ = ana_group_idx
-    if not isinstance(ana_df, pl.DataFrame):
-        ana_df = pl.from_pandas(ana_df)
 
-    if ana_df.height == 0:
+    if claim_dataset is None:
+        summary = _empty_drg_summary(patient_id)
+        summary.pricing_status = "missing_exact_inputs"
+        summary.unavailable_reason = DRG_COST_UNAVAILABLE_REASON
+        summary.required_inputs_missing = list(DRG_COST_REQUIRED_INPUTS)
+        summary.fully_priced = False
+        return summary
+
+    inpatient_claims = [
+        claim
+        for claim in claim_dataset.claims_by_patient.get(patient_id, ())
+        if _is_inpatient_claim(claim)
+    ]
+
+    if not inpatient_claims:
         return _empty_drg_summary(patient_id)
 
-    patient_data = _select_patient_rows(ana_df, patient_id)
-
-    if patient_data.height == 0:
-        return _empty_drg_summary(patient_id)
-
-    total_visits = max(patient_data.height, 1)
-
-    diag_code = _normalize_diag_codes(patient_data)
-    patient_data = patient_data.with_columns(diag_code.alias("diag_code"))
-    visit_type = _classify_visit_types_vectorized(patient_data)
-    patient_data = patient_data.with_columns(visit_type.alias("visit_type"))
-
-    los_expr = (
-        pl.when(pl.col("visit_type") == "inpatient_day")
-        .then(pl.lit(_DEFAULT_INPATIENT_LOS))
-        .when(pl.col("visit_type") == "icu_day")
-        .then(pl.lit(_DEFAULT_ICU_LOS))
-        .otherwise(pl.lit(1.0))
-    )
-    patient_data = patient_data.with_columns(los_expr.alias("los_per_row"))
-
-    if "visit_date" in patient_data.columns:
-        patient_data = patient_data.with_columns(
-            pl.col("visit_date").cast(pl.Date, strict=False).alias("visit_date_parsed")
-        )
-
-    grouped = patient_data.group_by("diag_code", maintain_order=False).agg(
-        pl.len().alias("n_visits_episode"),
-        pl.col("los_per_row").sum().alias("los"),
-    )
-    if "visit_date_parsed" in patient_data.columns:
-        grouped = patient_data.group_by("diag_code", maintain_order=False).agg(
-            pl.len().alias("n_visits_episode"),
-            pl.col("los_per_row").sum().alias("los"),
-            pl.col("visit_date_parsed").min().alias("adm_date_raw"),
-            pl.col("visit_date_parsed").max().alias("dis_date_raw"),
-        )
-
-    grouped = grouped.with_columns(
-        (pl.col("n_visits_episode") / total_visits).alias("proportion"),
-    )
-    grouped = grouped.with_columns(
-        pl.col("diag_code").str.slice(0, 1).str.to_uppercase().fill_null("R").alias("chapter"),
-    )
-
-    desc_map = pl.Series("chapter", list(_ICD10_CHAPTER_DESC.keys())).to_frame().with_columns(
-        pl.Series("desc", list(_ICD10_CHAPTER_DESC.values()))
-    )
-    grouped = grouped.join(desc_map, on="chapter", how="left").with_columns(
-        pl.col("desc").fill_null("Other")
-    )
-
-    ek2c_map = pl.Series("chapter", list(_ICD10_CHAPTER_TO_EK2C_GROUP.keys())).to_frame().with_columns(
-        pl.Series("ek2c_group", list(_ICD10_CHAPTER_TO_EK2C_GROUP.values()))
-    )
-    grouped = grouped.join(ek2c_map, on="chapter", how="left").with_columns(
-        pl.col("ek2c_group").fill_null("C")
-    )
-
-    if "adm_date_raw" in grouped.columns:
-        grouped = grouped.with_columns(
-            pl.col("adm_date_raw").cast(pl.Utf8).alias("adm_date"),
-            pl.col("dis_date_raw").cast(pl.Utf8).alias("dis_date"),
-        )
-    else:
-        grouped = grouped.with_columns(
-            pl.lit(None, dtype=pl.Utf8).alias("adm_date"),
-            pl.lit(None, dtype=pl.Utf8).alias("dis_date"),
-        )
-
-    exact_costs_by_diag = _claim_dataset_costs_by_diag(patient_id, claim_dataset)
     exact_patient_total = (
         _money_to_float(claim_totals.total_billed_try)
         if _is_exact_patient_totals(patient_id, claim_totals)
         else None
     )
-    costs_available = exact_costs_by_diag is not None or exact_patient_total is not None
+    costs_available = True  # claim_dataset gives us per-claim costs
 
-    episodes: list[DRGEpisode] = []
-    for episode_id, row in enumerate(grouped.iter_rows(named=True)):
-        admission_date = row.get("adm_date")
-        pricing_date = admission_date if admission_date else None
-        (
-            drg_package_price,
-            pricing_status,
-            unavailable_reason,
-            required_inputs_missing,
-        ) = _resolve_episode_pricing(
-            chapter=row["chapter"],
-            diag_code=row["diag_code"],
-            admission_date=pricing_date,
-        )
-        row_costs = (
-            exact_costs_by_diag.get(row["diag_code"])
-            if exact_costs_by_diag is not None
-            else None
-        )
-        if row_costs is None:
-            row_costs = {
-                "lab": 0.0,
-                "visit": 0.0,
-                "rx": 0.0,
-                "procedure": 0.0,
-                "total": 0.0,
-            }
-        episodes.append(
-            DRGEpisode(
-                episode_id=episode_id,
-                primary_icd10=row["diag_code"],
-                primary_icd10_chapter=row["chapter"],
-                description=f"{row['desc']} ({row['diag_code']})",
-                los_days=round(float(row["los"]), 1),
-                lab_cost=round(float(row_costs["lab"]), 2),
-                visit_cost=round(float(row_costs["visit"]), 2),
-                rx_cost=round(float(row_costs["rx"]), 2),
-                procedure_cost=round(float(row_costs["procedure"]), 2),
-                total_cost=round(float(row_costs["total"]), 2),
-                drg_package_price=drg_package_price,
-                ek2c_group=row["ek2c_group"],
-                admission_date=pricing_date,
-                discharge_date=row.get("dis_date"),
-                pricing_status=pricing_status,
-                pricing_date=pricing_date,
-                unavailable_reason=unavailable_reason,
-                required_inputs_missing=required_inputs_missing,
-            )
-        )
+    episodes = [_episode_for_claim(claim, claim_dataset) for claim in inpatient_claims]
 
-    chapter_costs = {}
+    chapter_costs: dict[str, float] = {}
     for episode in episodes:
         chapter_costs[episode.primary_icd10_chapter] = (
-            chapter_costs.get(episode.primary_icd10_chapter, 0.0)
-            + episode.total_cost
+            chapter_costs.get(episode.primary_icd10_chapter, 0.0) + episode.total_cost
         )
 
     episodes.sort(key=lambda e: e.total_cost, reverse=True)
-    if exact_costs_by_diag is not None:
-        total_drg_cost = round(sum(e.total_cost for e in episodes), 2)
-    elif exact_patient_total is not None:
-        total_drg_cost = round(exact_patient_total, 2)
-    else:
-        total_drg_cost = 0.0
+    total_drg_cost = round(sum(e.total_cost for e in episodes), 2)
     mean_ep_cost = (
-        round(total_drg_cost / len(episodes), 2)
-        if episodes and costs_available
-        else 0.0
+        round(total_drg_cost / len(episodes), 2) if episodes and costs_available else 0.0
     )
     most_expensive = episodes[0].description if episodes and costs_available else "N/A"
     dominant_chapter = (
@@ -429,48 +348,43 @@ def compute_drg_summary(
         if chapter_costs and costs_available
         else "N/A"
     )
+
     priced_episodes = [episode for episode in episodes if episode.pricing_status == "exact"]
     priced_episode_count = len(priced_episodes)
     unknown_date_episode_count = len(episodes) - priced_episode_count
     fully_priced = unknown_date_episode_count == 0
     total_pkg_price = (
         round(
-            sum(
-                episode.drg_package_price or 0.0
-                for episode in priced_episodes
-            ),
+            sum(episode.drg_package_price or 0.0 for episode in priced_episodes),
             2,
         )
         if fully_priced
         else None
     )
-    pricing_required_inputs = _ordered_unique(
-        [
+
+    pricing_required_inputs = sorted(
+        {
             missing
             for episode in episodes
             for missing in episode.required_inputs_missing
-        ]
+        }
     )
-    if not costs_available:
-        pricing_status = "missing_exact_inputs"
-        unavailable_reason = DRG_COST_UNAVAILABLE_REASON
-        required_inputs_missing = _ordered_unique(
-            list(DRG_COST_REQUIRED_INPUTS) + pricing_required_inputs
-        )
-    elif fully_priced:
+
+    if fully_priced:
         pricing_status = "exact"
         unavailable_reason = None
         required_inputs_missing = []
     elif priced_episode_count > 0:
         pricing_status = "partial_exact"
         unavailable_reason = (
-            "One or more episodes are missing admission dates or exact historical DRG prices."
+            "One or more inpatient episodes are missing admission dates or billed package lines."
         )
         required_inputs_missing = pricing_required_inputs
     else:
-        pricing_status = "unknown_date"
+        pricing_status = "missing_exact_inputs"
         unavailable_reason = (
-            "Episode pricing unavailable because admission dates or exact historical DRG prices are missing."
+            "DRG pricing unavailable because inpatient claims are missing "
+            "admission dates or billed package lines."
         )
         required_inputs_missing = pricing_required_inputs
 

@@ -1,6 +1,12 @@
 """
 src/bilun/domain/pricing/drg.py
-DRG package pricing using EK-2C median prices with ICD-10 keyword filtering.
+Legacy DRG package pricing using EK-2C median prices with ICD-10 keyword filtering.
+
+.. deprecated::
+    These median helpers are non-product. Patient DRG analytics and billing
+    strategy now use exact billed package lines and the dated EK-2C catalog
+    entry for the billed code. Keep this module only for historical tests or
+    future grouper research; do not call it from product code paths.
 """
 
 from __future__ import annotations
@@ -138,6 +144,10 @@ def get_drg_package_price(
 ) -> float:
     """Estimate the EK-2C DRG package price for an ICD-10 chapter/code.
 
+    .. deprecated::
+        Non-product median heuristic. Use exact billed package lines or
+        ``get_ek2c_price_for_date`` for the billed package code instead.
+
     Pricing strategy (most specific → least specific):
       1. Chapter-level keyword-filtered median (matches EK-2C package names
           relevant to the ICD-10 chapter via Turkish clinical keywords).
@@ -170,6 +180,10 @@ def get_drg_package_price_for_date(
     icd10_code: str | None = None,
 ) -> float | None:
     """Return a dated DRG chapter price using the canonical as-of catalog.
+
+    .. deprecated::
+        Non-product median heuristic. Use exact billed package lines or
+        ``get_ek2c_price_for_date`` for the billed package code instead.
 
     Unlike the legacy current-price helper, this function does not fall back to
     future/latest prices or hardcoded group medians when the requested date has
