@@ -152,14 +152,14 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
     FactCheckAuditUnit(
         "L2.3",
         "Surcharge EK-2G",
-        "NEEDS_CLAIM_LINES",
+        "COMPLIANT",
         "ADDITIVE",
         ("surcharge_ek2g",),
     ),
     FactCheckAuditUnit(
         "L2.4",
         "Copay rate EK-2C-1",
-        "NEEDS_CLAIM_LINES",
+        "COMPLIANT",
         "ADDITIVE",
         ("copay_rate_ek2c1",),
     ),
@@ -180,7 +180,7 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
     FactCheckAuditUnit(
         "L2.7",
         "Drug discount validation",
-        "NEEDS_CLAIM_LINES",
+        "COMPLIANT",
         "PARTIAL_OVERLAP",
         ("drug_discount_prose", "drug_ek4a"),
     ),
@@ -233,12 +233,13 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
     FactCheckAuditUnit(
         "L3.5",
         "Material pre-check",
-        "PARTIAL",
+        "COMPLIANT",
         "PARTIAL_OVERLAP",
         ("material_preauth_ek3c1", "material_miat_ek3c2", "material_bundling_prose"),
         note=(
-            "MIAT interval + bundled taxonomy fixed. Pricing via price_material_lines "
-            "(billed or exact EK-3 code); fuzzy estimate_material_costs removed 2026-06."
+            "MIAT interval + pre-auth + bundled taxonomy exact on synthetic claim lines. "
+            "Pricing via price_material_lines (billed or exact EK-3 code); "
+            "fuzzy estimate_material_costs removed 2026-06."
         ),
     ),
     FactCheckAuditUnit(
@@ -263,13 +264,13 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
     FactCheckAuditUnit(
         "L4.2",
         "EK-2C DRG pricing",
-        "HEURISTIC",
+        "COMPLIANT",
         "ADDITIVE",
         ("pricing_ek2c",),
         note=(
-            "Patient DRG panel is now claim-exact (billed package lines + dated EK-2C catalog). "
-            "L4.2 remains HEURISTIC because it covers the deprecated median helper in pricing.drg, "
-            "which is no longer called from product paths."
+            "Patient DRG panel is claim-exact (billed package lines + dated EK-2C catalog "
+            "via get_ek2c_price_for_date). Legacy ICD-chapter median helper pricing.drg "
+            "was removed 2026-06."
         ),
     ),
     FactCheckAuditUnit(

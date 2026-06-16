@@ -22,17 +22,17 @@ def test_audit_has_28_units() -> None:
 def test_rollup_verdict_counts_match_master() -> None:
     rollup = fact_check_rollup()
     counts = rollup["by_verdict"]
-    assert counts["COMPLIANT"] == 5
-    assert counts["PARTIAL"] == 18
-    assert counts["HEURISTIC"] == 2
-    assert counts["NEEDS_CLAIM_LINES"] == 3
+    assert counts["COMPLIANT"] == 10
+    assert counts["PARTIAL"] == 17
+    assert counts["HEURISTIC"] == 1
+    assert counts["NEEDS_CLAIM_LINES"] == 0
     assert counts["WRONG"] == 0
     assert rollup["audit_closed"] == "2026-06"
 
 
 def test_registry_entries_carry_fact_check_when_mapped() -> None:
     by_id = {entry.rule_id: entry for entry in RULE_REGISTRY}
-    assert by_id["copay_rate_ek2c1"].fact_check_verdict == "NEEDS_CLAIM_LINES"
+    assert by_id["copay_rate_ek2c1"].fact_check_verdict == "COMPLIANT"
     assert "L2.4" in by_id["copay_rate_ek2c1"].fact_check_units
     assert by_id["pricing_ek2b"].fact_check_verdict == "COMPLIANT"
     assert by_id["billing_documents"].fact_check_verdict is None
