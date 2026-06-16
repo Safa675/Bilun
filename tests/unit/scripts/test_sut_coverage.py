@@ -75,6 +75,66 @@ class TestClassify:
         assert "payment_method_tier_override" in matched
 
 
+    def test_procedure_pairing_section_match(self) -> None:
+        row = _sample_row(
+            section_id="2.2.2.A.(5)",
+            section_path="2.2/2.2.2/2.2.2.A.(5)",
+            annex_refs='["EK-2/B"]',
+            text_tr="Aynı seansta kolonoskopik polipektomi ilave ücret ile faturalandırılır.",
+            deontic_modality="MAY_BILL",
+        )
+        result = classify_clause_row(row)
+        matched = json.loads(result["matched_rule_ids"])
+        assert "procedure_pairing" in matched
+
+    def test_material_pairing_section_match(self) -> None:
+        row = _sample_row(
+            section_id="3.1.1",
+            section_path="3.1/3.1.1",
+            annex_refs='["EK-3/C"]',
+            text_tr="Malzeme ayrıca faturalandırılabilir.",
+            deontic_modality="MAY_BILL",
+        )
+        result = classify_clause_row(row)
+        matched = json.loads(result["matched_rule_ids"])
+        assert "material_pairing" in matched
+
+    def test_drg_package_adequacy_section_match(self) -> None:
+        row = _sample_row(
+            section_id="2.2.1.B-1.a",
+            section_path="2.2/2.2.1/2.2.1.B-1.a",
+            annex_refs='["EK-2/C"]',
+            text_tr="609270 paket kodu tanıya dayalı işlem paketi olarak faturalandırılır.",
+            deontic_modality="MUST_BILL",
+        )
+        result = classify_clause_row(row)
+        matched = json.loads(result["matched_rule_ids"])
+        assert "drg_package_adequacy" in matched
+
+    def test_gazette_repricing_keyword_match(self) -> None:
+        row = _sample_row(
+            section_id="1.1",
+            section_path="1.1",
+            annex_refs='["EK-2/B"]',
+            text_tr="Bu tebliğ yürürlük tarihinden sonra yeniden faturalandırılabilir.",
+            deontic_modality="MAY_BILL",
+        )
+        result = classify_clause_row(row)
+        matched = json.loads(result["matched_rule_ids"])
+        assert "gazette_repricing" in matched
+
+    def test_gazette_repricing_skips_generic_yururluk(self) -> None:
+        row = _sample_row(
+            section_id="2.2.1",
+            section_path="2.2/2.2.1",
+            text_tr="(1) Bu hüküm yürürlük tarihinde uygulanır.",
+            deontic_modality="MUST_BILL",
+        )
+        result = classify_clause_row(row)
+        matched = json.loads(result["matched_rule_ids"])
+        assert "gazette_repricing" not in matched
+
+
 class TestCoverage:
     def test_enriches_status_from_registry(self) -> None:
         clauses = pd.DataFrame([_sample_row()])
@@ -137,3 +197,64 @@ class TestFullCoverageBuild:
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
         assert RULE_BY_ID["specialty_materials_prose"].coverage_status == "implemented"
+
+    def test_drg_package_adequacy_implemented_not_false_gap(self, coverage: pd.DataFrame) -> None:
+        prose_json = _REPO_ROOT / "data/gazette/prose_rules/drg_package_adequacy_prose.json"
+        assert prose_json.is_file()
+
+        rows = coverage[coverage["primary_rule_id"] == "drg_package_adequacy"]
+        matched = coverage[coverage["matched_rule_ids"].str.contains("drg_package_adequacy", regex=False)]
+        assert not matched.empty
+        if not rows.empty:
+            assert (rows["coverage_status"] == "implemented").all()
+            assert rows["has_algorithmic_gap"].sum() == 0
+
+        from scripts.sut.prose.rule_registry import RULE_BY_ID
+
+        assert RULE_BY_ID["drg_package_adequacy"].coverage_status == "implemented"
+
+    def test_gazette_repricing_partial_has_mapping(self, coverage: pd.DataFrame) -> None:
+        prose_json = _REPO_ROOT / "data/gazette/prose_rules/gazette_repricing_prose.json"
+        assert prose_json.is_file()
+
+        matched = coverage[coverage["matched_rule_ids"].str.contains("gazette_repricing", regex=False)]
+        assert not matched.empty
+        primary = coverage[coverage["primary_rule_id"] == "gazette_repricing"]
+        if not primary.empty:
+            assert (primary["coverage_status"] == "partial").all()
+            assert primary["has_algorithmic_gap"].all()
+
+        from scripts.sut.prose.rule_registry import RULE_BY_ID
+
+        assert RULE_BY_ID["gazette_repricing"].coverage_status == "partial"
+
+    def test_procedure_pairing_partial_has_mapping(self, coverage: pd.DataFrame) -> None:
+        prose_json = _REPO_ROOT / "data/gazette/prose_rules/procedure_pairing_prose.json"
+        assert prose_json.is_file()
+
+        matched = coverage[coverage["matched_rule_ids"].str.contains("procedure_pairing", regex=False)]
+        assert not matched.empty
+
+        from scripts.sut.prose.rule_registry import RULE_BY_ID
+
+        assert RULE_BY_ID["procedure_pairing"].coverage_status == "partial"
+
+    def test_material_pairing_partial_has_mapping(self, coverage: pd.DataFrame) -> None:
+        prose_json = _REPO_ROOT / "data/gazette/prose_rules/material_pairing_uplift.json"
+        assert prose_json.is_file()
+
+        matched = coverage[coverage["matched_rule_ids"].str.contains("material_pairing", regex=False)]
+        assert not matched.empty
+
+        from scripts.sut.prose.rule_registry import RULE_BY_ID
+
+        assert RULE_BY_ID["material_pairing"].coverage_status == "partial"
+
+    def test_lab_billing_extended_has_mapping(self, coverage: pd.DataFrame) -> None:
+        matched = coverage[coverage["matched_rule_ids"].str.contains("lab_billing", regex=False)]
+        assert not matched.empty
+
+        from scripts.sut.prose.rule_registry import RULE_BY_ID
+
+        entry = RULE_BY_ID["lab_billing"]
+        assert any("lab_capture_gap" in module for module in entry.domain_modules)
