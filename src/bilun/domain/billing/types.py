@@ -132,6 +132,14 @@ MEDULA_PLAYBOOK_REQUIRED_INPUTS = (
 MEDULA_PLAYBOOK_UNAVAILABLE_REASON = (
     "MEDULA rebill playbook requires optional MEDULA rejection event ingest rows."
 )
+DRUG_INDICATION_REQUIRED_INPUTS = (
+    "dispensed_drug_claim_lines",
+    "claim_primary_icd10",
+)
+DRUG_INDICATION_UNAVAILABLE_REASON = (
+    "Drug indication validation requires exact dispensed drug claim lines with "
+    "primary ICD-10 context, which are not available in the active SUT runtime inputs."
+)
 
 
 @dataclass
@@ -492,6 +500,28 @@ class DrgPackageAdequacyReview:
 
 
 @dataclass
+class DrugIndicationReview:
+    """§4.2 pilot indication / report checks on exact drug claim lines."""
+
+    violations: list[dict[str, Any]] = field(default_factory=list)
+    exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
+    unavailable_reason: str | None = DRUG_INDICATION_UNAVAILABLE_REASON
+    required_inputs_missing: list[str] = field(
+        default_factory=lambda: list(DRUG_INDICATION_REQUIRED_INPUTS)
+    )
+    rule_source: str = "SUT §4.2 drug indication prose — Tier 3b pilot"
+    coverage_scope: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def violation_count(self) -> int:
+        return len(self.violations)
+
+    @property
+    def error_count(self) -> int:
+        return sum(1 for row in self.violations if row.get("severity") == "error")
+
+
+@dataclass
 class MedulaRejectionPlaybook:
     """Operational corrective rebill templates for ingested MEDULA rejections."""
 
@@ -644,6 +674,7 @@ class BillingActionReport:
     medula_rejection_playbook: MedulaRejectionPlaybook = field(
         default_factory=MedulaRejectionPlaybook
     )
+    drug_indication: DrugIndicationReview = field(default_factory=DrugIndicationReview)
     medula_rejection_ingest_available: bool = False
     sgk_uplift_try: float = 0.0
     compliance_adjustment_try: float = 0.0

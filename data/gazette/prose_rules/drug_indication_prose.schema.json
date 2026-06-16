@@ -41,6 +41,10 @@
           "items": { "type": "string" }
         },
         "report_required": { "type": "boolean" },
+        "report_specialties": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "message_tr": { "type": "string" }
       }
     }

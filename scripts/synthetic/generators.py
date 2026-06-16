@@ -254,6 +254,11 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
             elif pid == "SENTETIK-HASTA-0013" and ep_idx == 0:
                 episode_row["gelis_tipi"] = "gunubirlik"
                 episode_row["_sgk_session_uplift_demo"] = True
+            elif pid == "SENTETIK-HASTA-0014" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_drug_indication_demo"] = True
+                episode_row["birincil_icd10"] = "C34.9"
+                episode_row["_all_codes"] = ["C34.9"]
             episodes_out.append(episode_row)
 
             for line_no, code in enumerate(all_codes, start=1):
@@ -1655,9 +1660,12 @@ def _generate_claims_and_lines(
         gazette_repricing_demo = episode.get("_sgk_gazette_repricing_demo")
         medula_playbook_demo = episode.get("_sgk_medula_playbook_demo")
         session_uplift_demo = episode.get("_sgk_session_uplift_demo")
+        drug_indication_demo = episode.get("_sgk_drug_indication_demo")
         scenario_tag = (
             "medula_rejection_1688_molecular_microbiology"
             if medula_playbook_demo
+            else "sgk_drug_indication_bevacizumab_missing_report"
+            if drug_indication_demo
             else "sgk_session_uplift_cerrahi"
             if session_uplift_demo
             else "sgk_gazette_repricing_600150"
@@ -1697,6 +1705,7 @@ def _generate_claims_and_lines(
             or gazette_repricing_demo
             or medula_playbook_demo
             or session_uplift_demo
+            or drug_indication_demo
         ) or rng.random() < 0.15
         facility_tier = (
             "egitim_arastirma"
@@ -1883,6 +1892,35 @@ def _generate_claims_and_lines(
         else:
             mat_billed, mat_payable = _append_material_lines_for_claim(ctx)
         drug_billed, drug_payable = _append_drug_lines_for_claim(ctx)
+        if drug_indication_demo:
+            d_line_id = f"ILC-{claim_id}-IND-001"
+            prescription_id = f"REC-{claim_id}-IND-001"
+            unit_price = 12500.0
+            qty = 1
+            billed = _money(unit_price * qty)
+            payable = _money(billed * 0.72)
+            ctx.drug_claims.append({
+                "ilac_satiri_id": d_line_id,
+                "recete_id": prescription_id,
+                "fatura_id": claim_id,
+                "hasta_id": pid,
+                "basvuru_id": eid,
+                "ilac_fatura_tarihi": start_date,
+                "ilac_adi": "AVASTIN 400 MG IV INFUZYONLUK KONSANTRE COZELTI (BEVACIZUMAB)",
+                "ilac_kodu": "SUT-DEMO-BEV",
+                "barkod": "8690000000001",
+                "esdeger_grup": "DEMO-BEV",
+                "adet": qty,
+                "birim_fiyat_try": unit_price,
+                "fatura_tutari_try": billed,
+                "beklenen_odenebilir_tutar_try": payable,
+                "beklenen_indirim_kademesi": 0.28,
+                "beklenen_red_nedeni": "Uzmanlik saglik kurulu raporu eksik",
+                "beklenen_kural_izi": "4.2.14.C:bevacizumab:missing_board_report",
+                "uzmanlik_kurulu_raporu_var": False,
+            })
+            drug_billed += billed
+            drug_payable += payable
 
         total_billed = proc_billed + mat_billed + drug_billed
         total_payable = proc_payable + mat_payable + drug_payable

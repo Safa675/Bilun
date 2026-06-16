@@ -365,7 +365,7 @@ class TestFullCoverageBuild:
 
         assert RULE_BY_ID["medula_rejection_playbook"].coverage_status == "partial"
 
-    def test_drug_indication_prose_classified_non_algorithmic(self, coverage: pd.DataFrame) -> None:
+    def test_drug_indication_prose_classified_partial(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/drug_indication_prose.json"
         assert prose_json.is_file()
 
@@ -373,12 +373,12 @@ class TestFullCoverageBuild:
         assert not matched.empty
         primary = coverage[coverage["primary_rule_id"] == "drug_indication_prose"]
         assert not primary.empty
-        assert (primary["coverage_status"] == "non_algorithmic").all()
-        assert primary["has_algorithmic_gap"].sum() == 0
+        assert (primary["coverage_status"] == "partial").all()
+        assert primary["has_algorithmic_gap"].sum() > 0
 
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
-        assert RULE_BY_ID["drug_indication_prose"].coverage_status == "non_algorithmic"
+        assert RULE_BY_ID["drug_indication_prose"].coverage_status == "partial"
 
     def test_surcharge_general_implemented_not_false_gap(self, coverage: pd.DataFrame) -> None:
         rows = coverage[coverage["primary_rule_id"] == "surcharge_general"]

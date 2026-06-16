@@ -860,6 +860,9 @@ def _drug_line(row: Mapping[str, Any], errors: list[str]) -> DrugClaimLine | Non
             discount_tier_expected=_money(row, "discount_tier_expected", line_id, errors),
             denial_reason_expected=_text(row, "denial_reason_expected"),
             rule_trace_expected=_text(row, "rule_trace_expected"),
+            drug_specialty_board_report_present=_optional_bool(
+                row.get("drug_specialty_board_report_present")
+            ),
         )
     except KeyError as exc:
         errors.append(f"drug_claim_lines missing field {exc.args[0]}")

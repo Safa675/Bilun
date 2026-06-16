@@ -78,6 +78,7 @@ from src.bilun.domain.billing.claim_gazette_repricing import (
 from src.bilun.domain.billing.claim_medula_rejection import (
     recommend_medula_rejection_playbook_from_claims,
 )
+from src.bilun.domain.billing.claim_drug_indication import validate_drug_indication_from_claims
 from src.bilun.domain.billing.claim_material_uplift import recommend_material_uplift_from_claims
 from src.bilun.domain.billing.claim_drg_uplift import recommend_drg_uplift_from_claims
 from src.bilun.domain.billing.claim_session_uplift import recommend_session_uplift_from_claims
@@ -508,6 +509,7 @@ def compute_patient_billing_report(
     report.medula_rejection_playbook = (
         recommend_medula_rejection_playbook_from_claims(claim_context)
     )
+    report.drug_indication = validate_drug_indication_from_claims(claim_context)
     report.medula_rejection_ingest_available = (
         claim_context.medula_rejection_ingest_available
     )
@@ -529,6 +531,7 @@ def compute_patient_billing_report(
         + len(report.drg_package_adequacy.opportunities)
         + len(report.gazette_repricing.opportunities)
         + len(report.medula_rejection_playbook.entries)
+        + len(report.drug_indication.violations)
         + len(getattr(report.materials, "pre_auth_required", []))
         + len(getattr(report.materials, "miat_restricted", []))
         + len(getattr(report.materials, "bundled_separate_billing", []))

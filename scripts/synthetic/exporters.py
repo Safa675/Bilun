@@ -324,6 +324,7 @@ def _english_claim_exports(tables: dict[str, pd.DataFrame]) -> dict[str, pd.Data
             "beklenen_indirim_kademesi": "discount_tier_expected",
             "beklenen_red_nedeni": "denial_reason_expected",
             "beklenen_kural_izi": "rule_trace_expected",
+            "uzmanlik_kurulu_raporu_var": "drug_specialty_board_report_present",
         }),
         "expected_rule_outputs.parquet": tables["beklenen_kural_ciktilari"].rename(columns={
             "beklenen_cikti_id": "expected_output_id", "senaryo_etiketi": "scenario_tag",

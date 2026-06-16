@@ -231,6 +231,7 @@ class DrugClaimLine:
     discount_tier_expected: Money
     denial_reason_expected: str
     rule_trace_expected: str
+    drug_specialty_board_report_present: bool | None = None
 
 
 @dataclass(frozen=True)
