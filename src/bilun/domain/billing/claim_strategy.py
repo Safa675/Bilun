@@ -6,7 +6,6 @@ from datetime import date
 
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
-from src.bilun.domain.pricing import get_drg_package_price_for_date
 from src.bilun.domain.prose_rules import (
     check_payment_method_compliance,
     resolve_payment_method,
@@ -76,7 +75,7 @@ def resolve_package_total_try(
     claim: ClaimHeader,
     claim_procs: list[ProcedureClaimLine],
 ) -> tuple[float, str]:
-    """Resolve package total using claim-line payables, then EK-2C, then chapter median."""
+    """Resolve package total using claim-line payables, then EK-2C code lookup."""
     package_lines = [
         line for line in claim_procs if line.procedure_category == "paket"
     ]
@@ -92,17 +91,6 @@ def resolve_package_total_try(
                 package_total = float(price_try)
                 package_price_methodology = "ek2c_code"
                 break
-
-    if package_total <= 0 and claim.admission_date is not None:
-        chapter = (claim.primary_icd10 or "R69")[:1].upper()
-        drg_price = get_drg_package_price_for_date(
-            chapter,
-            claim.admission_date,
-            icd10_code=claim.primary_icd10,
-        )
-        if drg_price is not None:
-            package_total = float(drg_price)
-            package_price_methodology = "chapter_median_heuristic"
 
     return _money(package_total), package_price_methodology
 
@@ -344,9 +332,7 @@ def recommend_billing_strategy_from_claims(
                 if d is not None
             }
         )
-        if package_price_methodology == "chapter_median_heuristic":
-            savings_basis = "heuristic"
-        elif recommendation_kind == "optional_override":
+        if recommendation_kind == "optional_override":
             savings_basis = SAVINGS_BASIS_OPTIONAL_OVERRIDE
         else:
             savings_basis = "claim_line"

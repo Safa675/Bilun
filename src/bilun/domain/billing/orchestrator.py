@@ -14,16 +14,42 @@ import polars as pl
 
 from .types import (
     BILLING_REPORT_PARTIAL_REASON,
+    BILLING_STRATEGY_REQUIRED_INPUTS,
+    BILLING_STRATEGY_UNAVAILABLE_REASON,
+    BLOOD_UPLIFT_REQUIRED_INPUTS,
+    BLOOD_UPLIFT_UNAVAILABLE_REASON,
+    CARE_SETTING_REVIEW_REQUIRED_INPUTS,
+    CARE_SETTING_REVIEW_UNAVAILABLE_REASON,
     COHORT_RECOVERY_PARTIAL_REASON,
+    COPAY_REQUIRED_INPUTS,
+    COPAY_UNAVAILABLE_REASON,
+    DRG_PACKAGE_ADEQUACY_REQUIRED_INPUTS,
+    DRG_PACKAGE_ADEQUACY_UNAVAILABLE_REASON,
+    DRG_UPLIFT_REQUIRED_INPUTS,
+    DRG_UPLIFT_UNAVAILABLE_REASON,
     EXACTNESS_STATUS_EXACT,
     EXACTNESS_STATUS_MISSING_INPUTS,
     EXACTNESS_STATUS_NOT_APPLICABLE,
     EXACTNESS_STATUS_PARTIAL,
+    GAZETTE_REPRICING_REQUIRED_INPUTS,
+    GAZETTE_REPRICING_UNAVAILABLE_REASON,
+    MATERIAL_UPLIFT_REQUIRED_INPUTS,
+    MATERIAL_UPLIFT_UNAVAILABLE_REASON,
+    MATERIALS_PARTIAL_REASON,
+    MATERIALS_REQUIRED_INPUTS,
+    MEDULA_PLAYBOOK_REQUIRED_INPUTS,
+    MEDULA_PLAYBOOK_UNAVAILABLE_REASON,
     BillingActionReport,
     CohortRecoverySummary,
     LabOptimization,
+    PROCEDURE_ADDON_UPLIFT_REQUIRED_INPUTS,
+    PROCEDURE_ADDON_UPLIFT_UNAVAILABLE_REASON,
+    PROCEDURE_CAPTURE_GAP_REQUIRED_INPUTS,
+    PROCEDURE_CAPTURE_GAP_UNAVAILABLE_REASON,
     ProcedureAddonUplift,
     ProcedureCaptureGap,
+    SESSION_UPLIFT_REQUIRED_INPUTS,
+    SESSION_UPLIFT_UNAVAILABLE_REASON,
 )
 from src.bilun.domain.claims.patient_context import (
     PatientClaimContext,
@@ -57,9 +83,7 @@ from src.bilun.domain.billing.claim_drg_uplift import recommend_drg_uplift_from_
 from src.bilun.domain.billing.claim_session_uplift import recommend_session_uplift_from_claims
 from src.bilun.domain.billing.claim_strategy import recommend_billing_strategy_from_claims
 from .claim_lab import _optimize_lab_billing_from_claims
-from .copay import _optimize_copay
-from .strategy import _recommend_billing_strategy
-from .materials import _precheck_materials
+from src.bilun.domain.constants import SUT_REQUIRE_CLAIM_LINES
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.loader import SUTClaimDataset
@@ -280,6 +304,17 @@ def _finalize_report_exactness(report: BillingActionReport) -> None:
         report.required_inputs_missing = []
         return
 
+    if all(
+        _block_exactness_status(block) == EXACTNESS_STATUS_MISSING_INPUTS
+        for block in non_exact_blocks
+    ):
+        report.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+        report.unavailable_reason = getattr(
+            non_exact_blocks[0], "unavailable_reason", None
+        )
+        report.required_inputs_missing = _collect_required_inputs(non_exact_blocks)
+        return
+
     report.exactness_status = EXACTNESS_STATUS_PARTIAL
     report.unavailable_reason = BILLING_REPORT_PARTIAL_REASON
     report.required_inputs_missing = _collect_required_inputs(non_exact_blocks)
@@ -305,11 +340,87 @@ def _finalize_summary_exactness(
         summary.required_inputs_missing = []
         return
 
+    if all(
+        _block_exactness_status(report) == EXACTNESS_STATUS_MISSING_INPUTS
+        for report in non_exact_reports
+    ):
+        summary.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+        summary.unavailable_reason = getattr(
+            non_exact_reports[0], "unavailable_reason", None
+        )
+        summary.required_inputs_missing = _collect_required_inputs(non_exact_reports)
+        return
+
     summary.exactness_status = EXACTNESS_STATUS_PARTIAL
     summary.unavailable_reason = COHORT_RECOVERY_PARTIAL_REASON
     summary.required_inputs_missing = _collect_required_inputs(non_exact_reports)
     if not summary.required_inputs_missing:
         summary.required_inputs_missing = ["cohort_billing_report.required_inputs_missing"]
+
+
+def _set_missing_inputs_report(report: BillingActionReport) -> None:
+    """Mark every billing block as missing exact inputs when claim context is absent.
+
+    No heuristic ₺ amounts are produced. The report shape is preserved so the
+    frontend can still render empty sections.
+    """
+    report.lab.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.lab.unavailable_reason = (
+        "Lab optimization requires exact billed procedure claim lines."
+    )
+    report.lab.required_inputs_missing = ["procedure_claim_lines"]
+
+    report.copay.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.copay.unavailable_reason = COPAY_UNAVAILABLE_REASON
+    report.copay.required_inputs_missing = list(COPAY_REQUIRED_INPUTS)
+
+    report.billing_strategy.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.billing_strategy.unavailable_reason = BILLING_STRATEGY_UNAVAILABLE_REASON
+    report.billing_strategy.required_inputs_missing = list(BILLING_STRATEGY_REQUIRED_INPUTS)
+
+    report.materials.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.materials.unavailable_reason = MATERIALS_PARTIAL_REASON
+    report.materials.required_inputs_missing = list(MATERIALS_REQUIRED_INPUTS)
+
+    report.session_uplift.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.session_uplift.unavailable_reason = SESSION_UPLIFT_UNAVAILABLE_REASON
+    report.session_uplift.required_inputs_missing = list(SESSION_UPLIFT_REQUIRED_INPUTS)
+
+    report.drg_uplift.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.drg_uplift.unavailable_reason = DRG_UPLIFT_UNAVAILABLE_REASON
+    report.drg_uplift.required_inputs_missing = list(DRG_UPLIFT_REQUIRED_INPUTS)
+
+    report.blood_uplift.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.blood_uplift.unavailable_reason = BLOOD_UPLIFT_UNAVAILABLE_REASON
+    report.blood_uplift.required_inputs_missing = list(BLOOD_UPLIFT_REQUIRED_INPUTS)
+
+    report.material_uplift.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.material_uplift.unavailable_reason = MATERIAL_UPLIFT_UNAVAILABLE_REASON
+    report.material_uplift.required_inputs_missing = list(MATERIAL_UPLIFT_REQUIRED_INPUTS)
+
+    report.care_setting_review.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.care_setting_review.unavailable_reason = CARE_SETTING_REVIEW_UNAVAILABLE_REASON
+    report.care_setting_review.required_inputs_missing = list(CARE_SETTING_REVIEW_REQUIRED_INPUTS)
+
+    report.procedure_addon_uplift.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.procedure_addon_uplift.unavailable_reason = PROCEDURE_ADDON_UPLIFT_UNAVAILABLE_REASON
+    report.procedure_addon_uplift.required_inputs_missing = list(PROCEDURE_ADDON_UPLIFT_REQUIRED_INPUTS)
+
+    report.procedure_capture_gap.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.procedure_capture_gap.unavailable_reason = PROCEDURE_CAPTURE_GAP_UNAVAILABLE_REASON
+    report.procedure_capture_gap.required_inputs_missing = list(PROCEDURE_CAPTURE_GAP_REQUIRED_INPUTS)
+
+    report.drg_package_adequacy.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.drg_package_adequacy.unavailable_reason = DRG_PACKAGE_ADEQUACY_UNAVAILABLE_REASON
+    report.drg_package_adequacy.required_inputs_missing = list(DRG_PACKAGE_ADEQUACY_REQUIRED_INPUTS)
+
+    report.gazette_repricing.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.gazette_repricing.unavailable_reason = GAZETTE_REPRICING_UNAVAILABLE_REASON
+    report.gazette_repricing.required_inputs_missing = list(GAZETTE_REPRICING_REQUIRED_INPUTS)
+
+    report.medula_rejection_playbook.exactness_status = EXACTNESS_STATUS_MISSING_INPUTS
+    report.medula_rejection_playbook.unavailable_reason = MEDULA_PLAYBOOK_UNAVAILABLE_REASON
+    report.medula_rejection_playbook.required_inputs_missing = list(MEDULA_PLAYBOOK_REQUIRED_INPUTS)
 
 
 def compute_patient_billing_report(
@@ -330,19 +441,31 @@ def compute_patient_billing_report(
         claim_context: Patient-level or bill-level claim context. Required for
             exact lab, copay, strategy, and uplift algorithms.
         copay_exemption: Pre-computed copay exemption result.
-        chapters: Pre-computed ICD-10 chapter set.
+        chapters: Pre-computed ICD-10 chapter set (ignored when claim lines are
+            required; kept for backward-compatible signatures).
         lab_df_pl: Normalized clinical lab feed for lab capture-gap detection.
 
     Returns:
         BillingActionReport with all algorithm results.
     """
+    _ = chapters
     report = BillingActionReport(patient_id=pid)
 
-    if claim_context is not None:
-        report.lab, report.procedure_capture_gap = _compute_lab_and_capture_gap_from_claims(
-            claim_context,
-            lab_df_pl=lab_df_pl,
+    if claim_context is None:
+        if SUT_REQUIRE_CLAIM_LINES:
+            _set_missing_inputs_report(report)
+            _finalize_report_totals(report, claim_context=None)
+            _finalize_report_exactness(report)
+            return report
+        raise NotImplementedError(
+            "Legacy estimate-based billing report path removed. "
+            "Provide claim_context or set SUT_REQUIRE_CLAIM_LINES=False."
         )
+
+    report.lab, report.procedure_capture_gap = _compute_lab_and_capture_gap_from_claims(
+        claim_context,
+        lab_df_pl=lab_df_pl,
+    )
 
     exemption = copay_exemption or {
         "exempt": False,
@@ -350,19 +473,13 @@ def compute_patient_billing_report(
         "qualifying_diagnoses": [],
     }
 
-    if claim_context is not None and (
-        claim_context.procedure_lines or claim_context.drug_lines
-    ):
+    if claim_context.procedure_lines or claim_context.drug_lines:
         report.copay = optimize_copay_from_claims(claim_context, exemption)
-    else:
-        report.copay = _optimize_copay(pid, exemption)
 
-    if claim_context is not None and claim_context.claims:
+    if claim_context.claims:
         report.billing_strategy = recommend_billing_strategy_from_claims(claim_context)
-    else:
-        report.billing_strategy = _recommend_billing_strategy(pid, chapters or set())
 
-    if claim_context is not None and claim_context.procedure_lines:
+    if claim_context.procedure_lines:
         report.session_uplift = recommend_session_uplift_from_claims(claim_context)
         report.drg_uplift = recommend_drg_uplift_from_claims(
             claim_context,
@@ -388,16 +505,13 @@ def compute_patient_billing_report(
             report.procedure_capture_gap,
         )
 
-    if claim_context is not None:
-        report.medula_rejection_playbook = (
-            recommend_medula_rejection_playbook_from_claims(claim_context)
-        )
-        report.medula_rejection_ingest_available = (
-            claim_context.medula_rejection_ingest_available
-        )
-        report.materials = precheck_materials_from_claims(claim_context)
-    else:
-        report.materials = _precheck_materials(pid, chapters or set())
+    report.medula_rejection_playbook = (
+        recommend_medula_rejection_playbook_from_claims(claim_context)
+    )
+    report.medula_rejection_ingest_available = (
+        claim_context.medula_rejection_ingest_available
+    )
+    report.materials = precheck_materials_from_claims(claim_context)
 
     _finalize_report_totals(report, claim_context=claim_context)
 

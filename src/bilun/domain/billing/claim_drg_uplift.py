@@ -6,7 +6,7 @@ from typing import Any
 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.session_pricing import compute_session_adjusted_itemized_total
-from src.bilun.domain.prose_rules.types import SAVINGS_CATEGORY_SGK_UPLIFT
+from src.bilun.domain.prose_rules.types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
 
 from .claim_strategy import (
     _aggregate_claim_kind,
@@ -147,12 +147,13 @@ def recommend_drg_uplift_from_claims(
         if recoverable <= 0:
             continue
 
+        if claim_kind not in {"DRG_OVERRIDABLE", "ITEMIZED"}:
+            continue
+
         savings_basis = (
             "optional_override"
             if claim_kind == "DRG_OVERRIDABLE"
-            else "sourced"
-            if claim_kind == "ITEMIZED"
-            else "heuristic"
+            else SAVINGS_BASIS_SOURCED
         )
 
         opportunities.append(
@@ -165,7 +166,7 @@ def recommend_drg_uplift_from_claims(
                 "itemized_raw_try": itemized_raw,
                 "package_total_try": package_total,
                 "package_price_methodology": package_methodology,
-                "itemized_heuristic_uplift_try": gross_uplift,
+                "itemized_heuristic_uplift_try": 0.0,
                 "gross_uplift_try": gross_uplift,
                 "deduped_session_try": min(session_overlap, gross_uplift),
                 "recoverable_uplift_try": recoverable,

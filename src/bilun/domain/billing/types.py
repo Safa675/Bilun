@@ -27,6 +27,16 @@ COPAY_UNAVAILABLE_REASON = (
     "dispensed drug claim lines, and billed amounts, which are not available "
     "in the active SUT runtime inputs."
 )
+BILLING_STRATEGY_REQUIRED_INPUTS = (
+    "itemized_billed_procedure_lines",
+    "episode_package_eligibility_context",
+    "admission_dates",
+)
+BILLING_STRATEGY_UNAVAILABLE_REASON = (
+    "Billing strategy comparison requires exact itemized billed procedure lines, "
+    "package eligibility context, and admission dates, which are not available "
+    "in the active SUT runtime inputs."
+)
 MATERIALS_REQUIRED_INPUTS = (
     "billed_material_codes",
 )
@@ -252,11 +262,8 @@ class SessionPricingUplift:
 
     @property
     def total_uplift_try(self) -> float:
-        """Rule-calculated uplift across all opportunities (including review rows)."""
-        return round(
-            sum(float(row.get("recoverable_uplift_try") or 0.0) for row in self.opportunities),
-            2,
-        )
+        """Rule-calculated uplift including clinical-review rows (audit total)."""
+        return round(self.confirmed_uplift_try + self.review_uplift_try, 2)
 
     @property
     def confirmed_uplift_try(self) -> float:
@@ -272,7 +279,10 @@ class SessionPricingUplift:
 
     @property
     def review_uplift_try(self) -> float:
-        return round(self.total_uplift_try - self.confirmed_uplift_try, 2)
+        return round(
+            sum(float(row.get("review_uplift_try") or 0.0) for row in self.opportunities),
+            2,
+        )
 
     @property
     def review_opportunity_count(self) -> int:
