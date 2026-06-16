@@ -134,6 +134,30 @@ class TestClassify:
         matched = json.loads(result["matched_rule_ids"])
         assert "gazette_repricing" not in matched
 
+    def test_copay_exemption_ek4d_annex_match(self) -> None:
+        row = _sample_row(
+            section_id="1.8.2",
+            section_path="1.8/1.8.2",
+            annex_refs='["EK-4/D"]',
+            text_tr="EK-4/D listesindeki ilaçlar katılım payından muaftır.",
+            deontic_modality="NO_COPAY",
+        )
+        result = classify_clause_row(row)
+        matched = json.loads(result["matched_rule_ids"])
+        assert "copay_exemption_ek4d" in matched
+        assert result["primary_rule_id"] == "copay_exemption_ek4d"
+
+    def test_medula_rejection_playbook_section_match(self) -> None:
+        row = _sample_row(
+            section_id="1.7.2",
+            section_path="1.7/1.7.2",
+            text_tr="MEDULA sistemi üzerinden provizyon alınır.",
+            deontic_modality="MUST_BILL",
+        )
+        result = classify_clause_row(row)
+        matched = json.loads(result["matched_rule_ids"])
+        assert "medula_rejection_playbook" in matched
+
 
 class TestCoverage:
     def test_enriches_status_from_registry(self) -> None:
@@ -141,6 +165,34 @@ class TestCoverage:
         coverage, _, _, _ = build_sut_coverage(clauses)
         assert coverage.iloc[0]["coverage_status"] == "partial"
         assert "billing/claim_copay.py" in coverage.iloc[0]["domain_modules"]
+
+    def test_non_algorithmic_primary_has_no_gap(self) -> None:
+        row = _sample_row(
+            section_id="4.1",
+            section_path="4.1",
+            annex_refs='["EK-4/A"]',
+            text_tr="EK-4/A listesindeki ilaçlar Kurumca karşılanır.",
+            deontic_modality="MUST_BILL",
+        )
+        coverage, _, _, _ = build_sut_coverage(pd.DataFrame([row]))
+        drug_rows = coverage[coverage["primary_rule_id"] == "drug_ek4a"]
+        if not drug_rows.empty:
+            assert drug_rows.iloc[0]["coverage_status"] == "non_algorithmic"
+            assert drug_rows.iloc[0]["has_algorithmic_gap"] == False
+
+    def test_billing_documents_non_algorithmic_no_gap(self) -> None:
+        row = _sample_row(
+            section_id="5.2.1",
+            section_path="5.2/5.2.1",
+            text_tr="Fatura belgelerinde zorunlu alanlar yer alır.",
+            deontic_modality="MUST_BILL",
+            clause_type="fikra",
+        )
+        coverage, _, _, _ = build_sut_coverage(pd.DataFrame([row]))
+        doc_rows = coverage[coverage["primary_rule_id"] == "billing_documents"]
+        assert not doc_rows.empty
+        assert doc_rows.iloc[0]["coverage_status"] == "non_algorithmic"
+        assert doc_rows.iloc[0]["has_algorithmic_gap"] == False
 
     def test_registry_summary_lists_all_rules(self) -> None:
         clauses = pd.DataFrame([_sample_row()])
@@ -258,3 +310,34 @@ class TestFullCoverageBuild:
 
         entry = RULE_BY_ID["lab_billing"]
         assert any("lab_capture_gap" in module for module in entry.domain_modules)
+
+    def test_drug_ek4a_non_algorithmic_not_false_gap(self, coverage: pd.DataFrame) -> None:
+        drug = coverage[coverage["primary_rule_id"] == "drug_ek4a"]
+        assert not drug.empty
+        assert (drug["coverage_status"] == "non_algorithmic").all()
+        assert drug["has_algorithmic_gap"].sum() == 0
+
+    def test_billing_documents_non_algorithmic_not_false_gap(self, coverage: pd.DataFrame) -> None:
+        docs = coverage[coverage["primary_rule_id"] == "billing_documents"]
+        assert not docs.empty
+        assert (docs["coverage_status"] == "non_algorithmic").all()
+        assert docs["has_algorithmic_gap"].sum() == 0
+
+    def test_copay_exemption_ek4d_implemented_has_mapping(self, coverage: pd.DataFrame) -> None:
+        matched = coverage[coverage["matched_rule_ids"].str.contains("copay_exemption_ek4d", regex=False)]
+        assert not matched.empty
+
+        from scripts.sut.prose.rule_registry import RULE_BY_ID
+
+        assert RULE_BY_ID["copay_exemption_ek4d"].coverage_status == "implemented"
+        primary = coverage[coverage["primary_rule_id"] == "copay_exemption_ek4d"]
+        if not primary.empty:
+            assert primary["has_algorithmic_gap"].sum() == 0
+
+    def test_medula_rejection_playbook_partial_has_mapping(self, coverage: pd.DataFrame) -> None:
+        matched = coverage[coverage["matched_rule_ids"].str.contains("medula_rejection_playbook", regex=False)]
+        assert not matched.empty
+
+        from scripts.sut.prose.rule_registry import RULE_BY_ID
+
+        assert RULE_BY_ID["medula_rejection_playbook"].coverage_status == "partial"

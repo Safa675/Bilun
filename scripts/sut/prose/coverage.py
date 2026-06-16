@@ -82,6 +82,11 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
             worst_status = "missing"
             coverage_notes = "Actionable SUT rule text with no mapped domain implementation"
 
+        has_algorithmic_gap = (
+            primary_status in {"partial", "missing", "needs_claim_lines"}
+            and primary_status != "non_algorithmic"
+        )
+
         rows.append(
             {
                 **row.to_dict(),
@@ -91,7 +96,7 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
                 "domain_modules": json.dumps(sorted(all_modules or primary_modules), ensure_ascii=False),
                 "matched_rule_categories": json.dumps(sorted(all_categories), ensure_ascii=False),
                 "coverage_notes": coverage_notes,
-                "has_algorithmic_gap": primary_status in {"partial", "missing", "needs_claim_lines"},
+                "has_algorithmic_gap": has_algorithmic_gap,
             }
         )
 

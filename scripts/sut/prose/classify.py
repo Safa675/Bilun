@@ -126,7 +126,7 @@ def _fallback_rule_id(
         ("4.1", "drug_ek4a"),
         ("4.", "drug_ek4a"),
         ("5.", "billing_documents"),
-        ("1.7", "provizyon_medula"),
+        ("1.7", "medula_rejection_playbook"),
         ("1.5", "referral_admission"),
         ("1.4", "definitions"),
         ("1.1", "definitions"),

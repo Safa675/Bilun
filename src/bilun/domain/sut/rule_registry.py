@@ -330,13 +330,29 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         annex_refs=("EK-4/A",),
         sut_section_prefixes=("4.1", "4.4"),
         description=(
-            "EK-4/A catalog lookup (reference data). Drug copay rules live in "
-            "copay_general_1_8.json; EK-4/D in drugs/ek4d_exempt.py — not billing optimizers."
+            "EK-4/A catalog lookup (reference data). Drug copay percentages in "
+            "copay_general_1_8.json — not a billing optimizer."
         ),
         description_tr=(
-            "EK-4/A katalog sorgusu (referans veri). İlaç katılım payı kuralları "
-            "copay_general_1_8.json'da; EK-4/D drugs/ek4d_exempt.py'de — fatura optimize edici değil."
+            "EK-4/A katalog sorgusu (referans veri). İlaç katılım payı yüzdeleri "
+            "copay_general_1_8.json'da — fatura optimize edici değil."
         ),
+    ),
+    RuleRegistryEntry(
+        rule_id="copay_exemption_ek4d",
+        rule_category="copay_exemption",
+        rule_category_tr="Katılım Payı Muafiyeti",
+        coverage_status="implemented",
+        domain_modules=(
+            "src/bilun/domain/drugs/ek4d_exempt.py",
+            "src/bilun/domain/billing/claim_copay.py",
+            "data/gazette/curated/ek4d_copay_exempt_entries.parquet",
+        ),
+        sut_section_prefixes=("1.8.2", "1.8.5"),
+        annex_refs=("EK-4/D",),
+        keywords=("katılım payından muaf", "sağlık raporu"),
+        description="EK-4/D drug copay exemptions (§1.8.2(3), §1.8.5(8))",
+        description_tr="EK-4/D ilaç katılım payı muafiyetleri (§1.8.2(3), §1.8.5(8))",
     ),
     RuleRegistryEntry(
         rule_id="drug_discount_prose",
@@ -461,22 +477,38 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="billing_documents",
         rule_category="billing_admin",
         rule_category_tr="Fatura Yönetimi",
-        coverage_status="missing",
+        coverage_status="non_algorithmic",
         domain_modules=(),
         sut_section_prefixes=("5.2", "5.3", "5.4"),
-        description="Invoice/document compliance rules (§5.2–5.4)",
-        description_tr="Fatura/belge uygunluk kuralları (§5.2–5.4)",
+        keywords=("fatura", "belge"),
+        description="Invoice/document format compliance (§5.2–5.4) — administrative, not billing optimization",
+        description_tr="Fatura/belge şekil uygunluğu (§5.2–5.4) — idari, fatura optimizasyonu değil",
+    ),
+    RuleRegistryEntry(
+        rule_id="medula_rejection_playbook",
+        rule_category="medula_rejection",
+        rule_category_tr="MEDULA Red Playbook",
+        coverage_status="partial",
+        domain_modules=(
+            "src/bilun/domain/prose_rules/medula_rejection.py",
+            "src/bilun/domain/billing/claim_medula_rejection.py",
+            "data/medula/rejection_playbook.json",
+        ),
+        sut_section_prefixes=("1.7", "5.1"),
+        keywords=("MEDULA", "fatura kayıt", "provizyon"),
+        description="MEDULA rejection → corrective rebill playbook (event-driven; partial template corpus)",
+        description_tr="MEDULA red → düzeltici yeniden fatura playbook (olay güdümlü; kısmi şablon corpus)",
     ),
     RuleRegistryEntry(
         rule_id="provizyon_medula",
         rule_category="billing_admin",
         rule_category_tr="Fatura Yönetimi",
-        coverage_status="missing",
+        coverage_status="partial",
         domain_modules=(),
         sut_section_prefixes=("1.7", "5.1"),
         keywords=("MEDULA", "provizyon"),
-        description="MEDULA provision and billing system rules",
-        description_tr="MEDULA provizyon ve fatura sistemi kuralları",
+        description="MEDULA provision and billing system prose (playbook wired separately)",
+        description_tr="MEDULA provizyon ve fatura sistemi prose (playbook ayrı kuralda)",
     ),
     RuleRegistryEntry(
         rule_id="referral_admission",
