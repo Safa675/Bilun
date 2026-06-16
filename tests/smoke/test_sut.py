@@ -66,7 +66,7 @@ class TestSutClaimValidation:
             assert res["claim_id"] == "TEST-CLEAN-001"
             assert res["is_valid"] is True
             assert isinstance(res["violations"], list)
-            assert isinstance(res["material_estimates"], list)
+            assert isinstance(res["material_lines"], list)
 
     def test_bundled_consumables_detected(self, api_client):
         with _skip_if_unavailable():
@@ -119,7 +119,7 @@ class TestSutClaimValidation:
                     "validation_time_ms",
                     "summary",
                     "violations",
-                    "material_estimates",
+                    "material_lines",
                 },
                 "validate-claim shape",
             )
@@ -140,10 +140,10 @@ class TestSutClaimValidation:
                 ],
             }
             res = _get_json(api_client.post("/api/validate-claim", json=body))
-            if len(res["material_estimates"]) > 0:
-                est = res["material_estimates"][0]
+            if len(res["material_lines"]) > 0:
+                line = res["material_lines"][0]
                 _assert_keys(
-                    est,
+                    line,
                     {
                         "material_code",
                         "material_name",
@@ -153,9 +153,10 @@ class TestSutClaimValidation:
                         "is_reimbursable",
                         "is_bundled",
                         "source",
+                        "exactness_status",
                         "notes",
                     },
-                    "material estimate",
+                    "material line",
                 )
 
 

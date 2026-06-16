@@ -78,10 +78,10 @@ class TestProseDrgUnbundling:
         finding = analyze_claim_unbundling(claim, lines)
         assert finding is not None
         assert len(finding.bundled_violations) == 1
-        assert finding.potential_savings_try > 0
-        assert finding.heuristic_savings_try == finding.potential_savings_try
+        assert finding.potential_savings_try == 0.0
+        assert finding.heuristic_savings_try > 0
         assert finding.sourced_savings_try == 0.0
-        assert finding.bundled_violations[0]["savings_basis"] == "heuristic"
+        assert finding.bundled_violations[0]["savings_basis"] == "audit_flag"
 
     def test_itemized_package_uplift_is_heuristic(self, monkeypatch) -> None:
         claim = _claim()
@@ -131,7 +131,7 @@ class TestProseDrgUnbundling:
         assert finding.heuristic_savings_try == pytest.approx(2000.0)
         assert finding.sourced_savings_try == 0.0
 
-    def test_detect_drg_payload_splits_heuristic_savings(self) -> None:
+    def test_detect_drg_payload_keeps_heuristic_audit_separate(self) -> None:
         claim = _claim()
         lines = [
             _proc(
@@ -149,8 +149,11 @@ class TestProseDrgUnbundling:
             diagnoses=(),
         )
         result = detect_drg_unbundling({"I"}, ctx)
-        assert result["has_heuristic_savings"] is True
-        assert result["total_heuristic_savings"] > 0
+        assert result["has_unbundling_risk"] is True
+        assert result["total_potential_savings"] == 0.0
+        assert result["chapter_analysis"][0]["heuristic_savings_try"] > 0
+        assert "total_heuristic_savings" not in result
+        assert "has_heuristic_savings" not in result
 
     def test_session_violations_skipped_when_same_incision_unknown(self) -> None:
         claim = _claim()

@@ -80,7 +80,7 @@ class TestCoverage:
         clauses = pd.DataFrame([_sample_row()])
         coverage, _, _, _ = build_sut_coverage(clauses)
         assert coverage.iloc[0]["coverage_status"] == "partial"
-        assert "billing/copay.py" in coverage.iloc[0]["domain_modules"]
+        assert "billing/claim_copay.py" in coverage.iloc[0]["domain_modules"]
 
     def test_registry_summary_lists_all_rules(self) -> None:
         clauses = pd.DataFrame([_sample_row()])

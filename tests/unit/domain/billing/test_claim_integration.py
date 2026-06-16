@@ -64,9 +64,8 @@ def test_exempt_patient_rx_copay_in_total() -> None:
 
 
 def test_billing_strategy_without_claim_context_stays_unavailable() -> None:
-    from src.bilun.domain.billing.strategy import _recommend_billing_strategy
+    report = compute_patient_billing_report("P1", chapters={"I"})
 
-    result = _recommend_billing_strategy("P1", set("I"))
-    assert result.exactness_status == "missing_exact_inputs"
-    assert len(result.recommendations) == 1
-    assert result.recommendations[0]["recommendation"] == "review_package_eligibility"
+    assert report.billing_strategy.exactness_status == "missing_exact_inputs"
+    assert report.billing_strategy.recommendations == []
+    assert report.total_recoverable_try == 0.0

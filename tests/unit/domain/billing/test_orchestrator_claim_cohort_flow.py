@@ -52,3 +52,31 @@ def test_compute_all_billing_reports_builds_claim_context_from_dataset() -> None
         2,
     )
     assert summary.savings_by_category["sgk_uplift"] == summary.total_sgk_uplift
+
+
+def test_compute_all_billing_reports_without_dataset_marks_missing_inputs() -> None:
+    reports, summary = compute_all_billing_reports(
+        {
+            "sut_by_pid": {"P1": {"total_try": 0}},
+            "patient_alerts_cache": {
+                "patients": [
+                    {
+                        "patient_id": "P1",
+                        "copay_exemption": {
+                            "exempt": False,
+                            "n_qualifying": 0,
+                            "qualifying_diagnoses": [],
+                        },
+                        "icd10_chapters": ["I"],
+                    }
+                ]
+            },
+            "lab_df_pl": pl.DataFrame(),
+        }
+    )
+
+    report = reports["P1"]
+    assert report.exactness_status == "missing_exact_inputs"
+    assert report.total_recoverable_try == 0.0
+    assert report.copay.exactness_status == "missing_exact_inputs"
+    assert summary.exactness_status == "missing_exact_inputs"

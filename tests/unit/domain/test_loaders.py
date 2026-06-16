@@ -89,9 +89,9 @@ def test_legacy_ek1a_loader_normalizes_malign_labels(monkeypatch, tmp_path):
 def test_public_sut_packages_export_expected_helpers():
     from src.bilun.domain.billing import compute_all_billing_reports
     from src.bilun.domain.optimization import compute_optimization_summary
-    from src.bilun.domain.pricing import get_drg_package_price, get_drg_package_price_for_date
+    from src.bilun.domain.pricing import __all__ as pricing_exports
 
-    assert callable(get_drg_package_price)
-    assert callable(get_drg_package_price_for_date)
+    assert "get_drg_package_price" not in pricing_exports
+    assert "get_drg_package_price_for_date" not in pricing_exports
     assert callable(compute_optimization_summary)
     assert callable(compute_all_billing_reports)

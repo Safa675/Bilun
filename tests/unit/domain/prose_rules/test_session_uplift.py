@@ -114,6 +114,41 @@ class TestSessionUnderbilling:
         assert hits[0]["included_in_sgk_total"] is True
         assert hits[0].get("review_kind") is None
 
+    def test_clinical_review_rows_exclude_recoverable_amount(self, monkeypatch) -> None:
+        monkeypatch.setattr(
+            "src.bilun.domain.prose_rules.session_uplift.needs_clinical_review",
+            lambda **_kwargs: True,
+        )
+        claim = _claim()
+        session_day = date(2026, 1, 10)
+        lines = [
+            _proc(
+                procedure_line_id="PL1",
+                procedure_code="610070",
+                procedure_date=session_day,
+                billed_amount_try=Decimal("100"),
+                procedure_specialty_code="cerrahi",
+            ),
+            _proc(
+                procedure_line_id="PL2",
+                procedure_code="609270",
+                procedure_date=session_day,
+                billed_amount_try=Decimal("1000"),
+                procedure_specialty_code="cerrahi",
+            ),
+        ]
+        hits = detect_session_underbilling_opportunities(
+            lines,
+            claim_id="CLM1",
+            same_incision=True,
+            claim=claim,
+        )
+        assert len(hits) == 1
+        assert hits[0]["review_kind"] == "needs_clinical_review"
+        assert hits[0]["recoverable_uplift_try"] == 0.0
+        assert hits[0]["review_uplift_try"] > 0
+        assert hits[0]["included_in_sgk_total"] is False
+
     def test_no_opportunity_when_secondary_at_allowed_rate(self) -> None:
         claim = _claim()
         session_day = date(2026, 1, 10)
