@@ -1,0 +1,8 @@
+{
+  "rule_set_id": "drug_indication_prose",
+  "title": "SUT §4.2 drug indication and report requirements",
+  "effective_date": "2026-01-17",
+  "sut_anchors": ["4.2"],
+  "coverage_note": "Tier 3a seed — executable rules populated in Tier 3b (ICD + drug + report matcher).",
+  "rules": []
+}

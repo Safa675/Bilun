@@ -168,6 +168,19 @@ class TestClassify:
         matched = json.loads(result["matched_rule_ids"])
         assert "medula_rejection_playbook" in matched
 
+    def test_drug_indication_prose_section_match(self) -> None:
+        row = _sample_row(
+            section_id="4.2.14.C",
+            section_path="4.2/4.2.14/4.2.14.C",
+            annex_refs='["EK-4/A"]',
+            text_tr="Endikasyon ve rapor ile birlikte kullanılması halinde ödenir.",
+            deontic_modality="MUST_BILL",
+        )
+        result = classify_clause_row(row)
+        assert result["primary_rule_id"] == "drug_indication_prose"
+        matched = json.loads(result["matched_rule_ids"])
+        assert "drug_indication_prose" in matched
+
 
 class TestCoverage:
     def test_enriches_status_from_registry(self) -> None:
@@ -351,6 +364,34 @@ class TestFullCoverageBuild:
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
         assert RULE_BY_ID["medula_rejection_playbook"].coverage_status == "partial"
+
+    def test_drug_indication_prose_classified_non_algorithmic(self, coverage: pd.DataFrame) -> None:
+        prose_json = _REPO_ROOT / "data/gazette/prose_rules/drug_indication_prose.json"
+        assert prose_json.is_file()
+
+        matched = coverage[coverage["matched_rule_ids"].str.contains("drug_indication_prose", regex=False)]
+        assert not matched.empty
+        primary = coverage[coverage["primary_rule_id"] == "drug_indication_prose"]
+        assert not primary.empty
+        assert (primary["coverage_status"] == "non_algorithmic").all()
+        assert primary["has_algorithmic_gap"].sum() == 0
+
+        from scripts.sut.prose.rule_registry import RULE_BY_ID
+
+        assert RULE_BY_ID["drug_indication_prose"].coverage_status == "non_algorithmic"
+
+    def test_surcharge_general_implemented_not_false_gap(self, coverage: pd.DataFrame) -> None:
+        rows = coverage[coverage["primary_rule_id"] == "surcharge_general"]
+        assert not rows.empty
+        assert (rows["coverage_status"] == "implemented").all()
+        assert rows["has_algorithmic_gap"].sum() == 0
+
+    def test_unclassified_gaps_reduced_from_tier2_baseline(self, coverage: pd.DataFrame) -> None:
+        uncl = coverage[
+            (coverage["primary_rule_category"] == "unclassified")
+            & coverage["has_algorithmic_gap"]
+        ]
+        assert len(uncl) < 598
 
     def test_ek2c_prose_drg_locked_implemented_has_mapping(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/ek2c_prose_drg_locked_codes.json"

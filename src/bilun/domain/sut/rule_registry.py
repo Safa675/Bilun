@@ -127,12 +127,15 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="surcharge_general",
         rule_category="surcharge",
         rule_category_tr="İlave Ücret",
-        coverage_status="partial",
-        domain_modules=("src/bilun/domain/optimization/surcharge.py",),
+        coverage_status="implemented",
+        domain_modules=(
+            "src/bilun/domain/optimization/surcharge.py",
+            "src/bilun/domain/billing/claim_copay.py",
+        ),
         sut_section_prefixes=("1.9",),
         keywords=("ilave ücret",),
-        description="General surcharge rules in §1.9 prose",
-        description_tr="§1.9 prose'sindeki genel ilave ücret kuralları",
+        description="General §1.9 surcharge prose + exact claim-line exposure (with EK-2G list)",
+        description_tr="Genel §1.9 ilave ücret prose + kesin talep satırı maruziyeti (EK-2/G listesi ile)",
     ),
     RuleRegistryEntry(
         rule_id="payment_method_package",
@@ -339,6 +342,21 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
             "EK-4/A katalog sorgusu (referans veri). İlaç katılım payı yüzdeleri "
             "copay_general_1_8.json'da — fatura optimize edici değil."
         ),
+    ),
+    RuleRegistryEntry(
+        rule_id="drug_indication_prose",
+        rule_category="drug_indication",
+        rule_category_tr="İlaç Endikasyon",
+        coverage_status="non_algorithmic",
+        domain_modules=(
+            "src/bilun/domain/prose_rules/drug_indication.py",
+            "data/gazette/prose_rules/drug_indication_prose.json",
+        ),
+        sut_section_prefixes=("4.2",),
+        annex_refs=("EK-4/A",),
+        keywords=("endikasyon", "rapor", "reçete", "tanıya dayalı", "kullanımı"),
+        description="§4.2 drug indication / report prose corpus (ICD+drug matcher planned Tier 3b)",
+        description_tr="§4.2 ilaç endikasyon / rapor prose corpus (ICD+ilaç eşleştirici Tier 3b)",
     ),
     RuleRegistryEntry(
         rule_id="copay_exemption_ek4d",

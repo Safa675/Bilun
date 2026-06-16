@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bilun.local/schemas/drug_indication_prose.schema.json",
+  "title": "SUT §4.2 drug indication and report prose",
+  "description": "Endikasyon, rapor, ICD-10 and EK-4/A crosswalk rules for claim validation (Tier 3b corpus).",
+  "type": "object",
+  "required": ["rule_set_id", "title", "effective_date", "rules"],
+  "additionalProperties": true,
+  "properties": {
+    "rule_set_id": { "type": "string", "const": "drug_indication_prose" },
+    "title": { "type": "string" },
+    "effective_date": { "type": "string", "format": "date" },
+    "coverage_note": { "type": "string" },
+    "sut_anchors": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": ["rule_id", "sut_section"],
+      "additionalProperties": true,
+      "properties": {
+        "rule_id": { "type": "string" },
+        "sut_section": { "type": "string" },
+        "drug_names": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "icd10_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "icd10_ranges": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "report_required": { "type": "boolean" },
+        "message_tr": { "type": "string" }
+      }
+    }
+  }
+}
