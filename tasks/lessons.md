@@ -9,11 +9,16 @@ Format per entry:
 
 ---
 
-## 2026-06-14 — Don't declare a runtime missing just because it isn't on PATH
+## 2026-06-14 / 2026-06-16 — Don't declare a runtime missing just because it isn't on PATH (REPEATED — rule strengthened)
 
-**Pattern:** Running `npm --version` and getting "command not found", then telling the user Node/npm are not installed, when in fact Node v22.16.0 and npm 10.9.2 were present at `/home/safa/.local/node-v22.16.0-linux-x64/bin` but that directory was not in `PATH`.
+**Pattern:** Running `npm --version` and getting "command not found", then telling the user Node/npm are not installed, when in fact Node v22.16.0 and npm 10.9.2 were present at `/home/safa/.local/node-v22.16.0-linux-x64/bin` but that directory was not in `PATH`. This was repeated on 2026-06-16 despite an existing lesson.
 
-**Rule:** Before declaring a tool/runtime unavailable, check common installation locations (`~/.local`, `/opt`, `/usr/local`), locate the actual executable with `find`/`ls`, and try running it with the full path or with its `bin` directory prepended to `PATH`. Only conclude it is missing after that fails.
+**Rule:** Declaring a tool/runtime unavailable is a positive claim — it requires evidence, not just a PATH miss.
+1. First check: run `which <tool>` and `<tool> --version`.
+2. If that fails, check known installation locations: `ls ~/.local/*/bin`, `/opt`, `/usr/local/bin`.
+3. If found anywhere, prepend its `bin` directory to `PATH` and rerun the check.
+4. Only conclude "not available" after steps 1–3 all fail.
+5. When a prior lesson already covers this, re-read `tasks/lessons.md` before asserting the same failure again.
 
 ## 2026-06-14 — Never claim AI/LLM usage without reading the implementation
 

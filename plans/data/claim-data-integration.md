@@ -326,13 +326,14 @@ and `admission_date` is not null):
    - `is_package_included == False` (exclude bundled-in-package lines)
 3. **Package total** — sum `expected_payable_try` for lines where:
    - `procedure_category == "paket"`
-   - (If no package line exists, fall back to `get_drg_package_price_for_date`
-     using `primary_icd10` + `admission_date` from the claim header.)
+   - If no package line exists, **do not fall back to a median heuristic**. The
+     claim is not package-priceable; treat package total as unavailable for that
+     claim.
 4. **Compare:** `savings_try = abs(itemized_total - package_total)`;
    recommend whichever total is lower (cheaper for SGK / higher recovery for provider
    depending on perspective — document which side BILUN optimizes for).
-5. Set `exactness_status = "exact"` when at least one package-candidate claim
-   has both itemized and package totals computable.
+5. Set `exactness_status = "exact"` only when a package-candidate claim has a
+   billed `paket` line and itemized lines are computable.
 
 **Parquet fields used explicitly:**
 
