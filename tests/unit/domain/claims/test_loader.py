@@ -11,7 +11,9 @@ import pytest
 from src.bilun.domain.claims import (
     ClaimValidationError,
     SUTClaimDataset,
+    SUTDataSourceConfigError,
     build_patient_claim_context,
+    clear_sut_claim_dataset_cache,
     load_sut_claim_dataset,
     read_claim_tables,
 )
@@ -23,14 +25,14 @@ pytestmark = pytest.mark.unit
 def test_load_committed_v2_claim_fixture_with_exact_indexes_and_totals():
     dataset = load_sut_claim_dataset()
 
-    assert len(dataset.claims) == 134
-    assert len(dataset.diagnoses) >= 134
-    assert len(dataset.procedure_lines) == 742
-    assert len(dataset.material_lines) == 152
-    assert len(dataset.drug_lines) == 366
-    assert len(dataset.expected_outputs) == 619
+    assert len(dataset.claims) == 96
+    assert len(dataset.diagnoses) >= 96
+    assert len(dataset.procedure_lines) == 520
+    assert len(dataset.material_lines) == 115
+    assert len(dataset.drug_lines) == 245
+    assert len(dataset.expected_outputs) == 433
     assert len(dataset.performed_procedure_lines) == 1
-    assert len(dataset.medula_rejection_events) == 1
+    assert len(dataset.medula_rejection_events) == 10
     assert dataset.medula_rejection_ingest_available is True
     assert len(dataset.patient_totals) == 50
 
@@ -96,3 +98,59 @@ def test_read_claim_tables_marks_medula_ingest_unavailable_when_parquet_missing(
     tables = read_claim_tables(claims_dir=tmp_path, mode="real_claims")
     assert tables.medula_rejection_ingest_available is False
     assert tables.medula_rejections == ()
+
+
+def test_loader_cache_key_includes_mode(tmp_path: Path) -> None:
+    """Same resolved directory and mode must hit the in-process loader cache."""
+    claims_dir = tmp_path / "real_claims"
+    shutil.copytree(DEFAULT_SYNTHETIC_CLAIMS_DIR, claims_dir)
+
+    clear_sut_claim_dataset_cache()
+    first = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
+    second = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
+    assert len(first.claims) == 96
+    assert first is second
+    clear_sut_claim_dataset_cache()
+
+
+def test_loader_normalizes_unset_mode_to_synthetic_demo() -> None:
+    """Unset mode and explicit synthetic_demo must load the same fixture."""
+    clear_sut_claim_dataset_cache()
+    default_dataset = load_sut_claim_dataset()
+    explicit_dataset = load_sut_claim_dataset(mode="synthetic_demo")
+    assert len(default_dataset.claims) == len(explicit_dataset.claims) == 96
+    clear_sut_claim_dataset_cache()
+
+
+def test_loader_real_claims_dir_not_blocked_by_synthetic_cache_warm(tmp_path: Path) -> None:
+    """Warming the synthetic cache must not prevent loading a real_claims directory."""
+    claims_dir = tmp_path / "real_claims"
+    shutil.copytree(DEFAULT_SYNTHETIC_CLAIMS_DIR, claims_dir)
+
+    load_sut_claim_dataset(mode="synthetic_demo")
+    dataset = load_sut_claim_dataset(claims_dir=claims_dir, mode="real_claims")
+    assert len(dataset.claims) == 96
+    clear_sut_claim_dataset_cache()
+
+
+def test_loader_rejects_real_claims_mode_after_synthetic_cache_warm() -> None:
+    """Warming the synthetic cache must not bypass real_claims path validation."""
+    load_sut_claim_dataset(mode="synthetic_demo")
+
+    with pytest.raises(SUTDataSourceConfigError) as exc_info:
+        load_sut_claim_dataset(
+            claims_dir=DEFAULT_SYNTHETIC_CLAIMS_DIR,
+            mode="real_claims",
+        )
+
+    assert "must not contain 'synthetic' for real_claims mode" in str(exc_info.value)
+
+
+def test_load_sut_claim_dataset_exposes_cache_clear_alias() -> None:
+    """The loader entry point exposes cache_clear for test and REPL use."""
+
+    first = load_sut_claim_dataset()
+    load_sut_claim_dataset.cache_clear()
+    second = load_sut_claim_dataset()
+    assert len(first.claims) == len(second.claims) == 96
+    assert first is not second

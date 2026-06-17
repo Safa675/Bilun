@@ -32,6 +32,35 @@ class PatientClaimContext:
     medula_rejection_events: tuple[MedulaRejectionEvent, ...] = ()
     medula_rejection_ingest_available: bool = False
 
+    def slice_for_claim(self, claim_id: str) -> PatientClaimContext | None:
+        """Scope this bundle to a single bill (``claim_id``).
+
+        Returns ``None`` when the claim is not present in this context.
+        """
+        claims = tuple(c for c in self.claims if c.claim_id == claim_id)
+        if not claims:
+            return None
+
+        return PatientClaimContext(
+            patient_id=self.patient_id,
+            claims=claims,
+            procedure_lines=tuple(
+                p for p in self.procedure_lines if p.claim_id == claim_id
+            ),
+            material_lines=tuple(
+                m for m in self.material_lines if m.claim_id == claim_id
+            ),
+            drug_lines=tuple(d for d in self.drug_lines if d.claim_id == claim_id),
+            diagnoses=tuple(dg for dg in self.diagnoses if dg.claim_id == claim_id),
+            performed_procedure_lines=tuple(
+                p for p in self.performed_procedure_lines if p.claim_id == claim_id
+            ),
+            medula_rejection_events=tuple(
+                e for e in self.medula_rejection_events if e.claim_id == claim_id
+            ),
+            medula_rejection_ingest_available=self.medula_rejection_ingest_available,
+        )
+
 
 @dataclass(frozen=True)
 class CohortClaimContext:
@@ -97,25 +126,7 @@ def build_bill_claim_context(
     if base is None:
         return None
 
-    claims = tuple(c for c in base.claims if c.claim_id == claim_id)
-    if not claims:
-        return None
-
-    return PatientClaimContext(
-        patient_id=patient_id,
-        claims=claims,
-        procedure_lines=tuple(p for p in base.procedure_lines if p.claim_id == claim_id),
-        material_lines=tuple(m for m in base.material_lines if m.claim_id == claim_id),
-        drug_lines=tuple(d for d in base.drug_lines if d.claim_id == claim_id),
-        diagnoses=tuple(dg for dg in base.diagnoses if dg.claim_id == claim_id),
-        performed_procedure_lines=tuple(
-            p for p in base.performed_procedure_lines if p.claim_id == claim_id
-        ),
-        medula_rejection_events=tuple(
-            e for e in base.medula_rejection_events if e.claim_id == claim_id
-        ),
-        medula_rejection_ingest_available=base.medula_rejection_ingest_available,
-    )
+    return base.slice_for_claim(claim_id)
 
 
 def build_cohort_claim_context(dataset: SUTClaimDataset | None) -> CohortClaimContext | None:

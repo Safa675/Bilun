@@ -232,6 +232,9 @@ class DrugClaimLine:
     denial_reason_expected: str
     rule_trace_expected: str
     drug_specialty_board_report_present: bool | None = None
+    drug_report_duration_months: int | None = None
+    drug_inpatient_supply: bool | None = None
+    prescriber_specialty: str | None = None
 
 
 @dataclass(frozen=True)

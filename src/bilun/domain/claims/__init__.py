@@ -18,7 +18,12 @@ from src.bilun.domain.claims.config import (
     resolve_sut_data_source,
 )
 from src.bilun.domain.claims.errors import ClaimValidationError
-from src.bilun.domain.claims.loader import SUTClaimDataset, load_sut_claim_dataset, read_claim_tables
+from src.bilun.domain.claims.dataset import ClaimTables, SUTClaimDataset
+from src.bilun.domain.claims.loader import (
+    clear_sut_claim_dataset_cache,
+    load_sut_claim_dataset,
+    read_claim_tables,
+)
 from src.bilun.domain.claims.models import (
     ClaimDiagnosis,
     ClaimHeader,
@@ -43,10 +48,12 @@ from src.bilun.domain.claims.provenance import (
     normalize_bilun_data_source_metadata,
     unavailable_bilun_data_source_metadata,
 )
+from src.bilun.domain.claims.types import RowDict
 
 __all__ = [
     "ClaimHeader",
     "ClaimDiagnosis",
+    "ClaimTables",
     "ClaimTotals",
     "ClaimValidationError",
     "CohortClaimContext",
@@ -60,6 +67,7 @@ __all__ = [
     "PerformedProcedureLine",
     "ProcedureClaimLine",
     "REAL_CLAIMS_MODE",
+    "RowDict",
     "SUTDataSourceConfig",
     "SUTDataSourceConfigError",
     "SUTDataSourceMetadata",
@@ -69,6 +77,7 @@ __all__ = [
     "attach_bilun_data_source_metadata",
     "build_cohort_claim_context",
     "build_patient_claim_context",
+    "clear_sut_claim_dataset_cache",
     "configured_bilun_data_source_metadata",
     "load_sut_claim_dataset",
     "normalize_bilun_data_source_metadata",

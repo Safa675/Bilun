@@ -1,52 +1,107 @@
 # SUT exact claim loader
 
-`src.sut.claims` loads billing-native claim Parquets and exposes exact
+`src.bilun.domain.claims` loads billing-native claim Parquets and exposes exact
 line-derived aggregates. In demo mode, those files are the committed synthetic
 claim Parquets under `data/synthetic/sut/claims/`.
 
+## Module map
+
+| Module | Responsibility |
+|--------|----------------|
+| `loader.py` | Public entry point, in-process LRU cache |
+| `parquet_reader.py` | Read and schema-check Parquet tables |
+| `schema.py` | `ParquetTableSpec` registry; shared with synthetic validation |
+| `dataset.py` | `ClaimTables`, `SUTClaimDataset` |
+| `dataset_builder.py` | Parse rows, validate links, build indexes |
+| `parsing/primitives.py` | Cell coercion (`parse_text`, `parse_money`, dates) |
+| `parsing/row_parsers.py` | Map `RowDict` rows to typed models |
+| `validation/` | FK, date, lab, expected-output checks |
+| `totals.py` | Per-claim and per-patient exact totals |
+| `types.py` | `RowDict` alias for raw Parquet rows |
+| `config.py` | `BILUN_DATA_MODE`, path guards, provenance |
+| `models.py` | Typed row and aggregate dataclasses |
+
 ## Inputs
 
+Required Parquet tables (see `schema.REQUIRED_CLAIM_TABLES`):
+
 - `claim_headers.parquet`
+- `claim_diagnoses.parquet`
 - `procedure_claim_lines.parquet`
 - `material_claim_lines.parquet`
 - `drug_claim_lines.parquet`
 - `expected_rule_outputs.parquet`
 
+Optional tables (see `schema.OPTIONAL_CLAIM_TABLES`):
+
+- `patient_copay_profiles.parquet`
+- `performed_procedure_lines.parquet`
+- `medula_rejection_events.parquet`
+
 The loader mirrors the synthetic dataset integrity rules for claim columns,
 foreign keys, prescription traceability, expected rule outputs, and total
 reconciliation. Optional lab-result linkage columns are validated when present;
-the current v1.1 claim Parquets do not carry lab-result IDs, so lab aggregates
-are derived from explicit procedure lines with `procedure_category="laboratuvar"`.
+lab aggregates are derived from explicit procedure lines with
+`procedure_category="laboratuvar"`.
+
+Synthetic Parquet validation in `scripts/synthetic/validate_sut_synthetic_data.py`
+imports `build_synthetic_claim_validation_columns()` from `schema.py` so loader
+required columns and exporter checks stay aligned.
 
 ## Public entry point
 
 ```python
-from src.sut.claims import load_sut_claim_dataset
+from src.bilun.domain.claims import load_sut_claim_dataset
 
 dataset = load_sut_claim_dataset()
-totals = dataset.patient_totals["SENTETIK-HASTA-001"]
+totals = dataset.patient_totals["SENTETIK-HASTA-0001"]
+```
+
+For tests or fixture reloads, clear the in-process cache:
+
+```python
+from src.bilun.domain.claims import clear_sut_claim_dataset_cache
+
+clear_sut_claim_dataset_cache()
+# or
+load_sut_claim_dataset.cache_clear()
+```
+
+Build a dataset from in-memory rows (for unit tests):
+
+```python
+from src.bilun.domain.claims import SUTClaimDataset, read_claim_tables
+
+tables = read_claim_tables()
+dataset = SUTClaimDataset.from_rows(
+    claim_headers=tables.headers,
+    diagnoses=tables.diagnoses,
+    procedure_lines=tables.procedures,
+    material_lines=tables.materials,
+    drug_lines=tables.drugs,
+    expected_outputs=tables.expected_outputs,
+)
 ```
 
 Totals are calculated only from explicit procedure, material, and drug claim
-lines. As a non-active guard against legacy approximation contracts, the exact
-claim-loader contract intentionally does not expose `cost_min`, `cost_max`, or
-`cost_mid` fields.
+lines. The exact claim-loader contract intentionally does not expose legacy
+approximation fields such as `cost_min`, `cost_max`, or `cost_mid`.
 
 ## Data modes and migration contract
 
-`SUT_DATA_MODE=synthetic_demo` uses:
+`BILUN_DATA_MODE=synthetic_demo` (legacy `SUT_DATA_MODE` still accepted) uses:
 
 ```bash
-SUT_CLAIMS_DIR=data/synthetic/sut/claims
-SUT_CLEAN_DIR=data/synthetic/sut/clean
+BILUN_CLAIMS_DIR=data/synthetic/sut/claims
+BILUN_CLEAN_DIR=data/synthetic/sut/clean
 ```
 
 Synthetic demo claims are rule-exact for the generated procedure, material, and
 drug claim lines, but they are not real billing outcomes. Keep product, API, and
 docs copy visibly labeled as synthetic demo claim data.
 
-Future `SUT_DATA_MODE=real_claims` should point `SUT_CLAIMS_DIR` at a validated
-hospital claim export and `SUT_CLEAN_DIR` at the matching clean clinical feed.
+Future `BILUN_DATA_MODE=real_claims` should point `BILUN_CLAIMS_DIR` at a validated
+hospital claim export and `BILUN_CLEAN_DIR` at the matching clean clinical feed.
 The real adapter must map hospital rows into the same `ClaimHeader`,
 `ProcedureClaimLine`, `MaterialClaimLine`, and `DrugClaimLine` contract so rule
 modules continue to consume `SUTClaimDataset` without source-specific branches.
