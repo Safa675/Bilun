@@ -53,10 +53,19 @@ def _section_matches(section_path: str | None, section_id: str | None, prefix: s
         return False
     if section_path:
         parts = section_path.split("/")
-        if any(part == prefix or part.startswith(prefix + ".") for part in parts):
+        if any(
+            part == prefix
+            or part.startswith(prefix + ".")
+            or part.startswith(prefix + "-")
+            for part in parts
+        ):
             return True
     if section_id:
-        return section_id == prefix or section_id.startswith(prefix + ".")
+        return (
+            section_id == prefix
+            or section_id.startswith(prefix + ".")
+            or section_id.startswith(prefix + "-")
+        )
     return False
 
 
@@ -69,21 +78,32 @@ def _score_entry_match(
     text_norm: str,
 ) -> int:
     score = 0
+    section_matched = False
+
+    for prefix in entry.sut_section_prefixes:
+        if _section_matches(section_path, section_id, prefix):
+            section_matched = True
+            score += _MATCH_SCORE_SECTION
+            break
+
+    # When section prefixes are declared, annex/keyword signals must stay in-scope.
+    if entry.sut_section_prefixes and not section_matched:
+        return 0
 
     annex_set = set(annex_refs)
     registry_annexes = set(entry.annex_refs)
     if registry_annexes and annex_set & registry_annexes:
         score += _MATCH_SCORE_ANNEX
 
-    for prefix in entry.sut_section_prefixes:
-        if _section_matches(section_path, section_id, prefix):
-            score += _MATCH_SCORE_SECTION
-            break
-
+    keyword_matched = False
     for keyword in entry.keywords:
         if keyword.casefold() in text_norm:
+            keyword_matched = True
             score += _MATCH_SCORE_KEYWORD
             break
+
+    if entry.keywords and not keyword_matched:
+        return 0
 
     if score == 0 and not entry.sut_section_prefixes and not entry.annex_refs and not entry.keywords:
         return 0
@@ -125,9 +145,6 @@ def _fallback_rule_id(
     deontic_modality: str | None,
     clause_type: str,
 ) -> str | None:
-    if clause_type in {"chapter", "amendment"} and not deontic_modality:
-        return None
-
     prefixes = [
         ("1.8.5", "copay_exemption_ek1a"),
         ("1.8", "copay_rate_general"),
@@ -135,18 +152,31 @@ def _fallback_rule_id(
         ("4.2.9.A-2", "lab_billing"),
         ("2.2.2.A", "procedure_pairing"),
         ("2.2.1.B", "drg_package_adequacy"),
-        ("3.1.1", "material_pairing"),
+        ("3.1.1", "material_bundling_prose"),
         ("2.2", "payment_method_package"),
+        ("2.6", "definitions"),
+        ("2.5", "pricing_ek2b"),
+        ("2.4", "payment_method_package"),
         ("2.", "pricing_ek2b"),
         ("3.3", "specialty_materials"),
         ("3.", "material_bundling_prose"),
         ("4.2", "drug_indication_prose"),
+        ("4.7", "drug_ek4a"),
+        ("4.6", "drug_ek4a"),
+        ("4.5", "drug_ek4a"),
         ("4.4", "drug_ek4a"),
+        ("4.3", "drug_ek4a"),
         ("4.1", "drug_ek4a"),
+        ("5.1", "provizyon_medula"),
         ("5.", "billing_documents"),
-        ("1.7", "medula_rejection_playbook"),
+        ("6.", "definitions"),
+        ("14.", "definitions"),
+        ("1.7", "provizyon_medula"),
+        ("1.6", "referral_admission"),
         ("1.5", "referral_admission"),
         ("1.4", "definitions"),
+        ("1.3", "definitions"),
+        ("1.2", "definitions"),
         ("1.1", "definitions"),
     ]
     prefixes.sort(key=lambda item: len(item[0]), reverse=True)
@@ -154,6 +184,9 @@ def _fallback_rule_id(
     for prefix, rule_id in prefixes:
         if _section_matches(section_path, section_id, prefix.rstrip(".")):
             return rule_id
+
+    if clause_type in {"chapter", "amendment"} and not deontic_modality:
+        return None
 
     if deontic_modality and clause_type in {"fikra", "bent", "prose"}:
         return "material_bundling_prose" if deontic_modality in {"MUST_NOT_BILL", "NO_PAY"} else None

@@ -157,7 +157,19 @@ class TestClassify:
         assert "copay_exemption_ek4d" in matched
         assert result["primary_rule_id"] == "copay_exemption_ek4d"
 
-    def test_medula_rejection_playbook_section_match(self) -> None:
+    def test_procedure_pairing_not_primary_on_surcharge_section(self) -> None:
+        row = _sample_row(
+            section_id="1.9.1",
+            section_path="1.9/1.9.1",
+            annex_refs='["EK-2/B"]',
+            text_tr="Sözleşmeli kurumlar aynı seans ilave ücret uygular.",
+            deontic_modality="MUST_BILL",
+        )
+        result = classify_clause_row(row)
+        assert result["primary_rule_id"] == "surcharge_general"
+        assert "procedure_pairing" not in json.loads(result["matched_rule_ids"])
+
+    def test_medula_provizyon_fallback(self) -> None:
         row = _sample_row(
             section_id="1.7.2",
             section_path="1.7/1.7.2",
@@ -165,8 +177,7 @@ class TestClassify:
             deontic_modality="MUST_BILL",
         )
         result = classify_clause_row(row)
-        matched = json.loads(result["matched_rule_ids"])
-        assert "medula_rejection_playbook" in matched
+        assert result["primary_rule_id"] == "provizyon_medula"
 
     def test_drug_indication_prose_section_match(self) -> None:
         row = _sample_row(
@@ -216,6 +227,33 @@ class TestCoverage:
         assert not doc_rows.empty
         assert doc_rows.iloc[0]["coverage_status"] == "non_algorithmic"
         assert doc_rows.iloc[0]["has_algorithmic_gap"] == False
+
+    def test_billing_amendment_header_non_algorithmic_no_gap(self) -> None:
+        row = _sample_row(
+            section_id="5.2.1",
+            section_path="5.2/5.2.1",
+            text_tr="(Mülga: RG- 01/08/2013- 28725/ 11 md. Yürürlük: 01/08/2013)",
+            clause_type="amendment",
+            deontic_modality=None,
+        )
+        coverage, _, _, _ = build_sut_coverage(pd.DataFrame([row]))
+        doc_rows = coverage[coverage["primary_rule_id"] == "billing_documents"]
+        assert not doc_rows.empty
+        assert doc_rows.iloc[0]["coverage_status"] == "non_algorithmic"
+        assert doc_rows.iloc[0]["has_algorithmic_gap"] == False
+
+    def test_nan_deontic_amendment_not_actionable_gap(self) -> None:
+        row = _sample_row(
+            section_id="1.7",
+            section_path="1.7",
+            text_tr="(Değişiklik: RG- …)",
+            clause_type="amendment",
+            deontic_modality=None,
+        )
+        coverage, _, _, _ = build_sut_coverage(pd.DataFrame([row]))
+        assert coverage.iloc[0]["primary_rule_id"] == "provizyon_medula"
+        assert coverage.iloc[0]["coverage_status"] == "non_algorithmic"
+        assert coverage.iloc[0]["has_algorithmic_gap"] == False
 
     def test_registry_summary_lists_all_rules(self) -> None:
         clauses = pd.DataFrame([_sample_row()])
@@ -288,20 +326,20 @@ class TestFullCoverageBuild:
 
         assert RULE_BY_ID["drg_package_adequacy"].coverage_status == "implemented"
 
-    def test_gazette_repricing_partial_has_mapping(self, coverage: pd.DataFrame) -> None:
+    def test_gazette_repricing_implemented_has_corpus(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/gazette_repricing_prose.json"
+        manifest_json = (
+            _REPO_ROOT / "data/gazette/prose_manifests/L2.2_gazette_repricing_encoded_manifest.json"
+        )
         assert prose_json.is_file()
+        assert manifest_json.is_file()
 
-        matched = coverage[coverage["matched_rule_ids"].str.contains("gazette_repricing", regex=False)]
-        assert not matched.empty
         primary = coverage[coverage["primary_rule_id"] == "gazette_repricing"]
-        if not primary.empty:
-            assert (primary["coverage_status"] == "partial").all()
-            assert primary["has_algorithmic_gap"].all()
+        assert primary.empty
 
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
-        assert RULE_BY_ID["gazette_repricing"].coverage_status == "partial"
+        assert RULE_BY_ID["gazette_repricing"].coverage_status == "implemented"
 
     def test_procedure_pairing_partial_has_mapping(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/procedure_pairing_prose.json"
@@ -310,28 +348,36 @@ class TestFullCoverageBuild:
         matched = coverage[coverage["matched_rule_ids"].str.contains("procedure_pairing", regex=False)]
         assert not matched.empty
 
+        primary = coverage[coverage["primary_rule_id"] == "procedure_pairing"]
+        assert len(primary) <= 4
+
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
         assert RULE_BY_ID["procedure_pairing"].coverage_status == "partial"
 
     def test_material_pairing_partial_has_mapping(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/material_pairing_uplift.json"
+        manifest_json = (
+            _REPO_ROOT / "data/gazette/prose_manifests/L3.1_material_pairing_encoded_manifest.json"
+        )
         assert prose_json.is_file()
+        assert manifest_json.is_file()
 
-        matched = coverage[coverage["matched_rule_ids"].str.contains("material_pairing", regex=False)]
-        assert not matched.empty
+        primary = coverage[coverage["primary_rule_id"] == "material_pairing"]
+        assert primary.empty
 
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
         assert RULE_BY_ID["material_pairing"].coverage_status == "partial"
 
-    def test_lab_billing_extended_has_mapping(self, coverage: pd.DataFrame) -> None:
+    def test_lab_billing_implemented_has_mapping(self, coverage: pd.DataFrame) -> None:
         matched = coverage[coverage["matched_rule_ids"].str.contains("lab_billing", regex=False)]
         assert not matched.empty
 
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
         entry = RULE_BY_ID["lab_billing"]
+        assert entry.coverage_status == "implemented"
         assert any("lab_capture_gap" in module for module in entry.domain_modules)
 
     def test_drug_ek4a_non_algorithmic_not_false_gap(self, coverage: pd.DataFrame) -> None:
@@ -358,12 +404,13 @@ class TestFullCoverageBuild:
             assert primary["has_algorithmic_gap"].sum() == 0
 
     def test_medula_rejection_playbook_partial_has_mapping(self, coverage: pd.DataFrame) -> None:
-        matched = coverage[coverage["matched_rule_ids"].str.contains("medula_rejection_playbook", regex=False)]
-        assert not matched.empty
-
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
         assert RULE_BY_ID["medula_rejection_playbook"].coverage_status == "partial"
+        provizyon = coverage[coverage["primary_rule_id"] == "provizyon_medula"]
+        assert not provizyon.empty
+        assert (provizyon["coverage_status"] == "non_algorithmic").all()
+        assert provizyon["has_algorithmic_gap"].sum() == 0
 
     def test_drug_indication_prose_classified_partial(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/drug_indication_prose.json"
@@ -380,6 +427,36 @@ class TestFullCoverageBuild:
 
         assert RULE_BY_ID["drug_indication_prose"].coverage_status == "partial"
 
+    def test_drug_indication_manifest_on_disk(self) -> None:
+        manifest = _REPO_ROOT / "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"
+        assert manifest.is_file()
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        assert payload["rules_in_json"] >= 131
+        assert payload["manifest_version"] == "phase5-v1"
+        assert payload["clause_trace_complete"] is True
+        assert len(payload.get("clause_traces") or []) == 828
+        assert len(payload.get("tier_c_deferred_clause_ids") or []) >= 500
+        assert payload.get("tier_c_defer_themes_summary")
+
+    def test_drug_indication_has_rule_encoding_column(self, coverage: pd.DataFrame) -> None:
+        di = coverage[coverage["primary_rule_id"] == "drug_indication_prose"]
+        assert not di.empty
+        assert "has_rule_encoding" in di.columns
+        assert int(di["has_rule_encoding"].sum()) > 0
+        assert int(di["has_algorithmic_gap"].sum()) > int(di["has_rule_encoding"].sum())
+        unencoded_gaps = di[di["has_algorithmic_gap"] & ~di["has_rule_encoding"]]
+        assert len(unencoded_gaps) > 0
+
+    def test_drug_indication_rule_summary_has_encoding_counts(self, coverage: pd.DataFrame) -> None:
+        from scripts.sut.prose.coverage import build_coverage_summary
+
+        rule_summary = build_coverage_summary(coverage)
+        di_row = rule_summary[rule_summary["primary_rule_id"] == "drug_indication_prose"]
+        assert not di_row.empty
+        assert "encoded_clause_count" in di_row.columns
+        assert int(di_row["encoded_clause_count"].iloc[0]) > 0
+        assert int(di_row["unencoded_gap_clause_count"].iloc[0]) > 0
+
     def test_surcharge_general_implemented_not_false_gap(self, coverage: pd.DataFrame) -> None:
         rows = coverage[coverage["primary_rule_id"] == "surcharge_general"]
         assert not rows.empty
@@ -391,7 +468,22 @@ class TestFullCoverageBuild:
             (coverage["primary_rule_category"] == "unclassified")
             & coverage["has_algorithmic_gap"]
         ]
-        assert len(uncl) < 598
+        # Sprint 0: NaN-safe actionable signal + §5/§6 amendment routing.
+        assert len(uncl) <= 60
+
+    def test_material_bundling_prose_has_manifest_encoding(self, coverage: pd.DataFrame) -> None:
+        mb = coverage[coverage["primary_rule_id"] == "material_bundling_prose"]
+        assert not mb.empty
+        assert mb["has_rule_encoding"].sum() > 0
+
+    def test_specialty_materials_prose_has_manifest_encoding(self, coverage: pd.DataFrame) -> None:
+        sp = coverage[coverage["primary_rule_id"] == "specialty_materials_prose"]
+        assert not sp.empty
+        assert sp["has_rule_encoding"].sum() > 0
+
+    def test_section5_has_no_algorithmic_gaps(self, coverage: pd.DataFrame) -> None:
+        s5 = coverage[coverage["section_id"].astype(str).str.startswith("5")]
+        assert s5["has_algorithmic_gap"].sum() == 0
 
     def test_ek2c_prose_drg_locked_implemented_has_mapping(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/ek2c_prose_drg_locked_codes.json"

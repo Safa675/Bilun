@@ -1,0 +1,8 @@
+{
+  "manifest_version": "wave2-v1",
+  "rule_id": "procedure_pairing",
+  "scope_note": "§2.2.2.A same-session add-on pairing pilot (6 JSON rules)",
+  "encoded_clause_ids": [
+    "C000646"
+  ]
+}

@@ -66,6 +66,19 @@ def main() -> None:
     gaps = coverage[coverage["has_algorithmic_gap"]]
     print(f"\nClauses with algorithmic gaps: {len(gaps):,} ({100*len(gaps)/len(coverage):.1f}%)")
 
+    di = coverage[coverage["primary_rule_id"] == "drug_indication_prose"]
+    if not di.empty and "has_rule_encoding" in di.columns:
+        encoded = int(di["has_rule_encoding"].sum())
+        di_gaps = int(di["has_algorithmic_gap"].sum())
+        unencoded_gaps = int(
+            di[di["has_algorithmic_gap"] & ~di["has_rule_encoding"]].shape[0]
+        )
+        print("\nDrug indication honesty (§4.2 → drug_indication_prose):")
+        print(f"  classified rows: {len(di):,}")
+        print(f"  encoded in manifest: {encoded:,} ({100*encoded/len(di):.1f}%)")
+        print(f"  algorithmic gaps (registry partial): {di_gaps:,}")
+        print(f"  gaps without JSON encoding: {unencoded_gaps:,}")
+
     print("\nTop gap categories:")
     print(
         gaps["primary_rule_category"]

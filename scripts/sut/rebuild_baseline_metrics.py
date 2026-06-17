@@ -60,11 +60,39 @@ def _material_bundling_snapshot(
     return snapshot
 
 
+def _drug_indication_snapshot(
+    coverage: pd.DataFrame,
+    *,
+    manifest_path: Path,
+) -> dict[str, object]:
+    di = coverage[coverage["primary_rule_id"] == "drug_indication_prose"]
+    snapshot: dict[str, object] = {
+        "classified_clause_rows": int(len(di)),
+        "partial_rows": int((di["coverage_status"] == "partial").sum()),
+        "gap_rows": int(di["has_algorithmic_gap"].sum()),
+        "encoded_clause_rows": int(di["has_rule_encoding"].sum()) if "has_rule_encoding" in di.columns else 0,
+        "unencoded_gap_rows": int(
+            di[di["has_algorithmic_gap"] & ~di["has_rule_encoding"]].shape[0]
+        )
+        if {"has_algorithmic_gap", "has_rule_encoding"}.issubset(di.columns)
+        else 0,
+        "prose_rules_on_disk": 0,
+    }
+    prose_json = Path("data/gazette/prose_rules/drug_indication_prose.json")
+    if prose_json.is_file():
+        payload = json.loads(prose_json.read_text(encoding="utf-8"))
+        snapshot["prose_rules_on_disk"] = len(payload.get("rules", []))
+    if manifest_path.is_file():
+        snapshot["encode_manifest"] = json.loads(manifest_path.read_text(encoding="utf-8"))
+    return snapshot
+
+
 def build_baseline_metrics(
     clauses_path: Path,
     *,
     manifest_path: Path,
     gate_b_summary_path: Path,
+    drug_manifest_path: Path | None = None,
 ) -> dict[str, object]:
     coverage, _, _, registry = build_sut_coverage(pd.read_parquet(clauses_path))
 
@@ -108,6 +136,11 @@ def build_baseline_metrics(
                 coverage,
                 manifest_path=manifest_path,
                 gate_b_summary_path=gate_b_summary_path,
+            ),
+            "drug_indication_prose": _drug_indication_snapshot(
+                coverage,
+                manifest_path=drug_manifest_path
+                or Path("data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"),
             ),
         },
         "registry": {
@@ -168,6 +201,11 @@ def main() -> None:
         type=Path,
         default=Path("data/gazette/prose_corpus/L1.4_material_bundling_gate_b_summary.json"),
     )
+    parser.add_argument(
+        "--drug-manifest",
+        type=Path,
+        default=Path("data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"),
+    )
     args = parser.parse_args()
 
     if args.coverage_dir:
@@ -177,6 +215,7 @@ def main() -> None:
         args.clauses,
         manifest_path=args.manifest,
         gate_b_summary_path=args.gate_b_summary,
+        drug_manifest_path=args.drug_manifest,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -190,10 +229,16 @@ def main() -> None:
         0,
     )
     mb = payload["coverage"]["material_bundling_prose"]
+    di = payload["coverage"]["drug_indication_prose"]
     print(f"Wrote {args.out}")
     print(f"  algorithmic_gaps={payload['coverage']['algorithmic_gaps']}")
     print(f"  bundling category gaps={bundling_gaps}")
     print(f"  material_bundling_prose clauses={mb['classified_clause_rows']} gap_rows={mb['gap_rows']}")
+    print(
+        f"  drug_indication_prose clauses={di['classified_clause_rows']} "
+        f"encoded_rows={di['encoded_clause_rows']} gap_rows={di['gap_rows']} "
+        f"unencoded_gaps={di.get('unencoded_gap_rows', 0)}"
+    )
 
 
 if __name__ == "__main__":

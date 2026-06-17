@@ -47,3 +47,11 @@ def test_rule_index_matches_registry_enrichment() -> None:
         meta = index[entry.rule_id]
         assert entry.fact_check_verdict == meta["fact_check_verdict"]
         assert entry.fact_check_units == meta["fact_check_units"]
+
+
+def test_drug_indication_prose_has_supplemental_fact_check() -> None:
+    by_id = {entry.rule_id: entry for entry in RULE_REGISTRY}
+    entry = by_id["drug_indication_prose"]
+    assert entry.fact_check_verdict == "PARTIAL"
+    assert "SUT-4.2.14.C" in entry.fact_check_units
+    assert "4.2.14.C" in (entry.fact_check_note or "")

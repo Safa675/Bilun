@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +11,73 @@ import pandas as pd
 
 from .classify import classify_clauses
 from .rule_registry import RULE_BY_ID, RULE_REGISTRY, CoverageStatus
+
+_DRUG_INDICATION_MANIFEST = (
+    Path(__file__).resolve().parents[3]
+    / "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"
+)
+_MANIFEST_DIR = Path(__file__).resolve().parents[3] / "data/gazette/prose_manifests"
+_WAVE2_MANIFESTS: dict[str, str] = {
+    "gazette_repricing": "L2.2_gazette_repricing_encoded_manifest.json",
+    "procedure_pairing": "L2.2_procedure_pairing_encoded_manifest.json",
+    "material_pairing": "L3.1_material_pairing_encoded_manifest.json",
+}
+_PROSE_MANIFESTS: dict[str, str] = {
+    "material_bundling_prose": "L1.4_material_bundling_encoded_manifest.json",
+    "specialty_materials_prose": "L4.4_specialty_prose_encoded_manifest.json",
+}
+_MANIFEST_CLAUSE_ID_KEYS = frozenset({"gate_b_sources_encoded", "encoded_clause_ids"})
+_EXCLUDED_MANIFEST_CLAUSE_LIST_SUFFIXES = ("_deferred_clause_ids", "_pending_clause_ids")
+
+
+def _optional_str(value: object) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def _has_actionable_signal(row: pd.Series) -> bool:
+    deontic_modality = _optional_str(row.get("deontic_modality"))
+    annex_refs = _json_list(str(row.get("annex_refs", "[]")))
+    clause_type = str(row.get("clause_type") or "")
+    return bool(deontic_modality or annex_refs or clause_type in {"fikra", "bent", "prose"})
+
+
+def _load_encoded_clause_ids(manifest_name: str) -> frozenset[str]:
+    path = _MANIFEST_DIR / manifest_name
+    if not path.is_file():
+        return frozenset()
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return _manifest_clause_ids_from_payload(payload)
+
+
+def _manifest_clause_ids_from_payload(payload: dict[str, Any]) -> frozenset[str]:
+    ids: set[str] = set()
+    encoded = payload.get("encoded_clause_ids")
+    if isinstance(encoded, list):
+        ids.update(str(clause_id) for clause_id in encoded)
+    for key, value in payload.items():
+        if not isinstance(value, list):
+            continue
+        if key.endswith(_EXCLUDED_MANIFEST_CLAUSE_LIST_SUFFIXES):
+            continue
+        if key in _MANIFEST_CLAUSE_ID_KEYS or key.endswith("_clause_ids"):
+            ids.update(str(clause_id) for clause_id in value)
+    return frozenset(ids)
+
+
+def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
+    return _load_encoded_clause_ids("L4.2_drug_indication_4.2.14.C_manifest.json")
+
+
+def _load_wave2_encoded_clause_ids(rule_id: str) -> frozenset[str]:
+    manifest_name = _WAVE2_MANIFESTS.get(rule_id)
+    if not manifest_name:
+        return frozenset()
+    return _load_encoded_clause_ids(manifest_name)
 
 _STATUS_RANK: dict[str, int] = {
     "implemented": 0,
@@ -28,6 +96,7 @@ def _json_list(raw: str) -> list[str]:
 
 def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
+    encoded_clause_ids = _load_drug_indication_encoded_clause_ids()
 
     for _, row in classified.iterrows():
         primary_rule_id = row.get("primary_rule_id")
@@ -67,11 +136,7 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
         else:
             worst_status = primary_status
 
-        has_actionable_signal = bool(
-            row.get("deontic_modality")
-            or _json_list(str(row.get("annex_refs", "[]")))
-            or row.get("clause_type") in {"fikra", "bent"}
-        )
+        has_actionable_signal = _has_actionable_signal(row)
 
         if primary_category == "unclassified" and not has_actionable_signal:
             primary_status = "non_algorithmic"
@@ -86,6 +151,16 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
             primary_status in {"partial", "missing", "needs_claim_lines"}
             and primary_status != "non_algorithmic"
         )
+        clause_id = str(row.get("clause_id") or "")
+        if primary_rule_id == "drug_indication_prose":
+            has_rule_encoding = clause_id in encoded_clause_ids
+        elif primary_rule_id in _WAVE2_MANIFESTS:
+            has_rule_encoding = clause_id in _load_wave2_encoded_clause_ids(primary_rule_id)
+        elif primary_rule_id in _PROSE_MANIFESTS:
+            manifest_name = _PROSE_MANIFESTS[primary_rule_id]
+            has_rule_encoding = clause_id in _load_encoded_clause_ids(manifest_name)
+        else:
+            has_rule_encoding = False
 
         rows.append(
             {
@@ -97,6 +172,7 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
                 "matched_rule_categories": json.dumps(sorted(all_categories), ensure_ascii=False),
                 "coverage_notes": coverage_notes,
                 "has_algorithmic_gap": has_algorithmic_gap,
+                "has_rule_encoding": has_rule_encoding,
             }
         )
 
@@ -107,15 +183,27 @@ def build_coverage_summary(coverage: pd.DataFrame) -> pd.DataFrame:
     if coverage.empty:
         return pd.DataFrame()
 
+    agg_spec: dict[str, Any] = {
+        "clause_count": ("clause_id", "count"),
+        "sections": ("section_id", lambda s: sorted({x for x in s.dropna().unique()})),
+        "sample_text": ("text_tr", "first"),
+        "gap_clause_count": ("has_algorithmic_gap", "sum"),
+    }
+    if "has_rule_encoding" in coverage.columns:
+        agg_spec["encoded_clause_count"] = ("has_rule_encoding", "sum")
+
     grouped = (
         coverage.groupby(["primary_rule_id", "primary_rule_category", "coverage_status"], dropna=False)
-        .agg(
-            clause_count=("clause_id", "count"),
-            sections=("section_id", lambda s: sorted({x for x in s.dropna().unique()})),
-            sample_text=("text_tr", "first"),
-        )
+        .agg(**agg_spec)
         .reset_index()
     )
+
+    if "encoded_clause_count" in grouped.columns:
+        grouped["encoded_clause_count"] = grouped["encoded_clause_count"].astype(int)
+        grouped["unencoded_gap_clause_count"] = (
+            grouped["gap_clause_count"] - grouped["encoded_clause_count"]
+        ).clip(lower=0).astype(int)
+    grouped["gap_clause_count"] = grouped["gap_clause_count"].astype(int)
 
     grouped["sample_sections"] = grouped["sections"].apply(lambda xs: json.dumps(xs[:8], ensure_ascii=False))
     grouped["domain_modules"] = grouped["primary_rule_id"].apply(

@@ -142,6 +142,48 @@ class TestCoverageSummary:
             assert rule["coverage_status"] in {"implemented", "partial"}
             assert rule["rule_id"]
 
+    @_needs_coverage
+    def test_coverage_summary_exposes_drug_indication_partial_engine(self) -> None:
+        summary = rc.coverage_summary()
+        di = summary["partial_engines"]["drug_indication_prose"]
+        assert di["registry_status"] == "partial"
+        assert di["classified_clause_rows"] > 0
+        assert di["encoded_clause_rows"] > 0
+        assert di["algorithmic_gap_rows"] > di["encoded_clause_rows"]
+        assert di["unencoded_gap_rows"] > 0
+        assert di["prose_rules_on_disk"] >= 131
+        assert di["encode_tier_c_deferred_count"] >= 500
+
+    @_needs_coverage
+    def test_coverage_summary_exposes_material_partial_engines(self) -> None:
+        summary = rc.coverage_summary()
+        mb = summary["partial_engines"]["material_bundling_prose"]
+        sp = summary["partial_engines"]["specialty_materials_prose"]
+        assert mb["prose_rules_on_disk"] >= 59
+        assert mb["manifest_traced_clause_count"] > 0
+        assert mb["encoded_clause_rows"] > 0
+        assert mb.get("kdv_pricing_clauses", 0) >= 2
+        assert sp["prose_rules_on_disk"] >= 49
+        assert sp["manifest_traced_clause_count"] >= 84
+
+    @_needs_coverage
+    def test_coverage_summary_gap_composition_footnote(self) -> None:
+        summary = rc.coverage_summary()
+        composition = summary["gap_composition"]
+        assert composition["total_algorithmic_gaps"] > 0
+        assert composition["drug_indication_gap_pct_of_gaps"] >= 90.0
+        assert composition["non_algorithmic_clause_rows"] > 500
+        assert composition["footnote_en"]
+        assert composition["footnote_tr"]
+
+    @_needs_coverage
+    def test_drug_indication_rule_lists_partial_engine_scope(self) -> None:
+        by_id = {r["rule_id"]: r for r in rc.list_rules()}
+        scope = by_id["drug_indication_prose"].get("partial_engine_scope")
+        assert scope is not None
+        assert scope["pilot_rule_count"] >= 131
+        assert scope["tier_b_rule_count"] >= 20
+
     def test_coverage_summary_degrades_when_artifacts_missing(self, monkeypatch, tmp_path) -> None:
         missing = tmp_path / "absent.parquet"
         monkeypatch.setattr(rc, "SUT_CLAUSE_COVERAGE_PATH", missing)

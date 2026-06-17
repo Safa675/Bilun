@@ -1,0 +1,6 @@
+{
+  "manifest_version": "wave2-v1",
+  "rule_id": "gazette_repricing",
+  "scope_note": "Temporal EK-2B/EK-2C repricing engine (Wave1 corpus); clause keyword match optional",
+  "encoded_clause_ids": []
+}

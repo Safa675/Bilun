@@ -6,19 +6,36 @@ import {
   getRuleCatalog,
   getRuleDetail,
   getRuleSections,
+  sectionRollupRowKey,
   type CoverageSummary,
   type FactCheckRollup,
   type FactCheckVerdict,
-  type ProseInventoryResponse,
+  type PartialEngineCoverage,
   type RuleCatalogEntry,
   type RuleClause,
   type RuleCoverageStatus,
   type RuleDetailResponse,
-  type SectionRollupResponse,
 } from "@/lib/api/sut";
 import { isAbortError } from "@/lib/api/request";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
-import { Chip, Section, Surface } from "@/components/primitives";
+import {
+  Chip,
+  Section,
+  Surface,
+  TabsRoot,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  Toolbar,
+  DataTable,
+  DataTableHeader,
+  DataTableHeaderCell,
+  DataTableBody,
+  DataTableRow,
+  DataTableCell,
+  Eyebrow,
+  Stat,
+} from "@/components/primitives";
 import { EkAnnexChips } from "@/components/sut/RegulatorySourceChips";
 import { useSutApi } from "../useSutApi";
 import { fmtNum } from "../shared";
@@ -175,59 +192,153 @@ function FactCheckRollupBanner({ rollup }: { rollup: FactCheckRollup }) {
   );
 }
 
+function GapCompositionBanner({ summary }: { summary: CoverageSummary }) {
+  const t = useT();
+  const locale = useLocale();
+  const composition = summary.gap_composition;
+  if (!composition || composition.total_algorithmic_gaps <= 0) {
+    return null;
+  }
+  const footnote =
+    locale === "tr" && composition.footnote_tr
+      ? composition.footnote_tr
+      : composition.footnote_en;
+
+  return (
+    <Surface
+      variant="soft"
+      padding="md"
+      className="border-[color-mix(in_srgb,var(--primary)_20%,transparent)] bg-[color-mix(in_srgb,var(--primary)_6%,transparent)]"
+    >
+      <Eyebrow tone="primary">{t("sections.ruleDatabase.coverage.gapCompositionTitle")}</Eyebrow>
+      <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">{footnote}</p>
+      <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Stat
+          label={t("sections.ruleDatabase.coverage.gapCompositionDrugShare")}
+          value={`${composition.drug_indication_gap_pct_of_gaps}%`}
+        />
+        <Stat
+          label={t("sections.ruleDatabase.coverage.gapCompositionOptimizerExDrug")}
+          value={fmtNum(composition.optimizer_gaps_excluding_drug)}
+        />
+        <Stat
+          label={t("sections.ruleDatabase.coverage.gapCompositionNonAlgorithmic")}
+          value={fmtNum(composition.non_algorithmic_clause_rows)}
+        />
+        <Stat
+          label={t("sections.ruleDatabase.coverage.algorithmicGaps")}
+          value={fmtNum(composition.total_algorithmic_gaps)}
+        />
+      </div>
+    </Surface>
+  );
+}
+
+function PartialEnginePanel({
+  engine,
+  showTierC,
+}: {
+  engine: PartialEngineCoverage;
+  showTierC?: boolean;
+}) {
+  const t = useT();
+
+  return (
+    <Surface variant="base" padding="sm" className="space-y-3 border border-[var(--border-subtle)]">
+      <p className="font-mono text-[11px] font-semibold text-[var(--text-primary)]">
+        {engine.rule_id}
+      </p>
+      <p className="text-xs text-[var(--text-muted)]">{engine.honesty_note}</p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Stat
+          label={t("sections.ruleDatabase.coverage.partialEngineEncoded")}
+          value={`${fmtNum(engine.encoded_clause_rows)} (${engine.encoded_clause_pct}%)`}
+        />
+        <Stat
+          label={t("sections.ruleDatabase.coverage.partialEngineRulesOnDisk")}
+          value={fmtNum(engine.prose_rules_on_disk)}
+        />
+        {engine.manifest_traced_clause_count != null && (
+          <Stat
+            label={t("sections.ruleDatabase.coverage.partialEngineManifestTraced")}
+            value={fmtNum(engine.manifest_traced_clause_count)}
+          />
+        )}
+        {engine.algorithmic_gap_rows > 0 && (
+          <>
+            <Stat
+              label={t("sections.ruleDatabase.coverage.partialEngineGaps")}
+              value={fmtNum(engine.algorithmic_gap_rows)}
+            />
+            <Stat
+              label={t("sections.ruleDatabase.coverage.partialEngineUnencodedGaps")}
+              value={fmtNum(engine.unencoded_gap_rows)}
+            />
+          </>
+        )}
+        {engine.kdv_pricing_clauses != null && engine.kdv_pricing_clauses > 0 && (
+          <Stat
+            label={t("sections.ruleDatabase.coverage.partialEngineKdvClauses")}
+            value={fmtNum(engine.kdv_pricing_clauses)}
+          />
+        )}
+        {showTierC && engine.encode_tier_c_deferred_count != null && (
+          <Stat
+            label={t("sections.ruleDatabase.coverage.partialEngineTierCDeferred")}
+            value={fmtNum(engine.encode_tier_c_deferred_count)}
+          />
+        )}
+      </div>
+    </Surface>
+  );
+}
+
 function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
   const t = useT();
-  const { clauses, registry, meta } = summary;
+  const { clauses, registry, meta, partial_engines: partialEngines } = summary;
 
   if (!meta.artifacts_available) {
     return (
-      <div className="rounded-[var(--r-md)] border border-[color-mix(in_srgb,var(--warning)_30%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] px-3 py-2 text-xs text-[var(--text-secondary)]">
-        {t("sections.ruleDatabase.coverage.buildHint")}
-      </div>
+      <Surface variant="soft" padding="md">
+        <p className="text-sm text-[var(--text-secondary)]">
+          {t("sections.ruleDatabase.coverage.buildHint")}
+        </p>
+      </Surface>
     );
   }
 
   return (
-    <div className="rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-soft)] px-3 py-2.5 space-y-3">
+    <Surface variant="soft" padding="md" className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-[var(--text-secondary)]">
+        <Eyebrow tone="primary">
           {t("sections.ruleDatabase.coverage.title")}
-        </p>
+        </Eyebrow>
         {meta.generated_at && (
-          <p className="text-[10px] text-[var(--text-muted)]">
+          <span className="text-xs text-[var(--text-muted)]">
             {t("sections.ruleDatabase.coverage.generatedAt", { date: meta.generated_at })}
-          </p>
+          </span>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-6">
         {/* Clauses column */}
-        <div className="space-y-2">
-          <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
+        <div className="space-y-3">
+          <Eyebrow tone="primary">
             {t("sections.ruleDatabase.coverage.clausesTitle")}
-          </p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-semibold tabular-nums text-[var(--text-primary)]">
-              {fmtNum(clauses.total_extracted)}
-            </span>
-            <span className="text-[10px] text-[var(--text-muted)]">
-              {t("sections.ruleDatabase.coverage.totalExtracted")}
-            </span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-base font-semibold tabular-nums text-[var(--danger)]">
-              {fmtNum(clauses.algorithmic_gaps)}
-            </span>
-            <span className="text-[10px] text-[var(--text-muted)]">
-              {t("sections.ruleDatabase.coverage.algorithmicGaps")} ({clauses.algorithmic_gap_pct}%)
-            </span>
-          </div>
-          <div className="space-y-1">
+          </Eyebrow>
+          <Stat
+            label={t("sections.ruleDatabase.coverage.totalExtracted")}
+            value={fmtNum(clauses.total_extracted)}
+          />
+          <Stat
+            label={`${t("sections.ruleDatabase.coverage.algorithmicGaps")} (${clauses.algorithmic_gap_pct}%)`}
+            value={fmtNum(clauses.algorithmic_gaps)}
+            display="default"
+          />
+          <div className="space-y-1.5">
             {clauses.by_status.map((s) => (
-              <div key={s.status} className="flex items-center justify-between text-[10px]">
-                <Chip variant={COVERAGE_VARIANT[s.status as RuleCoverageStatus]} className="text-[9px]">
-                  {t(`sections.ruleDatabase.status.${COVERAGE_KEY[s.status as RuleCoverageStatus]}`)}
-                </Chip>
+              <div key={s.status} className="flex items-center justify-between text-xs">
+                <CoverageChip status={s.status as RuleCoverageStatus} />
                 <span className="tabular-nums text-[var(--text-secondary)]">{fmtNum(s.count)}</span>
               </div>
             ))}
@@ -235,46 +346,42 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
         </div>
 
         {/* Registry column */}
-        <div className="space-y-2">
-          <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
+        <div className="space-y-3">
+          <Eyebrow tone="primary">
             {t("sections.ruleDatabase.coverage.registryTitle")}
-          </p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-semibold tabular-nums text-[var(--text-primary)]">
-              {fmtNum(registry.total_rules)}
-            </span>
-            <span className="text-[10px] text-[var(--text-muted)]">
-              {t("sections.ruleDatabase.coverage.totalExtracted")}
-            </span>
-          </div>
-          <div className="space-y-1">
+          </Eyebrow>
+          <Stat
+            label={t("sections.ruleDatabase.coverage.totalExtracted")}
+            value={fmtNum(registry.total_rules)}
+          />
+          <div className="space-y-1.5">
             {registry.by_status.map((s) => (
-              <div key={s.status} className="flex items-center justify-between text-[10px]">
-                <Chip variant={COVERAGE_VARIANT[s.status as RuleCoverageStatus]} className="text-[9px]">
-                  {t(`sections.ruleDatabase.status.${COVERAGE_KEY[s.status as RuleCoverageStatus]}`)}
-                </Chip>
+              <div key={s.status} className="flex items-center justify-between text-xs">
+                <CoverageChip status={s.status as RuleCoverageStatus} />
                 <span className="tabular-nums text-[var(--text-secondary)]">{fmtNum(s.count)}</span>
               </div>
             ))}
           </div>
           {registry.zero_clause_matches.length > 0 && (
-            <div className="rounded border border-[color-mix(in_srgb,var(--warning)_30%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] px-2 py-1 text-[10px] text-[var(--text-secondary)]">
-              {t("sections.ruleDatabase.coverage.zeroClauseWarning")}: {fmtNum(registry.zero_clause_matches.length)}
-            </div>
+            <Surface variant="soft" padding="sm" className="border-[color-mix(in_srgb,var(--warning)_30%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)]">
+              <p className="text-xs text-[var(--text-secondary)]">
+                {t("sections.ruleDatabase.coverage.zeroClauseWarning")}: {fmtNum(registry.zero_clause_matches.length)}
+              </p>
+            </Surface>
           )}
         </div>
       </div>
 
       {clauses.top_gap_categories.length > 0 && (
-        <div className="space-y-1 border-t border-[var(--border-subtle)] pt-2">
-          <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
+        <div className="space-y-2 border-t border-[var(--border-subtle)] pt-3">
+          <Eyebrow tone="primary">
             {t("sections.ruleDatabase.coverage.topGapCategories")}
-          </p>
-          <div className="flex flex-wrap gap-1.5">
+          </Eyebrow>
+          <div className="flex flex-wrap gap-2">
             {clauses.top_gap_categories.map((cat) => (
               <span
                 key={cat.category}
-                className="inline-flex items-center gap-1 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-base)] px-2 py-0.5 text-[10px] text-[var(--text-secondary)]"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-base)] px-2.5 py-1 text-xs text-[var(--text-secondary)]"
               >
                 <span>{cat.category}</span>
                 <span className="tabular-nums font-semibold">{fmtNum(cat.count)}</span>
@@ -283,7 +390,34 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
           </div>
         </div>
       )}
-    </div>
+
+      {summary.gap_composition && <GapCompositionBanner summary={summary} />}
+
+      {partialEngines &&
+        (partialEngines.drug_indication_prose ||
+          partialEngines.material_bundling_prose ||
+          partialEngines.specialty_materials_prose) && (
+        <div className="space-y-3 border-t border-[var(--border-subtle)] pt-3">
+          <Eyebrow tone="primary">
+            {t("sections.ruleDatabase.coverage.partialEnginesTitle")}
+          </Eyebrow>
+          <div className="space-y-3">
+            {partialEngines.drug_indication_prose && (
+              <PartialEnginePanel
+                engine={partialEngines.drug_indication_prose}
+                showTierC
+              />
+            )}
+            {partialEngines.material_bundling_prose && (
+              <PartialEnginePanel engine={partialEngines.material_bundling_prose} />
+            )}
+            {partialEngines.specialty_materials_prose && (
+              <PartialEnginePanel engine={partialEngines.specialty_materials_prose} />
+            )}
+          </div>
+        </div>
+      )}
+    </Surface>
   );
 }
 
@@ -314,9 +448,7 @@ function SectionBrowserPanel() {
     errorFallback: t("sections.ruleDatabase.errors.loadFailed"),
   });
 
-  useEffect(() => {
-    setPage(1);
-  }, [query, minGapCount]);
+
 
   if (loading) {
     return <SutReferenceSectionSkeleton title={t("sections.ruleDatabase.sections.title")} />;
@@ -344,112 +476,107 @@ function SectionBrowserPanel() {
   const totalPages = result.total_pages;
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("sections.ruleDatabase.sections.searchPlaceholder")}
-          className="sut-input"
-          style={{ flex: 1, minWidth: 220, maxWidth: 360 }}
-        />
-        <input
-          type="number"
-          min={0}
-          value={minGapCount}
-          onChange={(e) => setMinGapCount(e.target.value)}
-          placeholder={t("sections.ruleDatabase.sections.minGapFilter")}
-          className="sut-input"
-          style={{ width: 120 }}
-        />
-      </div>
+    <div className="space-y-4">
+      <Toolbar
+        leading={
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+            placeholder={t("sections.ruleDatabase.sections.searchPlaceholder")}
+            className="sut-input min-w-[220px] max-w-[360px]"
+          />
+        }
+        trailing={
+          <input
+            type="number"
+            min={0}
+            value={minGapCount}
+            onChange={(e) => { setMinGapCount(e.target.value); setPage(1); }}
+            placeholder={t("sections.ruleDatabase.sections.minGapFilter")}
+            className="sut-input w-[140px]"
+          />
+        }
+      />
 
       {sections.length === 0 ? (
         <Surface variant="soft" padding="md" className="text-center">
-          <p className="text-xs text-[var(--text-secondary)]">
+          <p className="text-sm text-[var(--text-secondary)]">
             {t("sections.ruleDatabase.sections.noMatches")}
           </p>
         </Surface>
       ) : (
         <>
-          <div className="rounded-[var(--r-md)] border border-[var(--border-subtle)] overflow-hidden">
-            <table className="w-full text-[11px]">
-              <thead className="bg-[var(--surface-soft)] text-[var(--text-muted)] uppercase tracking-wide">
-                <tr>
-                  <th className="px-2 py-1.5 text-left font-medium">
-                    {t("sections.ruleDatabase.sections.columnSection")}
-                  </th>
-                  <th className="px-2 py-1.5 text-left font-medium">
-                    {t("sections.ruleDatabase.sections.columnTitle")}
-                  </th>
-                  <th className="px-2 py-1.5 text-right font-medium">
-                    {t("sections.ruleDatabase.sections.columnClauses")}
-                  </th>
-                  <th className="px-2 py-1.5 text-right font-medium">
-                    {t("sections.ruleDatabase.sections.columnGaps")}
-                  </th>
-                  <th className="px-2 py-1.5 text-left font-medium">
-                    {t("sections.ruleDatabase.sections.columnStatus")}
-                  </th>
-                  <th className="px-2 py-1.5 text-left font-medium">
-                    {t("sections.ruleDatabase.sections.columnCategories")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sections.map((section) => (
-                  <tr
-                    key={section.section_id ?? "unknown"}
-                    className="border-t border-[var(--border-subtle)] hover:bg-[var(--surface-soft)]"
-                  >
-                    <td className="px-2 py-1.5 font-mono text-[var(--text-primary)]">
-                      {section.section_id}
-                    </td>
-                    <td className="px-2 py-1.5 text-[var(--text-secondary)]">
-                      {section.section_title ?? "—"}
-                    </td>
-                    <td className="px-2 py-1.5 text-right tabular-nums text-[var(--text-secondary)]">
-                      {fmtNum(section.clause_count)}
-                    </td>
-                    <td className="px-2 py-1.5 text-right tabular-nums text-[var(--danger)]">
-                      {fmtNum(section.gap_clause_count)}
-                    </td>
-                    <td className="px-2 py-1.5">
-                      {section.worst_coverage_status && (
-                        <Chip
-                          variant={COVERAGE_VARIANT[section.worst_coverage_status as RuleCoverageStatus]}
-                          className="text-[9px]"
-                        >
-                          {t(
-                            `sections.ruleDatabase.status.${COVERAGE_KEY[section.worst_coverage_status as RuleCoverageStatus]}`,
-                          )}
+          <DataTable minWidth={600}>
+            <DataTableHeader>
+              <DataTableRow>
+                <DataTableHeaderCell className="text-left font-medium">
+                  {t("sections.ruleDatabase.sections.columnSection")}
+                </DataTableHeaderCell>
+                <DataTableHeaderCell className="text-left font-medium">
+                  {t("sections.ruleDatabase.sections.columnTitle")}
+                </DataTableHeaderCell>
+                <DataTableHeaderCell className="text-right font-medium">
+                  {t("sections.ruleDatabase.sections.columnClauses")}
+                </DataTableHeaderCell>
+                <DataTableHeaderCell className="text-right font-medium">
+                  {t("sections.ruleDatabase.sections.columnGaps")}
+                </DataTableHeaderCell>
+                <DataTableHeaderCell className="text-left font-medium">
+                  {t("sections.ruleDatabase.sections.columnStatus")}
+                </DataTableHeaderCell>
+                <DataTableHeaderCell className="text-left font-medium">
+                  {t("sections.ruleDatabase.sections.columnCategories")}
+                </DataTableHeaderCell>
+              </DataTableRow>
+            </DataTableHeader>
+            <DataTableBody>
+              {sections.map((section) => (
+                <DataTableRow key={sectionRollupRowKey(section)}>
+                  <DataTableCell className="font-mono text-xs text-[var(--text-primary)]">
+                    {section.section_id}
+                  </DataTableCell>
+                  <DataTableCell className="text-xs text-[var(--text-secondary)]">
+                    {section.section_title ?? "—"}
+                  </DataTableCell>
+                  <DataTableCell className="text-right text-xs tabular-nums text-[var(--text-secondary)]">
+                    {fmtNum(section.clause_count)}
+                  </DataTableCell>
+                  <DataTableCell className="text-right text-xs tabular-nums text-[var(--danger)]">
+                    {fmtNum(section.gap_clause_count)}
+                  </DataTableCell>
+                  <DataTableCell>
+                    {section.worst_coverage_status && (
+                      <Chip
+                        variant={COVERAGE_VARIANT[section.worst_coverage_status as RuleCoverageStatus]}
+                      >
+                        {t(
+                          `sections.ruleDatabase.status.${COVERAGE_KEY[section.worst_coverage_status as RuleCoverageStatus]}`,
+                        )}
+                      </Chip>
+                    )}
+                  </DataTableCell>
+                  <DataTableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {section.primary_categories.map((cat) => (
+                        <Chip key={cat} variant="outline">
+                          {cat}
                         </Chip>
-                      )}
-                    </td>
-                    <td className="px-2 py-1.5">
-                      <div className="flex flex-wrap gap-1">
-                        {section.primary_categories.map((cat) => (
-                          <Chip key={cat} variant="outline" className="text-[9px]">
-                            {cat}
-                          </Chip>
-                        ))}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      ))}
+                    </div>
+                  </DataTableCell>
+                </DataTableRow>
+              ))}
+            </DataTableBody>
+          </DataTable>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 text-[11px] text-[var(--text-muted)]">
+            <div className="flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
               <button
                 type="button"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="sut-section-btn"
-                style={{ padding: "3px 10px" }}
+                className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("sections.ruleDatabase.pagination.prev")}
               </button>
@@ -463,8 +590,7 @@ function SectionBrowserPanel() {
                 type="button"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                className="sut-section-btn"
-                style={{ padding: "3px 10px" }}
+                className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("sections.ruleDatabase.pagination.next")}
               </button>
@@ -596,16 +722,11 @@ function RuleSourceChips({ rule }: { rule: RuleCatalogEntry }) {
   );
 }
 
-type RuleDatabaseTab = "rules" | "sections" | "prose";
-
-const RULE_DB_TABS: RuleDatabaseTab[] = ["rules", "sections", "prose"];
-
 export function RuleDatabaseSection() {
   const t = useT();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<RuleCoverageStatus | "all">("all");
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<RuleDatabaseTab>("rules");
 
   const {
     data: catalog,
@@ -618,11 +739,11 @@ export function RuleDatabaseSection() {
 
   const rules = catalog?.rules ?? null;
   const artifactsAvailable = catalog?.artifacts_available ?? true;
+
   const zeroClauseRuleIds = useMemo(() => {
     const matches = catalog?.coverage_summary?.registry?.zero_clause_matches ?? [];
     return new Set(matches.map((m) => m.rule_id));
   }, [catalog?.coverage_summary?.registry?.zero_clause_matches]);
-  const activeRuleId = selectedRuleId ?? rules?.[0]?.rule_id ?? null;
 
   const filteredRules = useMemo(() => {
     if (!rules) return [];
@@ -644,9 +765,9 @@ export function RuleDatabaseSection() {
     });
   }, [rules, query, statusFilter]);
 
-  if (loading) {
-    return <SutReferenceSectionSkeleton title={t("sections.ruleDatabase.loading")} />;
-  }
+  const activeRuleId = selectedRuleId || (filteredRules.length > 0 ? filteredRules[0].rule_id : null);
+
+  if (loading) return <SutReferenceSectionSkeleton title={t("sections.ruleDatabase.title")} />;
 
   if (error) {
     return (
@@ -656,100 +777,107 @@ export function RuleDatabaseSection() {
     );
   }
 
-  if (!rules || rules.length === 0) {
-    return (
-      <Surface variant="base" padding="lg" className="text-center">
-        <p className="text-sm text-[var(--text-secondary)]">{t("sections.ruleDatabase.empty")}</p>
-      </Surface>
-    );
-  }
-
   return (
     <Section
       title={t("sections.ruleDatabase.title")}
-      description={t("sections.ruleDatabase.subtitle", { total: fmtNum(rules.length) })}
+      description={t("sections.ruleDatabase.subtitle", { total: fmtNum(rules?.length ?? 0) })}
+      variant="inset"
+      padding="none"
     >
-      {catalog?.coverage_summary && <CoverageSummaryPanel summary={catalog.coverage_summary} />}
+      <Surface variant="base" padding="lg" className="space-y-4">
+        {catalog?.coverage_summary && <CoverageSummaryPanel summary={catalog.coverage_summary} />}
 
-      {!artifactsAvailable && (
-        <div className="rounded-[var(--r-md)] border border-[color-mix(in_srgb,var(--warning)_30%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] px-3 py-2 text-xs text-[var(--text-secondary)]">
-          {t("sections.ruleDatabase.artifactsUnavailable")}
-        </div>
-      )}
+        {!artifactsAvailable && (
+          <Surface variant="soft" padding="md">
+            <p className="text-sm text-[var(--text-secondary)]">
+              {t("sections.ruleDatabase.artifactsUnavailable")}
+            </p>
+          </Surface>
+        )}
 
-      {catalog?.fact_check && <FactCheckRollupBanner rollup={catalog.fact_check} />}
+        {catalog?.fact_check && <FactCheckRollupBanner rollup={catalog.fact_check} />}
 
-      <div className="flex flex-wrap gap-1.5 border-b border-[var(--border-subtle)] pb-2">
-        {RULE_DB_TABS.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`sut-section-btn sut-section-btn-compact ${activeTab === tab ? "sut-section-btn-active" : ""}`}
-          >
-            <span className="text-[11px] font-semibold">
-              {t(`sections.ruleDatabase.tabs.${tab}`)}
-            </span>
-          </button>
-        ))}
-      </div>
+        <TabsRoot defaultValue="rules">
+          <TabsList density="compact">
+            <TabsTrigger value="rules" density="compact">
+              {t("sections.ruleDatabase.tabs.rules")}
+            </TabsTrigger>
+            <TabsTrigger value="sections" density="compact">
+              {t("sections.ruleDatabase.tabs.sections")}
+            </TabsTrigger>
+            <TabsTrigger value="prose" density="compact">
+              {t("sections.ruleDatabase.tabs.prose")}
+            </TabsTrigger>
+          </TabsList>
 
-      {activeTab === "rules" && (
-        <>
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("sections.ruleDatabase.searchPlaceholder")}
-              className="sut-input"
-              style={{ flex: 1, minWidth: 220, maxWidth: 360 }}
-            />
-            <div className="flex flex-wrap gap-1.5">
-              {STATUS_FILTERS.map((status) => (
-                <button
-                  key={status}
-                  type="button"
-                  onClick={() => setStatusFilter(status)}
-                  className={`sut-section-btn sut-section-btn-compact ${statusFilter === status ? "sut-section-btn-active" : ""}`}
-                >
-                  <span className="text-[11px] font-semibold">
-                    {status === "all"
-                      ? t("sections.ruleDatabase.filters.all")
-                      : t(`sections.ruleDatabase.status.${COVERAGE_KEY[status]}`)}
-                  </span>
-                </button>
-              ))}
+          <TabsContent value="rules" forceMount className="data-[state=inactive]:hidden">
+            <div className="space-y-4 pt-4">
+              <Toolbar
+                leading={
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={t("sections.ruleDatabase.searchPlaceholder")}
+                    className="sut-input min-w-[220px] max-w-[360px]"
+                  />
+                }
+              >
+                <div className="flex items-center gap-1.5 overflow-x-auto max-w-full no-scrollbar py-0.5">
+                  {STATUS_FILTERS.map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => setStatusFilter(status)}
+                      className={`sut-section-btn sut-section-btn-compact ${statusFilter === status ? "sut-section-btn-active" : ""}`}
+                    >
+                      <span className="text-xs font-semibold">
+                        {status === "all"
+                          ? t("sections.ruleDatabase.filters.all")
+                          : t(`sections.ruleDatabase.status.${COVERAGE_KEY[status]}`)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </Toolbar>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-[340px_1fr]">
+                <RuleList
+                  rules={filteredRules}
+                  selectedRuleId={activeRuleId}
+                  onSelect={setSelectedRuleId}
+                  zeroClauseRuleIds={zeroClauseRuleIds}
+                />
+                {activeRuleId ? (
+                  <RuleDetailPanel
+                    key={activeRuleId}
+                    ruleId={activeRuleId}
+                    artifactsAvailable={artifactsAvailable}
+                  />
+                ) : (
+                  <Surface variant="soft" padding="lg" className="flex items-center justify-center">
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      {t("sections.ruleDatabase.detail.selectPrompt")}
+                    </p>
+                  </Surface>
+                )}
+              </div>
             </div>
-          </div>
+          </TabsContent>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-[340px_1fr]">
-            <RuleList
-              rules={filteredRules}
-              selectedRuleId={activeRuleId}
-              onSelect={setSelectedRuleId}
-              zeroClauseRuleIds={zeroClauseRuleIds}
-            />
-            {activeRuleId ? (
-              <RuleDetailPanel
-                key={activeRuleId}
-                ruleId={activeRuleId}
-                artifactsAvailable={artifactsAvailable}
-              />
-            ) : (
-              <Surface variant="soft" padding="lg" className="flex items-center justify-center">
-                <p className="text-sm text-[var(--text-secondary)]">
-                  {t("sections.ruleDatabase.detail.selectPrompt")}
-                </p>
-              </Surface>
-            )}
-          </div>
-        </>
-      )}
+          <TabsContent value="sections" forceMount className="data-[state=inactive]:hidden">
+            <div className="pt-4">
+              <SectionBrowserPanel />
+            </div>
+          </TabsContent>
 
-      {activeTab === "sections" && <SectionBrowserPanel />}
-
-      {activeTab === "prose" && <ProseInventoryPanel />}
+          <TabsContent value="prose" forceMount className="data-[state=inactive]:hidden">
+            <div className="pt-4">
+              <ProseInventoryPanel />
+            </div>
+          </TabsContent>
+        </TabsRoot>
+      </Surface>
     </Section>
   );
 }
@@ -776,7 +904,7 @@ function RuleList({
   }
 
   return (
-    <div className="space-y-2" style={{ maxHeight: 560, overflowY: "auto" }}>
+    <div className="space-y-2 overflow-y-auto max-h-[60vh]">
       {rules.map((rule) => {
         const isActive = rule.rule_id === selectedRuleId;
         return (
@@ -950,19 +1078,18 @@ function RuleDetailPanel({
         <p className="text-sm text-[var(--text-secondary)]">{t("sections.ruleDatabase.detail.noClauses")}</p>
       ) : (
         <>
-          <ul className="space-y-3" style={{ maxHeight: 460, overflowY: "auto" }}>
+          <ul className="space-y-3 overflow-y-auto max-h-[55vh]">
             {clauses.map((clause) => (
               <ClauseCard key={clause.clause_id} clause={clause} />
             ))}
           </ul>
           {total_pages > 1 && (
-            <div className="flex items-center justify-center gap-3 pt-1 text-[11px] text-[var(--text-muted)]">
+            <div className="flex items-center justify-center gap-3 pt-2 text-sm text-[var(--text-muted)]">
               <button
                 type="button"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="sut-section-btn"
-                style={{ padding: "3px 10px" }}
+                className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("sections.ruleDatabase.pagination.prev")}
               </button>
@@ -976,8 +1103,7 @@ function RuleDetailPanel({
                 type="button"
                 disabled={page >= total_pages}
                 onClick={() => setPage((p) => p + 1)}
-                className="sut-section-btn"
-                style={{ padding: "3px 10px" }}
+                className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("sections.ruleDatabase.pagination.next")}
               </button>

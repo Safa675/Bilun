@@ -36,6 +36,21 @@ MedulaOverlap = Literal[
 AUDIT_CLOSED = "2026-06"
 AUDIT_TOTAL_UNITS = 28
 
+# Post-audit rules (e.g. §4.2.14.C expansion) — do not mutate FACT_CHECK_AUDIT_UNITS counts.
+SUPPLEMENTAL_FACT_CHECK_RULES: dict[str, dict[str, Any]] = {
+    "drug_indication_prose": {
+        "fact_check_verdict": "PARTIAL",
+        "medula_overlap": "ADDITIVE",
+        "fact_check_units": ("SUT-4.2.14.C",),
+        "fact_check_note": (
+            "SUT-4.2.14.C: partial INN+ICD+report corpus (103 JSON rules, 25 Tier B); "
+            "~240 manifest-encoded clauses vs ~3.6k registry-partial gap rows "
+            "(549 Tier-C deferred in encode manifest). "
+            "Not to be confused with audit unit L4.2 (EK-2C DRG pricing)."
+        ),
+    },
+}
+
 
 @dataclass(frozen=True)
 class FactCheckAuditUnit:
@@ -347,6 +362,8 @@ def build_rule_fact_check_index() -> dict[str, dict[str, Any]]:
             "fact_check_units": tuple(row["fact_check_units"]),
             "fact_check_note": "; ".join(row["notes"]),
         }
+    for rule_id, supplemental in SUPPLEMENTAL_FACT_CHECK_RULES.items():
+        index[rule_id] = supplemental
     return index
 
 

@@ -31,6 +31,7 @@ from pathlib import Path
 
 from ..constants import (
     _PROSE_RULES_DIR,
+    PROSE_MANIFESTS_DIR,
     SUT_CLAUSES_PATH,
     SUT_CLAUSE_COVERAGE_PATH,
     SUT_REGISTRY_COVERAGE_PATH,
@@ -63,6 +64,7 @@ _CLAUSE_COLUMNS: tuple[str, ...] = (
     "match_scores",
     "paragraph_index",
     "has_algorithmic_gap",
+    "has_rule_encoding",
     "primary_rule_category",
 )
 
@@ -173,6 +175,228 @@ def _rule_clause_mapping_from_coverage(rule_id: str) -> dict[str, Any]:
     }
 
 
+def _prose_partial_engine_summary(
+    *,
+    rule_id: str,
+    clause_frame: pl.DataFrame,
+    registry_status: str,
+    prose_rules_on_disk: int,
+    manifest_traced_clause_count: int | None = None,
+    honesty_note: str,
+) -> dict[str, Any]:
+    """Honest partial-engine rollup for prose corpora (registry vs manifest encoding)."""
+    scoped = clause_frame.filter(pl.col("primary_rule_id") == rule_id)
+    classified_rows = scoped.height
+    gap_rows = (
+        scoped.filter(pl.col("has_algorithmic_gap") == True).height
+        if "has_algorithmic_gap" in scoped.columns
+        else 0
+    )
+    encoded_rows = (
+        scoped.filter(pl.col("has_rule_encoding") == True).height
+        if "has_rule_encoding" in scoped.columns
+        else 0
+    )
+    unencoded_gap_rows = (
+        scoped.filter(
+            (pl.col("has_algorithmic_gap") == True)
+            & (pl.col("has_rule_encoding") == False)
+        ).height
+        if {"has_algorithmic_gap", "has_rule_encoding"}.issubset(set(scoped.columns))
+        else gap_rows
+    )
+    return {
+        "rule_id": rule_id,
+        "registry_status": registry_status,
+        "prose_engine_status": "partial" if registry_status == "partial" else "implemented",
+        "classified_clause_rows": classified_rows,
+        "encoded_clause_rows": encoded_rows,
+        "algorithmic_gap_rows": gap_rows,
+        "unencoded_gap_rows": unencoded_gap_rows,
+        "encoded_clause_pct": round(100.0 * encoded_rows / classified_rows, 1)
+        if classified_rows
+        else 0.0,
+        "gap_pct_of_classified": round(100.0 * gap_rows / classified_rows, 1)
+        if classified_rows
+        else 0.0,
+        "prose_rules_on_disk": prose_rules_on_disk,
+        "manifest_traced_clause_count": manifest_traced_clause_count,
+        "honesty_note": honesty_note,
+    }
+
+
+def _manifest_traced_clause_count(manifest_name: str) -> int:
+    manifest_path = PROSE_MANIFESTS_DIR / manifest_name
+    if not manifest_path.is_file():
+        return 0
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    ids: set[str] = set()
+    encoded = payload.get("encoded_clause_ids")
+    if isinstance(encoded, list):
+        ids.update(str(clause_id) for clause_id in encoded)
+    for key, value in payload.items():
+        if not isinstance(value, list):
+            continue
+        if key in {"gate_b_sources_encoded", "encoded_clause_ids"} or key.endswith("_clause_ids"):
+            ids.update(str(clause_id) for clause_id in value)
+    return len(ids)
+
+
+def _load_prose_manifest_stats(manifest_name: str) -> dict[str, Any]:
+    traced = _manifest_traced_clause_count(manifest_name)
+    manifest_path = PROSE_MANIFESTS_DIR / manifest_name
+    rules_in_json = 0
+    if manifest_path.is_file():
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        rules_in_json = int(payload.get("rules_in_json") or 0)
+    return {
+        "manifest_traced_clause_count": traced,
+        "rules_in_json": rules_in_json,
+    }
+
+
+def _material_bundling_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
+    from src.bilun.domain.prose_rules.material_bundling import load_material_bundling_rules
+
+    manifest_stats = _load_prose_manifest_stats("L1.4_material_bundling_encoded_manifest.json")
+    rules_on_disk = len((load_material_bundling_rules().get("rules") or []))
+    summary = _prose_partial_engine_summary(
+        rule_id="material_bundling_prose",
+        clause_frame=clause_frame,
+        registry_status=RULE_BY_ID["material_bundling_prose"].coverage_status,
+        prose_rules_on_disk=rules_on_disk,
+        manifest_traced_clause_count=manifest_stats.get("manifest_traced_clause_count"),
+        honesty_note=(
+            "Registry is implemented for the prose engine; manifest traces §3.1–3.2 encode "
+            f"candidates ({manifest_stats.get('manifest_traced_clause_count', 0):,} clause IDs) "
+            f"vs {rules_on_disk} JSON rules on disk. Long-tail §3.1 fikra stay manifest-only."
+        ),
+    )
+    summary["corpus_export_rows"] = 48
+    from src.bilun.domain.materials.coverage_scope import kdv_pricing_clause_count
+
+    summary["kdv_pricing_clauses"] = kdv_pricing_clause_count()
+    return summary
+
+
+def _specialty_materials_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
+    from src.bilun.domain.prose_rules.specialty_materials import load_specialty_materials_rules
+
+    manifest_stats = _load_prose_manifest_stats("L4.4_specialty_prose_encoded_manifest.json")
+    rules_on_disk = len((load_specialty_materials_rules().get("rules") or []))
+    summary = _prose_partial_engine_summary(
+        rule_id="specialty_materials_prose",
+        clause_frame=clause_frame,
+        registry_status=RULE_BY_ID["specialty_materials_prose"].coverage_status,
+        prose_rules_on_disk=rules_on_disk,
+        manifest_traced_clause_count=manifest_stats.get("manifest_traced_clause_count"),
+        honesty_note=(
+            "L4.4 export subset is 84 deontic §3.3 rows; manifest traces all of them while "
+            f"{rules_on_disk} JSON rules cover branch themes (3.3.1–3.3.4). "
+            "Catalog pricing (specialty_materials) remains separate."
+        ),
+    )
+    summary["corpus_export_rows"] = 84
+    return summary
+
+
+def _gap_composition_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
+    """Wave 4 scope-closure footnote: optimizer gaps vs intentional partial/admin."""
+    total_gaps = (
+        clause_frame.filter(pl.col("has_algorithmic_gap") == True).height
+        if "has_algorithmic_gap" in clause_frame.columns
+        else 0
+    )
+    drug_gaps = (
+        clause_frame.filter(
+            (pl.col("has_algorithmic_gap") == True)
+            & (pl.col("primary_rule_id") == "drug_indication_prose")
+        ).height
+        if total_gaps
+        else 0
+    )
+    non_algorithmic_rows = (
+        clause_frame.filter(pl.col("coverage_status") == "non_algorithmic").height
+        if "coverage_status" in clause_frame.columns
+        else 0
+    )
+    drug_gap_pct = round(100.0 * drug_gaps / total_gaps, 1) if total_gaps else 0.0
+    return {
+        "total_algorithmic_gaps": total_gaps,
+        "drug_indication_gap_rows": drug_gaps,
+        "drug_indication_gap_pct_of_gaps": drug_gap_pct,
+        "optimizer_gaps_excluding_drug": max(total_gaps - drug_gaps, 0),
+        "non_algorithmic_clause_rows": non_algorithmic_rows,
+        "footnote_en": (
+            f"{drug_gap_pct:.1f}% of algorithmic gaps ({drug_gaps:,}/{total_gaps:,}) map to "
+            "drug_indication_prose — mostly Tier C deferred §4.2 endikasyon prose. "
+            f"{non_algorithmic_rows:,} clauses are intentionally non-algorithmic "
+            "(§5 admin, provizyon, definitions, RG amendment headers)."
+        ),
+        "footnote_tr": (
+            f"Algoritmik boşlukların %{drug_gap_pct:.1f}'i ({drug_gaps:,}/{total_gaps:,}) "
+            "drug_indication_prose — çoğunlukla Tier C ertelenmiş §4.2 endikasyon prose. "
+            f"{non_algorithmic_rows:,} hüküm bilinçli non-algorithmic "
+            "(§5 idari, provizyon, tanım, RG mülga/değişiklik satırları)."
+        ),
+    }
+
+
+def _drug_indication_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
+    """Honest partial-engine rollup: registry partial vs manifest-encoded clauses."""
+    from src.bilun.domain.prose_rules.drug_indication import drug_indication_coverage_scope
+
+    scope = drug_indication_coverage_scope()
+    di = clause_frame.filter(pl.col("primary_rule_id") == "drug_indication_prose")
+    classified_rows = di.height
+    gap_rows = (
+        di.filter(pl.col("has_algorithmic_gap") == True).height
+        if "has_algorithmic_gap" in di.columns
+        else 0
+    )
+    encoded_rows = (
+        di.filter(pl.col("has_rule_encoding") == True).height
+        if "has_rule_encoding" in di.columns
+        else 0
+    )
+    unencoded_gap_rows = (
+        di.filter(
+            (pl.col("has_algorithmic_gap") == True)
+            & (pl.col("has_rule_encoding") == False)
+        ).height
+        if {"has_algorithmic_gap", "has_rule_encoding"}.issubset(set(di.columns))
+        else gap_rows
+    )
+
+    return {
+        "rule_id": "drug_indication_prose",
+        "registry_status": "partial",
+        "prose_engine_status": scope.get("prose_engine_status", "partial"),
+        "classified_clause_rows": classified_rows,
+        "encoded_clause_rows": encoded_rows,
+        "algorithmic_gap_rows": gap_rows,
+        "unencoded_gap_rows": unencoded_gap_rows,
+        "encoded_clause_pct": round(100.0 * encoded_rows / classified_rows, 1)
+        if classified_rows
+        else 0.0,
+        "gap_pct_of_classified": round(100.0 * gap_rows / classified_rows, 1)
+        if classified_rows
+        else 0.0,
+        "prose_rules_on_disk": scope.get("pilot_rule_count", 0),
+        "tier_b_rule_count": scope.get("tier_b_rule_count", 0),
+        "tier_a_pending_count": scope.get("tier_a_pending_count", 0),
+        "tier_b_pending_count": scope.get("tier_b_pending_count", 0),
+        "encode_tier_c_deferred_count": scope.get("encode_tier_C_deferred_count", 0),
+        "section_4.2.14.C_clause_total": scope.get("section_4.2.14.C_clause_total", 828),
+        "clause_trace_complete": scope.get("clause_trace_complete", False),
+        "honesty_note": (
+            "Registry stays partial while §4.2 clauses classify here; "
+            f"{encoded_rows:,} rows have JSON/manifest encoding vs "
+            f"{unencoded_gap_rows:,} gap rows still unencoded (mostly Tier C deferred)."
+        ),
+    }
+
+
 def _rule_summary(entry: RuleRegistryEntry) -> dict[str, Any]:
     coverage = _load_registry_coverage().get(entry.rule_id, {})
     if not coverage:
@@ -196,6 +420,10 @@ def _rule_summary(entry: RuleRegistryEntry) -> dict[str, Any]:
         summary["fact_check_units"] = list(entry.fact_check_units)
         if entry.fact_check_note:
             summary["fact_check_note"] = entry.fact_check_note
+    if entry.rule_id == "drug_indication_prose":
+        from src.bilun.domain.prose_rules.drug_indication import drug_indication_coverage_scope
+
+        summary["partial_engine_scope"] = drug_indication_coverage_scope()
     return summary
 
 
@@ -253,6 +481,16 @@ def coverage_summary() -> dict[str, Any]:
                 "algorithmic_gaps": 0,
                 "algorithmic_gap_pct": 0.0,
                 "top_gap_categories": [],
+            },
+            "partial_engines": {},
+            "gap_composition": {
+                "total_algorithmic_gaps": 0,
+                "drug_indication_gap_rows": 0,
+                "drug_indication_gap_pct_of_gaps": 0.0,
+                "optimizer_gaps_excluding_drug": 0,
+                "non_algorithmic_clause_rows": 0,
+                "footnote_en": "",
+                "footnote_tr": "",
             },
             "registry": {
                 "total_rules": len(RULE_REGISTRY),
@@ -379,6 +617,12 @@ def coverage_summary() -> dict[str, Any]:
             "algorithmic_gap_pct": algorithmic_gap_pct,
             "top_gap_categories": top_gap_categories,
         },
+        "partial_engines": {
+            "drug_indication_prose": _drug_indication_partial_engine_summary(clause_frame),
+            "material_bundling_prose": _material_bundling_partial_engine_summary(clause_frame),
+            "specialty_materials_prose": _specialty_materials_partial_engine_summary(clause_frame),
+        },
+        "gap_composition": _gap_composition_summary(clause_frame),
         "registry": {
             "total_rules": len(RULE_REGISTRY),
             "by_status": by_registry_status,
@@ -597,6 +841,10 @@ def _clause_payload(row: dict[str, Any], rule_id: str) -> dict[str, Any]:
         "coverage_status": row.get("coverage_status"),
         "is_primary": row.get("primary_rule_id") == rule_id,
         "match_score": int(match_scores.get(rule_id, 0)),
+        "has_algorithmic_gap": bool(row.get("has_algorithmic_gap")),
+        "has_rule_encoding": bool(row.get("has_rule_encoding"))
+        if row.get("has_rule_encoding") is not None
+        else None,
     }
 
 

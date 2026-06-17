@@ -65,6 +65,13 @@ export function MaterialBundlingScopeNotice({ scope, compact }: Props) {
             {t("sections.materialBundlingScope.medulaNote")}
           </p>
         )}
+        {typeof s.kdv_pricing_clauses === "number" && s.kdv_pricing_clauses > 0 && (
+          <p className="text-xs mt-2 leading-relaxed" style={{ color: "#71717A" }}>
+            {t("sections.materialBundlingScope.kdvPricingClauses", {
+              count: s.kdv_pricing_clauses,
+            })}
+          </p>
+        )}
       </Surface>
     );
   }
