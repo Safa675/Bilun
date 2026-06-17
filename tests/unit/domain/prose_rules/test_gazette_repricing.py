@@ -104,6 +104,9 @@ class TestGazetteRepricing:
 
 def test_gazette_repricing_rules_corpus_seeded() -> None:
     rules = load_gazette_repricing_rules()
-    assert len(rules.get("rules", [])) >= 2
+    assert len(rules.get("rules", [])) >= 10
     codes = {code for rule in rules["rules"] for code in rule.get("procedure_codes", [])}
     assert "600150" in codes
+    assert "600160" in codes
+    assert "609300" in codes
+    assert "701450" in codes

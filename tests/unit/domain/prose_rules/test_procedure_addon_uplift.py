@@ -106,6 +106,40 @@ class TestProcedureAddonUplift:
         ]
         assert detect_missing_procedure_addon_opportunities(claim, procs) == []
 
+    def test_sigmoidoscopy_missing_polypectomy(self) -> None:
+        claim = _claim(scenario_tag="sgk_procedure_addon_sigmoid")
+        rows = detect_missing_procedure_addon_opportunities(
+            claim,
+            [
+                _proc(
+                    procedure_code="701400",
+                    procedure_name="Rektosigmoidoskopi",
+                    billed_amount_try=Decimal("448.01"),
+                    expected_payable_try=Decimal("448.01"),
+                    unit_price_try=Decimal("448.01"),
+                )
+            ],
+        )
+        assert len(rows) == 1
+        assert rows[0]["expected_addon_procedure_code"] == "701460"
+
+    def test_confocal_missing_emr(self) -> None:
+        claim = _claim(scenario_tag="sgk_procedure_addon_confocal")
+        rows = detect_missing_procedure_addon_opportunities(
+            claim,
+            [
+                _proc(
+                    procedure_code="701545",
+                    procedure_name="Konfokal endoskopi",
+                    billed_amount_try=Decimal("527.70"),
+                    expected_payable_try=Decimal("527.70"),
+                    unit_price_try=Decimal("527.70"),
+                )
+            ],
+        )
+        assert len(rows) == 1
+        assert rows[0]["expected_addon_procedure_code"] == "701411"
+
     def test_session_uplift_dedupes(self) -> None:
         claim = _claim()
         session_rows = [
@@ -123,3 +157,10 @@ class TestProcedureAddonUplift:
             )
             == []
         )
+
+
+def test_procedure_pairing_corpus_wave1_size() -> None:
+    from src.bilun.domain.prose_rules.procedure_addon_uplift import load_procedure_pairing_rules
+
+    rules = load_procedure_pairing_rules()
+    assert len(rules.get("rules", [])) >= 6

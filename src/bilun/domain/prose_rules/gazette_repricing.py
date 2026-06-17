@@ -66,7 +66,14 @@ def _price_for_service(
     if not code:
         return None
     if line.procedure_category == "paket":
-        return get_ek2c_price_for_date(code, service_date)
+        price = get_ek2c_price_for_date(code, service_date)
+        if price is None and not str(line.procedure_code or "").strip().upper().startswith("P"):
+            price = get_ek2c_price_for_date(f"P{code}", service_date)
+        elif price is None:
+            price = get_ek2c_price_for_date(
+                str(line.procedure_code or "").strip().upper(), service_date
+            )
+        return price
     return get_ek2b_price_for_date(code, service_date)
 
 

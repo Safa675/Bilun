@@ -14,6 +14,15 @@
       "message_tr": "600150 islemi ile birlikte ayrica faturalandirilabilir OR2640 malzemesi eksik veya sifir faturalanmis."
     },
     {
+      "rule_id": "pairing.600160_or2640",
+      "sut_section": "3.1.1",
+      "specialty_annex": "EK-3/C",
+      "pairing_mode": "separate_billing",
+      "procedure_codes": ["600160"],
+      "expected_material_codes": ["OR2640"],
+      "message_tr": "600160 islemi ile birlikte ayrica faturalandirilabilir OR2640 malzemesi eksik veya sifir faturalanmis."
+    },
+    {
       "rule_id": "pairing.700910_kr1151",
       "sut_section": "3.3.1",
       "specialty_annex": "EK-3H",
@@ -21,6 +30,15 @@
       "procedure_codes": ["700910", "700890"],
       "expected_material_codes": ["KR1151"],
       "message_tr": "Koroner anjiyoplasti/stent islemi sonrasi EK-3H ilac salinimli koroner stent (KR1151) ayri faturalandirilmamis."
+    },
+    {
+      "rule_id": "pairing.700920_kr1152",
+      "sut_section": "3.3.1",
+      "specialty_annex": "EK-3H",
+      "pairing_mode": "specialty_annex",
+      "procedure_codes": ["700920", "700930"],
+      "expected_material_codes": ["KR1152"],
+      "message_tr": "Koroner stent islemi sonrasi EK-3H ilac salinimli stent (KR1152) ayri faturalandirilmamis."
     },
     {
       "rule_id": "pairing.700944_kv1012",
@@ -66,6 +84,33 @@
       "procedure_codes": ["612480", "612510"],
       "expected_material_codes": ["AP1390"],
       "message_tr": "Kalca artroplastisi sonrasi EK-3F-1 kalca protez bileseni (AP1390) eksik veya sifir faturalanmis."
+    },
+    {
+      "rule_id": "pairing.604960_kr4000",
+      "sut_section": "3.3.1",
+      "specialty_annex": "EK-3H",
+      "pairing_mode": "specialty_annex",
+      "procedure_codes": ["604960"],
+      "expected_material_codes": ["KR4000"],
+      "message_tr": "Acik kalp cerrahisi sonrasi EK-3H kalp pili/cihaz (KR4000) ayri faturalandirilmamis."
+    },
+    {
+      "rule_id": "pairing.605020_kv1000",
+      "sut_section": "3.3.2",
+      "specialty_annex": "EK-3I",
+      "pairing_mode": "specialty_annex",
+      "procedure_codes": ["605020"],
+      "expected_material_codes": ["KV1000"],
+      "message_tr": "Kapak cerrahisi sonrasi EK-3I biyolojik kapak protezi (KV1000) eksik veya sifir faturalanmis."
+    },
+    {
+      "rule_id": "pairing.700800_kr1150",
+      "sut_section": "3.3.1",
+      "specialty_annex": "EK-3H",
+      "pairing_mode": "specialty_annex",
+      "procedure_codes": ["700800"],
+      "expected_material_codes": ["KR1150"],
+      "message_tr": "Koroner girisim islemi sonrasi EK-3H bare-metal stent (KR1150) ayri faturalandirilmamis."
     }
   ]
 }

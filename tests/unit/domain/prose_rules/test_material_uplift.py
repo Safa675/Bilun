@@ -156,6 +156,36 @@ def test_unlinked_material_on_claim_does_not_suppress_uplift() -> None:
     assert rows[0]["procedure_line_id"] == "PL1"
 
 
+def test_coronary_stent_kr1152_specialty_pairing() -> None:
+    claim = _claim()
+    proc = _proc(
+        procedure_code="700920",
+        procedure_name="Koroner stent",
+    )
+    rows = detect_missing_billable_material_opportunities(claim, [proc], [])
+    assert len(rows) == 1
+    assert rows[0]["material_code"] == "KR1152".upper() or rows[0]["material_code"] == "KR1152"
+    assert rows[0]["recoverable_uplift_try"] > 1000
+
+
+def test_open_heart_kr4000_specialty_pairing() -> None:
+    claim = _claim()
+    proc = _proc(
+        procedure_code="604960",
+        procedure_name="Acik kalp",
+    )
+    rows = detect_missing_billable_material_opportunities(claim, [proc], [])
+    assert len(rows) == 1
+    assert rows[0]["material_code"] == "KR4000"
+
+
+def test_material_pairing_corpus_wave1_size() -> None:
+    from src.bilun.domain.prose_rules.material_uplift import load_material_pairing_rules
+
+    rules = load_material_pairing_rules()
+    assert len(rules.get("rules", [])) >= 10
+
+
 def test_zero_billed_material_still_triggers_uplift() -> None:
     claim = _claim()
     proc = _proc()

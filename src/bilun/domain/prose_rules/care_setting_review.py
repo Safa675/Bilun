@@ -88,14 +88,18 @@ def _best_legal_recoverable_try(
     if claim_kind is None:
         return CareSettingLegalTotals(0.0, None, 0.0, 0.0)
 
+    from src.bilun.domain.billing.claim_strategy import (
+        lines_for_legal_itemized_alternative,
+        resolve_package_total_try,
+    )
+
+    eligible_lines = lines_for_legal_itemized_alternative(claim_procs, claim, care_setting=care_setting)
     itemized_total, _ = compute_session_adjusted_itemized_total(
-        claim_procs,
+        eligible_lines,
         same_incision=True,
         cross_specialty=None,
         claim=claim,
     )
-    from src.bilun.domain.billing.claim_strategy import resolve_package_total_try
-
     package_total, _ = resolve_package_total_try(claim, claim_procs)
 
     if package_total <= 0 and itemized_total <= 0:
