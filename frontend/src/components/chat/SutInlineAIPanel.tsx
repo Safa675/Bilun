@@ -22,6 +22,7 @@ import type { SutChatPageContext } from "@/lib/sutChatPageContext";
 import type { SutChatDockPosition, SutInlineChatState } from "@/stores/storeInterfaces";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useT } from "@/lib/i18n/useTranslations";
+import { useUserRole } from "@/components/shell/RoleProvider";
 
 interface SutInlineAIPanelProps {
   patientId?: string | null;
@@ -36,8 +37,11 @@ interface SutInlineAIPanelProps {
 
 export const SUT_INLINE_CHAT_PANEL_WIDTH = 380;
 
+const CHAT_INPUT_MIN_HEIGHT_PX = 36;
+const CHAT_INPUT_MAX_HEIGHT_PX = 144;
+
 const CHAT_INPUT_CLASS =
-  "flex-1 rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-2 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-[border-color] duration-150 focus:border-[var(--gold)] focus:outline-none focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--gold)_15%,transparent)]";
+  "flex-1 resize-none overflow-y-auto rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-2 text-[13px] leading-[1.5] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-[border-color] duration-150 focus:border-[var(--gold)] focus:outline-none focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--gold)_15%,transparent)]";
 
 const CHAT_CURSOR_CLASS =
   "inline-block h-3.5 w-1.5 ml-0.5 align-text-bottom bg-[var(--gold)] [animation:sutChatCursorBlink_1s_step-end_infinite]";
@@ -78,6 +82,7 @@ export default function SutInlineAIPanel({
 }: SutInlineAIPanelProps) {
   const t = useT();
   const locale = useLocale();
+  const userRole = useUserRole();
   const [_messages, _setMessages] = useState<ChatMessage[]>(externalState?.messages ?? []);
   const [_autoText, _setAutoText] = useState(externalState?.autoText ?? "");
   const [autoReasoningText, setAutoReasoningText] = useState("");
@@ -98,6 +103,32 @@ export default function SutInlineAIPanel({
   const pageContextRef = useRef(pageContext);
   const fireAutoAnalysisRef = useRef<(options?: { force?: boolean }) => void>(() => undefined);
   const prevLocaleRef = useRef(locale);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const syncInputHeight = useCallback(() => {
+    const el = inputRef.current;
+    if (!el) {
+      return;
+    }
+    el.style.height = "0px";
+    const nextHeight = Math.min(
+      Math.max(el.scrollHeight, CHAT_INPUT_MIN_HEIGHT_PX),
+      CHAT_INPUT_MAX_HEIGHT_PX,
+    );
+    el.style.height = `${nextHeight}px`;
+  }, []);
+
+  useEffect(() => {
+    syncInputHeight();
+  }, [input, syncInputHeight]);
+
+  const handleInputFocus = useCallback((event: React.FocusEvent<HTMLTextAreaElement>) => {
+    const el = event.currentTarget;
+    const end = el.value.length;
+    requestAnimationFrame(() => {
+      el.setSelectionRange(end, end);
+    });
+  }, []);
 
   useEffect(() => {
     pageContextRef.current = pageContext;
@@ -322,6 +353,7 @@ export default function SutInlineAIPanel({
     ];
     setMessages(nextMessages);
     setInput("");
+    requestAnimationFrame(syncInputHeight);
     setFollowUpText("");
     setFollowUpReasoningText("");
     setFollowUpError(null);
@@ -374,9 +406,9 @@ export default function SutInlineAIPanel({
         }
         setIsResponding(false);
       });
-  }, [activeTab, input, isResponding, messages, patientId, setMessages, t]);
+  }, [activeTab, input, isResponding, messages, patientId, setMessages, syncInputHeight, t]);
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       handleSend();
@@ -404,6 +436,11 @@ export default function SutInlineAIPanel({
           <div>
             <div className="text-[0.95rem] font-bold leading-[1.35] text-[var(--text-primary)]">
               {t("chat.title")}
+              {userRole === "dev" && (
+                <span className="ml-2 align-middle text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--gold)]">
+                  {t("chat.devModeBadge")}
+                </span>
+              )}
             </div>
             <p className="mt-[0.2rem] flex items-center gap-1.5 text-[0.78rem] leading-[1.4] text-[var(--text-muted)]">
               {patientId ? (
@@ -584,15 +621,18 @@ export default function SutInlineAIPanel({
         </div>
       )}
 
-      <div className="mt-2.5 flex items-center gap-2">
-        <input
-          type="text"
+      <div className="mt-2.5 flex items-end gap-2">
+        <textarea
+          ref={inputRef}
+          rows={1}
           value={input}
           onChange={(event) => setInput(event.target.value)}
+          onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           placeholder={patientId ? t("chat.input.placeholderPatient") : t("chat.input.placeholderWorkspace")}
           disabled={isResponding}
           className={CHAT_INPUT_CLASS}
+          style={{ minHeight: CHAT_INPUT_MIN_HEIGHT_PX, maxHeight: CHAT_INPUT_MAX_HEIGHT_PX }}
         />
         <button
           type="button"

@@ -7,11 +7,59 @@ import type { SutHomeTab } from "@/lib/constants";
 
 export type SutChatPageId = "home" | "patient_workspace";
 
+/** KPI slice matching BillingSummary — sent so dev chat sees on-screen amounts. */
+export interface VisibleBillingSnapshot {
+  scope: "patient" | "bill";
+  patient_id: string;
+  claim_id?: string;
+  sgk_uplift_try?: number;
+  compliance_adjustment_try?: number;
+  audit_exposure_try?: number;
+  capture_gap_try?: number;
+  exemption_gap_try?: number;
+  package_adequacy_review_try?: number;
+  gazette_repricing_try?: number;
+  medula_playbook_entry_count?: number;
+  total_recoverable_try: number;
+  priority: BillingActionReport["priority"];
+  exactness_status?: BillingActionReport["exactness_status"];
+}
+
+export function buildVisibleBillingSnapshot(
+  report: BillingActionReport,
+): VisibleBillingSnapshot {
+  const isBillScope = report.scope === "bill" && Boolean(report.claim_id);
+  const copayExact = report.copay?.exactness_status === "exact";
+  const exemptionGapTotal =
+    report.copay?.patient_copay_waived_total_try ??
+    (report.copay?.visit_copay_savings_try ?? 0) + (report.copay?.rx_copay_savings_try ?? 0);
+  const showExemptionGap =
+    copayExact && report.copay?.is_exempt && exemptionGapTotal > 0;
+
+  return {
+    scope: isBillScope ? "bill" : "patient",
+    patient_id: report.patient_id,
+    claim_id: report.claim_id,
+    sgk_uplift_try: report.sgk_uplift_try ?? report.total_recoverable_try,
+    compliance_adjustment_try: report.compliance_adjustment_try,
+    audit_exposure_try: report.audit_exposure_try,
+    capture_gap_try: report.capture_gap_try,
+    exemption_gap_try: showExemptionGap ? exemptionGapTotal : undefined,
+    package_adequacy_review_try: report.package_adequacy_review_try,
+    gazette_repricing_try: report.gazette_repricing_try,
+    medula_playbook_entry_count: report.medula_playbook_entry_count,
+    total_recoverable_try: report.total_recoverable_try,
+    priority: report.priority,
+    exactness_status: report.exactness_status,
+  };
+}
+
 /** Structured snapshot of the page the user is viewing — sent with user questions. */
 export interface SutChatPageContext {
   page: SutChatPageId;
   tab?: string;
   patient_id?: string;
+  visible_billing?: VisibleBillingSnapshot;
   sections: Record<string, unknown>;
 }
 
@@ -58,6 +106,7 @@ export function buildPatientWorkspacePageContext(input: {
     sections.billing_report = {
       loaded: true,
       patient_id: input.billingReport.patient_id,
+      claim_id: input.billingReport.claim_id,
       total_recoverable_try: input.billingReport.total_recoverable_try,
       priority: input.billingReport.priority,
       exactness_status: input.billingReport.exactness_status,
@@ -68,6 +117,9 @@ export function buildPatientWorkspacePageContext(input: {
     page: "patient_workspace",
     tab: "SUT Patient Workspace",
     patient_id: input.patientId,
+    visible_billing: input.billingReport
+      ? buildVisibleBillingSnapshot(input.billingReport)
+      : undefined,
     sections,
   };
 }

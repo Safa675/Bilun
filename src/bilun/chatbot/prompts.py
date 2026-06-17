@@ -4,12 +4,52 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from .tools import UserRole
+
 ChatIntent = Literal["auto_brief", "user_question"]
+ChatLocale = Literal["en", "tr"]
+
+
+def _parse_ui_locale(value: str | None) -> ChatLocale:
+    if value == "tr":
+        return "tr"
+    return "en"
+
+
+def build_language_rules(ui_locale: ChatLocale) -> list[str]:
+    """Hard language contract tied to the BILUN UI locale (not prompt language)."""
+    if ui_locale == "tr":
+        return [
+            "LANGUAGE RULES — MANDATORY (Turkish UI / arayüz dili: Türkçe)",
+            "The user is on the TURKISH BILUN interface. This block overrides any other language instruction.",
+            "- You MUST write EVERY assistant reply entirely in Turkish (Türkçe). No exceptions.",
+            "- This applies even when the user prompt is in English, mixed language, or any other language.",
+            "- Do NOT reply in English because the user wrote in English. Translate your full answer into Turkish.",
+            "- Auto-briefs, follow-ups, tool summaries, and error explanations: all Turkish.",
+            "- Keep these in original form when needed: patient IDs, claim IDs, procedure codes,",
+            "  EK-x annex labels, §section IDs, MEDULA field names, TRY amounts, exactness_status values.",
+            "- If runtime context contains English labels, paraphrase or use the Turkish billing term in prose.",
+            "- Replying in English on the Turkish UI is a critical failure.",
+            "",
+        ]
+
+    return [
+        "LANGUAGE RULES (English UI)",
+        "The user is on the ENGLISH BILUN interface.",
+        "- Reply in the same language as the user's latest message.",
+        "- English prompt → English reply. Turkish prompt → Turkish reply.",
+        "- For mixed-language prompts, match the language of the main question.",
+        "- If the user's language is ambiguous, default to English.",
+        "",
+    ]
 
 
 def build_system_prompt(
     model_context: dict[str, Any],
     intent: ChatIntent = "user_question",
+    *,
+    user_role: UserRole = "billing_officer",
+    ui_locale: ChatLocale = "en",
 ) -> str:
     """Build the system prompt from SUT build metadata."""
 
@@ -22,11 +62,7 @@ def build_system_prompt(
         "Use only the numbers and facts present in the supplied context blocks.",
         "If a context block says data is unavailable or missing, say that clearly and do not guess.",
         "",
-        "LANGUAGE RULES",
-        "- Reply in English when the user writes in English.",
-        "- Reply in Turkish when the user writes in Turkish.",
-        "- Match the user's language.",
-        "",
+        *build_language_rules(ui_locale),
         "SUT TERMINOLOGY — Gazete Annexes",
         "- EK-1A: chronic disease copayment (katilim payi) exemptions — 98 ICD-10 ranges",
         "- EK-2G: surcharge (fark ucreti) prohibition list — 213 procedures where extra billing is illegal",
@@ -88,6 +124,18 @@ def build_system_prompt(
         "",
     ]
 
+    if user_role == "dev":
+        lines.extend([
+            "DEVELOPER COPILOT MODE",
+            "- You are assisting BILUN engineers building billing algorithms — not hospital billing officers.",
+            "- You have read_repo_file and grep_repo tools to inspect src/bilun/, plans/, tests/, and frontend/src/.",
+            "- For implementation questions (how audit_exposure_try is computed, which module owns a block), read the code and cite paths.",
+            "- For patient-specific TRY on screen, use page_view.visible_billing first, then get_bill_billing_report or get_billing_report.",
+            "- Money semantics: sgk_uplift_try ≠ audit_exposure_try ≠ compliance_adjustment_try ≠ exemption_gap_try.",
+            "- Do not claim you executed billing code; cite API/tool results or visible_billing for live numbers.",
+            "",
+        ])
+
     shared_response_rules = [
         "- Always state the exactness_status when reporting amounts.",
         "- When a feature is gated, explain what claim data is needed in plain language.",
@@ -101,6 +149,11 @@ def build_system_prompt(
         "- Every SUT claim must be traceable to its source annex. Never say \"per SUT rules\"",
         "  without naming the specific annex (e.g., EK-1A, EK-2G, EK-4A, EK-2C).",
     ]
+
+    if ui_locale == "tr":
+        shared_response_rules.append(
+            "- REMINDER: Turkish UI — the entire reply must be in Turkish (Türkçe), regardless of prompt language."
+        )
 
     if intent == "auto_brief":
         lines.extend([

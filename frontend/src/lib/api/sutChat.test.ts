@@ -2,6 +2,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { sendSutChatMessage } from "./sutChat";
 
+vi.mock("../cookies", () => ({
+  getCookie: vi.fn((name: string) => {
+    if (name === "bilun:role") return "dev";
+    if (name === "bilun:locale") return "en";
+    return null;
+  }),
+}));
+
 describe("sendSutChatMessage", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -41,6 +49,8 @@ describe("sendSutChatMessage", () => {
         active_tab: "SUT Patient Workspace",
         intent: "user_question",
         page_context: null,
+        user_role: "dev",
+        ui_locale: "en",
       }),
     );
   });
@@ -74,6 +84,8 @@ describe("sendSutChatMessage", () => {
       active_tab: "SUT Patient Workspace",
       intent: "user_question",
       page_context: pageContext,
+      user_role: "dev",
+      ui_locale: "en",
     });
   });
 });

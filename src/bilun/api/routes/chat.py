@@ -19,7 +19,7 @@ from src.bilun.shared.state import _chat_rate_lock as _rate_lock, _chat_rate_win
 from src.bilun.chatbot import stream_chat_response
 from src.bilun.chatbot.context import build_bilun_runtime_context
 from src.bilun.chatbot.llm import stream_chat_response_with_tools
-from src.bilun.chatbot.prompts import ChatIntent
+from src.bilun.chatbot.prompts import ChatIntent, _parse_ui_locale
 
 logger = logging.getLogger("bilun.api.chat")
 
@@ -59,7 +59,7 @@ def _encode_sse(kind: str, payload: str) -> str:
 
 from .optimization import get_optimization_summary, get_patient_optimization, get_revenue_recovery
 from .patients import get_bilun_patient_outcome
-from .billing import get_patient_billing_report
+from .billing import get_bill_billing_report, get_patient_billing_report
 from .medula_rejections import get_medula_rejection_queue
 
 from src.bilun.chatbot.medula_kb import search_medula
@@ -77,7 +77,18 @@ from src.bilun.shared.state import (
     get_pipeline_mode,
 )
 
+from src.bilun.chatbot.tools import UserRole
+
 router = APIRouter()
+
+UserRoleLiteral = Literal["dev", "billing_officer"]
+UiLocaleLiteral = Literal["en", "tr"]
+
+
+def _parse_user_role(value: str | None) -> UserRole:
+    if value == "dev":
+        return "dev"
+    return "billing_officer"
 
 
 class BilunChatMessage(BaseModel):
@@ -91,6 +102,8 @@ class BilunChatRequest(BaseModel):
     patient_id: str | None = None
     intent: ChatIntent = "user_question"
     page_context: dict[str, Any] | None = None
+    user_role: UserRoleLiteral = "billing_officer"
+    ui_locale: UiLocaleLiteral = "en"
 
 
 # ── Summarizers (keep in chat.py — they depend on route imports) ──────────────
@@ -252,11 +265,48 @@ def _should_use_chat_tools(
     *,
     patient_id: str | None,
     intent: ChatIntent,
+    user_role: UserRole = "billing_officer",
 ) -> bool:
-    """Patient chats pre-fetch all context; tools are only useful on cohort/home views."""
+    """Developer role always uses tools; cohort/home views use tools for officers."""
     if intent == "auto_brief":
         return False
+    if user_role == "dev":
+        return True
     return patient_id is None
+
+
+def _claim_id_from_page_context(page_context: dict[str, Any] | None) -> str | None:
+    if not page_context:
+        return None
+    visible = page_context.get("visible_billing")
+    if isinstance(visible, dict):
+        claim_id = visible.get("claim_id")
+        if isinstance(claim_id, str) and claim_id.strip():
+            return claim_id.strip()
+    sections = page_context.get("sections")
+    if isinstance(sections, dict):
+        billing = sections.get("billing_report")
+        if isinstance(billing, dict):
+            claim_id = billing.get("claim_id")
+            if isinstance(claim_id, str) and claim_id.strip():
+                return claim_id.strip()
+    return None
+
+
+def _fetch_billing_report_for_chat(
+    patient_id: str,
+    *,
+    user_role: UserRole = "billing_officer",
+    page_context: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    claim_id = _claim_id_from_page_context(page_context)
+    if user_role == "dev" and claim_id:
+        payload = get_bill_billing_report(patient_id, claim_id)
+    else:
+        payload = get_patient_billing_report(patient_id)
+    if user_role == "dev":
+        return payload
+    return _summarize_billing_report(payload)
 
 
 def _cached_patient_optimization_payload(patient_id: str) -> dict[str, Any] | None:
@@ -327,6 +377,7 @@ def _fetch_runtime_data(
     *,
     intent: ChatIntent = "user_question",
     page_context: dict[str, Any] | None = None,
+    user_role: UserRole = "billing_officer",
 ) -> dict[str, Any]:
     """Fetch all data needed for context assembly (parallel where independent)."""
 
@@ -361,8 +412,10 @@ def _fetch_runtime_data(
     def _fetch_billing_report() -> dict[str, Any]:
         return _safe_context_block(
             "Billing report",
-            lambda: _summarize_billing_report(
-                get_patient_billing_report(patient_id)
+            lambda: _fetch_billing_report_for_chat(
+                patient_id,
+                user_role=user_role,
+                page_context=page_context,
             ),
         )
 
@@ -484,23 +537,32 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
             user_message,
             intent=req.intent,
             page_context=req.page_context,
+            user_role=_parse_user_role(req.user_role),
         )
         t_fetch = time.perf_counter()
+        user_role = _parse_user_role(req.user_role)
+        ui_locale = _parse_ui_locale(req.ui_locale)
+        billing_detail = "full" if user_role == "dev" and req.patient_id else "summary"
         runtime_context = build_bilun_runtime_context(
             raw_data,
             req.active_tab,
             req.patient_id,
             page_context=req.page_context,
             intent=req.intent,
-            billing_detail="summary",
+            billing_detail=billing_detail,
+            user_role=user_role,
+            ui_locale=ui_locale,
         )
         use_tools = _should_use_chat_tools(
             patient_id=req.patient_id,
             intent=req.intent,
+            user_role=user_role,
         )
         logger.info(
-            "CHAT PRE-LLM | intent=%s patient=%s fetch_ms=%.0f ctx_ms=%.0f ctx_chars=%d tools=%s",
+            "CHAT PRE-LLM | intent=%s role=%s locale=%s patient=%s fetch_ms=%.0f ctx_ms=%.0f ctx_chars=%d tools=%s",
             req.intent,
+            user_role,
+            ui_locale,
             req.patient_id or "-",
             (t_fetch - t0) * 1000,
             (time.perf_counter() - t_fetch) * 1000,
@@ -517,6 +579,8 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
             [message.model_dump() for message in req.messages],
             runtime_context,
             intent=req.intent,
+            user_role=user_role,
+            ui_locale=ui_locale,
         ):
             if isinstance(item, tuple):
                 kind, text = item
@@ -570,12 +634,18 @@ async def weekly_brief(req: WeeklyBriefRequest, request: Request):
             page_context=None,
         )
         runtime_context = build_bilun_runtime_context(
-            raw_data, "SUT Analytics", None, intent="auto_brief", billing_detail="summary"
+            raw_data,
+            "SUT Analytics",
+            None,
+            intent="auto_brief",
+            billing_detail="summary",
+            ui_locale=_parse_ui_locale(req.language),
         )
         async for item in stream_chat_response(
             messages,
             runtime_context,
             intent="auto_brief",
+            ui_locale=_parse_ui_locale(req.language),
         ):
             if isinstance(item, tuple):
                 kind, text = item

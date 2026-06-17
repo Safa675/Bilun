@@ -12,6 +12,7 @@ const chat = {
     sendMessage: "Send message",
   },
   emptyState: "BILUN will brief each view and keep the full thread here.",
+  devModeBadge: "Dev copilot",
   roles: {
     you: "You",
     bilun: "BILUN",

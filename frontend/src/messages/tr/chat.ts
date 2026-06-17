@@ -12,6 +12,7 @@ const chat = {
     sendMessage: "Mesaj gönder",
   },
   emptyState: "BILUN her görünümü özetler ve tüm konuşmayı burada tutar.",
+  devModeBadge: "Geliştirici",
   roles: {
     you: "Siz",
     bilun: "BILUN",

@@ -1,6 +1,13 @@
 import { buildApiUrl, extractSseFrames, parseSsePayload } from "../apiClient";
+import { getCookie } from "../cookies";
 import type { ChatMessage } from "../domains/common";
 import type { SutChatPageContext } from "../sutChatPageContext";
+import { LOCALE_COOKIE_KEY, type Locale } from "../i18n/types";
+import { parseRole, ROLE_COOKIE_KEY, type UserRole } from "../userRole";
+
+function parseUiLocale(value: string | null): Locale {
+  return value === "tr" ? "tr" : "en";
+}
 
 export type SutChatIntent = "auto_brief" | "user_question";
 
@@ -25,6 +32,8 @@ export async function sendSutChatMessage(
   }: SendSutChatMessageOptions,
 ): Promise<void> {
   const url = buildApiUrl("/api/chat");
+  const userRole: UserRole = parseRole(getCookie(ROLE_COOKIE_KEY));
+  const uiLocale: Locale = parseUiLocale(getCookie(LOCALE_COOKIE_KEY));
   const requestController = new AbortController();
   let abortSource: "caller" | "timeout" | null = null;
 
@@ -62,6 +71,8 @@ export async function sendSutChatMessage(
         active_tab: activeTab,
         intent,
         page_context: pageContext,
+        user_role: userRole,
+        ui_locale: uiLocale,
       }),
       signal: requestController.signal,
     });

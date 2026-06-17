@@ -83,6 +83,8 @@ export interface SutMaterialBundlingCoverageScope {
   medula_boundary_doc?: string;
   medula_savings_note?: string;
   gate_b_deferred_clauses?: number;
+  kdv_pricing_clauses?: number;
+  kdv_pricing_module?: string;
 }
 
 export interface SutSpecialtyProseCoverageScope {
@@ -537,9 +539,47 @@ export interface CoverageSummaryMeta {
   unavailable_reason: string | null;
 }
 
+export interface PartialEngineCoverage {
+  rule_id: string;
+  registry_status: string;
+  prose_engine_status: string;
+  classified_clause_rows: number;
+  encoded_clause_rows: number;
+  algorithmic_gap_rows: number;
+  unencoded_gap_rows: number;
+  encoded_clause_pct: number;
+  gap_pct_of_classified: number;
+  prose_rules_on_disk: number;
+  tier_b_rule_count?: number;
+  encode_tier_c_deferred_count?: number;
+  manifest_traced_clause_count?: number | null;
+  corpus_export_rows?: number | null;
+  kdv_pricing_clauses?: number | null;
+  "section_4.2.14.C_clause_total"?: number;
+  honesty_note?: string;
+}
+
+export interface PartialEnginesCoverage {
+  drug_indication_prose?: PartialEngineCoverage;
+  material_bundling_prose?: PartialEngineCoverage;
+  specialty_materials_prose?: PartialEngineCoverage;
+}
+
+export interface GapCompositionSummary {
+  total_algorithmic_gaps: number;
+  drug_indication_gap_rows: number;
+  drug_indication_gap_pct_of_gaps: number;
+  optimizer_gaps_excluding_drug: number;
+  non_algorithmic_clause_rows: number;
+  footnote_en: string;
+  footnote_tr: string;
+}
+
 export interface CoverageSummary {
   clauses: ClauseCoverageSummary;
   registry: RegistryCoverageSummary;
+  partial_engines?: PartialEnginesCoverage;
+  gap_composition?: GapCompositionSummary;
   meta: CoverageSummaryMeta;
 }
 
@@ -584,6 +624,13 @@ export interface SectionRollupEntry {
   worst_coverage_status: string | null;
   gap_clause_count: number;
   primary_categories: string[];
+}
+
+/** Stable React/list key: section_id alone is not unique in coverage rollups. */
+export function sectionRollupRowKey(
+  section: Pick<SectionRollupEntry, "section_id" | "section_title">,
+): string {
+  return `${section.section_id ?? "unknown"}::${section.section_title ?? ""}`;
 }
 
 export interface SectionRollupResponse {

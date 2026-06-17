@@ -147,3 +147,41 @@ def test_execute_tool_call_search_medula_playbook_routes_to_kb(monkeypatch):
     assert captured["sonuc_kodu"] == "1688"
     assert captured["top_n"] == 5
     assert "1688_molecular_microbiology" in result.content
+
+
+def test_execute_tool_call_get_bill_billing_report(monkeypatch):
+    captured: dict[str, str] = {}
+
+    def fake_get_bill_billing_report(patient_id, claim_id):
+        captured["patient_id"] = patient_id
+        captured["claim_id"] = claim_id
+        return {"patient_id": patient_id, "claim_id": claim_id, "audit_exposure_try": 1.0}
+
+    monkeypatch.setattr(
+        "src.bilun.api.routes.billing.get_bill_billing_report",
+        fake_get_bill_billing_report,
+    )
+
+    result = asyncio.run(
+        execute_tool_call(
+            "get_bill_billing_report",
+            {"patient_id": "P-001", "claim_id": "F-P-001-048"},
+            ToolSession(),
+        )
+    )
+
+    assert result.success is True
+    assert captured == {"patient_id": "P-001", "claim_id": "F-P-001-048"}
+    assert "audit_exposure_try" in result.content
+
+
+def test_get_tool_schemas_includes_repo_tools_for_dev():
+    from src.bilun.chatbot.tools import get_tool_schemas
+
+    dev_names = {tool["function"]["name"] for tool in get_tool_schemas(user_role="dev")}
+    officer_names = {tool["function"]["name"] for tool in get_tool_schemas(user_role="billing_officer")}
+
+    assert "read_repo_file" in dev_names
+    assert "grep_repo" in dev_names
+    assert "read_repo_file" not in officer_names
+    assert "get_bill_billing_report" in officer_names

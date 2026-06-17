@@ -45,6 +45,21 @@ describe("sutChatPageContext", () => {
       page: "patient_workspace",
       tab: "SUT Patient Workspace",
       patient_id: "P-001",
+      visible_billing: {
+        scope: "patient",
+        patient_id: "P-001",
+        sgk_uplift_try: 100,
+        compliance_adjustment_try: undefined,
+        audit_exposure_try: undefined,
+        capture_gap_try: undefined,
+        exemption_gap_try: undefined,
+        package_adequacy_review_try: undefined,
+        gazette_repricing_try: undefined,
+        medula_playbook_entry_count: undefined,
+        total_recoverable_try: 100,
+        priority: "high",
+        exactness_status: "exact",
+      },
       sections: {
         workspace_header: {
           patient_id: "P-001",

@@ -7,6 +7,7 @@ Safety-first architecture:
 - Per-call timeout: 5 seconds max per tool execution
 - Response size cap: 8KB to prevent context window overflow
 - Audit log: every tool call is logged
+- Dev-only repo tools: read_repo_file, grep_repo (developer role)
 """
 
 from __future__ import annotations
@@ -16,13 +17,15 @@ import json
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any, Literal
 
 logger = logging.getLogger("bilun.chatbot.tools")
 
+UserRole = Literal["dev", "billing_officer"]
+
 # ── Tool schema definitions (OpenAI function-calling format) ──────────────────
 
-TOOL_SCHEMAS: list[dict[str, Any]] = [
+_CORE_TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "type": "function",
         "function": {
@@ -44,6 +47,33 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                     },
                 },
                 "required": ["patient_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_bill_billing_report",
+            "description": (
+                "Get a claim-scoped billing action report for one bill (claim_id)."
+                " Use when the UI shows a selected bill or page_view.visible_billing"
+                " has scope=bill. Returns full KPI fields including"
+                " audit_exposure_try, sgk_uplift_try, compliance_adjustment_try,"
+                " and per-block detail for that bill only."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "patient_id": {
+                        "type": "string",
+                        "description": "The patient ID",
+                    },
+                    "claim_id": {
+                        "type": "string",
+                        "description": "The bill / claim ID (e.g. F-SENTETIK-HASTA-0023-048)",
+                    },
+                },
+                "required": ["patient_id", "claim_id"],
             },
         },
     },
@@ -242,10 +272,79 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
     },
 ]
 
+_DEV_TOOL_SCHEMAS: list[dict[str, Any]] = [
+    {
+        "type": "function",
+        "function": {
+            "name": "read_repo_file",
+            "description": (
+                "Read a source file from the BILUN repository (developer mode)."
+                " Use to explain how billing algorithms, chat context, or SUT"
+                " rules are implemented. Cite the path in your answer."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": (
+                            "Repository-relative path, e.g."
+                            " src/bilun/domain/billing/claim_audit_exposure.py"
+                        ),
+                    },
+                    "start_line": {
+                        "type": "number",
+                        "description": "Optional 1-based start line (default 1)",
+                    },
+                    "end_line": {
+                        "type": "number",
+                        "description": "Optional 1-based end line (default EOF)",
+                    },
+                },
+                "required": ["path"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "grep_repo",
+            "description": (
+                "Search BILUN source files with a regex (developer mode)."
+                " Use to locate symbols, fields, or algorithm entry points."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "pattern": {
+                        "type": "string",
+                        "description": "Regex pattern to search for",
+                    },
+                    "path_prefix": {
+                        "type": "string",
+                        "description": (
+                            "Allowed repo prefix to search under"
+                            " (default src/bilun)"
+                        ),
+                    },
+                    "max_matches": {
+                        "type": "number",
+                        "description": "Max matches to return (default 30, cap 40)",
+                    },
+                },
+                "required": ["pattern"],
+            },
+        },
+    },
+]
+
+TOOL_SCHEMAS: list[dict[str, Any]] = _CORE_TOOL_SCHEMAS
+
 # ── Endpoint allowlist — maps tool name to executor ───────────────────────────
 
 _TOOL_FUNCTION_MAP: dict[str, str] = {
     "get_billing_report": "get_patient_billing_report",
+    "get_bill_billing_report": "get_bill_billing_report",
     "get_revenue_recovery": "get_revenue_recovery",
     "get_patient_optimization": "get_patient_optimization",
     "get_optimization_summary": "get_optimization_summary",
@@ -255,9 +354,15 @@ _TOOL_FUNCTION_MAP: dict[str, str] = {
     "get_patient_alerts": "get_patient_alerts",
     "search_sut_clauses": "search_sut_clauses",
     "search_medula_playbook": "search_medula_playbook_entries",
+    "read_repo_file": "read_repo_file",
+    "grep_repo": "grep_repo",
 }
 
+_DEV_TOOL_NAMES = frozenset({"read_repo_file", "grep_repo"})
+_BILLING_TOOL_NAMES = frozenset({"get_billing_report", "get_bill_billing_report"})
+
 RESPONSE_SIZE_CAP = 8192  # 8KB
+BILLING_RESPONSE_SIZE_CAP = 16384  # 16KB for full billing JSON
 TOOL_TIMEOUT_SEC = 5.0
 MAX_TOOL_CALLS_PER_TURN = 3
 CIRCUIT_BREAKER_THRESHOLD = 3
@@ -319,7 +424,7 @@ class ToolSession:
             self.consecutive_errors[result.tool_name] = current + 1
 
 
-def _serialize_for_llm(obj: Any) -> str:
+def _serialize_for_llm(obj: Any, *, size_cap: int = RESPONSE_SIZE_CAP) -> str:
     """Serialize a Python value to a JSON string safe for LLM context."""
     if isinstance(obj, (dict, list)):
         raw = json.dumps(obj, ensure_ascii=False, default=str)
@@ -327,20 +432,23 @@ def _serialize_for_llm(obj: Any) -> str:
         raw = json.dumps(obj, ensure_ascii=False)
     else:
         raw = json.dumps(str(obj), ensure_ascii=False)
-    if len(raw) > RESPONSE_SIZE_CAP:
-        truncated = raw[:RESPONSE_SIZE_CAP]
-        truncated += f"\n... [truncated at {RESPONSE_SIZE_CAP} bytes, original was {len(raw)} bytes]"
+    if len(raw) > size_cap:
+        truncated = raw[:size_cap]
+        truncated += f"\n... [truncated at {size_cap} bytes, original was {len(raw)} bytes]"
         return truncated
     return raw
 
 
+def _tool_schema_by_name(tool_name: str) -> dict[str, Any] | None:
+    for tool in _CORE_TOOL_SCHEMAS + _DEV_TOOL_SCHEMAS:
+        if tool["function"]["name"] == tool_name:
+            return tool["function"]["parameters"]
+    return None
+
+
 def _validate_arguments(tool_name: str, arguments: dict[str, Any]) -> None:
     """Validate tool arguments against the schema. Raises ValueError on mismatch."""
-    schema = None
-    for tool in TOOL_SCHEMAS:
-        if tool["function"]["name"] == tool_name:
-            schema = tool["function"]["parameters"]
-            break
+    schema = _tool_schema_by_name(tool_name)
     if schema is None:
         raise ValueError(f"Unknown tool: {tool_name}")
 
@@ -424,6 +532,7 @@ async def execute_tool_call(
 
         def _exec() -> str:
             from src.bilun.api.routes.billing import (
+                get_bill_billing_report,
                 get_drug_catalog,
                 get_patient_billing_report,
             )
@@ -437,12 +546,23 @@ async def execute_tool_call(
                 get_bilun_patients,
                 search_bilun_patients,
             )
-            from src.bilun.domain.sut.clause_retrieval import search_clauses
             from src.bilun.chatbot.medula_kb import search_playbook_entries
+            from src.bilun.chatbot.repo_tools import grep_repo, read_repo_file
+            from src.bilun.domain.sut.clause_retrieval import search_clauses
+
+            size_cap = (
+                BILLING_RESPONSE_SIZE_CAP
+                if tool_name in _BILLING_TOOL_NAMES
+                else RESPONSE_SIZE_CAP
+            )
 
             namespace = {
                 "get_patient_billing_report": lambda: get_patient_billing_report(
                     arguments["patient_id"]
+                ),
+                "get_bill_billing_report": lambda: get_bill_billing_report(
+                    arguments["patient_id"],
+                    arguments["claim_id"],
                 ),
                 "get_revenue_recovery": get_revenue_recovery,
                 "get_patient_optimization": lambda: get_patient_optimization(
@@ -476,12 +596,22 @@ async def execute_tool_call(
                     sonuc_kodu=arguments.get("sonuc_kodu"),
                     top_n=5,
                 ),
+                "read_repo_file": lambda: read_repo_file(
+                    arguments["path"],
+                    start_line=arguments.get("start_line"),
+                    end_line=arguments.get("end_line"),
+                ),
+                "grep_repo": lambda: grep_repo(
+                    arguments["pattern"],
+                    path_prefix=arguments.get("path_prefix", "src/bilun"),
+                    max_matches=int(arguments.get("max_matches", 30)),
+                ),
             }
             func = namespace.get(func_name)
             if func is None:
                 raise ValueError(f"Executor not found for tool '{tool_name}'")
             result = func()
-            return _serialize_for_llm(result)
+            return _serialize_for_llm(result, size_cap=size_cap)
 
         content = await asyncio.wait_for(
             asyncio.to_thread(_exec), timeout=TOOL_TIMEOUT_SEC
@@ -514,6 +644,8 @@ async def execute_tool_call(
     return result
 
 
-def get_tool_schemas() -> list[dict[str, Any]]:
-    """Return the full list of tool schemas for the LLM request."""
-    return TOOL_SCHEMAS
+def get_tool_schemas(*, user_role: UserRole = "billing_officer") -> list[dict[str, Any]]:
+    """Return tool schemas for the LLM request."""
+    if user_role == "dev":
+        return _CORE_TOOL_SCHEMAS + _DEV_TOOL_SCHEMAS
+    return list(_CORE_TOOL_SCHEMAS)

@@ -13,9 +13,10 @@ from typing import Any, AsyncIterator
 import httpx
 
 from .metadata import get_chat_model_context
-from .prompts import ChatIntent, build_system_prompt
+from .prompts import ChatIntent, ChatLocale, build_system_prompt
 from .tools import (
     ToolSession,
+    UserRole,
     execute_tool_call,
     get_tool_schemas,
     MAX_TOOL_CALLS_PER_TURN,
@@ -51,8 +52,15 @@ def _build_messages(
     *,
     model_context: dict[str, Any],
     intent: ChatIntent = "user_question",
+    user_role: str = "billing_officer",
+    ui_locale: ChatLocale = "en",
 ) -> list[dict]:
-    system_content = build_system_prompt(model_context, intent=intent)
+    system_content = build_system_prompt(
+        model_context,
+        intent=intent,
+        user_role=user_role if user_role == "dev" else "billing_officer",
+        ui_locale=ui_locale,
+    )
     if runtime_context:
         system_content += "\n\n" + runtime_context
     return [{"role": "system", "content": system_content}] + messages
@@ -213,6 +221,8 @@ async def stream_chat_response_with_tools(
     runtime_context: str = "",
     *,
     intent: ChatIntent = "user_question",
+    user_role: UserRole = "billing_officer",
+    ui_locale: ChatLocale = "en",
 ) -> AsyncIterator[str]:
     """Stream text chunks from the LLM with tool-calling support.
 
@@ -240,8 +250,10 @@ async def stream_chat_response_with_tools(
         runtime_context,
         model_context=get_chat_model_context(),
         intent=intent,
+        user_role=user_role,
+        ui_locale=ui_locale,
     )
-    tools = get_tool_schemas()
+    tools = get_tool_schemas(user_role=user_role)
     tool_session = ToolSession()
 
     base_payload = {
@@ -370,6 +382,8 @@ async def stream_chat_response(
     extra_params: dict | None = None,
     *,
     intent: ChatIntent = "user_question",
+    user_role: UserRole = "billing_officer",
+    ui_locale: ChatLocale = "en",
 ) -> AsyncIterator[tuple[str, str] | str]:
     """Stream text chunks from the configured LLM endpoint.
 
@@ -395,6 +409,8 @@ async def stream_chat_response(
         runtime_context,
         model_context=get_chat_model_context(),
         intent=intent,
+        user_role=user_role if user_role == "dev" else "billing_officer",
+        ui_locale=ui_locale,
     )
     logger.info(
         "LLM REQUEST | model=%s | msgs=%d | context_chars=%d",

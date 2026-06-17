@@ -11,6 +11,9 @@ import re
 from typing import Any, Literal
 
 from .prompts import ChatIntent
+from .tools import UserRole
+
+ChatLocale = Literal["en", "tr"]
 
 _FULL_BILLING_LIST_CAP = 50
 _SUMMARY_BILLING_LIST_CAP = 5
@@ -774,9 +777,15 @@ def slim_page_context(page_context: dict[str, Any] | None) -> dict[str, Any] | N
     """Keep page_view metadata only — full patient data is fetched server-side."""
     if not page_context:
         return None
+
+    slim: dict[str, Any] = dict(page_context)
+    visible = page_context.get("visible_billing")
+    if isinstance(visible, dict):
+        slim["visible_billing"] = visible
+
     sections = page_context.get("sections")
     if not isinstance(sections, dict):
-        return page_context
+        return slim
 
     slim_sections: dict[str, Any] = {}
     for section_key, value in sections.items():
@@ -785,11 +794,14 @@ def slim_page_context(page_context: dict[str, Any] | None) -> dict[str, Any] | N
             for field in _PAGE_SECTION_SUMMARY_KEYS[section_key]:
                 if field in value:
                     summary[field] = value[field]
+            if section_key == "billing_report" and value.get("claim_id"):
+                summary["claim_id"] = value["claim_id"]
             slim_sections[section_key] = summary
         else:
             slim_sections[section_key] = value
 
-    return {**page_context, "sections": slim_sections}
+    slim["sections"] = slim_sections
+    return slim
 
 
 def build_bilun_runtime_context(
@@ -800,6 +812,8 @@ def build_bilun_runtime_context(
     page_context: dict[str, Any] | None = None,
     intent: ChatIntent = "user_question",
     billing_detail: BillingDetailLevel | None = None,
+    user_role: UserRole = "billing_officer",
+    ui_locale: ChatLocale = "en",
 ) -> str:
     """Build the complete BILUN runtime context string for the LLM.
 
@@ -823,6 +837,8 @@ def build_bilun_runtime_context(
         "product": "BILUN",
         "active_tab": active_tab,
         "intent": intent,
+        "user_role": user_role,
+        "ui_locale": ui_locale,
         "assistant_rules": [
             "Answer only from BILUN financial, reimbursement, optimization, and patient-workspace context.",
             "If an exactness or pricing status is not exact, describe that surface as unavailable instead of inventing zero, clear, or low-risk values.",
@@ -831,6 +847,19 @@ def build_bilun_runtime_context(
             "When a feature is gated, explain what claim data is needed.",
         ],
     }
+
+    if user_role == "dev":
+        context["assistant_rules"].extend([
+            "Developer mode: you may call read_repo_file and grep_repo to explain implementation.",
+            "For patient-specific TRY amounts, prefer page_view.visible_billing or billing tools — never infer amounts from source code.",
+            "sgk_uplift_try is recoverable SGK revenue; audit_exposure_try is compliance/denetim risk (overbilling exposure); compliance_adjustment_try is downward compliance correction; exemption_gap_try is waived copay the patient should not pay.",
+            "Cite repository file paths when explaining how an algorithm works.",
+        ])
+
+    if ui_locale == "tr":
+        context["assistant_rules"].append(
+            "UI locale is Turkish (tr): every assistant reply must be written entirely in Turkish, even if the user prompt is in English."
+        )
 
     slim_view = slim_page_context(page_context)
     if slim_view:
@@ -849,6 +878,10 @@ def build_bilun_runtime_context(
             data,
             detail_level=resolved_billing_detail,
         )
+        if user_role == "dev":
+            raw_report = _unwrap_billing_report(data)
+            if raw_report:
+                context["billing_report_json"] = raw_report
 
     catalog = build_catalog_context(data)
     if catalog:

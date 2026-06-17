@@ -61,7 +61,9 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
         },
     )
 
-    async def fake_stream_chat_response(messages, runtime_context="", extra_params=None, intent="user_question"):
+    async def fake_stream_chat_response(
+        messages, runtime_context="", extra_params=None, intent="user_question", **kwargs
+    ):
         captured["messages"] = messages
         captured["runtime_context"] = runtime_context
         captured["extra_params"] = extra_params
@@ -137,7 +139,7 @@ def test_sut_chat_user_question_uses_summarized_billing_context(monkeypatch):
         lambda patient_id: full_report,
     )
 
-    async def fake_stream(messages, runtime_context="", intent="user_question"):
+    async def fake_stream(messages, runtime_context="", intent="user_question", **kwargs):
         captured["runtime_context"] = runtime_context
         captured["intent"] = intent
         yield "ok"
@@ -154,6 +156,7 @@ def test_sut_chat_user_question_uses_summarized_billing_context(monkeypatch):
                 "active_tab": "SUT Billing Review",
                 "intent": "user_question",
                 "page_context": page_context,
+                "user_role": "billing_officer",
             },
         )
 
@@ -195,11 +198,11 @@ def test_sut_chat_patient_question_skips_tools_path(monkeypatch):
         lambda patient_id: {"patient_id": patient_id, "lab": {}},
     )
 
-    async def fake_stream(messages, runtime_context="", intent="user_question"):
+    async def fake_stream(messages, runtime_context="", intent="user_question", **kwargs):
         captured["stream"] = "fast"
         yield "ok"
 
-    async def fake_tools(messages, runtime_context="", intent="user_question"):
+    async def fake_tools(messages, runtime_context="", intent="user_question", **kwargs):
         captured["stream"] = "tools"
         yield "ok"
 
@@ -218,11 +221,125 @@ def test_sut_chat_patient_question_skips_tools_path(monkeypatch):
                 "patient_id": "P-001",
                 "active_tab": "SUT Patient Workspace",
                 "intent": "user_question",
+                "user_role": "billing_officer",
             },
         )
 
     assert response.status_code == 200
     assert captured["stream"] == "fast"
+
+
+    assert captured["stream"] == "fast"
+
+
+def test_sut_chat_dev_role_uses_tools_on_patient(monkeypatch):
+    import src.bilun.api.routes.chat as sut_chat_mod
+    from src.bilun.api import app
+
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(sut_chat_mod, "_check_rate_limit", lambda _ip: True)
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "_fetch_runtime_data",
+        lambda *_args, **_kwargs: {"optimization_summary": {"status": "ready", "summary": {}}},
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "build_bilun_runtime_context",
+        lambda *_args, **_kwargs: "ctx",
+    )
+
+    async def fake_stream(messages, runtime_context="", intent="user_question", **kwargs):
+        captured["stream"] = "fast"
+        captured["user_role"] = kwargs.get("user_role")
+        yield "ok"
+
+    async def fake_tools(messages, runtime_context="", intent="user_question", **kwargs):
+        captured["stream"] = "tools"
+        captured["user_role"] = kwargs.get("user_role")
+        yield "ok"
+
+    monkeypatch.setattr(sut_chat_mod, "stream_chat_response", fake_stream)
+    monkeypatch.setattr(sut_chat_mod, "stream_chat_response_with_tools", fake_tools)
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/chat",
+            json={
+                "messages": [{"role": "user", "content": "Why is audit exposure high?"}],
+                "patient_id": "P-001",
+                "active_tab": "SUT Patient Workspace",
+                "intent": "user_question",
+                "user_role": "dev",
+            },
+        )
+
+    assert response.status_code == 200
+    assert captured["stream"] == "tools"
+    assert captured["user_role"] == "dev"
+
+
+def test_fetch_billing_report_for_chat_uses_bill_scope_for_dev(monkeypatch):
+    import src.bilun.api.routes.chat as sut_chat_mod
+
+    calls: list[tuple[str, ...]] = []
+
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_bill_billing_report",
+        lambda patient_id, claim_id: calls.append(("bill", patient_id, claim_id)) or {
+            "patient_id": patient_id,
+            "claim_id": claim_id,
+            "audit_exposure_try": 41103.79,
+        },
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_patient_billing_report",
+        lambda patient_id: calls.append(("patient", patient_id)) or {"patient_id": patient_id},
+    )
+
+    payload = sut_chat_mod._fetch_billing_report_for_chat(
+        "P-001",
+        user_role="dev",
+        page_context={
+            "visible_billing": {
+                "scope": "bill",
+                "patient_id": "P-001",
+                "claim_id": "F-P-001-048",
+            }
+        },
+    )
+
+    assert calls == [("bill", "P-001", "F-P-001-048")]
+    assert payload["audit_exposure_try"] == 41103.79
+
+
+def test_fetch_billing_report_for_chat_summarizes_for_officer(monkeypatch):
+    import src.bilun.api.routes.chat as sut_chat_mod
+
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_patient_billing_report",
+        lambda patient_id: {
+            "patient_id": patient_id,
+            "lab": {"exactness_status": "exact", "flagged_tests": [{"test_name": f"T-{i}"} for i in range(8)]},
+            "copay": {},
+            "billing_strategy": {},
+            "materials": {},
+            "total_recoverable_try": 10.0,
+        },
+    )
+
+    payload = sut_chat_mod._fetch_billing_report_for_chat(
+        "P-001",
+        user_role="billing_officer",
+        page_context={"visible_billing": {"claim_id": "F-P-001-048"}},
+    )
+
+    assert payload["patient_id"] == "P-001"
+    assert len(payload["lab"]["flagged_tests"]) == 5
 
 
 def test_sut_chat_auto_brief_uses_summarized_billing(monkeypatch):
@@ -272,7 +389,7 @@ def test_sut_chat_auto_brief_uses_summarized_billing(monkeypatch):
         lambda patient_id: full_report,
     )
 
-    async def fake_stream(messages, runtime_context="", intent="user_question"):
+    async def fake_stream(messages, runtime_context="", intent="user_question", **kwargs):
         captured["intent"] = intent
         captured["runtime_context"] = runtime_context
         yield "brief"
@@ -287,6 +404,7 @@ def test_sut_chat_auto_brief_uses_summarized_billing(monkeypatch):
                 "patient_id": "P-001",
                 "active_tab": "SUT Billing Review",
                 "intent": "auto_brief",
+                "user_role": "billing_officer",
             },
         )
 
