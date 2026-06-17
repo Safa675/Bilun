@@ -57,6 +57,37 @@ export function copayCorrectionSavingsTry(
   return null;
 }
 
+export function copayCorrectionGroundKey(
+  correction: CopayRateCorrectionRow,
+): string | null {
+  const ground = correction.exemption_ground?.trim();
+  return ground || null;
+}
+
+export function copayClaimScopedAnnexLabels(
+  copay: CopayOptimization,
+): string[] {
+  const labels: string[] = [];
+  const hasEk1aVisit = copay.rate_corrections.some(
+    (row) =>
+      row.exemption_ground === "ek1a_muayene" &&
+      (row.copay_component_try ?? 0) > 0,
+  );
+  if (hasEk1aVisit) {
+    labels.push("EK-1A");
+  }
+
+  const byGround = copay.rx_copay_savings_by_ground ?? {};
+  if ((byGround.inpatient_drug_1_8_5_8 ?? 0) > 0) {
+    labels.push("§1.8.5(8)");
+  }
+  if ((byGround.ek4d_drug ?? 0) > 0) {
+    labels.push("EK-4D");
+  }
+
+  return labels;
+}
+
 export function usesClaimCopayCorrectionShape(
   correction: CopayRateCorrectionRow,
 ): boolean {

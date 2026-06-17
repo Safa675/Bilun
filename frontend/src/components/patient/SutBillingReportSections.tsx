@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties, ReactNode } from "react";
-import type { BillingActionReport, PatientOptimization } from "@/lib/domains/sut";
+import type { BillingActionReport, ClaimSubmissionChecklist, PatientOptimization } from "@/lib/domains/sut";
 import { getSutAlertBadgeLabel } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
@@ -12,7 +12,9 @@ import {
   isOptionalIngestPending,
 } from "@/lib/sutExactness";
 import {
+  copayClaimScopedAnnexLabels,
   copayCorrectionBilledTry,
+  copayCorrectionGroundKey,
   copayCorrectionPayableTry,
   copayCorrectionProcedureLabel,
   copayCorrectionSavingsTry,
@@ -165,12 +167,14 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
   const packageAdequacyReview = billingReport.package_adequacy_review_try ?? 0;
   const gazetteRepricing = billingReport.gazette_repricing_try ?? 0;
   const medulaPlaybookCount = billingReport.medula_playbook_entry_count ?? 0;
+  const drugIndicationCount = billingReport.drug_indication_violation_count ?? 0;
   const showCompliance = reportHasTotals && complianceAdjustment > 0;
   const showAuditExposure = reportHasTotals && auditExposure > 0;
   const showCaptureGap = reportHasTotals && captureGap > 0;
   const showPackageAdequacy = reportHasTotals && packageAdequacyReview > 0;
   const showGazetteRepricing = reportHasTotals && gazetteRepricing > 0;
   const showMedulaPlaybook = reportHasTotals && medulaPlaybookCount > 0;
+  const showDrugIndication = drugIndicationCount > 0;
   const extraSummaryStats = [
     showCompliance,
     showAuditExposure,
@@ -178,6 +182,7 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
     showPackageAdequacy,
     showGazetteRepricing,
     showMedulaPlaybook,
+    showDrugIndication,
   ].filter(Boolean).length;
   const priorityColor = reportHasTotals ? PRIORITY_COLORS[billingReport.priority] : "#71717A";
   const statusLabel = reportExact
@@ -247,6 +252,12 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
           <Stat
             label={t("billing.summary.medulaPlaybook")}
             value={String(medulaPlaybookCount)}
+          />
+        )}
+        {showDrugIndication && (
+          <Stat
+            label={t("billing.summary.drugIndicationReview")}
+            value={String(drugIndicationCount)}
           />
         )}
         <Stat
@@ -381,6 +392,30 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
   const claimRows = copayData.rate_corrections.filter(
     (correction) => !usesInsightOnlyCopayCorrectionShape(correction),
   );
+  const claimScopedChips = copayClaimScopedAnnexLabels(copayData);
+  const hasWaiverGroundColumn = claimRows.some((row) => Boolean(copayCorrectionGroundKey(row)));
+  const inpatientDrugGroundTotal =
+    copayData.rx_copay_savings_by_ground?.inpatient_drug_1_8_5_8 ?? 0;
+  const hasEk1aVisitSavings = copayData.rate_corrections.some(
+    (row) =>
+      row.exemption_ground === "ek1a_muayene" && (row.copay_component_try ?? 0) > 0,
+  );
+
+  const waiverGroundLabel = (ground: string | null) => {
+    if (!ground) {
+      return "—";
+    }
+    const key = `billing.copay.groundLabels.${ground}` as
+      | "billing.copay.groundLabels.ek1a_muayene"
+      | "billing.copay.groundLabels.inpatient_drug_1_8_5_8"
+      | "billing.copay.groundLabels.ek4d_drug"
+      | "billing.copay.groundLabels.ek4d_partial"
+      | "billing.copay.groundLabels.composite_acil_servis"
+      | "billing.copay.groundLabels.composite_koruyucu_saglik"
+      | "billing.copay.groundLabels.composite_is_kazasi_meslek";
+    const translated = t(key);
+    return translated === key ? ground : translated;
+  };
 
   return (
     <BillingSectionShell
@@ -405,8 +440,18 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
               {copayData.exemption_disease} ({copayData.exemption_range})
             </span>
           )}
-          <RuleSourceAttribution ruleSource={copayData.rule_source} />
+          {claimScopedChips.length > 0 ? (
+            <EkAnnexChips labels={claimScopedChips} />
+          ) : (
+            <RuleSourceAttribution ruleSource={copayData.rule_source} />
+          )}
         </div>
+
+        {copayData.is_exempt && (
+          <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+            {t("billing.copay.patientVsClaimExemptionNotice")}
+          </p>
+        )}
 
         {copayExact && (
           <>
@@ -418,6 +463,16 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
             <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
               {t("billing.copay.exemptionGapFootnote")}
             </p>
+            {hasEk1aVisitSavings && (
+              <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+                {t("billing.copay.ek1aScopeNotice")}
+              </p>
+            )}
+            {inpatientDrugGroundTotal > 0 && (
+              <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+                {t("billing.copay.inpatientDrugWaiverNotice")}
+              </p>
+            )}
           </>
         )}
 
@@ -442,6 +497,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
             <thead>
               <tr>
                 <th>{t("billing.copay.procedure")}</th>
+                {hasWaiverGroundColumn ? <th>{t("billing.copay.waiverGround")}</th> : null}
                 {usesClaimCopayCorrectionShape(claimRows[0]) ? (
                   <>
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.billed")}</th>
@@ -460,6 +516,11 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
               {claimRows.map((correction, index) => (
                 <tr key={`${copayCorrectionProcedureLabel(correction)}-${index}`}>
                   <td>{copayCorrectionProcedureLabel(correction)}</td>
+                  {hasWaiverGroundColumn ? (
+                    <td className="text-sm text-[var(--text-secondary)]">
+                      {waiverGroundLabel(copayCorrectionGroundKey(correction))}
+                    </td>
+                  ) : null}
                   {usesClaimCopayCorrectionShape(correction) ? (
                     <>
                       <td className="num-col tabular-nums text-right">
@@ -1189,6 +1250,98 @@ export function GazetteRepricingSection({
   );
 }
 
+function localizedReadinessReminder(item: {
+  reminder_tr?: string;
+  reminder_en?: string;
+}): string {
+  const locale = getModuleLocale();
+  if (locale === "en") {
+    return item.reminder_en ?? item.reminder_tr ?? "—";
+  }
+  return item.reminder_tr ?? item.reminder_en ?? "—";
+}
+
+function localizedPreventiveSteps(
+  item: {
+    preventive_steps_tr?: string[];
+    preventive_steps_en?: string[];
+  },
+): string[] {
+  const locale = getModuleLocale();
+  if (locale === "en") {
+    return item.preventive_steps_en ?? item.preventive_steps_tr ?? [];
+  }
+  return item.preventive_steps_tr ?? item.preventive_steps_en ?? [];
+}
+
+export function ClaimSubmissionChecklistSection({
+  checklistData,
+}: {
+  checklistData: NonNullable<BillingActionReport["claim_submission_checklist"]>;
+}) {
+  const t = useT();
+  const checklistExact = isExactOutput(checklistData);
+  const items = checklistData.items ?? [];
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  const itemCount = checklistData.item_count ?? items.length;
+
+  return (
+    <BillingSectionShell
+      id="claim-submission-checklist"
+      title={t("billing.claimChecklist.title")}
+      total={String(itemCount)}
+    >
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.claimChecklist.scopeFootnote")}
+      </p>
+      {!checklistExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(checklistData, t("billing.claimChecklist.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1120}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.claimChecklist.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.claimChecklist.line")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.claimChecklist.medulaRisk")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.claimChecklist.severity")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.claimChecklist.reminder")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.claimChecklist.sutAnchor")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.claimChecklist.steps")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((item: ClaimSubmissionChecklist["items"][number], index: number) => (
+            <tr key={`${item.claim_id}-${item.line_id}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>
+                <div>{item.line_name ?? "—"}</div>
+                <div className="font-mono text-xs">{item.line_code ?? "—"}</div>
+              </td>
+              <td className="font-mono text-xs">{item.sonuc_kodu_risk ?? "—"}</td>
+              <td>{item.severity ?? "—"}</td>
+              <td>{localizedReadinessReminder(item)}</td>
+              <td>{item.sut_anchor ?? "—"}</td>
+              <td>
+                <ul className="list-disc space-y-1 pl-4 text-sm">
+                  {localizedPreventiveSteps(item).map((step, stepIndex) => (
+                    <li key={`${item.checklist_id}-step-${stepIndex}`}>{step}</li>
+                  ))}
+                </ul>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
 export function MedulaRejectionPlaybookSection({
   playbookData,
 }: {
@@ -1250,6 +1403,67 @@ export function MedulaRejectionPlaybookSection({
                   ))}
                 </ul>
               </td>
+            </tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </BillingSectionShell>
+  );
+}
+
+export function DrugIndicationReviewSection({
+  reviewData,
+}: {
+  reviewData: NonNullable<BillingActionReport["drug_indication"]>;
+}) {
+  const t = useT();
+  const reviewExact = isExactOutput(reviewData);
+  const violations = reviewData.violations ?? [];
+
+  if (violations.length === 0) {
+    return null;
+  }
+
+  const violationCount = reviewData.violation_count ?? violations.length;
+
+  return (
+    <BillingSectionShell
+      id="drug-indication"
+      title={t("billing.drugIndication.title")}
+      total={String(violationCount)}
+    >
+      <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {t("billing.drugIndication.scopeFootnote")}
+      </p>
+      {!reviewExact && (
+        <div className="sut-exactness-notice mb-4">
+          {getUnavailableMessage(reviewData, t("billing.drugIndication.unavailable"))}
+        </div>
+      )}
+      <TableWrap minWidth={1080}>
+        <thead>
+          <tr>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drugIndication.claim")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drugIndication.drug")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drugIndication.violationKind")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drugIndication.severity")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drugIndication.primaryIcd10")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drugIndication.ruleId")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drugIndication.sutSection")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.drugIndication.message")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {violations.map((item, index) => (
+            <tr key={`${item.claim_id}-${item.drug_claim_line_id}-${index}`}>
+              <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              <td>{item.drug_name ?? "—"}</td>
+              <td className="font-mono text-xs">{item.violation_kind ?? "—"}</td>
+              <td>{item.severity ?? "—"}</td>
+              <td className="font-mono text-xs">{item.primary_icd10 ?? "—"}</td>
+              <td className="font-mono text-xs">{item.rule_id ?? "—"}</td>
+              <td>{item.sut_section ?? "—"}</td>
+              <td>{item.message_tr ?? "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1760,13 +1974,15 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
   const bundledLines = materialsData.bundled_separate_billing ?? [];
   const proseViolations = materialsData.prose_bundling_violations ?? [];
   const specialtyProseViolations = materialsData.specialty_prose_violations ?? [];
+  const kdvPriceReviews = materialsData.kdv_price_reviews ?? [];
   const hasExactListData =
     materialsData.pre_auth_required.length > 0 ||
     materialsData.miat_restricted.length > 0 ||
     intervalViolations.length > 0 ||
     bundledLines.length > 0 ||
     proseViolations.length > 0 ||
-    specialtyProseViolations.length > 0;
+    specialtyProseViolations.length > 0 ||
+    kdvPriceReviews.length > 0;
   const hasAnyData = hasExactListData || ceilingEntries.length > 0;
 
   if (!hasAnyData && materialsExact) {
@@ -1952,6 +2168,40 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
                       {hit.risk_amount != null ? fmtTRY2(hit.risk_amount) : "—"}
                     </td>
                     <td>{hit.message || hit.rule_id || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </TableWrap>
+          </div>
+        )}
+
+        {kdvPriceReviews.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#B45309" }}>
+              {t("billing.materials.kdvPriceReviews")}
+            </p>
+            <TableWrap minWidth={920}>
+              <thead>
+                <tr>
+                  <th>{t("billing.materials.sutCode")}</th>
+                  <th>{t("billing.materials.material")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.materials.billedAmount")}</th>
+                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.materials.gazetteCeiling")}</th>
+                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {kdvPriceReviews.map((row, index) => (
+                  <tr key={`kdv-${row.sut_code ?? "row"}-${index}`}>
+                    <td className="font-mono text-xs">{row.sut_code || "—"}</td>
+                    <td>{row.material_name || "—"}</td>
+                    <td className="num-col tabular-nums text-right">
+                      {row.billed_try != null ? fmtTRY2(row.billed_try) : "—"}
+                    </td>
+                    <td className="num-col tabular-nums text-right">
+                      {row.gazette_ceiling_try != null ? fmtTRY2(row.gazette_ceiling_try) : "—"}
+                    </td>
+                    <td>{row.note || (row.kdv_applied ? t("billing.materials.kdvApplied") : "—")}</td>
                   </tr>
                 ))}
               </tbody>

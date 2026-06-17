@@ -20,6 +20,7 @@ const billing = {
     "packageAdequacyReview": "Paket yeterlilik incelemesi (kodlama)",
     "gazetteRepricing": "Gazete yeniden fiyatlama (prospektif)",
     "medulaPlaybook": "MEDULA yeniden fatura rehberi",
+    "drugIndicationReview": "İlaç endikasyon incelemesi",
     "recommendedActions": "Önerilen işlemler",
     "reviewSections": "Bölümleri incele",
     "priorityTier": "Öncelik seviyesi",
@@ -62,8 +63,21 @@ const billing = {
     "billed": "Faturalanan",
     "payable": "SGK ödenecek (talep)",
     "copayComponent": "Muafiyet farkı",
+    "waiverGround": "Muafiyet gerekçesi",
     "gazetteRate": "Tebliğ oranı",
-    "correction": "Açıklama"
+    "correction": "Açıklama",
+    "ek1aScopeNotice": "Bu faturada EK-1A yalnızca ayaktan uzman muayene satırlarına uygulanır (§1.8.5(7)); tetkik, ilaç ve günübirlik/yatış ziyaretleri başka gerekçelerle değerlendirilir.",
+    "inpatientDrugWaiverNotice": "Bu faturadaki reçete muafiyet farkı, satır düzeyinde yatarak ilaç bayrağı olana kadar yatış/günübirlik taleplerindeki ilaçlar için §1.8.5(8) gerekçesiyle hesaplanmıştır.",
+    "patientVsClaimExemptionNotice": "Hasta düzeyinde EK-1A uygunluğu, bu faturadaki her satırın EK-1A ile muaf olduğu anlamına gelmez — aşağıdaki satır gerekçelerine bakın.",
+    "groundLabels": {
+      "ek1a_muayene": "EK-1A ayaktan muayene",
+      "inpatient_drug_1_8_5_8": "§1.8.5(8) yatış/günübirlik ilaç",
+      "ek4d_drug": "EK-4/D listede ilaç",
+      "ek4d_partial": "EK-4/D (rapor eksik)",
+      "composite_acil_servis": "Acil ziyaret muafiyeti",
+      "composite_koruyucu_saglik": "Koruyucu sağlık muafiyeti",
+      "composite_is_kazasi_meslek": "İş kazası / meslek hastalığı"
+    }
   },
   "optionalOverride": {
     "title": "§2.2.2(2) isteğe bağlı faturalandırma",
@@ -92,6 +106,31 @@ const billing = {
     "steps": "Düzeltici adımlar",
     "yes": "Evet",
     "no": "Hayır"
+  },
+  "claimChecklist": {
+    "title": "Gönderim öncesi fatura kontrol listesi",
+    "scopeFootnote": "Talep satırı bayraklarından (rapor, ÜTS/TİTUBB) proaktif MEDULA red riski hatırlatmaları. Yalnızca önleme rehberi — SGK artış başlığına dahil değildir.",
+    "unavailable": "Kontrol listesi için rapor ve kayıt bayraklarıyla kesin talep satırları gerekir.",
+    "claim": "Fatura",
+    "line": "Satır",
+    "medulaRisk": "MEDULA risk kodu",
+    "severity": "Önem",
+    "reminder": "Hatırlatma",
+    "sutAnchor": "SUT dayanağı",
+    "steps": "Gönderim öncesi"
+  },
+  "drugIndication": {
+    "title": "İlaç endikasyon ve rapor incelemesi (§4.2)",
+    "scopeFootnote": "Faturalanan ilaç satırlarını §4.2.14.C INN + ICD-10 + sağlık kurulu raporu corpus'u ile eşler. Yalnızca uyumluluk incelemesi — SGK artış başlığına dahil değildir.",
+    "unavailable": "İlaç endikasyon incelemesi için rapor meta verili kesin ilaç talep satırları gerekir.",
+    "claim": "Fatura",
+    "drug": "İlaç",
+    "violationKind": "İhlal",
+    "severity": "Önem",
+    "primaryIcd10": "Birincil ICD-10",
+    "ruleId": "Kural",
+    "sutSection": "SUT bölümü",
+    "message": "Mesaj"
   },
   "gazetteRepricing": {
     "title": "Gazete yeniden fiyatlama fırsatı",
@@ -270,7 +309,11 @@ const billing = {
     "note": "Not",
     "miatPeriod": "MIAT süresi",
     "ceilingEyebrow": "EK-3 uzmanlık fiyat kıyası (P90)",
-    "partialBenchmarkNotice": "Kısmi mod: yalnızca EK-3 ekine göre P90 kıyasları. EK-3C-1 ön onay ve EK-3C-2 MIAT için faturalı malzeme satırları gerekir."
+    "partialBenchmarkNotice": "Kısmi mod: yalnızca EK-3 ekine göre P90 kıyasları. EK-3C-1 ön onay ve EK-3C-2 MIAT için faturalı malzeme satırları gerekir.",
+    "kdvPriceReviews": "KDV liste fiyat tavanı (§3.1.1(12))",
+    "billedAmount": "Faturalanan",
+    "gazetteCeiling": "EK-3 tavan",
+    "kdvApplied": "KDV uygulandı"
   },
   "sutOptimization": {
     "title": "SUT optimizasyon bulguları",

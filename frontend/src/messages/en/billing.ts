@@ -20,6 +20,7 @@ const billing = {
     "packageAdequacyReview": "Package adequacy review (coding)",
     "gazetteRepricing": "Gazette repricing (prospective)",
     "medulaPlaybook": "MEDULA rebill playbook",
+    "drugIndicationReview": "Drug indication review",
     "recommendedActions": "Recommended actions",
     "reviewSections": "Review sections",
     "priorityTier": "Priority tier",
@@ -62,8 +63,21 @@ const billing = {
     "billed": "Billed",
     "payable": "SGK payable (claim)",
     "copayComponent": "Exemption gap",
+    "waiverGround": "Waiver ground",
     "gazetteRate": "Gazette rate",
-    "correction": "Note"
+    "correction": "Note",
+    "ek1aScopeNotice": "EK-1A on this bill applies only to outpatient specialist examination lines (§1.8.5(7)); labs, drugs, and day-case or inpatient visits use other grounds.",
+    "inpatientDrugWaiverNotice": "Prescription exemption gap on this bill is attributed to §1.8.5(8) for drugs on inpatient or day-case claims until line-level inpatient-drug flags exist.",
+    "patientVsClaimExemptionNotice": "Patient-level EK-1A eligibility does not mean every line on this bill is waived under EK-1A — see per-line waiver grounds below.",
+    "groundLabels": {
+      "ek1a_muayene": "EK-1A outpatient examination",
+      "inpatient_drug_1_8_5_8": "§1.8.5(8) inpatient/day-case drug",
+      "ek4d_drug": "EK-4/D listed drug",
+      "ek4d_partial": "EK-4/D (report missing)",
+      "composite_acil_servis": "Emergency visit waiver",
+      "composite_koruyucu_saglik": "Preventive visit waiver",
+      "composite_is_kazasi_meslek": "Occupational injury waiver"
+    }
   },
   "optionalOverride": {
     "title": "§2.2.2(2) optional billing method",
@@ -92,6 +106,31 @@ const billing = {
     "steps": "Corrective steps",
     "yes": "Yes",
     "no": "No"
+  },
+  "claimChecklist": {
+    "title": "Pre-submission claim checklist",
+    "scopeFootnote": "Proactive MEDULA rejection-risk reminders from claim-line flags (report, ÜTS/TİTUBB). Prevention guidance only — not included in SGK uplift headline.",
+    "unavailable": "Claim checklist requires exact claim lines with optional report and registration flags.",
+    "claim": "Claim",
+    "line": "Line",
+    "medulaRisk": "MEDULA risk code",
+    "severity": "Severity",
+    "reminder": "Reminder",
+    "sutAnchor": "SUT anchor",
+    "steps": "Before submit"
+  },
+  "drugIndication": {
+    "title": "Drug indication & report review (§4.2)",
+    "scopeFootnote": "Matches billed drug lines against the §4.2.14.C INN + ICD-10 + sağlık kurulu raporu corpus. Compliance review only — not included in SGK uplift headline.",
+    "unavailable": "Drug indication review requires exact drug claim lines with report metadata.",
+    "claim": "Claim",
+    "drug": "Drug",
+    "violationKind": "Violation",
+    "severity": "Severity",
+    "primaryIcd10": "Primary ICD-10",
+    "ruleId": "Rule",
+    "sutSection": "SUT section",
+    "message": "Message"
   },
   "gazetteRepricing": {
     "title": "Gazette repricing opportunity",
@@ -270,7 +309,11 @@ const billing = {
     "note": "Note",
     "miatPeriod": "MIAT period",
     "ceilingEyebrow": "EK-3 specialty price benchmark (P90)",
-    "partialBenchmarkNotice": "Partial mode: P90 benchmarks by EK-3 annex only. EK-3C-1 pre-authorization and EK-3C-2 MIAT require billed material claim lines."
+    "partialBenchmarkNotice": "Partial mode: P90 benchmarks by EK-3 annex only. EK-3C-1 pre-authorization and EK-3C-2 MIAT require billed material claim lines.",
+    "kdvPriceReviews": "KDV list-price ceiling (§3.1.1(12))",
+    "billedAmount": "Billed",
+    "gazetteCeiling": "EK-3 ceiling",
+    "kdvApplied": "KDV applied"
   },
   "sutOptimization": {
     "title": "SUT optimization findings",

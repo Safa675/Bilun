@@ -19,7 +19,9 @@ import {
   ProcedureCaptureGapSection,
   DrgPackageAdequacyReviewSection,
   GazetteRepricingSection,
+  ClaimSubmissionChecklistSection,
   MedulaRejectionPlaybookSection,
+  DrugIndicationReviewSection,
   CareSettingReviewSection,
   DrgUpliftSection,
   MaterialsPreCheckSection,
@@ -563,9 +565,19 @@ export default function SutPatientPage() {
                     {activeBillingReport.gazette_repricing && (
                       <GazetteRepricingSection repricingData={activeBillingReport.gazette_repricing} />
                     )}
+                    {activeBillingReport.claim_submission_checklist && (
+                      <ClaimSubmissionChecklistSection
+                        checklistData={activeBillingReport.claim_submission_checklist}
+                      />
+                    )}
                     {activeBillingReport.medula_rejection_playbook && (
                       <MedulaRejectionPlaybookSection
                         playbookData={activeBillingReport.medula_rejection_playbook}
+                      />
+                    )}
+                    {activeBillingReport.drug_indication && (
+                      <DrugIndicationReviewSection
+                        reviewData={activeBillingReport.drug_indication}
                       />
                     )}
                     {activeBillingReport.care_setting_review && (

@@ -503,6 +503,7 @@ export interface CopayOptimization extends ExactnessState {
   total_copay_savings_try: number;
   /** Visit + Rx patient copay that exemption may waive. */
   patient_copay_waived_total_try?: number;
+  rx_copay_savings_by_ground?: Record<string, number>;
   rate_corrections: Array<{
     procedure?: string;
     gazette_rate?: number;
@@ -512,6 +513,9 @@ export interface CopayOptimization extends ExactnessState {
     billed_try?: number;
     payable_try?: number;
     copay_component_try?: number;
+    exemption_ground?: string;
+    sut_section?: string;
+    annex?: string;
     detail?: string;
   }>;
 }
@@ -600,6 +604,16 @@ export interface MaterialPreCheck extends ExactnessState {
     severity?: string;
     risk_amount?: number;
     material_outcome?: string;
+  }>;
+  kdv_price_reviews?: Array<{
+    sut_code?: string;
+    material_name?: string;
+    billed_try?: number;
+    gazette_ex_vat_try?: number;
+    gazette_ceiling_try?: number;
+    kdv_applied?: boolean;
+    kdv_rate?: number;
+    note?: string;
   }>;
   gazette_ceiling_by_specialty: Record<string, number>;
   coverage_scope?: SutMaterialBundlingCoverageScope;
@@ -741,6 +755,49 @@ export interface MedulaRejectionPlaybook extends ExactnessState {
   rebill_permitted_count?: number;
 }
 
+export interface ClaimSubmissionChecklist extends ExactnessState {
+  items: Array<{
+    checklist_id?: string;
+    trigger_key?: string;
+    playbook_key?: string;
+    sonuc_kodu_risk?: string;
+    severity?: string;
+    claim_id?: string;
+    line_type?: string;
+    line_id?: string;
+    line_code?: string;
+    line_name?: string;
+    reminder_tr?: string;
+    reminder_en?: string;
+    sut_anchor?: string;
+    preventive_steps_tr?: string[];
+    preventive_steps_en?: string[];
+    recommendation_kind?: string;
+    included_in_sgk_total?: boolean;
+    savings_category?: string;
+  }>;
+  item_count?: number;
+  error_count?: number;
+}
+
+export interface DrugIndicationReview extends ExactnessState {
+  violations: Array<{
+    drug_claim_line_id?: string;
+    claim_id?: string;
+    drug_name?: string;
+    rule_id?: string;
+    sut_section?: string;
+    primary_icd10?: string;
+    violation_kind?: string;
+    severity?: string;
+    message_tr?: string;
+  }>;
+  violation_count?: number;
+  error_count?: number;
+  coverage_scope?: Record<string, unknown>;
+  rule_source?: string;
+}
+
 export interface GazetteRepricingOpportunity extends ExactnessState {
   rule_source?: string;
   opportunities: Array<{
@@ -860,6 +917,8 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
   drg_package_adequacy?: DrgPackageAdequacyReview;
   gazette_repricing?: GazetteRepricingOpportunity;
   medula_rejection_playbook?: MedulaRejectionPlaybook;
+  claim_submission_checklist?: ClaimSubmissionChecklist;
+  drug_indication?: DrugIndicationReview;
   materials: MaterialPreCheck;
   sgk_uplift_try?: number;
   compliance_adjustment_try?: number;
@@ -868,6 +927,8 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
   package_adequacy_review_try?: number;
   gazette_repricing_try?: number;
   medula_playbook_entry_count?: number;
+  claim_submission_checklist_count?: number;
+  drug_indication_violation_count?: number;
   total_recoverable_try: number;
   action_count: number;
   priority: "high" | "medium" | "low";

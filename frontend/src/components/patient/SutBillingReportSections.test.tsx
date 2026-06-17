@@ -6,6 +6,7 @@ import {
   DrgUpliftSection,
   MaterialsPreCheckSection,
   MedulaRejectionPlaybookSection,
+  DrugIndicationReviewSection,
   OptionalOverrideSection,
 } from "./SutBillingReportSections";
 
@@ -294,6 +295,42 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("Material A");
     expect(html).toContain("Material B");
   });
+
+  it("renders specialty prose and KDV price review tables", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <MaterialsPreCheckSection
+        materialsData={{
+          exactness_status: "exact",
+          pre_auth_required: [],
+          miat_restricted: [],
+          specialty_prose_violations: [
+            {
+              rule_id: "3.3.3.A.(4).ek3d_lens_upgrade_difference",
+              material_code: "SUT-DEMO-OPT",
+              material_name: "Gözlük camı",
+              message: "Lens upgrade difference not payable",
+              risk_amount: 450,
+            },
+          ],
+          kdv_price_reviews: [
+            {
+              sut_code: "OP1592",
+              material_name: "ICD",
+              billed_try: 999999,
+              gazette_ceiling_try: 1200,
+              kdv_applied: true,
+              note: "Billed amount exceeds EK-3 list price + KDV (§3.1.1(12)).",
+            },
+          ],
+          gazette_ceiling_by_specialty: {},
+        }}
+      />,
+    );
+
+    expect(html).toContain("SUT-DEMO-OPT");
+    expect(html).toContain("OP1592");
+    expect(html).toContain("Lens upgrade difference not payable");
+  });
 });
 
 describe("MedulaRejectionPlaybookSection", () => {
@@ -359,5 +396,48 @@ describe("MedulaRejectionPlaybookSection", () => {
     expect(html).toContain("1688");
     expect(html).toContain("Moleküler mikrobiyoloji");
     expect(html).toContain("Step 1");
+  });
+});
+
+describe("DrugIndicationReviewSection", () => {
+  it("renders nothing when there are no violations", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <DrugIndicationReviewSection
+        reviewData={{
+          exactness_status: "exact",
+          violations: [],
+          violation_count: 0,
+          error_count: 0,
+        }}
+      />,
+    );
+    expect(html).toBe("");
+  });
+
+  it("renders violation table when entries exist", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <DrugIndicationReviewSection
+        reviewData={{
+          exactness_status: "exact",
+          violations: [
+            {
+              claim_id: "F-DEMO-001",
+              drug_name: "AVASTIN (BEVACIZUMAB)",
+              violation_kind: "missing_board_report",
+              severity: "error",
+              primary_icd10: "C34.9",
+              rule_id: "4.2.14.C.(1).bevacizumab_oncology_board",
+              sut_section: "4.2.14.C",
+              message_tr: "Uzmanlık sağlık kurulu raporu eksik",
+            },
+          ],
+          violation_count: 1,
+          error_count: 1,
+        }}
+      />,
+    );
+    expect(html).toContain("missing_board_report");
+    expect(html).toContain("AVASTIN");
+    expect(html).toContain("C34.9");
   });
 });

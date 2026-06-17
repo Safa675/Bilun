@@ -1,0 +1,26 @@
+{
+  "description": "Sprint 2 — pinned synthetic demo expectations for §3.1 bundling + §3.3 specialty prose",
+  "cases": [
+    {
+      "patient_id": "SENTETIK-HASTA-0021",
+      "scenario_tag": "sgk_specialty_prose_optical_lens_upgrade",
+      "material_code": "SUT-DEMO-OPT",
+      "expected_rule_id": "3.3.3.A.(4).ek3d_lens_upgrade_difference",
+      "check": "specialty_prose"
+    },
+    {
+      "patient_id": "SENTETIK-HASTA-0022",
+      "scenario_tag": "sgk_specialty_prose_hip_graft_no_pay",
+      "material_code": "SUT-DEMO-GRF",
+      "expected_rule_id": "3.3.4.(6).hip_arthroplasty_graft_no_pay",
+      "check": "specialty_prose"
+    },
+    {
+      "patient_id": "SENTETIK-HASTA-0024",
+      "scenario_tag": "sgk_material_bundling_procurement_incomplete",
+      "material_code": "OP1000",
+      "expected_rule_id": "3.1.1.(5).procurement_screen_incomplete",
+      "check": "prose_bundling"
+    }
+  ]
+}
