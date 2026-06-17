@@ -45,6 +45,17 @@
           "type": "array",
           "items": { "type": "string" }
         },
+        "report_duration_months": { "type": "integer", "minimum": 1 },
+        "prescriber_specialties": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "inpatient_only": { "type": "boolean" },
+        "encode_batch": { "type": "string" },
+        "gate_b_sources": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "message_tr": { "type": "string" }
       }
     }

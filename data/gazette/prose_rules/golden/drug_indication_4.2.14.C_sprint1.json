@@ -1,0 +1,33 @@
+{
+  "samples": [
+    {
+      "drug_name": "YONDELIS 1 MG (TRABECTEDIN)",
+      "primary_icd10": "C49.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.14.C.trabectedin_sarcoma_board"
+    },
+    {
+      "drug_name": "YONDELIS 1 MG (TRABECTEDIN)",
+      "primary_icd10": "C49.9",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.14.C.trabectedin_sarcoma_board"
+    },
+    {
+      "drug_name": "TRODELVY 200 MG (SACITUZUMAB GOVITEKAN)",
+      "primary_icd10": "C50.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.14.C.sacituzumab_govitecan_tnbc_board"
+    },
+    {
+      "drug_name": "VIDAZA 100 MG (AZASITIDIN)",
+      "primary_icd10": "D46.9",
+      "report_present": true,
+      "expect_violation": "report_duration_mismatch",
+      "drug_report_duration_months": 3,
+      "rule_id": "4.2.14.C.azacitidine_mds_4mo_heme"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "samples": [
+    {
+      "drug_name": "TECENTRIQ 1200 MG (ATEZOLIZUMAB)",
+      "primary_icd10": "C34.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.14.C.(15).atezolizumab_nsclc_board"
+    },
+    {
+      "drug_name": "TECENTRIQ 1200 MG (ATEZOLIZUMAB)",
+      "primary_icd10": "J45.9",
+      "report_present": true,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.14.C.(15).atezolizumab_nsclc_board"
+    },
+    {
+      "drug_name": "DARZALEX 400 MG (DARATUMUMAB)",
+      "primary_icd10": "C90.0",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.14.C.(2).daratumumab_mm_board"
+    }
+  ]
+}

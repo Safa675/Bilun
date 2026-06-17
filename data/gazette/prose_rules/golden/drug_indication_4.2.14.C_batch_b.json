@@ -1,0 +1,37 @@
+{
+  "samples": [
+    {
+      "drug_name": "HERCEPTIN 440 MG (TRASTUZUMAB)",
+      "primary_icd10": "C50.9",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.14.C.trastuzumab_3mo_ecg_board",
+      "drug_report_duration_months": 3,
+      "prescriber_specialty": "Tıbbi Onkoloji"
+    },
+    {
+      "drug_name": "HERCEPTIN 440 MG (TRASTUZUMAB)",
+      "primary_icd10": "C50.9",
+      "report_present": true,
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.14.C.trastuzumab_3mo_ecg_board",
+      "drug_report_duration_months": 12
+    },
+    {
+      "drug_name": "KEYTRUDA 100 MG (PEMBROLIZUMAB)",
+      "primary_icd10": "C34.9",
+      "report_present": true,
+      "expect_violation": "inpatient_supply_required",
+      "rule_id": "4.2.14.C.inpatient_hospital_supply_yatarak",
+      "drug_inpatient_supply": false
+    },
+    {
+      "drug_name": "HERCEPTIN 440 MG (TRASTUZUMAB)",
+      "primary_icd10": "C50.9",
+      "report_present": true,
+      "expect_violation": "prescriber_specialty_mismatch",
+      "rule_id": "4.2.14.C.trastuzumab_metastatic_prescriber_oncology",
+      "prescriber_specialty": "Dahiliye"
+    }
+  ]
+}

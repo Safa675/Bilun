@@ -1,171 +1,2978 @@
 {
   "rule_set_id": "drug_indication_prose",
-  "title": "SUT §4.2 drug indication and report requirements (Tier 3b pilot)",
+  "title": "SUT §4.2 drug indication and report requirements (4.2.14.C Sprint 1)",
   "effective_date": "2026-01-17",
-  "sut_anchors": ["4.2", "4.2.14.C"],
-  "coverage_note": "Tier 3b pilot — 18 high-volume §4.2.14.C INN rules with ICD-10 + sağlık kurulu raporu checks.",
+  "sut_anchors": [
+    "4.2",
+    "4.2.14.C"
+  ],
+  "coverage_note": "Sprint 1 — 131 rules for §4.2.14.C; Tier A/B pending manifest clauses encoded.",
   "rules": [
+    {
+      "rule_id": "4.2.14.C.(1).aflibercept_crc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "aflibercept",
+        "ziv-aflibercept"
+      ],
+      "icd10_ranges": [
+        "C18-C20"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Aflibercept — kolorektal kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005290"
+      ]
+    },
     {
       "rule_id": "4.2.14.C.(1).bevacizumab_oncology_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["bevacizumab"],
-      "icd10_ranges": ["C00-C97"],
+      "drug_names": [
+        "bevacizumab"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji"],
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
       "message_tr": "Bevacizumab — tıbbi onkoloji uzmanının yer aldığı sağlık kurulu raporu gerekir (§4.2.14.C(1))."
-    },
-    {
-      "rule_id": "4.2.14.C.(1).gefitinib_oncology_board",
-      "sut_section": "4.2.14.C",
-      "drug_names": ["gefitinib"],
-      "icd10_ranges": ["C00-C97"],
-      "report_required": true,
-      "report_specialties": ["tıbbi onkoloji"],
-      "message_tr": "Gefitinib — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1))."
-    },
-    {
-      "rule_id": "4.2.14.C.(1).octreotid_lanreotid_oncology_board",
-      "sut_section": "4.2.14.C",
-      "drug_names": ["octreotid", "lanreotid"],
-      "icd10_ranges": ["C00-C97"],
-      "report_required": true,
-      "report_specialties": ["tıbbi onkoloji"],
-      "message_tr": "Octreotid/lanreotid — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1))."
-    },
-    {
-      "rule_id": "4.2.14.C.(1).interleukin2_oncology_board",
-      "sut_section": "4.2.14.C",
-      "drug_names": ["interleukin"],
-      "icd10_ranges": ["C00-C97"],
-      "report_required": true,
-      "report_specialties": ["tıbbi onkoloji"],
-      "message_tr": "Interleukin-2 — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1))."
     },
     {
       "rule_id": "4.2.14.C.(1).cetuximab_oncology_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["setuksimab", "cetuximab"],
-      "icd10_ranges": ["C00-C97"],
+      "drug_names": [
+        "setuksimab",
+        "cetuximab"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji"],
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
       "message_tr": "Setuksimab — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1))."
+    },
+    {
+      "rule_id": "4.2.14.C.(1).denosumab_oncology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "denosumab"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Denosumab — kemik metastazı endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005356"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).etoposide_oncology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "etoposid"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Etoposid — onkoloji endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005745"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).fotemustine_oncology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "fotemustin"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Fotemustin — onkoloji endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C004923"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).gefitinib_oncology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "gefitinib"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Gefitinib — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1))."
+    },
+    {
+      "rule_id": "4.2.14.C.(1).gemtuzumab_aml_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "gemtuzumab"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Gemtuzumab — AML endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005642"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).idelalisib_cll_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "idelalisib"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "İdelalisib — KLL endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005476",
+        "C005477"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).interferon_oncology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "interferon"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Interferon — onkoloji endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005036",
+        "C005042",
+        "C005051",
+        "C005094",
+        "C005096",
+        "C005330",
+        "C005362"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).interleukin2_oncology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "interleukin"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Interleukin-2 — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1))."
+    },
+    {
+      "rule_id": "4.2.14.C.(1).kabazitaxel_prostate_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "kabazitaksel",
+        "cabazitaxel"
+      ],
+      "icd10_ranges": [
+        "C61"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Kabazitaksel — prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005112",
+        "C005113",
+        "C005119",
+        "C005121",
+        "C005122",
+        "C005146",
+        "C005157",
+        "C005168"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).lapatinib_her2_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "lapatinib"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Lapatinib — HER2+ meme kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005041"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).niraparib_parpi_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "niraparib"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Niraparib — onkoloji endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005660"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).octreotid_lanreotid_oncology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "octreotid",
+        "lanreotid"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Octreotid/lanreotid — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1))."
+    },
+    {
+      "rule_id": "4.2.14.C.(1).paclitaxel_oncology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "paklitaksel",
+        "paclitaxel",
+        "nab-paklitaksel"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Paklitaksel — onkoloji endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005349",
+        "C005736"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).panitumumab_crc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "panitumumab"
+      ],
+      "icd10_ranges": [
+        "C18-C20"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Panitumumab — kolorektal kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005104",
+        "C005105",
+        "C005106",
+        "C005107",
+        "C005108",
+        "C005109"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).pertuzumab_her2_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "pertuzumab"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Pertuzumab — HER2+ meme kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005276",
+        "C005278"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(1).ramucirumab_crc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ramucirumab"
+      ],
+      "icd10_ranges": [
+        "C18-C20"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Ramucirumab — kolorektal/gastrik kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C)."
+    },
+    {
+      "rule_id": "4.2.14.C.(1).sonidegib_bcc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "sonidegib"
+      ],
+      "icd10_ranges": [
+        "C44"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Sonidegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005228",
+        "C005235"
+      ]
     },
     {
       "rule_id": "4.2.14.C.(1).streptozocin_oncology_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["streptozosin", "streptozocin"],
-      "icd10_ranges": ["C00-C97"],
+      "drug_names": [
+        "streptozosin",
+        "streptozocin"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji"],
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
       "message_tr": "Streptozosin — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1))."
     },
     {
-      "rule_id": "4.2.14.C.(2).bortezomib_heme_onc_board",
+      "rule_id": "4.2.14.C.(1).temozolomide_oncology_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["bortezomib"],
-      "icd10_ranges": ["C00-C97", "D45-D47"],
+      "drug_names": [
+        "temozolomid"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji", "hematoloji"],
-      "message_tr": "Bortezomib — hematoloji ve/veya tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Temozolomid — onkoloji endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C004973",
+        "C005348"
+      ]
     },
     {
-      "rule_id": "4.2.14.C.(2).talidomid_heme_onc_board",
+      "rule_id": "4.2.14.C.(1).trastuzumab_emtansine_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["talidomid"],
-      "icd10_ranges": ["C00-C97", "D45-D47"],
+      "drug_names": [
+        "trastuzumab emtansin",
+        "t-dm1",
+        "ado-trastuzumab"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji", "hematoloji"],
-      "message_tr": "Talidomid — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Trastuzumab emtansin — HER2+ meme kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005276"
+      ]
     },
     {
-      "rule_id": "4.2.14.C.(2).fludarabine_cladribine_board",
+      "rule_id": "4.2.14.C.(1).trastuzumab_her2_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["fludarabin", "kladribin", "cladribine"],
-      "icd10_ranges": ["C00-C97", "D45-D47"],
+      "drug_names": [
+        "trastuzumab"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji", "hematoloji"],
-      "message_tr": "Fludarabin/kladribin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Trastuzumab — HER2+ meme kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C004927",
+        "C004928",
+        "C004929",
+        "C004930",
+        "C004932",
+        "C005041",
+        "C005276",
+        "C005278"
+      ]
     },
     {
-      "rule_id": "4.2.14.C.(2).tretinoin_heme_onc_board",
+      "rule_id": "4.2.14.C.(1).vismodegib_bcc_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["tretinoin"],
-      "icd10_ranges": ["C00-C97", "D45-D47"],
+      "drug_names": [
+        "vismodegib"
+      ],
+      "icd10_ranges": [
+        "C44"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji", "hematoloji"],
-      "message_tr": "Tretinoin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Vismodegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005228",
+        "C005235"
+      ]
     },
     {
-      "rule_id": "4.2.14.C.(2).idarubicin_board",
+      "rule_id": "4.2.14.C.(1).zoledronate_oncology_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["idarubisin", "idarubicin"],
-      "icd10_ranges": ["C00-C97", "D45-D47"],
+      "drug_names": [
+        "zoledronik",
+        "zoledronic"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji", "hematoloji"],
-      "message_tr": "İdarubisin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Zoledronik asit — kemik metastazı endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005357"
+      ]
     },
     {
-      "rule_id": "4.2.14.C.(2).liposomal_doxorubicin_board",
+      "rule_id": "4.2.14.C.(15).afatinib_egfr_nsclc_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["lipozomal doksorubisin", "peg-liposomal"],
-      "icd10_ranges": ["C00-C97", "D45-D47"],
+      "drug_names": [
+        "afatinib"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji", "hematoloji"],
-      "message_tr": "Lipozomal doksorubisin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "göğüs hastalıkları"
+      ],
+      "message_tr": "Afatinib — EGFR+ KHDAK endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005081",
+        "C005334",
+        "C005336",
+        "C005339",
+        "C005341",
+        "C005386",
+        "C005682"
+      ]
     },
     {
-      "rule_id": "4.2.14.C.(2).anagrelide_board",
+      "rule_id": "4.2.14.C.(15).atezolizumab_nsclc_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["anagrelid"],
-      "icd10_ranges": ["D45-D47"],
+      "drug_names": [
+        "atezolizumab"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji", "hematoloji"],
-      "message_tr": "Anagrelid — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Atezolizumab — metastatik KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005741",
+        "C005742",
+        "C005743",
+        "C005744",
+        "C005745",
+        "C005746"
+      ]
     },
     {
-      "rule_id": "4.2.14.C.(2).pentostatin_board",
+      "rule_id": "4.2.14.C.(15).avelumab_merkel_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["pentostatin"],
-      "icd10_ranges": ["C00-C97", "D45-D47"],
+      "drug_names": [
+        "avelumab"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji", "hematoloji"],
-      "message_tr": "Pentostatin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Avelumab — endikasyon ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005671"
+      ]
     },
     {
-      "rule_id": "4.2.14.C.(15).pembrolizumab_nsclc_board",
+      "rule_id": "4.2.14.C.(15).brigatinib_alk_nsclc_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["pembrolizumab"],
-      "icd10_ranges": ["C34"],
+      "drug_names": [
+        "brigatinib"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji"],
-      "message_tr": "Pembrolizumab — metastatik KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(15))."
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "göğüs hastalıkları"
+      ],
+      "message_tr": "Brigatinib — ALK+ KHDAK endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005225",
+        "C005390",
+        "C005395",
+        "C005596",
+        "C005598",
+        "C005600",
+        "C005603"
+      ]
     },
     {
-      "rule_id": "4.2.14.C.(15).nivolumab_nsclc_board",
+      "rule_id": "4.2.14.C.(15).durvalumab_nsclc_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["nivolumab"],
-      "icd10_ranges": ["C34"],
+      "drug_names": [
+        "durvalumab"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji"],
-      "message_tr": "Nivolumab — metastatik KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(15))."
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Durvalumab — akciğer kanseri endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005747",
+        "C005748",
+        "C005749"
+      ]
     },
     {
       "rule_id": "4.2.14.C.(15).ipilimumab_nsclc_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["ipilimumab"],
-      "icd10_ranges": ["C34"],
+      "drug_names": [
+        "ipilimumab"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji"],
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
       "message_tr": "Ipilimumab — metastatik KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(15))."
+    },
+    {
+      "rule_id": "4.2.14.C.(15).lorlatinib_alk_ros1_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "lorlatinib"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "göğüs hastalıkları"
+      ],
+      "message_tr": "Lorlatinib — ALK/ROS1+ KHDAK endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005225",
+        "C005595",
+        "C005598"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(15).nivolumab_nsclc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "nivolumab"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Nivolumab — metastatik KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(15))."
+    },
+    {
+      "rule_id": "4.2.14.C.(15).osimertinib_egfr_nsclc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "osimertinib"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "göğüs hastalıkları"
+      ],
+      "message_tr": "Osimertinib — EGFR+ KHDAK endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005375",
+        "C005378",
+        "C005381"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(15).pembrolizumab_nsclc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "pembrolizumab"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Pembrolizumab — metastatik KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(15))."
+    },
+    {
+      "rule_id": "4.2.14.C.(15).pemetrexed_nsclc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "pemetreksed",
+        "pemetrexed"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Pemetreksed — KHDAK kemoterapi endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C)."
+    },
+    {
+      "rule_id": "4.2.14.C.(2).anagrelide_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "anagrelid"
+      ],
+      "icd10_ranges": [
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Anagrelid — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+    },
+    {
+      "rule_id": "4.2.14.C.(2).azacitidine_mds_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "azasitidin",
+        "azacitidine"
+      ],
+      "icd10_ranges": [
+        "D46-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Azasitidin — MDS endikasyonu ve hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C004975",
+        "C004979",
+        "C004982",
+        "C004985",
+        "C004988",
+        "C004989",
+        "C004993",
+        "C004999",
+        "C005003"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).blinatumomab_all_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "blinatumomab"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Blinatumomab — ALL endikasyonu ve hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005303",
+        "C005310"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).bortezomib_heme_onc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bortezomib"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Bortezomib — hematoloji ve/veya tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+    },
+    {
+      "rule_id": "4.2.14.C.(2).daratumumab_mm_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "daratumumab"
+      ],
+      "icd10_ranges": [
+        "C90"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Daratumumab — multipl miyelom endikasyonu ve hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005519",
+        "C005525",
+        "C005531",
+        "C005535",
+        "C005582",
+        "C005585",
+        "C005586",
+        "C005590",
+        "C005592",
+        "C005694",
+        "C005699",
+        "C005704"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).decitabine_mds_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "decitabin",
+        "decitabine"
+      ],
+      "icd10_ranges": [
+        "D46-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Decitabin — MDS endikasyonu ve hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C004975",
+        "C004979",
+        "C004980",
+        "C004993",
+        "C004994",
+        "C004997",
+        "C004998",
+        "C004999",
+        "C005003"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).elranatamab_mm_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "elranatamab"
+      ],
+      "icd10_ranges": [
+        "C90"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Elranatamab — multipl miyelom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005519",
+        "C005531",
+        "C005535",
+        "C005590",
+        "C005694",
+        "C005695",
+        "C005699",
+        "C005704"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).fedratinib_mpn_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "fedratinib"
+      ],
+      "icd10_ranges": [
+        "D46-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Fedratinib — miyeloproliferatif neoplazi endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005706"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).fludarabine_cladribine_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "fludarabin",
+        "kladribin",
+        "cladribine"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Fludarabin/kladribin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+    },
+    {
+      "rule_id": "4.2.14.C.(2).gilteritinib_aml_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "gilteritinib"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Gilteritinib — AML endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005684"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).idarubicin_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "idarubisin",
+        "idarubicin"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "İdarubisin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+    },
+    {
+      "rule_id": "4.2.14.C.(2).lenalidomide_mm_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "lenalidomid"
+      ],
+      "icd10_ranges": [
+        "C90"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Lenalidomid — multipl miyelom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005060",
+        "C005076",
+        "C005515",
+        "C005517",
+        "C005523",
+        "C005528",
+        "C005529",
+        "C005533",
+        "C005583",
+        "C005587",
+        "C005588",
+        "C005702"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).liposomal_doxorubicin_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "lipozomal doksorubisin",
+        "peg-liposomal"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Lipozomal doksorubisin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+    },
+    {
+      "rule_id": "4.2.14.C.(2).midostaurin_aml_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "midostaurin"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Midostaurin — AML endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005576"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).obinutuzumab_cll_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "obinutuzumab"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Obinutuzumab — KLL endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005489",
+        "C005536"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).pentostatin_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "pentostatin"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Pentostatin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+    },
+    {
+      "rule_id": "4.2.14.C.(2).pomalidomide_mm_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "pomalidomid"
+      ],
+      "icd10_ranges": [
+        "C90"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Pomalidomid — multipl miyelom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005519",
+        "C005521",
+        "C005525",
+        "C005526",
+        "C005531",
+        "C005535",
+        "C005585",
+        "C005588",
+        "C005590",
+        "C005694",
+        "C005699",
+        "C005702"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).rituximab_lymphoma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "rituximab"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Rituximab — lenfoma endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C004958",
+        "C004962"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(2).talidomid_heme_onc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "talidomid"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Talidomid — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+    },
+    {
+      "rule_id": "4.2.14.C.(2).tretinoin_heme_onc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "tretinoin"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Tretinoin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2))."
+    },
+    {
+      "rule_id": "4.2.14.C.(3).abiraterone_prostate_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "abirateron"
+      ],
+      "icd10_ranges": [
+        "C61"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Abirateron — prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005112",
+        "C005113",
+        "C005119",
+        "C005120",
+        "C005121",
+        "C005129",
+        "C005146",
+        "C005152",
+        "C005157",
+        "C005164",
+        "C005168",
+        "C005175"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).apalutamide_prostate_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "apalutamid"
+      ],
+      "icd10_ranges": [
+        "C61"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Apalutamid — prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005153"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).bosutinib_cml_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bosutinib"
+      ],
+      "icd10_ranges": [
+        "C92-C95"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Bosutinib — KML endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005004",
+        "C005027",
+        "C005030",
+        "C005031"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).cabozantinib_rcc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "cabozantinib"
+      ],
+      "icd10_ranges": [
+        "C64-C66"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Cabozantinib — renal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005542"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).dabrafenib_melanoma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "dabrafenib"
+      ],
+      "icd10_ranges": [
+        "C43"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Dabrafenib — melanom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005190",
+        "C005191",
+        "C005192",
+        "C005197",
+        "C005199",
+        "C005200",
+        "C005204",
+        "C005205",
+        "C005208",
+        "C005274",
+        "C005721"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).darolutamide_prostate_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "darolutamid"
+      ],
+      "icd10_ranges": [
+        "C61"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Darolutamid — prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005121",
+        "C005165",
+        "C005167",
+        "C005168",
+        "C005175"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).dasatinib_cml_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "dasatinib"
+      ],
+      "icd10_ranges": [
+        "C92-C95"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Dasatinib — KML endikasyonu ve hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005004",
+        "C005007",
+        "C005008",
+        "C005010",
+        "C005012",
+        "C005013",
+        "C005014",
+        "C005027",
+        "C005030",
+        "C005033",
+        "C005034"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).enzalutamide_prostate_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "enzalutamid"
+      ],
+      "icd10_ranges": [
+        "C61"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Enzalutamid — kastrasyon dirençli prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005113",
+        "C005114",
+        "C005119",
+        "C005120",
+        "C005121",
+        "C005123",
+        "C005146",
+        "C005152",
+        "C005157",
+        "C005164",
+        "C005168",
+        "C005175"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).everolimus_oncology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "everolimus"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Everolimus — endikasyon ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005040",
+        "C005085",
+        "C005088"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).imatinib_cml_gist_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "imatinib"
+      ],
+      "icd10_ranges": [
+        "C92-C95",
+        "C49"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "İmatinib — KML/GIST endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C004952",
+        "C005009",
+        "C005012",
+        "C005013",
+        "C005014",
+        "C005030",
+        "C005031",
+        "C005036",
+        "C005267"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).nilotinib_cml_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "nilotinib"
+      ],
+      "icd10_ranges": [
+        "C92-C95"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Nilotinib — KML endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005004",
+        "C005007",
+        "C005009",
+        "C005010",
+        "C005013",
+        "C005014",
+        "C005027",
+        "C005030",
+        "C005034"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).olaparib_parpi_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "olaparib"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Olaparib — onkoloji endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005650",
+        "C005654",
+        "C005657"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).pazopanib_rcc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "pazopanib"
+      ],
+      "icd10_ranges": [
+        "C64-C66"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Pazopanib — renal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005037",
+        "C005042",
+        "C005052",
+        "C005093",
+        "C005095",
+        "C005099",
+        "C005546"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).regorafenib_crc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "regorafenib"
+      ],
+      "icd10_ranges": [
+        "C18-C20"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Regorafenib — kolorektal kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005265"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).sirolimus_oncology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "sirolimus"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Sirolimus — endikasyon ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005037",
+        "C005042",
+        "C005052",
+        "C005095",
+        "C005099",
+        "C005546"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).sorafenib_hcc_rcc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "sorafenib"
+      ],
+      "icd10_ranges": [
+        "C22",
+        "C64-C66"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Sorafenib — hepatoselüler/renal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005037",
+        "C005042",
+        "C005049",
+        "C005050",
+        "C005052",
+        "C005053",
+        "C005055",
+        "C005085",
+        "C005086",
+        "C005095",
+        "C005099",
+        "C005267",
+        "C005546"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).sunitinib_rcc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "sunitinib"
+      ],
+      "icd10_ranges": [
+        "C64-C66"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Sunitinib — renal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005035",
+        "C005037",
+        "C005040",
+        "C005042",
+        "C005052",
+        "C005085",
+        "C005086",
+        "C005088",
+        "C005095",
+        "C005099",
+        "C005267",
+        "C005546"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).temsirolimus_rcc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "temsirolimus"
+      ],
+      "icd10_ranges": [
+        "C64-C66"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Temsirolimus — renal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005037",
+        "C005042",
+        "C005052",
+        "C005095",
+        "C005099",
+        "C005546"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).trametinib_melanoma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trametinib"
+      ],
+      "icd10_ranges": [
+        "C43"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Trametinib — melanom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005191",
+        "C005192",
+        "C005197",
+        "C005199",
+        "C005201",
+        "C005202",
+        "C005203",
+        "C005208"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(3).vemurafenib_melanoma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "vemurafenib"
+      ],
+      "icd10_ranges": [
+        "C43"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Vemurafenib — BRAF+ melanom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005190",
+        "C005191",
+        "C005192",
+        "C005197",
+        "C005199",
+        "C005206",
+        "C005207",
+        "C005208",
+        "C005274",
+        "C005721"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.aferez_1mo_heme_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ekulizumab",
+        "eculizumab",
+        "infliximab"
+      ],
+      "icd10_ranges": [
+        "D59",
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Terapötik aferez merkezi ilaçları — 1 ay süreli hematoloji/onkoloji raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 1,
+      "prescriber_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C005355",
+        "C005399",
+        "C005413",
+        "C005416",
+        "C005443",
+        "C005454",
+        "C005466",
+        "C005472"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.aksitinib_rcc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "aksitinib",
+        "axitinib"
+      ],
+      "icd10_ranges": [
+        "C64-C66"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "üroloji"
+      ],
+      "message_tr": "Aksitinib — metastatik RCC endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005177"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.alemtuzumab_cll_heme",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "alemtuzumab"
+      ],
+      "icd10_ranges": [
+        "C91"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "message_tr": "Alemtuzumab — hematoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "prescriber_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004936",
+        "C004938"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.azacitidine_mds_4mo_heme",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "azasitidin",
+        "azacitidine"
+      ],
+      "icd10_ranges": [
+        "D46"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "message_tr": "Azasitidin — MDS dirençli anemi; 4 ay süreli hematoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 4,
+      "prescriber_specialties": [
+        "hematoloji"
+      ],
+      "gate_b_sources": [
+        "C004978"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.azacitidine_mds_6mo_heme",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "azasitidin",
+        "azacitidine"
+      ],
+      "icd10_ranges": [
+        "D46"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "message_tr": "Azasitidin — MDS dirençli anemi; 6 ay süreli hematoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "hematoloji"
+      ],
+      "gate_b_sources": [
+        "C004987"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.bcg_intravesical_12mo_urology",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bcg"
+      ],
+      "icd10_ranges": [
+        "C67",
+        "C68"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "üroloji"
+      ],
+      "message_tr": "BCG intravezikal — 12 ay süreli tedavi protokollü sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "üroloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004940",
+        "C004941"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.bendamustine_fikra2_heme",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bendamustin",
+        "bendamustine"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Bendamustin — hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
+      "prescriber_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004924",
+        "C005538"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.brentuximab_hodgkin_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "brentuksimab",
+        "brentuximab"
+      ],
+      "icd10_ranges": [
+        "C81",
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Brentuksimab vedotin — CD30+ lenfoma endikasyonu ve hematoloji/onkoloji raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005318",
+        "C005329"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.carmustine_brain_tumor_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "karmustin",
+        "carmustine"
+      ],
+      "icd10_ranges": [
+        "C71"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "radyasyon onkolojisi",
+        "nöroloji"
+      ],
+      "message_tr": "Karmustin — beyin tümörü endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005286"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.cetuximab_crc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "setuksimab",
+        "cetuximab"
+      ],
+      "icd10_ranges": [
+        "C18-C20"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Setuksimab — metastatik kolorektal kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005179"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.cetuximab_hnscc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "setuksimab",
+        "cetuximab"
+      ],
+      "icd10_ranges": [
+        "C00-C14"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "kulak burun boğaz"
+      ],
+      "message_tr": "Setuksimab — skuamoz HNSCC endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005184"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.cinacalcet_parathyroid_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "cinacalcet"
+      ],
+      "icd10_ranges": [
+        "C75"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "endokrinoloji",
+        "genel cerrahi",
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Cinacalcet — paratiroid karsinomu endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005100"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.clofarabine_fikra2_heme",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "klofarabin",
+        "clofarabine"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Klofarabin — hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
+      "prescriber_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004924",
+        "C005304",
+        "C005311",
+        "C005629"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.decitabine_mds_4mo_heme",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "decitabin",
+        "decitabine"
+      ],
+      "icd10_ranges": [
+        "D46"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "message_tr": "Decitabin — MDS dirençli anemi; 4 ay süreli hematoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 4,
+      "prescriber_specialties": [
+        "hematoloji"
+      ],
+      "gate_b_sources": [
+        "C004996"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.denosumab_giant_cell_tumor_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "denosumab"
+      ],
+      "icd10_ranges": [
+        "C40-C41"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "ortopedi"
+      ],
+      "message_tr": "Denosumab 120 mg — dev hücreli kemik tümörü endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005358"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.dinutuximab_neuroblastoma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "dinutuksimab",
+        "dinutuximab"
+      ],
+      "icd10_ranges": [
+        "C74"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "pediatrik onkoloji"
+      ],
+      "message_tr": "Dinutuksimab beta — yüksek riskli nöroblastom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005619"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.eculizumab_mg_12wk_adult_neurology",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ekulizumab",
+        "eculizumab"
+      ],
+      "icd10_ranges": [
+        "G70.0"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji"
+      ],
+      "message_tr": "Ekulizumab — yetişkin MG; 12 haftalık ilaç kullanım süresi raporda doğrulanmalı (§4.2.14.C).",
+      "report_duration_months": 3,
+      "prescriber_specialties": [
+        "nöroloji"
+      ],
+      "gate_b_sources": [
+        "C005469"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.eculizumab_mg_neurology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ekulizumab",
+        "eculizumab"
+      ],
+      "icd10_ranges": [
+        "G70.0"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji"
+      ],
+      "message_tr": "Ekulizumab — jeneralize miyastenia gravis endikasyonu ve nöroloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "prescriber_specialties": [
+        "nöroloji"
+      ],
+      "gate_b_sources": [
+        "C005430",
+        "C005436"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.eculizumab_nmosd_neurology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ekulizumab",
+        "eculizumab"
+      ],
+      "icd10_ranges": [
+        "G36.0"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji"
+      ],
+      "message_tr": "Ekulizumab — NMOSB endikasyonu ve nöroloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "prescriber_specialties": [
+        "nöroloji"
+      ],
+      "gate_b_sources": [
+        "C005448",
+        "C005458",
+        "C005471"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.eculizumab_pediatric_mg_neurology",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ekulizumab",
+        "eculizumab"
+      ],
+      "icd10_ranges": [
+        "G70.0"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji",
+        "pediatrik nöroloji"
+      ],
+      "message_tr": "Ekulizumab — pediatrik jeneralize miyastenia gravis; nöroloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "prescriber_specialties": [
+        "nöroloji"
+      ],
+      "gate_b_sources": [
+        "C005459"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.ekulizumab_ahus_1mo_nephrology",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ekulizumab",
+        "eculizumab"
+      ],
+      "icd10_ranges": [
+        "D59"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nefroloji"
+      ],
+      "message_tr": "Ekulizumab — 1 ay süreli nefrolog sağlık kurulu raporu gerekir (§4.2.14.C aHÜS).",
+      "report_duration_months": 1,
+      "prescriber_specialties": [
+        "nefroloji"
+      ],
+      "gate_b_sources": [
+        "C005399",
+        "C005400",
+        "C005413",
+        "C005416",
+        "C005443",
+        "C005454",
+        "C005466",
+        "C005472"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.ekulizumab_ahus_6mo_nephrology",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ekulizumab",
+        "eculizumab"
+      ],
+      "icd10_ranges": [
+        "D59"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nefroloji"
+      ],
+      "message_tr": "Ekulizumab — 6 ay süreli nefrolog sağlık kurulu raporu gerekir (§4.2.14.C aHÜS).",
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "nefroloji"
+      ],
+      "gate_b_sources": [
+        "C005399",
+        "C005413",
+        "C005416",
+        "C005417",
+        "C005443",
+        "C005454",
+        "C005466",
+        "C005472"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.erlotinib_6mo_nsclc",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "erlotinib"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "göğüs hastalıkları"
+      ],
+      "message_tr": "Erlotinib — 6 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "tıbbi onkoloji",
+        "göğüs hastalıkları"
+      ],
+      "gate_b_sources": [
+        "C005081",
+        "C005341",
+        "C005386",
+        "C005682"
+      ]
     },
     {
       "rule_id": "4.2.14.C.erlottinib_nsclc_board",
       "sut_section": "4.2.14.C",
-      "drug_names": ["erlotinib"],
-      "icd10_ranges": ["C34"],
+      "drug_names": [
+        "erlotinib"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
       "report_required": true,
-      "report_specialties": ["tıbbi onkoloji", "göğüs hastalıkları"],
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "göğüs hastalıkları"
+      ],
       "message_tr": "Erlotinib — KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C)."
+    },
+    {
+      "rule_id": "4.2.14.C.everolimus_net_12mo_oncology",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "everolimus"
+      ],
+      "icd10_ranges": [
+        "C25"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "endokrinoloji"
+      ],
+      "message_tr": "Everolimus — NET endikasyonu; 12 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C005087"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.fikra1_second_tier_prescriber",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bevacizumab",
+        "gefitinib",
+        "octreotid",
+        "lanreotid",
+        "setuksimab",
+        "cetuximab"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "§4.2.14.C(1) ilaçları — 2./3. basamak sağlık kurulu raporu ve onkoloji reçetesi gerekir.",
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004923",
+        "C005081",
+        "C005090",
+        "C005178",
+        "C005180",
+        "C005181",
+        "C005341",
+        "C005383",
+        "C005386",
+        "C005682",
+        "C005746"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.fikra2_second_tier_prescriber",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bortezomib",
+        "talidomid",
+        "fludarabin",
+        "tretinoin",
+        "idarubisin",
+        "pentostatin"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "§4.2.14.C(2) ilaçları — hematoloji/onkoloji raporu ve uzman reçetesi gerekir.",
+      "prescriber_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004924",
+        "C004937",
+        "C004964",
+        "C004965",
+        "C005061",
+        "C005066",
+        "C005073",
+        "C005078",
+        "C005515",
+        "C005517",
+        "C005522",
+        "C005523"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.floxuridin_crc_liver_met_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "floxuridin"
+      ],
+      "icd10_ranges": [
+        "C18-C20"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "genel cerrahi",
+        "gastroenteroloji"
+      ],
+      "message_tr": "Floxuridin — kolon CA karaciğer metastazı endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C004974"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.fluorouracil_topical_prescriber_only",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "fluorourasil",
+        "5-fu topikal",
+        "fluorouracil"
+      ],
+      "icd10_ranges": [
+        "C44"
+      ],
+      "report_required": false,
+      "prescriber_specialties": [
+        "dermatoloji",
+        "tıbbi onkoloji",
+        "plastik cerrahi"
+      ],
+      "message_tr": "Topikal fluorourasil — yalnızca dermatoloji/onkoloji/plastik cerrahi reçetesi (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005176"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.fulvestrant_12mo_hr_breast",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "fulvestrant"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Fulvestrant — 12 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004943",
+        "C004946",
+        "C004949",
+        "C004950",
+        "C005552",
+        "C005553",
+        "C005561",
+        "C005562",
+        "C005571",
+        "C005572",
+        "C005573"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.fulvestrant_6mo_hr_breast",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "fulvestrant"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Fulvestrant — 6 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004943",
+        "C004946",
+        "C004949",
+        "C004950",
+        "C005552",
+        "C005553",
+        "C005561",
+        "C005562",
+        "C005571",
+        "C005572",
+        "C005573"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.ibrutinib_3mo_cll",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ibrutinib"
+      ],
+      "icd10_ranges": [
+        "C91"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "İbrutinib — 3 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 3,
+      "prescriber_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C005476",
+        "C005477",
+        "C005494",
+        "C005504"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.imiquimod_bcc_dermatology_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "imiquimod"
+      ],
+      "icd10_ranges": [
+        "C44"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "cilt hastalıkları"
+      ],
+      "message_tr": "İmiquimod — yüzeysel BCC endikasyonu ve onkoloji/dermatoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "prescriber_specialties": [
+        "tıbbi onkoloji",
+        "cilt hastalıkları"
+      ],
+      "gate_b_sources": [
+        "C004953"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.inpatient_hospital_supply_yatarak",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "pembrolizumab",
+        "nivolumab",
+        "ipilimumab",
+        "bevacizumab",
+        "trastuzumab"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Özel düzenleme ilaçları — yatarak tedavide hastane temini gerekir (§4.2.14.C).",
+      "inpatient_only": true,
+      "gate_b_sources": [
+        "C004923",
+        "C004927",
+        "C004928",
+        "C004929",
+        "C004930",
+        "C004932",
+        "C005041",
+        "C005271",
+        "C005274",
+        "C005276",
+        "C005278",
+        "C005297"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.mifamurtide_osteosarcoma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "mifamurtide"
+      ],
+      "icd10_ranges": [
+        "C40-C41"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "ortopedi"
+      ],
+      "message_tr": "Mifamurtide — yüksek riskli osteosarkom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005298"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.nelarabine_t_all_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "nelarabin",
+        "nelarabine"
+      ],
+      "icd10_ranges": [
+        "C91"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Nelarabin — T-ALL/T-LBL endikasyonu ve hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005647"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.nivolumab_12mo_nsclc",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "nivolumab"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Nivolumab — 12 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C005297",
+        "C005360",
+        "C005365",
+        "C005367",
+        "C005371",
+        "C005718",
+        "C005719",
+        "C005720",
+        "C005721",
+        "C005722",
+        "C005723",
+        "C005724"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.nivolumab_6mo_nsclc",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "nivolumab"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Nivolumab — 6 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C005297",
+        "C005360",
+        "C005365",
+        "C005367",
+        "C005371",
+        "C005718",
+        "C005719",
+        "C005720",
+        "C005721",
+        "C005722",
+        "C005723",
+        "C005724"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.nivolumab_classical_hodgkin_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "nivolumab"
+      ],
+      "icd10_ranges": [
+        "C81"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Nivolumab — nüks/refrakter klasik Hodgkin lenfoma endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005725"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.palbociclib_12mo_hr_breast",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "palbosiklib",
+        "palbociclib"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Palbosiklib — 12 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004949",
+        "C004950",
+        "C005549"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.palbociclib_6mo_hr_breast",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "palbosiklib",
+        "palbociclib"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Palbosiklib — 6 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004949",
+        "C004950",
+        "C005549"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.pembrolizumab_6mo_nsclc",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "pembrolizumab"
+      ],
+      "icd10_ranges": [
+        "C34"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Pembrolizumab — 6 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C005734",
+        "C005735",
+        "C005736",
+        "C005737",
+        "C005738",
+        "C005739",
+        "C005740"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.pemetrexed_mesothelioma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "pemetreksed",
+        "pemetrexed"
+      ],
+      "icd10_ranges": [
+        "C45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "göğüs hastalıkları",
+        "genel cerrahi"
+      ],
+      "message_tr": "Pemetreksed — malign plevral mezotelyom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005058"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.raltitrexed_mesothelioma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "raltitreksed",
+        "raltitrexed"
+      ],
+      "icd10_ranges": [
+        "C45",
+        "C18-C20"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Raltitreksed — mezotelyom/kolorektal endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005084"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.ribociclib_12mo_hr_breast",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ribosiklib",
+        "ribociclib"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Ribosiklib — 12 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004949",
+        "C004950",
+        "C005558",
+        "C005569"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.ribociclib_6mo_hr_breast",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ribosiklib",
+        "ribociclib"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Ribosiklib — 6 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004949",
+        "C004950",
+        "C005558",
+        "C005569"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.ribociclib_nsai_combo_breast",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "ribosiklib",
+        "ribociclib"
+      ],
+      "icd10_ranges": [
+        "C50",
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Ribosiklib — NSAI kombinasyonu HR+/HER2- metastatik meme kanseri; sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C005570"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.sacituzumab_govitecan_tnbc_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "sacituzumab govitekan",
+        "sacituzumab govitecan"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Sacituzumab govitekan — metastatik TNBC endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005683"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.sunitinib_net_12mo_oncology",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "sunitinib"
+      ],
+      "icd10_ranges": [
+        "C25"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "endokrinoloji"
+      ],
+      "message_tr": "Sunitinib — NET endikasyonu; 12 ay süreli sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C005038"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tioguanin_fikra2_heme",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "tioguanin"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Tioguanin — hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
+      "prescriber_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004924"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tiotepa_fikra2_heme",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "tiotepa"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Tiotepa — hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
+      "prescriber_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004924"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.trabectedin_sarcoma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trabektedin",
+        "trabectedin"
+      ],
+      "icd10_ranges": [
+        "C49"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Trabektedin — liyomiyosarkom/liposarkom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005102"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.trastuzumab_3mo_ecg_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trastuzumab"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Trastuzumab — 3 ay süreli ekokardiyografi içeren sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 3,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004927",
+        "C004928",
+        "C004929",
+        "C004930",
+        "C004932",
+        "C005041",
+        "C005276",
+        "C005278"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.trastuzumab_metastatic_prescriber_oncology",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trastuzumab"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Trastuzumab — tıbbi onkoloji uzmanınca reçete/onkoloji raporu gerekir (§4.2.14.C).",
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004927",
+        "C004928",
+        "C004929",
+        "C004930",
+        "C004932",
+        "C005041",
+        "C005276",
+        "C005278"
+      ]
     }
   ]
 }
