@@ -30,6 +30,237 @@ from catalog import (
     _ek4a,
     _money,
 )
+from payment_method_sampling import (
+    episode_care_setting,
+    filter_ek2b_pool_for_packaged_claim,
+)
+
+PAYMENT_METHOD_COMPLIANCE_DEMO_TAG = "payment_method_compliance_demo"
+
+_DRUG_INDICATION_DEMO_SPECS: dict[str, dict[str, Any]] = {
+    "bevacizumab_missing_report": {
+        "scenario_tag": "sgk_drug_indication_bevacizumab_missing_report",
+        "ilac_adi": "AVASTIN 400 MG IV INFUZYONLUK KONSANTRE COZELTI (BEVACIZUMAB)",
+        "ilac_kodu": "SUT-DEMO-BEV",
+        "barkod": "8690000000001",
+        "esdeger_grup": "DEMO-BEV",
+        "beklenen_red_nedeni": "Uzmanlik saglik kurulu raporu eksik",
+        "beklenen_kural_izi": "4.2.14.C:bevacizumab:missing_board_report",
+        "uzmanlik_kurulu_raporu_var": False,
+    },
+    "nivolumab_indication_mismatch": {
+        "scenario_tag": "sgk_drug_indication_nivolumab_indication_mismatch",
+        "ilac_adi": "OPDIVO 100 MG IV INFUZYONLUK KONSANTRE COZELTI (NIVOLUMAB)",
+        "ilac_kodu": "SUT-DEMO-NIVO",
+        "barkod": "8690000000002",
+        "esdeger_grup": "DEMO-NIVO",
+        "beklenen_red_nedeni": "Endikasyon uyumsuzlugu",
+        "beklenen_kural_izi": "4.2.14.C:nivolumab:indication_mismatch",
+        "uzmanlik_kurulu_raporu_var": True,
+    },
+    "daratumumab_report_unknown": {
+        "scenario_tag": "sgk_drug_indication_daratumumab_report_unknown",
+        "ilac_adi": "DARZALEX 400 MG IV INFUZYONLUK KONSANTRE COZELTI (DARATUMUMAB)",
+        "ilac_kodu": "SUT-DEMO-DARA",
+        "barkod": "8690000000003",
+        "esdeger_grup": "DEMO-DARA",
+        "beklenen_red_nedeni": "Saglik kurulu raporu dogrulanmali",
+        "beklenen_kural_izi": "4.2.14.C:daratumumab:needs_report_verification",
+        "uzmanlik_kurulu_raporu_var": None,
+    },
+    "pembrolizumab_report_ok": {
+        "scenario_tag": "sgk_drug_indication_pembrolizumab_report_ok",
+        "ilac_adi": "KEYTRUDA 100 MG IV INFUZYONLUK KONSANTRE COZELTI (PEMBROLIZUMAB)",
+        "ilac_kodu": "SUT-DEMO-PEM",
+        "barkod": "8690000000004",
+        "esdeger_grup": "DEMO-PEM",
+        "beklenen_red_nedeni": "",
+        "beklenen_kural_izi": "",
+        "uzmanlik_kurulu_raporu_var": True,
+        "yatarak_tedavi_ilac": True,
+    },
+    "trastuzumab_report_duration_mismatch": {
+        "scenario_tag": "sgk_drug_indication_trastuzumab_report_duration_mismatch",
+        "ilac_adi": "HERCEPTIN 440 MG IV INFUZYONLUK KONSANTRE COZELTI (TRASTUZUMAB)",
+        "ilac_kodu": "SUT-DEMO-TRAS",
+        "barkod": "8690000000005",
+        "esdeger_grup": "DEMO-TRAS",
+        "beklenen_red_nedeni": "Saglik kurulu rapor suresi uyumsuz",
+        "beklenen_kural_izi": "4.2.14.C:trastuzumab:report_duration_mismatch",
+        "uzmanlik_kurulu_raporu_var": True,
+        "rapor_suresi_ay": 12,
+        "recete_eden_uzmanlik": "Tıbbi Onkoloji",
+    },
+    "trabectedin_missing_report": {
+        "scenario_tag": "sgk_drug_indication_trabectedin_missing_report",
+        "ilac_adi": "YONDELIS 1 MG IV INFUZYONLUK KONSANTRE COZELTI (TRABECTEDIN)",
+        "ilac_kodu": "SUT-DEMO-TRAB",
+        "barkod": "8690000000006",
+        "esdeger_grup": "DEMO-TRAB",
+        "beklenen_red_nedeni": "Uzmanlik saglik kurulu raporu eksik",
+        "beklenen_kural_izi": "4.2.14.C:trabectedin:missing_board_report",
+        "uzmanlik_kurulu_raporu_var": False,
+    },
+}
+
+_MATERIAL_PROSE_DEMO_SPECS: dict[str, dict[str, Any]] = {
+    "optical_lens_upgrade": {
+        "scenario_tag": "sgk_specialty_prose_optical_lens_upgrade",
+        "material_code": "SUT-DEMO-OPT",
+        "material_name": "Gözlük camı fark ücreti talebi",
+        "material_type": "goz",
+        "specialty_category": "goz",
+        "unit_price": 450.0,
+        "expected_rule_id": "3.3.3.A.(4).ek3d_lens_upgrade_difference",
+        "specialty_flags": {"optical_lens_upgrade_difference_claim": True},
+    },
+    "hip_graft_no_pay": {
+        "scenario_tag": "sgk_specialty_prose_hip_graft_no_pay",
+        "material_code": "SUT-DEMO-GRF",
+        "material_name": "Kalça protezi greft malzemesi",
+        "material_type": "ortopedi",
+        "specialty_category": "ortopedi",
+        "unit_price": 3200.0,
+        "expected_rule_id": "3.3.4.(6).hip_arthroplasty_graft_no_pay",
+        "specialty_flags": {"hip_arthroplasty_graft_claim": True},
+    },
+    "kdv_ceiling_exceeded": {
+        "scenario_tag": "sgk_material_kdv_ceiling_exceeded",
+        "material_code": "OP1592",
+        "material_name": "ICD kalp pili",
+        "material_type": "cihaz",
+        "specialty_category": "kardiyoloji",
+        "unit_price": 999999.0,
+    },
+    "procurement_incomplete": {
+        "scenario_tag": "sgk_material_bundling_procurement_incomplete",
+        "material_code": "OP1000",
+        "material_name": "İhale ekranı eksik sözleşmeli malzeme",
+        "material_type": "ortez",
+        "specialty_category": "ortopedi",
+        "unit_price": 850.0,
+        "expected_rule_id": "3.1.1.(5).procurement_screen_incomplete",
+        "prose_flags": {"ihale_ekrani_eksik_mi": True},
+    },
+}
+
+_CLAIM_READINESS_DEMO_SPECS: dict[str, dict[str, Any]] = {
+    "uts_barcode_missing": {
+        "scenario_tag": "sgk_claim_readiness_uts_barcode_missing",
+        "material_code": "OP2000",
+        "material_name": "ÜTS kaydı eksik implant malzemesi",
+        "material_type": "implant",
+        "specialty_category": "ortopedi",
+        "unit_price": 4200.0,
+        "prose_flags": {
+            "uts_kayitli_mi": False,
+            "titubb_uts_barkod_belge_eksik": True,
+        },
+    },
+}
+
+_MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
+    "0012": {
+        "scenario_tag": "medula_rejection_1688_molecular_microbiology",
+        "visit_date": "2024-07-15",
+        "sonuc_kodu": "1688",
+        "hata_kodu": "1688",
+        "hata_mesaji": (
+            "Moleküler mikrobiyoloji işlemi için zorunlu rapor eksik"
+        ),
+        "medula_asamasi": "fatura_kayit",
+    },
+    "0018": {
+        "scenario_tag": "medula_rejection_0612_board_report_missing",
+        "visit_date": "2024-08-20",
+        "sonuc_kodu": "0612",
+        "hata_kodu": "0612",
+        "hata_mesaji": (
+            "Uzmanlık sağlık kurulu raporu eksik — işlem faturalanamaz"
+        ),
+        "medula_asamasi": "fatura_kayit",
+    },
+    "0025": {
+        "scenario_tag": "medula_rejection_1205_service_date_mismatch",
+        "visit_date": "2024-09-01",
+        "sonuc_kodu": "1205",
+        "hata_kodu": "1205",
+        "hata_mesaji": "Hizmet tarihi uyumsuz — provizyon ile eşleşmiyor",
+        "medula_asamasi": "fatura_kayit",
+    },
+    "0026": {
+        "scenario_tag": "medula_rejection_0521_provision_not_obtained",
+        "visit_date": "2024-09-10",
+        "sonuc_kodu": "0521",
+        "hata_kodu": "0521",
+        "hata_mesaji": "Provizyon onay alınmamış — işlem faturalanamaz",
+        "medula_asamasi": "provizyon",
+    },
+    "0027": {
+        "scenario_tag": "medula_rejection_0315_specialty_mismatch",
+        "visit_date": "2024-09-15",
+        "sonuc_kodu": "0315",
+        "hata_kodu": "0315",
+        "hata_mesaji": "Branş uyumsuz — uzmanlık bilgisi hatalı",
+        "medula_asamasi": "fatura_kayit",
+    },
+    "0028": {
+        "scenario_tag": "medula_rejection_0901_duplicate_procedure",
+        "visit_date": "2024-09-20",
+        "sonuc_kodu": "0901",
+        "hata_kodu": "0901",
+        "hata_mesaji": "Mükerrer işlem — aynı gün tekrar faturalandırılamaz",
+        "medula_asamasi": "fatura_kayit",
+    },
+    "0029": {
+        "scenario_tag": "medula_rejection_0704_uts_barcode_missing",
+        "visit_date": "2024-09-25",
+        "sonuc_kodu": "0704",
+        "hata_kodu": "0704",
+        "hata_mesaji": "Malzeme ÜTS barkod kaydı eksik veya geçersiz",
+        "medula_asamasi": "fatura_kayit",
+    },
+    "0030": {
+        "scenario_tag": "medula_rejection_0320_package_bundled_procedure",
+        "visit_date": "2024-10-01",
+        "sonuc_kodu": "0320",
+        "hata_kodu": "0320",
+        "hata_mesaji": "Paket kapsamındaki işlem ayrı faturalandırılamaz",
+        "medula_asamasi": "fatura_kayit",
+    },
+    "0031": {
+        "scenario_tag": "medula_rejection_0411_drug_report_missing",
+        "visit_date": "2024-10-05",
+        "sonuc_kodu": "0411",
+        "hata_kodu": "0411",
+        "hata_mesaji": "İlaç endikasyon raporu eksik — sağlık kurulu onayı gerekli",
+        "medula_asamasi": "fatura_kayit",
+    },
+    "0032": {
+        "scenario_tag": "medula_rejection_1102_uncontracted_facility",
+        "visit_date": "2024-10-10",
+        "sonuc_kodu": "1102",
+        "hata_kodu": "1102",
+        "hata_mesaji": "Sözleşmesiz kurum — SGK anlaşması bulunamadı",
+        "medula_asamasi": "fatura_kayit",
+    },
+}
+
+
+def _empty_drug_indication_fields() -> dict[str, Any]:
+    return {
+        "uzmanlik_kurulu_raporu_var": None,
+        "rapor_suresi_ay": None,
+        "yatarak_tedavi_ilac": None,
+        "recete_eden_uzmanlik": None,
+    }
+
+
+def _ensure_drug_indication_columns(drug_claims: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    for row in drug_claims:
+        for key, default in _empty_drug_indication_fields().items():
+            row.setdefault(key, default)
+    return drug_claims
 
 
 def _icd10_in_range(code: str, start: str, end: str) -> bool:
@@ -126,6 +357,27 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
             "SENTETIK-HASTA-0010",
             "SENTETIK-HASTA-0011",
             "SENTETIK-HASTA-0012",
+            "SENTETIK-HASTA-0013",
+            "SENTETIK-HASTA-0014",
+            "SENTETIK-HASTA-0015",
+            "SENTETIK-HASTA-0016",
+            "SENTETIK-HASTA-0017",
+            "SENTETIK-HASTA-0018",
+            "SENTETIK-HASTA-0019",
+            "SENTETIK-HASTA-0020",
+            "SENTETIK-HASTA-0021",
+            "SENTETIK-HASTA-0022",
+            "SENTETIK-HASTA-0023",
+            "SENTETIK-HASTA-0024",
+            "SENTETIK-HASTA-0025",
+            "SENTETIK-HASTA-0026",
+            "SENTETIK-HASTA-0027",
+            "SENTETIK-HASTA-0028",
+            "SENTETIK-HASTA-0029",
+            "SENTETIK-HASTA-0030",
+            "SENTETIK-HASTA-0031",
+            "SENTETIK-HASTA-0032",
+            "SENTETIK-HASTA-0033",
         ):
             num_episodes = 1
         else:
@@ -243,8 +495,10 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
                 episode_row["son_tani_tarihi"] = visit_date
                 episode_row["basvuru_yasi"] = int(visit_date[:4]) - birth_year
                 episode_row["_sgk_gazette_repricing_demo"] = True
-            elif pid == "SENTETIK-HASTA-0012" and ep_idx == 0:
-                visit_date = "2024-07-15"
+            elif pid.rsplit("-", 1)[-1] in _MEDULA_DEMO_SPECS and ep_idx == 0:
+                medula_suffix = pid.rsplit("-", 1)[-1]
+                medula_spec = _MEDULA_DEMO_SPECS[medula_suffix]
+                visit_date = str(medula_spec.get("visit_date") or episode_row["basvuru_tarihi"])
                 episode_row["gelis_tipi"] = "poliklinik"
                 episode_row["basvuru_tarihi"] = visit_date
                 episode_row["ilk_tani_tarihi"] = visit_date
@@ -256,9 +510,77 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
                 episode_row["_sgk_session_uplift_demo"] = True
             elif pid == "SENTETIK-HASTA-0014" and ep_idx == 0:
                 episode_row["gelis_tipi"] = "yatis"
-                episode_row["_sgk_drug_indication_demo"] = True
+                episode_row["_sgk_drug_indication_demo"] = "bevacizumab_missing_report"
                 episode_row["birincil_icd10"] = "C34.9"
                 episode_row["_all_codes"] = ["C34.9"]
+            elif pid == "SENTETIK-HASTA-0015" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_drug_indication_demo"] = "nivolumab_indication_mismatch"
+                episode_row["birincil_icd10"] = "J45.9"
+                episode_row["_all_codes"] = ["J45.9"]
+            elif pid == "SENTETIK-HASTA-0016" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_drug_indication_demo"] = "daratumumab_report_unknown"
+                episode_row["birincil_icd10"] = "C90.0"
+                episode_row["_all_codes"] = ["C90.0"]
+            elif pid == "SENTETIK-HASTA-0017" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_drug_indication_demo"] = "pembrolizumab_report_ok"
+                episode_row["birincil_icd10"] = "C34.9"
+                episode_row["_all_codes"] = ["C34.9"]
+            elif pid == "SENTETIK-HASTA-0019" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_drug_indication_demo"] = (
+                    "trastuzumab_report_duration_mismatch"
+                )
+                episode_row["birincil_icd10"] = "C50.9"
+                episode_row["_all_codes"] = ["C50.9"]
+            elif pid == "SENTETIK-HASTA-0020" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_drug_indication_demo"] = "trabectedin_missing_report"
+                episode_row["birincil_icd10"] = "C49.9"
+                episode_row["_all_codes"] = ["C49.9"]
+            elif pid == "SENTETIK-HASTA-0021" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_material_prose_demo"] = "optical_lens_upgrade"
+                episode_row["servis_adi"] = "goz"
+                episode_row["birincil_icd10"] = "H52.1"
+                episode_row["_all_codes"] = ["H52.1"]
+            elif pid == "SENTETIK-HASTA-0022" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_material_prose_demo"] = "hip_graft_no_pay"
+                episode_row["servis_adi"] = "ortopedi"
+                episode_row["birincil_icd10"] = "M16.1"
+                episode_row["_all_codes"] = ["M16.1"]
+            elif pid == "SENTETIK-HASTA-0023" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_material_prose_demo"] = "kdv_ceiling_exceeded"
+                episode_row["servis_adi"] = "kardiyoloji"
+                episode_row["birincil_icd10"] = "I49.9"
+                episode_row["_all_codes"] = ["I49.9"]
+            elif pid == "SENTETIK-HASTA-0024" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_material_prose_demo"] = "procurement_incomplete"
+                episode_row["servis_adi"] = "genel_cerrahi"
+                episode_row["birincil_icd10"] = "K80.2"
+                episode_row["_all_codes"] = ["K80.2"]
+            elif pid == "SENTETIK-HASTA-0033" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["_sgk_claim_readiness_demo"] = "uts_barcode_missing"
+                episode_row["servis_adi"] = "ortopedi"
+                episode_row["birincil_icd10"] = "M17.9"
+                episode_row["_all_codes"] = ["M17.9"]
+            elif pid == "SENTETIK-HASTA-0038" and ep_idx == 0:
+                visit_date = "2023-10-06"
+                episode_row["gelis_tipi"] = "yatis"
+                episode_row["basvuru_tarihi"] = visit_date
+                episode_row["ilk_tani_tarihi"] = visit_date
+                episode_row["son_tani_tarihi"] = visit_date
+                episode_row["basvuru_yasi"] = int(visit_date[:4]) - birth_year
+                episode_row["birincil_icd10"] = "C92.0"
+                episode_row["tum_icd10_kodlari"] = "C92.0"
+                episode_row["_all_codes"] = ["C92.0"]
+                episode_row["_payment_method_compliance_demo"] = True
             episodes_out.append(episode_row)
 
             for line_no, code in enumerate(all_codes, start=1):
@@ -294,15 +616,43 @@ def _pick_procedures(
     ek2b_procs: dict[str, pd.DataFrame],
     ek2c_packages: dict[str, pd.DataFrame],
     rng: np.random.Generator,
+    facility_tier: str | None = None,
+    provider_type: str | None = None,
+    allow_mandatory_side_procs: bool = False,
 ) -> list[dict]:
-    procs = []
+    procs: list[dict] = []
     visit_type = episode["gelis_tipi"]
-    template = episode.get("_template", {})
     all_codes = episode.get("_all_codes", [])
     drg_grp = _drg_group(all_codes)
+    service_date = episode.get("basvuru_tarihi")
+    care_setting = episode_care_setting(visit_type)
+
+    package_code = None
+    package_name = None
+    package_price = 0.0
+    is_package_candidate = (visit_type in ("yatis", "gunubirlik")) and rng.random() < 0.6
+    if is_package_candidate and drg_grp in ek2c_packages:
+        pkg_pool = ek2c_packages[drg_grp]
+        if not pkg_pool.empty:
+            pkg_row = pkg_pool.sample(1, random_state=rng.bit_generator).iloc[0]
+            package_code = str(pkg_row["package_code"])
+            package_name = str(pkg_row["name"])
+            package_price = _money(float(pkg_row.get("price_try", 0) or 0))
+
+    def _side_pool(df: pd.DataFrame) -> pd.DataFrame:
+        if not package_code or allow_mandatory_side_procs:
+            return df
+        return filter_ek2b_pool_for_packaged_claim(
+            df,
+            care_setting=care_setting,
+            facility_tier=facility_tier,
+            provider_type=provider_type,
+            as_of_date=service_date,
+            allow_mandatory_side_procs=False,
+        )
 
     if not ek2b_procs.get("muayene", pd.DataFrame()).empty:
-        exam_pool = ek2b_procs["muayene"]
+        exam_pool = _side_pool(ek2b_procs["muayene"])
         exam_valid = exam_pool[exam_pool["price_try"].notna() & (exam_pool["price_try"] > 0)]
         if not exam_valid.empty:
             row = exam_valid.sample(1, random_state=rng.bit_generator).iloc[0]
@@ -314,7 +664,7 @@ def _pick_procedures(
             })
 
     if visit_type == "yatis" and not ek2b_procs.get("yatak", pd.DataFrame()).empty:
-        bed_pool = ek2b_procs["yatak"]
+        bed_pool = _side_pool(ek2b_procs["yatak"])
         bed_valid = bed_pool[bed_pool["price_try"].notna() & (bed_pool["price_try"] > 0)]
         if not bed_valid.empty:
             row = bed_valid.sample(1, random_state=rng.bit_generator).iloc[0]
@@ -330,9 +680,10 @@ def _pick_procedures(
     n_labs = int(rng.integers(1, 4))
     lab_pool = ek2b_procs.get("lab", pd.DataFrame())
     if not lab_pool.empty:
-        lab_pool_valid = lab_pool[
-            lab_pool["price_try"].notna() &
-            (lab_pool["price_try"] > 0)
+        lab_pool_valid = _side_pool(lab_pool)
+        lab_pool_valid = lab_pool_valid[
+            lab_pool_valid["price_try"].notna() &
+            (lab_pool_valid["price_try"] > 0)
         ]
         if not lab_pool_valid.empty:
             n_sample = min(n_labs, len(lab_pool_valid))
@@ -345,18 +696,6 @@ def _pick_procedures(
                     "category": "laboratuvar",
                 })
 
-    package_code = None
-    package_name = None
-    package_price = 0.0
-    is_package_candidate = (visit_type in ("yatis", "gunubirlik")) and rng.random() < 0.6
-    if is_package_candidate and drg_grp in ek2c_packages:
-        pkg_pool = ek2c_packages[drg_grp]
-        if not pkg_pool.empty:
-            pkg_row = pkg_pool.sample(1, random_state=rng.bit_generator).iloc[0]
-            package_code = str(pkg_row["package_code"])
-            package_name = str(pkg_row["name"])
-            package_price = _money(float(pkg_row.get("price_try", 0) or 0))
-
     # Build set of all EK-2C package codes so we never sample them as general procedures
     ek2c_all_codes: set[str] = set()
     for pkg_df in ek2c_packages.values():
@@ -366,11 +705,11 @@ def _pick_procedures(
     remaining = num_procs - len(procs) - (1 if package_code else 0)
     general_pool = ek2b_procs.get("general", pd.DataFrame())
     if remaining > 0 and not general_pool.empty:
-        gen_valid = general_pool[
-            general_pool["price_try"].notna() &
-            (general_pool["price_try"] > 0)
+        gen_valid = _side_pool(general_pool)
+        gen_valid = gen_valid[
+            gen_valid["price_try"].notna() &
+            (gen_valid["price_try"] > 0)
         ]
-        # Exclude EK-2C package codes from general pool — they must only appear via the package path
         if not gen_valid.empty and ek2c_all_codes:
             gen_valid = gen_valid[~gen_valid["code"].astype(str).isin(ek2c_all_codes)]
         if not gen_valid.empty:
@@ -398,6 +737,59 @@ def _pick_procedures(
         })
 
     return procs
+
+
+def _pick_payment_method_compliance_demo_procedures(
+    episode: dict,
+    *,
+    ek2b_procs: dict[str, pd.DataFrame],
+    ek2c_packages: dict[str, pd.DataFrame],
+    rng: np.random.Generator,
+) -> list[dict]:
+    """§2.2.2 demo: billed paket + DRG_MANDATORY side line billed as itemized (612070)."""
+    _ = (episode, ek2c_packages, rng)
+    name_m, price_m = _lookup_ek2b_price("700390", ek2b_procs)
+    name_b, unit_b = _lookup_ek2b_price("612070", ek2b_procs)
+    name_l, price_l = _lookup_ek2b_price("L116470", ek2b_procs)
+    name_i, price_i = _lookup_ek2b_price("G100580", ek2b_procs)
+    pkg_name, _pkg_catalog = _lookup_ek2b_price("P615440", ek2b_procs)
+    bed_days = 7
+    return [
+        {
+            "code": "700390",
+            "name": name_m,
+            "price": _money(max(price_m, 17.11)),
+            "category": "muayene",
+        },
+        {
+            "code": "612070",
+            "name": name_b,
+            "price": _money(unit_b),
+            "category": "yatak",
+            "quantity_override": bed_days,
+        },
+        {
+            "code": "L116470",
+            "name": name_l,
+            "price": _money(max(price_l, 107.55)),
+            "category": "laboratuvar",
+        },
+        {
+            "code": "G100580",
+            "name": name_i,
+            "price": _money(max(price_i, 1848.56)),
+            "category": "islem",
+        },
+        {
+            "code": "P615440",
+            "name": pkg_name,
+            "price": _money(103260.58),
+            "category": "paket",
+            "is_package": True,
+            "billed_override": 103260.58,
+            "payable_override": 61956.35,
+        },
+    ]
 
 
 def _lookup_ek2b_price(code: str, ek2b_procs: dict[str, pd.DataFrame]) -> tuple[str, float]:
@@ -1444,6 +1836,49 @@ def _append_procedure_lines_for_claim(
     return total_billed, total_payable
 
 
+def _append_material_prose_demo_line(
+    ctx: ClaimEpisodeContext,
+    spec: dict[str, Any],
+) -> tuple[float, float]:
+    """Inject a single pinned material line for Sprint 2 prose/KDV demos."""
+    proc_line_id = f"ISL-{ctx.claim_id}-001"
+    if ctx.procedure_rows:
+        for row in ctx.procedure_rows:
+            if row.get("fatura_id") == ctx.claim_id:
+                proc_line_id = str(row.get("islem_satiri_id") or proc_line_id)
+                break
+
+    mat_billed = _money(float(spec.get("unit_price") or 0))
+    m_line_id = f"MLZ-{ctx.claim_id}-DEMO-001"
+    prose_flags = _default_prose_material_flags()
+    prose_flags.update(spec.get("prose_flags") or {})
+    specialty_flags = _default_specialty_prose_flags()
+    specialty_flags.update(spec.get("specialty_flags") or {})
+
+    ctx.materials.append({
+        "malzeme_satiri_id": m_line_id,
+        "fatura_id": ctx.claim_id,
+        "islem_satiri_id": proc_line_id,
+        "hasta_id": ctx.pid,
+        "malzeme_tarihi": ctx.start_date,
+        "malzeme_kodu": str(spec.get("material_code") or ""),
+        "malzeme_adi": str(spec.get("material_name") or ""),
+        "malzeme_tipi": str(spec.get("material_type") or "genel"),
+        "uzmanlik_kategorisi": str(spec.get("specialty_category") or "genel"),
+        "adet": 1,
+        "birim_fiyat_try": mat_billed,
+        "fatura_tutari_try": mat_billed,
+        "beklenen_odenebilir_tutar_try": mat_billed,
+        "pakete_dahil_mi": False,
+        "on_onay_gerekli_mi": False,
+        "beklenen_red_nedeni": "",
+        "beklenen_kural_izi": f"MAT-PROSE-DEMO:{spec.get('material_code', '')}",
+        **prose_flags,
+        **specialty_flags,
+    })
+    return mat_billed, mat_billed
+
+
 def _append_material_lines_for_claim(ctx: ClaimEpisodeContext) -> tuple[float, float]:
     total_billed = 0.0
     total_payable = 0.0
@@ -1556,6 +1991,7 @@ def _append_drug_lines_for_claim(ctx: ClaimEpisodeContext) -> tuple[float, float
             "beklenen_indirim_kademesi": discount_tier,
             "beklenen_red_nedeni": "",
             "beklenen_kural_izi": f"EK-4A:{drug_row.get('kamu_no', '')}",
+            **_empty_drug_indication_fields(),
         })
         ctx.expected.append({
             "beklenen_cikti_id": f"BEK-{d_line_id}",
@@ -1659,13 +2095,42 @@ def _generate_claims_and_lines(
         package_adequacy_demo = episode.get("_sgk_package_adequacy_demo")
         gazette_repricing_demo = episode.get("_sgk_gazette_repricing_demo")
         medula_playbook_demo = episode.get("_sgk_medula_playbook_demo")
+        medula_demo_spec = (
+            _MEDULA_DEMO_SPECS.get(pid.rsplit("-", 1)[-1])
+            if medula_playbook_demo
+            else None
+        )
         session_uplift_demo = episode.get("_sgk_session_uplift_demo")
         drug_indication_demo = episode.get("_sgk_drug_indication_demo")
-        scenario_tag = (
-            "medula_rejection_1688_molecular_microbiology"
-            if medula_playbook_demo
-            else "sgk_drug_indication_bevacizumab_missing_report"
+        material_prose_demo = episode.get("_sgk_material_prose_demo")
+        claim_readiness_demo = episode.get("_sgk_claim_readiness_demo")
+        payment_method_compliance_demo = episode.get("_payment_method_compliance_demo")
+        drug_indication_spec = (
+            _DRUG_INDICATION_DEMO_SPECS.get(str(drug_indication_demo))
             if drug_indication_demo
+            else None
+        )
+        material_prose_spec = (
+            _MATERIAL_PROSE_DEMO_SPECS.get(str(material_prose_demo))
+            if material_prose_demo
+            else None
+        )
+        claim_readiness_spec = (
+            _CLAIM_READINESS_DEMO_SPECS.get(str(claim_readiness_demo))
+            if claim_readiness_demo
+            else None
+        )
+        scenario_tag = (
+            PAYMENT_METHOD_COMPLIANCE_DEMO_TAG
+            if payment_method_compliance_demo
+            else medula_demo_spec["scenario_tag"]
+            if medula_demo_spec
+            else drug_indication_spec["scenario_tag"]
+            if drug_indication_spec
+            else material_prose_spec["scenario_tag"]
+            if material_prose_spec
+            else claim_readiness_spec["scenario_tag"]
+            if claim_readiness_spec
             else "sgk_session_uplift_cerrahi"
             if session_uplift_demo
             else "sgk_gazette_repricing_600150"
@@ -1706,13 +2171,20 @@ def _generate_claims_and_lines(
             or medula_playbook_demo
             or session_uplift_demo
             or drug_indication_demo
+            or material_prose_demo
+            or claim_readiness_demo
         ) or rng.random() < 0.15
-        facility_tier = (
-            "egitim_arastirma"
-            if is_university
-            else rng.choice(["2_3_basamak_ozel", "2_basamak_kamu"])
-        )
-        provider = "Universite" if is_university else rng.choice(["Ozel", "Kamu"])
+        if payment_method_compliance_demo:
+            facility_tier = "2_basamak_kamu"
+            provider = "Kamu"
+            is_university = False
+        else:
+            facility_tier = (
+                "egitim_arastirma"
+                if is_university
+                else rng.choice(["2_3_basamak_ozel", "2_basamak_kamu"])
+            )
+            provider = "Universite" if is_university else rng.choice(["Ozel", "Kamu"])
 
         start_date = episode["basvuru_tarihi"]
         if visit_type == "yatis":
@@ -1794,6 +2266,13 @@ def _generate_claims_and_lines(
                 ek2c_packages=ek2c_packages,
                 rng=rng,
             )
+        elif payment_method_compliance_demo:
+            proc_specs = _pick_payment_method_compliance_demo_procedures(
+                episode,
+                ek2b_procs=ek2b_procs,
+                ek2c_packages=ek2c_packages,
+                rng=rng,
+            )
         elif override_demo:
             proc_specs = _pick_optional_override_demo_procedures(
                 episode,
@@ -1809,6 +2288,9 @@ def _generate_claims_and_lines(
                 ek2b_procs=ek2b_procs,
                 ek2c_packages=ek2c_packages,
                 rng=rng,
+                facility_tier=facility_tier,
+                provider_type=provider,
+                allow_mandatory_side_procs=False,
             )
 
         package_code_for_claim = None
@@ -1865,7 +2347,7 @@ def _generate_claims_and_lines(
                 "islem_adi": addon_name,
                 "kaynak": "emr",
             })
-        if medula_playbook_demo:
+        if medula_demo_spec:
             claim_proc_rows = [
                 row for row in procedure_rows if row["fatura_id"] == claim_id
             ]
@@ -1875,12 +2357,10 @@ def _generate_claims_and_lines(
                 "fatura_id": claim_id,
                 "hasta_id": pid,
                 "basvuru_id": eid,
-                "medula_asamasi": "fatura_kayit",
-                "sonuc_kodu": "1688",
-                "hata_kodu": "1688",
-                "hata_mesaji": (
-                    "Moleküler mikrobiyoloji işlemi için zorunlu rapor eksik"
-                ),
+                "medula_asamasi": medula_demo_spec["medula_asamasi"],
+                "sonuc_kodu": medula_demo_spec["sonuc_kodu"],
+                "hata_kodu": medula_demo_spec["hata_kodu"],
+                "hata_mesaji": medula_demo_spec["hata_mesaji"],
                 "red_zamani": start_date,
                 "ilgili_islem_kodu": first_proc["islem_kodu"] if first_proc else "",
                 "ilgili_islem_satiri_id": (
@@ -1889,35 +2369,65 @@ def _generate_claims_and_lines(
             })
         if material_demo:
             mat_billed, mat_payable = 0.0, 0.0
+        elif material_prose_spec or claim_readiness_spec:
+            mat_billed, mat_payable = _append_material_prose_demo_line(
+                ctx,
+                material_prose_spec or claim_readiness_spec or {},
+            )
         else:
             mat_billed, mat_payable = _append_material_lines_for_claim(ctx)
         drug_billed, drug_payable = _append_drug_lines_for_claim(ctx)
-        if drug_indication_demo:
+        if drug_indication_spec:
             d_line_id = f"ILC-{claim_id}-IND-001"
             prescription_id = f"REC-{claim_id}-IND-001"
             unit_price = 12500.0
             qty = 1
             billed = _money(unit_price * qty)
             payable = _money(billed * 0.72)
-            ctx.drug_claims.append({
+            drug_row: dict[str, Any] = {
                 "ilac_satiri_id": d_line_id,
                 "recete_id": prescription_id,
                 "fatura_id": claim_id,
                 "hasta_id": pid,
                 "basvuru_id": eid,
                 "ilac_fatura_tarihi": start_date,
-                "ilac_adi": "AVASTIN 400 MG IV INFUZYONLUK KONSANTRE COZELTI (BEVACIZUMAB)",
-                "ilac_kodu": "SUT-DEMO-BEV",
-                "barkod": "8690000000001",
-                "esdeger_grup": "DEMO-BEV",
+                "ilac_adi": drug_indication_spec["ilac_adi"],
+                "ilac_kodu": drug_indication_spec["ilac_kodu"],
+                "barkod": drug_indication_spec["barkod"],
+                "esdeger_grup": drug_indication_spec["esdeger_grup"],
                 "adet": qty,
                 "birim_fiyat_try": unit_price,
                 "fatura_tutari_try": billed,
                 "beklenen_odenebilir_tutar_try": payable,
                 "beklenen_indirim_kademesi": 0.28,
-                "beklenen_red_nedeni": "Uzmanlik saglik kurulu raporu eksik",
-                "beklenen_kural_izi": "4.2.14.C:bevacizumab:missing_board_report",
-                "uzmanlik_kurulu_raporu_var": False,
+                "beklenen_red_nedeni": drug_indication_spec["beklenen_red_nedeni"],
+                "beklenen_kural_izi": drug_indication_spec["beklenen_kural_izi"],
+                "uzmanlik_kurulu_raporu_var": drug_indication_spec["uzmanlik_kurulu_raporu_var"],
+                **_empty_drug_indication_fields(),
+            }
+            drug_row["uzmanlik_kurulu_raporu_var"] = drug_indication_spec["uzmanlik_kurulu_raporu_var"]
+            for optional_key in ("rapor_suresi_ay", "yatarak_tedavi_ilac", "recete_eden_uzmanlik"):
+                if optional_key in drug_indication_spec:
+                    drug_row[optional_key] = drug_indication_spec[optional_key]
+            ctx.drug_claims.append(drug_row)
+            ctx.expected.append({
+                "beklenen_cikti_id": f"BEK-{d_line_id}",
+                "senaryo_etiketi": drug_indication_spec["scenario_tag"],
+                "hasta_id": pid,
+                "fatura_id": claim_id,
+                "satir_id": d_line_id,
+                "satir_tipi": "ilac",
+                "kural_ailesi": "drug_indication",
+                "beklenen_durum": (
+                    drug_indication_spec["beklenen_kural_izi"].split(":")[-1]
+                    if drug_indication_spec.get("beklenen_kural_izi")
+                    else "odenebilir"
+                ),
+                "beklenen_odenebilir_tutar_try": payable,
+                "beklenen_tasarruf_try": _money(billed - payable),
+                "beklenen_red_nedeni": drug_indication_spec["beklenen_red_nedeni"],
+                "beklenen_kural_izi": drug_indication_spec["beklenen_kural_izi"],
+                "test_notu": "§4.2 drug indication demo drug line",
             })
             drug_billed += billed
             drug_payable += payable
@@ -2148,7 +2658,7 @@ def build_workbook_tables(
         "gerceklestirilen_islem_satirlari": pd.DataFrame(performed_rows),
         "medula_red_satirlari": pd.DataFrame(medula_rejection_rows),
         "malzeme_fatura_satirlari": pd.DataFrame(materials),
-        "ilac_fatura_satirlari": pd.DataFrame(drug_claims),
+        "ilac_fatura_satirlari": pd.DataFrame(_ensure_drug_indication_columns(drug_claims)),
         "receteler": pd.DataFrame(prescriptions),
         "laboratuvar_sonuclari": pd.DataFrame(lab_rows),
         "beklenen_kural_ciktilari": pd.DataFrame(expected),

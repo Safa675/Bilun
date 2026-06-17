@@ -4,11 +4,17 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.bilun.domain.claims.schema import build_synthetic_claim_validation_columns
+
 DEFAULT_DATA_DIR = PROJECT_ROOT / "data" / "synthetic" / "sut"
 WORKBOOK_NAME = "sentetik_sut_v2_50_hasta.xlsx"
 MIN_PATIENTS = 50
@@ -46,109 +52,7 @@ REQUIRED_CLEAN_COLUMNS = {
     "recete_clean.parquet": {"HASTA_ID", "RECETE_TARIH", "RF_EPISODE", "ilac_adi"},
 }
 
-REQUIRED_CLAIM_COLUMNS = {
-    "claim_headers.parquet": {
-        "claim_id",
-        "patient_id",
-        "episode_id",
-        "claim_type",
-        "admission_date",
-        "expected_total_billed_try",
-    },
-    "procedure_claim_lines.parquet": {
-        "procedure_line_id",
-        "claim_id",
-        "patient_id",
-        "episode_id",
-        "procedure_date",
-        "procedure_code",
-        "billed_amount_try",
-    },
-    "material_claim_lines.parquet": {
-        "material_line_id",
-        "claim_id",
-        "patient_id",
-        "material_code",
-        "billed_amount_try",
-        "titubb_registered",
-        "uts_registered",
-        "procurement_record_incomplete",
-        "procedure_not_reimbursed",
-        "foreign_facility",
-        "facility_procedure_restriction_violation",
-        "diagnosis_bundled_no_separate_bill",
-        "procurement_price_refs_insufficient",
-        "medula_code_undefined_on_date",
-        "barcode_sut_mismatch",
-        "diagnosis_bundled_material_scope",
-        "cross_branch_material_unauthorized",
-        "ortez_protez_contract_billing_invalid",
-        "maintenance_cost_exceeds_sut_cap",
-        "protez_repair_documentation_incomplete",
-        "warranty_maintenance_procedure_incomplete",
-        "ortez_protez_maintenance_unverified",
-        "ihale_dts_mandatory_fields_incomplete",
-        "supplier_contract_pricing_path",
-        "ek3c_inpatient_external_supply_invalid",
-        "ek3c_list_price_missing",
-        "ek3_quality_documentation_incomplete",
-        "ek3c_miat_early_renewal_unauthorized",
-        "ek3c_custom_order_billing_invalid",
-        "ek3c_medical_appropriateness_incomplete",
-        "ek3c_custom_garment_contract_invalid",
-        "ek3c_force_majeure_renewal_claim",
-        "ek3c_outpatient_material_scope",
-        "inpatient_material_facility_supply_violation",
-        "non_reimbursed_inpatient_patient_charge",
-        "lab_material_separate_billing",
-        "shared_consumable_wrong_branch_billing",
-        "material_prescription_quantity_exceeded",
-        "material_report_prescription_invalid",
-        "material_invoice_documentation_incomplete",
-        "diagnosis_package_material_unbundled",
-        "emergency_uncontracted_facility_material",
-        "unlisted_material_surcharge_billing",
-        "wheelchair_dual_prescription_invalid",
-        "outpatient_contract_center_supply_required",
-        "child_growth_miat_renewal_claim",
-        "facility_contract_material_supply_scope",
-        "ismarlama_device_component_titubb_incomplete",
-        "titubb_uts_barcode_documentation_missing",
-        "skin_substitute_non_burn_use",
-        "bone_stimulator_combined_use",
-        "cochlear_implant_under_12_months",
-        "optical_lens_upgrade_difference_claim",
-    },
-    "drug_claim_lines.parquet": {
-        "drug_claim_line_id",
-        "prescription_id",
-        "claim_id",
-        "patient_id",
-        "drug_claim_date",
-        "billed_amount_try",
-    },
-    "expected_rule_outputs.parquet": {
-        "expected_output_id",
-        "scenario_tag",
-        "patient_id",
-        "claim_id",
-        "line_id",
-        "line_type",
-        "rule_family",
-        "expected_status",
-    },
-    "claim_diagnoses.parquet": {
-        "diagnosis_id",
-        "claim_id",
-        "patient_id",
-        "episode_id",
-        "icd10_code",
-        "is_primary",
-        "diagnosis_role",
-        "diagnosis_date",
-        "exemption_eligible",
-    },
-}
+REQUIRED_CLAIM_COLUMNS = build_synthetic_claim_validation_columns()
 
 
 def parse_args() -> argparse.Namespace:
@@ -393,6 +297,63 @@ MATERIAL_PROSE_WORKBOOK_COLUMNS = (
     "ayakta_sozlesmeli_temin",
     "cocuk_buyume_miat",
     "sozlesmeli_temin_kapsam",
+    "ismarlama_bilesen_titubb_eksik",
+    "titubb_uts_barkod_belge_eksik",
+)
+
+MATERIAL_PROSE_DEMO_PATIENTS: dict[str, str] = {
+    "SENTETIK-HASTA-0021": "sgk_specialty_prose_optical_lens_upgrade",
+    "SENTETIK-HASTA-0022": "sgk_specialty_prose_hip_graft_no_pay",
+    "SENTETIK-HASTA-0023": "sgk_material_kdv_ceiling_exceeded",
+    "SENTETIK-HASTA-0024": "sgk_material_bundling_procurement_incomplete",
+}
+
+MATERIAL_PROSE_DEMO_MATERIAL_CODES: dict[str, str] = {
+    "SENTETIK-HASTA-0021": "SUT-DEMO-OPT",
+    "SENTETIK-HASTA-0022": "SUT-DEMO-GRF",
+    "SENTETIK-HASTA-0023": "OP1592",
+    "SENTETIK-HASTA-0024": "OP1000",
+}
+
+MATERIAL_PROSE_DEMO_FLAG_EXPECTATIONS: dict[str, dict[str, object]] = {
+    "SENTETIK-HASTA-0021": {"optical_lens_upgrade_difference_claim": True},
+    "SENTETIK-HASTA-0022": {"hip_arthroplasty_graft_claim": True},
+    "SENTETIK-HASTA-0024": {"ihale_ekrani_eksik_mi": True},
+}
+
+DRUG_INDICATION_DEMO_PATIENTS: dict[str, str] = {
+    "SENTETIK-HASTA-0014": "sgk_drug_indication_bevacizumab_missing_report",
+    "SENTETIK-HASTA-0015": "sgk_drug_indication_nivolumab_indication_mismatch",
+    "SENTETIK-HASTA-0016": "sgk_drug_indication_daratumumab_report_unknown",
+    "SENTETIK-HASTA-0017": "sgk_drug_indication_pembrolizumab_report_ok",
+    "SENTETIK-HASTA-0019": "sgk_drug_indication_trastuzumab_report_duration_mismatch",
+    "SENTETIK-HASTA-0020": "sgk_drug_indication_trabectedin_missing_report",
+}
+
+DRUG_INDICATION_DEMO_TIER_B_FIELDS: dict[str, dict[str, object]] = {
+    "SENTETIK-HASTA-0017": {
+        "yatarak_tedavi_ilac": True,
+    },
+    "SENTETIK-HASTA-0019": {
+        "rapor_suresi_ay": 12,
+        "recete_eden_uzmanlik": "Tıbbi Onkoloji",
+        "uzmanlik_kurulu_raporu_var": True,
+    },
+    "SENTETIK-HASTA-0020": {
+        "uzmanlik_kurulu_raporu_var": False,
+    },
+}
+
+PAYMENT_METHOD_COMPLIANCE_DEMO_TAG = "payment_method_compliance_demo"
+PAYMENT_METHOD_COMPLIANCE_DEMO_PATIENTS: dict[str, str] = {
+    "SENTETIK-HASTA-0038": PAYMENT_METHOD_COMPLIANCE_DEMO_TAG,
+}
+
+DRUG_INDICATION_WORKBOOK_COLUMNS = (
+    "uzmanlik_kurulu_raporu_var",
+    "rapor_suresi_ay",
+    "yatarak_tedavi_ilac",
+    "recete_eden_uzmanlik",
 )
 
 
@@ -454,6 +415,325 @@ def _validate_material_prose_flags(
             label = f"{col}=true"
         if not has_demo:
             _error(errors, f"Expected at least one material line with {label}")
+
+
+def _workbook_care_setting(claim_type: str) -> str:
+    if str(claim_type).strip() in {"yatis", "gunubirlik"}:
+        return "inpatient"
+    return "outpatient"
+
+
+def _validate_payment_method_compliance_demos(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    claims = tables.get("fatura_basliklari")
+    procedures = tables.get("islem_fatura_satirlari")
+    if claims is None or procedures is None or claims.empty or procedures.empty:
+        return
+
+    for patient_id, scenario_tag in PAYMENT_METHOD_COMPLIANCE_DEMO_PATIENTS.items():
+        patient_claims = claims[_strings(claims["hasta_id"]) == patient_id]
+        if patient_claims.empty:
+            _error(errors, f"Missing claim for payment-method compliance demo patient {patient_id}")
+            continue
+        matching = patient_claims[_strings(patient_claims["senaryo_etiketi"]) == scenario_tag]
+        if matching.empty:
+            _error(
+                errors,
+                f"Patient {patient_id} missing scenario_tag {scenario_tag!r}",
+            )
+            continue
+
+        demo_claim_ids = set(_strings(matching["fatura_id"]))
+        demo_procs = procedures[_strings(procedures["fatura_id"]).isin(demo_claim_ids)]
+        billed_paket = demo_procs[
+            (_strings(demo_procs["islem_kategorisi"]) == "paket")
+            & (pd.to_numeric(demo_procs["fatura_tutari_try"], errors="coerce").fillna(0) > 0)
+        ]
+        if billed_paket.empty:
+            _error(
+                errors,
+                f"Payment-method compliance demo patient {patient_id} missing billed paket line",
+            )
+
+
+def _validate_packaged_claim_mandatory_side_procedures(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    from src.bilun.domain.prose_rules.payment_method import resolve_payment_method
+
+    claims = tables.get("fatura_basliklari")
+    procedures = tables.get("islem_fatura_satirlari")
+    if claims is None or procedures is None or claims.empty or procedures.empty:
+        return
+
+    claim_by_id = {
+        str(row["fatura_id"]): row
+        for _, row in claims.iterrows()
+    }
+    for claim_id, claim_row in claim_by_id.items():
+        claim_procs = procedures[_strings(procedures["fatura_id"]) == claim_id]
+        if claim_procs.empty:
+            continue
+
+        billed_paket = claim_procs[
+            (_strings(claim_procs["islem_kategorisi"]) == "paket")
+            & (pd.to_numeric(claim_procs["fatura_tutari_try"], errors="coerce").fillna(0) > 0)
+        ]
+        if billed_paket.empty:
+            continue
+
+        scenario_tag = str(claim_row.get("senaryo_etiketi") or "").strip()
+        if scenario_tag == PAYMENT_METHOD_COMPLIANCE_DEMO_TAG:
+            continue
+
+        care_setting = _workbook_care_setting(str(claim_row.get("fatura_tipi") or ""))
+        facility_tier = str(claim_row.get("kurum_basamagi") or "").strip() or None
+        provider_type = str(claim_row.get("saglayici_tipi") or "").strip() or None
+        claim_date = claim_row.get("fatura_baslangic_tarihi")
+
+        offenders: list[str] = []
+        for _, proc_row in claim_procs.iterrows():
+            if _truthy(pd.Series([proc_row.get("pakete_dahil_mi")])).iloc[0]:
+                continue
+            if str(proc_row.get("islem_kategorisi") or "").strip() == "paket":
+                continue
+            payable = float(pd.to_numeric(proc_row.get("beklenen_odenebilir_tutar_try"), errors="coerce") or 0)
+            if payable <= 0:
+                continue
+
+            as_of_date = proc_row.get("islem_tarihi") or claim_date
+            code = str(proc_row.get("islem_kodu") or "").strip()
+            if not code:
+                continue
+
+            result = resolve_payment_method(
+                code,
+                care_setting=care_setting,  # type: ignore[arg-type]
+                facility_tier=facility_tier,
+                provider_type=provider_type,
+                as_of_date=as_of_date,
+            )
+            if result.kind == "DRG_MANDATORY":
+                offenders.append(code)
+
+        if offenders:
+            _error(
+                errors,
+                f"Claim {claim_id} has DRG_MANDATORY side procedures on a packaged bill: "
+                f"{sorted(set(offenders))}",
+            )
+
+
+def _validate_drug_indication_demos(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    drugs = tables.get("ilac_fatura_satirlari")
+    claims = tables.get("fatura_basliklari")
+    if drugs is None or claims is None or drugs.empty or claims.empty:
+        return
+
+    missing_cols = [
+        col for col in DRUG_INDICATION_WORKBOOK_COLUMNS if col not in drugs.columns
+    ]
+    if missing_cols:
+        _error(
+            errors,
+            f"ilac_fatura_satirlari missing §4.2 drug indication columns: {missing_cols}",
+        )
+        return
+
+    for patient_id, scenario_tag in DRUG_INDICATION_DEMO_PATIENTS.items():
+        patient_claims = claims[_strings(claims["hasta_id"]) == patient_id]
+        if patient_claims.empty:
+            _error(errors, f"Missing claim for drug indication demo patient {patient_id}")
+            continue
+        matching = patient_claims[_strings(patient_claims["senaryo_etiketi"]) == scenario_tag]
+        if matching.empty:
+            _error(
+                errors,
+                f"Patient {patient_id} missing scenario_tag {scenario_tag!r}",
+            )
+        patient_drugs = drugs[_strings(drugs["hasta_id"]) == patient_id]
+        if patient_drugs.empty:
+            _error(errors, f"Patient {patient_id} missing drug claim lines")
+            continue
+
+        demo_drugs = patient_drugs[
+            _strings(patient_drugs["ilac_kodu"]).str.startswith("SUT-DEMO-")
+        ]
+        if demo_drugs.empty:
+            _error(errors, f"Patient {patient_id} missing SUT-DEMO drug indication line")
+            continue
+
+        tier_b_expect = DRUG_INDICATION_DEMO_TIER_B_FIELDS.get(patient_id)
+        if tier_b_expect:
+            drug_row = demo_drugs.iloc[0]
+            for column, expected in tier_b_expect.items():
+                actual = drug_row.get(column)
+                if pd.isna(actual):
+                    actual = None
+                if actual != expected:
+                    _error(
+                        errors,
+                        f"Patient {patient_id} demo drug {column}={actual!r}, expected {expected!r}",
+                    )
+
+
+def _validate_material_prose_demos(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    materials = tables.get("malzeme_fatura_satirlari")
+    claims = tables.get("fatura_basliklari")
+    if materials is None or claims is None or materials.empty or claims.empty:
+        return
+
+    for patient_id, scenario_tag in MATERIAL_PROSE_DEMO_PATIENTS.items():
+        patient_claims = claims[_strings(claims["hasta_id"]) == patient_id]
+        if patient_claims.empty:
+            _error(errors, f"Missing claim for material prose demo patient {patient_id}")
+            continue
+        matching = patient_claims[_strings(patient_claims["senaryo_etiketi"]) == scenario_tag]
+        if matching.empty:
+            _error(
+                errors,
+                f"Patient {patient_id} missing scenario_tag {scenario_tag!r}",
+            )
+
+        expected_code = MATERIAL_PROSE_DEMO_MATERIAL_CODES.get(patient_id)
+        patient_materials = materials[_strings(materials["hasta_id"]) == patient_id]
+        if patient_materials.empty:
+            _error(errors, f"Patient {patient_id} missing material claim lines")
+            continue
+        if expected_code:
+            demo_rows = patient_materials[
+                _strings(patient_materials["malzeme_kodu"]) == expected_code
+            ]
+            if demo_rows.empty:
+                _error(
+                    errors,
+                    f"Patient {patient_id} missing demo material code {expected_code!r}",
+                )
+                continue
+            demo_row = demo_rows.iloc[0]
+            flag_expect = MATERIAL_PROSE_DEMO_FLAG_EXPECTATIONS.get(patient_id)
+            if flag_expect:
+                for column, expected in flag_expect.items():
+                    actual = demo_row.get(column)
+                    if pd.isna(actual):
+                        actual = None
+                    if actual != expected:
+                        _error(
+                            errors,
+                            f"Patient {patient_id} demo material {column}={actual!r}, "
+                            f"expected {expected!r}",
+                        )
+
+
+def _validate_medula_playbook_demos(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    import sys
+
+    synth_dir = PROJECT_ROOT / "scripts" / "synthetic"
+    if str(synth_dir) not in sys.path:
+        sys.path.insert(0, str(synth_dir))
+    from generators import _MEDULA_DEMO_SPECS  # noqa: E402
+
+    claims = tables.get("fatura_basliklari")
+    events = tables.get("medula_red_satirlari")
+    if claims is None or events is None or claims.empty:
+        return
+
+    for suffix, spec in _MEDULA_DEMO_SPECS.items():
+        patient_id = f"SENTETIK-HASTA-{suffix}"
+        scenario_tag = str(spec["scenario_tag"])
+        patient_claims = claims[_strings(claims["hasta_id"]) == patient_id]
+        if patient_claims.empty:
+            _error(errors, f"Missing claim for MEDULA demo patient {patient_id}")
+            continue
+        matching = patient_claims[_strings(patient_claims["senaryo_etiketi"]) == scenario_tag]
+        if matching.empty:
+            _error(
+                errors,
+                f"Patient {patient_id} missing scenario_tag {scenario_tag!r}",
+            )
+        patient_events = events[_strings(events["hasta_id"]) == patient_id]
+        if patient_events.empty:
+            _error(errors, f"Patient {patient_id} missing MEDULA rejection event")
+            continue
+        event_row = patient_events.iloc[0]
+        if str(event_row.get("sonuc_kodu")) != str(spec["sonuc_kodu"]):
+            _error(
+                errors,
+                f"Patient {patient_id} sonuc_kodu={event_row.get('sonuc_kodu')!r}, "
+                f"expected {spec['sonuc_kodu']!r}",
+            )
+
+
+CLAIM_READINESS_DEMO_PATIENTS: dict[str, str] = {
+    "SENTETIK-HASTA-0033": "sgk_claim_readiness_uts_barcode_missing",
+}
+
+
+def _validate_claim_readiness_demos(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    import sys
+
+    synth_dir = PROJECT_ROOT / "scripts" / "synthetic"
+    if str(synth_dir) not in sys.path:
+        sys.path.insert(0, str(synth_dir))
+    from generators import _CLAIM_READINESS_DEMO_SPECS  # noqa: E402
+
+    claims = tables.get("fatura_basliklari")
+    materials = tables.get("malzeme_fatura_satirlari")
+    events = tables.get("medula_red_satirlari")
+    if claims is None or materials is None or claims.empty:
+        return
+
+    for patient_id, scenario_tag in CLAIM_READINESS_DEMO_PATIENTS.items():
+        suffix = patient_id.rsplit("-", 1)[-1]
+        spec = _CLAIM_READINESS_DEMO_SPECS.get("uts_barcode_missing")
+        if suffix != "0033" or spec is None:
+            continue
+        patient_claims = claims[_strings(claims["hasta_id"]) == patient_id]
+        if patient_claims.empty:
+            _error(errors, f"Missing claim for claim-readiness demo patient {patient_id}")
+            continue
+        matching = patient_claims[_strings(patient_claims["senaryo_etiketi"]) == scenario_tag]
+        if matching.empty:
+            _error(
+                errors,
+                f"Patient {patient_id} missing scenario_tag {scenario_tag!r}",
+            )
+        patient_materials = materials[_strings(materials["hasta_id"]) == patient_id]
+        if patient_materials.empty:
+            _error(errors, f"Patient {patient_id} missing material line for readiness demo")
+            continue
+        material_row = patient_materials.iloc[0]
+        for column, expected in (spec.get("prose_flags") or {}).items():
+            actual = material_row.get(column)
+            if bool(actual) != bool(expected):
+                _error(
+                    errors,
+                    f"Patient {patient_id} readiness material {column}={actual!r}, "
+                    f"expected {expected!r}",
+                )
+        if events is not None and not events.empty:
+            patient_events = events[_strings(events["hasta_id"]) == patient_id]
+            if not patient_events.empty:
+                _error(
+                    errors,
+                    f"Patient {patient_id} should not have MEDULA rejection events "
+                    "(proactive readiness period demo)",
+                )
 
 
 def _validate_expected_outputs(
@@ -525,6 +805,12 @@ def main() -> None:
         _validate_workbook(tables, errors)
         _validate_material_prose_flags(tables, errors)
         _validate_specialty_prose_flags(tables, errors)
+        _validate_drug_indication_demos(tables, errors)
+        _validate_material_prose_demos(tables, errors)
+        _validate_medula_playbook_demos(tables, errors)
+        _validate_claim_readiness_demos(tables, errors)
+        _validate_payment_method_compliance_demos(tables, errors)
+        _validate_packaged_claim_mandatory_side_procedures(tables, errors)
     _validate_parquet_dir(data_dir / "clean", REQUIRED_CLEAN_COLUMNS, errors)
     _validate_parquet_dir(data_dir / "claims", REQUIRED_CLAIM_COLUMNS, errors)
 

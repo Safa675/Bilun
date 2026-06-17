@@ -154,15 +154,84 @@ class TestProcedureAddonSyntheticDemo:
 
 
 class TestMedulaPlaybookSyntheticDemo:
-    def test_0012_medula_playbook_excluded_from_sgk_headline(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0012"
+    @pytest.mark.parametrize(
+        ("patient_id", "scenario_tag", "sonuc_kodu", "playbook_key"),
+        [
+            (
+                "SENTETIK-HASTA-0012",
+                "medula_rejection_1688_molecular_microbiology",
+                "1688",
+                "1688_molecular_microbiology",
+            ),
+            (
+                "SENTETIK-HASTA-0018",
+                "medula_rejection_0612_board_report_missing",
+                "0612",
+                "0612_board_report_missing",
+            ),
+            (
+                "SENTETIK-HASTA-0025",
+                "medula_rejection_1205_service_date_mismatch",
+                "1205",
+                "1205_service_date_mismatch",
+            ),
+            (
+                "SENTETIK-HASTA-0026",
+                "medula_rejection_0521_provision_not_obtained",
+                "0521",
+                "0521_provision_not_obtained",
+            ),
+            (
+                "SENTETIK-HASTA-0027",
+                "medula_rejection_0315_specialty_mismatch",
+                "0315",
+                "0315_specialty_mismatch",
+            ),
+            (
+                "SENTETIK-HASTA-0028",
+                "medula_rejection_0901_duplicate_procedure",
+                "0901",
+                "0901_duplicate_procedure",
+            ),
+            (
+                "SENTETIK-HASTA-0029",
+                "medula_rejection_0704_uts_barcode_missing",
+                "0704",
+                "0704_uts_barcode_missing",
+            ),
+            (
+                "SENTETIK-HASTA-0030",
+                "medula_rejection_0320_package_bundled_procedure",
+                "0320",
+                "0320_package_bundled_procedure",
+            ),
+            (
+                "SENTETIK-HASTA-0031",
+                "medula_rejection_0411_drug_report_missing",
+                "0411",
+                "0411_drug_report_missing",
+            ),
+            (
+                "SENTETIK-HASTA-0032",
+                "medula_rejection_1102_uncontracted_facility",
+                "1102",
+                "1102_uncontracted_facility",
+            ),
+        ],
+    )
+    def test_medula_playbook_demo_excluded_from_sgk_headline(
+        self,
+        dataset,
+        patient_id: str,
+        scenario_tag: str,
+        sonuc_kodu: str,
+        playbook_key: str,
+    ) -> None:
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
         assert len(ctx.medula_rejection_events) == 1
 
-        demo_claim = _claim_by_scenario_tag(
-            ctx, "medula_rejection_1688_molecular_microbiology"
-        )
+        demo_claim = _claim_by_scenario_tag(ctx, scenario_tag)
         report = compute_patient_billing_report(
             patient_id,
             claim_context=ctx,
@@ -176,7 +245,8 @@ class TestMedulaPlaybookSyntheticDemo:
             if row.get("claim_id") == demo_claim.claim_id
         ]
         assert len(demo_rows) == 1
-        assert demo_rows[0]["sonuc_kodu"] == "1688"
+        assert demo_rows[0]["sonuc_kodu"] == sonuc_kodu
+        assert demo_rows[0]["playbook_id"] == playbook_key
         assert demo_rows[0]["included_in_sgk_total"] is False
         assert report.medula_playbook_entry_count == 1
         assert report.exactness_status == "exact"
@@ -320,3 +390,190 @@ class TestBloodUpliftSyntheticDemo:
 
         assert report.blood_uplift.confirmed_uplift_try == pytest.approx(310.0)
         assert report.sgk_uplift_try >= 310.0
+
+
+class TestDrugIndicationSyntheticDemo:
+    @pytest.mark.parametrize(
+        ("patient_id", "scenario_tag", "expect_kind", "expect_count"),
+        [
+            (
+                "SENTETIK-HASTA-0014",
+                "sgk_drug_indication_bevacizumab_missing_report",
+                "missing_board_report",
+                1,
+            ),
+            (
+                "SENTETIK-HASTA-0015",
+                "sgk_drug_indication_nivolumab_indication_mismatch",
+                "indication_mismatch",
+                1,
+            ),
+            (
+                "SENTETIK-HASTA-0016",
+                "sgk_drug_indication_daratumumab_report_unknown",
+                "needs_report_verification",
+                1,
+            ),
+            (
+                "SENTETIK-HASTA-0017",
+                "sgk_drug_indication_pembrolizumab_report_ok",
+                None,
+                0,
+            ),
+            (
+                "SENTETIK-HASTA-0019",
+                "sgk_drug_indication_trastuzumab_report_duration_mismatch",
+                "report_duration_mismatch",
+                1,
+            ),
+            (
+                "SENTETIK-HASTA-0020",
+                "sgk_drug_indication_trabectedin_missing_report",
+                "missing_board_report",
+                1,
+            ),
+        ],
+    )
+    def test_drug_indication_demo_patients(
+        self,
+        dataset,
+        patient_id: str,
+        scenario_tag: str,
+        expect_kind: str | None,
+        expect_count: int,
+    ) -> None:
+        ctx = build_patient_claim_context(patient_id, dataset)
+        assert ctx is not None
+
+        demo_claim = _claim_by_scenario_tag(ctx, scenario_tag)
+        report = compute_patient_billing_report(
+            patient_id,
+            claim_context=ctx,
+            copay_exemption={"exempt": False},
+            chapters={"C"},
+        )
+
+        demo_violations = [
+            row
+            for row in report.drug_indication.violations
+            if row.get("claim_id") == demo_claim.claim_id
+        ]
+        assert len(demo_violations) == expect_count
+        if expect_kind is not None:
+            assert demo_violations[0]["violation_kind"] == expect_kind
+        assert report.drug_indication.exactness_status == "exact"
+        assert report.drug_indication_violation_count >= expect_count
+        assert len(ctx.claims) == 1
+
+
+class TestClaimReadinessSyntheticDemo:
+    def test_0033_proactive_uts_checklist_without_medula_event(self, dataset) -> None:
+        patient_id = "SENTETIK-HASTA-0033"
+        ctx = build_patient_claim_context(patient_id, dataset)
+        assert ctx is not None
+        assert len(ctx.medula_rejection_events) == 0
+
+        demo_claim = _claim_by_scenario_tag(ctx, "sgk_claim_readiness_uts_barcode_missing")
+        report = compute_patient_billing_report(
+            patient_id,
+            claim_context=ctx,
+            copay_exemption={"exempt": False},
+            chapters={"M"},
+        )
+
+        demo_rows = [
+            row
+            for row in report.claim_submission_checklist.items
+            if row.get("claim_id") == demo_claim.claim_id
+        ]
+        assert len(demo_rows) == 1
+        assert demo_rows[0]["sonuc_kodu_risk"] == "0704"
+        assert demo_rows[0]["included_in_sgk_total"] is False
+        assert report.claim_submission_checklist_count == 1
+        assert report.medula_playbook_entry_count == 0
+        assert report.exactness_status == "exact"
+
+
+class TestMaterialProseSyntheticDemo:
+    @pytest.mark.parametrize(
+        ("patient_id", "scenario_tag", "check"),
+        [
+            (
+                "SENTETIK-HASTA-0021",
+                "sgk_specialty_prose_optical_lens_upgrade",
+                "specialty",
+            ),
+            (
+                "SENTETIK-HASTA-0022",
+                "sgk_specialty_prose_hip_graft_no_pay",
+                "specialty",
+            ),
+            (
+                "SENTETIK-HASTA-0023",
+                "sgk_material_kdv_ceiling_exceeded",
+                "kdv",
+            ),
+            (
+                "SENTETIK-HASTA-0024",
+                "sgk_material_bundling_procurement_incomplete",
+                "bundling",
+            ),
+        ],
+    )
+    def test_material_prose_demo_patients(
+        self,
+        dataset,
+        patient_id: str,
+        scenario_tag: str,
+        check: str,
+    ) -> None:
+        ctx = build_patient_claim_context(patient_id, dataset)
+        assert ctx is not None
+
+        demo_claim = _claim_by_scenario_tag(ctx, scenario_tag)
+        report = compute_patient_billing_report(
+            patient_id,
+            claim_context=ctx,
+            copay_exemption={"exempt": False},
+        )
+
+        assert report.materials.exactness_status == "exact"
+        assert len(ctx.claims) == 1
+
+        demo_materials = [
+            line
+            for line in ctx.material_lines
+            if line.claim_id == demo_claim.claim_id
+        ]
+        assert len(demo_materials) >= 1
+
+        if check == "specialty":
+            hits = [
+                row
+                for row in report.materials.specialty_prose_violations
+                if row.get("material_code")
+                in {line.material_code for line in demo_materials}
+            ]
+            assert len(hits) == 1
+            assert hits[0]["rule_id"] in {
+                "3.3.3.A.(4).ek3d_lens_upgrade_difference",
+                "3.3.4.(6).hip_arthroplasty_graft_no_pay",
+            }
+        elif check == "kdv":
+            hits = [
+                row
+                for row in report.materials.kdv_price_reviews
+                if row.get("sut_code") == "OP1592"
+            ]
+            assert len(hits) == 1
+            assert hits[0]["kdv_applied"] is True
+            assert float(hits[0]["billed_try"]) > float(hits[0]["gazette_ceiling_try"])
+        else:
+            hits = [
+                row
+                for row in report.materials.prose_bundling_violations
+                if row.get("material_code")
+                in {line.material_code for line in demo_materials}
+            ]
+            assert len(hits) == 1
+            assert hits[0]["rule_id"] == "3.1.1.(5).procurement_screen_incomplete"
