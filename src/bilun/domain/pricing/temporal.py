@@ -2,9 +2,9 @@
 src/bilun/domain/pricing/temporal.py
 Temporal historical pricing helpers for EK-2B and EK-2C catalogs.
 
-Runtime lookups delegate to the canonical as-of catalog path so DRG semantics
-remain centralized in ``src.bilun.domain.pricing.drg``. The history helpers at the
-bottom of the module still read curated parquet history directly.
+Runtime lookups use the canonical as-of catalog path (``load_sut_catalog``).
+The history helpers at the bottom of the module read curated parquet history
+directly for audit and exploration.
 """
 
 from __future__ import annotations
@@ -17,7 +17,6 @@ from typing import Literal
 import polars as pl
 
 from ..catalog import _normalize_asof_date, load_sut_catalog
-from .drg import get_drg_package_price_for_date as _get_drg_package_price_for_date
 
 logger = logging.getLogger("ilay.sut_pricing.temporal")
 
@@ -155,33 +154,6 @@ def get_ek2c_price_for_date(
 
     price = entry.get("price_try")
     return float(price) if price is not None else None
-
-
-def get_drg_package_price_for_date(
-    icd10_chapter: str,
-    procedure_date: date | datetime | str,
-    icd10_code: str | None = None,
-) -> float | None:
-    """
-    Get the DRG package price for an ICD-10 chapter on a specific date.
-
-    This is the temporal version of get_drg_package_price() that uses
-    historical prices instead of latest prices.
-
-    Args:
-        icd10_chapter: Single uppercase letter (e.g., "I", "C", "J")
-        procedure_date: Date when the procedure was performed
-        icd10_code: Optional full ICD-10 code (for logging only)
-
-    Returns:
-        The historical DRG package price in TRY, or None if the requested date
-        predates the first eligible package for that chapter/group.
-    """
-    return _get_drg_package_price_for_date(
-        icd10_chapter=icd10_chapter,
-        procedure_date=procedure_date,
-        icd10_code=icd10_code,
-    )
 
 
 def get_price_history(

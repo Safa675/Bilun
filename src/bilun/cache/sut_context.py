@@ -38,11 +38,13 @@ def _copay_exemption_action(result: dict[str, Any]) -> str | None:
 def _format_copay_exemption_payload(result: dict[str, Any]) -> dict[str, Any]:
     return {
         "exempt": bool(result.get("exempt")),
+        "partial_exempt": bool(result.get("partial_exempt")),
         "n_qualifying": int(result.get("n_qualifying") or 0),
         "qualifying_diagnoses": list(result.get("qualifying_diagnoses", [])),
         "exemption_sources": list(result.get("exemption_sources", [])),
         "categories_not_evaluated": list(result.get("categories_not_evaluated", [])),
         "primary_exemption_category": result.get("primary_exemption_category"),
+        "has_chronic_health_report": result.get("has_chronic_health_report"),
         "action": _copay_exemption_action(result),
     }
 

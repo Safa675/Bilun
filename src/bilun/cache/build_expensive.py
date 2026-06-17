@@ -7,7 +7,11 @@ import logging
 from pathlib import Path
 
 from src.bilun.cache.context import load_sut_expensive_context
-from src.bilun.cache.expensive import _compute_patient_expensive_sections
+from src.bilun.cache.expensive_compute import (
+    ExpensiveComputeContext,
+    compute_patient_expensive_sections,
+    should_skip_drg_backfill,
+)
 from src.bilun.cache.build_streaming import dump_json_compact
 from src.bilun.db import (
     BILUN_BUILD_SCOPE,
@@ -47,14 +51,6 @@ def _print_sut_data_source(config: SUTDataSourceConfig) -> None:
     print(f"  synthetic  : {metadata['is_synthetic']}")
 
 
-def _is_exact_claim_or_unavailable_sut_payload(value: object) -> bool:
-    return (
-        isinstance(value, dict)
-        and value.get("source") == "claim_lines"
-        and value.get("exactness_status") in {"exact", "missing_exact_inputs"}
-    )
-
-
 def backfill_expensive_sections(
     con,
     *,
@@ -64,17 +60,11 @@ def backfill_expensive_sections(
     batch_size: int,
     timeout_ms: int,
 ) -> dict[str, int]:
-    """Populate ``patient_outcome_expensive`` with per-patient DRG + gaps."""
-    ana_df_pl = ctx.get("ana_df_pl")
-    ana_by_pid = ctx.get("ana_by_pid")
-    if ana_df_pl is None and ana_by_pid is None:
+    """Populate ``patient_outcome_expensive`` with per-patient DRG sections."""
+    compute_ctx = ExpensiveComputeContext.from_backfill_context(ctx)
+    if compute_ctx.ana_df is None and compute_ctx.ana_by_pid is None:
         print("  ⚠ expensive backfill skipped — ctx has no ANA inputs")
         return {"ready": 0, "failed": 0, "skipped": len(patient_ids)}
-    compute_ctx = {"ana_by_pid": ana_by_pid}
-    if ana_df_pl is not None:
-        compute_ctx["ana_df"] = ana_df_pl
-    if ctx.get("sut_claim_dataset") is not None:
-        compute_ctx["sut_claim_dataset"] = ctx["sut_claim_dataset"]
     sut_by_pid = ctx.get("sut_by_pid", {})
 
     write_json_payload_rows_serialized(
@@ -92,12 +82,15 @@ def backfill_expensive_sections(
 
     for i, pid in enumerate(patient_ids, start=1):
         sut_estimate = sut_by_pid.get(pid)
-        if sut_estimate is None or _is_exact_claim_or_unavailable_sut_payload(sut_estimate):
+        if should_skip_drg_backfill(sut_estimate):
+            n_skipped += 1
+            continue
+        if sut_estimate is None and compute_ctx.sut_claim_dataset is None:
             n_skipped += 1
             continue
 
         try:
-            payload, completed = _compute_patient_expensive_sections(
+            payload, completed = compute_patient_expensive_sections(
                 patient_id=pid,
                 sut_estimate=sut_estimate,
                 ctx=compute_ctx,
@@ -112,7 +105,7 @@ def backfill_expensive_sections(
             n_failed += 1
             continue
 
-        rows.append((pid, dump_json_compact(payload)))
+        rows.append((pid, dump_json_compact(payload.to_json_dict())))
         n_ready += 1
 
         if len(rows) >= batch_size:
@@ -198,7 +191,7 @@ def run_active_sut_expensive_backfill(
         ctx = load_sut_expensive_context(sut_data_source_config=sut_data_source)
         patient_ids = list(ctx["patient_ids"])
         _print_memory_snapshot(
-            "analytics_cache:after_load_sut_expensive_pipeline",
+            "analytics_cache:after_load_sut_expensive_context",
             ana_df_pl=ctx.get("ana_df_pl"),
             sut_by_pid=ctx.get("sut_by_pid"),
         )
@@ -235,3 +228,62 @@ def run_active_sut_expensive_backfill(
         return build_id
     finally:
         con.close()
+
+
+def main() -> None:
+    """CLI entry point for expensive-only backfill on the active build."""
+    import argparse
+    import sys
+
+    from src.bilun.cache.builder import PROJECT_ROOT
+
+    parser = argparse.ArgumentParser(
+        description="Backfill patient_outcome_expensive (DRG) on the active BILUN build",
+    )
+    parser.add_argument(
+        "--db-path",
+        default=str(PROJECT_ROOT / ".cache" / "bilun.duckdb"),
+        help="Canonical BILUN analytics DuckDB path",
+    )
+    parser.add_argument(
+        "--stream-batch-size",
+        type=int,
+        default=2000,
+        help="Batch size when writing expensive payload rows",
+    )
+    parser.add_argument(
+        "--expensive-timeout-ms",
+        type=int,
+        default=DEFAULT_EXPENSIVE_TIMEOUT_MS,
+        help="Per-patient hard compute budget for expensive sections",
+    )
+    parser.add_argument(
+        "--sut-data-mode",
+        default=None,
+        help="SUT data-source mode (overrides BILUN_DATA_MODE)",
+    )
+    parser.add_argument(
+        "--sut-claims-dir",
+        default=None,
+        help="SUT claim-line directory (overrides BILUN_CLAIMS_DIR)",
+    )
+    parser.add_argument(
+        "--sut-clean-dir",
+        default=None,
+        help="SUT clean clinical directory (overrides BILUN_CLEAN_DIR)",
+    )
+    args = parser.parse_args()
+    build_id = run_active_sut_expensive_backfill(
+        db_path=args.db_path,
+        stream_batch_size=args.stream_batch_size,
+        expensive_timeout_ms=args.expensive_timeout_ms,
+        sut_data_mode=args.sut_data_mode,
+        sut_claims_dir=args.sut_claims_dir,
+        sut_clean_dir=args.sut_clean_dir,
+    )
+    print(f"Build complete: {build_id}")
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

@@ -20,8 +20,8 @@ consumer should return unavailable metadata instead of a guessed number.
 - Legacy gap analysis is not part of the active analytics surface.
 - Patient approximation-driven DRG totals are not active product behavior;
   exact totals must come from `src.bilun.domain.claims`.
-- `src.bilun.domain.pricing.drg.get_drg_package_price_for_date` is a deprecated
-  non-product median helper. Do not call it from active product paths.
+- ICD-chapter median DRG pricing (`pricing.drg`) was removed; use billed package
+  codes with `get_ek2c_price_for_date` instead.
 
 ## Dataclasses
 
