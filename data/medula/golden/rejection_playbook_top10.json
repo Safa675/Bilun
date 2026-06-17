@@ -1,0 +1,16 @@
+{
+  "description": "Sprint 3 — expected playbook_key per top-10 sonuc_kodu",
+  "expected_template_count": 10,
+  "cases": [
+    {"sonuc_kodu": "1688", "playbook_key": "1688_molecular_microbiology"},
+    {"sonuc_kodu": "0612", "playbook_key": "0612_board_report_missing"},
+    {"sonuc_kodu": "1205", "playbook_key": "1205_service_date_mismatch"},
+    {"sonuc_kodu": "0521", "playbook_key": "0521_provision_not_obtained"},
+    {"sonuc_kodu": "0315", "playbook_key": "0315_specialty_mismatch"},
+    {"sonuc_kodu": "0901", "playbook_key": "0901_duplicate_procedure"},
+    {"sonuc_kodu": "0704", "playbook_key": "0704_uts_barcode_missing"},
+    {"sonuc_kodu": "0320", "playbook_key": "0320_package_bundled_procedure"},
+    {"sonuc_kodu": "0411", "playbook_key": "0411_drug_report_missing"},
+    {"sonuc_kodu": "1102", "playbook_key": "1102_uncontracted_facility"}
+  ]
+}

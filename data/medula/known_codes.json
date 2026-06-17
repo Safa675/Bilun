@@ -1,14 +1,78 @@
 {
+  "0315": {
+    "meaning_tr": "Faturalanan işlem branşı ile hekim uzmanlık bilgisi uyumsuz.",
+    "meaning_en": "Billed procedure specialty does not match physician specialty.",
+    "action": "İşlemi yapan hekimin uzmanlık branşını doğrulayın.",
+    "is_error": true,
+    "playbook_key": "0315_specialty_mismatch"
+  },
+  "0320": {
+    "meaning_tr": "Paket kapsamındaki işlem ayrı faturalandırılmış.",
+    "meaning_en": "A procedure bundled in the package was billed separately.",
+    "action": "Paket kapsamındaki işlem satırını faturadan kaldırın.",
+    "is_error": true,
+    "playbook_key": "0320_package_bundled_procedure"
+  },
+  "0411": {
+    "meaning_tr": "İlaç satırı için zorunlu endikasyon veya sağlık kurulu raporu eksik.",
+    "meaning_en": "Required indication or specialty board report is missing for the drug line.",
+    "action": "Eksik raporu tamamlayın ve MEDULA ilaç satırına referans ekleyin.",
+    "is_error": true,
+    "playbook_key": "0411_drug_report_missing"
+  },
+  "0521": {
+    "meaning_tr": "İşlem için geçerli provizyon veya ön onay bulunamadı.",
+    "meaning_en": "No valid provision or pre-authorization found for the procedure.",
+    "action": "Provizyon sorgusunu yenileyin veya ön onay başvurusunu tamamlayın.",
+    "is_error": true,
+    "playbook_key": "0521_provision_not_obtained"
+  },
+  "0612": {
+    "meaning_tr": "İşlem veya ilaç için zorunlu uzmanlık sağlık kurulu raporu eksik.",
+    "meaning_en": "Required specialty health board report is missing.",
+    "action": "Uzmanlık sağlık kurulu raporunu tamamlayın ve sisteme yükleyin.",
+    "is_error": true,
+    "playbook_key": "0612_board_report_missing"
+  },
+  "0704": {
+    "meaning_tr": "Malzeme satırında ÜTS barkod kaydı eksik veya geçersiz.",
+    "meaning_en": "Material line is missing a valid ÜTS barcode registration.",
+    "action": "Malzeme ÜTS kaydını tamamlayın ve barkodu fatura satırına ekleyin.",
+    "is_error": true,
+    "playbook_key": "0704_uts_barcode_missing"
+  },
+  "0901": {
+    "meaning_tr": "Aynı işlem aynı gün veya paket kapsamında mükerrer faturalandırılmış.",
+    "meaning_en": "The same procedure was billed twice on the same day or within package scope.",
+    "action": "Mükerrer işlem satırını faturadan çıkarın veya birleştirin.",
+    "is_error": true,
+    "playbook_key": "0901_duplicate_procedure"
+  },
+  "1102": {
+    "meaning_tr": "Kurumun geçerli SGK sözleşmesi veya provizyon kaydı bulunamadı.",
+    "meaning_en": "No valid SGK contract or provision record found for the facility.",
+    "action": "Kurum sözleşme durumunu ve provizyon geçerliliğini doğrulayın.",
+    "is_error": true,
+    "playbook_key": "1102_uncontracted_facility"
+  },
+  "1205": {
+    "meaning_tr": "Fatura satırındaki hizmet tarihi provizyon veya EMR kaydı ile uyumsuz.",
+    "meaning_en": "Invoice line service date does not match provision or EMR record.",
+    "action": "EMR ve provizyon kayıtlarındaki hizmet tarihini doğrulayın.",
+    "is_error": true,
+    "playbook_key": "1205_service_date_mismatch"
+  },
+  "1688": {
+    "meaning_tr": "Moleküler mikrobiyoloji işlemi için zorunlu rapor eksik.",
+    "meaning_en": "Required molecular microbiology report is missing.",
+    "action": "Eksik raporu tamamlayın veya doğru işlem kodunu kullanın.",
+    "is_error": true,
+    "playbook_key": "1688_molecular_microbiology"
+  },
   "9000": {
     "meaning_tr": "Provizyon başarılı — uyarı veya bilgilendirme kodu",
     "meaning_en": "Provision successful — warning or informational code",
     "action": "İşleme devam edilebilir; mesajı kayıt altına alın.",
     "is_error": false
-  },
-  "1688": {
-    "meaning_tr": "Moleküler mikrobiyoloji işlemi için zorunlu rapor eksik",
-    "meaning_en": "Required report missing for molecular microbiology procedure",
-    "action": "İlgili raporu tamamlayıp faturayı düzeltin ve yeniden gönderin.",
-    "is_error": true
   }
 }

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "description": "Proactive claim submission checklist — narrow MEDULA rejection risk triggers (Sprint 4)",
+  "triggers": [
+    {
+      "trigger_key": "drug_board_report_missing",
+      "playbook_key": "0612_board_report_missing",
+      "sonuc_kodu_risk": "0612",
+      "line_type": "drug",
+      "severity": "error",
+      "signal": {
+        "field": "drug_specialty_board_report_present",
+        "equals": false
+      },
+      "reminder_tr": "İlaç satırında uzmanlık sağlık kurulu raporu eksik — MEDULA 0612 red riski.",
+      "reminder_en": "Specialty health board report missing on drug line — MEDULA 0612 rejection risk."
+    },
+    {
+      "trigger_key": "drug_inpatient_report_unknown",
+      "playbook_key": "0411_drug_report_missing",
+      "sonuc_kodu_risk": "0411",
+      "line_type": "drug",
+      "severity": "warning",
+      "signal": {
+        "all_of": [
+          {"field": "drug_inpatient_supply", "equals": true},
+          {"field": "drug_specialty_board_report_present", "equals": null}
+        ]
+      },
+      "reminder_tr": "Yatan ilaç satırında rapor durumu bilinmiyor — gönderim öncesi sağlık kurulu raporunu doğrulayın.",
+      "reminder_en": "Inpatient drug line has unknown report status — verify board report before submission."
+    },
+    {
+      "trigger_key": "material_uts_barcode_missing",
+      "playbook_key": "0704_uts_barcode_missing",
+      "sonuc_kodu_risk": "0704",
+      "line_type": "material",
+      "severity": "error",
+      "signal": {
+        "any_of": [
+          {"field": "uts_registered", "equals": false},
+          {"field": "titubb_uts_barcode_documentation_missing", "equals": true}
+        ]
+      },
+      "reminder_tr": "Malzeme satırında ÜTS/TİTUBB barkod kaydı eksik — MEDULA 0704 red riski.",
+      "reminder_en": "Material line missing ÜTS/TİTUBB barcode registration — MEDULA 0704 rejection risk."
+    }
+  ]
+}

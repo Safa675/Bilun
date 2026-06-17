@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "description": "MEDULA rejection → corrective rebill playbook templates",
+  "version": 2,
+  "description": "MEDULA rejection → corrective rebill playbook templates (top-10 hospital feedback codes)",
   "entries": [
     {
       "playbook_key": "1688_molecular_microbiology",
@@ -27,6 +27,234 @@
       ],
       "rebill_permitted": true,
       "rebill_stage": "fatura_kayit"
+    },
+    {
+      "playbook_key": "0612_board_report_missing",
+      "sonuc_kodu": "0612",
+      "medula_stages": ["fatura_kayit"],
+      "hata_mesaji_keywords": [
+        "uzmanlık",
+        "sağlık kurulu",
+        "rapor",
+        "eksik"
+      ],
+      "sut_anchor": "SUT §4.2 / uzmanlık sağlık kurulu raporu",
+      "problem_summary_tr": "İşlem veya ilaç için zorunlu uzmanlık sağlık kurulu raporu eksik.",
+      "problem_summary_en": "Required specialty health board report is missing.",
+      "corrective_steps_tr": [
+        "Uzmanlık sağlık kurulu raporunu tamamlayın ve sisteme yükleyin.",
+        "Rapor numarasını fatura satırına ekleyin.",
+        "Fatura kayıt aşamasında yeniden gönderin."
+      ],
+      "corrective_steps_en": [
+        "Complete the specialty health board report and upload it.",
+        "Add the report reference to the invoice line.",
+        "Resubmit during invoice registration."
+      ],
+      "rebill_permitted": true,
+      "rebill_stage": "fatura_kayit"
+    },
+    {
+      "playbook_key": "1205_service_date_mismatch",
+      "sonuc_kodu": "1205",
+      "medula_stages": ["fatura_kayit"],
+      "hata_mesaji_keywords": [
+        "tarih",
+        "uyumsuz",
+        "hizmet"
+      ],
+      "sut_anchor": "MEDULA fatura kayıt / hizmet tarihi doğrulaması",
+      "problem_summary_tr": "Fatura satırındaki hizmet tarihi provizyon veya EMR kaydı ile uyumsuz.",
+      "problem_summary_en": "Invoice line service date does not match provision or EMR record.",
+      "corrective_steps_tr": [
+        "EMR ve provizyon kayıtlarındaki hizmet tarihini doğrulayın.",
+        "Fatura satırındaki tarihi düzeltin.",
+        "Fatura kayıt aşamasında yeniden gönderin."
+      ],
+      "corrective_steps_en": [
+        "Verify the service date in EMR and provision records.",
+        "Correct the date on the invoice line.",
+        "Resubmit during invoice registration."
+      ],
+      "rebill_permitted": true,
+      "rebill_stage": "fatura_kayit"
+    },
+    {
+      "playbook_key": "0521_provision_not_obtained",
+      "sonuc_kodu": "0521",
+      "medula_stages": ["provizyon", "fatura_kayit"],
+      "hata_mesaji_keywords": [
+        "provizyon",
+        "onay",
+        "alınmamış"
+      ],
+      "sut_anchor": "SUT §1.7 / provizyon ve ön onay",
+      "problem_summary_tr": "İşlem için geçerli provizyon veya ön onay bulunamadı.",
+      "problem_summary_en": "No valid provision or pre-authorization found for the procedure.",
+      "corrective_steps_tr": [
+        "Provizyon sorgusunu yenileyin veya ön onay başvurusunu tamamlayın.",
+        "Provizyon numarasını faturaya ekleyin.",
+        "Provizyon alındıktan sonra fatura kaydına devam edin."
+      ],
+      "corrective_steps_en": [
+        "Refresh the provision query or complete pre-authorization.",
+        "Attach the provision number to the invoice.",
+        "Proceed to invoice registration after provision is obtained."
+      ],
+      "rebill_permitted": false,
+      "rebill_stage": "provizyon"
+    },
+    {
+      "playbook_key": "0315_specialty_mismatch",
+      "sonuc_kodu": "0315",
+      "medula_stages": ["fatura_kayit"],
+      "hata_mesaji_keywords": [
+        "branş",
+        "uyumsuz",
+        "uzmanlık"
+      ],
+      "sut_anchor": "SUT branş / uzmanlık uyumu",
+      "problem_summary_tr": "Faturalanan işlem branşı ile hekim uzmanlık bilgisi uyumsuz.",
+      "problem_summary_en": "Billed procedure specialty does not match physician specialty.",
+      "corrective_steps_tr": [
+        "İşlemi yapan hekimin uzmanlık branşını doğrulayın.",
+        "Gerekirse doğru branştan işlem kodunu kullanın veya branş dışı istisna belgesini ekleyin.",
+        "Fatura kayıt aşamasında yeniden gönderin."
+      ],
+      "corrective_steps_en": [
+        "Verify the performing physician's specialty.",
+        "Use the correct specialty procedure code or attach an out-of-specialty exception document.",
+        "Resubmit during invoice registration."
+      ],
+      "rebill_permitted": true,
+      "rebill_stage": "fatura_kayit"
+    },
+    {
+      "playbook_key": "0901_duplicate_procedure",
+      "sonuc_kodu": "0901",
+      "medula_stages": ["fatura_kayit"],
+      "hata_mesaji_keywords": [
+        "mükerrer",
+        "tekrar",
+        "aynı gün"
+      ],
+      "sut_anchor": "MEDULA mükerrer işlem / aynı gün tekrar faturalandırma",
+      "problem_summary_tr": "Aynı işlem aynı gün veya paket kapsamında mükerrer faturalandırılmış.",
+      "problem_summary_en": "The same procedure was billed twice on the same day or within package scope.",
+      "corrective_steps_tr": [
+        "Mükerrer işlem satırını faturadan çıkarın veya birleştirin.",
+        "Paket kapsamındaysa ayrı satırı silin.",
+        "Fatura kayıt aşamasında yeniden gönderin."
+      ],
+      "corrective_steps_en": [
+        "Remove or merge the duplicate procedure line.",
+        "If within package scope, delete the separate line.",
+        "Resubmit during invoice registration."
+      ],
+      "rebill_permitted": true,
+      "rebill_stage": "fatura_kayit"
+    },
+    {
+      "playbook_key": "0704_uts_barcode_missing",
+      "sonuc_kodu": "0704",
+      "medula_stages": ["fatura_kayit"],
+      "hata_mesaji_keywords": [
+        "üts",
+        "barkod",
+        "malzeme",
+        "eksik"
+      ],
+      "sut_anchor": "SUT §3.1 / ÜTS malzeme takibi",
+      "problem_summary_tr": "Malzeme satırında ÜTS barkod kaydı eksik veya geçersiz.",
+      "problem_summary_en": "Material line is missing a valid ÜTS barcode registration.",
+      "corrective_steps_tr": [
+        "Malzeme ÜTS kaydını tamamlayın ve barkodu fatura satırına ekleyin.",
+        "TİTUBB/ÜTS uyumunu doğrulayın.",
+        "Fatura kayıt aşamasında yeniden gönderin."
+      ],
+      "corrective_steps_en": [
+        "Complete the material ÜTS registration and add the barcode to the invoice line.",
+        "Verify TİTUBB/ÜTS compliance.",
+        "Resubmit during invoice registration."
+      ],
+      "rebill_permitted": true,
+      "rebill_stage": "fatura_kayit"
+    },
+    {
+      "playbook_key": "0320_package_bundled_procedure",
+      "sonuc_kodu": "0320",
+      "medula_stages": ["fatura_kayit"],
+      "hata_mesaji_keywords": [
+        "paket",
+        "kapsam",
+        "ayrı faturalandır"
+      ],
+      "sut_anchor": "SUT §2.2 / paket kapsamı",
+      "problem_summary_tr": "Paket kapsamındaki işlem ayrı faturalandırılmış.",
+      "problem_summary_en": "A procedure bundled in the package was billed separately.",
+      "corrective_steps_tr": [
+        "Paket kapsamındaki işlem satırını faturadan kaldırın.",
+        "Gerekirse paket kodunu ve ana işlemi doğrulayın.",
+        "Fatura kayıt aşamasında yeniden gönderin."
+      ],
+      "corrective_steps_en": [
+        "Remove the bundled procedure line from the invoice.",
+        "Verify the package code and primary procedure if needed.",
+        "Resubmit during invoice registration."
+      ],
+      "rebill_permitted": true,
+      "rebill_stage": "fatura_kayit"
+    },
+    {
+      "playbook_key": "0411_drug_report_missing",
+      "sonuc_kodu": "0411",
+      "medula_stages": ["fatura_kayit"],
+      "hata_mesaji_keywords": [
+        "ilaç",
+        "rapor",
+        "endikasyon",
+        "eksik"
+      ],
+      "sut_anchor": "SUT §4.2 / ilaç endikasyon raporu (MEDULA kayıt red)",
+      "problem_summary_tr": "İlaç satırı için zorunlu endikasyon veya sağlık kurulu raporu eksik.",
+      "problem_summary_en": "Required indication or specialty board report is missing for the drug line.",
+      "corrective_steps_tr": [
+        "Eksik raporu tamamlayın ve MEDULA ilaç satırına referans ekleyin.",
+        "Endikasyon ve ICD-10 uyumunu doğrulayın.",
+        "Fatura kayıt aşamasında yeniden gönderin."
+      ],
+      "corrective_steps_en": [
+        "Complete the missing report and attach the reference to the MEDULA drug line.",
+        "Verify indication and ICD-10 alignment.",
+        "Resubmit during invoice registration."
+      ],
+      "rebill_permitted": true,
+      "rebill_stage": "fatura_kayit"
+    },
+    {
+      "playbook_key": "1102_uncontracted_facility",
+      "sonuc_kodu": "1102",
+      "medula_stages": ["fatura_kayit", "provizyon"],
+      "hata_mesaji_keywords": [
+        "sözleşme",
+        "sözleşmesiz",
+        "anlaşma"
+      ],
+      "sut_anchor": "SGK kurum sözleşmesi / provizyon geçerliliği",
+      "problem_summary_tr": "Kurumun geçerli SGK sözleşmesi veya provizyon kaydı bulunamadı.",
+      "problem_summary_en": "No valid SGK contract or provision record found for the facility.",
+      "corrective_steps_tr": [
+        "Kurum sözleşme durumunu ve provizyon geçerliliğini doğrulayın.",
+        "Gerekirse idari birim ile sözleşme yenilemesini tamamlayın.",
+        "Provizyon alındıktan sonra fatura kaydına devam edin."
+      ],
+      "corrective_steps_en": [
+        "Verify facility contract status and provision validity.",
+        "Complete contract renewal with administration if required.",
+        "Proceed to invoice registration after provision is valid."
+      ],
+      "rebill_permitted": false,
+      "rebill_stage": "provizyon"
     }
   ]
 }
