@@ -390,6 +390,12 @@ class MedulaRejectionPlaybookResponse(BillingExactnessResponse):
     rebill_permitted_count: int = 0
 
 
+class ClaimSubmissionChecklistResponse(BillingExactnessResponse):
+    items: list[dict[str, Any]] = Field(default_factory=list)
+    item_count: int = 0
+    error_count: int = 0
+
+
 class MaterialPreCheckResponse(BillingExactnessResponse):
     pre_auth_required: list[dict[str, Any]] = Field(default_factory=list)
     miat_restricted: list[dict[str, Any]] = Field(default_factory=list)
@@ -401,6 +407,13 @@ class MaterialPreCheckResponse(BillingExactnessResponse):
     kdv_price_reviews: list[dict[str, Any]] = Field(default_factory=list)
     gazette_ceiling_by_specialty: dict[str, float] = Field(default_factory=dict)
     coverage_scope: MaterialBundlingCoverageScope | dict[str, Any] | None = None
+
+
+class DrugIndicationReviewResponse(BillingExactnessResponse):
+    violations: list[dict[str, Any]] = Field(default_factory=list)
+    violation_count: int = 0
+    error_count: int = 0
+    coverage_scope: dict[str, Any] = Field(default_factory=dict)
 
 
 class BilunPatientOutcomeResponse(BaseModel):
@@ -485,7 +498,13 @@ class BillingReportResponse(BaseModel):
     medula_rejection_playbook: MedulaRejectionPlaybookResponse = Field(
         default_factory=MedulaRejectionPlaybookResponse
     )
+    claim_submission_checklist: ClaimSubmissionChecklistResponse = Field(
+        default_factory=ClaimSubmissionChecklistResponse
+    )
     materials: MaterialPreCheckResponse = Field(default_factory=MaterialPreCheckResponse)
+    drug_indication: DrugIndicationReviewResponse = Field(
+        default_factory=DrugIndicationReviewResponse
+    )
     medula_rejection_ingest_available: bool = False
     sgk_uplift_try: float = 0.0
     compliance_adjustment_try: float = 0.0
@@ -494,6 +513,8 @@ class BillingReportResponse(BaseModel):
     package_adequacy_review_try: float = 0.0
     gazette_repricing_try: float = 0.0
     medula_playbook_entry_count: int = 0
+    claim_submission_checklist_count: int = 0
+    drug_indication_violation_count: int = 0
     total_recoverable_try: float = 0.0
     action_count: int = 0
     priority: str = "low"
@@ -854,11 +875,61 @@ class CoverageSummaryMeta(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class PartialEngineCoverage(BaseModel):
+    """Honest partial-engine rollup (registry partial vs manifest-encoded clauses)."""
+
+    rule_id: str
+    registry_status: str = "partial"
+    prose_engine_status: str = "partial"
+    classified_clause_rows: int = 0
+    encoded_clause_rows: int = 0
+    algorithmic_gap_rows: int = 0
+    unencoded_gap_rows: int = 0
+    encoded_clause_pct: float = 0.0
+    gap_pct_of_classified: float = 0.0
+    prose_rules_on_disk: int = 0
+    tier_b_rule_count: int = 0
+    encode_tier_c_deferred_count: int = 0
+    manifest_traced_clause_count: int | None = None
+    corpus_export_rows: int | None = None
+    kdv_pricing_clauses: int | None = None
+    section_4_2_14_C_clause_total: int = Field(default=828, alias="section_4.2.14.C_clause_total")
+    honesty_note: str = ""
+
+    model_config = ConfigDict(extra="allow", populate_by_name=True)
+
+
+class PartialEnginesCoverage(BaseModel):
+    """Per-engine honesty blocks keyed by rule_id."""
+
+    drug_indication_prose: PartialEngineCoverage | None = None
+    material_bundling_prose: PartialEngineCoverage | None = None
+    specialty_materials_prose: PartialEngineCoverage | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class GapCompositionSummary(BaseModel):
+    """Scope-closure footnote: drug partial vs admin non-algorithmic clauses."""
+
+    total_algorithmic_gaps: int = 0
+    drug_indication_gap_rows: int = 0
+    drug_indication_gap_pct_of_gaps: float = 0.0
+    optimizer_gaps_excluding_drug: int = 0
+    non_algorithmic_clause_rows: int = 0
+    footnote_en: str = ""
+    footnote_tr: str = ""
+
+    model_config = ConfigDict(extra="allow")
+
+
 class CoverageSummary(BaseModel):
     """Live pipeline-health summary for the Rule Database expert surface."""
 
     clauses: ClauseCoverageSummary = Field(default_factory=ClauseCoverageSummary)
     registry: RegistryCoverageSummary = Field(default_factory=RegistryCoverageSummary)
+    partial_engines: PartialEnginesCoverage = Field(default_factory=PartialEnginesCoverage)
+    gap_composition: GapCompositionSummary = Field(default_factory=GapCompositionSummary)
     meta: CoverageSummaryMeta = Field(default_factory=CoverageSummaryMeta)
 
     model_config = ConfigDict(extra="allow")

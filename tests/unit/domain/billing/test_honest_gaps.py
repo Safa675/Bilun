@@ -26,29 +26,80 @@ def test_orchestrator_claim_context_required_constant_defaults_true() -> None:
 
 
 def test_exempt_copay_from_claims_reports_waived_amounts_not_heuristic_savings() -> None:
+    from datetime import date
     from decimal import Decimal
-    from types import SimpleNamespace
 
     from src.bilun.domain.billing.claim_copay import optimize_copay_from_claims
+    from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
+    from src.bilun.domain.claims.patient_context import PatientClaimContext
 
-    ctx = SimpleNamespace(
-        procedure_lines=[
-            SimpleNamespace(
-                copay_rate_applicable=True,
-                procedure_code="P001",
+    claim = ClaimHeader(
+        claim_id="C1",
+        patient_id="P1",
+        episode_id="E1",
+        claim_type="poliklinik",
+        facility_tier="2",
+        provider_type="kamu",
+        department="",
+        admission_date=None,
+        discharge_date=None,
+        claim_start_date=date(2026, 1, 1),
+        claim_end_date=date(2026, 1, 1),
+        primary_icd10="E11.9",
+        package_candidate=False,
+        expected_total_billed_try=Decimal("0"),
+        expected_total_payable_try=Decimal("0"),
+        expected_denial_reason="",
+        scenario_tag="test",
+    )
+    ctx = PatientClaimContext(
+        patient_id="P1",
+        claims=(claim,),
+        procedure_lines=(
+            ProcedureClaimLine(
+                procedure_line_id="PL1",
+                claim_id=claim.claim_id,
+                patient_id="P1",
+                episode_id="E1",
+                procedure_date=date(2026, 1, 1),
+                procedure_code="703720",
                 procedure_name="Visit proc",
+                procedure_category="muayene",
+                quantity=1,
+                unit_price_try=Decimal("100"),
                 billed_amount_try=Decimal("100"),
                 expected_payable_try=Decimal("80"),
-            )
-        ],
-        drug_lines=[],
+                is_package_included=False,
+                package_code="",
+                surcharge_applicable=False,
+                copay_rate_applicable=True,
+                denial_reason_expected="",
+                rule_trace_expected="",
+            ),
+        ),
+        material_lines=(),
+        drug_lines=(),
+        diagnoses=(),
     )
 
     result = optimize_copay_from_claims(
         ctx,
         {
             "exempt": True,
+            "has_chronic_health_report": True,
             "qualifying_diagnoses": [{"disease": "Diabetes", "range": "E10-E14"}],
+            "exemption_sources": [
+                {
+                    "category": "ek1a_chronic",
+                    "counts_toward_exempt": True,
+                    "waives_sections": ("1.8.1",),
+                    "evidence": {
+                        "qualifying_diagnoses": [
+                            {"disease": "Diabetes", "range": "E10-E14"}
+                        ]
+                    },
+                }
+            ],
         },
     )
 

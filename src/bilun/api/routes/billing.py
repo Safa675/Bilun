@@ -103,6 +103,10 @@ def _serialize_billing_report(report: BillingActionReport | dict[str, Any]) -> d
             care_setting["review_opportunity_count"] = (
                 report.care_setting_review.review_opportunity_count
             )
+        drug_indication = payload.get("drug_indication")
+        if isinstance(drug_indication, dict):
+            drug_indication["violation_count"] = report.drug_indication.violation_count
+            drug_indication["error_count"] = report.drug_indication.error_count
         return payload
     if isinstance(report, dict):
         return report

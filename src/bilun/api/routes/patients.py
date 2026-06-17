@@ -9,7 +9,7 @@ from typing import Any
 
 from fastapi import APIRouter, Query
 
-from src.bilun.shared.pipeline import normalize_cached_drg_summary_payload
+from src.bilun.domain.analytics.drg_payload import normalize_cached_drg_summary_payload
 from src.bilun.shared.exceptions import PatientNotFound, ServiceUnavailableError
 from src.bilun.api.schemas import PatientSearchResponse
 from src.bilun.api.schemas import (

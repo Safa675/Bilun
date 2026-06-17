@@ -132,6 +132,15 @@ MEDULA_PLAYBOOK_REQUIRED_INPUTS = (
 MEDULA_PLAYBOOK_UNAVAILABLE_REASON = (
     "MEDULA rebill playbook requires optional MEDULA rejection event ingest rows."
 )
+CLAIM_SUBMISSION_CHECKLIST_REQUIRED_INPUTS = (
+    "procedure_claim_lines",
+    "material_claim_lines",
+    "dispensed_drug_claim_lines",
+)
+CLAIM_SUBMISSION_CHECKLIST_UNAVAILABLE_REASON = (
+    "Claim submission checklist requires exact claim lines with optional report and "
+    "registration flags."
+)
 DRUG_INDICATION_REQUIRED_INPUTS = (
     "dispensed_drug_claim_lines",
     "claim_primary_icd10",
@@ -187,6 +196,7 @@ class CopayOptimization:
     rx_copay_savings_try: float = 0.0  # prescription exemption gap (legacy name)
     total_copay_savings_try: float = 0.0  # procedure gap only (legacy field name)
     patient_copay_waived_total_try: float = 0.0  # total exemption gap (visit + rx)
+    rx_copay_savings_by_ground: dict[str, float] = field(default_factory=dict)
     rate_corrections: list[dict[str, Any]] = field(default_factory=list)
     exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
     unavailable_reason: str | None = COPAY_UNAVAILABLE_REASON
@@ -500,6 +510,27 @@ class DrgPackageAdequacyReview:
 
 
 @dataclass
+class ClaimSubmissionChecklist:
+    """Proactive MEDULA rejection-risk reminders before submission."""
+
+    items: list[dict[str, Any]] = field(default_factory=list)
+    exactness_status: str = EXACTNESS_STATUS_EXACT
+    unavailable_reason: str | None = None
+    required_inputs_missing: list[str] = field(default_factory=list)
+    rule_source: str = (
+        "Claim submission checklist — proactive MEDULA risk triggers (Sprint 4)"
+    )
+
+    @property
+    def item_count(self) -> int:
+        return len(self.items)
+
+    @property
+    def error_count(self) -> int:
+        return sum(1 for row in self.items if row.get("severity") == "error")
+
+
+@dataclass
 class DrugIndicationReview:
     """§4.2 pilot indication / report checks on exact drug claim lines."""
 
@@ -509,7 +540,7 @@ class DrugIndicationReview:
     required_inputs_missing: list[str] = field(
         default_factory=lambda: list(DRUG_INDICATION_REQUIRED_INPUTS)
     )
-    rule_source: str = "SUT §4.2 drug indication prose — Tier 3b pilot"
+    rule_source: str = "SUT §4.2 drug indication prose — Phase 2 corpus"
     coverage_scope: dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -674,6 +705,9 @@ class BillingActionReport:
     medula_rejection_playbook: MedulaRejectionPlaybook = field(
         default_factory=MedulaRejectionPlaybook
     )
+    claim_submission_checklist: ClaimSubmissionChecklist = field(
+        default_factory=ClaimSubmissionChecklist
+    )
     drug_indication: DrugIndicationReview = field(default_factory=DrugIndicationReview)
     medula_rejection_ingest_available: bool = False
     sgk_uplift_try: float = 0.0
@@ -683,6 +717,8 @@ class BillingActionReport:
     package_adequacy_review_try: float = 0.0
     gazette_repricing_try: float = 0.0
     medula_playbook_entry_count: int = 0
+    claim_submission_checklist_count: int = 0
+    drug_indication_violation_count: int = 0
     total_recoverable_try: float = 0.0
     action_count: int = 0
     priority: str = "low"

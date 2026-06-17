@@ -13,6 +13,7 @@ from src.bilun.domain.prose_rules import (
 from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 from src.bilun.domain.prose_rules.session_pricing import (
+    _line_itemized_payable,
     compute_session_adjusted_itemized_total,
 )
 from src.bilun.domain.prose_rules.types import (
@@ -93,6 +94,62 @@ def resolve_package_total_try(
                 break
 
     return _money(package_total), package_price_methodology
+
+
+def lines_for_legal_itemized_alternative(
+    lines: list[ProcedureClaimLine],
+    claim: ClaimHeader,
+    *,
+    care_setting: str | None = None,
+) -> list[ProcedureClaimLine]:
+    """Procedure lines that may count toward a legal itemized payment alternative."""
+    if care_setting is None:
+        care_setting = infer_care_setting(claim)
+    eligible: list[ProcedureClaimLine] = []
+
+    for line in lines:
+        if line.procedure_category == "paket":
+            continue
+        if line.is_package_included:
+            continue
+        if _line_itemized_payable(line) <= 0:
+            continue
+
+        billed_as_package = line.procedure_category == "paket"
+        compliance = check_payment_method_compliance(
+            line.procedure_code,
+            billed_as_package=billed_as_package,
+            care_setting=care_setting,  # type: ignore[arg-type]
+            facility_tier=claim.facility_tier,
+            provider_type=claim.provider_type,
+            as_of_date=_line_as_of_date(line, claim),
+        )
+        if not compliance.is_compliant:
+            continue
+        eligible.append(line)
+
+    return eligible
+
+
+def _itemized_exclusion_metadata(
+    lines: list[ProcedureClaimLine],
+    claim: ClaimHeader,
+) -> tuple[int, list[str]]:
+    eligible_ids = {
+        line.procedure_line_id
+        for line in lines_for_legal_itemized_alternative(lines, claim)
+    }
+    excluded_codes = sorted(
+        {
+            line.procedure_code
+            for line in lines
+            if line.procedure_line_id not in eligible_ids
+            and line.procedure_category != "paket"
+            and not line.is_package_included
+            and _line_itemized_payable(line) > 0
+        }
+    )
+    return len(excluded_codes), excluded_codes
 
 
 def _infer_current_billing(claim_procs: list[ProcedureClaimLine]) -> str:
@@ -270,13 +327,11 @@ def recommend_billing_strategy_from_claims(
         if claim_kind is None:
             continue
 
-        itemized_raw = sum(
-            float(line.expected_payable_try)
-            for line in claim_procs
-            if line.procedure_category != "paket" and not line.is_package_included
-        )
+        eligible_lines = lines_for_legal_itemized_alternative(claim_procs, claim)
+        excluded_count, excluded_codes = _itemized_exclusion_metadata(claim_procs, claim)
+        itemized_raw = sum(float(line.expected_payable_try) for line in eligible_lines)
         itemized_total, itemized_meta = compute_session_adjusted_itemized_total(
-            claim_procs,
+            eligible_lines,
             same_incision=True,
             cross_specialty=None,
             claim=claim,
@@ -364,6 +419,8 @@ def recommend_billing_strategy_from_claims(
                 "package_price_methodology": package_price_methodology,
                 "itemized_price_methodology": itemized_price_methodology,
                 "itemized_raw_try": _money(itemized_raw),
+                "itemized_excluded_violation_count": excluded_count,
+                "itemized_excluded_procedure_codes": excluded_codes[:10],
                 "mandated_methods": sorted(
                     {
                         result.payment_method

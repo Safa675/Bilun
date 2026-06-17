@@ -137,10 +137,13 @@ class TestClaimStrategySut:
         claim_rec = next(
             rec
             for rec in result.recommendations
-            if rec.get("claim_id") == "CLM1" and "recommendation_kind" in rec
+            if rec.get("claim_id") == "CLM1"
+            and rec.get("procedure_code") == "550970"
+            and "mandated_method" in rec
+            and "type" not in rec
         )
         assert claim_rec["payment_method_kind"] == "DRG_MANDATORY"
-        assert claim_rec["recommendation"] == "package"
+        assert claim_rec["mandated_method"] == "package"
 
     def test_corrective_savings_zero_when_already_compliant(self) -> None:
         claim = _claim(facility_tier="2_basamak_kamu")
@@ -176,6 +179,97 @@ class TestClaimStrategySut:
         assert len(violations) == 1
         assert violations[0]["payment_method_kind"] == "DRG_MANDATORY"
 
+    def test_itemized_totals_exclude_payment_method_violation(self) -> None:
+        claim = _claim(
+            facility_tier="2_basamak_kamu",
+            claim_type="yatis",
+            admission_date=date(2023, 10, 6),
+            discharge_date=date(2023, 10, 13),
+            claim_start_date=date(2023, 10, 6),
+            claim_end_date=date(2023, 10, 13),
+            primary_icd10="C92.0",
+            scenario_tag="payment_method_compliance_demo",
+        )
+        lines = [
+            _proc(
+                procedure_line_id="PL-M",
+                procedure_code="700390",
+                procedure_category="muayene",
+                expected_payable_try=Decimal("17.11"),
+            ),
+            _proc(
+                procedure_line_id="PL-B",
+                procedure_code="612070",
+                procedure_category="yatak",
+                quantity=7,
+                expected_payable_try=Decimal("2337.01"),
+            ),
+            _proc(
+                procedure_line_id="PL-L",
+                procedure_code="L116470",
+                procedure_category="laboratuvar",
+                expected_payable_try=Decimal("107.55"),
+            ),
+            _proc(
+                procedure_line_id="PL-I",
+                procedure_code="G100580",
+                procedure_category="islem",
+                expected_payable_try=Decimal("1848.56"),
+            ),
+            _proc(
+                procedure_line_id="PL-P",
+                procedure_code="P615440",
+                procedure_category="paket",
+                expected_payable_try=Decimal("61956.35"),
+            ),
+        ]
+        result = recommend_billing_strategy_from_claims(_ctx(claim, *lines))
+        claim_rec = next(
+            rec
+            for rec in result.recommendations
+            if rec.get("claim_id") == "CLM1" and "itemized_raw_try" in rec
+        )
+        assert claim_rec["itemized_raw_try"] == 1973.22
+        assert claim_rec["itemized_total_try"] == 2957.7
+        assert claim_rec["itemized_excluded_violation_count"] == 1
+        assert claim_rec["itemized_excluded_procedure_codes"] == ["612070"]
+        violations = [
+            rec for rec in result.recommendations if rec.get("type") == "compliance_violation"
+        ]
+        assert any(v.get("procedure_code") == "612070" for v in violations)
+
+    def test_tier_3_overridable_side_line_stays_in_itemized_total(self) -> None:
+        claim = _claim(
+            facility_tier="egitim_arastirma",
+            claim_type="yatis",
+            admission_date=date(2023, 10, 6),
+            discharge_date=date(2023, 10, 8),
+            claim_start_date=date(2023, 10, 6),
+            claim_end_date=date(2023, 10, 8),
+        )
+        lines = [
+            _proc(
+                procedure_line_id="PL-O",
+                procedure_code="600150",
+                procedure_category="islem",
+                expected_payable_try=Decimal("3000"),
+            ),
+            _proc(
+                procedure_line_id="PL-P",
+                procedure_code="P615440",
+                procedure_category="paket",
+                expected_payable_try=Decimal("50000"),
+            ),
+        ]
+        result = recommend_billing_strategy_from_claims(_ctx(claim, *lines))
+        claim_rec = next(
+            rec
+            for rec in result.recommendations
+            if rec.get("claim_id") == "CLM1" and "itemized_raw_try" in rec
+        )
+        assert claim_rec["itemized_excluded_violation_count"] == 0
+        assert claim_rec["itemized_raw_try"] == 3000.0
+
     def test_spot_check_sentetik_0001_001_no_price_comparison(self) -> None:
         from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_dataset
 
@@ -188,8 +282,8 @@ class TestClaimStrategySut:
             rec
             for rec in result.recommendations
             if rec.get("claim_id") == "F-SENTETIK-HASTA-0001-001"
-            and rec.get("procedure_code") == "609150"
+            and "recommendation" in rec
             and rec.get("payment_method_kind") == "DRG_MANDATORY"
         )
-        assert claim_rec["mandated_method"] == "package"
+        assert claim_rec["recommendation"] == "package"
         assert "lower than" not in claim_rec["detail"]

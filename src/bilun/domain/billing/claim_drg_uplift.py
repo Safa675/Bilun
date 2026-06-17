@@ -12,6 +12,7 @@ from .claim_strategy import (
     _aggregate_claim_kind,
     _infer_current_billing,
     _resolve_line_payment_method,
+    lines_for_legal_itemized_alternative,
     resolve_package_total_try,
 )
 from .types import (
@@ -121,15 +122,12 @@ def recommend_drg_uplift_from_claims(
         if mandated_methods == {"package"}:
             continue
 
+        eligible_lines = lines_for_legal_itemized_alternative(claim_procs, claim)
         itemized_raw = _money(
-            sum(
-                float(line.expected_payable_try)
-                for line in claim_procs
-                if line.procedure_category != "paket" and not line.is_package_included
-            )
+            sum(float(line.expected_payable_try) for line in eligible_lines)
         )
         itemized_adj, itemized_meta = compute_session_adjusted_itemized_total(
-            claim_procs,
+            eligible_lines,
             same_incision=True,
             cross_specialty=None,
             claim=claim,

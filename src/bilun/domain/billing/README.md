@@ -1,6 +1,6 @@
-# src/sut/billing
+# src/bilun/domain/billing
 
-Normative billing optimization engine — 4 algorithms + cohort aggregator.
+Normative billing optimization engine — claim-backed algorithms + cohort aggregator.
 
 ## Purpose
 
@@ -24,6 +24,7 @@ recovery amounts.
 |----------|-------------|
 | `compute_patient_billing_report(...)` | Full billing report for one patient |
 | `compute_all_billing_reports(cache)` | Cohort-level reports + summary |
+| `compute_all_bill_billing_reports(cache)` | Per-bill reports keyed by `patient_id::claim_id` |
 
 ## Dataclasses
 
@@ -38,12 +39,19 @@ recovery amounts.
 
 ## Modules
 
-- `types.py` — All dataclasses
-- `claim_lab.py` — Algorithm 1 (claim-line based)
-- `copay.py` — Algorithm 2
-- `strategy.py` — Algorithm 3
-- `materials.py` — Algorithm 4
-- `orchestrator.py` — Main entry points
+- `types.py` — Result dataclasses and exactness constants
+- `block_registry.py` — Declarative metadata for billing blocks
+- `claim_*.py` — Claim-backed algorithm implementations
+- `patient_report.py` — Single-patient report assembly
+- `lab_bill_merge.py` — Per-bill lab optimization + capture-gap merge
+- `procedure_dedup.py` — Add-on vs capture-gap deduplication
+- `report_totals.py` — TRY headline totals on `BillingActionReport`
+- `report_exactness.py` — Block and report exactness rollup
+- `recovery_summary.py` — Cohort table rows and cached JSON adapters
+- `priority.py` — Patient priority tiering by SGK uplift percentile
+- `cohort_summary.py` — `CohortRecoverySummary` aggregation
+- `cohort_runner.py` — Parallel cohort fan-out
+- `orchestrator.py` — Thin facade re-exporting public entry points
 
 ## Example
 

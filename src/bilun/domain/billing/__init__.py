@@ -8,11 +8,14 @@ per-patient revenue leakage/recovery recommendations.
 
 Modules:
 - types: Dataclasses for billing optimization results
+- block_registry: Declarative billing block metadata
 - claim_lab: Algorithm 1 — Lab hemogram bundling from claim lines (EK-2B L107020)
 - claim_copay: Algorithm 2 — Copay savings calculator from claim lines
 - claim_strategy: Algorithm 3 — Package vs itemized recommender from claim lines
 - claim_materials: Algorithm 4 — Material reimbursability pre-check from claim lines
-- orchestrator: Main entry points compute_patient_billing_report, compute_all_billing_reports
+- patient_report: Single-patient report assembly
+- cohort_runner: Parallel cohort billing runners
+- orchestrator: Thin facade re-exporting public entry points
 
 Re-exports for backward compatibility.
 """
