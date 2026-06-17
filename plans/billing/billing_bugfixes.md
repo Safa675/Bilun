@@ -31,6 +31,6 @@ Three bugs found: (1) duplicate test detection groups across entire patient hist
 - [ ] Spot-check patient SENTETIK-HASTA-0039 totals
 
 ### Out of Scope
-- Changing how copay exemptions are computed (the EK-1A matching logic stays as-is)
+- **Line-level copay waiver application** — see `copay-ek1a-ek4d-scope-fix-plan.md` (supersedes the old note that copay exemptions “stay as-is” for savings attachment). EK-1A **ICD matching** in `ek1a.py` unchanged.
 - Adding real Turkish hospital claim data (synthetic only)
 - Full visit-ID propagation to all data types (drugs, procedures, materials) — only lab for now

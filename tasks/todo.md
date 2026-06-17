@@ -170,3 +170,33 @@ Prove no product API field presents a ₺ amount derived from ICD chapter median
 - Full SUT prose coverage (54% algorithmic gaps remain a separate workstream).
 - Hospital grouper / auto package-code assignment.
 - MEDULA live integration.
+
+---
+
+## Task: Rule Database Section Polish & Subtabs Fix
+
+### Goal
+Fix the broken "Bölümler" (Sections) and "Prose Motorları" (Prose) subtabs in the Rule Database tab by resolving the Radix unmount/API abort conflict, and apply visual polish to clean up inline styles, viewport sizing, disabled states, and spacing issues.
+
+### Subtasks
+- [x] Fix Radix `TabsContent` unmount bug in `RuleDatabaseSection.tsx` using `forceMount` and `data-[state=inactive]:hidden`.
+- [x] Replace inline `style={{ minWidth: 220, maxWidth: 360 }}` in toolbars with Tailwind classes `min-w-[220px] max-w-[360px]`.
+- [x] Fix duplicate labeling/eyebrow in `CoverageSummaryPanel`'s `Stat` components.
+- [x] Change fixed `maxHeight: 620` scroll box on `RuleList` to a responsive class like `max-h-[60vh]`.
+- [x] Change fixed `maxHeight: 520` scroll box on `Clause Cards` list to a responsive class like `max-h-[55vh]`.
+- [x] Add `disabled:opacity-50 disabled:cursor-not-allowed` styles to all pagination buttons.
+- [x] Add `overflow-x-auto` container to status filters in the toolbar to prevent wrapping.
+- [x] Simplify excessive padding/nesting in main tab structure (`Section` padding none / single `Surface` wrapper).
+- [x] Verify that all typescript checks, linting, and build paths are green.
+- [x] Fix FastAPI route shadowing bug in backend `src/bilun/api/routes/rules.py` that was causing `404 Not Found` API errors for the `sections` and `prose` tabs.
+
+### Verification
+- [x] Run typescript type checks: `npx tsc --noEmit --pretty` - Passed with 0 errors
+- [x] Run eslint checks on `RuleDatabaseSection.tsx` - Passed with 0 warnings/errors
+- [x] Verify build is successful: `npm run build` - Passed successfully (compiled Next.js application)
+- [x] Verified FastAPI routes are correctly ordered to avoid parameter shadowing.
+
+### Out of Scope
+- Redesigning the entire API responses or data schemas.
+- Modifying backend endpoints.
+
