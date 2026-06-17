@@ -33,6 +33,7 @@ def evaluate_occupational_exemption(
             "category": "is_kazasi_meslek",
             "rule_source": "SUT §1.8.5(1) work accident / occupational disease",
             "counts_toward_exempt": True,
+            "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
             "evidence": {"visit_type": key},
         }
     if matched_context:
@@ -41,6 +42,7 @@ def evaluate_occupational_exemption(
             "category": "is_kazasi_meslek",
             "rule_source": "SUT §1.8.5(1) work accident / occupational disease",
             "counts_toward_exempt": True,
+            "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
             "evidence": {"occupational_context": key},
         }
     return None

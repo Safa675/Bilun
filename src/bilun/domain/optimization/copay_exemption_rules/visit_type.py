@@ -47,6 +47,7 @@ def evaluate_visit_type_exemptions(
                 "category": "acil_servis",
                 "rule_source": "SUT §1.8.5(5) emergency visit copay waiver (520021 excluded)",
                 "counts_toward_exempt": True,
+                "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
                 "evidence": {
                     "visit_type": matched,
                     "procedure_codes": sorted(procedure_codes),
@@ -61,6 +62,7 @@ def evaluate_visit_type_exemptions(
                 "category": "koruyucu_saglik",
                 "rule_source": "SUT §1.8.5(6) preventive health copay waiver",
                 "counts_toward_exempt": True,
+                "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
                 "evidence": {"visit_type": matched},
             }
         )

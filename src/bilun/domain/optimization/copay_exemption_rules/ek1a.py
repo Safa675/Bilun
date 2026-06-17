@@ -99,6 +99,7 @@ def evaluate_ek1a_exemption(
         "category": "ek1a_chronic",
         "rule_source": "SUT §1.8.5(7) + EK-1/A chronic disease copay exemptions",
         "counts_toward_exempt": counts_toward_exempt,
+        "waives_sections": ("1.8.1",),
         "evidence": {"qualifying_diagnoses": qualifying},
     }
     if has_health_report is False:

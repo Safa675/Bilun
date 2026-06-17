@@ -42,6 +42,7 @@ def evaluate_patient_status_exemptions(
                 "category": "yesil_kart",
                 "rule_source": "SUT §1.8.5(22)a — 5510 md.60(12) GSS beneficiary groups",
                 "counts_toward_exempt": True,
+                "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
                 "evidence": {"sgk_benefit_class": profile.sgk_benefit_class},
             }
         )
@@ -53,6 +54,7 @@ def evaluate_patient_status_exemptions(
                 "category": "sehit_gazi",
                 "rule_source": "SUT §1.8.5(13),(15),(16) — 2330 / 3713 / vazife malûlü",
                 "counts_toward_exempt": True,
+                "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
                 "evidence": {"veteran_martyr_status": profile.veteran_martyr_status},
             }
         )
@@ -73,6 +75,7 @@ def evaluate_patient_status_exemptions(
                 "category": "vatani_hizmet",
                 "rule_source": "SUT §1.8.5(11),(12) — Vatani Hizmet laws",
                 "counts_toward_exempt": True,
+                "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
                 "evidence": {"national_service_status": profile.national_service_status},
             }
         )
