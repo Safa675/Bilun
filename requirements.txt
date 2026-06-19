@@ -8,6 +8,7 @@
 numpy>=1.24
 pandas>=2.0
 openpyxl>=3.1
+xlrd>=2.0.1   # required to read legacy .xls SUT annex files (EK-1A, EK-3B, EK-3C-1, EK-2Ç, etc.)
 pyarrow>=14.0
 scipy>=1.10
 
