@@ -9,6 +9,18 @@ Format per entry:
 
 ---
 
+## 2026-06-19 — Don't advise on a subsystem's data dependencies without reading the compute path
+
+**Pattern:** When asked "do I need to rebuild the cache after the SUT replace?", I correctly identified the stale-process issue but hedged the *correctness* answer with "the rebuild may not visibly change much because claim lines carry their own billed_amount." That hedge was unverified speculation — I hadn't yet traced whether the DRG compute path actually reads EK-2C. When I finally did trace it (`src/bilun/domain/analytics/drg.py:196 get_ek2c_price_for_date`), it confirmed DRG pricing DOES depend directly on the rebuilt EK-2C catalog. So the cache rebuild IS a correctness requirement, not optional — my hedge downplayed a real staleness bug (later confirmed as audit finding B-C2/B-C7: no staleness detection mechanism exists). The backend audit (3 parallel subagents) later surfaced that the entire read-write-connection + no-staleness-check architecture means stale data is served silently with no self-healing.
+
+**Rule:** Before advising whether a data-source change requires a downstream cache/recompute rebuild:
+1. Read the actual compute path that produces the cached artifact — grep for `read_parquet` / `get_ek2*` / catalog lookups in the domain layer, not just the cache layer's `data_loader.py` (which only reads patient/cohort parquets, not gazette catalogs).
+2. Distinguish "cache reads gazette catalogs directly" (rebuild definitely needed) from "cache only reads pre-computed patient summaries" (gazette changes are baked in at build time, so rebuild still needed).
+3. Never hedge with "may not change much" without a concrete trace showing the dependency is absent. If you haven't traced it, say "I need to verify whether the DRG compute reads EK-2C" — don't guess.
+4. A running process holding a DB lock is ALWAYS a stale-data signal worth surfacing prominently, not a footnote — DuckDB single-writer semantics mean that process has the pre-rebuild data in memory and will serve it until killed.
+
+---
+
 ## 2026-06-19 — Latent pipeline bugs surface during data-source swaps; verify the full chain end-to-end
 
 **Pattern:** Replacing the active SUT tebliği (2026.01.17 → 2026.04.08) exposed TWO pre-existing latent bugs that were invisible as long as the committed parquets were never rebuilt: (1) `xlrd` was never declared in `requirements.txt`/`pyproject.toml`, so all `.xls`-sourced annexes (EK-1A, EK-3B-1/2, EK-3C-1, EK-2Ç) silently failed conversion — the committed parquets were artifacts from a prior machine that had xlrd. (2) `_find_raw_parquet` (`scripts/sut/_common.py`) deliberately skipped `effective_date=unknown` partitions, which broke EK-1A (legitimately undated `.xls`, no date in filename) even though its raw parquet existed. Both only surfaced when the full pipeline ran fresh.

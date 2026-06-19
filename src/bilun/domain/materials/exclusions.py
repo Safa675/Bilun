@@ -11,7 +11,7 @@ from typing import Any
 import pandas as pd
 
 from ..constants import EK3B1_BUNDLED_PATH, EK3B2_NON_REIMBURSABLE_PATH
-from ..utils import _safe_str, turkish_lower, fuzzy_match_name
+from ..utils import _safe_str, turkish_lower, fuzzy_match_name, token_bound_substring_match
 
 logger = logging.getLogger("ilay.sut_catalog")
 
@@ -108,7 +108,11 @@ def match_exclusion_entry(
         mat_name = turkish_lower((entry.get("material_name") or "").strip())
         if not mat_name:
             continue
-        if needle in mat_name or mat_name in needle:
+        # Token-bound match (both directions) — plain `in` substring matched
+        # short catalog entries against unrelated materials ("tel" -> "metal stent").
+        if token_bound_substring_match(needle, mat_name) or token_bound_substring_match(
+            mat_name, needle
+        ):
             return entry
 
     fuzzy_candidates = [
@@ -159,7 +163,11 @@ def is_consumable_bundled(item_name: str) -> bool:
         entry_name = turkish_lower((entry.get("item_name") or "").strip())
         if not entry_name:
             continue
-        if needle in entry_name or entry_name in needle:
+        # Token-bound match (both directions) — see find_non_reimbursable_entry
+        # for the rationale (short entry vs unrelated material collisions).
+        if token_bound_substring_match(needle, entry_name) or token_bound_substring_match(
+            entry_name, needle
+        ):
             return True
 
     fuzzy_candidates = [

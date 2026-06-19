@@ -252,8 +252,10 @@ def _episode_for_claim(
     ek2c_group = _ICD10_CHAPTER_TO_EK2C_GROUP.get(chapter, "C")
     if package_code and admission_date is not None:
         entry = get_ek2c_entry(package_code, as_of_date=admission_date.isoformat())
-        if entry and entry.get("ek2c_group"):
-            ek2c_group = entry["ek2c_group"]
+        # catalog_membership stores the group under the key "group" (see
+        # _ek2c_entry_map_asof), not "ek2c_group" — read the correct key.
+        if entry and entry.get("group"):
+            ek2c_group = entry["group"]
 
     return DRGEpisode(
         episode_id=claim.claim_id,

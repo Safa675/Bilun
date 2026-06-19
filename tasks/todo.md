@@ -1,5 +1,84 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: Backend bug fix — Dalga 1 (CRITICAL quick wins)
+
+### Goal
+`plans/billing/backend-bug-audit.md` raporundaki en kolay + en yüksek etki CRITICAL'leri fix'le. Bu dalgada para/doğruluk bug'ları: B-C3 (DRG tek satır), B-C5 (date.min session collapse), B-C4 (substring bundling). Her fix pytest green + file:line kanıtı. Co-author yok, push yok.
+
+### Subtasks
+- [x] **B-C3** DRG `entry.get("ek2c_group")` → `entry.get("group")` (`src/bilun/domain/analytics/drg.py:254-256`). Doğrula: DRG episode artık gerçek EK-2/C grubunu alıyor.
+- [x] **B-C5** date.min'ye eşit procedure satırlarını session gruplamadan çıkar (`src/bilun/domain/prose_rules/claim_utils.py:96-102`). Strateji: `date.min` key'ini "unknown session" say (her satır ayrı) veya atla. Doğrula: tarihsiz satırlar artık alakasız prosedürlerle aynı session'da değil.
+- [x] **B-C4** Substring bundling match tightening (`src/bilun/domain/rules/bundling_rules.py:108-110`, `src/bilun/domain/materials/exclusions.py:111,162`). `needle in entry OR entry in needle` → token-bound helper (`src/bilun/domain/utils.py:token_bound_substring_match`). Doğrula: "tel"/"cam"/"lam"/"ped" gibi kısa entry'ler alakasız malzemeleri ("metal stent"/"camaflaj"/"melamin"/"pediyatrik") yakalamıyor; meşru match'ler ("stent"→"metal stent", "süt sağma seti"→"süt sağma seti (disposable)") korunuyor.
+- [x] Her fix için regression test ekle: `tests/unit/domain/test_dalga1_bugfixes.py` (10 test)
+- [x] `pytest tests/` tam yeşil: **732 passed, 10 skipped** (10 skip = 01.17 docx silme loose end, Dalga 1 ile alakasız)
+- [ ] Commit (push yok) — kullanıcı kararı bekleniyor
+
+### Out of Scope
+- B-C2 (read-only connection) — Dalga 2
+- B-C1 (PII gate) — ayrı tasarım task'ı
+- B-C6, B-C7, tüm HIGH — sonraki dalgalar
+
+---
+
+## Task: Backend bug fix — Dalga 2 (stale data + cache lifecycle)
+
+### Goal
+Cache rebuild sonrası stale servis sorununu kökten çöz: read-only connection + staleness tespiti. Bu aynı zamanda cache rebuild'i güvenli yapan mimari fix.
+
+### Subtasks
+- [ ] **B-C2** API cache connection'ı `read_only=True` aç (`src/bilun/shared/runtime.py:53-63`, `src/bilun/db/connection.py:33-39`). Per-thread reader veya reader-process düşün. Doğrula: build_cache.py artık write lock alabiliyor.
+- [ ] **B-C7** Staleness tespiti: API startup + periyodik `source_hash_from_files` recompute, build_meta.source_hash ile karşılaştır, mismatch'i `/health` flag olarak surface et.
+- [ ] **B-C6** Alerts read-path write'ı çıkar (`src/bilun/api/routes/alerts.py:242`, `src/bilun/db/patient_alerts.py:435-464`). Build her zaman `patient_alert_rows` doldursun.
+- [ ] pytest green + doğrulama
+- [ ] Commit
+
+---
+
+## Task: Backend bug fix — Dalga 3 (chatbot güvenilirlik)
+
+### Goal
+PII hariç chatbot güvenilirlik: token budget, HTTP error mapping, streaming backpressure. B-C1 (PII) ayrı tasarım task'inde.
+
+### Subtasks
+- [ ] **B-H11** Token budget enforcement: `_build_messages` sonrası tokenize, runtime_context'i reserved budget'a truncate (`src/bilun/chatbot/llm.py:64-66,259-280`)
+- [ ] **B-H13** HTTP error mapping: 401/402/413/429 → spesifik mesaj, 429/5xx retry+backoff, raw upstream body sızdırma (`src/bilun/chatbot/llm.py:101-128,158-167`)
+- [ ] **B-H12** Streaming backpressure: `asyncio.Queue(maxsize=N)` (`src/bilun/chatbot/llm.py:131-201`, `src/bilun/api/routes/chat.py:470`)
+- [ ] pytest green
+- [ ] Commit
+
+---
+
+## Task: Backend bug fix — Dalga 4 (para doğruluğu cluster)
+
+### Subtasks
+- [ ] **B-H1** `procedure_addon_uplift` recoverable = addon'ın kendi list fiyatı × factor (`procedure_addon_uplift.py:218,248`)
+- [ ] **B-H6** `claim_materials` None material_date guard (`claim_materials.py:83`)
+- [ ] **B-H7** Session primary line seçimi factor-map key collision fix (`session_pricing.py:378-385`)
+- [ ] **B-H8** Checkup katsayi 04.08'e güncelle (`catalog.py:282-285`)
+- [ ] Decimal→float `_money` helper cluster (7 yerde) — str/Decimal serialize
+- [ ] pytest green
+- [ ] Commit
+
+---
+
+## Task: PII / chatbot veri sızıntısı (B-C1) — TASARIM TASK'İ
+
+### Goal
+B-C1 regulatuar risk (KVKK) ama product kararı gerektirir. Bu task sadece plan/tasarım; implementasyon ayrı.
+
+### Sorular (kullanıcı ile netleştirilecek)
+- Hasta verisi chat'i tamamen kapatılmalı mı, yoksa consent flag ile mi?
+- Hangi roller hasta verisini görebilir (dev only? billing_officer dahil)?
+- OpenRouter DPA / data residency durumu ne?
+- Anonimizasyon (patient_id → "Patient A") yeterli mi?
+
+### Out of Scope (şimdilik)
+- Consent UI
+- Rol matrisi implementasyonu
+- DPA belgeleme
+
+
+
 ## Task: SUT tebliği tazeliği — 2026.04.08 konsolide replace + 2026.05.23 delta patch
 
 ### Goal

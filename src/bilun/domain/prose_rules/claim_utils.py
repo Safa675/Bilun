@@ -96,7 +96,40 @@ def detect_care_setting_ambiguity(claim: ClaimHeader) -> CareSettingAmbiguity | 
 def group_procedure_lines_by_session(
     lines: Iterable[ProcedureClaimLine],
 ) -> dict[date, list[ProcedureClaimLine]]:
+    """Group procedure lines into sessions keyed by service date.
+
+    Lines whose ``procedure_date`` is ``date.min`` (the sentinel returned by
+    ``required_date`` when the source cell is missing) would all collapse into
+    a single session, which mis-applies §2.2.2.B session tenzil across
+    unrelated procedures. Treat each such line as its own session by keying it
+    off the line id instead of the date. Real ``date.min`` service dates do
+    not occur in SGK claim data, so this branch is safe.
+    """
     grouped: dict[date, list[ProcedureClaimLine]] = defaultdict(list)
+    used_keys: set = set()
     for line in lines:
-        grouped[line.procedure_date].append(line)
+        if line.procedure_date == date.min:
+            # Synthetic per-line session key so unrelated undated lines
+            # do not merge. Uses a hash of the line id to stay within the
+            # `date` key type the callers iterate over.
+            key = _undated_session_key(line, used_keys)
+            grouped[key].append(line)
+            used_keys.add(key)
+        else:
+            grouped[line.procedure_date].append(line)
     return dict(grouped)
+
+
+def _undated_session_key(line: ProcedureClaimLine, used_keys: set[date]) -> date:
+    """Return a distinct `date` key for an undated line.
+
+    Derives a deterministic far-past date from the line id hash so that
+    each undated line forms its own session and never collides with a
+    real service date or another undated line.
+    """
+    import hashlib
+
+    raw = repr(getattr(line, "procedure_line_id", id(line))).encode("utf-8")
+    h = hashlib.blake2b(raw, digest_size=4).digest()
+    ordinal = 719162 + (int.from_bytes(h, "little") % 3650)  # 0001..0010 range, far before real data
+    return date.fromordinal(ordinal)
