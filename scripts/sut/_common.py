@@ -42,7 +42,10 @@ def _find_raw_parquet(parquet_root: Path, annex_code: str) -> Path | None:
 
     Files are sorted by effective_date (YYYY-MM-DD prefix). Directories
     with ``effective_date=unknown`` are skipped — they are legacy dumps
-    with different column layouts that produce empty curated output.
+    with different column layouts that produce empty curated output —
+    *unless* the annex has no dated version at all, in which case the
+    ``unknown`` partition is a legitimate fallback (e.g. EK-1A, an
+    undated single-version .xls annex).
     """
     annex_dir = parquet_root / "raw" / f"annex={annex_code}"
     if not annex_dir.exists():
@@ -55,11 +58,15 @@ def _find_raw_parquet(parquet_root: Path, annex_code: str) -> Path | None:
                 return part.removeprefix("effective_date=")
         return ""
 
-    found = sorted(
-        (fp for fp in annex_dir.rglob("*.parquet") if _date_sort_key(fp)),
-        key=_date_sort_key,
-    )
-    return found[-1] if found else None
+    all_parquets = list(annex_dir.rglob("*.parquet"))
+    dated = sorted((fp for fp in all_parquets if _date_sort_key(fp)), key=_date_sort_key)
+    if dated:
+        return dated[-1]
+
+    # No dated version: fall back to the unknown partition if one exists
+    # (legitimately undated single-version annexes like EK-1A).
+    unknown = [fp for fp in all_parquets if not _date_sort_key(fp)]
+    return unknown[-1] if unknown else None
 
 
 def _read_raw(parquet_root: Path, annex_code: str) -> pd.DataFrame | None:
