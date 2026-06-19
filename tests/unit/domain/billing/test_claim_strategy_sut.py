@@ -134,16 +134,23 @@ class TestClaimStrategySut:
             ),
         ]
         result = recommend_billing_strategy_from_claims(_ctx(claim, *lines))
+        # 550970 is billed as itemized but mandates package → a compliance
+        # violation is emitted (no duplicate informational row).
         claim_rec = next(
             rec
             for rec in result.recommendations
             if rec.get("claim_id") == "CLM1"
             and rec.get("procedure_code") == "550970"
-            and "mandated_method" in rec
-            and "type" not in rec
+            and rec.get("type") == "compliance_violation"
         )
         assert claim_rec["payment_method_kind"] == "DRG_MANDATORY"
         assert claim_rec["mandated_method"] == "package"
+        # No informational duplicate should be present for this procedure.
+        assert not any(
+            rec.get("type") == "informational"
+            and rec.get("procedure_code") == "550970"
+            for rec in result.recommendations
+        )
 
     def test_corrective_savings_zero_when_already_compliant(self) -> None:
         claim = _claim(facility_tier="2_basamak_kamu")

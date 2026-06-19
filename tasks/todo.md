@@ -1,5 +1,23 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: Billing action count doğruluğu — duplicate informational Row B düzelt
+
+### Goal
+"11 önerilen aksiyon, gerçekte 3" yanlış sayımını düzelt. claim_strategy.py:314-330 aynı prosedür için compliance_violation + bare informational satır üretiyor; count_billing_actions ikisini de sayıyor ama frontend informational satırı render etmiyor → görünmez ama sayılıyor. Co-author yok, push yok.
+
+### Subtasks
+- [x] Planı yaz, claim_strategy.py:284-330 + patient_report.py:45-68'i doğrula
+- [ ] claim_strategy.py: information satırına `type: "informational"` ekle VE compliance_violation varsa emit etme (duplikasyonu kes)
+- [ ] patient_report.py: count_billing_actions, "informational" tip satırları saymasın (gerçek aksiyon = violation + recommendation_kind)
+- [ ] Doğrula: pytest + F-0003-015 gerçek action count manuel kontrol (3 gerçek ihlalin sayıma yansıması)
+- [ ] Commit
+
+### Out of Scope
+- Frontend "Recommended actions" kartı (backend düzelince action_count da düzelir)
+- SGK uplift vs audit_exposure ayrımı (zaten doğru)
+
+---
+
 ## Task: Demo Vignette feature'ını commit'le (dirty tree temizliği)
 
 ### Goal

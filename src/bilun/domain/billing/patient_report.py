@@ -43,10 +43,19 @@ from .types import BillingActionReport
 
 
 def count_billing_actions(report: BillingActionReport) -> int:
+    # Strategy recommendations may include informational mandated-method
+    # rows (type == "informational") that are not actionable. Exclude them
+    # from the action count so the headline "recommended actions" number
+    # reflects only real violations / claim-level strategy decisions.
+    actionable_strategy_rows = sum(
+        1
+        for row in report.billing_strategy.recommendations
+        if row.get("type") != "informational"
+    )
     return (
         len(report.lab.flagged_tests)
         + (1 if report.copay.is_exempt else 0)
-        + len(report.billing_strategy.recommendations)
+        + actionable_strategy_rows
         + len(report.session_uplift.opportunities)
         + len(report.drg_uplift.opportunities)
         + len(report.blood_uplift.opportunities)

@@ -295,6 +295,7 @@ def recommend_billing_strategy_from_claims(
             provider_type=claim.provider_type if claim is not None else None,
             as_of_date=as_of,
         )
+        emitted_violation = False
         if not compliance.is_compliant and compliance.mandated_method != "unknown":
             recommendations.append(
                 {
@@ -310,15 +311,23 @@ def recommend_billing_strategy_from_claims(
                     "detail": compliance.detail,
                 }
             )
+            emitted_violation = True
 
         mandated = _resolve_line_payment_method(
             line,
             claim,
             care_setting=care_setting,
         )
-        if mandated.payment_method != "unknown":
+        # Only emit the informational mandated-method line when we did NOT
+        # already emit a compliance_violation for the same procedure line.
+        # Emitting both produced a duplicate that inflated action_count while
+        # being invisible in the UI (no type/recommendation_kind to match the
+        # frontend predicates). Tag informational rows with an explicit type
+        # so downstream counters/filters can exclude them from action totals.
+        if mandated.payment_method != "unknown" and not emitted_violation:
             recommendations.append(
                 {
+                    "type": "informational",
                     "claim_id": line.claim_id,
                     "procedure_code": line.procedure_code,
                     "mandated_method": mandated.payment_method,
