@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getProseInventory,
   getRuleCatalog,
@@ -969,6 +969,9 @@ function RuleDetailPanel({
   artifactsAvailable: boolean;
 }) {
   const t = useT();
+  // Ref so the fetch reads a fresh translator without re-running on locale change.
+  const tRef = useRef(t);
+  tRef.current = t;
   const [detail, setDetail] = useState<RuleDetailResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -993,7 +996,7 @@ function RuleDetailPanel({
         if (!active || isAbortError(err)) return;
         setDetail(null);
         setError(
-          err instanceof Error ? err.message : t("sections.ruleDatabase.errors.loadFailed"),
+          err instanceof Error ? err.message : tRef.current("sections.ruleDatabase.errors.loadFailed"),
         );
       } finally {
         if (active) setLoading(false);
@@ -1004,7 +1007,7 @@ function RuleDetailPanel({
       active = false;
       controller.abort();
     };
-  }, [ruleId, page, t]);
+  }, [ruleId, page]);
 
   const { category, description } = useLocalizedRule(detail?.rule);
 

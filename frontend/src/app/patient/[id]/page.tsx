@@ -65,14 +65,20 @@ import { useT } from "@/lib/i18n/useTranslations";
 
 export default function SutPatientPage() {
   const t = useT();
+  // Keep the latest `t` in a ref so fetch callbacks read a fresh translator
+  // without re-creating themselves (and the effects that call them) on every
+  // locale switch. Fixes locale-switch churn: C2, H1, M7.
+  const tRef = useRef(t);
+  tRef.current = t;
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const claimQuery = searchParams.get("claim");
   const sectionQuery = searchParams.get("section");
-  const patientId = useMemo(
-    () => decodeURIComponent(Array.isArray(params?.id) ? params.id[0] : params?.id ?? ""),
-    [params],
+  // `useParams()` returns a fresh object every render, so useMemo on it never
+  // caches. Decode directly — the resulting string is stable across renders.
+  const patientId = decodeURIComponent(
+    Array.isArray(params?.id) ? params.id[0] : params?.id ?? "",
   );
 
   const [outcome, setOutcome] = useState<SutPatientOutcomeData | null>(null);
@@ -152,7 +158,7 @@ export default function SutPatientPage() {
           setOutcomeError(
             outcomeResult.reason instanceof Error
               ? outcomeResult.reason.message
-              : t("patient.page.errors.outcome"),
+              : tRef.current("patient.page.errors.outcome"),
           );
         }
 
@@ -162,7 +168,7 @@ export default function SutPatientPage() {
           setOptimizationError(
             optimizationResult.reason instanceof Error
               ? optimizationResult.reason.message
-              : t("patient.page.errors.optimization"),
+              : tRef.current("patient.page.errors.optimization"),
           );
         }
 
@@ -172,7 +178,7 @@ export default function SutPatientPage() {
           setBillingError(
             billingResult.reason instanceof Error
               ? billingResult.reason.message
-              : t("patient.page.errors.billing"),
+              : tRef.current("patient.page.errors.billing"),
           );
         }
 
@@ -182,7 +188,7 @@ export default function SutPatientPage() {
         billingControllerRef.current = null;
       },
     );
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     if (!patientId) {
@@ -223,7 +229,7 @@ export default function SutPatientPage() {
       .catch((reason) => {
         if (controller.signal.aborted) return;
         setClaimsError(
-          reason instanceof Error ? reason.message : t("patient.page.errors.claims"),
+          reason instanceof Error ? reason.message : tRef.current("patient.page.errors.claims"),
         );
       })
       .finally(() => {
@@ -232,7 +238,7 @@ export default function SutPatientPage() {
           claimsControllerRef.current = null;
         }
       });
-  }, [t]);
+  }, []);
 
   const loadClaimDetail = useCallback((nextPatientId: string, claimId: string | null) => {
     claimDetailControllerRef.current?.abort();
@@ -257,7 +263,7 @@ export default function SutPatientPage() {
       .catch((reason) => {
         if (controller.signal.aborted) return;
         setClaimDetailError(
-          reason instanceof Error ? reason.message : t("patient.page.errors.claims"),
+          reason instanceof Error ? reason.message : tRef.current("patient.page.errors.claims"),
         );
       })
       .finally(() => {
@@ -266,7 +272,7 @@ export default function SutPatientPage() {
           claimDetailControllerRef.current = null;
         }
       });
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     if (!patientId) {
@@ -324,7 +330,7 @@ export default function SutPatientPage() {
           setScopedBillingError(
             billingResult.reason instanceof Error
               ? billingResult.reason.message
-              : t("patient.page.errors.billing"),
+              : tRef.current("patient.page.errors.billing"),
           );
         }
 
@@ -334,7 +340,7 @@ export default function SutPatientPage() {
           setScopedOptimizationError(
             optimizationResult.reason instanceof Error
               ? optimizationResult.reason.message
-              : t("patient.page.errors.optimization"),
+              : tRef.current("patient.page.errors.optimization"),
           );
         }
 
@@ -342,18 +348,21 @@ export default function SutPatientPage() {
         scopedControllerRef.current = null;
       });
     },
-    [t],
+    [],
   );
 
+  // Scoped (bill-level) reports are independent of the workspace fetch.
+  // Do NOT gate on `loading` — loadScopedReports early-returns when
+  // selectedClaimId is null, and aborts the previous run on re-entry.
   useEffect(() => {
-    if (!patientId || loading) {
+    if (!patientId) {
       return;
     }
     loadScopedReports(patientId, selectedClaimId);
     return () => {
       scopedControllerRef.current?.abort();
     };
-  }, [loadScopedReports, loading, patientId, selectedClaimId]);
+  }, [loadScopedReports, patientId, selectedClaimId]);
 
   const isBillScoped = selectedClaimId !== null;
   const activeBillingReport = isBillScoped ? billBillingReport : billingReport;

@@ -1,5 +1,27 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: Frontend Bug Fix — Dalga 2 (patient page fetch/race + locale churn)
+
+### Goal
+Tek kök nedeni (`t` callback dep'lerinde) ortadan kaldırarak 4 bug'ı birden çöz: C2 (locale switch selectedClaimId sıfırlar), H1 (workspace loading reset eksik), H3/M7 (`t`-dep churn). Ayrıca C1 (scoped report loading guard) ve C3 (useParams memo) düzelt. Co-author yok.
+
+### Subtasks
+- [x] Planı yaz, page.tsx + RuleDatabaseSection + useTranslations'i doğrula
+- [ ] `tRef` pattern: her render'da `tRef.current = t`, callback'ler `tRef.current` okusun
+- [ ] 4 callback'in dep array'inden `t`'yi çıkar (loadWorkspace:185, loadClaims:235, loadClaimDetail:269, loadScopedReports:345)
+- [ ] C1: scoped report effect'inden `loading` guard'ını kaldır (349)
+- [ ] C3: `useParams` useMemo'yu kaldır, direkt hesapla
+- [ ] M7: RuleDatabaseSection detail effect'inden `t`'yi çıkar (1007) — tRef pattern
+- [ ] Doğrula: tsc, vitest, build
+- [ ] Commit (push yok)
+
+### Out of Scope
+- H2, H5 (chat panel double-fire) — Dalga 3
+- M1-M6, L1-L5 — Dalga 4
+- Registry drift (3a), stale rakam (3b)
+
+---
+
 ## Task: Frontend Dead-Code & Stale Cleanup — Dalga 1
 
 ### Goal
