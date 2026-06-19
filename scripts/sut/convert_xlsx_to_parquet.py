@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import os
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -349,10 +350,16 @@ def main() -> None:
         existing = pd.read_parquet(manifest_path)
         merged = pd.concat([existing, manifest], ignore_index=True)
         merged = merged.drop_duplicates(subset=["parquet_path"], keep="last")
-        merged.to_parquet(manifest_path, index=False)
+        # Write to a temp file then atomically rename, so a crash or
+        # concurrent run can't leave a half-written manifest at the final path.
+        tmp_path = manifest_path.with_suffix(".parquet.tmp")
+        merged.to_parquet(tmp_path, index=False)
+        os.replace(tmp_path, manifest_path)
         manifest_rows = len(merged)
     else:
-        manifest.to_parquet(manifest_path, index=False)
+        tmp_path = manifest_path.with_suffix(".parquet.tmp")
+        manifest.to_parquet(tmp_path, index=False)
+        os.replace(tmp_path, manifest_path)
         manifest_rows = len(manifest)
 
     print("\n" + "=" * 72)

@@ -78,7 +78,13 @@ def _load_existing(path: Path) -> dict[str, tuple[str, list[float]]]:
         return {}
     try:
         prior = pl.read_parquet(path)
-    except Exception:
+    except Exception as exc:
+        import logging
+
+        logging.getLogger(__name__).warning(
+            "Existing embeddings parquet could not be read; rebuilding from scratch. Cause: %s",
+            exc,
+        )
         return {}
     needed = {"clause_id", "content_hash", "embedding"}
     if not needed.issubset(set(prior.columns)):

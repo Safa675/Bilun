@@ -1,5 +1,38 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: Scripts Bug Fix — Dalga A-D (price_history, subprocess, atomicity, paths)
+
+### Goal
+`plans/frontend/scripts-bug-audit.md` raporundaki scripts bug'larını fixle. C1 (EK-2B kolon) en kritik. Co-author yok, push yok.
+
+### Subtasks — Dalga A (pipeline bütünlüğü)
+- [x] Planı yaz, dosyaları oku/doğrula
+- [ ] C1: extract_ek2b output kolonu `package_code` → `code` (price_history.py:83,93,96,168)
+- [ ] H2-kritik: price_history.py:145 broad except'e logging ekle (prose_drg_locked False olunca uyar)
+
+### Subtasks — Dalga B (operasyonel)
+- [ ] H1: ek4d_copay_exempt.py:80 LibreOffice subprocess'a timeout=300 ekle
+- [ ] H1: generate_sut_synthetic_data_v2.py:80,84 validator/assert subprocess'a timeout=600 ekle
+- [ ] H3: convert_xlsx_to_parquet.py:348-356 manifest write'a temp+os.replace atomic pattern
+
+### Subtasks — Dalga C (path/leakage)
+- [ ] M1: rebuild_baseline_metrics.py + export_material_bundling_clauses.py Path('data/...') → Path(__file__) resolve
+- [ ] M2: validate_sut_synthetic_data.py:88 pd.ExcelFile → with context manager
+
+### Subtasks — Dalga D (drift/cosmetic)
+- [ ] M4: raw_data/generate_readmes.py:12 TODAY → date.today().isoformat()
+- [ ] Diğer broad except'ler (convert_xlsx, build_curated, build_clause_embeddings) — değerlendir, log ekle
+- [ ] L1 (nested ternary), L2 (banker's rounding) — değerlendir
+
+### Doğrula + commit (dalga dalga)
+- [ ] pytest yeşil, scripts import'ları sağlam
+
+### Out of Scope
+- Backend `src/bilun/` audit
+- merge_drug_indication_phase1.py supersession kararı
+
+---
+
 ## Task: Frontend Bug Fix — Dalga 3 (chat panel race + null guards)
 
 ### Goal

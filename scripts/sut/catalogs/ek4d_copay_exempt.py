@@ -89,6 +89,7 @@ def doc_to_text(doc_path: Path) -> str:
             ],
             check=True,
             capture_output=True,
+            timeout=300,
         )
     return txt_path.read_text(encoding="utf-8", errors="replace")
 

@@ -25,27 +25,27 @@ def main() -> None:
     parser.add_argument(
         "--clauses",
         type=Path,
-        default=Path("data/gazette/sut_clauses.parquet"),
+        default=_PROJECT_ROOT / "data/gazette/sut_clauses.parquet",
     )
     parser.add_argument(
         "--prose-json",
         type=Path,
-        default=Path("data/gazette/prose_rules/material_bundling_prose.json"),
+        default=_PROJECT_ROOT / "data/gazette/prose_rules/material_bundling_prose.json",
     )
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path("data/gazette/prose_corpus/L1.4_material_bundling_prose.csv"),
+        default=_PROJECT_ROOT / "data/gazette/prose_corpus/L1.4_material_bundling_prose.csv",
     )
     parser.add_argument(
         "--review-out",
         type=Path,
-        default=Path("data/gazette/prose_corpus/L1.4_material_bundling_prose_review_sample.csv"),
+        default=_PROJECT_ROOT / "data/gazette/prose_corpus/L1.4_material_bundling_prose_review_sample.csv",
     )
     parser.add_argument(
         "--summary-out",
         type=Path,
-        default=Path("data/gazette/prose_corpus/L1.4_material_bundling_gate_b_summary.json"),
+        default=_PROJECT_ROOT / "data/gazette/prose_corpus/L1.4_material_bundling_gate_b_summary.json",
     )
     parser.add_argument("--review-fraction", type=float, default=0.1)
     parser.add_argument("--review-min", type=int, default=5)

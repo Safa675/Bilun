@@ -14,6 +14,7 @@ Outputs:
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from constants import DEFAULT_OUTPUT_DIR, SEED
@@ -28,6 +29,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-claims-per-patient", type=int, default=5)
     parser.add_argument("--output-dir", type=str, default=str(DEFAULT_OUTPUT_DIR))
     parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument(
+        "--skip-checks",
+        action="store_true",
+        help="Skip validate_sut_synthetic_data and assert_tier_a_post_regen",
+    )
     return parser.parse_args()
 
 
@@ -65,6 +71,23 @@ def main() -> None:
     print(f"Expected outputs: {len(tables['beklenen_kural_ciktilari'])}")
     print(f"Prescriptions: {len(tables['receteler'])}")
     print("=" * 72)
+
+    if not args.skip_checks:
+        import subprocess
+
+        validate_script = Path(__file__).resolve().parent / "validate_sut_synthetic_data.py"
+        assert_script = Path(__file__).resolve().parent / "assert_tier_a_post_regen.py"
+        subprocess.run(
+            [sys.executable, str(validate_script), "--data-dir", str(output_dir)],
+            check=True,
+            timeout=600,
+        )
+        subprocess.run(
+            [sys.executable, str(assert_script), "--data-dir", str(output_dir)],
+            check=True,
+            timeout=600,
+        )
+        print("Post-regen checks passed (validate + Tier A assert)")
 
 
 if __name__ == "__main__":

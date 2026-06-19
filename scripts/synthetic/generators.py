@@ -34,6 +34,11 @@ from payment_method_sampling import (
     episode_care_setting,
     filter_ek2b_pool_for_packaged_claim,
 )
+from demo_config import vignette_for_patient_id
+from fault_injection import (
+    apply_vignette_episode_defaults,
+    build_optional_override_specs,
+)
 
 PAYMENT_METHOD_COMPLIANCE_DEMO_TAG = "payment_method_compliance_demo"
 
@@ -463,9 +468,15 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
             if pid == "SENTETIK-HASTA-0002" and ep_idx == 0:
                 episode_row["gelis_tipi"] = "yatis"
                 episode_row["_sgk_optional_override_demo"] = "itemized_higher"
+                vignette = vignette_for_patient_id(pid)
+                if vignette:
+                    apply_vignette_episode_defaults(episode_row, vignette)
             elif pid == "SENTETIK-HASTA-0003" and ep_idx == 0:
                 episode_row["gelis_tipi"] = "yatis"
                 episode_row["_sgk_optional_override_demo"] = "package_higher"
+                vignette = vignette_for_patient_id(pid)
+                if vignette:
+                    apply_vignette_episode_defaults(episode_row, vignette)
             elif pid == "SENTETIK-HASTA-0004" and ep_idx == 0:
                 episode_row["gelis_tipi"] = "yatis"
                 episode_row["_sgk_blood_uplift_demo"] = True
@@ -925,87 +936,19 @@ def _pick_optional_override_demo_procedures(
     ek2c_packages: dict[str, pd.DataFrame],
     rng: np.random.Generator,
 ) -> list[dict]:
-    """§2.2.2(2) demo: tier-3 facility with package vs itemized choice."""
+    """§2.2.2(2) demo: credible submitted billing + optimizer alternative in strategy."""
     demo_kind = episode.get("_sgk_optional_override_demo")
-    _ = (ek2c_packages, rng)  # pinned overridable package; no DRG-group sampling
-
-    name_a, price_a = _lookup_ek2b_price("600150", ek2b_procs)
-    name_b, price_b = _lookup_ek2b_price("600160", ek2b_procs)
-    price_a = _money(max(price_a, 4500.0))
-    price_b = _money(max(price_b, 3500.0))
-
-    # 609270 is in EK-2B+EK-2C without (*) — always DRG_OVERRIDABLE at tier 3.
-    package_code = "609270"
-    package_name, catalog_pkg_price = _lookup_ek2b_price(package_code, ek2b_procs)
-
-    disable_surcharge = {"disable_surcharge": True}
-
-    if demo_kind == "package_higher":
-        item_a, item_b = 2200.0, 1800.0
-        package_price = _money(max(catalog_pkg_price, 9000.0))
-        return [
-            {
-                "code": "600150",
-                "name": name_a,
-                "price": item_a,
-                "category": "islem",
-                "included_in_package": False,
-                "payable_override": item_a,
-                **disable_surcharge,
-            },
-            {
-                "code": "600160",
-                "name": name_b,
-                "price": item_b,
-                "category": "islem",
-                "included_in_package": False,
-                "payable_override": item_b,
-                **disable_surcharge,
-            },
-            {
-                "code": package_code,
-                "name": package_name,
-                "price": package_price,
-                "category": "paket",
-                "is_package": True,
-                "billed_override": 0.0,
-                "payable_override": package_price,
-                **disable_surcharge,
-            },
-        ]
-
-    package_price = _money(min(catalog_pkg_price or 3500.0, 3500.0))
-    return [
-        {
-            "code": "600150",
-            "name": name_a,
-            "price": price_a,
-            "category": "islem",
-            "included_in_package": False,
-            "billed_override": 0.0,
-            "payable_override": price_a,
-            **disable_surcharge,
-        },
-        {
-            "code": "600160",
-            "name": name_b,
-            "price": price_b,
-            "category": "islem",
-            "included_in_package": False,
-            "billed_override": 0.0,
-            "payable_override": price_b,
-            **disable_surcharge,
-        },
-        {
-            "code": package_code,
-            "name": package_name,
-            "price": package_price,
-            "category": "paket",
-            "is_package": True,
-            "payable_override": package_price,
-            **disable_surcharge,
-        },
-    ]
+    _ = (ek2c_packages, rng)
+    pid = str(episode.get("hasta_id", ""))
+    vignette = vignette_for_patient_id(pid)
+    if vignette is None:
+        msg = f"Missing vignette for optional override demo patient {pid}"
+        raise ValueError(msg)
+    return build_optional_override_specs(
+        vignette,
+        str(demo_kind),
+        ek2b_procs=ek2b_procs,
+    )
 
 
 def _pick_gazette_repricing_demo_procedures(
@@ -1785,7 +1728,11 @@ def _append_procedure_lines_for_claim(
             "fatura_tutari_try": billed,
             "beklenen_odenebilir_tutar_try": expected_payable,
             "pakete_dahil_mi": included_in_package,
-            "paket_kodu": ctx.package_code_for_claim if (included_in_package or is_package_proc) else None,
+            "paket_kodu": (
+                (ps.get("candidate_package_code") or ctx.package_code_for_claim)
+                if (included_in_package or is_package_proc or ps.get("candidate_package_code"))
+                else None
+            ),
             "ilave_ucret_uygulanabilir_mi": surcharge_applicable,
             "ilave_ucret_orani": surcharge_rate,
             "katilim_payi_orani_uygulanabilir_mi": copay_applicable,
@@ -2298,10 +2245,12 @@ def _generate_claims_and_lines(
             if ps.get("is_package"):
                 package_code_for_claim = ps["code"]
                 break
+            if ps.get("candidate_package_code"):
+                package_code_for_claim = str(ps["candidate_package_code"])
 
         # DRG uplift demo keeps package lines but package_candidate=False so strategy defers.
         package_candidate = package_code_for_claim is not None and (
-            not drg_demo or package_adequacy_demo
+            not drg_demo or package_adequacy_demo or override_demo
         )
 
         ctx = ClaimEpisodeContext(
@@ -2367,7 +2316,7 @@ def _generate_claims_and_lines(
                     first_proc["islem_satiri_id"] if first_proc else ""
                 ),
             })
-        if material_demo:
+        if material_demo or override_demo:
             mat_billed, mat_payable = 0.0, 0.0
         elif material_prose_spec or claim_readiness_spec:
             mat_billed, mat_payable = _append_material_prose_demo_line(
@@ -2376,7 +2325,10 @@ def _generate_claims_and_lines(
             )
         else:
             mat_billed, mat_payable = _append_material_lines_for_claim(ctx)
-        drug_billed, drug_payable = _append_drug_lines_for_claim(ctx)
+        if override_demo:
+            drug_billed, drug_payable = 0.0, 0.0
+        else:
+            drug_billed, drug_payable = _append_drug_lines_for_claim(ctx)
         if drug_indication_spec:
             d_line_id = f"ILC-{claim_id}-IND-001"
             prescription_id = f"REC-{claim_id}-IND-001"

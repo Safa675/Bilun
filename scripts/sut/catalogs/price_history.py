@@ -80,7 +80,7 @@ def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
     body = df.iloc[h_idx + 1 :]
 
     out = pd.DataFrame()
-    out["package_code"] = body.iloc[:, pos["ISLEM KODU"]].apply(
+    out["code"] = body.iloc[:, pos["ISLEM KODU"]].apply(
         lambda x: str(x).strip() if pd.notna(x) else ""
     )
     out["name"] = body.iloc[:, pos["ISLEM ADI"]].apply(
@@ -90,10 +90,10 @@ def extract_ek2b(df: pd.DataFrame) -> pd.DataFrame:
         body.iloc[:, pos["ISLEM PUANI"]], errors="coerce"
     )
 
-    out = out[out["package_code"].str.match(RE_EK2B_CODE, na=False)]
+    out = out[out["code"].str.match(RE_EK2B_CODE, na=False)]
     out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
     out = out.reset_index(drop=True)
-    return out[["package_code", "name", "puan", "price_try"]]
+    return out[["code", "name", "puan", "price_try"]]
 
 
 def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
@@ -142,8 +142,16 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
             out["prose_drg_locked"] = out["package_code"].map(
                 lambda code: normalize_procedure_code(str(code)) in locked
             )
-    except Exception:
-        pass
+    except Exception as exc:
+        # Don't let a prose-rules import failure silently zero out the
+        # DRG-locked flag — surface it so downstream pricing stays trustworthy.
+        import logging
+
+        logging.getLogger(__name__).warning(
+            "prose_drg_locked could not be loaded; "
+            "EK-2C entries will have prose_drg_locked=False. Cause: %s",
+            exc,
+        )
     out = out.reset_index(drop=True)
     return out[
         [
@@ -165,7 +173,7 @@ SPECS: list[dict] = [
         "output": "ek2b_catalog_history.parquet",
         "source": "raw_all_versions",
         "extractor": extract_ek2b,
-        "history_key": "package_code",
+        "history_key": "code",
         "label": "EK-2B Procedure Prices (history)",
     },
     {

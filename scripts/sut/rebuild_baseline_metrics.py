@@ -49,7 +49,7 @@ def _material_bundling_snapshot(
         "gap_rows": int(mb["has_algorithmic_gap"].sum()),
         "prose_rules_on_disk": 0,
     }
-    prose_json = Path("data/gazette/prose_rules/material_bundling_prose.json")
+    prose_json = _PROJECT_ROOT / "data/gazette/prose_rules/material_bundling_prose.json"
     if prose_json.is_file():
         payload = json.loads(prose_json.read_text(encoding="utf-8"))
         snapshot["prose_rules_on_disk"] = len(payload.get("rules", []))
@@ -78,7 +78,7 @@ def _drug_indication_snapshot(
         else 0,
         "prose_rules_on_disk": 0,
     }
-    prose_json = Path("data/gazette/prose_rules/drug_indication_prose.json")
+    prose_json = _PROJECT_ROOT / "data/gazette/prose_rules/drug_indication_prose.json"
     if prose_json.is_file():
         payload = json.loads(prose_json.read_text(encoding="utf-8"))
         snapshot["prose_rules_on_disk"] = len(payload.get("rules", []))
@@ -140,7 +140,7 @@ def build_baseline_metrics(
             "drug_indication_prose": _drug_indication_snapshot(
                 coverage,
                 manifest_path=drug_manifest_path
-                or Path("data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"),
+                or (_PROJECT_ROOT / "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"),
             ),
         },
         "registry": {
@@ -178,33 +178,33 @@ def main() -> None:
     parser.add_argument(
         "--clauses",
         type=Path,
-        default=Path("data/gazette/sut_clauses.parquet"),
+        default=_PROJECT_ROOT / "data/gazette/sut_clauses.parquet",
     )
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path("tasks/archive/sut-fact-check-2026-06/baseline_metrics.json"),
+        default=_PROJECT_ROOT / "tasks/archive/sut-fact-check-2026-06/baseline_metrics.json",
     )
     parser.add_argument(
         "--coverage-dir",
         type=Path,
-        default=Path("data/gazette"),
+        default=_PROJECT_ROOT / "data/gazette",
         help="Optional parquet outputs for sut_clause_coverage etc.",
     )
     parser.add_argument(
         "--manifest",
         type=Path,
-        default=Path("data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json"),
+        default=_PROJECT_ROOT / "data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json",
     )
     parser.add_argument(
         "--gate-b-summary",
         type=Path,
-        default=Path("data/gazette/prose_corpus/L1.4_material_bundling_gate_b_summary.json"),
+        default=_PROJECT_ROOT / "data/gazette/prose_corpus/L1.4_material_bundling_gate_b_summary.json",
     )
     parser.add_argument(
         "--drug-manifest",
         type=Path,
-        default=Path("data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"),
+        default=_PROJECT_ROOT / "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json",
     )
     args = parser.parse_args()
 

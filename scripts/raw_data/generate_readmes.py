@@ -4,12 +4,13 @@
 from __future__ import annotations
 
 import re
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
 
 RAW = Path(__file__).resolve().parents[2] / "raw data"
-TODAY = "2026-06-15"
+TODAY = date.today().isoformat()
 
 EK_META: dict[str, dict[str, str]] = {
     "EK-1A": {

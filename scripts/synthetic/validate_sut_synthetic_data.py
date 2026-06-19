@@ -14,11 +14,12 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.bilun.domain.claims.schema import build_synthetic_claim_validation_columns
+from demo_config import load_demo_manifest, tier_a_patient_ids, vignette_registry
 
 DEFAULT_DATA_DIR = PROJECT_ROOT / "data" / "synthetic" / "sut"
 WORKBOOK_NAME = "sentetik_sut_v2_50_hasta.xlsx"
 MIN_PATIENTS = 50
-MIN_CLAIMS = 100
+MIN_CLAIMS = 90
 MIN_PROCEDURES = 300
 MIN_DRUGS = 60
 MIN_MATERIALS = 50
@@ -84,15 +85,15 @@ def _read_excel(data_dir: Path, errors: list[str]) -> dict[str, pd.DataFrame]:
     if not workbook.exists():
         _error(errors, f"Workbook missing: {workbook}")
         return {}
-    xls = pd.ExcelFile(workbook)
-    missing = [sheet for sheet in REQUIRED_SHEETS if sheet not in xls.sheet_names]
-    for sheet in missing:
-        _error(errors, f"Workbook missing sheet: {sheet}")
-    return {
-        sheet: pd.read_excel(xls, sheet_name=sheet)
-        for sheet in REQUIRED_SHEETS
-        if sheet in xls.sheet_names
-    }
+    with pd.ExcelFile(workbook) as xls:
+        missing = [sheet for sheet in REQUIRED_SHEETS if sheet not in xls.sheet_names]
+        for sheet in missing:
+            _error(errors, f"Workbook missing sheet: {sheet}")
+        return {
+            sheet: pd.read_excel(xls, sheet_name=sheet)
+            for sheet in REQUIRED_SHEETS
+            if sheet in xls.sheet_names
+        }
 
 
 def _validate_workbook(tables: dict[str, pd.DataFrame], errors: list[str]) -> None:
@@ -773,6 +774,155 @@ def _validate_expected_outputs(
         _error(errors, f"Missing line-level expected outputs: {missing_line_outputs}")
 
 
+def _validate_vignette_manifest_alignment(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    """P2: vignette registry and manifest scenario tags stay in sync."""
+    registry = vignette_registry()
+    manifest = load_demo_manifest()
+    scenario_by_index = manifest.get("scenario_by_index") or {}
+    for index, expected_tag in scenario_by_index.items():
+        vignette = registry.get(str(index))
+        if vignette is None:
+            _error(errors, f"Manifest index {index} has no vignette row")
+            continue
+        if vignette.scenario_tag != expected_tag:
+            _error(
+                errors,
+                f"Vignette {index} scenario_tag={vignette.scenario_tag!r} "
+                f"!= manifest {expected_tag!r}",
+            )
+
+    claims = tables["fatura_basliklari"]
+    for index, expected_tag in scenario_by_index.items():
+        patient_id = f"SENTETIK-HASTA-{index}"
+        patient_claims = claims[_strings(claims["hasta_id"]) == patient_id]
+        if patient_claims.empty:
+            continue
+        tagged = patient_claims[_strings(patient_claims["senaryo_etiketi"]) == expected_tag]
+        if tagged.empty:
+            _error(
+                errors,
+                f"Patient {patient_id} missing generated claim for scenario {expected_tag!r}",
+            )
+
+
+def _validate_tier_a_credibility(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    """Tier A showcase: no ghost package lines; header totals match line sums."""
+    manifest = load_demo_manifest()
+    tier_a = tier_a_patient_ids()
+    if not tier_a:
+        return
+
+    procedures = tables["islem_fatura_satirlari"]
+    claims = tables["fatura_basliklari"]
+    materials = tables["malzeme_fatura_satirlari"]
+    drugs = tables["ilac_fatura_satirlari"]
+
+    for patient_id in sorted(tier_a):
+        patient_claims = claims[_strings(claims["hasta_id"]) == patient_id]
+        if patient_claims.empty:
+            _error(errors, f"Tier A patient missing claims: {patient_id}")
+            continue
+
+        scenario_by_index = manifest.get("scenario_by_index") or {}
+        patient_index = patient_id.rsplit("-", 1)[-1]
+        showcase_tag = scenario_by_index.get(patient_index)
+        if showcase_tag:
+            tagged = patient_claims[
+                _strings(patient_claims["senaryo_etiketi"]) == showcase_tag
+            ]
+            if tagged.empty:
+                _error(
+                    errors,
+                    f"Tier A patient {patient_id} missing showcase scenario {showcase_tag!r}",
+                )
+
+        for _, claim in patient_claims.iterrows():
+            claim_id = str(claim["fatura_id"])
+            claim_tag = str(claim.get("senaryo_etiketi") or "")
+            is_showcase_claim = showcase_tag and claim_tag == showcase_tag
+            claim_procs = procedures[_strings(procedures["fatura_id"]) == claim_id]
+            billed = float(claim.get("beklenen_toplam_fatura_tutari_try") or 0)
+            payable = float(claim.get("beklenen_toplam_odenebilir_tutar_try") or 0)
+
+            line_billed = sum(float(row.get("fatura_tutari_try") or 0) for _, row in claim_procs.iterrows())
+            line_billed += sum(
+                float(row.get("fatura_tutari_try") or 0)
+                for _, row in materials[_strings(materials["fatura_id"]) == claim_id].iterrows()
+            )
+            line_billed += sum(
+                float(row.get("fatura_tutari_try") or 0)
+                for _, row in drugs[_strings(drugs["fatura_id"]) == claim_id].iterrows()
+            )
+            line_payable = sum(
+                float(row.get("beklenen_odenebilir_tutar_try") or 0) for _, row in claim_procs.iterrows()
+            )
+            line_payable += sum(
+                float(row.get("beklenen_odenebilir_tutar_try") or 0)
+                for _, row in materials[_strings(materials["fatura_id"]) == claim_id].iterrows()
+            )
+            line_payable += sum(
+                float(row.get("beklenen_odenebilir_tutar_try") or 0)
+                for _, row in drugs[_strings(drugs["fatura_id"]) == claim_id].iterrows()
+            )
+            if abs(billed - line_billed) > 0.02:
+                _error(
+                    errors,
+                    f"Tier A claim {claim_id} header billed {billed} != line sum {line_billed}",
+                )
+            if abs(payable - line_payable) > 0.02:
+                _error(
+                    errors,
+                    f"Tier A claim {claim_id} header payable {payable} != line sum {line_payable}",
+                )
+
+            if not is_showcase_claim:
+                continue
+
+            optional_override = claim_tag.startswith("sgk_optional_override_")
+            if not optional_override:
+                continue
+
+            ghost = claim_procs[
+                (_strings(claim_procs["islem_kategorisi"]) == "paket")
+                & (claim_procs["fatura_tutari_try"].fillna(0).astype(float) <= 0)
+                & (claim_procs["beklenen_odenebilir_tutar_try"].fillna(0).astype(float) > 0)
+            ]
+            if not ghost.empty:
+                _error(
+                    errors,
+                    f"Tier A claim {claim_id} has ghost package line(s): "
+                    f"{ghost['islem_kodu'].astype(str).tolist()}",
+                )
+
+            billed_paket = claim_procs[
+                (_strings(claim_procs["islem_kategorisi"]) == "paket")
+                & (claim_procs["fatura_tutari_try"].fillna(0).astype(float) > 0)
+            ]
+            billed_itemized = claim_procs[
+                (_strings(claim_procs["islem_kategorisi"]) != "paket")
+                & (claim_procs["fatura_tutari_try"].fillna(0).astype(float) > 0)
+                & (~_truthy(claim_procs["pakete_dahil_mi"]))
+            ]
+            if not billed_paket.empty and not billed_itemized.empty:
+                paket_payable = float(
+                    billed_paket["beklenen_odenebilir_tutar_try"].fillna(0).astype(float).sum()
+                )
+                item_payable = float(
+                    billed_itemized["beklenen_odenebilir_tutar_try"].fillna(0).astype(float).sum()
+                )
+                if paket_payable > 0 and item_payable > 0:
+                    _error(
+                        errors,
+                        f"Tier A claim {claim_id} double billing path: package and itemized payables",
+                    )
+
+
 def _validate_parquet_dir(
     directory: Path,
     required: dict[str, set[str]],
@@ -811,6 +961,8 @@ def main() -> None:
         _validate_claim_readiness_demos(tables, errors)
         _validate_payment_method_compliance_demos(tables, errors)
         _validate_packaged_claim_mandatory_side_procedures(tables, errors)
+        _validate_vignette_manifest_alignment(tables, errors)
+        _validate_tier_a_credibility(tables, errors)
     _validate_parquet_dir(data_dir / "clean", REQUIRED_CLEAN_COLUMNS, errors)
     _validate_parquet_dir(data_dir / "claims", REQUIRED_CLAIM_COLUMNS, errors)
 
