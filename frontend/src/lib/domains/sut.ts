@@ -552,8 +552,11 @@ export interface BillingStrategyRecommendation extends ExactnessState {
     current_billing?: "package" | "itemized";
     catalog_as_of_date?: string | null;
     package_price_methodology?: string;
-    type?: "compliance_violation";
+    type?: "compliance_violation" | "informational";
     billed_as_package?: boolean;
+    recommended_package_code?: string | null;
+    recoverable_uplift_try?: number | null;
+    included_in_sgk_total?: boolean | null;
   }>;
 }
 
@@ -902,6 +905,22 @@ export interface SessionPricingUplift extends ExactnessState {
   review_opportunity_count?: number;
 }
 
+export interface RecommendedActionItem {
+  action_id: string;
+  surface: string;
+  kind: string;
+  claim_id?: string | null;
+  procedure_code?: string | null;
+  procedure_name?: string | null;
+  material_code?: string | null;
+  drug_code?: string | null;
+  sgk_uplift_try?: number | null;
+  audit_risk_try?: number | null;
+  compliance_savings_try?: number | null;
+  detail?: string | null;
+  sut_section_id?: string | null;
+}
+
 export interface BillingActionReport extends SUTDataSourceCarrier {
   patient_id: string;
   lab: LabOptimization;
@@ -930,6 +949,7 @@ export interface BillingActionReport extends SUTDataSourceCarrier {
   claim_submission_checklist_count?: number;
   drug_indication_violation_count?: number;
   total_recoverable_try: number;
+  recommended_actions?: RecommendedActionItem[];
   action_count: number;
   priority: "high" | "medium" | "low";
   exactness_status?: ExactnessStatus;

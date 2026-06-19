@@ -38,6 +38,7 @@ from src.bilun.domain.claims.models import (
 from src.bilun.domain.claims.patient_context import (
     CohortClaimContext,
     PatientClaimContext,
+    build_bill_claim_context,
     build_cohort_claim_context,
     build_patient_claim_context,
 )
@@ -75,6 +76,7 @@ __all__ = [
     "SYNTHETIC_DEMO_MODE",
     "UNAVAILABLE_BILUN_DATA_MODE",
     "attach_bilun_data_source_metadata",
+    "build_bill_claim_context",
     "build_cohort_claim_context",
     "build_patient_claim_context",
     "clear_sut_claim_dataset_cache",

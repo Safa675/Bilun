@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
+import type { BillingActionReport } from "@/lib/domains/sut";
 import {
   BillingStrategySection,
+  BillingSummary,
   CopayOptimizationSection,
   DrgUpliftSection,
   MaterialsPreCheckSection,
@@ -439,5 +441,50 @@ describe("DrugIndicationReviewSection", () => {
     expect(html).toContain("missing_board_report");
     expect(html).toContain("AVASTIN");
     expect(html).toContain("C34.9");
+  });
+
+  it("lists itemized recommended actions under billing summary", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <BillingSummary
+        billingReport={{
+          patient_id: "SENTETIK-HASTA-0003",
+          claim_id: "F-SENTETIK-HASTA-0003-015",
+          scope: "bill",
+          exactness_status: "exact",
+          priority: "low",
+          total_recoverable_try: 0,
+          action_count: 4,
+          sgk_uplift_try: 0,
+          recommended_actions: [
+            {
+              action_id: "strategy:608870",
+              surface: "billing_strategy",
+              kind: "compliance_violation",
+              procedure_code: "608870",
+              procedure_name: "Torakotomi",
+              detail: "must use package",
+              sut_section_id: "2.2.1.B-1.a",
+            },
+            {
+              action_id: "copay:ek1a",
+              surface: "copay",
+              kind: "exemption_review",
+              sut_section_id: "1.8.5(7)",
+            },
+          ],
+          copay: {
+            is_exempt: false,
+            visit_copay_savings_try: 0,
+            rx_copay_savings_try: 0,
+          },
+        } as BillingActionReport}
+      />,
+    );
+
+    expect(html).toContain("608870");
+    expect(html).toContain("Torakotomi");
+    // Both recommended actions render as separate rows in the itemized table.
+    expect(html).toContain("§2.2.1.B-1.a");
+    expect(html).toContain("§1.8.5(7)");
   });
 });

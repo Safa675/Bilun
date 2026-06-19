@@ -516,6 +516,7 @@ class BillingReportResponse(BaseModel):
     claim_submission_checklist_count: int = 0
     drug_indication_violation_count: int = 0
     total_recoverable_try: float = 0.0
+    recommended_actions: list[dict[str, Any]] = Field(default_factory=list)
     action_count: int = 0
     priority: str = "low"
     exactness_status: ExactnessStatus = "missing_exact_inputs"

@@ -18,6 +18,21 @@ describe("sutExactness helpers", () => {
     );
   });
 
+  it("treats uplift totals as recoverable even when report exactness is blocked", () => {
+    expect(
+      hasRecoverableBillingTotals({
+        exactness_status: "missing_exact_inputs",
+        sgk_uplift_try: 7634.02,
+      }),
+    ).toBe(true);
+    expect(
+      hasRecoverableBillingTotals({
+        exactness_status: "missing_exact_inputs",
+        recommended_actions: [{ action_id: "x" }],
+      }),
+    ).toBe(true);
+  });
+
   it("formats required input identifiers into readable labels", () => {
     expect(formatRequiredInputs(["billed_procedure_codes", "procedure_dates"])).toBe(
       "billed procedure codes, procedure dates",

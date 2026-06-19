@@ -1,5 +1,65 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: SUT tebliği tazeliği — 2026.04.08 konsolide replace + 2026.05.23 delta patch
+
+### Goal
+Aktif SUT kaynağını 2026.01.17 → **2026.04.08 konsolide paket** ile değiştir (structure drop-in, doğrulandı). Ardından **23.05.2026 (RG 33262) delta tebliği**'nin BILUN-relevant maddelerini (özellikle §4.2.1.C-1 anti-TNF, §4.2.14.C prostat, §4.2.33 anti-VEGF) `drug_indication_prose` rule'larına patch olarak uygula. WebSearch (MCP quota) + gerçek dosya içeriği doğrulaması yapıldı.
+
+### Gerçek durum (doğrulandı, önceki plan yanlıştı)
+- **2026.04.08 klasörü** = tam konsolide "işlenmiş" SUT (998KB docx + EK-1/2/3/4). 01.17 ile birebir aynı EK dosya seti (eksik dosyalar sadece BILUN'un generate ettiği README.md'ler — pipeline yeniden üretecek). **Drop-in replace güvenli.**
+- **23.05.2026** = konsolide paket DEĞİL, sadece Resmî Gazette delta docx (1675 kelime, 10 MADDE). "Replace" yapılmaz, **patch olarak uygulanır**.
+- UUID adlı loose dosyalar: `6ae46745-...docx` = Mayıs delta metni; `f7f6aae6-...xlsx` = Mayıs MADDE 9'a ait yeni EK-4A ilaç listesi; `26046592-...zip` = bu ikisinin kaynağı.
+
+### Subtasks
+
+#### Faz 0 — Hazırlık (AGENT) ✅ tamamlandı
+- [x] Kullanıcı dosyaları indirdi
+- [x] Dosya kimlikleri doğrulandı (docx içeriği + xlsx sheet adı okundu)
+- [x] 04.08 vs 01.17 EK structure diff'i yapıldı (eksik = sadece README.md'ler)
+
+#### Faz 1 — Dosya yerleşimi ve isim düzeltme (AGENT)
+- [ ] Mayıs delta docx + EK-4A xlsx'i `raw data/` altında anlamlı isimlere taşı: `2026.05.23-Değişiklik Tebliği Delta (RG 33262).docx` + `2026.05.23-EK-4A Yeni Liste.xlsx`
+- [ ] `26046592-...zip` ve boş klasörünü temizle (kaynak arşiv, artık gerek yok)
+- [ ] `convert_xlsx_to_parquet.py`'nın path discovery'sini kontrol et: 04.08 klasörünü nasıl buluyor? (glob mı config mi)
+
+#### Faz 2 — 04.08'i aktif SUT yap (AGENT)
+- [ ] `convert_xlsx_to_parquet.py` 04.08 klasörünü hedefleyerek çalıştır → raw parquet yeniden inşa
+- [ ] `build_curated_catalogs.py` curated katmanı yeniden inşa (EK-2B/2C/3/4 parquet'leri)
+- [ ] `extract_sut_prose.py` 04.08 ana `.docx` için çalıştır → `sut_clauses.parquet` yeniden inşa
+- [ ] `version_manifest.parquet` güncellendi, son yürürlük = 08.04.2026
+- [ ] `generate_readmes.py` çalıştır → EK-*/ klasörlerine yeni README'ler
+
+#### Faz 3 — Mayıs delta patch (AGENT)
+- [ ] Delta docx'i parse et: 10 maddeden hangileri BILUN rule_registry'ye dokunuyor?
+- [ ] §4.2.1.C-1 anti-TNF (infliximab/sertolizumab/golimumab) → `drug_indication_prose.json`'da karşılığı var mı diff
+- [ ] §4.2.14.C prostat ADT yeni kriterleri → yeni rule ekle
+- [ ] §4.2.33 anti-VEGF (ranibizumab/aflibersept) yükleme dozu değişikliği
+- [ ] MADDE 9: yeni EK-4A xlsx'i 04.08'in EK-4A'sıyla diff → değişen ilaçlar
+- [ ] MADDE 10: EK-4/D A31 mikobakteri satırları eklendi → `ek4d_copay_exempt.py` rerun
+
+#### Faz 4 — Test ve doğrulama (AGENT, AGENTS.md §4)
+- [ ] `pytest tests/` çalıştır → kırılan testleri tespit et
+- [ ] Kırılan testler fiyat/fixture kaynaklıysa → yeni 04.08 fiyatlarına güncelle (sentetik cohort yeniden üret?)
+- [ ] `version_manifest.parquet` son tarih = 08.04.2026 (Mayıs delta henüz konsolide değil, not düş)
+- [ ] Frontend "gazette version" tarihi 08.04.2026 gösteriyor mu
+- [ ] "Would a staff engineer approve?" — diff çıktısını gözden geçir
+
+#### Faz 5 — Dokümantasyon (AGENT)
+- [ ] `docs/gazette/changelog.md` (yeni): 04.08 replace + 05.23 delta patch özeti
+- [ ] `README.md` (repo root) gazette versiyon tarihini 08.04.2026'ya güncelle
+- [ ] `tasks/lessons.md`'ye 2 not: (a) periyodik tebliğ kontrol süreci, (b) "konsolide vs delta tebliği ayrımı" (dosya adından değil içeriğinden)
+
+### Out of Scope
+- Mayıs delta'nın tam konsolide edilmiş SUT'yu üretmek (SGK'dan indirme gerekir, BILUN yapmaz)
+- PDF Fatura İnceleme Esasları anjio tenzil (sonraki task)
+- EK-1C loader (sonraki task)
+
+### Riskler
+- **Test kırılması**: 01.17 fiyatlarıyla yazılan fixture'lar 04.08 fiyatlarıyla uyuşmayacak. Cohort'u yeniden üretmek (`generate_sut_synthetic_data_v2.py`) gerekebilir — bu Faz 4'te ortaya çıkacak.
+- **Mayıs delta konsolide değil**: 05.23 sadece patch uygulandı, tam SUT metni 04.08'de kaldı. Bu bir geçici durum; bir sonraki SGK konsolide paketi gelince düzeltilir.
+
+---
+
 ## Task: Billing action count doğruluğu — duplicate informational Row B düzelt
 
 ### Goal
@@ -322,6 +382,28 @@ Prove no product API field presents a ₺ amount derived from ICD chapter median
 - Full SUT prose coverage (54% algorithmic gaps remain a separate workstream).
 - Hospital grouper / auto package-code assignment.
 - MEDULA live integration.
+
+---
+
+## Task: Local commit'leri push et + recommended_actions structured breakdown
+
+### Goal
+1) Mevcut 2 local commit'i (a0d13a4 billing count, fe4136d start.sh) remote'a push et (AGENTS.md §10: CI yeşil kontrolü öncesi). 2) Çalışma ağacındaki refinement'i 2 commit'e böl: (A) `recommended_actions` structured breakdown — opaque integer sayımı tek-tek satır bazlı yapıya çevir, (B) lessons.md EK-4B hallucination girdisi. Co-author yok.
+
+### Subtasks
+- [x] CI yeşil doğrula (origin/main son run = 83660d9, success)
+- [ ] a0d13a4 + fe4136d push et
+- [ ] Çalışma ağacını oku: billing_actions.py refactor'ı, broken test import (`build_bill_claim_context` export edilmemiş)
+- [ ] Fix: `src/bilun/domain/claims/__init__.py`'ya `build_bill_claim_context` export ekle
+- [ ] Commit A: billing_actions.py + patient_report.py + types.py + schemas.py + __init__.py + test_billing_actions.py
+- [ ] Commit B: tasks/lessons.md EK-4B entry
+- [ ] pytest tam yeşil doğrula
+- [ ] Push + push sonrası CI yeşil doğrula
+
+### Out of Scope
+- Build artifact'ları (next-env.d.ts, tsconfig.tsbuildinfo, package-lock.json, .~lock*) — commit dışı bırak
+- Backend audit (sonraki)
+- DuckDB cache rebuild (backend down; kullanıcı `./start.sh` ile yeniden başlatacak)
 
 ---
 

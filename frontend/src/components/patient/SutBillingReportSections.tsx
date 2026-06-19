@@ -36,6 +36,12 @@ import {
   usesHeuristicStrategyReviewShape,
   usesInsightOnlyCopayCorrectionShape,
 } from "@/lib/billingReportFields";
+import {
+  getRecommendedActions,
+  recommendedActionAmountParts,
+  recommendedActionSurfaceLabel,
+  recommendedActionTitle,
+} from "@/lib/recommendedActions";
 import { theme } from "@/lib/theme";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { EkAnnexChips, RuleSourceAttribution } from "@/components/sut/RegulatorySourceChips";
@@ -146,6 +152,82 @@ export function TableWrap({
     <DataTable minWidth={minWidth} className="text-[0.82rem]">
       {children}
     </DataTable>
+  );
+}
+
+export function RecommendedActionsPanel({
+  billingReport,
+}: {
+  billingReport: BillingActionReport;
+}) {
+  const t = useT();
+  const reportHasTotals = hasRecoverableBillingTotals(billingReport);
+  const actions = getRecommendedActions(billingReport);
+
+  if (actions.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-3 border-t border-[var(--border-subtle)] pt-5">
+      <Eyebrow>{t("billing.recommendedActions.listTitle")}</Eyebrow>
+      <TableWrap minWidth={920}>
+        <thead>
+          <tr>
+            <th>{t("billing.recommendedActions.surface")}</th>
+            <th>{t("billing.summary.recommendedActions")}</th>
+            {!billingReport.scope && (
+              <th style={WRAPPED_HEADER_STYLE}>{t("billing.recommendedActions.claim")}</th>
+            )}
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.recommendedActions.section")}</th>
+            <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
+              {t("billing.recommendedActions.amount")}
+            </th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.recommendedActions.detail")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {actions.map((action) => {
+            const amount = recommendedActionAmountParts(t, action);
+            return (
+              <tr key={action.action_id}>
+                <td>
+                  <Chip variant="neutral">
+                    {recommendedActionSurfaceLabel(t, action.surface)}
+                  </Chip>
+                </td>
+                <td className="font-medium text-[var(--text-primary)]">
+                  {recommendedActionTitle(t, action)}
+                </td>
+                {!billingReport.scope && (
+                  <td className="font-mono text-xs text-[var(--text-secondary)]">
+                    {action.claim_id ?? "—"}
+                  </td>
+                )}
+                <td className="text-sm text-[var(--text-secondary)]">
+                  {action.sut_section_id ? formatSutSectionLabel(action.sut_section_id) : "—"}
+                </td>
+                <td className="num-col tabular-nums text-right text-sm text-[var(--text-primary)]">
+                  {amount ? (
+                    <span>
+                      {amount.value != null ? fmtTRY2(amount.value) : amount.label}
+                      {amount.value != null ? (
+                        <span className="block text-xs text-[var(--text-secondary)]">
+                          {amount.label}
+                        </span>
+                      ) : null}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td className="text-sm text-[var(--text-secondary)]">{action.detail ?? "—"}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </TableWrap>
+    </div>
   );
 }
 
@@ -301,6 +383,7 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
           fallback={t("billing.summary.totalsUnavailableNotice")}
         />
       )}
+      <RecommendedActionsPanel billingReport={billingReport} />
     </Surface>
   );
 }
@@ -801,6 +884,7 @@ export function OptionalOverrideSection({
           <tr>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.optionalOverride.claim")}</th>
             <th>{t("billing.optionalOverride.recommended")}</th>
+            <th style={WRAPPED_HEADER_STYLE}>{t("billing.optionalOverride.packageCode")}</th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.optionalOverride.currentBilling")}</th>
             <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
               {t("billing.optionalOverride.packageTotal")}
@@ -824,6 +908,9 @@ export function OptionalOverrideSection({
                   label={fmtLabel(strategyModeLabel(item))}
                   color={strategyBadgeColor(item)}
                 />
+              </td>
+              <td className="font-mono text-sm text-[var(--text-primary)]">
+                {item.recommended_package_code ?? "—"}
               </td>
               <td>{item.current_billing ?? "—"}</td>
               <td className="num-col tabular-nums text-right">

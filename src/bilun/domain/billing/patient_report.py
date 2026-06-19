@@ -37,44 +37,10 @@ from src.bilun.domain.constants import SUT_REQUIRE_CLAIM_LINES
 
 from .lab_bill_merge import compute_lab_and_capture_gap_from_claims
 from .procedure_dedup import dedupe_addon_against_capture
+from .billing_actions import collect_billing_actions
 from .report_exactness import finalize_report_exactness, set_missing_inputs_report
 from .report_totals import finalize_report_totals
 from .types import BillingActionReport
-
-
-def count_billing_actions(report: BillingActionReport) -> int:
-    # Strategy recommendations may include informational mandated-method
-    # rows (type == "informational") that are not actionable. Exclude them
-    # from the action count so the headline "recommended actions" number
-    # reflects only real violations / claim-level strategy decisions.
-    actionable_strategy_rows = sum(
-        1
-        for row in report.billing_strategy.recommendations
-        if row.get("type") != "informational"
-    )
-    return (
-        len(report.lab.flagged_tests)
-        + (1 if report.copay.is_exempt else 0)
-        + actionable_strategy_rows
-        + len(report.session_uplift.opportunities)
-        + len(report.drg_uplift.opportunities)
-        + len(report.blood_uplift.opportunities)
-        + len(report.material_uplift.opportunities)
-        + len(report.care_setting_review.opportunities)
-        + len(report.procedure_addon_uplift.opportunities)
-        + len(report.procedure_capture_gap.opportunities)
-        + len(report.drg_package_adequacy.opportunities)
-        + len(report.gazette_repricing.opportunities)
-        + len(report.medula_rejection_playbook.entries)
-        + len(report.claim_submission_checklist.items)
-        + len(report.drug_indication.violations)
-        + len(getattr(report.materials, "pre_auth_required", []))
-        + len(getattr(report.materials, "miat_restricted", []))
-        + len(getattr(report.materials, "bundled_separate_billing", []))
-        + len(getattr(report.materials, "miat_interval_violations", []))
-        + len(getattr(report.materials, "prose_bundling_violations", []))
-        + len(getattr(report.materials, "specialty_prose_violations", []))
-    )
 
 
 def compute_patient_billing_report(
@@ -172,7 +138,8 @@ def compute_patient_billing_report(
     report.materials = precheck_materials_from_claims(claim_context)
 
     finalize_report_totals(report, claim_context=claim_context)
-    report.action_count = count_billing_actions(report)
+    report.recommended_actions = collect_billing_actions(report)
+    report.action_count = len(report.recommended_actions)
     finalize_report_exactness(report)
 
     return report

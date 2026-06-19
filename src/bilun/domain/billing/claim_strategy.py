@@ -26,6 +26,7 @@ from src.bilun.domain.prose_rules.types import (
 from .demo_vignette_lookup import (
     hypothetical_itemized_total_try,
     hypothetical_package_total_try,
+    recommended_package_code_for_claim,
 )
 from .types import EXACTNESS_STATUS_EXACT, BillingStrategyRecommendation
 
@@ -447,12 +448,19 @@ def recommend_billing_strategy_from_claims(
             else None
         )
 
+        recommended_package_code = (
+            recommended_package_code_for_claim(claim, claim_procs)
+            if recommendation == "package"
+            else None
+        )
+
         recommendations.append(
             {
                 "claim_id": claim.claim_id,
                 "recommendation": recommendation,
                 "recommendation_kind": recommendation_kind,
                 "payment_method_kind": claim_kind,
+                "recommended_package_code": recommended_package_code,
                 "sut_section_id": primary.trace.sut_section,
                 "rule_id": primary.trace.rule_id,
                 "package_total_try": _money(package_total),

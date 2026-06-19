@@ -1,0 +1,204 @@
+import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
+
+type TranslateFn = (
+  key: string,
+  params?: Record<string, string | number>,
+) => string;
+
+export type { RecommendedActionItem };
+
+export function getRecommendedActions(
+  report: BillingActionReport,
+): RecommendedActionItem[] {
+  if (report.recommended_actions?.length) {
+    return report.recommended_actions;
+  }
+  return buildRecommendedActionsFallback(report);
+}
+
+function buildRecommendedActionsFallback(
+  report: BillingActionReport,
+): RecommendedActionItem[] {
+  const actions: RecommendedActionItem[] = [];
+
+  for (const test of report.lab?.flagged_tests ?? []) {
+    actions.push({
+      action_id: `lab:${test.sut_code ?? test.test_name}`,
+      surface: "lab",
+      kind: String(test.flag_type ?? "lab_flag"),
+      procedure_code: test.sut_code ?? null,
+      procedure_name: test.test_name ?? null,
+      compliance_savings_try: test.savings_try ?? null,
+      detail: test.detail ?? null,
+    });
+  }
+
+  if (report.copay?.is_exempt) {
+    actions.push({
+      action_id: "copay:ek1a_exemption_review",
+      surface: "copay",
+      kind: "exemption_review",
+      compliance_savings_try:
+        report.copay.patient_copay_waived_total_try ??
+        report.copay.total_copay_savings_try ??
+        null,
+      detail: report.copay.exemption_disease ?? null,
+      sut_section_id: "1.8.5(7)",
+    });
+  }
+
+  for (const row of report.billing_strategy?.recommendations ?? []) {
+    if (row.type === "informational") continue;
+    actions.push({
+      action_id: `strategy:${row.claim_id}:${row.procedure_code}:${row.type ?? row.recommendation_kind}`,
+      surface: "billing_strategy",
+      kind: String(row.type ?? row.recommendation_kind ?? "strategy"),
+      claim_id: row.claim_id ?? null,
+      procedure_code: row.procedure_code ?? null,
+      procedure_name: row.procedure_name ?? null,
+      sgk_uplift_try:
+        row.included_in_sgk_total === false
+          ? null
+          : row.savings_try ?? row.recoverable_uplift_try ?? null,
+      detail: row.detail ?? null,
+      sut_section_id: row.sut_section_id ?? row.sut_section ?? null,
+    });
+  }
+
+  const upliftBlocks: Array<[string, { opportunities?: Array<Record<string, unknown>> } | undefined]> =
+    [
+      ["material_uplift", report.material_uplift],
+      ["session_uplift", report.session_uplift],
+      ["drg_uplift", report.drg_uplift],
+      ["blood_uplift", report.blood_uplift],
+    ];
+
+  for (const [surface, block] of upliftBlocks) {
+    for (const row of block?.opportunities ?? []) {
+      actions.push({
+        action_id: `${surface}:${row.claim_id}:${row.procedure_code ?? row.material_code}`,
+        surface,
+        kind: String(row.type ?? surface),
+        claim_id: (row.claim_id as string | undefined) ?? null,
+        procedure_code: (row.procedure_code as string | undefined) ?? null,
+        procedure_name: (row.procedure_name as string | undefined) ?? null,
+        material_code: (row.material_code as string | undefined) ?? null,
+        sgk_uplift_try:
+          (row.recoverable_uplift_try as number | undefined) ??
+          (row.recoverable_gap_try as number | undefined) ??
+          null,
+        detail: (row.detail as string | undefined) ?? null,
+        sut_section_id: (row.sut_section_id as string | undefined) ?? null,
+      });
+    }
+  }
+
+  return actions;
+}
+
+const SURFACE_LABEL_KEYS: Record<string, string> = {
+  lab: "billing.recommendedActions.surfaces.lab",
+  copay: "billing.recommendedActions.surfaces.copay",
+  billing_strategy: "billing.recommendedActions.surfaces.billingStrategy",
+  session_uplift: "billing.recommendedActions.surfaces.sessionUplift",
+  drg_uplift: "billing.recommendedActions.surfaces.drgUplift",
+  blood_uplift: "billing.recommendedActions.surfaces.bloodUplift",
+  material_uplift: "billing.recommendedActions.surfaces.materialUplift",
+  care_setting_review: "billing.recommendedActions.surfaces.careSettingReview",
+  procedure_addon_uplift: "billing.recommendedActions.surfaces.procedureAddon",
+  procedure_capture_gap: "billing.recommendedActions.surfaces.procedureCapture",
+  drg_package_adequacy: "billing.recommendedActions.surfaces.drgPackageAdequacy",
+  gazette_repricing: "billing.recommendedActions.surfaces.gazetteRepricing",
+  medula_playbook: "billing.recommendedActions.surfaces.medulaPlaybook",
+  claim_checklist: "billing.recommendedActions.surfaces.claimChecklist",
+  drug_indication: "billing.recommendedActions.surfaces.drugIndication",
+  materials: "billing.recommendedActions.surfaces.materials",
+};
+
+const KIND_LABEL_KEYS: Record<string, string> = {
+  compliance_violation: "billing.recommendedActions.kinds.complianceViolation",
+  optional_override: "billing.recommendedActions.kinds.optionalOverride",
+  mandatory_compliance: "billing.recommendedActions.kinds.mandatoryCompliance",
+  exemption_review: "billing.recommendedActions.kinds.exemptionReview",
+  hemogram_unbundling: "billing.recommendedActions.kinds.hemogramUnbundling",
+  missing_billable_material: "billing.recommendedActions.kinds.missingMaterial",
+};
+
+export function recommendedActionSurfaceLabel(
+  t: TranslateFn,
+  surface: string,
+): string {
+  const key = SURFACE_LABEL_KEYS[surface];
+  return key ? t(key) : surface;
+}
+
+export function recommendedActionKindLabel(t: TranslateFn, kind: string): string {
+  const key = KIND_LABEL_KEYS[kind];
+  return key ? t(key) : kind.replaceAll("_", " ");
+}
+
+export function recommendedActionTitle(
+  t: TranslateFn,
+  action: RecommendedActionItem,
+): string {
+  const kindLabel = recommendedActionKindLabel(t, action.kind);
+  const code =
+    action.procedure_code ??
+    action.material_code ??
+    action.drug_code ??
+    null;
+
+  if (code && action.procedure_name) {
+    return t("billing.recommendedActions.titleWithName", {
+      kind: kindLabel,
+      code,
+      name: action.procedure_name,
+    });
+  }
+
+  if (code) {
+    return t("billing.recommendedActions.titleWithCode", {
+      kind: kindLabel,
+      code,
+    });
+  }
+
+  return kindLabel;
+}
+
+export function recommendedActionAmountParts(
+  t: TranslateFn,
+  action: RecommendedActionItem,
+): { label: string; value: number | null } | null {
+  if (action.sgk_uplift_try != null && action.sgk_uplift_try > 0) {
+    return {
+      label: t("billing.recommendedActions.amountSgkUplift"),
+      value: action.sgk_uplift_try,
+    };
+  }
+  if (action.compliance_savings_try != null && action.compliance_savings_try > 0) {
+    return {
+      label: t("billing.recommendedActions.amountCompliance"),
+      value: action.compliance_savings_try,
+    };
+  }
+  if (action.audit_risk_try != null && action.audit_risk_try > 0) {
+    return {
+      label: t("billing.recommendedActions.amountAuditRisk"),
+      value: action.audit_risk_try,
+    };
+  }
+  if (action.surface === "copay" && action.kind === "exemption_review") {
+    return {
+      label: t("billing.recommendedActions.amountExemptionReview"),
+      value: null,
+    };
+  }
+  if (action.kind === "compliance_violation") {
+    return {
+      label: t("billing.recommendedActions.amountComplianceOnly"),
+      value: null,
+    };
+  }
+  return null;
+}

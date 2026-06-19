@@ -57,6 +57,31 @@ def _has_billed_itemized_lines(claim_procs: list[ProcedureClaimLine]) -> bool:
     )
 
 
+def recommended_package_code_for_claim(
+    claim: ClaimHeader,
+    claim_procs: list[ProcedureClaimLine],
+) -> str | None:
+    """Best-effort EK-2/C package code for optional-override recommendations."""
+    vignette = _vignette_for_claim(claim)
+    if vignette:
+        code = str(vignette.get("package_code") or "").strip()
+        if code:
+            return code
+
+    for line in claim_procs:
+        if line.procedure_category == "paket" and str(line.procedure_code or "").strip():
+            return str(line.procedure_code).strip()
+
+    package_codes = sorted(
+        {
+            str(line.package_code).strip()
+            for line in claim_procs
+            if str(line.package_code or "").strip()
+        }
+    )
+    return package_codes[0] if package_codes else None
+
+
 def hypothetical_package_total_try(
     claim: ClaimHeader,
     claim_procs: list[ProcedureClaimLine],

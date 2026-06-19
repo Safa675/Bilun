@@ -35,11 +35,20 @@ export function isOptionalIngestPending(
 }
 
 export function hasRecoverableBillingTotals(
-  block: ExactnessLike | null | undefined,
+  block: (ExactnessLike & {
+    sgk_uplift_try?: number | null;
+    total_recoverable_try?: number | null;
+    recommended_actions?: unknown[] | null;
+  }) | null | undefined,
 ): boolean {
+  const uplift =
+    (block?.sgk_uplift_try ?? 0) > 0 || (block?.total_recoverable_try ?? 0) > 0;
+  const hasActions = (block?.recommended_actions?.length ?? 0) > 0;
   return (
     isExactOutput(block) ||
-    block?.exactness_status === "partial_exact"
+    block?.exactness_status === "partial_exact" ||
+    uplift ||
+    hasActions
   );
 }
 
