@@ -29,6 +29,17 @@ err()  { echo -e "${RED}[bilun]${NC} $*"; }
 
 pids_on_port() {
     local port="$1"
+    # Prefer `ss` over `lsof`: on this host lsof fails to report the
+    # next-server process holding a LISTEN socket (returns empty), so
+    # relying on lsof lets port 3000 stay "in use" and trips EADDRINUSE.
+    # ss reads procfs and reliably surfaces the listening PID.
+    if command -v ss &>/dev/null; then
+        ss -ltnp "sport = :$port" 2>/dev/null \
+            | grep -oE 'pid=[0-9]+' \
+            | cut -d= -f2 \
+            | sort -u || true
+        return 0
+    fi
     if command -v lsof &>/dev/null; then
         lsof -ti :"$port" -sTCP:LISTEN 2>/dev/null || true
         return 0
@@ -36,12 +47,6 @@ pids_on_port() {
     if command -v fuser &>/dev/null; then
         fuser -n tcp "$port" 2>/dev/null | tr ' ' '\n' || true
         return 0
-    fi
-    if command -v ss &>/dev/null; then
-        ss -ltnp "sport = :$port" 2>/dev/null \
-            | grep -oE 'pid=[0-9]+' \
-            | cut -d= -f2 \
-            | sort -u || true
     fi
 }
 
@@ -67,18 +72,45 @@ free_port() {
     fi
 }
 
+# Kill stray BILUN-spawned dev servers that may linger after the listening
+# process is gone (e.g. the `sh -c next dev` / `node next dev` parents of a
+# next-server, or a detached uvicorn). Scoped to THIS repo's paths only so it
+# never touches unrelated node/python processes (Cursor, Antigravity, etc.).
+kill_stray_bilun_dev() {
+    local found=()
+    while IFS= read -r pid; do
+        [ -n "$pid" ] && found+=("$pid")
+    done < <(
+        pgrep -f "next dev .*$FRONTEND_PORT" 2>/dev/null || true
+        pgrep -f "next-server" 2>/dev/null | while read -r pid; do
+            if tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -q "$SCRIPT_DIR"; then
+                echo "$pid"
+            fi
+        done
+        pgrep -f "uvicorn src.bilun.api:app" 2>/dev/null || true
+    )
+    if [ "${#found[@]}" -gt 0 ]; then
+        warn "Killing stray BILUN dev process(es): ${found[*]}"
+        kill -9 "${found[@]}" 2>/dev/null || true
+        sleep 0.5
+    fi
+}
+
 free_bilun_ports() {
     local target="${1:-all}"
     case "$target" in
         backend)
             free_port "$BACKEND_PORT" "backend"
+            kill_stray_bilun_dev
             ;;
         frontend)
             free_port "$FRONTEND_PORT" "frontend"
+            kill_stray_bilun_dev
             ;;
         all)
             free_port "$BACKEND_PORT" "backend"
             free_port "$FRONTEND_PORT" "frontend"
+            kill_stray_bilun_dev
             ;;
     esac
 }

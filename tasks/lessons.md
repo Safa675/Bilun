@@ -9,6 +9,14 @@ Format per entry:
 
 ---
 
+## 2026-06-19 — Prefer `ss` over `lsof` for port/PID lookups on this host
+
+**Pattern:** AGENTS.md §5 prescribes `lsof -t -i :PORT` for the zombie-process check. On this host `lsof` fails to report the `next-server` process holding a LISTEN socket on port 3000 (returns empty, exit 1), even though the process is clearly bound. The user ran `kill -9 $(lsof -t -i :3000)`, got an empty PID list, and `kill` failed with "usage" — leaving the stale next-server alive and causing repeated `EADDRINUSE: address already in use :::3000` on `./start.sh`. `ss -ltnp "sport = :PORT"` (reads procfs) reliably surfaced the same PID.
+
+**Rule:** For port-to-PID resolution on this machine, use `ss -ltnp "sport = :PORT" | grep -oE 'pid=[0-9]+'` as the primary tool; treat `lsof` as a fallback only. `start.sh`'s `pids_on_port` is already ordered `ss` → `lsof` → `fuser`. When a port shows EADDRINUSE but `lsof` returns nothing, switch to `ss` before concluding the port is free. Also, Next.js spawns a process tree (`sh -c next dev` → `node next dev` → `next-server`); killing only the listening PID can leave orphans that respawn — sweep with a path-scoped `pgrep`/`kill_stray_bilun_dev` after freeing the port.
+
+---
+
 ## 2026-06-19 — Feed commit messages from a file, not a -m string, when they contain backticks
 
 **Pattern:** Using `git commit -m "..."` with a multi-line message that contains backtick-quoted code tokens (e.g. `` `t` ``, `` `loading` ``). Bash inside the tool shell interpreted the backticks as command substitution, ran the token as a command (`/bin/bash: line 1: t: command not found`), and silently dropped the token from the committed message. The commit succeeded but the message was garbled; only caught by re-reading `git log -1 --format='%B'`.
