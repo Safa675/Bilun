@@ -46,12 +46,20 @@ function priorityDot(priority: string | null | undefined): string {
   }
 }
 
+/** Parse a claim date defensively; invalid/empty -> 0 so it sorts to the
+ *  bottom instead of yielding NaN and corrupting the sort order. */
+function claimDateMillis(iso: string | null | undefined): number {
+  if (!iso) return 0;
+  const ms = new Date(iso).getTime();
+  return Number.isNaN(ms) ? 0 : ms;
+}
+
 export function defaultSelectedClaimId(claims: PatientClaimSummary[]): string | null {
   if (claims.length === 0) return null;
   const sorted = [...claims].sort((a, b) => {
     const recoverableDiff = (b.recoverable_try ?? 0) - (a.recoverable_try ?? 0);
     if (recoverableDiff !== 0) return recoverableDiff;
-    return new Date(b.claim_start_date).getTime() - new Date(a.claim_start_date).getTime();
+    return claimDateMillis(b.claim_start_date) - claimDateMillis(a.claim_start_date);
   });
   return sorted[0]?.claim_id ?? null;
 }
@@ -67,7 +75,7 @@ export default function BillPicker({
     () =>
       [...claims].sort(
         (a, b) =>
-          new Date(b.claim_start_date).getTime() - new Date(a.claim_start_date).getTime(),
+          claimDateMillis(b.claim_start_date) - claimDateMillis(a.claim_start_date),
       ),
     [claims],
   );

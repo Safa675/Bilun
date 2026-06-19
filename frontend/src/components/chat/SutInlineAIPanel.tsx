@@ -525,9 +525,13 @@ export default function SutInlineAIPanel({
         )}
 
         {displayedMessages.map((message, index) => {
+          // Append-only chat: use role+content as a stable key instead of the
+          // array index, which shifts when visibleChatMessages filters out
+          // briefing messages and makes React misidentify rows. The index is
+          // only a tie-breaker for the rare duplicate-question case.
           return (
             <div
-              key={`${message.role}-${index}-${message.content.slice(0, 24)}`}
+              key={`${message.role}-${message.content.slice(0, 64)}-${index}`}
               className="mb-3"
             >
               <div className="mb-1 text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
@@ -552,7 +556,7 @@ export default function SutInlineAIPanel({
             {autoReasoningText && (
               <details className="mb-2 rounded-[var(--r-sm)] border border-[var(--border-subtle)] p-2 text-[12px] leading-[1.6]">
                 <summary className="cursor-pointer text-[var(--text-muted)] select-none">
-                  Thinking{" "}
+                  {t("chat.loading.thinking")}{" "}
                   <span className="inline-block h-3 w-3 ml-1 align-text-bottom bg-[var(--text-muted)]/30 [animation:sutChatCursorBlink_1s_step-end_infinite]" />
                 </summary>
                 <div className="mt-1 whitespace-pre-wrap text-[var(--text-muted)]">
@@ -602,7 +606,7 @@ export default function SutInlineAIPanel({
           {followUpReasoningText && (
             <details className="mt-2 rounded-[var(--r-sm)] border border-[var(--border-subtle)] p-2 text-[12px] leading-[1.6]">
               <summary className="cursor-pointer text-[var(--text-muted)] select-none">
-                Thinking
+                {t("chat.loading.thinking")}
                 {!followUpText && (
                   <span className="inline-block h-3 w-3 ml-1 align-text-bottom bg-[var(--text-muted)]/30 [animation:sutChatCursorBlink_1s_step-end_infinite]" />
                 )}

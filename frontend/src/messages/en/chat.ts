@@ -23,6 +23,7 @@ const chat = {
   },
   loading: {
     analyzing: "BILUN is analyzing...",
+    thinking: "Thinking",
   },
   errors: {
     failedAutoAnalysis: "Failed to get SUT analysis. Click regenerate to retry.",

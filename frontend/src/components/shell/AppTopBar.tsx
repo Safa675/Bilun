@@ -43,20 +43,31 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
   const [medulaIngestAvailable, setMedulaIngestAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     let cancelled = false;
-    getMedulaRejectionIngestStatus()
-      .then((status) => {
-        if (!cancelled) {
-          setMedulaIngestAvailable(status.ingest_available);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setMedulaIngestAvailable(false);
-        }
-      });
+
+    const poll = () => {
+      getMedulaRejectionIngestStatus()
+        .then((status) => {
+          if (!cancelled) {
+            setMedulaIngestAvailable(status.ingest_available);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setMedulaIngestAvailable(false);
+          }
+        });
+    };
+
+    poll();
+    // Poll so the Operations tab appears if ingest becomes available after
+    // mount (e.g. the parquet lands while the user is on another tab).
+    const timer = window.setInterval(poll, 30_000);
     return () => {
       cancelled = true;
+      controller.abort();
+      window.clearInterval(timer);
     };
   }, []);
 

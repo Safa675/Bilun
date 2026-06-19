@@ -23,6 +23,7 @@ const chat = {
   },
   loading: {
     analyzing: "BILUN analiz ediyor...",
+    thinking: "Düşünüyor",
   },
   errors: {
     failedAutoAnalysis: "SUT analizi alınamadı. Yeniden denemek için yenileye tıklayın.",
