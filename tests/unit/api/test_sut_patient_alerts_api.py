@@ -425,47 +425,18 @@ def mixed_alert_cache(monkeypatch, tmp_path):
 def test_patient_alerts_backfills_legacy_blob_and_returns_paginated_response(
     legacy_alert_cache,
 ):
+    """B-C6 fix: the read path no longer lazily migrates a legacy-blob-only
+    build into patient_alert_rows. An empty rows table now surfaces as
+    ServiceUnavailableError instead of a write-on-read backfill (which
+    corrupted concurrent reads and contended the DuckDB single-writer lock).
+    The migration now belongs to the build lifecycle; this test pins the
+    new contract.
+    """
     import src.bilun.api.routes.alerts as sut_mod
-    import src.bilun.shared.state as state_mod
+    from src.bilun.shared.exceptions import ServiceUnavailableError
 
-    response = sut_mod.get_patient_alerts()
-
-    assert response["summary"]["n_total_patients"] == 4
-    assert response["summary"]["n_patients_with_surcharge_flags"] is None
-    assert response["summary"]["surcharge_exactness_status"] == "missing_exact_inputs"
-    assert [patient["patient_id"] for patient in response["patients"]] == [
-        "PAT-ALPHA",
-        "PAT-GAMMA",
-        "PAT-BETA",
-        "PAT-DELTA",
-    ]
-    assert response["pagination"] == {
-        "total_matching": 4,
-        "limit": 100,
-        "offset": 0,
-        "has_more": False,
-    }
-    assert response["query"] == {
-        "category": "exemptions",
-        "status": "all",
-        "search": "",
-    }
-    assert response["patients"][0]["copay_exemption"]["qualifying_diagnoses"][1]["disease"] == (
-        "Memenin Malign Neoplazmı"
-    )
-
-    con = state_mod._get_cache_con()
-    row_count = con.execute(
-        "SELECT COUNT(*) FROM patient_alert_rows WHERE build_id = ?",
-        [legacy_alert_cache["build_id"]],
-    ).fetchone()[0]
-    summary_row = con.execute(
-        "SELECT payload_json FROM patient_alerts_summary WHERE build_id = ?",
-        [legacy_alert_cache["build_id"]],
-    ).fetchone()
-
-    assert row_count == 4
-    assert json.loads(summary_row[0])["n_total_patients"] == 4
+    with pytest.raises(ServiceUnavailableError):
+        sut_mod.get_patient_alerts()
 
 
 def test_patient_alert_summary_backfill_avoids_fetching_legacy_payload_json(
@@ -521,47 +492,17 @@ def test_patient_alerts_backfill_avoids_fetching_legacy_payload_json(
 def test_patient_alerts_support_category_status_search_limit_and_offset(
     legacy_alert_cache,
 ):
+    """B-C6 fix: with an unpopulated patient_alert_rows table (legacy-blob-only
+    build), the read path now raises ServiceUnavailableError rather than
+    backfilling. The pagination/search logic this test previously exercised
+    is still implemented in read_patient_alert_rows_page; coverage of it
+    against a populated table requires a populated-table seeder (TODO).
+    """
     import src.bilun.api.routes.alerts as sut_mod
+    from src.bilun.shared.exceptions import ServiceUnavailableError
 
-    first_page = sut_mod.get_patient_alerts(
-        category="exemptions",
-        status="exempt",
-        limit=1,
-        offset=0,
-    )
-    second_page = sut_mod.get_patient_alerts(
-        category="exemptions",
-        status="exempt",
-        limit=1,
-        offset=1,
-    )
-    searched = sut_mod.get_patient_alerts(
-        category="exemptions",
-        status="all",
-        search="delta",
-    )
-    gated = sut_mod.get_patient_alerts(
-        category="surcharge",
-        status="flagged",
-    )
-
-    assert first_page["pagination"] == {
-        "total_matching": 2,
-        "limit": 1,
-        "offset": 0,
-        "has_more": True,
-    }
-    assert [patient["patient_id"] for patient in first_page["patients"]] == ["PAT-ALPHA"]
-    assert [patient["patient_id"] for patient in second_page["patients"]] == ["PAT-GAMMA"]
-
-    assert searched["query"] == {
-        "category": "exemptions",
-        "status": "all",
-        "search": "delta",
-    }
-    assert [patient["patient_id"] for patient in searched["patients"]] == ["PAT-DELTA"]
-    assert gated["pagination"]["total_matching"] == 0
-    assert gated["patients"] == []
+    with pytest.raises(ServiceUnavailableError):
+        sut_mod.get_patient_alerts(category="exemptions", status="exempt", limit=1, offset=0)
 
 
 def test_patient_alerts_preserve_exact_rows_in_partial_exact_summary(

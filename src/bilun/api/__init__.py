@@ -87,8 +87,10 @@ def health_check() -> dict:
     Checks:
       - BILUN database connection is reachable
       - BILUN cache has an active build (optional — 503 if not)
+      - Active gazette version is surfaced for staleness visibility
     """
     import os
+    from contextlib import closing
     from pathlib import Path
 
     db_path = Path(
@@ -101,18 +103,27 @@ def health_check() -> dict:
     db_ok = False
     active_build = None
     if db_path.exists():
+        # Use closing() so the connection is released even if execute() raises
+        # (audit H16: previously con.close() was only reached on the success
+        # path, leaking a handle per /health probe on the error path).
         try:
             import duckdb
 
-            con = duckdb.connect(str(db_path))
-            row = con.execute(
-                "SELECT active_build_id FROM build_pointer_scopes WHERE scope = 'bilun'"
-            ).fetchone()
-            active_build = row[0] if row else None
-            con.close()
+            with closing(duckdb.connect(str(db_path))) as con:
+                row = con.execute(
+                    "SELECT active_build_id FROM build_pointer_scopes "
+                    "WHERE scope = 'bilun'"
+                ).fetchone()
+                active_build = row[0] if row else None
             db_ok = True
         except Exception:
             pass
+
+    # Surface the active gazette version (B-C7: staleness visibility).
+    # The manifest's max effective_date is recomputed live so an operator
+    # can compare it against what the running build expects. Full source-hash
+    # comparison is a follow-up; this at least makes a stale gazette visible.
+    active_gazette_version = _read_active_gazette_version_for_health()
 
     status_code = 200 if db_ok else 503
     payload = {
@@ -120,6 +131,7 @@ def health_check() -> dict:
         "service": "bilun",
         "database_reachable": db_ok,
         "active_build": active_build,
+        "active_gazette_version": active_gazette_version,
         "version": "1.0.0",
     }
     return Response(
@@ -127,3 +139,32 @@ def health_check() -> dict:
         media_type="application/json",
         status_code=status_code,
     )
+
+
+def _read_active_gazette_version_for_health() -> str | None:
+    """Best-effort read of the manifest's latest effective_date.
+
+    Returns None on any failure (missing manifest, parse error) so /health
+    never 500s purely because the gazette manifest is unreadable.
+    """
+    import os
+    from pathlib import Path
+
+    try:
+        import pandas as pd
+
+        manifest = Path(
+            os.getenv(
+                "BILUN_GAZETTE_MANIFEST",
+                str(_PROJECT_ROOT / "data" / "gazette" / "version_manifest.parquet"),
+            )
+        )
+        if not manifest.exists():
+            return None
+        df = pd.read_parquet(manifest)
+        latest = df["effective_date"].max()
+        if latest is None or str(latest) == "nan":
+            return None
+        return str(latest)
+    except Exception:
+        return None

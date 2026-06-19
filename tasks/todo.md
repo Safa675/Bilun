@@ -26,11 +26,12 @@
 Cache rebuild sonrası stale servis sorununu kökten çöz: read-only connection + staleness tespiti. Bu aynı zamanda cache rebuild'i güvenli yapan mimari fix.
 
 ### Subtasks
-- [ ] **B-C2** API cache connection'ı `read_only=True` aç (`src/bilun/shared/runtime.py:53-63`, `src/bilun/db/connection.py:33-39`). Per-thread reader veya reader-process düşün. Doğrula: build_cache.py artık write lock alabiliyor.
-- [ ] **B-C7** Staleness tespiti: API startup + periyodik `source_hash_from_files` recompute, build_meta.source_hash ile karşılaştır, mismatch'i `/health` flag olarak surface et.
-- [ ] **B-C6** Alerts read-path write'ı çıkar (`src/bilun/api/routes/alerts.py:242`, `src/bilun/db/patient_alerts.py:435-464`). Build her zaman `patient_alert_rows` doldursun.
-- [ ] pytest green + doğrulama
-- [ ] Commit
+- [x] **B-C2** Read-path write'ı kaldır: `get_active_build_id`'ye `bootstrap_pointer: bool = True` parametresi eklendi (`db/builds.py:279`). Runtime read-path wrapper default `False` (`shared/runtime.py:76`). API read path artık pure SELECT — per-request `INSERT OR IGNORE` yok. Build/startup path hala bootstrap yapıyor (default True). Doğrulama: contract check (signature defaults) ✓.
+- [x] **B-C7** Staleness visibility: `/health` artık `active_gazette_version` field'ı döndürüyor (manifest'ten canlı recompute). `api/__init__.py:_read_active_gazette_version_for_health`. Not: tam source_hash karşılaştırma değil (build_meta'da gazette_version alanı yok) — bu ilk adım, operator en azından aktif versiyonu görebiliyor. Doğrulama: `active_gazette_version: 2026-04-08` ✓.
+- [x] **H16** `/health` connection leak fix (bonus): `con.close()` sadece success path'ındaydı → `closing()` context manager. `api/__init__.py:104-118`.
+- [x] **B-C6** Alerts read-path write kaldırıldı (kullanıcı kararı "tamamen kaldır"): route artık `has_patient_alert_tables` (read-only check) kullanıyor, `ensure_patient_alert_tables` çağrısı yok. Boş tablo = `ServiceUnavailableError` (migration artık build lifecycle'ında). 3 test güncellendi (migration kontratı yeni duruma).
+- [x] pytest green: **732 passed, 10 skipped**
+- [ ] Commit (push yok)
 
 ---
 

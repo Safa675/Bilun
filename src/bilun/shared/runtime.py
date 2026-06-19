@@ -78,9 +78,20 @@ class BilunRuntimeState:
         con=None,
         *,
         scope: str,
+        bootstrap_pointer: bool = False,
     ) -> str | None:
+        """Look up the active build_id for ``scope``.
+
+        Defaults to a pure read-only SELECT (``bootstrap_pointer=False``) so
+        the API's shared reader cursor never issues an INSERT — see the note
+        on ``db.builds.get_active_build_id``. Callers that hold a writable
+        connection and want the pointer row auto-created may pass
+        ``bootstrap_pointer=True``.
+        """
         reader = con if con is not None else self.get_cache_reader()
-        return get_active_build_id(reader, scope=scope)
+        return get_active_build_id(
+            reader, scope=scope, bootstrap_pointer=bootstrap_pointer
+        )
 
 
 def _build_default_runtime() -> BilunRuntimeState:

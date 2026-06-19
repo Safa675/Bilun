@@ -12,7 +12,7 @@ from src.bilun.shared.state import (
     get_pipeline_mode,
 )
 from src.bilun.db import (
-    ensure_patient_alert_tables,
+    has_patient_alert_tables,
     read_patient_alert_rows_page,
     read_patient_alerts_summary,
 )
@@ -239,7 +239,15 @@ def get_patient_alerts(
         reader = _get_cache_reader()
         active_build = _get_active_bilun_build_id(reader)
         if active_build is not None:
-            if not ensure_patient_alert_tables(reader, active_build):
+            # Read-only existence check (B-C6): the write-backfill in
+            # ensure_patient_alert_tables must NOT run on the shared reader
+            # cursor — it issues DELETE+INSERT inside a transaction on the
+            # process-singleton connection, which (a) is visible to and
+            # blocks concurrent readers, and (b) collides with DuckDB's
+            # single-writer model. The alerts tables are populated by the
+            # build lifecycle; if they are absent here, surface "unavailable"
+            # rather than corrupting concurrent reads.
+            if not has_patient_alert_tables(reader, active_build):
                 raise ServiceUnavailableError(
                     "Patient alerts cache is unavailable for the active build. "
                     "Run the patient-alerts backfill or rebuild the analytics cache."
