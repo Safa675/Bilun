@@ -52,7 +52,3 @@ export function useSutChatSession(sessionKey: string): SutInlineChatState {
 export function useSetSutChatSession() {
   return useUIStateStore((state) => state.setSutChatSession);
 }
-
-export function useClearSutChatSession() {
-  return useUIStateStore((state) => state.clearSutChatSession);
-}

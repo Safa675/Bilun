@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
 import SutHealthPanel from "@/components/admin/SutHealthPanel";
 import SutHowItWorksModal from "@/components/modals/SutHowItWorksModal";
-import SutWorkspaceHeader from "@/components/shell/SutWorkspaceHeader";
 import {
   buildSutPatientHref,
   parseSutHomeTab,
@@ -127,8 +126,6 @@ function SutHomeContent() {
       <main id="main-content" className="sut-app-main">
         <section className={sectionClass}>
             <>
-              <SutWorkspaceHeader />
-
               {showAdmin && (
                 <SutHealthPanel healthStatus={healthStatus} />
               )}
@@ -186,7 +183,6 @@ function SutHomeFallback() {
   return (
     <main id="main-content" className="sut-app-main">
       <section className="mx-auto max-w-7xl space-y-6">
-        <SutWorkspaceHeader />
         <SutAnalyticsShellSkeleton />
       </section>
     </main>

@@ -1,5 +1,30 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: Frontend Dead-Code & Stale Cleanup — Dalga 1
+
+### Goal
+Frontend audit raporundaki (`plans/frontend/frontend-deadcode-bug-audit.md`) Dalga 1 kalemlerini sil: orphaned/superseded dosyalar, ölü CSS sınıfları, kullanılmayan npm dependency'ler, ölü barrel export'lar. Bug'ler Dalga 2'de. Co-author yok.
+
+### Subtasks
+- [x] Planı yaz, dead dosyaları grep ile doğrula
+- [ ] 5 ölü dosyayı sil: `components/tabs/SUTAnalytics.tsx`, `components/patient/ClaimSelector.tsx`, `components/patient/ClaimDetailPanel.tsx`, `components/tabs/SUTOptimizer.tsx`, `components/home/SutWorkspaceLanding.tsx`
+- [ ] `components/home/SutWorkspaceLanding.test.tsx`'i sil (S3 testi)
+- [ ] `app/page.tsx`'ten `SutWorkspaceHeader` import+2 usage'ı kaldır (`:9,130,189`)
+- [ ] `components/shell/SutWorkspaceHeader.tsx`'i sil (artık unimported)
+- [ ] `legacy.css`'ten 4 ölü kuralı sil: `.sut-filter-control` (`:200-205`), `.loading-state,` grubu (`:253`), `.loading-spinner` + `@keyframes spin` (`:271-282`), `.app-main` (`:35-42`)
+- [ ] `package.json`'dan 5 ölü dependency çıkar: `@radix-ui/react-collapsible`, `@radix-ui/react-select`, `@radix-ui/react-slot`, `@tanstack/react-virtual`, `class-variance-authority`
+- [ ] `npm install` (lockfile güncelle)
+- [ ] Ölü export'ları kaldır: `getNestedMessage` (`lib/i18n/index.ts:3` + `translate.ts`), `Messages` type (`lib/i18n/index.ts:5`), `useClearSutChatSession` (`stores/uiStateContext.tsx:56`)
+- [ ] Doğrula: `npx tsc --noEmit`, `npx vitest run`, `npm run build` hepsi yeşil
+- [ ] Sadece kendi dosyalarımı stage'le + commit (push yok)
+
+### Out of Scope
+- Bug fix'ler (C1,C2,H3 vs.) — Dalga 2
+- `components/primitives/index.ts` type export'ları (14 adet) — ayrı değerlendirme, risk
+- Backend audit
+
+---
+
 ## Task: Exact billing only — Phase A: policy & wiring (block legacy paths)
 
 ### Goal
