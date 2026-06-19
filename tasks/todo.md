@@ -41,11 +41,13 @@ Cache rebuild sonrası stale servis sorununu kökten çöz: read-only connection
 PII hariç chatbot güvenilirlik: token budget, HTTP error mapping, streaming backpressure. B-C1 (PII) ayrı tasarım task'inde.
 
 ### Subtasks
-- [ ] **B-H11** Token budget enforcement: `_build_messages` sonrası tokenize, runtime_context'i reserved budget'a truncate (`src/bilun/chatbot/llm.py:64-66,259-280`)
-- [ ] **B-H13** HTTP error mapping: 401/402/413/429 → spesifik mesaj, 429/5xx retry+backoff, raw upstream body sızdırma (`src/bilun/chatbot/llm.py:101-128,158-167`)
-- [ ] **B-H12** Streaming backpressure: `asyncio.Queue(maxsize=N)` (`src/bilun/chatbot/llm.py:131-201`, `src/bilun/api/routes/chat.py:470`)
-- [ ] pytest green
-- [ ] Commit
+- [x] **B-H11** Token budget enforcement: `_truncate_runtime_context` + `_estimate_tokens` (karakter-bazlı, tokenizer dependency yok). Runtime context 16K token budget'inde truncate, marker ile. `_build_messages` içinde `_validate_messages_for_llm`'den ÖNCE uygulanıyor. `llm.py`.
+- [x] **B-H13** HTTP error mapping: `_llm_http_error_message` status→mesaj map (401/402/413/429/5xx spesifik). Raw upstream body artık kullanıcıya sızdırılmıyor (operatör log'da görüyor). Streaming + non-streaming path. `llm.py`.
+- [x] **M2** (bonus) Zero-token response artık WARNING, INFO değil (streaming path consistency). `llm.py`.
+- [x] **B-H12** Streaming backpressure: `asyncio.Queue(maxsize=64)` (`_SSE_QUEUE_MAXSIZE`). Yavaş SSE client artık OpenRouter upstream'ünü throttle ediyor (sınırsız memory growth bitti). `chat.py`.
+- [x] Regression test'ler: `tests/unit/chatbot/test_dalga3_chatbot_fixes.py` (21 test — davranış + static guard + fonksiyonel backpressure)
+- [x] pytest green: **753 passed, 10 skipped**
+- [ ] Commit (push yok)
 
 ---
 

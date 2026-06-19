@@ -46,6 +46,47 @@ def _get_api_key() -> str | None:
     )
 
 
+def _estimate_tokens(text: str) -> int:
+    """Rough token estimate without a tokenizer dependency.
+
+    Uses ~3 chars/token (conservative for Turkish + English mixed text;
+    English is closer to 4). This is only for budget-guarding the runtime
+    context against context-window overflow — it does NOT need to be exact,
+    only to flag "this is far too large". Real tokenization (tiktoken) is
+    a follow-up if precision matters.
+    """
+    return len(text) // 3
+
+
+# Reserve headroom for the system prompt + conversation history + tool
+# schemas + the model's output. Most BILUN chat models have 64K-128K context
+# windows; capping the runtime context at ~16K tokens keeps a dev-mode full
+# billing report from silently overflowing the window.
+_MAX_RUNTIME_CONTEXT_TOKENS = 16_000
+
+
+def _truncate_runtime_context(runtime_context: str) -> str:
+    """Cap the runtime context to the token budget.
+
+    The runtime context carries cohort/patient/billing data and can grow
+    large in dev mode (full billing_report_json). If it exceeds the budget,
+    truncate from the end (the catalog/medula tail is least essential) and
+    append a visible marker so the LLM knows context was dropped.
+    """
+    if not runtime_context:
+        return runtime_context
+    est_tokens = _estimate_tokens(runtime_context)
+    if est_tokens <= _MAX_RUNTIME_CONTEXT_TOKENS:
+        return runtime_context
+    char_budget = _MAX_RUNTIME_CONTEXT_TOKENS * 3
+    truncated = runtime_context[:char_budget]
+    marker = (
+        "\n\n[... runtime context truncated to fit the model context window; "
+        "older catalog/medula tail omitted ...]"
+    )
+    return truncated + marker
+
+
 def _build_messages(
     messages: list[dict],
     runtime_context: str,
@@ -61,7 +102,13 @@ def _build_messages(
         user_role=user_role if user_role == "dev" else "billing_officer",
         ui_locale=ui_locale,
     )
+    # B-H11: cap the runtime context to a token budget BEFORE appending,
+    # so a large dev-mode billing_report_json cannot silently overflow the
+    # model context window. _validate_messages_for_llm runs against the
+    # caller's messages (not this appended context), so it cannot enforce
+    # this — the cap must happen here.
     if runtime_context:
+        runtime_context = _truncate_runtime_context(runtime_context)
         system_content += "\n\n" + runtime_context
     return [{"role": "system", "content": system_content}] + messages
 
@@ -96,6 +143,35 @@ def _validate_messages_for_llm(
         if len(content) > max_msg_length:
             message["content"] = content[:max_msg_length]
     return messages, None
+
+
+# Status-code → operator/user-facing message map for LLM HTTP errors.
+# Avoids leaking raw upstream error bodies (which may expose provider
+# internals) and surfaces actionable signals (auth/quota/context/rate).
+_LLM_HTTP_ERROR_MAP = {
+    400: "The request was malformed.",
+    401: "LLM authentication failed — the API key is missing or invalid.",
+    402: "LLM quota exhausted — billing required.",
+    403: "LLM access forbidden.",
+    408: "The LLM request timed out.",
+    413: "The request exceeded the model's context window — the workspace context is too large.",
+    429: "The LLM rate limit was hit — please retry shortly.",
+}
+
+
+def _llm_http_error_message(status_code: int, raw_body: str) -> str:
+    """Return a user-facing message for a non-200 LLM response.
+
+    Never echoes the raw upstream body to the user (it can leak provider
+    internals or echo back request fragments). The raw body is logged at
+    ERROR level separately for operators.
+    """
+    base = _LLM_HTTP_ERROR_MAP.get(status_code)
+    if base is None:
+        if 500 <= status_code < 600:
+            return f"The LLM provider returned a server error ({status_code}). Please retry."
+        return f"The LLM provider returned an unexpected error ({status_code})."
+    return base
 
 
 async def _call_llm_non_streaming(
@@ -163,7 +239,10 @@ async def _stream_text_from_llm(
                         response.status_code,
                         error_text,
                     )
-                    yield f"⚠️ API error {response.status_code}: {error_text[:200]}"
+                    # Never echo the raw upstream body to the user (it can
+                    # leak provider internals or request fragments). The raw
+                    # body is logged above for operators.
+                    yield f"⚠️ {_llm_http_error_message(response.status_code, error_text)}"
                     return
 
                 async for line in response.aiter_lines():
@@ -187,11 +266,15 @@ async def _stream_text_from_llm(
                         pass
 
         elapsed = time.perf_counter() - t0
-        logger.info(
-            "LLM STREAM OK | tokens=%d | elapsed=%.2fs", token_count, elapsed
-        )
         if token_count == 0:
+            logger.warning(
+                "LLM STREAM returned zero tokens | elapsed=%.2fs", elapsed
+            )
             yield "\n\nI wasn't able to generate a response. Please try asking again."
+        else:
+            logger.info(
+                "LLM STREAM OK | tokens=%d | elapsed=%.2fs", token_count, elapsed
+            )
 
     except httpx.TimeoutException:
         logger.error("LLM STREAM TIMEOUT after %.1fs", time.perf_counter() - t0)
