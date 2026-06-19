@@ -23,6 +23,10 @@ from src.bilun.domain.prose_rules.types import (
     PaymentMethodResult,
 )
 
+from .demo_vignette_lookup import (
+    hypothetical_itemized_total_try,
+    hypothetical_package_total_try,
+)
 from .types import EXACTNESS_STATUS_EXACT, BillingStrategyRecommendation
 
 _PROSE_RULE_SOURCE = (
@@ -91,6 +95,23 @@ def resolve_package_total_try(
             if price_try is not None and float(price_try) > 0:
                 package_total = float(price_try)
                 package_price_methodology = "ek2c_code"
+                break
+
+    if package_total <= 0:
+        package_codes = sorted(
+            {
+                str(line.package_code).strip()
+                for line in claim_procs
+                if str(line.package_code or "").strip()
+            }
+        )
+        for package_code in package_codes:
+            as_of = _line_as_of_date(claim_procs[0], claim)
+            entry = get_ek2c_entry(package_code, as_of_date=as_of)
+            price_try = entry.get("price_try") if entry else None
+            if price_try is not None and float(price_try) > 0:
+                package_total = float(price_try)
+                package_price_methodology = "ek2c_candidate_code"
                 break
 
     return _money(package_total), package_price_methodology
@@ -344,6 +365,25 @@ def recommend_billing_strategy_from_claims(
             claim,
             claim_procs,
         )
+        hypothetical_package = hypothetical_package_total_try(
+            claim,
+            claim_procs,
+            resolved_package_total=package_total,
+        )
+        if hypothetical_package is not None:
+            package_total = max(package_total, hypothetical_package)
+            if package_total == hypothetical_package:
+                package_price_methodology = "demo_vignette_hypothesis"
+
+        hypothetical_itemized = hypothetical_itemized_total_try(
+            claim,
+            claim_procs,
+            resolved_itemized_total=itemized_total,
+        )
+        if hypothetical_itemized is not None:
+            itemized_total = max(itemized_total, hypothetical_itemized)
+            if itemized_total == hypothetical_itemized:
+                itemized_price_methodology = "demo_vignette_hypothesis"
 
         if package_total <= 0 and itemized_total <= 0:
             continue

@@ -57,7 +57,8 @@ const patient = {
     "variance": "Başlık vs kalemler",
     "noLabs": "Bu faturada laboratuvar kalemi yok.",
     "facility": "Tesis düzeyi",
-    "optimizationHint": "Aşağıdaki fatura kapsamlı optimizasyon bölümleri, bu faturanın SUT altında nasıl faturalandırılabileceğini gösterir."
+    "optimizationHint": "Aşağıdaki fatura kapsamlı optimizasyon bölümleri, bu faturanın SUT altında nasıl faturalandırılabileceğini gösterir.",
+    "legacyGhostLineFootnote": "Faturalanmayan ancak SUT beklenen tutarı olan {count} satır ara toplama dahil edilmedi; alternatif faturalama yolu optimizasyon bölümünde."
   },
   "claimDetail": {
     "loading": "Talep detayları yükleniyor…",

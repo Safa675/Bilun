@@ -57,7 +57,8 @@ const patient = {
     "variance": "Header vs lines",
     "noLabs": "No laboratory lines in this bill.",
     "facility": "Facility tier",
-    "optimizationHint": "Per-bill optimization sections below show how this invoice could be billed under SUT."
+    "optimizationHint": "Per-bill optimization sections below show how this invoice could be billed under SUT.",
+    "legacyGhostLineFootnote": "{count} line(s) with zero billed but non-zero SUT expected are excluded from subtotals; see optimization for the alternative billing path."
   },
   "claimDetail": {
     "loading": "Loading claim details…",

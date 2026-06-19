@@ -9,6 +9,19 @@ Format per entry:
 
 ---
 
+## 2026-06-19 — Feed commit messages from a file, not a -m string, when they contain backticks
+
+**Pattern:** Using `git commit -m "..."` with a multi-line message that contains backtick-quoted code tokens (e.g. `` `t` ``, `` `loading` ``). Bash inside the tool shell interpreted the backticks as command substitution, ran the token as a command (`/bin/bash: line 1: t: command not found`), and silently dropped the token from the committed message. The commit succeeded but the message was garbled; only caught by re-reading `git log -1 --format='%B'`.
+
+**Rule:** When a commit message contains backticks (or any shell metacharacters like `$`, `` ` ``, `\`), do NOT pass it via `git commit -m`. Instead:
+1. Write the message to a temp file with the Write tool.
+2. `git commit -F <file>` (or `git commit --amend -F <file>` to repair).
+3. Remove the temp file.
+4. Always verify with `git log -1 --format='%B'` before declaring the commit done.
+For simple messages with no metacharacters, `-m` is fine.
+
+---
+
 ## 2026-06-14 / 2026-06-16 — Don't declare a runtime missing just because it isn't on PATH (REPEATED — rule strengthened)
 
 **Pattern:** Running `npm --version` and getting "command not found", then telling the user Node/npm are not installed, when in fact Node v22.16.0 and npm 10.9.2 were present at `/home/safa/.local/node-v22.16.0-linux-x64/bin` but that directory was not in `PATH`. This was repeated on 2026-06-16 despite an existing lesson.

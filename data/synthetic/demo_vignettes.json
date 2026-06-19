@@ -1,0 +1,249 @@
+{
+  "vignettes": {
+    "0002": {
+      "patient_index": "0002",
+      "scenario_tag": "sgk_optional_override_itemized_higher",
+      "tier": "A",
+      "department": "Ortopedi ve Travmatoloji",
+      "primary_icd10": "M23.2",
+      "secondary_icd10": ["M17.9"],
+      "fault": "package_when_itemized_higher",
+      "package_code": "609270",
+      "package_price_try": 3500,
+      "itemized_codes": [
+        {"code": "600150", "price_try": 5000},
+        {"code": "600160", "price_try": 4000}
+      ],
+      "presentation": "package_only",
+      "golden": {
+        "savings_try": [5500, 5500],
+        "package_total_try": [3500, 3500],
+        "itemized_total_try": [9000, 9000]
+      }
+    },
+    "0003": {
+      "patient_index": "0003",
+      "scenario_tag": "sgk_optional_override_package_higher",
+      "tier": "A",
+      "department": "Ortopedi ve Travmatoloji",
+      "primary_icd10": "M23.2",
+      "secondary_icd10": ["M17.9"],
+      "fault": "itemized_when_package_higher",
+      "package_code": "609300",
+      "package_price_try": 9000,
+      "itemized_codes": [
+        {"code": "600150", "price_try": 2200},
+        {"code": "600160", "price_try": 1800}
+      ],
+      "presentation": "itemized_only",
+      "golden": {
+        "savings_try": [6300, 6300],
+        "package_total_try": [9000, 9000],
+        "itemized_total_try": [2700, 2700]
+      }
+    },
+    "0004": {
+      "patient_index": "0004",
+      "scenario_tag": "sgk_blood_uplift_yatis",
+      "tier": "B",
+      "fault": "blood_uplift"
+    },
+    "0005": {
+      "patient_index": "0005",
+      "scenario_tag": "sgk_drg_uplift_yatis",
+      "tier": "B",
+      "fault": "drg_uplift_itemized_higher"
+    },
+    "0006": {
+      "patient_index": "0006",
+      "scenario_tag": "sgk_material_uplift_yatis",
+      "tier": "A",
+      "fault": "package_materials_unbundled"
+    },
+    "0007": {
+      "patient_index": "0007",
+      "scenario_tag": "sgk_care_setting_review_gunubirlik",
+      "tier": "B",
+      "fault": "care_setting_review"
+    },
+    "0008": {
+      "patient_index": "0008",
+      "scenario_tag": "sgk_procedure_addon_kolonoskopi",
+      "tier": "B",
+      "fault": "procedure_addon_missing"
+    },
+    "0009": {
+      "patient_index": "0009",
+      "scenario_tag": "sgk_procedure_capture_kolonoskopi",
+      "tier": "A",
+      "fault": "procedure_capture_gap"
+    },
+    "0010": {
+      "patient_index": "0010",
+      "scenario_tag": "sgk_package_adequacy_undercoded",
+      "tier": "A",
+      "fault": "package_underbilled"
+    },
+    "0011": {
+      "patient_index": "0011",
+      "scenario_tag": "sgk_gazette_repricing_600150",
+      "tier": "A",
+      "fault": "gazette_stale_price"
+    },
+    "0012": {
+      "patient_index": "0012",
+      "scenario_tag": "medula_rejection_1688_molecular_microbiology",
+      "tier": "B",
+      "fault": "medula_rejection_1688"
+    },
+    "0013": {
+      "patient_index": "0013",
+      "scenario_tag": "sgk_session_uplift_cerrahi",
+      "tier": "A",
+      "fault": "session_underbilled"
+    },
+    "0014": {
+      "patient_index": "0014",
+      "scenario_tag": "sgk_drug_indication_bevacizumab_missing_report",
+      "tier": "B",
+      "fault": "drug_indication_missing_report",
+      "drug_indication_key": "bevacizumab_missing_report",
+      "primary_icd10": "C34.9"
+    },
+    "0015": {
+      "patient_index": "0015",
+      "scenario_tag": "sgk_drug_indication_nivolumab_indication_mismatch",
+      "tier": "B",
+      "fault": "drug_indication_mismatch",
+      "drug_indication_key": "nivolumab_indication_mismatch",
+      "primary_icd10": "J45.9"
+    },
+    "0016": {
+      "patient_index": "0016",
+      "scenario_tag": "sgk_drug_indication_daratumumab_report_unknown",
+      "tier": "B",
+      "fault": "drug_indication_needs_verification",
+      "drug_indication_key": "daratumumab_report_unknown",
+      "primary_icd10": "C90.0"
+    },
+    "0017": {
+      "patient_index": "0017",
+      "scenario_tag": "sgk_drug_indication_pembrolizumab_report_ok",
+      "tier": "B",
+      "fault": "drug_indication_compliant",
+      "drug_indication_key": "pembrolizumab_report_ok",
+      "primary_icd10": "C34.9"
+    },
+    "0018": {
+      "patient_index": "0018",
+      "scenario_tag": "medula_rejection_0612_board_report_missing",
+      "tier": "B",
+      "fault": "medula_rejection_0612"
+    },
+    "0019": {
+      "patient_index": "0019",
+      "scenario_tag": "sgk_drug_indication_trastuzumab_report_duration_mismatch",
+      "tier": "B",
+      "fault": "drug_indication_duration_mismatch",
+      "drug_indication_key": "trastuzumab_report_duration_mismatch",
+      "primary_icd10": "C50.9"
+    },
+    "0020": {
+      "patient_index": "0020",
+      "scenario_tag": "sgk_drug_indication_trabectedin_missing_report",
+      "tier": "B",
+      "fault": "drug_indication_missing_report",
+      "drug_indication_key": "trabectedin_missing_report",
+      "primary_icd10": "C49.9"
+    },
+    "0021": {
+      "patient_index": "0021",
+      "scenario_tag": "sgk_specialty_prose_optical_lens_upgrade",
+      "tier": "B",
+      "fault": "material_specialty_prose",
+      "material_prose_key": "optical_lens_upgrade"
+    },
+    "0022": {
+      "patient_index": "0022",
+      "scenario_tag": "sgk_specialty_prose_hip_graft_no_pay",
+      "tier": "B",
+      "fault": "material_specialty_prose",
+      "material_prose_key": "hip_graft_no_pay"
+    },
+    "0023": {
+      "patient_index": "0023",
+      "scenario_tag": "sgk_material_kdv_ceiling_exceeded",
+      "tier": "B",
+      "fault": "material_kdv_ceiling",
+      "material_prose_key": "kdv_ceiling_exceeded"
+    },
+    "0024": {
+      "patient_index": "0024",
+      "scenario_tag": "sgk_material_bundling_procurement_incomplete",
+      "tier": "B",
+      "fault": "material_bundling_procurement",
+      "material_prose_key": "procurement_incomplete"
+    },
+    "0025": {
+      "patient_index": "0025",
+      "scenario_tag": "medula_rejection_1205_service_date_mismatch",
+      "tier": "B",
+      "fault": "medula_rejection_1205"
+    },
+    "0026": {
+      "patient_index": "0026",
+      "scenario_tag": "medula_rejection_0521_provision_not_obtained",
+      "tier": "B",
+      "fault": "medula_rejection_0521"
+    },
+    "0027": {
+      "patient_index": "0027",
+      "scenario_tag": "medula_rejection_0315_specialty_mismatch",
+      "tier": "B",
+      "fault": "medula_rejection_0315"
+    },
+    "0028": {
+      "patient_index": "0028",
+      "scenario_tag": "medula_rejection_0901_duplicate_procedure",
+      "tier": "B",
+      "fault": "medula_rejection_0901"
+    },
+    "0029": {
+      "patient_index": "0029",
+      "scenario_tag": "medula_rejection_0704_uts_barcode_missing",
+      "tier": "A",
+      "fault": "medula_rejection_0704"
+    },
+    "0030": {
+      "patient_index": "0030",
+      "scenario_tag": "medula_rejection_0320_package_bundled_procedure",
+      "tier": "B",
+      "fault": "medula_rejection_0320"
+    },
+    "0031": {
+      "patient_index": "0031",
+      "scenario_tag": "medula_rejection_0411_drug_report_missing",
+      "tier": "B",
+      "fault": "medula_rejection_0411"
+    },
+    "0032": {
+      "patient_index": "0032",
+      "scenario_tag": "medula_rejection_1102_uncontracted_facility",
+      "tier": "B",
+      "fault": "medula_rejection_1102"
+    },
+    "0033": {
+      "patient_index": "0033",
+      "scenario_tag": "sgk_claim_readiness_uts_barcode_missing",
+      "tier": "B",
+      "fault": "claim_readiness_uts",
+      "claim_readiness_key": "uts_barcode_missing"
+    },
+    "0038": {
+      "patient_index": "0038",
+      "scenario_tag": "payment_method_compliance_demo",
+      "tier": "A",
+      "fault": "compliance_mandatory_itemized"
+    }
+  }
+}

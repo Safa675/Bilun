@@ -1,5 +1,25 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: Demo Vignette feature'ını commit'le (dirty tree temizliği)
+
+### Goal
+Sohbet öncesi dirty kalan "SGK optional override showcase" işini commit'le. Önce 2 kırık test'i yeni fixture satır sayılarına ve senaryoya uydur. Co-author yok, push yok.
+
+### Subtasks
+- [x] Planı yaz, gerçek sayıları/senaryoyu doğrula
+- [ ] test_loader.py:30 güncelle — procedure 520→501, material 115→110, drug 245→218, expected 433→394
+- [ ] test_drg_claim_exact.py:51-66 — 0002-007 artık endocrinology_yatis (paketli); invariant test'ini SENTETIK-HASTA-0005/F-SENTETIK-HASTA-0005-019'a taşı (paket yok → missing)
+- [ ] demo_vignette_lookup'un production'da no-op olduğunu doğrula (JSON yoksa None)
+- [ ] .~lock çöp dosyasını sil
+- [ ] pytest tam yeşil doğrula
+- [ ] Tek feature commit: vignette dosyaları + claim_strategy + veri + test + docs
+
+### Out of Scope
+- Backend audit (sonraki)
+- claim_strategy.py'deki "demo_vignette_hypothesis" mantığını değiştirme (feature'ın parçası)
+
+---
+
 ## Task: Scripts Bug Fix — Dalga A-D (price_history, subprocess, atomicity, paths)
 
 ### Goal

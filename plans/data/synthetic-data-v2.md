@@ -155,3 +155,14 @@ These need backend implementation work — **not in scope of this synthetic data
     - Optimizer → Compliance Alerts: per-row surcharge/copay data
     - Optimizer → Revenue Recovery: per-claim breakdowns
 14. Sections that remain "Unavailable" are ONLY those blocked by the 6 backend hard-blocks in "Out of Scope"
+
+---
+
+### Demo credibility cohort (Tier A/B)
+
+Showcase sentetik hastalar, claim line semantiği (sunulan vs optimizasyon alternatifi), post-regen doğrulama ve manifest:
+
+- [`data/synthetic/README.md`](../../data/synthetic/README.md)
+- [`plans/data/synthetic-demo-credibility-plan.md`](synthetic-demo-credibility-plan.md)
+
+After regenerating parquet, run `validate_sut_synthetic_data.py` and `assert_tier_a_post_regen.py`; rebuild cache with `scripts/bilun/build_cache.py --activate` when billing surfaces look stale.

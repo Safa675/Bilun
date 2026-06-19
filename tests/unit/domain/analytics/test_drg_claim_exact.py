@@ -51,13 +51,19 @@ class TestComputeDRGSummaryClaimExact:
     def test_yatish_claim_without_package_line_is_missing_inputs_not_median(
         self, claim_dataset
     ):
+        # SENTETIK-HASTA-0005 / F-...-0005-019 is an inpatient claim whose
+        # procedure lines carry no package code, so the DRG engine cannot
+        # resolve a package price and must report missing_exact_inputs
+        # (never a median fallback). The earlier SENTETIK-HASTA-0002 fixture
+        # for this invariant was replaced when 0002-007 became an
+        # endocrinology_yatis claim that does carry a package code.
         drg = compute_drg_summary(
-            "SENTETIK-HASTA-0002",
+            "SENTETIK-HASTA-0005",
             None,
             claim_dataset=claim_dataset,
         )
         episode = next(
-            (ep for ep in drg.episodes if ep.claim_id == "F-SENTETIK-HASTA-0002-007"),
+            (ep for ep in drg.episodes if ep.claim_id == "F-SENTETIK-HASTA-0005-019"),
             None,
         )
         assert episode is not None

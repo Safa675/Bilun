@@ -34,3 +34,7 @@ Three bugs found: (1) duplicate test detection groups across entire patient hist
 - **Line-level copay waiver application** — see `copay-ek1a-ek4d-scope-fix-plan.md` (supersedes the old note that copay exemptions “stay as-is” for savings attachment). EK-1A **ICD matching** in `ek1a.py` unchanged.
 - Adding real Turkish hospital claim data (synthetic only)
 - Full visit-ID propagation to all data types (drugs, procedures, materials) — only lab for now
+
+### Related — synthetic demo data
+- Sentetik kohort tier’ları, claim line semantiği, regen + cache: [`data/synthetic/README.md`](../../data/synthetic/README.md)
+- Showcase credibility plan: [`plans/data/synthetic-demo-credibility-plan.md`](../data/synthetic-demo-credibility-plan.md)

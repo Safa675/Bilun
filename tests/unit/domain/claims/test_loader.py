@@ -27,10 +27,10 @@ def test_load_committed_v2_claim_fixture_with_exact_indexes_and_totals():
 
     assert len(dataset.claims) == 96
     assert len(dataset.diagnoses) >= 96
-    assert len(dataset.procedure_lines) == 520
-    assert len(dataset.material_lines) == 115
-    assert len(dataset.drug_lines) == 245
-    assert len(dataset.expected_outputs) == 433
+    assert len(dataset.procedure_lines) == 501
+    assert len(dataset.material_lines) == 110
+    assert len(dataset.drug_lines) == 218
+    assert len(dataset.expected_outputs) == 394
     assert len(dataset.performed_procedure_lines) == 1
     assert len(dataset.medula_rejection_events) == 10
     assert dataset.medula_rejection_ingest_available is True
