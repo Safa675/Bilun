@@ -9,10 +9,8 @@ from src.bilun.domain.prose_rules.drug_indication import (
 )
 
 from .types import (
-    DRUG_INDICATION_REQUIRED_INPUTS,
-    DRUG_INDICATION_UNAVAILABLE_REASON,
     EXACTNESS_STATUS_EXACT,
-    EXACTNESS_STATUS_MISSING_INPUTS,
+    EXACTNESS_STATUS_NOT_APPLICABLE,
     DrugIndicationReview,
 )
 
@@ -27,9 +25,9 @@ def validate_drug_indication_from_claims(
     """Match billed drug lines against the §4.2 pilot indication corpus."""
     if not ctx.drug_lines:
         return DrugIndicationReview(
-            exactness_status=EXACTNESS_STATUS_MISSING_INPUTS,
-            unavailable_reason=DRUG_INDICATION_UNAVAILABLE_REASON,
-            required_inputs_missing=list(DRUG_INDICATION_REQUIRED_INPUTS),
+            exactness_status=EXACTNESS_STATUS_NOT_APPLICABLE,
+            unavailable_reason=None,
+            required_inputs_missing=[],
             rule_source=_PROSE_RULE_SOURCE,
             coverage_scope=drug_indication_coverage_scope(),
         )

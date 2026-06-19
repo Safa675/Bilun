@@ -91,3 +91,18 @@ def test_billing_report_clean_when_report_present() -> None:
     assert report.drug_indication.exactness_status == "exact"
     assert report.drug_indication.violation_count == 0
     assert report.drug_indication_violation_count == 0
+
+
+def test_billing_report_drug_indication_not_applicable_without_drug_lines() -> None:
+    ctx = _ctx(report_present=False)
+    ctx = PatientClaimContext(
+        patient_id=ctx.patient_id,
+        claims=ctx.claims,
+        procedure_lines=ctx.procedure_lines,
+        material_lines=ctx.material_lines,
+        drug_lines=(),
+        diagnoses=ctx.diagnoses,
+    )
+    report = compute_patient_billing_report("P1", claim_context=ctx)
+    assert report.drug_indication.exactness_status == "not_applicable"
+    assert report.drug_indication_violation_count == 0

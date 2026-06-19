@@ -9,6 +9,17 @@ Format per entry:
 
 ---
 
+## 2026-06-19 — Don't infer document content from the filename (EK-4B "diyaliz" hallucination)
+
+**Pattern:** Recommending "ingest EK-4B to fill the dialysis gap" based purely on the annex filename/title, without reading the file or even the repo's own README. The repo README (`EK-4 LİSTELERİ/README.md:18-24`) states EK-4B is *special diet products / medical nutritionals (PKU, cystic fibrosis, cow's milk allergy)* — ~76 rows, niche pharmacy scope. Dialysis materials live in EK-3 nephrology (`ek3p_nephrology_materials.parquet`), which is already loaded. Same error class: earlier in the same session I also claimed EK-1B contained a "yatak bedeli tariff" from its title, when it is a blank per-patient invoice template (`İşlem tutarı` rows empty). Both were filename-to-content inference failures.
+
+**Rule:** Before claiming a raw-data file contains extractable tariff/rule data — or proposing it to fill a named gap — do BOTH:
+1. Read the repo's own inventory (the auto-generated `raw data/.../README.md` files are the canonical source of what each EK annex actually is, including row counts and column lists).
+2. Extract the actual file content (libreoffice/pdftotext/pandas) and confirm the rows are populated, not a blank form/template.
+A filename like "HAST. SUN. HİZM. VE İLAVE ÜCR" describes a *form's purpose*, not its data contents. SGK annexes split into (a) real tariff tables (.xlsx with data) and (b) blank form templates / patient consent docs (.doc/.docx). Only (a) is worth building a loader for. The audit subagent already correctly labeled EK-1B/EK-1E/EK-4B as "form/template" — trust that classification; don't re-interpret titles as data.
+
+---
+
 ## 2026-06-19 — Prefer `ss` over `lsof` for port/PID lookups on this host
 
 **Pattern:** AGENTS.md §5 prescribes `lsof -t -i :PORT` for the zombie-process check. On this host `lsof` fails to report the `next-server` process holding a LISTEN socket on port 3000 (returns empty, exit 1), even though the process is clearly bound. The user ran `kill -9 $(lsof -t -i :3000)`, got an empty PID list, and `kill` failed with "usage" — leaving the stale next-server alive and causing repeated `EADDRINUSE: address already in use :::3000` on `./start.sh`. `ss -ltnp "sport = :PORT"` (reads procfs) reliably surfaced the same PID.
