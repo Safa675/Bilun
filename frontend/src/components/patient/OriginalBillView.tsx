@@ -50,6 +50,22 @@ function sumField(lines: InvoiceLine[], field: "billedAmountTry" | "expectedPaya
   return lines.reduce((total, line) => total + line[field], 0);
 }
 
+/** Sunulan fatura: yalnızca billed>0 satırlar ara toplama girer (ghost alternatif yollar hariç). */
+function sumPresentedField(
+  lines: InvoiceLine[],
+  field: "billedAmountTry" | "expectedPayableTry",
+): number {
+  return lines
+    .filter((line) => line.billedAmountTry > 0)
+    .reduce((total, line) => total + line[field], 0);
+}
+
+function countLegacyGhostLines(lines: InvoiceLine[]): number {
+  return lines.filter(
+    (line) => line.billedAmountTry <= 0 && line.expectedPayableTry > 0,
+  ).length;
+}
+
 function procedureToLine(line: ClaimProcedureLine): InvoiceLine {
   return {
     id: line.procedure_line_id,
@@ -180,8 +196,8 @@ function InvoiceSection({
         <InvoiceLineTable lines={lines} emptyMessage={emptyMessage} />
         <SectionSubtotal
           label={subtotalLabel}
-          billed={sumField(lines, "billedAmountTry")}
-          payable={sumField(lines, "expectedPayableTry")}
+          billed={sumPresentedField(lines, "billedAmountTry")}
+          payable={sumPresentedField(lines, "expectedPayableTry")}
         />
       </div>
     </Section>
@@ -213,8 +229,9 @@ export default function OriginalBillView({ claim }: OriginalBillViewProps) {
     [sections],
   );
 
-  const linesBilledTotal = sumField(allLines, "billedAmountTry");
-  const linesPayableTotal = sumField(allLines, "expectedPayableTry");
+  const linesBilledTotal = sumPresentedField(allLines, "billedAmountTry");
+  const linesPayableTotal = sumPresentedField(allLines, "expectedPayableTry");
+  const legacyGhostLineCount = countLegacyGhostLines(allLines);
 
   return (
     <Surface variant="base" padding="lg" className="space-y-6">
@@ -225,9 +242,13 @@ export default function OriginalBillView({ claim }: OriginalBillViewProps) {
             {t("patient.originalBill.title")}
           </h2>
           <p className="mt-1 font-mono text-sm text-[var(--text-secondary)]">{claim.claim_id}</p>
-          <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            {claim.episode_id} · {claim.claim_type} · {claim.primary_icd10}
-          </p>
+          {[claim.episode_id, claim.claim_type, claim.primary_icd10].filter(Boolean).length > 0 && (
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              {[claim.episode_id, claim.claim_type, claim.primary_icd10]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          )}
           {(claim.department || claim.facility_tier) && (
             <p className="mt-1 text-xs text-[var(--text-muted)]">
               {[claim.department, claim.facility_tier && `${t("patient.originalBill.facility")} ${claim.facility_tier}`]
@@ -248,6 +269,13 @@ export default function OriginalBillView({ claim }: OriginalBillViewProps) {
         {t("patient.originalBill.description")}
       </p>
       <p className="text-xs text-[var(--text-muted)]">{t("patient.originalBill.optimizationHint")}</p>
+      {legacyGhostLineCount > 0 && (
+        <p className="text-xs text-amber-700 dark:text-amber-400">
+          {t("patient.originalBill.legacyGhostLineFootnote", {
+            count: legacyGhostLineCount,
+          })}
+        </p>
+      )}
 
       <InvoiceSection
         title={t("patient.originalBill.proceduresTitle")}

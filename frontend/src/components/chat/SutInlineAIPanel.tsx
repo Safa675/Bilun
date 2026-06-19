@@ -304,6 +304,12 @@ export default function SutInlineAIPanel({
   useEffect(() => {
     if (prevLocaleRef.current !== locale) {
       prevLocaleRef.current = locale;
+      // Clear any pending debounce from the [patientId, activeTab] effect so
+      // the forced re-brief below is not followed by a stale second fire.
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
       followUpAbortRef.current?.abort();
       autoAbortRef.current?.abort();
       persistChatState({
@@ -630,14 +636,14 @@ export default function SutInlineAIPanel({
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           placeholder={patientId ? t("chat.input.placeholderPatient") : t("chat.input.placeholderWorkspace")}
-          disabled={isResponding}
+          disabled={isResponding || isAutoLoading}
           className={CHAT_INPUT_CLASS}
           style={{ minHeight: CHAT_INPUT_MIN_HEIGHT_PX, maxHeight: CHAT_INPUT_MAX_HEIGHT_PX }}
         />
         <button
           type="button"
           onClick={handleSend}
-          disabled={!input.trim() || isResponding}
+          disabled={!input.trim() || isResponding || isAutoLoading}
           aria-label={t("chat.actions.sendMessage")}
           className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--r-md)] border-none bg-[var(--gold)] text-[var(--text-inverse)] transition-colors duration-150 hover:bg-[var(--gold-hover)] disabled:cursor-default disabled:bg-[var(--surface-soft)] disabled:text-[var(--text-muted)]"
         >

@@ -1,5 +1,39 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: Frontend Bug Fix — Dalga 3 (chat panel race + null guards)
+
+### Goal
+H2 (auto-brief debounce/locale double-fire), H5 (auto-brief + follow-up stream race), M4 (OriginalBillView null guard) düzelt. Co-author yok.
+
+### Subtasks
+- [x] Planı yaz, SutInlineAIPanel + OriginalBillView doğrula
+- [ ] H2: locale effect'inin `force:true` ateşlemeden önce pending debounce'u temizle
+- [ ] H5: auto-brief stream ederken textarea `disabled` yap (isAutoLoading || isResponding)
+- [ ] M4: OriginalBillView episode/claim_type/icd10 null guard (filter Boolean join)
+- [ ] Doğrula + commit
+
+### Out of Scope
+- H4 (health status flash) — Dalga 4
+- M1, M2, M3, M6, L1-L5 — Dalga 4
+
+---
+
+## Task: Frontend Bug Fix — Dalga 4 (UX jank + i18n + cosmetic)
+
+### Goal
+Kalan MEDIUM/LOW bug'lar: M1 (chat message key), M2 (BillPicker null date), M3 (variance guard), M6 (AppTopBar poll), H4 (health flash), L1 (hardcoded strings).
+
+### Subtasks
+- [ ] M1: chat message key → stabil id (role + index yerine monoton counter/ref)
+- [ ] M2: BillPicker defaultSelectedClaimId + sortedClaims null-safe date sort
+- [ ] M3: OriginalBillView variance için guard (negatif/NaN)
+- [ ] M6: AppTopBar ingest status'e interval + AbortController
+- [ ] H4: app/page.tsx health effect `setHealthStatus(null)`'ı kaldır
+- [ ] L1: "Thinking" hardcoded → t() key (chat.ts'ye ekle, en+tr)
+- [ ] Doğrula + commit
+
+---
+
 ## Task: Frontend Bug Fix — Dalga 2 (patient page fetch/race + locale churn)
 
 ### Goal
