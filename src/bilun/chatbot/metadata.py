@@ -2,9 +2,31 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 CHAT_CONTEXT_SCHEMA_VERSION = "2026-05-23"
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[3]
+_MANIFEST_PATH = _PROJECT_ROOT / "data" / "gazette" / "version_manifest.parquet"
+
+
+def _read_active_gazette_version() -> str | None:
+    """Return the latest effective_date from the gazette manifest, or None.
+
+    The manifest is the source of truth for which SUT tebliği is active.
+    Read defensively so a missing/corrupt manifest never breaks the chatbot.
+    """
+    try:
+        df = pd.read_parquet(_MANIFEST_PATH)
+        latest = df["effective_date"].max()
+        if pd.isna(latest):
+            return None
+        return str(latest)
+    except (FileNotFoundError, OSError, KeyError, ValueError):
+        return None
 
 
 def get_chat_model_context(active_build_id: str | None = None) -> dict[str, Any]:
@@ -12,7 +34,7 @@ def get_chat_model_context(active_build_id: str | None = None) -> dict[str, Any]
     return {
         "product": "BILUN",
         "build_id": active_build_id,
-        "gazette_version": None,
+        "gazette_version": _read_active_gazette_version(),
         "claim_dataset": "synthetic_demo",
         "rule_engines": {
             "active": ["copay_exemptions", "temporal_price_validation"],
