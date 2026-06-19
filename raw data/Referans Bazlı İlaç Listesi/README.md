@@ -1,7 +1,7 @@
 # Referans Bazlı İlaç Listesi
 
 Konum: `raw data/Referans Bazlı İlaç Listesi`
-Son güncelleme: 2026-06-15
+Son güncelleme: 2026-06-19
 
 SGK **referans bazlı ilaç fiyat listesi** yayınları (EK-4A ile ilişkili fiyat güncellemeleri).
 

@@ -9,6 +9,30 @@ Format per entry:
 
 ---
 
+## 2026-06-19 — Latent pipeline bugs surface during data-source swaps; verify the full chain end-to-end
+
+**Pattern:** Replacing the active SUT tebliği (2026.01.17 → 2026.04.08) exposed TWO pre-existing latent bugs that were invisible as long as the committed parquets were never rebuilt: (1) `xlrd` was never declared in `requirements.txt`/`pyproject.toml`, so all `.xls`-sourced annexes (EK-1A, EK-3B-1/2, EK-3C-1, EK-2Ç) silently failed conversion — the committed parquets were artifacts from a prior machine that had xlrd. (2) `_find_raw_parquet` (`scripts/sut/_common.py`) deliberately skipped `effective_date=unknown` partitions, which broke EK-1A (legitimately undated `.xls`, no date in filename) even though its raw parquet existed. Both only surfaced when the full pipeline ran fresh.
+
+**Rule:** A "data source swap" (new tebliği, new SUT package, new cohort) is never just a file replacement — it is a **full-pipeline smoke test**. Before declaring the swap done, run the *entire* chain fresh (convert → curate → extract → load) and verify EVERY catalog/annex produced non-zero output, not just the ones that passed. Specifically:
+1. After `convert_xlsx_to_parquet.py`, check the "Failures: N" line — if N > 0, read the failure reasons before proceeding; they are usually a dependency gap (`xlrd`, `odfpy`), not a data problem.
+2. After `build_curated_catalogs.py`, grep for `[!!]` / `FAIL` / `missing` — a silently-empty curated catalog (0 rows) means an upstream annex wasn't found, even if conversion reported success.
+3. A committed parquet that can't be rebuilt from declared dependencies is a **lie in git** — always confirm `pip install -r requirements.txt` on a clean venv reproduces every committed artifact.
+4. When a lookup filter has a "skip X" rationale comment (like `unknown` partitions here), check whether X can legitimately apply to in-scope data before trusting the skip.
+
+---
+
+## 2026-06-19 — "Değişiklik tebliği" (delta) ≠ "İşlenmiş Güncel SUT" (consolidated) — don't patch rules from delta text
+
+**Pattern:** After downloading the 23.05.2026 SUT tebliği, I initially assumed it was a full SUT and proposed patching BILUN's `drug_indication_prose.json` directly from its delta text. Reality: the download was a 1675-word Resmî Gazette delta (only MADDE 1-10 changes), NOT a consolidated SUT. BILUN's rule encoder workflow extracts rules from the *full consolidated SUT docx* via `extract_sut_prose.py` + human golden-file review — patching a hand-curated rule from delta text bypasses that review, sources from a non-canonical document, and risks stylistic mismatch.
+
+**Rule:** Before touching any rule JSON, classify the source document first:
+1. **Consolidated ("İşlenmiş Güncel 2013 SUT")** = full integrated text, ~1MB docx + EK folders. This is the ONLY valid input for the normal encoder pipeline (`extract_sut_prose.py` → clause corpus → hand-curated rule JSON). A new one warrants a full pipeline replace.
+2. **Delta ("Değişiklik Yapılmasına Dair Tebliğ")** = Gazette article listing only the changed MADDE'ler (typically a few KB / few hundred words). NEVER use as a direct rule source. Its purpose is to tell you *what changed* so you can (a) flag affected rules for the next consolidated package, and (b) write a changelog entry.
+3. Verify which you have by file size and content: a 30KB docx with "MADDE 1-..." headers is a delta; a 1MB docx with full BÖLÜM/§ structure is consolidated. A folder named `YYYY.MM.DD-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/` containing EK subfolders is consolidated; a lone `.docx` named `...Delta...` or a raw Gazette UUID filename is a delta.
+4. When a delta touches a BILUN rule, the correct action is to document it as "pending next consolidated package" in `docs/gazette/changelog.md`, NOT to hand-patch the rule.
+
+---
+
 ## 2026-06-19 — Don't infer document content from the filename (EK-4B "diyaliz" hallucination)
 
 **Pattern:** Recommending "ingest EK-4B to fill the dialysis gap" based purely on the annex filename/title, without reading the file or even the repo's own README. The repo README (`EK-4 LİSTELERİ/README.md:18-24`) states EK-4B is *special diet products / medical nutritionals (PKU, cystic fibrosis, cow's milk allergy)* — ~76 rows, niche pharmacy scope. Dialysis materials live in EK-3 nephrology (`ek3p_nephrology_materials.parquet`), which is already loaded. Same error class: earlier in the same session I also claimed EK-1B contained a "yatak bedeli tariff" from its title, when it is a blank per-patient invoice template (`İşlem tutarı` rows empty). Both were filename-to-content inference failures.

@@ -1,7 +1,7 @@
 # EK-1 LİSTELERİ
 
-Konum: `raw data/2026.01.17-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ`
-Son güncelleme: 2026-06-15
+Konum: `raw data/2026.04.08-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ`
+Son güncelleme: 2026-06-19
 
 EK-1 — Hasta hakları, katılım payı muafiyetleri ve istisnai hizmetler (SUT Bölüm 1).
 
@@ -10,6 +10,7 @@ EK-1 — Hasta hakları, katılım payı muafiyetleri ve istisnai hizmetler (SUT
 ### EK-1A
 **Ayakta tedavide hekim / diş hekimi muayenesinde katılım payı alınmayacak kronik hastalıklar listesi**
 - Dosya: `EK-1A AYAKTA TED.HEK.DİŞ HEK MUA KAT PAY.ALIN KRN HAST LİS..xls`
+- Yaklaşık satır sayısı: **100**
 - SUT bağlantısı: §1.8.1 — kronik hastalık katılım payı muafiyeti
 - BILUN kullanımı: ek1a_chronic_exemptions.parquet — copay exemption checker (L2.1)
 - Tipik sütunlar: `ICD-10 kod aralıkları, hastalık adı, harf indeksi`

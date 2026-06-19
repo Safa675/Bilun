@@ -58,6 +58,22 @@ Aktif SUT kaynağını 2026.01.17 → **2026.04.08 konsolide paket** ile değiş
 - **Test kırılması**: 01.17 fiyatlarıyla yazılan fixture'lar 04.08 fiyatlarıyla uyuşmayacak. Cohort'u yeniden üretmek (`generate_sut_synthetic_data_v2.py`) gerekebilir — bu Faz 4'te ortaya çıkacak.
 - **Mayıs delta konsolide değil**: 05.23 sadece patch uygulandı, tam SUT metni 04.08'de kaldı. Bu bir geçici durum; bir sonraki SGK konsolide paketi gelince düzeltilir.
 
+### Review (2026-06-19)
+**Tamamlandı.** Aktif SUT 2026.01.17 → 2026.04.08 konsolide pakete replace edildi. Test kırılması gerçekleşmedi (732 passed) — çünkü BILUN test'leri fiyat kataloğuna karşı değil kendi mock input'larına karşı assert ediyor. Beklenen risk realize olmadı.
+
+Yan bulgular (Faz 1.5 + Faz 2'de düzeltildi):
+- `xlrd` latent bug'ı fix edildi (`.xls` annex'leri artık okunuyor).
+- `_find_raw_parquet` unknown-fallback bug'ı fix edildi (EK-1A artık inşa ediliyor).
+- `gazette_version` chatbot metadata'sı artık manifest'ten canlı okuyor (önceden `None`).
+
+Faz 3 (Mayıs delta) planlandığı gibi olmadı — 10 maddeden 9'u BILUN scope dışı (karşılık gelen kural motoru yok), 1'i (prostat) elle patch etmek yerine bir sonraki konsolide paketi beklemek kararı alındı. EK-4/A diff'i yapıldı ama kaynak belirsizliği (eksik liste şüphesi) yüzünden güvenilir bulunmadı; `ek4a_drugs.parquet` 04.08'de bırakıldı. Tüm bulgular `docs/gazette/changelog.md`'de belgelendi.
+
+**Doğrulama**: `pytest tests/` → 732 passed, 0 failed. Manifest max `effective_date` = 2026-04-08. Chatbot `gazette_version` = 2026-04-08.
+
+**Kullanılan MCP quota**: 3 WebSearch (2 yeni tebliği bulmak) + 1 webReader (SGK duyuru sayfası). Bu, kotanın "dış dünya" kullanımı için doğru harcamasıydı; tablo loader'ları için harcanmadı.
+
+**Sonraki adım (kullanıcı kararı)**: 23.05.2026 tebliği için tam konsolide paket indirilince → yeni bir replace task'ı aç → §4.2.14.C prostat değişikliği normal encoder süreciyle işlensin.
+
 ---
 
 ## Task: Billing action count doğruluğu — duplicate informational Row B düzelt

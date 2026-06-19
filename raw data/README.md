@@ -1,7 +1,7 @@
 # raw data
 
 Konum: `raw data/`
-Son güncelleme: 2026-06-15
+Son güncelleme: 2026-06-19
 
 SGK **Sağlık Uygulama Tebliği (SUT)** kaynak belgeleri. Resmi gazete tebliğ paketleri, ilaç listeleri ve saha röportajları.
 
@@ -10,7 +10,7 @@ SGK **Sağlık Uygulama Tebliği (SUT)** kaynak belgeleri. Resmi gazete tebliğ 
 ```
 raw data/
 ├── 2026.01.17-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/          (343 dosya)
-├── Ek İzlemeye Tabi İlaçlar Listesi /          (11 dosya)
+├── 2026.04.08-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/          (341 dosya)
 ├── Interviews/          (3 dosya)
 ├── Referans Bazlı İlaç Listesi/          (11 dosya)
 ├── 0abeb266-fde9-4958-b115-a31a8c2b0336.pdf
@@ -44,6 +44,6 @@ raw data/
 ## Alt klasörler
 
 - [2026.01.17-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT](2026.01.17-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/README.md)
-- [Ek İzlemeye Tabi İlaçlar Listesi ](Ek İzlemeye Tabi İlaçlar Listesi /README.md)
+- [2026.04.08-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT](2026.04.08-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/README.md)
 - [Interviews](Interviews/README.md)
 - [Referans Bazlı İlaç Listesi](Referans Bazlı İlaç Listesi/README.md)

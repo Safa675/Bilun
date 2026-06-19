@@ -1,7 +1,7 @@
 # EK-3 LİSTELERİ
 
-Konum: `raw data/2026.01.17-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ`
-Son güncelleme: 2026-06-15
+Konum: `raw data/2026.04.08-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ`
+Son güncelleme: 2026-06-19
 
 EK-3 — Tıbbi malzeme, sarf, protez ve branş bazlı implant tavan fiyatları (SUT Bölüm 3). En çok dosya burada; B/C alt listeleri ödeme kurallarını, E–T alt listeleri branş kataloglarını taşır.
 
@@ -35,6 +35,7 @@ SGK malzeme eklerini iki aileye ayırır:
 **Kurumca bedeli karşılanmayan tıbbi malzemeler (ana liste)**
 - Yürürlük (dosya adından): `03.09.2022`
 - Dosya: `EK-3B KURUMCA BEDELİ KARŞILANMAYAN TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xls`
+- Yaklaşık satır sayısı: **2**
 - SUT bağlantısı: §3.1.1(7)/(9) — EK-3/B üst liste
 - BILUN kullanımı: Üst katalog; alt listeler 3B-1 ve 3B-2
 - Tipik sütunlar: `Malzeme kodu ve adı`
@@ -43,6 +44,7 @@ SGK malzeme eklerini iki aileye ayırır:
 **İşlem puanına dahil basit sıhhi sarf malzemeler**
 - Yürürlük (dosya adından): `03.09.2022`
 - Dosya: `EK-3B-1 İŞLEM PUANINA DAHİL BASİT SIHHİ SARF MALZEMELER LİSTESİ (Yür.03.09.2022).xls`
+- Yaklaşık satır sayısı: **54**
 - SUT bağlantısı: §3.1.1 — paket içi sarf; ayrı faturalandırılamaz
 - BILUN kullanımı: ek3b1_bundled_consumables.parquet (54 kalem) — bundling rule (L1.1)
 - Tipik sütunlar: `Sarf kategorisi / malzeme adı`
@@ -51,6 +53,7 @@ SGK malzeme eklerini iki aileye ayırır:
 **Kurumca bedeli karşılanmayan diğer tıbbi malzemeler**
 - Yürürlük (dosya adından): `03.09.2022`
 - Dosya: `EK-3B-2 KURUMCA BEDELİ KARŞILANMAYAN DİĞER TIBBİ MALZ. LİSTESİ (Yür.03.09.2022).xls`
+- Yaklaşık satır sayısı: **13**
 - SUT bağlantısı: §3.1.1 — SGK ödemez
 - BILUN kullanımı: ek3b2_non_reimbursable.parquet (13 kalem) — exclusion rule (L1.2)
 - Tipik sütunlar: `Malzeme adı`
@@ -59,6 +62,7 @@ SGK malzeme eklerini iki aileye ayırır:
 **Ayakta tedavilerde kullanılan tıbbi malzemeler (üst liste)**
 - Yürürlük (dosya adından): `03.09.2022`
 - Dosya: `EK-3C AYAKTA TEDAVİLERDE KULLANILAN TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xls`
+- Yaklaşık satır sayısı: **10**
 - SUT bağlantısı: §3.1.2 — ayakta malzeme ödeme kuralları
 - BILUN kullanımı: Alt listeler C-1..C-5 + formlar
 - Tipik sütunlar: `SUT kodu, fiyat`
@@ -67,6 +71,7 @@ SGK malzeme eklerini iki aileye ayırır:
 **Tıbbi uygunluk aranacak tıbbi malzemeler**
 - Yürürlük (dosya adından): `03.09.2022`
 - Dosya: `EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xls`
+- Yaklaşık satır sayısı: **506**
 - SUT bağlantısı: §3.1.2 — ön onay / rapor zorunluluğu
 - BILUN kullanımı: ek3c1_materials.parquet — material pre-check
 - Tipik sütunlar: `SUT kodu, malzeme, koşullar`
@@ -75,6 +80,7 @@ SGK malzeme eklerini iki aileye ayırır:
 **Eksternal alt/üst ekstremite ve gövde protez-ortezler**
 - Yürürlük (dosya adından): `24.01.2026`
 - Dosya: `EK-3C-2 EKSTERNAL ALT VE ÜST EKSTREMİTE GÖVDE PROT. ORTEZ. LİS. (Yür. 24.01.2026).xls`
+- Yaklaşık satır sayısı: **528**
 - SUT bağlantısı: §3.1.2 — protez/ortez + MIAT aralıkları
 - BILUN kullanımı: ek3c2_materials.parquet — MIAT interval checks (L3.5)
 - Tipik sütunlar: `SUT kodu, MIAT, fiyat`
@@ -83,6 +89,7 @@ SGK malzeme eklerini iki aileye ayırır:
 **Diğer protez-ortezler**
 - Yürürlük (dosya adından): `24.01.2026`
 - Dosya: `EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 24.01.2026).xls`
+- Yaklaşık satır sayısı: **119**
 - SUT bağlantısı: §3.1.2
 - BILUN kullanımı: ek3c3_materials.parquet
 - Tipik sütunlar: `SUT kodu, fiyat`
@@ -91,6 +98,7 @@ SGK malzeme eklerini iki aileye ayırır:
 **Tıbbi sarf malzemeler**
 - Yürürlük (dosya adından): `24.01.2026`
 - Dosya: `EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür. 24.01.2026).xls`
+- Yaklaşık satır sayısı: **149**
 - SUT bağlantısı: §3.1.2
 - BILUN kullanımı: ek3c4_materials.parquet
 - Tipik sütunlar: `SUT kodu, fiyat`
@@ -99,6 +107,7 @@ SGK malzeme eklerini iki aileye ayırır:
 **Özel hallerde karşılanan tıbbi malzemeler**
 - Yürürlük (dosya adından): `24.01.2026`
 - Dosya: `EK-3C-5 ÖZEL HALLERDE KARŞILANAN TIBBİ MALZEMELER LİST.(Yür. 24.01.2026).xls`
+- Yaklaşık satır sayısı: **91**
 - SUT bağlantısı: §3.1.2
 - BILUN kullanımı: ek3c5_materials.parquet
 - Tipik sütunlar: `SUT kodu, koşul, fiyat`
@@ -318,42 +327,42 @@ Yürürlükten kalkmış EK listeleri (SGK konsolide tebliğ içindeki arşiv). 
 Toplam **202** dosya:
 
 ### Diğer (202 sürüm)
-- `MÜLGA EK-3A BİRDEN FAZLA BRANŞTA KULLANILAN TIBBİ MALZEMELER.xls`
-- `MÜLGA EK-3B KURUMCA BEDELİ KARŞILANMAYAN TIBBİ MALZEMELER.xls`
-- `MÜLGA EK-3B-1 İŞLEM PUANINA DAHİL BASİT SIHHİ SARF MALZEMELER.xls`
-- `MÜLGA EK-3B-2 KURUMCA BEDELİ KARŞILANMAYAN DİĞER TIBBİ MALZEMELER.xls`
-- `MÜLGA EK-3C  AYAKTA TEDAVİLERDE KULLANILAN TIBBİ MALZEMELER.xls`
-- `MÜLGA EK-3C-1 (Yür-01.01.2015)TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER.xls`
-- `MÜLGA EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER (Yür-01.01.2015).xls`
-- `MÜLGA EK-3C-2 EKST. ALT VE ÜST EKST.GÖVDE PRO. ORT (Yür-01.10.2014).xls`
-- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER.xls`
-- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER.xls`
+- `MÜLGA EK-3A BİRDEN FAZLA BRANŞTA KULLANILAN TIBBİ MALZEMELER.xls`, ~396 satır
+- `MÜLGA EK-3B KURUMCA BEDELİ KARŞILANMAYAN TIBBİ MALZEMELER.xls`, ~2 satır
+- `MÜLGA EK-3B-1 İŞLEM PUANINA DAHİL BASİT SIHHİ SARF MALZEMELER.xls`, ~54 satır
+- `MÜLGA EK-3B-2 KURUMCA BEDELİ KARŞILANMAYAN DİĞER TIBBİ MALZEMELER.xls`, ~15 satır
+- `MÜLGA EK-3C  AYAKTA TEDAVİLERDE KULLANILAN TIBBİ MALZEMELER.xls`, ~10 satır
+- `MÜLGA EK-3C-1 (Yür-01.01.2015)TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER.xls`, ~420 satır
+- `MÜLGA EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER (Yür-01.01.2015).xls`, ~420 satır
+- `MÜLGA EK-3C-2 EKST. ALT VE ÜST EKST.GÖVDE PRO. ORT (Yür-01.10.2014).xls`, ~466 satır
+- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER.xls`, ~184 satır
+- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER.xls`, ~295 satır
 - `MÜLGA EK-3C-5(Yür-01.01.2015) YENİ ÖZEL HAL. KARŞ. TIBBİ MALZ (Yür.-01.10.2014).xlsx`, ~85 satır
-- `MÜLGA EK-3C-5(Yür-01.10.2014)ÖZEL HALLERDE KARŞ. TIBBİ MAL..xls`
-- `MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER.xls`
-- `MÜLGA EK-3E-1  OMURGA CERRAHİSİ.xls`
-- `MÜLGA EK-3E-2 (Yür-01.10.2014)YENİ BEY.CERR.KRA.CERR.(Yür.01.08.13).xls`
+- `MÜLGA EK-3C-5(Yür-01.10.2014)ÖZEL HALLERDE KARŞ. TIBBİ MAL..xls`, ~11 satır
+- `MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER.xls`, ~55 satır
+- `MÜLGA EK-3E-1  OMURGA CERRAHİSİ.xls`, ~390 satır
+- `MÜLGA EK-3E-2 (Yür-01.10.2014)YENİ BEY.CERR.KRA.CERR.(Yür.01.08.13).xls`, ~262 satır
 - `MÜLGA EK-3E-2 BEY. CERR. KRAN. CERR..xlsx`, ~248 satır
 - `MÜLGA EK-3F-1 ORT VE TRAV.BRA.ART.xlsx`, ~366 satır
-- `MÜLGA EK-3F-2 (Yür-01.10.14)ORT.VE TRAV.BRA.ART.(EK Yür.01.08.14).xls`
-- `MÜLGA EK-3F-3 (Yür.14.10.14)ORT.TRAV BRA.TÜM. REZ  (Yür.01.10.14).xls`
+- `MÜLGA EK-3F-2 (Yür-01.10.14)ORT.VE TRAV.BRA.ART.(EK Yür.01.08.14).xls`, ~178 satır
+- `MÜLGA EK-3F-3 (Yür.14.10.14)ORT.TRAV BRA.TÜM. REZ  (Yür.01.10.14).xls`, ~183 satır
 - `MÜLGA EK-3F-4(Yür-01.10.14)ORT TRA  BRA.TRA. REK.  (Yür 01.10.14).xlsx`, ~511 satır
 - `MÜLGA EK-3F-4(Yür-01.10.14)YENİ ORT.TRAV.BRA.TRA (EK-Yür 01.08.14).xlsx`, ~511 satır
-- `MÜLGA EK-3H KARDİYOLOJİ (Yür 01.10.14).xls`
-- `MÜLGA EK-3M RAD. BRANŞ. VE ENDO.GİR  İŞL(Yürürlük 01 10 2014).xls`
-- `MÜLGA EK-3M Yür.01.10.14 YENİ RAD.BRA.END..GİR. İŞL.(Yür. 01.08.13).xls`
-- `MÜLGA EK-3S (Yür-01.10.2014)GÖĞÜS H. GÖĞ CERR.BRA(EK.Yür 01.08.14 ).xls`
+- `MÜLGA EK-3H KARDİYOLOJİ (Yür 01.10.14).xls`, ~697 satır
+- `MÜLGA EK-3M RAD. BRANŞ. VE ENDO.GİR  İŞL(Yürürlük 01 10 2014).xls`, ~706 satır
+- `MÜLGA EK-3M Yür.01.10.14 YENİ RAD.BRA.END..GİR. İŞL.(Yür. 01.08.13).xls`, ~467 satır
+- `MÜLGA EK-3S (Yür-01.10.2014)GÖĞÜS H. GÖĞ CERR.BRA(EK.Yür 01.08.14 ).xls`, ~110 satır
 - `MÜLGA EK-3T ANES. REAN. VE AĞRI TED. BRANŞ (Yür.-01.10.2014).xlsx`, ~68 satır
 - `MÜLGA EK-3T(Yür.01.10.14)ANES. REA. AĞRI TED.BRA(EK-Yür-01.08.14 ).xlsx`, ~49 satır
-- `MÜLGA EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER (Yür.01.01.2015).xls` — yür. `01.01.2015`
-- `MÜLGA EK-3C-2 EKST. ALT VE ÜST PROT. ORT(Yür.01.01.2015).xls` — yür. `01.01.2015`
+- `MÜLGA EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER (Yür.01.01.2015).xls` — yür. `01.01.2015`, ~649 satır
+- `MÜLGA EK-3C-2 EKST. ALT VE ÜST PROT. ORT(Yür.01.01.2015).xls` — yür. `01.01.2015`, ~710 satır
 - `MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST. (Yür. 01.01.2015).xlsx` — yür. `01.01.2015`, ~121 satır
 - `MÜLGA EK-3A BİRDEN FAZLA BR. KULL TIB ML. LİST(Yür. 01.06.2021).xlsx` — yür. `01.06.2021`, ~624 satır
-- `MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST (Yür. 01.06.2021).xls` — yür. `01.06.2021`
-- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 01.06.2021).xls` — yür. `01.06.2021`
-- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür. 01.06.2021).xls` — yür. `01.06.2021`
+- `MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST (Yür. 01.06.2021).xls` — yür. `01.06.2021`, ~628 satır
+- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 01.06.2021).xls` — yür. `01.06.2021`, ~123 satır
+- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür. 01.06.2021).xls` — yür. `01.06.2021`, ~158 satır
 - `MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST. (Yür. 01.06.2021).xlsx` — yür. `01.06.2021`, ~102 satır
-- `MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER LİSTESİ (Yür. 01.06.2021).xls` — yür. `01.06.2021`
+- `MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER LİSTESİ (Yür. 01.06.2021).xls` — yür. `01.06.2021`, ~55 satır
 - `MÜLGA EK-3E-1 OMURGA CERRAHİSİ ALAN GR. AİT TIB MALZ LİST(Yür. 01.06.2021).xlsx` — yür. `01.06.2021`, ~294 satır
 - `MÜLGA EK-3E-2 BEYİN CER.BR.KR.CER. ALAN GR. AİT TIB MLZ.LİST (Yür. 01.06.2021).xlsx` — yür. `01.06.2021`, ~159 satır
 - `MÜLGA EK-3F-1 ORT.VE TRAVM. BRA. ARTROPLASTİ LİSTESİ (Yür. 01.06.2021).xlsx` — yür. `01.06.2021`, ~346 satır
@@ -377,44 +386,44 @@ Toplam **202** dosya:
 - `MÜLGA EK-3T ANES. REAN. VE AĞRI TED. BR. LİST. (Yür. 01.06.2021).xlsx` — yür. `01.06.2021`, ~40 satır
 - `MÜLGA EK-3F-1 ( Yür 01.07.2015)-ORT.VE TRAVM. BRA. ARTROPLASTİ (Yür. 01.08.2014).xlsx` — yür. `01.07.2015`, ~344 satır
 - `MÜLGA EK-3F-1 ORT.VE TRAVM. BRA. ARTROPLASTİ (Yür. 01.07.2015).xlsx` — yür. `01.07.2015`, ~458 satır
-- `MÜLGA EK-3G  (Yür-01.10.2014)YENİ-GÖZ SAG.VE HAST.(Yür. 01.08.2013).xls` — yür. `01.08.2013`
-- `MÜLGA EK-3G GÖZ SAGLIGI VE HASTALIKLARI (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`
+- `MÜLGA EK-3G  (Yür-01.10.2014)YENİ-GÖZ SAG.VE HAST.(Yür. 01.08.2013).xls` — yür. `01.08.2013`, ~266 satır
+- `MÜLGA EK-3G GÖZ SAGLIGI VE HASTALIKLARI (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`, ~267 satır
 - `MÜLGA EK-3H  KARDİYOLOJİ ( Yürürlük 01.08.2013).xlsx` — yür. `01.08.2013`, ~411 satır
-- `MÜLGA EK-3H YENİ(Yür-01.10.2014)-KARDİYOLOJİ (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`
+- `MÜLGA EK-3H YENİ(Yür-01.10.2014)-KARDİYOLOJİ (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`, ~417 satır
 - `MÜLGA EK-3I  KALP DAMAR CERRAHİSİ (Yürürlük 01.08.2013).xlsx` — yür. `01.08.2013`, ~601 satır
-- `MÜLGA EK-3I (Yür-01.10.2014)YENİ-KALP DAMAR CERR. (Yür. 01.08.2013).xls` — yür. `01.08.2013`
-- `MÜLGA EK-3J KBB (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`
+- `MÜLGA EK-3I (Yür-01.10.2014)YENİ-KALP DAMAR CERR. (Yür. 01.08.2013).xls` — yür. `01.08.2013`, ~635 satır
+- `MÜLGA EK-3J KBB (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`, ~72 satır
 - `MÜLGA EK-3J KBB (Yürürlük 01.08.2013).xlsx` — yür. `01.08.2013`, ~34 satır
-- `MÜLGA EK-3K KADIN HASTALIKLARI VE DOGUM (Yür. 01.08.2013).xls` — yür. `01.08.2013`
-- `MÜLGA EK-3K KADIN HASTALIKLARI VE DOGUM (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`
-- `MÜLGA EK-3L  ÜROLOJİ (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`
-- `MÜLGA EK-3L ÜROLOJİ (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`
+- `MÜLGA EK-3K KADIN HASTALIKLARI VE DOGUM (Yür. 01.08.2013).xls` — yür. `01.08.2013`, ~51 satır
+- `MÜLGA EK-3K KADIN HASTALIKLARI VE DOGUM (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`, ~47 satır
+- `MÜLGA EK-3L  ÜROLOJİ (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`, ~131 satır
+- `MÜLGA EK-3L ÜROLOJİ (Yürürlük 01.08.2013).xls` — yür. `01.08.2013`, ~170 satır
 - `MÜLGA EK-3M RADYOLOJİ VE ENDOVASK. GİR. İŞL. (Yürürlük 01.08.2013).xlsx` — yür. `01.08.2013`, ~464 satır
-- `MÜLGA EK-3O HEMATOLOJİ-ONKOLOJİ BRANŞI  (EK-Yürürlük 01.08.2013).xls` — yür. `01.08.2013`
-- `MÜLGA EK-3P NEFROLOJİ BRANŞI (EK- Yürürlük 01.08.2013).xls` — yür. `01.08.2013`
+- `MÜLGA EK-3O HEMATOLOJİ-ONKOLOJİ BRANŞI  (EK-Yürürlük 01.08.2013).xls` — yür. `01.08.2013`, ~95 satır
+- `MÜLGA EK-3P NEFROLOJİ BRANŞI (EK- Yürürlük 01.08.2013).xls` — yür. `01.08.2013`, ~86 satır
 - `MÜLGA EK-3N-1 ALLOGREFT ÜRÜN GRUBU  ( Yürürlük 01.08.2014).xlsx` — yür. `01.08.2014`, ~228 satır
-- `MÜLGA EK-3N-1 ALLOGREFT ÜRÜN GRUBU (Yürürlük 01.08.2014).xls` — yür. `01.08.2014`
+- `MÜLGA EK-3N-1 ALLOGREFT ÜRÜN GRUBU (Yürürlük 01.08.2014).xls` — yür. `01.08.2014`, ~217 satır
 - `MÜLGA EK-3N-2(Yür-01.10.2014)XENOGREFT ÜRÜN GR(EK-Yür. 01.08.2014).xlsx` — yür. `01.08.2014`, ~25 satır
 - `MÜLGA EK-3N-3 SENTETİK GREFT ÜRÜN GRUBU (EK-Yürürlük 01.08.2014).xlsx` — yür. `01.08.2014`, ~19 satır
-- `MÜLGA EK-3R (Yür-01.10.2014)GASTRO. BRA.(EK-Yür. 01.08.2014 ).xls` — yür. `01.08.2014`
-- `MÜLGA EK-3A BİRDEN FAZ. BRŞ. KUL.TIB. ML.(Ek-Yür. 01.10.2014).xls` — yür. `01.10.2014`
-- `MÜLGA EK-3C-2   EKST.ALT VE ÜST PROT.ORT. (Yür. 01.10.2014).xls` — yür. `01.10.2014`
-- `MÜLGA EK-3C-2(Yür-01.01.2015)YENİ EKST.ALT VE ÜST PROT.ORT.Ek-Yür. 01.10.2014).xls` — yür. `01.10.2014`
-- `MÜLGA EK-3E-2 BEYİN CERRH. KRANİAL CERR.  (Yür. 01.10.2014).xls` — yür. `01.10.2014`
-- `MÜLGA EK-3F-2 ORT. VE TRAV. BRANŞ ART.( Yür. 01.10.2014).xls` — yür. `01.10.2014`
-- `MÜLGA EK-3F-3(Yür.01.10.2014)ORT.TRAV.BRATÜM.REZ( EK Yür 01.08.14).xls` — yür. `01.10.2014`
+- `MÜLGA EK-3R (Yür-01.10.2014)GASTRO. BRA.(EK-Yür. 01.08.2014 ).xls` — yür. `01.08.2014`, ~200 satır
+- `MÜLGA EK-3A BİRDEN FAZ. BRŞ. KUL.TIB. ML.(Ek-Yür. 01.10.2014).xls` — yür. `01.10.2014`, ~891 satır
+- `MÜLGA EK-3C-2   EKST.ALT VE ÜST PROT.ORT. (Yür. 01.10.2014).xls` — yür. `01.10.2014`, ~630 satır
+- `MÜLGA EK-3C-2(Yür-01.01.2015)YENİ EKST.ALT VE ÜST PROT.ORT.Ek-Yür. 01.10.2014).xls` — yür. `01.10.2014`, ~630 satır
+- `MÜLGA EK-3E-2 BEYİN CERRH. KRANİAL CERR.  (Yür. 01.10.2014).xls` — yür. `01.10.2014`, ~307 satır
+- `MÜLGA EK-3F-2 ORT. VE TRAV. BRANŞ ART.( Yür. 01.10.2014).xls` — yür. `01.10.2014`, ~226 satır
+- `MÜLGA EK-3F-3(Yür.01.10.2014)ORT.TRAV.BRATÜM.REZ( EK Yür 01.08.14).xls` — yür. `01.10.2014`, ~183 satır
 - `MÜLGA EK-3F-4 ORT VE TRAV BRŞ TRAV VE REK  (EK-Yürürlük 01.10.2014).xlsx` — yür. `01.10.2014`, ~550 satır
-- `MÜLGA EK-3G GÖZ SAGLIGI VE HASTALIKLARI (Yürürlük 01.10.2014).xls` — yür. `01.10.2014`
-- `MÜLGA EK-3I KALP DAMAR CERRAHİSİ (Yürürlük 01.10.2014).xls` — yür. `01.10.2014`
+- `MÜLGA EK-3G GÖZ SAGLIGI VE HASTALIKLARI (Yürürlük 01.10.2014).xls` — yür. `01.10.2014`, ~403 satır
+- `MÜLGA EK-3I KALP DAMAR CERRAHİSİ (Yürürlük 01.10.2014).xls` — yür. `01.10.2014`, ~1,022 satır
 - `MÜLGA EK-3N-2(Yür.14.10.14) XENOGREFT ÜRÜN GRUBU (Yür 01.10.2014).xlsx` — yür. `01.10.2014`, ~20 satır
-- `MÜLGA EK-3R GASTROENTEROLOJİ BRANŞI (EK-Yürürlük 01.10.2014 ).xls` — yür. `01.10.2014`
-- `MÜLGA EK-3S GÖĞÜS HAST.VE GÖĞÜS CERR. BRANŞ. (EK-Yür. 01.10.2014).xls` — yür. `01.10.2014`
+- `MÜLGA EK-3R GASTROENTEROLOJİ BRANŞI (EK-Yürürlük 01.10.2014 ).xls` — yür. `01.10.2014`, ~332 satır
+- `MÜLGA EK-3S GÖĞÜS HAST.VE GÖĞÜS CERR. BRANŞ. (EK-Yür. 01.10.2014).xls` — yür. `01.10.2014`, ~183 satır
 - `MÜLGA EK-3A BİRDEN FAZLA BR. KULL TIB ML. LİST(Yür.03.09.2022).xlsx` — yür. `03.09.2022`, ~597 satır
-- `MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST(Yür.03.09.2022).xls` — yür. `03.09.2022`
-- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür.03.09.2022).xls` — yür. `03.09.2022`
-- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür.03.09.2022).xls` — yür. `03.09.2022`
-- `MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST. (Yür.03.09.2022).xls` — yür. `03.09.2022`
-- `MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xls` — yür. `03.09.2022`
+- `MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST(Yür.03.09.2022).xls` — yür. `03.09.2022`, ~527 satır
+- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür.03.09.2022).xls` — yür. `03.09.2022`, ~118 satır
+- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür.03.09.2022).xls` — yür. `03.09.2022`, ~147 satır
+- `MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST. (Yür.03.09.2022).xls` — yür. `03.09.2022`, ~90 satır
+- `MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER LİSTESİ (Yür.03.09.2022).xls` — yür. `03.09.2022`, ~55 satır
 - `MÜLGA EK-3E-1 OMURGA CERRAHİSİ ALAN GR. AİT TIB MALZ LİST(Yür.03.09.2022).xlsx` — yür. `03.09.2022`, ~287 satır
 - `MÜLGA EK-3E-2 BEYİN CER.BR.KR.CER. ALAN GR. AİT TIB MLZ.LİST (Yür.03.09.2022).xlsx` — yür. `03.09.2022`, ~159 satır
 - `MÜLGA EK-3F-1 ORT.VE TRA. BR.ARTROPLASTİ AL.GR.AİT TB ML.LİST (Yür.03.09.2022).xlsx` — yür. `03.09.2022`, ~346 satır
@@ -437,12 +446,12 @@ Toplam **202** dosya:
 - `MÜLGA EK-3S GÖĞÜS HAST.VE GÖĞÜS CER.BR.AİT TIB.ML.LİST.(Yür.03.09.2022).xlsx` — yür. `03.09.2022`, ~105 satır
 - `MÜLGA EK-3T ANES.REA.VE AĞRI TED. BR.AİT TIB. MALZ.LİST.(Yür.03.09.2022).xlsx` — yür. `03.09.2022`, ~40 satır
 - `MÜLGA EK-3A BİRDEN FAZLA BR. KULL TIB ML. LİST(Yür.08.02.2022).xlsx` — yür. `08.02.2022`, ~632 satır
-- `MÜLGA EK-3C AYAKTA TEDAVİLERDE KULLANILAN TIBBİ MALZEMELER (Yür. 08.02.2022).xls` — yür. `08.02.2022`
-- `MÜLGA EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER (Yür. 08.02.2022).xls` — yür. `08.02.2022`
-- `MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST (Yür.08.02.2022).xls` — yür. `08.02.2022`
-- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür.08.02.2022).xls` — yür. `08.02.2022`
-- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür.08.02.2022).xls` — yür. `08.02.2022`
-- `MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST. (Yür.08.02.2022).xls` — yür. `08.02.2022`
+- `MÜLGA EK-3C AYAKTA TEDAVİLERDE KULLANILAN TIBBİ MALZEMELER (Yür. 08.02.2022).xls` — yür. `08.02.2022`, ~10 satır
+- `MÜLGA EK-3C-1 TIBBİ UYGUNLUK ARANACAK TIBBİ MALZEMELER (Yür. 08.02.2022).xls` — yür. `08.02.2022`, ~506 satır
+- `MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST (Yür.08.02.2022).xls` — yür. `08.02.2022`, ~527 satır
+- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür.08.02.2022).xls` — yür. `08.02.2022`, ~118 satır
+- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür.08.02.2022).xls` — yür. `08.02.2022`, ~162 satır
+- `MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST. (Yür.08.02.2022).xls` — yür. `08.02.2022`, ~90 satır
 - `MÜLGA EK-3E-1 OMURGA CERRAHİSİ ALAN GR. AİT TIB MALZ LİST(Yür.08.02.2022).xlsx` — yür. `08.02.2022`, ~287 satır
 - `MÜLGA EK-3E-2 BEYİN CER.BR.KR.CER. ALAN GR. AİT TIB MLZ.LİST  (Yür.08.02.2022).xlsx` — yür. `08.02.2022`, ~159 satır
 - `MÜLGA EK-3F-1 ORT.VE TRA. BR.ARTROPLASTİ AL.GR.AİT TB ML.LİST (Yür. 08.02.2022).xlsx` — yür. `08.02.2022`, ~346 satır
@@ -463,20 +472,20 @@ Toplam **202** dosya:
 - `MÜLGA EK-3R GASTRO.BR. AİT TIB. ML.LİST. (Yür.08.02.2022).xlsx` — yür. `08.02.2022`, ~190 satır
 - `MÜLGA EK-3S GÖĞÜS HAST.VE GÖĞÜS CER.BR.AİT TIB.ML.LİST.(Yür.08.02.2022).xlsx` — yür. `08.02.2022`, ~105 satır
 - `MÜLGA EK-3T ANES.REA.VE AĞRI TED. BR.AİT TIB. MALZ.LİST.(Yür. 08.02.2022).xlsx` — yür. `08.02.2022`, ~40 satır
-- `MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT ORT. LİST (Yür.13.08.2024).xls` — yür. `13.08.2024`
-- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür.13.08.2024).xls` — yür. `13.08.2024`
-- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür.13.08.2024).xls` — yür. `13.08.2024`
-- `MÜLGA EK-3C-5 ÖZEL HALLERDE KARŞILANAN TIBBİ MALZ. LİST (Yür.13.08.2024).xls` — yür. `13.08.2024`
+- `MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT ORT. LİST (Yür.13.08.2024).xls` — yür. `13.08.2024`, ~527 satır
+- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür.13.08.2024).xls` — yür. `13.08.2024`, ~119 satır
+- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ (Yür.13.08.2024).xls` — yür. `13.08.2024`, ~149 satır
+- `MÜLGA EK-3C-5 ÖZEL HALLERDE KARŞILANAN TIBBİ MALZ. LİST (Yür.13.08.2024).xls` — yür. `13.08.2024`, ~91 satır
 - `MÜLGA EK-3F-3 ORT VE TRAV BRANŞ. TÜMÖR REZ (Yür.14.10.2014).xlsx` — yür. `14.10.2014`, ~379 satır
 - `MÜLGA EK-3N-2 XENOGREFT ÜRÜN GRUBU (Yürürlük 14.10.2014).xlsx` — yür. `14.10.2014`, ~22 satır
-- `MÜLGA EK-3E-1 OMURGA CERRAHİSİ (Yürürlük 18.03.2014).xls` — yür. `18.03.2014`
-- `MÜLGA EK-3C-2 EKST.ALT VE ÜST EKST. GÖVDE PROTEZ ORT. LİS. (Yür.23.08.2024).xls` — yür. `23.08.2024`
+- `MÜLGA EK-3E-1 OMURGA CERRAHİSİ (Yürürlük 18.03.2014).xls` — yür. `18.03.2014`, ~363 satır
+- `MÜLGA EK-3C-2 EKST.ALT VE ÜST EKST. GÖVDE PROTEZ ORT. LİS. (Yür.23.08.2024).xls` — yür. `23.08.2024`, ~528 satır
 - `MÜLGA EK-3A BİRDEN FAZLA BR. KULL TIB ML. LİST (Yür. 24.03.2023).xlsx` — yür. `24.03.2023`, ~597 satır
-- `MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST.(Yür. 24.03.2023).xls` — yür. `24.03.2023`
-- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 24.03.2023).xls` — yür. `24.03.2023`
-- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ  (Yür. 24.03.2023).xls` — yür. `24.03.2023`
-- `MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST.  (Yür. 24.03.2023).xls` — yür. `24.03.2023`
-- `MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER LİSTESİ  (Yür. 24.03.2023).xls` — yür. `24.03.2023`
+- `MÜLGA EK-3C-2 EKSTERNAL ALT VE ÜST EKSTR. GÖVDE PROT. ORT. LİST.(Yür. 24.03.2023).xls` — yür. `24.03.2023`, ~527 satır
+- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 24.03.2023).xls` — yür. `24.03.2023`, ~118 satır
+- `MÜLGA EK-3C-4 TIBBİ SARF MALZEMELER LİSTESİ  (Yür. 24.03.2023).xls` — yür. `24.03.2023`, ~147 satır
+- `MÜLGA EK-3C-5 ÖZEL HAL. KARŞ. TIBBİ MALZ. LİST.  (Yür. 24.03.2023).xls` — yür. `24.03.2023`, ~90 satır
+- `MÜLGA EK-3D GÖRMEYE YARDIMCI TIBBİ MALZEMELER LİSTESİ  (Yür. 24.03.2023).xls` — yür. `24.03.2023`, ~57 satır
 - `MÜLGA EK-3E-1 OMURGA CER. ALAN GRUBUNA AİT TIBBİ MLZ. LİST.  (Yür. 24.03.2023).xlsx` — yür. `24.03.2023`, ~287 satır
 - `MÜLGA EK-3E-2 BEYİN CER.BR.KR.CER. ALAN GR. AİT TIB MLZ.LİST (Yür. 24.03.2023).xlsx` — yür. `24.03.2023`, ~159 satır
 - `MÜLGA EK-3F-1 ORT.VE TRA. BR.ARTROPLASTİ AL.GR.AİT TB ML.LİST (Yür. 24.03.2023).xlsx` — yür. `24.03.2023`, ~346 satır
@@ -498,7 +507,7 @@ Toplam **202** dosya:
 - `MÜLGA EK-3R GASTRO.BR. AİT TIB. ML.LİST. (Yür. 24.03.2023).xlsx` — yür. `24.03.2023`, ~190 satır
 - `MÜLGA EK-3S GÖĞÜS HAST.VE GÖĞÜS CER.BR.AİT TIB.ML.LİST.(Yür. 24.03.2023).xlsx` — yür. `24.03.2023`, ~105 satır
 - `MÜLGA EK-3T ANES.REA.VE AĞRI TED. BR.AİT TIB. MALZ.LİST.(Yür. 24.03.2023).xlsx` — yür. `24.03.2023`, ~40 satır
-- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 30.04.2024).xls` — yür. `30.04.2024`
+- `MÜLGA EK-3C-3 DİĞER PROTEZ ORTEZLER LİSTESİ (Yür. 30.04.2024).xls` — yür. `30.04.2024`, ~119 satır
 - `MÜLGA EK-3A BİRDEN FAZLA BRANŞTA KULLANILAN TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx` — yür. `30.08.2023`, ~598 satır
 - `MÜLGA EK-3E-1 OMURGA CERRAHİSİ ALAN GRUBUNA AİT TIBBİ MALZEMELER LİSTESİ (Yür.30.08.2023).xlsx` — yür. `30.08.2023`, ~288 satır
 - `MÜLGA EK-3E-2 BEYİN CER. BR.KRANİAL CERRAHİSİ ALAN GR. AİT TIB.MAL.LİS.(Yür.30.08.2023).xlsx` — yür. `30.08.2023`, ~162 satır

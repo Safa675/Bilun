@@ -1,7 +1,7 @@
 # EK-2 LİSTELERİ
 
-Konum: `raw data/2026.01.17-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ`
-Son güncelleme: 2026-06-15
+Konum: `raw data/2026.04.08-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ`
+Son güncelleme: 2026-06-19
 
 EK-2 — İşlem fiyatlandırma, DRG paketleri, diş tedavileri ve formlar (SUT Bölüm 2). BILUN'un ana fiyat motoru EK-2B ve EK-2C'den beslenir.
 
@@ -20,7 +20,7 @@ EK-2 — İşlem fiyatlandırma, DRG paketleri, diş tedavileri ve formlar (SUT 
 **Ayaktan başvuruda ilave olarak faturalandırılabilecek işlemler listesi**
 - Yürürlük (dosya adından): `01.06.2021`
 - Dosya: `EK-2A-2 AYAKTAN BAŞ. İLAVE OL. FAT. İŞ. LİSTESİ (Yür. 01.06.2021).xlsx`
-- Yaklaşık satır sayısı: **515**
+- Yaklaşık satır sayısı: **516**
 - SUT bağlantısı: §2.2.2.A(5) — ziyarete ek işlem
 - BILUN kullanımı: Ham kaynak
 - Tipik sütunlar: `İŞLEM KODU, İŞLEM ADI, AÇIKLAMA`
@@ -29,7 +29,7 @@ EK-2 — İşlem fiyatlandırma, DRG paketleri, diş tedavileri ve formlar (SUT 
 **Hizmet başı işlem puan listesi (fee-for-service tarife)**
 - Yürürlük (dosya adından): `31.01.2026`
 - Dosya: `EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür. 31.01.2026).xlsx`
-- Yaklaşık satır sayısı: **7,523**
+- Yaklaşık satır sayısı: **7,566**
 - SUT bağlantısı: §2.2.2 — işlem bazlı ödeme; ana prosedür kataloğu
 - BILUN kullanımı: ek2b_catalog_history.parquet (~7.500 kod) — birincil fiyat motoru
 - Tipik sütunlar: `İŞLEM KODU, İŞLEM ADI, İŞLEM PUANI`
@@ -38,7 +38,7 @@ EK-2 — İşlem fiyatlandırma, DRG paketleri, diş tedavileri ve formlar (SUT 
 **Tanıya dayalı işlem puan listesi (DRG / paket fiyatlandırma)**
 - Yürürlük (dosya adından): `31.01.2026`
 - Dosya: `EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür. 31.01.2026).xlsx`
-- Yaklaşık satır sayısı: **2,616**
+- Yaklaşık satır sayısı: **2,633**
 - SUT bağlantısı: §2.2.2.B — ICD-10 bölümüne göre paket kodları
 - BILUN kullanımı: ek2c_catalog_history.parquet — DRG unbundling, paket vs kalem
 - Tipik sütunlar: `İŞLEM KODU, İŞLEM GRUBU, İŞLEM PUANI`
@@ -64,6 +64,7 @@ EK-2 — İşlem fiyatlandırma, DRG paketleri, diş tedavileri ve formlar (SUT 
 ### EK-2D-3
 **Hiperbarik oksijen tedavisi uygulama listesi**
 - Dosya: `EK-2D-3 HİPERBARİK OKSİJEN TEDAVİSİ UYGULAMA LİSTESİ.xls`
+- Yaklaşık satır sayısı: **81**
 - SUT bağlantısı: §2.2 — HBO endikasyonları
 - BILUN kullanımı: Ham kaynak
 - Tipik sütunlar: `Endikasyon kodları`
@@ -90,6 +91,7 @@ EK-2 — İşlem fiyatlandırma, DRG paketleri, diş tedavileri ve formlar (SUT 
 **PGT ile IVF yapılan kalıtsal hastalıklar listesi**
 - Yürürlük (dosya adından): `11.08.2021`
 - Dosya: `EK-2K PREİMPLANT.GEN.TANI(PGT) İLE İNVİTRO FER.(IVF) YAP.KAL.HAS.LİS. (Yür.11.08.2021).xls`
+- Yaklaşık satır sayısı: **15**
 - SUT bağlantısı: §2.2 — tüp bebek / PGT endikasyonları
 - BILUN kullanımı: Ham kaynak
 - Tipik sütunlar: `Hastalık / ICD kodları`
@@ -107,6 +109,7 @@ EK-2 — İşlem fiyatlandırma, DRG paketleri, diş tedavileri ve formlar (SUT 
 **Diş tedavileri puan listesi**
 - Yürürlük (dosya adından): `01.01.2026`
 - Dosya: `EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.01.01.2026).xls`
+- Yaklaşık satır sayısı: **222**
 - SUT bağlantısı: §2.2 — ağız diş sağlığı işlemleri
 - BILUN kullanımı: Ham kaynak (diş prosedürleri EK-2B'den ayrı)
 - Tipik sütunlar: `Diş işlem kodları ve puanları`
@@ -204,29 +207,29 @@ Toplam **53** dosya:
 
 ### Diğer (53 sürüm)
 - `MÜLGA EK-2A-1 SAĞLIK KURUM. AYAK. TED SINIF. LİSTESİ.doc`
-- `MÜLGA EK-2A-2 AYAKTAN BAŞ. İLAVE OL. FAT. İŞ. LİS..xls`
+- `MÜLGA EK-2A-2 AYAKTAN BAŞ. İLAVE OL. FAT. İŞ. LİS..xls`, ~677 satır
 - `MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ.xlsx`, ~6,008 satır
 - `MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ.xlsx`, ~2,984 satır
 - `MÜLGA EK-2D-1  POZ. EMİ. TOMO (PET) GÖRÜN. KLİNİK UYG..doc`
-- `MÜLGA EK-2D-2 FİZİK TED.VE REH. TANI LİSTESİ  ( Yür-01.10.2014).xls`
+- `MÜLGA EK-2D-2 FİZİK TED.VE REH. TANI LİSTESİ  ( Yür-01.10.2014).xls`, ~231 satır
 - `MÜLGA EK-2D-4 İNT.NÖROMON.İŞL.AYR.FAT.İŞ. LİSTESİ.xlsx`, ~35 satır
-- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ.xls`
+- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ.xls`, ~266 satır
 - `MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.01.01.2026).xlsx` — yür. `01.01.2026`, ~7,523 satır
 - `MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.01.01.2026).xlsx` — yür. `01.01.2026`, ~2,616 satır
 - `MÜLGA EK-2Ç-3 TANIYA DAYALI ORTODONTİK TEDAVİ KONTROL FORMU (Yür.01.02.2019).docx` — yür. `01.02.2019`
 - `MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 01.06.2021).xlsx` — yür. `01.06.2021`, ~96 satır
 - `MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür. 01.06.2021).xlsx` — yür. `01.06.2021`, ~7,187 satır
 - `MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür. 01.06.2021).xlsx` — yür. `01.06.2021`, ~2,613 satır
-- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür. 01.06.2021).xls` — yür. `01.06.2021`
+- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür. 01.06.2021).xls` — yür. `01.06.2021`, ~220 satır
 - `MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 02.09.2023).xlsx` — yür. `02.09.2023`, ~98 satır
 - `MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür. 02.09.2023).xlsx` — yür. `02.09.2023`, ~7,534 satır
 - `MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür. 02.09.2023).xlsx` — yür. `02.09.2023`, ~2,611 satır
-- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür. 02.09.2023).xls` — yür. `02.09.2023`
+- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür. 02.09.2023).xls` — yür. `02.09.2023`, ~220 satır
 - `MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür.03.09.2022).docx` — yür. `03.09.2022`
 - `MÜLGA EK-2A-1 SAĞ.HİZ. SUN.AYAKTA TED.SINIFLANDIRILMASI LİS. (Yür.03.09.2022).docx` — yür. `03.09.2022`
 - `MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.03.09.2022).xlsx` — yür. `03.09.2022`, ~7,448 satır
 - `MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.03.09.2022).xlsx` — yür. `03.09.2022`, ~2,610 satır
-- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ  (Yür.03.09.2022).xls` — yür. `03.09.2022`
+- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ  (Yür.03.09.2022).xls` — yür. `03.09.2022`, ~220 satır
 - `MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 05.04.2025).xlsx` — yür. `05.04.2025`, ~99 satır
 - `MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür. 05.07.2018 ).xlsx` — yür. `05.07.2018`, ~7,401 satır
 - `MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür. 05.07.2018 ).xlsx` — yür. `05.07.2018`, ~2,616 satır
@@ -237,23 +240,23 @@ Toplam **53** dosya:
 - `MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.11.03.2020).xlsx` — yür. `11.03.2020`, ~6,831 satır
 - `MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.11.03.2020).xlsx` — yür. `11.03.2020`, ~2,612 satır
 - `MÜLGA EK-2C-1  İLAVE ORAN UYGULANACAK İŞLEMLER LİSTESİ (Yür.11.03.2020).xlsx` — yür. `11.03.2020`, ~465 satır
-- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.11.03.2020).xls` — yür. `11.03.2020`
+- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.11.03.2020).xls` — yür. `11.03.2020`, ~219 satır
 - `MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür.11.05.2024).xlsx` — yür. `11.05.2024`, ~98 satır
 - `MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.11.05.2024).xlsx` — yür. `11.05.2024`, ~7,886 satır
 - `MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.11.05.2024).xlsx` — yür. `11.05.2024`, ~2,693 satır
-- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.11.05.2024).xls` — yür. `11.05.2024`
+- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.11.05.2024).xls` — yür. `11.05.2024`, ~265 satır
 - `MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür.16.02.2022).xlsx` — yür. `16.02.2022`, ~108 satır
 - `MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür.16.02.2022).xlsx` — yür. `16.02.2022`, ~7,888 satır
 - `MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ (Yür.16.02.2022).xlsx` — yür. `16.02.2022`, ~2,622 satır
-- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.16.02.2022).xls` — yür. `16.02.2022`
+- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.16.02.2022).xls` — yür. `16.02.2022`, ~220 satır
 - `MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 19.09.2025).xlsx` — yür. `19.09.2025`, ~99 satır
 - `MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 24.03.2023).xlsx` — yür. `24.03.2023`, ~97 satır
 - `MÜLGA EK-2B HİZMET BAŞI İŞLEM PUAN LİSTESİ (Yür. 24.03.2023).xlsx` — yür. `24.03.2023`, ~7,450 satır
 - `MÜLGA EK-2C TANIYA DAYALI İŞLEM PUAN LİSTESİ  (Yür. 24.03.2023).xlsx` — yür. `24.03.2023`, ~2,611 satır
-- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür. 24.03.2023).xls` — yür. `24.03.2023`
+- `MÜLGA EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür. 24.03.2023).xls` — yür. `24.03.2023`, ~220 satır
 - `MÜLGA EK-2Ç-2 -DİŞ TEDAVİLERİ SEVK FORMU ( Yürürlük 25.07.2014).doc` — yür. `25.07.2014`
 - `MÜLGA EK 2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ (Yür. 29.06.2016).xlsx` — yür. `29.06.2016`, ~99 satır
-- `MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ(Yürürlük 29.06.2016).xls` — yür. `29.06.2016`
+- `MÜLGA EK-2A AYAKTAN BAŞVURULARDA ÖDEME LİSTESİ(Yürürlük 29.06.2016).xls` — yür. `29.06.2016`, ~55 satır
 - `MÜLGA EK-2A-1 SAĞLIK KURUM ve KURULUŞ AYAK. TED. SINIF LİSTESİ (Yür. 29.06.2016).docx` — yür. `29.06.2016`
 - `MÜLGA EK-2C-1  İLAVE ORAN UYGULANACAK İŞLEMLER LİSTESİ (Yür. 29.06.2016).xlsx` — yür. `29.06.2016`, ~483 satır
 
