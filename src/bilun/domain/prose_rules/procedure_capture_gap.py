@@ -16,13 +16,11 @@ if TYPE_CHECKING:
         ProcedureClaimLine,
     )
 
+from src.bilun.domain.money import money_round_half_up as _money
 _OPPORTUNITY_TYPE = "performed_not_submitted"
 _RULE_SET_ID = "procedure_capture_completeness"
 _BILLING_TOLERANCE = 0.02
 
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 def _procedure_name(code: str) -> str:

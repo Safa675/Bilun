@@ -4,13 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..money import money_round_half_up_opt as _money
 from .types import BillingActionReport
-
-
-def _money(value: float | int | None) -> float | None:
-    if value is None:
-        return None
-    return round(float(value), 2)
 
 
 def _action_row(

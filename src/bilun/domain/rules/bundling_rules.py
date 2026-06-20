@@ -12,7 +12,7 @@ from typing import Any
 
 from src.bilun.domain.materials import get_bundled_consumables
 from src.bilun.domain.materials.catalog_lookup import resolve_material_name_by_code
-from src.bilun.domain.utils import turkish_lower, fuzzy_match_name
+from src.bilun.domain.utils import fuzzy_match_name, token_bound_substring_match, turkish_lower
 
 logger = logging.getLogger("ilay.sut_optimization.bundling")
 
@@ -106,7 +106,14 @@ def _match_bundled_name(
         return None
 
     for bundled_name, bundled_entry in bundled_index:
-        if needle in bundled_name or bundled_name in needle:
+        # Token-bound match in BOTH directions so a short catalog entry like
+        # "lam" no longer matches "melamin", while a long entry like
+        # "süt sağma seti" still matches "süt sağma seti (disposable)".
+        # Plain `in` substring was bidirectional and produced false positives
+        # (e.g. "tel" -> "metal stent", "cam" -> "camaflaj").
+        if token_bound_substring_match(needle, bundled_name) or token_bound_substring_match(
+            bundled_name, needle
+        ):
             return bundled_entry, "name_substring"
 
     fuzzy = fuzzy_match_name(needle, bundled_index, threshold=0.80)

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from .catalog_membership import normalize_procedure_code
 from .claim_utils import group_procedure_lines_by_session
+from ..money import money_round_half_up as _money
 from .session_pricing import (
     compute_session_point_factors,
     expected_session_billed_try,
@@ -25,9 +26,6 @@ _MAX_SECONDARY_RATIO_FOR_REVIEW = 0.05
 _MIN_UPLIFT_FOR_RATIO_REVIEW_TRY = 200.0
 _MAX_SECONDARY_ABSOLUTE_FOR_REVIEW_TRY = 100.0
 
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 def _line_billed(line: ProcedureClaimLine) -> float:

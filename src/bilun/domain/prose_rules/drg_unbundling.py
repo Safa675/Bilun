@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from .catalog_membership import normalize_procedure_code
 from .claim_utils import group_procedure_lines_by_session, infer_care_setting
+from ..money import money_round_half_up as _money
 from .payment_method import check_payment_method_compliance, resolve_payment_method
 from .session_pricing import (
     blood_component_billable_fraction,
@@ -45,10 +46,6 @@ class ClaimUnbundlingFinding:
             or self.session_violations
             or self.blood_component_violations
         )
-
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 def _line_billed(line: ProcedureClaimLine) -> float:

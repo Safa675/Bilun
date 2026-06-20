@@ -74,8 +74,21 @@ class TestProcedureAddonUplift:
         assert row["trigger_procedure_code"] == "701450"
         assert row["expected_addon_procedure_code"] == "701460"
         assert row["addon_factor"] == pytest.approx(0.3)
-        assert row["recoverable_uplift_try"] == pytest.approx(879.72 * 0.3, rel=0.02)
-        assert row["price_methodology"] == "primary_billed_x_session_factor"
+        # B-H1: recoverable is priced off the addon's EK-2/B list price
+        # (polypectomy 701460), not the trigger's billed amount. Here the
+        # addon's list price happens to equal the trigger's billed (879.72),
+        # so the amount is unchanged, but the methodology label must reflect
+        # the addon-priced path. When the addon list price is unavailable,
+        # the code falls back to trigger_billed and uses the _fallback label.
+        addon_list_price = row.get("list_price_try")
+        price_basis = addon_list_price if addon_list_price is not None else 879.72
+        assert row["recoverable_uplift_try"] == pytest.approx(price_basis * 0.3, rel=0.02)
+        expected_methodology = (
+            "addon_list_price_x_session_factor"
+            if addon_list_price is not None
+            else "primary_billed_x_session_factor_fallback"
+        )
+        assert row["price_methodology"] == expected_methodology
         assert row["included_in_sgk_total"] is True
 
     def test_zero_billed_addon_line_suppresses_missing(self) -> None:

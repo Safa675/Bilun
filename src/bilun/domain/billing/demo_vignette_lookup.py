@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
+from src.bilun.domain.money import money_round_half_up as _money
 
 _VIGNETTES_PATH = (
     Path(__file__).resolve().parents[4] / "data" / "synthetic" / "demo_vignettes.json"
@@ -35,10 +36,6 @@ def _vignette_for_claim(claim: ClaimHeader) -> dict[str, Any] | None:
         if candidate.get("scenario_tag") == scenario_tag:
             return candidate
     return None
-
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 def _has_billed_package_line(claim_procs: list[ProcedureClaimLine]) -> bool:

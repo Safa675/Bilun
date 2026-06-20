@@ -30,6 +30,54 @@ def turkish_lower(text: str) -> str:
     return text.replace("\u0130", "i").replace("I", "\u0131").lower()
 
 
+# Split on whitespace and common Turkish/medical punctuation so that
+# "Disposable enjektör (1,2,5 cc)" tokenizes to real words only.
+_TOKEN_SPLIT_RE = re.compile(r"[\s,()/\-;:.\"']+")
+
+
+def _tokenize_name(name: str) -> list[str]:
+    """Tokenize a normalized (turkish_lower) name into bare word tokens.
+
+    Empty tokens and pure-digit tokens shorter than 2 chars are dropped so
+    that stray punctuation or single digits do not pollute membership tests.
+    """
+    return [t for t in _TOKEN_SPLIT_RE.split(name) if len(t) >= 2 or t.isdigit()]
+
+
+def token_bound_substring_match(needle: str, haystack: str) -> bool:
+    """Token-bound containment test for Turkish material-name matching.
+
+    Returns True when the ``needle`` (a catalog entry name) matches the
+    ``haystack`` (a billed material name) without the false positives that
+    plain ``in`` substring matching produces. A short entry like ``"lam"``
+    must not match ``"melamin"``; an entry like ``"süt sağma seti"`` should
+    match ``"süt sağma seti (disposable)"``.
+
+    Rules, in order:
+      1. Exact equality (after normalization).
+      2. The entry is a multi-word phrase and every one of its tokens is
+         present in the haystack's token set (handles "süt sağma seti" vs
+         "süt sağma seti (disposable)").
+      3. The entry is a single token and that token appears verbatim in the
+         haystack's token list (handles "ped" vs "pediyatrik" correctly —
+         no match, since "ped" is not a token of "pediyatrik").
+
+    Inputs are assumed already passed through ``turkish_lower``.
+    """
+    if not needle or not haystack:
+        return False
+    if needle == haystack:
+        return True
+    needle_tokens = _tokenize_name(needle)
+    haystack_tokens = set(_tokenize_name(haystack))
+    if not needle_tokens or not haystack_tokens:
+        return False
+    if len(needle_tokens) == 1:
+        return needle_tokens[0] in haystack_tokens
+    # Multi-word entry: require ALL of its tokens present in the haystack.
+    return all(tok in haystack_tokens for tok in needle_tokens)
+
+
 def turkish_upper(text: str) -> str:
     """Uppercase a string using Turkish locale rules.
 

@@ -1,5 +1,138 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: B-H7 — session primary-line seçimi (duplicate normalized code) — ARAŞTIRMA
+
+### Goal
+`plans/billing/backend-bug-audit.md` B-H7: `session_pricing.py:375-385` factor-map'i `normalize_procedure_code(code)` key'li — aynı normalize edilmiş kod bir session'da iki kez geçerse factor-map collision oluyor, `billable[0]` default primary yanlış kalabiliyor. Audit "suspicious" dedi (reprodükte edilmedi). **Bu task önce REPRODUCE eder**, reprodükte olmazsa "not-a-bug" kapatılır.
+
+### Subtasks
+- [ ] **Reproduce**: duplicate-code fixture yaz (ayni normalized code, 2 satır, farklı billed). `compute_session_point_factors` + downstream `total` hesabını çağır, yanlış primary seçimi observable mı?
+- [ ] Eğer reprodükte olursa: fix — factor-map key'i `(procedure_line_id, normalized_code)` tuple'ı yap, veya `is_primary` selection'ı highest-puan line üzerinden yap
+- [ ] Regression test (duplicate-code senaryosu)
+- [ ] pytest green + commit
+- [ ] Eğer reprodükte OLMAZSA: not-a-bug kararı, audit raporunu güncelle (B-H7 "verified not-a-bug"), task'ı kapat
+
+### Out of Scope
+- Diğer session_pricing mantığı (cross-specialty, blood fraction) — sadece primary selection
+
+---
+
+## Task: Decimal→float `_money` cluster — DRY refactor + Decimal-through
+
+### Goal
+15 yerde duplicate `_money(value) -> round(float(value), 2)` helper var (`billing/*`, `prose_rules/*`). Bu: (a) DRY ihlali, (b) Decimal→float representation error + banker's rounding (SUT citation yok). Tek shared helper'a taşı + Decimal-through + ROUND_HALF_UP.
+
+### Subtasks
+- [ ] Yeni shared helper: `src/bilun/domain/money.py` (veya `utils.py`'ye) — `quantize_money(value) -> Decimal`, ROUND_HALF_UP, None-safe
+- [ ] 15 call site'ı shared helper'a yönlendir (her birinin imzası: `float|None` -> artık `Decimal|None`)
+- [ ] Return type'lar `float` -> `Decimal` olunca downstream JSON serialization etkilenir — `cache/payloads.py`, `api/routes/*` serialization kontrol et (orada da `float()` var, audit B-H14)
+- [ ] Banker's rounding → ROUND_HALF_UP değişince bazı test assertion'ları (exact ₺ değerleri) güncellenebilir — pytest ile tespit et, güncelle
+- [ ] pytest green + commit
+
+### Risk
+- Return type değişimi (`float`→`Decimal`) cascade edebilir — dikkatli, dalga dalga yap (önce shared helper, sonra bir modül, test, sonra sonraki)
+- Bu MEDIUM severity (drift, yanlış cevap değil) — acele etmeye gerek yok
+
+---
+
+## Task: B-H8 — checkup katsayi 0.593 doğrulama + güncelleme
+
+### Goal
+`catalog.py:282-285` katsayi default 0.593 + docstring "RG-17/1/2026-33140" stale. 04.08 SUT replace sonrası değer değişti mi SGK komisyon kararından doğrulanmadı. Bu task önce DOĞRULAR, sonra günceller (veya değeri doğruysa sadece tag).
+
+### Subtasks
+- [ ] **WebSearch**: "SGK Sağlık Hizmetleri Fiyatlandırma Komisyonu katsayı 2026" — katsayi 0.593 hala geçerli mi?
+- [ ] Eğer değiştiyse: `data/gazette/sut_checkup_pricing.json` meta.katsayi + `catalog.py` default + docstring güncelle
+- [ ] Eğer aynıysa: sadece docstring/tag güncelle ("RG-17/1/2026-33140" -> "2026-04-08" veya komisyon karar tarihi)
+- [ ] pytest green + commit
+
+### Out of Scope
+- Checkup pricing'in tamamının yeniden üretilmesi (sadece katsayi)
+
+
+
+## Task: Backend bug fix — Dalga 1 (CRITICAL quick wins)
+
+### Goal
+`plans/billing/backend-bug-audit.md` raporundaki en kolay + en yüksek etki CRITICAL'leri fix'le. Bu dalgada para/doğruluk bug'ları: B-C3 (DRG tek satır), B-C5 (date.min session collapse), B-C4 (substring bundling). Her fix pytest green + file:line kanıtı. Co-author yok, push yok.
+
+### Subtasks
+- [x] **B-C3** DRG `entry.get("ek2c_group")` → `entry.get("group")` (`src/bilun/domain/analytics/drg.py:254-256`). Doğrula: DRG episode artık gerçek EK-2/C grubunu alıyor.
+- [x] **B-C5** date.min'ye eşit procedure satırlarını session gruplamadan çıkar (`src/bilun/domain/prose_rules/claim_utils.py:96-102`). Strateji: `date.min` key'ini "unknown session" say (her satır ayrı) veya atla. Doğrula: tarihsiz satırlar artık alakasız prosedürlerle aynı session'da değil.
+- [x] **B-C4** Substring bundling match tightening (`src/bilun/domain/rules/bundling_rules.py:108-110`, `src/bilun/domain/materials/exclusions.py:111,162`). `needle in entry OR entry in needle` → token-bound helper (`src/bilun/domain/utils.py:token_bound_substring_match`). Doğrula: "tel"/"cam"/"lam"/"ped" gibi kısa entry'ler alakasız malzemeleri ("metal stent"/"camaflaj"/"melamin"/"pediyatrik") yakalamıyor; meşru match'ler ("stent"→"metal stent", "süt sağma seti"→"süt sağma seti (disposable)") korunuyor.
+- [x] Her fix için regression test ekle: `tests/unit/domain/test_dalga1_bugfixes.py` (10 test)
+- [x] `pytest tests/` tam yeşil: **732 passed, 10 skipped** (10 skip = 01.17 docx silme loose end, Dalga 1 ile alakasız)
+- [ ] Commit (push yok) — kullanıcı kararı bekleniyor
+
+### Out of Scope
+- B-C2 (read-only connection) — Dalga 2
+- B-C1 (PII gate) — ayrı tasarım task'ı
+- B-C6, B-C7, tüm HIGH — sonraki dalgalar
+
+---
+
+## Task: Backend bug fix — Dalga 2 (stale data + cache lifecycle)
+
+### Goal
+Cache rebuild sonrası stale servis sorununu kökten çöz: read-only connection + staleness tespiti. Bu aynı zamanda cache rebuild'i güvenli yapan mimari fix.
+
+### Subtasks
+- [x] **B-C2** Read-path write'ı kaldır: `get_active_build_id`'ye `bootstrap_pointer: bool = True` parametresi eklendi (`db/builds.py:279`). Runtime read-path wrapper default `False` (`shared/runtime.py:76`). API read path artık pure SELECT — per-request `INSERT OR IGNORE` yok. Build/startup path hala bootstrap yapıyor (default True). Doğrulama: contract check (signature defaults) ✓.
+- [x] **B-C7** Staleness visibility: `/health` artık `active_gazette_version` field'ı döndürüyor (manifest'ten canlı recompute). `api/__init__.py:_read_active_gazette_version_for_health`. Not: tam source_hash karşılaştırma değil (build_meta'da gazette_version alanı yok) — bu ilk adım, operator en azından aktif versiyonu görebiliyor. Doğrulama: `active_gazette_version: 2026-04-08` ✓.
+- [x] **H16** `/health` connection leak fix (bonus): `con.close()` sadece success path'ındaydı → `closing()` context manager. `api/__init__.py:104-118`.
+- [x] **B-C6** Alerts read-path write kaldırıldı (kullanıcı kararı "tamamen kaldır"): route artık `has_patient_alert_tables` (read-only check) kullanıyor, `ensure_patient_alert_tables` çağrısı yok. Boş tablo = `ServiceUnavailableError` (migration artık build lifecycle'ında). 3 test güncellendi (migration kontratı yeni duruma).
+- [x] pytest green: **732 passed, 10 skipped**
+- [ ] Commit (push yok)
+
+---
+
+## Task: Backend bug fix — Dalga 3 (chatbot güvenilirlik)
+
+### Goal
+PII hariç chatbot güvenilirlik: token budget, HTTP error mapping, streaming backpressure. B-C1 (PII) ayrı tasarım task'inde.
+
+### Subtasks
+- [x] **B-H11** Token budget enforcement: `_truncate_runtime_context` + `_estimate_tokens` (karakter-bazlı, tokenizer dependency yok). Runtime context 16K token budget'inde truncate, marker ile. `_build_messages` içinde `_validate_messages_for_llm`'den ÖNCE uygulanıyor. `llm.py`.
+- [x] **B-H13** HTTP error mapping: `_llm_http_error_message` status→mesaj map (401/402/413/429/5xx spesifik). Raw upstream body artık kullanıcıya sızdırılmıyor (operatör log'da görüyor). Streaming + non-streaming path. `llm.py`.
+- [x] **M2** (bonus) Zero-token response artık WARNING, INFO değil (streaming path consistency). `llm.py`.
+- [x] **B-H12** Streaming backpressure: `asyncio.Queue(maxsize=64)` (`_SSE_QUEUE_MAXSIZE`). Yavaş SSE client artık OpenRouter upstream'ünü throttle ediyor (sınırsız memory growth bitti). `chat.py`.
+- [x] Regression test'ler: `tests/unit/chatbot/test_dalga3_chatbot_fixes.py` (21 test — davranış + static guard + fonksiyonel backpressure)
+- [x] pytest green: **753 passed, 10 skipped**
+- [ ] Commit (push yok)
+
+---
+
+## Task: Backend bug fix — Dalga 4 (para doğruluğu cluster)
+
+### Subtasks
+- [ ] **B-H1** `procedure_addon_uplift` recoverable = addon'ın kendi list fiyatı × factor (`procedure_addon_uplift.py:218,248`)
+- [ ] **B-H6** `claim_materials` None material_date guard (`claim_materials.py:83`)
+- [ ] **B-H7** Session primary line seçimi factor-map key collision fix (`session_pricing.py:378-385`)
+- [ ] **B-H8** Checkup katsayi 04.08'e güncelle (`catalog.py:282-285`)
+- [ ] Decimal→float `_money` helper cluster (7 yerde) — str/Decimal serialize
+- [ ] pytest green
+- [ ] Commit
+
+---
+
+## Task: PII / chatbot veri sızıntısı (B-C1) — TASARIM TASK'İ
+
+### Goal
+B-C1 regulatuar risk (KVKK) ama product kararı gerektirir. Bu task sadece plan/tasarım; implementasyon ayrı.
+
+### Sorular (kullanıcı ile netleştirilecek)
+- Hasta verisi chat'i tamamen kapatılmalı mı, yoksa consent flag ile mi?
+- Hangi roller hasta verisini görebilir (dev only? billing_officer dahil)?
+- OpenRouter DPA / data residency durumu ne?
+- Anonimizasyon (patient_id → "Patient A") yeterli mi?
+
+### Out of Scope (şimdilik)
+- Consent UI
+- Rol matrisi implementasyonu
+- DPA belgeleme
+
+
+
 ## Task: SUT tebliği tazeliği — 2026.04.08 konsolide replace + 2026.05.23 delta patch
 
 ### Goal

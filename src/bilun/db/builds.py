@@ -276,9 +276,25 @@ def set_active_build(con, build_id: str, *, scope: str = BILUN_BUILD_SCOPE) -> N
     )
 
 
-def get_active_build_id(con, *, scope: str) -> str | None:
+def get_active_build_id(
+    con, *, scope: str, bootstrap_pointer: bool = True
+) -> str | None:
+    """Return the active build_id for ``scope``, or None if none is set.
+
+    By default this also ensures the ``build_pointer_scopes`` row exists
+    (a cheap ``INSERT OR IGNORE``), which is fine on a writable connection
+    used by the build/startup path. Read paths MUST pass
+    ``bootstrap_pointer=False`` so the lookup is a pure SELECT — issuing the
+    INSERT on the API's shared reader cursor (a) performs a write inside a
+    read request, (b) collides with DuckDB's single-writer model under
+    concurrent traffic, and (c) cannot run at all if the connection is
+    opened read-only. The pointer row is bootstrapped at startup and on
+    every successful build, so a read-only SELECT returning NULL simply
+    means "no active build", not "row missing".
+    """
     normalized_scope = _normalize_build_scope(scope)
-    _ensure_scope_pointer_row(con, normalized_scope)
+    if bootstrap_pointer:
+        _ensure_scope_pointer_row(con, normalized_scope)
     row = con.execute(
         SQL_SELECT_ACTIVE_BUILD_ID,
         [normalized_scope],

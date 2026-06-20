@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.prose_rules.claim_utils import detect_care_setting_ambiguity
 from src.bilun.domain.prose_rules.facility_tier import normalize_facility_tier
 from src.bilun.domain.prose_rules.payment_method import resolve_payment_method
@@ -30,9 +31,6 @@ class CareSettingLegalTotals:
     package_total_try: float
     itemized_total_try: float
 
-
-def _money(value: float) -> float:
-    return round(float(value), 2)
 
 
 def _line_as_of_date(

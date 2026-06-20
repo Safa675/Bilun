@@ -6,6 +6,7 @@ from datetime import date
 
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.prose_rules import (
     check_payment_method_compliance,
     resolve_payment_method,
@@ -35,8 +36,9 @@ _PROSE_RULE_SOURCE = (
 )
 
 
-def _money(value) -> float:
-    return round(float(value), 2)
+# _money is imported from src.bilun.domain.money (money_round_half_up).
+# Previously a local `round(float(value), 2)` — banker's rounding, no SUT
+# citation. Now ROUND_HALF_UP, float return type preserved.
 
 
 def _claim_for_line(

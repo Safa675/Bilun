@@ -26,6 +26,11 @@ logger = logging.getLogger("bilun.api.chat")
 RATE_LIMIT = 15  # max requests per window
 RATE_WINDOW_SEC = 60  # window size in seconds
 
+# B-H12: bound the SSE producer→consumer queue so a slow SSE client applies
+# backpressure to the OpenRouter stream. 64 tokens of headroom is enough to
+# keep latency low without letting memory grow unbounded on verbose models.
+_SSE_QUEUE_MAXSIZE = 64
+
 
 def _prune_rate_windows(now: float) -> None:
     stale_ips = []
@@ -467,11 +472,16 @@ async def _sse_event_stream(
 ) -> Any:
     """Wrap an async producer with immediate stream-start and keepalive comments."""
 
-    queue: asyncio.Queue = asyncio.Queue()
+    queue: asyncio.Queue = asyncio.Queue(maxsize=_SSE_QUEUE_MAXSIZE)
 
     async def _run_producer() -> None:
         try:
             async for kind, payload in producer():
+                # B-H12: bounded queue provides backpressure. When the SSE
+                # client is slow and the buffer fills, this put() awaits,
+                # which in turn pauses upstream consumption from OpenRouter
+                # (the producer's aiter_lines loop). This prevents unbounded
+                # memory growth when a verbose model outpaces a slow client.
                 await queue.put((kind, payload))
         except asyncio.CancelledError:
             return

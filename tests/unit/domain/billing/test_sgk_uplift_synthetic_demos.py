@@ -145,7 +145,18 @@ class TestProcedureAddonSyntheticDemo:
         assert demo_rows[0]["trigger_procedure_code"] == "701450"
         assert demo_rows[0]["expected_addon_procedure_code"] == "701460"
         uplift = demo_rows[0]["recoverable_uplift_try"]
-        assert uplift == pytest.approx(demo_rows[0]["trigger_billed_try"] * 0.3, rel=0.02)
+        # B-H1: recoverable is priced off the ADDON's own EK-2/B list price
+        # (the missing procedure), not the trigger's billed amount. The row
+        # carries list_price_try for the addon; fall back to trigger_billed
+        # only when the list price is unavailable (price_methodology signals
+        # which path was taken).
+        addon_list_price = demo_rows[0].get("list_price_try")
+        if addon_list_price is not None:
+            assert uplift == pytest.approx(addon_list_price * 0.3, rel=0.02)
+            assert demo_rows[0]["price_methodology"] == "addon_list_price_x_session_factor"
+        else:
+            assert uplift == pytest.approx(demo_rows[0]["trigger_billed_try"] * 0.3, rel=0.02)
+            assert demo_rows[0]["price_methodology"] == "primary_billed_x_session_factor_fallback"
         assert report.procedure_addon_uplift.confirmed_uplift_try == pytest.approx(
             uplift, rel=0.02
         )

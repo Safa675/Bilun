@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.prose_rules.session_pricing import compute_session_adjusted_itemized_total
 from src.bilun.domain.prose_rules.types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
 
@@ -27,10 +28,6 @@ from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 _PROSE_RULE_SOURCE = (
     "SUT §2.2.2 itemized vs package comparison (drg_unbundling) — uplift-only subset"
 )
-
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 def _strategy_uplift_by_claim(recommendations: list[dict[str, Any]]) -> dict[str, float]:
