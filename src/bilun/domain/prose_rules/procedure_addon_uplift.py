@@ -215,12 +215,24 @@ def detect_missing_procedure_addon_opportunities(
                     if factor <= 0:
                         continue
 
-                    recoverable = _money(trigger_billed * factor)
-                    if recoverable <= _BILLING_TOLERANCE:
-                        continue
-
                     as_of = trigger_line.procedure_date or claim.claim_start_date
                     reference_ek2b = get_ek2b_price_for_date(addon_code, as_of)
+                    # B-H1: the recoverable uplift must be priced off the
+                    # ADDON's own EK-2/B list price (the procedure that is
+                    # actually missing from the bill), not the trigger's
+                    # billed amount. The trigger and addon usually have very
+                    # different list prices; using the trigger's billed
+                    # amount mis-prices the SGK-uplift headline by their
+                    # ratio. Fall back to trigger_billed only when the addon
+                    # list price is unavailable.
+                    price_basis = (
+                        reference_ek2b
+                        if reference_ek2b is not None
+                        else trigger_billed
+                    )
+                    recoverable = _money(price_basis * factor)
+                    if recoverable <= _BILLING_TOLERANCE:
+                        continue
 
                     seen.add(dedupe_key)
                     sut_section = str(rule.get("sut_section") or "2.2.2.A.(5)")
@@ -229,7 +241,7 @@ def detect_missing_procedure_addon_opportunities(
                     detail = message or (
                         f"Trigger {trigger_code} billed {trigger_billed:.2f} TRY on "
                         f"{session_date_str}; expected add-on {addon_code} at "
-                        f"{factor:.0%} of primary billed is missing."
+                        f"{factor:.0%} of its list price is missing."
                     )
 
                     opportunities.append(
@@ -250,7 +262,11 @@ def detect_missing_procedure_addon_opportunities(
                             else None,
                             "actual_billed_try": _money(actual_billed),
                             "recoverable_uplift_try": recoverable,
-                            "price_methodology": "primary_billed_x_session_factor",
+                            "price_methodology": (
+                                "addon_list_price_x_session_factor"
+                                if reference_ek2b is not None
+                                else "primary_billed_x_session_factor_fallback"
+                            ),
                             "same_incision": bool(rule.get("same_incision", True)),
                             "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                             "savings_basis": SAVINGS_BASIS_SOURCED,

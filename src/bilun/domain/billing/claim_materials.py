@@ -80,7 +80,17 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
     for line in ctx.material_lines:
         code_key = line.material_code.strip().upper()
         prev = latest_line_by_code.get(code_key)
-        if prev is None or line.material_date >= prev.material_date:  # type: ignore[union-attr]
+        # B-H6: guard against None material_date. The parser coerces null
+        # dates to date.min via required_date, but a MaterialClaimLine built
+        # through any other path can carry a real None — and None >= None
+        # raises TypeError, aborting the entire material pre-check for the
+        # patient. Treat a None-dated line as older than any dated one.
+        if prev is None:
+            latest_line_by_code[code_key] = line
+        elif line.material_date is not None and (
+            prev.material_date is None
+            or line.material_date >= prev.material_date  # type: ignore[union-attr]
+        ):
             latest_line_by_code[code_key] = line
 
     for line in ctx.material_lines:
