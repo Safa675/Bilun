@@ -3,11 +3,8 @@
 from __future__ import annotations
 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.prose_rules.drg_unbundling import analyze_claim_unbundling
-
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 def compute_audit_exposure_from_claims(ctx: PatientClaimContext) -> float:

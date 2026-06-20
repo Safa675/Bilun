@@ -8,6 +8,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Literal
 
 from src.bilun.domain.constants import _PROSE_RULES_DIR
+from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.pricing.temporal import (
     get_ek2b_price_for_date,
     get_ek2c_price_for_date,
@@ -26,9 +27,6 @@ _OPPORTUNITY_TYPE = "stale_gazette_price"
 _PRICE_TOLERANCE = 0.02
 _PAYABLE_TOLERANCE = 0.05
 
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 @lru_cache(maxsize=1)

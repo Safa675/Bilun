@@ -119,6 +119,7 @@
 ### None / tip güvenliği
 - **[B-H6]** `claim_materials` latest-line selection `material_date=None` olursa `None >= None` → TypeError, patient material pre-check tamamen abort. `claim_materials.py:83`
 - **[B-H7]** Session primary line seçimi duplicate normalized code'da factor-map key collision yüzünden yanlış line seçebiliyor → tüm session yanlış fiyatlanıyor. `session_pricing.py:378-385`
+  - **Güncelleme (2026-06-20):** REPRODUKTE EDİLDİ — `compute_session_point_factors(['701450','701450'])` 2 factor üretiyor (primary 1.0 + secondary 0.3), ama downstream `factors = {normalize(code): f}` dict'i collision yüzünden primary'yi düşürüyor. ANCAK downstream `compute_session_adjusted_itemized_total`'da `primary_factor` default 1.0 (line 379) olduğu için, kayıp primary factor default 1.0 ile aynı sonucu veriyor → **toplam tutar (1300.0) OLD ve NEW kodda aynı.** Collision gerçek ama observable bir money bug üretmiyor (latent code smell). **verified not-a-bug in current path.** Fix uygulanmadı (kompleksite eklemeden davranış değiştirmiyor). Eğer gelecekte `primary_factor` default'u değişirse veya `_session_adjusted_line_payable` formülü değişirse bu tekrar canlanabilir.
 
 ### Stale data / tebliğ migration
 - **[B-H8]** Checkup katsayi + docstring stale (01.17 = 0.593, RG-17/1/2026). 04.08 replace sonrası güncellenmedi. `catalog.py:282-285`

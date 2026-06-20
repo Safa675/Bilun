@@ -18,6 +18,7 @@ from src.bilun.domain.materials.exclusions import (
     is_consumable_bundled,
     is_material_reimbursable,
 )
+from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.pricing.material_kdv import ek3_payable_ceiling_try
 from src.bilun.domain.prose_rules.catalog_membership import normalize_procedure_code
 
@@ -29,10 +30,6 @@ if TYPE_CHECKING:
 _RULES_PATH = _PROSE_RULES_DIR / "material_pairing_uplift.json"
 _OPPORTUNITY_TYPE = "missing_billable_material"
 _BILLING_TOLERANCE = 0.02
-
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 @lru_cache(maxsize=1)

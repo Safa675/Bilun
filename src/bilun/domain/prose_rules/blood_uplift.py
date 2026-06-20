@@ -10,12 +10,10 @@ from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ProcedureClaimLine
 
+from src.bilun.domain.money import money_round_half_up as _money
 _BILLING_TOLERANCE = 0.02
 _OPPORTUNITY_TYPE = "blood_component_underbilling"
 
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 def _line_billed(line: ProcedureClaimLine) -> float:

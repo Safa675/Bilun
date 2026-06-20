@@ -18,14 +18,12 @@ from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_SGK_UPLIFT
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 
+from src.bilun.domain.money import money_round_half_up as _money
 _RULES_PATH = _PROSE_RULES_DIR / "procedure_pairing_prose.json"
 _OPPORTUNITY_TYPE = "missing_add_on_procedure"
 _RULE_SET_ID = "procedure_pairing_addon"
 _BILLING_TOLERANCE = 0.02
 
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 @lru_cache(maxsize=1)

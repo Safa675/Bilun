@@ -1,5 +1,56 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: B-H7 — session primary-line seçimi (duplicate normalized code) — ARAŞTIRMA
+
+### Goal
+`plans/billing/backend-bug-audit.md` B-H7: `session_pricing.py:375-385` factor-map'i `normalize_procedure_code(code)` key'li — aynı normalize edilmiş kod bir session'da iki kez geçerse factor-map collision oluyor, `billable[0]` default primary yanlış kalabiliyor. Audit "suspicious" dedi (reprodükte edilmedi). **Bu task önce REPRODUCE eder**, reprodükte olmazsa "not-a-bug" kapatılır.
+
+### Subtasks
+- [ ] **Reproduce**: duplicate-code fixture yaz (ayni normalized code, 2 satır, farklı billed). `compute_session_point_factors` + downstream `total` hesabını çağır, yanlış primary seçimi observable mı?
+- [ ] Eğer reprodükte olursa: fix — factor-map key'i `(procedure_line_id, normalized_code)` tuple'ı yap, veya `is_primary` selection'ı highest-puan line üzerinden yap
+- [ ] Regression test (duplicate-code senaryosu)
+- [ ] pytest green + commit
+- [ ] Eğer reprodükte OLMAZSA: not-a-bug kararı, audit raporunu güncelle (B-H7 "verified not-a-bug"), task'ı kapat
+
+### Out of Scope
+- Diğer session_pricing mantığı (cross-specialty, blood fraction) — sadece primary selection
+
+---
+
+## Task: Decimal→float `_money` cluster — DRY refactor + Decimal-through
+
+### Goal
+15 yerde duplicate `_money(value) -> round(float(value), 2)` helper var (`billing/*`, `prose_rules/*`). Bu: (a) DRY ihlali, (b) Decimal→float representation error + banker's rounding (SUT citation yok). Tek shared helper'a taşı + Decimal-through + ROUND_HALF_UP.
+
+### Subtasks
+- [ ] Yeni shared helper: `src/bilun/domain/money.py` (veya `utils.py`'ye) — `quantize_money(value) -> Decimal`, ROUND_HALF_UP, None-safe
+- [ ] 15 call site'ı shared helper'a yönlendir (her birinin imzası: `float|None` -> artık `Decimal|None`)
+- [ ] Return type'lar `float` -> `Decimal` olunca downstream JSON serialization etkilenir — `cache/payloads.py`, `api/routes/*` serialization kontrol et (orada da `float()` var, audit B-H14)
+- [ ] Banker's rounding → ROUND_HALF_UP değişince bazı test assertion'ları (exact ₺ değerleri) güncellenebilir — pytest ile tespit et, güncelle
+- [ ] pytest green + commit
+
+### Risk
+- Return type değişimi (`float`→`Decimal`) cascade edebilir — dikkatli, dalga dalga yap (önce shared helper, sonra bir modül, test, sonra sonraki)
+- Bu MEDIUM severity (drift, yanlış cevap değil) — acele etmeye gerek yok
+
+---
+
+## Task: B-H8 — checkup katsayi 0.593 doğrulama + güncelleme
+
+### Goal
+`catalog.py:282-285` katsayi default 0.593 + docstring "RG-17/1/2026-33140" stale. 04.08 SUT replace sonrası değer değişti mi SGK komisyon kararından doğrulanmadı. Bu task önce DOĞRULAR, sonra günceller (veya değeri doğruysa sadece tag).
+
+### Subtasks
+- [ ] **WebSearch**: "SGK Sağlık Hizmetleri Fiyatlandırma Komisyonu katsayı 2026" — katsayi 0.593 hala geçerli mi?
+- [ ] Eğer değiştiyse: `data/gazette/sut_checkup_pricing.json` meta.katsayi + `catalog.py` default + docstring güncelle
+- [ ] Eğer aynıysa: sadece docstring/tag güncelle ("RG-17/1/2026-33140" -> "2026-04-08" veya komisyon karar tarihi)
+- [ ] pytest green + commit
+
+### Out of Scope
+- Checkup pricing'in tamamının yeniden üretilmesi (sadece katsayi)
+
+
+
 ## Task: Backend bug fix — Dalga 1 (CRITICAL quick wins)
 
 ### Goal

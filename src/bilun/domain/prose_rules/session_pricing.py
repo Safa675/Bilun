@@ -7,6 +7,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
 from ..constants import _PROSE_RULES_DIR
+from ..money import money_round_half_up as _money
 from .catalog_membership import (
     get_ek2c_entry,
     normalize_procedure_code,
@@ -239,9 +240,6 @@ def compute_session_point_factors(
         detail_prefix="EK-2/B-only multi-procedure session",
     )
 
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 def line_gazette_list_billed_try(line: ProcedureClaimLine) -> float:

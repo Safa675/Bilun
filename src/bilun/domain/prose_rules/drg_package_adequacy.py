@@ -7,6 +7,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.constants import _PROSE_RULES_DIR
+from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.pricing.temporal import get_ek2c_price_for_date
 from src.bilun.domain.prose_rules.catalog_membership import (
     get_ek2c_entry,
@@ -23,9 +24,6 @@ _RULE_SET_ID = "drg_package_adequacy"
 _OPPORTUNITY_TYPE = "under_coded_package"
 _BILLING_TOLERANCE = 0.02
 
-
-def _money(value: float | int) -> float:
-    return round(float(value), 2)
 
 
 @lru_cache(maxsize=1)
