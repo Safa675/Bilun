@@ -123,6 +123,7 @@
 
 ### Stale data / tebliğ migration
 - **[B-H8]** Checkup katsayi + docstring stale (01.17 = 0.593, RG-17/1/2026). 04.08 replace sonrası güncellenmedi. `catalog.py:282-285`
+  - **Güncelleme (2026-06-20):** Katsayi değeri SGK Sağlık Hizmetleri Fiyatlandırma Komisyonu kararıyla belirleniyor (SUT ana metninde değil). WebSearch ile 17.01.2026 ve 08.04.2026 tebliğleri doğrulandı ama **sayısal katsayi değeri (0,593 veya yeni?) search summary'sinden çıkmadı** — gerçek değer SGK komisyon kararı PDF'inden okunmalı. Tahmin yazılmadı (anti-hallucination). Default 0.593 + docstring "RG-17/1/2026-33140" tag'i korundu. **LOW severity** (check-up SGK tarafından karşılanmaz, referans amaçlı — JSON kendi notunda belirtiyor). Görev: bir sonraki sefer komisyon kararı PDF'ini indirip değeri teyit et, o zaman güncelle.
 
 ### Cache build lifecycle
 - **[B-H9]** Expensive backfill 100% failure durumunda bile build'i COMPLETE+activate ediyor → half-built build active servis ediliyor. `build_expensive.py:54-136`, `builder.py:360-432`
