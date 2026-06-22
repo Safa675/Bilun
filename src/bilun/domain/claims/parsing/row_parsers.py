@@ -232,6 +232,8 @@ def parse_procedure_line(row: RowDict, errors: list[str]) -> ProcedureClaimLine 
             copay_rate_applicable=parse_bool(row.get("copay_rate_applicable")),
             denial_reason_expected=parse_text(row, "denial_reason_expected"),
             rule_trace_expected=parse_text(row, "rule_trace_expected"),
+            copay_rate=optional_money(row.get("copay_rate"), line_id, errors),
+            surcharge_rate=optional_money(row.get("surcharge_rate"), line_id, errors),
             lab_result_id=parse_text(row, "lab_result_id"),
             lab_billing_status=parse_text(row, "lab_billing_status"),
             procedure_specialty_code=parse_text(row, "procedure_specialty_code"),
@@ -292,6 +294,8 @@ def parse_drug_line(row: RowDict, errors: list[str]) -> DrugClaimLine | None:
             discount_tier_expected=parse_money(row, "discount_tier_expected", line_id, errors),
             denial_reason_expected=parse_text(row, "denial_reason_expected"),
             rule_trace_expected=parse_text(row, "rule_trace_expected"),
+            copay_rate=optional_money(row.get("copay_rate"), line_id, errors),
+            surcharge_rate=optional_money(row.get("surcharge_rate"), line_id, errors),
             drug_specialty_board_report_present=optional_bool(
                 row.get("drug_specialty_board_report_present")
             ),

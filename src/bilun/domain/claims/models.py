@@ -75,6 +75,8 @@ class ProcedureClaimLine:
     copay_rate_applicable: bool
     denial_reason_expected: str
     rule_trace_expected: str
+    copay_rate: Money | None = None
+    surcharge_rate: Money | None = None
     lab_result_id: str = ""
     lab_billing_status: str = ""
     procedure_specialty_code: str = ""
@@ -231,6 +233,8 @@ class DrugClaimLine:
     discount_tier_expected: Money
     denial_reason_expected: str
     rule_trace_expected: str
+    copay_rate: Money | None = None
+    surcharge_rate: Money | None = None
     drug_specialty_board_report_present: bool | None = None
     drug_report_duration_months: int | None = None
     drug_inpatient_supply: bool | None = None

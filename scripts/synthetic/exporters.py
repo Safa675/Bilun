@@ -322,6 +322,8 @@ def _english_claim_exports(tables: dict[str, pd.DataFrame]) -> dict[str, pd.Data
             "birim_fiyat_try": "unit_price_try", "fatura_tutari_try": "billed_amount_try",
             "beklenen_odenebilir_tutar_try": "expected_payable_try",
             "beklenen_indirim_kademesi": "discount_tier_expected",
+            "katilim_payi_orani": "copay_rate",
+            "ilave_ucret_orani": "surcharge_rate",
             "beklenen_red_nedeni": "denial_reason_expected",
             "beklenen_kural_izi": "rule_trace_expected",
             "uzmanlik_kurulu_raporu_var": "drug_specialty_board_report_present",

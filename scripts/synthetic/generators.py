@@ -1663,23 +1663,24 @@ def _append_procedure_lines_for_claim(
         is_package_proc = (ps["category"] == "paket")
         qty = int(ps.get("quantity_override", 1))
         unit_price = ps["price"]
-        billed = _money(unit_price * qty)
-        if "billed_override" in ps:
-            billed = _money(ps["billed_override"])
+        billed_override = "billed_override" in ps
+        billed = _money(ps["billed_override"]) if billed_override else _money(unit_price * qty)
 
         included_in_package = ps.get("included_in_package", False)
 
         if included_in_package:
-            base_payable = 0.0
+            sgk_base = 0.0
         elif is_package_proc:
-            base_payable = billed
+            sgk_base = billed
         else:
-            base_payable = billed
+            sgk_base = billed
 
         surcharge_applicable = (
             not ps.get("disable_surcharge")
             and ps["code"] not in ctx.ek2g_no_surcharge
         )
+        if included_in_package:
+            surcharge_applicable = False
         surcharge_rate = None
         if surcharge_applicable and not is_package_proc:
             if ctx.is_university:
@@ -1699,11 +1700,32 @@ def _append_procedure_lines_for_claim(
         ):
             copay_applicable = True
             copay_rate = float(ctx.rng.choice([0.20, 0.40, 0.50]))
+        if included_in_package:
+            copay_applicable = False
+            copay_rate = None
 
-        # SGK payable: copay reduces kurum payi; ilave ucret is patient-side only.
-        expected_payable = base_payable
+        if "payable_override" in ps:
+            # Keep explicit demo overrides deterministic and mark rates unavailable.
+            copay_applicable = False
+            copay_rate = None
+            surcharge_rate = None
+
+        if billed_override:
+            denominator = 1.0 + float(surcharge_rate or 0.0)
+            sgk_base = _money(billed / denominator) if denominator > 0 else billed
+
+        expected_payable = sgk_base
+        patient_copay = 0.0
         if copay_rate and copay_applicable:
-            expected_payable = _money(expected_payable * (1 - copay_rate))
+            expected_payable = _money(sgk_base * (1 - copay_rate))
+            patient_copay = _money(sgk_base * copay_rate)
+        surcharge_amount = (
+            _money(sgk_base * float(surcharge_rate))
+            if surcharge_applicable and surcharge_rate
+            else 0.0
+        )
+        if not included_in_package and not billed_override:
+            billed = _money(expected_payable + patient_copay + surcharge_amount)
         if expected_payable > billed:
             expected_payable = billed
         if "payable_override" in ps:
@@ -1917,6 +1939,7 @@ def _append_drug_lines_for_claim(ctx: ClaimEpisodeContext) -> tuple[float, float
         except (ValueError, TypeError):
             discount_tier = 0.28
         payable = _money(billed * (1 - discount_tier))
+        copay_rate = discount_tier if discount_tier > 0 else None
 
         d_line_id = f"ILC-{ctx.claim_id}-{drug_idx:03d}"
         prescription_id = f"REC-{ctx.claim_id}-{drug_idx:03d}"
@@ -1936,6 +1959,8 @@ def _append_drug_lines_for_claim(ctx: ClaimEpisodeContext) -> tuple[float, float
             "fatura_tutari_try": billed,
             "beklenen_odenebilir_tutar_try": payable,
             "beklenen_indirim_kademesi": discount_tier,
+            "katilim_payi_orani": copay_rate,
+            "ilave_ucret_orani": None,
             "beklenen_red_nedeni": "",
             "beklenen_kural_izi": f"EK-4A:{drug_row.get('kamu_no', '')}",
             **_empty_drug_indication_fields(),
