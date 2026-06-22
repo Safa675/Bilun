@@ -72,8 +72,7 @@ def _ek1a() -> pd.DataFrame:
     return _gazette("ek1a", CURATED_DIR / "ek1a_chronic_exemptions.parquet")
 
 
-def _money(value: float) -> float:
-    return round(float(value), 2)
+from src.bilun.domain.money import money_round_half_up as _money
 
 
 def _drug_unit_price(drug_row: pd.Series, rng: np.random.Generator) -> float:

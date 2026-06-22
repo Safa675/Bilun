@@ -67,3 +67,54 @@ class TestSessionAdjustedItemizedTotal:
         assert meta["methodology"] == "session_adjusted"
         assert total < raw
         assert total > 1000.0
+
+    def test_duplicate_normalized_code_collision_does_not_break_total(self) -> None:
+        """B-H7 regression: two codes that normalize to the same key
+        (e.g. P701450 and 70-1450 both → 701450) cause a factor-map dict
+        collision — the primary factor is silently dropped.  The total
+        must still be correct because primary identification downstream
+        is procedure_line_id-based, not factor-map-based, and the default
+        primary_factor is 1.0 which matches the actual primary factor.
+        If any of those masking defaults change, this test will catch the
+        regression.
+        """
+        from src.bilun.domain.prose_rules.catalog_membership import (
+            normalize_procedure_code,
+        )
+        from src.bilun.domain.prose_rules.session_pricing import (
+            compute_session_point_factors,
+        )
+
+        primary = _proc(
+            procedure_line_id="PL_A",
+            procedure_code="P701450",
+            expected_payable_try=Decimal("1000"),
+        )
+        secondary = _proc(
+            procedure_line_id="PL_B",
+            procedure_code="70-1450",
+            expected_payable_try=Decimal("1000"),
+        )
+
+        assert normalize_procedure_code("P701450") == normalize_procedure_code(
+            "70-1450"
+        ), "fixture must produce a collision"
+
+        session = compute_session_point_factors(
+            ["P701450", "70-1450"], same_incision=True
+        )
+        assert len(session.factors) == 2
+
+        factors_map = {
+            normalize_procedure_code(f.procedure_code): f for f in session.factors
+        }
+        assert len(factors_map) == 1, "factor-map collision expected"
+
+        total, meta = compute_session_adjusted_itemized_total(
+            [primary, secondary],
+            same_incision=True,
+        )
+        assert total == 1300.0, (
+            f"collision must not change the total; got {total}"
+        )
+        assert meta["methodology"] == "session_adjusted"

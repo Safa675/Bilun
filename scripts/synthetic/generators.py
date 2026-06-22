@@ -1500,6 +1500,8 @@ def _reconcile_ek2c1_procedure_lines(
         copay_frac = ek2c1_copay_rates[code]
         row["katilim_payi_orani_uygulanabilir_mi"] = True
         row["katilim_payi_orani"] = copay_frac
+        row["ilave_ucret_uygulanabilir_mi"] = False
+        row["ilave_ucret_orani"] = None
         payable = _money(billed * (1 - copay_frac))
         row["beklenen_odenebilir_tutar_try"] = min(payable, billed)
 
@@ -1751,10 +1753,10 @@ def _append_procedure_lines_for_claim(
             "beklenen_odenebilir_tutar_try": expected_payable,
             "pakete_dahil_mi": included_in_package,
             "paket_kodu": (
-                (ps.get("candidate_package_code") or ctx.package_code_for_claim)
-                if (included_in_package or is_package_proc or ps.get("candidate_package_code"))
-                else None
-            ),
+                ps.get("candidate_package_code") or ctx.package_code_for_claim
+            )
+            if (included_in_package or is_package_proc or ps.get("candidate_package_code"))
+            else None,
             "ilave_ucret_uygulanabilir_mi": surcharge_applicable,
             "ilave_ucret_orani": surcharge_rate,
             "katilim_payi_orani_uygulanabilir_mi": copay_applicable,

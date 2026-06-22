@@ -52,6 +52,15 @@ def test_procedure_and_drug_line_identity() -> None:
 
     proc_with_rate = procedures[procedures["katilim_payi_orani"].notna()]
     assert not proc_with_rate.empty
+    # Exclude deliberate EK-2C-1 "copay not applied" violation demo rows: the
+    # generator intentionally flags copay_applicable yet sets payable == billed
+    # so the optimizer can surface the missed copay. These rows are designed to
+    # violate the decomposition invariant and must be skipped here.
+    copay_not_applied = (
+        procedures["katilim_payi_orani_uygulanabilir_mi"]
+        & (procedures["fatura_tutari_try"] == procedures["beklenen_odenebilir_tutar_try"])
+    )
+    proc_with_rate = proc_with_rate[~copay_not_applied.loc[proc_with_rate.index]]
     for row in proc_with_rate.itertuples(index=False):
         assert _line_identity_holds(
             billed=float(row.fatura_tutari_try),

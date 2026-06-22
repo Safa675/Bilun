@@ -41,7 +41,6 @@ class TestOptionalOverrideSyntheticDemos:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
 
         rows = _override_rows_for_claim(report, demo_claim.claim_id)
@@ -63,7 +62,6 @@ class TestOptionalOverrideSyntheticDemos:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
 
         rows = _override_rows_for_claim(report, demo_claim.claim_id)
@@ -89,7 +87,6 @@ class TestDrgUpliftSyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
 
         drg_rows = [
@@ -115,7 +112,6 @@ class TestMaterialUpliftSyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
 
         assert report.material_uplift.confirmed_uplift_try == pytest.approx(667.01, rel=0.01)
@@ -133,7 +129,6 @@ class TestProcedureAddonSyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"K"},
         )
 
         demo_rows = [
@@ -247,7 +242,6 @@ class TestMedulaPlaybookSyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"A"},
         )
 
         demo_rows = [
@@ -275,7 +269,6 @@ class TestGazetteRepricingSyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"L"},
         )
 
         demo_rows = [
@@ -305,7 +298,6 @@ class TestPackageAdequacySyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"K"},
         )
 
         demo_rows = [
@@ -337,7 +329,6 @@ class TestProcedureCaptureSyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"K"},
         )
 
         demo_rows = [
@@ -368,7 +359,6 @@ class TestCareSettingReviewSyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
 
         demo_rows = [
@@ -396,7 +386,6 @@ class TestBloodUpliftSyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"D"},
         )
 
         assert report.blood_uplift.confirmed_uplift_try == pytest.approx(310.0)
@@ -461,7 +450,6 @@ class TestDrugIndicationSyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"C"},
         )
 
         demo_violations = [
@@ -489,7 +477,6 @@ class TestClaimReadinessSyntheticDemo:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"M"},
         )
 
         demo_rows = [

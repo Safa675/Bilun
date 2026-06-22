@@ -18,6 +18,8 @@ semantiği. Üretim pipeline’ı ve Tier A/B ayrımı için tek giriş noktası
 |---------------|------|
 | `demo_manifest.json` | Tier A/B hasta indeksleri, `default_landing_index`, `scenario_by_index` |
 | `demo_vignettes.json` | Hasta başına vignette: `fault`, klinik kabuk, golden bantlar |
+| `demo_cohort_tiers.json` | **Regen sonrası** Tier A/B/C hasta listesi (JSON; demo cheat sheet kaynağı) |
+| `DEMO_COHORT.md` | **Regen sonrası** insan-okur demo rehberi (senaryo + fault tabloları) |
 | `sut/` | Üretilmiş workbook, `clean/*.parquet`, `claims/*.parquet` |
 | `scripts/synthetic/vignettes.py` | Typed `BillingVignette` registry (JSON kaynak) |
 | `scripts/synthetic/fault_injection.py` | Ortak fault / optional-override üretim yardımcıları |
@@ -89,6 +91,8 @@ python scripts/bilun/build_cache.py --activate
 ```
 
 `generate_sut_synthetic_data_v2.py` adım 2–3’ü varsayılan olarak çalıştırır (`--skip-checks` ile atlanır).
+
+**Demo hazırlığı:** Her regen sonrası `data/synthetic/DEMO_COHORT.md` ve `demo_cohort_tiers.json` güncellenir — Tier A/B/C hasta listesi ve default landing (0003) burada.
 
 ### CI / golden testler
 

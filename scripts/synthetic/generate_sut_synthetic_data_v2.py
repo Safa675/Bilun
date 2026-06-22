@@ -9,6 +9,8 @@ Outputs:
     data/synthetic/sut/sentetik_sut_v2.xlsx
     data/synthetic/sut/clean/*.parquet
     data/synthetic/sut/claims/*.parquet
+    data/synthetic/demo_cohort_tiers.json
+    data/synthetic/DEMO_COHORT.md
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ import sys
 from pathlib import Path
 
 from constants import DEFAULT_OUTPUT_DIR, SEED
+from cohort_tiers import build_cohort_tier_report, write_cohort_tier_artifacts
 from generators import build_workbook_tables
 from exporters import _write_claim_exports, _write_clean_exports, _write_workbook
 
@@ -55,6 +58,16 @@ def main() -> None:
     _write_clean_exports(tables, output_dir)
     _write_claim_exports(tables, output_dir)
 
+    tier_report = build_cohort_tier_report(
+        num_patients=args.num_patients,
+        seed=args.seed,
+        dataset_id=dataset_id,
+    )
+    tier_json, tier_md = write_cohort_tier_artifacts(
+        synthetic_root=output_dir.parent,
+        report=tier_report,
+    )
+
     print("=" * 72)
     print(f"Dataset: {dataset_id}")
     print(f"Workbook: {workbook_path}")
@@ -70,6 +83,8 @@ def main() -> None:
     print(f"Diagnoses: {len(tables['tani_satirlari'])}")
     print(f"Expected outputs: {len(tables['beklenen_kural_ciktilari'])}")
     print(f"Prescriptions: {len(tables['receteler'])}")
+    print(f"Demo cohort tiers: {tier_json}")
+    print(f"Demo cohort guide: {tier_md}")
     print("=" * 72)
 
     if not args.skip_checks:

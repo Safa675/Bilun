@@ -112,7 +112,6 @@ class TestOptionalOverrideGoldenBands:
             patient_id,
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
         row = next(
             entry

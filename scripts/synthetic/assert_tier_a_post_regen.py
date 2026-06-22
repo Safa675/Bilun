@@ -200,7 +200,6 @@ def _assert_optional_override_strategy(
         patient_id,
         claim_context=ctx,
         copay_exemption={"exempt": False},
-        chapters={"I"},
     )
     rows = [
         row
