@@ -22,7 +22,6 @@ def test_sentetik_0001_no_false_session_uplift() -> None:
         PATIENT_ID,
         claim_context=ctx,
         copay_exemption={"exempt": False},
-        chapters={"I"},
     )
 
     session = report.session_uplift

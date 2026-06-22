@@ -11,7 +11,6 @@ the SUT analytics API.
 | `context.py` | Load SUT build and expensive backfill contexts |
 | `build_expensive.py` | Backfill `patient_outcome_expensive` rows |
 | `expensive_compute.py` | Per-patient DRG expensive compute + typed context |
-| `expensive.py` | Backward-compatible re-exports |
 | `sut_context.py` | Exact SUT claim totals and optimization context |
 | `billing_context.py` | Billing report cache inputs |
 | `payloads.py` | Row payload builders for cache tables |

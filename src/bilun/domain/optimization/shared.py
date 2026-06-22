@@ -6,14 +6,8 @@ Shared helper functions for optimization rules.
 from __future__ import annotations
 
 import re
-from typing import Any
 
 import polars as pl
-
-
-def _is_blank(val: Any) -> bool:
-    """True if val is empty, None, or a stringified null variant."""
-    return not val or str(val).strip().lower() in ("nan", "none", "nat", "")
 
 
 def _icd10_in_range(code: str, start: str, end: str) -> bool:
@@ -95,20 +89,3 @@ def _extract_patient_icd10_chapters(diagnoses: list[str]) -> set[str]:
         if diag and diag[0].isalpha():
             chapters.add(diag[0].upper())
     return chapters
-
-
-_ICD10_CHAPTER_TO_PROCEDURE_PREFIXES: dict[str, list[str]] = {
-    "I": ["55", "60", "61", "70"],
-    "C": ["60", "61", "62", "80"],
-    "J": ["55", "60"],
-    "K": ["60", "61"],
-    "G": ["55", "60", "70"],
-    "E": ["53", "55"],
-    "M": ["60", "61"],
-    "N": ["60", "61", "62"],
-    "L": ["60"],
-    "H": ["60"],
-    "D": ["60", "61"],
-    "Q": ["60", "61", "70"],
-    "F": ["53", "55"],
-}

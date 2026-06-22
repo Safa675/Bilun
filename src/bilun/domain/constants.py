@@ -21,7 +21,6 @@ _GAZETTE_CURATED_DIR = _GAZETTE_DIR / "curated"
 _PROSE_RULES_DIR = _GAZETTE_DIR / "prose_rules"
 PROSE_MANIFESTS_DIR = _GAZETTE_DIR / "prose_manifests"
 PROSE_CORPUS_DIR = _GAZETTE_DIR / "prose_corpus"
-_LEGACY_DIR = _DATA_DIR / "legacy"
 
 # SUT prose corpus — extracted clauses + rule-coverage matrix (rule database)
 SUT_CLAUSES_PATH = _GAZETTE_DIR / "sut_clauses.parquet"

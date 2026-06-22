@@ -139,7 +139,6 @@ class TestDrgUpliftWiring:
             "P1",
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
         assert report.drg_uplift.confirmed_uplift_try == drg.confirmed_uplift_try
         assert report.sgk_uplift_try >= drg.confirmed_uplift_try
@@ -279,7 +278,6 @@ class TestDrgUpliftWiring:
             "SENTETIK-HASTA-0001",
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
         assert report.drg_uplift.confirmed_uplift_try == 0.0
         assert report.session_uplift.confirmed_uplift_try == 0.0

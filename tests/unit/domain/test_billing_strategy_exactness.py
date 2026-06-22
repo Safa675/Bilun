@@ -12,7 +12,7 @@ pytestmark = pytest.mark.unit
 
 
 def test_billing_strategy_is_unavailable_without_exact_claim_inputs() -> None:
-    report = compute_patient_billing_report("P1", chapters={"I"})
+    report = compute_patient_billing_report("P1")
 
     assert report.billing_strategy.recommendations == []
     assert report.billing_strategy.exactness_status == "missing_exact_inputs"
@@ -20,7 +20,7 @@ def test_billing_strategy_is_unavailable_without_exact_claim_inputs() -> None:
 
 
 def test_billing_strategy_with_chapters_only_stays_unavailable() -> None:
-    report = compute_patient_billing_report("P1", chapters={"I"})
+    report = compute_patient_billing_report("P1")
 
     assert report.billing_strategy.recommendations == []
     assert report.billing_strategy.exactness_status == "missing_exact_inputs"
@@ -37,7 +37,6 @@ def test_billing_report_with_claim_context_uses_sut_strategy() -> None:
     report = compute_patient_billing_report(
         "SENTETIK-HASTA-0003",
         claim_context=ctx,
-        chapters={"I"},
     )
 
     assert report.billing_strategy.exactness_status == "exact"
@@ -54,7 +53,7 @@ def test_billing_report_with_claim_context_uses_sut_strategy() -> None:
 
 
 def test_billing_report_without_claim_context_excludes_heuristic_totals() -> None:
-    report = compute_patient_billing_report("P1", chapters={"I"})
+    report = compute_patient_billing_report("P1")
 
     assert report.billing_strategy.exactness_status == "missing_exact_inputs"
     assert report.exactness_status == "missing_exact_inputs"

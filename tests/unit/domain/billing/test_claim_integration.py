@@ -23,7 +23,6 @@ def test_billing_report_uses_exact_copay_from_claim_context() -> None:
             "exempt": True,
             "qualifying_diagnoses": [{"disease": "Hypertension", "range": "I10-I15"}],
         },
-        chapters={"I"},
     )
 
     assert report.copay.exactness_status == "exact"
@@ -43,7 +42,6 @@ def test_exempt_patient_rx_copay_in_total() -> None:
             "exempt": True,
             "qualifying_diagnoses": [{"disease": "Hypertension", "range": "I10-I15"}],
         },
-        chapters={"I"},
     )
 
     rx = report.copay.rx_copay_savings_try
@@ -64,7 +62,7 @@ def test_exempt_patient_rx_copay_in_total() -> None:
 
 
 def test_billing_strategy_without_claim_context_stays_unavailable() -> None:
-    report = compute_patient_billing_report("P1", chapters={"I"})
+    report = compute_patient_billing_report("P1")
 
     assert report.billing_strategy.exactness_status == "missing_exact_inputs"
     assert report.billing_strategy.recommendations == []

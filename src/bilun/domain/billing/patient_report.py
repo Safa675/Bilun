@@ -48,7 +48,6 @@ def compute_patient_billing_report(
     *,
     claim_context: PatientClaimContext | None = None,
     copay_exemption: dict[str, Any] | None = None,
-    chapters: set[str] | None = None,
     lab_df_pl: pl.DataFrame | None = None,
 ) -> BillingActionReport:
     """Compute a full billing action report for a single patient or bill.
@@ -61,14 +60,11 @@ def compute_patient_billing_report(
         claim_context: Patient-level or bill-level claim context. Required for
             exact lab, copay, strategy, and uplift algorithms.
         copay_exemption: Pre-computed copay exemption result.
-        chapters: Pre-computed ICD-10 chapter set (ignored when claim lines are
-            required; kept for backward-compatible signatures).
         lab_df_pl: Normalized clinical lab feed for lab capture-gap detection.
 
     Returns:
         BillingActionReport with all algorithm results.
     """
-    _ = chapters
     report = BillingActionReport(patient_id=pid)
 
     if claim_context is None:
@@ -77,10 +73,8 @@ def compute_patient_billing_report(
             finalize_report_totals(report, claim_context=None)
             finalize_report_exactness(report)
             return report
-        raise NotImplementedError(
-            "Legacy estimate-based billing report path removed. "
-            "Provide claim_context or set SUT_REQUIRE_CLAIM_LINES=False."
-        )
+
+    assert claim_context is not None
 
     report.lab, report.procedure_capture_gap = compute_lab_and_capture_gap_from_claims(
         claim_context,

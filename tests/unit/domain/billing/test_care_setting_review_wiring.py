@@ -101,7 +101,6 @@ class TestCareSettingReviewWiring:
             "P1",
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
         assert report.care_setting_review.review_opportunity_count == 1
         assert report.care_setting_review.confirmed_uplift_try == 0.0

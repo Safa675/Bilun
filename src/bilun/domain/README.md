@@ -3,11 +3,6 @@
 This package is split by responsibility and favors direct package imports over
 legacy shim modules.
 
-## Runtime state
-
-- `runtime_state.py` holds mutable enrichment caches used by estimators.
-- `estimators.py` lazily enriches gazette-backed price dictionaries on first use.
-
 ## Loader split
 
 - `loaders/checkup.py`: check-up JSON loading/indexes.

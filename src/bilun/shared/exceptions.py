@@ -1,7 +1,7 @@
 """Domain-level API exceptions and the global handler for BILUN.
 
 Defines a small ``BilunAPIError`` hierarchy so endpoint code can raise semantic
-errors (``PatientNotFound``, ``InvalidBuildId``) instead of building an
+errors (``PatientNotFound``, ``NotFoundError``) instead of building an
 ``HTTPException`` with a hand-rolled detail dict at every site.
 
 Wire-up:
@@ -57,13 +57,6 @@ class NotFoundError(BilunAPIError):
 
     status_code = 404
     error_code = "not_found"
-
-
-class InvalidBuildId(BilunAPIError):
-    """Raised when a build_id is malformed or refers to a missing build."""
-
-    status_code = 400
-    error_code = "invalid_build_id"
 
 
 class ValidationError(BilunAPIError):

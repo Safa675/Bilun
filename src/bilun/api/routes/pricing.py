@@ -21,6 +21,7 @@ from src.bilun.api.schemas import (
     VisitPricingResponse,
 )
 from src.bilun.domain.materials import get_all_specialty_materials
+from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.utils import turkish_lower, fuzzy_match_name
 
 router = APIRouter()
@@ -177,7 +178,7 @@ def get_price_history(code: str):
     for row in matched.sort(date_col).iter_rows(named=True):
         entry: dict[str, Any] = {
             "effective_date": str(row.get(date_col, "")),
-            "price_try": round(float(row.get(price_col) or 0), 2),
+            "price_try": _money(row.get(price_col) or 0),
         }
         if puan_col and row.get(puan_col) is not None:
             entry["puan"] = float(row[puan_col])

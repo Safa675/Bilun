@@ -135,7 +135,7 @@ def test_copay_total_excludes_rx_component() -> None:
 def test_orchestrator_without_claim_context_returns_missing_inputs() -> None:
     import src.bilun.domain.billing.orchestrator as billing_mod
 
-    report = billing_mod.compute_patient_billing_report("P1", chapters={"I"})
+    report = billing_mod.compute_patient_billing_report("P1")
 
     assert report.exactness_status == "missing_exact_inputs"
     assert report.total_recoverable_try == 0.0

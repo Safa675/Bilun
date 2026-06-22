@@ -10,7 +10,7 @@ pytestmark = pytest.mark.unit
 def test_orchestrator_total_includes_only_exact_blocks() -> None:
     import src.bilun.domain.billing.orchestrator as billing_mod
 
-    report = billing_mod.compute_patient_billing_report("P1", chapters={"I"})
+    report = billing_mod.compute_patient_billing_report("P1")
 
     # Without claim lines every block is missing inputs, so no money is counted.
     assert report.compliance_adjustment_try == 0.0

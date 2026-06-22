@@ -177,7 +177,6 @@ class TestOptionalOverrideSurfacing:
             "P1",
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
         assert report.billing_strategy.optional_override_uplift_try > 0
         assert report.sgk_uplift_try >= report.billing_strategy.optional_override_uplift_try

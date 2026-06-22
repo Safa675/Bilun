@@ -34,6 +34,7 @@ from .loaders import (
     _load_ek2c1_copay_rates,
     get_cached_ek2a,
 )
+from .money import money_round_half_up as _money
 from .utils import _safe_float, _safe_str
 
 logger = logging.getLogger("ilay.sut_catalog")
@@ -104,7 +105,7 @@ def _normalize_asof_date(visit_date: Any | None) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Unified catalog loader (3-tier fallback: curated parquet → JSON → Excel)
+# Unified catalog loader (curated temporal parquet)
 # ═══════════════════════════════════════════════════════════════════════════
 
 
@@ -113,17 +114,15 @@ def load_sut_catalog(
     visit_date: Any | None = None,
 ) -> dict[str, Any]:
     """
-    Load the SUT catalog from the best available source.
-
-    Priority:
-      1. Curated temporal parquet (as-of date filtered)
-      2. Legacy JSON cache (sut_ek2b.json / sut_ek2c.json)
-      3. Excel files (slowest)
+    Load the SUT catalog from curated temporal parquets (as-of date filtered).
 
     Returns:
         Dict with keys "ek2b" and "ek2c", each containing parsed data
         with "procedures"/"packages", "by_code", and "stats".
         The "ek2b" by_code index supports BOTH old (9xxxxx) and new (L1xxxxx) codes.
+
+    Raises:
+        FileNotFoundError: When curated parquets are missing (run ETL first).
     """
     asof_date = _normalize_asof_date(visit_date)
     if not force_reload and asof_date in _catalog_cache_by_asof:
@@ -342,8 +341,8 @@ def lookup_ek2a_visit_price_try(
         if not prices:
             return None, "unavailable"
         price = sum(prices) / len(prices)
-        return round(float(price), 2), "ek2a_specialty_mean"
-    return round(float(price), 2), "ek2a_tier_row"
+        return _money(price), "ek2a_specialty_mean"
+    return _money(price), "ek2a_tier_row"
 
 
 # ═══════════════════════════════════════════════════════════════════════════

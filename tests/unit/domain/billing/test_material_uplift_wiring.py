@@ -89,7 +89,6 @@ class TestMaterialUpliftWiring:
             "P1",
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"I"},
         )
         assert report.material_uplift.confirmed_uplift_try == uplift.confirmed_uplift_try
         assert report.sgk_uplift_try >= uplift.confirmed_uplift_try

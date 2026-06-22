@@ -20,21 +20,16 @@ import logging
 logger = logging.getLogger("bilun.domain.optimization")
 
 from .shared import (
-    _is_blank,
     _icd10_in_range,
     _extract_diagnoses_bulk_pl,
     _extract_patient_icd10_chapters,
-    _ICD10_CHAPTER_TO_PROCEDURE_PREFIXES,
 )
 
 from .copay_exemptions import (
     check_copay_exemptions,
     evaluate_copay_exemption,
 )
-from .copay_exemption_rules.ek1a import (
-    _get_ek1a_by_letter,
-    _precompute_exemption_map,
-)
+from .copay_exemption_rules.ek1a import _get_ek1a_by_letter
 
 from .surcharge import analyze_surcharge_exposure
 
@@ -49,15 +44,12 @@ from .drug_discounts import validate_drug_discount_tiers
 from .aggregator import compute_optimization_summary
 
 __all__ = [
-    "_is_blank",
     "_icd10_in_range",
     "_extract_diagnoses_bulk_pl",
     "_extract_patient_icd10_chapters",
-    "_ICD10_CHAPTER_TO_PROCEDURE_PREFIXES",
     "check_copay_exemptions",
     "evaluate_copay_exemption",
     "_get_ek1a_by_letter",
-    "_precompute_exemption_map",
     "analyze_surcharge_exposure",
     "analyze_copay_rate_exposure",
     "audit_temporal_prices",

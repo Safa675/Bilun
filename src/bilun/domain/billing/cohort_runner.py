@@ -112,12 +112,10 @@ def compute_all_bill_billing_reports(
             return key, None
         alert = alerts_by_pid.get(pid, {})
         copay_exemption = alert.get("copay_exemption", _DEFAULT_COPAY_EXEMPTION)
-        chapters = set(alert.get("icd10_chapters", []))
         report = _compute_patient_billing_report(
             pid,
             claim_context=bill_context,
             copay_exemption=copay_exemption,
-            chapters=chapters,
             lab_df_pl=lab_df_pl,
         )
         return key, report
@@ -167,7 +165,6 @@ def compute_all_billing_reports(
     def _build_report(pid: str) -> BillingActionReport:
         alert = alerts_by_pid.get(pid, {})
         copay_exemption = alert.get("copay_exemption", _DEFAULT_COPAY_EXEMPTION)
-        chapters = set(alert.get("icd10_chapters", []))
 
         claim_context = None
         if claim_dataset is not None:
@@ -177,7 +174,6 @@ def compute_all_billing_reports(
             pid,
             claim_context=claim_context,
             copay_exemption=copay_exemption,
-            chapters=chapters,
             lab_df_pl=lab_df_pl,
         )
 

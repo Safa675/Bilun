@@ -34,28 +34,6 @@ def _get_ek1a_by_letter() -> dict[str, list[tuple[str, str, str]]]:
     return _ek1a_by_letter
 
 
-def _precompute_exemption_map(
-    all_diagnoses: set[str],
-) -> dict[str, tuple[str, str]]:
-    """Pre-check every unique ICD-10 code against EK-1A ranges once."""
-    ek1a_idx = _get_ek1a_by_letter()
-    if not ek1a_idx:
-        return {}
-
-    result: dict[str, tuple[str, str]] = {}
-    for diag_raw in all_diagnoses:
-        diag = diag_raw.strip().upper()
-        if not diag or not diag[0].isalpha():
-            continue
-        letter = diag[0]
-        for start, end, disease in ek1a_idx.get(letter, []):
-            if _icd10_in_range(diag, start, end):
-                range_str = f"{start}-{end}" if start != end else start
-                result[diag_raw] = (disease, range_str)
-                break
-    return result
-
-
 def evaluate_ek1a_exemption(
     diagnoses: list[str],
     *,

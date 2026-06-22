@@ -87,7 +87,6 @@ class TestBloodUpliftWiring:
             "P1",
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"D"},
         )
         assert report.blood_uplift.confirmed_uplift_try == pytest.approx(310.0)
         assert report.sgk_uplift_try >= 310.0

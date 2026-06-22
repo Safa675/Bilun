@@ -234,8 +234,6 @@ def run_build(args: argparse.Namespace) -> str:
             sut_data_source_config=sut_data_source,
         )
         patient_ids = list(ctx["patient_ids"])
-        rank_df = pl.DataFrame()
-        rank_storage_df = pl.DataFrame()
         _print_memory_snapshot(
             "analytics_cache:after_load_sut_pipeline",
             ana_df_pl=ctx["ana_df_pl"],
@@ -354,7 +352,6 @@ def run_build(args: argparse.Namespace) -> str:
         _print_memory_snapshot(
             "analytics_cache:after_outcome_payload_build",
             patient_outcome_count=outcome_rows,
-            eci_rank_df=rank_df,
         )
 
         expensive_counts = {"ready": 0, "failed": 0, "skipped": len(patient_ids)}
@@ -401,7 +398,6 @@ def run_build(args: argparse.Namespace) -> str:
                 len(ctx.get("bill_billing_reports", {}))
             ),
             "cohort_recovery_summary": 1,
-            "patient_eci_rank": int(rank_storage_df.height),
             "patient_detail_cache": int(detail_rows),
             "patient_outcome_base": int(outcome_rows),
             "patient_expensive_ready": int(expensive_counts["ready"]),

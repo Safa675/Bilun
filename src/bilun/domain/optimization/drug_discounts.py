@@ -7,6 +7,7 @@ from decimal import Decimal
 from typing import Any
 
 from src.bilun.domain.claims.models import DrugClaimLine
+from src.bilun.domain.money import money_round_half_up as _money
 
 from .exactness import EXACTNESS_STATUS_MISSING_INPUTS
 
@@ -90,11 +91,11 @@ def validate_drug_discount_tiers(
                     "patient_id": line.patient_id,
                     "drug_code": line.drug_code,
                     "drug_name": line.drug_name,
-                    "billed_try": round(float(billed), 2),
-                    "expected_payable_try": round(float(payable), 2),
-                    "expected_discount_pct": round(float(expected_discount) * 100, 2),
-                    "implied_discount_pct": round(float(implied_discount) * 100, 2),
-                    "delta_pct": round(float(delta) * 100, 2),
+                    "billed_try": _money(billed),
+                    "expected_payable_try": _money(payable),
+                    "expected_discount_pct": _money(float(expected_discount) * 100),
+                    "implied_discount_pct": _money(float(implied_discount) * 100),
+                    "delta_pct": _money(float(delta) * 100),
                 }
             )
 
@@ -110,10 +111,10 @@ def validate_drug_discount_tiers(
         "n_evaluable_lines": n_evaluable,
         "n_discounted_lines": n_discounted,
         "n_violations": len(violations),
-        "total_billed_try": round(float(total_billed), 2),
-        "total_expected_payable_try": round(float(total_payable), 2),
-        "total_expected_discount_try": round(float(total_discount_amount), 2),
-        "mean_expected_discount_pct": round(float(mean_discount) * 100, 2),
+        "total_billed_try": _money(total_billed),
+        "total_expected_payable_try": _money(total_payable),
+        "total_expected_discount_try": _money(total_discount_amount),
+        "mean_expected_discount_pct": _money(float(mean_discount) * 100),
         "top_violations": violations[:10],
         "methodology": (
             "Validates each exact drug claim line by comparing the implied "

@@ -144,23 +144,3 @@ def read_patient_outcome_expensive(
     if not row:
         return None
     return json.loads(row[0])
-
-
-def read_patient_eci_rank_window(
-    con,
-    build_id: str,
-    patient_id: str,
-    *,
-    window_size: int = 15,
-) -> dict[str, Any] | None:
-    """Read +/- window cohort ranking for one patient.
-
-    .. deprecated::
-        ECI rank table is IHP-specific and not available in BILUN.
-        This function returns an empty result for BILUN builds.
-    """
-    return {
-        "cohort_ranking": [],
-        "patient_percentile": None,
-        "cohort_total": 0,
-    }

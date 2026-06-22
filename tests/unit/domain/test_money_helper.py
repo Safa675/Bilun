@@ -110,8 +110,10 @@ def test_no_local_money_defs_remain_in_billing_modules() -> None:
 
     billing_dir = Path("src/bilun/domain/billing")
     prose_dir = Path("src/bilun/domain/prose_rules")
+    optimization_dir = Path("src/bilun/domain/optimization")
+    scripts_dir = Path("scripts/synthetic")
     offenders = []
-    for d in (billing_dir, prose_dir):
+    for d in (billing_dir, prose_dir, optimization_dir, scripts_dir):
         for py in d.glob("*.py"):
             src = py.read_text(encoding="utf-8")
             if re.search(r"^def _money\(", src, re.MULTILINE):

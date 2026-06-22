@@ -34,7 +34,6 @@ consumer should return unavailable metadata instead of a guessed number.
 
 - `drg.py` — `DRGEpisode`, `DRGSummary`, `compute_drg_summary`
 - `materials.py` — compatibility material rule helpers; active billing values must come from exact claim lines
-- `shared.py` — `_select_patient_rows` helper (retained for legacy callers; `compute_drg_summary` ignores anadata inputs)
 
 ## Dependencies
 

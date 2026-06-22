@@ -78,7 +78,6 @@ class TestProcedureAddonWiring:
             "P1",
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"K"},
         )
         expected = round(879.72 * 0.3, 2)
         assert report.procedure_addon_uplift.confirmed_uplift_try == pytest.approx(
@@ -110,7 +109,6 @@ class TestProcedureAddonWiring:
             "P1",
             claim_context=ctx,
             copay_exemption={"exempt": False},
-            chapters={"K"},
         )
         assert report.procedure_addon_uplift.opportunities == []
         assert report.session_uplift.confirmed_uplift_try > 0

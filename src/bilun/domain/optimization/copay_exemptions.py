@@ -14,14 +14,11 @@ from .copay_exemption_rules import (
     evaluate_patient_status_exemptions,
     evaluate_visit_type_exemptions,
 )
-from .copay_exemption_rules.ek1a import _get_ek1a_by_letter, _precompute_exemption_map
 from .copay_exemption_types import empty_copay_exemption_result
 
 __all__ = [
     "check_copay_exemptions",
     "evaluate_copay_exemption",
-    "_get_ek1a_by_letter",
-    "_precompute_exemption_map",
 ]
 
 
