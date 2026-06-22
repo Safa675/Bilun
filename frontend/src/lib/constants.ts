@@ -2,8 +2,7 @@
  * Static design tokens and CSS class mappings.
  *
  * Domain constants (risk tiers, rating tiers, state colors, etc.)
- * are NOT here — they come from useConfig() / useRatingColors() / etc.
- * in @/lib/configContext.tsx, sourced from the backend.
+ * come from useConfig() in @/lib/configContext.tsx, sourced from the backend.
  */
 
 import { theme } from "@/lib/theme";
@@ -121,28 +120,3 @@ export function buildSutBillingHref(
 ): string {
   return buildSutPatientHref(patientId, params);
 }
-
-export const TAB_BACKGROUNDS = ["", "", "", "", "", ""];
-
-export const CHART_COLORS = {
-  bg: theme.surfaceBase,
-  grid: theme.borderSubtle,
-  axis: theme.borderSubtle,
-  text: theme.textMuted,
-  accent: theme.gold,
-  prescription: theme.warning,
-  positive: theme.success,
-  negative: theme.danger,
-  neutral: theme.textMuted,
-  amber: theme.warning,
-  band: theme.accentAlpha(0.04),
-};
-
-export const BADGE_CLASS: Record<string, string> = {
-  AAA: "badge-aaa",
-  AA: "badge-aa",
-  A: "badge-a",
-  BBB: "badge-bbb",
-  BB: "badge-bb",
-  "B/CCC": "badge-bccc",
-};

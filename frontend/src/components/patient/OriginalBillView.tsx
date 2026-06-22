@@ -336,8 +336,8 @@ export default function OriginalBillView({ claim }: OriginalBillViewProps) {
           <div>
             <p className="text-xs text-[var(--text-muted)]">{t("patient.originalBill.variance")}</p>
             <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
-              {fmtTRY2(claim.expected_total_billed_try - linesBilledTotal)} /{" "}
-              {fmtTRY2(claim.expected_total_payable_try - linesPayableTotal)}
+              {fmtTRY2(Math.max(0, claim.expected_total_billed_try - linesBilledTotal))} /{" "}
+              {fmtTRY2(Math.max(0, claim.expected_total_payable_try - linesPayableTotal))}
             </p>
           </div>
         </div>

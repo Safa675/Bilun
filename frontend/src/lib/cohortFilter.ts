@@ -1,6 +1,5 @@
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import type { PatientMeta } from "@/lib/domains/patient";
-import type { SutHomeTab } from "@/lib/constants";
 import enMessages from "@/messages/en/index";
 import trMessages from "@/messages/tr/index";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
@@ -180,34 +179,4 @@ export function copyCohortFilterParams(
     const value = source.get(key);
     if (value) target.set(key, value);
   }
-}
-
-export function buildSutHomeSearchParams(
-  tab: SutHomeTab,
-  options?: {
-    preserveParams?: Pick<URLSearchParams, "get"> | ReadonlyURLSearchParams | null;
-    cohort?: CohortFilter;
-    admin?: string | null;
-  },
-): URLSearchParams {
-  const params = new URLSearchParams();
-  params.set("tab", tab);
-
-  if (options?.preserveParams) {
-    copyCohortFilterParams(options.preserveParams, params);
-  }
-
-  if (options?.cohort) {
-    applyCohortFilterToSearchParams(params, options.cohort);
-  }
-
-  const admin = options?.admin ?? options?.preserveParams?.get("admin");
-  if (admin) params.set("admin", admin);
-
-  return params;
-}
-
-export function buildSutHomeHrefFromParams(params: URLSearchParams): string {
-  const query = params.toString();
-  return query ? `/?${query}` : "/";
 }

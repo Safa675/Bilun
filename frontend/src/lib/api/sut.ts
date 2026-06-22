@@ -698,22 +698,6 @@ export async function getMaterialsBySpecialty(
   );
 }
 
-export interface PriceHistoryEntry {
-  effective_date: string;
-  price_try: number;
-  puan?: number;
-}
-
-export async function getPriceHistory(
-  code: string,
-  options?: RequestInit,
-): Promise<{ code: string; name: string; history: PriceHistoryEntry[] }> {
-  return requestJSON<{ code: string; name: string; history: PriceHistoryEntry[] }>(
-    `/api/price-history/${encodeURIComponent(code)}`,
-    options,
-  );
-}
-
 export interface LabPriceEntry {
   test_name: string;
   sut_code: string;

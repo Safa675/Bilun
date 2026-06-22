@@ -1,4 +1,4 @@
-// Shared API client helpers used by endpoint wrappers in lib/api.ts
+// Shared API client helpers used by endpoint wrappers in lib/api/
 
 export function resolveApiBase(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL?.trim();

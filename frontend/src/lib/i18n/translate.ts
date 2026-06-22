@@ -1,6 +1,6 @@
 import type { MessageTree } from "./types";
 
-export function getNestedMessage(messages: MessageTree, key: string): string | undefined {
+function getNestedMessage(messages: MessageTree, key: string): string | undefined {
   const parts = key.split(".");
   let current: unknown = messages;
 

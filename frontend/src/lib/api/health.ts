@@ -10,7 +10,3 @@ export interface HealthStatus {
 export async function getHealthStatus(options?: RequestInit): Promise<HealthStatus> {
   return fetchJSON<HealthStatus>("/api/health", options);
 }
-
-export async function rollbackCache(options?: RequestInit): Promise<{ status: string; build_id: string }> {
-  return fetchJSON("/api/admin/rollback", { method: "POST", ...options });
-}

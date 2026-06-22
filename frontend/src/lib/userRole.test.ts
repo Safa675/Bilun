@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
-import { canAccessRuleDatabase, parseRole, setUserRole } from "./userRole";
+import { parseRole, setUserRole } from "./userRole";
 
 describe("parseRole", () => {
   it("returns billing_officer for that value", () => {
@@ -15,16 +15,6 @@ describe("parseRole", () => {
     expect(parseRole(null)).toBe("dev");
     expect(parseRole("admin")).toBe("dev");
     expect(parseRole("compliance_engineer")).toBe("dev");
-  });
-});
-
-describe("canAccessRuleDatabase", () => {
-  it("allows dev", () => {
-    expect(canAccessRuleDatabase("dev")).toBe(true);
-  });
-
-  it("denies billing_officer", () => {
-    expect(canAccessRuleDatabase("billing_officer")).toBe(false);
   });
 });
 

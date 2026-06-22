@@ -22,10 +22,6 @@ export function parseRole(value: string | null | undefined): UserRole {
   return getDefaultRole();
 }
 
-export function canAccessRuleDatabase(role: UserRole): boolean {
-  return RULE_DATABASE_ALLOWED_ROLES.includes(role);
-}
-
 export function setUserRole(role: UserRole): void {
   if (typeof window !== "undefined") {
     window.localStorage.setItem(ROLE_STORAGE_KEY, role);

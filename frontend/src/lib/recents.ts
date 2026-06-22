@@ -1,7 +1,5 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-
 export type RecentKind = "patient" | "billing";
 
 export interface RecentEntry {
@@ -78,63 +76,6 @@ export function recordRecent(kind: RecentKind, patientId: string): void {
   } catch {
     // Swallow quota / serialization errors silently — recents are non-critical.
   }
-}
-
-// Snapshot cache so `getSnapshot` returns referentially stable values between
-// reads — required by `useSyncExternalStore` to avoid infinite re-renders.
-const SNAPSHOT_CACHE: Record<RecentKind, { raw: string | null; value: RecentEntry[] }> = {
-  patient: { raw: null, value: [] },
-  billing: { raw: null, value: [] },
-};
-
-const EMPTY: RecentEntry[] = [];
-
-function readSnapshot(kind: RecentKind): RecentEntry[] {
-  if (typeof window === "undefined") {
-    return EMPTY;
-  }
-  const raw = window.localStorage.getItem(STORAGE_KEYS[kind]);
-  const cache = SNAPSHOT_CACHE[kind];
-  if (cache.raw === raw) {
-    return cache.value;
-  }
-  const next = getRecents(kind, MAX_ENTRIES);
-  SNAPSHOT_CACHE[kind] = { raw, value: next };
-  return next;
-}
-
-function subscribeToRecents(kind: RecentKind, onChange: () => void): () => void {
-  if (typeof window === "undefined") {
-    return () => undefined;
-  }
-  const onStorage = (event: StorageEvent) => {
-    if (event.key === STORAGE_KEYS[kind]) onChange();
-  };
-  const onCustom = (event: Event) => {
-    const detail = (event as CustomEvent<{ kind?: RecentKind }>).detail;
-    if (!detail || detail.kind === kind) onChange();
-  };
-  window.addEventListener("storage", onStorage);
-  window.addEventListener("bilun:recents-changed", onCustom);
-  return () => {
-    window.removeEventListener("storage", onStorage);
-    window.removeEventListener("bilun:recents-changed", onCustom);
-  };
-}
-
-/**
- * Subscribe to the recents list for a given kind.
- * Uses `useSyncExternalStore`, so the value updates synchronously when
- * `recordRecent` runs (same tab) or `storage` fires (other tab).
- * Server snapshot is always `[]` — SSR-safe.
- */
-export function useRecents(kind: RecentKind, limit: number = MAX_ENTRIES): RecentEntry[] {
-  const entries = useSyncExternalStore(
-    (notify) => subscribeToRecents(kind, notify),
-    () => readSnapshot(kind),
-    () => EMPTY,
-  );
-  return limit < entries.length ? entries.slice(0, limit) : entries;
 }
 
 export const RECENTS_STORAGE_KEYS = STORAGE_KEYS;

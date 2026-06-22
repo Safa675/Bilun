@@ -167,48 +167,6 @@ export function KpiCard({
   );
 }
 
-export function ChartTooltipContent({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean;
-  payload?: { value: number; fill?: string }[];
-  label?: string;
-}) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-2 text-xs shadow-[var(--shadow-1)]">
-      <p className="mb-1 font-medium text-[var(--text-primary)]">{label}</p>
-      {payload.map((entry, i) => (
-        <p key={i} style={{ color: entry.fill || ACCENT }}>
-          {typeof entry.value === "number"
-            ? fmtNumber(entry.value, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })
-            : entry.value}
-        </p>
-      ))}
-    </div>
-  );
-}
-
-export const TIER_COLORS: Record<string, string> = {
-  "Very High": "#B91C1C",
-  "High": "#B45309",
-  "Moderate": "#B45309",
-  "Low": theme.accent,
-  "Minimal": theme.accent,
-};
-
-export const CATEGORY_COLORS: Record<string, string> = {
-  lab: theme.gold,
-  visit: theme.textPrimary,
-  rx: theme.warning,
-  procedure: theme.textSecondary,
-};
-
 export const SEVERITY_COLORS: Record<
   string,
   { bg: string; text: string; border: string }

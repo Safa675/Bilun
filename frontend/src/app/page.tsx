@@ -92,7 +92,6 @@ function SutHomeContent() {
 
   useEffect(() => {
     if (!isWorkspaceMode || !showAdmin) {
-      setHealthStatus(null);
       return;
     }
 
@@ -109,7 +108,6 @@ function SutHomeContent() {
             return;
           }
           console.warn("SUT health polling failed:", err);
-          setHealthStatus(null);
         });
     };
 

@@ -5,13 +5,6 @@ vi.mock("@/hooks/useStaggeredReveal", () => ({
   default: () => ({}),
 }));
 
-vi.mock("@/lib/constants", () => ({
-  CHART_COLORS: {
-    grid: "#E4E4E7",
-    text: "#71717A",
-  },
-}));
-
 vi.mock("@/lib/theme", () => ({
   theme: {
     accent: "#059669",
