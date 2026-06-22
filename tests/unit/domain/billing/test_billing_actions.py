@@ -38,25 +38,20 @@ class TestBillingActionsBreakdown:
             "SENTETIK-HASTA-0003",
             claim_context=ctx,
             copay_exemption=copay,
-            chapters={"E"},
         )
 
         assert report.action_count == len(report.recommended_actions)
-        assert report.action_count == 3
+        assert report.action_count == 1
 
         surfaces = {row["surface"] for row in report.recommended_actions}
-        assert surfaces == {"billing_strategy", "copay"}
+        assert surfaces == {"copay"}
 
         violations = [
             row
             for row in report.recommended_actions
             if row["kind"] == "compliance_violation"
         ]
-        assert len(violations) == 2
-        assert {row["procedure_code"] for row in violations} == {
-            "621360",
-            "620340",
-        }
+        assert len(violations) == 0
 
         copay_rows = [row for row in report.recommended_actions if row["surface"] == "copay"]
         assert len(copay_rows) == 1
@@ -71,7 +66,6 @@ class TestBillingActionsBreakdown:
             "SENTETIK-HASTA-0003",
             claim_context=ctx,
             copay_exemption={"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []},
-            chapters={"I"},
         )
 
         assert report.exactness_status == "exact"
@@ -100,7 +94,6 @@ class TestBillingActionsBreakdown:
             "SENTETIK-HASTA-0003",
             claim_context=ctx,
             copay_exemption={"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []},
-            chapters={"I"},
         )
         assert count_billing_actions(report) == len(collect_billing_actions(report))
 

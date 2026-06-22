@@ -83,6 +83,7 @@ function buildRecommendedActionsFallback(
         procedure_code: (row.procedure_code as string | undefined) ?? null,
         procedure_name: (row.procedure_name as string | undefined) ?? null,
         material_code: (row.material_code as string | undefined) ?? null,
+        material_name: (row.material_name as string | undefined) ?? null,
         sgk_uplift_try:
           (row.recoverable_uplift_try as number | undefined) ??
           (row.recoverable_gap_try as number | undefined) ??
@@ -146,22 +147,36 @@ const MATERIAL_BILLED_KINDS = new Set([
   "material_specialty_prose",
 ]);
 
+function isMaterialAnchoredAction(action: RecommendedActionItem): boolean {
+  return action.surface === "materials" || action.surface === "material_uplift";
+}
+
+function recommendedActionPrimaryCode(action: RecommendedActionItem): string | null {
+  if (isMaterialAnchoredAction(action)) {
+    return action.material_code ?? action.procedure_code ?? action.drug_code ?? null;
+  }
+  return action.procedure_code ?? action.material_code ?? action.drug_code ?? null;
+}
+
 export function recommendedActionTitle(
   t: TranslateFn,
   action: RecommendedActionItem,
 ): string {
   const kindLabel = recommendedActionKindLabel(t, action.kind);
-  const code =
-    action.procedure_code ??
-    action.material_code ??
-    action.drug_code ??
-    null;
+  const code = recommendedActionPrimaryCode(action);
 
-  if (action.surface === "materials" && code && action.material_name) {
+  if (isMaterialAnchoredAction(action) && code && action.material_name) {
     return t("billing.recommendedActions.titleMaterialWithName", {
       kind: kindLabel,
       code,
       name: action.material_name,
+    });
+  }
+
+  if (isMaterialAnchoredAction(action) && code) {
+    return t("billing.recommendedActions.titleWithCode", {
+      kind: kindLabel,
+      code,
     });
   }
 

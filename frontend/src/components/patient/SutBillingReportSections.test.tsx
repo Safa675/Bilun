@@ -216,7 +216,7 @@ describe("SutBillingReportSections honest gaps", () => {
             line_decomposition_status: "exact",
             rate_corrections: [],
           },
-        } as BillingActionReport}
+        } as unknown as BillingActionReport}
       />,
     );
 

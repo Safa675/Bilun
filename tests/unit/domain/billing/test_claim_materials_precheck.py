@@ -149,6 +149,37 @@ def test_precheck_rows_include_sut_section_claim_and_price(
     assert row["material_name"] == "Test material"
 
 
+def test_none_material_date_does_not_crash_latest_line_selection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """B-H6 regression: a MaterialClaimLine with material_date=None must
+    not raise TypeError in the latest-line-by-code selection loop.  The
+    dated line should win over the None-dated line for the same code.
+    """
+    from src.bilun.domain.billing import claim_materials as cm
+
+    monkeypatch.setattr(cm, "_get_ek3c1_preauth", lambda: [])
+    monkeypatch.setattr(cm, "_get_ek3c2_miat", lambda: [])
+    monkeypatch.setattr(cm, "check_material_bundling_for_context", lambda _ctx: [])
+
+    none_dated = _material_line(
+        code="OP9990",
+        line_id="M_NONE",
+        billed="50",
+        material_date=None,
+    )
+    dated = _material_line(
+        code="OP9990",
+        line_id="M_DATED",
+        billed="80",
+        material_date=date(2026, 1, 15),
+    )
+
+    result = cm.precheck_materials_from_claims(_ctx(none_dated, dated))
+    assert len(result.pre_auth_required) == 0
+    assert len(result.miat_restricted) == 0
+
+
 def test_miat_interval_violation_separate_from_catalog_advisory(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

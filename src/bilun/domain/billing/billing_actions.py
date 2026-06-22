@@ -152,6 +152,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                     or row.get("trigger_procedure_code"),
                     procedure_name=row.get("procedure_name"),
                     material_code=row.get("material_code"),
+                    material_name=row.get("material_name"),
                     sgk_uplift_try=row.get(uplift_field) or row.get("recoverable_uplift_try"),
                     detail=row.get("detail"),
                     sut_section_id=row.get("sut_section_id") or row.get("sut_section"),

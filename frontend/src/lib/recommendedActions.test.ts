@@ -76,9 +76,50 @@ describe("recommendedActions", () => {
 
     expect(recommendedActionTitle(t, action)).toContain("OP1198");
     expect(recommendedActionTitle(t, action)).toContain("Ortez");
+    expect(recommendedActionTitle(t, action)).not.toContain("P611132");
 
     const amount = recommendedActionAmountParts(t, action);
     expect(amount?.label).toBe("billing.recommendedActions.amountBilledAtRisk");
     expect(amount?.value).toBe(1250);
+  });
+
+  it("prefers material code over package procedure code on material precheck rows", () => {
+    const action: RecommendedActionItem = {
+      action_id: "materials:material_bundling:F-1:0",
+      surface: "materials",
+      kind: "material_bundling",
+      procedure_code: "P700930",
+      procedure_name: "Perkütan balon valvüloplasti, mitral kapak için",
+      material_code: "GHC1390",
+      material_name: "STENT, SİLİKON, FİSTÜL",
+      billed_try: 12969.69,
+      detail: "Bundled material billed separately",
+      sut_section_id: "EK-3B-1",
+    };
+
+    const title = recommendedActionTitle(t, action);
+    expect(title).toContain("GHC1390");
+    expect(title).toContain("STENT, SİLİKON, FİSTÜL");
+    expect(title).not.toContain("P700930");
+  });
+
+  it("shows missing billable material code on material uplift rows", () => {
+    const action: RecommendedActionItem = {
+      action_id: "material_uplift:F-1:0",
+      surface: "material_uplift",
+      kind: "missing_billable_material",
+      procedure_code: "P700930",
+      procedure_name: "Perkütan balon valvüloplasti, mitral kapak için",
+      material_code: "KR1152",
+      material_name: "STENT, KORONER, BALONA MONTE EDİLMİŞ GRAFT STENT",
+      sgk_uplift_try: 10134.14,
+      detail: "EK-3H ilac salinimli stent (KR1152) ayri faturalandirilmamis.",
+      sut_section_id: "3.3.1",
+    };
+
+    const title = recommendedActionTitle(t, action);
+    expect(title).toContain("KR1152");
+    expect(title).toContain("STENT, KORONER");
+    expect(title).not.toContain("P700930");
   });
 });
