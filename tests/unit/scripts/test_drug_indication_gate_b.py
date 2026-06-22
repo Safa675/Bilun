@@ -15,9 +15,9 @@ _CORPUS = _REPO / "data/gazette/prose_corpus/L4.2_drug_indication_4.2.14.C.csv"
 
 def test_gate_b_export_has_4_2_14_c_rows() -> None:
     frame = export_4_2_14_c_candidates(_CLAUSES)
-    assert frame.height == 828
+    assert frame.height == 832
     summary = gate_b_summary(frame)
-    assert summary["total"] == 828
+    assert summary["total"] == 832
     assert summary.get("encode_tier:A", 0) >= 50
     assert summary.get("encode_tier:C", 0) >= 700
 

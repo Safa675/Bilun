@@ -4,6 +4,30 @@ Bu dosya, BILUN'un aktif SUT kaynağının hangi tebliği temel aldığını ve 
 
 ---
 
+## 2026-06-22 — Aktif SUT 2026.04.08 → 2026.05.23 (konsolide replace)
+
+### Yapılan
+- **Replace**: Aktif SUT kaynağı `2026.04.08` konsolide paketten `2026.05.23` konsolide pakete değiştirildi.
+- **Pipeline**: `convert_xlsx_to_parquet.py` (312 sheets, 0 failures) → `build_curated_catalogs.py` (74 catalogs) → `extract_sut_prose.py` (8,295 clauses) → `ek4d_copay_exempt.py` (3,196 entries) → `generate_readmes.py` (14 READMEs) → `generate_sut_synthetic_data_v2.py` (50 patients, 502 procedure lines, 254 drug lines) → `build_cache.py --activate` (build 96e91a3c).
+- **Manifest**: max `effective_date` = `2026-05-23`.
+
+### Değişen EK'ler (04.08 → 23.05 diff)
+- **EK-1, EK-2, EK-3**: byte-for-byte identical — zero changes.
+- **EK-4A** (bedeli ödenecek ilaçlar): −44.6 KB, eski liste MÜLGA'ya arşivlendi, yeni küçük liste aktif.
+- **EK-4D** (katılım payından muaf ilaçlar): +9.2 KB, entries 3,196'ya yükseldi.
+- **EK-4E** (sistemik antimikrobik reçete kuralları): +777 B, küçük değişiklik.
+- **EK-4F** (ayakta tedavi sağlık raporu ilaçlar): −1.5 KB, bazı ilaçlar çıkarıldı.
+
+### Test güncellemeleri
+- Drug indication clause count: 828 → 832
+- Synthetic data counts: procedure 501→502, material 110→112, drug 245→254, expected 433→438
+- `test_billing_actions.py::test_f015`: claim 003-015'in prosedür kodları değişti, compliance violations 2→0, action_count 3→1.
+- `generators.py:1500`: EK-2C-1 reconcile sonrası ilave ücret flag'leri temizleniyor (consistency fix).
+- `test_synthetic_data_integrity.py`: bilinçli "copay uygulanmamış" violation demo satırı identity check'ten muaf.
+- **Sonuç**: 785 passed, 10 skipped.
+
+---
+
 ## 2026-06-19 — Aktif SUT 2026.01.17 → 2026.04.08 (konsolide replace)
 
 ### Yapılan

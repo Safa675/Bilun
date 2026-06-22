@@ -2,7 +2,7 @@
 
 HASTA KATILIM PAYINDAN MUAF İLAÇLAR LİSTESİ (EK-4/D)
 
-1. Tüberküloz  (A15-A19)   (P37.0)
+1. Tüberküloz (A15-A19) (Ek:RG-23/05/2026-33262/10-a md. Yürürlük: 04/06/2026) (A31) (P37.0)
 
 
 1.1.	Anti-tüberküloz ilaçlar 
@@ -20,6 +20,9 @@ HASTA KATILIM PAYINDAN MUAF İLAÇLAR LİSTESİ (EK-4/D)
 	1.2.9. 	Linezolid
 	1.2.10.	Azitromisin
 	1.2.11.	Roksitromisin
+	(Ek: RG-23/05/2026-33262/10-b md. Yürürlük: 04/06/2026) 
+	1.2.12. Kinolon grubu antibiyotikler (Sadece A31.0, A31.1, A31.8 ve A31.9 ICD kodlarında muafiyet kapsamındadır.) (Sağlık Bakanlığı Endikasyon Dışı Genelge ve Kılavuzuna uyulacaktır.)
+	1.2.13. Linezolid (Sadece A31.0, A31.1, A31.8 ve A31.9 ICD kodlarında muafiyet kapsamındadır.) (Sağlık Bakanlığı Endikasyon Dışı Genelge ve Kılavuzuna uyulacaktır.)
 1.3.	Kortikosteroidler
 1.4.	Viomisin
 
@@ -1795,6 +1798,8 @@ I27.2	Sekonder Pulmoner Hipertansiyon
 4.10.13.   Epoprostenol*
             (Ek: RG- 09/05/2024- 32541/ 20-b md. Yürürlük: 17/05/2024)
              4.10.14.   Trepostenil*
+            (Ek: RG-23/05/2026-33262/10-c md. Yürürlük: 04/06/2026)
+	4.10.15. Masitentan ve tadalafil kombinasyonu*
 
 4.11. 	Raynaud hastalığı   (I73.0)
 I73.0	Raynaud sendromu

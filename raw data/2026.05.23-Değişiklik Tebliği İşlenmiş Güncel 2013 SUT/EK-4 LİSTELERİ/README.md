@@ -1,7 +1,7 @@
 # EK-4 LİSTELERİ
 
-Konum: `raw data/2026.04.08-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ`
-Son güncelleme: 2026-06-19
+Konum: `raw data/2026.05.23-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-4 LİSTELERİ`
+Son güncelleme: 2026-06-22
 
 EK-4 — İlaç geri ödeme kataloğu ve reçeteleme kuralları (SUT Bölüm 4). EK-4A ana ilaç listesidir.
 
@@ -10,7 +10,7 @@ EK-4 — İlaç geri ödeme kataloğu ve reçeteleme kuralları (SUT Bölüm 4).
 ### EK-4A
 **Bedeli ödenecek ilaçlar listesi**
 - Dosya: `EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ.xlsx`
-- Yaklaşık satır sayısı: **8,506**
+- Yaklaşık satır sayısı: **8,080**
 - SUT bağlantısı: §4 — SGK ilaç geri ödeme kataloğu
 - BILUN kullanımı: ek4a_drugs.parquet (~8.400 ilaç) — drug optimizer, discount validation
 - Tipik sütunlar: `Kamu No, Barkod, İlaç Adı, fiyat kademeleri`
@@ -72,9 +72,9 @@ EK-4 — İlaç geri ödeme kataloğu ve reçeteleme kuralları (SUT Bölüm 4).
 
 Yürürlükten kalkmış EK listeleri (SGK konsolide tebliğ içindeki arşiv). BILUN fiyat geçmişi (`ek2b_catalog_history`, `ek2c_catalog_history`, …) için `scripts/sut/convert_xlsx_to_parquet.py --include-mulga` ile `data/gazette/raw/` altına dönüştürülür; varsayılan dönüşüm MÜLGA dosyalarını atlar.
 
-Toplam **14** dosya:
+Toplam **15** dosya:
 
-### Diğer (14 sürüm)
+### Diğer (15 sürüm)
 - `MÜLGA EK-4B HAS.ÖZ.DĞ.MT.HS.KS.FB. VEİNEK SÜT AL.DİY.ÜR.TIB.M.LİS.(Yür. 02.11.2024).xlsx` — yür. `02.11.2024`, ~74 satır
 - `MÜLGA EK-4C YURT DIŞI İLAÇ FİYAT LİSTESİ (Yür. 08.03.2025).xlsx` — yür. `08.03.2025`, ~402 satır
 - `MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 08.04.2026).xlsx` — yür. `08.04.2026`, ~8,430 satır
@@ -84,6 +84,7 @@ Toplam **14** dosya:
 - `MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür.17.01.2026).xlsx` — yür. `17.01.2026`, ~8,253 satır
 - `MÜLGA EK-4C YURT DIŞI İLAÇ FİYAT LİSTESİ (Yür. 17.01.2026).xlsx` — yür. `17.01.2026`, ~406 satır
 - `MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 17.10.2025).xlsx` — yür. `17.10.2025`, ~8,058 satır
+- `MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür.23.05.2026).xlsx` — yür. `23.05.2026`, ~8,506 satır
 - `MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 24.05.2025).xlsx` — yür. `24.05.2025`, ~8,508 satır
 - `MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 25.03.2025).xlsx` — yür. `25.03.2025`, ~8,475 satır
 - `MÜLGA EK-4A BEDELİ ÖDENECEK İLAÇLAR LİSTESİ (Yür. 25.11.2025).xlsx` — yür. `25.11.2025`, ~8,242 satır

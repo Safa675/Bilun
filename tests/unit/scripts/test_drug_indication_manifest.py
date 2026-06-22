@@ -113,4 +113,4 @@ def test_build_phase5_manifest_partition_is_disjoint(rebuilt_manifest: dict) -> 
     assert encoded.isdisjoint(deferred)
     assert pending_a.isdisjoint(deferred)
     assert pending_b.isdisjoint(deferred)
-    assert len(encoded | pending_a | pending_b | deferred) == 828
+    assert len(encoded | pending_a | pending_b | deferred) == 832

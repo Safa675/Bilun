@@ -1,7 +1,7 @@
 # EK-1 LİSTELERİ
 
-Konum: `raw data/2026.04.08-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ`
-Son güncelleme: 2026-06-19
+Konum: `raw data/2026.05.23-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-1 LİSTELERİ`
+Son güncelleme: 2026-06-22
 
 EK-1 — Hasta hakları, katılım payı muafiyetleri ve istisnai hizmetler (SUT Bölüm 1).
 

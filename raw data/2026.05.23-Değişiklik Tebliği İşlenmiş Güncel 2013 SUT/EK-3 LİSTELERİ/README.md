@@ -1,7 +1,7 @@
 # EK-3 LİSTELERİ
 
-Konum: `raw data/2026.04.08-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ`
-Son güncelleme: 2026-06-19
+Konum: `raw data/2026.05.23-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-3 LİSTELERİ`
+Son güncelleme: 2026-06-22
 
 EK-3 — Tıbbi malzeme, sarf, protez ve branş bazlı implant tavan fiyatları (SUT Bölüm 3). En çok dosya burada; B/C alt listeleri ödeme kurallarını, E–T alt listeleri branş kataloglarını taşır.
 

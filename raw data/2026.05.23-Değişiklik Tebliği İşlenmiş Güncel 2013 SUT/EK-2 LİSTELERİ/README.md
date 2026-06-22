@@ -1,7 +1,7 @@
 # EK-2 LİSTELERİ
 
-Konum: `raw data/2026.04.08-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ`
-Son güncelleme: 2026-06-19
+Konum: `raw data/2026.05.23-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/EK-2 LİSTELERİ`
+Son güncelleme: 2026-06-22
 
 EK-2 — İşlem fiyatlandırma, DRG paketleri, diş tedavileri ve formlar (SUT Bölüm 2). BILUN'un ana fiyat motoru EK-2B ve EK-2C'den beslenir.
 
