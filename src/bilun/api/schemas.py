@@ -314,6 +314,9 @@ class CopayOptimizationResponse(BillingExactnessResponse):
     rx_copay_savings_try: float = 0.0
     total_copay_savings_try: float = 0.0
     patient_copay_waived_total_try: float = 0.0
+    patient_copay_try: float = 0.0
+    ilave_ucret_total_try: float = 0.0
+    line_decomposition_status: str = "missing_inputs"
     rate_corrections: list[dict[str, Any]] = Field(default_factory=list)
 
 

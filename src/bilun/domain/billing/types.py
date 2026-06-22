@@ -196,6 +196,9 @@ class CopayOptimization:
     rx_copay_savings_try: float = 0.0  # prescription exemption gap (legacy name)
     total_copay_savings_try: float = 0.0  # procedure gap only (legacy field name)
     patient_copay_waived_total_try: float = 0.0  # total exemption gap (visit + rx)
+    patient_copay_try: float = 0.0  # total katılım payı before waiver
+    ilave_ucret_total_try: float = 0.0  # total ilave ücret (never waived)
+    line_decomposition_status: str = "missing_inputs"
     rx_copay_savings_by_ground: dict[str, float] = field(default_factory=dict)
     rate_corrections: list[dict[str, Any]] = field(default_factory=list)
     exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS

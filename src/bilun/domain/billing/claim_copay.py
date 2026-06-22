@@ -21,6 +21,11 @@ from .copay_line_waivers import (
     waiver_ek4d_drug,
     waiver_inpatient_drug,
 )
+from .line_decomposition import (
+    aggregate_decomposition_status,
+    decompose_drug_line,
+    decompose_procedure_line,
+)
 from .types import (
     COPAY_GAP_KIND_EXEMPTION_CORRECTION,
     COPAY_SAVINGS_BENEFICIARY_PATIENT_AND_SGK,
@@ -157,8 +162,17 @@ def optimize_copay_from_claims(
     visit_savings = Decimal("0")
     rx_savings = Decimal("0")
     rx_by_ground: dict[str, Decimal] = defaultdict(Decimal)
+    patient_copay_total = Decimal("0")
+    ilave_total = Decimal("0")
+    decomposition_statuses: list[str] = []
 
     for line in ctx.procedure_lines:
+        if line.billed_amount_try > line.expected_payable_try:
+            decomp = decompose_procedure_line(line)
+            patient_copay_total += decomp.patient_copay_try
+            ilave_total += decomp.ilave_ucret_try
+            decomposition_statuses.append(decomp.status)
+
         claim = claim_by_id.get(line.claim_id)
         if claim is None:
             continue
@@ -183,6 +197,12 @@ def optimize_copay_from_claims(
         )
 
     for line in ctx.drug_lines:
+        if line.billed_amount_try > line.expected_payable_try:
+            decomp = decompose_drug_line(line)
+            patient_copay_total += decomp.patient_copay_try
+            ilave_total += decomp.ilave_ucret_try
+            decomposition_statuses.append(decomp.status)
+
         claim = claim_by_id.get(line.claim_id)
         if claim is None:
             continue
@@ -230,6 +250,9 @@ def optimize_copay_from_claims(
     result.rx_copay_savings_try = rx_waived
     result.total_copay_savings_try = visit_waived
     result.patient_copay_waived_total_try = round(visit_waived + rx_waived, 2)
+    result.patient_copay_try = round(float(patient_copay_total), 2)
+    result.ilave_ucret_total_try = round(float(ilave_total), 2)
+    result.line_decomposition_status = aggregate_decomposition_status(decomposition_statuses)
     result.rx_copay_savings_by_ground = {
         ground: round(float(amount), 2) for ground, amount in rx_by_ground.items() if amount > 0
     }

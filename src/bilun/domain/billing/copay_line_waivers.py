@@ -6,6 +6,10 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any
 
+from src.bilun.domain.billing.line_decomposition import (
+    decompose_drug_line,
+    decompose_procedure_line,
+)
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine, ProcedureClaimLine
 from src.bilun.domain.drugs.ek4d_exempt import match_ek4d_copay_exempt_drug
 
@@ -44,6 +48,7 @@ class WaiverResult:
     billed_try: float | None = None
     payable_try: float | None = None
     insight_only: bool = False
+    ilave_ucret_try: Decimal = Decimal("0")
 
     def to_rate_correction(self) -> dict[str, Any]:
         row: dict[str, Any] = {
@@ -64,6 +69,8 @@ class WaiverResult:
             row["payable_try"] = self.payable_try
         if self.component_try > 0:
             row["copay_component_try"] = float(self.component_try)
+        if self.ilave_ucret_try > 0:
+            row["ilave_ucret_try"] = float(self.ilave_ucret_try)
         return row
 
 
@@ -71,6 +78,20 @@ def copay_component(billed: Decimal, payable: Decimal) -> Decimal:
     if billed <= payable:
         return Decimal("0")
     return billed - payable
+
+
+def _waivable_copay_parts(
+    line: ProcedureClaimLine | DrugClaimLine,
+) -> tuple[Decimal, Decimal]:
+    if isinstance(line, ProcedureClaimLine):
+        decomp = decompose_procedure_line(line)
+    else:
+        decomp = decompose_drug_line(line)
+
+    if decomp.status != "missing_inputs":
+        return decomp.patient_copay_try, decomp.ilave_ucret_try
+
+    return copay_component(line.billed_amount_try, line.expected_payable_try), Decimal("0")
 
 
 def waives_section(section: str, sources: list[dict[str, Any]]) -> bool:
@@ -144,12 +165,13 @@ def waiver_ek1a_muayene(
     if has_health_report is False:
         return None
 
-    component = copay_component(line.billed_amount_try, line.expected_payable_try)
-    if component <= 0:
+    component, ilave = _waivable_copay_parts(line)
+    if component <= 0 and ilave <= 0:
         return None
 
     return WaiverResult(
         component_try=component,
+        ilave_ucret_try=ilave,
         exemption_ground="ek1a_muayene",
         sut_section_id="1.8.5(7)",
         rule_id="copay_exemption_ek1a",
@@ -171,12 +193,13 @@ def waiver_inpatient_drug(
     if claim.claim_type not in _INPATIENT_CLAIM_TYPES:
         return None
 
-    component = copay_component(line.billed_amount_try, line.expected_payable_try)
-    if component <= 0:
+    component, ilave = _waivable_copay_parts(line)
+    if component <= 0 and ilave <= 0:
         return None
 
     return WaiverResult(
         component_try=component,
+        ilave_ucret_try=ilave,
         exemption_ground="inpatient_drug_1_8_5_8",
         sut_section_id="1.8.5(8)",
         rule_id="copay_inpatient_drug_1_8_5_8",
@@ -210,7 +233,7 @@ def waiver_ek4d_drug(
     if ek4d is None:
         return None
 
-    component = copay_component(line.billed_amount_try, line.expected_payable_try)
+    component, ilave = _waivable_copay_parts(line)
     drug_label = ek4d["evidence"].get("drug_name_tr") or line.drug_name
     section_title = ek4d["evidence"].get("section_title", "listed disease")
 
@@ -255,6 +278,7 @@ def waiver_ek4d_drug(
 
     return WaiverResult(
         component_try=component,
+        ilave_ucret_try=ilave,
         exemption_ground="ek4d_drug",
         sut_section_id="1.8.2.(3)",
         rule_id="copay_exemption_ek4d",
@@ -300,13 +324,14 @@ def waiver_composite_procedure(
     if source is None:
         return None
 
-    component = copay_component(line.billed_amount_try, line.expected_payable_try)
-    if component <= 0:
+    component, ilave = _waivable_copay_parts(line)
+    if component <= 0 and ilave <= 0:
         return None
 
     category = str(source.get("category") or "composite")
     return WaiverResult(
         component_try=component,
+        ilave_ucret_try=ilave,
         exemption_ground=f"composite_{category}",
         sut_section_id="1.8.5",
         rule_id=f"copay_exemption_{category}",
@@ -332,13 +357,14 @@ def waiver_composite_drug(
     if source is None:
         return None
 
-    component = copay_component(line.billed_amount_try, line.expected_payable_try)
-    if component <= 0:
+    component, ilave = _waivable_copay_parts(line)
+    if component <= 0 and ilave <= 0:
         return None
 
     category = str(source.get("category") or "composite")
     return WaiverResult(
         component_try=component,
+        ilave_ucret_try=ilave,
         exemption_ground=f"composite_{category}",
         sut_section_id="1.8.5",
         rule_id=f"copay_exemption_{category}",
