@@ -42,7 +42,7 @@ class TestBillingActionsBreakdown:
         )
 
         assert report.action_count == len(report.recommended_actions)
-        assert report.action_count == 4
+        assert report.action_count == 3
 
         surfaces = {row["surface"] for row in report.recommended_actions}
         assert surfaces == {"billing_strategy", "copay"}
@@ -52,11 +52,10 @@ class TestBillingActionsBreakdown:
             for row in report.recommended_actions
             if row["kind"] == "compliance_violation"
         ]
-        assert len(violations) == 3
+        assert len(violations) == 2
         assert {row["procedure_code"] for row in violations} == {
-            "608870",
-            "603791",
-            "609111",
+            "621360",
+            "620340",
         }
 
         copay_rows = [row for row in report.recommended_actions if row["surface"] == "copay"]

@@ -27,10 +27,10 @@ def test_load_committed_v2_claim_fixture_with_exact_indexes_and_totals():
 
     assert len(dataset.claims) == 96
     assert len(dataset.diagnoses) >= 96
-    assert len(dataset.procedure_lines) == 501
-    assert len(dataset.material_lines) == 110
-    assert len(dataset.drug_lines) == 218
-    assert len(dataset.expected_outputs) == 394
+    assert len(dataset.procedure_lines) == 514
+    assert len(dataset.material_lines) == 118
+    assert len(dataset.drug_lines) == 253
+    assert len(dataset.expected_outputs) == 443
     assert len(dataset.performed_procedure_lines) == 1
     assert len(dataset.medula_rejection_events) == 10
     assert dataset.medula_rejection_ingest_available is True
@@ -48,6 +48,15 @@ def test_load_committed_v2_claim_fixture_with_exact_indexes_and_totals():
     assert patient_totals.claim_count >= 1
     assert patient_totals.exactness_status == "exact"
     assert patient_totals.source == "claim_lines"
+
+    assert any(
+        line.copay_rate is not None or line.surcharge_rate is not None
+        for line in dataset.procedure_lines.values()
+    )
+    assert all(
+        line.copay_rate is None or line.copay_rate >= Decimal("0")
+        for line in dataset.drug_lines.values()
+    )
 
 
 def test_loaded_synthetic_materials_carry_prose_flags() -> None:
