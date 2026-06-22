@@ -9,6 +9,18 @@ Format per entry:
 
 ---
 
+## 2026-06-22 — When a test reads a committed artifact and a sibling test rebuilds the same artifact, check both before changing a shared constant
+
+**Pattern:** Fixing `test_phase5_manifest_traces_all_4214c_clauses` (reads committed manifest JSON, section_clause_total=828) by changing every `832` in the file to `828` — including line 116 in `test_build_phase5_manifest_partition_is_disjoint`, which rebuilds the manifest live from `sut_clauses.parquet` (which has 832 clauses). The committed manifest JSON is stale (828) relative to the current `sut_clauses.parquet` (832). The two tests exercise different sources, so they legitimately expect different counts. Blindly replacing all occurrences broke the rebuild-based test.
+
+**Rule:** When a test file has one test reading a committed JSON/parquet and another test rebuilding the same artifact from a source parquet, the committed artifact may be stale. Before changing a shared numeric assertion:
+1. Identify which tests read the committed artifact vs which rebuild from source — grep for the fixture/`build_*` call.
+2. Only update assertions in the tests that read the committed artifact.
+3. The rebuild test's count reflects the current source data and should be left alone (it was passing for a reason).
+4. Flag the committed-artifact staleness (828 committed vs 832 source) as a separate data-rebuild task, don't paper over it by lowering the rebuild assertion.
+
+---
+
 ## 2026-06-19 — Don't advise on a subsystem's data dependencies without reading the compute path
 
 **Pattern:** When asked "do I need to rebuild the cache after the SUT replace?", I correctly identified the stale-process issue but hedged the *correctness* answer with "the rebuild may not visibly change much because claim lines carry their own billed_amount." That hedge was unverified speculation — I hadn't yet traced whether the DRG compute path actually reads EK-2C. When I finally did trace it (`src/bilun/domain/analytics/drg.py:196 get_ek2c_price_for_date`), it confirmed DRG pricing DOES depend directly on the rebuilt EK-2C catalog. So the cache rebuild IS a correctness requirement, not optional — my hedge downplayed a real staleness bug (later confirmed as audit finding B-C2/B-C7: no staleness detection mechanism exists). The backend audit (3 parallel subagents) later surfaced that the entire read-write-connection + no-staleness-check architecture means stale data is served silently with no self-healing.
