@@ -1,5 +1,93 @@
 > **Note:** All completed tasks through 2026-06-16 are archived in `tasks/archive/todo-archive-2026-06-16.md`. This file contains only active work.
 
+## Task: Billing copay/ilave split — Phase B0 (data foundation)
+
+### Goal
+Add claim-line `copay_rate` / `surcharge_rate` wiring and make synthetic line economics consistent with `billed ≈ expected_payable + patient_copay + ilave_ucret`.
+
+### Subtasks
+- [x] Add `copay_rate` + `surcharge_rate` fields to `ProcedureClaimLine` and `DrugClaimLine` (optional).
+- [x] Parse/load rate fields from claim parquet rows in `row_parsers.py`.
+- [x] Update synthetic generator/exporter so procedure+drug rows carry rate columns and follow the accounting identity.
+- [x] Add/extend tests in `test_loader.py` and a synthetic integrity test for the identity check.
+- [x] Run targeted pytest for claims loader + synthetic tests.
+
+### Out of Scope
+- B1 decomposition helper, B2 waiver logic, B3 UI/chat wiring.
+
+---
+
+## Task: Billing copay/ilave split — Phase B1 (line decomposition)
+
+### Goal
+Add `decompose_line()` with `exact` / `copay_only` / `missing_inputs` status for claim-line copay vs ilave split.
+
+### Subtasks
+- [x] Add `billing/line_decomposition.py` with `LineDecomposition` + `decompose_line()`.
+- [x] Add `test_line_decomposition.py` — exact, copay_only, surcharge+zero-copay, missing_inputs.
+- [x] Run targeted pytest.
+
+### Out of Scope
+- B2 waiver wiring (`copay_line_waivers.py`), B3 UI.
+
+---
+
+## Task: Billing copay/ilave split — Phase B2 (waiver + totals)
+
+### Goal
+Use `decompose_line()` in copay waivers so only katılım payı is waived; expose ilave totals on `CopayOptimization`.
+
+### Subtasks
+- [x] `copay_line_waivers.py` — `_waivable_copay_parts`, `ilave_ucret_try` on `WaiverResult`.
+- [x] `claim_copay.py` — `patient_copay_try`, `ilave_ucret_total_try`, `line_decomposition_status`.
+- [x] `types.py` + `schemas.py` — new CopayOptimization fields.
+- [x] `test_copay_line_decomposition.py` — waiver split + aggregate totals.
+- [x] Serialization spot-check (`billing.py` asdict already carries fields).
+- [x] B3 UI + chatbot footnotes.
+
+### Out of Scope
+- Synthetic parquet regen (I0).
+
+---
+
+## Task: Billing copay/ilave split — Phase B3 (UI + chatbot)
+
+### Goal
+Split katılım payı vs ilave ücret in copay detail UI, billing summary, i18n, and chatbot context.
+
+### Subtasks
+- [x] `domains/sut.ts` — CopayOptimization fields
+- [x] `billingReportFields.ts` — ilave helpers
+- [x] Billing summary KPIs (copay vs ilave)
+- [x] `CopayOptimizationSection` line table + column rename
+- [x] Recommended actions — copay only; no ilave action row (policy unchanged)
+- [x] i18n footnotes (two concepts + partial notice)
+- [x] `context.py` + `prompts.py`
+- [x] `SutBillingReportSections.test.tsx`
+- [ ] vitest/tsc local verify (Node script name TBD)
+
+### Out of Scope
+- EK-2G surcharge engine (B4).
+
+---
+
+## Task: Billing copay/ilave split — I0 (synthetic regen + cache)
+
+### Goal
+Regenerate synthetic claim parquets with `copay_rate`/`surcharge_rate` columns and rebuild analytics cache.
+
+### Subtasks
+- [x] `python scripts/synthetic/generate_sut_synthetic_data_v2.py` (validate + Tier A assert passed)
+- [x] Kill stale uvicorn on :8001 (DuckDB lock)
+- [x] `python scripts/bilun/build_cache.py --activate` (build `8d4c7e07-6112-4631-920b-8c8fdc3486c4`)
+- [x] Spot-check F-SENTETIK-HASTA-0042-072 — materials + copay totals
+- [x] Update `test_loader.py` + `test_billing_actions.py` post-regen counts
+
+### Out of Scope
+- Restarting dev API (user runs `./start.sh`)
+
+---
+
 ## Task: B-H7 — session primary-line seçimi (duplicate normalized code) — ARAŞTIRMA
 
 ### Goal
