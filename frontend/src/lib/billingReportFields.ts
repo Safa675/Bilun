@@ -57,6 +57,30 @@ export function copayCorrectionSavingsTry(
   return null;
 }
 
+export function copayCorrectionIlaveTry(
+  correction: CopayRateCorrectionRow,
+): number | null {
+  if (typeof correction.ilave_ucret_try === "number") {
+    return correction.ilave_ucret_try;
+  }
+  return null;
+}
+
+export function copayExemptionGapTotal(copay: CopayOptimization): number {
+  return (
+    copay.patient_copay_waived_total_try ??
+    copay.visit_copay_savings_try + copay.rx_copay_savings_try
+  );
+}
+
+export function copayShowsIlaveColumn(copay: CopayOptimization): boolean {
+  if (copay.line_decomposition_status !== "exact") {
+    return false;
+  }
+  return (copay.ilave_ucret_total_try ?? 0) > 0 ||
+    copay.rate_corrections.some((row) => (copayCorrectionIlaveTry(row) ?? 0) > 0);
+}
+
 export function copayCorrectionGroundKey(
   correction: CopayRateCorrectionRow,
 ): string | null {

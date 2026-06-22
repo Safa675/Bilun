@@ -18,6 +18,9 @@ import {
   copayCorrectionPayableTry,
   copayCorrectionProcedureLabel,
   copayCorrectionSavingsTry,
+  copayCorrectionIlaveTry,
+  copayExemptionGapTotal,
+  copayShowsIlaveColumn,
   formatSutSectionLabel,
   isClaimLevelStrategyRow,
   isComplianceViolationRow,
@@ -237,10 +240,12 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
   const reportExact = isExactOutput(billingReport);
   const reportHasTotals = hasRecoverableBillingTotals(billingReport);
   const copayExact = isExactOutput(billingReport.copay);
-  const exemptionGapTotal =
-    billingReport.copay.patient_copay_waived_total_try ??
-    billingReport.copay.visit_copay_savings_try + billingReport.copay.rx_copay_savings_try;
+  const exemptionGapTotal = copayExemptionGapTotal(billingReport.copay);
   const showExemptionGap = copayExact && billingReport.copay.is_exempt && exemptionGapTotal > 0;
+  const showIlaveInfo = copayExact && copayShowsIlaveColumn(billingReport.copay);
+  const ilaveTotal = billingReport.copay.ilave_ucret_total_try ?? 0;
+  const copayOnlyDecomposition =
+    billingReport.copay.line_decomposition_status === "copay_only";
   const sgkUplift =
     billingReport.sgk_uplift_try ?? billingReport.total_recoverable_try ?? 0;
   const complianceAdjustment = billingReport.compliance_adjustment_try ?? 0;
@@ -265,6 +270,7 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
     showGazetteRepricing,
     showMedulaPlaybook,
     showDrugIndication,
+    showIlaveInfo,
   ].filter(Boolean).length;
   const priorityColor = reportHasTotals ? PRIORITY_COLORS[billingReport.priority] : "#71717A";
   const statusLabel = reportExact
@@ -353,6 +359,12 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
           }
           display={showExemptionGap ? "default" : "default"}
         />
+        {showIlaveInfo && (
+          <Stat
+            label={t("billing.summary.ilaveUcretInfo")}
+            value={fmtTRY2(ilaveTotal)}
+          />
+        )}
         <Stat
           label={t("billing.summary.recommendedActions")}
           value={reportHasTotals ? fmtNum(billingReport.action_count) : t("billing.summary.reviewSections")}
@@ -369,6 +381,16 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
       {showExemptionGap && reportHasTotals && (
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
           {t("billing.summary.dualTotalsFootnote")}
+        </p>
+      )}
+      {showIlaveInfo && reportHasTotals && (
+        <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.copay.ilaveUcretFootnote")}
+        </p>
+      )}
+      {copayOnlyDecomposition && copayExact && reportHasTotals && (
+        <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.copay.partialDecompositionNotice")}
         </p>
       )}
       {!reportExact && reportHasTotals && (
@@ -465,10 +487,11 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
     );
   }
 
-  const exemptionGapTotal =
-    copayData.patient_copay_waived_total_try ??
-    copayData.visit_copay_savings_try + copayData.rx_copay_savings_try;
+  const exemptionGapTotal = copayExemptionGapTotal(copayData);
   const savingsColor = exemptionGapTotal > 0 ? ACCENT : "#71717A";
+  const showIlaveColumn = copayShowsIlaveColumn(copayData);
+  const ilaveTotal = copayData.ilave_ucret_total_try ?? 0;
+  const copayOnlyDecomposition = copayData.line_decomposition_status === "copay_only";
   const insightOnlyRows = copayData.rate_corrections.filter((correction) =>
     usesInsightOnlyCopayCorrectionShape(correction),
   );
@@ -538,14 +561,31 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
 
         {copayExact && (
           <>
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className={`grid gap-3 ${showIlaveColumn ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
               <KpiCard label={t("billing.copay.visitSavings")} value={fmtTRY2(copayData.visit_copay_savings_try)} valueColor={savingsColor} />
               <KpiCard label={t("billing.copay.rxSavings")} value={fmtTRY2(copayData.rx_copay_savings_try)} valueColor={savingsColor} />
               <KpiCard label={t("billing.copay.totalSavings")} value={fmtTRY2(exemptionGapTotal)} valueColor={savingsColor} />
+              {showIlaveColumn && (
+                <KpiCard
+                  label={t("billing.copay.ilaveUcretTotal")}
+                  value={fmtTRY2(ilaveTotal)}
+                  valueColor="#71717A"
+                />
+              )}
             </div>
             <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
               {t("billing.copay.exemptionGapFootnote")}
             </p>
+            {showIlaveColumn && (
+              <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+                {t("billing.copay.ilaveUcretFootnote")}
+              </p>
+            )}
+            {copayOnlyDecomposition && (
+              <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+                {t("billing.copay.partialDecompositionNotice")}
+              </p>
+            )}
             {hasEk1aVisitSavings && (
               <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
                 {t("billing.copay.ek1aScopeNotice")}
@@ -586,6 +626,9 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.billed")}</th>
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.payable")}</th>
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.copayComponent")}</th>
+                    {showIlaveColumn ? (
+                      <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.ilaveUcret")}</th>
+                    ) : null}
                   </>
                 ) : (
                   <>
@@ -615,6 +658,11 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
                       <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                         {fmtTRY2OrUnavailable(copayCorrectionSavingsTry(correction))}
                       </td>
+                      {showIlaveColumn ? (
+                        <td className="num-col tabular-nums text-right text-[var(--text-secondary)]">
+                          {fmtTRY2OrUnavailable(copayCorrectionIlaveTry(correction))}
+                        </td>
+                      ) : null}
                     </>
                   ) : (
                     <>

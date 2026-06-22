@@ -75,6 +75,8 @@ def build_system_prompt(
         "- EK-4A: drug reimbursement catalog (reference lookup; copay rules in §1.8 + EK-4/D)",
         "",
         "SUT TERMINOLOGY — Key Concepts",
+        "- katılım payı (§1.8): patient copayment portion of billed minus SGK payable — may be waived under EK-1A exemption",
+        "- ilave ücret (§2.4): facility surcharge portion of billed minus payable — informational only; exemption does not waive ilave",
         "- hemogram bundling: CBC subcomponents (Hb, Hct, WBC, PLT, etc.) all roll into one L107020 code",
         "- DRG unbundling: when itemized billing may be more profitable than the DRG package price",
         "- MIAT: minimum interval between uses — some EK-3 materials have mandatory waiting periods",

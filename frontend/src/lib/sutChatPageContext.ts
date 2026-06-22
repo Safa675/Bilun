@@ -17,6 +17,8 @@ export interface VisibleBillingSnapshot {
   audit_exposure_try?: number;
   capture_gap_try?: number;
   exemption_gap_try?: number;
+  ilave_ucret_total_try?: number;
+  line_decomposition_status?: BillingActionReport["copay"]["line_decomposition_status"];
   package_adequacy_review_try?: number;
   gazette_repricing_try?: number;
   medula_playbook_entry_count?: number;
@@ -35,6 +37,8 @@ export function buildVisibleBillingSnapshot(
     (report.copay?.visit_copay_savings_try ?? 0) + (report.copay?.rx_copay_savings_try ?? 0);
   const showExemptionGap =
     copayExact && report.copay?.is_exempt && exemptionGapTotal > 0;
+  const showIlaveInfo = copayExact && (report.copay?.ilave_ucret_total_try ?? 0) > 0 &&
+    report.copay?.line_decomposition_status === "exact";
 
   return {
     scope: isBillScope ? "bill" : "patient",
@@ -45,6 +49,8 @@ export function buildVisibleBillingSnapshot(
     audit_exposure_try: report.audit_exposure_try,
     capture_gap_try: report.capture_gap_try,
     exemption_gap_try: showExemptionGap ? exemptionGapTotal : undefined,
+    ilave_ucret_total_try: showIlaveInfo ? report.copay?.ilave_ucret_total_try : undefined,
+    line_decomposition_status: report.copay?.line_decomposition_status,
     package_adequacy_review_try: report.package_adequacy_review_try,
     gazette_repricing_try: report.gazette_repricing_try,
     medula_playbook_entry_count: report.medula_playbook_entry_count,

@@ -503,6 +503,11 @@ export interface CopayOptimization extends ExactnessState {
   total_copay_savings_try: number;
   /** Visit + Rx patient copay that exemption may waive. */
   patient_copay_waived_total_try?: number;
+  /** Total katılım payı on claim lines (before waiver). */
+  patient_copay_try?: number;
+  /** Total ilave ücret (§2.4) — informational, never waived. */
+  ilave_ucret_total_try?: number;
+  line_decomposition_status?: "exact" | "copay_only" | "missing_inputs";
   rx_copay_savings_by_ground?: Record<string, number>;
   rate_corrections: Array<{
     procedure?: string;
@@ -513,6 +518,7 @@ export interface CopayOptimization extends ExactnessState {
     billed_try?: number;
     payable_try?: number;
     copay_component_try?: number;
+    ilave_ucret_try?: number;
     exemption_ground?: string;
     sut_section?: string;
     annex?: string;

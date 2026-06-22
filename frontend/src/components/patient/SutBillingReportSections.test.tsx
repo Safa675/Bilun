@@ -116,7 +116,113 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("Total exemption gap");
     expect(html).toContain("110.00 TRY");
     expect(html).toContain("Compliance correction");
-    expect(html).toContain("Exemption gap");
+    expect(html).toContain("Copay (participation fee)");
+  });
+
+  it("shows ilave column and KPI when line decomposition is exact", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <CopayOptimizationSection
+        copayData={{
+          exactness_status: "exact",
+          is_exempt: true,
+          exemption_disease: "Diabetes",
+          exemption_range: "E10-E14",
+          visit_copay_savings_try: 80,
+          rx_copay_savings_try: 0,
+          total_copay_savings_try: 80,
+          patient_copay_waived_total_try: 80,
+          ilave_ucret_total_try: 25,
+          line_decomposition_status: "exact",
+          rate_corrections: [
+            {
+              code: "704100",
+              name: "Ear exam",
+              billed_try: 100,
+              payable_try: 70,
+              copay_component_try: 20,
+              ilave_ucret_try: 10,
+            },
+            {
+              code: "704200",
+              name: "Hearing test",
+              billed_try: 50,
+              payable_try: 35,
+              copay_component_try: 10,
+              ilave_ucret_try: 5,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(html).toContain("Ilave ücret");
+    expect(html).toContain("Ilave ücret total");
+    expect(html).toContain("25.00 TRY");
+    expect(html).toContain("10.00 TRY");
+    expect(html).toContain("exemption does not waive ilave");
+  });
+
+  it("hides ilave column when line decomposition is copay_only", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <CopayOptimizationSection
+        copayData={{
+          exactness_status: "exact",
+          is_exempt: true,
+          exemption_disease: "Diabetes",
+          exemption_range: "E10-E14",
+          visit_copay_savings_try: 20,
+          rx_copay_savings_try: 0,
+          total_copay_savings_try: 20,
+          patient_copay_waived_total_try: 20,
+          line_decomposition_status: "copay_only",
+          rate_corrections: [
+            {
+              code: "704100",
+              name: "Ear exam",
+              billed_try: 50,
+              payable_try: 30,
+              copay_component_try: 20,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(html).not.toContain("Ilave ücret total");
+    expect(html).toContain("surcharge rates are missing");
+    expect(html).toContain("Copay (participation fee)");
+  });
+
+  it("shows ilave info stat in billing summary when decomposition is exact", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <BillingSummary
+        billingReport={{
+          patient_id: "SENTETIK-HASTA-0042",
+          claim_id: "F-SENTETIK-HASTA-0042-072",
+          scope: "bill",
+          exactness_status: "exact",
+          priority: "low",
+          total_recoverable_try: 0,
+          action_count: 0,
+          sgk_uplift_try: 0,
+          recommended_actions: [],
+          copay: {
+            exactness_status: "exact",
+            is_exempt: true,
+            visit_copay_savings_try: 50,
+            rx_copay_savings_try: 0,
+            patient_copay_waived_total_try: 50,
+            ilave_ucret_total_try: 15,
+            line_decomposition_status: "exact",
+            rate_corrections: [],
+          },
+        } as BillingActionReport}
+      />,
+    );
+
+    expect(html).toContain("Ilave ücret (informational)");
+    expect(html).toContain("15.00 TRY");
+    expect(html).toContain("exemption does not waive ilave");
   });
 
   it("shows strategy chapter review flags without TRY", () => {
@@ -486,5 +592,45 @@ describe("DrugIndicationReviewSection", () => {
     // Both recommended actions render as separate rows in the itemized table.
     expect(html).toContain("§2.2.1.B-1.a");
     expect(html).toContain("§1.8.5(7)");
+  });
+
+  it("renders material recommended actions with SUT, billed amount, and detail", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <BillingSummary
+        billingReport={{
+          patient_id: "SENTETIK-HASTA-0042",
+          claim_id: "F-SENTETIK-HASTA-0042-072",
+          scope: "bill",
+          exactness_status: "exact",
+          priority: "low",
+          total_recoverable_try: 0,
+          action_count: 1,
+          sgk_uplift_try: 0,
+          recommended_actions: [
+            {
+              action_id: "materials:material_pre_auth:F-1:0",
+              surface: "materials",
+              kind: "material_pre_auth",
+              material_code: "OP1198",
+              material_name: "Ortez",
+              billed_try: 1250,
+              detail: "EK-3C-1 — pre-auth required",
+              sut_section_id: "3.1.2",
+            },
+          ],
+          copay: {
+            is_exempt: false,
+            visit_copay_savings_try: 0,
+            rx_copay_savings_try: 0,
+          },
+        } as BillingActionReport}
+      />,
+    );
+
+    expect(html).toContain("OP1198");
+    expect(html).toContain("Ortez");
+    expect(html).toContain("§3.1.2");
+    expect(html).toContain("1250.00 TRY");
+    expect(html).toContain("EK-3C-1 — pre-auth required");
   });
 });

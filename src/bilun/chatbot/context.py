@@ -389,18 +389,29 @@ def _copay_correction_savings_try(correction: dict[str, Any]) -> float | None:
     return None
 
 
+def _copay_correction_ilave_try(correction: dict[str, Any]) -> float | None:
+    value = correction.get("ilave_ucret_try")
+    if isinstance(value, (int, float)):
+        return float(value)
+    return None
+
+
 def _format_copay_correction_line(correction: dict[str, Any]) -> str:
     label = _copay_correction_label(correction)
     billed = correction.get("billed_try", correction.get("gazette_rate"))
     payable = correction.get("payable_try")
     savings = _copay_correction_savings_try(correction)
+    ilave = _copay_correction_ilave_try(correction)
     rate = correction.get("correct_rate_pct")
 
     if billed is not None and payable is not None and savings is not None:
-        return (
+        parts = [
             f"{label}: billed {float(billed):.2f} TRY, "
-            f"payable {float(payable):.2f} TRY, copay {savings:.2f} TRY"
-        )
+            f"payable {float(payable):.2f} TRY, katılım payı {savings:.2f} TRY"
+        ]
+        if ilave is not None and ilave > 0:
+            parts.append(f"ilave ücret {ilave:.2f} TRY")
+        return ", ".join(parts)
     if rate is not None and savings is not None:
         return f"{label}: {rate}% correction ({savings:.2f} TRY)"
     if savings is not None:
@@ -529,6 +540,20 @@ def _append_billing_sections(
             rx = copay.get("rx_copay_savings_try")
             if rx is not None and rx > 0:
                 lines.append(f"    Prescription exemption gap: {rx:.2f} TRY")
+        decomposition_status = copay.get("line_decomposition_status")
+        if decomposition_status:
+            lines.append(f"    Line decomposition: {decomposition_status}")
+        patient_copay = copay.get("patient_copay_try")
+        if is_full and isinstance(patient_copay, (int, float)) and float(patient_copay) > 0:
+            lines.append(f"    Total katılım payı on lines: {float(patient_copay):.2f} TRY")
+        ilave_total = copay.get("ilave_ucret_total_try")
+        if isinstance(ilave_total, (int, float)) and float(ilave_total) > 0:
+            lines.append(f"    Total ilave ücret (§2.4, informational): {float(ilave_total):.2f} TRY")
+            if is_full:
+                lines.append(
+                    "    Katılım payı (§1.8) and ilave ücret (§2.4) are separate — "
+                    "exemption waives katılım payı only, not ilave ücret."
+                )
         total_gap = copay.get("patient_copay_waived_total_try")
         if total_gap is None:
             visit_val = float(copay.get("visit_copay_savings_try") or 0)
