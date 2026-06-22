@@ -6,6 +6,7 @@ import pytest
 
 from src.bilun.domain.billing.billing_actions import collect_billing_actions, count_billing_actions
 from src.bilun.domain.billing.patient_report import compute_patient_billing_report
+from src.bilun.domain.billing.types import BillingActionReport, MaterialPreCheck
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.claims.patient_context import (
     build_bill_claim_context,
@@ -103,3 +104,54 @@ class TestBillingActionsBreakdown:
             chapters={"I"},
         )
         assert count_billing_actions(report) == len(collect_billing_actions(report))
+
+
+class TestMaterialRecommendedActions:
+    def test_material_pre_auth_maps_note_price_and_sut_section(self) -> None:
+        report = BillingActionReport(
+            patient_id="PT-MAT",
+            materials=MaterialPreCheck(
+                pre_auth_required=[
+                    {
+                        "claim_id": "F-1",
+                        "sut_code": "OP1198",
+                        "material_name": "Ortez",
+                        "price_try": 1250.0,
+                        "note": "EK-3C-1 — pre-auth required",
+                        "sut_section_id": "3.1.2",
+                    }
+                ]
+            ),
+        )
+
+        actions = collect_billing_actions(report)
+        assert len(actions) == 1
+        row = actions[0]
+        assert row["surface"] == "materials"
+        assert row["kind"] == "material_pre_auth"
+        assert row["material_code"] == "OP1198"
+        assert row["material_name"] == "Ortez"
+        assert row["billed_try"] == pytest.approx(1250.0)
+        assert row["detail"] == "EK-3C-1 — pre-auth required"
+        assert row["sut_section_id"] == "3.1.2"
+        assert row["sgk_uplift_try"] is None
+
+    def test_material_kind_fallback_sut_section_when_row_missing(self) -> None:
+        report = BillingActionReport(
+            patient_id="PT-MAT",
+            materials=MaterialPreCheck(
+                bundled_separate_billing=[
+                    {
+                        "sut_code": "EK3B99",
+                        "material_name": "Screw",
+                        "price_try": 99.0,
+                        "note": "Bundled billed separately",
+                    }
+                ]
+            ),
+        )
+
+        row = collect_billing_actions(report)[0]
+        assert row["kind"] == "material_bundling"
+        assert row["sut_section_id"] == "EK-3B-1"
+        assert row["billed_try"] == pytest.approx(99.0)

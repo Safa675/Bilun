@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   getRecommendedActions,
+  recommendedActionAmountParts,
   recommendedActionTitle,
 } from "@/lib/recommendedActions";
-import type { BillingActionReport } from "@/lib/domains/sut";
+import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
 
 const t = (key: string, params?: Record<string, string | number>) => {
   if (params) {
@@ -59,5 +60,25 @@ describe("recommendedActions", () => {
     expect(
       recommendedActionTitle(t, actions[1]!),
     ).toContain("608870");
+  });
+
+  it("renders material rows with billed amount and material name title", () => {
+    const action: RecommendedActionItem = {
+      action_id: "materials:material_pre_auth:F-1:0",
+      surface: "materials",
+      kind: "material_pre_auth",
+      material_code: "OP1198",
+      material_name: "Ortez",
+      billed_try: 1250,
+      detail: "Pre-auth required",
+      sut_section_id: "3.1.2",
+    };
+
+    expect(recommendedActionTitle(t, action)).toContain("OP1198");
+    expect(recommendedActionTitle(t, action)).toContain("Ortez");
+
+    const amount = recommendedActionAmountParts(t, action);
+    expect(amount?.label).toBe("billing.recommendedActions.amountBilledAtRisk");
+    expect(amount?.value).toBe(1250);
   });
 });

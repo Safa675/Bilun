@@ -120,6 +120,35 @@ def test_preauth_note_uses_tibbi_uygunluk(monkeypatch: pytest.MonkeyPatch) -> No
     assert "sağlık kurulu" not in result.pre_auth_required[0]["note"].lower()
 
 
+def test_precheck_rows_include_sut_section_claim_and_price(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.bilun.domain.billing import claim_materials as cm
+
+    monkeypatch.setattr(
+        cm,
+        "_get_ek3c1_preauth",
+        lambda: [
+            {
+                "sut_code": "OP1198",
+                "material_name": "Board item",
+                "price_try": 1.0,
+            }
+        ],
+    )
+    monkeypatch.setattr(cm, "_get_ek3c2_miat", lambda: [])
+    monkeypatch.setattr(cm, "check_material_bundling_for_context", lambda _ctx: [])
+
+    line = _material_line(code="OP1198", claim_id="F-TEST-001", billed="250.50")
+    result = cm.precheck_materials_from_claims(_ctx(line))
+
+    row = result.pre_auth_required[0]
+    assert row["sut_section_id"] == "3.1.2"
+    assert row["claim_id"] == "F-TEST-001"
+    assert row["price_try"] == pytest.approx(250.50)
+    assert row["material_name"] == "Test material"
+
+
 def test_miat_interval_violation_separate_from_catalog_advisory(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

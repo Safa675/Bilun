@@ -137,6 +137,15 @@ export function recommendedActionKindLabel(t: TranslateFn, kind: string): string
   return key ? t(key) : kind.replaceAll("_", " ");
 }
 
+const MATERIAL_BILLED_KINDS = new Set([
+  "material_pre_auth",
+  "material_miat",
+  "material_miat_interval",
+  "material_bundling",
+  "material_prose_bundling",
+  "material_specialty_prose",
+]);
+
 export function recommendedActionTitle(
   t: TranslateFn,
   action: RecommendedActionItem,
@@ -147,6 +156,14 @@ export function recommendedActionTitle(
     action.material_code ??
     action.drug_code ??
     null;
+
+  if (action.surface === "materials" && code && action.material_name) {
+    return t("billing.recommendedActions.titleMaterialWithName", {
+      kind: kindLabel,
+      code,
+      name: action.material_name,
+    });
+  }
 
   if (code && action.procedure_name) {
     return t("billing.recommendedActions.titleWithName", {
@@ -170,6 +187,17 @@ export function recommendedActionAmountParts(
   t: TranslateFn,
   action: RecommendedActionItem,
 ): { label: string; value: number | null } | null {
+  if (
+    action.surface === "materials" &&
+    action.billed_try != null &&
+    action.billed_try > 0 &&
+    MATERIAL_BILLED_KINDS.has(action.kind)
+  ) {
+    return {
+      label: t("billing.recommendedActions.amountBilledAtRisk"),
+      value: action.billed_try,
+    };
+  }
   if (action.sgk_uplift_try != null && action.sgk_uplift_try > 0) {
     return {
       label: t("billing.recommendedActions.amountSgkUplift"),

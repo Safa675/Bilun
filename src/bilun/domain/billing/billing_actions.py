@@ -7,6 +7,37 @@ from typing import Any
 from ..money import money_round_half_up_opt as _money
 from .types import BillingActionReport
 
+_MATERIAL_KIND_SUT_SECTION: dict[str, str] = {
+    "material_pre_auth": "3.1.2",
+    "material_miat": "3.1.4",
+    "material_miat_interval": "3.1.4",
+    "material_bundling": "EK-3B-1",
+    "material_prose_bundling": "3.1.5",
+    "material_specialty_prose": "3.3",
+}
+
+
+def _material_row_billed_try(row: dict[str, object]) -> float | None:
+    for key in ("price_try", "billed_try", "risk_amount"):
+        value = row.get(key)
+        if value is None:
+            continue
+        try:
+            amount = float(value)
+        except (TypeError, ValueError):
+            continue
+        if amount > 0:
+            return amount
+    return None
+
+
+def _material_row_detail(row: dict[str, object]) -> str | None:
+    for key in ("note", "detail", "message", "rule_id"):
+        value = row.get(key)
+        if value:
+            return str(value)
+    return None
+
 
 def _action_row(
     *,
@@ -21,6 +52,8 @@ def _action_row(
     sgk_uplift_try: float | None = None,
     audit_risk_try: float | None = None,
     compliance_savings_try: float | None = None,
+    billed_try: float | None = None,
+    material_name: str | None = None,
     detail: str | None = None,
     sut_section_id: str | None = None,
 ) -> dict[str, Any]:
@@ -36,6 +69,8 @@ def _action_row(
         "sgk_uplift_try": _money(sgk_uplift_try),
         "audit_risk_try": _money(audit_risk_try),
         "compliance_savings_try": _money(compliance_savings_try),
+        "billed_try": _money(billed_try),
+        "material_name": material_name,
         "detail": detail,
         "sut_section_id": sut_section_id,
     }
@@ -186,16 +221,23 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
     materials = report.materials
     for attr, kind in material_lists:
         for index, row in enumerate(getattr(materials, attr, []) or []):
+            row_dict = row if isinstance(row, dict) else {}
             actions.append(
                 _action_row(
-                    action_id=f"materials:{kind}:{row.get('claim_id')}:{index}",
+                    action_id=f"materials:{kind}:{row_dict.get('claim_id')}:{index}",
                     surface="materials",
                     kind=kind,
-                    claim_id=row.get("claim_id"),
-                    procedure_code=row.get("procedure_code") or row.get("sut_code"),
-                    material_code=row.get("material_code") or row.get("sut_code"),
-                    detail=row.get("detail") or row.get("rule_id"),
-                    sut_section_id=row.get("sut_section_id"),
+                    claim_id=row_dict.get("claim_id"),
+                    procedure_code=row_dict.get("procedure_code"),
+                    material_code=row_dict.get("material_code") or row_dict.get("sut_code"),
+                    material_name=row_dict.get("material_name"),
+                    billed_try=_material_row_billed_try(row_dict),
+                    detail=_material_row_detail(row_dict),
+                    sut_section_id=(
+                        row_dict.get("sut_section_id")
+                        or row_dict.get("sut_section")
+                        or _MATERIAL_KIND_SUT_SECTION.get(kind)
+                    ),
                 )
             )
 

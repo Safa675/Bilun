@@ -917,6 +917,8 @@ export interface RecommendedActionItem {
   sgk_uplift_try?: number | null;
   audit_risk_try?: number | null;
   compliance_savings_try?: number | null;
+  billed_try?: number | null;
+  material_name?: string | null;
   detail?: string | null;
   sut_section_id?: string | null;
 }

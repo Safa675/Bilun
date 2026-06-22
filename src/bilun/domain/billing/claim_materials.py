@@ -21,6 +21,72 @@ _PREAUTH_NOTE = (
     "EK-3C-1 — tıbbi uygunluk (medical appropriateness) required before SGK submission (§3.1.2)"
 )
 
+_MATERIAL_LIST_SUT_SECTION: dict[str, str] = {
+    "pre_auth_required": "3.1.2",
+    "miat_restricted": "3.1.4",
+    "miat_interval_violations": "3.1.4",
+    "bundled_separate_billing": "EK-3B-1",
+    "prose_bundling_violations": "3.1.5",
+    "specialty_prose_violations": "3.3",
+}
+
+
+def _normalize_sut_section_id(value: object, *, fallback: str) -> str:
+    text = str(value or "").strip().lstrip("§")
+    return text or fallback
+
+
+def _package_code_for_claim(ctx: PatientClaimContext, claim_id: str | None) -> str | None:
+    if not claim_id:
+        return None
+    for line in ctx.procedure_lines:
+        if line.claim_id != claim_id:
+            continue
+        package_code = str(line.package_code or "").strip()
+        if package_code:
+            return package_code
+    return None
+
+
+def _enrich_material_precheck_row(
+    ctx: PatientClaimContext,
+    row: dict[str, object],
+    *,
+    list_key: str,
+    claim_id: str | None = None,
+) -> dict[str, object]:
+    """Attach claim scope, SUT section, and optional package code for action rows."""
+    enriched = dict(row)
+    resolved_claim_id = str(claim_id or enriched.get("claim_id") or "").strip() or None
+    if resolved_claim_id is None and len(ctx.claims) == 1:
+        resolved_claim_id = ctx.claims[0].claim_id
+    if resolved_claim_id:
+        enriched["claim_id"] = resolved_claim_id
+
+    fallback_section = _MATERIAL_LIST_SUT_SECTION[list_key]
+    enriched["sut_section_id"] = _normalize_sut_section_id(
+        enriched.get("sut_section_id") or enriched.get("sut_section"),
+        fallback=fallback_section,
+    )
+
+    package_code = _package_code_for_claim(ctx, resolved_claim_id)
+    if package_code:
+        enriched["procedure_code"] = package_code
+
+    code = str(enriched.get("sut_code") or enriched.get("material_code") or "").strip()
+    if code and "sut_code" not in enriched:
+        enriched["sut_code"] = code
+
+    if enriched.get("price_try") is None and enriched.get("risk_amount") is not None:
+        enriched["price_try"] = float(enriched["risk_amount"])
+
+    if not enriched.get("note"):
+        note = enriched.get("message") or enriched.get("detail") or enriched.get("rule_id")
+        if note:
+            enriched["note"] = str(note)
+
+    return enriched
+
 
 def _append_kdv_price_reviews(
     result: MaterialPreCheck,
@@ -101,12 +167,17 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
         if code in preauth_codes or line.requires_pre_auth:
             catalog = preauth_codes.get(code, {})
             result.pre_auth_required.append(
-                {
-                    "sut_code": code,
-                    "material_name": line.material_name or catalog.get("material_name", ""),
-                    "price_try": float(line.billed_amount_try),
-                    "note": _PREAUTH_NOTE,
-                }
+                _enrich_material_precheck_row(
+                    ctx,
+                    {
+                        "sut_code": code,
+                        "material_name": line.material_name or catalog.get("material_name", ""),
+                        "price_try": float(line.billed_amount_try),
+                        "note": _PREAUTH_NOTE,
+                    },
+                    list_key="pre_auth_required",
+                    claim_id=line.claim_id,
+                )
             )
 
         if code in miat_catalog:
@@ -118,34 +189,57 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
                 miat_period=miat_period,
             )
             if interval_hit is not None:
-                result.miat_interval_violations.append(interval_hit)
+                result.miat_interval_violations.append(
+                    _enrich_material_precheck_row(
+                        ctx,
+                        interval_hit,
+                        list_key="miat_interval_violations",
+                        claim_id=line.claim_id,
+                    )
+                )
             else:
                 result.miat_restricted.append(
-                    {
-                        "sut_code": code,
-                        "material_name": line.material_name
-                        or catalog.get("material_name", ""),
-                        "miat_period": miat_period,
-                        "price_try": float(line.billed_amount_try),
-                        "note": (
-                            f"Catalog MIAT period: {miat_period or 'N/A'} — "
-                            "verify interval vs patient history"
-                        ),
-                    }
+                    _enrich_material_precheck_row(
+                        ctx,
+                        {
+                            "sut_code": code,
+                            "material_name": line.material_name
+                            or catalog.get("material_name", ""),
+                            "miat_period": miat_period,
+                            "price_try": float(line.billed_amount_try),
+                            "note": (
+                                f"Catalog MIAT period: {miat_period or 'N/A'} — "
+                                "verify interval vs patient history"
+                            ),
+                        },
+                        list_key="miat_restricted",
+                        claim_id=line.claim_id,
+                    )
                 )
 
         if line.is_bundled and float(line.billed_amount_try) > 0:
             result.bundled_separate_billing.append(
-                {
-                    "sut_code": code,
-                    "material_name": line.material_name,
-                    "price_try": float(line.billed_amount_try),
-                    "note": "Bundled material billed separately — review package inclusion (EK-3B-1)",
-                }
+                _enrich_material_precheck_row(
+                    ctx,
+                    {
+                        "sut_code": code,
+                        "material_name": line.material_name,
+                        "price_try": float(line.billed_amount_try),
+                        "note": "Bundled material billed separately — review package inclusion (EK-3B-1)",
+                    },
+                    list_key="bundled_separate_billing",
+                    claim_id=line.claim_id,
+                )
             )
 
-    result.prose_bundling_violations = check_material_bundling_for_context(ctx)
-    result.specialty_prose_violations = check_specialty_materials_for_context(ctx)
+    result.prose_bundling_violations = [
+        _enrich_material_precheck_row(ctx, row, list_key="prose_bundling_violations")
+        for row in check_material_bundling_for_context(ctx)
+    ]
+    result.specialty_prose_violations = [
+        _enrich_material_precheck_row(ctx, row, list_key="specialty_prose_violations")
+        for row in check_specialty_materials_for_context(ctx)
+    ]
     result.specialty_coverage_scope = specialty_materials_coverage_scope()
     _append_kdv_price_reviews(result, ctx)
 

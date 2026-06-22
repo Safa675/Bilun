@@ -181,7 +181,7 @@ export function RecommendedActionsPanel({
             )}
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.recommendedActions.section")}</th>
             <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>
-              {t("billing.recommendedActions.amount")}
+              {t("billing.recommendedActions.amountBilledOrUplift")}
             </th>
             <th style={WRAPPED_HEADER_STYLE}>{t("billing.recommendedActions.detail")}</th>
           </tr>
@@ -2079,6 +2079,9 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
   return (
     <BillingSectionShell title={t("billing.materials.title")}>
       <div className="space-y-4">
+        <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+          {t("billing.materials.advisoryFootnote")}
+        </p>
         <MaterialBundlingScopeNotice scope={materialsData.coverage_scope} compact />
         <SpecialtyProseScopeNotice scope={materialsData.specialty_coverage_scope} compact />
         {!materialsExact && (
