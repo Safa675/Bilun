@@ -64,6 +64,7 @@ export async function sendSutChatMessage(
   try {
     response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages,
