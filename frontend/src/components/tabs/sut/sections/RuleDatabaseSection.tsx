@@ -15,6 +15,7 @@ import {
   type RuleClause,
   type RuleCoverageStatus,
   type RuleDetailResponse,
+  type SectionRollupResponse,
 } from "@/lib/api/sut";
 import { isAbortError } from "@/lib/api/request";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
@@ -429,26 +430,53 @@ function SectionBrowserPanel() {
   const [minGapCount, setMinGapCount] = useState<string>("");
   const [page, setPage] = useState(1);
 
-  const params = useMemo(
-    () => ({
-      page,
-      per_page: SECTIONS_PER_PAGE,
-      q: query.trim() || undefined,
-      min_gap_count: minGapCount ? parseInt(minGapCount, 10) : undefined,
-    }),
-    [page, query, minGapCount],
-  );
+  // Stable filter inputs: empty string -> undefined so the API client omits the
+  // query param and the effect's dependency identity matches backend semantics.
+  const trimmedQuery = query.trim();
+  const parsedGapCount = minGapCount ? parseInt(minGapCount, 10) : undefined;
 
-  const {
-    data: result,
-    loading,
-    error,
-  } = useSutApi((opts) => getRuleSections(params, opts), {
-    enabled: true,
-    errorFallback: t("sections.ruleDatabase.errors.loadFailed"),
-  });
+  const [result, setResult] = useState<SectionRollupResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Refetch on any filter/page change (mirrors RuleDetailPanel's effect below).
+  // NOTE: `useSutApi` is a fetch-once-when-enabled hook and silently ignores
+  // param changes after the first load — wrong for a paginated/filtered panel.
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
 
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await getRuleSections(
+          {
+            page,
+            per_page: SECTIONS_PER_PAGE,
+            q: trimmedQuery || undefined,
+            min_gap_count: parsedGapCount,
+          },
+          { signal: controller.signal },
+        );
+        if (!active || controller.signal.aborted) return;
+        setResult(res);
+      } catch (err) {
+        if (!active || isAbortError(err)) return;
+        setResult(null);
+        setError(
+          err instanceof Error ? err.message : t("sections.ruleDatabase.errors.loadFailed"),
+        );
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [page, trimmedQuery, parsedGapCount, t]);
 
   if (loading) {
     return <SutReferenceSectionSkeleton title={t("sections.ruleDatabase.sections.title")} />;

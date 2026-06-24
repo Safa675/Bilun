@@ -190,6 +190,7 @@ export const SEVERITY_COLORS: Record<
 
 export const EMPTY_MATERIAL: SutMaterialItem = {
   name: "",
+  code: "",
   unit_price: 0,
   quantity: 1,
 };

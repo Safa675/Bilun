@@ -97,7 +97,12 @@ export function ClaimValidatorSection() {
   }, []);
 
   const handleValidate = useCallback(async () => {
-    const validMaterials = materials.filter((m) => m.name.trim() !== "");
+    // A material is submittable when it has a name (drives bundling/exclusion
+    // rules) OR a SUT code (drives exact EK-3 pricing). The backend needs at
+    // least one of the two to produce a meaningful line.
+    const validMaterials = materials.filter(
+      (m) => m.name.trim() !== "" || (m.code ?? "").trim() !== "",
+    );
     if (validMaterials.length === 0) {
       setError(t("sections.claimValidator.errors.addAtLeastOneMaterial"));
       return;
@@ -205,10 +210,14 @@ export function ClaimValidatorSection() {
 
         <div className="space-y-2">
           {materials.map((mat, idx) => (
-            <div key={idx} className="grid gap-2 items-end" style={{ gridTemplateColumns: "1fr 120px 80px 36px" }}>
+            <div key={idx} className="grid gap-2 items-end" style={{ gridTemplateColumns: "1fr 1fr 120px 80px 36px" }}>
               <div>
                 {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.name")}</label>}
                 <input type="text" value={mat.name} onChange={(e) => updateMaterial(idx, "name", e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.namePlaceholder")} />
+              </div>
+              <div>
+                {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.code")}</label>}
+                <input type="text" value={mat.code ?? ""} onChange={(e) => updateMaterial(idx, "code", e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.codePlaceholder")} />
               </div>
               <div>
                 {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.priceTry")}</label>}

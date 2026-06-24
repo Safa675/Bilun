@@ -159,6 +159,8 @@ const sections = {
     noMatchingProcedure: "No matching procedure found. Try the full 6-digit SUT code.",
     name: "Name",
     namePlaceholder: "e.g. Stent, Enjektör",
+    code: "SUT Code (EK-3)",
+    codePlaceholder: "e.g. 3.3.1.001",
     priceTry: "Price (TRY)",
     pricePlaceholder: "0.00",
     qty: "Qty",
