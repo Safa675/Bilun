@@ -95,7 +95,9 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 
     async function load() {
       try {
-        const res = await fetch(`${resolveApiBase()}/api/frontend-config`);
+        const res = await fetch(`${resolveApiBase()}/api/frontend-config`, {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error(`Config fetch failed: ${res.status}`);
         const data: FrontendConfig = await res.json();
         if (!cancelled) setState({ config: data, loading: false, error: null });
