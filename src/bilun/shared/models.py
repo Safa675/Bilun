@@ -25,9 +25,24 @@ class MaterialItem(BaseModel):
     prior_therapies: list[dict[str, str]] | None = None
 
 
+class DrugContext(BaseModel):
+    """Claim-level drug indication context (optional, only for drug claims).
+
+    When present, the validate-claim endpoint runs the drug_indication engine
+    (§4.2.14.C oncology + §4.2.33 anti-VEGF) against each material line.
+    Line-level fields (biomarkers, dose counts) stay on MaterialItem.
+    """
+
+    primary_icd10: str = ""
+    prescriber_specialty: str = ""
+    board_report_present: bool | None = None
+    report_duration_months: int | None = None
+
+
 class ClaimValidationRequest(BaseModel):
     """Request body for POST /api/validate-claim."""
 
     claim_id: str = ""
     procedure_code: str = ""
     materials: list[MaterialItem] = []
+    drug_context: DrugContext | None = None

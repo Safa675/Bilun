@@ -33,7 +33,6 @@ from src.bilun.domain.rules.bundling_rules import check_bundling_violations
 from src.bilun.domain.rules.exclusion_rules import check_exclusion_violations
 from src.bilun.domain.analytics import MaterialLinePricing, price_material_lines
 from src.bilun.domain.billing.types import EXACTNESS_STATUS_EXACT
-
 logger = logging.getLogger("ilay.sut_optimization.rule_engine")
 
 
@@ -83,6 +82,113 @@ class ClaimValidationResult:
     specialty_coverage_scope: dict[str, Any] = field(
         default_factory=specialty_materials_coverage_scope
     )
+
+
+def _run_drug_indication_checks(
+    materials: list[dict[str, Any]],
+    claim: dict[str, Any],
+) -> list[RuleViolation]:
+    """Bridge MaterialItem dicts → DrugClaimLine + ClaimHeader and run §4.2 checks.
+
+    Returns a list of RuleViolation(rule="drug_indication"). Skips entirely when
+    the claim carries no ``drug_context`` (backwards-compatible: plain material
+    claims never trigger drug_indication).
+    """
+    drug_ctx = claim.get("drug_context")
+    if not drug_ctx:
+        return []
+
+    from datetime import date
+    from decimal import Decimal
+
+    from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
+    from src.bilun.domain.prose_rules.drug_indication import (
+        evaluate_drug_indication_line,
+        list_drug_indication_rules,
+    )
+
+    rules = list_drug_indication_rules()
+    if not rules:
+        return []
+
+    icd10 = str(drug_ctx.get("primary_icd10", "")).strip().upper()
+    prescriber = str(drug_ctx.get("prescriber_specialty", "")).strip() or None
+    report_present = drug_ctx.get("board_report_present")
+    report_duration = drug_ctx.get("report_duration_months")
+
+    claim_header = ClaimHeader(
+        claim_id=str(claim.get("claim_id", "")),
+        patient_id="",
+        episode_id="",
+        claim_type="ayakta",
+        facility_tier="",
+        provider_type="",
+        department="",
+        admission_date=None,
+        discharge_date=None,
+        claim_start_date=date.today(),
+        claim_end_date=date.today(),
+        primary_icd10=icd10,
+        package_candidate=None,
+        expected_total_billed_try=Decimal("0"),
+        expected_total_payable_try=Decimal("0"),
+        expected_denial_reason="",
+        scenario_tag="validate_claim",
+    )
+
+    violations: list[RuleViolation] = []
+    for idx, mat in enumerate(materials, start=1):
+        drug_name = str(mat.get("name", "")).strip()
+        if not drug_name:
+            continue
+        line_id = f"DRUG-{claim.get('claim_id', '')}-{idx:03d}"
+        biomarkers = mat.get("biomarkers")
+        prior_therapies = mat.get("prior_therapies")
+        drug_line = DrugClaimLine(
+            drug_claim_line_id=line_id,
+            prescription_id="",
+            claim_id=claim_header.claim_id,
+            patient_id="",
+            episode_id="",
+            drug_claim_date=date.today(),
+            drug_name=drug_name,
+            drug_code=str(mat.get("code", "")),
+            barkod="",
+            equivalence_group="",
+            quantity=int(mat.get("quantity", 1) or 1),
+            unit_price_try=Decimal(str(mat.get("unit_price", 0) or 0)),
+            billed_amount_try=Decimal(str(mat.get("billed_amount", 0) or 0)),
+            expected_payable_try=Decimal("0"),
+            discount_tier_expected=Decimal("0"),
+            denial_reason_expected="",
+            rule_trace_expected="",
+            prescriber_specialty=prescriber,
+            drug_specialty_board_report_present=report_present,
+            drug_report_duration_months=report_duration,
+            annual_application_count=mat.get("annual_application_count"),
+            is_loading_phase=mat.get("is_loading_phase"),
+            biomarkers=tuple(biomarkers) if biomarkers else None,
+            prior_therapies=tuple(prior_therapies) if prior_therapies else None,
+        )
+        hit = evaluate_drug_indication_line(
+            drug_line=drug_line,
+            claim=claim_header,
+            diagnoses=[],
+            rules=rules,
+        )
+        if hit is None:
+            continue
+        violations.append(
+            RuleViolation(
+                rule="drug_indication",
+                severity=hit.get("severity", "warning"),
+                material_name=drug_name,
+                message=hit.get("message_tr", str(hit.get("violation_kind", ""))),
+                savings_try=0.0,
+                details=hit,
+            )
+        )
+    return violations
 
 
 def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
@@ -234,6 +340,15 @@ def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
         2,
     )
 
+    # ── 4b. Drug indication checks (§4.2.14.C + §4.2.33) — only when
+    #        the claim carries drug_context (backwards-compatible). ──────
+    drug_violations = _run_drug_indication_checks(materials, claim)
+    n_drug_violations = 0
+    for dv in drug_violations:
+        result.violations.append(dv)
+        if dv.severity == "error":
+            n_drug_violations += 1
+
     # ── 5. Determine validity ────────────────────────────────────────
     has_errors = any(v.severity == "error" for v in result.violations)
     result.is_valid = not has_errors
@@ -262,6 +377,8 @@ def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
             f"{result.n_exclusion_violations} exclusion violation(s), "
             f"risk: {result.total_risk_try:.2f} TRY"
         )
+    if n_drug_violations > 0:
+        parts.append(f"{n_drug_violations} drug indication violation(s)")
 
     parts.append(f"validated in {elapsed:.1f}ms")
     result.summary = " | ".join(parts)

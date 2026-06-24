@@ -23,6 +23,9 @@ def validate_claim_endpoint(req: ClaimValidationRequest):
       - Partial §3.1 prose bundling (material_bundling_prose)
       - Partial §3.3 specialty annex prose (specialty_materials_prose, L4.4)
       - Material line pricing from billed amounts or exact EK-3 code lookup
+      - Drug indication checks (§4.2.14.C oncology + §4.2.33 anti-VEGF) when
+        drug_context is provided: indication match, prescriber specialty, board
+        report, biomarker, dose protocol, prior therapy.
 
     Returns validation result with violations, savings, and priced material lines.
     """
@@ -30,6 +33,7 @@ def validate_claim_endpoint(req: ClaimValidationRequest):
         "claim_id": req.claim_id,
         "procedure_code": req.procedure_code,
         "materials": [m.model_dump() for m in req.materials],
+        "drug_context": req.drug_context.model_dump() if req.drug_context else None,
     }
 
     result = sut_validate_claim(claim_dict)
