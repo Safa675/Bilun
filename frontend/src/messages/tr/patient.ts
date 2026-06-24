@@ -17,7 +17,7 @@ const patient = {
     }
   },
   "financialSummary": {
-    "eyebrow": "Finansal profil",
+    "eyebrow": "Finansal özet",
     "title": "Tüm faturalar özeti",
     "description": "Her talep için hasta düzeyinde toplamlar: faturalanan, SUT'un ödemesini beklediği tutar ve BILUN'un hâlâ kurtarabileceği miktar.",
     "totalBilled": "Toplam faturalanan",
@@ -54,7 +54,7 @@ const patient = {
     "sutExpected": "SUT beklenen",
     "sectionSubtotal": "{section} ara toplam",
     "linesSubtotal": "Kalem ara toplamı",
-    "variance": "Başlık vs kalemler",
+    "variance": "Başlık – kalemler",
     "noLabs": "Bu faturada laboratuvar kalemi yok.",
     "facility": "Tesis düzeyi",
     "optimizationHint": "Aşağıdaki fatura kapsamlı optimizasyon bölümleri, bu faturanın SUT altında nasıl faturalandırılabileceğini gösterir.",
@@ -105,7 +105,7 @@ const patient = {
     "copayCodePlural": "kod",
     "copayWaiverGrounds": "Muafiyet gerekçeleri: {basis}.",
     "copayGenericMatch": "Hasta en az bir değerlendirilmiş katılım payı muafiyet kuralıyla eşleşiyor.",
-    "copayNoInputs": "Mevcut talep ve profil girdileriyle EK-1A, ziyaret türü veya statü muafiyeti eşleşmedi.",
+    "copayNoInputs": "Mevcut talep ve durum girdileriyle EK-1A, ziyaret türü veya statü muafiyeti eşleşmedi.",
     "chipActionable": "Uygulanabilir",
     "chipClear": "Temiz",
     "topMatchDetail": "ICD-10 {icd10} · Tebliğ aralığı {range}",

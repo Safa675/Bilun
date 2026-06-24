@@ -17,8 +17,8 @@ const common = {
   prev: "Önceki",
   go: "Git",
   skeleton: {
-    patientAnalytics: "Hasta analitiği yükleniyor…",
-    patientAnalyticsWithId: "{patientId} hasta analitiği yükleniyor…",
+    patientAnalytics: "Hasta çözümlemesi yükleniyor…",
+    patientAnalyticsWithId: "{patientId} hasta çözümlemesi yükleniyor…",
     billingReport: "Fatura raporu yükleniyor…",
     billingReportWithId: "{patientId} fatura raporu yükleniyor…",
   },

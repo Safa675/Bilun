@@ -17,9 +17,9 @@ const billing = {
     "ilaveUcretInfo": "İlave ücret (bilgi)",
     "dualTotalsFootnote": "SGK artışı meşru Kurum ödemesi artışıdır (seans oranları, fatura stratejisi). Uyumluluk düzeltmesi aşırı faturalama düzeltmelerini (ör. lab paketleme) kapsar. Muafiyet farkı yalnızca muafiyetle kaldırılabilir katılım payıdır — ilave ücret değildir.",
     "auditExposure": "Denetim riski (aşırı faturalama)",
-    "captureGap": "Yakalama boşluğu (EMR ve klinik lab vs fatura)",
+    "captureGap": "Yakalama boşluğu (EMR ve klinik lab – fatura)",
     "packageAdequacyReview": "Paket yeterlilik incelemesi (kodlama)",
-    "gazetteRepricing": "Gazete yeniden fiyatlama (prospektif)",
+    "gazetteRepricing": "Gazete yeniden fiyatlama (öngörüsel)",
     "medulaPlaybook": "MEDULA yeniden fatura rehberi",
     "drugIndicationReview": "İlaç endikasyon incelemesi",
     "recommendedActions": "Önerilen işlemler",
@@ -41,9 +41,9 @@ const billing = {
       "copay": "Katılım payı",
       "billingStrategy": "Fatura stratejisi",
       "sessionUplift": "Seans fiyatlandırması",
-      "drgUplift": "DRG uplift",
+      "drgUplift": "DRG artışı",
       "bloodUplift": "Kan bileşeni",
-      "materialUplift": "Malzeme uplift",
+      "materialUplift": "Malzeme artışı",
       "careSettingReview": "Bakım ortamı incelemesi",
       "procedureAddon": "Prosedür eklentisi",
       "procedureCapture": "Yakalama boşluğu",
@@ -84,7 +84,7 @@ const billing = {
   },
   "drug": {
     "title": "İlaç optimizasyonu",
-    "unavailable": "İlaç optimizasyon tasarrufları kesin dispense ilaç talep satırları ve faturalandırılmış ilaç tutarları gerektirir.",
+    "unavailable": "İlaç optimizasyon tasarrufları kesin dağıtılmış ilaç talep satırları ve faturalandırılmış ilaç tutarları gerektirir.",
     "drug": "İlaç",
     "issue": "Sorun",
     "alternative": "Alternatif",
@@ -92,7 +92,7 @@ const billing = {
     "tierCorrection": "Kademe düzeltmesi",
     "tierCorrectionSameDrug": "Aynı ilaçta kademe düzeltmesi",
     "heuristicInsight": "Katalog içgörüsü",
-    "heuristicFootnote": "Eşdeğer ve pasifleştirilmiş ilaç satırları yalnızca EK-4A katalog içgörüsüdür — kesin dispense ilaç talep satırları olmadan tasarruf iddia edilmez."
+    "heuristicFootnote": "Eşdeğer ve pasifleştirilmiş ilaç satırları yalnızca EK-4A katalog içgörüsüdür — kesin dağıtılmış ilaç talep satırları olmadan tasarruf iddia edilmez."
   },
   "copay": {
     "title": "Katılım payı muafiyeti incelemesi",
@@ -146,7 +146,7 @@ const billing = {
   "medulaPlaybook": {
     "title": "MEDULA red → düzeltici yeniden fatura rehberi",
     "scopeFootnote": "MEDULA red kodlarını SUT dayanaklı düzeltici işlem şablonlarına eşler. Yalnızca operasyonel rehber — BILUN MEDULA'ya otomatik yeniden fatura göndermez.",
-    "unavailable": "MEDULA rehberi için isteğe bağlı MEDULA red olayı ingest satırları gerekir.",
+    "unavailable": "MEDULA rehberi için isteğe bağlı MEDULA red olayı içe aktarım satırları gerekir.",
     "claim": "Fatura",
     "stage": "MEDULA aşaması",
     "code": "Sonuç kodu",
@@ -156,7 +156,13 @@ const billing = {
     "rebill": "Yeniden fatura",
     "steps": "Düzeltici adımlar",
     "yes": "Evet",
-    "no": "Hayır"
+    "no": "Hayır",
+    "lineType": {
+      "procedure": "İşlem",
+      "material": "Malzeme",
+      "drug": "İlaç",
+      "claim": "Fatura"
+    }
   },
   "claimChecklist": {
     "title": "Gönderim öncesi fatura kontrol listesi",
@@ -172,7 +178,7 @@ const billing = {
   },
   "drugIndication": {
     "title": "İlaç endikasyon ve rapor incelemesi (§4.2)",
-    "scopeFootnote": "Faturalanan ilaç satırlarını §4.2.14.C INN + ICD-10 + sağlık kurulu raporu corpus'u ile eşler. Yalnızca uyumluluk incelemesi — SGK artış başlığına dahil değildir.",
+    "scopeFootnote": "Faturalanan ilaç satırlarını §4.2.14.C INN + ICD-10 + sağlık kurulu raporu derlemi ile eşler. Yalnızca uyumluluk incelemesi — SGK artış başlığına dahil değildir.",
     "unavailable": "İlaç endikasyon incelemesi için rapor meta verili kesin ilaç talep satırları gerekir.",
     "claim": "Fatura",
     "drug": "İlaç",
@@ -185,7 +191,7 @@ const billing = {
   },
   "gazetteRepricing": {
     "title": "Gazete yeniden fiyatlama fırsatı",
-    "scopeFootnote": "Hizmet tarihinden sonra yürürlüğe giren tebliğ liste fiyatını artırdığında ancak fatura satırı eski gazete fiyatını yansıtıyorsa prospektif yeniden fiyatlama incelemesi işaretlenir. Fatura masası doğrulaması gerekir — SGK artış başlığına dahil değildir.",
+    "scopeFootnote": "Hizmet tarihinden sonra yürürlüğe giren tebliğ liste fiyatını artırdığında ancak fatura satırı eski gazete fiyatını yansıtıyorsa öngörüsel yeniden fiyatlama incelemesi işaretlenir. Fatura masası doğrulaması gerekir — SGK artış başlığına dahil değildir.",
     "unavailable": "Gazete yeniden fiyatlama incelemesi için hizmet tarihli kesin işlem satırları gerekir.",
     "claim": "Fatura",
     "procedure": "İşlem",
@@ -194,7 +200,7 @@ const billing = {
     "priceAtService": "Hizmetteki fiyat",
     "amendedPrice": "Tebliğ sonrası liste",
     "payablePerUnit": "Fatura ödenebilir/birim",
-    "repricingDelta": "Prospektif fark",
+    "repricingDelta": "Öngörüsel fark",
     "sutSection": "SUT bölümü",
     "note": "Not"
   },
@@ -214,7 +220,7 @@ const billing = {
     "note": "Not"
   },
   "procedureCaptureGap": {
-    "title": "Yakalama boşluğu (EMR ve klinik lab vs fatura)",
+    "title": "Yakalama boşluğu (EMR ve klinik lab – fatura)",
     "scopeFootnote": "EMR/OR kaydı veya klinik lab sonuçları bir işlemin/tetkikin yapıldığını gösterirken fatura gönderiminde satır yoksa (veya sıfır TRY), boşluk EK-2B/EK-2C liste fiyatından hesaplanır. Doğrulama öncesi yalnızca gösterim — SGK artış başlığına dahil değildir.",
     "unavailable": "Yakalama boşluğu için isteğe bağlı EMR gerçekleştirilen işlem kayıtları veya klinik lab verisi gerekir.",
     "claim": "Fatura",

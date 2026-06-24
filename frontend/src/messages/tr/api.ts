@@ -10,7 +10,7 @@ const api = {
     itemized_billed_procedure_lines: "kalemlendirilmiş faturalandırılmış işlem satırları",
     episode_package_eligibility_context: "paket uygunluk bağlamı",
     admission_dates: "yatış tarihleri",
-    dispensed_drug_claim_lines: "dispense edilmiş ilaç talep satırları",
+    dispensed_drug_claim_lines: "dağıtılmış ilaç talep satırları",
     drug_claim_dates: "ilaç talep tarihleri",
     billed_drug_amounts: "faturalandırılmış ilaç tutarları",
     billed_material_codes: "faturalandırılmış malzeme kodları",
@@ -28,7 +28,7 @@ const api = {
   },
   unavailableReason: {
     copayOptimizationUnavailable:
-      "Katılım payı optimizasyonu; faturalandırılmış işlem kodları, talep tarihleri, dispense edilmiş ilaç talep satırları ve faturalandırılmış tutarlar gibi kesin girdiler gerektirir. Bunlar aktif SUT çalışma zamanı girdilerinde mevcut değil.",
+      "Katılım payı optimizasyonu; faturalandırılmış işlem kodları, talep tarihleri, dağıtılmış ilaç talep satırları ve faturalandırılmış tutarlar gibi kesin girdiler gerektirir. Bunlar aktif SUT çalışma zamanı girdilerinde mevcut değil.",
     materialsPartialUnavailable:
       "EK-3C-1 ön onay ve EK-3C-2 MIAT, faturalı malzeme talep satırları gerektirir. Kısmi mod yalnızca EK-3 branş fiyat kıyaslarını (P90) gösterir — katalog ön onay veya MIAT bayrakları değil.",
     billingReportPartialUnavailable:

@@ -77,13 +77,13 @@ const optimizer = {
     activeFilters: "Aktif filtreler",
     partialExact: "Kısmi Kesin",
     cohortFilterAlertsHint:
-      "Uyarı tabloları aktif filtreleri yansıtır. Özet KPI kartları filtreli API'ler hazır olana kadar tam kohort toplamlarını kullanır.",
+      "Uyarı tabloları aktif filtreleri yansıtır. Özet performans göstergesi kartları filtreli API'ler hazır olana kadar tam kohort toplamlarını kullanır.",
     cohortFilterRevenueHint:
       "Geri kazanılabilir toplam ve hasta sayısı aktif filtreleri yansıtır. Kategori tasarruf grafikleri filtreli API'ler hazır olana kadar tam kohort toplamlarını kullanır.",
     copayComposableWithProfiles:
       "Birleştirilebilir katılım payı muafiyeti: EK-1A ({ek1aCount} kronik aralık) artı talep profilleri mevcutsa ziyaret türü ve hasta statüsü kuralları. EK-2C-1 katılım payı oranı listesi (§2.2) ayrı değerlendirilir.",
     copayEk1aOnly:
-      "Hasta ICD-10 tanılarını tebliğ eki EK-1A'daki {ek1aCount} kronik hastalık muafiyet aralığıyla çapraz referanslar. Statü ve ziyaret türü muafiyet alanları için analitik önbelleğini yeniden oluşturun.",
+      "Hasta ICD-10 tanılarını tebliğ eki EK-1A'daki {ek1aCount} kronik hastalık muafiyet aralığıyla çapraz referanslar. Statü ve ziyaret türü muafiyet alanları için çözümleme önbelleğini yeniden oluşturun.",
     billLevelOverlapNote:
       "Tek bir fatura birden fazla muafiyet gerekçesini karşılayabilir; bu nedenle kategori toplamları muaf fatura sayısından fazla olabilir. Kronik hastalık muafiyeti hasta özelliği olduğundan, etkilenen hastanın her faturasına uygulanır.",
     surchargeExact:
@@ -161,7 +161,7 @@ const optimizer = {
     procedureAddonPatients: "Eksik eklenti hastaları",
     captureGapTotal: "İşlem yakalama farkı (EMR)",
     packageAdequacyReviewTotal: "Paket yeterlilik incelemesi",
-    gazetteRepricingTotal: "Gazete yeniden fiyatlama (prospektif)",
+    gazetteRepricingTotal: "Gazete yeniden fiyatlama (öngörüsel)",
     medulaPlaybookEntries: "MEDULA rehber kayıtları",
     patientsInCohort: "Kohorttaki Hastalar",
     cohortSizeUntilInputs: "Kesin girdiler gelene kadar yalnızca kohort boyutu",
@@ -170,7 +170,7 @@ const optimizer = {
     exactUnbundlingFindings: "Kesin ayrıştırma bulguları",
     potentialSavings: "Talep destekli tasarruf",
     amountsResumeAfterInputs: "Kesin girdiler gelince tutarlar devam eder",
-    fromExactClaimLineAnalysis: "Yalnızca kesin talep satırı prose ihlallerinden",
+    fromExactClaimLineAnalysis: "Yalnızca kesin talep satırı düz metin ihlallerinden",
     riskyChapters: "Riskli Bölümler",
     requiresDatedPackageContext: "Tarihli paket bağlamı gerekir",
     icd10ChaptersWithRepeatedRisk: "Tekrarlayan riskli ICD-10 bölümleri",
@@ -182,7 +182,7 @@ const optimizer = {
     dispensedLinesValidated: "Reçetelenmiş satırlar doğrulandı",
     tierMismatches: "Kademe Uyuşmazlıkları",
     actualClaimAmountsRequired: "Gerçek talep tutarları gerekli",
-    payableVsTierExpectation: "Ödenecek tutar vs kademe beklentisi",
+    payableVsTierExpectation: "Ödenecek tutar – kademe beklentisi",
     discountSavings: "İndirim Tasarrufu",
     exactClaimInputsRequired: "Kesin talep girdileri gerekli",
     billedMinusExpectedPayable:

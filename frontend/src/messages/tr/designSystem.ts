@@ -28,7 +28,7 @@ const designSystem = {
   surface: {
     title: "Yüzey",
     titleAccent: "varyantlar",
-    variantDescription: "`{variant}` yüzey varyantı.",
+    variantDescription: "`{variant}` yüzey değişkeni.",
   },
   stat: {
     title: "İstatistik",

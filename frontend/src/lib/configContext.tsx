@@ -30,23 +30,31 @@ const ConfigContext = createContext<ConfigState>({
   error: null,
 });
 
-/** Default fallback config used while loading or on error. */
+/** Default fallback config used while loading or on error.
+ *
+ * Display strings (risk-tier labels, direction labels, sut_data_source
+ * label/notice) are intentionally empty: the fallback represents an
+ * unavailable/uninitialized state, and the only config consumers
+ * (AppTopBar via SyntheticDemoChip, SUTOptimizerTab via regulatory
+ * counts) never render these label fields. The real localized labels
+ * come from the backend /api/frontend-config response in production.
+ */
 const FALLBACK_CONFIG: FrontendConfig = {
   risk_tiers: [
-    { min: 70, key: "dusuk", label: "Low Risk", color: theme.accent },
-    { min: 40, key: "orta", label: "Moderate", color: "#B45309" },
-    { min: 20, key: "yuksek", label: "High", color: "#B45309" },
-    { min: 0, key: "kritik", label: "Critical", color: "#B91C1C" },
+    { min: 70, key: "dusuk", label: "", color: theme.accent },
+    { min: 40, key: "orta", label: "", color: "#B45309" },
+    { min: 20, key: "yuksek", label: "", color: "#B45309" },
+    { min: 0, key: "kritik", label: "", color: "#B91C1C" },
   ],
   rating_tiers: [],
   subscores: {},
   directions: {
-    rapidly_declining: { arrow: "\u21CA", color: "#B91C1C", label: "Rapidly Declining" },
-    declining: { arrow: "\u2198", color: "#B45309", label: "Declining" },
-    stable: { arrow: "\u2192", color: theme.accent, label: "Stable" },
-    improving: { arrow: "\u2197", color: theme.accent, label: "Improving" },
-    insufficient_data: { arrow: "\u2015", color: "#A1A1AA", label: "Insufficient Data" },
-    exitus: { arrow: "\u2020", color: "#A1A1AA", label: "Exitus" },
+    rapidly_declining: { arrow: "\u21CA", color: "#B91C1C", label: "" },
+    declining: { arrow: "\u2198", color: "#B45309", label: "" },
+    stable: { arrow: "\u2192", color: theme.accent, label: "" },
+    improving: { arrow: "\u2197", color: theme.accent, label: "" },
+    insufficient_data: { arrow: "\u2015", color: "#A1A1AA", label: "" },
+    exitus: { arrow: "\u2020", color: "#A1A1AA", label: "" },
   },
   regime_states: {},
   performance: {
@@ -60,9 +68,9 @@ const FALLBACK_CONFIG: FrontendConfig = {
   cost_tiers: [],
   sut_data_source: {
     mode: "unavailable",
-    label: "SUT data source unavailable",
+    label: "",
     is_synthetic: null,
-    notice: "SUT data-source provenance has not loaded yet.",
+    notice: "",
     unavailable_reason: "frontend_config_unavailable",
     required_inputs_missing: ["sut_data_source"],
   },

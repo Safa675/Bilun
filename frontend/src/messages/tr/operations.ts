@@ -1,9 +1,9 @@
 const operations = {
   queue: {
     title: "MEDULA red kuyruğu",
-    subtitle: "MEDULA tarafından reddedilen talepler için reaktif triyaj. Yalnızca operasyonel rehber — SGK artışına dahil değildir.",
+    subtitle: "MEDULA tarafından reddedilen talepler için reaktif acil ayıklama. Yalnızca operasyonel rehber — SGK artışına dahil değildir.",
     empty: {
-      noIngest: "Bu kohort için MEDULA red ingest etkin değil.",
+      noIngest: "Bu kohort için MEDULA red içe aktarımı etkin değil.",
       noEvents: "MEDULA red kaydı bulunamadı.",
     },
     columns: {
@@ -14,9 +14,16 @@ const operations = {
       resultCode: "Sonuç kodu",
       message: "MEDULA mesajı",
       procedure: "İşlem",
+      relatedLine: "İlgili satır",
       playbook: "Rehber",
       rebill: "Yeniden fatura",
-      action: "Aksiyon",
+      action: "Eylem",
+    },
+    lineType: {
+      procedure: "İşlem",
+      material: "Malzeme",
+      drug: "İlaç",
+      claim: "Fatura",
     },
     filters: {
       resultCode: "Sonuç kodu",
