@@ -14,6 +14,7 @@ fi
 VENV_DIR="${VENV_DIR:-$SCRIPT_DIR/.venv}"
 PYTHON="${PYTHON:-$VENV_DIR/bin/python3}"
 BACKEND_PORT="${BACKEND_PORT:-8001}"
+BACKEND_HOST="${BACKEND_HOST:-127.0.0.1}"
 FRONTEND_PORT="${FRONTEND_PORT:-3000}"
 
 NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
@@ -177,7 +178,7 @@ start_backend() {
     ensure_python_deps
     log "Starting backend on port $BACKEND_PORT..."
     export BILUN_STARTUP_POLICY="${BILUN_STARTUP_POLICY:-load-only}"
-    "$PYTHON" -m uvicorn src.bilun.api:app --host 0.0.0.0 --port "$BACKEND_PORT"
+    "$PYTHON" -m uvicorn src.bilun.api:app --host "$BACKEND_HOST" --port "$BACKEND_PORT"
 }
 
 start_frontend() {

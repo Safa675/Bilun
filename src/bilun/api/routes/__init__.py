@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from . import alerts, billing, chat, medula_rejections, optimization, patients, pricing, rules, validation
+from . import alerts, auth, billing, chat, medula_rejections, optimization, patients, pricing, rules, validation
 
 # Public function re-exports — flat surface for tests and external callers
 # that prefer ``from src.bilun.api.routes import <fn>`` over reaching into a
@@ -62,6 +62,7 @@ from .validation import (  # noqa: F401, E402
 )
 
 router = APIRouter(prefix="/api", tags=["bilun"])
+router.include_router(auth.router)
 router.include_router(chat.router)
 router.include_router(patients.router)
 router.include_router(validation.router)

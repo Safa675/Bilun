@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CircleHelp } from "lucide-react";
+import { CircleHelp, LogOut } from "lucide-react";
 import Image from "next/image";
 import { SyntheticDemoChip } from "@/components/sut/SyntheticDemoProvenance";
 import LocaleSwitcher from "@/components/shell/LocaleSwitcher";
@@ -34,6 +34,7 @@ function useActiveHomeTab(): SutHomeTab {
 
 export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProps) {
   const t = useT();
+  const router = useRouter();
   const setShowHowItWorks = useSetShowHowItWorks();
   const config = useConfig();
   const searchParams = useSearchParams();
@@ -41,6 +42,16 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
   const activeTab = useActiveHomeTab();
   const userRole = useUserRole();
   const [medulaIngestAvailable, setMedulaIngestAvailable] = useState<boolean | null>(null);
+
+  async function handleLogout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } catch {
+      // Even if the network call fails, clear the session locally and leave.
+    }
+    router.replace("/login");
+    router.refresh();
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -141,6 +152,20 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
         <LocaleSwitcher />
 
         <RoleSwitcher />
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          className={cn(
+            "inline-flex items-center gap-1.5 text-xs font-medium",
+            "text-[var(--text-secondary)] hover:text-[var(--gold-hover)]",
+            "transition-colors duration-150",
+          )}
+          aria-label={t("auth.logout.button")}
+        >
+          <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+          {t("auth.logout.button")}
+        </button>
 
         <button
           type="button"

@@ -1,0 +1,205 @@
+"""Shared-password authentication helpers for the BILUN API.
+
+This is a deliberately simple shared-secret gate (Option A), not a per-user
+account system. One username + one password are configured via environment
+variables; a successful login issues a stateless HMAC session token that both
+the backend middleware and the Next.js frontend middleware verify.
+
+Security notes:
+- Passwords are stored PBKDF2-HMAC-SHA256 hashed (never plaintext in .env).
+- Session tokens are ``base64url(payload).base64url(hmac)`` where the HMAC is
+  keyed by ``BILUN_SESSION_SECRET``. Verification is constant-time. Tokens are
+  stateless — no server-side session store — so rotating the secret revokes
+  everyone immediately.
+- The token carries a username + expiry. It is NOT encrypted, only signed —
+  do not put anything sensitive in it.
+"""
+
+from __future__ import annotations
+
+import base64
+import hashlib
+import hmac
+import os
+import secrets
+import time
+from dataclasses import dataclass
+
+# PBKDF2 parameters (OWASP-recommended ballpark for SHA-256).
+_PBKDF2_ITERATIONS = 310_000
+_PBKDF2_HASH_NAME = "sha256"
+_SALT_BYTES = 16
+_HASH_DELIMITER = "$"
+
+# Session token lifetime.
+_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60  # 7 days
+
+COOKIE_NAME = "bilun:session"
+
+
+class AuthConfigError(RuntimeError):
+    """Raised when auth env vars are missing/misconfigured."""
+
+
+@dataclass(frozen=True)
+class AuthCredentials:
+    """The configured shared credentials, loaded from env."""
+
+    username: str
+    password_hash: str  # PBKDF2 digest string
+    session_secret: bytes
+
+
+def _require_env(name: str) -> str:
+    value = os.getenv(name, "").strip()
+    if not value:
+        raise AuthConfigError(
+            f"Missing required auth env var {name}. Run "
+            f"`python scripts/generate_auth_env.py` and paste the output into .env."
+        )
+    return value
+
+
+def load_credentials() -> AuthCredentials:
+    """Load the shared credentials from environment variables.
+
+    Raises AuthConfigError if any required var is missing. Callers that want
+    auth-optional behaviour (e.g. tests) should catch this.
+    """
+    username = _require_env("BILUN_AUTH_USERNAME")
+    password_hash = _require_env("BILUN_AUTH_PASSWORD")
+    secret = _require_env("BILUN_SESSION_SECRET")
+    return AuthCredentials(
+        username=username,
+        password_hash=password_hash,
+        session_secret=secret.encode("utf-8"),
+    )
+
+
+def is_auth_configured() -> bool:
+    """True iff all three auth env vars are present and non-empty."""
+    try:
+        load_credentials()
+        return True
+    except AuthConfigError:
+        return False
+
+
+# ── Password hashing (PBKDF2-HMAC-SHA256) ────────────────────────────────────
+
+def hash_password(plaintext: str) -> str:
+    """Return a self-describing PBKDF2 digest string.
+
+    Format: ``pbkdf2_sha256$<iterations>$<salt_b64>$<hash_b64>``
+    """
+    salt = secrets.token_bytes(_SALT_BYTES)
+    digest = hashlib.pbkdf2_hmac(
+        _PBKDF2_HASH_NAME,
+        plaintext.encode("utf-8"),
+        salt,
+        _PBKDF2_ITERATIONS,
+    )
+    return _HASH_DELIMITER.join(
+        [
+            "pbkdf2_sha256",
+            str(_PBKDF2_ITERATIONS),
+            base64.b64encode(salt).decode("ascii"),
+            base64.b64encode(digest).decode("ascii"),
+        ]
+    )
+
+
+def verify_password(plaintext: str, stored_hash: str) -> bool:
+    """Constant-time verify a plaintext password against a stored digest."""
+    try:
+        algorithm, iterations_str, salt_b64, hash_b64 = stored_hash.split(_HASH_DELIMITER)
+    except ValueError:
+        return False
+    if algorithm != "pbkdf2_sha256":
+        return False
+    try:
+        iterations = int(iterations_str)
+        salt = base64.b64decode(salt_b64)
+        expected = base64.b64decode(hash_b64)
+    except (ValueError, base64.binascii.Error):
+        return False
+    candidate = hashlib.pbkdf2_hmac(
+        _PBKDF2_HASH_NAME,
+        plaintext.encode("utf-8"),
+        salt,
+        iterations,
+    )
+    return hmac.compare_digest(candidate, expected)
+
+
+def check_credentials(username: str, password: str) -> bool:
+    """Verify a username/password pair against the configured shared creds."""
+    try:
+        creds = load_credentials()
+    except AuthConfigError:
+        return False
+    # Compare username in constant time too.
+    user_ok = hmac.compare_digest(username.encode("utf-8"), creds.username.encode("utf-8"))
+    pass_ok = verify_password(password, creds.password_hash)
+    return user_ok and pass_ok
+
+
+# ── Stateless session tokens (HMAC-signed) ───────────────────────────────────
+
+def _b64url(raw: bytes) -> str:
+    return base64.urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
+
+
+def _unb64url(text: str) -> bytes:
+    padding = "=" * (-len(text) % 4)
+    return base64.urlsafe_b64decode(text + padding)
+
+
+@dataclass(frozen=True)
+class TokenClaims:
+    username: str
+    expires_at: int  # unix timestamp
+
+
+def issue_session_token(username: str, *, ttl_seconds: int = _SESSION_TTL_SECONDS) -> str:
+    """Issue an HMAC-signed session token for ``username``."""
+    try:
+        creds = load_credentials()
+    except AuthConfigError as exc:
+        raise AuthConfigError("Cannot issue session token: auth not configured") from exc
+    expires_at = int(time.time()) + ttl_seconds
+    payload = f"{username}.{expires_at}".encode("utf-8")
+    signature = hmac.new(creds.session_secret, payload, _PBKDF2_HASH_NAME).digest()
+    return f"{_b64url(payload)}.{_b64url(signature)}"
+
+
+def verify_session_token(token: str) -> TokenClaims | None:
+    """Verify a session token's signature and expiry. Returns claims or None."""
+    try:
+        creds = load_credentials()
+    except AuthConfigError:
+        return None
+    if not token or token.count(".") != 1:
+        return None
+    payload_b64, sig_b64 = token.split(".")
+    try:
+        payload = _unb64url(payload_b64)
+        provided_sig = _unb64url(sig_b64)
+    except (ValueError, base64.binascii.Error):
+        return None
+    expected_sig = hmac.new(creds.session_secret, payload, _PBKDF2_HASH_NAME).digest()
+    if not hmac.compare_digest(provided_sig, expected_sig):
+        return None
+    try:
+        username, exp_str = payload.decode("utf-8").rsplit(".", 1)
+        expires_at = int(exp_str)
+    except (ValueError, UnicodeDecodeError):
+        return None
+    if expires_at <= int(time.time()):
+        return None
+    return TokenClaims(username=username, expires_at=expires_at)
+
+
+def generate_session_secret() -> str:
+    """Return a fresh random session secret for ``BILUN_SESSION_SECRET``."""
+    return secrets.token_urlsafe(48)

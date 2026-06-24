@@ -59,6 +59,7 @@ export async function fetchJSON<T>(path: string, options?: RequestInit): Promise
   try {
     res = await fetch(url, {
       ...options,
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         ...options?.headers,

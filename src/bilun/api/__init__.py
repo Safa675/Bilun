@@ -62,6 +62,58 @@ app.add_middleware(
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
+# ── Session gate ──────────────────────────────────────────────────────────────
+# Reject any unauthenticated request to a protected route. This is the second
+# layer of defense (the first being the Next.js middleware); it ensures the
+# backend cannot be bypassed by hitting :8001 directly. Auth is only enforced
+# when the env vars are configured — a missing config fails open with a logged
+# warning so local dev without .env keeps working, but a production deploy MUST
+# set the vars (the login route itself returns 503 when unconfigured).
+
+from starlette.middleware.base import BaseHTTPMiddleware  # noqa: E402
+from starlette.requests import Request as _StarletteRequest  # noqa: E402
+from starlette.responses import JSONResponse as _JSONResponse  # noqa: E402
+
+from src.bilun.api.auth import COOKIE_NAME as _SESSION_COOKIE, is_auth_configured, verify_session_token  # noqa: E402
+
+# Paths exempt from the session check. /api/auth/* must be reachable without a
+# token (login to obtain one, logout to clear it, me to probe status); /health
+# stays open for uptime probes.
+_SESSION_EXEMPT_PREFIXES = ("/api/auth/",)
+_SESSION_EXEMPT_PATHS = {"/health", "/"}
+
+
+class SessionGateMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: _StarletteRequest, call_next):
+        path = request.url.path
+        # Only gate the API surface and the doc roots.
+        if not (path == "/health" or path.startswith("/api/")):
+            return await call_next(request)
+        # Auth not configured → fail open (local dev) but log loudly.
+        if not is_auth_configured():
+            _api_logger.warning(
+                "BILUN_AUTH_* env vars not set — session gate disabled. "
+                "Set them before exposing the server."
+            )
+            return await call_next(request)
+        # Exempt auth routes (needed to obtain/clear a token and probe status)
+        # and health.
+        if (
+            path in _SESSION_EXEMPT_PATHS
+            or any(path.startswith(p) for p in _SESSION_EXEMPT_PREFIXES)
+        ):
+            return await call_next(request)
+        token = request.cookies.get(_SESSION_COOKIE, "")
+        if verify_session_token(token) is not None:
+            return await call_next(request)
+        return _JSONResponse(
+            status_code=401,
+            content={"detail": "Authentication required."},
+        )
+
+
+app.add_middleware(SessionGateMiddleware)
+
 # ── Exception handlers ───────────────────────────────────────────────────────
 
 from src.bilun.shared.exceptions import register_exception_handlers  # noqa: E402

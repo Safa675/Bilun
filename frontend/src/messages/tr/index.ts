@@ -15,6 +15,7 @@ import synthetic from "./synthetic";
 import admin from "./admin";
 import api from "./api";
 import designSystem from "./designSystem";
+import auth from "./auth";
 
 const trMessages = {
   shell,
@@ -34,6 +35,7 @@ const trMessages = {
   admin,
   api,
   designSystem,
+  auth,
 };
 
 export default trMessages;
