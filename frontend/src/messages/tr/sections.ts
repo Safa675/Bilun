@@ -169,6 +169,17 @@ const sections = {
     addMaterial: "+ Malzeme Ekle",
     validating: "Doğrulanıyor...",
     validateClaim: "Talebi Doğrula",
+    drugContext: {
+      title: "İlaç Endikasyon Bağlamı (§4.2)",
+      icd10: "Tanı (ICD-10)",
+      icd10Placeholder: "örn. C50.9, H35.3",
+      prescriber: "Reçete Eden Branş",
+      prescriberPlaceholder: "örn. tıbbi onkoloji, göz hastalıkları",
+      boardReport: "Sağlık Kurulu Raporu",
+      present: "Var",
+      absent: "Yok",
+      unknown: "Belirtilmedi",
+    },
     errors: {
       addAtLeastOneMaterial: "Adı olan en az bir malzeme ekleyin.",
       validationFailed: "Doğrulama başarısız",

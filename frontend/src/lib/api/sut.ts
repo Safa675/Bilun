@@ -49,10 +49,24 @@ export interface SutMaterialItem {
   prior_therapies?: Array<{ drug_or_class: string; outcome: string }>;
 }
 
+export interface SutDrugContext {
+  /** Primary ICD-10 diagnosis code (required for drug_indication checks). */
+  primary_icd10: string;
+  /** Prescriber's medical specialty (e.g. "tıbbi onkoloji", "göz hastalıkları"). */
+  prescriber_specialty: string;
+  /** Whether a specialty board report (sağlık kurulu raporu) is present. */
+  board_report_present?: boolean | null;
+  /** Report validity in months (e.g. 3, 6). */
+  report_duration_months?: number | null;
+}
+
 export interface SutClaimRequest {
   claim_id: string;
   procedure_code: string;
   materials: SutMaterialItem[];
+  /** Optional drug indication context. When present, validate-claim runs §4.2.14.C
+   * oncology + §4.2.33 anti-VEGF checks (indication, prescriber, biomarker, dose). */
+  drug_context?: SutDrugContext;
 }
 
 export interface SutViolation {

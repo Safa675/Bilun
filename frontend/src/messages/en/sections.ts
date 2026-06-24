@@ -169,6 +169,17 @@ const sections = {
     addMaterial: "+ Add Material",
     validating: "Validating...",
     validateClaim: "Validate Claim",
+    drugContext: {
+      title: "Drug Indication Context (§4.2)",
+      icd10: "Diagnosis (ICD-10)",
+      icd10Placeholder: "e.g. C50.9, H35.3",
+      prescriber: "Prescriber Specialty",
+      prescriberPlaceholder: "e.g. medical oncology, ophthalmology",
+      boardReport: "Board Report",
+      present: "Present",
+      absent: "Absent",
+      unknown: "Not specified",
+    },
     errors: {
       addAtLeastOneMaterial: "Add at least one material with a name.",
       validationFailed: "Validation failed",

@@ -6,6 +6,7 @@ import { validateSutClaim, getSutProcedureInfo } from "@/lib/api/sut";
 import type {
   SutMaterialItem,
   SutClaimRequest,
+  SutDrugContext,
   SutValidationResult,
   SutProcedureInfo,
   SutProcedureEntry,
@@ -44,6 +45,12 @@ export function ClaimValidatorSection() {
   const procAbortRef = useRef<AbortController | null>(null);
   const normalizedProcedureCode = procedureCode.trim().replace(/[\s.]/g, "");
   const shouldShowProcedureLookup = normalizedProcedureCode.length >= 3;
+
+  // §4.2 drug indication context (optional — toggled by user for drug claims)
+  const [drugContextEnabled, setDrugContextEnabled] = useState(false);
+  const [drugIcd10, setDrugIcd10] = useState("");
+  const [drugPrescriber, setDrugPrescriber] = useState("");
+  const [drugReportPresent, setDrugReportPresent] = useState<string>("");
 
   useEffect(() => {
     if (!shouldShowProcedureLookup) {
@@ -122,6 +129,17 @@ export function ClaimValidatorSection() {
         procedure_code: procedureCode || "GENERIC",
         materials: validMaterials,
       };
+      // Attach drug_context only when the user enabled it and filled at least
+      // the ICD-10. The backend runs §4.2.14.C + §4.2.33 checks when present.
+      if (drugContextEnabled && drugIcd10.trim()) {
+        const ctx: SutDrugContext = {
+          primary_icd10: drugIcd10.trim(),
+          prescriber_specialty: drugPrescriber.trim(),
+        };
+        if (drugReportPresent === "yes") ctx.board_report_present = true;
+        else if (drugReportPresent === "no") ctx.board_report_present = false;
+        claim.drug_context = ctx;
+      }
       const res = await validateSutClaim(claim, { signal: controller.signal });
       if (!controller.signal.aborted) {
         setResult(res);
@@ -135,7 +153,7 @@ export function ClaimValidatorSection() {
         abortRef.current = null;
       }
     }
-  }, [materials, claimId, procedureCode, t]);
+  }, [materials, claimId, procedureCode, drugContextEnabled, drugIcd10, drugPrescriber, drugReportPresent, t]);
 
   useEffect(() => {
     return () => { abortRef.current?.abort(); };
@@ -233,6 +251,41 @@ export function ClaimValidatorSection() {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-4 rounded-[var(--r-md)] border border-[var(--border-subtle)]">
+          <button
+            type="button"
+            onClick={() => setDrugContextEnabled((v) => !v)}
+            className="flex w-full items-center justify-between px-3 py-2 text-left"
+          >
+            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: ACCENT_LOCAL }}>
+              {t("sections.claimValidator.drugContext.title")}
+            </span>
+            <span className="text-[10px]" style={{ color: "#94A3B8" }}>
+              {drugContextEnabled ? "−" : "+"}
+            </span>
+          </button>
+          {drugContextEnabled && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 px-3 pb-3 pt-1 border-t border-[var(--border-subtle)]">
+              <div>
+                <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.drugContext.icd10")}</label>
+                <input type="text" value={drugIcd10} onChange={(e) => setDrugIcd10(e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.drugContext.icd10Placeholder")} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.drugContext.prescriber")}</label>
+                <input type="text" value={drugPrescriber} onChange={(e) => setDrugPrescriber(e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.drugContext.prescriberPlaceholder")} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.drugContext.boardReport")}</label>
+                <select value={drugReportPresent} onChange={(e) => setDrugReportPresent(e.target.value)} className="sut-input">
+                  <option value="">{t("sections.claimValidator.drugContext.unknown")}</option>
+                  <option value="yes">{t("sections.claimValidator.drugContext.present")}</option>
+                  <option value="no">{t("sections.claimValidator.drugContext.absent")}</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-3 mt-4">
