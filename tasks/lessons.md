@@ -9,6 +9,18 @@ Format per entry:
 
 ---
 
+## 2026-06-24 — A synthetic row missing optional flag columns coerces the whole DataFrame column to float, breaking string-truthy validators
+
+**Pattern:** Injecting one extra material row (a MEDULA rejection anchor) that set only the `prose_flags` dict but NOT the L4.4 `specialty_flags`. When the per-claim material dicts were assembled into a DataFrame and written to the xlsx workbook, the specialty columns were `NaN` for that one row. Because the column now mixed `True`/`False`/`NaN`, pandas/the Excel round-trip stored them as floats (`1.0`/`0.0`/`nan`) instead of object strings. The validator's `_truthy()` does `_strings(series).str.lower().isin({"true","1","evet","yes"})` — and `_strings(1.0)` → `"1.0"`, which is NOT `"1"`, so EVERY row in that column failed the truthy check. Result: 35 spurious "Expected at least one material line with X=true" errors even though the parquet (read separately) showed the flags correctly. The single incomplete row poisoned the entire column's dtype.
+
+**Rule:** When adding a new row to a list-of-dicts that gets assembled into a DataFrame and written to a workbook/parquet, the row MUST include EVERY column the sibling rows carry — especially boolean flag columns — even if the value is just the default `False`. A missing key becomes `NaN`, and if the column mixes `NaN` with bools, the round-trip dtype flips to float, which silently breaks downstream string-based parsers. Concretely:
+1. When appending a material row outside the normal builder (`_append_material_lines_for_claim`), spread BOTH `**_default_prose_material_flags()` AND `**_default_specialty_prose_flags()` — the specialty flag set is large and easy to forget.
+2. If a validator reports "expected at least one row with flag X" but the parquet clearly has the flag, the bug is the WORKBOOK column dtype (NaN-induced float coercion), not the data. Read the `.xlsx` sheet, not the parquet, to diagnose.
+3. Diagnose column dtype with `df[col].dtype` and `df[col].value_counts(dropna=False)` — a float dtype with `0.0`/`1.0`/`nan` is the smoking gun.
+4. The post-pass coverage functions (`_ensure_specialty_flag_coverage`) cannot fix this — they set flags on existing rows but the NaN row still forces float dtype. The fix must be at row-construction time.
+
+---
+
 ## 2026-06-22 — When a test reads a committed artifact and a sibling test rebuilds the same artifact, check both before changing a shared constant
 
 **Pattern:** Fixing `test_phase5_manifest_traces_all_4214c_clauses` (reads committed manifest JSON, section_clause_total=828) by changing every `832` in the file to `828` — including line 116 in `test_build_phase5_manifest_partition_is_disjoint`, which rebuilds the manifest live from `sut_clauses.parquet` (which has 832 clauses). The committed manifest JSON is stale (828) relative to the current `sut_clauses.parquet` (832). The two tests exercise different sources, so they legitimately expect different counts. Blindly replacing all occurrences broke the rebuild-based test.

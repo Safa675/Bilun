@@ -1,77 +1,63 @@
-## Task: Frontend Türkçe lokalizasyon düzeltme — gömülmüş İngilizce jargonu temizle
+## Task: Acibadem-ready trimmed synthetic billing xlsx + column mapping
 
 ### Goal
-Frontend'deki Türkçe metne gömülmüş İngilizce teknik jargonu (uplift, pipeline, manifest, prose, Tier C, dispense, corpus, prospektif, vs, ingest, triyaj, Aksiyon, profil, analitik, varyant) saf Türkçeye çevir; 2 tamamen çevrilmemiş string'i düzelt (DRG uplift, Malzeme uplift); configContext.tsx'teki hardcoded İngilizce fallback label'ları boş/neutral'a çevir. Co-author yok.
+Produce a new xlsx (+ reproducible build script) that keeps ONLY the algorithm-used INPUT columns from the current synthetic SUT workbook — dropping BILUN-computed outputs (`beklenen_*`/`expected_*`), the ~78 material prose-rule flags, demo scaffolding (`senaryo_etiketi`, unused medula cols), and non-billing clinical sheets — so the result is a clean Acibadem column-mapping template. Plus a mapping sheet (Turkish xlsx col → English parquet col → meaning → blank Acibadem field) and a removed-columns transparency sheet.
+
+### Verified facts (do not re-litigate)
+- Authoritative consumed-column set = dataclass fields in `src/bilun/domain/claims/models.py`.
+- xlsx uses Turkish names/sheets; parquets use English; rename maps in `scripts/synthetic/exporters.py`. Same in-memory `tables` dict feeds both; xlsx↔parquet ~1:1 for the 8 claim sheets (diagnoses adds `claim_id`/`is_primary` during export).
+- Algorithms consume ONLY `data/synthetic/sut/claims/*.parquet`. The xlsx is human-facing + the validator's Turkish-named self-check. Nothing at runtime loads this xlsx.
+- openpyxl 3.1.5 available.
+
+### Decisions (user-approved)
+1. Drop all `beklenen_*`/`expected_*` computed outputs + the `beklenen_kural_ciktilari` golden sheet.
+2. Layer 1 (claims) only — drop clinical sheets (`hastalar`, `basvurular`, `receteler`, `laboratuvar_sonuclari`), manifest, empty `katalog_alt_kumesi`.
+3. Drop the ~78 material prose-rule flags. KEEP titubb/uts (flagged borderline in mapping sheet).
+4. Deliverable = trimmed xlsx + mapping sheet + removed sheet, via reproducible script.
+
+### Per-sheet kept columns (Turkish xlsx names)
+- `fatura_basliklari` (14): fatura_id, hasta_id, basvuru_id, fatura_tipi, mesleki_kontekst, kurum_basamagi, saglayici_tipi, servis_adi, yatis_tarihi, taburcu_tarihi, fatura_baslangic_tarihi, fatura_bitis_tarihi, birincil_icd10, paket_adayi_mi
+- `tani_satirlari` (7): all kept
+- `islem_fatura_satirlari` (17): drop beklenen_odenebilir_tutar_try/red_nedeni/kural_izi
+- `malzeme_fatura_satirlari` (16): structural + titubb/uts; drop beklenen_* + 78 flags
+- `ilac_fatura_satirlari` (19): drop 4 beklenen_*
+- `hasta_katilim_payi_profilleri` (6): all kept
+- `medula_red_satirlari` (11): drop ilgili_satir_tipi, ilgili_satir_id
+- `gerceklestirilen_islem_satirlari` (8): all kept
 
 ### Subtasks
-- [x] Plan: 2 paralel Explore audit + terminoloji sözlüğü + kullanıcı onayı (purist Türkçe)
-- [x] Faz 1a — billing.ts: uplift→artış, dispense→dağıtılmış, ingest→içe aktarım, corpus→derlem, prospektif→öngörüsel, vs→–
-- [x] Faz 1b — sections.ts: fact-check→denetim, pipeline→işlem hattı, manifest→bildirim, Tier C→C kademesi, prose→düz metin, optimizer→optimizasyon, Non-algorithmic→Algoritmik olmayan
-- [x] Faz 1c — optimizer.ts (KPI→performans göstergesi, prose, vs, prospektif), api.ts (dispense), operations.ts (triyaj→acil ayıklama, ingest, Aksiyon→Eylem), patient.ts (vs, profil→durum), common.ts (analitik→çözümleme), designSystem.ts (varyant→değişken)
-- [x] Faz 1 ek — optimizer.ts:86 + sections.ts:235 analitik→çözümleme (tutarlılık)
-- [x] Faz 2 — configContext.tsx: FALLBACK_CONFIG label/notice İngilizce'sini boş string'e çevir (dead code olduğu kanıtlandı: AppTopBar sadece mode==='synthetic_demo' render ediyor, fallback mode==='unavailable' → null döner; risk_tiers/directions hiçbir bileşende render edilmiyor)
-- [x] Faz 3 — tsc clean, vitest 140 passed, build succeeded
+- [x] Write build script `scripts/synthetic/build_acibadem_mapping_workbook.py`
+- [x] Run script → emit `data/synthetic/sut/sentetik_sut_v2_acibadem_input_50_hasta.xlsx`
+- [x] Verify: 8 data sheets, kept-col counts match plan, row counts preserved, mapping+removed sheets populated
+- [x] Spot-check: every kept column maps to a models.py field; no beklenen_*/prose-flag leaked
+- [x] Document result + titubb/uts flag in Review section
+
+### Review
+Deliverable: `data/synthetic/sut/sentetik_sut_v2_acibadem_input_50_hasta.xlsx` (built by `scripts/synthetic/build_acibadem_mapping_workbook.py`, reproducible).
+
+Structure (10 sheets):
+- `kolon_eslestirme` — mapping template: Türkçe kolon | İngilizce parquet kolonu | açıklama | sınırda mı | **Acibadem alanı (boş, doldurulacak)**. 98 rows.
+- 8 data sheets (claim/invoice Layer 1 only), 98 kept columns total, all source data rows preserved:
+  - fatura_basliklari 14c/96r · tani_satirlari 7c/244r · islem_fatura_satirlari 17c/510r
+  - malzeme_fatura_satirlari 16c/113r · ilac_fatura_satirlari 19c/255r
+  - hasta_katilim_payi_profilleri 6c/50r · medula_red_satirlari 11c/10r
+  - gerceklestirilen_islem_satirlar 8c/1r
+- `kaldirilan_kolonlar` — 213 removed entries: 26 BILUN çıktısı (beklenen_*) + 78 paket kural bayrağı (üretilmiş) + 2 algoritma-okumuyor (medula ilgili_satir_*) + 107 demo iskeleti (whole clinical/manifest/golden sheets).
+
+Verification (independent re-read + script self-guard):
+- Row-preservation assertion passes for all 8 sheets (source non-empty rows == output rows).
+- Every mapping English col confirmed a real dataclass field in `models.py`.
+- Leak scan: zero beklenen_*/senaryo_etiketi/medula-unused/prose-flag in any data sheet.
+- Mapping TR names ↔ data-sheet headers consistent; col counts align.
+
+Decisions flagged for review:
+- **titubb_kayitli_mi / uts_kayitli_mi** kept but marked "Sınırda — BILUN kayıt aramasıyla üretebilir" (tinted in mapping sheet). If Acibadem's procurement system doesn't supply them, drop these 2 rows and BILUN can derive via TİTUBB/UTS lookup. One edit in `MALZEME_FATURA_SATIRLARI`.
+- Source sheet `gerceklestirilen_islem_satirlari` (32 chars) truncated to 31 in output for Excel safety; recorded in `SHEET_NAME_OVERRIDES`.
+- No changes to `models.py`/`schema.py`/algorithms — consumed column set unchanged; algorithms still read `data/synthetic/sut/claims/*.parquet`. This xlsx is a human/mapping artifact only.
+
 
 ### Out of Scope
-- Backend /api/frontend-config lokalizasyonu (production label'ları backend'den geliyor)
-- EN dosyaları (zaten İngilizce)
-- Test assertion metinleri
-- Marka/kısaltmalar (BILUN, SUT, SGK, MEDULA, DRG, EK-, ICD-10, INN, KDV)
-
----
-
-## Task: Fix claim validator missing SUT code input + diagnose katsayı display
-
-### Issue A — Katsayı shows "1" (NO CODE CHANGE REQUIRED)
-
-**Verified facts (direct backend calls, not assumptions):**
-- `data/gazette/sut_checkup_pricing.json` meta.katsayi == 0.593 (committed 1e253e0, working tree clean)
-- `catalog.get_katsayi()` returns 0.593
-- `pricing.get_checkup_pricing()` returns katsayi: 0.593
-- Frontend `CheckupPricingSection` displays `fmtNum(data.katsayi)` — pure passthrough, no hardcode
-- No "1" literal exists anywhere in the checkup path
-
-**Root cause:** Stale backend process in memory (lessons.md 2026-06-19 pattern). Right now
-NO backend is on :8000; dev server proxies to :8001 (next.config.ts:4). A backend started
-against an older JSON held katsayi=1 in its module-level `_checkup_cache` (checkup.py:15).
-
-**Action:** Clean backend restart. Do NOT hardcode 0.593 in frontend — that masks future
-gazette updates and violates the "no fabricated numbers" rule. Report this to the user.
-
-### Issue B — Claim validator has no SUT code input (REAL BUG, frontend fix)
-
-**Verified facts:**
-- Backend `price_material_lines` (materials.py:64-65): material with no `code` ->
-  notes="material code required for exact EK-3 pricing", source="missing_code",
-  exactness_status=missing_exact_inputs. This is the error the user sees.
-- `materials.py:55-56`: name drives bundling/exclusion rules; code drives exact EK-3 pricing.
-  Both are meaningful; they are complementary, not redundant.
-- `SutMaterialItem` (sut.ts:36-41) already has optional `code?` — wired in API client.
-- `EMPTY_MATERIAL` (shared.tsx:191) omits code.
-- `ClaimValidatorSection.tsx:206-227` material row: inputs for name/unit_price/qty only.
-- `ClaimValidatorSection.tsx:100`: `validMaterials = filter(name !== "")` — currently
-  requires a name to even submit.
-
-**Fix:**
-- Add a `code` input to the material row (SUT/EK-3 material code).
-- Update `EMPTY_MATERIAL` to include `code: ""`.
-- Loosen validity gate: a material is submittable if it has a name OR a code.
-- Adjust the row grid template (4 cols -> 5 cols) so the new field fits.
-- Add i18n keys: `code` label + placeholder, TR + EN.
-
-### Subtasks
-- [ ] shared.tsx: add `code: ""` to EMPTY_MATERIAL
-- [ ] ClaimValidatorSection.tsx: add code input to material row; widen grid template
-- [ ] ClaimValidatorSection.tsx: relax validity filter to name OR code
-- [ ] messages/tr/sections.ts + messages/en/sections.ts: add `code` + `codePlaceholder`
-- [ ] tsc --noEmit + eslint + vitest green
-
-### Out of scope
-- Katsayı code (backend + data are already 0.593; restart fixes the display)
-- Backend rule engine / materials.py (correct by design)
-- Procedure-code lookup (already works)
-
-### Verification
-- Manual: enter a material with name + EK-3 code -> no "material code required" note,
-  priced from ek3_code source. Enter code only -> still submittable.
-- tsc + lint + 140 vitest green.
+- No changes to `models.py`/`schema.py`/algorithms — consumed column set unchanged.
+- No regen/replace of the existing synthetic xlsx or parquets (this is a NEW artifact).
+- No real Acibadem ETL/connector (separate `real_claims` workstream).
+- No filling of the Acibadem field column (blank template by design).
