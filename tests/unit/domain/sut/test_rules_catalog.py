@@ -152,7 +152,10 @@ class TestCoverageSummary:
         assert di["algorithmic_gap_rows"] > di["encoded_clause_rows"]
         assert di["unencoded_gap_rows"] > 0
         assert di["prose_rules_on_disk"] >= 131
-        assert di["encode_tier_c_deferred_count"] >= 500
+        # Tier-C deferred shrank after Bucket D cleanup (205 non-actionable removed).
+        assert di["encode_tier_c_deferred_count"] >= 300
+        # EMR-blocked clauses are honestly flagged (ECOG/progresyon/lab).
+        assert di["emr_blocked_rows"] > 0
 
     @_needs_coverage
     def test_coverage_summary_exposes_material_partial_engines(self) -> None:

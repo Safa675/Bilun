@@ -6,7 +6,7 @@
     "4.2",
     "4.2.14.C"
   ],
-  "coverage_note": "Sprint 1 — 131 rules for §4.2.14.C; Tier A/B pending manifest clauses encoded.",
+  "coverage_note": "§4.2.14.C oncology (164 rules: Tier-A/B base + Bucket A prescriber + Bucket B biomarker/prior-therapy) + §4.2.33 anti-VEGF (21 rules).",
   "rules": [
     {
       "rule_id": "4.2.14.C.(1).aflibercept_crc_board",
@@ -2973,6 +2973,914 @@
         "C005276",
         "C005278"
       ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C004933.filgrastim",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "filgrastim",
+        "lenograstim",
+        "pegfilgrastim",
+        "lipegfilgrastim"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C004933"
+      ],
+      "message_tr": "(2) Filgrastim, lenograstim, pegfilgrastim ve lipegfilgrastim; (Değişik:RG-02/11/2024-32710/14md.  Yürürlük:09/11/2024) en az bir hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 a",
+      "prescriber_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "report_duration_months": 6,
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C004986.floxuridin",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "floxuridin"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C004986"
+      ],
+      "message_tr": "ğ) Floxuridin; Sadece kolon kanserinin karaciğere çoklu metastazlarında ilacın onaylı prospektüs bilgileri dikkate alınarak, intraarterial yolla en fazla 6 kür olarak tıbbi onkoloji, genel cerrahi ve",
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "max_applications_per_year": 6,
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C005019.dasatinib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "dasatinib",
+        "nilotinib"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C005019"
+      ],
+      "message_tr": "Sağlık Bakanlığınca onaylanan prospektüslerinde yer alan endikasyonlarda kullanılmak üzere, söz konusu ilaçların prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji",
+      "prescriber_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "report_duration_months": 6,
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C005020.dasatinib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "dasatinib"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C005020"
+      ],
+      "message_tr": "1) Dasatinib; prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji uzmanının yer aldığı, en fazla 6 ay süre ile geçerli sağlık kurulu raporu ile tıbbi onkoloji veya",
+      "prescriber_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "report_duration_months": 6,
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C005097.everolimus",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "everolimus",
+        "sunitinib",
+        "sorafenib"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C005097"
+      ],
+      "message_tr": "p) Everolimus; (Değişik: RG- 04/05/2013- 28637/ 12-c md. Yürürlük: 11/05/2013) Daha önce sunitinib veya sorafenib kullanmış ve direnç göstermiş olan metastatik renal hücreli hastalarda en az bir tıbbi",
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "report_duration_months": 6,
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C005131.kabazitaksel",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "kabazitaksel",
+        "abirateron",
+        "enzalutamid"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C005131"
+      ],
+      "message_tr": "5) (Değişik: RG- 18/02/2017- 29983/ 9-a md. Yürürlük: 01/03/2017) Kabazitaksel ve abirateron ardışık olarak kullanılamaz. Kabazitaksel, enzalutamid ve abirateron ardışık olarak kullanılamaz.",
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C005272.hidroksiüre",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "hidroksiüre"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C005272"
+      ],
+      "message_tr": "1- En az 2 g/gün veya hastanın tolere edebileceği maksimum dozda hidroksiüre kullanan polistemi vera tanılı hastalarda en az 3 aylık tedaviye rağmen;",
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C005314.mifamurtide",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "mifamurtide"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C005314"
+      ],
+      "message_tr": "ii) Mifamurtide; Yaşları 2-30 arasında değişen çocuk, ergen ve genç yetişkinlerdeki; makroskopik olarak tam rezeke edilmiş, metastatik olmayan, yüksek evreli osteosarkom tedavisinde, çoklu ajan kemote",
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C005402.erlotinib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "erlotinib",
+        "gefitinib",
+        "dakomitinib",
+        "afatinib"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C005402"
+      ],
+      "message_tr": "3)  Erlotinib, gefitinib (Ek: RG- 09/05/2024- 32541/10-k md. Yürürlük:17/05/2024), dakomitinib ve afatinib etken maddeli ilaçların ardışık ya da kombine kullanılması halinde bedelleri Kurumca karşılan",
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "combo_prohibition": true,
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C005658.gemtuzumab",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "gemtuzumab"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C005658"
+      ],
+      "message_tr": "jjj) Gemtuzumab ozogamisin; 15 yaş ve üzerinde daha önce tedavi edilmemiş, de novo CD33 pozitif, düşük (akut promyelositik lösemi hariç) ve orta sitogenetik ve moleküler risk grubunda olduğu gösterilm",
+      "prescriber_specialties": [
+        "hematoloji"
+      ],
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "report_duration_months": 6,
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c.C005698.erlotinib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "erlotinib",
+        "gefitinib",
+        "dakomitinib",
+        "afatinib"
+      ],
+      "report_required": true,
+      "gate_b_sources": [
+        "C005698"
+      ],
+      "message_tr": "3) Erlotinib, gefitinib, dakomitinib ve afatinib etkin maddeli ilaçların ardışık ya da kombine kullanılması halinde bedelleri Kurumca karşılanmaz. Erlotinib, dakomitinib, gefitinib ve afatinib etkin m",
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "combo_prohibition": true,
+      "icd10_ranges": [
+        "C00-C97"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C004939.trastuzumab",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trastuzumab"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C004939"
+      ],
+      "message_tr": "a) Trastuzumab; HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda;",
+      "required_biomarkers": [
+        {
+          "marker": "HER2",
+          "status_any": [
+            "3+",
+            "positive",
+            "pozitif"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C004942.trastuzumab",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trastuzumab"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C004942"
+      ],
+      "message_tr": "a) Trastuzumab; 1) HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda,  metastatik meme kanseri endikasyonunda, bu durumun belirtildiği tıbbi onkoloji uzman hekiminin yer aldığı sağl",
+      "required_biomarkers": [
+        {
+          "marker": "HER2",
+          "status_any": [
+            "3+",
+            "positive",
+            "pozitif"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C004944.trastuzumab",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trastuzumab"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C004944"
+      ],
+      "message_tr": "2) HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda,   erken evre meme kanseri endikasyonunda, tedavi süresi 9 haftadır. Tedavinin 52 haftaya tamamlanması düşünülen durumlarda, 9 h",
+      "required_biomarkers": [
+        {
+          "marker": "HER2",
+          "status_any": [
+            "3+",
+            "positive",
+            "pozitif"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005021.nilotinib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "nilotinib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005021"
+      ],
+      "message_tr": "2) Nilotinib yalnızca; İmatinib dahil önceki tedavilere dirençli veya intolere, Philadelphia kromozomu pozitif kronik evre veya hızlanmış evre kronik miyeloid lösemi tanılı yetişkin hastaların tedavis",
+      "required_biomarkers": [
+        {
+          "marker": "BCR_ABL",
+          "status_any": [
+            "positive",
+            "pozitif"
+          ]
+        }
+      ],
+      "requires_prior_therapy": {
+        "drug_or_class": "prior_therapy",
+        "outcome": "resistant"
+      }
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005024.dasatinib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "dasatinib",
+        "imatinib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005024"
+      ],
+      "message_tr": "1) Dasatinib; imatinib dahil önceki tedavilere dirençli veya intolere (aşağıdaki 4. ve 5. maddede belirtilen koşullarda), Philadelphia kromozomu pozitif kronik, hızlanmış veya blastik evre kronik miye",
+      "required_biomarkers": [
+        {
+          "marker": "BCR_ABL",
+          "status_any": [
+            "positive",
+            "pozitif"
+          ]
+        }
+      ],
+      "requires_prior_therapy": {
+        "drug_or_class": "imatinib",
+        "outcome": "resistant_or_intolerant"
+      }
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005043.bosutinib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bosutinib",
+        "imatinib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005043"
+      ],
+      "message_tr": "7) Bosutinib; imatinib dahil önceki tedavilere dirençli veya intolere (yukarıdaki 4. ve 5. maddede belirtilen koşullarda) kronik faz (KF), akselere faz (AF) veya blastik faz (BF) Philadelphia kromozom",
+      "required_biomarkers": [
+        {
+          "marker": "BCR_ABL",
+          "status_any": [
+            "positive",
+            "pozitif"
+          ]
+        }
+      ],
+      "requires_prior_therapy": {
+        "drug_or_class": "imatinib",
+        "outcome": "resistant_or_intolerant"
+      }
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005045.dasatinib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "dasatinib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005045"
+      ],
+      "message_tr": "1) Dasatinib; Relaps/refrakter Philadelphia kromozomu pozitif (Ph+) ALL (akut lenfoblastik lösemili) yetişkin hastaların tedavisinde çoklu ajanlı kemoterapi şemaları ile birlikte içinde en az bir hema",
+      "required_biomarkers": [
+        {
+          "marker": "BCR_ABL",
+          "status_any": [
+            "positive",
+            "pozitif"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005067.sorafenib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "sorafenib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005067"
+      ],
+      "message_tr": "3) Tiroid kanseri endikasyonunda; daha önce VEGF-TKİ gibi hedefe yönelik bir tedavi almamış cerrahi ve radyoterapi gibi lokal tedavilere uygun olmayan veya bu tedaviler sonrası progresyon gösteren, so",
+      "requires_prior_therapy": {
+        "drug_or_class": "prior_therapy",
+        "outcome": "resistant"
+      }
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005117.panitumumab",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "panitumumab"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005117"
+      ],
+      "message_tr": "1) Daha önce panitumumab veya diğer anti-EGFR (Anti-Epidermal Büyüme Faktörü Reseptörü) tedavileri kullanmamış, ECOG performans skoru 0-1 olan, (Değişik: RG-09/09/2017- 30175/ 20-b md. Yürürlük: 23/09",
+      "required_biomarkers": [
+        {
+          "marker": "KRAS",
+          "status_any": [
+            "wild_type",
+            "wild-type",
+            "mutant",
+            "mutasyon"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005217.trametinib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trametinib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005217"
+      ],
+      "message_tr": "a) Daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 olan, BRAF V600 mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavilerin tekrar",
+      "required_biomarkers": [
+        {
+          "marker": "BRAF",
+          "status_any": [
+            "V600E",
+            "mutant",
+            "mutasyon"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005218.trametinib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trametinib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005218"
+      ],
+      "message_tr": "b) BRAF V600 E mutasyonu pozitif Evre III malign melanomu olan hastaların tam rezeksiyonu takiben adjuvan tedavisinde progresyona kadar en fazla 12 ay süreyle; trametinib ile kombine kullanılması ve t",
+      "required_biomarkers": [
+        {
+          "marker": "BRAF",
+          "status_any": [
+            "V600E",
+            "mutant",
+            "mutasyon"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005220.dabrafenib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "dabrafenib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005220"
+      ],
+      "message_tr": "a) Daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 olan, BRAF V600 mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavilerin tekrar",
+      "required_biomarkers": [
+        {
+          "marker": "BRAF",
+          "status_any": [
+            "V600E",
+            "mutant",
+            "mutasyon"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005221.dabrafenib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "dabrafenib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005221"
+      ],
+      "message_tr": "b) BRAF V600 E mutasyonu pozitif Evre III malign melanomu olan hastaların tam rezeksiyonu takiben adjuvan tedavisinde progresyona kadar en fazla 12 ay süreyle; dabrafenib ile kombine kullanılması ve t",
+      "required_biomarkers": [
+        {
+          "marker": "BRAF",
+          "status_any": [
+            "V600E",
+            "mutant",
+            "mutasyon"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005222.vemurafenib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "vemurafenib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005222"
+      ],
+      "message_tr": "3) Kobimetinib; daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 olan, BRAF V600 mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavi",
+      "required_biomarkers": [
+        {
+          "marker": "BRAF",
+          "status_any": [
+            "V600E",
+            "mutant",
+            "mutasyon"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005223.vemurafenib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "vemurafenib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005223"
+      ],
+      "message_tr": "4) Vemurafenib; daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 olan, BRAF V600 mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavi",
+      "required_biomarkers": [
+        {
+          "marker": "BRAF",
+          "status_any": [
+            "V600E",
+            "mutant",
+            "mutasyon"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005294.trastuzumab",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trastuzumab",
+        "pertuzumab"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005294"
+      ],
+      "message_tr": "gg) pertuzumab; daha önce metastatik hastalığı için sistemik kemoterapi veya trastuzumab tedavisi almamış, ECOG performans skoru 0-1 olan, HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan, vi",
+      "required_biomarkers": [
+        {
+          "marker": "HER2",
+          "status_any": [
+            "3+",
+            "positive",
+            "pozitif"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005505.obinutuzumab",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "obinutuzumab"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005505"
+      ],
+      "message_tr": "2) Daha önce tedavi edilmemiş, 17p delesyonu, TP53 mutasyonu, CD38 pozitifliği (%30), ZAP70 pozitifliği (%20) veya immunoglobulin variable bölge mutasyonu yokluğu özelliklerinden herhangi birine sahip",
+      "required_biomarkers": [
+        {
+          "marker": "TP17_DELETION",
+          "status_any": [
+            "present",
+            "var"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005539.bortezomib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bortezomib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005539"
+      ],
+      "message_tr": "2) Otolog kök hücre nakline uygun olan, bortezomib, lenalidomid ve otolog nakil destekli yüksek doz kemoterapötik ilaç içeren en az üç seri tedaviyi uygun dozda ve yeterli sürede kullanmış olmasına ra",
+      "requires_prior_therapy": {
+        "drug_or_class": "stem_cell_transplant",
+        "outcome": "completed"
+      }
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005543.bortezomib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bortezomib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005543"
+      ],
+      "message_tr": "1) Otolog kök hücre nakline uygun olmayan, bortezomib ve immünomodülatör ilaç içeren en az iki seri tedaviyi uygun dozda ve yeterli sürede kullanmış olmasına rağmen yanıt alınamayan veya nüks gelişen",
+      "requires_prior_therapy": {
+        "drug_or_class": "stem_cell_transplant",
+        "outcome": "completed"
+      }
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005544.bortezomib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bortezomib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005544"
+      ],
+      "message_tr": "2) Otolog kök hücre nakline uygun olan, bortezomib, lenalidomid ve otolog nakil destekli yüksek doz kemoterapötik ilaç içeren en az iki seri tedaviyi uygun dozda ve yeterli sürede kullanmış olmasına r",
+      "requires_prior_therapy": {
+        "drug_or_class": "stem_cell_transplant",
+        "outcome": "completed"
+      }
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005545.bortezomib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bortezomib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005545"
+      ],
+      "message_tr": "3) Daha önce lenalidomid de dahil olmak üzere en az bir tedavi rejimi alan, bu tedavilere dirençli veya nüks eden multiple miyelomlu erişkin hastaların tedavisinde bortezomib ve deksametazon ile kombi",
+      "requires_prior_therapy": {
+        "drug_or_class": "prior_therapy",
+        "outcome": "resistant"
+      }
+    },
+    {
+      "rule_id": "4.2.14.C.tier_c_b.C005707.bortezomib",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "bortezomib"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "icd10_ranges": [
+        "C00-C97"
+      ],
+      "gate_b_sources": [
+        "C005707"
+      ],
+      "message_tr": "1) Daha önce en az 1-3 sıra multiple myelom tedavisini uygun dozda ve yeterli sürede kullanmış ve önceki tedavilerle Proteazom İnhibitörüne (PI) dirençli olmayan (önceki PI ile en az kısmi yanıt elde",
+      "requires_prior_therapy": {
+        "drug_or_class": "prior_therapy",
+        "outcome": "resistant"
+      }
     }
   ]
 }

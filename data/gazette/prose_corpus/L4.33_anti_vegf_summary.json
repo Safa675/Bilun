@@ -1,0 +1,30 @@
+{
+  "section_4_2_33_total_clauses": 136,
+  "export_row_count": 166,
+  "unique_inn_clauses": 121,
+  "inn_counts": {
+    "ranibizumab": 32,
+    "aflibersept": 29,
+    "deksametazon": 21,
+    "bevacizumab": 21,
+    "verteporfin": 10,
+    "siklosporin": 3,
+    "pegaptanib": 3,
+    "sisteamin": 2
+  },
+  "indication_group_counts": {
+    "diger_goz_hastaliklari": 4,
+    "diyabetik_makuler_odem_dmo": 30,
+    "general_4_2_33": 76,
+    "patolojik_miyopi_koroidal_neovaskularizasyon": 10,
+    "premature_retinopatisi_rop": 2,
+    "retina_ven_dali_tikanikligi_rvdt_srvt": 19,
+    "yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd": 25
+  },
+  "dose_protocol_hits": {
+    "loading_dose_count_extracted": 31,
+    "max_applications_per_year_extracted": 1,
+    "gunubirlik_signal": 10
+  },
+  "note": "§4.2.33 anti-VEGF / göz ilaçları corpus. ICD-10 endikasyondan çıkarıldı (SUT metninde değil). Doz protokolü regex best-effort — Phase 2 golden-file review'de elle doğrulanmalı. anti_vegf_prose.json üretimi için temel."
+}

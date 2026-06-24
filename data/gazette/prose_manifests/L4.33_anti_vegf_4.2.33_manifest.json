@@ -1,0 +1,134 @@
+{
+  "manifest_version": "1.0",
+  "section_id": "4.2.33",
+  "effective_date": "2026-05-23",
+  "rule_set_id": "anti_vegf_prose",
+  "rules_in_json": 21,
+  "section_clause_total": 136,
+  "clause_trace_complete": false,
+  "manifest_coverage_pct": 22.8,
+  "encoded_clause_count": 31,
+  "encoded_clause_ids": [
+    "C006457",
+    "C006458",
+    "C006462",
+    "C006463",
+    "C006464",
+    "C006472",
+    "C006473",
+    "C006480",
+    "C006481",
+    "C006488",
+    "C006489",
+    "C006495",
+    "C006497",
+    "C006498",
+    "C006499",
+    "C006508",
+    "C006512",
+    "C006518",
+    "C006519",
+    "C006526",
+    "C006527",
+    "C006548",
+    "C006552",
+    "C006564",
+    "C006565",
+    "C006567",
+    "C006570",
+    "C006571",
+    "C006582",
+    "C006583",
+    "C006586"
+  ],
+  "clause_traces": {
+    "4.2.33.A.pegaptanib_wet_amd": [
+      "C006457"
+    ],
+    "4.2.33.A.ranibizumab_wet_amd": [
+      "C006458",
+      "C006472",
+      "C006473"
+    ],
+    "4.2.33.A.aflibersept_wet_amd": [
+      "C006472",
+      "C006473"
+    ],
+    "4.2.33.A.verteporfin_wet_amd": [
+      "C006457"
+    ],
+    "4.2.33.A.bevacizumab_wet_amd": [
+      "C006512",
+      "C006518",
+      "C006519",
+      "C006526",
+      "C006527"
+    ],
+    "4.2.33.B.deksametazon_itv_implant_rvdt_srvt": [
+      "C006462",
+      "C006463",
+      "C006464",
+      "C006481"
+    ],
+    "4.2.33.B.ranibizumab_rvdt_srvt": [
+      "C006480"
+    ],
+    "4.2.33.B.aflibersept_rvdt_srvt": [
+      "C006480"
+    ],
+    "4.2.33.B.bevacizumab_rvdt_srvt": [
+      "C006564",
+      "C006565"
+    ],
+    "4.2.33.C.bevacizumab_pm_knv": [
+      "C006567",
+      "C006527"
+    ],
+    "4.2.33.C.ranibizumab_pm_knv": [
+      "C006488",
+      "C006489"
+    ],
+    "4.2.33.C.aflibersept_pm_knv": [
+      "C006488",
+      "C006489"
+    ],
+    "4.2.33.Ç.bevacizumab_dmo": [
+      "C006570",
+      "C006571"
+    ],
+    "4.2.33.Ç.deksametazon_itv_dmo": [
+      "C006570"
+    ],
+    "4.2.33.D.ranibizumab_dmo": [
+      "C006495",
+      "C006497",
+      "C006498",
+      "C006499"
+    ],
+    "4.2.33.D.aflibersept_dmo": [
+      "C006495",
+      "C006497",
+      "C006552"
+    ],
+    "4.2.33.D.deksametazon_itv_dmo": [
+      "C006495",
+      "C006481"
+    ],
+    "4.2.33.D.bevacizumab_dmo": [
+      "C006512",
+      "C006519",
+      "C006548"
+    ],
+    "4.2.33.E.siklosporin_kuru_goz": [
+      "C006508"
+    ],
+    "4.2.33.E.sisteamin_sistinozis": [
+      "C006582",
+      "C006583"
+    ],
+    "4.2.33.F.ranibizumab_rop": [
+      "C006586"
+    ]
+  },
+  "note": "§4.2.33 anti-VEGF / göz ilaçları encode manifest. 21 INN kuralı 31 clause'u izliyor (gate_b_sources). Geri kalan ~105 clause başlık/amendment/etkinlik kriteri/tanımsal (non-actionable) veya Tier C deferred. drug_indication_prose loader'ı tarafından §4.2.14.C ile birleştirilir."
+}

@@ -15,6 +15,14 @@ class MaterialItem(BaseModel):
     unit_price: float = 0.0
     quantity: int = 1
     billed_amount: float = 0.0
+    # §4.2.33 anti-VEGF dose protocol (intravitreal injection counts) — optional,
+    # only meaningful for ophthalmology drug claims; ignored otherwise.
+    annual_application_count: int | None = None
+    is_loading_phase: bool | None = None
+    # §4.2.14.C oncology biomarker + prior-therapy gating — optional, only for
+    # indication-gated oncology drug claims; ignored otherwise.
+    biomarkers: list[dict[str, str]] | None = None
+    prior_therapies: list[dict[str, str]] | None = None
 
 
 class ClaimValidationRequest(BaseModel):

@@ -16,6 +16,10 @@ _DRUG_INDICATION_MANIFEST = (
     Path(__file__).resolve().parents[3]
     / "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"
 )
+_ANTI_VEGF_MANIFEST = (
+    Path(__file__).resolve().parents[3]
+    / "data/gazette/prose_manifests/L4.33_anti_vegf_4.2.33_manifest.json"
+)
 _MANIFEST_DIR = Path(__file__).resolve().parents[3] / "data/gazette/prose_manifests"
 _WAVE2_MANIFESTS: dict[str, str] = {
     "gazette_repricing": "L2.2_gazette_repricing_encoded_manifest.json",
@@ -69,8 +73,37 @@ def _manifest_clause_ids_from_payload(payload: dict[str, Any]) -> frozenset[str]
     return frozenset(ids)
 
 
+def _load_drug_indication_emr_blocked_clause_ids() -> frozenset[str]:
+    """Clause IDs that are genuinely EMR-blocked (ECOG, progression, lab values).
+
+    These cannot be encoded from claim fields alone — they require clinical
+    assessment data. Loaded from the §4.2.14.C manifest's emr_blocked_clause_ids.
+    """
+    if not _ANTI_VEGF_MANIFEST.parent.joinpath(
+        "L4.2_drug_indication_4.2.14.C_manifest.json"
+    ).is_file():
+        return frozenset()
+    payload = json.loads(
+        _ANTI_VEGF_MANIFEST.parent.joinpath(
+            "L4.2_drug_indication_4.2.14.C_manifest.json"
+        ).read_text(encoding="utf-8")
+    )
+    return frozenset(str(c) for c in (payload.get("emr_blocked_clause_ids") or []))
+
+
 def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
-    return _load_encoded_clause_ids("L4.2_drug_indication_4.2.14.C_manifest.json")
+    """Encoded clause IDs for the merged drug_indication corpus.
+
+    Combines §4.2.14.C (oncology) + §4.2.33 (anti-VEGF) manifests so coverage
+    rebuild marks ophthalmology clauses as encoded when they trace to a rule.
+    """
+    onco = _load_encoded_clause_ids("L4.2_drug_indication_4.2.14.C_manifest.json")
+    if _ANTI_VEGF_MANIFEST.is_file():
+        anti_vegf = _manifest_clause_ids_from_payload(
+            json.loads(_ANTI_VEGF_MANIFEST.read_text(encoding="utf-8"))
+        )
+        return onco | anti_vegf
+    return onco
 
 
 def _load_wave2_encoded_clause_ids(rule_id: str) -> frozenset[str]:
@@ -97,6 +130,7 @@ def _json_list(raw: str) -> list[str]:
 def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     encoded_clause_ids = _load_drug_indication_encoded_clause_ids()
+    emr_blocked_ids = _load_drug_indication_emr_blocked_clause_ids()
 
     for _, row in classified.iterrows():
         primary_rule_id = row.get("primary_rule_id")
@@ -173,6 +207,7 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
                 "coverage_notes": coverage_notes,
                 "has_algorithmic_gap": has_algorithmic_gap,
                 "has_rule_encoding": has_rule_encoding,
+                "emr_blocked": clause_id in emr_blocked_ids,
             }
         )
 

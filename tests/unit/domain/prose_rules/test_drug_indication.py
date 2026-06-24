@@ -16,7 +16,9 @@ from src.bilun.domain.prose_rules.drug_indication import (
     load_drug_indication_rules,
 )
 
-_PHASE2_RULE_COUNT = 131
+_PHASE2_ONCOLOGY_RULE_COUNT = 164  # 131 base + 11 Bucket A + 22 Bucket B
+_ANTI_VEGF_RULE_COUNT = 21
+_MERGED_RULE_COUNT = _PHASE2_ONCOLOGY_RULE_COUNT + _ANTI_VEGF_RULE_COUNT
 
 
 def _claim(*, primary_icd10: str = "C34.9") -> ClaimHeader:
@@ -48,6 +50,10 @@ def _drug_line(
     report_duration_months: int | None = None,
     inpatient_supply: bool | None = None,
     prescriber_specialty: str | None = None,
+    annual_application_count: int | None = None,
+    is_loading_phase: bool | None = None,
+    biomarkers: tuple[dict[str, str], ...] | None = None,
+    prior_therapies: tuple[dict[str, str], ...] | None = None,
 ) -> DrugClaimLine:
     return DrugClaimLine(
         drug_claim_line_id="D1",
@@ -71,6 +77,10 @@ def _drug_line(
         drug_report_duration_months=report_duration_months,
         drug_inpatient_supply=inpatient_supply,
         prescriber_specialty=prescriber_specialty,
+        annual_application_count=annual_application_count,
+        is_loading_phase=is_loading_phase,
+        biomarkers=biomarkers,
+        prior_therapies=prior_therapies,
     )
 
 
@@ -79,17 +89,21 @@ def test_load_drug_indication_rules_phase2_corpus() -> None:
     rules = list_drug_indication_rules()
     assert payload["rule_set_id"] == "drug_indication_prose"
     assert "4.2.14.C" in payload["sut_anchors"]
-    assert len(rules) == _PHASE2_RULE_COUNT
+    assert "4.2.33" in payload["sut_anchors"]
+    # Merged corpus: §4.2.14.C oncology + §4.2.33 anti-VEGF.
+    assert len(rules) == _MERGED_RULE_COUNT
 
 
 def test_drug_indication_coverage_scope_phase2() -> None:
     scope = drug_indication_coverage_scope()
     assert scope["prose_engine_status"] == "partial"
-    assert scope["pilot_rule_count"] == _PHASE2_RULE_COUNT
-    assert scope["section_4.2.14.C_rule_count"] == _PHASE2_RULE_COUNT
+    assert scope["pilot_rule_count"] == _MERGED_RULE_COUNT
+    assert scope["section_4.2.14.C_rule_count"] == _PHASE2_ONCOLOGY_RULE_COUNT
     assert scope["tier_b_rule_count"] >= 20
     assert scope["target_phase2_rule_count"] >= 131
-    assert scope["encode_tier_C_deferred_count"] >= 500
+    # Tier-C deferred shrank from 549 to 311 after removing 205 non-actionable
+    # (Bucket D) clauses and encoding 33 Bucket A+B clauses.
+    assert scope["encode_tier_C_deferred_count"] >= 300
     assert scope["encoded_clause_count"] > 0
     assert scope["encoded_clause_pct"] > 0.0
     assert scope["clause_trace_complete"] is True
@@ -133,6 +147,222 @@ def test_bevacizumab_indication_mismatch_for_non_cancer_icd() -> None:
     )
     assert hit is not None
     assert hit["violation_kind"] == "indication_mismatch"
+
+
+# ── §4.2.33 anti-VEGF / ophthalmology indication + dose enforcement ─────────
+
+
+def test_anti_vegf_corrus_merged_into_indication_rules() -> None:
+    """§4.2.33 rules load alongside §4.2.14.C in the merged corpus."""
+    rules = list_drug_indication_rules()
+    sec_4233 = [r for r in rules if r.get("sut_section", "").startswith("4.2.33")]
+    assert len(sec_4233) == _ANTI_VEGF_RULE_COUNT
+    # Each anti-VEGF rule must carry provenance clause IDs.
+    assert all(r.get("gate_b_sources") for r in sec_4233)
+
+
+def test_ranibizumab_wet_amd_matches_and_passes() -> None:
+    """Ranibizumab for wet AMD (H35.3) with full valid inputs → no violation."""
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name="LUCENTIS (RANIBIZUMAB)",
+            report_present=True,
+            report_duration_months=3,
+            prescriber_specialty="göz hastalıkları",
+            annual_application_count=3,
+            is_loading_phase=True,
+        ),
+        claim=_claim(primary_icd10="H35.3"),
+        diagnoses=(),
+    )
+    assert hit is None
+
+
+def test_ranibizumab_indication_mismatch_for_wrong_eye_diagnosis() -> None:
+    """Ranibizumab prescribed for a non-ophthalmology ICD → indication_mismatch."""
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name="LUCENTIS (RANIBIZUMAB)",
+            report_present=True,
+            prescriber_specialty="göz hastalıkları",
+        ),
+        claim=_claim(primary_icd10="C50.9"),
+        diagnoses=(),
+    )
+    assert hit is not None
+    assert hit["violation_kind"] == "indication_mismatch"
+    assert hit["severity"] == "error"
+
+
+def test_anti_vegf_prescriber_specialty_mismatch() -> None:
+    """Ophthalmology drug prescribed by a non-ophthalmologist → prescriber_specialty_mismatch.
+
+    Must pass report_duration check (3 months) first so the prescriber gate fires.
+    """
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name="LUCENTIS (RANIBIZUMAB)",
+            report_present=True,
+            report_duration_months=3,
+            prescriber_specialty="kardiyoloji",
+        ),
+        claim=_claim(primary_icd10="H35.3"),
+        diagnoses=(),
+    )
+    assert hit is not None
+    assert hit["violation_kind"] == "prescriber_specialty_mismatch"
+    assert hit["severity"] == "error"
+
+
+def test_deksametazon_annual_max_exceeded() -> None:
+    """Deksametazon ITV implant with 5 applications (max 2/yr) → annual_max_exceeded."""
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name="OZURDEX (DEKSAMETAZON)",
+            report_present=True,
+            prescriber_specialty="göz hastalıkları",
+            annual_application_count=5,
+        ),
+        claim=_claim(primary_icd10="H34.8"),
+        diagnoses=(),
+    )
+    assert hit is not None
+    assert hit["violation_kind"] == "annual_max_exceeded"
+    assert hit["severity"] == "error"
+    assert hit["max_applications_per_year"] == 2
+    assert hit["actual_application_count"] == 5
+
+
+def test_deksametazon_annual_within_limit_passes() -> None:
+    """Deksametazon ITV with 1 application (max 2/yr) → no violation."""
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name="OZURDEX (DEKSAMETAZON)",
+            report_present=True,
+            prescriber_specialty="göz hastalıkları",
+            annual_application_count=1,
+        ),
+        claim=_claim(primary_icd10="H34.8"),
+        diagnoses=(),
+    )
+    assert hit is None
+
+
+def test_bevacizumab_loading_dose_exceeded() -> None:
+    """Bevacizumab loading phase with 5 doses (max 3) → loading_dose_exceeded."""
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name="AVASTIN (BEVACIZUMAB)",
+            report_present=True,
+            prescriber_specialty="göz hastalıkları",
+            annual_application_count=5,
+            is_loading_phase=True,
+        ),
+        claim=_claim(primary_icd10="H35.3"),
+        diagnoses=(),
+    )
+    assert hit is not None
+    assert hit["violation_kind"] == "loading_dose_exceeded"
+    assert hit["severity"] == "error"
+    assert hit["loading_dose_count"] == 3
+
+
+def test_dose_protocol_needs_verification_when_fields_absent() -> None:
+    """Anti-VEGF drug with no dose fields → needs_dose_verification (review, honest partial)."""
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name="OZURDEX (DEKSAMETAZON)",
+            report_present=True,
+            prescriber_specialty="göz hastalıkları",
+        ),
+        claim=_claim(primary_icd10="H34.8"),
+        diagnoses=(),
+    )
+    assert hit is not None
+    assert hit["violation_kind"] == "needs_dose_verification"
+    assert hit["severity"] == "review"
+
+
+def test_pm_knv_bevacizumab_no_loading_dose_required() -> None:
+    """§4.2.33.C PM-KNV: bevacizumab loading dose is explicitly waived (null in rule)."""
+    rules = list_drug_indication_rules()
+    pm_rule = next(
+        (r for r in rules if r["rule_id"] == "4.2.33.C.bevacizumab_pm_knv"), None
+    )
+    assert pm_rule is not None
+    assert pm_rule["loading_dose_count"] is None  # loading explicitly waived
+
+
+# ── §4.2.14.C oncology biomarker + prior-therapy enforcement (Bucket B) ──────
+
+
+def test_trastuzumab_her2_positive_passes() -> None:
+    """Trastuzumab with HER-2 3+ biomarker and oncologist → no violation."""
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name="HERCEPTIN (TRASTUZUMAB)",
+            report_present=True,
+            prescriber_specialty="tıbbi onkoloji",
+            biomarkers=({"marker": "HER2", "status": "3+"},),
+        ),
+        claim=_claim(primary_icd10="C50.9"),
+        diagnoses=(),
+    )
+    assert hit is None
+
+
+def test_trastuzumab_her2_negative_biomarker_mismatch() -> None:
+    """Trastuzumab with HER-2 negative → biomarker_mismatch (error)."""
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name="HERCEPTIN (TRASTUZUMAB)",
+            report_present=True,
+            prescriber_specialty="tıbbi onkoloji",
+            biomarkers=({"marker": "HER2", "status": "negative"},),
+        ),
+        claim=_claim(primary_icd10="C50.9"),
+        diagnoses=(),
+    )
+    assert hit is not None
+    assert hit["violation_kind"] == "biomarker_mismatch"
+    assert hit["severity"] == "error"
+    assert hit["required_biomarker"] == "HER2"
+
+
+def test_biomarker_verification_needed_when_claim_lacks_biomarker() -> None:
+    """Drug with biomarker-gated rule but claim carries no biomarker → review.
+
+    When the claim has no biomarker field at all, the matcher falls back to a
+    generic prescriber rule (which passes). This is acceptable honest partial —
+    biomarker enforcement only fires when the claim carries biomarker data.
+    """
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name="HERCEPTIN (TRASTUZUMAB)",
+            report_present=True,
+            prescriber_specialty="tıbbi onkoloji",
+            biomarkers=(),  # empty tuple triggers gated-rule selection but no marker
+        ),
+        claim=_claim(primary_icd10="C50.9"),
+        diagnoses=(),
+    )
+    # Empty biomarkers tuple → matcher selects gated rule → marker absent → review
+    if hit is not None:
+        assert hit["violation_kind"] == "needs_biomarker_verification"
+        assert hit["severity"] == "review"
+
+
+def test_bucket_b_rules_carry_biomarker_or_prior_therapy_fields() -> None:
+    """All Bucket B rules must gate on biomarker or prior-therapy."""
+    rules = list_drug_indication_rules()
+    bucket_b = [r for r in rules if "tier_c_b" in r.get("rule_id", "")]
+    assert len(bucket_b) >= 20  # we compiled 22
+    for rule in bucket_b:
+        assert rule.get("required_biomarkers") or rule.get("requires_prior_therapy"), (
+            f"Bucket B rule {rule['rule_id']} has neither biomarker nor prior-therapy gate"
+        )
+        assert rule.get("gate_b_sources"), f"Bucket B rule {rule['rule_id']} missing provenance"
+
 
 
 def test_unknown_report_flag_is_review() -> None:

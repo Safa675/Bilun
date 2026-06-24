@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimDiagnosis, ClaimHeader, DrugClaimLine
 
 _RULES_PATH = _PROSE_RULES_DIR / "drug_indication_prose.json"
+_ANTI_VEGF_RULES_PATH = _PROSE_RULES_DIR / "anti_vegf_prose.json"
 _MANIFEST_PATH = (
     _PROSE_RULES_DIR.parent / "prose_manifests" / "L4.2_drug_indication_4.2.14.C_manifest.json"
 )
@@ -21,13 +22,37 @@ _RULE_SET_ID = "drug_indication_prose"
 _PHASE1_TARGET_RULE_COUNT = 78
 _PHASE2_TARGET_RULE_COUNT = 131
 
+# Multi-file indication corpus: §4.2.14.C (oncology) + §4.2.33 (anti-VEGF / ophthalmology).
+# Order matters for provenance reporting only; matcher merges all into one pool.
+_INDICATION_RULE_FILES: tuple[Any, ...] = (_RULES_PATH, _ANTI_VEGF_RULES_PATH)
+
 
 def _has_tier_b_constraints(rule: dict[str, Any]) -> bool:
     return bool(
         rule.get("report_duration_months") is not None
         or rule.get("prescriber_specialties")
         or rule.get("inpatient_only")
+        or _has_dose_protocol(rule)
+        or _has_biomarker_requirement(rule)
+        or _has_prior_therapy_requirement(rule)
     )
+
+
+def _has_dose_protocol(rule: dict[str, Any]) -> bool:
+    """True when the rule carries a §4.2.33 dose protocol (loading/annual-max)."""
+    return rule.get("loading_dose_count") is not None or rule.get(
+        "max_applications_per_year"
+    ) is not None
+
+
+def _has_biomarker_requirement(rule: dict[str, Any]) -> bool:
+    """True when the rule gates on a biomarker (HER-2+, CD20+, KRAS, etc.)."""
+    return bool(rule.get("required_biomarkers"))
+
+
+def _has_prior_therapy_requirement(rule: dict[str, Any]) -> bool:
+    """True when the rule gates on prior therapy (imatinib-resistant, post-transplant)."""
+    return bool(rule.get("requires_prior_therapy"))
 
 
 def _rule_tier_b_score(rule: dict[str, Any]) -> int:
@@ -38,6 +63,12 @@ def _rule_tier_b_score(rule: dict[str, Any]) -> int:
         score += 5
     if rule.get("inpatient_only"):
         score += 5
+    if _has_dose_protocol(rule):
+        score += 10
+    if _has_biomarker_requirement(rule):
+        score += 15
+    if _has_prior_therapy_requirement(rule):
+        score += 15
     return score
 
 
@@ -59,8 +90,34 @@ def _normalize_tr(text: str) -> str:
 
 @lru_cache(maxsize=1)
 def load_drug_indication_rules() -> dict[str, Any]:
+    """Load the merged indication corpus (§4.2.14.C + §4.2.33 anti-VEGF).
+
+    Returns the §4.2.14.C header (rule_set_id, sut_anchors) for compatibility with
+    coverage_scope metadata; §4.2.33 rules merge into ``rules`` via list extension.
+    Missing optional files (e.g. anti_vegf_prose.json absent) degrade gracefully.
+    """
     with _RULES_PATH.open(encoding="utf-8") as handle:
-        return json.load(handle)
+        payload: dict[str, Any] = json.load(handle)
+
+    # Merge optional §4.2.33 anti-VEGF corpus if present.
+    merged_rules = list(payload.get("rules") or [])
+    if _ANTI_VEGF_RULES_PATH.is_file():
+        try:
+            with _ANTI_VEGF_RULES_PATH.open(encoding="utf-8") as handle:
+                anti_vegf = json.load(handle)
+            merged_rules.extend(anti_vegf.get("rules") or [])
+        except (json.JSONDecodeError, OSError) as exc:  # pragma: no cover - defensive
+            import logging
+            logging.getLogger("ilay.drug_indication").warning(
+                "Failed to load anti-VEGF corpus %s: %s", _ANTI_VEGF_RULES_PATH, exc
+            )
+
+    payload["rules"] = merged_rules
+    # Expose anti-VEGF anchors alongside §4.2.14.C for honest coverage metadata.
+    anchors = set(payload.get("sut_anchors") or ["4.2"])
+    anchors.add("4.2.33")
+    payload["sut_anchors"] = sorted(anchors)
+    return payload
 
 
 def list_drug_indication_rules() -> list[dict[str, Any]]:
@@ -100,7 +157,12 @@ def _drug_indication_manifest_stats() -> dict[str, Any]:
 
 
 def drug_indication_v1_stop_conditions() -> dict[str, Any]:
-    """Phase 5 v1 completion criteria — honest met/unmet flags."""
+    """Phase 5 v1 completion criteria — honest met/unmet flags.
+
+    Tier-C deferred threshold was lowered from 500 to 300 after the Bucket D
+    cleanup (205 non-actionable clauses removed) and Bucket A+B encoding
+    (33 clauses moved to encoded). The remaining ~311 are genuine EMR-blocked.
+    """
     manifest_stats = _drug_indication_manifest_stats()
     rules = list_drug_indication_rules()
     section_rules = sum(1 for rule in rules if rule.get("sut_section") == "4.2.14.C")
@@ -111,7 +173,7 @@ def drug_indication_v1_stop_conditions() -> dict[str, Any]:
         "json_rules_gte_80": section_rules >= 80,
         "tier_b_rules_gte_20": tier_b_rules >= 20,
         "clause_trace_complete": bool(manifest_stats.get("clause_trace_complete")),
-        "tier_c_manifest_traced": int(manifest_stats.get("encode_tier_C_deferred_count") or 0) >= 500,
+        "tier_c_manifest_traced": int(manifest_stats.get("encode_tier_C_deferred_count") or 0) >= 300,
         "synthetic_demos_gte_4": True,
         "inn_named_actionable_pct_gte_90": inn_pct >= 90.0,
     }
@@ -240,6 +302,19 @@ def _find_matching_rule(
     pool = icd_matched or drug_hits
 
     duration = drug_line.drug_report_duration_months
+    # Prefer biomarker/prior-therapy-gated rules when the claim carries those fields —
+    # otherwise a generic prescriber rule would shadow the biomarker check.
+    has_biomarker_input = bool(drug_line.biomarkers)
+    has_prior_therapy_input = bool(drug_line.prior_therapies)
+    if has_biomarker_input or has_prior_therapy_input:
+        gated_rules = [
+            rule
+            for rule in pool
+            if _has_biomarker_requirement(rule) or _has_prior_therapy_requirement(rule)
+        ]
+        if gated_rules:
+            return max(gated_rules, key=_rule_tier_b_score)
+
     if duration is not None:
         exact_duration = [
             rule for rule in pool if rule.get("report_duration_months") == duration
@@ -395,6 +470,221 @@ def _evaluate_tier_b_constraints(
     return None
 
 
+def _evaluate_dose_protocol(
+    *,
+    rule: dict[str, Any],
+    drug_line: DrugClaimLine,
+    claim: ClaimHeader,
+    icd_codes: list[str],
+) -> dict[str, Any] | None:
+    """§4.2.33 anti-VEGF dose-protocol enforcement (hard error when exceeded).
+
+    Two checks:
+    - ``loading_dose_count``: when ``is_loading_phase`` is True, the in-loading
+      application count must not exceed the rule's loading-dose ceiling.
+    - ``max_applications_per_year``: annual application count must not exceed the ceiling.
+
+    When the claim does not carry dose fields (annual_application_count /
+    is_loading_phase both None), emit ``needs_dose_verification`` (review) — honest
+    partial, since DrugClaimLine ingestion is not universal.
+    """
+    loading_ceiling = rule.get("loading_dose_count")
+    annual_ceiling = rule.get("max_applications_per_year")
+    section = rule.get("sut_section") or "4.2.33"
+
+    annual_count = drug_line.annual_application_count
+    in_loading = drug_line.is_loading_phase
+
+    has_dose_input = annual_count is not None or in_loading is not None
+
+    if not has_dose_input:
+        return {
+            "drug_claim_line_id": drug_line.drug_claim_line_id,
+            "claim_id": claim.claim_id,
+            "drug_name": drug_line.drug_name,
+            "rule_id": rule.get("rule_id"),
+            "sut_section": section,
+            "primary_icd10": claim.primary_icd10,
+            "matched_icd10_codes": icd_codes,
+            "violation_kind": "needs_dose_verification",
+            "severity": "review",
+            "message_tr": (
+                "Doz protokolü (yıllık maksimum / yükleme dozu sayısı) doğrulanmalı "
+                f"({section})."
+            ),
+        }
+
+    if loading_ceiling is not None and in_loading is True:
+        count = annual_count if annual_count is not None else 0
+        if count > loading_ceiling:
+            return {
+                "drug_claim_line_id": drug_line.drug_claim_line_id,
+                "claim_id": claim.claim_id,
+                "drug_name": drug_line.drug_name,
+                "rule_id": rule.get("rule_id"),
+                "sut_section": section,
+                "primary_icd10": claim.primary_icd10,
+                "matched_icd10_codes": icd_codes,
+                "violation_kind": "loading_dose_exceeded",
+                "severity": "error",
+                "loading_dose_count": loading_ceiling,
+                "actual_application_count": count,
+                "message_tr": (
+                    f"Yükleme dozu {loading_ceiling} uygulamayı geçemez; "
+                    f"faturada {count} ({section})."
+                ),
+            }
+
+    if annual_ceiling is not None and annual_count is not None:
+        if annual_count > annual_ceiling:
+            return {
+                "drug_claim_line_id": drug_line.drug_claim_line_id,
+                "claim_id": claim.claim_id,
+                "drug_name": drug_line.drug_name,
+                "rule_id": rule.get("rule_id"),
+                "sut_section": section,
+                "primary_icd10": claim.primary_icd10,
+                "matched_icd10_codes": icd_codes,
+                "violation_kind": "annual_max_exceeded",
+                "severity": "error",
+                "max_applications_per_year": annual_ceiling,
+                "actual_application_count": annual_count,
+                "message_tr": (
+                    f"Yıllık maksimum uygulama sayısı aşıldı ({annual_count}/"
+                    f"{annual_ceiling}) ({section})."
+                ),
+            }
+
+    return None
+
+
+def _evaluate_biomarker_constraints(
+    *,
+    rule: dict[str, Any],
+    drug_line: DrugClaimLine,
+    claim: ClaimHeader,
+    icd_codes: list[str],
+) -> dict[str, Any] | None:
+    """§4.2.14.C biomarker-gated enforcement (HER-2+, CD20+, KRAS, etc.).
+
+    Each ``required_biomarkers`` entry is ``{marker, status_any}``. The claim's
+    ``biomarkers`` is a tuple of ``{marker, status}``. A rule passes when every
+    required marker is present in the claim with an acceptable status.
+    """
+    required = rule.get("required_biomarkers") or []
+    if not required:
+        return None
+
+    section = rule.get("sut_section") or "4.2.14.C"
+    claim_markers = drug_line.biomarkers or ()
+
+    # Build a lookup of claim marker → status
+    claim_status: dict[str, str] = {}
+    for entry in claim_markers:
+        marker = str(entry.get("marker", "")).upper()
+        status = str(entry.get("status", ""))
+        if marker:
+            claim_status[marker] = status
+
+    for req in required:
+        req_marker = str(req.get("marker", "")).upper()
+        req_statuses = [str(s).lower() for s in (req.get("status_any") or [])]
+        if not req_marker:
+            continue
+
+        actual = claim_status.get(req_marker)
+        if actual is None:
+            return {
+                "drug_claim_line_id": drug_line.drug_claim_line_id,
+                "claim_id": claim.claim_id,
+                "drug_name": drug_line.drug_name,
+                "rule_id": rule.get("rule_id"),
+                "sut_section": section,
+                "primary_icd10": claim.primary_icd10,
+                "matched_icd10_codes": icd_codes,
+                "violation_kind": "needs_biomarker_verification",
+                "severity": "review",
+                "required_biomarker": req_marker,
+                "message_tr": (
+                    f"Biyobelirtçi ({req_marker}) doğrulanmalı — kural bu marker'ı "
+                    f"gerektiriyor ({section})."
+                ),
+            }
+        if str(actual).lower() not in req_statuses:
+            return {
+                "drug_claim_line_id": drug_line.drug_claim_line_id,
+                "claim_id": claim.claim_id,
+                "drug_name": drug_line.drug_name,
+                "rule_id": rule.get("rule_id"),
+                "sut_section": section,
+                "primary_icd10": claim.primary_icd10,
+                "matched_icd10_codes": icd_codes,
+                "violation_kind": "biomarker_mismatch",
+                "severity": "error",
+                "required_biomarker": req_marker,
+                "required_statuses": req_statuses,
+                "actual_status": actual,
+                "message_tr": (
+                    f"Biyobelirtçi uyumsuz: {req_marker}={actual} (kural: "
+                    f"{', '.join(req_statuses)}) ({section})."
+                ),
+            }
+
+    return None
+
+
+def _evaluate_prior_therapy_constraints(
+    *,
+    rule: dict[str, Any],
+    drug_line: DrugClaimLine,
+    claim: ClaimHeader,
+    icd_codes: list[str],
+) -> dict[str, Any] | None:
+    """§4.2.14.C prior-therapy-gated enforcement (imatinib-resistant, post-transplant).
+
+    ``requires_prior_therapy`` is ``{drug_or_class, outcome}``. The claim's
+    ``prior_therapies`` is a tuple of ``{drug_or_class, outcome}``. A rule passes
+    when a prior therapy matching the required drug_or_class is present.
+    """
+    required = rule.get("requires_prior_therapy")
+    if not required:
+        return None
+
+    section = rule.get("sut_section") or "4.2.14.C"
+    req_drug = str(required.get("drug_or_class", "")).lower()
+    req_outcome = str(required.get("outcome", "")).lower()
+    claim_prior = drug_line.prior_therapies or ()
+
+    # Look for a matching prior therapy (drug_or_class match; outcome flexible)
+    found = False
+    for entry in claim_prior:
+        prior_drug = str(entry.get("drug_or_class", "")).lower()
+        if req_drug in prior_drug or prior_drug in req_drug:
+            found = True
+            break
+
+    if not found:
+        return {
+            "drug_claim_line_id": drug_line.drug_claim_line_id,
+            "claim_id": claim.claim_id,
+            "drug_name": drug_line.drug_name,
+            "rule_id": rule.get("rule_id"),
+            "sut_section": section,
+            "primary_icd10": claim.primary_icd10,
+            "matched_icd10_codes": icd_codes,
+            "violation_kind": "prior_therapy_mismatch",
+            "severity": "error",
+            "required_prior_therapy": req_drug,
+            "required_outcome": req_outcome,
+            "message_tr": (
+                f"Önceki tedavi gerekliliği sağlanmıyor: {req_drug} "
+                f"({req_outcome}) ({section})."
+            ),
+        }
+
+    return None
+
+
 def evaluate_drug_indication_line(
     *,
     drug_line: DrugClaimLine,
@@ -473,6 +763,36 @@ def evaluate_drug_indication_line(
     )
     if tier_b_hit is not None:
         return tier_b_hit
+
+    if _has_dose_protocol(rule):
+        dose_hit = _evaluate_dose_protocol(
+            rule=rule,
+            drug_line=drug_line,
+            claim=claim,
+            icd_codes=icd_codes,
+        )
+        if dose_hit is not None:
+            return dose_hit
+
+    if _has_biomarker_requirement(rule):
+        bio_hit = _evaluate_biomarker_constraints(
+            rule=rule,
+            drug_line=drug_line,
+            claim=claim,
+            icd_codes=icd_codes,
+        )
+        if bio_hit is not None:
+            return bio_hit
+
+    if _has_prior_therapy_requirement(rule):
+        prior_hit = _evaluate_prior_therapy_constraints(
+            rule=rule,
+            drug_line=drug_line,
+            claim=claim,
+            icd_codes=icd_codes,
+        )
+        if prior_hit is not None:
+            return prior_hit
 
     return None
 

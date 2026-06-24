@@ -65,6 +65,7 @@ _CLAUSE_COLUMNS: tuple[str, ...] = (
     "paragraph_index",
     "has_algorithmic_gap",
     "has_rule_encoding",
+    "emr_blocked",
     "primary_rule_category",
 )
 
@@ -367,6 +368,11 @@ def _drug_indication_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[
         if {"has_algorithmic_gap", "has_rule_encoding"}.issubset(set(di.columns))
         else gap_rows
     )
+    emr_blocked_rows = (
+        di.filter(pl.col("emr_blocked") == True).height
+        if "emr_blocked" in di.columns
+        else 0
+    )
 
     return {
         "rule_id": "drug_indication_prose",
@@ -376,6 +382,7 @@ def _drug_indication_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[
         "encoded_clause_rows": encoded_rows,
         "algorithmic_gap_rows": gap_rows,
         "unencoded_gap_rows": unencoded_gap_rows,
+        "emr_blocked_rows": emr_blocked_rows,
         "encoded_clause_pct": round(100.0 * encoded_rows / classified_rows, 1)
         if classified_rows
         else 0.0,
@@ -392,7 +399,9 @@ def _drug_indication_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[
         "honesty_note": (
             "Registry stays partial while §4.2 clauses classify here; "
             f"{encoded_rows:,} rows have JSON/manifest encoding vs "
-            f"{unencoded_gap_rows:,} gap rows still unencoded (mostly Tier C deferred)."
+            f"{unencoded_gap_rows:,} gap rows still unencoded. "
+            f"{emr_blocked_rows:,} of those gaps are EMR-blocked "
+            "(ECOG/progresyon/lab — klinik veri gerekir, claim ile encode edilemez)."
         ),
     }
 

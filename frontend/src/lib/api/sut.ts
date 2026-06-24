@@ -38,6 +38,15 @@ export interface SutMaterialItem {
   unit_price: number;
   quantity: number;
   code?: string;
+  // §4.2.33 anti-VEGF dose protocol (intravitreal injection counts).
+  // Optional; only meaningful when validate-claim runs drug_indication checks.
+  annual_application_count?: number;
+  is_loading_phase?: boolean;
+  // §4.2.14.C oncology biomarker + prior-therapy gating.
+  // biomarkers: [{ marker: "HER2", status: "3+" }]
+  biomarkers?: Array<{ marker: string; status: string }>;
+  // prior_therapies: [{ drug_or_class: "imatinib", outcome: "resistant" }]
+  prior_therapies?: Array<{ drug_or_class: string; outcome: string }>;
 }
 
 export interface SutClaimRequest {

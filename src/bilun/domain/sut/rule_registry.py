@@ -352,17 +352,20 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
             "src/bilun/domain/prose_rules/drug_indication.py",
             "src/bilun/domain/billing/claim_drug_indication.py",
             "data/gazette/prose_rules/drug_indication_prose.json",
+            "data/gazette/prose_rules/anti_vegf_prose.json",
         ),
         sut_section_prefixes=("4.2",),
         annex_refs=("EK-4/A",),
         keywords=("endikasyon", "rapor", "reçete", "tanıya dayalı", "kullanımı"),
         description=(
-            "§4.2 drug indication / report prose — Phase 2 corpus "
-            "(103 INN rules, ICD+report matcher, Tier B duration/prescriber/inpatient)"
+            "§4.2 drug indication / report prose — §4.2.14.C oncology (131 rules) + "
+            "§4.2.33 anti-VEGF / ophthalmology (21 rules, dose protocol). "
+            "ICD+report matcher, Tier B duration/prescriber/inpatient + §4.2.33 dose enforcement."
         ),
         description_tr=(
-            "§4.2 ilaç endikasyon / rapor prose — Phase 2 corpus "
-            "(103 INN kural, ICD+rapor eşleştirici, Tier B süre/reçete/yatarak)"
+            "§4.2 ilaç endikasyon / rapor prose — §4.2.14.C onkoloji (131 kural) + "
+            "§4.2.33 anti-VEGF / göz (21 kural, doz protokolü). "
+            "ICD+rapor eşleştirici, Tier B süre/reçete/yatarak + §4.2.33 doz kontrolü."
         ),
     ),
     RuleRegistryEntry(

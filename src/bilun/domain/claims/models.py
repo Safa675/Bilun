@@ -111,6 +111,13 @@ class MedulaRejectionEvent:
     rejection_timestamp: date | None = None
     related_procedure_code: str = ""
     related_procedure_line_id: str = ""
+    # Discriminator + id of the offending line the rejection is about.
+    # `related_line_type` ∈ {"procedure", "material", "drug", "claim", ""};
+    # `related_line_id` is the line id of that type on the same claim.
+    # For materials/drugs these are the material_line_id / drug_claim_line_id,
+    # which the legacy related_procedure_* fields could not express.
+    related_line_type: str = ""
+    related_line_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -239,6 +246,14 @@ class DrugClaimLine:
     drug_report_duration_months: int | None = None
     drug_inpatient_supply: bool | None = None
     prescriber_specialty: str | None = None
+    # §4.2.33 anti-VEGF dose protocol (intravitreal injection counts)
+    annual_application_count: int | None = None
+    is_loading_phase: bool | None = None
+    # §4.2.14.C oncology biomarker + prior-therapy gating (Bucket B)
+    # biomarkers: [{"marker": "HER2", "status": "3+"}, {"marker": "ER", "status": "positive"}]
+    biomarkers: tuple[dict[str, str], ...] | None = None
+    # prior_therapies: [{"drug_or_class": "imatinib", "outcome": "resistant"}]
+    prior_therapies: tuple[dict[str, str], ...] | None = None
 
 
 @dataclass(frozen=True)
