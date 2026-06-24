@@ -95,7 +95,13 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
         )
 
     if report.copay.is_exempt:
-        gap = report.copay.patient_copay_waived_total_try or report.copay.total_copay_savings_try
+        # B-H5: patient_copay_waived_total_try IS the true total (visit + rx
+        # copay savings). The previous `or total_copay_savings_try` fallback
+        # was a bug: when the true total is 0 (falsy), it fell back to
+        # total_copay_savings_try which holds ONLY visit savings (legacy
+        # misleading field name), injecting a non-zero gap where there is
+        # none. Use the true total directly.
+        gap = report.copay.patient_copay_waived_total_try
         actions.append(
             _action_row(
                 action_id="copay:ek1a_exemption_review",

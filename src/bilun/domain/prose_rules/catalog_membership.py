@@ -58,14 +58,18 @@ def _eligible_history_rows(
     work = work[work["effective_date_parsed"].notna()]
     eligible = work[work["effective_date_parsed"] <= cutoff]
     if eligible.empty:
-        eligible = work.sort_values([code_column, "effective_date_parsed"]).drop_duplicates(
-            subset=[code_column],
-            keep="first",
-        )
-    else:
-        eligible = eligible.sort_values(
-            [code_column, "effective_date_parsed"]
-        ).drop_duplicates(subset=[code_column], keep="last")
+        # B-H2: no amendment is effective on or before the cutoff (e.g. a
+        # claim dated before the earliest curated gazette, or a date.min
+        # sentinel). Returning the OLDEST amendment as a fallback silently
+        # served a price that was never effective on the service date and is
+        # inconsistent with pricing/temporal.py (_is_effective_on_or_before
+        # returns None there). Return empty so callers (get_ek2b_codes_as_of
+        # -> empty frozenset, get_ek2c_entry -> None) correctly signal "no
+        # price as of this date".
+        return eligible.reset_index(drop=True)
+    eligible = eligible.sort_values(
+        [code_column, "effective_date_parsed"]
+    ).drop_duplicates(subset=[code_column], keep="last")
     return eligible.reset_index(drop=True)
 
 

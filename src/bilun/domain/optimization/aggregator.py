@@ -141,9 +141,22 @@ def _aggregate_copay_rate_exposure(
         for procedure in exposure.get("procedures_with_rates", []):
             if procedure.get("catalog_validated") is False:
                 continue
-            rate_key = f"{procedure.get('rate_pct')}%"
+            # B-H3: only codes with an actual EK-2C-1 mandated rate belong
+            # in the cohort rate mean/distribution. copay_rate_matches_catalog
+            # returns True for codes ABSENT from EK-2C-1 (mandated is None),
+            # so catalog_validated alone never filters them out — they
+            # polluted cohort_mean_rate and rate_distribution with codes that
+            # have no mandated copay rate. Gate on mandated_rate_pct is not None.
+            if procedure.get("mandated_rate_pct") is None:
+                continue
+            # B-H4: rate key must match exactness.py's quantized format so
+            # per-patient and cohort distributions merge correctly. The
+            # rate_pct is a float; format to 2dp to match
+            # f"{rate.quantize(Decimal('0.01'))}%" from exactness.py.
+            rate_val = procedure.get("rate_pct")
+            rate_key = f"{Decimal(str(rate_val)).quantize(Decimal('0.01'))}%"
             rate_counter[rate_key] += 1
-            rate_sum += float(procedure.get("rate_pct") or 0.0)
+            rate_sum += float(rate_val or 0.0)
             rate_count += 1
 
     n_patients = len(patient_ids) or 1
