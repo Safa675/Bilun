@@ -1,7 +1,7 @@
 # Interviews
 
 Konum: `raw data/Interviews`
-Son güncelleme: 2026-06-19
+Son güncelleme: 2026-06-22
 
 Saha araştırması — hastane faturalama ekipleriyle röportaj notları. SUT/EK kaynak verisi değil.
 
