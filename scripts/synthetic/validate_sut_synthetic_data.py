@@ -676,6 +676,137 @@ def _validate_medula_playbook_demos(
                 f"expected {spec['sonuc_kodu']!r}",
             )
 
+        # Anchor coherence: the rejection must point at the offending line on
+        # this claim, of the type declared by the spec's anchor. This is the
+        # regression guard against the old "blind first-proc pointer" bug.
+        anchor = spec.get("anchor") or {"type": "claim"}
+        expected_type = {
+            "procedure": "procedure",
+            "procedure_duplicate": "procedure",
+            "procedure_bundled": "procedure",
+            "material": "material",
+            "drug": "drug",
+            "claim": "claim",
+        }.get(str(anchor.get("type")), "claim")
+        actual_type = str(event_row.get("ilgili_satir_tipi") or "")
+        if actual_type != expected_type:
+            _error(
+                errors,
+                f"Patient {patient_id} ilgili_satir_tipi={actual_type!r}, "
+                f"expected {expected_type!r} for {spec['sonuc_kodu']}",
+            )
+
+        related_id = str(event_row.get("ilgili_satir_id") or "")
+        if expected_type != "claim":
+            sheet, id_col = {
+                "procedure": ("islem_fatura_satirlari", "islem_satiri_id"),
+                "material": ("malzeme_fatura_satirlari", "malzeme_satiri_id"),
+                "drug": ("ilac_fatura_satirlari", "ilac_satiri_id"),
+            }[expected_type]
+            line_table = tables.get(sheet)
+            if line_table is None or related_id == "":
+                _error(
+                    errors,
+                    f"Patient {patient_id} {spec['sonuc_kodu']} anchor line id missing "
+                    f"(related_id={related_id!r})",
+                )
+            else:
+                claim_lines = line_table[_strings(line_table["hasta_id"]) == patient_id]
+                if related_id not in set(_strings(claim_lines[id_col])):
+                    _error(
+                        errors,
+                        f"Patient {patient_id} {spec['sonuc_kodu']} ilgili_satir_id "
+                        f"{related_id!r} not found among {expected_type} lines on the claim",
+                    )
+
+        # Scenario-specific anchor content checks.
+        _validate_medula_anchor_content(patient_id, spec, event_row, tables, errors)
+
+
+def _validate_medula_anchor_content(
+    patient_id: str,
+    spec: dict,
+    event_row: pd.Series,
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    """Assert the offending line's content matches the rejection reason."""
+    anchor = spec.get("anchor") or {}
+    anchor_type = str(anchor.get("type") or "")
+    sonuc = str(spec["sonuc_kodu"])
+
+    if sonuc == "1688":
+        # Molecular microbiology: the anchored procedure must be the 912550 panel.
+        _assert_procedure_code(patient_id, tables, anchor["code"], errors, sonuc)
+    elif sonuc == "0901":
+        # Duplicate: the anchored procedure code must appear ≥2 times.
+        procs = tables.get("islem_fatura_satirlari")
+        if procs is not None:
+            claim_procs = procs[_strings(procs["hasta_id"]) == patient_id]
+            code = str(anchor["code"])
+            n = int((_strings(claim_procs["islem_kodu"]) == code).sum())
+            if n < 2:
+                _error(
+                    errors,
+                    f"Patient {patient_id} 0901 duplicate anchor {code} appears {n}x, "
+                    f"expected ≥2",
+                )
+    elif sonuc == "0320":
+        # Package-bundled: the component must be flagged pakete_dahil_mi.
+        procs = tables.get("islem_fatura_satirlari")
+        if procs is not None:
+            claim_procs = procs[_strings(procs["hasta_id"]) == patient_id]
+            comp = claim_procs[_strings(claim_procs["islem_kodu"]) == str(anchor["component_code"])]
+            if comp.empty or not bool(comp.iloc[0].get("pakete_dahil_mi")):
+                _error(
+                    errors,
+                    f"Patient {patient_id} 0320 bundled component {anchor['component_code']} "
+                    f"not flagged pakete_dahil_mi",
+                )
+    elif sonuc == "0704":
+        # Material anchor must have uts_kayitli_mi=False.
+        mats = tables.get("malzeme_fatura_satirlari")
+        if mats is not None:
+            claim_mats = mats[_strings(mats["hasta_id"]) == patient_id]
+            if claim_mats.empty or bool(claim_mats.iloc[0].get("uts_kayitli_mi", True)):
+                _error(
+                    errors,
+                    f"Patient {patient_id} 0704 material anchor missing or "
+                    f"uts_kayitli_mi not False",
+                )
+    elif sonuc == "0411":
+        # Drug anchor must have uzmanlik_kurulu_raporu_var=False.
+        drugs = tables.get("ilac_fatura_satirlari")
+        if drugs is not None:
+            claim_drugs = drugs[_strings(drugs["hasta_id"]) == patient_id]
+            report_missing = claim_drugs[
+                _strings(claim_drugs["ilac_kodu"]) == str(anchor["ilac_kodu"])
+            ]
+            if report_missing.empty or bool(report_missing.iloc[0].get("uzmanlik_kurulu_raporu_var", True)):
+                _error(
+                    errors,
+                    f"Patient {patient_id} 0411 drug anchor {anchor['ilac_kodu']} missing or "
+                    f"uzmanlik_kurulu_raporu_var not False",
+                )
+
+
+def _assert_procedure_code(
+    patient_id: str,
+    tables: dict[str, pd.DataFrame],
+    code: str,
+    errors: list[str],
+    sonuc: str,
+) -> None:
+    procs = tables.get("islem_fatura_satirlari")
+    if procs is None:
+        return
+    claim_procs = procs[_strings(procs["hasta_id"]) == patient_id]
+    if str(code) not in set(_strings(claim_procs["islem_kodu"])):
+        _error(
+            errors,
+            f"Patient {patient_id} {sonuc} anchor procedure {code} not found on claim",
+        )
+
 
 CLAIM_READINESS_DEMO_PATIENTS: dict[str, str] = {
     "SENTETIK-HASTA-0033": "sgk_claim_readiness_uts_barcode_missing",

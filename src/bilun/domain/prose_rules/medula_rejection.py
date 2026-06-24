@@ -72,6 +72,8 @@ def build_medula_playbook_entry(
         "hata_mesaji": event.hata_mesaji,
         "related_procedure_code": event.related_procedure_code,
         "related_procedure_line_id": event.related_procedure_line_id,
+        "related_line_type": event.related_line_type,
+        "related_line_id": event.related_line_id,
         "sut_anchor": template.get("sut_anchor", ""),
         "problem_summary_tr": template.get("problem_summary_tr", ""),
         "problem_summary_en": template.get("problem_summary_en", ""),

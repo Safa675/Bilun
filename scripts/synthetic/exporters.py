@@ -20,6 +20,8 @@ def _medula_rejection_export(df: pd.DataFrame) -> pd.DataFrame:
         "red_zamani": "rejection_timestamp",
         "ilgili_islem_kodu": "related_procedure_code",
         "ilgili_islem_satiri_id": "related_procedure_line_id",
+        "ilgili_satir_tipi": "related_line_type",
+        "ilgili_satir_id": "related_line_id",
     }
     if df.empty:
         return pd.DataFrame(columns=list(columns.values()))
@@ -330,6 +332,10 @@ def _english_claim_exports(tables: dict[str, pd.DataFrame]) -> dict[str, pd.Data
             "rapor_suresi_ay": "drug_report_duration_months",
             "yatarak_tedavi_ilac": "drug_inpatient_supply",
             "recete_eden_uzmanlik": "prescriber_specialty",
+            "yillik_uygulama_sayisi": "annual_application_count",
+            "yukleme_fazinda": "is_loading_phase",
+            "biyobelirteciler": "biomarkers",
+            "onceki_tedaviler": "prior_therapies",
         }),
         "expected_rule_outputs.parquet": tables["beklenen_kural_ciktilari"].rename(columns={
             "beklenen_cikti_id": "expected_output_id", "senaryo_etiketi": "scenario_tag",

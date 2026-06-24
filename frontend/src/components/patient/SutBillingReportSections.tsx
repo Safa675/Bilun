@@ -1527,7 +1527,16 @@ export function MedulaRejectionPlaybookSection({
               <td className="font-mono text-xs">{item.sonuc_kodu ?? "—"}</td>
               <td>{item.hata_mesaji ?? "—"}</td>
               <td>
-                <div className="font-mono text-xs">{item.related_procedure_code ?? "—"}</div>
+                <div className="font-mono text-xs">
+                  {item.related_line_type === "procedure" && item.related_procedure_code
+                    ? item.related_procedure_code
+                    : item.related_line_id ?? "—"}
+                </div>
+                {item.related_line_type && item.related_line_type !== "procedure" && (
+                  <div className="text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    {t(`billing.medulaPlaybook.lineType.${item.related_line_type}`)}
+                  </div>
+                )}
               </td>
               <td>{item.sut_anchor ?? "—"}</td>
               <td>{item.rebill_permitted ? t("billing.medulaPlaybook.yes") : t("billing.medulaPlaybook.no")}</td>

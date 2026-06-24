@@ -156,7 +156,13 @@ const billing = {
     "rebill": "Rebill permitted",
     "steps": "Corrective steps",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "lineType": {
+      "procedure": "Procedure",
+      "material": "Material",
+      "drug": "Drug",
+      "claim": "Claim"
+    }
   },
   "claimChecklist": {
     "title": "Pre-submission claim checklist",

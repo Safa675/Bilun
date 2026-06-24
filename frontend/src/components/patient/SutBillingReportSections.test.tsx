@@ -487,6 +487,8 @@ describe("MedulaRejectionPlaybookSection", () => {
                 "Moleküler mikrobiyoloji işlemi için zorunlu rapor eksik",
               related_procedure_code: "700390",
               related_procedure_line_id: "ISL-001",
+              related_line_type: "procedure",
+              related_line_id: "ISL-001",
               sut_anchor: "EK-2 / moleküler mikrobiyoloji rapor gerekliliği",
               problem_summary_tr: "Rapor eksik.",
               problem_summary_en: "Report missing.",

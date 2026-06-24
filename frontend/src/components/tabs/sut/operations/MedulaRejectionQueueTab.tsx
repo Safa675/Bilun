@@ -21,6 +21,43 @@ const WRAPPED_HEADER_STYLE = {
   minWidth: 120,
 };
 
+type TranslationFn = (key: string) => string;
+
+/**
+ * Renders the offending line a MEDULA rejection points at. Shows a small type
+ * chip (İşlem/Malzeme/İlaç/Fatura) plus the line id; for procedures the
+ * procedure code is shown as well. This replaces the old "Procedure" column
+ * that always pointed at an unrelated exam line.
+ */
+function RelatedLineCell({
+  lineType,
+  lineId,
+  procedureCode,
+  t,
+}: {
+  lineType?: string;
+  lineId?: string;
+  procedureCode?: string;
+  t: TranslationFn;
+}) {
+  const chipKey = `operations.queue.lineType.${lineType || "claim"}`;
+  const chip = t(chipKey);
+  const shownChip = chip === chipKey ? t("operations.queue.lineType.claim") : chip;
+  const id = lineId || procedureCode;
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="inline-flex w-fit rounded border border-[var(--border-subtle)] px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+        {shownChip}
+      </span>
+      {id ? (
+        <span className="font-mono text-xs">{procedureCode ? procedureCode : id}</span>
+      ) : (
+        <span className="text-xs text-[var(--text-muted)]">—</span>
+      )}
+    </div>
+  );
+}
+
 export default function MedulaRejectionQueueTab() {
   const t = useT();
   const [data, setData] = useState<MedulaRejectionQueueResponse | null>(null);
@@ -214,7 +251,7 @@ export default function MedulaRejectionQueueTab() {
                 <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.stage")}</th>
                 <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.resultCode")}</th>
                 <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.message")}</th>
-                <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.procedure")}</th>
+                <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.relatedLine")}</th>
                 <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.playbook")}</th>
                 <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.rebill")}</th>
                 <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.action")}</th>
@@ -237,7 +274,12 @@ export default function MedulaRejectionQueueTab() {
                   <td className="font-mono text-xs">{row.sonuc_kodu}</td>
                   <td>{row.hata_mesaji}</td>
                   <td>
-                    <div className="font-mono text-xs">{row.related_procedure_code ?? "—"}</div>
+                    <RelatedLineCell
+                      lineType={row.related_line_type}
+                      lineId={row.related_line_id}
+                      procedureCode={row.related_procedure_code ?? undefined}
+                      t={t}
+                    />
                   </td>
                   <td>
                     {row.playbook_matched

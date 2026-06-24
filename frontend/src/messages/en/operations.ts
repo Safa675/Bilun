@@ -14,9 +14,16 @@ const operations = {
       resultCode: "Result code",
       message: "MEDULA message",
       procedure: "Procedure",
+      relatedLine: "Related line",
       playbook: "Playbook",
       rebill: "Rebill permitted",
       action: "Action",
+    },
+    lineType: {
+      procedure: "Procedure",
+      material: "Material",
+      drug: "Drug",
+      claim: "Claim",
     },
     filters: {
       resultCode: "Result code",

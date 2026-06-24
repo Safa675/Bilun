@@ -1051,6 +1051,8 @@ class MedulaRejectionQueueRow(BaseModel):
     hata_mesaji: str
     related_procedure_code: str | None = None
     rejection_timestamp: str | None = None
+    related_line_type: str = ""
+    related_line_id: str = ""
     playbook_matched: bool
     playbook_key: str | None = None
     sut_anchor: str | None = None

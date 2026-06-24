@@ -749,6 +749,8 @@ export interface MedulaRejectionPlaybook extends ExactnessState {
     hata_mesaji?: string;
     related_procedure_code?: string;
     related_procedure_line_id?: string;
+    related_line_type?: string;
+    related_line_id?: string;
     sut_anchor?: string;
     problem_summary_tr?: string;
     problem_summary_en?: string;
@@ -1125,6 +1127,8 @@ export interface MedulaRejectionQueueRow {
   hata_mesaji: string;
   related_procedure_code?: string | null;
   rejection_timestamp?: string | null;
+  related_line_type?: string;
+  related_line_id?: string;
   playbook_matched: boolean;
   playbook_key?: string | null;
   sut_anchor?: string | null;

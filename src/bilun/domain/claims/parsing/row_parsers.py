@@ -181,6 +181,14 @@ def parse_medula_rejection_event(
                 },
                 "related_procedure_line_id",
             ),
+            related_line_type=parse_text(
+                {**row, "related_line_type": row.get("related_line_type") or ""},
+                "related_line_type",
+            ),
+            related_line_id=parse_text(
+                {**row, "related_line_id": row.get("related_line_id") or ""},
+                "related_line_id",
+            ),
         )
     except KeyError as exc:
         errors.append(f"medula_rejection_events missing field {exc.args[0]}")

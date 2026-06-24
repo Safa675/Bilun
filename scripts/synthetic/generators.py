@@ -174,6 +174,13 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
             "Moleküler mikrobiyoloji işlemi için zorunlu rapor eksik"
         ),
         "medula_asamasi": "fatura_kayit",
+        # Anchor: a real molecular-microbiology procedure on the claim so the
+        # rejection points at the very procedure the missing report concerns.
+        "anchor": {
+            "type": "procedure",
+            "code": "912550",
+            "category": "islem",
+        },
     },
     "0018": {
         "scenario_tag": "medula_rejection_0612_board_report_missing",
@@ -184,6 +191,12 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
             "Uzmanlık sağlık kurulu raporu eksik — işlem faturalanamaz"
         ),
         "medula_asamasi": "fatura_kayit",
+        # Anchor: a procedure that legally requires a specialty board report.
+        "anchor": {
+            "type": "procedure",
+            "code": "612160",
+            "category": "islem",
+        },
     },
     "0025": {
         "scenario_tag": "medula_rejection_1205_service_date_mismatch",
@@ -192,6 +205,14 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
         "hata_kodu": "1205",
         "hata_mesaji": "Hizmet tarihi uyumsuz — provizyon ile eşleşmiyor",
         "medula_asamasi": "fatura_kayit",
+        # Anchor: a procedure whose service date is the subject of the mismatch
+        # (the rejection message carries the date-mismatch semantics; the line
+        # itself stays within the claim window to satisfy date validation).
+        "anchor": {
+            "type": "procedure",
+            "code": "620030",
+            "category": "islem",
+        },
     },
     "0026": {
         "scenario_tag": "medula_rejection_0521_provision_not_obtained",
@@ -200,6 +221,12 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
         "hata_kodu": "0521",
         "hata_mesaji": "Provizyon onay alınmamış — işlem faturalanamaz",
         "medula_asamasi": "provizyon",
+        # Anchor: a high-cost procedure that requires prior provizyon.
+        "anchor": {
+            "type": "procedure",
+            "code": "801510",
+            "category": "islem",
+        },
     },
     "0027": {
         "scenario_tag": "medula_rejection_0315_specialty_mismatch",
@@ -208,6 +235,12 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
         "hata_kodu": "0315",
         "hata_mesaji": "Branş uyumsuz — uzmanlık bilgisi hatalı",
         "medula_asamasi": "fatura_kayit",
+        # Anchor: a procedure whose specialty differs from the claim department.
+        "anchor": {
+            "type": "procedure",
+            "code": "700620",
+            "category": "islem",
+        },
     },
     "0028": {
         "scenario_tag": "medula_rejection_0901_duplicate_procedure",
@@ -216,6 +249,12 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
         "hata_kodu": "0901",
         "hata_mesaji": "Mükerrer işlem — aynı gün tekrar faturalandırılamaz",
         "medula_asamasi": "fatura_kayit",
+        # Anchor: the same procedure billed twice (the 2nd copy is the duplicate).
+        "anchor": {
+            "type": "procedure_duplicate",
+            "code": "615430",
+            "category": "islem",
+        },
     },
     "0029": {
         "scenario_tag": "medula_rejection_0704_uts_barcode_missing",
@@ -224,6 +263,16 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
         "hata_kodu": "0704",
         "hata_mesaji": "Malzeme ÜTS barkod kaydı eksik veya geçersiz",
         "medula_asamasi": "fatura_kayit",
+        # Anchor: a real material on the claim whose ÜTS barcode registration is missing.
+        "anchor": {
+            "type": "material",
+            "material_code": "AP1030",
+            "material_name": "Omuz artroplasti implantı",
+            "material_type": "implant",
+            "specialty_category": "ortopedi",
+            "unit_price": 12500.0,
+            "prose_flags": {"uts_kayitli_mi": False, "titubb_uts_barkod_belge_eksik": True},
+        },
     },
     "0030": {
         "scenario_tag": "medula_rejection_0320_package_bundled_procedure",
@@ -232,6 +281,13 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
         "hata_kodu": "0320",
         "hata_mesaji": "Paket kapsamındaki işlem ayrı faturalandırılamaz",
         "medula_asamasi": "fatura_kayit",
+        # Anchor: a package header plus one bundled component billed separately.
+        "anchor": {
+            "type": "procedure_bundled",
+            "package_code": "609300",
+            "package_price": 9000.0,
+            "component_code": "600160",
+        },
     },
     "0031": {
         "scenario_tag": "medula_rejection_0411_drug_report_missing",
@@ -240,6 +296,15 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
         "hata_kodu": "0411",
         "hata_mesaji": "İlaç endikasyon raporu eksik — sağlık kurulu onayı gerekli",
         "medula_asamasi": "fatura_kayit",
+        # Anchor: an oncology drug billed without the mandatory indication report.
+        "anchor": {
+            "type": "drug",
+            "ilac_adi": "BEVACİZUMAB 400 MG FLK",
+            "ilac_kodu": "SUT-DEMO-BEV",
+            "barkod": "8690000000001",
+            "esdeger_grup": "bevasizumab",
+            "uzmanlik_kurulu_raporu_var": False,
+        },
     },
     "0032": {
         "scenario_tag": "medula_rejection_1102_uncontracted_facility",
@@ -248,6 +313,10 @@ _MEDULA_DEMO_SPECS: dict[str, dict[str, Any]] = {
         "hata_kodu": "1102",
         "hata_mesaji": "Sözleşmesiz kurum — SGK anlaşması bulunamadı",
         "medula_asamasi": "fatura_kayit",
+        # Claim-level rejection (facility contract) — no specific line anchor.
+        "anchor": {
+            "type": "claim",
+        },
     },
 }
 
@@ -258,6 +327,10 @@ def _empty_drug_indication_fields() -> dict[str, Any]:
         "rapor_suresi_ay": None,
         "yatarak_tedavi_ilac": None,
         "recete_eden_uzmanlik": None,
+        "yillik_uygulama_sayisi": None,
+        "yukleme_fazinda": None,
+        "biyobelirteciler": None,
+        "onceki_tedaviler": None,
     }
 
 
@@ -1988,6 +2061,255 @@ def _append_drug_lines_for_claim(ctx: ClaimEpisodeContext) -> tuple[float, float
     return total_billed, total_payable
 
 
+def _inject_medula_anchor_line(
+    ctx: ClaimEpisodeContext,
+    anchor: dict[str, Any],
+    ek2b_procs: dict[str, pd.DataFrame],
+) -> dict[str, str]:
+    """Inject the offending line(s) for a MEDULA rejection demo and return the
+    rejection-row pointer fields.
+
+    Returns a dict with keys: ``related_line_type``, ``related_line_id``,
+    ``ilgili_islem_kodu`` (procedure code, when the anchor is a procedure),
+    ``ilgili_islem_satiri_id`` (procedure line id, when the anchor is a
+    procedure), ``anchor_billed``, ``anchor_payable`` (the offending line's
+    contribution to fold into the claim totals). For material/drug anchors the
+    legacy procedure-code fields are left blank and the new discriminator fields
+    carry the real line id. The offending line is appended ON TOP of the claim's
+    realistic base bill.
+    """
+    anchor_type = str(anchor.get("type") or "claim")
+    result: dict[str, str] = {
+        "related_line_type": "",
+        "related_line_id": "",
+        "ilgili_islem_kodu": "",
+        "ilgili_islem_satiri_id": "",
+        "anchor_billed": "0.0",
+        "anchor_payable": "0.0",
+    }
+
+    if anchor_type == "claim":
+        result["related_line_type"] = "claim"
+        return result
+
+    if anchor_type in ("procedure", "procedure_duplicate"):
+        code = str(anchor["code"])
+        name, price = _lookup_ek2b_price(code, ek2b_procs)
+        category = str(anchor.get("category") or "islem")
+        qty = 1
+        billed = _money(price * qty)
+        # Two copies for the duplicate scenario; one otherwise.
+        copies = 2 if anchor_type == "procedure_duplicate" else 1
+        last_line_id = ""
+        for copy_idx in range(1, copies + 1):
+            # New procedure line id, continuing the existing numbering for the claim.
+            existing = [r for r in ctx.procedure_rows if r.get("fatura_id") == ctx.claim_id]
+            line_idx = len(existing) + 1
+            line_id = f"ISL-{ctx.claim_id}-{line_idx:03d}"
+            date_offset = int(anchor.get("date_offset_days") or 0)
+            proc_date = ctx.start_date
+            if date_offset:
+                proc_date = (
+                    dt.date.fromisoformat(ctx.start_date) + dt.timedelta(days=date_offset)
+                ).isoformat()
+            ctx.procedure_rows.append({
+                "islem_satiri_id": line_id,
+                "fatura_id": ctx.claim_id,
+                "hasta_id": ctx.pid,
+                "basvuru_id": ctx.eid,
+                "islem_tarihi": proc_date,
+                "islem_kodu": code,
+                "islem_adi": name,
+                "islem_kategorisi": category,
+                "adet": qty,
+                "birim_fiyat_try": price,
+                "fatura_tutari_try": billed,
+                "beklenen_odenebilir_tutar_try": billed,
+                "pakete_dahil_mi": False,
+                "paket_kodu": None,
+                "ilave_ucret_uygulanabilir_mi": False,
+                "ilave_ucret_orani": None,
+                "katilim_payi_orani_uygulanabilir_mi": False,
+                "katilim_payi_orani": None,
+                "beklenen_red_nedeni": "",
+                "beklenen_kural_izi": f"EK-2B:{code}",
+            })
+            last_line_id = line_id
+        # Point at the (second/duplicate) procedure line.
+        result["related_line_type"] = "procedure"
+        result["related_line_id"] = last_line_id
+        result["ilgili_islem_kodu"] = code
+        result["ilgili_islem_satiri_id"] = last_line_id
+        result["anchor_billed"] = str(_money(billed * copies))
+        result["anchor_payable"] = str(_money(billed * copies))
+        return result
+
+    if anchor_type == "procedure_bundled":
+        # A procedure that is bundled into a package but was billed separately
+        # (the offending line). No standalone package header is emitted: adding
+        # one would turn the claim into a packaged bill and conflict with the
+        # DRG-mandatory side-procedure check. The component carries the package
+        # code reference, which is what the rejection concerns.
+        package_code = str(anchor["package_code"])
+        component_code = str(anchor["component_code"])
+        comp_name, comp_price = _lookup_ek2b_price(component_code, ek2b_procs)
+        existing = [r for r in ctx.procedure_rows if r.get("fatura_id") == ctx.claim_id]
+        comp_idx = len(existing) + 1
+        comp_line_id = f"ISL-{ctx.claim_id}-{comp_idx:03d}"
+        # Bundled component billed separately (the offending line).
+        ctx.procedure_rows.append({
+            "islem_satiri_id": comp_line_id,
+            "fatura_id": ctx.claim_id,
+            "hasta_id": ctx.pid,
+            "basvuru_id": ctx.eid,
+            "islem_tarihi": ctx.start_date,
+            "islem_kodu": component_code,
+            "islem_adi": comp_name,
+            "islem_kategorisi": "islem",
+            "adet": 1,
+            "birim_fiyat_try": comp_price,
+            "fatura_tutari_try": comp_price,
+            "beklenen_odenebilir_tutar_try": 0.0,
+            "pakete_dahil_mi": True,
+            "paket_kodu": package_code,
+            "ilave_ucret_uygulanabilir_mi": False,
+            "ilave_ucret_orani": None,
+            "katilim_payi_orani_uygulanabilir_mi": False,
+            "katilim_payi_orani": None,
+            "beklenen_red_nedeni": "Paket ici islem ayrica odenmez",
+            "beklenen_kural_izi": f"EK-2B:{component_code}",
+        })
+        # Bundled procedures carry a line-level expected output (mirrors
+        # _append_procedure_lines_for_claim's pakete_dahil_red branch).
+        ctx.expected.append({
+            "beklenen_cikti_id": f"BEK-{comp_line_id}",
+            "senaryo_etiketi": ctx.scenario_tag,
+            "hasta_id": ctx.pid,
+            "fatura_id": ctx.claim_id,
+            "satir_id": comp_line_id,
+            "satir_tipi": "islem",
+            "kural_ailesi": "drg_paket_ayristirma",
+            "beklenen_durum": "pakete_dahil_red",
+            "beklenen_odenebilir_tutar_try": 0.0,
+            "beklenen_tasarruf_try": _money(comp_price),
+            "beklenen_red_nedeni": "Paket ici islem ayrica odenmez",
+            "beklenen_kural_izi": f"EK-2B:{component_code}",
+            "test_notu": "MEDULA anchor: bundled procedure separately billed",
+        })
+        result["related_line_type"] = "procedure"
+        result["related_line_id"] = comp_line_id
+        result["ilgili_islem_kodu"] = component_code
+        result["ilgili_islem_satiri_id"] = comp_line_id
+        result["anchor_billed"] = str(_money(comp_price))
+        result["anchor_payable"] = "0.0"
+        return result
+
+    if anchor_type == "material":
+        # A real material whose ÜTS barcode registration is missing.
+        proc_line_id = ""
+        for row in ctx.procedure_rows:
+            if row.get("fatura_id") == ctx.claim_id:
+                proc_line_id = str(row.get("islem_satiri_id") or "")
+                break
+        unit_price = _money(float(anchor.get("unit_price") or 0))
+        existing_mats = [r for r in ctx.materials if r.get("fatura_id") == ctx.claim_id]
+        m_line_id = f"MLZ-{ctx.claim_id}-{len(existing_mats) + 1:03d}"
+        prose_flags = _default_prose_material_flags()
+        prose_flags.update(anchor.get("prose_flags") or {})
+        # Specialty (L4.4) prose flags must be present with explicit False
+        # values; omitting them leaves NaN and coerces the column to float,
+        # which breaks the validator's string-based truthy check across ALL rows.
+        specialty_flags = _default_specialty_prose_flags()
+        specialty_flags.update(anchor.get("specialty_flags") or {})
+        ctx.materials.append({
+            "malzeme_satiri_id": m_line_id,
+            "fatura_id": ctx.claim_id,
+            "islem_satiri_id": proc_line_id,
+            "hasta_id": ctx.pid,
+            "malzeme_tarihi": ctx.start_date,
+            "malzeme_kodu": str(anchor.get("material_code") or ""),
+            "malzeme_adi": str(anchor.get("material_name") or ""),
+            "malzeme_tipi": str(anchor.get("material_type") or "genel"),
+            "uzmanlik_kategorisi": str(anchor.get("specialty_category") or "genel"),
+            "adet": 1,
+            "birim_fiyat_try": unit_price,
+            "fatura_tutari_try": unit_price,
+            "beklenen_odenebilir_tutar_try": unit_price,
+            "pakete_dahil_mi": False,
+            "on_onay_gerekli_mi": False,
+            "beklenen_red_nedeni": "",
+            "beklenen_kural_izi": f"MEDULA-ANCHOR:{anchor.get('material_code', '')}",
+            **prose_flags,
+            **specialty_flags,
+        })
+        result["related_line_type"] = "material"
+        result["related_line_id"] = m_line_id
+        result["anchor_billed"] = str(unit_price)
+        result["anchor_payable"] = str(unit_price)
+        return result
+
+    if anchor_type == "drug":
+        # An oncology drug billed without the mandatory indication report.
+        unit_price = 12500.0
+        qty = 1
+        billed = _money(unit_price * qty)
+        payable = _money(billed * 0.72)
+        existing_drugs = [r for r in ctx.drug_claims if r.get("fatura_id") == ctx.claim_id]
+        drug_idx = len(existing_drugs) + 1
+        d_line_id = f"ILC-{ctx.claim_id}-{drug_idx:03d}"
+        prescription_id = f"REC-{ctx.claim_id}-{drug_idx:03d}"
+        drug_row: dict[str, Any] = {
+            "ilac_satiri_id": d_line_id,
+            "recete_id": prescription_id,
+            "fatura_id": ctx.claim_id,
+            "hasta_id": ctx.pid,
+            "basvuru_id": ctx.eid,
+            "ilac_fatura_tarihi": ctx.start_date,
+            "ilac_adi": str(anchor.get("ilac_adi") or ""),
+            "ilac_kodu": str(anchor.get("ilac_kodu") or ""),
+            "barkod": str(anchor.get("barkod") or ""),
+            "esdeger_grup": str(anchor.get("esdeger_grup") or ""),
+            "adet": qty,
+            "birim_fiyat_try": unit_price,
+            "fatura_tutari_try": billed,
+            "beklenen_odenebilir_tutar_try": payable,
+            "beklenen_indirim_kademesi": 0.28,
+            "katilim_payi_orani": 0.28,
+            "ilave_ucret_orani": None,
+            "beklenen_red_nedeni": "İlaç endikasyon raporu eksik",
+            "beklenen_kural_izi": f"MEDULA-ANCHOR:drug:{anchor.get('ilac_kodu', '')}",
+            **_empty_drug_indication_fields(),
+        }
+        drug_row["uzmanlik_kurulu_raporu_var"] = bool(anchor.get("uzmanlik_kurulu_raporu_var", False))
+        ctx.drug_claims.append(drug_row)
+        # Drug lines carry a line-level expected output (validator requires one
+        # for every drug_claim_line; mirrors _append_drug_lines_for_claim).
+        ctx.expected.append({
+            "beklenen_cikti_id": f"BEK-{d_line_id}",
+            "senaryo_etiketi": ctx.scenario_tag,
+            "hasta_id": ctx.pid,
+            "fatura_id": ctx.claim_id,
+            "satir_id": d_line_id,
+            "satir_tipi": "ilac",
+            "kural_ailesi": "drug_indication",
+            "beklenen_durum": "endikasyon_raporu_eksik",
+            "beklenen_odenebilir_tutar_try": payable,
+            "beklenen_tasarruf_try": _money(billed - payable),
+            "beklenen_red_nedeni": "İlaç endikasyon raporu eksik",
+            "beklenen_kural_izi": f"MEDULA-ANCHOR:drug:{anchor.get('ilac_kodu', '')}",
+            "test_notu": "MEDULA anchor: oncology drug without indication report",
+        })
+        result["related_line_type"] = "drug"
+        result["related_line_id"] = d_line_id
+        result["anchor_billed"] = str(billed)
+        result["anchor_payable"] = str(payable)
+        return result
+
+    # Unknown anchor type — claim-level fallback.
+    result["related_line_type"] = "claim"
+    return result
+
+
 # ── Claims and lines orchestrator ────────────────────────────────────
 def _generate_claims_and_lines(
     episodes: list[dict],
@@ -2323,26 +2645,6 @@ def _generate_claims_and_lines(
                 "islem_adi": addon_name,
                 "kaynak": "emr",
             })
-        if medula_demo_spec:
-            claim_proc_rows = [
-                row for row in procedure_rows if row["fatura_id"] == claim_id
-            ]
-            first_proc = claim_proc_rows[0] if claim_proc_rows else None
-            medula_rejection_rows.append({
-                "medula_red_satir_id": f"MEDULA-{claim_id}-001",
-                "fatura_id": claim_id,
-                "hasta_id": pid,
-                "basvuru_id": eid,
-                "medula_asamasi": medula_demo_spec["medula_asamasi"],
-                "sonuc_kodu": medula_demo_spec["sonuc_kodu"],
-                "hata_kodu": medula_demo_spec["hata_kodu"],
-                "hata_mesaji": medula_demo_spec["hata_mesaji"],
-                "red_zamani": start_date,
-                "ilgili_islem_kodu": first_proc["islem_kodu"] if first_proc else "",
-                "ilgili_islem_satiri_id": (
-                    first_proc["islem_satiri_id"] if first_proc else ""
-                ),
-            })
         if material_demo or override_demo:
             mat_billed, mat_payable = 0.0, 0.0
         elif material_prose_spec or claim_readiness_spec:
@@ -2410,6 +2712,34 @@ def _generate_claims_and_lines(
             })
             drug_billed += billed
             drug_payable += payable
+
+        # MEDULA rejection demo: inject the offending anchor line ON TOP of the
+        # realistic base bill, then stamp the rejection row pointing at it. The
+        # anchor line(s) are added after all base lines so their ids continue
+        # the existing numbering and their amounts fold into the claim total.
+        if medula_demo_spec:
+            anchor_ptr = _inject_medula_anchor_line(
+                ctx, medula_demo_spec.get("anchor") or {"type": "claim"}, ek2b_procs
+            )
+            anchor_billed = float(anchor_ptr.get("anchor_billed") or 0.0)
+            anchor_payable = float(anchor_ptr.get("anchor_payable") or 0.0)
+            proc_billed = _money(proc_billed + anchor_billed)
+            proc_payable = _money(proc_payable + anchor_payable)
+            medula_rejection_rows.append({
+                "medula_red_satir_id": f"MEDULA-{claim_id}-001",
+                "fatura_id": claim_id,
+                "hasta_id": pid,
+                "basvuru_id": eid,
+                "medula_asamasi": medula_demo_spec["medula_asamasi"],
+                "sonuc_kodu": medula_demo_spec["sonuc_kodu"],
+                "hata_kodu": medula_demo_spec["hata_kodu"],
+                "hata_mesaji": medula_demo_spec["hata_mesaji"],
+                "red_zamani": start_date,
+                "ilgili_islem_kodu": anchor_ptr.get("ilgili_islem_kodu", ""),
+                "ilgili_islem_satiri_id": anchor_ptr.get("ilgili_islem_satiri_id", ""),
+                "ilgili_satir_tipi": anchor_ptr.get("related_line_type", ""),
+                "ilgili_satir_id": anchor_ptr.get("related_line_id", ""),
+            })
 
         total_billed = proc_billed + mat_billed + drug_billed
         total_payable = proc_payable + mat_payable + drug_payable

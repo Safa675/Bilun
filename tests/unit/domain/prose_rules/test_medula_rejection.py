@@ -59,6 +59,8 @@ def _event(
         rejection_timestamp=date(2024, 7, 15),
         related_procedure_code="600150",
         related_procedure_line_id="ISL-F-DEMO-001-001",
+        related_line_type="procedure",
+        related_line_id="ISL-F-DEMO-001-001",
     )
 
 
