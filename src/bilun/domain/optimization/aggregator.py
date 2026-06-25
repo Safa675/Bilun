@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 import time
 from collections import Counter
+from decimal import Decimal
 from typing import Any
 
 import polars as pl
