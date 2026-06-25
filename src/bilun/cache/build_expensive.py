@@ -200,6 +200,18 @@ def run_active_sut_expensive_backfill(
             f"on active build {build_id} "
             f"(timeout={expensive_timeout_ms}ms each)"
         )
+        # B-H10: warn that this operation is destructive. The backfill first
+        # DELETES all existing patient_outcome_expensive rows for the active
+        # build (append=False clear), then rewrites in batches. A crash or
+        # Ctrl-C between the clear and the final batch leaves the active build
+        # with a partial expensive table. Operators should avoid interrupting
+        # this command; if interrupted, re-run it to repopulate.
+        logger.warning(
+            "run_active_sut_expensive_backfill: this will clear and rewrite "
+            "patient_outcome_expensive for build %s. Do not interrupt — a "
+            "crash mid-backfill leaves the active build with partial data.",
+            build_id,
+        )
         expensive_counts = backfill_expensive_sections(
             con,
             build_id=build_id,

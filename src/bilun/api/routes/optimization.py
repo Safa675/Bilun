@@ -268,15 +268,25 @@ def get_bill_optimization(patient_id: str, claim_id: str):
             if cached_diagnoses is not None:
                 data_source = read_active_bilun_data_source(reader, active_build)
                 claim_dataset = _safe_load_claim_dataset(patient_id)
-                if claim_dataset is not None:
-                    claim_ids = {
-                        c.claim_id
-                        for c in claim_dataset.claims_by_patient.get(patient_id, ())
-                    }
-                    if claim_id not in claim_ids:
-                        raise PatientNotFound(
-                            f"Bill {claim_id} not found for patient {patient_id}"
-                        )
+                # B-H15: when the claim dataset is unavailable (transient
+                # file/config error — logged at WARNING in _safe_load), we
+                # cannot verify the claim_id belongs to this patient, and
+                # _compute_optimization_payload with claim_dataset=None would
+                # return a fabricated "bill-scoped" payload that is actually
+                # patient-scoped. Surface 503 instead of a misleading answer.
+                if claim_dataset is None:
+                    raise ServiceUnavailableError(
+                        "Claim dataset unavailable — cannot produce bill-scoped "
+                        "optimization. Check claim-line data source configuration."
+                    )
+                claim_ids = {
+                    c.claim_id
+                    for c in claim_dataset.claims_by_patient.get(patient_id, ())
+                }
+                if claim_id not in claim_ids:
+                    raise PatientNotFound(
+                        f"Bill {claim_id} not found for patient {patient_id}"
+                    )
                 return _compute_optimization_payload(
                     patient_id,
                     cached_diagnoses,

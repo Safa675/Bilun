@@ -566,3 +566,78 @@ def test_titubb_uts_barcode_documentation_missing() -> None:
     assert hits[0]["rule_id"] == "3.1.1.(4).titubb_uts_barcode_documentation_missing"
     assert hits[0]["material_outcome"] == "review_required"
     assert hits[0]["severity"] == "warning"
+
+
+# ── Inpatient-scope care-setting gate (false-positive guard) ─────────────────
+# The §3.1.1(7) "Karşılanmayan yatarak malzeme" rule asserts an inpatient
+# context. It must NOT fire on an outpatient (poliklinik) claim — that is a
+# false compliance violation an auditor can falsify on the spot.
+
+def test_inpatient_rule_suppressed_on_outpatient_care_setting() -> None:
+    """Inpatient-scoped flag must not fire when care_setting is outpatient."""
+    hits = check_material_bundling_prose(
+        [
+            {
+                "name": "Omuz artroplasti implantı",
+                "code": "AP1030",
+                "unit_price": 12500.0,
+                "non_reimbursed_inpatient_patient_charge": True,
+            }
+        ],
+        care_setting="outpatient",
+    )
+    inpatient_hits = [
+        h for h in hits if h["rule_id"] == "3.1.1.(7).non_reimbursed_inpatient_patient_charge"
+    ]
+    assert inpatient_hits == [], "inpatient rule must be suppressed on outpatient claim"
+
+
+def test_inpatient_rule_fires_on_inpatient_care_setting() -> None:
+    """The same rule MUST fire when the claim is genuinely inpatient (yatarak)."""
+    hits = check_material_bundling_prose(
+        [
+            {
+                "name": "Renal replasman seti",
+                "code": "NF1017",
+                "unit_price": 5000.0,
+                "non_reimbursed_inpatient_patient_charge": True,
+            }
+        ],
+        care_setting="inpatient",
+    )
+    inpatient_hits = [
+        h for h in hits if h["rule_id"] == "3.1.1.(7).non_reimbursed_inpatient_patient_charge"
+    ]
+    assert len(inpatient_hits) == 1, "inpatient rule must fire on a yatarak claim"
+
+
+def test_inpatient_rule_uses_per_material_care_setting() -> None:
+    """A mixed patient (one outpatient + one inpatient material) must gate each
+    material by ITS OWN claim's care setting, not the patient's first claim."""
+    hits = check_material_bundling_prose(
+        [
+            {
+                "name": "Outpatient material",
+                "code": "OP1",
+                "unit_price": 5000.0,
+                "non_reimbursed_inpatient_patient_charge": True,
+                "care_setting": "outpatient",  # must suppress
+            },
+            {
+                "name": "Inpatient material",
+                "code": "IP1",
+                "unit_price": 5000.0,
+                "non_reimbursed_inpatient_patient_charge": True,
+                "care_setting": "inpatient",  # must fire
+            },
+        ],
+        care_setting="inpatient",  # global fallback, overridden per-material
+    )
+    rule_ids = [h["rule_id"] for h in hits]
+    assert "3.1.1.(7).non_reimbursed_inpatient_patient_charge" in rule_ids
+    # The outpatient material (OP1) must NOT carry the inpatient finding.
+    op_hits = [h for h in hits if h.get("material_code") == "OP1"]
+    assert not any(
+        h["rule_id"] == "3.1.1.(7).non_reimbursed_inpatient_patient_charge"
+        for h in op_hits
+    )

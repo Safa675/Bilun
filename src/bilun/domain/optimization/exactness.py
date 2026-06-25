@@ -213,7 +213,12 @@ def build_exact_copay_rate_exposure(context: CopayRateClaimContext) -> dict[str,
     distribution: dict[str, int] = {}
     procedures = []
     for line, rate in zip(applicable, rates, strict=True):
-        rate_key = f"{rate.normalize()}%"
+        # B-H4: format the rate key consistently so per-patient and cohort
+        # distributions can be merged/compared. Decimal.normalize() emits
+        # scientific notation for whole numbers (40 -> "4E+1"), which never
+        # matches the aggregator's float-derived "40.0%". Quantize to 2dp
+        # instead and format as a plain string.
+        rate_key = f"{rate.quantize(Decimal('0.01'))}%"
         distribution[rate_key] = distribution.get(rate_key, 0) + 1
         mandated = get_ek2c1_mandated_copay_rate_pct(line.procedure_code)
         procedures.append(

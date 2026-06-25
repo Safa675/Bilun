@@ -376,6 +376,28 @@ def run_build(args: argparse.Namespace) -> str:
                 f"failed={expensive_counts['failed']}, "
                 f"skipped={expensive_counts['skipped']}"
             )
+            # B-H9: warn loudly when the expensive backfill had a high failure
+            # rate. The build is still completed+activated (the base outcome
+            # layer works without expensive DRG data), but operators must know
+            # the build is degraded so they can re-run the backfill. A 100%
+            # failure rate (e.g. every patient hit the DRG timeout) means the
+            # expensive layer is entirely empty — surface that explicitly.
+            total_attempted = (
+                expensive_counts["ready"]
+                + expensive_counts["failed"]
+                + expensive_counts["skipped"]
+            )
+            if total_attempted > 0:
+                failure_rate = expensive_counts["failed"] / total_attempted
+                if failure_rate >= 0.5:
+                    print(
+                        f"  ⚠ WARNING: expensive backfill failure rate "
+                        f"{failure_rate:.0%} ({expensive_counts['failed']}/"
+                        f"{total_attempted} patients). The active build will "
+                        f"serve with 'expensive analytics unavailable' for "
+                        f"those patients. Consider re-running with a higher "
+                        f"--expensive-timeout-ms."
+                    )
 
         row_counts = {
             "cohort_kpi": 0,

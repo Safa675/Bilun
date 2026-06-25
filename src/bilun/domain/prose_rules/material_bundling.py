@@ -20,6 +20,19 @@ from ..constants import _PROSE_RULES_DIR
 _RULES_PATH = _PROSE_RULES_DIR / "material_bundling_prose.json"
 _GENERIC_PROCEDURE_CODES = frozenset({"", "GENERIC"})
 
+# Flags whose rule text asserts an INPATIENT (yatarak) context — e.g.
+# "Karşılanmayan yatarak malzeme". These must not fire on outpatient
+# (poliklinik/gunubirlik) claims; doing so is a false-positive compliance
+# violation that an auditor can falsify on the spot. The care-setting gate
+# in _condition_matches suppresses them when care_setting != "inpatient".
+_INPATIENT_SCOPED_FLAGS = frozenset(
+    {
+        "non_reimbursed_inpatient_patient_charge",
+        "inpatient_material_facility_supply_violation",
+        "ek3c_inpatient_external_supply_invalid",
+    }
+)
+
 
 def _normalize_tr(text: str) -> str:
     folded = unicodedata.normalize("NFKD", str(text).casefold())
@@ -160,6 +173,7 @@ def _condition_matches(
     procedure_line_id: str,
     procedure_codes_on_claim: frozenset[str],
     billed_procedure_line_ids: frozenset[str],
+    care_setting: str = "inpatient",
 ) -> bool:
     if unit_price <= 0:
         return False
@@ -248,6 +262,11 @@ def _condition_matches(
     )
     for flag in claim_flags:
         if condition.get(flag):
+            # Inpatient-scoped rules (e.g. §3.1.1(7) "yatarak malzeme") cannot
+            # apply to an outpatient claim — the violation text asserts a setting
+            # that doesn't exist. Suppress rather than emit a false positive.
+            if flag in _INPATIENT_SCOPED_FLAGS and care_setting != "inpatient":
+                return False
             return mat.get(flag) is True
 
     keywords = condition.get("material_name_any") or []
@@ -314,6 +333,7 @@ def check_material_bundling_prose(
     procedure_code: str = "",
     procedure_codes_on_claim: frozenset[str] | set[str] | None = None,
     billed_procedure_line_ids: frozenset[str] | set[str] | None = None,
+    care_setting: str = "inpatient",
 ) -> list[dict[str, Any]]:
     """Evaluate partial §3.1 prose rules on material dict lines (validator or claims)."""
     ruleset = load_material_bundling_rules()
@@ -332,6 +352,9 @@ def check_material_bundling_prose(
             continue
 
         proc_line_id = str(mat.get("procedure_line_id") or "").strip()
+        # Per-material care setting when available (mixed-claim patients),
+        # else the caller's global default.
+        mat_care = str(mat.get("care_setting") or care_setting)
 
         for rule in rules:
             condition = rule.get("condition") or {}
@@ -345,6 +368,7 @@ def check_material_bundling_prose(
                 procedure_line_id=proc_line_id,
                 procedure_codes_on_claim=claim_codes,
                 billed_procedure_line_ids=billed_ids,
+                care_setting=mat_care,
             ):
                 continue
 
@@ -364,6 +388,14 @@ def check_material_bundling_prose(
 
 def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
     """Run prose material rules on a PatientClaimContext."""
+    from .claim_utils import infer_care_setting
+
+    # Map each claim_id → care setting. A patient with mixed claims (e.g. one
+    # poliklinik + one yatis) has materials on different claim types; the care
+    # setting must come from the material's OWN claim, not ctx.claims[0].
+    claim_care = {
+        str(c.claim_id): infer_care_setting(c) for c in ctx.claims
+    }
     procedure_codes = frozenset(
         normalize_procedure_code(line.procedure_code)
         for line in ctx.procedure_lines
@@ -381,6 +413,9 @@ def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
             "code": line.material_code,
             "unit_price": float(line.billed_amount_try),
             "procedure_line_id": line.procedure_line_id,
+            "care_setting": claim_care.get(
+                getattr(line, "claim_id", ""), "inpatient"
+            ),
         }
         for flag in (
             "titubb_registered",
@@ -435,9 +470,15 @@ def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
     primary_procedure = ""
     if ctx.procedure_lines:
         primary_procedure = str(ctx.procedure_lines[0].procedure_code or "")
+    # Global care setting as a fallback for materials without an explicit
+    # care_setting (materials above already carry per-claim care setting).
+    fallback_care = "inpatient"
+    if ctx.claims:
+        fallback_care = infer_care_setting(ctx.claims[0])
     return check_material_bundling_prose(
         materials,
         procedure_code=primary_procedure,
         procedure_codes_on_claim=procedure_codes,
         billed_procedure_line_ids=billed_procedure_ids,
+        care_setting=fallback_care,
     )

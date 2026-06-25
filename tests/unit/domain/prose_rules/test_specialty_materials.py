@@ -211,7 +211,9 @@ def test_wheelchair_stand_device_duplicate() -> None:
                 "code": "ST1",
                 "unit_price": 300.0,
                 "wheelchair_stand_device_duplicate_billing": True,
-            }
+            },
+            # Co-material gate: a wheelchair must be co-billed for the rule to fire.
+            {"name": "Tekerlekli sandalye", "code": "WC1", "unit_price": 500.0},
         ]
     )
     assert hits[0]["rule_id"] == "3.3.7.B.(2).wheelchair_stand_device_duplicate"
@@ -239,7 +241,9 @@ def test_nimv_heated_humidifier_separate() -> None:
                 "code": "HN1",
                 "unit_price": 80.0,
                 "nimv_heated_humidifier_separate_billing": True,
-            }
+            },
+            # Co-material gate: an NIMV device must be co-billed for the rule to fire.
+            {"name": "NIMV cihazı (spinal)", "code": "NV1", "unit_price": 400.0},
         ]
     )
     assert hits[0]["rule_id"] == "3.3.6.A-1.heated_humidifier_nimv_separate"
@@ -267,7 +271,9 @@ def test_spinal_mobility_device_duplicate() -> None:
                 "code": "PP1",
                 "unit_price": 150.0,
                 "spinal_mobility_device_duplicate_billing": True,
-            }
+            },
+            # Co-material gate: a spinal device must be co-billed for the rule to fire.
+            {"name": "Spinal mobilite cihazı", "code": "SM1", "unit_price": 600.0},
         ]
     )
     assert hits[0]["rule_id"] == "3.3.8.B.(2).spinal_mobility_device_bundle_excluded"
@@ -292,3 +298,51 @@ def test_dual_mesh_primary_hernia_flag() -> None:
         ]
     )
     assert hits[0]["rule_id"] == "3.3.16.(4).dual_mesh_primary_hernia_no_pay"
+
+
+# ── Co-material presence gate (false-positive guard) ─────────────────────────
+# The §3.3.7.B(2) wheelchair duplicate-billing rule asserts a SECOND device
+# (wheelchair) was co-billed. It must NOT fire on a lone material with no
+# wheelchair present — that is a false violation an auditor can falsify.
+
+def test_wheelchair_duplicate_rule_suppressed_without_comaterial() -> None:
+    """A lone shoulder implant with the flag set but NO wheelchair on the claim
+    must not trigger the wheelchair duplicate-billing rule."""
+    hits = check_specialty_materials_prose(
+        [
+            {
+                "name": "Omuz artroplasti implantı",
+                "code": "AP1030",
+                "unit_price": 12500.0,
+                "wheelchair_stand_device_duplicate_billing": True,
+            }
+        ]
+    )
+    wheelchair_hits = [
+        h for h in hits if h["rule_id"] == "3.3.7.B.(2).wheelchair_stand_device_duplicate"
+    ]
+    assert wheelchair_hits == [], "wheelchair rule must not fire without a wheelchair present"
+
+
+def test_wheelchair_duplicate_rule_fires_with_comaterial() -> None:
+    """When a wheelchair IS co-billed, the duplicate rule must fire on the
+    flagged standing-device material."""
+    hits = check_specialty_materials_prose(
+        [
+            {
+                "name": "Ayakta dik konumlandırma cihazı",
+                "code": "STD1",
+                "unit_price": 8000.0,
+                "wheelchair_stand_device_duplicate_billing": True,
+            },
+            {
+                "name": "Tekerlekli sandalye, manuel",
+                "code": "WC1",
+                "unit_price": 5000.0,
+            },
+        ]
+    )
+    wheelchair_hits = [
+        h for h in hits if h["rule_id"] == "3.3.7.B.(2).wheelchair_stand_device_duplicate"
+    ]
+    assert len(wheelchair_hits) == 1, "wheelchair rule must fire when a wheelchair is co-billed"
