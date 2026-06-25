@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from functools import lru_cache
 from pathlib import Path
 
@@ -31,6 +32,13 @@ _SEPARATE_BILLING_ALLOW_MARKERS = (
     "islem bedeline ilave olarak faturalandir",
 )
 
+# Matches a parenthetical code list like "(HO1003, HO1008, HO1009, HO1011)"
+# — used by EK-3/O aggregate notes that name several co-billable codes in one
+# row's description. Without parsing these, the codes mentioned only in such a
+# group note (not in their own row) are wrongly flagged as not-separately-billable.
+_CODE_LIST_IN_PARENS = re.compile(r"\(([^()]*?\b[A-Z]{1,4}\d{3,5}(?:\s*,\s*[A-Z]{1,4}\d{3,5})+[^()]*?)\)")
+_INDIVIDUAL_CODE = re.compile(r"\b([A-Z]{1,4}\d{3,5})\b")
+
 
 def _fold_tr(text: str) -> str:
     return turkish_lower(str(text)).replace("ı", "i")
@@ -39,6 +47,27 @@ def _fold_tr(text: str) -> str:
 def _text_indicates_separate_billing_allowed(*parts: object) -> bool:
     combined = _fold_tr(" ".join(str(part or "") for part in parts))
     return any(_fold_tr(marker) in combined for marker in _SEPARATE_BILLING_ALLOW_MARKERS)
+
+
+def _extract_aggregate_codes(*parts: object) -> set[str]:
+    """Extract codes named in an aggregate co-billing note.
+
+    EK-3/O note (3) reads: "Kolon, filtre veya membran (HO1003, HO1008, HO1009,
+    HO1011, HO1012, HO1017, HO1018, HO1020, HO1022) ile birlikte
+    faturalandırılabilir." — a single description naming 9 co-billable codes.
+    Each code's OWN row only carries note (1) (the report requirement), so the
+    per-row matcher misses them. This parser finds the parenthetical code list
+    in any row whose text carries a co-billing marker and returns all codes in it.
+    """
+    combined = " ".join(str(part or "") for part in parts)
+    if not _text_indicates_separate_billing_allowed(combined):
+        return set()
+    codes: set[str] = set()
+    for group_match in _CODE_LIST_IN_PARENS.finditer(combined):
+        for code_match in _INDIVIDUAL_CODE.finditer(group_match.group(1)):
+            codes.add(code_match.group(1).strip().upper())
+    return codes
+
 _EK3C_PARQUET_NAMES = (
     "ek3c1_materials.parquet",
     "ek3c2_materials.parquet",
@@ -111,19 +140,27 @@ def _build_ek3_price_index() -> dict[str, float]:
 
 @lru_cache(maxsize=1)
 def ek3_separate_billing_allowed_codes() -> frozenset[str]:
-    """EK-3 rows explicitly marked as separately billable (§3.1.4 / C001823)."""
+    """EK-3 rows explicitly marked as separately billable (§3.1.4 / C001823).
+
+    Two detection paths:
+    1. Per-row: a material's own description/name carries a co-billing marker.
+    2. Aggregate: a sibling row's description names several codes in a
+       parenthetical list (e.g. EK-3/O note (3): "(HO1003, HO1008, ...) ile
+       birlikte faturalandırılabilir"). Without parsing these, codes mentioned
+       only in a group note are wrongly flagged as not-separately-billable.
+    """
     allowed: set[str] = set()
     for path in _all_ek3_catalog_paths():
         for row in _read_material_rows_from_parquet(path):
             code = str(row.get("sut_code") or "").strip().upper()
-            if not code:
-                continue
-            if _text_indicates_separate_billing_allowed(
-                row.get("description"),
-                row.get("material_name"),
-                row.get("name"),
-            ):
+            desc = row.get("description")
+            name = row.get("material_name")
+            alt_name = row.get("name")
+            # Path 1: own row carries the marker.
+            if code and _text_indicates_separate_billing_allowed(desc, name, alt_name):
                 allowed.add(code)
+            # Path 2: aggregate note names codes in a parenthetical list.
+            allowed |= _extract_aggregate_codes(desc, name, alt_name)
     return frozenset(allowed)
 
 
