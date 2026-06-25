@@ -11,6 +11,18 @@ from ..constants import _PROSE_RULES_DIR
 
 _RULES_PATH = _PROSE_RULES_DIR / "specialty_materials_prose.json"
 
+# Duplicate-billing rules assert that a SECOND device was co-billed (e.g. "a
+# standing device billed together WITH a wheelchair"). They must not fire when
+# the referenced co-material is absent from the claim — firing on a lone
+# shoulder implant with no wheelchair present is a false positive an auditor
+# can falsify instantly. Map each such flag to the keyword the co-material's
+# name must contain for the rule to be applicable.
+_DUPLICATE_BILLING_COS = {
+    "wheelchair_stand_device_duplicate_billing": "tekerlekli",  # wheelchair must be co-billed
+    "spinal_mobility_device_duplicate_billing": "spinal",  # spinal device must be co-billed
+    "nimv_heated_humidifier_separate_billing": "nimv",  # NIMV device must be co-billed
+}
+
 SPECIALTY_CLAIM_FLAGS: tuple[str, ...] = (
     "specialty_wound_care_excluded",
     "skin_substitute_non_burn_use",
@@ -94,6 +106,7 @@ def _condition_matches(
     mat: dict[str, Any],
     name: str,
     unit_price: float,
+    all_material_names: frozenset[str] = frozenset(),
 ) -> bool:
     if unit_price <= 0:
         return False
@@ -105,6 +118,15 @@ def _condition_matches(
     if active_flags:
         if not all(mat.get(flag) is True for flag in active_flags):
             return False
+        # Duplicate-billing rules require the referenced co-material to be
+        # present on the claim. If it isn't, the rule cannot apply — suppress.
+        for flag in active_flags:
+            cos_keyword = _DUPLICATE_BILLING_COS.get(flag)
+            if cos_keyword:
+                if not any(
+                    cos_keyword in nm for nm in all_material_names
+                ):
+                    return False
         if keywords:
             return name_hit
         return True
@@ -158,6 +180,12 @@ def check_specialty_materials_prose(
     violations: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
 
+    # Collect all material names on the claim once — duplicate-billing rules
+    # need to check co-material presence against this set.
+    all_names = frozenset(
+        str(_material_fields(m)[0]).casefold() for m in materials if _material_fields(m)[0]
+    )
+
     for mat in materials:
         name, code, unit_price = _material_fields(mat)
         if unit_price <= 0:
@@ -166,7 +194,11 @@ def check_specialty_materials_prose(
         for rule in rules:
             condition = rule.get("condition") or {}
             if not _condition_matches(
-                condition, mat=mat, name=name, unit_price=unit_price
+                condition,
+                mat=mat,
+                name=name,
+                unit_price=unit_price,
+                all_material_names=all_names,
             ):
                 continue
 

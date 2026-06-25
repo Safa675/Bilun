@@ -1,7 +1,7 @@
 # Synthetic demo cohort — Tier A / B / C
 
 **Dataset:** `sentetik_sut_v2_50_hasta`  
-**Generated:** 2026-06-24T16:33:31Z  
+**Generated:** 2026-06-25T16:35:57Z  
 **Seed:** `20260504`  
 **Patients:** 50 (A=9, B=24, C=17)
 

@@ -1372,17 +1372,55 @@ def _sample_prose_material_flags(*, bundled: bool) -> dict[str, bool]:
     return {**_default_prose_material_flags(), **_default_specialty_prose_flags()}
 
 
-def _ensure_specialty_flag_coverage(materials: list[dict[str, Any]]) -> None:
-    """Guarantee at least one demo row per L4.4 specialty prose claim flag."""
+def _ensure_specialty_flag_coverage(
+    materials: list[dict[str, Any]],
+    claims: list[dict[str, Any]] | None = None,
+) -> None:
+    """Guarantee at least one demo row per L4.4 specialty prose claim flag.
+
+    Context-aware: duplicate-billing flags (wheelchair_stand_device_duplicate_billing,
+    spinal_mobility_device_duplicate_billing, nimv_heated_humidifier_separate_billing)
+    assert a SECOND device was co-billed. They must only be set on materials whose
+    claim also carries the referenced co-material — otherwise the §3.3 engine fires a
+    "tekerlekli sandalye ile birlikte..." violation on a lone shoulder implant, a false
+    positive. When no claim has the co-material, coverage for that flag is skipped
+    (honest "no demo row" beats a fabricated one).
+    """
     if not materials:
         return
 
     candidates = [row for row in materials if not row.get("pakete_dahil_mi")] or materials
 
+    # Duplicate-billing flags → required co-material keyword in a sibling line's name.
+    duplicate_cos = {
+        "wheelchair_stand_device_duplicate_billing": "tekerlekli",
+        "spinal_mobility_device_duplicate_billing": "spinal",
+        "nimv_heated_humidifier_separate_billing": "nimv",
+    }
+
+    def _claim_has_cosiblings(material_row: dict[str, Any], keyword: str) -> bool:
+        """True if another material on the same claim has `keyword` in its name."""
+        cid = material_row.get("fatura_id")
+        return any(
+            other.get("fatura_id") == cid
+            and other is not material_row
+            and keyword in str(other.get("malzeme_adi", "")).lower()
+            for other in materials
+        )
+
     for idx, col in enumerate(SPECIALTY_PROSE_FLAG_COLUMNS):
         if any(row.get(col) for row in materials):
             continue
-        row = candidates[idx % len(candidates)]
+        # Duplicate-billing flags: only assign to a material whose claim has the
+        # co-material. If none qualifies, skip coverage for this flag.
+        cos_keyword = duplicate_cos.get(col)
+        if cos_keyword:
+            eligible = [r for r in candidates if _claim_has_cosiblings(r, cos_keyword)]
+            if not eligible:
+                continue  # no co-material anywhere → skip rather than fabricate
+            row = eligible[idx % len(eligible)]
+        else:
+            row = candidates[idx % len(candidates)]
         row[col] = True
         if float(row.get("fatura_tutari_try") or 0) <= 0:
             row["fatura_tutari_try"] = 100.0
@@ -1477,19 +1515,45 @@ def _inject_specialty_keyword_demo_rows(
         )
 
 
-def _ensure_prose_flag_coverage(materials: list[dict[str, Any]]) -> None:
-    """Guarantee at least one demo row per prose flag without touching RNG."""
+def _ensure_prose_flag_coverage(
+    materials: list[dict[str, Any]],
+    inpatient_claim_ids: frozenset[str] | None = None,
+) -> None:
+    """Guarantee at least one demo row per prose flag without touching RNG.
+
+    Context-aware: inpatient-scoped flags (non_reimbursed_inpatient_patient_charge,
+    inpatient_material_facility_supply_violation, ek3c_inpatient_external_supply_invalid)
+    are only set on materials belonging to a yatarak (inpatient) claim, never on an
+    outpatient — otherwise the §3.1 engine emits a "yatarak malzeme" violation on a
+    poliklinik claim, a false positive an auditor can falsify. Duplicate-billing flags
+    require the referenced co-material on the same claim.
+    """
     if not materials:
         return
 
     candidates = [
         row for row in materials if not row.get("pakete_dahil_mi")
     ] or materials
+    inpatient_ids = inpatient_claim_ids or frozenset()
+    inpatient_candidates = [
+        row for row in candidates if row.get("fatura_id") in inpatient_ids
+    ] or candidates
+
+    # Flags whose rule text asserts an inpatient (yatarak) context. These use
+    # the GENERATOR's Turkish column names (the exported English names differ).
+    inpatient_scoped = frozenset(
+        {
+            "karsilanmayan_yatarak_hasta",          # -> non_reimbursed_inpatient_patient_charge
+            "yatarak_kurum_temin_ihlali",           # -> inpatient_material_facility_supply_violation
+            "ek3c_yatarak_dis_temin_ihlali",        # -> ek3c_inpatient_external_supply_invalid
+        }
+    )
 
     for idx, col in enumerate(MATERIAL_PROSE_FLAG_COLUMNS[2:]):
         if any(row.get(col) for row in materials):
             continue
-        candidates[idx % len(candidates)][col] = True
+        pool = inpatient_candidates if col in inpatient_scoped else candidates
+        pool[idx % len(pool)][col] = True
 
     if not any(row.get("titubb_kayitli_mi") is False for row in materials):
         candidates[0]["titubb_kayitli_mi"] = False
@@ -2910,8 +2974,15 @@ def build_workbook_tables(
         expected,
         lab_billing_budget,
     ) = _generate_claims_and_lines(episodes, rng)
-    _ensure_prose_flag_coverage(materials)
-    _ensure_specialty_flag_coverage(materials)
+    # Inpatient (yatarak) claim ids — needed so coverage post-passes don't set
+    # inpatient-scoped flags on outpatient materials (false-positive guard).
+    inpatient_claim_ids = frozenset(
+        str(c.get("fatura_id", ""))
+        for c in claims
+        if "yatis" in str(c.get("fatura_tipi", "")) or "yatarak" in str(c.get("fatura_tipi", ""))
+    )
+    _ensure_prose_flag_coverage(materials, inpatient_claim_ids=inpatient_claim_ids)
+    _ensure_specialty_flag_coverage(materials, claims=claims)
     _inject_specialty_keyword_demo_rows(materials, claims)
     ek2c1_copay_rates = _build_normalized_ek2c1_copay_rates(_ek2c1())
     _reconcile_ek2c1_procedure_lines(procedure_rows, ek2c1_copay_rates)

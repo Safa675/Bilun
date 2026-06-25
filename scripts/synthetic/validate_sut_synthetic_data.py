@@ -383,8 +383,19 @@ def _validate_specialty_prose_flags(
         )
         return
 
+    # Duplicate-billing flags are context-gated (require a co-material on the
+    # same claim). They may legitimately have zero rows when no qualifying
+    # co-material exists — demanding coverage would force a false positive.
+    _SPECIALTY_CONTEXT_GATED = frozenset(
+        {
+            "wheelchair_stand_device_duplicate_billing",
+            "spinal_mobility_device_duplicate_billing",
+            "nimv_heated_humidifier_separate_billing",
+        }
+    )
+
     for col in SPECIALTY_PROSE_FLAG_COLUMNS:
-        if not _truthy(materials[col]).any():
+        if not _truthy(materials[col]).any() and col not in _SPECIALTY_CONTEXT_GATED:
             _error(errors, f"Expected at least one material line with {col}=true")
 
 
@@ -403,6 +414,19 @@ def _validate_material_prose_flags(
         _error(errors, f"malzeme_fatura_satirlari missing prose flag columns: {missing_cols}")
         return
 
+    # Duplicate-billing flags require a co-material (wheelchair/spinal/humidifier)
+    # on the same claim to be applicable. They are context-gated, NOT guaranteed-
+    # coverage — when no claim carries the co-material, zero rows is correct, not a
+    # failure. Demanding coverage here would force the generator to fabricate a
+    # false-positive match (exactly the bug this guard prevents).
+    _CONTEXT_GATED_FLAGS = frozenset(
+        {
+            "wheelchair_stand_device_duplicate_billing",
+            "spinal_mobility_device_duplicate_billing",
+            "nimv_heated_humidifier_separate_billing",
+        }
+    )
+
     for col in MATERIAL_PROSE_WORKBOOK_COLUMNS:
         if col in {"titubb_kayitli_mi", "uts_kayitli_mi"}:
             if col == "titubb_kayitli_mi":
@@ -414,8 +438,71 @@ def _validate_material_prose_flags(
         else:
             has_demo = _truthy(materials[col]).any()
             label = f"{col}=true"
-        if not has_demo:
+        if not has_demo and col not in _CONTEXT_GATED_FLAGS:
             _error(errors, f"Expected at least one material line with {label}")
+
+    _validate_material_flag_applicability(tables, materials, errors)
+
+
+def _validate_material_flag_applicability(
+    tables: dict[str, pd.DataFrame],
+    materials: pd.DataFrame,
+    errors: list[str],
+) -> None:
+    """Assert inpatient-scoped flags never appear on outpatient claims, and
+    duplicate-billing flags never appear without the co-material. These are the
+    drift guards for the false-positive fixes — they fail loudly if a future
+    regen re-introduces the context-incompatible flag assignment."""
+    claims = tables.get("fatura_basliklari")
+    if claims is None:
+        return
+
+    # Map fatura_id → care setting.
+    care = {
+        str(r["fatura_id"]): _workbook_care_setting(str(r.get("fatura_tipi", "")))
+        for _, r in claims.iterrows()
+    }
+
+    inpatient_scoped = (
+        "non_reimbursed_inpatient_patient_charge",
+        "inpatient_material_facility_supply_violation",
+        "ek3c_inpatient_external_supply_invalid",
+    )
+    for col in inpatient_scoped:
+        if col not in materials.columns:
+            continue
+        offenders = materials[_truthy(materials[col])]
+        for _, row in offenders.iterrows():
+            cid = str(row.get("fatura_id", ""))
+            if care.get(cid) == "outpatient":
+                _error(
+                    errors,
+                    f"Inpatient-scoped flag {col} set on outpatient claim {cid} "
+                    f"(material {row.get('malzeme_kodu', '?')}) — false-positive risk.",
+                )
+
+    # Duplicate-billing flags require the co-material on the same claim.
+    duplicate_cos = {
+        "wheelchair_stand_device_duplicate_billing": "tekerlekli",
+        "spinal_mobility_device_duplicate_billing": "spinal",
+        "nimv_heated_humidifier_separate_billing": "nimv",
+    }
+    for col, keyword in duplicate_cos.items():
+        if col not in materials.columns:
+            continue
+        offenders = materials[_truthy(materials[col])]
+        for _, row in offenders.iterrows():
+            cid = str(row.get("fatura_id", ""))
+            siblings = materials[_strings(materials["fatura_id"]) == cid]
+            has_cos = siblings["malzeme_adi"].astype(str).str.lower().str.contains(
+                keyword, na=False
+            ).any()
+            if not has_cos:
+                _error(
+                    errors,
+                    f"{col} set on claim {cid} but no co-material with "
+                    f"'{keyword}' present — false-positive risk.",
+                )
 
 
 def _workbook_care_setting(claim_type: str) -> str:
