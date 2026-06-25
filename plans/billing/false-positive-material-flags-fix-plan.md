@@ -132,9 +132,17 @@ A full self-scoping corpus audit is captured as a follow-up, out of scope here.
   a larger structural change than these bugs require.
 
 ## Verification of done
-- Patient-0029 (poliklinik) shows no §3.1.1(7) "yatarak malzeme" note.
-- Patient-0029 shows no §3.3.7.B(2) "tekerlekli sandalye" note on the shoulder implant.
-- The genuine findings on 0029 (0704 ÜTS barcode, copay exemption, package-billing
-  compliance) remain intact.
-- A yatarak inpatient patient with an inpatient material DOES still trigger §3.1.1(7).
-- Full test suite + synthetic validator green.
+- Patient-0029 (poliklinik) shows no §3.1.1(7) "yatarak malzeme" note. ✅ (live-verified)
+- Patient-0029 shows no §3.3.7.B(2) "tekerlekli sandalye" note on the shoulder implant. ✅ (live-verified)
+- The genuine findings on 0029 (0704 ÜTS barcode, §3.1.1(4)) remain intact. ✅
+- A yatarak inpatient patient with an inpatient material DOES still trigger §3.1.1(7). ✅ (patient-0037 mixed-claim)
+- Full test suite (827) + synthetic validator + Tier A green. ✅
+- Drift guard (`_validate_material_flag_applicability`) asserts no outpatient carries an inpatient flag. ✅
+
+## Review
+- **Engine gates:** `material_bundling.py` now resolves care setting per-material (not per-patient-first-claim) via a `claim_id → care_setting` map — critical for mixed-claim patients where one patient has both poliklinik and yatis claims. `specialty_materials.py` gates duplicate-billing rules on co-material presence (wheelchair/spinal/NIMV keyword in a sibling line).
+- **Data fix:** the coverage post-passes (`_ensure_prose_flag_coverage`, `_ensure_specialty_flag_coverage`) now respect context. Had to use the GENERATOR's Turkish column names (`karsilanmayan_yatarak_hasta`) in the inpatient-scoped set, NOT the exported English names — a column-name-language mismatch caught only by tracing.
+- **Surfaced a latent bug:** the regen exercised a code path in `aggregator.py:157` using `Decimal` without importing it, crashing the production cache rebuild (503). Fixed the import (`1fa98bd`), but this illustrates that data regens are full-pipeline smoke tests (lesson captured).
+- **Deploy gap found:** the auto-deploy workflow restarts services but does NOT rebuild the DuckDB cache. When a deploy ships regenerated data, the cache must be rebuilt manually (`BILUN_STARTUP_POLICY=rebuild` + restart) or the frontend serves stale findings. This is a known gap to address in a deploy-workflow follow-up.
+- **Pre-existing tests updated:** 3 specialty tests that asserted the false-positive behavior (lone material triggers duplicate rule) now include the co-material so they test the corrected behavior. The coverage test exempts context-gated flags.
+

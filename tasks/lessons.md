@@ -9,6 +9,18 @@ Format per entry:
 
 ---
 
+## 2026-06-25 — Regenerating synthetic data surfaces latent code bugs hidden by the old data's shape
+
+**Pattern:** Fixing the false-positive material flags required regenerating the cohort. The new cohort's slightly different values (different rate distributions, different material assignments) exercised a code path in `compute_optimization_summary` that the OLD cohort never reached — specifically the `Decimal(str(rate_val)).quantize(...)` line at `aggregator.py:157`. That line used `Decimal` but the module never imported it (`from decimal import Decimal` was missing). The import was latent-broken since the line was written, but only the regen exposed it — and it crashed the production cache rebuild, taking the billing endpoint 503. The old data happened to never produce a rate that hit the quantize branch, so the NameError was invisible.
+
+**Rule:** A synthetic-data regeneration is NOT just "swap the parquet" — it is a full-pipeline smoke test that can surface dormant bugs in every downstream consumer. Before declaring a regen-based fix deployed:
+1. After regenerating, **rebuild the cache** (`BILUN_STARTUP_POLICY=rebuild` + restart), not just restart the backend. The cache builder processes the data through the entire compute path; a stale cache hides code bugs that the rebuild exposes.
+2. A cache rebuild that silently fails (no `active_build` in `/health`) means the rebuild **errored** — check `journalctl -u bilun-backend` for the traceback. `active_build: null` with `status: ok` is a degraded state, not healthy.
+3. Latent import bugs (`NameError`) hide in code paths only reached by specific data values. When a regen changes data distributions, grep for unqualified builtin/stdlib names (`Decimal`, `date`, `Decimal`) in the modules the cache builder touches.
+4. The deploy workflow restarts services but does NOT rebuild the cache. If a deploy includes regenerated data, the cache rebuild must be an explicit deploy step — otherwise the frontend serves stale findings until the cache is manually rebuilt.
+
+---
+
 ## 2026-06-24 — A synthetic row missing optional flag columns coerces the whole DataFrame column to float, breaking string-truthy validators
 
 **Pattern:** Injecting one extra material row (a MEDULA rejection anchor) that set only the `prose_flags` dict but NOT the L4.4 `specialty_flags`. When the per-claim material dicts were assembled into a DataFrame and written to the xlsx workbook, the specialty columns were `NaN` for that one row. Because the column now mixed `True`/`False`/`NaN`, pandas/the Excel round-trip stored them as floats (`1.0`/`0.0`/`nan`) instead of object strings. The validator's `_truthy()` does `_strings(series).str.lower().isin({"true","1","evet","yes"})` — and `_strings(1.0)` → `"1.0"`, which is NOT `"1"`, so EVERY row in that column failed the truthy check. Result: 35 spurious "Expected at least one material line with X=true" errors even though the parquet (read separately) showed the flags correctly. The single incomplete row poisoned the entire column's dtype.
