@@ -444,7 +444,7 @@
       "action": {
         "material_outcome": "must_not_bill_separately",
         "severity": "warning",
-        "message_tr": "EK-3 listesinde olup SUT/eklerinde ayrıca faturalandırma izni belirtilmeyen malzeme — ilave faturalandırma riski (§3.1.1(15))."
+        "message_tr": "EK-3 listesinde olup ilgili ekte ayrıca faturalandırma izni belirtilmeyen malzeme — ilave faturalandırma riski (EK-3 listesi / §3.1)."
       }
     },
     {
