@@ -7,6 +7,7 @@ import {
   getRuleDetail,
   getRuleSections,
   getSectionClauses,
+  listClauses,
   sectionRollupRowKey,
   type CoverageSummary,
   type FactCheckRollup,
@@ -849,6 +850,248 @@ function SectionDetailPane({ section }: { section: SectionRollupEntry | null }) 
   );
 }
 
+function ClauseBrowserPanel() {
+  const t = useT();
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [gapFilter, setGapFilter] = useState(false);
+  const [encodingFilter, setEncodingFilter] = useState(false);
+  const [page, setPage] = useState(1);
+  const [result, setResult] = useState<SectionClausesResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedClause, setSelectedClause] = useState<RuleClause | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 300ms debounce on search input.
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedQuery(query.trim());
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query]);
+
+  // Reset to page 1 on any filter change.
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter]);
+
+  // Abort-aware fetch.
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await listClauses(
+          {
+            q: debouncedQuery || undefined,
+            page,
+            per_page: CLAUSES_PER_PAGE,
+            coverage_status: statusFilter || undefined,
+            has_gap: gapFilter || undefined,
+            has_encoding: encodingFilter || undefined,
+          },
+          { signal: controller.signal },
+        );
+        if (!active || controller.signal.aborted) return;
+        setResult(res);
+        // Auto-select first clause in the results.
+        if (res.clauses.length > 0) {
+          setSelectedClause(res.clauses[0]);
+        } else {
+          setSelectedClause(null);
+        }
+      } catch (err) {
+        if (!active || isAbortError(err)) return;
+        setResult(null);
+        setError(
+          err instanceof Error ? err.message : t("sections.ruleDatabase.errors.loadFailed"),
+        );
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, page, t]);
+
+  const clauses = result?.clauses ?? [];
+  const totalPages = result?.total_pages ?? 0;
+  const total = result?.clause_total ?? 0;
+
+  return (
+    <div className="space-y-4">
+      <Toolbar
+        leading={
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("sections.ruleDatabase.clauses.searchPlaceholder")}
+            className="sut-input min-w-[220px] max-w-[360px]"
+          />
+        }
+        trailing={
+          <div className="flex items-center gap-2">
+            {STATUS_FILTERS.map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() =>
+                  setStatusFilter((prev) => (prev === status ? "" : status))
+                }
+                className={`sut-section-btn sut-section-btn-compact text-[11px] ${
+                  statusFilter === status ? "sut-section-btn-active" : ""
+                }`}
+              >
+                {status === "all"
+                  ? t("sections.ruleDatabase.status.all")
+                  : t(`sections.ruleDatabase.status.${COVERAGE_KEY[status]}`)}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setGapFilter((v) => !v)}
+              className={`sut-section-btn sut-section-btn-compact text-[11px] ${
+                gapFilter ? "sut-section-btn-active" : ""
+              }`}
+            >
+              {t("sections.ruleDatabase.clauses.filterGap")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEncodingFilter((v) => !v)}
+              className={`sut-section-btn sut-section-btn-compact text-[11px] ${
+                encodingFilter ? "sut-section-btn-active" : ""
+              }`}
+            >
+              {t("sections.ruleDatabase.clauses.filterEncoded")}
+            </button>
+          </div>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="space-y-3">
+          {error ? (
+            <Surface variant="soft" padding="md" className="text-center">
+              <p className="text-sm text-[var(--danger)]">{error}</p>
+            </Surface>
+          ) : clauses.length === 0 && !loading ? (
+            <Surface variant="soft" padding="md" className="text-center">
+              <p className="text-sm text-[var(--text-secondary)]">
+                {t("sections.ruleDatabase.detail.noClauses")}
+              </p>
+            </Surface>
+          ) : (
+            <>
+              <div className="text-[11px] text-[var(--text-muted)]">
+                {t("sections.ruleDatabase.clauses.resultCount", { count: fmtNum(total) })}
+              </div>
+              <ul className="space-y-1.5">
+                {clauses.map((clause) => {
+                  const isSelected =
+                    selectedClause?.clause_id === clause.clause_id;
+                  return (
+                    <li
+                      key={clause.clause_id}
+                      onClick={() => setSelectedClause(clause)}
+                      className={`cursor-pointer rounded-[var(--r-sm)] border px-3 py-2 transition-colors hover:bg-[var(--surface-default)] ${
+                        isSelected
+                          ? "border-[var(--accent)] bg-[var(--surface-default)]"
+                          : "border-[var(--border-subtle)]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {clause.clause_id && (
+                          <span className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-secondary)]">
+                            {clause.clause_id}
+                          </span>
+                        )}
+                        {clause.coverage_status && (
+                          <CoverageChip status={clause.coverage_status as RuleCoverageStatus} />
+                        )}
+                        {clause.has_algorithmic_gap && (
+                          <Chip variant="warning" className="text-[9px] uppercase">
+                            {t("sections.ruleDatabase.detail.gapBadge")}
+                          </Chip>
+                        )}
+                        {clause.has_rule_encoding && (
+                          <Chip variant="success" className="text-[9px] uppercase">
+                            {t("sections.ruleDatabase.detail.encodedBadge")}
+                          </Chip>
+                        )}
+                        {clause.primary_rule_id && (
+                          <span className="font-mono text-[10px] text-[var(--text-muted)]">
+                            {clause.primary_rule_id}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-[var(--text-secondary)]">
+                        {clause.text_tr}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
+                  <button
+                    type="button"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {t("sections.ruleDatabase.pagination.prev")}
+                  </button>
+                  <span>
+                    {t("sections.ruleDatabase.pagination.page", {
+                      page: fmtNum(page),
+                      totalPages: fmtNum(totalPages),
+                    })}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {t("sections.ruleDatabase.pagination.next")}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Detail pane */}
+        {selectedClause ? (
+          <div>
+            <ClauseCard clause={selectedClause} />
+          </div>
+        ) : (
+          <Surface variant="soft" padding="md" className="h-full">
+            <p className="text-sm text-[var(--text-secondary)]">
+              {t("sections.ruleDatabase.sections.detailPrompt")}
+            </p>
+          </Surface>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ProseInventoryPanel() {
   const t = useT();
   const {
@@ -1052,6 +1295,9 @@ export function RuleDatabaseSection() {
             <TabsTrigger value="sections" density="compact">
               {t("sections.ruleDatabase.tabs.sections")}
             </TabsTrigger>
+            <TabsTrigger value="clauses" density="compact">
+              {t("sections.ruleDatabase.tabs.clauses")}
+            </TabsTrigger>
             <TabsTrigger value="prose" density="compact">
               {t("sections.ruleDatabase.tabs.prose")}
             </TabsTrigger>
@@ -1115,6 +1361,12 @@ export function RuleDatabaseSection() {
           <TabsContent value="sections" forceMount className="data-[state=inactive]:hidden">
             <div className="pt-4">
               <SectionBrowserPanel />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="clauses" forceMount className="data-[state=inactive]:hidden">
+            <div className="pt-4">
+              <ClauseBrowserPanel />
             </div>
           </TabsContent>
 

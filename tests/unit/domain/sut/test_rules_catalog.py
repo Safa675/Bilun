@@ -161,6 +161,45 @@ class TestSectionClauseDrilldown:
         assert rc.list_section_clauses("99.99.99") == ([], 0)
 
 
+class TestGlobalClauseSearch:
+    def test_case_insensitive_text_search(self) -> None:
+        clauses, total = rc.list_clauses(q="azasitidin")
+        assert total > 0
+        assert any("azasitidin" in c["text_tr"].lower() for c in clauses)
+
+    def test_clause_id_search(self) -> None:
+        clauses, total = rc.list_clauses(q="C002684")
+        assert total == 1
+        assert clauses[0]["clause_id"] == "C002684"
+
+    def test_pagination_disjoint(self) -> None:
+        page1, total = rc.list_clauses(limit=5, offset=0)
+        page2, _ = rc.list_clauses(limit=5, offset=5)
+        assert len(page1) == 5
+        assert {c["clause_id"] for c in page1}.isdisjoint(
+            {c["clause_id"] for c in page2}
+        )
+        assert total >= 10
+
+    def test_has_gap_filter(self) -> None:
+        clauses, total = rc.list_clauses(has_gap=True)
+        assert total > 0
+        assert all(c["has_algorithmic_gap"] for c in clauses)
+
+    def test_no_query_returns_all(self) -> None:
+        _, total = rc.list_clauses()
+        assert total > 1000  # most of the 4,710 clauses
+
+    def test_get_clause_returns_dict(self) -> None:
+        clause = rc.get_clause("C002684")
+        assert clause is not None
+        assert clause["clause_id"] == "C002684"
+        assert "text_tr" in clause
+
+    def test_get_clause_missing_returns_none(self) -> None:
+        assert rc.get_clause("DOESNOTEXIST") is None
+
+
 class TestCoverageSummary:
     @_needs_coverage
     def test_coverage_summary_returns_pipeline_health(self) -> None:

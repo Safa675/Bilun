@@ -81,7 +81,14 @@ const sections = {
     tabs: {
       rules: "Rules",
       sections: "Sections",
+      clauses: "Clauses",
       prose: "Prose engines",
+    },
+    clauses: {
+      searchPlaceholder: "Search clause_id or text…",
+      filterGap: "Gap",
+      filterEncoded: "Encoded",
+      resultCount: "{count} clauses",
     },
     sections: {
       title: "SUT Sections",

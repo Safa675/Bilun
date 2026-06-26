@@ -54,6 +54,8 @@ _CLAUSE_COLUMNS: tuple[str, ...] = (
     "chapter",
     "clause_type",
     "text_tr",
+    "in_force_text",
+    "is_in_force",
     "annex_refs",
     "procedure_codes",
     "percentages",
@@ -956,3 +958,67 @@ def list_section_clauses(
 
     clauses = [_clause_payload(row, None) for row in matched.iter_rows(named=True)]
     return clauses, total
+
+
+def list_clauses(
+    *,
+    q: str | None = None,
+    coverage_status: str | None = None,
+    has_gap: bool | None = None,
+    has_encoding: bool | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[dict[str, Any]], int]:
+    """Return ``(clauses, total)`` across all in-force clauses with optional search/filter.
+
+    ``q`` does a case-insensitive contains on both ``clause_id`` and
+    ``in_force_text``. The ``in_force_text`` column carries mixed-case text,
+    so ``str.to_lowercase()`` is mandatory before ``str.contains``.
+    """
+    frame = _load_coverage()
+    if frame is None:
+        return [], 0
+
+    if "is_in_force" in frame.columns:
+        frame = frame.filter(pl.col("is_in_force"))
+        if frame.height == 0:
+            return [], 0
+
+    if q:
+        needle = q.strip().lower()
+        if needle:
+            frame = frame.filter(
+                pl.col("clause_id").str.to_lowercase().str.contains(needle)
+                | pl.col("in_force_text").str.to_lowercase().str.contains(needle)
+            )
+
+    if coverage_status and frame.height > 0:
+        frame = frame.filter(pl.col("coverage_status") == coverage_status)
+    if has_gap is True and frame.height > 0:
+        frame = frame.filter(pl.col("has_algorithmic_gap") == True)  # noqa: E712
+    if has_encoding is True and frame.height > 0:
+        frame = frame.filter(pl.col("has_rule_encoding") == True)  # noqa: E712
+
+    if frame.height == 0:
+        return [], 0
+
+    frame = frame.sort("paragraph_index", descending=False, nulls_last=True)
+    total = frame.height
+    if offset:
+        frame = frame.slice(offset, None)
+    if limit is not None:
+        frame = frame.head(limit)
+
+    clauses = [_clause_payload(row, None) for row in frame.iter_rows(named=True)]
+    return clauses, total
+
+
+def get_clause(clause_id: str) -> dict[str, Any] | None:
+    """Return a single clause payload by ``clause_id``, or ``None`` if not found."""
+    frame = _load_coverage()
+    if frame is None:
+        return None
+    matched = frame.filter(pl.col("clause_id") == clause_id)
+    if matched.height == 0:
+        return None
+    return _clause_payload(matched.row(0, named=True), None)

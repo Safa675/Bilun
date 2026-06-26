@@ -81,7 +81,14 @@ const sections = {
     tabs: {
       rules: "Kurallar",
       sections: "Bölümler",
+      clauses: "Hükümler",
       prose: "Düz metin motorları",
+    },
+    clauses: {
+      searchPlaceholder: "Hüküm id veya metin ara…",
+      filterGap: "Boşluk",
+      filterEncoded: "Kodlanmış",
+      resultCount: "{count} hüküm",
     },
     sections: {
       title: "SUT Bölümleri",

@@ -730,6 +730,35 @@ export async function getSectionClauses(
   );
 }
 
+export async function listClauses(
+  params?: {
+    q?: string;
+    page?: number;
+    per_page?: number;
+    coverage_status?: string;
+    has_gap?: boolean;
+    has_encoding?: boolean;
+  },
+  options?: RequestInit,
+): Promise<SectionClausesResponse> {
+  const qs = new URLSearchParams();
+  if (params?.q) qs.set("q", params.q);
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.per_page) qs.set("per_page", String(params.per_page));
+  if (params?.coverage_status) qs.set("coverage_status", params.coverage_status);
+  if (params?.has_gap !== undefined) qs.set("has_gap", String(params.has_gap));
+  if (params?.has_encoding !== undefined) qs.set("has_encoding", String(params.has_encoding));
+  const query = qs.toString();
+  return requestJSON<SectionClausesResponse>(
+    `/api/rules/clauses${query ? `?${query}` : ""}`,
+    options,
+  );
+}
+
+export async function getClause(clauseId: string, options?: RequestInit): Promise<RuleClause> {
+  return requestJSON<RuleClause>(`/api/rules/clauses/${encodeURIComponent(clauseId)}`, options);
+}
+
 export async function getProseInventory(options?: RequestInit): Promise<ProseInventoryResponse> {
   return requestJSON<ProseInventoryResponse>("/api/rules/prose-inventory", options);
 }

@@ -14,6 +14,7 @@ from fastapi import APIRouter
 from src.bilun.api.schemas import (
     ProseInventoryResponse,
     RuleCatalogResponse,
+    RuleClause,
     RuleDetailResponse,
     SectionClausesResponse,
     SectionRollupResponse,
@@ -105,6 +106,53 @@ def get_section_clauses(
 def get_prose_inventory():
     """Manifest of prose rule engines under ``data/gazette/prose_rules`` (expert surface)."""
     return rules_catalog.prose_inventory()
+
+
+@router.get("/rules/clauses", response_model=SectionClausesResponse)
+def list_all_clauses(
+    q: str | None = None,
+    page: int = 1,
+    per_page: int = 50,
+    coverage_status: str | None = None,
+    has_gap: bool | None = None,
+    has_encoding: bool | None = None,
+):
+    """Search across all in-force SUT clauses (global Hükümler browser)."""
+    if page < 1:
+        raise ValidationError("page must be >= 1", page=page)
+    if per_page < 1 or per_page > _MAX_PER_PAGE:
+        raise ValidationError(
+            f"per_page must be between 1 and {_MAX_PER_PAGE}", per_page=per_page
+        )
+
+    offset = (page - 1) * per_page
+    clauses, clause_total = rules_catalog.list_clauses(
+        q=q,
+        coverage_status=coverage_status,
+        has_gap=has_gap,
+        has_encoding=has_encoding,
+        limit=per_page,
+        offset=offset,
+    )
+    total_pages = (clause_total + per_page - 1) // per_page if clause_total else 0
+
+    return {
+        "clauses": clauses,
+        "clause_total": clause_total,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages,
+        "artifacts_available": rules_catalog.artifacts_available(),
+    }
+
+
+@router.get("/rules/clauses/{clause_id}", response_model=RuleClause)
+def get_single_clause(clause_id: str):
+    """Single SUT clause by clause_id."""
+    clause = rules_catalog.get_clause(clause_id)
+    if clause is None:
+        raise NotFoundError(f"Unknown clause_id: {clause_id}", clause_id=clause_id)
+    return clause
 
 
 @router.get("/rules/{rule_id}", response_model=RuleDetailResponse)

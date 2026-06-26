@@ -8,6 +8,7 @@ from src.bilun.api.routes import rules as rules_route
 from src.bilun.api.schemas import (
     ProseInventoryResponse,
     RuleCatalogResponse,
+    RuleClause,
     RuleDetailResponse,
     SectionClausesResponse,
     SectionRollupResponse,
@@ -199,6 +200,48 @@ class TestSectionClausesEndpoint:
     def test_invalid_page_raises_400(self, page: int) -> None:
         with pytest.raises(ValidationError) as exc:
             rules_route.get_section_clauses(section_id="1.8", page=page)
+        assert exc.value.status_code == 400
+
+
+class TestGlobalClausesEndpoint:
+    @_needs_coverage
+    def test_search_returns_results(self) -> None:
+        payload = rules_route.list_all_clauses(q="azasitidin")
+        model = SectionClausesResponse.model_validate(payload)
+        assert model.clause_total > 0
+        assert model.artifacts_available is True
+
+    @_needs_coverage
+    def test_no_query_returns_all(self) -> None:
+        payload = rules_route.list_all_clauses(page=1, per_page=5)
+        model = SectionClausesResponse.model_validate(payload)
+        assert model.clause_total > 100
+        assert len(model.clauses) <= 5
+
+    @_needs_coverage
+    def test_has_gap_filter(self) -> None:
+        payload = rules_route.list_all_clauses(has_gap=True, per_page=5)
+        model = SectionClausesResponse.model_validate(payload)
+        assert model.clause_total > 0
+        for clause in model.clauses:
+            assert clause.has_algorithmic_gap is True
+
+    @_needs_coverage
+    def test_single_clause(self) -> None:
+        payload = rules_route.get_single_clause(clause_id="C002684")
+        model = RuleClause.model_validate(payload)
+        assert model.clause_id == "C002684"
+
+    @_needs_coverage
+    def test_single_clause_not_found(self) -> None:
+        with pytest.raises(NotFoundError) as exc:
+            rules_route.get_single_clause(clause_id="DOESNOTEXIST")
+        assert exc.value.status_code == 404
+
+    @pytest.mark.parametrize("page", [0, -1])
+    def test_invalid_page_raises_400(self, page: int) -> None:
+        with pytest.raises(ValidationError) as exc:
+            rules_route.list_all_clauses(page=page)
         assert exc.value.status_code == 400
 
 
