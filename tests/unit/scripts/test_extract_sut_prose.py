@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -21,18 +22,32 @@ from scripts.sut.prose.extractor import (
 )
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_DEFAULT_DOCX = (
-    _REPO_ROOT
-    / "raw data"
-    / "2026.01.17-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT"
-    / "17.01.2026-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT.docx"
+_RAW_DATA_DIR = _REPO_ROOT / "raw data"
+_CONSOLIDATED_FOLDER_RE = re.compile(
+    r"^\d{4}\.\d{2}\.\d{2}-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT$"
 )
-_MAY_DOCX = (
-    _REPO_ROOT
-    / "raw data"
-    / "2026.05.23-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT"
-    / "23.05.2026 - Değişiklik Tebliği İşlenmiş Güncel 2013 SUT.docx"
-)
+
+
+def _find_consolidated_sut_docx(raw_data_dir: Path = _RAW_DATA_DIR) -> Path | None:
+    """Auto-discover the active consolidated SUT docx.
+
+    Only one consolidated ("İşlenmiş Güncel 2013 SUT") folder is kept at a time;
+    each new tebliğ supersedes the prior one (it contains all past amendments).
+    The folder name follows ``YYYY.MM.DD-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT``.
+    Delta/incremental folders (no "İşlenmiş") are excluded.
+    """
+    for entry in sorted(raw_data_dir.iterdir()):
+        if not entry.is_dir():
+            continue
+        if not _CONSOLIDATED_FOLDER_RE.match(entry.name):
+            continue
+        docx_files = sorted(entry.glob("*.docx"))
+        if docx_files:
+            return docx_files[0]
+    return None
+
+
+_ACTIVE_DOCX = _find_consolidated_sut_docx()
 
 
 class TestParsingHelpers:
@@ -73,11 +88,12 @@ class TestParsingHelpers:
         assert "2.2(5)" in refs
 
 
-@pytest.mark.skipif(not _DEFAULT_DOCX.exists(), reason="SUT docx not present")
+@pytest.mark.skipif(not _ACTIVE_DOCX, reason="consolidated SUT docx not present")
 class TestDocxExtraction:
     @pytest.fixture(scope="class")
     def clauses(self) -> pd.DataFrame:
-        return extract_sut_clauses(_DEFAULT_DOCX)
+        assert _ACTIVE_DOCX is not None
+        return extract_sut_clauses(_ACTIVE_DOCX)
 
     def test_non_empty(self, clauses: pd.DataFrame) -> None:
         assert len(clauses) > 5000
@@ -101,8 +117,12 @@ class TestDocxExtraction:
         assert clauses["is_in_force"].sum() < len(clauses)
         assert clauses["is_in_force"].sum() > 3000
 
-    def test_effective_date(self, clauses: pd.DataFrame) -> None:
-        assert clauses["source_effective_date"].iloc[0] == "2026-01-17"
+    def test_effective_date_matches_folder(self, clauses: pd.DataFrame) -> None:
+        """source_effective_date must match the date in the folder name (date-neutral)."""
+        assert _ACTIVE_DOCX is not None
+        folder_date = _ACTIVE_DOCX.parent.name[:10]  # YYYY.MM.DD
+        expected = folder_date.replace(".", "-")
+        assert clauses["source_effective_date"].iloc[0] == expected
 
     def test_section_1_8_present(self, clauses: pd.DataFrame) -> None:
         section = clauses[clauses["section_id"] == "1.8"]
@@ -115,7 +135,8 @@ class TestDocxExtraction:
         assert (hits["percentages"] != "[]").any()
 
     def test_body_start_skips_toc(self) -> None:
-        paragraphs = _read_docx_paragraphs(_DEFAULT_DOCX)
+        assert _ACTIVE_DOCX is not None
+        paragraphs = _read_docx_paragraphs(_ACTIVE_DOCX)
         start = _find_body_start(paragraphs)
         assert paragraphs[start] == "BİRİNCİ BÖLÜM"
 
@@ -135,11 +156,12 @@ class TestDocxExtraction:
         assert (section["annex_refs"].str.contains("EK-2/C", na=False)).any()
 
 
-@pytest.mark.skipif(not _MAY_DOCX.exists(), reason="May 2026 SUT docx not present")
+@pytest.mark.skipif(not _ACTIVE_DOCX, reason="consolidated SUT docx not present")
 class TestInForceExtraction:
     @pytest.fixture(scope="class")
     def clauses(self) -> pd.DataFrame:
-        return extract_sut_clauses(_MAY_DOCX)
+        assert _ACTIVE_DOCX is not None
+        return extract_sut_clauses(_ACTIVE_DOCX)
 
     def test_titubb_fikra_in_force_flags(self, clauses: pd.DataFrame) -> None:
         c618 = clauses.loc[clauses["clause_id"] == "C001618"].iloc[0]
