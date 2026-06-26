@@ -12,6 +12,8 @@ import pandas as pd
 from .classify import classify_clauses
 from .rule_registry import RULE_BY_ID, RULE_REGISTRY, CoverageStatus
 
+_IN_FORCE_ONLY = True
+
 _DRUG_INDICATION_MANIFEST = (
     Path(__file__).resolve().parents[3]
     / "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"
@@ -221,7 +223,9 @@ def build_coverage_summary(coverage: pd.DataFrame) -> pd.DataFrame:
     agg_spec: dict[str, Any] = {
         "clause_count": ("clause_id", "count"),
         "sections": ("section_id", lambda s: sorted({x for x in s.dropna().unique()})),
-        "sample_text": ("text_tr", "first"),
+        "sample_text": ("in_force_text", "first")
+        if "in_force_text" in coverage.columns
+        else ("text_tr", "first"),
         "gap_clause_count": ("has_algorithmic_gap", "sum"),
     }
     if "has_rule_encoding" in coverage.columns:
@@ -309,6 +313,8 @@ def build_registry_coverage_summary(coverage: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_sut_coverage(clauses: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    if _IN_FORCE_ONLY and "is_in_force" in clauses.columns:
+        clauses = clauses[clauses["is_in_force"]].copy()
     classified = classify_clauses(clauses)
     coverage = _enrich_with_coverage(classified)
     rule_summary = build_coverage_summary(coverage)

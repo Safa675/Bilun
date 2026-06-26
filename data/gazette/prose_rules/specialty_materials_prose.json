@@ -36,7 +36,7 @@
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001877"
+        "C002838"
       ],
       "condition": {
         "material_name_any": [
@@ -63,7 +63,7 @@
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001877"
+        "C002838"
       ],
       "condition": {
         "material_name_any": [
@@ -90,7 +90,7 @@
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001877"
+        "C002838"
       ],
       "condition": {
         "material_name_any": [
@@ -110,7 +110,7 @@
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001877"
+        "C002838"
       ],
       "condition": {
         "material_name_any": [
@@ -130,7 +130,6 @@
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001915",
         "C002856"
       ],
       "condition": {
@@ -147,8 +146,6 @@
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001877",
-        "C001915",
         "C002856"
       ],
       "condition": {
@@ -171,7 +168,7 @@
       "sut_section": "3.3.1",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C001923"
+        "C002838"
       ],
       "condition": {
         "immunobullous_wound_care_patient_supply": true
@@ -187,7 +184,7 @@
       "sut_section": "3.3.1",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C001923"
+        "C002838"
       ],
       "condition": {
         "immunobullous_wound_care_non_moh_facility": true
@@ -203,8 +200,6 @@
       "sut_section": "3.3.3",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001940",
-        "C001966",
         "C002888"
       ],
       "condition": {
@@ -237,8 +232,6 @@
       "sut_section": "3.3.3.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001945",
-        "C001971",
         "C002893"
       ],
       "condition": {
@@ -255,8 +248,6 @@
       "sut_section": "3.3.3.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001952",
-        "C001978",
         "C002907"
       ],
       "condition": {
@@ -273,8 +264,6 @@
       "sut_section": "3.3.3.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001952",
-        "C001978",
         "C002907"
       ],
       "condition": {
@@ -296,8 +285,6 @@
       "sut_section": "3.3.3.C",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001962",
-        "C001988",
         "C002917"
       ],
       "condition": {
@@ -314,8 +301,6 @@
       "sut_section": "3.3.3.C",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001963",
-        "C001989",
         "C002918"
       ],
       "condition": {
@@ -336,8 +321,7 @@
       "sut_section": "3.3.34",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002475",
-        "C003279"
+        "C003386"
       ],
       "condition": {
         "tv5680_with_tv1080_tv1090_combo": true
@@ -353,9 +337,6 @@
       "sut_section": "3.3.35",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002480",
-        "C002481",
-        "C002590",
         "C003289"
       ],
       "condition": {
@@ -372,7 +353,6 @@
       "sut_section": "3.3.35",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002605",
         "C003302"
       ],
       "condition": {
@@ -389,8 +369,6 @@
       "sut_section": "3.3.36.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002626",
-        "C003323",
         "C003346"
       ],
       "condition": {
@@ -407,7 +385,6 @@
       "sut_section": "3.3.36.C",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002645",
         "C003363"
       ],
       "condition": {
@@ -424,7 +401,6 @@
       "sut_section": "3.3.36.D",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002666",
         "C003384"
       ],
       "condition": {
@@ -441,7 +417,6 @@
       "sut_section": "3.3.37",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002677",
         "C003394"
       ],
       "condition": {
@@ -458,8 +433,7 @@
       "sut_section": "3.3.4",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002006",
-        "C002054"
+        "C002930"
       ],
       "condition": {
         "tissue_bank_unauthorized_product": true
@@ -475,8 +449,6 @@
       "sut_section": "3.3.4",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002008",
-        "C002056",
         "C002934"
       ],
       "condition": {
@@ -499,8 +471,6 @@
       "sut_section": "3.3.4.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002011",
-        "C002087",
         "C002964"
       ],
       "condition": {
@@ -517,8 +487,6 @@
       "sut_section": "3.3.4.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002012",
-        "C002089",
         "C002966"
       ],
       "condition": {
@@ -535,8 +503,6 @@
       "sut_section": "3.3.4.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002013",
-        "C002090",
         "C002967"
       ],
       "condition": {
@@ -553,7 +519,7 @@
       "sut_section": "3.3.4.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002014"
+        "C002931"
       ],
       "condition": {
         "bone_stimulator_benign_tumor_use": true
@@ -569,8 +535,6 @@
       "sut_section": "3.3.4",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002027",
-        "C002061",
         "C002936"
       ],
       "condition": {
@@ -587,8 +551,6 @@
       "sut_section": "3.3.4",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002028",
-        "C002093",
         "C002970"
       ],
       "condition": {
@@ -605,7 +567,6 @@
       "sut_section": "3.3.4",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002062",
         "C002937"
       ],
       "condition": {
@@ -622,7 +583,6 @@
       "sut_section": "3.3.4",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002064",
         "C002939"
       ],
       "condition": {
@@ -639,7 +599,6 @@
       "sut_section": "3.3.4.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002078",
         "C002953"
       ],
       "condition": {
@@ -660,7 +619,6 @@
       "sut_section": "3.3.4.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002085",
         "C002962"
       ],
       "condition": {
@@ -677,7 +635,6 @@
       "sut_section": "3.3.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001928",
         "C002875"
       ],
       "condition": {
@@ -694,7 +651,6 @@
       "sut_section": "3.3.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001928",
         "C002875"
       ],
       "condition": {
@@ -716,8 +672,7 @@
       "sut_section": "3.3.7.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C003072",
-        "C002225"
+        "C003072"
       ],
       "condition": {
         "wheelchair_stand_device_duplicate_billing": true
@@ -733,9 +688,7 @@
       "sut_section": "3.3.7.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C003073",
-        "C002208",
-        "C002226"
+        "C003073"
       ],
       "condition": {
         "stand_up_wheelchair_early_renewal": true
@@ -751,7 +704,7 @@
       "sut_section": "3.3.8.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002195"
+        "C003074"
       ],
       "condition": {
         "paraplegia_standing_table_over_age_limit": true
@@ -767,7 +720,7 @@
       "sut_section": "3.3.8.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002198"
+        "C003074"
       ],
       "condition": {
         "paraplegia_wheelchair_separate_billing": true
@@ -783,8 +736,7 @@
       "sut_section": "3.3.8.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002207",
-        "C002224"
+        "C003074"
       ],
       "condition": {
         "spinal_mobility_device_duplicate_billing": true
@@ -800,8 +752,7 @@
       "sut_section": "3.3.8.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002207",
-        "C002224"
+        "C003074"
       ],
       "condition": {
         "material_name_any": [
@@ -821,7 +772,6 @@
       "sut_section": "3.3.6",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002119",
         "C002997"
       ],
       "condition": {
@@ -838,7 +788,6 @@
       "sut_section": "3.3.6.A-1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002146",
         "C003030"
       ],
       "condition": {
@@ -855,7 +804,6 @@
       "sut_section": "3.3.6.A-1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002146",
         "C003030"
       ],
       "condition": {
@@ -876,8 +824,6 @@
       "sut_section": "3.3.12",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002323",
-        "C002328",
         "C003146"
       ],
       "condition": {
@@ -901,8 +847,6 @@
       "sut_section": "3.3.12",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002323",
-        "C002328",
         "C003146"
       ],
       "condition": {
@@ -919,7 +863,6 @@
       "sut_section": "3.3.16",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002345",
         "C003159"
       ],
       "condition": {
@@ -936,7 +879,6 @@
       "sut_section": "3.3.16",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002345",
         "C003159"
       ],
       "condition": {

@@ -123,7 +123,6 @@
         "message_tr": "Malzeme kodu EK-3/C listelerinde yok — Kurumca karşılanmaz (§3.1.2(2))."
       },
       "gate_b_sources": [
-        "C001648",
         "C002707"
       ]
     },
@@ -146,8 +145,6 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001618",
-        "C001619",
         "C002684"
       ],
       "condition": {
@@ -164,7 +161,6 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001637",
         "C002697"
       ],
       "condition": {
@@ -225,7 +221,6 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001664",
         "C002720"
       ],
       "condition": {
@@ -330,7 +325,6 @@
       "sut_section": "3.1.3",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001762",
         "C002789"
       ],
       "condition": {
@@ -351,7 +345,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001622"
+        "C002682"
       ],
       "condition": {
         "procurement_record_incomplete": true
@@ -367,7 +361,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001629"
+        "C002682"
       ],
       "condition": {
         "procedure_not_reimbursed": true
@@ -383,7 +377,6 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001633",
         "C002694"
       ],
       "condition": {
@@ -400,7 +393,6 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001639",
         "C002698"
       ],
       "condition": {
@@ -417,7 +409,6 @@
       "sut_section": "3.1.3",
       "deontic": "MUST_NOT_BILL",
       "gate_b_sources": [
-        "C001797",
         "C002798"
       ],
       "condition": {
@@ -434,9 +425,7 @@
       "sut_section": "3.1.1",
       "deontic": "MUST_NOT_BILL",
       "gate_b_sources": [
-        "C001635",
-        "C002695",
-        "C001823"
+        "C002695"
       ],
       "condition": {
         "separate_billing_not_authorized": true
@@ -452,10 +441,7 @@
       "sut_section": "3.2.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001834",
-        "C001837",
-        "C001845",
-        "C001849"
+        "C002821"
       ],
       "condition": {
         "procurement_price_refs_insufficient": true
@@ -471,7 +457,6 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001636",
         "C002696"
       ],
       "condition": {
@@ -488,7 +473,6 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001799",
         "C002800"
       ],
       "condition": {
@@ -505,7 +489,6 @@
       "sut_section": "3.1.3",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001789",
         "C002791"
       ],
       "condition": {
@@ -522,7 +505,6 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002739",
         "C002740"
       ],
       "condition": {
@@ -624,7 +606,7 @@
       "sut_section": "3.2.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001842"
+        "C002821"
       ],
       "condition": {
         "supplier_contract_pricing_path": true
@@ -640,7 +622,6 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001626",
         "C002751"
       ],
       "condition": {
@@ -657,7 +638,6 @@
       "sut_section": "3.2.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001852",
         "C002834"
       ],
       "condition": {
@@ -674,7 +654,6 @@
       "sut_section": "3.1.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001631",
         "C002693"
       ],
       "condition": {
@@ -707,7 +686,6 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001650",
         "C002709"
       ],
       "condition": {
@@ -724,7 +702,6 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001655",
         "C002713"
       ],
       "condition": {
@@ -741,7 +718,6 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001654",
         "C002712"
       ],
       "condition": {
@@ -774,7 +750,6 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001641",
         "C002700"
       ],
       "condition": {
@@ -791,7 +766,6 @@
       "sut_section": "3.1.1",
       "deontic": "MANDATORY",
       "gate_b_sources": [
-        "C001623",
         "C002687"
       ],
       "condition": {
@@ -808,7 +782,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001624"
+        "C002682"
       ],
       "condition": {
         "non_reimbursed_inpatient_patient_charge": true
@@ -824,7 +798,7 @@
       "sut_section": "3.1.3",
       "deontic": "MUST_NOT_BILL",
       "gate_b_sources": [
-        "C001795"
+        "C002765"
       ],
       "condition": {
         "lab_material_separate_billing": true
@@ -840,7 +814,7 @@
       "sut_section": "3.1.3",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001788"
+        "C002765"
       ],
       "condition": {
         "shared_consumable_wrong_branch_billing": true
@@ -856,7 +830,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001663"
+        "C002699"
       ],
       "condition": {
         "material_prescription_quantity_exceeded": true
@@ -872,31 +846,17 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001668",
         "C002759",
-        "C001670",
-        "C001731",
-        "C001732",
         "C002719",
         "C002753",
         "C002760",
         "C002764",
-        "C001733",
         "C002761",
-        "C001790",
         "C002792",
-        "C001791",
         "C002793",
-        "C001730",
         "C002758",
-        "C001735",
         "C002762",
-        "C002734",
-        "C001725",
-        "C001726",
-        "C001727",
-        "C001728",
-        "C001729"
+        "C002734"
       ],
       "condition": {
         "material_report_prescription_invalid": true
@@ -912,7 +872,6 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001652",
         "C002711"
       ],
       "condition": {
@@ -929,7 +888,6 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001819",
         "C002818",
         "C002801"
       ],
@@ -947,7 +905,6 @@
       "sut_section": "3.2.3",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001854",
         "C002836"
       ],
       "condition": {
@@ -964,12 +921,8 @@
       "sut_section": "3.2.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001831",
-        "C001839",
         "C002823",
         "C002830",
-        "C001830",
-        "C001844",
         "C002690",
         "C002766",
         "C002790",
@@ -1038,14 +991,9 @@
       "sut_section": "3.1.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001663",
-        "C001737",
         "C002688",
-        "C001848",
         "C002825",
-        "C001818",
-        "C002715",
-        "C001825"
+        "C002715"
       ],
       "condition": {
         "facility_contract_material_supply_scope": true
@@ -1061,7 +1009,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C001620"
+        "C002682"
       ],
       "condition": {
         "ismarlama_device_component_titubb_incomplete": true
@@ -1077,7 +1025,6 @@
       "sut_section": "3.1.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C001621",
         "C002685"
       ],
       "condition": {

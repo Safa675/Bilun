@@ -28,6 +28,7 @@ import numpy as np
 import polars as pl
 
 from ..constants import SUT_CLAUSE_EMBEDDINGS_PATH, SUT_CLAUSES_PATH
+from .clause_in_force import clause_display_text
 from .embeddings import normalize, resolve_provider, tokenize
 
 logger = logging.getLogger("bilun.sut.clause_retrieval")
@@ -40,6 +41,8 @@ _META_COLUMNS = (
     "chapter",
     "clause_type",
     "text_tr",
+    "in_force_text",
+    "is_in_force",
     "annex_refs",
     "procedure_codes",
     "deontic_modality",
@@ -115,9 +118,11 @@ def _build_index() -> _Index | None:
     embeds = pl.read_parquet(SUT_CLAUSE_EMBEDDINGS_PATH)
 
     joined = clauses.join(embeds, on="clause_id", how="inner")
-    # Defensive: never serve a superseded clause even if one slipped into the sidecar.
+    # Defensive: never serve superseded or out-of-force clauses.
     if "is_superseded_marker" in joined.columns:
         joined = joined.filter(~pl.col("is_superseded_marker"))
+    if "is_in_force" in joined.columns:
+        joined = joined.filter(pl.col("is_in_force"))
     if joined.height == 0:
         logger.warning("SUT clause retrieval index is empty after join")
         return None
@@ -128,7 +133,8 @@ def _build_index() -> _Index | None:
     matrix = np.asarray(joined["embedding"].to_list(), dtype=np.float32)
     matrix = normalize(matrix)
 
-    texts = joined["text_tr"].to_list()
+    text_col = "in_force_text" if "in_force_text" in joined.columns else "text_tr"
+    texts = joined[text_col].to_list()
     titles = joined["section_title"].to_list()
     token_sets: list[set[str]] = []
     for text, title in zip(texts, titles):
@@ -266,7 +272,7 @@ def search_clauses(
         if final[i] <= 0.0:
             break
         row = rows.row(int(i), named=True)
-        text = row.get("text_tr") or ""
+        text = clause_display_text(row)
         if len(text) > _TEXT_CAP:
             text = text[:_TEXT_CAP].rstrip() + " …"
         results.append(

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pandas as pd
@@ -15,6 +16,7 @@ from scripts.sut.prose.extractor import (
     _find_body_start,
     _parse_section_heading,
     _read_docx_paragraphs,
+    _run_is_struck,
     extract_sut_clauses,
 )
 
@@ -24,6 +26,12 @@ _DEFAULT_DOCX = (
     / "raw data"
     / "2026.01.17-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT"
     / "17.01.2026-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT.docx"
+)
+_MAY_DOCX = (
+    _REPO_ROOT
+    / "raw data"
+    / "2026.05.23-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT"
+    / "23.05.2026 - Değişiklik Tebliği İşlenmiş Güncel 2013 SUT.docx"
 )
 
 
@@ -79,12 +87,19 @@ class TestDocxExtraction:
             "clause_id",
             "section_id",
             "text_tr",
+            "in_force_text",
+            "is_in_force",
+            "had_struck_content",
             "annex_refs",
             "deontic_modality",
             "clause_type",
             "source_effective_date",
         }
         assert required.issubset(clauses.columns)
+
+    def test_in_force_subset_of_rows(self, clauses: pd.DataFrame) -> None:
+        assert clauses["is_in_force"].sum() < len(clauses)
+        assert clauses["is_in_force"].sum() > 3000
 
     def test_effective_date(self, clauses: pd.DataFrame) -> None:
         assert clauses["source_effective_date"].iloc[0] == "2026-01-17"
@@ -118,3 +133,91 @@ class TestDocxExtraction:
     def test_annex_refs_in_payment_section(self, clauses: pd.DataFrame) -> None:
         section = clauses[clauses["section_path"].str.contains("2.2", na=False)]
         assert (section["annex_refs"].str.contains("EK-2/C", na=False)).any()
+
+
+@pytest.mark.skipif(not _MAY_DOCX.exists(), reason="May 2026 SUT docx not present")
+class TestInForceExtraction:
+    @pytest.fixture(scope="class")
+    def clauses(self) -> pd.DataFrame:
+        return extract_sut_clauses(_MAY_DOCX)
+
+    def test_titubb_fikra_in_force_flags(self, clauses: pd.DataFrame) -> None:
+        c618 = clauses.loc[clauses["clause_id"] == "C001618"].iloc[0]
+        c619 = clauses.loc[clauses["clause_id"] == "C001619"].iloc[0]
+        c684 = clauses.loc[clauses["clause_id"] == "C002684"].iloc[0]
+        assert not bool(c618["is_in_force"])
+        assert c618["in_force_text"] == ""
+        assert bool(c618["had_struck_content"])
+        assert not bool(c619["is_in_force"])
+        assert bool(c684["is_in_force"])
+        assert "TİTUBB" in str(c684["in_force_text"])
+        assert str(c684["in_force_text"]).startswith("(2)")
+
+    def test_mixed_strike_strips_dead_runs(self, clauses: pd.DataFrame) -> None:
+        mixed = clauses[
+            clauses["had_struck_content"] & clauses["is_in_force"]
+        ]
+        assert not mixed.empty
+        for _, row in mixed.head(5).iterrows():
+            assert len(str(row["in_force_text"])) < len(str(row["text_tr"]))
+
+    def test_clean_paragraph_in_force_equals_text_tr(self, clauses: pd.DataFrame) -> None:
+        """A paragraph with no struck runs must have in_force_text == text_tr."""
+        clean = clauses[~clauses["had_struck_content"] & clauses["is_in_force"]]
+        assert not clean.empty
+        for _, row in clean.head(20).iterrows():
+            assert str(row["in_force_text"]) == str(row["text_tr"])
+
+    def test_mixed_strike_in_force_excludes_struck_fragments(self, clauses: pd.DataFrame) -> None:
+        """Mixed paragraphs: in_force_text is shorter than text_tr and non-empty."""
+        mixed = clauses[
+            clauses["had_struck_content"] & clauses["is_in_force"]
+        ]
+        assert not mixed.empty
+        for _, row in mixed.head(5).iterrows():
+            in_force = str(row["in_force_text"]).strip()
+            legacy = str(row["text_tr"]).strip()
+            assert in_force  # non-empty (it's in force)
+            assert len(in_force) < len(legacy)  # struck fragments stripped
+
+    def test_fully_struck_paragraph_is_not_in_force(self, clauses: pd.DataFrame) -> None:
+        """A paragraph that had struck content but no surviving live text must be
+        is_in_force=false with an empty in_force_text (covers fully-struck Mülga
+        paragraphs and any other fully-superseded paragraph)."""
+        struck_only = clauses[
+            clauses["had_struck_content"] & ~clauses["is_in_force"]
+        ]
+        assert not struck_only.empty, "expected fully-struck out-of-force paragraphs"
+        assert (struck_only["in_force_text"] == "").all()
+        assert not bool(struck_only["is_in_force"].any())
+
+
+class TestRunIsStruck:
+    """Spec-completeness tests for _run_is_struck (no docx required)."""
+
+    _W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+
+    def _make_run(self, strike_val: str | None, present: bool = True) -> ET.Element:
+        run = ET.Element(f"{self._W}r")
+        rpr = ET.SubElement(run, f"{self._W}rPr")
+        if present:
+            strike = ET.SubElement(rpr, f"{self._W}strike")
+            if strike_val is not None:
+                strike.set(f"{self._W}val", strike_val)
+        return run
+
+    def test_bare_strike_is_struck(self) -> None:
+        assert _run_is_struck(self._make_run(strike_val=None)) is True
+
+    def test_strike_val_true_is_struck(self) -> None:
+        assert _run_is_struck(self._make_run(strike_val="true")) is True
+        assert _run_is_struck(self._make_run(strike_val="1")) is True
+        assert _run_is_struck(self._make_run(strike_val="on")) is True
+
+    def test_strike_val_false_is_not_struck(self) -> None:
+        assert _run_is_struck(self._make_run(strike_val="false")) is False
+        assert _run_is_struck(self._make_run(strike_val="0")) is False
+        assert _run_is_struck(self._make_run(strike_val="off")) is False
+
+    def test_no_strike_element_is_not_struck(self) -> None:
+        assert _run_is_struck(self._make_run(strike_val=None, present=False)) is False

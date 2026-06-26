@@ -68,6 +68,8 @@ def main() -> None:
 
     print(f"Wrote {len(frame):,} clauses -> {output_path}")
     if not frame.empty:
+        in_force = int(frame["is_in_force"].sum()) if "is_in_force" in frame.columns else None
+        print(f"  in_force: {in_force:,}" if in_force is not None else "")
         print(f"  sections: {frame['section_id'].nunique(dropna=True):,}")
         print(f"  with annex refs: {(frame['annex_refs'] != '[]').sum():,}")
         print(f"  with deontic markers: {(frame['deontic_markers'] != '[]').sum():,}")

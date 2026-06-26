@@ -31,6 +31,7 @@ from pathlib import Path
 
 from ..constants import (
     _PROSE_RULES_DIR,
+    PROSE_CORPUS_DIR,
     PROSE_MANIFESTS_DIR,
     SUT_CLAUSES_PATH,
     SUT_CLAUSE_COVERAGE_PATH,
@@ -40,6 +41,7 @@ from ..constants import (
 )
 from .fact_check_audit import fact_check_rollup
 from .rule_registry import RULE_BY_ID, RULE_REGISTRY, RuleRegistryEntry
+from .clause_in_force import clause_display_text
 
 logger = logging.getLogger("ilay.sut_rules_catalog")
 
@@ -273,11 +275,22 @@ def _material_bundling_partial_engine_summary(clause_frame: pl.DataFrame) -> dic
             f"vs {rules_on_disk} JSON rules on disk. Long-tail §3.1 fikra stay manifest-only."
         ),
     )
-    summary["corpus_export_rows"] = 48
+    summary["corpus_export_rows"] = _l14_corpus_row_count()
     from src.bilun.domain.materials.coverage_scope import kdv_pricing_clause_count
 
     summary["kdv_pricing_clauses"] = kdv_pricing_clause_count()
     return summary
+
+
+_L1_4_CORPUS_PATH = PROSE_CORPUS_DIR / "L1.4_material_bundling_prose.csv"
+
+
+def _l14_corpus_row_count() -> int:
+    """Read the live L1.4 corpus row count (was hardcoded 48, now 24 after in-force sync)."""
+    try:
+        return pl.read_csv(_L1_4_CORPUS_PATH, columns=["clause_id"]).height
+    except (FileNotFoundError, pl.exceptions.ColumnNotFoundError):
+        return 0
 
 
 def _specialty_materials_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
@@ -840,7 +853,7 @@ def _clause_payload(row: dict[str, Any], rule_id: str) -> dict[str, Any]:
         "section_path": row.get("section_path"),
         "chapter": row.get("chapter"),
         "clause_type": row.get("clause_type"),
-        "text_tr": row.get("text_tr"),
+        "text_tr": clause_display_text(row),
         "annex_refs": _json_list(row.get("annex_refs")),
         "procedure_codes": _json_list(row.get("procedure_codes")),
         "percentages": _json_list(row.get("percentages")),
@@ -876,6 +889,11 @@ def get_rule_clauses(
     matched = frame.filter(pl.col("_matched_rule_ids_list").list.contains(rule_id))
     if matched.height == 0:
         return [], 0
+
+    if "is_in_force" in matched.columns:
+        matched = matched.filter(pl.col("is_in_force"))
+        if matched.height == 0:
+            return [], 0
 
     matched = matched.with_columns(
         (pl.col("primary_rule_id") == rule_id).alias("_is_primary")

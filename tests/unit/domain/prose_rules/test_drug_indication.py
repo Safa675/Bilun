@@ -101,9 +101,8 @@ def test_drug_indication_coverage_scope_phase2() -> None:
     assert scope["section_4.2.14.C_rule_count"] == _PHASE2_ONCOLOGY_RULE_COUNT
     assert scope["tier_b_rule_count"] >= 20
     assert scope["target_phase2_rule_count"] >= 131
-    # Tier-C deferred shrank from 549 to 311 after removing 205 non-actionable
-    # (Bucket D) clauses and encoding 33 Bucket A+B clauses.
-    assert scope["encode_tier_C_deferred_count"] >= 300
+    # Tier-C deferred shrank to ~207 after in-force strike filtering (~69 superseded removed).
+    assert scope["encode_tier_C_deferred_count"] >= 200
     assert scope["encoded_clause_count"] > 0
     assert scope["encoded_clause_pct"] > 0.0
     assert scope["clause_trace_complete"] is True

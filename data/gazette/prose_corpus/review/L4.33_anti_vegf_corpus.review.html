@@ -1,0 +1,2852 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>L4.33 Anti-VEGF §4.2.33 — review</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; line-height: 1.45; color: #1a1a1a; }
+    body { max-width: 960px; margin: 0 auto; padding: 1.5rem; background: #f6f7f9; }
+    h1 { font-size: 1.35rem; margin-bottom: 0.25rem; }
+    .muted { color: #666; font-weight: normal; font-size: 0.9rem; }
+    .intro { background: #fff; border: 1px solid #dde3ea; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+    table.legend { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    table.legend th, table.legend td { border: 1px solid #dde3ea; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+    table.legend th { background: #1f3a5f; color: #fff; }
+    .card { background: #fff; border: 1px solid #dde3ea; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .card h2 { margin: 0 0 0.35rem; font-size: 1.05rem; }
+    .badge { display: inline-block; margin: 0; padding: 0.15rem 0.5rem; background: #e8f0fe; border-radius: 4px; font-size: 0.8rem; }
+    table.meta { width: 100%; font-size: 0.82rem; border-collapse: collapse; margin: 0.5rem 0 0.75rem; }
+    table.meta th { text-align: left; width: 28%; color: #444; padding: 0.2rem 0.5rem 0.2rem 0; vertical-align: top; }
+    table.meta td { padding: 0.2rem 0; }
+    pre.excerpt { white-space: pre-wrap; word-break: break-word; background: #f9fafb; border: 1px solid #eef1f4; border-radius: 6px; padding: 0.75rem; font-size: 0.88rem; margin: 0.5rem 0 0; }
+    details summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="intro">
+    <h1>L4.33 Anti-VEGF §4.2.33</h1>
+    <p class="muted">Kaynak: <code>data/gazette/prose_corpus/L4.33_anti_vegf_corpus.csv</code>
+      · 166 satır · 2026-06-26T12:27:27+00:00</p>
+    <h3>Kolon sözlüğü</h3>
+    <table class="legend">
+      <thead><tr><th>Kolon</th><th>Anlam (TR)</th><th>Örnek değerler</th></tr></thead>
+      <tbody><tr><td><code>clause_id</code></td><td>sut_clauses.parquet anahtarı; Rule Database&#x27;de tam metin</td><td><code>C001618</code></td></tr>
+<tr><td><code>section_id</code></td><td>SUT bölüm numarası</td><td><code>3.1.1</code></td></tr>
+<tr><td><code>indication_group</code></td><td>Endikasyon grubu (slug)</td><td><code>dmo | wet_amd | general_4_2_33</code></td></tr>
+<tr><td><code>indication_tr</code></td><td>Endikasyon Türkçe etiket</td><td><code></code></td></tr>
+<tr><td><code>inn</code></td><td>Etkin madde (INN)</td><td><code>ranibizumab | (non-INN)</code></td></tr>
+<tr><td><code>loading_dose_count</code></td><td>(bu pilot export&#x27;ta özel açıklama yok)</td><td><code></code></td></tr>
+<tr><td><code>max_applications_per_year</code></td><td>(bu pilot export&#x27;ta özel açıklama yok)</td><td><code></code></td></tr>
+<tr><td><code>report_duration_months</code></td><td>(bu pilot export&#x27;ta özel açıklama yok)</td><td><code></code></td></tr>
+<tr><td><code>ayakta_tedavi</code></td><td>(bu pilot export&#x27;ta özel açıklama yok)</td><td><code></code></td></tr>
+<tr><td><code>gunubirlik_tedavi</code></td><td>(bu pilot export&#x27;ta özel açıklama yok)</td><td><code></code></td></tr>
+<tr><td><code>text_excerpt</code></td><td>Kısaltılmış metin önizlemesi (~400 char)</td><td><code></code></td></tr>
+<tr><td><code>full_text</code></td><td>Tam hüküm metni</td><td><code></code></td></tr></tbody>
+    </table>
+  </div>
+  
+<article class="card" id="C006512">
+  <header>
+    <h2>C006512 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006512</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab, ranibizumab, aflibersept, deksametazon intravitreal implant ve verteporfin etkin maddelerini içeren ilaçların; üçüncü basamak sağlık kurumlarında 3 göz hastalıkları uzman hekiminin yer aldığı 3 ay süreli sağlık kurulu raporuna istinaden göz hastalıkları uzman hekimlerince uygulanması ve aşağıda yer alan kurallar çerçevesinde reçete edilmesi halinde bedelleri Kurumca karşılanır.  B</pre>
+  </details>
+</article>
+<article class="card" id="C006512">
+  <header>
+    <h2>C006512 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006512</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab, ranibizumab, aflibersept, deksametazon intravitreal implant ve verteporfin etkin maddelerini içeren ilaçların; üçüncü basamak sağlık kurumlarında 3 göz hastalıkları uzman hekiminin yer aldığı 3 ay süreli sağlık kurulu raporuna istinaden göz hastalıkları uzman hekimlerince uygulanması ve aşağıda yer alan kurallar çerçevesinde reçete edilmesi halinde bedelleri Kurumca karşılanır.  B</pre>
+  </details>
+</article>
+<article class="card" id="C006512">
+  <header>
+    <h2>C006512 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006512</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab, ranibizumab, aflibersept, deksametazon intravitreal implant ve verteporfin etkin maddelerini içeren ilaçların; üçüncü basamak sağlık kurumlarında 3 göz hastalıkları uzman hekiminin yer aldığı 3 ay süreli sağlık kurulu raporuna istinaden göz hastalıkları uzman hekimlerince uygulanması ve aşağıda yer alan kurallar çerçevesinde reçete edilmesi halinde bedelleri Kurumca karşılanır.  B</pre>
+  </details>
+</article>
+<article class="card" id="C006512">
+  <header>
+    <h2>C006512 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006512</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>verteporfin</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab, ranibizumab, aflibersept, deksametazon intravitreal implant ve verteporfin etkin maddelerini içeren ilaçların; üçüncü basamak sağlık kurumlarında 3 göz hastalıkları uzman hekiminin yer aldığı 3 ay süreli sağlık kurulu raporuna istinaden göz hastalıkları uzman hekimlerince uygulanması ve aşağıda yer alan kurallar çerçevesinde reçete edilmesi halinde bedelleri Kurumca karşılanır.  B</pre>
+  </details>
+</article>
+<article class="card" id="C006512">
+  <header>
+    <h2>C006512 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006512</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab, ranibizumab, aflibersept, deksametazon intravitreal implant ve verteporfin etkin maddelerini içeren ilaçların; üçüncü basamak sağlık kurumlarında 3 göz hastalıkları uzman hekiminin yer aldığı 3 ay süreli sağlık kurulu raporuna istinaden göz hastalıkları uzman hekimlerince uygulanması ve aşağıda yer alan kurallar çerçevesinde reçete edilmesi halinde bedelleri Kurumca karşılanır.  B</pre>
+  </details>
+</article>
+<article class="card" id="C006513">
+  <header>
+    <h2>C006513 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006513</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Raporlarda; hasta anamnezi, görme keskinliği, lezyona ait renkli resim, Fundus Fluorescein Anjiografi (FFA) (kontrendikasyonu yoksa) ve Optik Koherens Tomografi (OKT) bulguları ile tedaviye yanıta ilişkin kriter esasları yer alacaktır.</pre>
+  </details>
+</article>
+<article class="card" id="C006514">
+  <header>
+    <h2>C006514 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006514</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) Tedavinin etkinliğine (tedaviye cevapsızlık/yetersiz cevap) yönelik değerlendirme kriterleri aşağıdaki gibidir:</pre>
+  </details>
+</article>
+<article class="card" id="C006515">
+  <header>
+    <h2>C006515 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006515</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">a) Başlangıç tedavisine göre görme keskinliğinde artış olmaması veya görme keskinliğinin azalması veya</pre>
+  </details>
+</article>
+<article class="card" id="C006516">
+  <header>
+    <h2>C006516 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006516</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">b) Bir sıra (5 harf) kayıp olması veya</pre>
+  </details>
+</article>
+<article class="card" id="C006517">
+  <header>
+    <h2>C006517 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006517</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">c) OKT’de merkezi fovea kalınlığının 250 mikron ve üzerinde olması.</pre>
+  </details>
+</article>
+<article class="card" id="C006518">
+  <header>
+    <h2>C006518 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006518</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>True</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(4) İlk defa tedavi alacak hastalarda ameliyathane koşullarında steril şartlarda hazırlanacak bevacizumab etkin maddeli ilaç ile günübirlik tedavi kapsamında tedaviye başlanacaktır.</pre>
+  </details>
+</article>
+<article class="card" id="C006519">
+  <header>
+    <h2>C006519 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006519</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(5) İntravitreal bevacizumab enjeksiyonu yükleme dozu; en az 3 ay süreyle 4-6 haftada bir, her uygulamada 1,25 mg/0,1 ml’dir.  Ardışık olarak yapılan 3 uygulama sonrasında tedavinin etkinliği değerlendirilecek ve başlangıç değerlerine göre etkinlik düzeyi sağlık raporunda belirtilecektir.  İntravitreal bevacizumab enjeksiyonu devam dozları ve pozolojisi uygulamayı yapan hekim tarafından belirlener</pre>
+  </details>
+</article>
+<article class="card" id="C006519">
+  <header>
+    <h2>C006519 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006519</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(5) İntravitreal bevacizumab enjeksiyonu yükleme dozu; en az 3 ay süreyle 4-6 haftada bir, her uygulamada 1,25 mg/0,1 ml’dir.  Ardışık olarak yapılan 3 uygulama sonrasında tedavinin etkinliği değerlendirilecek ve başlangıç değerlerine göre etkinlik düzeyi sağlık raporunda belirtilecektir.  İntravitreal bevacizumab enjeksiyonu devam dozları ve pozolojisi uygulamayı yapan hekim tarafından belirlener</pre>
+  </details>
+</article>
+<article class="card" id="C006519">
+  <header>
+    <h2>C006519 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006519</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(5) İntravitreal bevacizumab enjeksiyonu yükleme dozu; en az 3 ay süreyle 4-6 haftada bir, her uygulamada 1,25 mg/0,1 ml’dir.  Ardışık olarak yapılan 3 uygulama sonrasında tedavinin etkinliği değerlendirilecek ve başlangıç değerlerine göre etkinlik düzeyi sağlık raporunda belirtilecektir.  İntravitreal bevacizumab enjeksiyonu devam dozları ve pozolojisi uygulamayı yapan hekim tarafından belirlener</pre>
+  </details>
+</article>
+<article class="card" id="C006519">
+  <header>
+    <h2>C006519 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006519</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>verteporfin</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(5) İntravitreal bevacizumab enjeksiyonu yükleme dozu; en az 3 ay süreyle 4-6 haftada bir, her uygulamada 1,25 mg/0,1 ml’dir.  Ardışık olarak yapılan 3 uygulama sonrasında tedavinin etkinliği değerlendirilecek ve başlangıç değerlerine göre etkinlik düzeyi sağlık raporunda belirtilecektir.  İntravitreal bevacizumab enjeksiyonu devam dozları ve pozolojisi uygulamayı yapan hekim tarafından belirlener</pre>
+  </details>
+</article>
+<article class="card" id="C006519">
+  <header>
+    <h2>C006519 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006519</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(5) İntravitreal bevacizumab enjeksiyonu yükleme dozu; en az 3 ay süreyle 4-6 haftada bir, her uygulamada 1,25 mg/0,1 ml’dir.  Ardışık olarak yapılan 3 uygulama sonrasında tedavinin etkinliği değerlendirilecek ve başlangıç değerlerine göre etkinlik düzeyi sağlık raporunda belirtilecektir.  İntravitreal bevacizumab enjeksiyonu devam dozları ve pozolojisi uygulamayı yapan hekim tarafından belirlener</pre>
+  </details>
+</article>
+<article class="card" id="C006520">
+  <header>
+    <h2>C006520 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006520</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(6) Hâlihazırda ranibizumab veya aflibersept etkin maddelerini içeren ilaçlar ile tedavileri devam etmekte olan hastalarda ilaç değişimi gerekmesi halinde en az 3 ay süreyle bevacizumab etkin maddeli ilaç uygulaması ile tedaviye devam edilecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006520">
+  <header>
+    <h2>C006520 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006520</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(6) Hâlihazırda ranibizumab veya aflibersept etkin maddelerini içeren ilaçlar ile tedavileri devam etmekte olan hastalarda ilaç değişimi gerekmesi halinde en az 3 ay süreyle bevacizumab etkin maddeli ilaç uygulaması ile tedaviye devam edilecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006520">
+  <header>
+    <h2>C006520 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006520</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(6) Hâlihazırda ranibizumab veya aflibersept etkin maddelerini içeren ilaçlar ile tedavileri devam etmekte olan hastalarda ilaç değişimi gerekmesi halinde en az 3 ay süreyle bevacizumab etkin maddeli ilaç uygulaması ile tedaviye devam edilecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006521">
+  <header>
+    <h2>C006521 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006521</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(7) Yükleme dozu aranan durumlarda yükleme dozu tamamlanmaksızın diğer etkin maddeli ilacın kullanımı halinde bu ilaç bedelleri Kurumca karşılanmaz.</pre>
+  </details>
+</article>
+<article class="card" id="C006522">
+  <header>
+    <h2>C006522 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006522</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(8) Ranibizumab veya aflibersept etkin maddeli ilaçlarda 3 ay süreyle 4-6 haftada bir yükleme dozu ile tedaviye başlanır.  Diyabetik Maküler Ödem (DMÖ)’de aflibersept etkin maddeli ilaç ile yükleme dozu 5 ay süreyle de uygulanabilecektir. Ranibizumab veya aflibersept etkin maddeli ilaçlarla tedaviye Sağlık Bakanlığınca ruhsatlı endikasyonunda belirtilen sürelerden daha uzun süreyle ara verilmesi d</pre>
+  </details>
+</article>
+<article class="card" id="C006522">
+  <header>
+    <h2>C006522 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006522</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(8) Ranibizumab veya aflibersept etkin maddeli ilaçlarda 3 ay süreyle 4-6 haftada bir yükleme dozu ile tedaviye başlanır.  Diyabetik Maküler Ödem (DMÖ)’de aflibersept etkin maddeli ilaç ile yükleme dozu 5 ay süreyle de uygulanabilecektir. Ranibizumab veya aflibersept etkin maddeli ilaçlarla tedaviye Sağlık Bakanlığınca ruhsatlı endikasyonunda belirtilen sürelerden daha uzun süreyle ara verilmesi d</pre>
+  </details>
+</article>
+<article class="card" id="C006523">
+  <header>
+    <h2>C006523 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006523</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(9) Ranibizumab ve aflibersept etkin maddeli ilaçlar arasında ilaç değişimi gereken hallerde tedaviye en az 3 ay süreyle 4-6 haftada bir bevacizumab etkin maddeli ilaç ile devam edilecek olup bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda diğer etkin maddeli ilaç ile tedaviye yükleme dozu yapılmaksızın devam edilebilecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006523">
+  <header>
+    <h2>C006523 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006523</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(9) Ranibizumab ve aflibersept etkin maddeli ilaçlar arasında ilaç değişimi gereken hallerde tedaviye en az 3 ay süreyle 4-6 haftada bir bevacizumab etkin maddeli ilaç ile devam edilecek olup bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda diğer etkin maddeli ilaç ile tedaviye yükleme dozu yapılmaksızın devam edilebilecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006523">
+  <header>
+    <h2>C006523 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006523</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(9) Ranibizumab ve aflibersept etkin maddeli ilaçlar arasında ilaç değişimi gereken hallerde tedaviye en az 3 ay süreyle 4-6 haftada bir bevacizumab etkin maddeli ilaç ile devam edilecek olup bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda diğer etkin maddeli ilaç ile tedaviye yükleme dozu yapılmaksızın devam edilebilecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006526">
+  <header>
+    <h2>C006526 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006526</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Anti-VEGF (Değişik: RG- 25/03/2025-32852/16-a md.Yürürlük: 04/04/2025) ilaçlar (bevacizumab/ ranibizumab/ aflibersept), ilaçlardan bevacizumab etkin maddeli ilaçlar; (Değişik: RG-26/04/2025- 32882/ 6 md. Yürürlük: 04/04/2025) ikinci basamak sağlık kurumlarında ikinci veya üçüncü basamak sağlık hizmeti sunucularında, Anti-VEGF ilaçlardan ranibizumab ve aflibersept, deksametazon intravitreal imp</pre>
+  </details>
+</article>
+<article class="card" id="C006526">
+  <header>
+    <h2>C006526 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006526</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Anti-VEGF (Değişik: RG- 25/03/2025-32852/16-a md.Yürürlük: 04/04/2025) ilaçlar (bevacizumab/ ranibizumab/ aflibersept), ilaçlardan bevacizumab etkin maddeli ilaçlar; (Değişik: RG-26/04/2025- 32882/ 6 md. Yürürlük: 04/04/2025) ikinci basamak sağlık kurumlarında ikinci veya üçüncü basamak sağlık hizmeti sunucularında, Anti-VEGF ilaçlardan ranibizumab ve aflibersept, deksametazon intravitreal imp</pre>
+  </details>
+</article>
+<article class="card" id="C006526">
+  <header>
+    <h2>C006526 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006526</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Anti-VEGF (Değişik: RG- 25/03/2025-32852/16-a md.Yürürlük: 04/04/2025) ilaçlar (bevacizumab/ ranibizumab/ aflibersept), ilaçlardan bevacizumab etkin maddeli ilaçlar; (Değişik: RG-26/04/2025- 32882/ 6 md. Yürürlük: 04/04/2025) ikinci basamak sağlık kurumlarında ikinci veya üçüncü basamak sağlık hizmeti sunucularında, Anti-VEGF ilaçlardan ranibizumab ve aflibersept, deksametazon intravitreal imp</pre>
+  </details>
+</article>
+<article class="card" id="C006526">
+  <header>
+    <h2>C006526 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006526</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>verteporfin</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Anti-VEGF (Değişik: RG- 25/03/2025-32852/16-a md.Yürürlük: 04/04/2025) ilaçlar (bevacizumab/ ranibizumab/ aflibersept), ilaçlardan bevacizumab etkin maddeli ilaçlar; (Değişik: RG-26/04/2025- 32882/ 6 md. Yürürlük: 04/04/2025) ikinci basamak sağlık kurumlarında ikinci veya üçüncü basamak sağlık hizmeti sunucularında, Anti-VEGF ilaçlardan ranibizumab ve aflibersept, deksametazon intravitreal imp</pre>
+  </details>
+</article>
+<article class="card" id="C006526">
+  <header>
+    <h2>C006526 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006526</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Anti-VEGF (Değişik: RG- 25/03/2025-32852/16-a md.Yürürlük: 04/04/2025) ilaçlar (bevacizumab/ ranibizumab/ aflibersept), ilaçlardan bevacizumab etkin maddeli ilaçlar; (Değişik: RG-26/04/2025- 32882/ 6 md. Yürürlük: 04/04/2025) ikinci basamak sağlık kurumlarında ikinci veya üçüncü basamak sağlık hizmeti sunucularında, Anti-VEGF ilaçlardan ranibizumab ve aflibersept, deksametazon intravitreal imp</pre>
+  </details>
+</article>
+<article class="card" id="C006527">
+  <header>
+    <h2>C006527 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006527</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>True</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">a) Başlangıç tedavilerinde; yükleme dozları açısından bevacizumab etkin maddeli ilaç için göz hastalıkları uzman hekimi tarafından 1 ay süreli tek hekim raporu ile günübirlik tedavi kapsamında diğer etkin maddeli ilaçlar içinse 3 göz hastalıkları uzman hekiminin yer aldığı 3 ay süreli sağlık kurulu raporuna istinaden göz hastalıkları uzman hekimlerince uygulanması ve aşağıda yer alan kurallar çerç</pre>
+  </details>
+</article>
+<article class="card" id="C006528">
+  <header>
+    <h2>C006528 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006528</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>1</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>True</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">b) İdame tedavilerde; deksametazon intravitreal implant ve verteporfin etkin maddeli ilaçlar hariç olmak üzere yükleme dozu sonrası (3 doz olarak uygulanarak tamamlanacak) bevacizumab etkin maddeli ilaç için göz hastalıkları uzman hekimi tarafından 1 ay süreli tek hekim raporu ile günübirlik tedavi kapsamında, diğer etkin maddeli ilaçlar içinse 3 göz hastalıkları uzman hekimi tarafından 1 ay sürel</pre>
+  </details>
+</article>
+<article class="card" id="C006528">
+  <header>
+    <h2>C006528 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006528</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>verteporfin</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>1</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>True</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">b) İdame tedavilerde; deksametazon intravitreal implant ve verteporfin etkin maddeli ilaçlar hariç olmak üzere yükleme dozu sonrası (3 doz olarak uygulanarak tamamlanacak) bevacizumab etkin maddeli ilaç için göz hastalıkları uzman hekimi tarafından 1 ay süreli tek hekim raporu ile günübirlik tedavi kapsamında, diğer etkin maddeli ilaçlar içinse 3 göz hastalıkları uzman hekimi tarafından 1 ay sürel</pre>
+  </details>
+</article>
+<article class="card" id="C006528">
+  <header>
+    <h2>C006528 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006528</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>1</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>True</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">b) İdame tedavilerde; deksametazon intravitreal implant ve verteporfin etkin maddeli ilaçlar hariç olmak üzere yükleme dozu sonrası (3 doz olarak uygulanarak tamamlanacak) bevacizumab etkin maddeli ilaç için göz hastalıkları uzman hekimi tarafından 1 ay süreli tek hekim raporu ile günübirlik tedavi kapsamında, diğer etkin maddeli ilaçlar içinse 3 göz hastalıkları uzman hekimi tarafından 1 ay sürel</pre>
+  </details>
+</article>
+<article class="card" id="C006529">
+  <header>
+    <h2>C006529 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006529</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">c) İlk defa tedaviye başlanan (Değişik:RG-02/11/2024-32710/21-a md. Yürürlük:09/11/2024) hastalar ile ilaç değişimi gereken idame hastaların tedavilerinde kullanılacak etkin maddeler açısından yükleme dozlarının tamamlanması esastır. Düzenlenecek elektronik reçete veya tek hekim raporu/sağlık kurulu raporunda yükleme dozu yapılacak ilacın kaçıncı doz olduğu belirtilecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006530">
+  <header>
+    <h2>C006530 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006530</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">ç) Bu etkin maddeleri içeren ilaçların aynı anda aynı gözde kombine olarak kullanılması halinde bedelleri Kurumca karşılanmaz. Farklı göze kullanımlar kombine kullanım olarak değerlendirilmez.</pre>
+  </details>
+</article>
+<article class="card" id="C006531">
+  <header>
+    <h2>C006531 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006531</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Raporlarda; hasta anamnezi, görme keskinliği, lezyona ait renkli resim, Fundus Fluorescein Anjiografi (FFA) (kontrendikasyonu yoksa) ve Optik Koherens Tomografi (OKT) bulguları ile tedaviye yanıta ilişkin kriter esasları yer alacaktır.</pre>
+  </details>
+</article>
+<article class="card" id="C006533">
+  <header>
+    <h2>C006533 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006533</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) Tedavinin etkinliğine (tedaviye cevapsızlık/yetersiz cevap) yönelik değerlendirme kriterleri aşağıdaki gibidir:</pre>
+  </details>
+</article>
+<article class="card" id="C006534">
+  <header>
+    <h2>C006534 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006534</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">a) Başlangıç tedavisine göre görme keskinliğinde artış olmaması veya görme keskinliğinin azalması veya</pre>
+  </details>
+</article>
+<article class="card" id="C006535">
+  <header>
+    <h2>C006535 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006535</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">b) Bir sıra (5 harf) kayıp olması veya</pre>
+  </details>
+</article>
+<article class="card" id="C006536">
+  <header>
+    <h2>C006536 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006536</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">c) OKT’ de merkezi fovea kalınlığının 250 mikron ve üzerinde olması.</pre>
+  </details>
+</article>
+<article class="card" id="C006537">
+  <header>
+    <h2>C006537 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006537</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) Tedavinin etkinliğine yönelik değerlendirmeler aşağıda belirtildiği şekilde yapılacaktır:</pre>
+  </details>
+</article>
+<article class="card" id="C006538">
+  <header>
+    <h2>C006538 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006538</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">a) Tedaviye cevabın yeterli olduğunun belirlenmesi açısından;</pre>
+  </details>
+</article>
+<article class="card" id="C006539">
+  <header>
+    <h2>C006539 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006539</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">1) Başlangıç tedavisine göre görme keskinliğinde azalma olmaması veya en az bir sıra (5 harf) kazanç olması,</pre>
+  </details>
+</article>
+<article class="card" id="C006540">
+  <header>
+    <h2>C006540 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006540</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">2) OKT’de merkezi fovea kalınlığının 250 mikron ve altında olması,</pre>
+  </details>
+</article>
+<article class="card" id="C006541">
+  <header>
+    <h2>C006541 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006541</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">şartlarının herhangi birinin tespit edilmiş olması gerekmektedir.</pre>
+  </details>
+</article>
+<article class="card" id="C006542">
+  <header>
+    <h2>C006542 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006542</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">b) Tedaviye cevabın yetersiz olduğunun belirlenmesi açısından;</pre>
+  </details>
+</article>
+<article class="card" id="C006543">
+  <header>
+    <h2>C006543 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006543</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">1) Başlangıç tedavisine göre görme keskinliğinde azalma olması veya en az bir sıra (5 harf) kayıp olması,</pre>
+  </details>
+</article>
+<article class="card" id="C006544">
+  <header>
+    <h2>C006544 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006544</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">2) OKT’de merkezi fovea kalınlığında 50 mikron azalma olmaması,</pre>
+  </details>
+</article>
+<article class="card" id="C006545">
+  <header>
+    <h2>C006545 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006545</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">şartlarının herhangi birinin tespit edilmiş olması gerekmektedir.</pre>
+  </details>
+</article>
+<article class="card" id="C006546">
+  <header>
+    <h2>C006546 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006546</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(4) Tedavinin etkinliğine yönelik değerlendirme kriterlerinin tamamı; yükleme dozu uygulamalarında ilk muayene değerlendirme kriterleriyle, idame tedavilerde bir önceki muayenede tespit edilen değerlendirme kriterleriyle mukayese edilerek raporda belirtilecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006547">
+  <header>
+    <h2>C006547 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006547</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(5) Tedavinin başladığı veya idame tedaviye geçildiği tarihte yürürlükte bulunan Tebliğde belirtilmiş OKT bulgularına göre tedavi görmekte olan hastaların hâlihazırdaki OKT’ de merkezi fovea kalınlığının 250 mikron ve üzerinde olması durumunda tedaviyi yürüten hekim tarafından “hastanın tedaviye yanıt verdiğinin” raporda belirtilmesi kaydıyla mevcut anti-VEGF ilaç ile tedaviye devam edilmesi mümkü</pre>
+  </details>
+</article>
+<article class="card" id="C006548">
+  <header>
+    <h2>C006548 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006548</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>True</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(6) İntravitreal bevacizumab günübirlik tedavi kapsamında uygulanacak olup, yükleme dozu; 4-6 hafta arayla ardışık 3 doz olarak 1,25 mg/0,05 ml’dir. Ayrıca tedaviyi düzenleyen hekim tarafından farklı dozlarda (2,5 mg/0,1 ml veya 1,25 mg/0,1 ml) kullanımı da mümkündür. İntravitreal bevacizumab idame tedavilerinde doz ve pozoloji uygulamayı yapan hekim tarafından belirlenerek düzenlenecek sağlık rap</pre>
+  </details>
+</article>
+<article class="card" id="C006548">
+  <header>
+    <h2>C006548 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006548</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>True</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(6) İntravitreal bevacizumab günübirlik tedavi kapsamında uygulanacak olup, yükleme dozu; 4-6 hafta arayla ardışık 3 doz olarak 1,25 mg/0,05 ml’dir. Ayrıca tedaviyi düzenleyen hekim tarafından farklı dozlarda (2,5 mg/0,1 ml veya 1,25 mg/0,1 ml) kullanımı da mümkündür. İntravitreal bevacizumab idame tedavilerinde doz ve pozoloji uygulamayı yapan hekim tarafından belirlenerek düzenlenecek sağlık rap</pre>
+  </details>
+</article>
+<article class="card" id="C006548">
+  <header>
+    <h2>C006548 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006548</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>True</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(6) İntravitreal bevacizumab günübirlik tedavi kapsamında uygulanacak olup, yükleme dozu; 4-6 hafta arayla ardışık 3 doz olarak 1,25 mg/0,05 ml’dir. Ayrıca tedaviyi düzenleyen hekim tarafından farklı dozlarda (2,5 mg/0,1 ml veya 1,25 mg/0,1 ml) kullanımı da mümkündür. İntravitreal bevacizumab idame tedavilerinde doz ve pozoloji uygulamayı yapan hekim tarafından belirlenerek düzenlenecek sağlık rap</pre>
+  </details>
+</article>
+<article class="card" id="C006548">
+  <header>
+    <h2>C006548 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006548</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>verteporfin</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>True</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(6) İntravitreal bevacizumab günübirlik tedavi kapsamında uygulanacak olup, yükleme dozu; 4-6 hafta arayla ardışık 3 doz olarak 1,25 mg/0,05 ml’dir. Ayrıca tedaviyi düzenleyen hekim tarafından farklı dozlarda (2,5 mg/0,1 ml veya 1,25 mg/0,1 ml) kullanımı da mümkündür. İntravitreal bevacizumab idame tedavilerinde doz ve pozoloji uygulamayı yapan hekim tarafından belirlenerek düzenlenecek sağlık rap</pre>
+  </details>
+</article>
+<article class="card" id="C006548">
+  <header>
+    <h2>C006548 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006548</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>True</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(6) İntravitreal bevacizumab günübirlik tedavi kapsamında uygulanacak olup, yükleme dozu; 4-6 hafta arayla ardışık 3 doz olarak 1,25 mg/0,05 ml’dir. Ayrıca tedaviyi düzenleyen hekim tarafından farklı dozlarda (2,5 mg/0,1 ml veya 1,25 mg/0,1 ml) kullanımı da mümkündür. İntravitreal bevacizumab idame tedavilerinde doz ve pozoloji uygulamayı yapan hekim tarafından belirlenerek düzenlenecek sağlık rap</pre>
+  </details>
+</article>
+<article class="card" id="C006549">
+  <header>
+    <h2>C006549 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006549</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(7) Ranibizumab veya aflibersept etkin maddeli ilaçlar arasında ilaç değişimi gereken hallerde tedaviye bevacizumab etkin maddeli ilaç ile yükleme dozu tamamlanmak suretiyle devam edilecektir. Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda diğer etkin maddeli ilaç ile tedaviye (Mülga:RG-16/06/2020-31157/19-c md. Yürürlük: 24/06/2020) yükleme dozu yapılarak </pre>
+  </details>
+</article>
+<article class="card" id="C006549">
+  <header>
+    <h2>C006549 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006549</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(7) Ranibizumab veya aflibersept etkin maddeli ilaçlar arasında ilaç değişimi gereken hallerde tedaviye bevacizumab etkin maddeli ilaç ile yükleme dozu tamamlanmak suretiyle devam edilecektir. Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda diğer etkin maddeli ilaç ile tedaviye (Mülga:RG-16/06/2020-31157/19-c md. Yürürlük: 24/06/2020) yükleme dozu yapılarak </pre>
+  </details>
+</article>
+<article class="card" id="C006549">
+  <header>
+    <h2>C006549 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006549</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(7) Ranibizumab veya aflibersept etkin maddeli ilaçlar arasında ilaç değişimi gereken hallerde tedaviye bevacizumab etkin maddeli ilaç ile yükleme dozu tamamlanmak suretiyle devam edilecektir. Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda diğer etkin maddeli ilaç ile tedaviye (Mülga:RG-16/06/2020-31157/19-c md. Yürürlük: 24/06/2020) yükleme dozu yapılarak </pre>
+  </details>
+</article>
+<article class="card" id="C006550">
+  <header>
+    <h2>C006550 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006550</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(8) Yükleme dozu aranan durumlarda yükleme dozu tamamlanmaksızın diğer etkin maddeli ilacın kullanımı halinde bu ilaç bedelleri Kurumca karşılanmaz.</pre>
+  </details>
+</article>
+<article class="card" id="C006552">
+  <header>
+    <h2>C006552 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006552</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(9) Ranibizumab veya aflibersept etkin maddeli ilaçlarda yükleme dozu; 4-6 hafta arayla ardışık 3 doz uygulamadır. Diyabetik Maküler Ödem (DMÖ)’de aflibersept etkin maddeli ilaç ile yükleme 5 doz olarak da uygulanabilir. Anti-VEGF ajanlar ile yükleme dozu tamamlandıktan sonra idame tedaviler hekim tarafından belirlenecek aralıklarda sağlanacak, tekrar ilaç gereksinimi durumunda son kullanılan etki</pre>
+  </details>
+</article>
+<article class="card" id="C006552">
+  <header>
+    <h2>C006552 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006552</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(9) Ranibizumab veya aflibersept etkin maddeli ilaçlarda yükleme dozu; 4-6 hafta arayla ardışık 3 doz uygulamadır. Diyabetik Maküler Ödem (DMÖ)’de aflibersept etkin maddeli ilaç ile yükleme 5 doz olarak da uygulanabilir. Anti-VEGF ajanlar ile yükleme dozu tamamlandıktan sonra idame tedaviler hekim tarafından belirlenecek aralıklarda sağlanacak, tekrar ilaç gereksinimi durumunda son kullanılan etki</pre>
+  </details>
+</article>
+<article class="card" id="C006553">
+  <header>
+    <h2>C006553 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006553</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(9) Ranibizumab veya 2 mg ve 8 mg aflibersept etkin maddeli ilaçlarda yükleme dozu; 4-6 hafta arayla ardışık 3 doz uygulamadır. Diyabetik Maküler Ödem (DMÖ)’de aflibersept 2 mg etkin maddeli ilaç ile yükleme 5 doz olarak da uygulanabilir. Anti-VEGF ajanlar ile yükleme dozu tamamlandıktan sonra idame tedaviler hekim tarafından belirlenecek aralıklarda sağlanarak, tekrar ilaç gereksinimi durumunda s</pre>
+  </details>
+</article>
+<article class="card" id="C006553">
+  <header>
+    <h2>C006553 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006553</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(9) Ranibizumab veya 2 mg ve 8 mg aflibersept etkin maddeli ilaçlarda yükleme dozu; 4-6 hafta arayla ardışık 3 doz uygulamadır. Diyabetik Maküler Ödem (DMÖ)’de aflibersept 2 mg etkin maddeli ilaç ile yükleme 5 doz olarak da uygulanabilir. Anti-VEGF ajanlar ile yükleme dozu tamamlandıktan sonra idame tedaviler hekim tarafından belirlenecek aralıklarda sağlanarak, tekrar ilaç gereksinimi durumunda s</pre>
+  </details>
+</article>
+<article class="card" id="C006555">
+  <header>
+    <h2>C006555 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006555</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(10) Deksametazon intravitreal implant etkin maddeli ilacın, anti-VEGF ilaçlar ile aynı göze aynı günde uygulanmaması kaydıyla yılda en fazla 4 defa kullanılması halinde bedelleri Kurumca karşılanır. Aynı göze ardışık uygulanacak deksametazon intravitreal implant etkin maddeli ilaç için iki uygulama arasındaki süre en az 3 ay olmalıdır. İki doz arasındaki süre tedaviyi yürüten hekim tarafından bel</pre>
+  </details>
+</article>
+<article class="card" id="C006556">
+  <header>
+    <h2>C006556 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006556</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(10) Deksametazon intravitreal implant etkin maddeli ilacın, anti-VEGF ilaçların uygulamasını takiben en erken 1 ay sonra kullanılmak kaydıyla yılda en fazla 4 defa kullanılması halinde bedelleri Kurumca karşılanır. Aynı göze ardışık uygulanacak deksametazon intravitreal implant etkin maddeli ilaç için iki uygulama arasındaki süre en az 3 ay olmalıdır. İki doz arasındaki süre tedaviyi yürüten heki</pre>
+  </details>
+</article>
+<article class="card" id="C006556">
+  <header>
+    <h2>C006556 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006556</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(10) Deksametazon intravitreal implant etkin maddeli ilacın, anti-VEGF ilaçların uygulamasını takiben en erken 1 ay sonra kullanılmak kaydıyla yılda en fazla 4 defa kullanılması halinde bedelleri Kurumca karşılanır. Aynı göze ardışık uygulanacak deksametazon intravitreal implant etkin maddeli ilaç için iki uygulama arasındaki süre en az 3 ay olmalıdır. İki doz arasındaki süre tedaviyi yürüten heki</pre>
+  </details>
+</article>
+<article class="card" id="C006556">
+  <header>
+    <h2>C006556 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006556</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(10) Deksametazon intravitreal implant etkin maddeli ilacın, anti-VEGF ilaçların uygulamasını takiben en erken 1 ay sonra kullanılmak kaydıyla yılda en fazla 4 defa kullanılması halinde bedelleri Kurumca karşılanır. Aynı göze ardışık uygulanacak deksametazon intravitreal implant etkin maddeli ilaç için iki uygulama arasındaki süre en az 3 ay olmalıdır. İki doz arasındaki süre tedaviyi yürüten heki</pre>
+  </details>
+</article>
+<article class="card" id="C006556">
+  <header>
+    <h2>C006556 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006556</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(10) Deksametazon intravitreal implant etkin maddeli ilacın, anti-VEGF ilaçların uygulamasını takiben en erken 1 ay sonra kullanılmak kaydıyla yılda en fazla 4 defa kullanılması halinde bedelleri Kurumca karşılanır. Aynı göze ardışık uygulanacak deksametazon intravitreal implant etkin maddeli ilaç için iki uygulama arasındaki süre en az 3 ay olmalıdır. İki doz arasındaki süre tedaviyi yürüten heki</pre>
+  </details>
+</article>
+<article class="card" id="C006557">
+  <header>
+    <h2>C006557 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006557</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(11) Retinal ven tıkanıklığı (Mülga: RG-16/06/2020-31157/19-d md. Yürürlük: 24/06/2020) ve diyabetik maküler ödem tanılı glokomun eşlik ettiği hastalarda bevacizumab ile yükleme dozu sonrası yetersiz cevap alınması durumunda, bu durumun sağlık raporunda belirtilmesi kaydı ile deksametazon intravitreal implant etkin maddeli ilaç kullanılmaksızın ranibizumab veya aflibercept ile tedaviye devam edile</pre>
+  </details>
+</article>
+<article class="card" id="C006557">
+  <header>
+    <h2>C006557 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006557</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(11) Retinal ven tıkanıklığı (Mülga: RG-16/06/2020-31157/19-d md. Yürürlük: 24/06/2020) ve diyabetik maküler ödem tanılı glokomun eşlik ettiği hastalarda bevacizumab ile yükleme dozu sonrası yetersiz cevap alınması durumunda, bu durumun sağlık raporunda belirtilmesi kaydı ile deksametazon intravitreal implant etkin maddeli ilaç kullanılmaksızın ranibizumab veya aflibercept ile tedaviye devam edile</pre>
+  </details>
+</article>
+<article class="card" id="C006557">
+  <header>
+    <h2>C006557 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006557</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(11) Retinal ven tıkanıklığı (Mülga: RG-16/06/2020-31157/19-d md. Yürürlük: 24/06/2020) ve diyabetik maküler ödem tanılı glokomun eşlik ettiği hastalarda bevacizumab ile yükleme dozu sonrası yetersiz cevap alınması durumunda, bu durumun sağlık raporunda belirtilmesi kaydı ile deksametazon intravitreal implant etkin maddeli ilaç kullanılmaksızın ranibizumab veya aflibercept ile tedaviye devam edile</pre>
+  </details>
+</article>
+<article class="card" id="C006557">
+  <header>
+    <h2>C006557 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006557</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(11) Retinal ven tıkanıklığı (Mülga: RG-16/06/2020-31157/19-d md. Yürürlük: 24/06/2020) ve diyabetik maküler ödem tanılı glokomun eşlik ettiği hastalarda bevacizumab ile yükleme dozu sonrası yetersiz cevap alınması durumunda, bu durumun sağlık raporunda belirtilmesi kaydı ile deksametazon intravitreal implant etkin maddeli ilaç kullanılmaksızın ranibizumab veya aflibercept ile tedaviye devam edile</pre>
+  </details>
+</article>
+<article class="card" id="C006558">
+  <header>
+    <h2>C006558 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006558</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(12) Anti-VEGF ilaçlarla yükleme dozu sonrası, anti-VEGF ilaçların idame tedavisi sırasında ve anti-VEGF ilaç kullanımının kontrendike olduğu durumlarının herhangi birinde deksametazon intravitreal implant etkin maddeli ilacın kullanılması halinde bedelleri Kurumca karşılanır. Retinal ven tıkanıklığı ve diyabetik maküla ödemi tanılarında önceden deksametazon implant ile tedavi edilmiş, cevap alınm</pre>
+  </details>
+</article>
+<article class="card" id="C006559">
+  <header>
+    <h2>C006559 <span class="muted">§4.2.33</span></h2>
+    <p class="badge">general_4_2_33</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006559</td></tr>
+<tr><th>section_id</th><td>4.2.33</td></tr>
+<tr><th>indication_group</th><td>general_4_2_33</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(13) Anti-VEGF ilaçların kullanımının kontrendike olduğu durumlar; son 3 ay içinde geçirilmiş miyokard enfarktüsü veya serebro vasküler olay ve benzeri vasküler patolojilerdir. Kontrendikasyon oluşturan gerekçe hekim tarafından sağlık kurulu raporunda mutlaka belirtilir.</pre>
+  </details>
+</article>
+<article class="card" id="C006457">
+  <header>
+    <h2>C006457 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006457</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Pegaptanib sodyum, ranibizumab ve vertaporfin etken maddelerini içeren ilaçlar; üçüncü basamak sağlık kurumlarında en az üç göz sağlığı ve hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA ve lezyona ait renkli resim varlığı raporda belirtilerek, göz sağlığı ve hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006457">
+  <header>
+    <h2>C006457 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006457</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>pegaptanib</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Pegaptanib sodyum, ranibizumab ve vertaporfin etken maddelerini içeren ilaçlar; üçüncü basamak sağlık kurumlarında en az üç göz sağlığı ve hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA ve lezyona ait renkli resim varlığı raporda belirtilerek, göz sağlığı ve hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006457">
+  <header>
+    <h2>C006457 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006457</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>verteporfin</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Pegaptanib sodyum, ranibizumab ve vertaporfin etken maddelerini içeren ilaçlar; üçüncü basamak sağlık kurumlarında en az üç göz sağlığı ve hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA ve lezyona ait renkli resim varlığı raporda belirtilerek, göz sağlığı ve hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006458">
+  <header>
+    <h2>C006458 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006458</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Ranibizumab; hasta anamnezi, FFA ve lezyona ait renkli resim varlığına ait bilgiler 3 ay süreli sağlık kurulu raporunda belirtilerek birer ay arayla 3 kez yükleme dozuyla başlanır. Hastalar izlenerek göz dibi bulguları, görme keskinliği ve optik koherens tomografileri (OKT) değerlendirilir ve tekrar tedavi gerekirse bu bulgular ve tedaviye devam kararı her uygulama için düzenlenecek yeni sağlı</pre>
+  </details>
+</article>
+<article class="card" id="C006459">
+  <header>
+    <h2>C006459 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006459</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) Bu grup ilaçlar ardışık ya da kombine olarak kullanılamayacaktır.</pre>
+  </details>
+</article>
+<article class="card" id="C006460">
+  <header>
+    <h2>C006460 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006460</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(4) Bu grup ilaçlar yalnızca ayakta tedavi kapsamında ödenecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006468">
+  <header>
+    <h2>C006468 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006468</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) (EK: RG- 18/02/2015-29271 / 16-a md. Yürürlük: 28/02/2015)Pegaptanib sodyum, ranibizumab, aflibersept ve vertaporfin etken maddelerini içeren ilaçlar; üçüncü basamak sağlık kurumlarında en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA ve lezyona ait renkli resim varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006468">
+  <header>
+    <h2>C006468 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006468</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) (EK: RG- 18/02/2015-29271 / 16-a md. Yürürlük: 28/02/2015)Pegaptanib sodyum, ranibizumab, aflibersept ve vertaporfin etken maddelerini içeren ilaçlar; üçüncü basamak sağlık kurumlarında en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA ve lezyona ait renkli resim varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006468">
+  <header>
+    <h2>C006468 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006468</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>pegaptanib</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) (EK: RG- 18/02/2015-29271 / 16-a md. Yürürlük: 28/02/2015)Pegaptanib sodyum, ranibizumab, aflibersept ve vertaporfin etken maddelerini içeren ilaçlar; üçüncü basamak sağlık kurumlarında en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA ve lezyona ait renkli resim varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006468">
+  <header>
+    <h2>C006468 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006468</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>verteporfin</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) (EK: RG- 18/02/2015-29271 / 16-a md. Yürürlük: 28/02/2015)Pegaptanib sodyum, ranibizumab, aflibersept ve vertaporfin etken maddelerini içeren ilaçlar; üçüncü basamak sağlık kurumlarında en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA ve lezyona ait renkli resim varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006470">
+  <header>
+    <h2>C006470 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006470</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Pegaptanib sodyum, ranibizumab, aflibersept ve vertaporfin etken maddelerini içeren ilaçlar; üniversite veya eğitim ve araştırma hastanelerinde en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA (kontrendikasyonu yoksa) ve lezyona ait renkli resim ve/veya OKT varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006470">
+  <header>
+    <h2>C006470 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006470</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Pegaptanib sodyum, ranibizumab, aflibersept ve vertaporfin etken maddelerini içeren ilaçlar; üniversite veya eğitim ve araştırma hastanelerinde en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA (kontrendikasyonu yoksa) ve lezyona ait renkli resim ve/veya OKT varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006470">
+  <header>
+    <h2>C006470 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006470</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>pegaptanib</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Pegaptanib sodyum, ranibizumab, aflibersept ve vertaporfin etken maddelerini içeren ilaçlar; üniversite veya eğitim ve araştırma hastanelerinde en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA (kontrendikasyonu yoksa) ve lezyona ait renkli resim ve/veya OKT varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006470">
+  <header>
+    <h2>C006470 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006470</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>verteporfin</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Pegaptanib sodyum, ranibizumab, aflibersept ve vertaporfin etken maddelerini içeren ilaçlar; üniversite veya eğitim ve araştırma hastanelerinde en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA (kontrendikasyonu yoksa) ve lezyona ait renkli resim ve/veya OKT varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygulanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006472">
+  <header>
+    <h2>C006472 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006472</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) (Değişik: RG- 05/08/2015- 29436/ 22 md. Yürürlük: 13/08/2015) (EK: RG- 18/02/2015-29271 / 16-a md. Yürürlük: 28/02/2015) Ranibizumab ve aflibersept; hasta anamnezi, FFA ve lezyona ait renkli resim varlığına ait bilgiler 3 ay süreli sağlık kurulu raporunda belirtilerek birer ay arayla 3 kez yükleme dozuyla başlanır. Hastalar izlenerek göz dibi bulguları, görme keskinliği ve optik koherens tomog</pre>
+  </details>
+</article>
+<article class="card" id="C006472">
+  <header>
+    <h2>C006472 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006472</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) (Değişik: RG- 05/08/2015- 29436/ 22 md. Yürürlük: 13/08/2015) (EK: RG- 18/02/2015-29271 / 16-a md. Yürürlük: 28/02/2015) Ranibizumab ve aflibersept; hasta anamnezi, FFA ve lezyona ait renkli resim varlığına ait bilgiler 3 ay süreli sağlık kurulu raporunda belirtilerek birer ay arayla 3 kez yükleme dozuyla başlanır. Hastalar izlenerek göz dibi bulguları, görme keskinliği ve optik koherens tomog</pre>
+  </details>
+</article>
+<article class="card" id="C006473">
+  <header>
+    <h2>C006473 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006473</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Ranibizumab ve aflibersept; hasta anamnezi, FFA (kontrendikasyonu yoksa) ve lezyona ait renkli resim ve/veya OKT varlığına ait bilgiler 3 ay süreli sağlık kurulu raporunda belirtilerek 4 (dört) ila 6 (altı) hafta arayla 3 kez yükleme dozuyla başlanır. Yükleme dozları arasındaki sürenin hastaya bağlı sebeplerle 6 (altı) haftanın üzerine çıkması söz konusu olduğu takdirde bu durumun belirtildiği</pre>
+  </details>
+</article>
+<article class="card" id="C006473">
+  <header>
+    <h2>C006473 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006473</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Ranibizumab ve aflibersept; hasta anamnezi, FFA (kontrendikasyonu yoksa) ve lezyona ait renkli resim ve/veya OKT varlığına ait bilgiler 3 ay süreli sağlık kurulu raporunda belirtilerek 4 (dört) ila 6 (altı) hafta arayla 3 kez yükleme dozuyla başlanır. Yükleme dozları arasındaki sürenin hastaya bağlı sebeplerle 6 (altı) haftanın üzerine çıkması söz konusu olduğu takdirde bu durumun belirtildiği</pre>
+  </details>
+</article>
+<article class="card" id="C006474">
+  <header>
+    <h2>C006474 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006474</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) (Değişik: RG- 05/08/2015- 29436/ 22 md. Yürürlük: 13/08/2015) Bu grup ilaçlar ardışık ya da kombine olarak kullanılamayacaktır. Bu grup ilaçlar kombine olarak kullanılamayacaktır. (Ek:RG-09/09/2017- 30175/27-b md. Yürürlük: 08/05/2017) Farklı göze kullanımlar kombine kullanım olarak değerlendirilmez.</pre>
+  </details>
+</article>
+<article class="card" id="C006475">
+  <header>
+    <h2>C006475 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006475</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(4) Bu grup ilaçlar yalnızca ayakta tedavi kapsamında ödenecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006561">
+  <header>
+    <h2>C006561 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006561</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab etkin maddeli ilaç ile tedaviye başlanır. Bevacizumab kullanımının kontrendike olduğu durumlarda (Ek: RG-04/09/2019-30878/32 md. Yürürlük:12/09/2019) hekim tarafından gerekli görüldüğü takdirde 3 ay süre ile verteporfin etkin maddeli ilaç ve bu sürenin sonunda bevacizumab etkin maddeli ilaç kullanılması halinde bedelleri Kurumca karşılanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006561">
+  <header>
+    <h2>C006561 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006561</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>verteporfin</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab etkin maddeli ilaç ile tedaviye başlanır. Bevacizumab kullanımının kontrendike olduğu durumlarda (Ek: RG-04/09/2019-30878/32 md. Yürürlük:12/09/2019) hekim tarafından gerekli görüldüğü takdirde 3 ay süre ile verteporfin etkin maddeli ilaç ve bu sürenin sonunda bevacizumab etkin maddeli ilaç kullanılması halinde bedelleri Kurumca karşılanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006562">
+  <header>
+    <h2>C006562 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006562</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-b md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-a md.Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); ranibizumab veya aflibers</pre>
+  </details>
+</article>
+<article class="card" id="C006562">
+  <header>
+    <h2>C006562 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006562</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-b md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-a md.Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); ranibizumab veya aflibers</pre>
+  </details>
+</article>
+<article class="card" id="C006562">
+  <header>
+    <h2>C006562 <span class="muted">§4.2.33.A</span></h2>
+    <p class="badge">yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006562</td></tr>
+<tr><th>section_id</th><td>4.2.33.A</td></tr>
+<tr><th>indication_group</th><td>yas_tip_yas_bagli_makula_dejenerasyonu_wet_amd</td></tr>
+<tr><th>indication_tr</th><td>Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-b md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-a md.Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); ranibizumab veya aflibers</pre>
+  </details>
+</article>
+<article class="card" id="C006462">
+  <header>
+    <h2>C006462 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006462</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Deksametazon intravitreal implant; her bir uygulama için; makula ödemi olan hastanın anamnezi, FFA ve lezyona ait renkli resim ve optik koherens tomografi (OKT) varlığı sağlık kurulu raporunda belirtilerek tedaviye başlanır. Görme keskinliği 0,5 ve altı ve/veya OKT’de CRT 250 mikron ve üzerinde ise tekrar tedavi verilebilir. Bu bulgular ve tedaviye devam kararı her uygulama için düzenlenecek y</pre>
+  </details>
+</article>
+<article class="card" id="C006463">
+  <header>
+    <h2>C006463 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006463</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>max_applications_per_year</th><td>2</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Her bir göz için yılda maksimum 2 uygulama yapılır.</pre>
+  </details>
+</article>
+<article class="card" id="C006464">
+  <header>
+    <h2>C006464 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006464</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) Üçüncü basamak sağlık kurumlarında en az üç göz sağlığı ve hastalıkları uzmanı tarafından düzenlenen sağlık kurulu raporuna dayanılarak göz sağlığı ve hastalıkları uzmanlarınca reçetelenir.</pre>
+  </details>
+</article>
+<article class="card" id="C006479">
+  <header>
+    <h2>C006479 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006479</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Deksametazon intravitreal implant; her bir uygulama için; makula ödemi olan hastanın anamnezi, FFA (Ek: RG- 18/02/2017- 29983/ 11-a md. Yürürlük: 01/03/2017) (kontrendikasyonu yoksa) ve lezyona ait renkli resim ve optik koherens tomografi (OKT) varlığı sağlık kurulu raporunda belirtilerek tedaviye başlanır. Görme keskinliği 0,5 ve altı ve/veya OKT’de CRT 250 mikron ve üzerinde ise tekrar tedav</pre>
+  </details>
+</article>
+<article class="card" id="C006480">
+  <header>
+    <h2>C006480 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006480</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) (Ek: RG- 18/02/2015- 29271/ 16-b md. Yürürlük: 28/02/2015) Ranibizumab ve aflibersept deksametazon intravitreal implant kullanımı uygun olmayan veya yanıt alınamayan hastalarda kullanılabilir. (Ek: RG- 18/02/2015- 29271/ 16-b md. Yürürlük: 28/02/2015) Ranibizumab ve aflibersept; intravitreal implant kullanılamama gerekçesi ile birlikte hasta anamnezi, FFA (Ek: RG- 18/02/2017- 29983/ 11-a md. Y</pre>
+  </details>
+</article>
+<article class="card" id="C006480">
+  <header>
+    <h2>C006480 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006480</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) (Ek: RG- 18/02/2015- 29271/ 16-b md. Yürürlük: 28/02/2015) Ranibizumab ve aflibersept deksametazon intravitreal implant kullanımı uygun olmayan veya yanıt alınamayan hastalarda kullanılabilir. (Ek: RG- 18/02/2015- 29271/ 16-b md. Yürürlük: 28/02/2015) Ranibizumab ve aflibersept; intravitreal implant kullanılamama gerekçesi ile birlikte hasta anamnezi, FFA (Ek: RG- 18/02/2017- 29983/ 11-a md. Y</pre>
+  </details>
+</article>
+<article class="card" id="C006480">
+  <header>
+    <h2>C006480 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006480</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>3</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) (Ek: RG- 18/02/2015- 29271/ 16-b md. Yürürlük: 28/02/2015) Ranibizumab ve aflibersept deksametazon intravitreal implant kullanımı uygun olmayan veya yanıt alınamayan hastalarda kullanılabilir. (Ek: RG- 18/02/2015- 29271/ 16-b md. Yürürlük: 28/02/2015) Ranibizumab ve aflibersept; intravitreal implant kullanılamama gerekçesi ile birlikte hasta anamnezi, FFA (Ek: RG- 18/02/2017- 29983/ 11-a md. Y</pre>
+  </details>
+</article>
+<article class="card" id="C006481">
+  <header>
+    <h2>C006481 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006481</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) (Ek: RG- 18/02/2015- 29271/ 16-b md. Yürürlük: 28/02/2015) Deksametazon intravitreal implant; her bir göz için yılda maksimum 2, ranibizumab ve aflibersept; her bir göz için ömür boyu maksimum 7 kutu ilaç bedeli ödenir.</pre>
+  </details>
+</article>
+<article class="card" id="C006481">
+  <header>
+    <h2>C006481 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006481</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) (Ek: RG- 18/02/2015- 29271/ 16-b md. Yürürlük: 28/02/2015) Deksametazon intravitreal implant; her bir göz için yılda maksimum 2, ranibizumab ve aflibersept; her bir göz için ömür boyu maksimum 7 kutu ilaç bedeli ödenir.</pre>
+  </details>
+</article>
+<article class="card" id="C006481">
+  <header>
+    <h2>C006481 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006481</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) (Ek: RG- 18/02/2015- 29271/ 16-b md. Yürürlük: 28/02/2015) Deksametazon intravitreal implant; her bir göz için yılda maksimum 2, ranibizumab ve aflibersept; her bir göz için ömür boyu maksimum 7 kutu ilaç bedeli ödenir.</pre>
+  </details>
+</article>
+<article class="card" id="C006482">
+  <header>
+    <h2>C006482 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006482</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(4) (Değişik: RG- 18/06/2016- 29746/ 20-c md. Yürürlük: 25/06/2016) Üçüncü basamak sağlık kurumlarında Üniversite veya eğitim ve araştırma hastanelerinde en az üç göz hastalıkları uzmanı tarafından düzenlenen sağlık kurulu raporuna dayanılarak göz hastalıkları uzmanlarınca reçetelenir.</pre>
+  </details>
+</article>
+<article class="card" id="C006484">
+  <header>
+    <h2>C006484 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006484</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(5) Bu grup ilaçlar kombine olarak kullanılamayacaktır. Farklı göze kullanımlar kombine kullanım olarak değerlendirilmez.</pre>
+  </details>
+</article>
+<article class="card" id="C006485">
+  <header>
+    <h2>C006485 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006485</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(6) Bu grup ilaçlar yalnızca ayakta tedavi kapsamında ödenecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006564">
+  <header>
+    <h2>C006564 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006564</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab etkin maddeli ilaç ile tedaviye başlanır. Bevacizumab kullanımının kontrendike olduğu durumlarda 1 defaya mahsus olmak üzere deksametazon intravitreal implant etkin maddeli ilaç kullanılması ve sonunda bevacizumab etkin maddeli ilaç kullanılması halinde bedelleri Kurumca karşılanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006564">
+  <header>
+    <h2>C006564 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006564</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab etkin maddeli ilaç ile tedaviye başlanır. Bevacizumab kullanımının kontrendike olduğu durumlarda 1 defaya mahsus olmak üzere deksametazon intravitreal implant etkin maddeli ilaç kullanılması ve sonunda bevacizumab etkin maddeli ilaç kullanılması halinde bedelleri Kurumca karşılanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006565">
+  <header>
+    <h2>C006565 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006565</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2)  Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-c md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-b md.Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); 1 yıl içinde (Değişik:RG</pre>
+  </details>
+</article>
+<article class="card" id="C006565">
+  <header>
+    <h2>C006565 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006565</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2)  Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-c md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-b md.Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); 1 yıl içinde (Değişik:RG</pre>
+  </details>
+</article>
+<article class="card" id="C006565">
+  <header>
+    <h2>C006565 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006565</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2)  Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-c md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-b md.Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); 1 yıl içinde (Değişik:RG</pre>
+  </details>
+</article>
+<article class="card" id="C006565">
+  <header>
+    <h2>C006565 <span class="muted">§4.2.33.B</span></h2>
+    <p class="badge">retina_ven_dali_tikanikligi_rvdt_srvt</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006565</td></tr>
+<tr><th>section_id</th><td>4.2.33.B</td></tr>
+<tr><th>indication_group</th><td>retina_ven_dali_tikanikligi_rvdt_srvt</td></tr>
+<tr><th>indication_tr</th><td>Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2)  Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-c md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-b md.Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); 1 yıl içinde (Değişik:RG</pre>
+  </details>
+</article>
+<article class="card" id="C006488">
+  <header>
+    <h2>C006488 <span class="muted">§4.2.33.C</span></h2>
+    <p class="badge">patolojik_miyopi_koroidal_neovaskularizasyon</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006488</td></tr>
+<tr><th>section_id</th><td>4.2.33.C</td></tr>
+<tr><th>indication_group</th><td>patolojik_miyopi_koroidal_neovaskularizasyon</td></tr>
+<tr><th>indication_tr</th><td>Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Ranibizumab (Ek: RG- 18/02/2017- 29983/ 11-b md. Yürürlük: 01/03/2017) ve aflibersept etken maddesini içeren ilaçlar; (Değişik: RG- 18/06/2016- 29746/ 20-ç md. Yürürlük: 25/06/2016) üçüncü basamak sağlık kurumlarında  Üniversite veya eğitim ve araştırma hastanelerinde en az üç göz hastalıkları uzmanının yer aldığı bir ay süreli sağlık kurulu raporu ile hasta anamnezi, FFA (Ek:RG-09/09/2017-301</pre>
+  </details>
+</article>
+<article class="card" id="C006488">
+  <header>
+    <h2>C006488 <span class="muted">§4.2.33.C</span></h2>
+    <p class="badge">patolojik_miyopi_koroidal_neovaskularizasyon</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006488</td></tr>
+<tr><th>section_id</th><td>4.2.33.C</td></tr>
+<tr><th>indication_group</th><td>patolojik_miyopi_koroidal_neovaskularizasyon</td></tr>
+<tr><th>indication_tr</th><td>Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Ranibizumab (Ek: RG- 18/02/2017- 29983/ 11-b md. Yürürlük: 01/03/2017) ve aflibersept etken maddesini içeren ilaçlar; (Değişik: RG- 18/06/2016- 29746/ 20-ç md. Yürürlük: 25/06/2016) üçüncü basamak sağlık kurumlarında  Üniversite veya eğitim ve araştırma hastanelerinde en az üç göz hastalıkları uzmanının yer aldığı bir ay süreli sağlık kurulu raporu ile hasta anamnezi, FFA (Ek:RG-09/09/2017-301</pre>
+  </details>
+</article>
+<article class="card" id="C006489">
+  <header>
+    <h2>C006489 <span class="muted">§4.2.33.C</span></h2>
+    <p class="badge">patolojik_miyopi_koroidal_neovaskularizasyon</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006489</td></tr>
+<tr><th>section_id</th><td>4.2.33.C</td></tr>
+<tr><th>indication_group</th><td>patolojik_miyopi_koroidal_neovaskularizasyon</td></tr>
+<tr><th>indication_tr</th><td>Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Hastalar izlenerek göz dibi bulguları, görme keskinliği, optik koherens tomografileri (OKT) ve FFA (Ek:RG-09/09/2017- 30175/ 29-a md. Yürürlük:08/05/2017) (kontrendikasyonu yoksa) ile değerlendirilir ve tekrar tedavi gerekirse bu bulgular ile tedaviye devam kararı her uygulama için düzenlenecek yeni sağlık kurulu raporunda belirtilir.</pre>
+  </details>
+</article>
+<article class="card" id="C006490">
+  <header>
+    <h2>C006490 <span class="muted">§4.2.33.C</span></h2>
+    <p class="badge">patolojik_miyopi_koroidal_neovaskularizasyon</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006490</td></tr>
+<tr><th>section_id</th><td>4.2.33.C</td></tr>
+<tr><th>indication_group</th><td>patolojik_miyopi_koroidal_neovaskularizasyon</td></tr>
+<tr><th>indication_tr</th><td>Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) Bu grup ilaçlar yalnızca ayakta tedavi kapsamında ödenecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006492">
+  <header>
+    <h2>C006492 <span class="muted">§4.2.33.C</span></h2>
+    <p class="badge">patolojik_miyopi_koroidal_neovaskularizasyon</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006492</td></tr>
+<tr><th>section_id</th><td>4.2.33.C</td></tr>
+<tr><th>indication_group</th><td>patolojik_miyopi_koroidal_neovaskularizasyon</td></tr>
+<tr><th>indication_tr</th><td>Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(4) Bu grup ilaçlar kombine olarak kullanılamayacaktır. Farklı göze kullanımlar kombine kullanım olarak değerlendirilmez.</pre>
+  </details>
+</article>
+<article class="card" id="C006567">
+  <header>
+    <h2>C006567 <span class="muted">§4.2.33.C</span></h2>
+    <p class="badge">patolojik_miyopi_koroidal_neovaskularizasyon</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006567</td></tr>
+<tr><th>section_id</th><td>4.2.33.C</td></tr>
+<tr><th>indication_group</th><td>patolojik_miyopi_koroidal_neovaskularizasyon</td></tr>
+<tr><th>indication_tr</th><td>Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab etkin maddeli ilaç ile tedaviye başlanır. Bevacizumab kullanımının kontrendike olduğu durumlarda (Ek:RG-04/09/2019-30878/34 md. Yürürlük:12/09/2019) hekim tarafından gerekli görüldüğü takdirde 3 ay süre ile verteporfin etkin maddeli ilaç ve bu sürenin sonunda bevacizumab etkin maddeli ilaç kullanılması halinde bedelleri Kurumca karşılanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006567">
+  <header>
+    <h2>C006567 <span class="muted">§4.2.33.C</span></h2>
+    <p class="badge">patolojik_miyopi_koroidal_neovaskularizasyon</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006567</td></tr>
+<tr><th>section_id</th><td>4.2.33.C</td></tr>
+<tr><th>indication_group</th><td>patolojik_miyopi_koroidal_neovaskularizasyon</td></tr>
+<tr><th>indication_tr</th><td>Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)</td></tr>
+<tr><th>inn</th><td>verteporfin</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab etkin maddeli ilaç ile tedaviye başlanır. Bevacizumab kullanımının kontrendike olduğu durumlarda (Ek:RG-04/09/2019-30878/34 md. Yürürlük:12/09/2019) hekim tarafından gerekli görüldüğü takdirde 3 ay süre ile verteporfin etkin maddeli ilaç ve bu sürenin sonunda bevacizumab etkin maddeli ilaç kullanılması halinde bedelleri Kurumca karşılanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006568">
+  <header>
+    <h2>C006568 <span class="muted">§4.2.33.C</span></h2>
+    <p class="badge">patolojik_miyopi_koroidal_neovaskularizasyon</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006568</td></tr>
+<tr><th>section_id</th><td>4.2.33.C</td></tr>
+<tr><th>indication_group</th><td>patolojik_miyopi_koroidal_neovaskularizasyon</td></tr>
+<tr><th>indication_tr</th><td>Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-ç md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya 6 hafta sonra (Değişik:RG-16/03/2023-32134/30-c md. Yürürlük:24/03/2023) OCT OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); ranibizumab veya aflibersept etkin madd</pre>
+  </details>
+</article>
+<article class="card" id="C006568">
+  <header>
+    <h2>C006568 <span class="muted">§4.2.33.C</span></h2>
+    <p class="badge">patolojik_miyopi_koroidal_neovaskularizasyon</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006568</td></tr>
+<tr><th>section_id</th><td>4.2.33.C</td></tr>
+<tr><th>indication_group</th><td>patolojik_miyopi_koroidal_neovaskularizasyon</td></tr>
+<tr><th>indication_tr</th><td>Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-ç md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya 6 hafta sonra (Değişik:RG-16/03/2023-32134/30-c md. Yürürlük:24/03/2023) OCT OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); ranibizumab veya aflibersept etkin madd</pre>
+  </details>
+</article>
+<article class="card" id="C006568">
+  <header>
+    <h2>C006568 <span class="muted">§4.2.33.C</span></h2>
+    <p class="badge">patolojik_miyopi_koroidal_neovaskularizasyon</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006568</td></tr>
+<tr><th>section_id</th><td>4.2.33.C</td></tr>
+<tr><th>indication_group</th><td>patolojik_miyopi_koroidal_neovaskularizasyon</td></tr>
+<tr><th>indication_tr</th><td>Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-ç md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya 6 hafta sonra (Değişik:RG-16/03/2023-32134/30-c md. Yürürlük:24/03/2023) OCT OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); ranibizumab veya aflibersept etkin madd</pre>
+  </details>
+</article>
+<article class="card" id="C006495">
+  <header>
+    <h2>C006495 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006495</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Ranibizumab,  aflibersept  ve deksametazon intravitreal implant etken maddelerini içeren ilaçlar;  üniversite hastaneleri ile eğitim ve araştırma hastanelerinde en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA (kontrendikasyonu yoksa) ve lezyona ait renkli resim ve/veya OKT varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygu</pre>
+  </details>
+</article>
+<article class="card" id="C006495">
+  <header>
+    <h2>C006495 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006495</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Ranibizumab,  aflibersept  ve deksametazon intravitreal implant etken maddelerini içeren ilaçlar;  üniversite hastaneleri ile eğitim ve araştırma hastanelerinde en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA (kontrendikasyonu yoksa) ve lezyona ait renkli resim ve/veya OKT varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygu</pre>
+  </details>
+</article>
+<article class="card" id="C006495">
+  <header>
+    <h2>C006495 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006495</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Ranibizumab,  aflibersept  ve deksametazon intravitreal implant etken maddelerini içeren ilaçlar;  üniversite hastaneleri ile eğitim ve araştırma hastanelerinde en az üç göz hastalıkları uzmanının yer aldığı sağlık kurulu raporu ile hasta anamnezi, FFA (kontrendikasyonu yoksa) ve lezyona ait renkli resim ve/veya OKT varlığı raporda belirtilerek, göz hastalıkları uzmanlarınca reçetelenerek uygu</pre>
+  </details>
+</article>
+<article class="card" id="C006497">
+  <header>
+    <h2>C006497 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006497</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>5</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Ranibizumab tedavisine, 3 ay süreli sağlık kurulu raporunda belirtilerek birer ay arayla 3 kez yükleme dozuyla, aflibersept tedavisine 5 ay süreli sağlık kurulu raporunda belirtilerek birer ay arayla 5 kez yükleme dozuyla başlanır. Deksametazon intravitreal implant için yükleme dozu uygulaması bulunmamaktadır.</pre>
+  </details>
+</article>
+<article class="card" id="C006497">
+  <header>
+    <h2>C006497 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006497</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>5</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Ranibizumab tedavisine, 3 ay süreli sağlık kurulu raporunda belirtilerek birer ay arayla 3 kez yükleme dozuyla, aflibersept tedavisine 5 ay süreli sağlık kurulu raporunda belirtilerek birer ay arayla 5 kez yükleme dozuyla başlanır. Deksametazon intravitreal implant için yükleme dozu uygulaması bulunmamaktadır.</pre>
+  </details>
+</article>
+<article class="card" id="C006497">
+  <header>
+    <h2>C006497 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006497</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>5</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Ranibizumab tedavisine, 3 ay süreli sağlık kurulu raporunda belirtilerek birer ay arayla 3 kez yükleme dozuyla, aflibersept tedavisine 5 ay süreli sağlık kurulu raporunda belirtilerek birer ay arayla 5 kez yükleme dozuyla başlanır. Deksametazon intravitreal implant için yükleme dozu uygulaması bulunmamaktadır.</pre>
+  </details>
+</article>
+<article class="card" id="C006498">
+  <header>
+    <h2>C006498 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006498</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) Tedavinin devamında göz dibi bulguları, görme keskinliği ve optik koherens tomografileri (OKT) değerlendirilir.</pre>
+  </details>
+</article>
+<article class="card" id="C006499">
+  <header>
+    <h2>C006499 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006499</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">Başlangıç ve devam bulguları ve tedaviye devam kararı her uygulama için düzenlenecek yeni sağlık kurulu raporunda belirtilir.</pre>
+  </details>
+</article>
+<article class="card" id="C006500">
+  <header>
+    <h2>C006500 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006500</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(4) Ranibizumab ve aflibersept arasında ilaç değişimi bir defaya mahsus olmak üzere, ilk tedaviye başlanan ilaç ile yükleme dozu tamamlandıktan sonra yapılacak değerlendirme sonucuna göre, başlangıç kriterlerine uygun olarak düzenlenmiş, değişimin gerekçesinin belirtildiği sağlık kurulu raporu ile mümkündür.</pre>
+  </details>
+</article>
+<article class="card" id="C006500">
+  <header>
+    <h2>C006500 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006500</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(4) Ranibizumab ve aflibersept arasında ilaç değişimi bir defaya mahsus olmak üzere, ilk tedaviye başlanan ilaç ile yükleme dozu tamamlandıktan sonra yapılacak değerlendirme sonucuna göre, başlangıç kriterlerine uygun olarak düzenlenmiş, değişimin gerekçesinin belirtildiği sağlık kurulu raporu ile mümkündür.</pre>
+  </details>
+</article>
+<article class="card" id="C006501">
+  <header>
+    <h2>C006501 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006501</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>5</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Ranibizumab tedavisine, 3 ay süreli sağlık kurulu raporunda belirtilerek 4 (dört) ila 6 (altı) hafta arayla 3 kez yükleme dozuyla, aflibersept tedavisine 5 ay süreli sağlık kurulu raporunda belirtilerek 4 (dört) ila 6 (altı) hafta arayla en az 3 en fazla 5 doza kadar yükleme dozuyla başlanır. Deksametazon intravitreal implant için yükleme dozu uygulaması bulunmamaktadır. Yükleme dozları arasın</pre>
+  </details>
+</article>
+<article class="card" id="C006501">
+  <header>
+    <h2>C006501 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006501</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>5</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Ranibizumab tedavisine, 3 ay süreli sağlık kurulu raporunda belirtilerek 4 (dört) ila 6 (altı) hafta arayla 3 kez yükleme dozuyla, aflibersept tedavisine 5 ay süreli sağlık kurulu raporunda belirtilerek 4 (dört) ila 6 (altı) hafta arayla en az 3 en fazla 5 doza kadar yükleme dozuyla başlanır. Deksametazon intravitreal implant için yükleme dozu uygulaması bulunmamaktadır. Yükleme dozları arasın</pre>
+  </details>
+</article>
+<article class="card" id="C006501">
+  <header>
+    <h2>C006501 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006501</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>loading_dose_count</th><td>3</td></tr>
+<tr><th>report_duration_months</th><td>5</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Ranibizumab tedavisine, 3 ay süreli sağlık kurulu raporunda belirtilerek 4 (dört) ila 6 (altı) hafta arayla 3 kez yükleme dozuyla, aflibersept tedavisine 5 ay süreli sağlık kurulu raporunda belirtilerek 4 (dört) ila 6 (altı) hafta arayla en az 3 en fazla 5 doza kadar yükleme dozuyla başlanır. Deksametazon intravitreal implant için yükleme dozu uygulaması bulunmamaktadır. Yükleme dozları arasın</pre>
+  </details>
+</article>
+<article class="card" id="C006502">
+  <header>
+    <h2>C006502 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006502</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(3) Yükleme dozunun tamamlanması sonunda hastalar izlenerek göz dibi bulguları, görme keskinliği ve optik koherens tomografileri (OKT) değerlendirilir. Tedavinin devamında bu bulgular ve tedaviye devam kararı her uygulama için düzenlenecek yeni sağlık kurulu raporunda belirtilir. Devam tedavisi, ilacın Sağlık Bakanlığınca ruhsatlı endikasyonu/kullanım şeklinde yer alan esaslar doğrultusunda sürdür</pre>
+  </details>
+</article>
+<article class="card" id="C006503">
+  <header>
+    <h2>C006503 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006503</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(4) Ranibizumab ve aflibersept arasında ilaç değişimi bir defaya mahsus olmak üzere, ilk tedaviye başlanan ilaç ile yükleme dozu tamamlandıktan sonra devam edecek tedaviler esnasında yapılacak değerlendirme sonucuna göre, hekim tarafından uygun görülen durumda başlangıç kriterlerine uygun olarak düzenlenmiş, değişimin gerekçesinin belirtildiği sağlık kurulu raporu ile mümkün bulunmaktadır. İlaç de</pre>
+  </details>
+</article>
+<article class="card" id="C006503">
+  <header>
+    <h2>C006503 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006503</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(4) Ranibizumab ve aflibersept arasında ilaç değişimi bir defaya mahsus olmak üzere, ilk tedaviye başlanan ilaç ile yükleme dozu tamamlandıktan sonra devam edecek tedaviler esnasında yapılacak değerlendirme sonucuna göre, hekim tarafından uygun görülen durumda başlangıç kriterlerine uygun olarak düzenlenmiş, değişimin gerekçesinin belirtildiği sağlık kurulu raporu ile mümkün bulunmaktadır. İlaç de</pre>
+  </details>
+</article>
+<article class="card" id="C006504">
+  <header>
+    <h2>C006504 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006504</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(5) Bu grup ilaçlar kombine olarak kullanılamayacaktır. (Ek:RG-09/09/2017-30175/ 30-b md.Yürürlük: 08/05/2017) Farklı göze kullanımlar kombine kullanım olarak değerlendirilmez. Deksametazon intravitreal implant, ranibizumab ve aflibersept etkin maddeli ilaçlar ile aynı gün içerisinde olmamak kaydıyla uygulanabilecektir. (Aynı gözde diyabetik maküler ödemde 7 implanttan fazla tekrar edilmesi gereke</pre>
+  </details>
+</article>
+<article class="card" id="C006504">
+  <header>
+    <h2>C006504 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006504</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(5) Bu grup ilaçlar kombine olarak kullanılamayacaktır. (Ek:RG-09/09/2017-30175/ 30-b md.Yürürlük: 08/05/2017) Farklı göze kullanımlar kombine kullanım olarak değerlendirilmez. Deksametazon intravitreal implant, ranibizumab ve aflibersept etkin maddeli ilaçlar ile aynı gün içerisinde olmamak kaydıyla uygulanabilecektir. (Aynı gözde diyabetik maküler ödemde 7 implanttan fazla tekrar edilmesi gereke</pre>
+  </details>
+</article>
+<article class="card" id="C006504">
+  <header>
+    <h2>C006504 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006504</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(5) Bu grup ilaçlar kombine olarak kullanılamayacaktır. (Ek:RG-09/09/2017-30175/ 30-b md.Yürürlük: 08/05/2017) Farklı göze kullanımlar kombine kullanım olarak değerlendirilmez. Deksametazon intravitreal implant, ranibizumab ve aflibersept etkin maddeli ilaçlar ile aynı gün içerisinde olmamak kaydıyla uygulanabilecektir. (Aynı gözde diyabetik maküler ödemde 7 implanttan fazla tekrar edilmesi gereke</pre>
+  </details>
+</article>
+<article class="card" id="C006505">
+  <header>
+    <h2>C006505 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006505</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>True</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(6) Bu grup ilaçlar yalnızca ayakta tedavi kapsamında ödenecektir.</pre>
+  </details>
+</article>
+<article class="card" id="C006574">
+  <header>
+    <h2>C006574 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006574</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>siklosporin</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Siklosporin içeren immünsupresif göz damlaları, üç göz hastalıkları uzman hekimi tarafından düzenlenen bir yıl süreli sağlık kurulu raporuna dayanılarak göz hastalıkları uzman hekimlerince reçete edilebilir.</pre>
+  </details>
+</article>
+<article class="card" id="C006575">
+  <header>
+    <h2>C006575 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006575</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>siklosporin</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Siklosporin içeren immünsupresif göz damlaları, göz hastalıkları uzman hekimi tarafından düzenlenen bir yıl süreli uzman hekim raporuna dayanılarak göz hastalıkları uzman hekimlerince reçete edilebilir.</pre>
+  </details>
+</article>
+<article class="card" id="C006577">
+  <header>
+    <h2>C006577 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006577</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Kuru göz sendromunda kullanılan suni gözyaşları, göz hastalıkları uzman hekimlerince veya bu hekimlerce düzenlenecek 6 (altı) ay süreli uzman hekim raporuna dayanılarak tüm uzman hekimlerce reçete edilebilir.</pre>
+  </details>
+</article>
+<article class="card" id="C006578">
+  <header>
+    <h2>C006578 <span class="muted">§4.2.33.D</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006578</td></tr>
+<tr><th>section_id</th><td>4.2.33.D</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ) — D varyantı</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Keratitis sicca (kuru göz sendromu) veya kerato konjunktivitis sicca tedavisinde kullanılan suni gözyaşlarının, göz hastalıkları uzman hekimlerince veya bu hekimlerce düzenlenecek (Değişik: RG-25/03/2025-32852/16-b md. Yürürlük: 04/04/2025) 6 ay 1 yıl süreli uzman hekim raporuna dayanılarak uzman hekimlerce etkilenen göze günde en fazla 7 damlaya kadar reçete edilmesi halinde Kurumca bedelleri</pre>
+  </details>
+</article>
+<article class="card" id="C006508">
+  <header>
+    <h2>C006508 <span class="muted">§4.2.33.E</span></h2>
+    <p class="badge">diger_goz_hastaliklari</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006508</td></tr>
+<tr><th>section_id</th><td>4.2.33.E</td></tr>
+<tr><th>indication_group</th><td>diger_goz_hastaliklari</td></tr>
+<tr><th>indication_tr</th><td>Göz hastalıklarında kullanılan diğer ilaçlar</td></tr>
+<tr><th>inn</th><td>siklosporin</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Siklosporin içeren immünsupresif  göz damlaları, üç göz hastalıkları uzman hekimi tarafından düzenlenen bir yıl süreli sağlık kurulu raporuna dayanılarak göz hastalıkları uzman hekimlerince reçete edilebilir.</pre>
+  </details>
+</article>
+<article class="card" id="C006509">
+  <header>
+    <h2>C006509 <span class="muted">§4.2.33.E</span></h2>
+    <p class="badge">diger_goz_hastaliklari</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006509</td></tr>
+<tr><th>section_id</th><td>4.2.33.E</td></tr>
+<tr><th>indication_group</th><td>diger_goz_hastaliklari</td></tr>
+<tr><th>indication_tr</th><td>Göz hastalıklarında kullanılan diğer ilaçlar</td></tr>
+<tr><th>inn</th><td>(non-INN)</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Kuru göz sendromunda kullanılan suni gözyaşları, göz hastalıkları uzman hekimlerince veya bu hekimlerce düzenlenecek 6 (altı) ay süreli uzman hekim raporuna dayanılarak tüm uzman hekimlerce reçete edilebilir.</pre>
+  </details>
+</article>
+<article class="card" id="C006582">
+  <header>
+    <h2>C006582 <span class="muted">§4.2.33.E</span></h2>
+    <p class="badge">diger_goz_hastaliklari</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006582</td></tr>
+<tr><th>section_id</th><td>4.2.33.E</td></tr>
+<tr><th>indication_group</th><td>diger_goz_hastaliklari</td></tr>
+<tr><th>indication_tr</th><td>Göz hastalıklarında kullanılan diğer ilaçlar</td></tr>
+<tr><th>inn</th><td>sisteamin</td></tr>
+<tr><th>report_duration_months</th><td>6</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Sisteamin hidroklorür (Merkaptamin hidroklorür) etkin maddesini içeren ilaçların, genetik tetkik ile 17. kromozomda CTNS gen mutasyonu saptanarak sistinozis tanısı almış ve yarık lamba ile sistin kristallerinin görüldüğü yetişkinlerde ve 2 yaşından büyük çocuklarda, bu durumun belirtildiği üçüncü basamak sağlık kurumlarında 3 göz hastalıkları uzman hekiminin yer aldığı 6 ay süreli sağlık kurul</pre>
+  </details>
+</article>
+<article class="card" id="C006583">
+  <header>
+    <h2>C006583 <span class="muted">§4.2.33.E</span></h2>
+    <p class="badge">diger_goz_hastaliklari</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006583</td></tr>
+<tr><th>section_id</th><td>4.2.33.E</td></tr>
+<tr><th>indication_group</th><td>diger_goz_hastaliklari</td></tr>
+<tr><th>indication_tr</th><td>Göz hastalıklarında kullanılan diğer ilaçlar</td></tr>
+<tr><th>inn</th><td>sisteamin</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Sisteamin hidroklorür (Merkaptamin hidroklorür) etkin maddesini içeren ilaçların, genetik tetkik ile 17. kromozomda CTNS gen mutasyonu saptanarak veya lökosit içi sistin ile sistinozis tanısı almış ve yarık lamba ile sistin kristallerinin görüldüğü yetişkinlerde ve 2 yaşından büyük çocuklarda, bu durumun belirtildiği üçüncü basamak sağlık kurumlarında en az biri göz hastalıkları uzman hekimi o</pre>
+  </details>
+</article>
+<article class="card" id="C006586">
+  <header>
+    <h2>C006586 <span class="muted">§4.2.33.F</span></h2>
+    <p class="badge">premature_retinopatisi_rop</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006586</td></tr>
+<tr><th>section_id</th><td>4.2.33.F</td></tr>
+<tr><th>indication_group</th><td>premature_retinopatisi_rop</td></tr>
+<tr><th>indication_tr</th><td>Prematüre retinopatisi (ROP)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Ranibizumab etkin maddesini içeren ilaçların, erken doğmuş bebeklerde - Prematüre Retinopatisinin (ROP) zon I (evre 1+, 2+, 3 veya 3+), zon II (evre 3+) veya APROP (Agresif Posterior ROP) hastalığının tedavisinde; 1 doz intravitreal bevacizumab uygulanıp cevap alınamayan, vasküler aktivitesi devam eden olgulara bevacizumabtan en az 4 hafta sonra ve en fazla 2 doz (en az 4 hafta ara ile) için b</pre>
+  </details>
+</article>
+<article class="card" id="C006586">
+  <header>
+    <h2>C006586 <span class="muted">§4.2.33.F</span></h2>
+    <p class="badge">premature_retinopatisi_rop</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006586</td></tr>
+<tr><th>section_id</th><td>4.2.33.F</td></tr>
+<tr><th>indication_group</th><td>premature_retinopatisi_rop</td></tr>
+<tr><th>indication_tr</th><td>Prematüre retinopatisi (ROP)</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Ranibizumab etkin maddesini içeren ilaçların, erken doğmuş bebeklerde - Prematüre Retinopatisinin (ROP) zon I (evre 1+, 2+, 3 veya 3+), zon II (evre 3+) veya APROP (Agresif Posterior ROP) hastalığının tedavisinde; 1 doz intravitreal bevacizumab uygulanıp cevap alınamayan, vasküler aktivitesi devam eden olgulara bevacizumabtan en az 4 hafta sonra ve en fazla 2 doz (en az 4 hafta ara ile) için b</pre>
+  </details>
+</article>
+<article class="card" id="C006570">
+  <header>
+    <h2>C006570 <span class="muted">§4.2.33.Ç</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006570</td></tr>
+<tr><th>section_id</th><td>4.2.33.Ç</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ)</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab etkin maddeli ilaç ile tedaviye başlanır. Bevacizumab kullanımının kontrendike olduğu durumlarda 1 defaya mahsus olmak üzere deksametazon intravitreal implant etkin maddeli ilaç kullanılması ve sonunda bevacizumab etkin maddeli ilaç kullanılması halinde bedelleri Kurumca karşılanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006570">
+  <header>
+    <h2>C006570 <span class="muted">§4.2.33.Ç</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006570</td></tr>
+<tr><th>section_id</th><td>4.2.33.Ç</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ)</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(1) Bevacizumab etkin maddeli ilaç ile tedaviye başlanır. Bevacizumab kullanımının kontrendike olduğu durumlarda 1 defaya mahsus olmak üzere deksametazon intravitreal implant etkin maddeli ilaç kullanılması ve sonunda bevacizumab etkin maddeli ilaç kullanılması halinde bedelleri Kurumca karşılanır.</pre>
+  </details>
+</article>
+<article class="card" id="C006571">
+  <header>
+    <h2>C006571 <span class="muted">§4.2.33.Ç</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006571</td></tr>
+<tr><th>section_id</th><td>4.2.33.Ç</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ)</td></tr>
+<tr><th>inn</th><td>ranibizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-d md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-ç md. Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); deksametazon, ranibizuma</pre>
+  </details>
+</article>
+<article class="card" id="C006571">
+  <header>
+    <h2>C006571 <span class="muted">§4.2.33.Ç</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006571</td></tr>
+<tr><th>section_id</th><td>4.2.33.Ç</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ)</td></tr>
+<tr><th>inn</th><td>bevacizumab</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-d md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-ç md. Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); deksametazon, ranibizuma</pre>
+  </details>
+</article>
+<article class="card" id="C006571">
+  <header>
+    <h2>C006571 <span class="muted">§4.2.33.Ç</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006571</td></tr>
+<tr><th>section_id</th><td>4.2.33.Ç</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ)</td></tr>
+<tr><th>inn</th><td>aflibersept</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-d md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-ç md. Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); deksametazon, ranibizuma</pre>
+  </details>
+</article>
+<article class="card" id="C006571">
+  <header>
+    <h2>C006571 <span class="muted">§4.2.33.Ç</span></h2>
+    <p class="badge">diyabetik_makuler_odem_dmo</p>
+  </header>
+  <table class="meta"><tr><th>clause_id</th><td>C006571</td></tr>
+<tr><th>section_id</th><td>4.2.33.Ç</td></tr>
+<tr><th>indication_group</th><td>diyabetik_makuler_odem_dmo</td></tr>
+<tr><th>indication_tr</th><td>Diyabetik maküler ödem (DMÖ)</td></tr>
+<tr><th>inn</th><td>deksametazon</td></tr>
+<tr><th>ayakta_tedavi</th><td>False</td></tr>
+<tr><th>gunubirlik_tedavi</th><td>False</td></tr></table>
+  <details open>
+    <summary>Tam metin (text_excerpt)</summary>
+    <pre class="excerpt">(2) Bevacizumab etkin maddeli ilaçla tedaviye cevapsızlık/yetersiz cevap alınması durumunda (Ek:RG-25/08/2022-31934/33-d md. Yürürlük:03/09/2022) (Bevacizumab tedavisinden yanıt alınamaması durumu uygulama tarihinden 4 veya (Değişik:RG-16/03/2023-32134/30-ç md. Yürürlük:24/03/2023) 6 hafta sonra OCT 12 hafta sonra OKT görüntüsünün eklenerek dokümante edilmesi zorunludur.); deksametazon, ranibizuma</pre>
+  </details>
+</article>
+</body>
+</html>

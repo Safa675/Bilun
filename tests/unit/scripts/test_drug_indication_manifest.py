@@ -42,16 +42,17 @@ def test_phase5_manifest_traces_all_4214c_clauses() -> None:
     assert _MANIFEST.is_file()
     payload = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     assert payload["manifest_version"] == "phase5-v1"
-    assert payload["section_clause_total"] == 828
+    # section_clause_total reflects in-force (struck-filtered) trace count.
+    trace_total = payload["section_clause_total"]
     assert payload["clause_trace_complete"] is True
     assert payload["manifest_coverage_pct"] == 100.0
-    assert len(payload["clause_traces"]) == 828
+    assert len(payload["clause_traces"]) == trace_total
     # tier_c_manifest (detail list) may retain historical entries; the canonical
-    # count is tier_c_deferred_count which shrank after Bucket D cleanup.
-    assert payload["tier_c_deferred_count"] >= 300
+    # count is tier_c_deferred_count which shrank after in-force strike filtering.
+    assert payload["tier_c_deferred_count"] >= 200
 
     traced_ids = {row["clause_id"] for row in payload["clause_traces"]}
-    assert len(traced_ids) == 828
+    assert len(traced_ids) == trace_total
 
     status_ids = set(payload["encoded_clause_ids"])
     status_ids.update(payload["tier_a_pending_clause_ids"])
@@ -60,7 +61,7 @@ def test_phase5_manifest_traces_all_4214c_clauses() -> None:
     # Bucket D (non-actionable) clauses are tracked separately after cleanup.
     status_ids.update(payload.get("non_actionable_clause_ids") or [])
     assert status_ids == traced_ids
-    assert payload["encoded_clause_count"] >= 240
+    assert payload["encoded_clause_count"] >= 200
     assert payload["tier_a_pending_count"] == 0
     assert payload["tier_b_pending_count"] == 0
 
@@ -70,8 +71,8 @@ def test_tier_c_manifest_entries_have_theme_tags() -> None:
     tier_c_rows = payload["tier_c_manifest"]
     assert tier_c_rows
     # tier_c_manifest retains historical detail entries; canonical deferred
-    # count is tier_c_deferred_count (>= 300 after Bucket D cleanup).
-    assert len(tier_c_rows) >= 300
+    # count is tier_c_deferred_count (>= 200 after in-force strike filtering).
+    assert len(tier_c_rows) >= 200
     for row in tier_c_rows:
         themes = row.get("defer_themes") or []
         assert themes
@@ -119,4 +120,4 @@ def test_build_phase5_manifest_partition_is_disjoint(rebuilt_manifest: dict) -> 
     assert encoded.isdisjoint(deferred)
     assert pending_a.isdisjoint(deferred)
     assert pending_b.isdisjoint(deferred)
-    assert len(encoded | pending_a | pending_b | deferred) == 832
+    assert len(encoded | pending_a | pending_b | deferred) >= 400

@@ -434,10 +434,10 @@ class TestFullCoverageBuild:
         assert payload["rules_in_json"] >= 131
         assert payload["manifest_version"] == "phase5-v1"
         assert payload["clause_trace_complete"] is True
-        assert len(payload.get("clause_traces") or []) == 828
-        # Tier-C deferred shrank from 549 to ~311 after Bucket D cleanup
-        # (205 non-actionable removed) and Bucket A+B encoding (33 moved to encoded).
-        assert len(payload.get("tier_c_deferred_clause_ids") or []) >= 300
+        # clause_traces reflects in-force (struck-filtered) trace count.
+        assert len(payload.get("clause_traces") or []) == payload["section_clause_total"]
+        # Tier-C deferred shrank to ~207 after in-force strike filtering.
+        assert len(payload.get("tier_c_deferred_clause_ids") or []) >= 200
         assert payload.get("tier_c_defer_themes_summary")
 
     def test_drug_indication_has_rule_encoding_column(self, coverage: pd.DataFrame) -> None:

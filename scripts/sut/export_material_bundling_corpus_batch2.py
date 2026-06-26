@@ -18,6 +18,7 @@ from scripts.sut.prose.material_bundling_gate_b import (  # noqa: E402
     _normalize_tr,
     load_candidate_clauses,
 )
+from src.bilun.domain.sut.clause_in_force import in_force_polars_filter, regulatory_text_column
 
 
 def _theme_label(excerpt: str) -> str:
@@ -47,10 +48,11 @@ def _theme_label(excerpt: str) -> str:
 
 def build_corpus_batch2(clauses_path: Path, prose_json_path: Path) -> pl.DataFrame:
     """§3.1+3.2 rows with material keywords not already in Gate B export."""
-    all_sec = pl.read_parquet(clauses_path).filter(
+    all_sec = in_force_polars_filter(pl.read_parquet(clauses_path)).filter(
         pl.col("section_id").str.starts_with("3.1")
         | pl.col("section_id").str.starts_with("3.2")
     )
+    text_col = regulatory_text_column(all_sec)
     gate_b_ids = set(load_candidate_clauses(clauses_path)["clause_id"].to_list())
 
     keywords = (
@@ -67,7 +69,7 @@ def build_corpus_batch2(clauses_path: Path, prose_json_path: Path) -> pl.DataFra
     )
     keyword_expr = pl.lit(False)
     for kw in keywords:
-        keyword_expr = keyword_expr | pl.col("text_tr").str.to_lowercase().str.contains(kw)
+        keyword_expr = keyword_expr | pl.col(text_col).str.to_lowercase().str.contains(kw)
 
     backlog = all_sec.filter(keyword_expr).filter(~pl.col("clause_id").is_in(list(gate_b_ids)))
 
@@ -94,7 +96,7 @@ def build_corpus_batch2(clauses_path: Path, prose_json_path: Path) -> pl.DataFra
 
     rows: list[dict[str, object]] = []
     for record in backlog.iter_rows(named=True):
-        excerpt = str(record.get("text_tr") or "")
+        excerpt = str(record.get("in_force_text") or record.get("text_tr") or "")
         clause_id = str(record.get("clause_id") or "")
         rows.append(
             {

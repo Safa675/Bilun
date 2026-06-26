@@ -1,8 +1,8 @@
 {
-  "total_rows": 48,
-  "p1_encode": 40,
-  "skip_annex_duplicate": 2,
-  "skip_already_encoded": 6,
-  "duplicate_ek3b1": 2,
+  "total_rows": 24,
+  "p1_encode": 20,
+  "skip_annex_duplicate": 1,
+  "skip_already_encoded": 3,
+  "duplicate_ek3b1": 1,
   "duplicate_ek3b2": 0
 }

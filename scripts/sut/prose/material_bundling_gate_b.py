@@ -10,6 +10,8 @@ from typing import Any
 
 import polars as pl
 
+from src.bilun.domain.sut.clause_in_force import in_force_polars_filter, regulatory_text_column
+
 _KEYWORDS = (
     "ayrıca faturalandır",
     "faturalandırılmayacak",
@@ -136,7 +138,8 @@ def _suggested_condition_type(excerpt: str, deontic: str) -> str:
 
 def load_candidate_clauses(clauses_path: Path) -> pl.DataFrame:
     """§3.1–3.2 rows matching Gate B keyword or NO_PAY / MUST_NOT_BILL deontic."""
-    df = pl.read_parquet(clauses_path)
+    df = in_force_polars_filter(pl.read_parquet(clauses_path))
+    text_col = regulatory_text_column(df)
 
     prefix_expr = pl.lit(False)
     for prefix in _PREFIXES:
@@ -144,7 +147,7 @@ def load_candidate_clauses(clauses_path: Path) -> pl.DataFrame:
 
     keyword_expr = pl.lit(False)
     for kw in _KEYWORDS:
-        keyword_expr = keyword_expr | pl.col("text_tr").str.contains(kw, literal=False)
+        keyword_expr = keyword_expr | pl.col(text_col).str.contains(kw, literal=False)
 
     deontic_expr = pl.col("deontic_modality").is_in(list(_DEONTIC_MODALITIES))
 
@@ -159,7 +162,7 @@ def enrich_gate_b_dataframe(
     """Add dedup, priority, and encoding hints for Gate B CSV outputs."""
     rows: list[dict[str, Any]] = []
     for record in hit.iter_rows(named=True):
-        excerpt = str(record.get("text_tr") or "")
+        excerpt = str(record.get("in_force_text") or record.get("text_tr") or "")
         annex_refs = _annex_refs_list(record.get("annex_refs"))
         deontic = str(record.get("deontic_modality") or "")
 

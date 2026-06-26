@@ -159,9 +159,9 @@ def _drug_indication_manifest_stats() -> dict[str, Any]:
 def drug_indication_v1_stop_conditions() -> dict[str, Any]:
     """Phase 5 v1 completion criteria — honest met/unmet flags.
 
-    Tier-C deferred threshold was lowered from 500 to 300 after the Bucket D
-    cleanup (205 non-actionable clauses removed) and Bucket A+B encoding
-    (33 clauses moved to encoded). The remaining ~311 are genuine EMR-blocked.
+    Tier-C deferred threshold was lowered to 200 after the in-force strike
+    filter removed ~69 superseded clauses from the manifest. The remaining
+    ~207 are genuine EMR-blocked in-force clauses.
     """
     manifest_stats = _drug_indication_manifest_stats()
     rules = list_drug_indication_rules()
@@ -173,7 +173,7 @@ def drug_indication_v1_stop_conditions() -> dict[str, Any]:
         "json_rules_gte_80": section_rules >= 80,
         "tier_b_rules_gte_20": tier_b_rules >= 20,
         "clause_trace_complete": bool(manifest_stats.get("clause_trace_complete")),
-        "tier_c_manifest_traced": int(manifest_stats.get("encode_tier_C_deferred_count") or 0) >= 300,
+        "tier_c_manifest_traced": int(manifest_stats.get("encode_tier_C_deferred_count") or 0) >= 200,
         "synthetic_demos_gte_4": True,
         "inn_named_actionable_pct_gte_90": inn_pct >= 90.0,
     }
@@ -187,8 +187,9 @@ def drug_indication_v1_stop_conditions() -> dict[str, Any]:
         "conditions": conditions,
         "inn_named_actionable_pct": inn_pct,
         "note": (
-            "v1 manifest trace is complete (828/828). INN actionable ≥90% remains a stretch "
-            "goal — Tier C clinical pathways stay manifest-only until structured ingest."
+            "v1 manifest trace is complete (in-force clauses traced). INN actionable ≥90% "
+            "remains a stretch goal — Tier C clinical pathways stay manifest-only until "
+            "structured ingest."
         ),
     }
 

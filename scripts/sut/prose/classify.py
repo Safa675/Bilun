@@ -201,12 +201,16 @@ def classify_clause_row(row: pd.Series) -> dict[str, Any]:
     section_path, section_id = _sanitize_section_refs(section_path, section_id)
     deontic_modality = _as_optional_str(row.get("deontic_modality"))
     clause_type = str(row.get("clause_type") or "")
+    if row.get("is_in_force") and row.get("in_force_text"):
+        clause_text = str(row.get("in_force_text") or "")
+    else:
+        clause_text = str(row.get("text_tr") or "")
 
     matches = _match_entries(
         section_path=section_path,
         section_id=section_id,
         annex_refs=annex_refs,
-        text_tr=str(row.get("text_tr") or ""),
+        text_tr=clause_text,
     )
 
     if not matches:

@@ -54,22 +54,27 @@ def _content_hash(text: str) -> str:
 
 def _embed_text(row: dict) -> str:
     """Prefix structural context so the vector captures section identity."""
+    body = str(row.get("in_force_text") or row.get("text_tr") or "")
     parts = [
         str(row.get("section_id") or ""),
         str(row.get("section_title") or ""),
-        str(row.get("text_tr") or ""),
+        body,
     ]
     return "\n".join(p for p in parts if p).strip()
 
 
 def select_embeddable(frame: pl.DataFrame) -> pl.DataFrame:
-    return frame.filter(
-        (~pl.col("is_heading"))
-        & (~pl.col("is_superseded_marker"))
-        & (pl.col("clause_type").is_in(_EMBEDDABLE_TYPES))
-        & (pl.col("text_tr").is_not_null())
-        & (pl.col("text_tr").str.len_chars() > 0)
-    )
+    text_col = "in_force_text" if "in_force_text" in frame.columns else "text_tr"
+    filters = [
+        (~pl.col("is_heading")),
+        (~pl.col("is_superseded_marker")),
+        (pl.col("clause_type").is_in(_EMBEDDABLE_TYPES)),
+        (pl.col(text_col).is_not_null()),
+        (pl.col(text_col).str.len_chars() > 0),
+    ]
+    if "is_in_force" in frame.columns:
+        filters.append(pl.col("is_in_force"))
+    return frame.filter(*filters)
 
 
 def _load_existing(path: Path) -> dict[str, tuple[str, list[float]]]:
@@ -103,13 +108,14 @@ def build(
     force: bool = False,
 ) -> pl.DataFrame:
     frame = pl.read_parquet(clauses_path)
+    text_col = "in_force_text" if "in_force_text" in frame.columns else "text_tr"
     subset = select_embeddable(frame).with_columns(
-        pl.struct(["section_id", "section_title", "text_tr"])
+        pl.struct(["section_id", "section_title", text_col])
         .map_elements(_embed_text, return_dtype=pl.Utf8)
         .alias("_embed_text")
     )
     subset = subset.with_columns(
-        pl.col("text_tr")
+        pl.col(text_col)
         .map_elements(_content_hash, return_dtype=pl.Utf8)
         .alias("content_hash")
     )

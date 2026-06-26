@@ -10,7 +10,10 @@ Phase 1 output schema (sut_clauses.parquet):
   section_path           — full hierarchy joined by /
   chapter                — BIRINCI BOLUM, IKINCI BOLUM, ...
   clause_type            — chapter | section_heading | fikra | bent | amendment | prose
-  text_tr                — original paragraph text
+  text_tr                — legacy paragraph text (all runs joined; audit only)
+  in_force_text          — yürürlükteki metin (non-strike runs only)
+  is_in_force            — bool — len(in_force_text.strip()) > 0
+  had_struck_content     — bool — paragraph had at least one strike run
   is_heading             — bool
   is_amendment           — bool (Degisik/Mulga/Ek marker)
   is_superseded_marker   — bool (Mulga or inline replacement chain)
@@ -252,16 +255,62 @@ def _parent_section_id(section_id: str) -> str | None:
     return ".".join(parts[:-1])
 
 
-def _read_docx_paragraphs(docx_path: Path) -> list[str]:
+@dataclass(frozen=True)
+class _ParagraphText:
+    legacy: str
+    in_force: str
+    had_struck_content: bool
+
+
+def _parse_paragraph_runs(paragraph: ET.Element) -> _ParagraphText:
+    legacy_parts: list[str] = []
+    in_force_parts: list[str] = []
+    had_struck = False
+    for run in paragraph.iter(f"{_WORD_NS}r"):
+        strike = _run_is_struck(run)
+        texts = "".join(node.text or "" for node in run.iter(f"{_WORD_NS}t"))
+        if not texts:
+            continue
+        legacy_parts.append(texts)
+        if strike:
+            had_struck = True
+        else:
+            in_force_parts.append(texts)
+    return _ParagraphText(
+        legacy="".join(legacy_parts).strip(),
+        in_force="".join(in_force_parts).strip(),
+        had_struck_content=had_struck,
+    )
+
+
+def _run_is_struck(run: ET.Element) -> bool:
+    """Return True if the run carries active strikethrough.
+
+    OOXML ``w:strike`` is a toggle property: it is active when the element is
+    present with no ``w:val`` attribute or with ``w:val`` in {true, 1, on}, and
+    explicitly inactive when ``w:val`` is {false, 0, off}.
+    """
+    strike_el = run.find(f"{_WORD_NS}rPr/{_WORD_NS}strike")
+    if strike_el is None:
+        return False
+    val = (strike_el.get(f"{_WORD_NS}val") or "").strip().lower()
+    return val in {"", "true", "1", "on"}
+
+
+def _read_docx_paragraph_texts(docx_path: Path) -> list[_ParagraphText]:
     with zipfile.ZipFile(docx_path) as archive:
         document_xml = archive.read("word/document.xml")
     root = ET.fromstring(document_xml)
 
-    paragraphs: list[str] = []
+    segments: list[_ParagraphText] = []
     for paragraph in root.iter(f"{_WORD_NS}p"):
-        texts = [node.text or "" for node in paragraph.iter(f"{_WORD_NS}t")]
-        paragraphs.append("".join(texts).strip())
-    return paragraphs
+        segments.append(_parse_paragraph_runs(paragraph))
+    return segments
+
+
+def _read_docx_paragraphs(docx_path: Path) -> list[str]:
+    """Legacy full-text paragraphs (audit / section parsing)."""
+    return [seg.legacy for seg in _read_docx_paragraph_texts(docx_path)]
 
 
 def _find_body_start(paragraphs: list[str]) -> int:
@@ -314,16 +363,26 @@ class SutClauseExtractor:
     _section_stack: list[str] = field(default_factory=list, init=False)
 
     def extract(self) -> pd.DataFrame:
-        paragraphs = _read_docx_paragraphs(self.docx_path)
-        start = self.body_start if self.body_start is not None else _find_body_start(paragraphs)
-        body = paragraphs[start:]
+        segments = _read_docx_paragraph_texts(self.docx_path)
+        legacy_paragraphs = [seg.legacy for seg in segments]
+        start = (
+            self.body_start
+            if self.body_start is not None
+            else _find_body_start(legacy_paragraphs)
+        )
+        body = segments[start:]
 
         effective_date = _infer_effective_date(self.docx_path)
         rows: list[dict[str, Any]] = []
 
-        for offset, text in enumerate(body):
+        for offset, seg in enumerate(body):
+            text = seg.legacy
             if not text:
                 continue
+
+            in_force_text = seg.in_force
+            is_in_force = len(in_force_text) > 0
+            meta_text = in_force_text if is_in_force else text
 
             paragraph_index = start + offset
             chapter_match = _CHAPTER_RE.match(text)
@@ -356,13 +415,13 @@ class SutClauseExtractor:
                 parent_section = _parent_section_id(section_id)
                 section_path = "/".join(self._section_stack)
 
-            annex_refs = _extract_annex_refs(text)
-            procedure_codes = _extract_procedure_codes(text)
-            percentages = _extract_percentages(text)
-            deontic_markers = _extract_deontic_markers(text)
-            deontic_modality = _classify_deontic_modality(text, deontic_markers)
-            sut_section_refs = _extract_sut_section_refs(text)
-            amendment_refs = _extract_amendment_refs(text)
+            annex_refs = _extract_annex_refs(meta_text)
+            procedure_codes = _extract_procedure_codes(meta_text)
+            percentages = _extract_percentages(meta_text)
+            deontic_markers = _extract_deontic_markers(meta_text)
+            deontic_modality = _classify_deontic_modality(meta_text, deontic_markers)
+            sut_section_refs = _extract_sut_section_refs(meta_text)
+            amendment_refs = _extract_amendment_refs(meta_text)
 
             clause_type = _classify_clause_type(
                 text, is_chapter, section_heading, is_amendment
@@ -378,6 +437,9 @@ class SutClauseExtractor:
                     "chapter": self._chapter,
                     "clause_type": clause_type,
                     "text_tr": text,
+                    "in_force_text": in_force_text,
+                    "is_in_force": is_in_force,
+                    "had_struck_content": seg.had_struck_content,
                     "is_heading": clause_type in {"chapter", "section_heading"},
                     "is_amendment": is_amendment,
                     "is_superseded_marker": bool(

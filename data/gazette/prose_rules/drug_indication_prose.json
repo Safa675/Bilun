@@ -24,7 +24,7 @@
       ],
       "message_tr": "Aflibercept — kolorektal kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005290"
+        "C005306"
       ]
     },
     {
@@ -184,7 +184,6 @@
       "message_tr": "Interferon — onkoloji endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005036",
-        "C005042",
         "C005051",
         "C005094",
         "C005096",
@@ -248,7 +247,7 @@
       ],
       "message_tr": "Lapatinib — HER2+ meme kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005041"
+        "C005053"
       ]
     },
     {
@@ -323,8 +322,6 @@
       "gate_b_sources": [
         "C005104",
         "C005105",
-        "C005106",
-        "C005107",
         "C005108",
         "C005109"
       ]
@@ -378,7 +375,6 @@
       ],
       "message_tr": "Sonidegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005228",
         "C005235"
       ]
     },
@@ -457,7 +453,6 @@
         "C004929",
         "C004930",
         "C004932",
-        "C005041",
         "C005276",
         "C005278"
       ]
@@ -477,7 +472,6 @@
       ],
       "message_tr": "Vismodegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005228",
         "C005235"
       ]
     },
@@ -521,7 +515,6 @@
         "C005336",
         "C005339",
         "C005341",
-        "C005386",
         "C005682"
       ]
     },
@@ -586,8 +579,6 @@
         "C005390",
         "C005395",
         "C005596",
-        "C005598",
-        "C005600",
         "C005603"
       ]
     },
@@ -643,8 +634,7 @@
       "message_tr": "Lorlatinib — ALK/ROS1+ KHDAK endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005225",
-        "C005595",
-        "C005598"
+        "C005595"
       ]
     },
     {
@@ -678,9 +668,7 @@
       ],
       "message_tr": "Osimertinib — EGFR+ KHDAK endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005375",
-        "C005378",
-        "C005381"
+        "C005394"
       ]
     },
     {
@@ -752,8 +740,6 @@
         "C004982",
         "C004985",
         "C004988",
-        "C004989",
-        "C004993",
         "C004999",
         "C005003"
       ]
@@ -812,18 +798,14 @@
       ],
       "message_tr": "Daratumumab — multipl miyelom endikasyonu ve hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005519",
         "C005525",
-        "C005531",
         "C005535",
-        "C005582",
         "C005585",
         "C005586",
         "C005590",
         "C005592",
         "C005694",
-        "C005699",
-        "C005704"
+        "C005699"
       ]
     },
     {
@@ -846,8 +828,6 @@
         "C004975",
         "C004979",
         "C004980",
-        "C004993",
-        "C004994",
         "C004997",
         "C004998",
         "C004999",
@@ -870,14 +850,11 @@
       ],
       "message_tr": "Elranatamab — multipl miyelom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005519",
-        "C005531",
         "C005535",
         "C005590",
         "C005694",
         "C005695",
-        "C005699",
-        "C005704"
+        "C005699"
       ]
     },
     {
@@ -974,13 +951,10 @@
       "gate_b_sources": [
         "C005060",
         "C005076",
-        "C005515",
-        "C005517",
         "C005523",
         "C005528",
         "C005529",
         "C005533",
-        "C005583",
         "C005587",
         "C005588",
         "C005702"
@@ -1021,7 +995,7 @@
       ],
       "message_tr": "Midostaurin — AML endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005576"
+        "C005592"
       ]
     },
     {
@@ -1078,11 +1052,9 @@
       ],
       "message_tr": "Pomalidomid — multipl miyelom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005519",
         "C005521",
         "C005525",
         "C005526",
-        "C005531",
         "C005535",
         "C005585",
         "C005588",
@@ -1167,13 +1139,10 @@
         "C005119",
         "C005120",
         "C005121",
-        "C005129",
         "C005146",
         "C005152",
         "C005157",
-        "C005164",
-        "C005168",
-        "C005175"
+        "C005168"
       ]
     },
     {
@@ -1253,11 +1222,7 @@
         "C005191",
         "C005192",
         "C005197",
-        "C005199",
         "C005200",
-        "C005204",
-        "C005205",
-        "C005208",
         "C005274",
         "C005721"
       ]
@@ -1278,10 +1243,8 @@
       "message_tr": "Darolutamid — prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005121",
-        "C005165",
         "C005167",
-        "C005168",
-        "C005175"
+        "C005168"
       ]
     },
     {
@@ -1333,13 +1296,10 @@
         "C005119",
         "C005120",
         "C005121",
-        "C005123",
         "C005146",
         "C005152",
         "C005157",
-        "C005164",
-        "C005168",
-        "C005175"
+        "C005168"
       ]
     },
     {
@@ -1379,7 +1339,6 @@
       ],
       "message_tr": "İmatinib — KML/GIST endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C004952",
         "C005009",
         "C005012",
         "C005013",
@@ -1453,7 +1412,6 @@
       "message_tr": "Pazopanib — renal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005037",
-        "C005042",
         "C005052",
         "C005093",
         "C005095",
@@ -1495,7 +1453,6 @@
       "message_tr": "Sirolimus — endikasyon ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005037",
-        "C005042",
         "C005052",
         "C005095",
         "C005099",
@@ -1519,7 +1476,6 @@
       "message_tr": "Sorafenib — hepatoselüler/renal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005037",
-        "C005042",
         "C005049",
         "C005050",
         "C005052",
@@ -1551,7 +1507,6 @@
         "C005035",
         "C005037",
         "C005040",
-        "C005042",
         "C005052",
         "C005085",
         "C005086",
@@ -1578,7 +1533,6 @@
       "message_tr": "Temsirolimus — renal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005037",
-        "C005042",
         "C005052",
         "C005095",
         "C005099",
@@ -1603,11 +1557,9 @@
         "C005191",
         "C005192",
         "C005197",
-        "C005199",
         "C005201",
         "C005202",
-        "C005203",
-        "C005208"
+        "C005203"
       ]
     },
     {
@@ -1629,10 +1581,6 @@
         "C005191",
         "C005192",
         "C005197",
-        "C005199",
-        "C005206",
-        "C005207",
-        "C005208",
         "C005274",
         "C005721"
       ]
@@ -1664,11 +1612,9 @@
         "C005355",
         "C005399",
         "C005413",
-        "C005416",
         "C005443",
         "C005454",
-        "C005466",
-        "C005472"
+        "C005466"
       ]
     },
     {
@@ -1782,8 +1728,7 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004940",
-        "C004941"
+        "C004953"
       ]
     },
     {
@@ -1808,8 +1753,7 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924",
-        "C005538"
+        "C004924"
       ]
     },
     {
@@ -1853,7 +1797,7 @@
       ],
       "message_tr": "Karmustin — beyin tümörü endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005286"
+        "C005301"
       ]
     },
     {
@@ -1939,8 +1883,7 @@
       "gate_b_sources": [
         "C004924",
         "C005304",
-        "C005311",
-        "C005629"
+        "C005311"
       ]
     },
     {
@@ -2025,7 +1968,7 @@
         "nöroloji"
       ],
       "gate_b_sources": [
-        "C005469"
+        "C005432"
       ]
     },
     {
@@ -2047,7 +1990,6 @@
         "nöroloji"
       ],
       "gate_b_sources": [
-        "C005430",
         "C005436"
       ]
     },
@@ -2070,9 +2012,7 @@
         "nöroloji"
       ],
       "gate_b_sources": [
-        "C005448",
-        "C005458",
-        "C005471"
+        "C005432"
       ]
     },
     {
@@ -2095,7 +2035,7 @@
         "nöroloji"
       ],
       "gate_b_sources": [
-        "C005459"
+        "C005432"
       ]
     },
     {
@@ -2121,11 +2061,9 @@
         "C005399",
         "C005400",
         "C005413",
-        "C005416",
         "C005443",
         "C005454",
-        "C005466",
-        "C005472"
+        "C005466"
       ]
     },
     {
@@ -2150,12 +2088,9 @@
       "gate_b_sources": [
         "C005399",
         "C005413",
-        "C005416",
-        "C005417",
         "C005443",
         "C005454",
-        "C005466",
-        "C005472"
+        "C005466"
       ]
     },
     {
@@ -2181,7 +2116,6 @@
       "gate_b_sources": [
         "C005081",
         "C005341",
-        "C005386",
         "C005682"
       ]
     },
@@ -2250,12 +2184,9 @@
         "C004923",
         "C005081",
         "C005090",
-        "C005178",
         "C005180",
         "C005181",
         "C005341",
-        "C005383",
-        "C005386",
         "C005682",
         "C005746"
       ]
@@ -2292,10 +2223,6 @@
         "C004965",
         "C005061",
         "C005066",
-        "C005073",
-        "C005078",
-        "C005515",
-        "C005517",
         "C005522",
         "C005523"
       ]
@@ -2339,7 +2266,7 @@
       ],
       "message_tr": "Topikal fluorourasil — yalnızca dermatoloji/onkoloji/plastik cerrahi reçetesi (§4.2.14.C).",
       "gate_b_sources": [
-        "C005176"
+        "C004946"
       ]
     },
     {
@@ -2363,8 +2290,6 @@
       "gate_b_sources": [
         "C004943",
         "C004946",
-        "C004949",
-        "C004950",
         "C005552",
         "C005553",
         "C005561",
@@ -2395,8 +2320,6 @@
       "gate_b_sources": [
         "C004943",
         "C004946",
-        "C004949",
-        "C004950",
         "C005552",
         "C005553",
         "C005561",
@@ -2428,9 +2351,7 @@
       ],
       "gate_b_sources": [
         "C005476",
-        "C005477",
-        "C005494",
-        "C005504"
+        "C005477"
       ]
     },
     {
@@ -2482,12 +2403,10 @@
         "C004929",
         "C004930",
         "C004932",
-        "C005041",
         "C005271",
         "C005274",
         "C005276",
-        "C005278",
-        "C005297"
+        "C005278"
       ]
     },
     {
@@ -2506,7 +2425,7 @@
       ],
       "message_tr": "Mifamurtide — yüksek riskli osteosarkom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005298"
+        "C005314"
       ]
     },
     {
@@ -2548,7 +2467,6 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C005297",
         "C005360",
         "C005365",
         "C005367",
@@ -2581,7 +2499,6 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C005297",
         "C005360",
         "C005365",
         "C005367",
@@ -2634,8 +2551,6 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004949",
-        "C004950",
         "C005549"
       ]
     },
@@ -2659,8 +2574,6 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004949",
-        "C004950",
         "C005549"
       ]
     },
@@ -2753,9 +2666,6 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004949",
-        "C004950",
-        "C005558",
         "C005569"
       ]
     },
@@ -2779,9 +2689,6 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004949",
-        "C004950",
-        "C005558",
         "C005569"
       ]
     },
@@ -2941,7 +2848,6 @@
         "C004929",
         "C004930",
         "C004932",
-        "C005041",
         "C005276",
         "C005278"
       ]
@@ -2969,7 +2875,6 @@
         "C004929",
         "C004930",
         "C004932",
-        "C005041",
         "C005276",
         "C005278"
       ]
@@ -3032,7 +2937,7 @@
       ],
       "report_required": true,
       "gate_b_sources": [
-        "C005019"
+        "C005016"
       ],
       "message_tr": "Sağlık Bakanlığınca onaylanan prospektüslerinde yer alan endikasyonlarda kullanılmak üzere, söz konusu ilaçların prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji",
       "prescriber_specialties": [
@@ -3056,7 +2961,7 @@
       ],
       "report_required": true,
       "gate_b_sources": [
-        "C005020"
+        "C005024"
       ],
       "message_tr": "1) Dasatinib; prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji uzmanının yer aldığı, en fazla 6 ay süre ile geçerli sağlık kurulu raporu ile tıbbi onkoloji veya",
       "prescriber_specialties": [
@@ -3106,7 +3011,7 @@
       ],
       "report_required": true,
       "gate_b_sources": [
-        "C005131"
+        "C005133"
       ],
       "message_tr": "5) (Değişik: RG- 18/02/2017- 29983/ 9-a md. Yürürlük: 01/03/2017) Kabazitaksel ve abirateron ardışık olarak kullanılamaz. Kabazitaksel, enzalutamid ve abirateron ardışık olarak kullanılamaz.",
       "report_specialties": [
@@ -3242,7 +3147,7 @@
         "C00-C97"
       ],
       "gate_b_sources": [
-        "C004939"
+        "C004942"
       ],
       "message_tr": "a) Trastuzumab; HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda;",
       "required_biomarkers": [
@@ -3304,7 +3209,7 @@
         "C00-C97"
       ],
       "gate_b_sources": [
-        "C004944"
+        "C004945"
       ],
       "message_tr": "2) HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda,   erken evre meme kanseri endikasyonunda, tedavi süresi 9 haftadır. Tedavinin 52 haftaya tamamlanması düşünülen durumlarda, 9 h",
       "required_biomarkers": [
@@ -3335,7 +3240,7 @@
         "C00-C97"
       ],
       "gate_b_sources": [
-        "C005021"
+        "C005016"
       ],
       "message_tr": "2) Nilotinib yalnızca; İmatinib dahil önceki tedavilere dirençli veya intolere, Philadelphia kromozomu pozitif kronik evre veya hızlanmış evre kronik miyeloid lösemi tanılı yetişkin hastaların tedavis",
       "required_biomarkers": [
@@ -3494,7 +3399,7 @@
         "C00-C97"
       ],
       "gate_b_sources": [
-        "C005117"
+        "C005120"
       ],
       "message_tr": "1) Daha önce panitumumab veya diğer anti-EGFR (Anti-Epidermal Büyüme Faktörü Reseptörü) tedavileri kullanmamış, ECOG performans skoru 0-1 olan, (Değişik: RG-09/09/2017- 30175/ 20-b md. Yürürlük: 23/09",
       "required_biomarkers": [
@@ -3774,7 +3679,7 @@
         "C00-C97"
       ],
       "gate_b_sources": [
-        "C005539"
+        "C005544"
       ],
       "message_tr": "2) Otolog kök hücre nakline uygun olan, bortezomib, lenalidomid ve otolog nakil destekli yüksek doz kemoterapötik ilaç içeren en az üç seri tedaviyi uygun dozda ve yeterli sürede kullanmış olmasına ra",
       "requires_prior_therapy": {
