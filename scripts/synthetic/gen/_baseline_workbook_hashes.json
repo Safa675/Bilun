@@ -1,0 +1,62 @@
+{
+  "veri_seti_manifestosu": {
+    "rows": 1,
+    "hash": "de68598772cad5da6e8f1c9eec23b8fba6f1e26fddffd58fe3502224ce264bcc"
+  },
+  "hastalar": {
+    "rows": 50,
+    "hash": "880dfc273ce01da8d3e7a7658a25b4e623da2305a3f042c797e27cb65a560f7a"
+  },
+  "hasta_katilim_payi_profilleri": {
+    "rows": 50,
+    "hash": "69d58d84a322ed680afa7ad4d8ee2fdda30f569aa6ada4f4f43636038536ba57"
+  },
+  "basvurular": {
+    "rows": 96,
+    "hash": "148a1a61dc9c34d3ded22d239352b8a5935762257654976138d50ae651ecf4e9"
+  },
+  "tani_satirlari": {
+    "rows": 244,
+    "hash": "1b61b7e6a3a4e1935f5df8ea289f17b2fbd223455bdb9037804a56b8a6ea0bbb"
+  },
+  "fatura_basliklari": {
+    "rows": 96,
+    "hash": "e68d1d79258ddc9991b01d49d3c3debdc86ab40df63a7c629d96b611760ec17d"
+  },
+  "islem_fatura_satirlari": {
+    "rows": 510,
+    "hash": "560578f60c67e655c53ecfff8f54501e53df6282bd3a5900f184e8dda90e8911"
+  },
+  "gerceklestirilen_islem_satirlari": {
+    "rows": 1,
+    "hash": "af3d2738929dedb5e7f221ad89b1620d06c634bc53144bcef92359345ec9b452"
+  },
+  "medula_red_satirlari": {
+    "rows": 10,
+    "hash": "e03dcc5005963401bb8644ba72b1d8a21fb8a9ec330443e2d9367e69a91d395a"
+  },
+  "malzeme_fatura_satirlari": {
+    "rows": 113,
+    "hash": "c82b8cb643f23ca3591eda8b6cb0999a51c3e534a6ff87f1fc5d3c6c6875b907"
+  },
+  "ilac_fatura_satirlari": {
+    "rows": 255,
+    "hash": "352bbeb28fbc446ea6025fca9e2b7d7bf169fbeb1179a174ca27bdf9c33166f6"
+  },
+  "receteler": {
+    "rows": 255,
+    "hash": "8f4412b7b5d9e95f93c49d904c29ee2bcba06e560f0ea0a6a1f12147d3fe459b"
+  },
+  "laboratuvar_sonuclari": {
+    "rows": 656,
+    "hash": "6e4c143008d3ac1832059b2be6dd49ffd7becbdd9e33030e2be97f4f583ef741"
+  },
+  "beklenen_kural_ciktilari": {
+    "rows": 440,
+    "hash": "17d72caa2455b6e940f327f61f47b1ba392da69aa49568ca8954928b4682ae71"
+  },
+  "katalog_alt_kumesi": {
+    "rows": 0,
+    "hash": "af6eb68e98a426dcf819ecb63d6c0c1bb246bca5752296c793b9a745d24a3db5"
+  }
+}
