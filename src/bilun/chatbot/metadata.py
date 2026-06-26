@@ -44,7 +44,27 @@ def get_chat_model_context(active_build_id: str | None = None) -> dict[str, Any]
                 "drg_unbundling",
             ],
         },
-        "billing_algorithms": ["lab", "copay", "strategy", "materials"],
+        # The 17 per-patient billing analyzers assembled by
+        # compute_patient_billing_report (src/bilun/domain/billing/patient_report.py).
+        "billing_algorithms": [
+            "lab",
+            "copay",
+            "strategy",
+            "session_uplift",
+            "drg_uplift",
+            "blood_uplift",
+            "material_uplift",
+            "procedure_addon_uplift",
+            "procedure_capture_gap",
+            "drg_package_adequacy",
+            "gazette_repricing",
+            "medula_rejection_playbook",
+            "claim_submission_checklist",
+            "drug_indication",
+            "care_setting_review",
+            "materials_precheck",
+            "audit_exposure",
+        ],
     }
 
 

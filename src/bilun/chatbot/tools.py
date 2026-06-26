@@ -32,11 +32,19 @@ _CORE_TOOL_SCHEMAS: list[dict[str, Any]] = [
             "name": "get_billing_report",
             "description": (
                 "Get a patient's billing action report with TRY-denominated"
-                " savings recommendations across 4 billing algorithms: lab"
-                " hemogram bundling, copay savings,"
-                " billing strategy (package vs itemized), and material"
-                " pre-check. Returns total_recoverable_try, priority, and"
-                " exactness_status."
+                " savings and risk recommendations across all 17 billing"
+                " analyzers: lab hemogram bundling, copay exemption review,"
+                " billing strategy (package vs itemized), session pricing"
+                " uplift, DRG itemized-vs-package uplift, blood component"
+                " fraction uplift, missing billable material uplift,"
+                " procedure add-on uplift, procedure capture gap, DRG/EK-2C"
+                " package adequacy review, gazette repricing, MEDULA rejection"
+                " playbook, claim submission checklist, drug indication"
+                " validation, and material reimbursability pre-check (MIAT,"
+                " bundled, specialty, KDV). Also returns total_recoverable_try,"
+                " audit_exposure_try (over-billing risk), priority, and"
+                " exactness_status. Use this for any per-patient savings,"
+                " uplift, or over-billing-risk question."
             ),
             "parameters": {
                 "type": "object",
@@ -93,6 +101,64 @@ _CORE_TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "type": "function",
         "function": {
+            "name": "get_drg_episode_cost",
+            "description": (
+                "Get a patient's DRG (Diagnosis-Related Group) inpatient"
+                " episode cost summary: total DRG cost, mean episode cost,"
+                " most expensive DRG, dominant ICD-10 chapter, total DRG"
+                " package price (EK-2C), episode count, and per-episode"
+                " breakdown (length of stay, lab/visit/rx/procedure cost,"
+                " DRG package price, package code, EK-2C group). Use this"
+                " for any DRG costing, inpatient episode, or package-pricing"
+                " question. Reports pricing_status (fully_priced / partial"
+                " / unavailable)."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "patient_id": {
+                        "type": "string",
+                        "description": "The patient ID",
+                    },
+                },
+                "required": ["patient_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "validate_claim",
+            "description": (
+                "Validate a STORED claim (by patient_id + claim_id) against"
+                " BILUN bundling and exclusion rules: EK-3B-1 bundled"
+                " consumables, EK-3B-2 exclusions, §3.1 material-bundling"
+                " prose, §3.3 specialty prose, and exact EK-3 material"
+                " pricing. Returns per-line violations, total savings and"
+                " risk (TRY), and priced material lines. Use this to check"
+                " whether a claim's materials are reimbursable / correctly"
+                " unbundled. Drug-indication sub-checks are not run on"
+                " stored claims (prescriber specialty unavailable)."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "patient_id": {
+                        "type": "string",
+                        "description": "The patient ID",
+                    },
+                    "claim_id": {
+                        "type": "string",
+                        "description": "The bill / claim ID",
+                    },
+                },
+                "required": ["patient_id", "claim_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "get_patient_optimization",
             "description": (
                 "Get a patient's optimization findings: copay exemptions,"
@@ -116,10 +182,12 @@ _CORE_TOOL_SCHEMAS: list[dict[str, Any]] = [
         "function": {
             "name": "get_optimization_summary",
             "description": (
-                "Get cohort-level SUT optimization summary: copay exemption"
-                " rates, surcharge exposure, copay rate exposure, DRG"
-                " unbundling flags, and temporal"
-                " price audit findings."
+                "Get cohort-level SUT optimization summary across all 6"
+                " optimization features: copay exemption rates (EK-1A),"
+                " surcharge exposure (EK-2G), copay rate exposure (EK-2C-1),"
+                " DRG unbundling flags, temporal price audit findings"
+                " (EK-2B/2C history), and drug discount tier validation"
+                " (EK-4A). Each feature reports exactness_status."
             ),
             "parameters": {"type": "object", "properties": {}},
         },
@@ -346,6 +414,8 @@ _TOOL_FUNCTION_MAP: dict[str, str] = {
     "get_billing_report": "get_patient_billing_report",
     "get_bill_billing_report": "get_bill_billing_report",
     "get_revenue_recovery": "get_revenue_recovery",
+    "get_drg_episode_cost": "get_drg_episode_cost",
+    "validate_claim": "validate_stored_claim",
     "get_patient_optimization": "get_patient_optimization",
     "get_optimization_summary": "get_optimization_summary",
     "search_patients": "search_bilun_patients",
@@ -446,6 +516,96 @@ def _tool_schema_by_name(tool_name: str) -> dict[str, Any] | None:
     return None
 
 
+def _validate_stored_claim(
+    claim_detail_loader: Any,
+    validator: Any,
+    patient_id: str,
+    claim_id: str,
+) -> dict[str, Any]:
+    """Reconstruct a stored claim into the validator's expected dict and run it.
+
+    The rule-engine ``validate_claim`` (``src/bilun/domain/rule_engine.py``)
+    expects ``{claim_id, procedure_code, materials[], drug_context}`` where each
+    material uses the short field names ``name``/``code``/``unit_price``/
+    ``billed_amount``. The stored claim-detail API
+    (``get_patient_claim_detail``) emits ``material_name``/``material_code``/
+    ``unit_price_try``/``billed_amount_try``. This adapter closes that gap and
+    derives ``procedure_code`` from the first procedure line.
+
+    ``drug_context`` is omitted because ``prescriber_specialty`` is not present
+    in stored claim detail, so drug-indication sub-checks are skipped.
+    """
+    detail = claim_detail_loader(patient_id, claim_id)
+
+    procedures = detail.get("procedures") or []
+    procedure_code = ""
+    for proc in procedures:
+        code = str(proc.get("procedure_code") or "").strip()
+        if code:
+            procedure_code = code
+            break
+
+    materials = []
+    for line in detail.get("materials") or []:
+        materials.append(
+            {
+                "name": line.get("material_name", ""),
+                "code": line.get("material_code", ""),
+                "quantity": line.get("quantity", 0),
+                "unit_price": line.get("unit_price_try", 0),
+                "billed_amount": line.get("billed_amount_try", 0),
+            }
+        )
+
+    claim_dict = {
+        "claim_id": claim_id,
+        "procedure_code": procedure_code,
+        "materials": materials,
+        "drug_context": None,
+    }
+    result = validator(claim_dict)
+    # Mirror the /validate-claim route's serialization (validation.py:53-78):
+    # flatten the nested RuleViolation / MaterialLinePricing dataclasses into
+    # JSON-friendly dicts so _serialize_for_llm round-trips cleanly.
+    return {
+        "claim_id": result.claim_id,
+        "is_valid": result.is_valid,
+        "total_claim_amount": result.total_claim_amount,
+        "total_savings_try": result.total_savings_try,
+        "total_risk_try": result.total_risk_try,
+        "n_bundling_violations": result.n_bundling_violations,
+        "n_exclusion_violations": result.n_exclusion_violations,
+        "validation_time_ms": result.validation_time_ms,
+        "summary": result.summary,
+        "violations": [
+            {
+                "rule": v.rule,
+                "severity": v.severity,
+                "material_name": v.material_name,
+                "message": v.message,
+                "savings_try": v.savings_try,
+                "risk_amount": v.risk_amount,
+            }
+            for v in result.violations
+        ],
+        "material_lines": [
+            {
+                "material_code": line.material_code,
+                "material_name": line.material_name,
+                "unit_price": line.unit_price,
+                "quantity": line.quantity,
+                "total_price": line.total_price,
+                "is_reimbursable": line.is_reimbursable,
+                "is_bundled": line.is_bundled,
+                "source": line.source,
+                "exactness_status": line.exactness_status,
+                "notes": line.notes,
+            }
+            for line in result.material_lines
+        ],
+    }
+
+
 def _validate_arguments(tool_name: str, arguments: dict[str, Any]) -> None:
     """Validate tool arguments against the schema. Raises ValueError on mismatch."""
     schema = _tool_schema_by_name(tool_name)
@@ -544,10 +704,13 @@ async def execute_tool_call(
             )
             from src.bilun.api.routes.patients import (
                 get_bilun_patients,
+                get_bilun_patient_outcome,
+                get_patient_claim_detail,
                 search_bilun_patients,
             )
             from src.bilun.chatbot.medula_kb import search_playbook_entries
             from src.bilun.chatbot.repo_tools import grep_repo, read_repo_file
+            from src.bilun.domain.rule_engine import validate_claim as sut_validate_claim
             from src.bilun.domain.sut.clause_retrieval import search_clauses
 
             size_cap = (
@@ -565,6 +728,18 @@ async def execute_tool_call(
                     arguments["claim_id"],
                 ),
                 "get_revenue_recovery": get_revenue_recovery,
+                "get_drg_episode_cost": lambda: (
+                    get_bilun_patient_outcome(
+                        arguments["patient_id"], include_expensive=True
+                    ).get("drg_summary")
+                    or {"unavailable_reason": "no DRG episode data for this patient"}
+                ),
+                "validate_stored_claim": lambda: _validate_stored_claim(
+                    get_patient_claim_detail,
+                    sut_validate_claim,
+                    arguments["patient_id"],
+                    arguments["claim_id"],
+                ),
                 "get_patient_optimization": lambda: get_patient_optimization(
                     arguments["patient_id"]
                 ),
