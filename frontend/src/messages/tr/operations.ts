@@ -17,7 +17,6 @@ const operations = {
       relatedLine: "İlgili satır",
       playbook: "Rehber",
       rebill: "Yeniden fatura",
-      action: "Eylem",
     },
     lineType: {
       procedure: "İşlem",
@@ -31,9 +30,6 @@ const operations = {
       matchedOnly: "Yalnızca eşleşen şablonlar",
       rebillPermittedOnly: "Yalnızca yeniden faturaya izin verilen",
       searchPlaceholder: "Hasta veya fatura ara",
-    },
-    actions: {
-      review: "İncele",
     },
     values: {
       yes: "Evet",

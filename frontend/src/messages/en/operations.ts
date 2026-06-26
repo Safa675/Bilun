@@ -17,7 +17,6 @@ const operations = {
       relatedLine: "Related line",
       playbook: "Playbook",
       rebill: "Rebill permitted",
-      action: "Action",
     },
     lineType: {
       procedure: "Procedure",
@@ -31,9 +30,6 @@ const operations = {
       matchedOnly: "Only matched templates",
       rebillPermittedOnly: "Only rebill permitted",
       searchPlaceholder: "Search patient or claim",
-    },
-    actions: {
-      review: "Review",
     },
     values: {
       yes: "Yes",

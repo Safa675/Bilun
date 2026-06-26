@@ -254,7 +254,6 @@ export default function MedulaRejectionQueueTab() {
                 <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.relatedLine")}</th>
                 <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.playbook")}</th>
                 <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.rebill")}</th>
-                <th style={WRAPPED_HEADER_STYLE}>{t("operations.queue.columns.action")}</th>
               </tr>
             </thead>
             <tbody>
@@ -268,7 +267,17 @@ export default function MedulaRejectionQueueTab() {
                       {row.patient_id}
                     </Link>
                   </td>
-                  <td>{row.claim_id}</td>
+                  <td>
+                    <Link
+                      href={buildSutPatientHref(row.patient_id, {
+                        claimId: row.claim_id,
+                        section: "medula-playbook",
+                      })}
+                      className="font-mono text-xs font-semibold text-slate-950 hover:text-[var(--gold-hover)]"
+                    >
+                      {row.claim_id}
+                    </Link>
+                  </td>
                   <td>{row.rejection_timestamp ?? "—"}</td>
                   <td>{row.medula_stage}</td>
                   <td className="font-mono text-xs">{row.sonuc_kodu}</td>
@@ -292,17 +301,6 @@ export default function MedulaRejectionQueueTab() {
                       : row.rebill_permitted === false
                         ? t("operations.queue.values.no")
                         : "—"}
-                  </td>
-                  <td>
-                    <Link
-                      href={buildSutPatientHref(row.patient_id, {
-                        claimId: row.claim_id,
-                        section: "medula-playbook",
-                      })}
-                      className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--gold-hover)]"
-                    >
-                      {t("operations.queue.actions.review")}
-                    </Link>
                   </td>
                 </tr>
               ))}
