@@ -38,6 +38,7 @@ Thumbs.db
 data/*
 !data/synthetic/
 !data/gazette/
+data/gazette/coverage/
 !data/legacy/
 !data/medula/
 !data/medula/**
