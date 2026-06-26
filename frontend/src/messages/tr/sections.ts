@@ -95,6 +95,9 @@ const sections = {
       columnCategories: "Kategoriler",
       noMatches: "Eşleşen bölüm yok.",
       artifactsUnavailable: "Bölüm özeti kullanılamıyor — kapsam parquetleri oluşturulmamış.",
+      detailTitle: "Hükümler",
+      detailPrompt: "Hükümlerine göz atmak için bir bölüm seçin.",
+      clausePage: "Sayfa {page} / {total}",
     },
     prose: {
       title: "Düz metin kural motorları",

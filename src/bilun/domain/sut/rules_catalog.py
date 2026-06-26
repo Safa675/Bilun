@@ -915,3 +915,44 @@ def get_rule_clauses(
 
     clauses = [_clause_payload(row, rule_id) for row in matched.iter_rows(named=True)]
     return clauses, total
+
+
+def list_section_clauses(
+    section_id: str,
+    section_title: str | None = None,
+    *,
+    limit: int | None = None,
+    offset: int = 0,
+) -> tuple[list[dict[str, Any]], int]:
+    """Return ``(clauses, total)`` for a section.
+
+    Filters the in-force clause coverage frame by ``section_id`` (and optionally
+    ``section_title`` to disambiguate duplicate section_id rows). Ordered by
+    document order (``paragraph_index``). Clause payloads are built with
+    ``rule_id=None`` so ``is_primary``/``match_score`` are neutral.
+    """
+    frame = _load_coverage()
+    if frame is None:
+        return [], 0
+
+    matched = frame.filter(pl.col("section_id") == section_id)
+    if section_title is not None and matched.height > 0:
+        matched = matched.filter(pl.col("section_title") == section_title)
+    if matched.height == 0:
+        return [], 0
+
+    if "is_in_force" in matched.columns:
+        matched = matched.filter(pl.col("is_in_force"))
+        if matched.height == 0:
+            return [], 0
+
+    matched = matched.sort("paragraph_index", descending=False, nulls_last=True)
+
+    total = matched.height
+    if offset:
+        matched = matched.slice(offset, None)
+    if limit is not None:
+        matched = matched.head(limit)
+
+    clauses = [_clause_payload(row, None) for row in matched.iter_rows(named=True)]
+    return clauses, total

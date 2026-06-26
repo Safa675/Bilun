@@ -129,6 +129,38 @@ class TestClauseDrilldown:
         assert rc.get_rule_clauses("claim_validation")[1] == 0
 
 
+class TestSectionClauseDrilldown:
+    def test_returns_clauses_for_section(self) -> None:
+        clauses, total = rc.list_section_clauses("1.8")
+        assert total > 0
+        assert len(clauses) == total
+        first = clauses[0]
+        assert "clause_id" in first
+        assert "text_tr" in first
+        assert "coverage_status" in first
+        assert "primary_rule_id" in first
+        assert first["is_primary"] is False  # rule_id=None context
+        assert first["match_score"] == 0
+
+    def test_section_title_disambiguates(self) -> None:
+        all_clauses, total_all = rc.list_section_clauses("1.8")
+        titled, total_titled = rc.list_section_clauses("1.8", section_title="Katılım payı")
+        assert total_titled <= total_all
+        assert total_titled >= 1
+
+    def test_pagination_disjoint(self) -> None:
+        page1, total = rc.list_section_clauses("1.8", limit=3, offset=0)
+        page2, _ = rc.list_section_clauses("1.8", limit=3, offset=3)
+        assert len(page1) == 3
+        assert {c["clause_id"] for c in page1}.isdisjoint(
+            {c["clause_id"] for c in page2}
+        )
+        assert total >= 6
+
+    def test_unknown_section_returns_empty(self) -> None:
+        assert rc.list_section_clauses("99.99.99") == ([], 0)
+
+
 class TestCoverageSummary:
     @_needs_coverage
     def test_coverage_summary_returns_pipeline_health(self) -> None:

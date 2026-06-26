@@ -988,6 +988,19 @@ class RuleDetailResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class SectionClausesResponse(BaseModel):
+    """GET /api/rules/sections/clauses — in-force clauses for one section."""
+
+    clauses: list[RuleClause]
+    clause_total: int
+    page: int
+    per_page: int
+    total_pages: int
+    artifacts_available: bool
+
+    model_config = ConfigDict(extra="allow")
+
+
 class SectionRollupEntry(BaseModel):
     """One SUT section with coverage gap rollup."""
 

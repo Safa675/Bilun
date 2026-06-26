@@ -15,6 +15,7 @@ from src.bilun.api.schemas import (
     ProseInventoryResponse,
     RuleCatalogResponse,
     RuleDetailResponse,
+    SectionClausesResponse,
     SectionRollupResponse,
 )
 from src.bilun.domain.sut import rules_catalog
@@ -64,6 +65,40 @@ def get_rule_sections(
         query=q,
         min_gap_count=min_gap_count,
     )
+
+
+@router.get("/rules/sections/clauses", response_model=SectionClausesResponse)
+def get_section_clauses(
+    section_id: str,
+    section_title: str | None = None,
+    page: int = 1,
+    per_page: int = 50,
+):
+    """In-force SUT clauses for one section (drill-down from the section rollup)."""
+    if page < 1:
+        raise ValidationError("page must be >= 1", page=page)
+    if per_page < 1 or per_page > _MAX_PER_PAGE:
+        raise ValidationError(
+            f"per_page must be between 1 and {_MAX_PER_PAGE}", per_page=per_page
+        )
+
+    offset = (page - 1) * per_page
+    clauses, clause_total = rules_catalog.list_section_clauses(
+        section_id,
+        section_title,
+        limit=per_page,
+        offset=offset,
+    )
+    total_pages = (clause_total + per_page - 1) // per_page if clause_total else 0
+
+    return {
+        "clauses": clauses,
+        "clause_total": clause_total,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages,
+        "artifacts_available": rules_catalog.artifacts_available(),
+    }
 
 
 @router.get("/rules/prose-inventory", response_model=ProseInventoryResponse)

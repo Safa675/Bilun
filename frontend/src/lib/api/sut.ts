@@ -706,6 +706,30 @@ export async function getRuleSections(
   );
 }
 
+export interface SectionClausesResponse {
+  clauses: RuleClause[];
+  clause_total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+  artifacts_available: boolean;
+}
+
+export async function getSectionClauses(
+  params: { section_id: string; section_title?: string | null; page?: number; per_page?: number },
+  options?: RequestInit,
+): Promise<SectionClausesResponse> {
+  const qs = new URLSearchParams();
+  qs.set("section_id", params.section_id);
+  if (params.section_title) qs.set("section_title", params.section_title);
+  if (params.page) qs.set("page", String(params.page));
+  if (params.per_page) qs.set("per_page", String(params.per_page));
+  return requestJSON<SectionClausesResponse>(
+    `/api/rules/sections/clauses?${qs.toString()}`,
+    options,
+  );
+}
+
 export async function getProseInventory(options?: RequestInit): Promise<ProseInventoryResponse> {
   return requestJSON<ProseInventoryResponse>("/api/rules/prose-inventory", options);
 }

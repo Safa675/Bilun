@@ -95,6 +95,9 @@ const sections = {
       columnCategories: "Categories",
       noMatches: "No sections match.",
       artifactsUnavailable: "Section rollup unavailable — coverage parquets not built.",
+      detailTitle: "Clauses",
+      detailPrompt: "Select a section to browse its clauses.",
+      clausePage: "Page {page} of {total}",
     },
     prose: {
       title: "Prose rule engines",

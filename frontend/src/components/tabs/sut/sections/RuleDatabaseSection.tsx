@@ -6,6 +6,7 @@ import {
   getRuleCatalog,
   getRuleDetail,
   getRuleSections,
+  getSectionClauses,
   sectionRollupRowKey,
   type CoverageSummary,
   type FactCheckRollup,
@@ -15,6 +16,8 @@ import {
   type RuleClause,
   type RuleCoverageStatus,
   type RuleDetailResponse,
+  type SectionClausesResponse,
+  type SectionRollupEntry,
   type SectionRollupResponse,
 } from "@/lib/api/sut";
 import { isAbortError } from "@/lib/api/request";
@@ -494,6 +497,7 @@ function SectionBrowserPanel() {
   const [query, setQuery] = useState("");
   const [minGapCount, setMinGapCount] = useState<string>("");
   const [page, setPage] = useState(1);
+  const [selectedSection, setSelectedSection] = useState<SectionRollupEntry | null>(null);
 
   // Stable filter inputs: empty string -> undefined so the API client omits the
   // query param and the effect's dependency identity matches backend semantics.
@@ -592,98 +596,248 @@ function SectionBrowserPanel() {
         }
       />
 
-      {sections.length === 0 ? (
-        <Surface variant="soft" padding="md" className="text-center">
-          <p className="text-sm text-[var(--text-secondary)]">
-            {t("sections.ruleDatabase.sections.noMatches")}
-          </p>
-        </Surface>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="space-y-3">
+          {sections.length === 0 ? (
+            <Surface variant="soft" padding="md" className="text-center">
+              <p className="text-sm text-[var(--text-secondary)]">
+                {t("sections.ruleDatabase.sections.noMatches")}
+              </p>
+            </Surface>
+          ) : (
+            <>
+              <DataTable minWidth={600}>
+                <DataTableHeader>
+                  <DataTableRow>
+                    <DataTableHeaderCell className="text-left font-medium">
+                      {t("sections.ruleDatabase.sections.columnSection")}
+                    </DataTableHeaderCell>
+                    <DataTableHeaderCell className="text-left font-medium">
+                      {t("sections.ruleDatabase.sections.columnTitle")}
+                    </DataTableHeaderCell>
+                    <DataTableHeaderCell className="text-right font-medium">
+                      {t("sections.ruleDatabase.sections.columnClauses")}
+                    </DataTableHeaderCell>
+                    <DataTableHeaderCell className="text-right font-medium">
+                      {t("sections.ruleDatabase.sections.columnGaps")}
+                    </DataTableHeaderCell>
+                    <DataTableHeaderCell className="text-left font-medium">
+                      {t("sections.ruleDatabase.sections.columnStatus")}
+                    </DataTableHeaderCell>
+                    <DataTableHeaderCell className="text-left font-medium">
+                      {t("sections.ruleDatabase.sections.columnCategories")}
+                    </DataTableHeaderCell>
+                  </DataTableRow>
+                </DataTableHeader>
+                <DataTableBody>
+                  {sections.map((section) => {
+                    const isSelected =
+                      selectedSection && sectionRollupRowKey(selectedSection) === sectionRollupRowKey(section);
+                    return (
+                      <DataTableRow
+                        key={sectionRollupRowKey(section)}
+                        onClick={() => setSelectedSection(section)}
+                        className="cursor-pointer transition-colors hover:bg-[var(--surface-default)]"
+                        {...(isSelected ? { "data-selected": true } : {})}
+                      >
+                        <DataTableCell className="font-mono text-xs text-[var(--text-primary)]">
+                          {section.section_id}
+                        </DataTableCell>
+                        <DataTableCell className="text-xs text-[var(--text-secondary)]">
+                          {section.section_title ?? "—"}
+                        </DataTableCell>
+                        <DataTableCell className="text-right text-xs tabular-nums text-[var(--text-secondary)]">
+                          {fmtNum(section.clause_count)}
+                        </DataTableCell>
+                        <DataTableCell className="text-right text-xs tabular-nums text-[var(--danger)]">
+                          {fmtNum(section.gap_clause_count)}
+                        </DataTableCell>
+                        <DataTableCell>
+                          {section.worst_coverage_status && (
+                            <Chip
+                              variant={COVERAGE_VARIANT[section.worst_coverage_status as RuleCoverageStatus]}
+                            >
+                              {t(
+                                `sections.ruleDatabase.status.${COVERAGE_KEY[section.worst_coverage_status as RuleCoverageStatus]}`,
+                              )}
+                            </Chip>
+                          )}
+                        </DataTableCell>
+                        <DataTableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {section.primary_categories.map((cat) => (
+                              <Chip key={cat} variant="outline">
+                                {cat}
+                              </Chip>
+                            ))}
+                          </div>
+                        </DataTableCell>
+                      </DataTableRow>
+                    );
+                  })}
+                </DataTableBody>
+              </DataTable>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
+                  <button
+                    type="button"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {t("sections.ruleDatabase.pagination.prev")}
+                  </button>
+                  <span>
+                    {t("sections.ruleDatabase.pagination.page", {
+                      page: fmtNum(page),
+                      totalPages: fmtNum(totalPages),
+                    })}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {t("sections.ruleDatabase.pagination.next")}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <SectionDetailPane section={selectedSection} />
+      </div>
+    </div>
+  );
+}
+
+function SectionDetailPane({ section }: { section: SectionRollupEntry | null }) {
+  const t = useT();
+  const [clausePage, setClausePage] = useState(1);
+  const [result, setResult] = useState<SectionClausesResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const sectionKey = section ? sectionRollupRowKey(section) : null;
+
+  // Reset to page 1 when selection changes.
+  useEffect(() => {
+    setClausePage(1);
+  }, [sectionKey]);
+
+  useEffect(() => {
+    if (!section) return;
+    // Short-circuit: zero clauses → skip fetch.
+    if (section.clause_count === 0) {
+      setResult(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await getSectionClauses(
+          {
+            section_id: section.section_id!,
+            section_title: section.section_title ?? undefined,
+            page: clausePage,
+            per_page: SECTIONS_PER_PAGE,
+          },
+          { signal: controller.signal },
+        );
+        if (!active || controller.signal.aborted) return;
+        setResult(res);
+      } catch (err) {
+        if (!active || isAbortError(err)) return;
+        setResult(null);
+        setError(
+          err instanceof Error ? err.message : t("sections.ruleDatabase.errors.loadFailed"),
+        );
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [section, clausePage, t]);
+
+  if (!section) {
+    return (
+      <Surface variant="soft" padding="md" className="h-full">
+        <p className="text-sm text-[var(--text-secondary)]">
+          {t("sections.ruleDatabase.sections.detailPrompt")}
+        </p>
+      </Surface>
+    );
+  }
+
+  const clauses = result?.clauses ?? [];
+  const totalPages = result?.total_pages ?? 0;
+
+  return (
+    <Surface variant="soft" padding="md" className="h-full">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h4 className="font-mono text-sm font-semibold text-[var(--text-primary)]">
+          {section.section_id}
+          {section.section_title ? ` · ${section.section_title}` : ""}
+        </h4>
+        <span className="text-[11px] text-[var(--text-muted)]">
+          {t("sections.ruleDatabase.sections.detailTitle")} ({fmtNum(section.clause_count)})
+        </span>
+      </div>
+
+      {loading ? (
+        <p className="text-sm text-[var(--text-secondary)]">{t("common.loading")}</p>
+      ) : error ? (
+        <p className="text-sm text-[var(--danger)]">{error}</p>
+      ) : section.clause_count === 0 ? (
+        <p className="text-sm text-[var(--text-secondary)]">
+          {t("sections.ruleDatabase.detail.noClauses")}
+        </p>
+      ) : clauses.length === 0 ? (
+        <p className="text-sm text-[var(--text-secondary)]">
+          {t("sections.ruleDatabase.detail.noClauses")}
+        </p>
       ) : (
         <>
-          <DataTable minWidth={600}>
-            <DataTableHeader>
-              <DataTableRow>
-                <DataTableHeaderCell className="text-left font-medium">
-                  {t("sections.ruleDatabase.sections.columnSection")}
-                </DataTableHeaderCell>
-                <DataTableHeaderCell className="text-left font-medium">
-                  {t("sections.ruleDatabase.sections.columnTitle")}
-                </DataTableHeaderCell>
-                <DataTableHeaderCell className="text-right font-medium">
-                  {t("sections.ruleDatabase.sections.columnClauses")}
-                </DataTableHeaderCell>
-                <DataTableHeaderCell className="text-right font-medium">
-                  {t("sections.ruleDatabase.sections.columnGaps")}
-                </DataTableHeaderCell>
-                <DataTableHeaderCell className="text-left font-medium">
-                  {t("sections.ruleDatabase.sections.columnStatus")}
-                </DataTableHeaderCell>
-                <DataTableHeaderCell className="text-left font-medium">
-                  {t("sections.ruleDatabase.sections.columnCategories")}
-                </DataTableHeaderCell>
-              </DataTableRow>
-            </DataTableHeader>
-            <DataTableBody>
-              {sections.map((section) => (
-                <DataTableRow key={sectionRollupRowKey(section)}>
-                  <DataTableCell className="font-mono text-xs text-[var(--text-primary)]">
-                    {section.section_id}
-                  </DataTableCell>
-                  <DataTableCell className="text-xs text-[var(--text-secondary)]">
-                    {section.section_title ?? "—"}
-                  </DataTableCell>
-                  <DataTableCell className="text-right text-xs tabular-nums text-[var(--text-secondary)]">
-                    {fmtNum(section.clause_count)}
-                  </DataTableCell>
-                  <DataTableCell className="text-right text-xs tabular-nums text-[var(--danger)]">
-                    {fmtNum(section.gap_clause_count)}
-                  </DataTableCell>
-                  <DataTableCell>
-                    {section.worst_coverage_status && (
-                      <Chip
-                        variant={COVERAGE_VARIANT[section.worst_coverage_status as RuleCoverageStatus]}
-                      >
-                        {t(
-                          `sections.ruleDatabase.status.${COVERAGE_KEY[section.worst_coverage_status as RuleCoverageStatus]}`,
-                        )}
-                      </Chip>
-                    )}
-                  </DataTableCell>
-                  <DataTableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {section.primary_categories.map((cat) => (
-                        <Chip key={cat} variant="outline">
-                          {cat}
-                        </Chip>
-                      ))}
-                    </div>
-                  </DataTableCell>
-                </DataTableRow>
-              ))}
-            </DataTableBody>
-          </DataTable>
-
+          <ul className="space-y-2">
+            {clauses.map((clause) => (
+              <ClauseCard key={clause.clause_id} clause={clause} />
+            ))}
+          </ul>
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
+            <div className="mt-3 flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
               <button
                 type="button"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={clausePage <= 1}
+                onClick={() => setClausePage((p) => Math.max(1, p - 1))}
+                className="sut-section-btn sut-section-btn-compact disabled:opacity-50"
               >
                 {t("sections.ruleDatabase.pagination.prev")}
               </button>
               <span>
-                {t("sections.ruleDatabase.pagination.page", {
-                  page: fmtNum(page),
-                  totalPages: fmtNum(totalPages),
+                {t("sections.ruleDatabase.sections.clausePage", {
+                  page: fmtNum(clausePage),
+                  total: fmtNum(totalPages),
                 })}
               </span>
               <button
                 type="button"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={clausePage >= totalPages}
+                onClick={() => setClausePage((p) => p + 1)}
+                className="sut-section-btn sut-section-btn-compact disabled:opacity-50"
               >
                 {t("sections.ruleDatabase.pagination.next")}
               </button>
@@ -691,7 +845,7 @@ function SectionBrowserPanel() {
           )}
         </>
       )}
-    </div>
+    </Surface>
   );
 }
 

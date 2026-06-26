@@ -9,6 +9,7 @@ from src.bilun.api.schemas import (
     ProseInventoryResponse,
     RuleCatalogResponse,
     RuleDetailResponse,
+    SectionClausesResponse,
     SectionRollupResponse,
 )
 from src.bilun.domain.constants import SUT_CLAUSE_COVERAGE_PATH
@@ -153,6 +154,51 @@ class TestSectionRollupEndpoint:
     def test_invalid_per_page_raises_400(self, per_page: int) -> None:
         with pytest.raises(ValidationError) as exc:
             rules_route.get_rule_sections(per_page=per_page)
+        assert exc.value.status_code == 400
+
+
+class TestSectionClausesEndpoint:
+    @_needs_coverage
+    def test_returns_clauses_for_known_section(self) -> None:
+        payload = rules_route.get_section_clauses(section_id="1.8")
+        model = SectionClausesResponse.model_validate(payload)
+        assert model.artifacts_available is True
+        assert model.clause_total > 0
+        assert len(model.clauses) <= model.per_page
+        first = model.clauses[0]
+        assert first.clause_id is not None
+        assert first.is_primary is False  # section context, no rule highlight
+
+    @_needs_coverage
+    def test_section_title_disambiguates(self) -> None:
+        all_payload = rules_route.get_section_clauses(section_id="1.8")
+        all_model = SectionClausesResponse.model_validate(all_payload)
+        titled_payload = rules_route.get_section_clauses(
+            section_id="1.8", section_title="Katılım payı"
+        )
+        titled_model = SectionClausesResponse.model_validate(titled_payload)
+        assert titled_model.clause_total <= all_model.clause_total
+
+    @_needs_coverage
+    def test_pagination_meta(self) -> None:
+        payload = rules_route.get_section_clauses(section_id="1.8", page=1, per_page=3)
+        model = SectionClausesResponse.model_validate(payload)
+        assert model.page == 1
+        assert model.per_page == 3
+        assert model.total_pages >= 1
+        assert len(model.clauses) <= 3
+
+    @_needs_coverage
+    def test_empty_section_returns_zero(self) -> None:
+        payload = rules_route.get_section_clauses(section_id="99.99.99")
+        model = SectionClausesResponse.model_validate(payload)
+        assert model.clause_total == 0
+        assert model.clauses == []
+
+    @pytest.mark.parametrize("page", [0, -1])
+    def test_invalid_page_raises_400(self, page: int) -> None:
+        with pytest.raises(ValidationError) as exc:
+            rules_route.get_section_clauses(section_id="1.8", page=page)
         assert exc.value.status_code == 400
 
 
