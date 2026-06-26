@@ -105,6 +105,7 @@ const sections = {
       detailTitle: "Clauses",
       detailPrompt: "Select a section to browse its clauses.",
       clausePage: "Page {page} of {total}",
+      consolidate: "Consolidate",
     },
     prose: {
       title: "Prose rule engines",

@@ -47,6 +47,7 @@ def get_rule_sections(
     per_page: int = _DEFAULT_PER_PAGE,
     q: str | None = None,
     min_gap_count: int | None = None,
+    consolidate: bool = False,
 ):
     """Paginated SUT section rollup with coverage gap counts (expert surface)."""
     if page < 1:
@@ -65,6 +66,7 @@ def get_rule_sections(
         per_page=per_page,
         query=q,
         min_gap_count=min_gap_count,
+        consolidate=consolidate,
     )
 
 

@@ -717,6 +717,7 @@ def list_sections(
     per_page: int = 50,
     query: str | None = None,
     min_gap_count: int | None = None,
+    consolidate: bool = False,
 ) -> dict[str, Any]:
     """Paginated SUT section rollup from offline-built coverage summary.
 
@@ -760,6 +761,27 @@ def list_sections(
 
     if min_gap_count is not None and min_gap_count > 0:
         frame = frame.filter(pl.col("gap_clause_count") >= min_gap_count)
+
+    if consolidate and frame.height > 0:
+        # Aggregate duplicate (section_id, section_title) rows into one per section_id.
+        # worst_coverage_status: take the most severe; order missing > partial > implemented.
+        frame = frame.with_columns(
+            pl.col("worst_coverage_status")
+            .map_elements(
+                lambda s: {"missing": 3, "needs_claim_lines": 2, "partial": 2, "implemented": 1}.get(s, 0),
+                return_dtype=pl.Int64,
+            )
+            .alias("_severity")
+        )
+        frame = frame.sort("_severity", descending=True).group_by(
+            "section_id", maintain_order=True
+        ).agg(
+            pl.first("section_title").alias("section_title"),
+            pl.sum("clause_count").alias("clause_count"),
+            pl.sum("gap_clause_count").alias("gap_clause_count"),
+            pl.first("worst_coverage_status").alias("worst_coverage_status"),
+            pl.first("primary_categories").alias("primary_categories"),
+        )
 
     total = frame.height
     total_pages = (total + per_page - 1) // per_page if total else 0

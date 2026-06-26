@@ -691,7 +691,7 @@ export async function getRuleDetail(
 }
 
 export async function getRuleSections(
-  params?: { page?: number; per_page?: number; q?: string; min_gap_count?: number },
+  params?: { page?: number; per_page?: number; q?: string; min_gap_count?: number; consolidate?: boolean },
   options?: RequestInit,
 ): Promise<SectionRollupResponse> {
   const qs = new URLSearchParams();
@@ -699,6 +699,7 @@ export async function getRuleSections(
   if (params?.per_page) qs.set("per_page", String(params.per_page));
   if (params?.q) qs.set("q", params.q);
   if (params?.min_gap_count !== undefined) qs.set("min_gap_count", String(params.min_gap_count));
+  if (params?.consolidate) qs.set("consolidate", "true");
   const query = qs.toString();
   return requestJSON<SectionRollupResponse>(
     `/api/rules/sections${query ? `?${query}` : ""}`,

@@ -105,6 +105,7 @@ const sections = {
       detailTitle: "Hükümler",
       detailPrompt: "Hükümlerine göz atmak için bir bölüm seçin.",
       clausePage: "Sayfa {page} / {total}",
+      consolidate: "Bölüm başına birleştir",
     },
     prose: {
       title: "Düz metin kural motorları",

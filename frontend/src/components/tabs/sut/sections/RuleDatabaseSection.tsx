@@ -46,6 +46,7 @@ import { useSutApi } from "../useSutApi";
 import { fmtNum } from "../shared";
 import { useLocale } from "@/lib/i18n";
 import { useT } from "@/lib/i18n/useTranslations";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const COVERAGE_VARIANT: Record<RuleCoverageStatus, "success" | "warning" | "danger" | "neutral"> = {
   implemented: "success",
@@ -498,6 +499,7 @@ function SectionBrowserPanel() {
   const [query, setQuery] = useState("");
   const [minGapCount, setMinGapCount] = useState<string>("");
   const [page, setPage] = useState(1);
+  const [consolidate, setConsolidate] = useState(false);
   const [selectedSection, setSelectedSection] = useState<SectionRollupEntry | null>(null);
 
   // Stable filter inputs: empty string -> undefined so the API client omits the
@@ -526,6 +528,7 @@ function SectionBrowserPanel() {
             per_page: SECTIONS_PER_PAGE,
             q: trimmedQuery || undefined,
             min_gap_count: parsedGapCount,
+            consolidate: consolidate || undefined,
           },
           { signal: controller.signal },
         );
@@ -546,7 +549,7 @@ function SectionBrowserPanel() {
       active = false;
       controller.abort();
     };
-  }, [page, trimmedQuery, parsedGapCount, t]);
+  }, [page, trimmedQuery, parsedGapCount, consolidate, t]);
 
   if (loading) {
     return <SutReferenceSectionSkeleton title={t("sections.ruleDatabase.sections.title")} />;
@@ -586,14 +589,25 @@ function SectionBrowserPanel() {
           />
         }
         trailing={
-          <input
-            type="number"
-            min={0}
-            value={minGapCount}
-            onChange={(e) => { setMinGapCount(e.target.value); setPage(1); }}
-            placeholder={t("sections.ruleDatabase.sections.minGapFilter")}
-            className="sut-input w-[140px]"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={0}
+              value={minGapCount}
+              onChange={(e) => { setMinGapCount(e.target.value); setPage(1); }}
+              placeholder={t("sections.ruleDatabase.sections.minGapFilter")}
+              className="sut-input w-[140px]"
+            />
+            <button
+              type="button"
+              onClick={() => { setConsolidate((v) => !v); setPage(1); }}
+              className={`sut-section-btn sut-section-btn-compact text-[11px] whitespace-nowrap ${
+                consolidate ? "sut-section-btn-active" : ""
+              }`}
+            >
+              {t("sections.ruleDatabase.sections.consolidate")}
+            </button>
+          </div>
         }
       />
 
@@ -850,9 +864,9 @@ function SectionDetailPane({ section }: { section: SectionRollupEntry | null }) 
   );
 }
 
-function ClauseBrowserPanel() {
+function ClauseBrowserPanel({ initialQuery = "" }: { initialQuery?: string }) {
   const t = useT();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [gapFilter, setGapFilter] = useState(false);
@@ -862,6 +876,11 @@ function ClauseBrowserPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedClause, setSelectedClause] = useState<RuleClause | null>(null);
+
+  // Re-sync query when parent passes a new initialQuery (e.g. prose anchor click).
+  useEffect(() => {
+    if (initialQuery) setQuery(initialQuery);
+  }, [initialQuery]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 300ms debounce on search input.
@@ -1092,7 +1111,11 @@ function ClauseBrowserPanel() {
   );
 }
 
-function ProseInventoryPanel() {
+function ProseInventoryPanel({
+  onAnchorClick,
+}: {
+  onAnchorClick?: (anchor: string) => void;
+}) {
   const t = useT();
   const {
     data: result,
@@ -1180,9 +1203,16 @@ function ProseInventoryPanel() {
               <td className="px-2 py-1.5">
                 <div className="flex flex-wrap gap-1">
                   {engine.sut_anchors.map((anchor) => (
-                    <Chip key={anchor} variant="outline" className="text-[9px]">
-                      {anchor}
-                    </Chip>
+                    <button
+                      key={anchor}
+                      type="button"
+                      onClick={() => onAnchorClick?.(anchor)}
+                      className="cursor-pointer transition-opacity hover:opacity-70"
+                    >
+                      <Chip variant="outline" className="text-[9px]">
+                        {anchor}
+                      </Chip>
+                    </button>
                   ))}
                 </div>
               </td>
@@ -1217,6 +1247,38 @@ export function RuleDatabaseSection() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<RuleCoverageStatus | "all">("all");
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
+
+  // URL state: use rdTab/rdClause/rdSection to avoid colliding with the outer
+  // app-shell ?tab= param (see constants.ts parseSutHomeTab).
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<string>(
+    searchParams.get("rdTab") || "rules",
+  );
+  const [clauseSearchQ, setClauseSearchQ] = useState<string>(
+    searchParams.get("rdSection") || "",
+  );
+
+  const updateUrl = (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(updates)) {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    updateUrl({ rdTab: tab });
+  };
+
+  const handleAnchorClick = (anchor: string) => {
+    setActiveTab("clauses");
+    setClauseSearchQ(anchor);
+    updateUrl({ rdTab: "clauses", rdSection: anchor });
+  };
 
   const {
     data: catalog,
@@ -1287,7 +1349,7 @@ export function RuleDatabaseSection() {
 
         {catalog?.fact_check && <FactCheckRollupBanner rollup={catalog.fact_check} />}
 
-        <TabsRoot defaultValue="rules">
+        <TabsRoot value={activeTab} onValueChange={handleTabChange}>
           <TabsList density="compact">
             <TabsTrigger value="rules" density="compact">
               {t("sections.ruleDatabase.tabs.rules")}
@@ -1366,13 +1428,13 @@ export function RuleDatabaseSection() {
 
           <TabsContent value="clauses" forceMount className="data-[state=inactive]:hidden">
             <div className="pt-4">
-              <ClauseBrowserPanel />
+              <ClauseBrowserPanel initialQuery={clauseSearchQ} />
             </div>
           </TabsContent>
 
           <TabsContent value="prose" forceMount className="data-[state=inactive]:hidden">
             <div className="pt-4">
-              <ProseInventoryPanel />
+              <ProseInventoryPanel onAnchorClick={handleAnchorClick} />
             </div>
           </TabsContent>
         </TabsRoot>
@@ -1617,7 +1679,7 @@ function RuleDetailPanel({
   );
 }
 
-function ClauseCard({ clause }: { clause: RuleClause }) {
+export function ClauseCard({ clause }: { clause: RuleClause }) {
   const t = useT();
   const sectionLabel = [clause.section_id, clause.section_title].filter(Boolean).join(" · ");
   const deonticLabel = useDeonticLabel(clause.deontic_modality);
