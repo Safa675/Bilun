@@ -128,6 +128,66 @@ function CoverageChip({ status }: { status: RuleCoverageStatus }) {
   );
 }
 
+function GlossaryStrip({
+  clauseCount,
+  ruleEngineCount,
+}: {
+  clauseCount: number;
+  ruleEngineCount: number;
+}) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  // Static figures that change rarely (require pipeline rebuild).
+  const JSON_RULE_COUNT = 337;
+  const SECTION_ROWS = 951;
+  const UNIQUE_SECTIONS = 481;
+
+  return (
+    <div className="rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-soft)] px-3 py-2.5">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between text-[11px] font-medium text-[var(--text-secondary)]"
+      >
+        <span>{t("sections.ruleDatabase.coverage.glossary.toggle")}</span>
+        <span className="text-[var(--text-muted)]">{open ? "−" : "+"}</span>
+      </button>
+      {open && (
+        <dl className="mt-2 space-y-1.5 text-[11px] leading-relaxed text-[var(--text-secondary)]">
+          <div>
+            <dt className="font-semibold text-[var(--text-primary)]">Hüküm</dt>
+            <dd>
+              {t("sections.ruleDatabase.coverage.glossary.hukum", { count: fmtNum(clauseCount) })}
+            </dd>
+          </div>
+          <div>
+            <dd>
+              {t("sections.ruleDatabase.coverage.glossary.kuralMotoru", {
+                count: ruleEngineCount,
+              })}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-[var(--text-primary)]">JSON</dt>
+            <dd>
+              {t("sections.ruleDatabase.coverage.glossary.jsonSatir", { count: JSON_RULE_COUNT })}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-[var(--text-primary)]">§</dt>
+            <dd>
+              {t("sections.ruleDatabase.coverage.glossary.bolumSatiri", {
+                count: SECTION_ROWS,
+                unique: UNIQUE_SECTIONS,
+              })}
+            </dd>
+          </div>
+        </dl>
+      )}
+    </div>
+  );
+}
+
 function FactCheckChip({ verdict }: { verdict: FactCheckVerdict }) {
   const t = useT();
   return (
@@ -321,6 +381,11 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
         )}
       </div>
 
+      <GlossaryStrip
+        clauseCount={clauses.total_extracted}
+        ruleEngineCount={registry.total_rules}
+      />
+
       <div className="grid grid-cols-2 gap-6">
         {/* Clauses column */}
         <div className="space-y-3">
@@ -328,7 +393,7 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
             {t("sections.ruleDatabase.coverage.clausesTitle")}
           </Eyebrow>
           <Stat
-            label={t("sections.ruleDatabase.coverage.totalExtracted")}
+            label={t("sections.ruleDatabase.coverage.totalClauses")}
             value={fmtNum(clauses.total_extracted)}
           />
           <Stat
@@ -352,7 +417,7 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
             {t("sections.ruleDatabase.coverage.registryTitle")}
           </Eyebrow>
           <Stat
-            label={t("sections.ruleDatabase.coverage.totalExtracted")}
+            label={t("sections.ruleDatabase.coverage.totalRuleEngines")}
             value={fmtNum(registry.total_rules)}
           />
           <div className="space-y-1.5">
@@ -1150,10 +1215,17 @@ function ClauseCard({ clause }: { clause: RuleClause }) {
   const t = useT();
   const sectionLabel = [clause.section_id, clause.section_title].filter(Boolean).join(" · ");
   const deonticLabel = useDeonticLabel(clause.deontic_modality);
+  const shownMatched = clause.matched_rule_ids.slice(0, 3);
+  const overflowCount = clause.matched_rule_ids.length - shownMatched.length;
 
   return (
-    <li className="rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-soft)] p-3">
+    <li className="min-h-[80px] rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-soft)] p-3">
       <div className="mb-1.5 flex flex-wrap items-center gap-2">
+        {clause.clause_id && (
+          <span className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-secondary)]">
+            {clause.clause_id}
+          </span>
+        )}
         {sectionLabel && (
           <span className="font-mono text-[11px] font-semibold text-[var(--text-primary)]">
             {sectionLabel}
@@ -1164,12 +1236,30 @@ function ClauseCard({ clause }: { clause: RuleClause }) {
             {t("sections.ruleDatabase.detail.primaryBadge")}
           </Chip>
         )}
+        {clause.coverage_status && (
+          <CoverageChip status={clause.coverage_status as RuleCoverageStatus} />
+        )}
+        {clause.has_rule_encoding && (
+          <Chip variant="success" className="text-[9px] uppercase tracking-wide">
+            {t("sections.ruleDatabase.detail.encodedBadge")}
+          </Chip>
+        )}
+        {clause.has_algorithmic_gap && (
+          <Chip variant="warning" className="text-[9px] uppercase tracking-wide">
+            {t("sections.ruleDatabase.detail.gapBadge")}
+          </Chip>
+        )}
         <EkAnnexChips labels={clause.annex_refs} />
       </div>
       <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-[var(--text-primary)]">
         {clause.text_tr}
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-[var(--text-muted)]">
+        {clause.primary_rule_id && (
+          <span className="font-mono">
+            {t("sections.ruleDatabase.detail.motorLabel")}: {clause.primary_rule_id}
+          </span>
+        )}
         {deonticLabel && (
           <span className="font-mono uppercase tracking-wide">{deonticLabel}</span>
         )}
@@ -1183,6 +1273,16 @@ function ClauseCard({ clause }: { clause: RuleClause }) {
             {t("sections.ruleDatabase.detail.amendments", {
               refs: clause.amendment_refs.join(", "),
             })}
+          </span>
+        )}
+        {shownMatched.length > 0 && (
+          <span className="font-mono text-[var(--text-muted)]">
+            {shownMatched.join(", ")}
+            {overflowCount > 0 && (
+              <span className="ml-1">
+                {t("sections.ruleDatabase.detail.matchedMore", { count: overflowCount })}
+              </span>
+            )}
           </span>
         )}
       </div>

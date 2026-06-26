@@ -861,6 +861,10 @@ def _clause_payload(row: dict[str, Any], rule_id: str) -> dict[str, Any]:
         "deontic_modality": row.get("deontic_modality"),
         "source_effective_date": row.get("source_effective_date"),
         "coverage_status": row.get("coverage_status"),
+        "primary_rule_id": row.get("primary_rule_id"),
+        "primary_rule_category": row.get("primary_rule_category"),
+        "matched_rule_ids": row.get("_matched_rule_ids_list")
+        or _json_list(row.get("matched_rule_ids")),
         "is_primary": row.get("primary_rule_id") == rule_id,
         "match_score": int(match_scores.get(rule_id, 0)),
         "has_algorithmic_gap": bool(row.get("has_algorithmic_gap")),

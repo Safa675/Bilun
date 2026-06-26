@@ -98,9 +98,15 @@ class TestClauseDrilldown:
             "is_primary",
             "match_score",
             "coverage_status",
+            "primary_rule_id",
+            "primary_rule_category",
+            "matched_rule_ids",
+            "has_algorithmic_gap",
+            "has_rule_encoding",
         ):
             assert key in first
         assert isinstance(first["annex_refs"], list)
+        assert isinstance(first["matched_rule_ids"], list)
 
     def test_primary_clauses_sorted_first(self) -> None:
         clauses, _ = rc.get_rule_clauses("copay_rate_ek2c1")

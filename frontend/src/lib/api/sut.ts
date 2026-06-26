@@ -488,8 +488,13 @@ export interface RuleClause {
   deontic_modality: string | null;
   source_effective_date: string | null;
   coverage_status: string | null;
+  primary_rule_id: string | null;
+  primary_rule_category: string | null;
+  matched_rule_ids: string[];
   is_primary: boolean;
   match_score: number;
+  has_algorithmic_gap: boolean;
+  has_rule_encoding: boolean | null;
 }
 
 export interface FactCheckVerdictCounts {
