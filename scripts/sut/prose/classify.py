@@ -174,6 +174,8 @@ def _fallback_rule_id(
         ("1.7", "provizyon_medula"),
         ("1.6", "referral_admission"),
         ("1.5", "referral_admission"),
+        ("1.11", "provizyon_medula"),
+        ("1.10", "provizyon_medula"),
         ("1.4", "definitions"),
         ("1.3", "definitions"),
         ("1.2", "definitions"),
