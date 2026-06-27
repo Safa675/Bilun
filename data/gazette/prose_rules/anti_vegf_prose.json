@@ -2,12 +2,108 @@
   "rule_set_id": "anti_vegf_prose",
   "title": "SUT §4.2.33 göz hastalıklarında ilaç kullanım ilkeleri — anti-VEGF / intravitreal prose",
   "effective_date": "2026-05-23",
-  "coverage_note": "§4.2.33 A–F endikasyon grupları için INN + ICD-10 + sağlık kurulu raporu + reçete eden branş + doz protokolü kuralları. Yaş tip AMD, RVDT/SRVT, PM-KNV, DMÖ, ROP. drug_indication_prose §4.2.14.C'den ayrı; aynı Tier 3b matcher tarafından yüklenir.",
+  "coverage_note": "R5 A2c — 29 §4.2.33 rules; anti-VEGF tail batch merged.",
   "sut_anchors": [
     "4.2",
     "4.2.33"
   ],
   "rules": [
+    {
+      "rule_id": "4.2.33.A.aflibersept_wet_amd",
+      "sut_section": "4.2.33.A",
+      "drug_names": [
+        "aflibersept"
+      ],
+      "icd10_codes": [
+        "H35.3"
+      ],
+      "indication_tr": "Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "report_duration_months": 3,
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "loading_dose_count": 3,
+      "gate_b_sources": [
+        "C006472",
+        "C006473",
+        "C006562"
+      ],
+      "message_tr": "Aflibersept (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 3 yükleme dozu; göz hastalıkları uzmanınca reçete (§4.2.33.A)."
+    },
+    {
+      "rule_id": "4.2.33.A.anti_vegf_switch_after_bevacizumab_failure",
+      "sut_section": "4.2.33.A",
+      "drug_names": [
+        "ranibizumab",
+        "aflibersept"
+      ],
+      "icd10_codes": [
+        "H35.3"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "message_tr": "Ranibizumab/aflibersept (YAŞ AMD) — bevacizumab tedavisine cevapsızlıkta göz hastalıkları uzmanı raporu ile geçiş (§4.2.33.A/2).",
+      "gate_b_sources": [
+        "C006562"
+      ],
+      "report_duration_months": 3,
+      "loading_dose_count": 3
+    },
+    {
+      "rule_id": "4.2.33.A.bevacizumab_first_line_wet_amd",
+      "sut_section": "4.2.33.A",
+      "drug_names": [
+        "bevacizumab"
+      ],
+      "icd10_codes": [
+        "H35.3"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "message_tr": "Bevacizumab (YAŞ AMD) — ilk tedavi seçeneği; göz hastalıkları uzmanı sağlık kurulu raporu ve reçete şartı (§4.2.33.A/1).",
+      "gate_b_sources": [
+        "C006561"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.33.A.bevacizumab_wet_amd",
+      "sut_section": "4.2.33.A",
+      "drug_names": [
+        "bevacizumab"
+      ],
+      "icd10_codes": [
+        "H35.3"
+      ],
+      "indication_tr": "Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "loading_dose_count": 3,
+      "gate_b_sources": [
+        "C006526",
+        "C006527"
+      ],
+      "message_tr": "Bevacizumab (YAŞ AMD) — günübirlik tedavi kapsamında, göz hastalıkları uzmanı raporuyla 3 yükleme dozu (1,25 mg/0,1 ml); ilk tedavi seçeneği (§4.2.33)."
+    },
     {
       "rule_id": "4.2.33.A.pegaptanib_wet_amd",
       "sut_section": "4.2.33.A",
@@ -51,33 +147,12 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
+        "C006458",
+        "C006472",
+        "C006473",
         "C006562"
       ],
       "message_tr": "Ranibizumab (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla birer ay arayla 3 kez yükleme dozu; ardışık/kombine kullanım yasak (§4.2.33.A)."
-    },
-    {
-      "rule_id": "4.2.33.A.aflibersept_wet_amd",
-      "sut_section": "4.2.33.A",
-      "drug_names": [
-        "aflibersept"
-      ],
-      "icd10_codes": [
-        "H35.3"
-      ],
-      "indication_tr": "Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)",
-      "report_required": true,
-      "report_specialties": [
-        "göz hastalıkları"
-      ],
-      "report_duration_months": 3,
-      "prescriber_specialties": [
-        "göz hastalıkları"
-      ],
-      "loading_dose_count": 3,
-      "gate_b_sources": [
-        "C006562"
-      ],
-      "message_tr": "Aflibersept (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 3 yükleme dozu; göz hastalıkları uzmanınca reçete (§4.2.33.A)."
     },
     {
       "rule_id": "4.2.33.A.verteporfin_wet_amd",
@@ -102,77 +177,6 @@
         "C006561"
       ],
       "message_tr": "Verteporfin (YAŞ AMD) — 3 ay süreli sağlık kurulu raporu ve göz hastalıkları uzmanı reçetesi (§4.2.33.A)."
-    },
-    {
-      "rule_id": "4.2.33.A.bevacizumab_wet_amd",
-      "sut_section": "4.2.33.A",
-      "drug_names": [
-        "bevacizumab"
-      ],
-      "icd10_codes": [
-        "H35.3"
-      ],
-      "indication_tr": "Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)",
-      "report_required": true,
-      "report_specialties": [
-        "göz hastalıkları"
-      ],
-      "prescriber_specialties": [
-        "göz hastalıkları"
-      ],
-      "loading_dose_count": 3,
-      "gate_b_sources": [
-        "C006526",
-        "C006527"
-      ],
-      "message_tr": "Bevacizumab (YAŞ AMD) — günübirlik tedavi kapsamında, göz hastalıkları uzmanı raporuyla 3 yükleme dozu (1,25 mg/0,1 ml); ilk tedavi seçeneği (§4.2.33)."
-    },
-    {
-      "rule_id": "4.2.33.B.deksametazon_itv_implant_rvdt_srvt",
-      "sut_section": "4.2.33.B",
-      "drug_names": [
-        "deksametazon"
-      ],
-      "icd10_codes": [
-        "H34.8"
-      ],
-      "indication_tr": "Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)",
-      "report_required": true,
-      "report_specialties": [
-        "göz hastalıkları"
-      ],
-      "prescriber_specialties": [
-        "göz hastalıkları"
-      ],
-      "max_applications_per_year": 2,
-      "gate_b_sources": [
-        "C006564"
-      ],
-      "message_tr": "Deksametazon intravitreal implant (RVDT/SRVT) — her göz için yılda maksimum 2 uygulama; 3 göz hastalıkları uzmanı sağlık kurulu raporu (§4.2.33.B)."
-    },
-    {
-      "rule_id": "4.2.33.B.ranibizumab_rvdt_srvt",
-      "sut_section": "4.2.33.B",
-      "drug_names": [
-        "ranibizumab"
-      ],
-      "icd10_codes": [
-        "H34.8"
-      ],
-      "indication_tr": "Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT) — deksametazon uygun değilse",
-      "report_required": true,
-      "report_specialties": [
-        "göz hastalıkları"
-      ],
-      "report_duration_months": 3,
-      "prescriber_specialties": [
-        "göz hastalıkları"
-      ],
-      "loading_dose_count": 3,
-      "gate_b_sources": [
-        "C006565"
-      ],
-      "message_tr": "Ranibizumab (RVDT/SRVT) — deksametazon uygun değilse 3 ay süreli rapor ve 3 yükleme dozu (§4.2.33.B)."
     },
     {
       "rule_id": "4.2.33.B.aflibersept_rvdt_srvt",
@@ -223,6 +227,125 @@
       "message_tr": "Bevacizumab (RVDT/SRVT) — ilk tedavi; günübirlik kapsamda 3 yükleme dozu (§4.2.33.B/Ç)."
     },
     {
+      "rule_id": "4.2.33.B.deksametazon_itv_implant_rvdt_srvt",
+      "sut_section": "4.2.33.B",
+      "drug_names": [
+        "deksametazon"
+      ],
+      "icd10_codes": [
+        "H34.8"
+      ],
+      "indication_tr": "Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT)",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "max_applications_per_year": 2,
+      "gate_b_sources": [
+        "C006564"
+      ],
+      "message_tr": "Deksametazon intravitreal implant (RVDT/SRVT) — her göz için yılda maksimum 2 uygulama; 3 göz hastalıkları uzmanı sağlık kurulu raporu (§4.2.33.B)."
+    },
+    {
+      "rule_id": "4.2.33.B.ranibizumab_rvdt_loading_protocol",
+      "sut_section": "4.2.33.B",
+      "drug_names": [
+        "ranibizumab",
+        "aflibersept"
+      ],
+      "icd10_codes": [
+        "H34.8"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "message_tr": "Ranibizumab/aflibersept (RVDT/SRVT) — deksametazon uygun değilse 3 ay süreli rapor ve 3 yükleme dozu (§4.2.33.B, C006480 güncellemesi).",
+      "gate_b_sources": [
+        "C006480",
+        "C006481"
+      ],
+      "report_duration_months": 3,
+      "loading_dose_count": 3
+    },
+    {
+      "rule_id": "4.2.33.B.ranibizumab_rvdt_srvt",
+      "sut_section": "4.2.33.B",
+      "drug_names": [
+        "ranibizumab"
+      ],
+      "icd10_codes": [
+        "H34.8"
+      ],
+      "indication_tr": "Retina ven dal/santral retinal ven tıkanıklığı (RVDT/SRVT) — deksametazon uygun değilse",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "report_duration_months": 3,
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "loading_dose_count": 3,
+      "gate_b_sources": [
+        "C006565"
+      ],
+      "message_tr": "Ranibizumab (RVDT/SRVT) — deksametazon uygun değilse 3 ay süreli rapor ve 3 yükleme dozu (§4.2.33.B)."
+    },
+    {
+      "rule_id": "4.2.33.C.aflibersept_pm_knv",
+      "sut_section": "4.2.33.C",
+      "drug_names": [
+        "aflibersept"
+      ],
+      "icd10_codes": [
+        "H44.2"
+      ],
+      "indication_tr": "Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "loading_dose_count": 3,
+      "gate_b_sources": [
+        "C006568"
+      ],
+      "message_tr": "Aflibersept (PM-KNV) — 3 göz hastalıkları uzmanı sağlık kurulu raporu; ayakta tedavi kapsamında (§4.2.33.C)."
+    },
+    {
+      "rule_id": "4.2.33.C.anti_vegf_switch_after_bevacizumab_pm_knv",
+      "sut_section": "4.2.33.C",
+      "drug_names": [
+        "ranibizumab",
+        "aflibersept"
+      ],
+      "icd10_codes": [
+        "H44.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "message_tr": "Ranibizumab/aflibersept (PM-KNV) — bevacizumab cevapsızlığında göz hastalıkları uzmanı raporu ile geçiş (§4.2.33.C/2).",
+      "gate_b_sources": [
+        "C006568"
+      ],
+      "report_duration_months": 3,
+      "loading_dose_count": 3
+    },
+    {
       "rule_id": "4.2.33.C.bevacizumab_pm_knv",
       "sut_section": "4.2.33.C",
       "drug_names": [
@@ -270,15 +393,45 @@
       "message_tr": "Ranibizumab (PM-KNV) — 3 göz hastalıkları uzmanı sağlık kurulu raporu; ayakta tedavi kapsamında (§4.2.33.C)."
     },
     {
-      "rule_id": "4.2.33.C.aflibersept_pm_knv",
-      "sut_section": "4.2.33.C",
+      "rule_id": "4.2.33.D.aflibersept_dmo",
+      "sut_section": "4.2.33.D",
       "drug_names": [
         "aflibersept"
       ],
       "icd10_codes": [
-        "H44.2"
+        "E10.3",
+        "E11.3",
+        "E13.3",
+        "E14.3"
       ],
-      "indication_tr": "Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)",
+      "indication_tr": "Diyabetik maküler ödem (DMÖ)",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "report_duration_months": 5,
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "loading_dose_count": 3,
+      "gate_b_sources": [
+        "C006526"
+      ],
+      "message_tr": "Aflibersept (DMÖ) — 5 ay süreli sağlık kurulu raporu (DMÖ'de aflibersept için), 3 yükleme dozu (§4.2.33.D/C006552)."
+    },
+    {
+      "rule_id": "4.2.33.D.bevacizumab_dmo",
+      "sut_section": "4.2.33.D",
+      "drug_names": [
+        "bevacizumab"
+      ],
+      "icd10_codes": [
+        "E10.3",
+        "E11.3",
+        "E13.3",
+        "E14.3"
+      ],
+      "indication_tr": "Diyabetik maküler ödem (DMÖ)",
       "report_required": true,
       "report_specialties": [
         "göz hastalıkları"
@@ -288,9 +441,204 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006568"
+        "C006548"
       ],
-      "message_tr": "Aflibersept (PM-KNV) — 3 göz hastalıkları uzmanı sağlık kurulu raporu; ayakta tedavi kapsamında (§4.2.33.C)."
+      "message_tr": "Bevacizumab (DMÖ) — ilk tedavi seçeneği; günübirlik kapsamda 3 yükleme dozu (1,25 mg) (§4.2.33)."
+    },
+    {
+      "rule_id": "4.2.33.D.deksametazon_itv_dmo",
+      "sut_section": "4.2.33.D",
+      "drug_names": [
+        "deksametazon"
+      ],
+      "icd10_codes": [
+        "E10.3",
+        "E11.3",
+        "E13.3",
+        "E14.3"
+      ],
+      "indication_tr": "Diyabetik maküler ödem (DMÖ)",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "max_applications_per_year": 2,
+      "gate_b_sources": [
+        "C006526"
+      ],
+      "message_tr": "Deksametazon ITV implant (DMÖ) — her göz için yılda maksimum 2 uygulama (§4.2.33.D/B)."
+    },
+    {
+      "rule_id": "4.2.33.D.ranibizumab_dmo",
+      "sut_section": "4.2.33.D",
+      "drug_names": [
+        "ranibizumab"
+      ],
+      "icd10_codes": [
+        "E10.3",
+        "E11.3",
+        "E13.3",
+        "E14.3"
+      ],
+      "indication_tr": "Diyabetik maküler ödem (DMÖ)",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "report_duration_months": 3,
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "loading_dose_count": 3,
+      "gate_b_sources": [
+        "C006526"
+      ],
+      "message_tr": "Ranibizumab (DMÖ) — 3 ay süreli sağlık kurulu raporu, 3 yükleme dozu; her uygulama için yeni rapor (§4.2.33.D)."
+    },
+    {
+      "rule_id": "4.2.33.E.siklosporin_dry_eye_annual_report",
+      "sut_section": "4.2.33.E",
+      "drug_names": [
+        "siklosporin"
+      ],
+      "icd10_codes": [],
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "message_tr": "Siklosporin göz damlası — göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.D/1, C006575).",
+      "gate_b_sources": [
+        "C006575"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.33.E.siklosporin_kuru_goz",
+      "sut_section": "4.2.33.E",
+      "drug_names": [
+        "siklosporin"
+      ],
+      "icd10_codes": [],
+      "indication_tr": "Kuru göz sendromu (immünsupresif göz damlası)",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "gate_b_sources": [
+        "C006508",
+        "C006575"
+      ],
+      "message_tr": "Siklosporin göz damlası — 3 göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.E)."
+    },
+    {
+      "rule_id": "4.2.33.E.sisteamin_sistinozis",
+      "sut_section": "4.2.33.E",
+      "drug_names": [
+        "sisteamin",
+        "merkaptamin"
+      ],
+      "icd10_codes": [
+        "E72.0"
+      ],
+      "indication_tr": "Sistinozis (korneal sistin kristal yatakları)",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "gate_b_sources": [
+        "C006583"
+      ],
+      "message_tr": "Sisteamin hidroklorür — CTNS gen mutasyonu/sistin düzeyiyle doğrulanmış sistinozis tanısı, yarık lamba bulgusu raporu (§4.2.33.E)."
+    },
+    {
+      "rule_id": "4.2.33.F.ranibizumab_rop",
+      "sut_section": "4.2.33.F",
+      "drug_names": [
+        "ranibizumab"
+      ],
+      "icd10_codes": [
+        "H35.1",
+        "P35.1"
+      ],
+      "indication_tr": "Prematüre retinopatisi (ROP) — zon I/II evre 3+ veya APROP",
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "gate_b_sources": [
+        "C006586"
+      ],
+      "message_tr": "Ranibizumab (ROP) — prematüre bebeklerde zon I/II evre 3+ veya APROP tanısı; çocuk göz hastalıkları uzmanı raporu (§4.2.33.F)."
+    },
+    {
+      "rule_id": "4.2.33.general_ranibizumab_aflibersept_loading_protocol",
+      "sut_section": "4.2.33",
+      "drug_names": [
+        "ranibizumab",
+        "aflibersept"
+      ],
+      "icd10_codes": [
+        "H35.3",
+        "E10.3",
+        "E11.3",
+        "E13.3",
+        "E14.3"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "message_tr": "Ranibizumab/aflibersept — 4-6 hafta arayla ardışık 3 yükleme dozu; göz hastalıkları uzmanı raporu (§4.2.33/9).",
+      "gate_b_sources": [
+        "C006553"
+      ],
+      "report_duration_months": 3,
+      "loading_dose_count": 3
+    },
+    {
+      "rule_id": "4.2.33.general_switch_to_bevacizumab",
+      "sut_section": "4.2.33",
+      "drug_names": [
+        "bevacizumab"
+      ],
+      "icd10_codes": [
+        "H35.3",
+        "E10.3",
+        "E11.3",
+        "E13.3",
+        "E14.3"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "message_tr": "Bevacizumab — ranibizumab/aflibersept arasında ilaç değişimi gereken hallerde tedaviye bevacizumab ile devam; göz hastalıkları raporu (§4.2.33/7).",
+      "gate_b_sources": [
+        "C006549"
+      ],
+      "loading_dose_count": 3
     },
     {
       "rule_id": "4.2.33.Ç.bevacizumab_dmo",
@@ -346,62 +694,8 @@
       "message_tr": "Deksametazon ITV implant (DMÖ) — bevacizumab kontrendike ise 1 defaya mahsus; yılda maks 2 (§4.2.33.Ç)."
     },
     {
-      "rule_id": "4.2.33.D.ranibizumab_dmo",
-      "sut_section": "4.2.33.D",
-      "drug_names": [
-        "ranibizumab"
-      ],
-      "icd10_codes": [
-        "E10.3",
-        "E11.3",
-        "E13.3",
-        "E14.3"
-      ],
-      "indication_tr": "Diyabetik maküler ödem (DMÖ)",
-      "report_required": true,
-      "report_specialties": [
-        "göz hastalıkları"
-      ],
-      "report_duration_months": 3,
-      "prescriber_specialties": [
-        "göz hastalıkları"
-      ],
-      "loading_dose_count": 3,
-      "gate_b_sources": [
-        "C006526"
-      ],
-      "message_tr": "Ranibizumab (DMÖ) — 3 ay süreli sağlık kurulu raporu, 3 yükleme dozu; her uygulama için yeni rapor (§4.2.33.D)."
-    },
-    {
-      "rule_id": "4.2.33.D.aflibersept_dmo",
-      "sut_section": "4.2.33.D",
-      "drug_names": [
-        "aflibersept"
-      ],
-      "icd10_codes": [
-        "E10.3",
-        "E11.3",
-        "E13.3",
-        "E14.3"
-      ],
-      "indication_tr": "Diyabetik maküler ödem (DMÖ)",
-      "report_required": true,
-      "report_specialties": [
-        "göz hastalıkları"
-      ],
-      "report_duration_months": 5,
-      "prescriber_specialties": [
-        "göz hastalıkları"
-      ],
-      "loading_dose_count": 3,
-      "gate_b_sources": [
-        "C006526"
-      ],
-      "message_tr": "Aflibersept (DMÖ) — 5 ay süreli sağlık kurulu raporu (DMÖ'de aflibersept için), 3 yükleme dozu (§4.2.33.D/C006552)."
-    },
-    {
-      "rule_id": "4.2.33.D.deksametazon_itv_dmo",
-      "sut_section": "4.2.33.D",
+      "rule_id": "4.2.33.Ç.deksametazon_timing_after_anti_vegf",
+      "sut_section": "4.2.33.Ç",
       "drug_names": [
         "deksametazon"
       ],
@@ -411,7 +705,6 @@
         "E13.3",
         "E14.3"
       ],
-      "indication_tr": "Diyabetik maküler ödem (DMÖ)",
       "report_required": true,
       "report_specialties": [
         "göz hastalıkları"
@@ -419,104 +712,11 @@
       "prescriber_specialties": [
         "göz hastalıkları"
       ],
-      "max_applications_per_year": 2,
+      "message_tr": "Deksametazon ITV — anti-VEGF yükleme sonrası idame sırasında veya anti-VEGF kontrendikasyonunda; yılda maks 2 uygulama (§4.2.33/12).",
       "gate_b_sources": [
-        "C006526"
+        "C006558"
       ],
-      "message_tr": "Deksametazon ITV implant (DMÖ) — her göz için yılda maksimum 2 uygulama (§4.2.33.D/B)."
-    },
-    {
-      "rule_id": "4.2.33.D.bevacizumab_dmo",
-      "sut_section": "4.2.33.D",
-      "drug_names": [
-        "bevacizumab"
-      ],
-      "icd10_codes": [
-        "E10.3",
-        "E11.3",
-        "E13.3",
-        "E14.3"
-      ],
-      "indication_tr": "Diyabetik maküler ödem (DMÖ)",
-      "report_required": true,
-      "report_specialties": [
-        "göz hastalıkları"
-      ],
-      "prescriber_specialties": [
-        "göz hastalıkları"
-      ],
-      "loading_dose_count": 3,
-      "gate_b_sources": [
-        "C006548"
-      ],
-      "message_tr": "Bevacizumab (DMÖ) — ilk tedavi seçeneği; günübirlik kapsamda 3 yükleme dozu (1,25 mg) (§4.2.33)."
-    },
-    {
-      "rule_id": "4.2.33.E.siklosporin_kuru_goz",
-      "sut_section": "4.2.33.E",
-      "drug_names": [
-        "siklosporin"
-      ],
-      "icd10_codes": [],
-      "indication_tr": "Kuru göz sendromu (immünsupresif göz damlası)",
-      "report_required": true,
-      "report_specialties": [
-        "göz hastalıkları"
-      ],
-      "report_duration_months": 12,
-      "prescriber_specialties": [
-        "göz hastalıkları"
-      ],
-      "gate_b_sources": [
-        "C006575"
-      ],
-      "message_tr": "Siklosporin göz damlası — 3 göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.E)."
-    },
-    {
-      "rule_id": "4.2.33.E.sisteamin_sistinozis",
-      "sut_section": "4.2.33.E",
-      "drug_names": [
-        "sisteamin",
-        "merkaptamin"
-      ],
-      "icd10_codes": [
-        "E72.0"
-      ],
-      "indication_tr": "Sistinozis (korneal sistin kristal yatakları)",
-      "report_required": true,
-      "report_specialties": [
-        "göz hastalıkları"
-      ],
-      "prescriber_specialties": [
-        "göz hastalıkları"
-      ],
-      "gate_b_sources": [
-        "C006583"
-      ],
-      "message_tr": "Sisteamin hidroklorür — CTNS gen mutasyonu/sistin düzeyiyle doğrulanmış sistinozis tanısı, yarık lamba bulgusu raporu (§4.2.33.E)."
-    },
-    {
-      "rule_id": "4.2.33.F.ranibizumab_rop",
-      "sut_section": "4.2.33.F",
-      "drug_names": [
-        "ranibizumab"
-      ],
-      "icd10_codes": [
-        "H35.1",
-        "P35.1"
-      ],
-      "indication_tr": "Prematüre retinopatisi (ROP) — zon I/II evre 3+ veya APROP",
-      "report_required": true,
-      "report_specialties": [
-        "göz hastalıkları"
-      ],
-      "prescriber_specialties": [
-        "göz hastalıkları"
-      ],
-      "gate_b_sources": [
-        "C006586"
-      ],
-      "message_tr": "Ranibizumab (ROP) — prematüre bebeklerde zon I/II evre 3+ veya APROP tanısı; çocuk göz hastalıkları uzmanı raporu (§4.2.33.F)."
+      "max_applications_per_year": 2
     }
   ]
 }

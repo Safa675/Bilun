@@ -1,0 +1,61 @@
+{
+  "samples": [
+    {
+      "drug_name": "AVASTIN (BEVACIZUMAB)",
+      "primary_icd10": "H35.3",
+      "report_present": true,
+      "report_duration_months": 3,
+      "prescriber_specialty": "göz hastalıkları",
+      "expect_violation": null,
+      "rule_id": "4.2.33.A.bevacizumab_first_line_wet_amd"
+    },
+    {
+      "drug_name": "AVASTIN (BEVACIZUMAB)",
+      "primary_icd10": "H35.3",
+      "report_present": false,
+      "prescriber_specialty": "göz hastalıkları",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.33.A.bevacizumab_first_line_wet_amd"
+    },
+    {
+      "drug_name": "LUCENTIS (RANIBIZUMAB)",
+      "primary_icd10": "H35.3",
+      "report_present": true,
+      "report_duration_months": 3,
+      "prescriber_specialty": "göz hastalıkları",
+      "annual_application_count": 3,
+      "is_loading_phase": true,
+      "expect_violation": null,
+      "rule_id": "4.2.33.A.anti_vegf_switch_after_bevacizumab_failure"
+    },
+    {
+      "drug_name": "AVASTIN (BEVACIZUMAB)",
+      "primary_icd10": "E11.3",
+      "report_present": true,
+      "report_duration_months": 3,
+      "prescriber_specialty": "göz hastalıkları",
+      "annual_application_count": 3,
+      "is_loading_phase": true,
+      "expect_violation": null,
+      "rule_id": "4.2.33.general_switch_to_bevacizumab"
+    },
+    {
+      "drug_name": "RESTASIS (SIKLOSPORIN)",
+      "primary_icd10": "H04.1",
+      "report_present": true,
+      "report_duration_months": 12,
+      "prescriber_specialty": "göz hastalıkları",
+      "expect_violation": null,
+      "rule_id": "4.2.33.E.siklosporin_dry_eye_annual_report"
+    },
+    {
+      "drug_name": "OZURDEX (DEKSAMETAZON)",
+      "primary_icd10": "E11.3",
+      "report_present": true,
+      "prescriber_specialty": "göz hastalıkları",
+      "annual_application_count": 3,
+      "expect_violation": "annual_max_exceeded",
+      "rule_id": "4.2.33.Ç.deksametazon_timing_after_anti_vegf"
+    }
+  ]
+}

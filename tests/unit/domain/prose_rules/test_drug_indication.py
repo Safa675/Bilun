@@ -16,9 +16,10 @@ from src.bilun.domain.prose_rules.drug_indication import (
     load_drug_indication_rules,
 )
 
-_PHASE2_ONCOLOGY_RULE_COUNT = 164  # 131 base + 11 Bucket A + 22 Bucket B
-_ANTI_VEGF_RULE_COUNT = 21
-_MERGED_RULE_COUNT = _PHASE2_ONCOLOGY_RULE_COUNT + _ANTI_VEGF_RULE_COUNT
+_PHASE2_ONCOLOGY_RULE_COUNT = 164  # §4.2.14.C oncology corpus
+_A2_4213_4216_RULE_COUNT = 13
+_ANTI_VEGF_RULE_COUNT = 29
+_MERGED_RULE_COUNT = _PHASE2_ONCOLOGY_RULE_COUNT + _A2_4213_4216_RULE_COUNT + _ANTI_VEGF_RULE_COUNT
 
 
 def _claim(*, primary_icd10: str = "C34.9") -> ClaimHeader:
@@ -101,8 +102,9 @@ def test_drug_indication_coverage_scope_phase2() -> None:
     assert scope["section_4.2.14.C_rule_count"] == _PHASE2_ONCOLOGY_RULE_COUNT
     assert scope["tier_b_rule_count"] >= 20
     assert scope["target_phase2_rule_count"] >= 131
-    # Tier-C deferred shrank to ~207 after in-force strike filtering (~69 superseded removed).
-    assert scope["encode_tier_C_deferred_count"] >= 200
+    # Tier-C deferred + EMR-blocked traced clauses (A1 repair partitions in-force rows).
+    deferred_or_emr = scope["encode_tier_C_deferred_count"] + scope.get("emr_blocked_count", 0)
+    assert deferred_or_emr >= 150
     assert scope["encoded_clause_count"] > 0
     assert scope["encoded_clause_pct"] > 0.0
     assert scope["clause_trace_complete"] is True

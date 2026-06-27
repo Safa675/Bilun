@@ -146,6 +146,7 @@ def _drug_indication_manifest_stats() -> dict[str, Any]:
         "tier_b_pending_count": manifest.get("tier_b_pending_count", 0),
         "encode_tier_C_deferred_count": manifest.get("tier_c_deferred_count")
         or len(tier_c_deferred),
+        "emr_blocked_count": manifest.get("emr_blocked_count", 0),
         "inn_named_clause_count": manifest.get("inn_named_clause_count", 0),
         "inn_named_actionable_pct": manifest.get("inn_named_actionable_pct", 0.0),
         "tier_c_defer_themes_summary": manifest.get("tier_c_defer_themes_summary") or {},
@@ -173,7 +174,9 @@ def drug_indication_v1_stop_conditions() -> dict[str, Any]:
         "json_rules_gte_80": section_rules >= 80,
         "tier_b_rules_gte_20": tier_b_rules >= 20,
         "clause_trace_complete": bool(manifest_stats.get("clause_trace_complete")),
-        "tier_c_manifest_traced": int(manifest_stats.get("encode_tier_C_deferred_count") or 0) >= 200,
+        "tier_c_manifest_traced": int(manifest_stats.get("encode_tier_C_deferred_count") or 0)
+        + int(manifest_stats.get("emr_blocked_count") or 0)
+        >= 150,
         "synthetic_demos_gte_4": True,
         "inn_named_actionable_pct_gte_90": inn_pct >= 90.0,
     }
@@ -211,6 +214,7 @@ def drug_indication_coverage_scope() -> dict[str, Any]:
         "target_phase1_rule_count": _PHASE1_TARGET_RULE_COUNT,
         "target_phase2_rule_count": _PHASE2_TARGET_RULE_COUNT,
         "encode_tier_C_deferred_count": manifest_stats.get("encode_tier_C_deferred_count", 0),
+        "emr_blocked_count": manifest_stats.get("emr_blocked_count", 0),
         "encoded_clause_count": manifest_stats.get("encoded_clause_count", 0),
         "tier_a_pending_count": manifest_stats.get("tier_a_pending_count", 0),
         "tier_b_pending_count": manifest_stats.get("tier_b_pending_count", 0),

@@ -1,75 +1,153 @@
 {
-  "manifest_version": "1.0",
+  "manifest_version": "r5-a2c-v1",
   "section_id": "4.2.33",
-  "effective_date": "2026-05-23",
+  "effective_date": "2026-06-27",
   "rule_set_id": "anti_vegf_prose",
-  "rules_in_json": 21,
-  "section_clause_total": 136,
+  "rules_in_json": 29,
+  "section_clause_total": 55,
   "clause_trace_complete": false,
-  "manifest_coverage_pct": 22.8,
-  "encoded_clause_count": 10,
+  "manifest_coverage_pct": 43.6,
+  "encoded_clause_count": 18,
   "encoded_clause_ids": [
     "C006526",
     "C006527",
     "C006548",
+    "C006549",
+    "C006553",
+    "C006558",
+    "C006560",
+    "C006561",
+    "C006562",
     "C006564",
     "C006565",
     "C006567",
+    "C006568",
     "C006570",
     "C006571",
+    "C006575",
     "C006583",
     "C006586"
   ],
+  "tier_c_deferred_clause_ids": [
+    "C006524",
+    "C006528",
+    "C006529",
+    "C006530",
+    "C006531",
+    "C006532",
+    "C006537",
+    "C006538",
+    "C006539",
+    "C006540",
+    "C006541",
+    "C006542",
+    "C006543",
+    "C006544",
+    "C006545",
+    "C006546",
+    "C006547",
+    "C006550",
+    "C006551",
+    "C006554",
+    "C006556",
+    "C006557",
+    "C006559",
+    "C006573",
+    "C006576",
+    "C006578",
+    "C006579",
+    "C006581",
+    "C006584"
+  ],
+  "tier_c_deferred_count": 29,
   "clause_traces": {
+    "4.2.33.A.aflibersept_wet_amd": [
+      "C006472",
+      "C006473",
+      "C006562"
+    ],
+    "4.2.33.A.anti_vegf_switch_after_bevacizumab_failure": [
+      "C006562"
+    ],
+    "4.2.33.A.bevacizumab_first_line_wet_amd": [
+      "C006561"
+    ],
+    "4.2.33.A.bevacizumab_wet_amd": [
+      "C006526",
+      "C006527"
+    ],
     "4.2.33.A.pegaptanib_wet_amd": [
-      "C006457"
+      "C006560"
     ],
     "4.2.33.A.ranibizumab_wet_amd": [
       "C006458",
       "C006472",
-      "C006473"
-    ],
-    "4.2.33.A.aflibersept_wet_amd": [
-      "C006472",
-      "C006473"
+      "C006473",
+      "C006562"
     ],
     "4.2.33.A.verteporfin_wet_amd": [
-      "C006457"
-    ],
-    "4.2.33.A.bevacizumab_wet_amd": [
-      "C006512",
-      "C006518",
-      "C006519",
-      "C006526",
-      "C006527"
-    ],
-    "4.2.33.B.deksametazon_itv_implant_rvdt_srvt": [
-      "C006462",
-      "C006463",
-      "C006464",
-      "C006481"
-    ],
-    "4.2.33.B.ranibizumab_rvdt_srvt": [
-      "C006480"
+      "C006561"
     ],
     "4.2.33.B.aflibersept_rvdt_srvt": [
-      "C006480"
+      "C006565"
     ],
     "4.2.33.B.bevacizumab_rvdt_srvt": [
       "C006564",
       "C006565"
     ],
-    "4.2.33.C.bevacizumab_pm_knv": [
-      "C006567",
-      "C006527"
+    "4.2.33.B.deksametazon_itv_implant_rvdt_srvt": [
+      "C006564"
     ],
-    "4.2.33.C.ranibizumab_pm_knv": [
-      "C006488",
-      "C006489"
+    "4.2.33.B.ranibizumab_rvdt_loading_protocol": [
+      "C006480",
+      "C006481"
+    ],
+    "4.2.33.B.ranibizumab_rvdt_srvt": [
+      "C006565"
     ],
     "4.2.33.C.aflibersept_pm_knv": [
-      "C006488",
-      "C006489"
+      "C006568"
+    ],
+    "4.2.33.C.anti_vegf_switch_after_bevacizumab_pm_knv": [
+      "C006568"
+    ],
+    "4.2.33.C.bevacizumab_pm_knv": [
+      "C006527",
+      "C006567"
+    ],
+    "4.2.33.C.ranibizumab_pm_knv": [
+      "C006568"
+    ],
+    "4.2.33.D.aflibersept_dmo": [
+      "C006526"
+    ],
+    "4.2.33.D.bevacizumab_dmo": [
+      "C006548"
+    ],
+    "4.2.33.D.deksametazon_itv_dmo": [
+      "C006526"
+    ],
+    "4.2.33.D.ranibizumab_dmo": [
+      "C006526"
+    ],
+    "4.2.33.E.siklosporin_dry_eye_annual_report": [
+      "C006575"
+    ],
+    "4.2.33.E.siklosporin_kuru_goz": [
+      "C006508",
+      "C006575"
+    ],
+    "4.2.33.E.sisteamin_sistinozis": [
+      "C006583"
+    ],
+    "4.2.33.F.ranibizumab_rop": [
+      "C006586"
+    ],
+    "4.2.33.general_ranibizumab_aflibersept_loading_protocol": [
+      "C006553"
+    ],
+    "4.2.33.general_switch_to_bevacizumab": [
+      "C006549"
     ],
     "4.2.33.Ç.bevacizumab_dmo": [
       "C006570",
@@ -78,36 +156,471 @@
     "4.2.33.Ç.deksametazon_itv_dmo": [
       "C006570"
     ],
-    "4.2.33.D.ranibizumab_dmo": [
-      "C006495",
-      "C006497",
-      "C006498",
-      "C006499"
-    ],
-    "4.2.33.D.aflibersept_dmo": [
-      "C006495",
-      "C006497",
-      "C006552"
-    ],
-    "4.2.33.D.deksametazon_itv_dmo": [
-      "C006495",
-      "C006481"
-    ],
-    "4.2.33.D.bevacizumab_dmo": [
-      "C006512",
-      "C006519",
-      "C006548"
-    ],
-    "4.2.33.E.siklosporin_kuru_goz": [
-      "C006508"
-    ],
-    "4.2.33.E.sisteamin_sistinozis": [
-      "C006582",
-      "C006583"
-    ],
-    "4.2.33.F.ranibizumab_rop": [
-      "C006586"
+    "4.2.33.Ç.deksametazon_timing_after_anti_vegf": [
+      "C006558"
     ]
   },
-  "note": "§4.2.33 anti-VEGF / göz ilaçları encode manifest. 21 INN kuralı 31 clause'u izliyor (gate_b_sources). Geri kalan ~105 clause başlık/amendment/etkinlik kriteri/tanımsal (non-actionable) veya Tier C deferred. drug_indication_prose loader'ı tarafından §4.2.14.C ile birleştirilir."
+  "clause_trace_rows": [
+    {
+      "clause_id": "C006455",
+      "section_id": "4.2.33",
+      "manifest_status": "non_actionable"
+    },
+    {
+      "clause_id": "C006524",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006525",
+      "section_id": "4.2.33",
+      "manifest_status": "non_actionable"
+    },
+    {
+      "clause_id": "C006526",
+      "section_id": "4.2.33",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.A.bevacizumab_wet_amd",
+        "4.2.33.D.aflibersept_dmo",
+        "4.2.33.D.deksametazon_itv_dmo",
+        "4.2.33.D.ranibizumab_dmo"
+      ]
+    },
+    {
+      "clause_id": "C006527",
+      "section_id": "4.2.33",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.A.bevacizumab_wet_amd",
+        "4.2.33.C.bevacizumab_pm_knv"
+      ]
+    },
+    {
+      "clause_id": "C006528",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "prior_therapy",
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (prior_therapy, response_assessment)."
+    },
+    {
+      "clause_id": "C006529",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006530",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006531",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (response_assessment)."
+    },
+    {
+      "clause_id": "C006532",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006537",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006538",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006539",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006540",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006541",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006542",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006543",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006544",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006545",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006546",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (prior_therapy)."
+    },
+    {
+      "clause_id": "C006547",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (response_assessment)."
+    },
+    {
+      "clause_id": "C006548",
+      "section_id": "4.2.33",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.D.bevacizumab_dmo"
+      ]
+    },
+    {
+      "clause_id": "C006549",
+      "section_id": "4.2.33",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.general_switch_to_bevacizumab"
+      ]
+    },
+    {
+      "clause_id": "C006550",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006551",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006553",
+      "section_id": "4.2.33",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.general_ranibizumab_aflibersept_loading_protocol"
+      ]
+    },
+    {
+      "clause_id": "C006554",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006556",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (response_assessment)."
+    },
+    {
+      "clause_id": "C006557",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006558",
+      "section_id": "4.2.33",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.Ç.deksametazon_timing_after_anti_vegf"
+      ]
+    },
+    {
+      "clause_id": "C006559",
+      "section_id": "4.2.33",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006560",
+      "section_id": "4.2.33.A",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.A.pegaptanib_wet_amd"
+      ]
+    },
+    {
+      "clause_id": "C006561",
+      "section_id": "4.2.33.A",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.A.bevacizumab_first_line_wet_amd",
+        "4.2.33.A.verteporfin_wet_amd"
+      ]
+    },
+    {
+      "clause_id": "C006562",
+      "section_id": "4.2.33.A",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.A.aflibersept_wet_amd",
+        "4.2.33.A.anti_vegf_switch_after_bevacizumab_failure",
+        "4.2.33.A.ranibizumab_wet_amd"
+      ]
+    },
+    {
+      "clause_id": "C006563",
+      "section_id": "4.2.33.B",
+      "manifest_status": "non_actionable"
+    },
+    {
+      "clause_id": "C006564",
+      "section_id": "4.2.33.B",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.B.bevacizumab_rvdt_srvt",
+        "4.2.33.B.deksametazon_itv_implant_rvdt_srvt"
+      ]
+    },
+    {
+      "clause_id": "C006565",
+      "section_id": "4.2.33.B",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.B.aflibersept_rvdt_srvt",
+        "4.2.33.B.bevacizumab_rvdt_srvt",
+        "4.2.33.B.ranibizumab_rvdt_srvt"
+      ]
+    },
+    {
+      "clause_id": "C006566",
+      "section_id": "4.2.33.C",
+      "manifest_status": "non_actionable"
+    },
+    {
+      "clause_id": "C006567",
+      "section_id": "4.2.33.C",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.C.bevacizumab_pm_knv"
+      ]
+    },
+    {
+      "clause_id": "C006568",
+      "section_id": "4.2.33.C",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.C.aflibersept_pm_knv",
+        "4.2.33.C.anti_vegf_switch_after_bevacizumab_pm_knv",
+        "4.2.33.C.ranibizumab_pm_knv"
+      ]
+    },
+    {
+      "clause_id": "C006569",
+      "section_id": "4.2.33.Ç",
+      "manifest_status": "non_actionable"
+    },
+    {
+      "clause_id": "C006570",
+      "section_id": "4.2.33.Ç",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.Ç.bevacizumab_dmo",
+        "4.2.33.Ç.deksametazon_itv_dmo"
+      ]
+    },
+    {
+      "clause_id": "C006571",
+      "section_id": "4.2.33.Ç",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.Ç.bevacizumab_dmo"
+      ]
+    },
+    {
+      "clause_id": "C006572",
+      "section_id": "4.2.33.D",
+      "manifest_status": "non_actionable"
+    },
+    {
+      "clause_id": "C006573",
+      "section_id": "4.2.33.D",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006575",
+      "section_id": "4.2.33.D",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.E.siklosporin_dry_eye_annual_report",
+        "4.2.33.E.siklosporin_kuru_goz"
+      ]
+    },
+    {
+      "clause_id": "C006576",
+      "section_id": "4.2.33.D",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006578",
+      "section_id": "4.2.33.D",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006579",
+      "section_id": "4.2.33.D",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006580",
+      "section_id": "4.2.33.E",
+      "manifest_status": "non_actionable"
+    },
+    {
+      "clause_id": "C006581",
+      "section_id": "4.2.33.E",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006583",
+      "section_id": "4.2.33.E",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.E.sisteamin_sistinozis"
+      ]
+    },
+    {
+      "clause_id": "C006584",
+      "section_id": "4.2.33.E",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+    },
+    {
+      "clause_id": "C006585",
+      "section_id": "4.2.33.F",
+      "manifest_status": "non_actionable"
+    },
+    {
+      "clause_id": "C006586",
+      "section_id": "4.2.33.F",
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.F.ranibizumab_rop"
+      ]
+    }
+  ],
+  "note": "§4.2.33 anti-VEGF A2c — 29 rules, 24 encoded clause sources, 29 tier-C deferred in-force rows."
 }

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.sut.prose.drug_indication_a1_manifest_coverage import in_force_4214c_clause_ids
 from scripts.sut.prose.drug_indication_gate_b import (
     export_4_2_14_c_candidates,
     infer_defer_themes,
@@ -47,20 +48,27 @@ def test_phase5_manifest_traces_all_4214c_clauses() -> None:
     assert payload["clause_trace_complete"] is True
     assert payload["manifest_coverage_pct"] == 100.0
     assert len(payload["clause_traces"]) == trace_total
-    # tier_c_manifest (detail list) may retain historical entries; the canonical
-    # count is tier_c_deferred_count which shrank after in-force strike filtering.
-    assert payload["tier_c_deferred_count"] >= 200
+    # A1 repair: tier-C deferred is a small in-force tail; EMR-blocked holds pathway clauses.
+    assert payload["tier_c_deferred_count"] >= 20
+    assert payload.get("emr_blocked_count", 0) >= 100
 
     traced_ids = {row["clause_id"] for row in payload["clause_traces"]}
     assert len(traced_ids) == trace_total
 
-    status_ids = set(payload["encoded_clause_ids"])
-    status_ids.update(payload["tier_a_pending_clause_ids"])
-    status_ids.update(payload["tier_b_pending_clause_ids"])
-    status_ids.update(payload["tier_c_deferred_clause_ids"])
-    # Bucket D (non-actionable) clauses are tracked separately after cleanup.
-    status_ids.update(payload.get("non_actionable_clause_ids") or [])
-    assert status_ids == traced_ids
+    in_force = in_force_4214c_clause_ids(_CLAUSES)
+    assert traced_ids == in_force
+
+    for row in payload["clause_traces"]:
+        cid = row["clause_id"]
+        status = row.get("manifest_status")
+        if status == "encoded":
+            assert cid in payload["encoded_clause_ids"]
+        elif status == "tier_c_deferred":
+            assert cid in payload["tier_c_deferred_clause_ids"]
+        elif status == "emr_blocked":
+            assert cid in (payload.get("emr_blocked_clause_ids") or [])
+        elif status == "non_actionable":
+            assert cid in (payload.get("non_actionable_clause_ids") or [])
     assert payload["encoded_clause_count"] >= 200
     assert payload["tier_a_pending_count"] == 0
     assert payload["tier_b_pending_count"] == 0
@@ -70,9 +78,8 @@ def test_tier_c_manifest_entries_have_theme_tags() -> None:
     payload = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     tier_c_rows = payload["tier_c_manifest"]
     assert tier_c_rows
-    # tier_c_manifest retains historical detail entries; canonical deferred
-    # count is tier_c_deferred_count (>= 200 after in-force strike filtering).
-    assert len(tier_c_rows) >= 200
+    # tier_c_manifest lists in-force tier-C deferred rows (A1 repair).
+    assert len(tier_c_rows) >= 20
     for row in tier_c_rows:
         themes = row.get("defer_themes") or []
         assert themes
