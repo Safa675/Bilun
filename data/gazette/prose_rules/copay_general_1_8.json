@@ -1,8 +1,8 @@
 {
   "rule_set_id": "copay_general_1_8",
-  "title": "SUT §1.8 general copay rates",
+  "title": "SUT §1.8 general copay rates and exemptions",
   "effective_date": "2026-01-17",
-  "sut_anchors": ["1.8.2", "1.8.3", "1.8.4"],
+  "sut_anchors": ["1.8.2", "1.8.3", "1.8.4", "1.8.5"],
   "rules": [
     {
       "rule_id": "1.8.2.(1)",
@@ -11,7 +11,8 @@
       "rates": {
         "sgk_income_recipient": 0.1,
         "other": 0.2
-      }
+      },
+      "gate_b_sources": ["C000314"]
     },
     {
       "rule_id": "1.8.2.(2)",
@@ -25,7 +26,8 @@
       "legacy_fees_try": {
         "base_up_to_3_boxes": 3.0,
         "per_extra_box": 1.0
-      }
+      },
+      "gate_b_sources": ["C000321"]
     },
     {
       "rule_id": "1.8.3.(2)",
@@ -34,7 +36,8 @@
       "rates": {
         "sgk_income_recipient": 0.1,
         "other": 0.2
-      }
+      },
+      "gate_b_sources": ["C000338"]
     },
     {
       "rule_id": "1.8.4.(1)",
@@ -44,7 +47,125 @@
         "1": {"sgk_income_recipient": 0.3, "other": 0.3},
         "2": {"sgk_income_recipient": 0.25, "other": 0.25},
         "3": {"sgk_income_recipient": 0.2, "other": 0.2}
-      }
+      },
+      "gate_b_sources": ["C000352"]
+    },
+    {
+      "rule_id": "1.8.5.(2).askeri_tatbikat",
+      "sut_section": "1.8.5.(2)",
+      "service_type": "copay_exemption",
+      "exemption_category": "askeri_tatbikat",
+      "condition": {
+        "care_context": "military_exercise_maneuver"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": ["1.8.1", "1.8.2", "1.8.3"]
+      },
+      "gate_b_sources": ["C000356"]
+    },
+    {
+      "rule_id": "1.8.5.(3).afet_savas_hali",
+      "sut_section": "1.8.5.(3)",
+      "service_type": "copay_exemption",
+      "exemption_category": "afet_savas_hali",
+      "condition": {
+        "legal_basis": "5510_md_75",
+        "care_context": "disaster_or_war_state"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": ["1.8.1", "1.8.2", "1.8.3"]
+      },
+      "gate_b_sources": ["C000357"]
+    },
+    {
+      "rule_id": "1.8.5.(4).kontrol_muayenesi",
+      "sut_section": "1.8.5.(4)",
+      "service_type": "copay_exemption",
+      "exemption_category": "kontrol_muayenesi",
+      "condition": {
+        "legal_basis": "5510_md_94",
+        "visit_type": "kontrol"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": ["1.8.1"]
+      },
+      "gate_b_sources": ["C000358"]
+    },
+    {
+      "rule_id": "1.8.5.(9).tibbi_sarf_malzeme",
+      "sut_section": "1.8.5.(9)",
+      "service_type": "copay_exemption",
+      "exemption_category": "tibbi_sarf_malzeme",
+      "condition": {
+        "line_kind": "medical_consumable_or_non_1_8_3_1_material"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": ["1.8.3"]
+      },
+      "gate_b_sources": ["C000363"]
+    },
+    {
+      "rule_id": "1.8.5.(10).organ_nakli",
+      "sut_section": "1.8.5.(10)",
+      "service_type": "copay_exemption",
+      "exemption_category": "organ_nakli",
+      "condition": {
+        "requires_health_report": true,
+        "service_category": "organ_tissue_stem_cell_transplant"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": ["1.8.1", "1.8.2", "1.8.3"]
+      },
+      "gate_b_sources": ["C000364"]
+    },
+    {
+      "rule_id": "1.8.5.(14).kanun_2828",
+      "sut_section": "1.8.5.(14)",
+      "service_type": "copay_exemption",
+      "exemption_category": "kanun_2828",
+      "condition": {
+        "legal_basis": "2828",
+        "patient_status": "protection_care_rehab_beneficiary"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": ["1.8.1", "1.8.2", "1.8.3"]
+      },
+      "gate_b_sources": ["C000368"]
+    },
+    {
+      "rule_id": "1.8.5.(17).iade_malzeme",
+      "sut_section": "1.8.5.(17)",
+      "service_type": "copay_exemption",
+      "exemption_category": "iade_malzeme",
+      "condition": {
+        "line_kind": "returned_medical_material"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": ["1.8.3"]
+      },
+      "gate_b_sources": ["C000371"]
+    },
+    {
+      "rule_id": "1.8.5.(20).deprem_protez",
+      "sut_section": "1.8.5.(20)",
+      "service_type": "copay_exemption",
+      "exemption_category": "deprem_protez",
+      "condition": {
+        "legal_basis": "2011_earthquake_victims",
+        "line_kind": "prosthesis_orthosis_vehicle_equipment"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": ["1.8.3"]
+      },
+      "gate_b_sources": ["C000374"]
     }
   ],
   "exemptions_ref": {
