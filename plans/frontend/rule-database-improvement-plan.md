@@ -184,7 +184,7 @@ Items that were specified in Phases 1–4 but shipped incomplete, plus maintaina
 
 - [ ] Read `rdClause` from `searchParams` on mount; if set → `activeTab=clauses`, fetch via `getClause(rdClause)`, select in browser
 - [ ] On clause row click in Hükümler → `updateUrl({ rdTab: "clauses", rdClause: clause_id })`
-- [ ] Optional: `rdSection` on Bölümler row select for shareable section drill-down links
+- [ ] `rdSection` on Bölümler row select for shareable section drill-down links (was Phase 4 gap — required, not optional)
 - [ ] Document params in plan / dev tooltip: `rdTab`, `rdClause`, `rdSection` (avoid collision with app-shell `?tab=`)
 
 **Done when:** `?rdTab=clauses&rdClause=C004975` opens the correct hüküm without manual search.
@@ -194,31 +194,30 @@ Items that were specified in Phases 1–4 but shipped incomplete, plus maintaina
 - [ ] Add `primary_rule_id` param to `list_clauses()` + `GET /api/rules/clauses`
 - [ ] Hükümler toolbar: motor dropdown populated from catalog `rules[]` (36 entries)
 - [ ] Pydantic `RuleClause`: declare all utilization fields explicitly (`primary_rule_id`, `matched_rule_ids`, `has_algorithmic_gap`, `has_rule_encoding`, …) — stop relying on `extra="allow"` for OpenAPI accuracy
-- [ ] Optional: `get_clause()` response includes `matched_rules: [{rule_id, rule_category_tr}]` resolved from `RULE_BY_ID` (plan originally said “registry labels”)
+- [ ] `get_clause()` response includes `matched_rules: [{rule_id, rule_category_tr}]` resolved from `RULE_BY_ID` (was Phase 1 architecture spec line 59 — required, not optional)
 
 **Done when:** Filter Hükümler to `drug_indication_prose` only via dropdown; OpenAPI shows full `RuleClause` shape.
 
 #### 5d — UI polish + i18n fixes
 
+> **Hotfix first:** the `status.all` → `filters.all` i18n key bug (below) is a 1-line trivial fix — ship immediately, do not wait for the rest of Phase 5.
+
+- [ ] **i18n bug (hotfix):** `ClauseBrowserPanel` status “all” button uses missing key `status.all` → use `filters.all` (“Tümü”)
 - [ ] **Section detail header**: show `{clause_count} hüküm · {gap_clause_count} boşluk` from selected rollup row
 - [ ] **Glossary strip**: replace hardcoded `JSON_RULE_COUNT = 337` / `SECTION_ROWS = 951` with live values — sum `prose-inventory` `rule_count`; section rows from coverage meta or section rollup `total`
-- [ ] **i18n bug**: `ClauseBrowserPanel` status “all” button uses missing key `status.all` → use `filters.all` (“Tümü”)
 - [ ] Remove dead i18n key `coverage.totalExtracted` if unused
 
-#### 5e — Maintainability refactor (1 PR, no behavior change)
+#### 5e — Maintainability refactor (DEFERRED — not part of this execution)
 
-- [ ] Extract `ClauseUtilizationCard.tsx` from `RuleDatabaseSection.tsx` (export `ClauseCard` rename or alias)
-- [ ] Split panels into separate files under `sections/rule-database/`:
-  - `CoverageSummaryPanel.tsx`
-  - `SectionBrowserPanel.tsx` + `SectionDetailPane.tsx`
-  - `ClauseBrowserPanel.tsx`
-  - `RuleListPanel.tsx` + `RuleDetailPanel.tsx`
-  - `ProseInventoryPanel.tsx`
-- [ ] Keep `RuleDatabaseSection.tsx` as thin tab shell + URL state + `onNavigateToRule`
-
-**Done when:** `RuleDatabaseSection.tsx` < 400 lines; vitest imports `ClauseUtilizationCard` from its own file.
+> **Evaluation note (2026-06-27):** Pure file-split refactor of a *dev-only* tab delivers zero user value. Deferred unless `RuleDatabaseSection.tsx` becomes actively painful to work in. If taken up later, do it **before** the next functional phase so features land in the new files cleanly (avoid double-editing). Listed here as a tracked follow-up only.
 
 #### Phase 5 verification
+
+**PR sizing (per evaluation):**
+- PR 1 — functional closure: 5a + 5b + 5c (cross-nav, deep links, API/filter completeness)
+- PR 2 — polish: 5d (live glossary counts, section gap header, dead-key removal)
+- Hotfix (immediate): i18n `status.all` bug
+- Deferred: 5e (file-split refactor)
 
 ```bash
 pytest tests/unit/api/test_sut_rules_api.py tests/unit/domain/sut/test_rules_catalog.py -q
@@ -299,3 +298,12 @@ Corrected JSON rule count (185→337), unique section count (400→481), and fie
 **Deferred to Phase 5:** motor/cross-tab navigation, `rdClause` deep links, `primary_rule_id` API filter + dropdown, Pydantic schema completeness, glossary live counts, section gap header, i18n `status.all` bug, component file split.
 
 **Benchmarks (local):** `list_clauses(q="azasitidin")` ~12ms; full 4.710 count ~33ms.
+
+### 2026-06-27 — Phase 5 evaluation + implementation
+**Plan revised** per evaluation: promoted `matched_rules` registry resolution and `rdSection` deep link from "optional" to required (they were original Phase 1/4 spec, not optional); deferred 5e file-split refactor (zero user value on a dev-only tab); reordered i18n `status.all` bug as an immediate hotfix.
+
+**Implemented (5a–5d):** `onNavigateToRule` cross-navigation with clickable motor/secondary chips on `ClauseCard`; `rdClause` + `rdSection` URL deep links (read on mount, write on select); `primary_rule_id` filter end-to-end (domain → API → TS → motor dropdown); explicit `RuleClause` Pydantic fields + `matched_rules` resolution from `RULE_BY_ID`; `MatchedRuleRef` schema; live glossary counts (prose-inventory + section rollup fetches replacing hardcoded 337/951/481); section detail header showing clause + gap counts; i18n `status.all` → `filters.all` hotfix; removed dead `coverage.totalExtracted` key.
+
+**Verified:** 892 backend tests pass (+2 new: `primary_rule_id` filter, `matched_rules` resolution); tsc clean; 7 vitest tests pass.
+
+**Deferred:** 5e file-split refactor (tracked as optional follow-up).
