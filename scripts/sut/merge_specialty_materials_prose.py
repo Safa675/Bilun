@@ -38,6 +38,9 @@ from scripts.sut.prose.specialty_materials_other_3_3_tail_batch_rules import (  
     OTHER_3_3_TAIL_BATCH_RULES,
     OTHER_3_3_TAIL_CLAUSE_IDS,
 )
+from scripts.sut.prose.specialty_materials_r5_header_batch_rules import (  # noqa: E402
+    SPECIALTY_R5_HEADER_CLAUSE_IDS,
+)
 
 _PROSE_PATH = _PROJECT_ROOT / "data/gazette/prose_rules/specialty_materials_prose.json"
 _MANIFEST_PATH = _PROJECT_ROOT / "data/gazette/prose_manifests/L4.4_specialty_prose_encoded_manifest.json"
@@ -152,6 +155,7 @@ def main() -> None:
         "specialty_338_batch_clause_ids": sorted(SPECIALTY_338_BATCH_CLAUSE_IDS),
         "specialty_336_batch_clause_ids": sorted(SPECIALTY_336_BATCH_CLAUSE_IDS),
         "other_3_3_tail_clause_ids": sorted(OTHER_3_3_TAIL_CLAUSE_IDS),
+        "r5_specialty_header_clause_ids": sorted(SPECIALTY_R5_HEADER_CLAUSE_IDS),
         "gate_b_sources_encoded": sorted(sources),
     }
     _MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
