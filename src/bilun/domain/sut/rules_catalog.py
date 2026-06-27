@@ -995,6 +995,7 @@ def list_clauses(
     has_gap: bool | None = None,
     has_encoding: bool | None = None,
     primary_rule_id: str | None = None,
+    exclude_non_algorithmic: bool = False,
     limit: int | None = None,
     offset: int = 0,
 ) -> tuple[list[dict[str, Any]], int]:
@@ -1029,6 +1030,8 @@ def list_clauses(
         frame = frame.filter(pl.col("has_rule_encoding") == True)  # noqa: E712
     if primary_rule_id and frame.height > 0:
         frame = frame.filter(pl.col("primary_rule_id") == primary_rule_id)
+    if exclude_non_algorithmic and frame.height > 0:
+        frame = frame.filter(pl.col("coverage_status") != "non_algorithmic")
 
     if frame.height == 0:
         return [], 0

@@ -196,6 +196,13 @@ class TestGlobalClauseSearch:
         assert total > 0
         assert all(c["primary_rule_id"] == "drug_indication_prose" for c in clauses)
 
+    def test_exclude_non_algorithmic_filter(self) -> None:
+        all_total = rc.list_clauses()[1]
+        filtered, filtered_total = rc.list_clauses(exclude_non_algorithmic=True)
+        ref_only = rc.list_clauses(coverage_status="non_algorithmic")[1]
+        assert filtered_total == all_total - ref_only
+        assert all(c["coverage_status"] != "non_algorithmic" for c in filtered)
+
     def test_matched_rules_resolved_to_registry_labels(self) -> None:
         clause = rc.get_clause("C002684")
         assert clause is not None
