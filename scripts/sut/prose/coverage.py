@@ -46,10 +46,17 @@ def _optional_str(value: object) -> str | None:
 
 
 def _has_actionable_signal(row: pd.Series) -> bool:
+    """True when the clause plausibly needs a billing rule mapping (not pure reference)."""
     deontic_modality = _optional_str(row.get("deontic_modality"))
     annex_refs = _json_list(str(row.get("annex_refs", "[]")))
     clause_type = str(row.get("clause_type") or "")
-    return bool(deontic_modality or annex_refs or clause_type in {"fikra", "bent", "prose"})
+    has_normative_or_annex = bool(deontic_modality or annex_refs)
+    # Structural / navigational rows (chapter titles, section headings, RG lines,
+    # short prose labels like "Genel Hükümler") are reference unless they carry
+    # deontic or annex signals — fixes C000002 false missing/gap.
+    if clause_type in {"chapter", "section_heading", "amendment", "prose"}:
+        return has_normative_or_annex
+    return bool(has_normative_or_annex or clause_type in {"fikra", "bent"})
 
 
 def _load_encoded_clause_ids(manifest_name: str) -> frozenset[str]:

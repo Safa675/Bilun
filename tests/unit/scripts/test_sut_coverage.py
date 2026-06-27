@@ -255,6 +255,53 @@ class TestCoverage:
         assert coverage.iloc[0]["coverage_status"] == "non_algorithmic"
         assert coverage.iloc[0]["has_algorithmic_gap"] == False
 
+    def test_chapter_title_non_algorithmic_no_gap(self) -> None:
+        row = _sample_row(
+            clause_id="C000001",
+            section_id=None,
+            section_path=None,
+            section_title=None,
+            text_tr="BİRİNCİ BÖLÜM",
+            clause_type="chapter",
+            deontic_modality=None,
+            annex_refs="[]",
+        )
+        coverage, _, _, _ = build_sut_coverage(pd.DataFrame([row]))
+        assert coverage.iloc[0]["primary_rule_id"] is None
+        assert coverage.iloc[0]["coverage_status"] == "non_algorithmic"
+        assert coverage.iloc[0]["has_algorithmic_gap"] == False
+
+    def test_prose_section_label_non_algorithmic_no_gap(self) -> None:
+        row = _sample_row(
+            clause_id="C000002",
+            section_id=None,
+            section_path=None,
+            section_title=None,
+            text_tr="Genel Hükümler",
+            clause_type="prose",
+            deontic_modality=None,
+            annex_refs="[]",
+        )
+        coverage, _, _, _ = build_sut_coverage(pd.DataFrame([row]))
+        assert coverage.iloc[0]["primary_rule_id"] is None
+        assert coverage.iloc[0]["coverage_status"] == "non_algorithmic"
+        assert coverage.iloc[0]["has_algorithmic_gap"] == False
+
+    def test_section_heading_without_deontic_non_algorithmic(self) -> None:
+        row = _sample_row(
+            clause_id="C000003",
+            section_id="1.1",
+            section_path="1.1",
+            section_title="Amaç",
+            text_tr="1.1 - Amaç",
+            clause_type="section_heading",
+            deontic_modality=None,
+            annex_refs="[]",
+        )
+        coverage, _, _, _ = build_sut_coverage(pd.DataFrame([row]))
+        assert coverage.iloc[0]["coverage_status"] == "non_algorithmic"
+        assert coverage.iloc[0]["has_algorithmic_gap"] == False
+
     def test_registry_summary_lists_all_rules(self) -> None:
         clauses = pd.DataFrame([_sample_row()])
         coverage, _, _, registry = build_sut_coverage(clauses)
