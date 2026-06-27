@@ -302,6 +302,36 @@ class TestCoverage:
         assert coverage.iloc[0]["coverage_status"] == "non_algorithmic"
         assert coverage.iloc[0]["has_algorithmic_gap"] == False
 
+    def test_section_1_10_health_report_routes_provizyon(self) -> None:
+        row = _sample_row(
+            clause_id="C000460",
+            section_id="1.10",
+            section_path="1.10",
+            text_tr="MEDULA sistemindeki düzenlemelere uyulacaktır.",
+            clause_type="fikra",
+            deontic_modality="MANDATORY",
+            annex_refs="[]",
+        )
+        result = classify_clause_row(row)
+        assert result["primary_rule_id"] == "provizyon_medula"
+        coverage, _, _, _ = build_sut_coverage(pd.DataFrame([row]))
+        assert coverage.iloc[0]["coverage_status"] == "non_algorithmic"
+        assert coverage.iloc[0]["has_algorithmic_gap"] == False
+
+    def test_section_6_amendment_not_gazette_repricing(self) -> None:
+        row = _sample_row(
+            section_id="6.3",
+            section_path="6.3",
+            text_tr="(Değişik: RG- 01/01/2024- …) Bu tebliğ yürürlük tarihinde uygulanır.",
+            clause_type="amendment",
+            deontic_modality=None,
+            annex_refs="[]",
+        )
+        result = classify_clause_row(row)
+        assert result["primary_rule_id"] == "definitions"
+        matched = json.loads(result["matched_rule_ids"])
+        assert "gazette_repricing" not in matched
+
     def test_registry_summary_lists_all_rules(self) -> None:
         clauses = pd.DataFrame([_sample_row()])
         coverage, _, _, registry = build_sut_coverage(clauses)
@@ -481,10 +511,10 @@ class TestFullCoverageBuild:
         assert payload["rules_in_json"] >= 131
         assert payload["manifest_version"] == "phase5-v1"
         assert payload["clause_trace_complete"] is True
-        # clause_traces reflects in-force (struck-filtered) trace count.
+        # A1 repair: clause_traces are in-force only; tier-C + EMR-blocked partition deferred rows.
         assert len(payload.get("clause_traces") or []) == payload["section_clause_total"]
-        # Tier-C deferred shrank to ~207 after in-force strike filtering.
-        assert len(payload.get("tier_c_deferred_clause_ids") or []) >= 200
+        assert len(payload.get("tier_c_deferred_clause_ids") or []) >= 20
+        assert len(payload.get("emr_blocked_clause_ids") or []) >= 100
         assert payload.get("tier_c_defer_themes_summary")
 
     def test_drug_indication_has_rule_encoding_column(self, coverage: pd.DataFrame) -> None:
