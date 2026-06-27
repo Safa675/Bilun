@@ -280,7 +280,7 @@ def _aggregate_copay_exemptions_by_bill(
                 patient_profile=patient_input.patient_profile,
                 patient_claims=(claim,),
                 claim_procedure_codes=tuple(codes_by_claim.get(cid, [])),
-                age_at_latest_claim=None,
+                age_at_latest_claim=patient_input.age_at_latest_claim,
                 has_chronic_health_report=patient_input.has_chronic_health_report,
             )
             result = evaluate_copay_exemption(bill_input)

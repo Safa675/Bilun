@@ -72,7 +72,41 @@ def test_evaluate_acil_visit_type() -> None:
         )
     )
     assert result["exempt"] is True
-    assert any(s["category"] == "acil_servis" for s in result["exemption_sources"])
+    acil = next(s for s in result["exemption_sources"] if s["category"] == "acil_servis")
+    assert acil["waives_sections"] == ("1.8.1", "1.8.2", "1.8.3")
+
+
+def test_evaluate_koruyucu_visit_type() -> None:
+    from src.bilun.domain.optimization.copay_exemption_types import CopayExemptionInput
+    from src.bilun.domain.optimization.copay_exemptions import evaluate_copay_exemption
+
+    result = evaluate_copay_exemption(
+        CopayExemptionInput(
+            diagnoses=["Z00.0"],
+            claim_visit_types=("koruyucu",),
+        )
+    )
+    assert result["exempt"] is True
+    koruyucu = next(
+        s for s in result["exemption_sources"] if s["category"] == "koruyucu_saglik"
+    )
+    assert koruyucu["waives_sections"] == ("1.8.1", "1.8.2", "1.8.3")
+
+
+def test_evaluate_occupational_visit_type() -> None:
+    from src.bilun.domain.optimization.copay_exemption_types import CopayExemptionInput
+    from src.bilun.domain.optimization.copay_exemptions import evaluate_copay_exemption
+
+    result = evaluate_copay_exemption(
+        CopayExemptionInput(
+            diagnoses=["S62.0"],
+            claim_visit_types=("is_kazasi",),
+            occupational_contexts=("is_kazasi",),
+        )
+    )
+    assert result["exempt"] is True
+    occ = next(s for s in result["exemption_sources"] if s["category"] == "is_kazasi_meslek")
+    assert occ["waives_sections"] == ("1.8.1", "1.8.2", "1.8.3")
 
 
 def test_check_copay_exemptions_backward_compat() -> None:

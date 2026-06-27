@@ -447,3 +447,139 @@ def test_gunubirlik_drugs_inpatient_ground() -> None:
     assert grounds["KADCYLA"] == "inpatient_drug_1_8_5_8"
     assert grounds["ZINCOPLEX"] == "inpatient_drug_1_8_5_8"
     assert "ek1a_muayene" not in grounds.values()
+
+
+def test_acil_servis_composite_procedure_waiver() -> None:
+    claim = ClaimHeader(
+        claim_id="C-ACIL",
+        patient_id="P1",
+        episode_id="E1",
+        claim_type="acil",
+        facility_tier="2",
+        provider_type="kamu",
+        department="acil",
+        admission_date=None,
+        discharge_date=None,
+        claim_start_date=date(2026, 1, 1),
+        claim_end_date=date(2026, 1, 1),
+        primary_icd10="S06.0",
+        package_candidate=False,
+        expected_total_billed_try=Decimal("0"),
+        expected_total_payable_try=Decimal("0"),
+        expected_denial_reason="",
+        scenario_tag="test",
+    )
+    ctx = PatientClaimContext(
+        patient_id="P1",
+        claims=(claim,),
+        procedure_lines=(
+            ProcedureClaimLine(
+                procedure_line_id="PL-ACIL",
+                claim_id=claim.claim_id,
+                patient_id="P1",
+                episode_id="E1",
+                procedure_date=date(2026, 1, 1),
+                procedure_code="520030",
+                procedure_name="Acil muayene",
+                procedure_category="muayene",
+                quantity=1,
+                unit_price_try=Decimal("100"),
+                billed_amount_try=Decimal("100"),
+                expected_payable_try=Decimal("70"),
+                is_package_included=False,
+                package_code="",
+                surcharge_applicable=False,
+                copay_rate_applicable=True,
+                denial_reason_expected="",
+                rule_trace_expected="",
+            ),
+        ),
+        material_lines=(),
+        drug_lines=(),
+        diagnoses=(),
+    )
+    exemption = {
+        "exempt": True,
+        "exemption_sources": [
+            {
+                "category": "acil_servis",
+                "rule_source": "SUT §1.8.5(5) emergency visit copay waiver",
+                "counts_toward_exempt": True,
+                "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
+                "evidence": {"visit_type": "acil"},
+            }
+        ],
+    }
+
+    result = optimize_copay_from_claims(ctx, exemption)
+
+    assert result.visit_copay_savings_try == pytest.approx(30.0)
+    assert result.rate_corrections[0]["exemption_ground"] == "composite_acil_servis"
+
+
+def test_yesil_kart_composite_drug_waiver() -> None:
+    claim = ClaimHeader(
+        claim_id="C-GREEN",
+        patient_id="P2",
+        episode_id="E2",
+        claim_type="poliklinik",
+        facility_tier="2",
+        provider_type="kamu",
+        department="dahiliye",
+        admission_date=None,
+        discharge_date=None,
+        claim_start_date=date(2026, 2, 1),
+        claim_end_date=date(2026, 2, 1),
+        primary_icd10="Z00.0",
+        package_candidate=False,
+        expected_total_billed_try=Decimal("0"),
+        expected_total_payable_try=Decimal("0"),
+        expected_denial_reason="",
+        scenario_tag="test",
+    )
+    ctx = PatientClaimContext(
+        patient_id="P2",
+        claims=(claim,),
+        procedure_lines=(),
+        material_lines=(),
+        drug_lines=(
+            DrugClaimLine(
+                drug_claim_line_id="D-GREEN",
+                prescription_id="RX-GREEN",
+                claim_id=claim.claim_id,
+                patient_id="P2",
+                episode_id="E2",
+                drug_claim_date=date(2026, 2, 1),
+                drug_name="Parol",
+                drug_code="P-PAROL",
+                barkod="",
+                equivalence_group="",
+                quantity=1,
+                unit_price_try=Decimal("50"),
+                billed_amount_try=Decimal("50"),
+                expected_payable_try=Decimal("30"),
+                discount_tier_expected=Decimal("0"),
+                denial_reason_expected="",
+                rule_trace_expected="",
+            ),
+        ),
+        diagnoses=(),
+    )
+    exemption = {
+        "exempt": True,
+        "exemption_sources": [
+            {
+                "category": "yesil_kart",
+                "rule_source": "SUT §1.8.5(22)a — GSS beneficiary groups",
+                "counts_toward_exempt": True,
+                "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
+                "evidence": {"sgk_benefit_class": "yesil_kart"},
+            }
+        ],
+    }
+
+    result = optimize_copay_from_claims(ctx, exemption)
+
+    assert result.rx_copay_savings_try == pytest.approx(20.0)
+    assert result.rx_copay_savings_by_ground["composite_yesil_kart"] == pytest.approx(20.0)
+    assert result.rate_corrections[0]["exemption_ground"] == "composite_yesil_kart"

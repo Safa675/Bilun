@@ -35,6 +35,36 @@ def _copay_exemption_action(result: dict[str, Any]) -> str | None:
     return "Waive outpatient copay"
 
 
+def _copay_exemption_outcome_kind(result: dict[str, Any]) -> str:
+    if result.get("exempt"):
+        return "exempt"
+    if result.get("partial_exempt"):
+        return "partial_exempt"
+    return "none"
+
+
+def _copay_rate_outcome_kind(exposure: dict[str, Any]) -> str:
+    if not is_exact_output(exposure):
+        return "unavailable"
+    if int(exposure.get("n_violations") or 0) > 0:
+        return "rate_capped"
+    return "none"
+
+
+def _copay_primary_outcome_kind(
+    exemption: dict[str, Any],
+    rate_exposure: dict[str, Any],
+) -> str:
+    exemption_kind = _copay_exemption_outcome_kind(exemption)
+    if exemption_kind == "exempt":
+        return "exempt"
+    if exemption_kind == "partial_exempt":
+        return "partial_exempt"
+    if _copay_rate_outcome_kind(rate_exposure) == "rate_capped":
+        return "rate_capped"
+    return "none"
+
+
 def _format_copay_exemption_payload(result: dict[str, Any]) -> dict[str, Any]:
     return {
         "exempt": bool(result.get("exempt")),
@@ -45,6 +75,7 @@ def _format_copay_exemption_payload(result: dict[str, Any]) -> dict[str, Any]:
         "categories_not_evaluated": list(result.get("categories_not_evaluated", [])),
         "primary_exemption_category": result.get("primary_exemption_category"),
         "has_chronic_health_report": result.get("has_chronic_health_report"),
+        "outcome_kind": _copay_exemption_outcome_kind(result),
         "action": _copay_exemption_action(result),
     }
 
@@ -139,12 +170,60 @@ def build_sut_patient_alerts_cache(
             ),
         )[:3]
 
+        copay_exemption_payload = _format_copay_exemption_payload(copay_exemption)
+        copay_rate_payload = {
+            **(
+                {"exactness_status": EXACTNESS_STATUS_EXACT}
+                if is_exact_output(copay_rate_exposure)
+                else {}
+            ),
+            "n_applicable": (
+                copay_listed_count if is_exact_output(copay_rate_exposure) else None
+            ),
+            "n_violations": (
+                copay_violation_count if is_exact_output(copay_rate_exposure) else None
+            ),
+            "mean_rate": (
+                float(copay_rate_exposure.get("mean_rate") or 0.0)
+                if is_exact_output(copay_rate_exposure)
+                else None
+            ),
+            "top_procedures": (
+                top_procedures if is_exact_output(copay_rate_exposure) else []
+            ),
+            "outcome_kind": _copay_rate_outcome_kind(copay_rate_exposure),
+            "action": (
+                "Apply capped copay rate"
+                if is_exact_output(copay_rate_exposure) and copay_violation_count > 0
+                else None
+            ),
+            **(
+                {}
+                if is_exact_output(copay_rate_exposure)
+                else {
+                    "exactness_status": copay_rate_exposure.get(
+                        "exactness_status"
+                    ),
+                    "unavailable_reason": copay_rate_exposure.get(
+                        "unavailable_reason"
+                    ),
+                    "required_inputs_missing": list(
+                        copay_rate_exposure.get("required_inputs_missing", [])
+                    ),
+                }
+            ),
+        }
+
         rows.append(
             {
                 "patient_id": patient_id,
                 "n_diagnoses": len(diagnoses),
                 "icd10_chapters": chapters,
-                "copay_exemption": _format_copay_exemption_payload(copay_exemption),
+                "copay_primary_outcome": _copay_primary_outcome_kind(
+                    copay_exemption,
+                    copay_rate_exposure,
+                ),
+                "copay_exemption": copay_exemption_payload,
                 "surcharge_exposure": {
                     **(
                         {"exactness_status": EXACTNESS_STATUS_EXACT}
@@ -183,47 +262,7 @@ def build_sut_patient_alerts_cache(
                         }
                     ),
                 },
-                "copay_rate_exposure": {
-                    **(
-                        {"exactness_status": EXACTNESS_STATUS_EXACT}
-                        if is_exact_output(copay_rate_exposure)
-                        else {}
-                    ),
-                    "n_applicable": (
-                        copay_listed_count if is_exact_output(copay_rate_exposure) else None
-                    ),
-                    "n_violations": (
-                        copay_violation_count if is_exact_output(copay_rate_exposure) else None
-                    ),
-                    "mean_rate": (
-                        float(copay_rate_exposure.get("mean_rate") or 0.0)
-                        if is_exact_output(copay_rate_exposure)
-                        else None
-                    ),
-                    "top_procedures": (
-                        top_procedures if is_exact_output(copay_rate_exposure) else []
-                    ),
-                    "action": (
-                        "Apply capped copay rate"
-                        if is_exact_output(copay_rate_exposure) and copay_violation_count > 0
-                        else None
-                    ),
-                    **(
-                        {}
-                        if is_exact_output(copay_rate_exposure)
-                        else {
-                            "exactness_status": copay_rate_exposure.get(
-                                "exactness_status"
-                            ),
-                            "unavailable_reason": copay_rate_exposure.get(
-                                "unavailable_reason"
-                            ),
-                            "required_inputs_missing": list(
-                                copay_rate_exposure.get("required_inputs_missing", [])
-                            ),
-                        }
-                    ),
-                },
+                "copay_rate_exposure": copay_rate_payload,
             }
         )
 
