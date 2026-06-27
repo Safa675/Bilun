@@ -74,10 +74,10 @@ describe("ClauseCard", () => {
     expect(html).toContain("Üçüncü basamak eğitim araştırma hastanelerinde");
   });
 
-  it("renders gap and encoded badges when flags are true", () => {
+  it("renders utilization tier chip instead of separate gap/encoded badges", () => {
     const html = renderToStaticMarkupWithLocale(<ClauseCard clause={mockClause} />);
-    expect(html).toContain("sections.ruleDatabase.detail.gapBadge");
-    expect(html).toContain("sections.ruleDatabase.detail.encodedBadge");
+    expect(html).toContain("sections.ruleDatabase.utilization.encoded");
+    expect(html).not.toContain("sections.ruleDatabase.detail.gapBadge");
   });
 
   it("does not render gap/encoded badges when flags are false", () => {

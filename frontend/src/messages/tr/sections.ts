@@ -87,8 +87,17 @@ const sections = {
       searchPlaceholder: "Hüküm id veya metin ara…",
       filterGap: "Boşluk",
       filterEncoded: "Kodlanmış",
+      filterHideReferans: "Referans gizle",
       filterMotor: "Motor",
       resultCount: "{count} hüküm",
+    },
+    utilization: {
+      referans: "Referans",
+      encoded: "Encode edilmiş",
+      motorBound: "Motora bağlı",
+    },
+    rules: {
+      definitionsLabel: "Tanım / kapsam (referans)",
     },
     sections: {
       title: "SUT Bölümleri",

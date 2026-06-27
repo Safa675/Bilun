@@ -48,6 +48,12 @@ import { fmtNum } from "../shared";
 import { useLocale } from "@/lib/i18n";
 import { useT } from "@/lib/i18n/useTranslations";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  clauseUtilizationTier,
+  ruleMotorLabel,
+  UTILIZATION_CHIP_VARIANT,
+  UTILIZATION_I18N_KEY,
+} from "@/lib/clauseUtilization";
 
 const COVERAGE_VARIANT: Record<RuleCoverageStatus, "success" | "warning" | "danger" | "neutral"> = {
   implemented: "success",
@@ -130,6 +136,16 @@ function CoverageChip({ status }: { status: RuleCoverageStatus }) {
   return (
     <Chip variant={COVERAGE_VARIANT[status]} className="text-[10px]">
       {t(`sections.ruleDatabase.status.${COVERAGE_KEY[status]}`)}
+    </Chip>
+  );
+}
+
+function UtilizationChip({ clause }: { clause: RuleClause }) {
+  const t = useT();
+  const tier = clauseUtilizationTier(clause);
+  return (
+    <Chip variant={UTILIZATION_CHIP_VARIANT[tier]} className="text-[9px] uppercase tracking-wide">
+      {t(UTILIZATION_I18N_KEY[tier])}
     </Chip>
   );
 }
@@ -941,6 +957,7 @@ function ClauseBrowserPanel({
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [gapFilter, setGapFilter] = useState(false);
   const [encodingFilter, setEncodingFilter] = useState(false);
+  const [hideReferans, setHideReferans] = useState(true);
   const [ruleFilter, setRuleFilter] = useState<string>("");
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<SectionClausesResponse | null>(null);
@@ -986,7 +1003,7 @@ function ClauseBrowserPanel({
   // Reset to page 1 on any filter change.
   useEffect(() => {
     setPage(1);
-  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, ruleFilter]);
+  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, ruleFilter, hideReferans]);
 
   // Abort-aware fetch.
   useEffect(() => {
@@ -1006,6 +1023,7 @@ function ClauseBrowserPanel({
             has_gap: gapFilter || undefined,
             has_encoding: encodingFilter || undefined,
             primary_rule_id: ruleFilter || undefined,
+            exclude_non_algorithmic: hideReferans || undefined,
           },
           { signal: controller.signal },
         );
@@ -1032,7 +1050,7 @@ function ClauseBrowserPanel({
       active = false;
       controller.abort();
     };
-  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, ruleFilter, page, t]);
+  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, ruleFilter, hideReferans, page, t]);
 
   const clauses = result?.clauses ?? [];
   const totalPages = result?.total_pages ?? 0;
@@ -1070,6 +1088,15 @@ function ClauseBrowserPanel({
             ))}
             <button
               type="button"
+              onClick={() => setHideReferans((v) => !v)}
+              className={`sut-section-btn sut-section-btn-compact text-[11px] ${
+                hideReferans ? "sut-section-btn-active" : ""
+              }`}
+            >
+              {t("sections.ruleDatabase.clauses.filterHideReferans")}
+            </button>
+            <button
+              type="button"
               onClick={() => setGapFilter((v) => !v)}
               className={`sut-section-btn sut-section-btn-compact text-[11px] ${
                 gapFilter ? "sut-section-btn-active" : ""
@@ -1096,7 +1123,7 @@ function ClauseBrowserPanel({
                 <option value="">{t("sections.ruleDatabase.clauses.filterMotor")}</option>
                 {rules.map((r) => (
                   <option key={r.rule_id} value={r.rule_id}>
-                    {r.rule_id}
+                    {ruleMotorLabel(r.rule_id, t)}
                   </option>
                 ))}
               </select>
@@ -1145,19 +1172,7 @@ function ClauseBrowserPanel({
                             {clause.clause_id}
                           </span>
                         )}
-                        {clause.coverage_status && (
-                          <CoverageChip status={clause.coverage_status as RuleCoverageStatus} />
-                        )}
-                        {clause.has_algorithmic_gap && (
-                          <Chip variant="warning" className="text-[9px] uppercase">
-                            {t("sections.ruleDatabase.detail.gapBadge")}
-                          </Chip>
-                        )}
-                        {clause.has_rule_encoding && (
-                          <Chip variant="success" className="text-[9px] uppercase">
-                            {t("sections.ruleDatabase.detail.encodedBadge")}
-                          </Chip>
-                        )}
+                        <UtilizationChip clause={clause} />
                         {clause.primary_rule_id && (
                           <span className="font-mono text-[10px] text-[var(--text-muted)]">
                             {clause.primary_rule_id}
@@ -1611,7 +1626,7 @@ function RuleList({
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="font-mono text-[11px] font-semibold text-[var(--text-primary)]">
-                  {rule.rule_id}
+                  {ruleMotorLabel(rule.rule_id, t)}
                 </span>
                 <span className="flex flex-wrap justify-end gap-1">
                   {rule.fact_check_verdict && (
@@ -1721,7 +1736,9 @@ function RuleDetailPanel({
     <Surface variant="base" padding="md" className="space-y-4">
       <div className="space-y-2 border-b border-[var(--border-subtle)] pb-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="font-mono text-xs font-semibold text-[var(--text-primary)]">{rule.rule_id}</span>
+          <span className="font-mono text-xs font-semibold text-[var(--text-primary)]">
+            {ruleMotorLabel(rule.rule_id, t)}
+          </span>
           <span className="flex flex-wrap gap-1">
             {rule.fact_check_verdict && <FactCheckChip verdict={rule.fact_check_verdict} />}
             <CoverageChip status={rule.coverage_status} />
@@ -1841,19 +1858,7 @@ export function ClauseCard({
             {t("sections.ruleDatabase.detail.primaryBadge")}
           </Chip>
         )}
-        {clause.coverage_status && (
-          <CoverageChip status={clause.coverage_status as RuleCoverageStatus} />
-        )}
-        {clause.has_rule_encoding && (
-          <Chip variant="success" className="text-[9px] uppercase tracking-wide">
-            {t("sections.ruleDatabase.detail.encodedBadge")}
-          </Chip>
-        )}
-        {clause.has_algorithmic_gap && (
-          <Chip variant="warning" className="text-[9px] uppercase tracking-wide">
-            {t("sections.ruleDatabase.detail.gapBadge")}
-          </Chip>
-        )}
+        <UtilizationChip clause={clause} />
         <EkAnnexChips labels={clause.annex_refs} />
       </div>
       <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-[var(--text-primary)]">
@@ -1868,11 +1873,11 @@ export function ClauseCard({
               className="rounded border border-[var(--border-subtle)] bg-[var(--surface-default)] px-1.5 py-0.5 font-mono transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
               title={t("sections.ruleDatabase.detail.motorJump")}
             >
-              {t("sections.ruleDatabase.detail.motorLabel")}: {clause.primary_rule_id}
+              {t("sections.ruleDatabase.detail.motorLabel")}: {ruleMotorLabel(clause.primary_rule_id, t)}
             </button>
           ) : (
             <span className="font-mono">
-              {t("sections.ruleDatabase.detail.motorLabel")}: {clause.primary_rule_id}
+              {t("sections.ruleDatabase.detail.motorLabel")}: {ruleMotorLabel(clause.primary_rule_id, t)}
             </span>
           )
         )}

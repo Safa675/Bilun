@@ -741,6 +741,7 @@ export async function listClauses(
     has_gap?: boolean;
     has_encoding?: boolean;
     primary_rule_id?: string;
+    exclude_non_algorithmic?: boolean;
   },
   options?: RequestInit,
 ): Promise<SectionClausesResponse> {
@@ -752,6 +753,7 @@ export async function listClauses(
   if (params?.has_gap !== undefined) qs.set("has_gap", String(params.has_gap));
   if (params?.has_encoding !== undefined) qs.set("has_encoding", String(params.has_encoding));
   if (params?.primary_rule_id) qs.set("primary_rule_id", params.primary_rule_id);
+  if (params?.exclude_non_algorithmic) qs.set("exclude_non_algorithmic", "true");
   const query = qs.toString();
   return requestJSON<SectionClausesResponse>(
     `/api/rules/clauses${query ? `?${query}` : ""}`,

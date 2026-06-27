@@ -87,8 +87,17 @@ const sections = {
       searchPlaceholder: "Search clause_id or text…",
       filterGap: "Gap",
       filterEncoded: "Encoded",
+      filterHideReferans: "Hide reference",
       filterMotor: "Motor",
       resultCount: "{count} clauses",
+    },
+    utilization: {
+      referans: "Reference",
+      encoded: "Encoded",
+      motorBound: "Motor-linked",
+    },
+    rules: {
+      definitionsLabel: "Definitions / scope (reference)",
     },
     sections: {
       title: "SUT Sections",
