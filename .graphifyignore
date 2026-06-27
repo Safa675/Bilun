@@ -1,0 +1,21 @@
+# Code-only graph for now (no LLM API key configured).
+# Re-enable these by removing the lines below after setting an API key.
+raw data/
+docs/
+reports/
+logs/
+__pycache__/
+bilun.egg-info/
+*.md
+*.mdx
+*.qmd
+*.html
+*.txt
+*.rst
+*.yaml
+*.yml
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.webp

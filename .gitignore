@@ -39,6 +39,7 @@ data/*
 !data/synthetic/
 !data/gazette/
 data/gazette/coverage/
+graphify-out/cache/
 !data/legacy/
 !data/medula/
 !data/medula/**
