@@ -118,6 +118,7 @@ def list_all_clauses(
     coverage_status: str | None = None,
     has_gap: bool | None = None,
     has_encoding: bool | None = None,
+    primary_rule_id: str | None = None,
 ):
     """Search across all in-force SUT clauses (global Hükümler browser)."""
     if page < 1:
@@ -133,6 +134,7 @@ def list_all_clauses(
         coverage_status=coverage_status,
         has_gap=has_gap,
         has_encoding=has_encoding,
+        primary_rule_id=primary_rule_id,
         limit=per_page,
         offset=offset,
     )

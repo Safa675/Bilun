@@ -190,6 +190,21 @@ class TestGlobalClauseSearch:
         _, total = rc.list_clauses()
         assert total > 1000  # most of the 4,710 clauses
 
+    def test_primary_rule_id_filter(self) -> None:
+        # Pick a rule that actually owns clauses so the test is meaningful.
+        clauses, total = rc.list_clauses(primary_rule_id="drug_indication_prose")
+        assert total > 0
+        assert all(c["primary_rule_id"] == "drug_indication_prose" for c in clauses)
+
+    def test_matched_rules_resolved_to_registry_labels(self) -> None:
+        clause = rc.get_clause("C002684")
+        assert clause is not None
+        assert "matched_rules" in clause
+        # Every resolved entry carries its registry category label.
+        for ref in clause["matched_rules"]:
+            assert ref["rule_id"] in RULE_BY_ID
+            assert "rule_category_tr" in ref
+
     def test_get_clause_returns_dict(self) -> None:
         clause = rc.get_clause("C002684")
         assert clause is not None

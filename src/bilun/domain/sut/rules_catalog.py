@@ -870,7 +870,7 @@ def prose_inventory() -> dict[str, Any]:
 
 def _clause_payload(row: dict[str, Any], rule_id: str) -> dict[str, Any]:
     match_scores = _json_obj(row.get("match_scores"))
-    return {
+    payload = {
         "clause_id": row.get("clause_id"),
         "section_id": row.get("section_id"),
         "section_title": row.get("section_title"),
@@ -896,6 +896,12 @@ def _clause_payload(row: dict[str, Any], rule_id: str) -> dict[str, Any]:
         if row.get("has_rule_encoding") is not None
         else None,
     }
+    payload["matched_rules"] = [
+        {"rule_id": rid, "rule_category_tr": entry.rule_category_tr}
+        for rid in payload["matched_rule_ids"]
+        if (entry := RULE_BY_ID.get(rid)) is not None
+    ]
+    return payload
 
 
 def get_rule_clauses(
@@ -988,6 +994,7 @@ def list_clauses(
     coverage_status: str | None = None,
     has_gap: bool | None = None,
     has_encoding: bool | None = None,
+    primary_rule_id: str | None = None,
     limit: int | None = None,
     offset: int = 0,
 ) -> tuple[list[dict[str, Any]], int]:
@@ -1020,6 +1027,8 @@ def list_clauses(
         frame = frame.filter(pl.col("has_algorithmic_gap") == True)  # noqa: E712
     if has_encoding is True and frame.height > 0:
         frame = frame.filter(pl.col("has_rule_encoding") == True)  # noqa: E712
+    if primary_rule_id and frame.height > 0:
+        frame = frame.filter(pl.col("primary_rule_id") == primary_rule_id)
 
     if frame.height == 0:
         return [], 0

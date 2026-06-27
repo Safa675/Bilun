@@ -951,6 +951,13 @@ class RuleCatalogResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class MatchedRuleRef(BaseModel):
+    """A rule id resolved to its registry label (clause → rule cross-link)."""
+
+    rule_id: str
+    rule_category_tr: str | None = None
+
+
 class RuleClause(BaseModel):
     """One extracted SUT clause mapped to a rule, with provenance."""
 
@@ -968,8 +975,14 @@ class RuleClause(BaseModel):
     deontic_modality: str | None = None
     source_effective_date: str | None = None
     coverage_status: str | None = None
+    primary_rule_id: str | None = None
+    primary_rule_category: str | None = None
+    matched_rule_ids: list[str] = Field(default_factory=list)
+    matched_rules: list[MatchedRuleRef] = Field(default_factory=list)
     is_primary: bool = False
     match_score: int = 0
+    has_algorithmic_gap: bool = False
+    has_rule_encoding: bool | None = None
 
     model_config = ConfigDict(extra="allow")
 
