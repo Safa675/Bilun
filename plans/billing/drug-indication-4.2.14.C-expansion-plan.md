@@ -224,6 +224,20 @@ Track after each batch:
 6. Fact-check L4.2 documents **PARTIAL** with explicit 4.2.14.C coverage fraction (not falsely COMPLIANT).
 7. Registry remains `partial` until Tier C fraction is explicitly accepted or per-clause coverage ships.
 
+## Phase A0 — R5 Epic A inventory refresh (2026-06)
+
+**Orchestration:** `plans/billing/r5-epic-4.2-drug-indication.md`
+
+- [x] Re-run Gate B export (`scripts/sut/prose/drug_indication_gate_b.py`) → refresh `L4.2_drug_indication_4.2.14.C.csv`
+- [x] Full §4.2 motor gap CSV → `data/gazette/prose_corpus/L4.2_drug_indication_gap_refresh.csv`
+  - Columns: `clause_id`, `section_id`, `text_excerpt`, `deontic_modality`, `encode_tier`, `in_manifest`, `has_rule_encoding`
+- [x] Manifest vs coverage diff → `data/gazette/prose_corpus/L4.2_drug_indication_a0_summary.json`
+  - Segment unencoded rows by `section_id` prefix: 4.2.14.C, 4.2.13, 4.2.16, 4.2.33, rest
+- [x] Script: `scripts/sut/prose/drug_indication_a0_inventory.py`
+- [x] Test: `tests/unit/scripts/test_drug_indication_a0_inventory.py`
+
+**Baseline (A0 snapshot):** 2.369 §4.2 motor clauses; 518 `has_rule_encoding`; 103 in manifest but not encoded; unencoded tail 4.2.14.C=101, 4.2.13=109, 4.2.16=24, 4.2.33=44, rest=1.573.
+
 ## Out of scope (this plan)
 
 - Full §4.2 beyond 4.2.14.C (4.2.13.x, 4.2.16, 4.2.34 — separate batches after v1)
