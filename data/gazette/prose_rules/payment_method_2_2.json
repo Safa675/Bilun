@@ -10,6 +10,138 @@
   ],
   "rules": [
     {
+      "rule_id": "2.2.(12).no_pay_without_documentation",
+      "sut_section": "2.2",
+      "condition": {
+        "provider_contract_status": "contracted",
+        "documentation_on_request": false
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "bilgi/belge ibraz edilemeyen tetkik/tahlil bedeli ödenmez",
+        "billable": false
+      },
+      "gate_b_sources": [
+        "C000530"
+      ]
+    },
+    {
+      "rule_id": "2.2.(13).health_report_single_bill",
+      "sut_section": "2.2",
+      "condition": {
+        "line_type": "health_report",
+        "report_annex": "EK-2/B"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "sağlık raporu bedeli EK-2/B puanları — sadece bir adet",
+        "max_bill_count": 1
+      },
+      "gate_b_sources": [
+        "C000531"
+      ]
+    },
+    {
+      "rule_id": "2.2.(14).committee_report_exam_fee",
+      "sut_section": "2.2",
+      "condition": {
+        "requires_health_committee_report": true,
+        "line_type": "examination"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "sağlık kurulu raporu için sadece bir adet muayene bedeli",
+        "max_bill_count": 1
+      },
+      "gate_b_sources": [
+        "C000532"
+      ]
+    },
+    {
+      "rule_id": "2.2.(3).aesthetic_must_not_bill",
+      "sut_section": "2.2",
+      "condition": {
+        "billing_purpose": "aesthetic",
+        "work_injury_or_congenital_excluded": true
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "estetik amaçlı hizmetler Kuruma faturalandırılamaz",
+        "billable": false
+      },
+      "gate_b_sources": [
+        "C000521"
+      ]
+    },
+    {
+      "rule_id": "2.2.(8).contracted_tetkik_mandatory",
+      "sut_section": "2.2",
+      "condition": {
+        "provider_contract_status": "contracted",
+        "care_setting": "any"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "sözleşmeli kuruluş tetkik/tahlil zorunluluğu",
+        "tetkik_supply": "in_house_or_procurement"
+      },
+      "gate_b_sources": [
+        "C000526"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.(20).class3_package_surcharge",
+      "sut_section": "2.2.1",
+      "condition": {
+        "facility_class": "EK-2/A-1.Sınıf-3",
+        "procedure_in_annex": "EK-2/C-1"
+      },
+      "action": {
+        "payment_method": "package",
+        "payment_method_tr": "Sınıf-3 EK-2/C-1 işlem oranı ilavesi ile paket",
+        "bill_materials_separately": true,
+        "bill_drugs_separately": true
+      },
+      "gate_b_sources": [
+        "C000538"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-1.(11).private_daily_visit_cap",
+      "sut_section": "2.2.1.B-1",
+      "condition": {
+        "care_setting": "outpatient",
+        "provider_type": "private"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "özel kuruluş günlük muayene sınırı — hekim×6 saat",
+        "daily_visit_cap_basis": "physician_hours_x6",
+        "bill_visit_fee": false
+      },
+      "gate_b_sources": [
+        "C000576"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-1.(2).ten_day_same_specialty_no_visit",
+      "sut_section": "2.2.1.B-1",
+      "condition": {
+        "care_setting": "outpatient",
+        "same_provider_same_specialty_within_days": 10,
+        "visit_type_excluded": "emergency"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "10 gün içinde aynı uzmanlık — sadece EK-2/A-2 işlemleri",
+        "visit_fee_annex": "EK-2/A-2",
+        "bill_visit_fee": false
+      },
+      "gate_b_sources": [
+        "C000562"
+      ]
+    },
+    {
       "rule_id": "2.2.1.B-1.a",
       "sut_section": "2.2.1.B-1.a",
       "condition": {
@@ -20,7 +152,10 @@
         "payment_method_tr": "tanıya dayalı işlem üzerinden ödeme",
         "bill_materials_separately": true,
         "bill_drugs_separately": true
-      }
+      },
+      "gate_b_sources": [
+        "C000571"
+      ]
     },
     {
       "rule_id": "2.2.1.B-1.b",
@@ -34,19 +169,29 @@
         "visit_fee_annex": "EK-2/A",
         "bill_materials_separately": true,
         "bill_drugs_separately": true
-      }
+      },
+      "gate_b_sources": [
+        "C000572"
+      ]
     },
     {
-      "rule_id": "2.2.2.(1).package",
-      "sut_section": "2.2.2.(1)",
+      "rule_id": "2.2.1.B-2.(2).g.no_visit_fee",
+      "sut_section": "2.2.1.B-2",
       "condition": {
         "care_setting": "inpatient",
-        "procedure_in_annex": "EK-2/C"
+        "payment_method_path": "itemized",
+        "service_category": "hizmet_basi_listed"
       },
       "action": {
-        "payment_method": "package",
-        "payment_method_tr": "tanıya dayalı işlem üzerinden ödeme"
-      }
+        "payment_method": "itemized",
+        "payment_method_tr": "hizmet başına ödeme — EK-2/A muayene tutarı faturalandırılamaz",
+        "visit_fee_annex": null,
+        "bill_materials_separately": true,
+        "bill_drugs_separately": true
+      },
+      "gate_b_sources": [
+        "C000606"
+      ]
     },
     {
       "rule_id": "2.2.2.(1).itemized",
@@ -58,7 +203,25 @@
       "action": {
         "payment_method": "itemized",
         "payment_method_tr": "hizmet başına ödeme"
-      }
+      },
+      "gate_b_sources": [
+        "C000633"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.(1).package",
+      "sut_section": "2.2.2.(1)",
+      "condition": {
+        "care_setting": "inpatient",
+        "procedure_in_annex": "EK-2/C"
+      },
+      "action": {
+        "payment_method": "package",
+        "payment_method_tr": "tanıya dayalı işlem üzerinden ödeme"
+      },
+      "gate_b_sources": [
+        "C000633"
+      ]
     },
     {
       "rule_id": "2.2.2.(2).override",
@@ -77,7 +240,130 @@
           "package",
           "itemized"
         ]
-      }
+      },
+      "gate_b_sources": [
+        "C000634"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.(3).short_stay_day_bed",
+      "sut_section": "2.2.2",
+      "condition": {
+        "care_setting": "inpatient",
+        "stay_duration_hours_lt": 24
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "24 saatten kısa yatışta gündüz yatak bedeli",
+        "bed_fee_basis": "day_rate"
+      },
+      "gate_b_sources": [
+        "C000635"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.(4).gunubirlik_no_day_bed",
+      "sut_section": "2.2.2",
+      "condition": {
+        "care_setting": "inpatient",
+        "visit_type": "gunubirlik",
+        "procedure_in_annex": "EK-2/C"
+      },
+      "action": {
+        "payment_method": "package",
+        "payment_method_tr": "günübirlik EK-2/C işlemlerde gündüz yatak bedeli yok",
+        "bill_day_bed": false
+      },
+      "gate_b_sources": [
+        "C000636"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.(5).gunubirlik_no_companion_fee",
+      "sut_section": "2.2.2",
+      "condition": {
+        "care_setting": "inpatient",
+        "visit_type": "gunubirlik",
+        "line_type": "refakatci",
+        "procedure_in_annex": "EK-2/B"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "günübirlik tedavide refakatçi bedeli ödenmez",
+        "billable": false
+      },
+      "gate_b_sources": [
+        "C000637"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.A(1).itemized_basis",
+      "sut_section": "2.2.2.A",
+      "condition": {
+        "care_setting": "inpatient",
+        "payment_method_path": "itemized"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "hizmet başına ödeme — EK-2/B ve EK-2/Ç esas",
+        "bill_materials_separately": true,
+        "bill_drugs_separately": true
+      },
+      "gate_b_sources": [
+        "C000639"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.A(2).itemized_materials_drugs",
+      "sut_section": "2.2.2.A",
+      "condition": {
+        "care_setting": "inpatient",
+        "payment_method_path": "itemized"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "hizmet başına ödeme — temin edilen ilaç/malzeme ayrı",
+        "bill_materials_separately": true,
+        "bill_drugs_separately": true
+      },
+      "gate_b_sources": [
+        "C000640"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.A(3).companion_fee_itemized",
+      "sut_section": "2.2.2.A",
+      "condition": {
+        "care_setting": "inpatient",
+        "payment_method_path": "itemized",
+        "line_type": "refakatci"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "refakatçi bedeli — §2.6.3(2) esas",
+        "bill_materials_separately": false,
+        "bill_drugs_separately": false
+      },
+      "gate_b_sources": [
+        "C000641"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.C.(1).complication_itemized_discount",
+      "sut_section": "2.2.2.C",
+      "condition": {
+        "care_setting": "inpatient",
+        "event_type": "post_procedure_complication",
+        "same_provider": true
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "komplikasyon bedelleri hizmet başına ödeme — %10 indirimli",
+        "discount_rate": 0.1
+      },
+      "gate_b_sources": [
+        "C000703"
+      ]
     }
   ],
   "session_rules_ref": "session_pricing_2_2_2_B.json",

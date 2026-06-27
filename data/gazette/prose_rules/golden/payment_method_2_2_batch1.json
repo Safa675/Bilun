@@ -1,0 +1,40 @@
+{
+  "description": "Gate B golden — C2 batch-1 payment_method_2_2 clause → rule_id",
+  "cases": [
+    {
+      "clause_id": "C000538",
+      "expected_rule_id": "2.2.1.(20).class3_package_surcharge",
+      "encode_batch": "C2c"
+    },
+    {
+      "clause_id": "C000606",
+      "expected_rule_id": "2.2.1.B-2.(2).g.no_visit_fee",
+      "encode_batch": "C2c"
+    },
+    {
+      "clause_id": "C000635",
+      "expected_rule_id": "2.2.2.(3).short_stay_day_bed",
+      "encode_batch": "C2b"
+    },
+    {
+      "clause_id": "C000636",
+      "expected_rule_id": "2.2.2.(4).gunubirlik_no_day_bed",
+      "encode_batch": "C2b"
+    },
+    {
+      "clause_id": "C000639",
+      "expected_rule_id": "2.2.2.A(1).itemized_basis",
+      "encode_batch": "C2a"
+    },
+    {
+      "clause_id": "C000640",
+      "expected_rule_id": "2.2.2.A(2).itemized_materials_drugs",
+      "encode_batch": "C2a"
+    },
+    {
+      "clause_id": "C000641",
+      "expected_rule_id": "2.2.2.A(3).companion_fee_itemized",
+      "encode_batch": "C2b"
+    }
+  ]
+}
