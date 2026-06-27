@@ -1,0 +1,60 @@
+{
+  "samples": [
+    {
+      "drug_name": "BARACLUDE 0.5 MG (ENTEKAVIR)",
+      "primary_icd10": "B18.1",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.13.hbv_entekavir_board"
+    },
+    {
+      "drug_name": "BARACLUDE 0.5 MG (ENTEKAVIR)",
+      "primary_icd10": "B18.1",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.13.hbv_entekavir_board"
+    },
+    {
+      "drug_name": "BARACLUDE 0.5 MG (ENTEKAVIR)",
+      "primary_icd10": "J45.9",
+      "report_present": true,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.13.hbv_entekavir_board"
+    },
+    {
+      "drug_name": "MAVYRET (GLEKAPREVIR/PIBRENTASVIR)",
+      "primary_icd10": "B18.2",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.13.hcv_glecaprevir_pibrentasvir_board"
+    },
+    {
+      "drug_name": "MODULEN KF (KISTIK FIBROZIS MAMASI)",
+      "primary_icd10": "E84.9",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.16.cystic_fibrosis_formula_report"
+    },
+    {
+      "drug_name": "MODULEN KF (KISTIK FIBROZIS MAMASI)",
+      "primary_icd10": "E84.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.cystic_fibrosis_formula_report"
+    },
+    {
+      "drug_name": "GLUTENSIZ UN KARISIMI (CELYAK)",
+      "primary_icd10": "K90.0",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.16.celiac_gluten_free_report"
+    },
+    {
+      "drug_name": "GLUTENSIZ UN KARISIMI (CELYAK)",
+      "primary_icd10": "K90.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.celiac_gluten_free_report"
+    }
+  ]
+}

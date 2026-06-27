@@ -4,10 +4,213 @@
   "effective_date": "2026-01-17",
   "sut_anchors": [
     "4.2",
-    "4.2.14.C"
+    "4.2.13",
+    "4.2.14.C",
+    "4.2.16"
   ],
-  "coverage_note": "§4.2.14.C oncology (164 rules: Tier-A/B base + Bucket A prescriber + Bucket B biomarker/prior-therapy) + §4.2.33 anti-VEGF (21 rules).",
+  "coverage_note": "R5 A2 pilot — 177 rules; §4.2.13 hepatitis + §4.2.16 formula batches merged.",
   "rules": [
+    {
+      "rule_id": "4.2.13.hbv_entekavir_board",
+      "sut_section": "4.2.13.1",
+      "drug_names": [
+        "entekavir"
+      ],
+      "icd10_ranges": [
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "Entekavir — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).",
+      "gate_b_sources": [
+        "C004572"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hbv_lamivudin_board",
+      "sut_section": "4.2.13.1",
+      "drug_names": [
+        "lamivudin"
+      ],
+      "icd10_ranges": [
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "Lamivudin — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).",
+      "gate_b_sources": [
+        "C004572"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hbv_oral_report_duration_6mo",
+      "sut_section": "4.2.13.1",
+      "drug_names": [
+        "entekavir",
+        "tenofovir",
+        "lamivudin",
+        "telbivudin"
+      ],
+      "icd10_ranges": [
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HBV oral antiviral — ilk rapor süresi en fazla 6 ay olmalıdır (§4.2.13.1).",
+      "gate_b_sources": [
+        "C004604"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.13.hbv_tenofovir_board",
+      "sut_section": "4.2.13.1",
+      "drug_names": [
+        "tenofovir"
+      ],
+      "icd10_ranges": [
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "Tenofovir — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).",
+      "gate_b_sources": [
+        "C004572"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hcv_acute_interferon_report",
+      "sut_section": "4.2.13.3.1",
+      "drug_names": [
+        "interferon",
+        "pegile interferon",
+        "peginterferon"
+      ],
+      "icd10_ranges": [
+        "B17.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "Akut hepatit C interferon tedavisi — gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.1).",
+      "gate_b_sources": [
+        "C004636",
+        "C004637"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hcv_glecaprevir_pibrentasvir_board",
+      "sut_section": "4.2.13.3.2",
+      "drug_names": [
+        "glekaprevir",
+        "pibrentasvir"
+      ],
+      "icd10_ranges": [
+        "B18.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "Glekaprevir/pibrentasvir — kronik HCV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.3.2).",
+      "gate_b_sources": [
+        "C004815"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hcv_ribavirin_combo_report",
+      "sut_section": "4.2.13.E-2",
+      "drug_names": [
+        "ribavirin"
+      ],
+      "icd10_ranges": [
+        "B18.2",
+        "B17.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HCV ribavirin kombinasyonu — kronik hepatit C endikasyonu ve uzman hekim raporu gerekir (§4.2.13).",
+      "gate_b_sources": [
+        "C004641"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hcv_sofosbuvir_ledipasvir_board",
+      "sut_section": "4.2.13.3.2",
+      "drug_names": [
+        "sofosbuvir",
+        "ledipasvir"
+      ],
+      "icd10_ranges": [
+        "B18.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "Sofosbuvir/ledipasvir — kronik HCV endikasyonu ve gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.2).",
+      "gate_b_sources": [
+        "C004690",
+        "C004897"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hepatitis_viral_gastro_inf_report",
+      "sut_section": "4.2.13",
+      "drug_names": [
+        "hepatit",
+        "viral hepatit"
+      ],
+      "icd10_ranges": [
+        "B15",
+        "B16",
+        "B17",
+        "B18",
+        "B19"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "Viral hepatit ilaçları — gastroenteroloji veya enfeksiyon hastalıkları uzman hekim ilaç kullanım raporu gerekir (§4.2.13).",
+      "gate_b_sources": [
+        "C004501"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları",
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ]
+    },
     {
       "rule_id": "4.2.14.C.(1).aflibercept_crc_board",
       "sut_section": "4.2.14.C",
@@ -2758,128 +2961,6 @@
       ]
     },
     {
-      "rule_id": "4.2.14.C.tioguanin_fikra2_heme",
-      "sut_section": "4.2.14.C",
-      "drug_names": [
-        "tioguanin"
-      ],
-      "icd10_ranges": [
-        "C00-C97",
-        "D45-D47"
-      ],
-      "report_required": true,
-      "report_specialties": [
-        "tıbbi onkoloji",
-        "hematoloji"
-      ],
-      "message_tr": "Tioguanin — hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
-      "prescriber_specialties": [
-        "hematoloji",
-        "tıbbi onkoloji"
-      ],
-      "gate_b_sources": [
-        "C004924"
-      ]
-    },
-    {
-      "rule_id": "4.2.14.C.tiotepa_fikra2_heme",
-      "sut_section": "4.2.14.C",
-      "drug_names": [
-        "tiotepa"
-      ],
-      "icd10_ranges": [
-        "C00-C97",
-        "D45-D47"
-      ],
-      "report_required": true,
-      "report_specialties": [
-        "tıbbi onkoloji",
-        "hematoloji"
-      ],
-      "message_tr": "Tiotepa — hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
-      "prescriber_specialties": [
-        "hematoloji",
-        "tıbbi onkoloji"
-      ],
-      "gate_b_sources": [
-        "C004924"
-      ]
-    },
-    {
-      "rule_id": "4.2.14.C.trabectedin_sarcoma_board",
-      "sut_section": "4.2.14.C",
-      "drug_names": [
-        "trabektedin",
-        "trabectedin"
-      ],
-      "icd10_ranges": [
-        "C49"
-      ],
-      "report_required": true,
-      "report_specialties": [
-        "tıbbi onkoloji"
-      ],
-      "message_tr": "Trabektedin — liyomiyosarkom/liposarkom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
-      "gate_b_sources": [
-        "C005102"
-      ]
-    },
-    {
-      "rule_id": "4.2.14.C.trastuzumab_3mo_ecg_board",
-      "sut_section": "4.2.14.C",
-      "drug_names": [
-        "trastuzumab"
-      ],
-      "icd10_ranges": [
-        "C50"
-      ],
-      "report_required": true,
-      "report_specialties": [
-        "tıbbi onkoloji"
-      ],
-      "message_tr": "Trastuzumab — 3 ay süreli ekokardiyografi içeren sağlık kurulu raporu gerekir (§4.2.14.C).",
-      "report_duration_months": 3,
-      "prescriber_specialties": [
-        "tıbbi onkoloji"
-      ],
-      "gate_b_sources": [
-        "C004927",
-        "C004928",
-        "C004929",
-        "C004930",
-        "C004932",
-        "C005276",
-        "C005278"
-      ]
-    },
-    {
-      "rule_id": "4.2.14.C.trastuzumab_metastatic_prescriber_oncology",
-      "sut_section": "4.2.14.C",
-      "drug_names": [
-        "trastuzumab"
-      ],
-      "icd10_ranges": [
-        "C50"
-      ],
-      "report_required": true,
-      "report_specialties": [
-        "tıbbi onkoloji"
-      ],
-      "message_tr": "Trastuzumab — tıbbi onkoloji uzmanınca reçete/onkoloji raporu gerekir (§4.2.14.C).",
-      "prescriber_specialties": [
-        "tıbbi onkoloji"
-      ],
-      "gate_b_sources": [
-        "C004927",
-        "C004928",
-        "C004929",
-        "C004930",
-        "C004932",
-        "C005276",
-        "C005278"
-      ]
-    },
-    {
       "rule_id": "4.2.14.C.tier_c.C004933.filgrastim",
       "sut_section": "4.2.14.C",
       "drug_names": [
@@ -3786,6 +3867,233 @@
         "drug_or_class": "prior_therapy",
         "outcome": "resistant"
       }
+    },
+    {
+      "rule_id": "4.2.14.C.tioguanin_fikra2_heme",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "tioguanin"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Tioguanin — hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
+      "prescriber_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004924"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.tiotepa_fikra2_heme",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "tiotepa"
+      ],
+      "icd10_ranges": [
+        "C00-C97",
+        "D45-D47"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ],
+      "message_tr": "Tiotepa — hematoloji/onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
+      "prescriber_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004924"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.trabectedin_sarcoma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trabektedin",
+        "trabectedin"
+      ],
+      "icd10_ranges": [
+        "C49"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Trabektedin — liyomiyosarkom/liposarkom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005102"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.trastuzumab_3mo_ecg_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trastuzumab"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Trastuzumab — 3 ay süreli ekokardiyografi içeren sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "report_duration_months": 3,
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004927",
+        "C004928",
+        "C004929",
+        "C004930",
+        "C004932",
+        "C005276",
+        "C005278"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.trastuzumab_metastatic_prescriber_oncology",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "trastuzumab"
+      ],
+      "icd10_ranges": [
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Trastuzumab — tıbbi onkoloji uzmanınca reçete/onkoloji raporu gerekir (§4.2.14.C).",
+      "prescriber_specialties": [
+        "tıbbi onkoloji"
+      ],
+      "gate_b_sources": [
+        "C004927",
+        "C004928",
+        "C004929",
+        "C004930",
+        "C004932",
+        "C005276",
+        "C005278"
+      ]
+    },
+    {
+      "rule_id": "4.2.16.celiac_gluten_free_report",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "çölyak",
+        "coelyak",
+        "glutensiz"
+      ],
+      "icd10_ranges": [
+        "K90.0"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji"
+      ],
+      "message_tr": "Çölyak hastalığı glutensiz ürün — gastroenteroloji uzman hekim raporu gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C006007"
+      ]
+    },
+    {
+      "rule_id": "4.2.16.cystic_fibrosis_formula_report",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "kistik fibrozis",
+        "modulen"
+      ],
+      "icd10_ranges": [
+        "E84"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "göğüs hastalıkları"
+      ],
+      "message_tr": "Kistik fibrozis özel maması — gastroenteroloji/göğüs hastalıkları uzman hekim raporu gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C005947",
+        "C005999"
+      ]
+    },
+    {
+      "rule_id": "4.2.16.metabolic_formula_pediatric_report",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "metabolik mama",
+        "özel formül",
+        "ozel formul",
+        "fenilketonüri",
+        "pku"
+      ],
+      "icd10_ranges": [
+        "E70",
+        "E71",
+        "E72",
+        "E74"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji"
+      ],
+      "message_tr": "Doğuştan metabolik hastalık özel formülü — metabolizma/gastroenteroloji uzman hekim raporu gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C005983"
+      ],
+      "report_duration_months": 36,
+      "prescriber_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji",
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.16.protein_metabolism_formula_report",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "özel formüllü un",
+        "ozel formul",
+        "aminoasit metabolizması"
+      ],
+      "icd10_ranges": [
+        "E70",
+        "E71",
+        "E72",
+        "E74"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji"
+      ],
+      "message_tr": "Protein metabolizması bozukluğu özel formülü — uzman hekim raporu gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C005877",
+        "C005993"
+      ]
     }
   ]
 }
