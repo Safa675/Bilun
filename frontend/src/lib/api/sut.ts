@@ -491,6 +491,7 @@ export interface RuleClause {
   primary_rule_id: string | null;
   primary_rule_category: string | null;
   matched_rule_ids: string[];
+  matched_rules: { rule_id: string; rule_category_tr: string | null }[];
   is_primary: boolean;
   match_score: number;
   has_algorithmic_gap: boolean;
@@ -739,6 +740,7 @@ export async function listClauses(
     coverage_status?: string;
     has_gap?: boolean;
     has_encoding?: boolean;
+    primary_rule_id?: string;
   },
   options?: RequestInit,
 ): Promise<SectionClausesResponse> {
@@ -749,6 +751,7 @@ export async function listClauses(
   if (params?.coverage_status) qs.set("coverage_status", params.coverage_status);
   if (params?.has_gap !== undefined) qs.set("has_gap", String(params.has_gap));
   if (params?.has_encoding !== undefined) qs.set("has_encoding", String(params.has_encoding));
+  if (params?.primary_rule_id) qs.set("primary_rule_id", params.primary_rule_id);
   const query = qs.toString();
   return requestJSON<SectionClausesResponse>(
     `/api/rules/clauses${query ? `?${query}` : ""}`,

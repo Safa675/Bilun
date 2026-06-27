@@ -45,7 +45,6 @@ const sections = {
       zeroClauseWarning: "Implemented but no mapped clauses",
       buildHint: "Coverage data unavailable — run `python scripts/sut/build_sut_coverage.py`",
       generatedAt: "Generated {date}",
-      totalExtracted: "Extracted clauses",
       totalClauses: "In-force clauses",
       totalRuleEngines: "Registered rule engines",
       glossary: {
@@ -88,6 +87,7 @@ const sections = {
       searchPlaceholder: "Search clause_id or text…",
       filterGap: "Gap",
       filterEncoded: "Encoded",
+      filterMotor: "Motor",
       resultCount: "{count} clauses",
     },
     sections: {
@@ -103,6 +103,7 @@ const sections = {
       noMatches: "No sections match.",
       artifactsUnavailable: "Section rollup unavailable — coverage parquets not built.",
       detailTitle: "Clauses",
+      detailStats: "{clauses} clauses · {gaps} gaps",
       detailPrompt: "Select a section to browse its clauses.",
       clausePage: "Page {page} of {total}",
       consolidate: "Consolidate",
@@ -130,6 +131,7 @@ const sections = {
       encodedBadge: "Encoded",
       gapBadge: "Gap",
       motorLabel: "Motor",
+      motorJump: "Open this motor in the Rules tab",
       matchedMore: "+{count} more",
       noClauses: "No SUT clauses are mapped to this rule.",
       noArtifacts: "Clause text unavailable until the SUT clause corpus is built.",

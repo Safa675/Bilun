@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import {
+  getClause,
   getProseInventory,
   getRuleCatalog,
   getRuleDetail,
@@ -142,10 +143,49 @@ function GlossaryStrip({
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
-  // Static figures that change rarely (require pipeline rebuild).
-  const JSON_RULE_COUNT = 337;
-  const SECTION_ROWS = 951;
-  const UNIQUE_SECTIONS = 481;
+  // Live figures fetched once from the prose-inventory + section rollup endpoints
+  // (previously hardcoded 337 / 951 / 481, which drifted after pipeline rebuilds).
+  const [jsonRuleCount, setJsonRuleCount] = useState<number | null>(null);
+  const [sectionRows, setSectionRows] = useState<number | null>(null);
+  const [uniqueSections, setUniqueSections] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const inv = await getProseInventory();
+        if (!active) return;
+        const sum = (inv.engines ?? [])
+          .reduce((acc, e) => acc + (e.rule_count ?? 0), 0);
+        setJsonRuleCount(sum);
+      } catch {
+        /* leave null — UI falls back */
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [rows, unique] = await Promise.all([
+          getRuleSections({ per_page: 1, page: 1 }),
+          getRuleSections({ per_page: 1, page: 1, consolidate: true }),
+        ]);
+        if (!active) return;
+        setSectionRows(rows.total);
+        setUniqueSections(unique.total);
+      } catch {
+        /* leave null */
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-soft)] px-3 py-2.5">
@@ -175,15 +215,15 @@ function GlossaryStrip({
           <div>
             <dt className="font-semibold text-[var(--text-primary)]">JSON</dt>
             <dd>
-              {t("sections.ruleDatabase.coverage.glossary.jsonSatir", { count: JSON_RULE_COUNT })}
+              {t("sections.ruleDatabase.coverage.glossary.jsonSatir", { count: fmtNum(jsonRuleCount ?? 0) })}
             </dd>
           </div>
           <div>
             <dt className="font-semibold text-[var(--text-primary)]">§</dt>
             <dd>
               {t("sections.ruleDatabase.coverage.glossary.bolumSatiri", {
-                count: SECTION_ROWS,
-                unique: UNIQUE_SECTIONS,
+                count: fmtNum(sectionRows ?? 0),
+                unique: fmtNum(uniqueSections ?? 0),
               })}
             </dd>
           </div>
@@ -494,7 +534,13 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
 
 const SECTIONS_PER_PAGE = 25;
 
-function SectionBrowserPanel() {
+function SectionBrowserPanel({
+  onNavigateToRule,
+  onUrlUpdate,
+}: {
+  onNavigateToRule?: (ruleId: string) => void;
+  onUrlUpdate?: (updates: Record<string, string | null>) => void;
+}) {
   const t = useT();
   const [query, setQuery] = useState("");
   const [minGapCount, setMinGapCount] = useState<string>("");
@@ -651,7 +697,10 @@ function SectionBrowserPanel() {
                     return (
                       <DataTableRow
                         key={sectionRollupRowKey(section)}
-                        onClick={() => setSelectedSection(section)}
+                        onClick={() => {
+                          setSelectedSection(section);
+                          onUrlUpdate?.({ rdSection: section.section_id });
+                        }}
                         className="cursor-pointer transition-colors hover:bg-[var(--surface-default)]"
                         {...(isSelected ? { "data-selected": true } : {})}
                       >
@@ -723,13 +772,19 @@ function SectionBrowserPanel() {
           )}
         </div>
 
-        <SectionDetailPane section={selectedSection} />
+        <SectionDetailPane section={selectedSection} onNavigateToRule={onNavigateToRule} />
       </div>
     </div>
   );
 }
 
-function SectionDetailPane({ section }: { section: SectionRollupEntry | null }) {
+function SectionDetailPane({
+  section,
+  onNavigateToRule,
+}: {
+  section: SectionRollupEntry | null;
+  onNavigateToRule?: (ruleId: string) => void;
+}) {
   const t = useT();
   const [clausePage, setClausePage] = useState(1);
   const [result, setResult] = useState<SectionClausesResponse | null>(null);
@@ -809,7 +864,10 @@ function SectionDetailPane({ section }: { section: SectionRollupEntry | null }) 
           {section.section_title ? ` · ${section.section_title}` : ""}
         </h4>
         <span className="text-[11px] text-[var(--text-muted)]">
-          {t("sections.ruleDatabase.sections.detailTitle")} ({fmtNum(section.clause_count)})
+          {t("sections.ruleDatabase.sections.detailStats", {
+            clauses: fmtNum(section.clause_count),
+            gaps: fmtNum(section.gap_clause_count ?? 0),
+          })}
         </span>
       </div>
 
@@ -829,7 +887,7 @@ function SectionDetailPane({ section }: { section: SectionRollupEntry | null }) 
         <>
           <ul className="space-y-2">
             {clauses.map((clause) => (
-              <ClauseCard key={clause.clause_id} clause={clause} />
+              <ClauseCard key={clause.clause_id} clause={clause} onNavigateToRule={onNavigateToRule} />
             ))}
           </ul>
           {totalPages > 1 && (
@@ -864,13 +922,26 @@ function SectionDetailPane({ section }: { section: SectionRollupEntry | null }) 
   );
 }
 
-function ClauseBrowserPanel({ initialQuery = "" }: { initialQuery?: string }) {
+function ClauseBrowserPanel({
+  initialQuery = "",
+  initialClauseId,
+  rules,
+  onNavigateToRule,
+  onUrlUpdate,
+}: {
+  initialQuery?: string;
+  initialClauseId?: string | null;
+  rules?: RuleCatalogEntry[] | null;
+  onNavigateToRule?: (ruleId: string) => void;
+  onUrlUpdate?: (updates: Record<string, string | null>) => void;
+}) {
   const t = useT();
   const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [gapFilter, setGapFilter] = useState(false);
   const [encodingFilter, setEncodingFilter] = useState(false);
+  const [ruleFilter, setRuleFilter] = useState<string>("");
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<SectionClausesResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -881,6 +952,24 @@ function ClauseBrowserPanel({ initialQuery = "" }: { initialQuery?: string }) {
   useEffect(() => {
     if (initialQuery) setQuery(initialQuery);
   }, [initialQuery]);
+
+  // Deep link: ?rdClause=C002684 → fetch and pre-select that clause on mount.
+  useEffect(() => {
+    if (!initialClauseId) return;
+    let active = true;
+    (async () => {
+      try {
+        const clause = await getClause(initialClauseId);
+        if (active && clause) setSelectedClause(clause);
+      } catch {
+        /* clause may not exist; silently ignore */
+      }
+    })();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 300ms debounce on search input.
@@ -897,7 +986,7 @@ function ClauseBrowserPanel({ initialQuery = "" }: { initialQuery?: string }) {
   // Reset to page 1 on any filter change.
   useEffect(() => {
     setPage(1);
-  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter]);
+  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, ruleFilter]);
 
   // Abort-aware fetch.
   useEffect(() => {
@@ -916,6 +1005,7 @@ function ClauseBrowserPanel({ initialQuery = "" }: { initialQuery?: string }) {
             coverage_status: statusFilter || undefined,
             has_gap: gapFilter || undefined,
             has_encoding: encodingFilter || undefined,
+            primary_rule_id: ruleFilter || undefined,
           },
           { signal: controller.signal },
         );
@@ -942,7 +1032,7 @@ function ClauseBrowserPanel({ initialQuery = "" }: { initialQuery?: string }) {
       active = false;
       controller.abort();
     };
-  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, page, t]);
+  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, ruleFilter, page, t]);
 
   const clauses = result?.clauses ?? [];
   const totalPages = result?.total_pages ?? 0;
@@ -974,7 +1064,7 @@ function ClauseBrowserPanel({ initialQuery = "" }: { initialQuery?: string }) {
                 }`}
               >
                 {status === "all"
-                  ? t("sections.ruleDatabase.status.all")
+                  ? t("sections.ruleDatabase.filters.all")
                   : t(`sections.ruleDatabase.status.${COVERAGE_KEY[status]}`)}
               </button>
             ))}
@@ -996,6 +1086,21 @@ function ClauseBrowserPanel({ initialQuery = "" }: { initialQuery?: string }) {
             >
               {t("sections.ruleDatabase.clauses.filterEncoded")}
             </button>
+            {rules && rules.length > 0 && (
+              <select
+                value={ruleFilter}
+                onChange={(e) => setRuleFilter(e.target.value)}
+                className="sut-input max-w-[220px] truncate text-[11px]"
+                aria-label={t("sections.ruleDatabase.clauses.filterMotor")}
+              >
+                <option value="">{t("sections.ruleDatabase.clauses.filterMotor")}</option>
+                {rules.map((r) => (
+                  <option key={r.rule_id} value={r.rule_id}>
+                    {r.rule_id}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         }
       />
@@ -1024,7 +1129,10 @@ function ClauseBrowserPanel({ initialQuery = "" }: { initialQuery?: string }) {
                   return (
                     <li
                       key={clause.clause_id}
-                      onClick={() => setSelectedClause(clause)}
+                      onClick={() => {
+                        setSelectedClause(clause);
+                        onUrlUpdate?.({ rdClause: clause.clause_id });
+                      }}
                       className={`cursor-pointer rounded-[var(--r-sm)] border px-3 py-2 transition-colors hover:bg-[var(--surface-default)] ${
                         isSelected
                           ? "border-[var(--accent)] bg-[var(--surface-default)]"
@@ -1097,7 +1205,7 @@ function ClauseBrowserPanel({ initialQuery = "" }: { initialQuery?: string }) {
         {/* Detail pane */}
         {selectedClause ? (
           <div>
-            <ClauseCard clause={selectedClause} />
+            <ClauseCard clause={selectedClause} onNavigateToRule={onNavigateToRule} />
           </div>
         ) : (
           <Surface variant="soft" padding="md" className="h-full">
@@ -1259,6 +1367,7 @@ export function RuleDatabaseSection() {
   const [clauseSearchQ, setClauseSearchQ] = useState<string>(
     searchParams.get("rdSection") || "",
   );
+  const initialClauseId = searchParams.get("rdClause");
 
   const updateUrl = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -1278,6 +1387,12 @@ export function RuleDatabaseSection() {
     setActiveTab("clauses");
     setClauseSearchQ(anchor);
     updateUrl({ rdTab: "clauses", rdSection: anchor });
+  };
+
+  const handleNavigateToRule = (ruleId: string) => {
+    setSelectedRuleId(ruleId);
+    setActiveTab("rules");
+    updateUrl({ rdTab: "rules", rdClause: null, rdSection: null });
   };
 
   const {
@@ -1408,6 +1523,7 @@ export function RuleDatabaseSection() {
                     key={activeRuleId}
                     ruleId={activeRuleId}
                     artifactsAvailable={artifactsAvailable}
+                    onNavigateToRule={handleNavigateToRule}
                   />
                 ) : (
                   <Surface variant="soft" padding="lg" className="flex items-center justify-center">
@@ -1422,13 +1538,22 @@ export function RuleDatabaseSection() {
 
           <TabsContent value="sections" forceMount className="data-[state=inactive]:hidden">
             <div className="pt-4">
-              <SectionBrowserPanel />
+              <SectionBrowserPanel
+                onNavigateToRule={handleNavigateToRule}
+                onUrlUpdate={updateUrl}
+              />
             </div>
           </TabsContent>
 
           <TabsContent value="clauses" forceMount className="data-[state=inactive]:hidden">
             <div className="pt-4">
-              <ClauseBrowserPanel initialQuery={clauseSearchQ} />
+              <ClauseBrowserPanel
+                initialQuery={clauseSearchQ}
+                initialClauseId={initialClauseId}
+                rules={rules}
+                onNavigateToRule={handleNavigateToRule}
+                onUrlUpdate={updateUrl}
+              />
             </div>
           </TabsContent>
 
@@ -1525,9 +1650,11 @@ function RuleList({
 function RuleDetailPanel({
   ruleId,
   artifactsAvailable,
+  onNavigateToRule,
 }: {
   ruleId: string;
   artifactsAvailable: boolean;
+  onNavigateToRule?: (ruleId: string) => void;
 }) {
   const t = useT();
   // Ref so the fetch reads a fresh translator without re-running on locale change.
@@ -1644,7 +1771,7 @@ function RuleDetailPanel({
         <>
           <ul className="space-y-3 overflow-y-auto max-h-[55vh]">
             {clauses.map((clause) => (
-              <ClauseCard key={clause.clause_id} clause={clause} />
+              <ClauseCard key={clause.clause_id} clause={clause} onNavigateToRule={onNavigateToRule} />
             ))}
           </ul>
           {total_pages > 1 && (
@@ -1679,12 +1806,22 @@ function RuleDetailPanel({
   );
 }
 
-export function ClauseCard({ clause }: { clause: RuleClause }) {
+export function ClauseCard({
+  clause,
+  onNavigateToRule,
+}: {
+  clause: RuleClause;
+  onNavigateToRule?: (ruleId: string) => void;
+}) {
   const t = useT();
   const sectionLabel = [clause.section_id, clause.section_title].filter(Boolean).join(" · ");
   const deonticLabel = useDeonticLabel(clause.deontic_modality);
   const shownMatched = clause.matched_rule_ids.slice(0, 3);
   const overflowCount = clause.matched_rule_ids.length - shownMatched.length;
+  const navigate = (rid: string) => (e: ReactMouseEvent) => {
+    e.stopPropagation();
+    onNavigateToRule?.(rid);
+  };
 
   return (
     <li className="min-h-[80px] rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-soft)] p-3">
@@ -1724,9 +1861,20 @@ export function ClauseCard({ clause }: { clause: RuleClause }) {
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-[var(--text-muted)]">
         {clause.primary_rule_id && (
-          <span className="font-mono">
-            {t("sections.ruleDatabase.detail.motorLabel")}: {clause.primary_rule_id}
-          </span>
+          onNavigateToRule ? (
+            <button
+              type="button"
+              onClick={navigate(clause.primary_rule_id)}
+              className="rounded border border-[var(--border-subtle)] bg-[var(--surface-default)] px-1.5 py-0.5 font-mono transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+              title={t("sections.ruleDatabase.detail.motorJump")}
+            >
+              {t("sections.ruleDatabase.detail.motorLabel")}: {clause.primary_rule_id}
+            </button>
+          ) : (
+            <span className="font-mono">
+              {t("sections.ruleDatabase.detail.motorLabel")}: {clause.primary_rule_id}
+            </span>
+          )
         )}
         {deonticLabel && (
           <span className="font-mono uppercase tracking-wide">{deonticLabel}</span>
@@ -1744,10 +1892,23 @@ export function ClauseCard({ clause }: { clause: RuleClause }) {
           </span>
         )}
         {shownMatched.length > 0 && (
-          <span className="font-mono text-[var(--text-muted)]">
-            {shownMatched.join(", ")}
+          <span className="inline-flex flex-wrap items-center gap-1">
+            {shownMatched.map((rid) =>
+              onNavigateToRule ? (
+                <button
+                  key={rid}
+                  type="button"
+                  onClick={navigate(rid)}
+                  className="rounded border border-dashed border-[var(--border-subtle)] px-1.5 py-0.5 font-mono transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                >
+                  {rid}
+                </button>
+              ) : (
+                <span key={rid} className="font-mono">{rid}</span>
+              ),
+            )}
             {overflowCount > 0 && (
-              <span className="ml-1">
+              <span>
                 {t("sections.ruleDatabase.detail.matchedMore", { count: overflowCount })}
               </span>
             )}

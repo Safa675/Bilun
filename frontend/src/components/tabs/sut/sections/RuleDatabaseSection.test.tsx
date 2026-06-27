@@ -50,6 +50,7 @@ const mockClause: RuleClause = {
   primary_rule_id: "payment_method_2_2",
   primary_rule_category: "payment",
   matched_rule_ids: ["payment_method_2_2", "drg_package_adequacy", "copay_rate_ek2c1", "claim_validation", "billing_strategy"],
+  matched_rules: [],
   is_primary: true,
   match_score: 100,
   has_algorithmic_gap: true,

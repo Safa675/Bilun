@@ -45,7 +45,6 @@ const sections = {
       zeroClauseWarning: "Uygulandı ancak eşleşen hüküm yok",
       buildHint: "Kapsam verisi kullanılamıyor — `python scripts/sut/build_sut_coverage.py` çalıştırın",
       generatedAt: "Oluşturulma {date}",
-      totalExtracted: "Çıkarılan hüküm",
       totalClauses: "Canlı hüküm",
       totalRuleEngines: "Kayıtlı kural motoru",
       glossary: {
@@ -88,6 +87,7 @@ const sections = {
       searchPlaceholder: "Hüküm id veya metin ara…",
       filterGap: "Boşluk",
       filterEncoded: "Kodlanmış",
+      filterMotor: "Motor",
       resultCount: "{count} hüküm",
     },
     sections: {
@@ -103,6 +103,7 @@ const sections = {
       noMatches: "Eşleşen bölüm yok.",
       artifactsUnavailable: "Bölüm özeti kullanılamıyor — kapsam parquetleri oluşturulmamış.",
       detailTitle: "Hükümler",
+      detailStats: "{clauses} hüküm · {gaps} boşluk",
       detailPrompt: "Hükümlerine göz atmak için bir bölüm seçin.",
       clausePage: "Sayfa {page} / {total}",
       consolidate: "Bölüm başına birleştir",
@@ -130,6 +131,7 @@ const sections = {
       encodedBadge: "Kodlanmış",
       gapBadge: "Boşluk",
       motorLabel: "Motor",
+      motorJump: "Bu motoru Kurallar sekmesinde aç",
       matchedMore: "+{count} daha",
       noClauses: "Bu kurala eşlenmiş SUT hükmü yok.",
       noArtifacts: "SUT hüküm derlemi oluşturulana kadar hüküm metni kullanılamaz.",
