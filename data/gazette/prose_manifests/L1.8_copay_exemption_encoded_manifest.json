@@ -1,0 +1,61 @@
+{
+  "rules_in_json": 12,
+  "json_rule_clause_traces": {
+    "1.8.2.(1)": "C000314",
+    "1.8.2.(2)": "C000321",
+    "1.8.3.(2)": "C000338",
+    "1.8.4.(1)": "C000352",
+    "1.8.5.(10).organ_nakli": "C000364",
+    "1.8.5.(14).kanun_2828": "C000368",
+    "1.8.5.(17).iade_malzeme": "C000371",
+    "1.8.5.(2).askeri_tatbikat": "C000356",
+    "1.8.5.(20).deprem_protez": "C000374",
+    "1.8.5.(3).afet_savas_hali": "C000357",
+    "1.8.5.(4).kontrol_muayenesi": "C000358",
+    "1.8.5.(9).tibbi_sarf_malzeme": "C000363"
+  },
+  "compositor_clause_traces": {
+    "copay_exemption_ek1a": [
+      "C000361"
+    ],
+    "copay_exemption_ek4d": [
+      "C000326",
+      "C000362"
+    ],
+    "copay_exemption_visit_type": [
+      "C000359",
+      "C000360"
+    ],
+    "copay_exemption_occupational": [
+      "C000355"
+    ],
+    "copay_exemption_patient_status": [
+      "C000378"
+    ]
+  },
+  "gate_b_sources_encoded": [
+    "C000314",
+    "C000321",
+    "C000326",
+    "C000338",
+    "C000352",
+    "C000355",
+    "C000356",
+    "C000357",
+    "C000358",
+    "C000359",
+    "C000360",
+    "C000361",
+    "C000362",
+    "C000363",
+    "C000364",
+    "C000368",
+    "C000371",
+    "C000374",
+    "C000378"
+  ],
+  "ek4d_overlap_clause_ids": [
+    "C000326",
+    "C000362"
+  ]
+}
