@@ -151,6 +151,86 @@
         "unit_price": 35.0
       },
       "expected_rule_id": "3.1.2.c.warranty_maintenance"
+    },
+    {
+      "clause_id": "C002706",
+      "material": {
+        "name": "EK-3/C liste alan tanımı",
+        "code": "EK3C1",
+        "unit_price": 10.0,
+        "ek3c_list_field_definition_scope": true
+      },
+      "expected_rule_id": "3.1.2.(1).ek3c_list_field_definitions"
+    },
+    {
+      "clause_id": "C002710",
+      "material": {
+        "name": "Ismarlama protez",
+        "code": "IP1",
+        "unit_price": 500.0,
+        "ismarlama_licensed_center_supply_required": true
+      },
+      "expected_rule_id": "3.1.2.(4)a.ismarlama_licensed_center_supply"
+    },
+    {
+      "clause_id": "C002714",
+      "material": {
+        "name": "Hasta alt bezi",
+        "code": "D1",
+        "unit_price": 25.0,
+        "ek3c_optional_appropriateness_consumable": true
+      },
+      "expected_rule_id": "3.1.2.(5).ek3c_optional_appropriateness_consumables"
+    },
+    {
+      "clause_id": "C002736",
+      "material": {
+        "name": "Vazife malulü ortez",
+        "code": "OP1",
+        "unit_price": 1200.0,
+        "disabled_veteran_ortez_protez_billing_review": true
+      },
+      "expected_rule_id": "3.1.2.(14).disabled_veteran_ortez_protez_billing"
+    },
+    {
+      "clause_id": "C002747",
+      "material": {
+        "name": "Olay mağduru protez",
+        "code": "TV1",
+        "unit_price": 800.0,
+        "terror_victim_ortez_protez_documentation_incomplete": true
+      },
+      "expected_rule_id": "3.1.2.(15).terror_victim_ortez_protez_documentation"
+    },
+    {
+      "clause_id": "C002750",
+      "material": {
+        "name": "Reçete düzeltmesi gerekli malzeme",
+        "code": "RX1",
+        "unit_price": 40.0,
+        "material_prescription_correction_invalid": true
+      },
+      "expected_rule_id": "3.1.2.(18).prescription_correction_authority"
+    },
+    {
+      "clause_id": "C002756",
+      "material": {
+        "name": "İade kapsamı cihaz",
+        "code": "RET1",
+        "unit_price": 300.0,
+        "device_return_application_deadline_missed": true
+      },
+      "expected_rule_id": "3.1.2.1.(3).device_return_deadline_missed"
+    },
+    {
+      "clause_id": "C008292",
+      "material": {
+        "name": "Geçiş dönemi malzeme fiyatı",
+        "code": "TR1",
+        "unit_price": 15.0,
+        "material_effective_date_transition_scope": true
+      },
+      "expected_rule_id": "3.1.3.effective_date_transition_scope"
     }
   ]
 }

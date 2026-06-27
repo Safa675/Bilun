@@ -46,6 +46,12 @@ from scripts.sut.prose.material_bundling_tail_batch_rules import (  # noqa: E402
     GATE_B_TAIL_BATCH_RULES,
     KDV_PRICING_CLAUSE_IDS,
 )
+from scripts.sut.prose.material_bundling_r5_batch_rules import (  # noqa: E402
+    R5_AMENDMENT_HEADER_CLAUSE_IDS,
+    R5_BATCH_RULES,
+    R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS,
+    R5_RULE_PATCHES,
+)
 
 _PROSE_PATH = _PROJECT_ROOT / "data/gazette/prose_rules/material_bundling_prose.json"
 _MANIFEST_PATH = (
@@ -56,7 +62,7 @@ _MANIFEST_PATH = (
 def _apply_rule_patches(rules: list[dict]) -> int:
     patched = 0
     by_id = {rule["rule_id"]: rule for rule in rules}
-    all_patches = {**GATE_B_RULE_PATCHES, **CORPUS_BATCH2_RULE_PATCHES}
+    all_patches = {**GATE_B_RULE_PATCHES, **CORPUS_BATCH2_RULE_PATCHES, **R5_RULE_PATCHES}
     for rule_id, patch in all_patches.items():
         rule = by_id.get(rule_id)
         if not rule:
@@ -104,6 +110,7 @@ def main() -> None:
         *EK3_LIST_BATCH_RULES,
         *MALZEME_GENERAL_BATCH_RULES,
         *TITUBB_UTS_BATCH_RULES,
+        *R5_BATCH_RULES,
     ]:
         if rule["rule_id"] in existing_ids:
             continue
@@ -150,6 +157,8 @@ def main() -> None:
             load_malzeme_general_header_clause_ids()
         ),
         "corpus_malzeme_scope_clause_ids": sorted(MALZEME_SCOPE_ONLY_CLAUSE_IDS),
+        "r5_amendment_header_clause_ids": sorted(R5_AMENDMENT_HEADER_CLAUSE_IDS),
+        "r5_manifest_header_only_clause_ids": sorted(R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS),
     }
     _MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
     _MANIFEST_PATH.write_text(

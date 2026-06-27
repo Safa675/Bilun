@@ -98,6 +98,14 @@ def _rule_evaluation_priority(rule: dict[str, Any]) -> int:
             "facility_contract_material_supply_scope",
             "ismarlama_device_component_titubb_incomplete",
             "titubb_uts_barcode_documentation_missing",
+            "ek3c_list_field_definition_scope",
+            "ismarlama_licensed_center_supply_required",
+            "ek3c_optional_appropriateness_consumable",
+            "disabled_veteran_ortez_protez_billing_review",
+            "terror_victim_ortez_protez_documentation_incomplete",
+            "material_prescription_correction_invalid",
+            "device_return_application_deadline_missed",
+            "material_effective_date_transition_scope",
         )
     ):
         return 4
@@ -259,6 +267,14 @@ def _condition_matches(
         "facility_contract_material_supply_scope",
         "ismarlama_device_component_titubb_incomplete",
         "titubb_uts_barcode_documentation_missing",
+        "ek3c_list_field_definition_scope",
+        "ismarlama_licensed_center_supply_required",
+        "ek3c_optional_appropriateness_consumable",
+        "disabled_veteran_ortez_protez_billing_review",
+        "terror_victim_ortez_protez_documentation_incomplete",
+        "material_prescription_correction_invalid",
+        "device_return_application_deadline_missed",
+        "material_effective_date_transition_scope",
     )
     for flag in claim_flags:
         if condition.get(flag):
@@ -462,6 +478,14 @@ def check_material_bundling_for_context(ctx: Any) -> list[dict[str, Any]]:
             "facility_contract_material_supply_scope",
             "ismarlama_device_component_titubb_incomplete",
             "titubb_uts_barcode_documentation_missing",
+            "ek3c_list_field_definition_scope",
+            "ismarlama_licensed_center_supply_required",
+            "ek3c_optional_appropriateness_consumable",
+            "disabled_veteran_ortez_protez_billing_review",
+            "terror_victim_ortez_protez_documentation_incomplete",
+            "material_prescription_correction_invalid",
+            "device_return_application_deadline_missed",
+            "material_effective_date_transition_scope",
             "is_bundled",
         ):
             if hasattr(line, flag):
