@@ -122,48 +122,116 @@ Enables sharing a specific hüküm link in reviews. Not required for MVP.
 
 ## Phased delivery
 
-### Phase 1 — Honest copy + richer clause cards (1 PR, no new routes)
+### Phase 1 — Honest copy + richer clause cards (1 PR, no new routes) ✅
 
-- [ ] i18n: add `coverage.totalRuleEngines` (“Kayıtlı kural motoru” / “Registered rule engines”); use in registry column instead of `totalExtracted`
-- [ ] i18n: add `coverage.totalClauses` for left column (keep or rename “Çıkarılan hüküm” → “Canlı hüküm” for clarity)
-- [ ] Add glossary help strip component under coverage header
-- [ ] Extend `_clause_payload()`: add `primary_rule_id` (raw string), `primary_rule_category`, `matched_rule_ids` (short list). Note: `coverage_status`, `has_algorithmic_gap`, `has_rule_encoding`, `deontic_modality`, `annex_refs` are **already emitted** — no backend change needed for those.
-- [ ] Sync `RuleClause` TS type (`frontend/src/lib/api/sut.ts`) with the full backend payload — it currently omits `has_algorithmic_gap`, `has_rule_encoding`, `deontic_modality` (type is behind backend).
-- [ ] Upgrade `ClauseCard` → show `clause_id`, status chip, primary motor link, gap/encode badges
-- [ ] Subtitle tweak: “{total} kural motoru — hüküm metni ve kullanım için sekmelere geçin”
-- [ ] Tests: extend `test_rules_catalog.py` assert new fields on `get_rule_clauses`; snapshot i18n keys
+- [x] i18n: add `coverage.totalRuleEngines` (“Kayıtlı kural motoru” / “Registered rule engines”); use in registry column instead of `totalExtracted`
+- [x] i18n: add `coverage.totalClauses` for left column (keep or rename “Çıkarılan hüküm” → “Canlı hüküm” for clarity)
+- [x] Add glossary help strip component under coverage header
+- [x] Extend `_clause_payload()`: add `primary_rule_id` (raw string), `primary_rule_category`, `matched_rule_ids` (short list). Note: `coverage_status`, `has_algorithmic_gap`, `has_rule_encoding`, `deontic_modality`, `annex_refs` are **already emitted** — no backend change needed for those.
+- [x] Sync `RuleClause` TS type (`frontend/src/lib/api/sut.ts`) with the full backend payload — it currently omits `has_algorithmic_gap`, `has_rule_encoding`, `deontic_modality` (type is behind backend).
+- [~] Upgrade `ClauseCard` → show `clause_id`, status chip, primary motor link, gap/encode badges — **badges done; motor is plain text, not a link** (→ Phase 5)
+- [x] Subtitle tweak: “{total} kural motoru — hüküm metni ve kullanım için sekmelere geçin”
+- [x] Tests: extend `test_rules_catalog.py` assert new fields on `get_rule_clauses`; snapshot i18n keys
 
 **Done when:** Selecting `copay_rate_ek2c1` shows clauses with visible `clause_id` + primary/gap badges; coverage header no longer says “Çıkarılan hüküm: 36”.
 
-### Phase 2 — Section → clauses drill-down (1 PR)
+### Phase 2 — Section → clauses drill-down (1 PR) ✅
 
-- [ ] `rules_catalog.list_section_clauses(section_id, section_title?, page, per_page, filters?)`
-- [ ] `GET /api/rules/sections/clauses` endpoint + Pydantic response (reuse `RuleClause[]` + pagination meta)
-- [ ] `getSectionClauses()` in `frontend/src/lib/api/sut.ts`
-- [ ] `SectionBrowserPanel`: selectable rows + detail pane with paginated clauses
-- [ ] Empty state when `clause_count === 0`
-- [ ] API tests in `tests/unit/api/test_sut_rules_api.py`
-- [ ] Domain tests: filter by `(section_id, section_title)`, pagination disjoint
+- [x] `rules_catalog.list_section_clauses(section_id, section_title?, page, per_page, filters?)`
+- [x] `GET /api/rules/sections/clauses` endpoint + Pydantic response (reuse `RuleClause[]` + pagination meta)
+- [x] `getSectionClauses()` in `frontend/src/lib/api/sut.ts`
+- [x] `SectionBrowserPanel`: selectable rows + detail pane with paginated clauses
+- [x] Empty state when `clause_count === 0`
+- [x] API tests in `tests/unit/api/test_sut_rules_api.py`
+- [x] Domain tests: filter by `(section_id, section_title)`, pagination disjoint
+- [~] Detail pane rollup stats show `clause_count` only — **`gap_clause_count` not in header** (→ Phase 5)
 
 **Done when:** Clicking §3.1.2 row (either title variant) lists its paragraphs with utilization metadata.
 
-### Phase 3 — Global Hükümler browser tab (1 PR)
+### Phase 3 — Global Hükümler browser tab (1 PR) ✅
 
-- [ ] `rules_catalog.list_clauses(...)` with vectorized Polars filters (`q` on `clause_id` + `in_force_text`)
-- [ ] `GET /api/rules/clauses` + `GET /api/rules/clauses/{clause_id}`
-- [ ] New tab `Hükümler` in `RuleDatabaseSection`
-- [ ] `ClauseBrowserPanel` with search + filters + master-detail
-- [ ] Clause detail shows all `matched_rule_ids` as links to Kurallar tab
-- [ ] Performance: cap `per_page` at 200 (existing `_MAX_PER_PAGE`); debounce search 300ms. **Benchmark first** — global `in_force_text` LIKE across 4.710 rows via Polars filter is expected <100ms (vectorized), but verify before shipping; if slow, consider pre-built section-partitioned parquet or a trigram index.
+- [x] `rules_catalog.list_clauses(...)` with vectorized Polars filters (`q` on `clause_id` + `in_force_text`)
+- [x] `GET /api/rules/clauses` + `GET /api/rules/clauses/{clause_id}`
+- [x] New tab `Hükümler` in `RuleDatabaseSection`
+- [x] `ClauseBrowserPanel` with search + filters + master-detail
+- [~] Clause detail shows all `matched_rule_ids` as links to Kurallar tab — **plain text only** (→ Phase 5)
+- [~] Filters: coverage status, has gap, has encoding — **`primary_rule_id` dropdown missing** (API + UI → Phase 5)
+- [x] Performance: cap `per_page` at 200 (existing `_MAX_PER_PAGE`); debounce search 300ms. Verified ~12ms search / ~33ms full count on 4.710 rows.
 
 **Done when:** Search `C002684` or “azasitidin” returns matching hükümler; click shows full text + which motors claim it.
 
-### Phase 4 — Cross-links + polish (optional)
+### Phase 4 — Cross-links + polish ✅ (partial)
 
-- [ ] Prose anchor chips → navigate to Hükümler with `section_id` filter
-- [ ] URL query sync for `tab`, `clause_id`, `section_id`
-- [ ] Section rollup consolidation option: “Bölüm başına birleştir” toggle (aggregate 470 duplicate-title rows for 481 unique section_ids → simpler browse — requires backend `group_by section_id` mode or client-side merge)
-- [ ] `frontend` component test for `ClauseUtilizationCard` (vitest + mock clause)
+- [x] Prose anchor chips → navigate to Hükümler with `section_id` filter (`rdSection` prefills search)
+- [~] URL query sync for `tab`, `clause_id`, `section_id` — **`rdTab` + `rdSection` only; `rdClause` not wired** (→ Phase 5)
+- [x] Section rollup consolidation option: “Bölüm başına birleştir” toggle (`consolidate` API param)
+- [~] `frontend` component test for `ClauseUtilizationCard` — **`ClauseCard` tested in `RuleDatabaseSection.test.tsx`; not extracted to own file** (→ Phase 5)
+
+### Phase 5 — Gaps from Phases 1–4 (polish + missed plan items)
+
+Items that were specified in Phases 1–4 but shipped incomplete, plus maintainability follow-ups identified in the post-implementation review (2026-06-26).
+
+#### 5a — Cross-navigation (highest user value)
+
+- [ ] **`onNavigateToRule(rule_id)`** callback lifted to `RuleDatabaseSection` — switches to Kurallar tab + `setSelectedRuleId`
+- [ ] **`ClauseCard`**: `primary_rule_id` as clickable chip (not plain `<span>`)
+- [ ] **`ClauseCard`**: `matched_rule_ids` as outline chips (cap 3 + “+N”); each chip calls `onNavigateToRule`
+- [ ] Pass `onNavigateToRule` from `RuleDetailPanel`, `SectionDetailPane`, and `ClauseBrowserPanel` detail pane
+
+**Done when:** Clicking `drug_indication_prose` on any clause card opens that motor in Kurallar.
+
+#### 5b — URL deep links
+
+- [ ] Read `rdClause` from `searchParams` on mount; if set → `activeTab=clauses`, fetch via `getClause(rdClause)`, select in browser
+- [ ] On clause row click in Hükümler → `updateUrl({ rdTab: "clauses", rdClause: clause_id })`
+- [ ] Optional: `rdSection` on Bölümler row select for shareable section drill-down links
+- [ ] Document params in plan / dev tooltip: `rdTab`, `rdClause`, `rdSection` (avoid collision with app-shell `?tab=`)
+
+**Done when:** `?rdTab=clauses&rdClause=C004975` opens the correct hüküm without manual search.
+
+#### 5c — API + filter completeness
+
+- [ ] Add `primary_rule_id` param to `list_clauses()` + `GET /api/rules/clauses`
+- [ ] Hükümler toolbar: motor dropdown populated from catalog `rules[]` (36 entries)
+- [ ] Pydantic `RuleClause`: declare all utilization fields explicitly (`primary_rule_id`, `matched_rule_ids`, `has_algorithmic_gap`, `has_rule_encoding`, …) — stop relying on `extra="allow"` for OpenAPI accuracy
+- [ ] Optional: `get_clause()` response includes `matched_rules: [{rule_id, rule_category_tr}]` resolved from `RULE_BY_ID` (plan originally said “registry labels”)
+
+**Done when:** Filter Hükümler to `drug_indication_prose` only via dropdown; OpenAPI shows full `RuleClause` shape.
+
+#### 5d — UI polish + i18n fixes
+
+- [ ] **Section detail header**: show `{clause_count} hüküm · {gap_clause_count} boşluk` from selected rollup row
+- [ ] **Glossary strip**: replace hardcoded `JSON_RULE_COUNT = 337` / `SECTION_ROWS = 951` with live values — sum `prose-inventory` `rule_count`; section rows from coverage meta or section rollup `total`
+- [ ] **i18n bug**: `ClauseBrowserPanel` status “all” button uses missing key `status.all` → use `filters.all` (“Tümü”)
+- [ ] Remove dead i18n key `coverage.totalExtracted` if unused
+
+#### 5e — Maintainability refactor (1 PR, no behavior change)
+
+- [ ] Extract `ClauseUtilizationCard.tsx` from `RuleDatabaseSection.tsx` (export `ClauseCard` rename or alias)
+- [ ] Split panels into separate files under `sections/rule-database/`:
+  - `CoverageSummaryPanel.tsx`
+  - `SectionBrowserPanel.tsx` + `SectionDetailPane.tsx`
+  - `ClauseBrowserPanel.tsx`
+  - `RuleListPanel.tsx` + `RuleDetailPanel.tsx`
+  - `ProseInventoryPanel.tsx`
+- [ ] Keep `RuleDatabaseSection.tsx` as thin tab shell + URL state + `onNavigateToRule`
+
+**Done when:** `RuleDatabaseSection.tsx` < 400 lines; vitest imports `ClauseUtilizationCard` from its own file.
+
+#### Phase 5 verification
+
+```bash
+pytest tests/unit/api/test_sut_rules_api.py tests/unit/domain/sut/test_rules_catalog.py -q
+cd frontend && npm run tsc --noEmit && npm run vitest run src/components/tabs/sut/sections/
+```
+
+Manual:
+1. Hükümler → motor dropdown → only `drug_indication_prose` clauses.
+2. Any clause card → click motor chip → Kurallar tab selects that rule.
+3. Paste `?rdTab=clauses&rdClause=C002684` → card loads selected.
+4. Bölümler → §3.1.2 → header shows gap count.
+
+**Out of scope for Phase 5:** Gate B encode-from-UI, patient-facing surfaces, chatbot clause viewer.
 
 ---
 
@@ -173,7 +241,7 @@ Enables sharing a specific hüküm link in reviews. Not required for MVP.
 |-------|--------|
 | Domain | `src/bilun/domain/sut/rules_catalog.py` |
 | API | `src/bilun/api/routes/rules.py`, `src/bilun/api/schemas.py` |
-| Frontend | `frontend/src/components/tabs/sut/sections/RuleDatabaseSection.tsx`, new `ClauseUtilizationCard.tsx` (extract) |
+| Frontend | `frontend/src/components/tabs/sut/sections/RuleDatabaseSection.tsx`, `sections/rule-database/*.tsx` (Phase 5 split) |
 | API client | `frontend/src/lib/api/sut.ts` |
 | i18n | `frontend/src/messages/en/sections.ts`, `frontend/src/messages/tr/sections.ts` |
 | Tests | `tests/unit/domain/sut/test_rules_catalog.py`, `tests/unit/api/test_sut_rules_api.py` |
@@ -216,6 +284,18 @@ Manual (dev role):
 ---
 
 ## Review
-_Plan authored 2026-06-26. Supersedes offline HTML audit direction in `plans/billing/prose-corpus-review-export-plan.md` for in-app human review._
 
-_Revised 2026-06-26 after codebase verification: corrected JSON rule count (185→337), unique section count (400→481), and field-exposure facts (5/8 utilization fields already wired through `_clause_payload()`; only 3 need new backend wiring; TS type is behind backend). Added performance benchmark note for global search and ClauseCard layout-stability guidance._
+### 2026-06-26 — Plan authored
+Supersedes offline HTML audit direction in `plans/billing/prose-corpus-review-export-plan.md` for in-app human review.
+
+### 2026-06-26 — Pre-implementation revision
+Corrected JSON rule count (185→337), unique section count (400→481), and field-exposure facts (5/8 utilization fields already wired through `_clause_payload()`; only 3 need new backend wiring; TS type is behind backend). Added performance benchmark note for global search and ClauseCard layout-stability guidance.
+
+### 2026-06-26 — Phases 1–4 implementation review
+**Shipped:** honest coverage labels, glossary, enriched `ClauseCard`, section drill-down, Hükümler global browser, prose anchor → Hükümler, consolidate toggle, 62 backend tests + `ClauseCard` vitest.
+
+**Grade: A−** functionally; **B+** polish. Core goal met (browse individual hükümler by rule, section, global search).
+
+**Deferred to Phase 5:** motor/cross-tab navigation, `rdClause` deep links, `primary_rule_id` API filter + dropdown, Pydantic schema completeness, glossary live counts, section gap header, i18n `status.all` bug, component file split.
+
+**Benchmarks (local):** `list_clauses(q="azasitidin")` ~12ms; full 4.710 count ~33ms.
