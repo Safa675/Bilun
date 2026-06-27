@@ -70,6 +70,10 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
         "PARTIAL",
         "ADDITIVE",
         ("payment_method_package", "payment_method_itemized", "payment_method_tier_override"),
+        note=(
+            "§2.2 Gate B: ~21 JSON rules / ~20 encoded clauses (~23% of §2.2 corpus); "
+            "§2.2.2.B session-fraction PARTIAL (session_pricing_2_2_2_B manifest cross-ref)."
+        ),
     ),
     FactCheckAuditUnit(
         "P0.2",

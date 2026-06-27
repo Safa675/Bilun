@@ -1,0 +1,48 @@
+{
+  "manifest_version": "wave2-v1",
+  "rule_set_id": "session_pricing_2_2_2_B",
+  "scope_note": "§2.2.2.B session-fraction PARTIAL — runtime in session_pricing.py; 4 JSON rules with Gate B clause traces (not merged into payment_method_2_2.json)",
+  "rules_in_json": 4,
+  "session_fraction_status": "PARTIAL",
+  "gate_b_sources_encoded": [
+    "C000654",
+    "C000655",
+    "C000657",
+    "C000658",
+    "C000659",
+    "C000660",
+    "C000661"
+  ],
+  "encoded_clause_ids": [
+    "C000654",
+    "C000655",
+    "C000657",
+    "C000658",
+    "C000659",
+    "C000660",
+    "C000661"
+  ],
+  "gate_b_sources_by_rule": {
+    "2.2.2.B.(1).ek2c_package_basis": [
+      "C000654"
+    ],
+    "2.2.2.B.(2).non_package_itemized": [
+      "C000655"
+    ],
+    "2.2.2.B.a": [
+      "C000657"
+    ],
+    "2.2.2.B.b": [
+      "C000658"
+    ],
+    "2.2.2.B.c": [
+      "C000659"
+    ],
+    "2.2.2.B.ç": [
+      "C000660"
+    ],
+    "2.2.2.B.(3).cross_specialty_uplift": [
+      "C000661"
+    ]
+  }
+}
