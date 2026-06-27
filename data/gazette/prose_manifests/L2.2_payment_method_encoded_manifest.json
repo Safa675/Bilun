@@ -1,0 +1,124 @@
+{
+  "manifest_version": "wave2-v1",
+  "rule_set_id": "payment_method_2_2",
+  "scope_note": "§2.2 package vs itemized vs tier-override (21 JSON rules, C2 batch-1+2)",
+  "rules_in_json": 21,
+  "gate_b_sources_encoded": [
+    "C000521",
+    "C000526",
+    "C000530",
+    "C000531",
+    "C000532",
+    "C000538",
+    "C000562",
+    "C000571",
+    "C000572",
+    "C000576",
+    "C000606",
+    "C000633",
+    "C000634",
+    "C000635",
+    "C000636",
+    "C000637",
+    "C000639",
+    "C000640",
+    "C000641",
+    "C000703"
+  ],
+  "encoded_clause_ids": [
+    "C000521",
+    "C000526",
+    "C000530",
+    "C000531",
+    "C000532",
+    "C000538",
+    "C000562",
+    "C000571",
+    "C000572",
+    "C000576",
+    "C000606",
+    "C000633",
+    "C000634",
+    "C000635",
+    "C000636",
+    "C000637",
+    "C000639",
+    "C000640",
+    "C000641",
+    "C000703"
+  ],
+  "gate_b_sources_by_rule": {
+    "2.2.(12).no_pay_without_documentation": [
+      "C000530"
+    ],
+    "2.2.(13).health_report_single_bill": [
+      "C000531"
+    ],
+    "2.2.(14).committee_report_exam_fee": [
+      "C000532"
+    ],
+    "2.2.(3).aesthetic_must_not_bill": [
+      "C000521"
+    ],
+    "2.2.(8).contracted_tetkik_mandatory": [
+      "C000526"
+    ],
+    "2.2.1.(20).class3_package_surcharge": [
+      "C000538"
+    ],
+    "2.2.1.B-1.(11).private_daily_visit_cap": [
+      "C000576"
+    ],
+    "2.2.1.B-1.(2).ten_day_same_specialty_no_visit": [
+      "C000562"
+    ],
+    "2.2.1.B-1.a": [
+      "C000571"
+    ],
+    "2.2.1.B-1.b": [
+      "C000572"
+    ],
+    "2.2.1.B-2.(2).g.no_visit_fee": [
+      "C000606"
+    ],
+    "2.2.2.(1).itemized": [
+      "C000633"
+    ],
+    "2.2.2.(1).package": [
+      "C000633"
+    ],
+    "2.2.2.(2).override": [
+      "C000634"
+    ],
+    "2.2.2.(3).short_stay_day_bed": [
+      "C000635"
+    ],
+    "2.2.2.(4).gunubirlik_no_day_bed": [
+      "C000636"
+    ],
+    "2.2.2.(5).gunubirlik_no_companion_fee": [
+      "C000637"
+    ],
+    "2.2.2.A(1).itemized_basis": [
+      "C000639"
+    ],
+    "2.2.2.A(2).itemized_materials_drugs": [
+      "C000640"
+    ],
+    "2.2.2.A(3).companion_fee_itemized": [
+      "C000641"
+    ],
+    "2.2.2.C.(1).complication_itemized_discount": [
+      "C000703"
+    ]
+  },
+  "related_rule_sets": [
+    {
+      "rule_set_id": "session_pricing_2_2_2_B",
+      "json_path": "session_pricing_2_2_2_B.json",
+      "manifest": "L2.2_session_pricing_2_2_2_B_encoded_manifest.json",
+      "note": "§2.2.2.B session-fraction remains PARTIAL — see session_pricing.py"
+    }
+  ],
+  "session_fraction_status": "PARTIAL"
+}
