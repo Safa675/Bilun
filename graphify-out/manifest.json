@@ -45,14 +45,14 @@
     "semantic_hash": "4a47bd6eafeba990cc866028d08b0281"
   },
   "data/gazette/prose_manifests/L1.4_malzeme_general_header_clause_ids.json": {
-    "mtime": 1781023985.4165921,
-    "ast_hash": "ddf8fd93e1f6da02bbc4cb764e5539b1",
-    "semantic_hash": "ddf8fd93e1f6da02bbc4cb764e5539b1"
+    "mtime": 1782575461.2201762,
+    "ast_hash": "6030092add5b7d7e99ce2326bec8e3fb",
+    "semantic_hash": ""
   },
   "data/gazette/prose_manifests/L1.4_material_bundling_encoded_manifest.json": {
-    "mtime": 1782481181.2230043,
-    "ast_hash": "d9714434f1583134497bf90107b61304",
-    "semantic_hash": "d9714434f1583134497bf90107b61304"
+    "mtime": 1782575478.236267,
+    "ast_hash": "3363b52a49a6b26909f53e299f5ea857",
+    "semantic_hash": ""
   },
   "data/gazette/prose_manifests/L2.2_gazette_repricing_encoded_manifest.json": {
     "mtime": 1781705767.5843577,
@@ -70,29 +70,29 @@
     "semantic_hash": "8b2aec481ba74d8fcaf87987fe0723f1"
   },
   "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json": {
-    "mtime": 1782483182.8156197,
-    "ast_hash": "e40c2fd134639045cfdf4bc68a49deb8",
-    "semantic_hash": "e40c2fd134639045cfdf4bc68a49deb8"
+    "mtime": 1782575807.3950202,
+    "ast_hash": "3e20fe70c26f1076ff785bd14ffb4ac9",
+    "semantic_hash": ""
   },
   "data/gazette/prose_manifests/L4.33_anti_vegf_4.2.33_manifest.json": {
-    "mtime": 1782483182.8160667,
-    "ast_hash": "124cb2e6e7fd1c943390c6d8ba2aedaf",
-    "semantic_hash": "124cb2e6e7fd1c943390c6d8ba2aedaf"
+    "mtime": 1782575807.832801,
+    "ast_hash": "5064d4a3c65e016f92341802f65fd386",
+    "semantic_hash": ""
   },
   "data/gazette/prose_manifests/L4.4_specialty_prose_encoded_manifest.json": {
-    "mtime": 1782481181.2268524,
-    "ast_hash": "d9b19ca40000d2c45ea6996fb3ab36b1",
-    "semantic_hash": "d9b19ca40000d2c45ea6996fb3ab36b1"
+    "mtime": 1782575478.607009,
+    "ast_hash": "943056f40e4ac9726ee0a2f8df67ada1",
+    "semantic_hash": ""
   },
   "data/gazette/prose_rules/anti_vegf_prose.json": {
-    "mtime": 1782481494.2887251,
-    "ast_hash": "672f35efed06068fa81aec3b323db46c",
-    "semantic_hash": "672f35efed06068fa81aec3b323db46c"
+    "mtime": 1782575807.8164434,
+    "ast_hash": "b25f9c725d2f97cbcd572d6a9f31ec88",
+    "semantic_hash": ""
   },
   "data/gazette/prose_rules/copay_general_1_8.json": {
-    "mtime": 1781023985.4167242,
-    "ast_hash": "804488be37cabfebeaff853352e0b1bc",
-    "semantic_hash": "804488be37cabfebeaff853352e0b1bc"
+    "mtime": 1782577455.4066586,
+    "ast_hash": "fdba842b19b17d0738bc1bdd5ed7995d",
+    "semantic_hash": ""
   },
   "data/gazette/prose_rules/drg_package_adequacy_prose.json": {
     "mtime": 1781023985.4167945,
@@ -100,9 +100,9 @@
     "semantic_hash": "690eed0a5f89227de69fb581c39c7310"
   },
   "data/gazette/prose_rules/drug_indication_prose.json": {
-    "mtime": 1782487411.410943,
-    "ast_hash": "710eaecbc6114b24ce8115726172ee88",
-    "semantic_hash": "710eaecbc6114b24ce8115726172ee88"
+    "mtime": 1782577419.7773945,
+    "ast_hash": "aa0a0422f07d41b7343c57fce0766e4a",
+    "semantic_hash": ""
   },
   "data/gazette/prose_rules/drug_indication_prose.schema.json": {
     "mtime": 1782487411.3898826,
@@ -140,9 +140,9 @@
     "semantic_hash": "b14edaf0bb3e2266858853068c0f6c3e"
   },
   "data/gazette/prose_rules/golden/material_bundling_gate_b.json": {
-    "mtime": 1781437350.138954,
-    "ast_hash": "8598a6c5f2ae94bb68a43f8330cdb124",
-    "semantic_hash": "8598a6c5f2ae94bb68a43f8330cdb124"
+    "mtime": 1782574959.6203697,
+    "ast_hash": "463271a1c702166b65d659c6ead22fbd",
+    "semantic_hash": ""
   },
   "data/gazette/prose_rules/golden/material_prose_sprint2.json": {
     "mtime": 1782487411.4665844,
@@ -155,9 +155,9 @@
     "semantic_hash": "d5de9e92ba056ff24b747d1e492eb5f7"
   },
   "data/gazette/prose_rules/material_bundling_prose.json": {
-    "mtime": 1782481494.2960398,
-    "ast_hash": "af934217c6d804aa6bd5367c4128ea2a",
-    "semantic_hash": "af934217c6d804aa6bd5367c4128ea2a"
+    "mtime": 1782575478.2360165,
+    "ast_hash": "100e66d829b0e3da2f0b992457c91ad6",
+    "semantic_hash": ""
   },
   "data/gazette/prose_rules/material_bundling_prose.schema.json": {
     "mtime": 1781023985.4173524,
@@ -170,9 +170,9 @@
     "semantic_hash": "2bf90022efad7b1dec62bc58ef7b8c10"
   },
   "data/gazette/prose_rules/payment_method_2_2.json": {
-    "mtime": 1781023985.4174314,
-    "ast_hash": "d2fe39116562f34f3f98cf35d0951fa5",
-    "semantic_hash": "d2fe39116562f34f3f98cf35d0951fa5"
+    "mtime": 1782577465.898738,
+    "ast_hash": "3608db87c4322da28c2c01047286053d",
+    "semantic_hash": ""
   },
   "data/gazette/prose_rules/procedure_pairing_prose.json": {
     "mtime": 1782487411.411943,
@@ -185,9 +185,9 @@
     "semantic_hash": "821eedfe52f2527c8521a9c2250ffed5"
   },
   "data/gazette/prose_rules/specialty_materials_prose.json": {
-    "mtime": 1782481494.305776,
-    "ast_hash": "c3f0ade15d0262244ea692704615794f",
-    "semantic_hash": "c3f0ade15d0262244ea692704615794f"
+    "mtime": 1782575478.6068668,
+    "ast_hash": "632a84566b371f6f2942d145de013d2d",
+    "semantic_hash": ""
   },
   "data/gazette/prose_rules/specialty_materials_prose.schema.json": {
     "mtime": 1781023985.4175887,
@@ -245,9 +245,9 @@
     "semantic_hash": "02b2e0ccef2fe72ee7b268339eed3372"
   },
   "data/synthetic/demo_manifest.json": {
-    "mtime": 1782451311.9414961,
-    "ast_hash": "2d196eb4a5d7dfe66a2f7268d830ef93",
-    "semantic_hash": "2d196eb4a5d7dfe66a2f7268d830ef93"
+    "mtime": 1782577531.5599802,
+    "ast_hash": "fe0c7ec01ed260c26e1c3bfcc23c81f5",
+    "semantic_hash": ""
   },
   "data/synthetic/demo_vignettes.json": {
     "mtime": 1782451311.9414961,
@@ -400,9 +400,9 @@
     "semantic_hash": "ddf7094bec9e36d1e6ee4285649dbff1"
   },
   "frontend/src/components/patient/SutBillingReportSections.tsx": {
-    "mtime": 1782487411.4129431,
-    "ast_hash": "2bb96dbc14c65c7afe67853776e18886",
-    "semantic_hash": "2bb96dbc14c65c7afe67853776e18886"
+    "mtime": 1782576918.9807312,
+    "ast_hash": "15369f73d7a679de2689a842753c4144",
+    "semantic_hash": ""
   },
   "frontend/src/components/patient/SutPatientWorkspace.test.tsx": {
     "mtime": 1781453919.484347,
@@ -640,14 +640,14 @@
     "semantic_hash": "3de288cd01b0c85598014fa62da7de4f"
   },
   "frontend/src/components/tabs/sut/sections/RuleDatabaseSection.test.tsx": {
-    "mtime": 1782503842.0266724,
-    "ast_hash": "7d5a64258a5028005d39c5933bd7a643",
-    "semantic_hash": "7d5a64258a5028005d39c5933bd7a643"
+    "mtime": 1782573899.0102437,
+    "ast_hash": "08025caad041bb70878d2d1725460537",
+    "semantic_hash": ""
   },
   "frontend/src/components/tabs/sut/sections/RuleDatabaseSection.tsx": {
-    "mtime": 1782503816.821766,
-    "ast_hash": "253caed79d0c0beb47e6a6bcbb686f9d",
-    "semantic_hash": "253caed79d0c0beb47e6a6bcbb686f9d"
+    "mtime": 1782577491.1309235,
+    "ast_hash": "a75db3160e513d3756097dee330738f6",
+    "semantic_hash": ""
   },
   "frontend/src/components/tabs/sut/sections/SpecialtyMaterialSection.tsx": {
     "mtime": 1781023985.9737499,
@@ -725,9 +725,9 @@
     "semantic_hash": "29058c98d504283957893d0a4e5dd125"
   },
   "frontend/src/lib/api/sut.ts": {
-    "mtime": 1782503727.6964083,
-    "ast_hash": "dde28cae53f6a6ea3042021785844f41",
-    "semantic_hash": "dde28cae53f6a6ea3042021785844f41"
+    "mtime": 1782577488.0462592,
+    "ast_hash": "855a82a238435eb28e4287455354fc30",
+    "semantic_hash": ""
   },
   "frontend/src/lib/api/sutChat.test.ts": {
     "mtime": 1782487411.3889432,
@@ -840,9 +840,9 @@
     "semantic_hash": "3ace52c47fd284a59c38e5e47cb79d0a"
   },
   "frontend/src/lib/domains/sut.ts": {
-    "mtime": 1782487411.433943,
-    "ast_hash": "d9221a072982921e75d253cc68c5572f",
-    "semantic_hash": "d9221a072982921e75d253cc68c5572f"
+    "mtime": 1782576907.6081896,
+    "ast_hash": "889277839f630ef6428dfe9fc983a988",
+    "semantic_hash": ""
   },
   "frontend/src/lib/i18n/LocaleProvider.tsx": {
     "mtime": 1781589192.9157174,
@@ -1065,9 +1065,9 @@
     "semantic_hash": "d799cef4524cd3345e274132c692dcfd"
   },
   "frontend/src/messages/en/sections.ts": {
-    "mtime": 1782503800.2525575,
-    "ast_hash": "bf3655caf587a9cc866513d9bc414e34",
-    "semantic_hash": "bf3655caf587a9cc866513d9bc414e34"
+    "mtime": 1782577385.4409463,
+    "ast_hash": "dd7d9643235a97a3749270f1d2ecb395",
+    "semantic_hash": ""
   },
   "frontend/src/messages/en/shell.ts": {
     "mtime": 1781589242.6898127,
@@ -1160,9 +1160,9 @@
     "semantic_hash": "dc0d5e60b5ba34f173d2bb55eac6ed43"
   },
   "frontend/src/messages/tr/sections.ts": {
-    "mtime": 1782503800.261955,
-    "ast_hash": "734cca2108c64eed0c1fe67a3d4ea1f3",
-    "semantic_hash": "734cca2108c64eed0c1fe67a3d4ea1f3"
+    "mtime": 1782577387.489155,
+    "ast_hash": "a7ef283fd2088bd01e201f5c27f20856",
+    "semantic_hash": ""
   },
   "frontend/src/messages/tr/shell.ts": {
     "mtime": 1781589247.8919117,
@@ -1390,14 +1390,14 @@
     "semantic_hash": "ecfe1c244aa5f739cab633bb51d6a633"
   },
   "scripts/sut/merge_material_bundling_prose.py": {
-    "mtime": 1781023986.1570137,
-    "ast_hash": "cc74d0713b1623371395b9277a8794ce",
-    "semantic_hash": "cc74d0713b1623371395b9277a8794ce"
+    "mtime": 1782575466.6757467,
+    "ast_hash": "c129a7eb3880448f9f8978b9841f7c71",
+    "semantic_hash": ""
   },
   "scripts/sut/merge_specialty_materials_prose.py": {
-    "mtime": 1781023986.157113,
-    "ast_hash": "fd22d8c7cb53930d57f9267fce71922b",
-    "semantic_hash": "fd22d8c7cb53930d57f9267fce71922b"
+    "mtime": 1782575471.7547648,
+    "ast_hash": "5c2e4efa8b6478af154fee11ab0e2286",
+    "semantic_hash": ""
   },
   "scripts/sut/prose/__init__.py": {
     "mtime": 1781023986.157113,
@@ -1410,9 +1410,9 @@
     "semantic_hash": "80ce608fa3c83270fe8e85c80767bdb1"
   },
   "scripts/sut/prose/classify.py": {
-    "mtime": 1782487411.4665844,
-    "ast_hash": "7047a310bd0a6aee9215b3591b96af4e",
-    "semantic_hash": "7047a310bd0a6aee9215b3591b96af4e"
+    "mtime": 1782573809.098061,
+    "ast_hash": "40fd17ca64dd5e81481b8c2c7ca39f66",
+    "semantic_hash": ""
   },
   "scripts/sut/prose/compile_bucket_a_rules.py": {
     "mtime": 1782323271.587844,
@@ -1425,9 +1425,9 @@
     "semantic_hash": "840b2a29de1655f4ae6c46ec43fc727c"
   },
   "scripts/sut/prose/coverage.py": {
-    "mtime": 1782487411.433943,
-    "ast_hash": "f8f0bbbec525b9de5ee7ff62b11b5b3d",
-    "semantic_hash": "f8f0bbbec525b9de5ee7ff62b11b5b3d"
+    "mtime": 1782577420.4994,
+    "ast_hash": "c7f0057f0f247368c0ac0c7634e25d22",
+    "semantic_hash": ""
   },
   "scripts/sut/prose/drug_indication_4214c_batch_rules.py": {
     "mtime": 1782487411.413943,
@@ -1660,14 +1660,14 @@
     "semantic_hash": "fa13281fa026e5e7744b101b70ed1e57"
   },
   "scripts/synthetic/gen/orchestrate.py": {
-    "mtime": 1782482226.988589,
-    "ast_hash": "e262322e422bc5b673b282bcb1443cd8",
-    "semantic_hash": "e262322e422bc5b673b282bcb1443cd8"
+    "mtime": 1782577524.2841692,
+    "ast_hash": "0d5f32d189d39282426c6127f646c051",
+    "semantic_hash": ""
   },
   "scripts/synthetic/gen/patients.py": {
-    "mtime": 1782482240.006174,
-    "ast_hash": "6c0e6ddbfcbd683dc2ab4299893b9c25",
-    "semantic_hash": "6c0e6ddbfcbd683dc2ab4299893b9c25"
+    "mtime": 1782577518.459126,
+    "ast_hash": "017e287ce86e2caf8f7ea92ee0ca3916",
+    "semantic_hash": ""
   },
   "scripts/synthetic/gen/procedures.py": {
     "mtime": 1782482226.9883761,
@@ -1680,9 +1680,9 @@
     "semantic_hash": "f19ef1cce5b13d20e1ba5dfd5e3d561a"
   },
   "scripts/synthetic/gen/specs.py": {
-    "mtime": 1782482226.9877074,
-    "ast_hash": "c62c6eb747424049d321fd5da8e53a30",
-    "semantic_hash": "c62c6eb747424049d321fd5da8e53a30"
+    "mtime": 1782577511.6590757,
+    "ast_hash": "66b85a4af4f6e689398c9692f7f7cb74",
+    "semantic_hash": ""
   },
   "scripts/synthetic/gen/workbook.py": {
     "mtime": 1782482226.9886417,
@@ -1710,9 +1710,9 @@
     "semantic_hash": "959491f44afa0f7ec781b8aa9eab3437"
   },
   "scripts/synthetic/validate_sut_synthetic_data.py": {
-    "mtime": 1782487411.470943,
-    "ast_hash": "9ae46d03b662ceaed78a55ce3560471f",
-    "semantic_hash": "9ae46d03b662ceaed78a55ce3560471f"
+    "mtime": 1782577563.7762918,
+    "ast_hash": "f1fa7737b15abfc2224d412ee328f7f3",
+    "semantic_hash": ""
   },
   "scripts/synthetic/vignettes.py": {
     "mtime": 1782451311.9414961,
@@ -1785,9 +1785,9 @@
     "semantic_hash": "faa1fe509dfb10af60820a542e2ed824"
   },
   "src/bilun/api/routes/rules.py": {
-    "mtime": 1782503716.2092133,
-    "ast_hash": "9deda6c9ac5b8191293b41e834ce5683",
-    "semantic_hash": "9deda6c9ac5b8191293b41e834ce5683"
+    "mtime": 1782573819.9227052,
+    "ast_hash": "4d998bab1e7e2226be6d82d9c84e2217",
+    "semantic_hash": ""
   },
   "src/bilun/api/routes/validation.py": {
     "mtime": 1782451311.9254959,
@@ -1795,9 +1795,9 @@
     "semantic_hash": "83ec205ab2ee1f870d0f3c225fcca45e"
   },
   "src/bilun/api/schemas.py": {
-    "mtime": 1782500737.9927294,
-    "ast_hash": "4a704e16ef4e7fd7d78c26c3c11d9f7a",
-    "semantic_hash": "4a704e16ef4e7fd7d78c26c3c11d9f7a"
+    "mtime": 1782577487.5544226,
+    "ast_hash": "64e652814c12d7e730b2efc4cf71f3ed",
+    "semantic_hash": ""
   },
   "src/bilun/api/startup.py": {
     "mtime": 1781023986.161798,
@@ -1860,9 +1860,9 @@
     "semantic_hash": "1b5e66d584f1187828ac060ca60192a6"
   },
   "src/bilun/cache/sut_context.py": {
-    "mtime": 1782487411.4665844,
-    "ast_hash": "746efc54f5b09bd1ef66165c3a88253c",
-    "semantic_hash": "746efc54f5b09bd1ef66165c3a88253c"
+    "mtime": 1782576898.9163592,
+    "ast_hash": "e3e93037d315be65d1f48eaee817280f",
+    "semantic_hash": ""
   },
   "src/bilun/chatbot/__init__.py": {
     "mtime": 1781023986.1638944,
@@ -1870,9 +1870,9 @@
     "semantic_hash": "9e0108be351c8622364d116b6d248023"
   },
   "src/bilun/chatbot/context.py": {
-    "mtime": 1782487411.411943,
-    "ast_hash": "51b017618b286c3d88e18890e2d5dac8",
-    "semantic_hash": "51b017618b286c3d88e18890e2d5dac8"
+    "mtime": 1782576906.2733989,
+    "ast_hash": "9da695ab03f81c191c26a9a7c9875698",
+    "semantic_hash": ""
   },
   "src/bilun/chatbot/llm.py": {
     "mtime": 1782487411.433943,
@@ -2015,9 +2015,9 @@
     "semantic_hash": "a59cc8a7f0c92e0bb9b18a1b7bdd2749"
   },
   "src/bilun/domain/billing/claim_copay.py": {
-    "mtime": 1782487411.413943,
-    "ast_hash": "e484454ac6a16ec5940d84ba4d9ad755",
-    "semantic_hash": "e484454ac6a16ec5940d84ba4d9ad755"
+    "mtime": 1782576883.8874214,
+    "ast_hash": "1eb8e564b5a5fb333051f9b28d900bd8",
+    "semantic_hash": ""
   },
   "src/bilun/domain/billing/claim_drg_package_adequacy.py": {
     "mtime": 1781023986.1668816,
@@ -2160,9 +2160,9 @@
     "semantic_hash": "77935af669e3c1f1dc10118a5856befe"
   },
   "src/bilun/domain/billing/types.py": {
-    "mtime": 1782487411.4019432,
-    "ast_hash": "baf56023e05087dac88e0da93a625010",
-    "semantic_hash": "baf56023e05087dac88e0da93a625010"
+    "mtime": 1782576881.5689652,
+    "ast_hash": "0a497b2308da17284bace0d82a2b2c5b",
+    "semantic_hash": ""
   },
   "src/bilun/domain/catalog.py": {
     "mtime": 1782136542.1651394,
@@ -2375,9 +2375,9 @@
     "semantic_hash": "71b3ee19b2296318f4fab232dff9d234"
   },
   "src/bilun/domain/optimization/aggregator.py": {
-    "mtime": 1782407214.0636625,
-    "ast_hash": "9ccf3e5013f5f11f8613ece6487407de",
-    "semantic_hash": "9ccf3e5013f5f11f8613ece6487407de"
+    "mtime": 1782575484.757719,
+    "ast_hash": "9938688d144df0e5dee286e1821aeda3",
+    "semantic_hash": ""
   },
   "src/bilun/domain/optimization/catalog_join.py": {
     "mtime": 1781272816.8127108,
@@ -2535,9 +2535,9 @@
     "semantic_hash": "99aa24608fa689bc6aa2c783df70b8e1"
   },
   "src/bilun/domain/prose_rules/drug_indication.py": {
-    "mtime": 1782487411.413943,
-    "ast_hash": "a25459bbada210c98e0452d3ed6fdec7",
-    "semantic_hash": "a25459bbada210c98e0452d3ed6fdec7"
+    "mtime": 1782577483.555758,
+    "ast_hash": "1b2dd1b1136763b57f7818f6f01a0b1d",
+    "semantic_hash": ""
   },
   "src/bilun/domain/prose_rules/ek2c_prose_drg_locked.py": {
     "mtime": 1781023986.1745672,
@@ -2560,9 +2560,9 @@
     "semantic_hash": "c81e40c743a5f20c284760b1533ce821"
   },
   "src/bilun/domain/prose_rules/material_bundling.py": {
-    "mtime": 1782405984.0588892,
-    "ast_hash": "90bfde54dcfe99eb3a61630a2c1db497",
-    "semantic_hash": "90bfde54dcfe99eb3a61630a2c1db497"
+    "mtime": 1782574949.3161683,
+    "ast_hash": "7eb876958fb09be2723b8cc179843b33",
+    "semantic_hash": ""
   },
   "src/bilun/domain/prose_rules/material_uplift.py": {
     "mtime": 1781979362.4438484,
@@ -2655,19 +2655,19 @@
     "semantic_hash": "dce996b911894107feb7f33352c79260"
   },
   "src/bilun/domain/sut/fact_check_audit.py": {
-    "mtime": 1782487411.4665844,
-    "ast_hash": "a0442bb22f073cedeaba6eb7df3fe2d1",
-    "semantic_hash": "a0442bb22f073cedeaba6eb7df3fe2d1"
+    "mtime": 1782577452.4746368,
+    "ast_hash": "e2e40427de6c4b79f76557270fec352b",
+    "semantic_hash": ""
   },
   "src/bilun/domain/sut/rule_registry.py": {
-    "mtime": 1782487411.470943,
-    "ast_hash": "2816642698ee7aa407d142ecbbff4610",
-    "semantic_hash": "2816642698ee7aa407d142ecbbff4610"
+    "mtime": 1782573809.7186296,
+    "ast_hash": "1455fbbce1d85815360ae4b37b336ce4",
+    "semantic_hash": ""
   },
   "src/bilun/domain/sut/rules_catalog.py": {
-    "mtime": 1782503875.405764,
-    "ast_hash": "f70941f39aac1a6262669ce0b30c02b7",
-    "semantic_hash": "f70941f39aac1a6262669ce0b30c02b7"
+    "mtime": 1782577487.1396828,
+    "ast_hash": "6a12f7ccb44c22cd5cd2585c2a03145f",
+    "semantic_hash": ""
   },
   "src/bilun/domain/utils.py": {
     "mtime": 1781979362.444161,
@@ -2920,9 +2920,9 @@
     "semantic_hash": "96fb010d033b46eaf837a85752593668"
   },
   "tests/unit/domain/billing/test_claim_copay_scope.py": {
-    "mtime": 1782487411.4665844,
-    "ast_hash": "0f3eee8408272d7476245871032a4325",
-    "semantic_hash": "0f3eee8408272d7476245871032a4325"
+    "mtime": 1782576934.3219714,
+    "ast_hash": "abc3137f4c0241417ef37808658a2976",
+    "semantic_hash": ""
   },
   "tests/unit/domain/billing/test_claim_drug_indication.py": {
     "mtime": 1782487411.4665844,
@@ -3150,9 +3150,9 @@
     "semantic_hash": "042db8e06f08e4edf017266b285d5f00"
   },
   "tests/unit/domain/prose_rules/test_drug_indication.py": {
-    "mtime": 1782487411.413943,
-    "ast_hash": "5392f43fc46ac83895e68fcda6c77a19",
-    "semantic_hash": "5392f43fc46ac83895e68fcda6c77a19"
+    "mtime": 1782577416.101237,
+    "ast_hash": "d0e84183d2f6527deac39161bb1d8e41",
+    "semantic_hash": ""
   },
   "tests/unit/domain/prose_rules/test_facility_tier.py": {
     "mtime": 1781023986.185972,
@@ -3265,9 +3265,9 @@
     "semantic_hash": "70add11057c0ef135705388bbe6d4e1f"
   },
   "tests/unit/domain/sut/test_rules_catalog.py": {
-    "mtime": 1782501926.967131,
-    "ast_hash": "c8b2e7a951bec73e6299bc6f22d149f4",
-    "semantic_hash": "c8b2e7a951bec73e6299bc6f22d149f4"
+    "mtime": 1782577496.3989625,
+    "ast_hash": "30b22bf8b298a4cc5d883eccf17d8f86",
+    "semantic_hash": ""
   },
   "tests/unit/domain/test_billing_strategy_exactness.py": {
     "mtime": 1782130496.8932915,
@@ -3275,9 +3275,9 @@
     "semantic_hash": "b1d13ab3b20682074f2a324a4757b14a"
   },
   "tests/unit/domain/test_copay_exemption_composite.py": {
-    "mtime": 1781023986.1884463,
-    "ast_hash": "33ac5a0e907b727c2f290887085d814c",
-    "semantic_hash": "33ac5a0e907b727c2f290887085d814c"
+    "mtime": 1782574906.8321187,
+    "ast_hash": "3bd69d0fee21f8c979fe437a53bd6a71",
+    "semantic_hash": ""
   },
   "tests/unit/domain/test_copay_exemption_p1.py": {
     "mtime": 1781023986.1885476,
@@ -3340,9 +3340,9 @@
     "semantic_hash": "02ebd07a6e373857cc41cb6faca91dc1"
   },
   "tests/unit/scripts/test_drug_indication_manifest.py": {
-    "mtime": 1782487411.413943,
-    "ast_hash": "945adf0b42ae2863f312a8175393cfa2",
-    "semantic_hash": "945adf0b42ae2863f312a8175393cfa2"
+    "mtime": 1782575768.422736,
+    "ast_hash": "e69794e7aa3eac3ad26175c5476a980e",
+    "semantic_hash": ""
   },
   "tests/unit/scripts/test_extract_ek2c.py": {
     "mtime": 1781023986.1893065,
@@ -3365,9 +3365,9 @@
     "semantic_hash": "2622bc5d76f837d0817e67975b34c183"
   },
   "tests/unit/scripts/test_sut_coverage.py": {
-    "mtime": 1782487411.4665844,
-    "ast_hash": "5fa890dde5f9cd9820639bed2d94a175",
-    "semantic_hash": "5fa890dde5f9cd9820639bed2d94a175"
+    "mtime": 1782575841.456693,
+    "ast_hash": "16fbe99faae4cf25eab869473e704a35",
+    "semantic_hash": ""
   },
   "tests/unit/scripts/test_synthetic_data_integrity.py": {
     "mtime": 1782134697.701006,
@@ -3398,5 +3398,320 @@
     "mtime": 1782451311.9254959,
     "ast_hash": "faa422557c4ea6a94b43297a34f5c4af",
     "semantic_hash": "faa422557c4ea6a94b43297a34f5c4af"
+  },
+  "data/gazette/prose_corpus/L4.2_drug_indication_a0_summary.json": {
+    "mtime": 1782574500.4577756,
+    "ast_hash": "9dab3e6a4c31ac45ddebf5b4b90995e0",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_manifests/L1.8_copay_exemption_encoded_manifest.json": {
+    "mtime": 1782577584.8135028,
+    "ast_hash": "a6e85070d8d876a4572ff04a795fd3bc",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_manifests/L2.2_payment_method_encoded_manifest.json": {
+    "mtime": 1782577465.8983777,
+    "ast_hash": "05e044f9a68899f953eac1a20e55f129",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_manifests/L2.2_session_pricing_2_2_2_B_encoded_manifest.json": {
+    "mtime": 1782577464.9037564,
+    "ast_hash": "2bb06ab39dff8fd68f480bca7d3f92f3",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_manifests/L4.2_drug_indication_4213_4216_manifest.json": {
+    "mtime": 1782577109.2987,
+    "ast_hash": "a50205d1c6023cc723884df6bf762f49",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_manifests/L4.2_drug_indication_4217_manifest.json": {
+    "mtime": 1782577108.780051,
+    "ast_hash": "9ef74c7b9392648f0258e752a2dc2461",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_rules/golden/copay_general_1_8_batch1.json": {
+    "mtime": 1782575458.0222547,
+    "ast_hash": "f22597da3b4fe20fe093187dd87410b5",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_rules/golden/drug_indication_4.2.13_4.2.16_a2.json": {
+    "mtime": 1782575175.0063307,
+    "ast_hash": "d8fe603d5b1b2e42544d7338289df66b",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_rules/golden/drug_indication_4.2.17_a3.json": {
+    "mtime": 1782577107.9057283,
+    "ast_hash": "46b402a68036e144aa1dadc13d6ffeef",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_rules/golden/drug_indication_4.2.33_a2c.json": {
+    "mtime": 1782575807.8329732,
+    "ast_hash": "74793f2a03798c49791c9c90d19fa97e",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_rules/golden/payment_method_2_2_batch1.json": {
+    "mtime": 1782574905.1297855,
+    "ast_hash": "283fbcc28d59c69d4e2abb046fc98c8b",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_rules/golden/payment_method_2_2_batch2.json": {
+    "mtime": 1782575468.571693,
+    "ast_hash": "d12c3110dc853bbeba7dd760175896bf",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_rules/golden/payment_method_2_2_batch3.json": {
+    "mtime": 1782576908.6086788,
+    "ast_hash": "c33c4480f50300d5a8bccf659169a058",
+    "semantic_hash": ""
+  },
+  "data/gazette/rule_interaction_graph.json": {
+    "mtime": 1782577421.5279348,
+    "ast_hash": "791b53169bf876b582d6a8f18d27b327",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/clauseUtilization.test.ts": {
+    "mtime": 1782573889.062218,
+    "ast_hash": "a4da23eb7f29ca7a570132b87b473734",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/clauseUtilization.ts": {
+    "mtime": 1782573808.7876227,
+    "ast_hash": "c50b02a5546a3e385f07cb15efdc1460",
+    "semantic_hash": ""
+  },
+  "scripts/sut/build_rule_interaction_graph.py": {
+    "mtime": 1782573942.0156105,
+    "ast_hash": "da9badb999e0412faab754e2ebc88a34",
+    "semantic_hash": ""
+  },
+  "scripts/sut/export_material_bundling_r5_gap_triage.py": {
+    "mtime": 1782575513.0834463,
+    "ast_hash": "79e81f30e4994c8eba7e4f3df7452226",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/copay_exemption_gate_b.py": {
+    "mtime": 1782576886.287439,
+    "ast_hash": "96a09e5c8d9d7d51fe742aec4da7c916",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/drug_indication_4213_4216_batch_rules.py": {
+    "mtime": 1782575172.7451324,
+    "ast_hash": "4917f29ee345ccfd59fa3c0166267929",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/drug_indication_4213_4216_gate_b.py": {
+    "mtime": 1782574945.9066148,
+    "ast_hash": "eb293140ec2cdf3fe9dbd368ffea91e6",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/drug_indication_4217_batch_rules.py": {
+    "mtime": 1782577119.9054244,
+    "ast_hash": "347573cdc670fec94564d6a5304844a1",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/drug_indication_4217_gate_b.py": {
+    "mtime": 1782576901.8013172,
+    "ast_hash": "f42084e8a78a2aff97f16bf4344f332a",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/drug_indication_4233_batch_rules.py": {
+    "mtime": 1782575805.7894285,
+    "ast_hash": "f0054320b52d13221f8d75900c9aa4bb",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/drug_indication_a0_inventory.py": {
+    "mtime": 1782574489.0338144,
+    "ast_hash": "fc51e41695f0a8aaba0baaa2c3e59d47",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/drug_indication_a1_manifest_coverage.py": {
+    "mtime": 1782575794.5564535,
+    "ast_hash": "718fce54dfee5883166066670f4b3353",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/material_bundling_r5_batch_rules.py": {
+    "mtime": 1782575463.9750314,
+    "ast_hash": "efaac62998397f6308300e4a3887efa3",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/merge_drug_indication_4213_4216.py": {
+    "mtime": 1782575170.77079,
+    "ast_hash": "39677f279267926eff498ed6130ef0d1",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/merge_drug_indication_4217.py": {
+    "mtime": 1782577105.9726913,
+    "ast_hash": "7e41b2dffd748567ec47d94c7a11fd64",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/merge_drug_indication_4233.py": {
+    "mtime": 1782575797.2008576,
+    "ast_hash": "2758c0675312297d76ba091c9dbaab5d",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/merge_payment_method_batch1.py": {
+    "mtime": 1782574893.6156657,
+    "ast_hash": "ed7bede9cd200db5309bfc4ee8f02cb9",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/merge_payment_method_batch2.py": {
+    "mtime": 1782575424.837604,
+    "ast_hash": "0394b5e903cc2e8935ad034348812634",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/merge_payment_method_batch3.py": {
+    "mtime": 1782576846.9912384,
+    "ast_hash": "5e113c3eb796b879c39d3b8355114092",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/payment_method_2_2_batch1_rules.py": {
+    "mtime": 1782574875.601532,
+    "ast_hash": "83ef85c33110725a42520aeea9a0a4e8",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/payment_method_2_2_batch2_rules.py": {
+    "mtime": 1782575413.6617944,
+    "ast_hash": "77f6b9546bbf7bd1acaa3a81e974e845",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/payment_method_2_2_batch3_rules.py": {
+    "mtime": 1782576829.1790113,
+    "ast_hash": "1ae2932052f3ab9049f5eaadaa54efaf",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/payment_method_gate_b.py": {
+    "mtime": 1782577450.6376233,
+    "ast_hash": "0e46d999cb81a3fdab88da2236e66864",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/specialty_materials_r5_header_batch_rules.py": {
+    "mtime": 1782575468.4614708,
+    "ast_hash": "fa60c81b71175545523ff75f81e5d7f0",
+    "semantic_hash": ""
+  },
+  "tests/unit/cache/test_copay_outcome_kind.py": {
+    "mtime": 1782576973.462761,
+    "ast_hash": "623293b797b7269972b0f88f41cb43df",
+    "semantic_hash": ""
+  },
+  "tests/unit/domain/prose_rules/test_copay_general.py": {
+    "mtime": 1782577469.0943646,
+    "ast_hash": "66b02749ceee1aa8ee3f285564f6e30f",
+    "semantic_hash": ""
+  },
+  "tests/unit/domain/prose_rules/test_drug_indication_4213_4216.py": {
+    "mtime": 1782575132.3684356,
+    "ast_hash": "9d9ff018cec1f5b5c575c67e0313d522",
+    "semantic_hash": ""
+  },
+  "tests/unit/domain/prose_rules/test_drug_indication_4217.py": {
+    "mtime": 1782577104.0704026,
+    "ast_hash": "7ae006aab298ef09818761b8dad743c9",
+    "semantic_hash": ""
+  },
+  "tests/unit/domain/prose_rules/test_drug_indication_4233.py": {
+    "mtime": 1782575745.585982,
+    "ast_hash": "fc82fc68e7aeeca6191c8b73ea8e560c",
+    "semantic_hash": ""
+  },
+  "tests/unit/domain/prose_rules/test_payment_method.py": {
+    "mtime": 1782577317.883639,
+    "ast_hash": "59acb99ae27da5e94fd7be98a9bf25fb",
+    "semantic_hash": ""
+  },
+  "tests/unit/scripts/test_copay_exemption_gate_b.py": {
+    "mtime": 1782577475.1489017,
+    "ast_hash": "fc90adb680f06690749123275ae94406",
+    "semantic_hash": ""
+  },
+  "tests/unit/scripts/test_drug_indication_4213_4216_gate_b.py": {
+    "mtime": 1782575058.76689,
+    "ast_hash": "0482f49214deca5a0a17498c3d2c82b5",
+    "semantic_hash": ""
+  },
+  "tests/unit/scripts/test_drug_indication_4217_gate_b.py": {
+    "mtime": 1782576991.976142,
+    "ast_hash": "66dfa3042e0d849bbe36c0ab565fb652",
+    "semantic_hash": ""
+  },
+  "tests/unit/scripts/test_drug_indication_a0_inventory.py": {
+    "mtime": 1782574493.8587017,
+    "ast_hash": "87c9e6f09e6dbc97c4c200156dc3dfa5",
+    "semantic_hash": ""
+  },
+  "tests/unit/scripts/test_drug_indication_a1_manifest_coverage.py": {
+    "mtime": 1782575632.7532074,
+    "ast_hash": "6912baf28c11507302af3e5a40309274",
+    "semantic_hash": ""
+  },
+  "tests/unit/scripts/test_material_bundling_r5_triage.py": {
+    "mtime": 1782575517.3406014,
+    "ast_hash": "39557ca6caa759068a8e9de9950a2c71",
+    "semantic_hash": ""
+  },
+  "tests/unit/scripts/test_payment_method_gate_b.py": {
+    "mtime": 1782577463.1704128,
+    "ast_hash": "3ada05164acf6e222505fa2118f581dc",
+    "semantic_hash": ""
+  },
+  "tests/unit/scripts/test_rule_interaction_graph.py": {
+    "mtime": 1782573905.24909,
+    "ast_hash": "154ad5bc9f1e77f263ad38d6244c9054",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_rules/golden/payment_method_2_2_batch4.json": {
+    "mtime": 1782577464.9720862,
+    "ast_hash": "51f36173f1d868bfd33df3efa428f75b",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/drug_indication_4219_batch_rules.py": {
+    "mtime": 1782577317.9933364,
+    "ast_hash": "613d73f87f7ea66f0a1cfdd26aa1b8f3",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/merge_payment_method_batch4.py": {
+    "mtime": 1782577310.4788828,
+    "ast_hash": "6f9e2bb2bf0b595220630c013404c6cd",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/payment_method_2_2_batch4_rules.py": {
+    "mtime": 1782577288.9717188,
+    "ast_hash": "ceea28844ed50d7c8a23bcfd84e5a952",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_manifests/L4.2_drug_indication_4219_manifest.json": {
+    "mtime": 1782577492.2457852,
+    "ast_hash": "f88d3406e7033dc2dcab6b6573457546",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_rules/golden/drug_indication_4.2.19_a4.json": {
+    "mtime": 1782577419.7977567,
+    "ast_hash": "6489591c5603949afe6d2e40e09c83d0",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/drug_indication_4219_gate_b.py": {
+    "mtime": 1782577338.9499187,
+    "ast_hash": "62e9513e4f7eeecb148c4584ca7894ac",
+    "semantic_hash": ""
+  },
+  "scripts/sut/prose/merge_drug_indication_4219.py": {
+    "mtime": 1782577354.2179856,
+    "ast_hash": "9ab0713578e59e57ceeacb234336cdda",
+    "semantic_hash": ""
+  },
+  "tests/unit/domain/prose_rules/test_drug_indication_4219.py": {
+    "mtime": 1782577400.8446376,
+    "ast_hash": "7c1d039eddc9015e7a88a5b0ae998425",
+    "semantic_hash": ""
+  },
+  "tests/unit/scripts/test_drug_indication_4219_gate_b.py": {
+    "mtime": 1782577407.8501625,
+    "ast_hash": "17dffbc61c3db93eaeeef26b384c8058",
+    "semantic_hash": ""
+  },
+  "data/gazette/prose_rules/golden/copay_general_1_8_batch2.json": {
+    "mtime": 1782577458.354192,
+    "ast_hash": "81c7239ca312d3aac53837a184a44756",
+    "semantic_hash": ""
   }
 }
