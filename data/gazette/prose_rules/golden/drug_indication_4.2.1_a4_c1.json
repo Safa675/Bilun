@@ -1,0 +1,98 @@
+{
+  "samples": [
+    {
+      "drug_name": "ENBREL 50 MG (ETANERSEPT)",
+      "primary_icd10": "M08.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.anti_tnf_jia_acr30_continuation_c1"
+    },
+    {
+      "drug_name": "ENBREL 50 MG (ETANERSEPT)",
+      "primary_icd10": "M08.0",
+      "report_present": true,
+      "prescriber_specialty": "çocuk romatoloji",
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.anti_tnf_jia_acr30_continuation_c1"
+    },
+    {
+      "drug_name": "HUMIRA 40 MG (ADALIMUMAB)",
+      "primary_icd10": "M08.1",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.anti_tnf_jia_acr50_continuation_c1"
+    },
+    {
+      "drug_name": "HUMIRA 40 MG (ADALIMUMAB)",
+      "primary_icd10": "M08.1",
+      "report_present": true,
+      "prescriber_specialty": "çocuk sağlığı",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.anti_tnf_jia_acr50_continuation_c1"
+    },
+    {
+      "drug_name": "REMICADE 100 MG (INFLIKSIMAB)",
+      "primary_icd10": "M45.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.inflix_peripheral_as_second_line_start"
+    },
+    {
+      "drug_name": "REMICADE 100 MG (INFLIKSIMAB)",
+      "primary_icd10": "M45.9",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.inflix_peripheral_as_second_line_start"
+    },
+    {
+      "drug_name": "REMICADE 100 MG (INFLIKSIMAB)",
+      "primary_icd10": "M45.0",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.1.inflix_peripheral_as_basdai_continuation"
+    },
+    {
+      "drug_name": "REMICADE 100 MG (INFLIKSIMAB)",
+      "primary_icd10": "M45.0",
+      "report_present": true,
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.inflix_peripheral_as_basdai_continuation"
+    },
+    {
+      "drug_name": "CIMZIA 200 MG (CERTOLIZUMAB)",
+      "primary_icd10": "M08.2",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.anti_tnf_jia_acr_monitoring_board"
+    },
+    {
+      "drug_name": "CIMZIA 200 MG (CERTOLIZUMAB)",
+      "primary_icd10": "M08.2",
+      "report_present": true,
+      "prescriber_specialty": "çocuk romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.anti_tnf_jia_acr_monitoring_board"
+    },
+    {
+      "drug_name": "REMICADE 100 MG (INFLIKSIMAB)",
+      "primary_icd10": "M45.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.inflix_peripheral_as_second_line_romato_board"
+    },
+    {
+      "drug_name": "REMICADE 100 MG (INFLIKSIMAB)",
+      "primary_icd10": "M45.9",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.inflix_peripheral_as_second_line_romato_board"
+    }
+  ]
+}

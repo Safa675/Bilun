@@ -1,0 +1,340 @@
+"""Gate B export + manifest bootstrap for §4.2.6 growth hormone drug indication pilot."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import unicodedata
+from datetime import date
+from pathlib import Path
+from typing import Any
+
+import polars as pl
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[3]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from scripts.sut.prose.drug_indication_gate_b import (  # noqa: E402
+    _heuristic_inn,
+    infer_defer_themes,
+)
+
+# Trailing dot excludes §4.2.60, §4.2.63, etc.
+_SECTION_PREFIX = "4.2.6."
+_DEONTIC_MODALITIES = frozenset(
+    {"MUST_BILL", "MUST_NOT_BILL", "NO_PAY", "MAY_BILL", "PROHIBITED", "REGULATORY_ACTION"}
+)
+_DRUG_KEYWORDS = (
+    "buyume hormonu",
+    "büyüme hormonu",
+    "somatropin",
+    "somatrogon",
+    "mecasermin",
+    "rhigf",
+    "igf-1",
+    "igf1",
+    "increlex",
+    "turner",
+    "laron",
+    "somatotropin",
+    "ilaç",
+    "ilac",
+    "rapor",
+    "reçete",
+    "recete",
+)
+_TIER_A_CLAUSE_IDS = frozenset(
+    {
+        # A6 pilot (already encoded)
+        "C003998",
+        "C004003",
+        "C004039",
+        # A2 board-report batch
+        "C003941",
+        "C003957",
+        "C003966",
+        "C003956",
+        "C003982",
+        "C004016",
+        "C004030",
+        "C004033",
+    }
+)
+
+
+def _all_4206_batch_rules() -> list[dict[str, Any]]:
+    from scripts.sut.prose.drug_indication_4206_a2_batch_rules import BATCH_A2_RULES
+    from scripts.sut.prose.drug_indication_4206_batch_rules import BATCH_A6_RULES
+
+    return [*BATCH_A6_RULES, *BATCH_A2_RULES]
+
+
+def _normalize_tr(text: str) -> str:
+    folded = unicodedata.normalize("NFKD", str(text).casefold())
+    return "".join(ch for ch in folded if not unicodedata.combining(ch))
+
+
+def _matches_drug_keyword(text: str) -> bool:
+    normalized = _normalize_tr(text)
+    return any(keyword in normalized for keyword in _DRUG_KEYWORDS)
+
+
+def _has_report_signal(text: str) -> bool:
+    normalized = _normalize_tr(text)
+    return "rapor" in normalized or "reçete" in normalized or "recete" in normalized
+
+
+def _encode_tier_for_clause(text: str, *, clause_id: str, section_id: str) -> tuple[str, str]:
+    inn = _heuristic_inn(text) or ""
+    if clause_id in _TIER_A_CLAUSE_IDS:
+        return "A", inn or "buyume_hormonu"
+    normalized = _normalize_tr(text)
+    if _has_report_signal(text) and (
+        "endokrinoloji" in normalized
+        or "saglik kurulu" in normalized
+        or "sağlık kurulu" in text
+    ):
+        return "B", inn or "buyume_hormonu"
+    return "C", inn
+
+
+def export_4206_candidates(
+    clauses_path: Path,
+    *,
+    encoded_clause_ids: frozenset[str] | None = None,
+) -> pl.DataFrame:
+    """Export §4.2.6.* rows (trailing-dot prefix) with Gate B enrichment."""
+    encoded_clause_ids = encoded_clause_ids or frozenset()
+    clauses = pl.read_parquet(clauses_path)
+    section = clauses.filter(pl.col("section_id").str.starts_with(_SECTION_PREFIX))
+    if section.is_empty():
+        return pl.DataFrame()
+
+    rows: list[dict[str, Any]] = []
+    for record in section.iter_rows(named=True):
+        clause_id = str(record.get("clause_id") or "")
+        section_id = str(record.get("section_id") or "")
+        text = str(record.get("text_tr") or "")
+        deontic = str(record.get("deontic_modality") or "")
+        has_deontic = deontic in _DEONTIC_MODALITIES
+        has_drug_kw = _matches_drug_keyword(text)
+        if not has_deontic and not has_drug_kw:
+            continue
+
+        tier, inn = _encode_tier_for_clause(text, clause_id=clause_id, section_id=section_id)
+        defer_themes = infer_defer_themes(text) if tier == "C" else []
+        if clause_id in encoded_clause_ids:
+            encode_priority = "skip_already_encoded"
+        elif tier == "C":
+            encode_priority = "defer_tier_c"
+        elif tier == "A":
+            encode_priority = "p1_encode"
+        else:
+            encode_priority = "p2_encode"
+
+        rows.append(
+            {
+                "clause_id": clause_id,
+                "section_id": section_id,
+                "deontic_modality": deontic,
+                "text_tr": text,
+                "heuristic_inn": inn,
+                "encode_tier": tier,
+                "encode_priority": encode_priority,
+                "defer_themes": ",".join(defer_themes) if defer_themes else "",
+            }
+        )
+
+    return pl.DataFrame(rows).sort("clause_id")
+
+
+def _encoded_clause_ids_from_rules(rules: list[dict[str, Any]]) -> set[str]:
+    encoded: set[str] = set()
+    for rule in rules:
+        for clause_id in rule.get("gate_b_sources") or []:
+            encoded.add(str(clause_id))
+    return encoded
+
+
+def build_4206_manifest(
+    gate_b_frame: pl.DataFrame,
+    rules: list[dict[str, Any]],
+    *,
+    effective_date: str,
+) -> dict[str, Any]:
+    """Manifest for §4.2.6 pilot — encoded Tier A + Tier C deferred trace."""
+    encoded_ids = _encoded_clause_ids_from_rules(rules)
+    rules_by_clause: dict[str, list[str]] = {}
+    for rule in rules:
+        rule_id = str(rule.get("rule_id") or "")
+        for clause_id in rule.get("gate_b_sources") or []:
+            rules_by_clause.setdefault(str(clause_id), []).append(rule_id)
+
+    traces: list[dict[str, Any]] = []
+    tier_a_pending: list[str] = []
+    tier_b_pending: list[str] = []
+    tier_c_deferred: list[str] = []
+
+    for row in gate_b_frame.iter_rows(named=True):
+        clause_id = str(row.get("clause_id") or "")
+        encode_tier = str(row.get("encode_tier") or "C")
+        text = str(row.get("text_tr") or "")
+        if clause_id in encoded_ids:
+            status = "encoded"
+        elif encode_tier == "A":
+            status = "tier_a_pending"
+            tier_a_pending.append(clause_id)
+        elif encode_tier == "B":
+            status = "tier_b_pending"
+            tier_b_pending.append(clause_id)
+        else:
+            status = "tier_c_deferred"
+            tier_c_deferred.append(clause_id)
+
+        entry: dict[str, Any] = {
+            "clause_id": clause_id,
+            "section_id": str(row.get("section_id") or ""),
+            "encode_tier": encode_tier,
+            "manifest_status": status,
+            "heuristic_inn": str(row.get("heuristic_inn") or ""),
+        }
+        if status == "encoded":
+            entry["linked_rule_ids"] = sorted(rules_by_clause.get(clause_id, []))
+        elif status == "tier_c_deferred":
+            themes = infer_defer_themes(text)
+            entry["defer_themes"] = themes
+            labels = ", ".join(themes) if themes else "clinical_pathway"
+            entry["defer_reason"] = (
+                f"Deferred — requires structured ingest for: {labels}. "
+                "Tier C manifest-only until EMR fields support pathway."
+            )
+        traces.append(entry)
+
+    return {
+        "manifest_version": "r5-a6-a2-v1",
+        "section_id": "4.2.6",
+        "effective_date": effective_date,
+        "rules_in_json": len(rules),
+        "section_4.2.6_clause_total": gate_b_frame.height,
+        "section_clause_total": gate_b_frame.height,
+        "encoded_clause_count": len(encoded_ids),
+        "encoded_clause_ids": sorted(encoded_ids),
+        "gate_b_sources_encoded": sorted(encoded_ids),
+        "tier_a_pending_clause_ids": sorted(tier_a_pending),
+        "tier_b_pending_clause_ids": sorted(tier_b_pending),
+        "tier_c_deferred_clause_ids": sorted(tier_c_deferred),
+        "tier_a_pending_count": len(tier_a_pending),
+        "tier_b_pending_count": len(tier_b_pending),
+        "tier_c_deferred_count": len(tier_c_deferred),
+        "clause_traces": traces,
+    }
+
+
+def gate_b_summary(enriched: pl.DataFrame) -> dict[str, int]:
+    if enriched.is_empty():
+        return {"total": 0}
+    summary: dict[str, int] = {"total": enriched.height}
+    for col in ("encode_tier", "encode_priority"):
+        for key, count in enriched.group_by(col).len().iter_rows():
+            summary[f"{col}:{key}"] = int(count)
+    return summary
+
+
+def write_gate_b_artifacts(
+    *,
+    clauses_path: Path,
+    rules: list[dict[str, Any]],
+    corpus_csv: Path,
+    manifest_path: Path,
+    effective_date: str,
+) -> tuple[pl.DataFrame, dict[str, Any]]:
+    manifest = build_4206_manifest(
+        export_4206_candidates(clauses_path),
+        rules,
+        effective_date=effective_date,
+    )
+    encoded = frozenset(manifest["gate_b_sources_encoded"])
+
+    corpus_csv.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+
+    frame = export_4206_candidates(clauses_path, encoded_clause_ids=encoded)
+    frame.write_csv(corpus_csv)
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    return frame, manifest
+
+
+def write_gate_b_artifacts_from_prose(
+    *,
+    clauses_path: Path,
+    rules_path: Path,
+    corpus_csv: Path,
+    manifest_path: Path,
+    effective_date: str,
+) -> tuple[pl.DataFrame, dict[str, Any]]:
+    payload = json.loads(rules_path.read_text(encoding="utf-8"))
+    batch_rules = [
+        rule
+        for rule in (payload.get("rules") or [])
+        if str(rule.get("sut_section") or "").startswith("4.2.6")
+    ]
+    return write_gate_b_artifacts(
+        clauses_path=clauses_path,
+        rules=batch_rules,
+        corpus_csv=corpus_csv,
+        manifest_path=manifest_path,
+        effective_date=effective_date,
+    )
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="§4.2.6 growth hormone Gate B export")
+    parser.add_argument(
+        "--write-manifest",
+        action="store_true",
+        help="Write corpus CSV + manifest JSON using batch rules (pre-merge)",
+    )
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = _parse_args()
+    repo = _PROJECT_ROOT
+    clauses = repo / "data/gazette/sut_clauses.parquet"
+    corpus = repo / "data/gazette/prose_corpus/L4.2_drug_indication_4206.csv"
+    manifest = repo / "data/gazette/prose_manifests/L4.2_drug_indication_4206_manifest.json"
+    effective = date.today().isoformat()
+    batch_rules = _all_4206_batch_rules()
+
+    if args.write_manifest:
+        frame, manifest_payload = write_gate_b_artifacts(
+            clauses_path=clauses,
+            rules=batch_rules,
+            corpus_csv=corpus,
+            manifest_path=manifest,
+            effective_date=effective,
+        )
+    else:
+        rules_path = repo / "data/gazette/prose_rules/drug_indication_prose.json"
+        frame, manifest_payload = write_gate_b_artifacts_from_prose(
+            clauses_path=clauses,
+            rules_path=rules_path,
+            corpus_csv=corpus,
+            manifest_path=manifest,
+            effective_date=effective,
+        )
+
+    print(f"Wrote {frame.height} rows -> {corpus}")
+    print(
+        f"Manifest: {len(manifest_payload['gate_b_sources_encoded'])} encoded "
+        f"tier_a_pending={manifest_payload['tier_a_pending_count']} "
+        f"tier_b_pending={manifest_payload['tier_b_pending_count']} "
+        f"tier_c={manifest_payload['tier_c_deferred_count']} -> {manifest}"
+    )
+    for key, value in sorted(gate_b_summary(frame).items()):
+        print(f"  {key}: {value}")

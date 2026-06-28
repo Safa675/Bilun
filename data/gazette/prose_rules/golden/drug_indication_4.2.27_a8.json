@@ -1,0 +1,182 @@
+{
+  "samples": [
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.coagulation_factor_board_report"
+    },
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "prescriber_specialty": "hematoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.27.coagulation_factor_board_report"
+    },
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "prescriber_specialty": "kardiyoloji",
+      "expect_violation": "prescriber_specialty_mismatch",
+      "rule_id": "4.2.27.coagulation_factor_board_report"
+    },
+    {
+      "drug_name": "ALFINITI 250 IU (FACTOR IX)",
+      "primary_icd10": "D67",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.prophylaxis_acute_bleed_3day_report"
+    },
+    {
+      "drug_name": "ALFINITI 250 IU (FACTOR IX)",
+      "primary_icd10": "D67",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.27.prophylaxis_acute_bleed_3day_report"
+    },
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.coagulation_emergency_one_day"
+    },
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.27.coagulation_emergency_one_day"
+    },
+    {
+      "drug_name": "OCTAPLEX 500 IU (PROTHROMBIN COMPLEX)",
+      "primary_icd10": "D68.4",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.pcc_acquired_coagulopathy_board"
+    },
+    {
+      "drug_name": "OCTAPLEX 500 IU (PROTHROMBIN COMPLEX)",
+      "primary_icd10": "D68.4",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.27.pcc_acquired_coagulopathy_board"
+    },
+    {
+      "drug_name": "BERIPLEX 500 IU (PROTHROMBIN COMPLEX)",
+      "primary_icd10": "T45.515A",
+      "report_present": null,
+      "expect_violation": null,
+      "rule_id": "4.2.27.coumarin_active_bleed_one_day"
+    },
+    {
+      "drug_name": "BERIPLEX 500 IU (PROTHROMBIN COMPLEX)",
+      "primary_icd10": "J45.9",
+      "report_present": null,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.27.coumarin_active_bleed_one_day"
+    },
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.factor_annual_board_report"
+    },
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "prescriber_specialty": "iç hastalıkları",
+      "report_duration_months": 12,
+      "expect_violation": null,
+      "rule_id": "4.2.27.factor_annual_board_report"
+    },
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "report_duration_months": 6,
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.27.factor_annual_board_report"
+    },
+    {
+      "drug_name": "WILATE 500 IU (VON WILLEBRAND)",
+      "primary_icd10": "D68.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.vwf_weekly_unit_cap_board"
+    },
+    {
+      "drug_name": "WILATE 500 IU (VON WILLEBRAND)",
+      "primary_icd10": "D68.0",
+      "report_present": true,
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.27.vwf_weekly_unit_cap_board"
+    },
+    {
+      "drug_name": "HAEMATE P 500 IU (VON WILLEBRAND)",
+      "primary_icd10": "D68.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.vwf_acute_bleed_3day_report"
+    },
+    {
+      "drug_name": "HAEMATE P 500 IU (VON WILLEBRAND)",
+      "primary_icd10": "D68.0",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.27.vwf_acute_bleed_3day_report"
+    },
+    {
+      "drug_name": "HEMLIBRA 105 MG (EMICIZUMAB)",
+      "primary_icd10": "D66",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.emicizumab_hematology_monthly_prescription"
+    },
+    {
+      "drug_name": "HEMLIBRA 105 MG (EMICIZUMAB)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "prescriber_specialty": "hematoloji",
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.27.emicizumab_hematology_monthly_prescription"
+    },
+    {
+      "drug_name": "HEMLIBRA 105 MG (EMICIZUMAB)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "prescriber_specialty": "iç hastalıkları",
+      "report_duration_months": 3,
+      "expect_violation": "prescriber_specialty_mismatch",
+      "rule_id": "4.2.27.emicizumab_hematology_monthly_prescription"
+    },
+    {
+      "drug_name": "ALBUTEIN 20% (HUMAN ALBUMIN)",
+      "primary_icd10": "E86.0",
+      "drug_inpatient_supply": true,
+      "expect_violation": null,
+      "rule_id": "4.2.27.human_albumin_inpatient_hypoalbuminemia"
+    },
+    {
+      "drug_name": "ALBUTEIN 20% (HUMAN ALBUMIN)",
+      "primary_icd10": "E86.0",
+      "drug_inpatient_supply": false,
+      "expect_violation": "inpatient_supply_required",
+      "rule_id": "4.2.27.human_albumin_inpatient_hypoalbuminemia"
+    },
+    {
+      "drug_name": "ALBUTEIN 20% (HUMAN ALBUMIN)",
+      "primary_icd10": "J45.9",
+      "drug_inpatient_supply": true,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.27.human_albumin_inpatient_hypoalbuminemia"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "samples": [
+    {
+      "drug_name": "CYMBALTA 60 MG (DULOKSETIN)",
+      "primary_icd10": "E11.9",
+      "report_present": null,
+      "prescriber_specialty": null,
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.35.duloxetine_diabetic_neuropathy_prescriber"
+    },
+    {
+      "drug_name": "CYMBALTA 60 MG (DULOKSETIN)",
+      "primary_icd10": "E11.9",
+      "report_present": null,
+      "prescriber_specialty": "endokrinoloji ve metabolizma",
+      "expect_violation": null,
+      "rule_id": "4.2.35.duloxetine_diabetic_neuropathy_prescriber"
+    },
+    {
+      "drug_name": "CYMBALTA 60 MG (DULOKSETIN)",
+      "primary_icd10": "J45.9",
+      "report_present": null,
+      "prescriber_specialty": "endokrinoloji",
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.35.duloxetine_diabetic_neuropathy_prescriber"
+    },
+    {
+      "drug_name": "NEURONTIN 400 MG (GABAPENTIN)",
+      "primary_icd10": "G62.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.35.neuropathic_pain_specialist_report"
+    },
+    {
+      "drug_name": "NEURONTIN 400 MG (GABAPENTIN)",
+      "primary_icd10": "G62.9",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.35.neuropathic_pain_specialist_report"
+    },
+    {
+      "drug_name": "LYRICA 150 MG (PREGABALIN)",
+      "primary_icd10": "M79.7",
+      "report_present": true,
+      "report_duration_months": null,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.35.pregabalin_fibromyalgia_board_6mo"
+    },
+    {
+      "drug_name": "LYRICA 150 MG (PREGABALIN)",
+      "primary_icd10": "M79.7",
+      "report_present": true,
+      "report_duration_months": 6,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.35.pregabalin_fibromyalgia_board_6mo"
+    },
+    {
+      "drug_name": "SOMAVERT 10 MG (PEGVISOMANT)",
+      "primary_icd10": "E22.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.37.pegvisomant_init_board_2mo"
+    },
+    {
+      "drug_name": "SOMAVERT 10 MG (PEGVISOMANT)",
+      "primary_icd10": "E22.0",
+      "report_present": true,
+      "report_duration_months": 2,
+      "expect_violation": null,
+      "rule_id": "4.2.37.pegvisomant_init_board_2mo"
+    },
+    {
+      "drug_name": "SOMAVERT 10 MG (PEGVISOMANT)",
+      "primary_icd10": "E22.0",
+      "report_present": true,
+      "report_duration_months": null,
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.37.pegvisomant_init_board_2mo"
+    },
+    {
+      "drug_name": "SOMAVERT 10 MG (PEGVISOMANT)",
+      "primary_icd10": "E22.0",
+      "report_present": true,
+      "prescriber_specialty": "dahiliye",
+      "expect_violation": "prescriber_specialty_mismatch",
+      "rule_id": "4.2.37.pegvisomant_endocrine_prescriber"
+    },
+    {
+      "drug_name": "SOMAVERT 10 MG (PEGVISOMANT)",
+      "primary_icd10": "E22.0",
+      "report_present": true,
+      "report_duration_months": 2,
+      "prescriber_specialty": "endokrinoloji ve metabolizma",
+      "expect_violation": null,
+      "rule_id": "4.2.37.pegvisomant_endocrine_prescriber"
+    }
+  ]
+}

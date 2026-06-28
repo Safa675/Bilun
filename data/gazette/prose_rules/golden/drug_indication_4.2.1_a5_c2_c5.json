@@ -1,0 +1,35 @@
+{
+  "samples": [
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.rituximab_ra_report_section_header"
+    },
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.rituximab_ra_report_section_header"
+    },
+    {
+      "drug_name": "ACTEMRA 162 MG (TOSILIZUMAB)",
+      "primary_icd10": "M31.6",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.tocilizumab_dha_sc_steroid_contraindicated"
+    },
+    {
+      "drug_name": "ACTEMRA 162 MG (TOSILIZUMAB)",
+      "primary_icd10": "M31.6",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.tocilizumab_dha_sc_steroid_contraindicated"
+    }
+  ]
+}

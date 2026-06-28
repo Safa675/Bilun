@@ -1,0 +1,82 @@
+{
+  "samples": [
+    {
+      "drug_name": "GLUCOPHAGE 1000 MG (METFORMIN)",
+      "primary_icd10": "E11.9",
+      "report_present": null,
+      "expect_violation": null,
+      "rule_id": "4.2.38.first_line_oral_antidiabetic"
+    },
+    {
+      "drug_name": "GLUCOPHAGE 1000 MG (METFORMIN)",
+      "primary_icd10": "J45.9",
+      "report_present": null,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.38.first_line_oral_antidiabetic"
+    },
+    {
+      "drug_name": "ACTOS 30 MG (PIOGLITAZON)",
+      "primary_icd10": "E11.9",
+      "report_present": false,
+      "prescriber_specialty": null,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.38.analog_insulin_pioglitazone_specialist"
+    },
+    {
+      "drug_name": "ACTOS 30 MG (PIOGLITAZON)",
+      "primary_icd10": "E11.9",
+      "report_present": true,
+      "prescriber_specialty": "endokrinoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.38.analog_insulin_pioglitazone_specialist"
+    },
+    {
+      "drug_name": "RYZODEG 100 IU/ML (INSÜLIN DEGLUDEK+ASPART)",
+      "primary_icd10": "E11.9",
+      "report_present": false,
+      "prescriber_specialty": "endokrinoloji",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.38.degludec_aspart_unstable_glucose_board"
+    },
+    {
+      "drug_name": "RYZODEG 100 IU/ML (INSÜLIN DEGLUDEK+ASPART)",
+      "primary_icd10": "E11.9",
+      "report_present": true,
+      "prescriber_specialty": "endokrinoloji",
+      "report_duration_months": 24,
+      "expect_violation": null,
+      "rule_id": "4.2.38.degludec_aspart_unstable_glucose_board"
+    },
+    {
+      "drug_name": "JANUVIA 100 MG (SITAGLIPTIN)",
+      "primary_icd10": "E11.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.38.dpp4_gliptin_specialist_report"
+    },
+    {
+      "drug_name": "JANUVIA 100 MG (SITAGLIPTIN)",
+      "primary_icd10": "E11.9",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.38.dpp4_gliptin_specialist_report"
+    },
+    {
+      "drug_name": "SOLIQUA 100/33 (INSÜLIN GLARJIN LIKSISENATID)",
+      "primary_icd10": "E11.9",
+      "report_present": false,
+      "prescriber_specialty": "endokrinoloji",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.38.glargine_lixisenatide_obesity_report"
+    },
+    {
+      "drug_name": "SOLIQUA 100/33 (INSÜLIN GLARJIN LIKSISENATID)",
+      "primary_icd10": "E11.9",
+      "report_present": true,
+      "prescriber_specialty": "endokrinoloji",
+      "report_duration_months": 12,
+      "expect_violation": null,
+      "rule_id": "4.2.38.glargine_lixisenatide_obesity_report"
+    }
+  ]
+}

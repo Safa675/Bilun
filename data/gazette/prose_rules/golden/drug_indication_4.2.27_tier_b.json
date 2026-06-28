@@ -1,0 +1,91 @@
+{
+  "samples": [
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.coagulation_prescribing_principles_header"
+    },
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "prescriber_specialty": "hematoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.27.coagulation_prescribing_principles_header"
+    },
+    {
+      "drug_name": "NOVOSEVEN 1 MG (FACTOR VIIA)",
+      "primary_icd10": "D66",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.factor_viia_dose_limited_board"
+    },
+    {
+      "drug_name": "NOVOSEVEN 1 MG (FACTOR VIIA)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.27.factor_viia_dose_limited_board"
+    },
+    {
+      "drug_name": "OCTAPLEX 500 IU (PROTHROMBIN COMPLEX)",
+      "primary_icd10": "D68.4",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.coagulopathy_hospital_one_day_prescriber"
+    },
+    {
+      "drug_name": "OCTAPLEX 500 IU (PROTHROMBIN COMPLEX)",
+      "primary_icd10": "D68.4",
+      "report_present": true,
+      "prescriber_specialty": "iç hastalıkları",
+      "expect_violation": null,
+      "rule_id": "4.2.27.coagulopathy_hospital_one_day_prescriber"
+    },
+    {
+      "drug_name": "KONAKION 10 MG (VITAMIN K)",
+      "primary_icd10": "K72.9",
+      "report_present": null,
+      "expect_violation": null,
+      "rule_id": "4.2.27.vitamin_k_acquired_coagulopathy_referral"
+    },
+    {
+      "drug_name": "KONAKION 10 MG (VITAMIN K)",
+      "primary_icd10": "J45.9",
+      "report_present": null,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.27.vitamin_k_acquired_coagulopathy_referral"
+    },
+    {
+      "drug_name": "BERIPLEX 500 IU (PROTHROMBIN COMPLEX)",
+      "primary_icd10": "K72.9",
+      "report_present": null,
+      "expect_violation": null,
+      "rule_id": "4.2.27.vitamin_k_emergency_one_day_no_report"
+    },
+    {
+      "drug_name": "BERIPLEX 500 IU (PROTHROMBIN COMPLEX)",
+      "primary_icd10": "J45.9",
+      "report_present": null,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.27.vitamin_k_emergency_one_day_no_report"
+    },
+    {
+      "drug_name": "REVOLADE 25 MG (ELTROMBOPAG)",
+      "primary_icd10": "D69.3",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.eltrombopag_pediatric_dosing_report"
+    },
+    {
+      "drug_name": "REVOLADE 25 MG (ELTROMBOPAG)",
+      "primary_icd10": "D69.3",
+      "report_present": true,
+      "prescriber_specialty": "hematoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.27.eltrombopag_pediatric_dosing_report"
+    }
+  ]
+}

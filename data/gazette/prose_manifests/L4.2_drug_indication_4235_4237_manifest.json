@@ -1,0 +1,335 @@
+{
+  "manifest_version": "r5-a5-v1",
+  "section_id": "4.2.35,4.2.37",
+  "effective_date": "2026-06-27",
+  "rules_in_json": 5,
+  "section_4.2.35_clause_total": 17,
+  "section_4.2.37_clause_total": 9,
+  "section_clause_total": 26,
+  "encoded_clause_count": 6,
+  "encoded_clause_ids": [
+    "C006694",
+    "C006697",
+    "C006705",
+    "C006715",
+    "C006716",
+    "C006718"
+  ],
+  "gate_b_sources_encoded": [
+    "C006694",
+    "C006697",
+    "C006705",
+    "C006715",
+    "C006716",
+    "C006718"
+  ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_clause_ids": [
+    "C006681",
+    "C006687",
+    "C006688",
+    "C006691",
+    "C006692",
+    "C006693",
+    "C006695",
+    "C006696",
+    "C006698",
+    "C006699",
+    "C006700",
+    "C006702",
+    "C006703",
+    "C006704",
+    "C006712",
+    "C006713",
+    "C006714",
+    "C006717",
+    "C006719",
+    "C006720"
+  ],
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 20,
+  "clause_traces": [
+    {
+      "clause_id": "C006681",
+      "section_id": "4.2.35",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006687",
+      "section_id": "4.2.35",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.35 -Nöropatik ağrı ve fibromiyaljide ilaç kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006688",
+      "section_id": "4.2.35.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.35.A – Nöropatik ağrıda ilaç kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006691",
+      "section_id": "4.2.35.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 04/09/2019- 30878/ 36-a md. Yürürlük: 12/09/2019)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006692",
+      "section_id": "4.2.35.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006693",
+      "section_id": "4.2.35.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006694",
+      "section_id": "4.2.35.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Duloksetin",
+      "linked_rule_ids": [
+        "4.2.35.duloxetine_diabetic_neuropathy_prescriber"
+      ]
+    },
+    {
+      "clause_id": "C006695",
+      "section_id": "4.2.35.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Alfa lipoik asit (kombinasyonları dahil)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006696",
+      "section_id": "4.2.35.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006697",
+      "section_id": "4.2.35.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Nöropatik ağrıda",
+      "linked_rule_ids": [
+        "4.2.35.neuropathic_pain_specialist_report"
+      ]
+    },
+    {
+      "clause_id": "C006698",
+      "section_id": "4.2.35.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 04/09/2019- 30878/ 36-b md. Yürürlük: 12/09/2019)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006699",
+      "section_id": "4.2.35.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006700",
+      "section_id": "4.2.35.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006702",
+      "section_id": "4.2.35.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.35.B-Kronik kas iskelet ağrısı ve fibromiyaljide ilaç kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006703",
+      "section_id": "4.2.35.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006704",
+      "section_id": "4.2.35.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 04/09/2019- 30878/ 37 md. Yürürlük: 12/09/2019)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006705",
+      "section_id": "4.2.35.B",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Pregabalin etken maddeli ilaçların mono veya sabit doz kombinasyonlarının",
+      "linked_rule_ids": [
+        "4.2.35.pregabalin_fibromyalgia_board_6mo"
+      ]
+    },
+    {
+      "clause_id": "C006712",
+      "section_id": "4.2.37",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.37 - Akromegalide ilaç kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006713",
+      "section_id": "4.2.37.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.37.A - Pegvisomant",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006714",
+      "section_id": "4.2.37.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "akromegali_ilac",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006715",
+      "section_id": "4.2.37.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavinin başlangıcında",
+      "linked_rule_ids": [
+        "4.2.37.pegvisomant_init_board_2mo"
+      ]
+    },
+    {
+      "clause_id": "C006716",
+      "section_id": "4.2.37.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Düzenlenen raporlarda",
+      "linked_rule_ids": [
+        "4.2.37.pegvisomant_endocrine_prescriber"
+      ]
+    },
+    {
+      "clause_id": "C006717",
+      "section_id": "4.2.37.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006718",
+      "section_id": "4.2.37.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Reçeteler",
+      "linked_rule_ids": [
+        "4.2.37.pegvisomant_endocrine_prescriber"
+      ]
+    },
+    {
+      "clause_id": "C006719",
+      "section_id": "4.2.37.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.37.B - Oktreotid ve lanreotid",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006720",
+      "section_id": "4.2.37.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "akromegali_ilac",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "samples": [
+    {
+      "drug_name": "XENICAL 120 MG (ORLISTAT)",
+      "primary_icd10": "E66.0",
+      "report_present": null,
+      "report_duration_months": null,
+      "prescriber_specialty": null,
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.18.orlistat_monthly_prescription"
+    },
+    {
+      "drug_name": "XENICAL 120 MG (ORLISTAT)",
+      "primary_icd10": "E66.0",
+      "report_present": null,
+      "report_duration_months": 1,
+      "prescriber_specialty": null,
+      "expect_violation": null,
+      "rule_id": "4.2.18.orlistat_monthly_prescription"
+    },
+    {
+      "drug_name": "XENICAL 120 MG (ORLISTAT)",
+      "primary_icd10": "E66.0",
+      "report_present": null,
+      "report_duration_months": 3,
+      "prescriber_specialty": null,
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.18.orlistat_monthly_prescription"
+    },
+    {
+      "drug_name": "SIFROL 1 MG (PRAMIPEXOLE)",
+      "primary_icd10": "G20",
+      "report_present": false,
+      "report_duration_months": null,
+      "prescriber_specialty": null,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.36.parkinson_dopamine_agonists_report"
+    },
+    {
+      "drug_name": "SIFROL 1 MG (PRAMIPEXOLE)",
+      "primary_icd10": "G20",
+      "report_present": true,
+      "report_duration_months": null,
+      "prescriber_specialty": null,
+      "expect_violation": null,
+      "rule_id": "4.2.36.parkinson_dopamine_agonists_report"
+    },
+    {
+      "drug_name": "TASMAR 100 MG (TOLCAPONE)",
+      "primary_icd10": "G20",
+      "report_present": true,
+      "report_duration_months": 1,
+      "prescriber_specialty": "nöroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.36.tolcapone_tertiary_neurology_report"
+    },
+    {
+      "drug_name": "TASMAR 100 MG (TOLCAPONE)",
+      "primary_icd10": "G20",
+      "report_present": true,
+      "report_duration_months": 1,
+      "prescriber_specialty": "dahiliye",
+      "expect_violation": "prescriber_specialty_mismatch",
+      "rule_id": "4.2.36.tolcapone_tertiary_neurology_report"
+    },
+    {
+      "drug_name": "PK-MERZ 100 MG (AMANTADINE)",
+      "primary_icd10": "G25.1",
+      "report_present": false,
+      "report_duration_months": null,
+      "prescriber_specialty": null,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.36.amantadine_sulfate_report"
+    },
+    {
+      "drug_name": "PK-MERZ 100 MG (AMANTADINE)",
+      "primary_icd10": "G25.1",
+      "report_present": true,
+      "report_duration_months": null,
+      "prescriber_specialty": null,
+      "expect_violation": null,
+      "rule_id": "4.2.36.amantadine_sulfate_report"
+    },
+    {
+      "drug_name": "AMANTIX 100 MG (AMANTADIN HCL)",
+      "primary_icd10": "G20",
+      "report_present": true,
+      "report_duration_months": null,
+      "prescriber_specialty": null,
+      "expect_violation": null,
+      "rule_id": "4.2.36.amantadine_hcl_parkinson_report"
+    },
+    {
+      "drug_name": "AMANTIX 100 MG (AMANTADIN HCL)",
+      "primary_icd10": "G25.1",
+      "report_present": true,
+      "report_duration_months": null,
+      "prescriber_specialty": null,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.36.amantadine_hcl_parkinson_report"
+    }
+  ]
+}

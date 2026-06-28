@@ -1,0 +1,773 @@
+{
+  "manifest_version": "r5-a15-v1",
+  "section_id": "4.2.15",
+  "effective_date": "2026-06-27",
+  "rules_in_json": 8,
+  "section_4.2.15_clause_total": 59,
+  "section_clause_total": 59,
+  "encoded_clause_count": 8,
+  "encoded_clause_ids": [
+    "C005776",
+    "C005777",
+    "C005778",
+    "C005779",
+    "C005780",
+    "C005782",
+    "C005823",
+    "C005870"
+  ],
+  "gate_b_sources_encoded": [
+    "C005776",
+    "C005777",
+    "C005778",
+    "C005779",
+    "C005780",
+    "C005782",
+    "C005823",
+    "C005870"
+  ],
+  "tier_a_pending_clause_ids": [
+    "C005785",
+    "C005797",
+    "C005835",
+    "C005859"
+  ],
+  "tier_b_pending_clause_ids": [
+    "C005860"
+  ],
+  "tier_c_deferred_clause_ids": [
+    "C005775",
+    "C005781",
+    "C005783",
+    "C005784",
+    "C005786",
+    "C005792",
+    "C005793",
+    "C005794",
+    "C005796",
+    "C005798",
+    "C005799",
+    "C005812",
+    "C005813",
+    "C005814",
+    "C005815",
+    "C005816",
+    "C005817",
+    "C005818",
+    "C005819",
+    "C005820",
+    "C005829",
+    "C005830",
+    "C005831",
+    "C005832",
+    "C005833",
+    "C005834",
+    "C005836",
+    "C005837",
+    "C005839",
+    "C005840",
+    "C005841",
+    "C005853",
+    "C005854",
+    "C005855",
+    "C005856",
+    "C005857",
+    "C005858",
+    "C005861",
+    "C005862",
+    "C005863",
+    "C005864",
+    "C005865",
+    "C005866",
+    "C005867",
+    "C005868",
+    "C005869",
+    "C005871"
+  ],
+  "tier_a_pending_count": 4,
+  "tier_b_pending_count": 1,
+  "tier_c_deferred_count": 47,
+  "clause_traces": [
+    {
+      "clause_id": "C005777",
+      "section_id": "4.2.15.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "klopidogrel",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.15.clopidogrel_acs_no_report_acute"
+      ]
+    },
+    {
+      "clause_id": "C005835",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Yukarıda tanımlanan durumların belirtildiği",
+      "signal_score": 10
+    },
+    {
+      "clause_id": "C005859",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Yukarıda tanımlanan durumların belirtildiği kardiyoloji",
+      "signal_score": 10
+    },
+    {
+      "clause_id": "C005870",
+      "section_id": "4.2.15.F",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "2.15.F-Ranolazin",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.15.ranolazin_stable_angina_board"
+      ]
+    },
+    {
+      "clause_id": "C005776",
+      "section_id": "4.2.15.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Koroner artere stent uygulanacak hastalarda",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.15.clopidogrel_stent_no_report"
+      ]
+    },
+    {
+      "clause_id": "C005779",
+      "section_id": "4.2.15.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "klopidogrel",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.15.clopidogrel_valve_cad_report"
+      ]
+    },
+    {
+      "clause_id": "C005780",
+      "section_id": "4.2.15.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Girişimsel periferik veya serebral işlemler sonucu",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.15.clopidogrel_peripheral_stent"
+      ]
+    },
+    {
+      "clause_id": "C005782",
+      "section_id": "4.2.15.B",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "En az bir kalp damar cerrahi uzman hekiminin yer aldığı",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.15.clopidogrel_cabg_board"
+      ]
+    },
+    {
+      "clause_id": "C005817",
+      "section_id": "4.2.15.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 6,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005869",
+      "section_id": "4.2.15.E",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 6,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005778",
+      "section_id": "4.2.15.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İlk iki rapor süresi sonunda (toplam 24 ay)",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.15.clopidogrel_family_medicine_renewal"
+      ]
+    },
+    {
+      "clause_id": "C005785",
+      "section_id": "4.2.15.B",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "reçete edilir.",
+      "signal_score": 5
+    },
+    {
+      "clause_id": "C005792",
+      "section_id": "4.2.15.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005793",
+      "section_id": "4.2.15.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005820",
+      "section_id": "4.2.15.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.15.D-Dabigatran",
+      "signal_score": 4,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005830",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.15.D-1- Dabigatran",
+      "signal_score": 4,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005832",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005833",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005853",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.15.D-2-Rivaroksaban",
+      "signal_score": 4,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005856",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Rivaroksaban ve apiksaban",
+      "signal_score": 4,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005857",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Yukarıdaki durumlarda",
+      "signal_score": 4,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005860",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "B",
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Rapor süresinin bitiminde ilaç tedavisinin devamına karar verilmesi halinde",
+      "signal_score": 4
+    },
+    {
+      "clause_id": "C005816",
+      "section_id": "4.2.15.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005831",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005858",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005797",
+      "section_id": "4.2.15.C",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Beta blokör kontrendikasyonu olan veya",
+      "signal_score": 2
+    },
+    {
+      "clause_id": "C005814",
+      "section_id": "4.2.15.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 2,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005815",
+      "section_id": "4.2.15.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 2,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005863",
+      "section_id": "4.2.15.E",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 2,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005775",
+      "section_id": "4.2.15.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.15.A - Klopidogrel (kombinasyonları dahil)",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005812",
+      "section_id": "4.2.15.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.15.Ç - Prasugrel",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005813",
+      "section_id": "4.2.15.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005836",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Mülga: RG- 18/06/2016- 29746/ 15 md. Yürürlük: 25/06/2016) Apiksaban",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005841",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.15.D-2 -Rivaroksaban",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005862",
+      "section_id": "4.2.15.E",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.15.E-Tikagrelor",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005864",
+      "section_id": "4.2.15.E",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: prior_therapy. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005868",
+      "section_id": "4.2.15.E",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005781",
+      "section_id": "4.2.15.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.15.B - Silostazol",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005783",
+      "section_id": "4.2.15.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005784",
+      "section_id": "4.2.15.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005786",
+      "section_id": "4.2.15.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.15.C - Ivabradin",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005794",
+      "section_id": "4.2.15.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 16/03/2023-32134/25 md. Yürürlük: 24/03/2023)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005796",
+      "section_id": "4.2.15.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Beta blokör tedavisi dahil standart tedavi ile kombinasyon halinde veya",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005798",
+      "section_id": "4.2.15.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Beta blokör tedavisine intoleransı olan.",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005799",
+      "section_id": "4.2.15.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 25/08/2022- 31934/ 28-a md. Yürürlük: 03/09/2022)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005818",
+      "section_id": "4.2.15.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 25/07/2014- 29071/ 28-d md. Yürürlük: 07/08/2014)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005819",
+      "section_id": "4.2.15.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek:RG-09/09/2017-30175/21-a md.Yürürlük: 23/09/2017)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005829",
+      "section_id": "4.2.15.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek:RG- 09/09/2017-30175/ 21-b md. Yürürlük: 23/09/2017)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005834",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 30/08/2014- 29104/ 15-c md. Yürürlük: 06/09/2014)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005837",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 04/09/2019- 30878/ 24 md. Yürürlük: 12/09/2019)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005839",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 18/06/2016- 29746/ 16 md. Yürürlük: 25/06/2016)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005840",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 30/08/2014- 29104/ 15-ç md. Yürürlük: 06/09/2014)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005854",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Yetişkin hastalarda",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005855",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 07/10/2016- 29850/ 27 md. Yürürlük: 15/10/2016)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005861",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 25/07/2014- 29071/ 28-e md. Yürürlük: 07/08/2014)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005865",
+      "section_id": "4.2.15.E",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Hastanın varfarin tedavisi altında olmaması",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005866",
+      "section_id": "4.2.15.E",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Aşağıdaki durumlardan birinin mevcut olması",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005867",
+      "section_id": "4.2.15.E",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C005871",
+      "section_id": "4.2.15.F",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Mülga: RG- 25/08/2022- 31934/ 28-c md. Yürürlük: 03/09/2022)",
+      "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    }
+  ]
+}

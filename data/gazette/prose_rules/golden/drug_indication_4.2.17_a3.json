@@ -1,0 +1,71 @@
+{
+  "samples": [
+    {
+      "drug_name": "FOSAMAX 70 MG (ALENDRONAT)",
+      "primary_icd10": "M81.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.17.bisphosphonate_specialist_report"
+    },
+    {
+      "drug_name": "FOSAMAX 70 MG (ALENDRONAT)",
+      "primary_icd10": "M81.0",
+      "report_present": true,
+      "prescriber_specialty": "ortopedi ve travmatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.17.bisphosphonate_specialist_report"
+    },
+    {
+      "drug_name": "FOSAMAX 70 MG (ALENDRONAT)",
+      "primary_icd10": "J45.9",
+      "report_present": true,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.17.bisphosphonate_specialist_report"
+    },
+    {
+      "drug_name": "PROLIA 60 MG (DENOSUMAB)",
+      "primary_icd10": "M81.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.17.denosumab_board_report"
+    },
+    {
+      "drug_name": "PROLIA 60 MG (DENOSUMAB)",
+      "primary_icd10": "M81.0",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.17.denosumab_board_report"
+    },
+    {
+      "drug_name": "FORTEO 20 MCG (TERIPARATID)",
+      "primary_icd10": "M80.0",
+      "report_present": true,
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.17.teriparatid_severe_osteoporosis_board"
+    },
+    {
+      "drug_name": "FORTEO 20 MCG (TERIPARATID)",
+      "primary_icd10": "M80.0",
+      "report_present": true,
+      "report_duration_months": null,
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.17.teriparatid_severe_osteoporosis_board"
+    },
+    {
+      "drug_name": "MIACALCIC 100 IU (KALSITONIN)",
+      "primary_icd10": "M48.5",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.17.calcitonin_vertebral_fracture_report"
+    },
+    {
+      "drug_name": "MIACALCIC 100 IU (KALSITONIN)",
+      "primary_icd10": "M48.5",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.17.calcitonin_vertebral_fracture_report"
+    }
+  ]
+}

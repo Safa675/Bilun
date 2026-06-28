@@ -1,0 +1,83 @@
+{
+  "samples": [
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M05.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.rituximab_ra_das28_continuation"
+    },
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M05.9",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.rituximab_ra_das28_continuation"
+    },
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M06.0",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "report_duration_months": 3,
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.1.rituximab_ra_das28_continuation"
+    },
+    {
+      "drug_name": "MABTHERA 1000 MG (RITUXIMAB)",
+      "primary_icd10": "M05.8",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.rituximab_ra_romatoloji_board"
+    },
+    {
+      "drug_name": "MABTHERA 1000 MG (RITUXIMAB)",
+      "primary_icd10": "M05.8",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.rituximab_ra_romatoloji_board"
+    },
+    {
+      "drug_name": "MABTHERA 1000 MG (RITUXIMAB)",
+      "primary_icd10": "L10.0",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.1.rituximab_ra_romatoloji_board"
+    },
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.rituximab_ra_university_tertiary_board"
+    },
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "prescriber_specialty": "klinik immunoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.rituximab_ra_university_tertiary_board"
+    },
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M05.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.rituximab_ra_6mo_renewal"
+    },
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M05.0",
+      "report_present": true,
+      "prescriber_specialty": "fiziksel tıp",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.rituximab_ra_6mo_renewal"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+clause_id,section_id,deontic_modality,text_tr,heuristic_inn,encode_tier,encode_priority,in_manifest
+C006061,4.2.19,"",4.2.19 - Migrende ilaç kullanım ilkeleri,2.19 - Migrende ilaç kullanım ilkeleri,C,p3_tier_c,false
+C006062,4.2.19,REGULATORY_ACTION,"(1) Triptanlar, nöroloji uzman hekimleri tarafından reçete edilir. Bu grup ilaçlardan yalnız bir etken madde reçete edilebilir ve ayda en fazla 6 doz/adet yazılabilir. Aynı ilacın farklı farmasötik formlarının aynı anda reçete edilmesi halinde birisinin bedeli ödenir.",Triptanlar,A,p0_encoded,true
+C006063,4.2.19,"","(2) Topiramat tedavisine, diğer profilaktik migren ilaçlarının 6 ay süreyle kullanılıp etkisiz kaldığı durumlarda nöroloji uzman hekimince düzenlenen uzman hekim raporunda bu husus belirtilerek nöroloji uzman hekimince başlanır.",Topiramat tedavisine,A,p0_encoded,true
+C006064,4.2.19,REGULATORY_ACTION,(3) Uzman hekim raporu 1 yıl süreyle geçerlidir ve nöroloji uzman hekimince düzenlenen uzman hekim raporuna dayanılarak diğer hekimler tarafından en fazla birer aylık dozda reçete edilmesi halinde bedeli ödenir.,"",C,p3_tier_c,false

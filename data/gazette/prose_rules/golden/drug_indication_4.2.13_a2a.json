@@ -1,0 +1,147 @@
+{
+  "samples": [
+    {
+      "drug_name": "BARACLUDE 0.5 MG (ENTEKAVIR)",
+      "primary_icd10": "B18.1",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.13.hepatitis_prior_therapy_documentation"
+    },
+    {
+      "drug_name": "BARACLUDE 0.5 MG (ENTEKAVIR)",
+      "primary_icd10": "B18.1",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.13.hepatitis_prior_therapy_documentation"
+    },
+    {
+      "drug_name": "VIREAD 245 MG (TENOFOVIR)",
+      "primary_icd10": "B18.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.13.hbv_dna_initiation_board"
+    },
+    {
+      "drug_name": "VIREAD 245 MG (TENOFOVIR)",
+      "primary_icd10": "B18.0",
+      "report_present": true,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.13.hbv_dna_initiation_board"
+    },
+    {
+      "drug_name": "ZEFFIX 100 MG (LAMIVUDIN)",
+      "primary_icd10": "B18.1",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.13.hbv_immunosuppression_lamivudin_prophylaxis"
+    },
+    {
+      "drug_name": "ZEFFIX 100 MG (LAMIVUDIN)",
+      "primary_icd10": "B18.1",
+      "report_present": true,
+      "report_duration_months": 12,
+      "expect_violation": null,
+      "rule_id": "4.2.13.hbv_immunosuppression_lamivudin_prophylaxis"
+    },
+    {
+      "drug_name": "PEGASYS 180 MCG (PEGINTERFERON)",
+      "primary_icd10": "B18.0",
+      "report_present": true,
+      "prescriber_specialty": "enfeksiyon hastalıkları",
+      "expect_violation": null,
+      "rule_id": "4.2.13.hdv_interferon_board"
+    },
+    {
+      "drug_name": "PEGASYS 180 MCG (PEGINTERFERON)",
+      "primary_icd10": "B17.1",
+      "report_present": true,
+      "report_duration_months": 24,
+      "expect_violation": null,
+      "rule_id": "4.2.13.hcv_acute_interferon_24w_monotherapy"
+    },
+    {
+      "drug_name": "REBETOL 200 MG (RIBAVIRIN)",
+      "primary_icd10": "B18.2",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.13.hcv_ribavirin_genotype_duration"
+    },
+    {
+      "drug_name": "REBETOL 200 MG (RIBAVIRIN)",
+      "primary_icd10": "B18.2",
+      "report_present": true,
+      "report_duration_months": 48,
+      "expect_violation": null,
+      "rule_id": "4.2.13.hcv_ribavirin_genotype_duration"
+    },
+    {
+      "drug_name": "HARVONI (SOFOSBUVIR/LEDIPASVIR)",
+      "primary_icd10": "B18.2",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.13.hcv_daa_tertiary_gastro_once"
+    },
+    {
+      "drug_name": "HARVONI (SOFOSBUVIR/LEDIPASVIR)",
+      "primary_icd10": "B18.2",
+      "report_present": true,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.13.hcv_daa_tertiary_gastro_once"
+    },
+    {
+      "drug_name": "MAVYRET (GLEKAPREVIR/PIBRENTASVIR)",
+      "primary_icd10": "B18.2",
+      "report_present": true,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.13.hcv_daa_child_pugh_report"
+    },
+    {
+      "drug_name": "SOVALDI 400 MG (SOFOSBUVIR)",
+      "primary_icd10": "B18.2",
+      "report_present": null,
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.13.hcv_specialist_report_criteria"
+    },
+    {
+      "drug_name": "SOVALDI 400 MG (SOFOSBUVIR)",
+      "primary_icd10": "B18.2",
+      "report_present": true,
+      "prescriber_specialty": "enfeksiyon hastalıkları",
+      "expect_violation": null,
+      "rule_id": "4.2.13.hcv_specialist_report_criteria"
+    },
+    {
+      "drug_name": "PEGASYS 180 MCG (PEGINTERFERON)",
+      "primary_icd10": "B18.2",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.13.hcv_reteatment_prior_therapy_report"
+    },
+    {
+      "drug_name": "PEGASYS 180 MCG (PEGINTERFERON)",
+      "primary_icd10": "B18.2",
+      "report_present": true,
+      "report_duration_months": 48,
+      "expect_violation": null,
+      "rule_id": "4.2.13.hcv_genotype_b_48w_monitoring"
+    },
+    {
+      "drug_name": "PEGASYS 180 MCG (PEGINTERFERON)",
+      "primary_icd10": "B18.2",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.13.hcv_pediatric_early_stop_rechallenge"
+    },
+    {
+      "drug_name": "PEGASYS 180 MCG (PEGINTERFERON)",
+      "primary_icd10": "B18.2",
+      "report_present": true,
+      "prescriber_specialty": "çocuk sağlığı",
+      "expect_violation": null,
+      "rule_id": "4.2.13.hcv_pediatric_early_stop_rechallenge"
+    }
+  ]
+}

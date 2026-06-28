@@ -1,0 +1,159 @@
+{
+  "manifest_version": "r5-a5-v1",
+  "section_id": "4.2.18,4.2.36",
+  "effective_date": "2026-06-27",
+  "rules_in_json": 5,
+  "section_4.2.18_clause_total": 5,
+  "section_4.2.36_clause_total": 6,
+  "section_4.2.18_tier_a_count": 1,
+  "section_4.2.18_tier_c_count": 4,
+  "section_4.2.36_tier_a_count": 4,
+  "section_4.2.36_tier_c_count": 2,
+  "section_clause_total": 11,
+  "encoded_clause_count": 5,
+  "encoded_clause_ids": [
+    "C006059",
+    "C006707",
+    "C006708",
+    "C006709",
+    "C006711"
+  ],
+  "gate_b_sources_encoded": [
+    "C006059",
+    "C006707",
+    "C006708",
+    "C006709",
+    "C006711"
+  ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_clause_ids": [
+    "C006056",
+    "C006057",
+    "C006058",
+    "C006060",
+    "C006706",
+    "C006710"
+  ],
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 6,
+  "clause_traces": [
+    {
+      "clause_id": "C006056",
+      "section_id": "4.2.18",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.18 - Orlistat kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006057",
+      "section_id": "4.2.18",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: prior_therapy. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006058",
+      "section_id": "4.2.18",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Daha önce dört ardışık hafta boyunca yalnızca diyetle en az 2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006059",
+      "section_id": "4.2.18",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Reçeteler birer aylık düzenlenecektir.",
+      "linked_rule_ids": [
+        "4.2.18.orlistat_monthly_prescription"
+      ]
+    },
+    {
+      "clause_id": "C006060",
+      "section_id": "4.2.18",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006706",
+      "section_id": "4.2.36",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.36 - Parkinson tedavisinde ilaç kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006707",
+      "section_id": "4.2.36",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Apomorfin",
+      "linked_rule_ids": [
+        "4.2.36.parkinson_dopamine_agonists_report"
+      ]
+    },
+    {
+      "clause_id": "C006708",
+      "section_id": "4.2.36",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tolkapon",
+      "linked_rule_ids": [
+        "4.2.36.tolcapone_tertiary_neurology_report"
+      ]
+    },
+    {
+      "clause_id": "C006709",
+      "section_id": "4.2.36",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Amantadin sülfat",
+      "linked_rule_ids": [
+        "4.2.36.amantadine_sulfate_report"
+      ]
+    },
+    {
+      "clause_id": "C006710",
+      "section_id": "4.2.36",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 16/03/2023-32134/32 md. Yürürlük: 24/03/2023)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006711",
+      "section_id": "4.2.36",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Amantadin hidroklorür",
+      "linked_rule_ids": [
+        "4.2.36.amantadine_hcl_parkinson_report"
+      ]
+    }
+  ]
+}

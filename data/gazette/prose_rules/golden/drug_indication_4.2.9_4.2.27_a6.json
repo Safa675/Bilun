@@ -1,0 +1,141 @@
+{
+  "samples": [
+    {
+      "drug_name": "ARANESP 40 MCG (DARBEPETIN)",
+      "primary_icd10": "N18.5",
+      "report_present": false,
+      "report_duration_months": null,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.9.esa_ckd_monthly_nephrology_report"
+    },
+    {
+      "drug_name": "ARANESP 40 MCG (DARBEPETIN)",
+      "primary_icd10": "N18.5",
+      "report_present": true,
+      "prescriber_specialty": "nefroloji",
+      "report_duration_months": 1,
+      "expect_violation": null,
+      "rule_id": "4.2.9.esa_ckd_monthly_nephrology_report"
+    },
+    {
+      "drug_name": "ARANESP 40 MCG (DARBEPETIN)",
+      "primary_icd10": "N18.5",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.9.esa_ckd_monthly_nephrology_report"
+    },
+    {
+      "drug_name": "ARANESP 40 MCG (DARBEPETIN)",
+      "primary_icd10": "N18.5",
+      "report_present": true,
+      "report_duration_months": 1,
+      "prescriber_specialty": "nefroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.9.esa_ckd_monthly_nephrology_report"
+    },
+    {
+      "drug_name": "BINOCRIT 4000 IU (EPOETIN ALFA)",
+      "primary_icd10": "D46.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.9.mds_esa_hematology_report"
+    },
+    {
+      "drug_name": "BINOCRIT 4000 IU (EPOETIN ALFA)",
+      "primary_icd10": "D46.9",
+      "report_present": true,
+      "prescriber_specialty": "hematoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.9.mds_esa_hematology_report"
+    },
+    {
+      "drug_name": "MIMPARA 30 MG (ETELCALCETIDE)",
+      "primary_icd10": "E21.0",
+      "report_present": null,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.9.etelcalcetide_dialysis_ckd_only"
+    },
+    {
+      "drug_name": "MIMPARA 30 MG (ETELCALCETIDE)",
+      "primary_icd10": "N18.5",
+      "report_present": null,
+      "expect_violation": null,
+      "rule_id": "4.2.9.etelcalcetide_dialysis_ckd_only"
+    },
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.hemophilia_acute_bleed_report"
+    },
+    {
+      "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.27.hemophilia_acute_bleed_report"
+    },
+    {
+      "drug_name": "NOVOSEVEN 1 MG (FACTOR VIIA)",
+      "primary_icd10": "D66",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.factor_seven_a_bleeding_board"
+    },
+    {
+      "drug_name": "NOVOSEVEN 1 MG (FACTOR VIIA)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "prescriber_specialty": "hematoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.27.factor_seven_a_bleeding_board"
+    },
+    {
+      "drug_name": "NOVOSEVEN 1 MG (FACTOR VIIA)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "report_duration_months": 6,
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.27.factor_seven_a_prophylaxis_board"
+    },
+    {
+      "drug_name": "FEIBA 500 IU (APCC)",
+      "primary_icd10": "D66",
+      "report_present": true,
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.27.apcc_prophylaxis_board"
+    },
+    {
+      "drug_name": "WILATE 500 IU (VON WILLEBRAND)",
+      "primary_icd10": "D68.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.27.vwf_factor_board_report"
+    },
+    {
+      "drug_name": "WILATE 500 IU (VON WILLEBRAND)",
+      "primary_icd10": "D68.0",
+      "report_present": true,
+      "report_duration_months": 12,
+      "expect_violation": null,
+      "rule_id": "4.2.27.vwf_factor_board_report"
+    },
+    {
+      "drug_name": "MICRHOGAM 300 MCG (ANTI-RH)",
+      "primary_icd10": "O26.9",
+      "report_present": null,
+      "expect_violation": null,
+      "rule_id": "4.2.27.anti_rh_specialist_prescription"
+    },
+    {
+      "drug_name": "MICRHOGAM 300 MCG (ANTI-RH)",
+      "primary_icd10": "J45.9",
+      "report_present": null,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.27.anti_rh_specialist_prescription"
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "samples": [
+    {
+      "drug_name": "HUMIRA 40 MG (ADALIMUMAB)",
+      "primary_icd10": "K50.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.crohn_fistulizing_month4_cdai_report"
+    },
+    {
+      "drug_name": "HUMIRA 40 MG (ADALIMUMAB)",
+      "primary_icd10": "K50.9",
+      "report_present": true,
+      "report_duration_months": 4,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.crohn_fistulizing_month4_cdai_report"
+    },
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.rituximab_ra_romatoloji_institution_board"
+    },
+    {
+      "drug_name": "MABTHERA 500 MG (RITUXIMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.rituximab_ra_romatoloji_institution_board"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.tocilizumab_ra_das28_06_continuation_c3"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "report_duration_months": 3,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.tocilizumab_ra_das28_06_continuation_c3"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "report_duration_months": null,
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.1.tocilizumab_ra_das28_06_continuation_c5"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "report_duration_months": 3,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.tocilizumab_ra_das28_06_continuation_c5"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M08.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.tocilizumab_jia_acr_pediatric_3mo_c5"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M08.0",
+      "report_present": true,
+      "report_duration_months": 3,
+      "prescriber_specialty": "çocuk romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.tocilizumab_jia_acr_pediatric_3mo_c5"
+    },
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M06.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.tofacitinib_ra_prescriber_board_c6"
+    },
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "report_duration_months": 6,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.tofacitinib_ra_prescriber_board_c6"
+    },
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M08.0",
+      "report_present": true,
+      "report_duration_months": 6,
+      "prescriber_specialty": "çocuk romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.jia_acr_pediatric_6mo_continuation_c6"
+    },
+    {
+      "drug_name": "KINERET 100 MG (ANAKINRA)",
+      "primary_icd10": "M08.0",
+      "report_present": true,
+      "report_duration_months": null,
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.1.fmf_jia_acr_pediatric_stop_c7"
+    },
+    {
+      "drug_name": "KINERET 100 MG (ANAKINRA)",
+      "primary_icd10": "M08.0",
+      "report_present": true,
+      "report_duration_months": 3,
+      "prescriber_specialty": "çocuk romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.fmf_jia_acr_pediatric_stop_c7"
+    },
+    {
+      "drug_name": "ILARIS 150 MG (KANAKINUMAB)",
+      "primary_icd10": "E85.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.kanakinumab_fmf_3mo_response_c7"
+    },
+    {
+      "drug_name": "ILARIS 150 MG (KANAKINUMAB)",
+      "primary_icd10": "E85.0",
+      "report_present": true,
+      "report_duration_months": 3,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.kanakinumab_fmf_3mo_response_c7"
+    },
+    {
+      "drug_name": "COSENTYX 150 MG (SEKUKINUMAB)",
+      "primary_icd10": "L73.2",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.sekukinumab_hs_16wk_continuation_c9"
+    },
+    {
+      "drug_name": "COSENTYX 150 MG (SEKUKINUMAB)",
+      "primary_icd10": "L73.2",
+      "report_present": true,
+      "report_duration_months": 6,
+      "prescriber_specialty": "dermatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.sekukinumab_hs_16wk_continuation_c9"
+    },
+    {
+      "drug_name": "COSENTYX 150 MG (SEKUKINUMAB)",
+      "primary_icd10": "L73.2",
+      "report_present": true,
+      "report_duration_months": 4,
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.1.sekukinumab_hs_16wk_continuation_c9"
+    }
+  ]
+}

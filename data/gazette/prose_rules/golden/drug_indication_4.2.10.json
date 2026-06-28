@@ -1,0 +1,81 @@
+{
+  "samples": [
+    {
+      "drug_name": "CEREZYME 400 U (IMIGLUCERASE)",
+      "primary_icd10": "E75.22",
+      "report_present": false,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.10.gaucher_board_report_6mo"
+    },
+    {
+      "drug_name": "CEREZYME 400 U (IMIGLUCERASE)",
+      "primary_icd10": "E75.22",
+      "report_present": true,
+      "report_duration_months": 6,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.10.gaucher_board_report_6mo"
+    },
+    {
+      "drug_name": "CEREZYME 400 U (IMIGLUCERASE)",
+      "primary_icd10": "J45.9",
+      "report_present": true,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.10.gaucher_board_report_6mo"
+    },
+    {
+      "drug_name": "CERDELGA 84 MG (ELIGLUSTAT)",
+      "primary_icd10": "E75.22",
+      "report_present": false,
+      "prescriber_specialty": "endokrinoloji ve metabolizma",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.10.eliglustat_cyp2d6_report"
+    },
+    {
+      "drug_name": "CERDELGA 84 MG (ELIGLUSTAT)",
+      "primary_icd10": "E75.22",
+      "report_present": true,
+      "report_duration_months": 6,
+      "prescriber_specialty": "endokrinoloji ve metabolizma",
+      "expect_violation": null,
+      "rule_id": "4.2.10.eliglustat_cyp2d6_report"
+    },
+    {
+      "drug_name": "REPLAGAL 1 MG (AGALSIDASE ALFA)",
+      "primary_icd10": "E75.21",
+      "report_present": false,
+      "prescriber_specialty": "nefroloji",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.10.fabry_board_report_6mo"
+    },
+    {
+      "drug_name": "ALDURAZYME 2.9 MG (LARONIDASE)",
+      "primary_icd10": "E76.0",
+      "report_present": true,
+      "report_duration_months": 12,
+      "prescriber_specialty": "çocuk metabolizma",
+      "expect_violation": null,
+      "rule_id": "4.2.10.mps_board_report_1yr"
+    },
+    {
+      "drug_name": "MYOZYME 50 MG (ALGLUCOSIDASE ALFA)",
+      "primary_icd10": "E74.02",
+      "report_present": true,
+      "report_duration_months": null,
+      "prescriber_specialty": "nöroloji",
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.10.pompe_board_report_1yr"
+    },
+    {
+      "drug_name": "ZAVESCA 100 MG (MIGLUSTAT)",
+      "primary_icd10": "E75.24",
+      "report_present": true,
+      "report_duration_months": 6,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.10.npc_board_report_6mo"
+    }
+  ]
+}

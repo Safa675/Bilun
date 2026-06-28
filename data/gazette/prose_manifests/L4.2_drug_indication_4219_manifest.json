@@ -1,0 +1,70 @@
+{
+  "manifest_version": "r5-a4-v1",
+  "section_id": "4.2.19",
+  "effective_date": "2026-06-27",
+  "rules_in_json": 2,
+  "section_4.2.19_clause_total": 4,
+  "section_clause_total": 4,
+  "encoded_clause_count": 2,
+  "encoded_clause_ids": [
+    "C006062",
+    "C006063"
+  ],
+  "gate_b_sources_encoded": [
+    "C006062",
+    "C006063"
+  ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_clause_ids": [
+    "C006061",
+    "C006064"
+  ],
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 2,
+  "clause_traces": [
+    {
+      "clause_id": "C006061",
+      "section_id": "4.2.19",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.19 - Migrende ilaç kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006062",
+      "section_id": "4.2.19",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Triptanlar",
+      "linked_rule_ids": [
+        "4.2.19.triptan_neurology_prescriber"
+      ]
+    },
+    {
+      "clause_id": "C006063",
+      "section_id": "4.2.19",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Topiramat tedavisine",
+      "linked_rule_ids": [
+        "4.2.19.topiramate_migraine_prophylaxis"
+      ]
+    },
+    {
+      "clause_id": "C006064",
+      "section_id": "4.2.19",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    }
+  ]
+}

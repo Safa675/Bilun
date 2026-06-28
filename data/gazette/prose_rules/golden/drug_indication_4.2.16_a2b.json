@@ -1,0 +1,175 @@
+{
+  "samples": [
+    {
+      "drug_name": "METABOLIK MAMA OZEL FORMUL (PKU)",
+      "primary_icd10": "E70.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.special_formula_ek4b_specialist_report"
+    },
+    {
+      "drug_name": "METABOLIK MAMA OZEL FORMUL (PKU)",
+      "primary_icd10": "E70.0",
+      "report_present": true,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.16.special_formula_ek4b_specialist_report"
+    },
+    {
+      "drug_name": "PKU OZEL FORMUL UN KARISIMI",
+      "primary_icd10": "E70.1",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.pediatric_metabolic_formula_3yr_board"
+    },
+    {
+      "drug_name": "PKU OZEL FORMUL UN KARISIMI",
+      "primary_icd10": "E70.1",
+      "report_present": true,
+      "report_duration_months": 36,
+      "prescriber_specialty": "çocuk metabolizma",
+      "expect_violation": null,
+      "rule_id": "4.2.16.pediatric_metabolic_formula_3yr_board"
+    },
+    {
+      "drug_name": "PKU OZEL FORMUL UN KARISIMI",
+      "primary_icd10": "E70.1",
+      "report_present": true,
+      "report_duration_months": 12,
+      "prescriber_specialty": "çocuk metabolizma",
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.16.pediatric_metabolic_formula_3yr_board"
+    },
+    {
+      "drug_name": "GLUTENSIZ UN KARISIMI (CELYAK)",
+      "primary_icd10": "K90.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.celiac_gluten_free_1yr_gastro_report"
+    },
+    {
+      "drug_name": "GLUTENSIZ UN KARISIMI (CELYAK)",
+      "primary_icd10": "K90.0",
+      "report_present": true,
+      "report_duration_months": 12,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.16.celiac_gluten_free_1yr_gastro_report"
+    },
+    {
+      "drug_name": "GLUTENSIZ MAKARNA (CELYAK)",
+      "primary_icd10": "K90.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.celiac_gluten_free_3yr_board"
+    },
+    {
+      "drug_name": "GLUTENSIZ MAKARNA (CELYAK)",
+      "primary_icd10": "K90.0",
+      "report_present": true,
+      "report_duration_months": 36,
+      "prescriber_specialty": "iç hastalıkları",
+      "expect_violation": null,
+      "rule_id": "4.2.16.celiac_gluten_free_3yr_board"
+    },
+    {
+      "drug_name": "GLUTENSIZ MAKARNA (CELYAK)",
+      "primary_icd10": "K90.0",
+      "report_present": true,
+      "report_duration_months": 12,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.16.celiac_gluten_free_3yr_board"
+    },
+    {
+      "drug_name": "NUTRAMIGEN HIDROLIZE MAMA (CMPA)",
+      "primary_icd10": "T78.1",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.infant_cmpa_hydrolyzed_formula_report"
+    },
+    {
+      "drug_name": "NUTRAMIGEN HIDROLIZE MAMA (CMPA)",
+      "primary_icd10": "T78.1",
+      "report_present": true,
+      "prescriber_specialty": "çocuk gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.16.infant_cmpa_hydrolyzed_formula_report"
+    },
+    {
+      "drug_name": "NEOCATE AMINOASIT MAMA (CMPA)",
+      "primary_icd10": "K52.2",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.infant_cmpa_amino_acid_severe_formula"
+    },
+    {
+      "drug_name": "NEOCATE AMINOASIT MAMA (CMPA)",
+      "primary_icd10": "K52.2",
+      "report_present": true,
+      "prescriber_specialty": "çocuk immünoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.16.infant_cmpa_amino_acid_severe_formula"
+    },
+    {
+      "drug_name": "TIBBI MAMA CMPA FORMUL",
+      "primary_icd10": "T78.1",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.infant_cmpa_medical_formula_2025"
+    },
+    {
+      "drug_name": "TIBBI MAMA CMPA FORMUL",
+      "primary_icd10": "T78.1",
+      "report_present": true,
+      "prescriber_specialty": "çocuk alerji",
+      "expect_violation": null,
+      "rule_id": "4.2.16.infant_cmpa_medical_formula_2025"
+    },
+    {
+      "drug_name": "MALABSORBSIYON TEDAVI EDICI MAMA",
+      "primary_icd10": "K90.4",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.malabsorption_special_formula_report"
+    },
+    {
+      "drug_name": "MALABSORBSIYON TEDAVI EDICI MAMA",
+      "primary_icd10": "K90.4",
+      "report_present": true,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.16.malabsorption_special_formula_report"
+    },
+    {
+      "drug_name": "DOGUSTAN METABOLIK FORMUL KARISIMI",
+      "primary_icd10": "E71.0",
+      "report_present": true,
+      "prescriber_specialty": "çocuk sağlığı",
+      "expect_violation": null,
+      "rule_id": "4.2.16.metabolic_formula_prescriber_fallback"
+    },
+    {
+      "drug_name": "DOGUSTAN METABOLIK FORMUL KARISIMI",
+      "primary_icd10": "E71.0",
+      "report_present": true,
+      "prescriber_specialty": "dermatoloji",
+      "expect_violation": "prescriber_specialty_mismatch",
+      "rule_id": "4.2.16.metabolic_formula_prescriber_fallback"
+    },
+    {
+      "drug_name": "HASTALIGA OZEL OZEL FORMUL MAMA",
+      "primary_icd10": "E84.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.special_formula_all_prescriber_with_report"
+    },
+    {
+      "drug_name": "HASTALIGA OZEL OZEL FORMUL MAMA",
+      "primary_icd10": "E84.9",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.16.special_formula_all_prescriber_with_report"
+    }
+  ]
+}

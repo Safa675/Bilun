@@ -1,0 +1,150 @@
+{
+  "samples": [
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M06.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.jak_ra_dmard_initiation"
+    },
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.jak_ra_dmard_initiation"
+    },
+    {
+      "drug_name": "RINVOQ 15 MG (UPADASITINIB)",
+      "primary_icd10": "L40.5",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.jak_psa_second_line_initiation"
+    },
+    {
+      "drug_name": "RINVOQ 15 MG (UPADASITINIB)",
+      "primary_icd10": "L40.5",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.1.jak_psa_second_line_initiation"
+    },
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M45.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.tofacitinib_axial_as_initiation"
+    },
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M45.9",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.tofacitinib_axial_as_initiation"
+    },
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M45.0",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.tofacitinib_peripheral_as_initiation"
+    },
+    {
+      "drug_name": "OLUMIANT 4 MG (BARISITINIB)",
+      "primary_icd10": "M06.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.jak_ra_university_prescriber_board"
+    },
+    {
+      "drug_name": "OLUMIANT 4 MG (BARISITINIB)",
+      "primary_icd10": "M06.0",
+      "report_present": true,
+      "prescriber_specialty": "klinik immunoloji",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.jak_ra_university_prescriber_board"
+    },
+    {
+      "drug_name": "RINVOQ 15 MG (UPADASITINIB)",
+      "primary_icd10": "M45.9",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.upadacitinib_anti_tnf_second_line"
+    },
+    {
+      "drug_name": "RINVOQ 15 MG (UPADASITINIB)",
+      "primary_icd10": "K50.9",
+      "report_present": true,
+      "prescriber_specialty": "gastroenteroloji",
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.upadacitinib_crohn_anti_tnf"
+    },
+    {
+      "drug_name": "RINVOQ 15 MG (UPADASITINIB)",
+      "primary_icd10": "K51.9",
+      "report_present": true,
+      "prescriber_specialty": "genel cerrahi",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.upadacitinib_uc_anti_tnf"
+    },
+    {
+      "drug_name": "RINVOQ 15 MG (UPADASITINIB)",
+      "primary_icd10": "L20.9",
+      "report_present": true,
+      "prescriber_specialty": "dermatoloji",
+      "report_duration_months": 4,
+      "expect_violation": null,
+      "rule_id": "4.2.1.upadacitinib_ad_dermatology_board"
+    },
+    {
+      "drug_name": "OLUMIANT 4 MG (BARISITINIB)",
+      "primary_icd10": "L20.9",
+      "report_present": true,
+      "prescriber_specialty": "immünoloji",
+      "report_duration_months": 4,
+      "expect_violation": null,
+      "rule_id": "4.2.1.baricitinib_ad_specialist_board"
+    },
+    {
+      "drug_name": "RINVOQ 15 MG (UPADASITINIB)",
+      "primary_icd10": "K51.0",
+      "report_present": true,
+      "prescriber_specialty": "iç hastalıkları",
+      "expect_violation": null,
+      "rule_id": "4.2.1.jak_ibd_gi_prescriber"
+    },
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M08.0",
+      "report_present": true,
+      "prescriber_specialty": "çocuk romatoloji",
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.tofacitinib_pjia_second_line"
+    },
+    {
+      "drug_name": "RINVOQ 15 MG (UPADASITINIB)",
+      "primary_icd10": "M08.1",
+      "report_present": true,
+      "prescriber_specialty": "çocuk sağlığı",
+      "expect_violation": null,
+      "rule_id": "4.2.1.jak_pjia_pediatric_tertiary_board"
+    },
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.jak_efficacy_continuation_romato_immuno"
+    }
+  ]
+}

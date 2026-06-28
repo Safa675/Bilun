@@ -1,0 +1,51 @@
+{
+  "samples": [
+    {
+      "drug_name": "KINERET 100 MG (ANAKINRA)",
+      "primary_icd10": "E85.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.anakinra_fmf_colchicine_add_on"
+    },
+    {
+      "drug_name": "KINERET 100 MG (ANAKINRA)",
+      "primary_icd10": "E85.0",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.anakinra_fmf_colchicine_add_on"
+    },
+    {
+      "drug_name": "ILARIS 150 MG (KANAKINUMAB)",
+      "primary_icd10": "E85.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.canakinumab_fmf_anakinra_failure_switch"
+    },
+    {
+      "drug_name": "ILARIS 150 MG (KANAKINUMAB)",
+      "primary_icd10": "E85.0",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.canakinumab_fmf_anakinra_failure_switch"
+    },
+    {
+      "drug_name": "KINERET 100 MG (ANAKINRA)",
+      "primary_icd10": "E85.0",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber"
+    },
+    {
+      "drug_name": "ILARIS 150 MG (KANAKINUMAB)",
+      "primary_icd10": "E85.0",
+      "report_present": true,
+      "prescriber_specialty": "nefroloji",
+      "report_duration_months": 12,
+      "expect_violation": null,
+      "rule_id": "4.2.1.anakinra_canakinumab_fmf_amyloidosis_colchicine"
+    }
+  ]
+}

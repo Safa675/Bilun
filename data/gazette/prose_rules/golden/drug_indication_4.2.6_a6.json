@@ -1,0 +1,79 @@
+{
+  "samples": [
+    {
+      "drug_name": "GENOTROPIN 5.3 MG (SOMATROPIN)",
+      "primary_icd10": "E23.0",
+      "report_present": false,
+      "prescriber_specialty": "endokrinoloji",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.6.adult_somatropin_board_report"
+    },
+    {
+      "drug_name": "GENOTROPIN 5.3 MG (SOMATROPIN)",
+      "primary_icd10": "E23.0",
+      "report_present": true,
+      "prescriber_specialty": "endokrinoloji",
+      "report_duration_months": 12,
+      "expect_violation": null,
+      "rule_id": "4.2.6.adult_somatropin_board_report"
+    },
+    {
+      "drug_name": "GENOTROPIN 5.3 MG (SOMATROPIN)",
+      "primary_icd10": "E23.0",
+      "report_present": true,
+      "prescriber_specialty": "ortopedi ve travmatoloji",
+      "report_duration_months": 12,
+      "expect_violation": "prescriber_specialty_mismatch",
+      "rule_id": "4.2.6.adult_somatropin_board_report"
+    },
+    {
+      "drug_name": "GENOTROPIN 5.3 MG (SOMATROPIN)",
+      "primary_icd10": "J45.9",
+      "report_present": true,
+      "prescriber_specialty": "endokrinoloji",
+      "report_duration_months": 12,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.6.adult_somatropin_board_report"
+    },
+    {
+      "drug_name": "NORDITROPIN 10 MG (SOMATROPIN)",
+      "primary_icd10": "Q96.9",
+      "report_present": false,
+      "prescriber_specialty": "çocuk endokrinoloji",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.6.turner_somatropin_pediatric_board"
+    },
+    {
+      "drug_name": "NORDITROPIN 10 MG (SOMATROPIN)",
+      "primary_icd10": "Q96.9",
+      "report_present": true,
+      "prescriber_specialty": "çocuk endokrinoloji",
+      "report_duration_months": 12,
+      "expect_violation": null,
+      "rule_id": "4.2.6.turner_somatropin_pediatric_board"
+    },
+    {
+      "drug_name": "INCRELEX 10 MG/ML (MECASERMIN)",
+      "primary_icd10": "E34.31",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.6.laron_mecasermin_continuation_board"
+    },
+    {
+      "drug_name": "INCRELEX 10 MG/ML (MECASERMIN)",
+      "primary_icd10": "E34.31",
+      "report_present": true,
+      "report_duration_months": 12,
+      "expect_violation": null,
+      "rule_id": "4.2.6.laron_mecasermin_continuation_board"
+    },
+    {
+      "drug_name": "INCRELEX 10 MG/ML (MECASERMIN)",
+      "primary_icd10": "E34.31",
+      "report_present": true,
+      "report_duration_months": null,
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.6.laron_mecasermin_continuation_board"
+    }
+  ]
+}

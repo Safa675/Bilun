@@ -1,0 +1,58 @@
+{
+  "samples": [
+    {
+      "drug_name": "COSENTYX 150 MG (SEKUKINUMAB)",
+      "primary_icd10": "L40.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.sekukinumab_psoriasis_pasi_systemic_failure"
+    },
+    {
+      "drug_name": "COSENTYX 150 MG (SEKUKINUMAB)",
+      "primary_icd10": "L40.0",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.1.sekukinumab_psoriasis_pasi_systemic_failure"
+    },
+    {
+      "drug_name": "COSENTYX 150 MG (SEKUKINUMAB)",
+      "primary_icd10": "L40.5",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.1.sekukinumab_psa_second_line"
+    },
+    {
+      "drug_name": "COSENTYX 150 MG (SEKUKINUMAB)",
+      "primary_icd10": "L73.2",
+      "report_present": true,
+      "report_duration_months": 4,
+      "expect_violation": null,
+      "rule_id": "4.2.1.sekukinumab_hs_adalimumab_failure"
+    },
+    {
+      "drug_name": "OTEZLA 30 MG (APREMILAST)",
+      "primary_icd10": "L40.5",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.apremilast_psa_dmard_second_line"
+    },
+    {
+      "drug_name": "OTEZLA 30 MG (APREMILAST)",
+      "primary_icd10": "L40.5",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.apremilast_psa_dmard_second_line"
+    },
+    {
+      "drug_name": "OTEZLA 30 MG (APREMILAST)",
+      "primary_icd10": "L40.0",
+      "report_present": true,
+      "prescriber_specialty": "dermatoloji",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.apremilast_psoriasis_dermatology_board"
+    }
+  ]
+}

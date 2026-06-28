@@ -1,0 +1,115 @@
+{
+  "samples": [
+    {
+      "drug_name": "EPREX 4000 IU (EPOETIN ALFA)",
+      "primary_icd10": "N18.5",
+      "report_present": false,
+      "report_duration_months": null,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.9.esa_legacy_muadil_monthly_report"
+    },
+    {
+      "drug_name": "EPREX 4000 IU (EPOETIN ALFA)",
+      "primary_icd10": "N18.5",
+      "report_present": true,
+      "prescriber_specialty": "nefroloji",
+      "report_duration_months": 1,
+      "expect_violation": null,
+      "rule_id": "4.2.9.esa_legacy_muadil_monthly_report"
+    },
+    {
+      "drug_name": "EPREX 4000 IU (EPOETIN ALFA)",
+      "primary_icd10": "N18.5",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": "report_duration_mismatch",
+      "rule_id": "4.2.9.esa_legacy_muadil_monthly_report"
+    },
+    {
+      "drug_name": "BINOCRIT 4000 IU (EPOETIN ALFA)",
+      "primary_icd10": "N18.4",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.9.esa_ckd_iron_hb_nephrology_report"
+    },
+    {
+      "drug_name": "BINOCRIT 4000 IU (EPOETIN ALFA)",
+      "primary_icd10": "N18.4",
+      "report_present": true,
+      "prescriber_specialty": "nefroloji",
+      "report_duration_months": 1,
+      "expect_violation": null,
+      "rule_id": "4.2.9.esa_ckd_iron_hb_nephrology_report"
+    },
+    {
+      "drug_name": "ARANESP 40 MCG (DARBEPETIN)",
+      "primary_icd10": "N18.5",
+      "report_present": true,
+      "prescriber_specialty": "diyaliz",
+      "expect_violation": null,
+      "rule_id": "4.2.9.esa_ckd_legacy_nephrology_prescriber"
+    },
+    {
+      "drug_name": "ARANESP 40 MCG (DARBEPETIN)",
+      "primary_icd10": "N18.5",
+      "report_present": true,
+      "prescriber_specialty": "kardiyoloji",
+      "expect_violation": "prescriber_specialty_mismatch",
+      "rule_id": "4.2.9.esa_ckd_legacy_nephrology_prescriber"
+    },
+    {
+      "drug_name": "EVRENZO 70 MG (ROKSADUSTAT)",
+      "primary_icd10": "N18.5",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.9.roksadustat_esa_switch_dialysis_report"
+    },
+    {
+      "drug_name": "EVRENZO 70 MG (ROKSADUSTAT)",
+      "primary_icd10": "N18.5",
+      "report_present": true,
+      "prescriber_specialty": "nefroloji",
+      "report_duration_months": 1,
+      "expect_violation": null,
+      "rule_id": "4.2.9.roksadustat_esa_switch_dialysis_report"
+    },
+    {
+      "drug_name": "BINOCRIT 4000 IU (EPOETIN ALFA)",
+      "primary_icd10": "D46.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.9.mds_esa_initiation_hematology_report"
+    },
+    {
+      "drug_name": "BINOCRIT 4000 IU (EPOETIN ALFA)",
+      "primary_icd10": "D46.9",
+      "report_present": true,
+      "prescriber_specialty": "hematoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.9.mds_esa_initiation_hematology_report"
+    },
+    {
+      "drug_name": "ZEMPLAR 2 MCG (PARIKALSITOL)",
+      "primary_icd10": "N18.5",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.9.paricalcitol_oral_pd_nephrology_report"
+    },
+    {
+      "drug_name": "ZEMPLAR 2 MCG (PARIKALSITOL)",
+      "primary_icd10": "N18.5",
+      "report_present": true,
+      "prescriber_specialty": "nefroloji",
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.9.paricalcitol_oral_pd_nephrology_report"
+    },
+    {
+      "drug_name": "ZEMPLAR 2 MCG (PARIKALSITOL)",
+      "primary_icd10": "E21.0",
+      "report_present": true,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.9.paricalcitol_oral_pd_nephrology_report"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "samples": [
+    {
+      "drug_name": "ARAVA 20 MG (LEFLUNOMID)",
+      "primary_icd10": "M06.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.leflunomid_ra_psa_report"
+    },
+    {
+      "drug_name": "ARAVA 20 MG (LEFLUNOMID)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.leflunomid_ra_psa_report"
+    },
+    {
+      "drug_name": "ARAVA 20 MG (LEFLUNOMID)",
+      "primary_icd10": "J45.9",
+      "report_present": true,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.1.leflunomid_ra_psa_report"
+    },
+    {
+      "drug_name": "HUMIRA 40 MG (ADALIMUMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.anti_tnf_prescriber_board"
+    },
+    {
+      "drug_name": "HUMIRA 40 MG (ADALIMUMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.anti_tnf_prescriber_board"
+    },
+    {
+      "drug_name": "REMICADE 100 MG (INFLIKSIMAB)",
+      "primary_icd10": "M45.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.anti_tnf_axial_as_board"
+    },
+    {
+      "drug_name": "REMICADE 100 MG (INFLIKSIMAB)",
+      "primary_icd10": "M45.9",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.anti_tnf_axial_as_board"
+    },
+    {
+      "drug_name": "HUMIRA 40 MG (ADALIMUMAB)",
+      "primary_icd10": "K50.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.adalimumab_crohn_adult_board"
+    },
+    {
+      "drug_name": "HUMIRA 40 MG (ADALIMUMAB)",
+      "primary_icd10": "K50.9",
+      "report_present": true,
+      "report_duration_months": 4,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.adalimumab_crohn_adult_board"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "report_duration_months": null,
+      "expect_violation": "needs_report_verification",
+      "rule_id": "4.2.1.tocilizumab_ra_board"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "report_duration_months": 3,
+      "prescriber_specialty": "romatoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.tocilizumab_ra_board"
+    },
+    {
+      "drug_name": "XELJANZ 5 MG (TOFACITINIB)",
+      "primary_icd10": "M45.9",
+      "report_present": true,
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.tofacitinib_axial_as_board"
+    },
+    {
+      "drug_name": "ENTYVIO 300 MG (VEDOLIZUMAB)",
+      "primary_icd10": "K51.9",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.vedolizumab_uc_report"
+    },
+    {
+      "drug_name": "ENTYVIO 300 MG (VEDOLIZUMAB)",
+      "primary_icd10": "K51.9",
+      "report_present": true,
+      "report_duration_months": 6,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.1.vedolizumab_uc_report"
+    }
+  ]
+}

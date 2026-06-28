@@ -1,0 +1,87 @@
+{
+  "samples": [
+    {
+      "drug_name": "PLAVIX 75 MG (KLOPIDOGREL)",
+      "primary_icd10": "Z95.1",
+      "report_present": false,
+      "prescriber_specialty": "kardiyoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.15.clopidogrel_stent_no_report"
+    },
+    {
+      "drug_name": "PLAVIX 75 MG (KLOPIDOGREL)",
+      "primary_icd10": "Z95.1",
+      "report_present": false,
+      "prescriber_specialty": "ortopedi ve travmatoloji",
+      "expect_violation": "prescriber_specialty_mismatch",
+      "rule_id": "4.2.15.clopidogrel_stent_no_report"
+    },
+    {
+      "drug_name": "PLAVIX 75 MG (KLOPIDOGREL)",
+      "primary_icd10": "J45.9",
+      "report_present": false,
+      "prescriber_specialty": "kardiyoloji",
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.15.clopidogrel_stent_no_report"
+    },
+    {
+      "drug_name": "PLAVIX 75 MG (KLOPIDOGREL)",
+      "primary_icd10": "I21.9",
+      "report_present": false,
+      "prescriber_specialty": "acil tıp",
+      "expect_violation": null,
+      "rule_id": "4.2.15.clopidogrel_acs_no_report_acute"
+    },
+    {
+      "drug_name": "PLAVIX 75 MG (KLOPIDOGREL)",
+      "primary_icd10": "Z95.2",
+      "report_present": false,
+      "prescriber_specialty": "kardiyoloji",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.15.clopidogrel_valve_cad_report"
+    },
+    {
+      "drug_name": "PLAVIX 75 MG (KLOPIDOGREL)",
+      "primary_icd10": "Z95.2",
+      "report_present": true,
+      "report_duration_months": 12,
+      "prescriber_specialty": "kardiyoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.15.clopidogrel_valve_cad_report"
+    },
+    {
+      "drug_name": "RANEXA 500 MG (RANOLAZIN)",
+      "primary_icd10": "I20.9",
+      "report_present": false,
+      "prescriber_specialty": "kardiyoloji",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.15.ranolazin_stable_angina_board"
+    },
+    {
+      "drug_name": "RANEXA 500 MG (RANOLAZIN)",
+      "primary_icd10": "I20.9",
+      "report_present": true,
+      "report_duration_months": 12,
+      "prescriber_specialty": "kardiyoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.15.ranolazin_stable_angina_board"
+    },
+    {
+      "drug_name": "PRADAXA 110 MG (DABIGATRAN)",
+      "primary_icd10": "I25.1",
+      "report_present": false,
+      "prescriber_specialty": "kardiyoloji",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.15.dabigatran_cardiology_board"
+    },
+    {
+      "drug_name": "PRADAXA 110 MG (DABIGATRAN)",
+      "primary_icd10": "I25.1",
+      "report_present": true,
+      "report_duration_months": 12,
+      "prescriber_specialty": "kardiyoloji",
+      "expect_violation": null,
+      "rule_id": "4.2.15.dabigatran_cardiology_board"
+    }
+  ]
+}

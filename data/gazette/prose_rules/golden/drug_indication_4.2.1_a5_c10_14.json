@@ -1,0 +1,46 @@
+{
+  "samples": [
+    {
+      "drug_name": "TALTZ 80 MG (IXEKIZUMAB)",
+      "primary_icd10": "L40.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.ixekizumab_psoriasis_pasi_systemic_failure"
+    },
+    {
+      "drug_name": "TALTZ 80 MG (IXEKIZUMAB)",
+      "primary_icd10": "L40.0",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.1.ixekizumab_psoriasis_pasi_systemic_failure"
+    },
+    {
+      "drug_name": "TALTZ 80 MG (IXEKIZUMAB)",
+      "primary_icd10": "L40.5",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.1.ixekizumab_psa_second_line"
+    },
+    {
+      "drug_name": "TREMFYA 100 MG (GUSELKUMAB)",
+      "primary_icd10": "L40.0",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.1.guselkumab_psoriasis_pasi_systemic_failure"
+    },
+    {
+      "drug_name": "SKYRIZI 150 MG (RISANKIZUMAB)",
+      "primary_icd10": "L40.0",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.1.risankizumab_psoriasis_pasi_systemic_failure"
+    },
+    {
+      "drug_name": "BIMZELX 160 MG (BIMEKIZUMAB)",
+      "primary_icd10": "L40.0",
+      "report_present": true,
+      "expect_violation": null,
+      "rule_id": "4.2.1.bimekizumab_psoriasis_pasi_systemic_failure"
+    }
+  ]
+}

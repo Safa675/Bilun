@@ -1,0 +1,139 @@
+"""Golden tests for §4.2.9 ESA / §4.2.27 coagulation A6 pilot rules."""
+
+from __future__ import annotations
+
+import json
+from datetime import date
+from decimal import Decimal
+from pathlib import Path
+
+import pytest
+
+from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
+from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
+
+pytestmark = pytest.mark.unit
+
+_REPO = Path(__file__).resolve().parents[4]
+_GOLDEN = _REPO / "data/gazette/prose_rules/golden/drug_indication_4.2.9_4.2.27_a6.json"
+_BATCH_RULES_PATH = _REPO / "scripts/sut/prose/drug_indication_4209_4227_batch_rules.py"
+
+
+def _claim(*, primary_icd10: str) -> ClaimHeader:
+    return ClaimHeader(
+        claim_id="C-A6",
+        patient_id="P1",
+        episode_id="E1",
+        claim_type="ayakta",
+        facility_tier="3",
+        provider_type="kamu",
+        department="hematoloji",
+        admission_date=date(2026, 1, 1),
+        discharge_date=date(2026, 1, 1),
+        claim_start_date=date(2026, 1, 1),
+        claim_end_date=date(2026, 1, 1),
+        primary_icd10=primary_icd10,
+        package_candidate=False,
+        expected_total_billed_try=Decimal("0"),
+        expected_total_payable_try=Decimal("0"),
+        expected_denial_reason="",
+        scenario_tag="test-4209-4227",
+    )
+
+
+def _drug_line(
+    *,
+    drug_name: str,
+    report_present: bool | None,
+    report_duration_months: int | None = None,
+    prescriber_specialty: str | None = None,
+) -> DrugClaimLine:
+    return DrugClaimLine(
+        drug_claim_line_id="D-A6",
+        prescription_id="RX-A6",
+        claim_id="C-A6",
+        patient_id="P1",
+        episode_id="E1",
+        drug_claim_date=date(2026, 1, 2),
+        drug_name=drug_name,
+        drug_code="",
+        barkod="",
+        equivalence_group="",
+        quantity=1,
+        unit_price_try=Decimal("1000"),
+        billed_amount_try=Decimal("1000"),
+        expected_payable_try=Decimal("720"),
+        discount_tier_expected=Decimal("0.28"),
+        denial_reason_expected="",
+        rule_trace_expected="",
+        drug_specialty_board_report_present=report_present,
+        drug_report_duration_months=report_duration_months,
+        prescriber_specialty=prescriber_specialty,
+    )
+
+
+@pytest.fixture(scope="module")
+def a6_rules() -> list[dict]:
+    from scripts.sut.prose.drug_indication_4209_4227_batch_rules import BATCH_A6_RULES
+
+    return BATCH_A6_RULES
+
+
+def test_a6_rule_count(a6_rules: list[dict]) -> None:
+    assert len(a6_rules) == 14
+
+
+def test_a6_gate_b_sources_cover_tier_a(a6_rules: list[dict]) -> None:
+    sources: set[str] = set()
+    for rule in a6_rules:
+        sources.update(rule.get("gate_b_sources") or [])
+    expected = {
+        "C004127",
+        "C004128",
+        "C004130",
+        "C004131",
+        "C004135",
+        "C004137",
+        "C004200",
+        "C006227",
+        "C006228",
+        "C006230",
+        "C006232",
+        "C006233",
+        "C006239",
+        "C006246",
+        "C006247",
+        "C006249",
+        "C006250",
+        "C006255",
+        "C006267",
+        "C006268",
+    }
+    assert sources == expected
+
+
+@pytest.mark.parametrize(
+    ("sample",),
+    [(s,) for s in json.loads(_GOLDEN.read_text(encoding="utf-8"))["samples"]],
+)
+def test_a6_golden_samples(sample: dict, a6_rules: list[dict]) -> None:
+    rule_id = sample["rule_id"]
+    rule = next(r for r in a6_rules if r["rule_id"] == rule_id)
+    hit = evaluate_drug_indication_line(
+        drug_line=_drug_line(
+            drug_name=sample["drug_name"],
+            report_present=sample.get("report_present"),
+            report_duration_months=sample.get("report_duration_months"),
+            prescriber_specialty=sample.get("prescriber_specialty"),
+        ),
+        claim=_claim(primary_icd10=sample["primary_icd10"]),
+        diagnoses=(),
+        rules=[rule],
+    )
+    expected = sample.get("expect_violation")
+    if expected is None:
+        assert hit is None
+    else:
+        assert hit is not None
+        assert hit["violation_kind"] == expected
+        assert hit["rule_id"] == sample["rule_id"]

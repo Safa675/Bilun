@@ -1,0 +1,93 @@
+{
+  "samples": [
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M08.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.tocilizumab_jia_c5_prior_therapy_failure"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M08.0",
+      "report_present": true,
+      "prescriber_specialty": "çocuk romatoloji",
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.tocilizumab_jia_c5_prior_therapy_failure"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M08.1",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.tocilizumab_jia_c5_acr30_continuation"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M08.1",
+      "report_present": true,
+      "prescriber_specialty": "çocuk sağlığı",
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.tocilizumab_jia_c5_acr30_continuation"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M08.2",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.tocilizumab_jia_c5_acr50_continuation"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M08.2",
+      "report_present": true,
+      "prescriber_specialty": "çocuk romatoloji",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.tocilizumab_jia_c5_acr50_continuation"
+    },
+    {
+      "drug_name": "ACTEMRA 200 MG (TOSILIZUMAB)",
+      "primary_icd10": "M06.9",
+      "report_present": true,
+      "prescriber_specialty": "çocuk romatoloji",
+      "report_duration_months": 6,
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.1.tocilizumab_jia_c5_acr50_continuation"
+    },
+    {
+      "drug_name": "ACTEMRA 162 MG (TOSILIZUMAB)",
+      "primary_icd10": "M31.6",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.tocilizumab_dha_sc_initiation"
+    },
+    {
+      "drug_name": "ACTEMRA 162 MG (TOSILIZUMAB)",
+      "primary_icd10": "M31.6",
+      "report_present": true,
+      "prescriber_specialty": "romatoloji",
+      "report_duration_months": 3,
+      "expect_violation": null,
+      "rule_id": "4.2.1.tocilizumab_dha_sc_initiation"
+    },
+    {
+      "drug_name": "ACTEMRA 162 MG (TOSILIZUMAB)",
+      "primary_icd10": "M31.6",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.1.tocilizumab_dha_sc_efficacy_continuation"
+    },
+    {
+      "drug_name": "ACTEMRA 162 MG (TOSILIZUMAB)",
+      "primary_icd10": "M31.6",
+      "report_present": true,
+      "prescriber_specialty": "klinik immunoloji",
+      "report_duration_months": 6,
+      "expect_violation": null,
+      "rule_id": "4.2.1.tocilizumab_dha_sc_efficacy_continuation"
+    }
+  ]
+}

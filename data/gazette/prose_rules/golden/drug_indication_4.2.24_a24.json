@@ -1,0 +1,76 @@
+{
+  "samples": [
+    {
+      "drug_name": "SERETIDE 250 DISKUS (SALMETEROL+FLUTIKAZON)",
+      "primary_icd10": "J45.9",
+      "report_present": false,
+      "prescriber_specialty": "göğüs hastalıkları",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.24.formeterol_salmeterol_prescriber"
+    },
+    {
+      "drug_name": "SERETIDE 250 DISKUS (SALMETEROL+FLUTIKAZON)",
+      "primary_icd10": "J45.9",
+      "report_present": true,
+      "prescriber_specialty": "göğüs hastalıkları",
+      "expect_violation": null,
+      "rule_id": "4.2.24.formeterol_salmeterol_prescriber"
+    },
+    {
+      "drug_name": "SERETIDE 250 DISKUS (SALMETEROL+FLUTIKAZON)",
+      "primary_icd10": "J45.9",
+      "report_present": true,
+      "prescriber_specialty": "ortopedi ve travmatoloji",
+      "expect_violation": "prescriber_specialty_mismatch",
+      "rule_id": "4.2.24.formeterol_salmeterol_prescriber"
+    },
+    {
+      "drug_name": "SINGULAIR 10 MG (MONTELUKAST)",
+      "primary_icd10": "J45.0",
+      "report_present": false,
+      "prescriber_specialty": "alerji",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.24.montelukast_prescriber_report"
+    },
+    {
+      "drug_name": "SINGULAIR 10 MG (MONTELUKAST)",
+      "primary_icd10": "J45.0",
+      "report_present": true,
+      "prescriber_specialty": "alerji",
+      "expect_violation": null,
+      "rule_id": "4.2.24.montelukast_prescriber_report"
+    },
+    {
+      "drug_name": "NUCALA 100 MG (MEPOLIZUMAB)",
+      "primary_icd10": "J45.5",
+      "report_present": false,
+      "prescriber_specialty": "göğüs hastalıkları",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.24.biologic_tertiary_board"
+    },
+    {
+      "drug_name": "NUCALA 100 MG (MEPOLIZUMAB)",
+      "primary_icd10": "J45.5",
+      "report_present": true,
+      "prescriber_specialty": "göğüs hastalıkları",
+      "expect_violation": null,
+      "rule_id": "4.2.24.biologic_tertiary_board"
+    },
+    {
+      "drug_name": "AVAMYS 27.5 MCG (FLUTIKAZON)",
+      "primary_icd10": "J30.4",
+      "report_present": false,
+      "prescriber_specialty": "çocuk sağlığı",
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.24.nasal_cs_pediatric_prescriber"
+    },
+    {
+      "drug_name": "AVAMYS 27.5 MCG (FLUTIKAZON)",
+      "primary_icd10": "J30.4",
+      "report_present": true,
+      "prescriber_specialty": "çocuk sağlığı",
+      "expect_violation": null,
+      "rule_id": "4.2.24.nasal_cs_pediatric_prescriber"
+    }
+  ]
+}

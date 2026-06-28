@@ -1,0 +1,526 @@
+{
+  "manifest_version": "r5-a6-a2-v1",
+  "section_id": "4.2.6",
+  "effective_date": "2026-06-27",
+  "rules_in_json": 10,
+  "section_4.2.6_clause_total": 42,
+  "section_clause_total": 42,
+  "encoded_clause_count": 11,
+  "encoded_clause_ids": [
+    "C003941",
+    "C003956",
+    "C003957",
+    "C003966",
+    "C003982",
+    "C003998",
+    "C004003",
+    "C004016",
+    "C004030",
+    "C004033",
+    "C004039"
+  ],
+  "gate_b_sources_encoded": [
+    "C003941",
+    "C003956",
+    "C003957",
+    "C003966",
+    "C003982",
+    "C003998",
+    "C004003",
+    "C004016",
+    "C004030",
+    "C004033",
+    "C004039"
+  ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_clause_ids": [
+    "C003940",
+    "C003942",
+    "C003953",
+    "C003954",
+    "C003955",
+    "C003965",
+    "C003976",
+    "C003977",
+    "C003978",
+    "C003979",
+    "C003991",
+    "C003992",
+    "C003994",
+    "C003995",
+    "C003996",
+    "C003997",
+    "C004001",
+    "C004002",
+    "C004012",
+    "C004013",
+    "C004014",
+    "C004017",
+    "C004018",
+    "C004023",
+    "C004024",
+    "C004027",
+    "C004031",
+    "C004032",
+    "C004035",
+    "C004037",
+    "C004040"
+  ],
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 31,
+  "clause_traces": [
+    {
+      "clause_id": "C003940",
+      "section_id": "4.2.6.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.6.A - Büyüme hormonu bozuklukları",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003941",
+      "section_id": "4.2.6.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "buyume_hormonu",
+      "linked_rule_ids": [
+        "4.2.6.general_gh_age_group_board"
+      ]
+    },
+    {
+      "clause_id": "C003942",
+      "section_id": "4.2.6.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003953",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003954",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Boy sapması patolojik olan (yani -2",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003955",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003956",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "buyume_hormonu",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C003957",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "buyume_hormonu",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_gh_monitoring_board"
+      ]
+    },
+    {
+      "clause_id": "C003965",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.6.A-1 – Çocuklarda somatropin ve somatrogon kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003966",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "buyume_hormonu",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_somatropin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C003976",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003977",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003978",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Epifizlerin açık olması dışında başkaca şartlar aranmaksızın",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: mutation_panel. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003979",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003982",
+      "section_id": "4.2.6.A-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "buyume_hormonu",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_gh_renewal_board"
+      ]
+    },
+    {
+      "clause_id": "C003991",
+      "section_id": "4.2.6.A-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.6.A-2 – Erişkinlerde somatropin kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003992",
+      "section_id": "4.2.6.A-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003994",
+      "section_id": "4.2.6.A-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Çocukluk yaş grubunda büyüme hormonu eksikliği tanısı konulup",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003995",
+      "section_id": "4.2.6.A-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003996",
+      "section_id": "4.2.6.A-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003997",
+      "section_id": "4.2.6.A-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003998",
+      "section_id": "4.2.6.A-2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Büyüme hormonu",
+      "linked_rule_ids": [
+        "4.2.6.adult_somatropin_board_report"
+      ]
+    },
+    {
+      "clause_id": "C004001",
+      "section_id": "4.2.6.A-3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.6.A-3- Turner sendromunda",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004002",
+      "section_id": "4.2.6.A-3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.6.A-3- Turner sendromunda somatropin kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004003",
+      "section_id": "4.2.6.A-3",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Epifiz hatları açık olan",
+      "linked_rule_ids": [
+        "4.2.6.turner_somatropin_pediatric_board"
+      ]
+    },
+    {
+      "clause_id": "C004012",
+      "section_id": "4.2.6.A-4",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.6.A-4- Çocuklarda Prader-Willi Sendromunda (PWS) somatropin kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004013",
+      "section_id": "4.2.6.A-4",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004014",
+      "section_id": "4.2.6.A-4",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Serum IGF1 düzeyinin +2 SD altında olması ve",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004016",
+      "section_id": "4.2.6.A-4",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "buyume_hormonu",
+      "linked_rule_ids": [
+        "4.2.6.pws_somatropin_tertiary_board"
+      ]
+    },
+    {
+      "clause_id": "C004017",
+      "section_id": "4.2.6.A-4",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Büyüme hormonu infant ve çocuklarda 0",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004018",
+      "section_id": "4.2.6.A-4",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004023",
+      "section_id": "4.2.6.A-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004024",
+      "section_id": "4.2.6.A-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "KBY evresi evre III",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004027",
+      "section_id": "4.2.6.A-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004030",
+      "section_id": "4.2.6.A-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "buyume_hormonu",
+      "linked_rule_ids": [
+        "4.2.6.ckd_gh_nephro_endo_board"
+      ]
+    },
+    {
+      "clause_id": "C004031",
+      "section_id": "4.2.6.A-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Epifiz hatları kapandığında",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004032",
+      "section_id": "4.2.6.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.6.B - Laron Sendromu tanı kriterleri ve rhIGF-I (mecasermin) kullanım ilkeleri",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004033",
+      "section_id": "4.2.6.B",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "buyume_hormonu",
+      "linked_rule_ids": [
+        "4.2.6.laron_mecasermin_initiation_board"
+      ]
+    },
+    {
+      "clause_id": "C004035",
+      "section_id": "4.2.6.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004037",
+      "section_id": "4.2.6.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Büyüme hormonu tedavisinin yerine kullanılmaz.",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004039",
+      "section_id": "4.2.6.B-2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavi alan hastalar en az 3 aylık sürelerle izlenerek",
+      "linked_rule_ids": [
+        "4.2.6.laron_mecasermin_continuation_board"
+      ]
+    },
+    {
+      "clause_id": "C004040",
+      "section_id": "4.2.6.B-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Yenilenen raporlarda tedavi öncesi ve tedaviyle sağlanan büyüme hızı",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    }
+  ]
+}

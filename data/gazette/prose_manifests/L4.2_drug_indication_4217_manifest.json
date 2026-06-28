@@ -1,0 +1,404 @@
+{
+  "manifest_version": "r5-a3-v1",
+  "section_id": "4.2.17",
+  "effective_date": "2026-06-27",
+  "rules_in_json": 9,
+  "section_4.2.17_clause_total": 34,
+  "section_clause_total": 34,
+  "encoded_clause_count": 9,
+  "encoded_clause_ids": [
+    "C006019",
+    "C006025",
+    "C006026",
+    "C006027",
+    "C006031",
+    "C006039",
+    "C006040",
+    "C006041",
+    "C006053"
+  ],
+  "gate_b_sources_encoded": [
+    "C006019",
+    "C006025",
+    "C006026",
+    "C006027",
+    "C006031",
+    "C006039",
+    "C006040",
+    "C006041",
+    "C006053"
+  ],
+  "tier_a_pending_clause_ids": [
+    "C006018",
+    "C006028",
+    "C006033",
+    "C006035",
+    "C006044",
+    "C006051",
+    "C006054"
+  ],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_clause_ids": [
+    "C006015",
+    "C006016",
+    "C006020",
+    "C006021",
+    "C006022",
+    "C006023",
+    "C006024",
+    "C006030",
+    "C006034",
+    "C006036",
+    "C006037",
+    "C006042",
+    "C006045",
+    "C006046",
+    "C006048",
+    "C006050",
+    "C006052",
+    "C006055"
+  ],
+  "tier_a_pending_count": 7,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 18,
+  "clause_traces": [
+    {
+      "clause_id": "C006015",
+      "section_id": "4.2.17",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.17 - Osteoporoz",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006016",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.17.A – Osteoporoz",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006018",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "osteoporoz_ilac"
+    },
+    {
+      "clause_id": "C006019",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Osteoporozda ilaç tedavisi",
+      "linked_rule_ids": [
+        "4.2.17.bisphosphonate_specialist_report",
+        "4.2.17.osteoporosis_bmd_planning"
+      ]
+    },
+    {
+      "clause_id": "C006020",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006021",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006022",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006023",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Patolojik kırığı olmayan 65 yaş ve üzeri hastalarda",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006024",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Patolojik kırığı olmayan 65 yaş altı hastalarda",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006025",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Romatoid artrit",
+      "linked_rule_ids": [
+        "4.2.17.secondary_osteoporosis_steroid_board"
+      ]
+    },
+    {
+      "clause_id": "C006026",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Bifosfanatların",
+      "linked_rule_ids": [
+        "4.2.17.bisphosphonate_ho_no_bmd"
+      ]
+    },
+    {
+      "clause_id": "C006027",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Bifosfanat grubu ilaçlar",
+      "linked_rule_ids": [
+        "4.2.17.bisphosphonate_specialist_report"
+      ]
+    },
+    {
+      "clause_id": "C006028",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "osteoporoz_ilac"
+    },
+    {
+      "clause_id": "C006030",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Stronsiyum ranelat (kombinasyonları dahil)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006031",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Stronsiyum ranelat (kombinasyonları dahil)",
+      "linked_rule_ids": [
+        "4.2.17.strontium_raloxifene_bisph_fail"
+      ]
+    },
+    {
+      "clause_id": "C006033",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Denosumab"
+    },
+    {
+      "clause_id": "C006034",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Denosumab",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006035",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "osteoporoz_ilac"
+    },
+    {
+      "clause_id": "C006036",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006037",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006039",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "iç hastalıkları",
+      "linked_rule_ids": [
+        "4.2.17.denosumab_board_report"
+      ]
+    },
+    {
+      "clause_id": "C006040",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Kalsitonin",
+      "linked_rule_ids": [
+        "4.2.17.calcitonin_vertebral_fracture_report"
+      ]
+    },
+    {
+      "clause_id": "C006041",
+      "section_id": "4.2.17.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Kalsitonin",
+      "linked_rule_ids": [
+        "4.2.17.calcitonin_tertiary_bisph_fail"
+      ]
+    },
+    {
+      "clause_id": "C006042",
+      "section_id": "4.2.17.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006044",
+      "section_id": "4.2.17.B",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "osteoporoz_ilac"
+    },
+    {
+      "clause_id": "C006045",
+      "section_id": "4.2.17.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.17.C - Juvenil Osteoporoz",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006046",
+      "section_id": "4.2.17.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006048",
+      "section_id": "4.2.17.Ç",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006050",
+      "section_id": "4.2.17.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.17.D - Osteoporozda teriparatid kullanımı",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006051",
+      "section_id": "4.2.17.D",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "osteoporoz_ilac"
+    },
+    {
+      "clause_id": "C006052",
+      "section_id": "4.2.17.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.17.D - Osteoporozda teriparatid ve romosozumab kullanımı",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006053",
+      "section_id": "4.2.17.D",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "65 yaş üstü hastalardan",
+      "linked_rule_ids": [
+        "4.2.17.teriparatid_severe_osteoporosis_board"
+      ]
+    },
+    {
+      "clause_id": "C006054",
+      "section_id": "4.2.17.D",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "osteoporoz_ilac"
+    },
+    {
+      "clause_id": "C006055",
+      "section_id": "4.2.17.D",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    }
+  ]
+}

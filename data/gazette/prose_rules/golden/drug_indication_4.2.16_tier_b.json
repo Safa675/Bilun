@@ -1,0 +1,34 @@
+{
+  "samples": [
+    {
+      "drug_name": "OZEL FORMULLU UN PKU (AMINOASIT)",
+      "primary_icd10": "E70.0",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.protein_metabolism_specialist_prescriber"
+    },
+    {
+      "drug_name": "OZEL FORMULLU UN PKU (AMINOASIT)",
+      "primary_icd10": "E70.0",
+      "report_present": true,
+      "prescriber_specialty": "metabolizma hastalıkları",
+      "expect_violation": null,
+      "rule_id": "4.2.16.protein_metabolism_specialist_prescriber"
+    },
+    {
+      "drug_name": "ORGANIK ASIDEMI OZEL FORMUL UN",
+      "primary_icd10": "E71.3",
+      "report_present": false,
+      "expect_violation": "missing_board_report",
+      "rule_id": "4.2.16.protein_metabolism_formula_diet_report"
+    },
+    {
+      "drug_name": "ORGANIK ASIDEMI OZEL FORMUL UN",
+      "primary_icd10": "E71.3",
+      "report_present": true,
+      "prescriber_specialty": "gastroenteroloji",
+      "expect_violation": null,
+      "rule_id": "4.2.16.protein_metabolism_formula_diet_report"
+    }
+  ]
+}
