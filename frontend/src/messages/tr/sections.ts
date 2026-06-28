@@ -76,6 +76,7 @@ const sections = {
       partialEngineManifestTraced: "Bildirimle izlenen hüküm ID",
       partialEngineTierCDeferred: "C kademesi ertelenmiş (bildirim)",
       partialEngineKdvClauses: "KDV fiyat maddeleri (§3.1.1(12))",
+      partialEngineSubsections: "§4.2 alt bölüm kodlama %",
     },
     tabs: {
       rules: "Kurallar",

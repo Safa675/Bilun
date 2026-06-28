@@ -494,6 +494,10 @@ export interface CopayOptimization extends ExactnessState {
   is_exempt: boolean;
   exemption_disease: string;
   exemption_range: string;
+  exemption_sources?: ExemptionSource[];
+  categories_not_evaluated?: ExemptionCategoryGap[];
+  primary_exemption_category?: string | null;
+  copay_primary_outcome?: "exempt" | "partial_exempt" | "rate_capped" | "none";
   /** Exemption gap benefits patient katılım waiver and SGK payable correction. */
   savings_beneficiary?: "patient_and_sgk";
   gap_kind?: "exemption_correction";

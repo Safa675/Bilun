@@ -546,6 +546,18 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
               {copayData.exemption_disease} ({copayData.exemption_range})
             </span>
           )}
+          {copayData.exemption_sources && copayData.exemption_sources.length > 0 && (
+            <ExemptionBasisChips
+              copay={{
+                exempt: copayData.is_exempt,
+                n_qualifying: 0,
+                qualifying_diagnoses: [],
+                exemption_sources: copayData.exemption_sources,
+                primary_exemption_category: copayData.primary_exemption_category,
+              }}
+              max={3}
+            />
+          )}
           {claimScopedChips.length > 0 ? (
             <EkAnnexChips labels={claimScopedChips} />
           ) : (

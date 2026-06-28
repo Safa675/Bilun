@@ -359,11 +359,15 @@ function GapCompositionBanner({ summary }: { summary: CoverageSummary }) {
 function PartialEnginePanel({
   engine,
   showTierC,
+  showSubsections,
 }: {
   engine: PartialEngineCoverage;
   showTierC?: boolean;
+  showSubsections?: boolean;
 }) {
   const t = useT();
+  const subsections = showSubsections ? engine.subsection_coverage : undefined;
+  const subsectionKeys = subsections ? Object.keys(subsections).sort() : [];
 
   return (
     <Surface variant="base" padding="sm" className="space-y-3 border border-[var(--border-subtle)]">
@@ -411,6 +415,30 @@ function PartialEnginePanel({
           />
         )}
       </div>
+      {subsectionKeys.length > 0 && (
+        <div className="space-y-1.5 border-t border-[var(--border-subtle)] pt-2">
+          <Eyebrow tone="primary">
+            {t("sections.ruleDatabase.coverage.partialEngineSubsections")}
+          </Eyebrow>
+          <div className="space-y-1">
+            {subsectionKeys.map((sectionKey) => {
+              const row = subsections![sectionKey];
+              return (
+                <div
+                  key={sectionKey}
+                  className="flex items-center justify-between text-xs text-[var(--text-secondary)]"
+                >
+                  <span className="font-mono">§{sectionKey}</span>
+                  <span className="tabular-nums">
+                    {fmtNum(row.encoded_clause_count)}/{fmtNum(row.clause_total)} (
+                    {row.encoded_clause_pct}%)
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </Surface>
   );
 }
@@ -523,7 +551,9 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
       {partialEngines &&
         (partialEngines.drug_indication_prose ||
           partialEngines.material_bundling_prose ||
-          partialEngines.specialty_materials_prose) && (
+          partialEngines.specialty_materials_prose ||
+          partialEngines.payment_method_2_2 ||
+          partialEngines.copay_general_1_8) && (
         <div className="space-y-3 border-t border-[var(--border-subtle)] pt-3">
           <Eyebrow tone="primary">
             {t("sections.ruleDatabase.coverage.partialEnginesTitle")}
@@ -533,6 +563,7 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
               <PartialEnginePanel
                 engine={partialEngines.drug_indication_prose}
                 showTierC
+                showSubsections
               />
             )}
             {partialEngines.material_bundling_prose && (
@@ -540,6 +571,12 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
             )}
             {partialEngines.specialty_materials_prose && (
               <PartialEnginePanel engine={partialEngines.specialty_materials_prose} />
+            )}
+            {partialEngines.payment_method_2_2 && (
+              <PartialEnginePanel engine={partialEngines.payment_method_2_2} />
+            )}
+            {partialEngines.copay_general_1_8 && (
+              <PartialEnginePanel engine={partialEngines.copay_general_1_8} />
             )}
           </div>
         </div>

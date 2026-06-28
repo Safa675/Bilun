@@ -160,7 +160,7 @@ const optimizer = {
     procedureAddonPatients: "Missing add-on patients",
     captureGapTotal: "Procedure capture gap (EMR)",
     packageAdequacyReviewTotal: "Package adequacy review",
-    gazetteRepricingTotal: "Gazette repricing (prospective)",
+    gazetteRepricingTotal: "Gazette price review (prospective)",
     medulaPlaybookEntries: "MEDULA playbook entries",
     patientsInCohort: "Patients in Cohort",
     cohortSizeUntilInputs: "Cohort size only until exact inputs land",
@@ -204,7 +204,7 @@ const optimizer = {
     strategy: "Strategy uplift",
     capture_gap: "Procedure capture gap",
     package_adequacy_review: "Package adequacy review",
-    gazette_repricing: "Gazette repricing",
+    gazette_repricing: "Gazette price review",
     medula_playbook: "MEDULA playbook",
   },
   tables: {

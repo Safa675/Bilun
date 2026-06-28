@@ -76,6 +76,7 @@ const sections = {
       partialEngineManifestTraced: "Manifest traced clause IDs",
       partialEngineTierCDeferred: "Tier C deferred (manifest)",
       partialEngineKdvClauses: "KDV pricing clauses (§3.1.1(12))",
+      partialEngineSubsections: "§4.2 subsection encoded %",
     },
     tabs: {
       rules: "Rules",

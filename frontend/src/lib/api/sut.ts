@@ -585,6 +585,10 @@ export interface PartialEngineCoverage {
   corpus_export_rows?: number | null;
   kdv_pricing_clauses?: number | null;
   "section_4.2.14.C_clause_total"?: number;
+  subsection_coverage?: Record<
+    string,
+    { encoded_clause_count: number; clause_total: number; encoded_clause_pct: number }
+  >;
   honesty_note?: string;
 }
 
@@ -592,6 +596,8 @@ export interface PartialEnginesCoverage {
   drug_indication_prose?: PartialEngineCoverage;
   material_bundling_prose?: PartialEngineCoverage;
   specialty_materials_prose?: PartialEngineCoverage;
+  payment_method_2_2?: PartialEngineCoverage;
+  copay_general_1_8?: PartialEngineCoverage;
 }
 
 export interface GapCompositionSummary {
