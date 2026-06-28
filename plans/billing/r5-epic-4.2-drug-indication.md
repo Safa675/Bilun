@@ -5,7 +5,7 @@
 **Extends:** `plans/billing/drug-indication-4.2.14.C-expansion-plan.md` (Phase 0–5 largely **done**)  
 **Registry:** `drug_indication_prose` — `partial`  
 **Runtime:** `src/bilun/domain/prose_rules/drug_indication.py`, `claim_drug_indication.py`  
-**Artifact:** `data/gazette/prose_rules/drug_indication_prose.json` (**164 rules** on disk, 2026-06)
+**Artifact:** `data/gazette/prose_rules/drug_indication_prose.json` (**188 rules** on disk, 2026-06)
 
 ---
 
@@ -48,7 +48,7 @@ Close the **honest encode gap** for §4.2 beyond the completed 4.2.14.C Sprint 1
 - [x] Re-run Gate B export: `scripts/sut/prose/drug_indication_gate_b.py`
 - [x] Diff manifest vs `has_rule_encoding` — list clause IDs in manifest but not in coverage
 - [x] Segment unencoded §4.2 by `section_id` prefix (4.2.14.C vs rest)
-- [ ] Update `drug_indication_coverage_scope()` counters in fact-check note (A1+)
+- [x] Update `drug_indication_coverage_scope()` counters in fact-check note (A1+)
 
 **Deliverable:** CSV `data/gazette/prose_corpus/L4.2_drug_indication_gap_refresh.csv` with `encode_tier` column.
 
@@ -66,15 +66,16 @@ Priority: high deontic + high claim-line mention density (grep synthetic drug li
 
 | Batch | Section focus | Target JSON rules | Gate B script |
 |-------|---------------|------------------:|---------------|
-| A2a | 4.2.13.x biosimilar / substitution | 10–15 | extend gate_b export filter |
+| A2a | 4.2.13.x viral hepatitis tail (not biosimilar — corpus has no biyobenzer text) | 10–15 | `drug_indication_4213_a2a_batch_rules.py` |
 | A2b | 4.2.16 reporting | 8–12 | same |
 | A2c | 4.2.33 anti-VEGF (extend `anti_vegf_prose`) | 5–10 | link existing 21 rules |
+| A3 | 4.2.17 osteoporosis | 8–12 | `drug_indication_4217_gate_b.py` |
 
 Per batch:
 
-- [ ] `*_batch_rules.py` → merge script → `drug_indication_prose.json`
-- [ ] Append `gate_b_sources` per rule
-- [ ] Golden file + 2 tests per rule (pos/neg)
+- [x] `*_batch_rules.py` → merge script → `drug_indication_prose.json` (A2 + A3)
+- [x] Append `gate_b_sources` per rule
+- [x] Golden file + 2 tests per rule (pos/neg) — A3 golden in `drug_indication_4.2.17_a3.json`
 - [ ] 1 synthetic demo patient per batch (optional)
 
 ### Phase A3 — Matcher / schema (only if Tier B fields needed)
@@ -84,10 +85,11 @@ Per batch:
 
 ### Phase A4 — Coverage + graph wiring
 
-- [ ] Update / split manifest: `L4.2_drug_indication_full_manifest.json` OR extend existing manifest sections
-- [ ] `python scripts/sut/build_sut_coverage.py`
-- [ ] `python scripts/sut/build_rule_interaction_graph.py`
-- [ ] Rule Database: drug motor card shows **clause encoded %** separate from registry status
+- [x] Update / split manifest: `L4.2_drug_indication_4217_manifest.json` (+ existing manifests)
+- [x] `python scripts/sut/build_sut_coverage.py`
+- [x] `python scripts/sut/build_rule_interaction_graph.py`
+- [x] `drug_indication_coverage_scope()` exposes subsection encoded fractions (4.2.13/16/33/14.C/17/19)
+- [x] Rule Database: drug motor card shows **clause encoded %** separate from registry status (partial-engines panel + §4.2 subsection fractions)
 
 ---
 
@@ -105,8 +107,8 @@ Per batch:
 
 | Metric | Now | Epic target |
 |--------|----:|------------:|
-| JSON rules (drug_indication) | 164 | **≥200** |
-| §4.2 `has_rule_encoding` | 518 | **≥600** |
+| JSON rules (drug_indication) | 164 | **188** (target ≥200) |
+| §4.2 `has_rule_encoding` | 518 | **601** (target ≥600 ✓) |
 | Tier C traced (4.2.14.C) | ~750 | **828 (100%)** |
 | Synthetic demo patients (drug indication) | 4+ | **+3** for A2 batches |
 

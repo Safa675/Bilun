@@ -69,22 +69,25 @@ Target deontic clusters (84 rows on `payment_method_package` motor):
 | C2a | Paket vs kalem (2.2.2 core) | 3–5 |
 | C2b | Yatak / muayene / lab mix rules | 3–5 |
 | C2c | Tier override / facility tier | 2–4 |
+| C2d | Ayakta mix / evde sağlık / komorbidite (batch 3) | 5–8 |
 
-- [ ] Extend `payment_method_2_2.json` + schema if needed
-- [ ] Golden: `data/gazette/prose_rules/golden/payment_method_2_2.json`
-- [ ] Tests: `tests/unit/domain/prose_rules/test_payment_method.py` (create or extend)
+- [x] Extend `payment_method_2_2.json` + schema if needed
+- [x] Golden: `data/gazette/prose_rules/golden/payment_method_2_2_batch1.json` (+ batch2, batch3)
+- [x] Tests: `tests/unit/domain/prose_rules/test_payment_method.py` (create or extend)
+- [x] C2 batch 3: `payment_method_2_2_batch3_rules.py` + `merge_payment_method_batch3.py`
+- [x] C2 batch 4: `payment_method_2_2_batch4_rules.py` + `merge_payment_method_batch4.py` (13 rules → 42 JSON total)
 
 ### Phase C3 — Session pricing boundary (document)
 
-- [ ] Cross-ref `session_pricing_2_2_2_B.json` rules in manifest `related_rule_sets`
-- [ ] Fact-check L3.1 hemogram: §2.2.2.B gap explicitly **unimplemented** or partial encode
-- [ ] Do not merge session fraction into payment_method JSON without matcher design
+- [x] Cross-ref `session_pricing_2_2_2_B.json` rules in manifest `related_rule_sets`
+- [x] Fact-check L3.1 hemogram: §2.2.2.B gap explicitly **unimplemented** or partial encode
+- [x] Do not merge session fraction into payment_method JSON without matcher design
 
 ### Phase C4 — UX + fact-check
 
-- [ ] Rule Database payment_method motor: show encoded clause count
-- [ ] Update `fact_check_audit.py` L2.2 row with encode fraction
-- [ ] Coverage + graph regen
+- [x] Rule Database payment_method motor: show encoded clause count
+- [x] Update `fact_check_audit.py` L2.2 row with encode fraction
+- [x] Coverage + graph regen
 
 ---
 
@@ -101,8 +104,8 @@ Target deontic clusters (84 rows on `payment_method_package` motor):
 
 | Metric | Now | Target |
 |--------|----:|-------:|
-| §2.2 `has_rule_encoding` | 0 | **≥40** |
-| JSON rules (payment_method_2_2) | 5 | **≥15** |
+| §2.2 `has_rule_encoding` | 20 | **≥40** (49/148) |
+| JSON rules (payment_method_2_2) | 29 | **≥15** (42) |
 | Deontic unencoded §2.2 | 38 | **≤15** |
 | Synthetic accidental paket+DRG_MANDATORY mix | unknown | **0** (demo cohort) |
 

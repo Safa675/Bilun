@@ -30,6 +30,10 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+# LibreOffice lock files (created when a docx/xlsx is open)
+.~lock.*
+# Real hospital billing extracts — never commit (KVKK)
+raw data/Finans.XLSX
 
 # DuckDB / Data
 *.duckdb

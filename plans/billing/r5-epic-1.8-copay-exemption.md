@@ -82,16 +82,19 @@ Per category:
 
 ### Phase D3 — Prose expansion (1 week)
 
-- [ ] Add 6–10 JSON rules for remaining deontic §1.8 fıkra not covered by compositor modules
-- [ ] Golden: `golden/copay_general_1_8.json`
-- [ ] Tests: `tests/unit/domain/optimization/test_copay_exemptions.py` (extend)
+- [x] Add 6–10 JSON rules for remaining deontic §1.8 fıkra not covered by compositor modules
+- [x] Golden: `golden/copay_general_1_8_batch1.json` + `golden/copay_general_1_8_batch2.json`
+- [x] Tests: `tests/unit/domain/prose_rules/test_copay_general.py` (batch-1/2 golden)
+
+**D3 batch-2 (Phase 4):** +5 JSON traces — `1.8.5.(18).polis_akademisi` (C000372), `1.8.5.(19).harp_okulu` (C000373), `1.8.1.(6).farkli_kurum_artis` (C000312), `1.8.2.(3).enjektabl_kutu` (C000325), `1.8.3.(1).protez_ortez` (C000333). No §1.8 dialysis prose in corpus; organ nakli already encoded (C000364).
 
 ### Phase D4 — Product + metrics
 
-- [ ] Cohort cache: pass patient status + claim type into exemption check
-- [ ] Billing alerts: distinguish **exempt** vs **rate-capped** (EK-2C-1)
-- [ ] Rule Database §1.8 utilization chips reflect encode
-- [ ] Fact-check L2.1/L2.2 copay rows updated
+- [x] Cohort cache: pass patient status + claim type into exemption check
+- [x] Billing alerts: distinguish **exempt** vs **rate-capped** (EK-2C-1)
+- [x] Rule Database §1.8 utilization chips reflect encode (`copay_general_1_8` partial-engine panel)
+- [x] Fact-check L2.1/L2.2 copay rows updated
+- [x] Synthetic: demo patients 0034 (acil), 0035 (yesil_kart), 0036 (ek1a) + `validate_sut_synthetic_data.py` checks
 
 ---
 
@@ -108,10 +111,11 @@ Per category:
 
 | Metric | Now | Target |
 |--------|----:|-------:|
-| §1.8 `has_rule_encoding` | 0 | **≥25** |
-| JSON rules (copay_general_1_8) | 4 | **≥12** |
-| Exemption categories with tests | 1 (EK-1A) | **≥5** |
-| Synthetic demo patients (multi-category exempt) | ~EK-1A only | **≥3** scenarios |
+| §1.8 encoded (Gate B) | **30/103** | **≥30** |
+| motor_gap | 77 | **≤77** |
+| JSON rules (copay_general_1_8) | **17** | **≥12** |
+| Exemption categories with tests | 5+ | **≥5** |
+| Synthetic demo patients (multi-category exempt) | **3** (0034 acil, 0035 yesil_kart, 0036 ek1a) | **≥3** scenarios |
 
 ---
 

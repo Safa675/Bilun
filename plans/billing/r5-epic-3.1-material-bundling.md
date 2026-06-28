@@ -1,9 +1,10 @@
 # R5 Epic B — §3.1–3.2 Material bundling (long-tail Gate B)
 
 **Epic ID:** `R5-B`  
+**Status:** **Complete** (2026-06-27)  
 **Orchestration:** `plans/billing/r5-gate-b-parallel-index.md`  
 **Extends:** `plans/billing/material-bundling-prose-p2-plan.md` (Phase 1–8 **complete**, 59 JSON rules, 0 deferred)  
-**Registry:** `material_bundling_prose` — `implemented` (clause coverage **partial**)  
+**Registry:** `material_bundling_prose` — `implemented` (clause coverage **129/129 encoded**, gap **0**)  
 **Runtime:** `src/bilun/domain/prose_rules/material_bundling.py`  
 **Artifact:** `data/gazette/prose_rules/material_bundling_prose.json`
 
@@ -13,11 +14,11 @@
 
 Encode the **remaining §3.1–3.2 long tail** from Phase 8 corpus batch2 backlog (204-row export themes already traced in manifest headers) into executable JSON rules — without duplicating EK-3B-1/2 list engines or opening §3.3 specialty pricing (separate track).
 
-**Done looks like:** §3.1 motor-bound gap **~35 → ≤10**; manifest `gate_b_deferred_clause_ids` stays empty or explicitly justified.
+**Done looks like:** §3.1 motor-bound gap **~35 → 0**; manifest `gate_b_deferred_clause_ids` empty. **Achieved.**
 
 ---
 
-## Baseline
+## Baseline (R5 start)
 
 | Metric | Value |
 |--------|------:|
@@ -45,11 +46,11 @@ Encode the **remaining §3.1–3.2 long tail** from Phase 8 corpus batch2 backlo
 
 ### Phase B0 — Gap triage (0.5 day)
 
-- [ ] Filter coverage: §3.1–3.2, `material_bundling_prose`, `has_rule_encoding=false`, not `non_algorithmic`
-- [ ] Join with `L1.4_material_bundling_corpus_batch2.csv` — map each gap row to theme (`malzeme_general`, `ek3_list`, `faturalandirma`, …)
-- [ ] Mark rows: **encode now** vs **manifest header only** vs **duplicate of EK-3B-1/2**
+- [x] Filter coverage: §3.1–3.2, `material_bundling_prose`, `has_rule_encoding=false`, not `non_algorithmic`
+- [x] Join with `L1.4_material_bundling_corpus_batch2.csv` — map each gap row to theme (`malzeme_general`, `ek3_list`, `faturalandirma`, …)
+- [x] Mark rows: **encode now** vs **manifest header only** vs **duplicate of EK-3B-1/2**
 
-**Deliverable:** `data/gazette/prose_corpus/L1.4_material_bundling_r5_gap_triage.csv`
+**Deliverable:** `data/gazette/prose_corpus/L1.4_material_bundling_r5_gap_triage.csv` (0 rows — no motor-bound gaps remain)
 
 ### Phase B1 — Theme batches (1–2 weeks)
 
@@ -64,15 +65,15 @@ Process highest-signal themes first (deontic `MUST_NOT_BILL` / `NO_PAY`):
 
 Per batch (same pattern as P2 Phase 8):
 
-- [ ] Add rules in `material_bundling_*_batch_rules.py`
-- [ ] `scripts/sut/merge_material_bundling_prose.py`
-- [ ] Update `L1.4_material_bundling_encoded_manifest.json` `gate_b_sources`
-- [ ] Golden row in `golden/material_bundling_gate_b.json`
-- [ ] `test_material_bundling_golden.py`
+- [x] Add rules in `material_bundling_*_batch_rules.py`
+- [x] `scripts/sut/merge_material_bundling_prose.py`
+- [x] Update `L1.4_material_bundling_encoded_manifest.json` `gate_b_sources`
+- [x] Golden row in `golden/material_bundling_gate_b.json`
+- [x] `test_material_bundling_golden.py`
 
 ### Phase B2 — §3.3 specialty tail (optional, 1 week)
 
-If same agent continues:
+**Deferred** — out of Epic B scope; track `specialty_materials_prose` separately (29/32 encoded).
 
 - [ ] 3 unencoded `specialty_materials_prose` clauses → `specialty_materials_prose.json`
 - [ ] Manifest: `L4.4_specialty_materials_encoded_manifest.json` (create if missing)
@@ -80,10 +81,10 @@ If same agent continues:
 
 ### Phase B3 — Integration check
 
-- [ ] `validate_claim()` third pass still ordered correctly
-- [ ] `precheck_materials_from_claims()` — prose vs EK-3B-1 separation unchanged
-- [ ] MEDULA boundary doc: still **ADDITIVE**
-- [ ] Coverage regen + graph regen (orchestrator)
+- [x] `validate_claim()` third pass still ordered correctly
+- [x] `precheck_materials_from_claims()` — prose vs EK-3B-1 separation unchanged
+- [x] MEDULA boundary doc: still **ADDITIVE**
+- [x] Coverage regen + graph regen (orchestrator)
 
 ---
 
@@ -98,21 +99,47 @@ If same agent continues:
 
 ## Metrics targets
 
-| Metric | Now | Target |
-|--------|----:|-------:|
-| §3.1 encoded clauses | 80 | **≥105** |
-| JSON rules (material_bundling) | 59 | **≥70** |
-| Motor-bound gap §3.1 | ~35 | **≤10** |
-| gate_b_deferred | 0 | **0** |
+| Metric | R5 start | Target | **Final** |
+|--------|----:|-------:|----------:|
+| §3.1 encoded clauses | 80 | **≥105** | **129** |
+| JSON rules (material_bundling) | 59 | **≥70** | **67** |
+| Motor-bound gap §3.1 | ~35 | **≤10** | **0** |
+| gate_b_deferred | 0 | **0** | **0** |
 
 ---
 
 ## Definition of done
 
-1. Every remaining §3.1–3.2 motor-bound row is either encoded or documented as duplicate-of-EK-3 in triage CSV.
-2. ≥10 net new JSON rules with golden tests.
-3. Manifest `gate_b_sources_encoded` covers all new clause IDs.
-4. L1.4 fact-check stays **PARTIAL** with updated clause encode fraction (not false COMPLIANT).
+1. [x] Every remaining §3.1–3.2 motor-bound row is either encoded or documented as duplicate-of-EK-3 in triage CSV.
+2. [x] ≥10 net new JSON rules with golden tests (+8 rules: 59 → 67).
+3. [x] Manifest `gate_b_sources_encoded` covers all new clause IDs (90 Gate B sources; 3 manifest-header-only).
+4. [x] L1.4 fact-check stays **PARTIAL** with updated clause encode fraction (not false COMPLIANT).
+
+---
+
+## Review (2026-06-27 — Epic B closed)
+
+| Metric | Value |
+|--------|------:|
+| Clauses (`material_bundling_prose`) | 129 |
+| Encoded (`has_rule_encoding=true`) | **129 / 129** |
+| Motor-bound gap (`unencoded_gap_clause_count`) | **0** |
+| JSON rules (`material_bundling_prose.json`) | 67 |
+| Manifest `gate_b_sources_encoded` | 90 |
+| Manifest `gate_b_deferred_clause_ids` | 0 |
+| Manifest `r5_manifest_header_only_clause_ids` | 3 |
+| Gap triage CSV rows | 0 (empty — no remaining motor-bound gaps) |
+
+**Verification (Phase 3 closeout):**
+
+```bash
+pytest tests/unit/domain/prose_rules/test_material_bundling_golden.py \
+  tests/unit/scripts/test_material_bundling_r5_triage.py \
+  tests/unit/domain/materials/test_coverage_scope.py -q
+# 31 passed, 1 skipped
+```
+
+**Out of epic scope (unchanged):** `specialty_materials_prose` §3.3 tail (29/32 encoded) — separate track.
 
 ---
 
@@ -120,6 +147,7 @@ If same agent continues:
 
 ```bash
 pytest tests/unit/domain/prose_rules/test_material_bundling_golden.py \
+  tests/unit/scripts/test_material_bundling_r5_triage.py \
   tests/unit/domain/materials/test_coverage_scope.py -q
 python scripts/sut/merge_material_bundling_prose.py
 python scripts/sut/build_sut_coverage.py
