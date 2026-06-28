@@ -2,115 +2,198 @@
   "rule_set_id": "material_pairing_uplift",
   "title": "Procedure-to-material pairing uplift (inverse EK-3B-1)",
   "effective_date": "2026-01-17",
-  "sut_anchors": ["3.1.1", "3.1.4", "3.3"],
+  "sut_anchors": [
+    "3.1.1",
+    "3.1.4",
+    "3.3"
+  ],
   "rules": [
     {
       "rule_id": "pairing.600150_or2640",
       "sut_section": "3.1.1",
       "specialty_annex": "EK-3/C",
       "pairing_mode": "separate_billing",
-      "procedure_codes": ["600150"],
-      "expected_material_codes": ["OR2640"],
-      "message_tr": "600150 islemi ile birlikte ayrica faturalandirilabilir OR2640 malzemesi eksik veya sifir faturalanmis."
+      "procedure_codes": [
+        "600150"
+      ],
+      "expected_material_codes": [
+        "OR2640"
+      ],
+      "message_tr": "600150 islemi ile birlikte ayrica faturalandirilabilir OR2640 malzemesi eksik veya sifir faturalanmis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.600160_or2640",
       "sut_section": "3.1.1",
       "specialty_annex": "EK-3/C",
       "pairing_mode": "separate_billing",
-      "procedure_codes": ["600160"],
-      "expected_material_codes": ["OR2640"],
-      "message_tr": "600160 islemi ile birlikte ayrica faturalandirilabilir OR2640 malzemesi eksik veya sifir faturalanmis."
+      "procedure_codes": [
+        "600160"
+      ],
+      "expected_material_codes": [
+        "OR2640"
+      ],
+      "message_tr": "600160 islemi ile birlikte ayrica faturalandirilabilir OR2640 malzemesi eksik veya sifir faturalanmis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.700910_kr1151",
       "sut_section": "3.3.1",
       "specialty_annex": "EK-3H",
       "pairing_mode": "specialty_annex",
-      "procedure_codes": ["700910", "700890"],
-      "expected_material_codes": ["KR1151"],
-      "message_tr": "Koroner anjiyoplasti/stent islemi sonrasi EK-3H ilac salinimli koroner stent (KR1151) ayri faturalandirilmamis."
+      "procedure_codes": [
+        "700910",
+        "700890"
+      ],
+      "expected_material_codes": [
+        "KR1151"
+      ],
+      "message_tr": "Koroner anjiyoplasti/stent islemi sonrasi EK-3H ilac salinimli koroner stent (KR1151) ayri faturalandirilmamis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.700920_kr1152",
       "sut_section": "3.3.1",
       "specialty_annex": "EK-3H",
       "pairing_mode": "specialty_annex",
-      "procedure_codes": ["700920", "700930"],
-      "expected_material_codes": ["KR1152"],
-      "message_tr": "Koroner stent islemi sonrasi EK-3H ilac salinimli stent (KR1152) ayri faturalandirilmamis."
+      "procedure_codes": [
+        "700920",
+        "700930"
+      ],
+      "expected_material_codes": [
+        "KR1152"
+      ],
+      "message_tr": "Koroner stent islemi sonrasi EK-3H ilac salinimli stent (KR1152) ayri faturalandirilmamis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.700944_kv1012",
       "sut_section": "3.3.2",
       "specialty_annex": "EK-3I",
       "pairing_mode": "specialty_annex",
-      "procedure_codes": ["700944"],
-      "expected_material_codes": ["KV1012"],
-      "message_tr": "Transkateter aortik kapak implantasyonu sonrasi EK-3I TAVI seti (KV1012) eksik veya sifir faturalanmis."
+      "procedure_codes": [
+        "700944"
+      ],
+      "expected_material_codes": [
+        "KV1012"
+      ],
+      "message_tr": "Transkateter aortik kapak implantasyonu sonrasi EK-3I TAVI seti (KV1012) eksik veya sifir faturalanmis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.700710_kr1000",
       "sut_section": "3.3.1",
       "specialty_annex": "EK-3H",
       "pairing_mode": "specialty_annex",
-      "procedure_codes": ["700710", "700700", "700730"],
-      "expected_material_codes": ["KR1000"],
-      "message_tr": "ICD implantasyonu sonrasi EK-3H ICD cihazi (KR1000) eksik veya sifir faturalanmis."
+      "procedure_codes": [
+        "700710",
+        "700700",
+        "700730"
+      ],
+      "expected_material_codes": [
+        "KR1000"
+      ],
+      "message_tr": "ICD implantasyonu sonrasi EK-3H ICD cihazi (KR1000) eksik veya sifir faturalanmis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.604670_kv1002",
       "sut_section": "3.3.2",
       "specialty_annex": "EK-3I",
       "pairing_mode": "specialty_annex",
-      "procedure_codes": ["604670", "604690"],
-      "expected_material_codes": ["KV1002"],
-      "message_tr": "Acik mitral kapak islemi sonrasi EK-3I stentli biyolojik kalp kapagi (KV1002) eksik veya sifir faturalanmis."
+      "procedure_codes": [
+        "604670",
+        "604690"
+      ],
+      "expected_material_codes": [
+        "KV1002"
+      ],
+      "message_tr": "Acik mitral kapak islemi sonrasi EK-3I stentli biyolojik kalp kapagi (KV1002) eksik veya sifir faturalanmis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.606152_kr3000",
       "sut_section": "3.3.1",
       "specialty_annex": "EK-3H",
       "pairing_mode": "specialty_annex",
-      "procedure_codes": ["606152"],
-      "expected_material_codes": ["KR3000"],
-      "message_tr": "Fenestre endovaskuler aort anevrizma islemi sonrasi EK-3H EVAR stentgreft (KR3000) eksik veya sifir faturalanmis."
+      "procedure_codes": [
+        "606152"
+      ],
+      "expected_material_codes": [
+        "KR3000"
+      ],
+      "message_tr": "Fenestre endovaskuler aort anevrizma islemi sonrasi EK-3H EVAR stentgreft (KR3000) eksik veya sifir faturalanmis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.612480_ap1390",
       "sut_section": "3.3.4",
       "specialty_annex": "EK-3F-1",
       "pairing_mode": "specialty_annex",
-      "procedure_codes": ["612480", "612510"],
-      "expected_material_codes": ["AP1390"],
-      "message_tr": "Kalca artroplastisi sonrasi EK-3F-1 kalca protez bileseni (AP1390) eksik veya sifir faturalanmis."
+      "procedure_codes": [
+        "612480",
+        "612510"
+      ],
+      "expected_material_codes": [
+        "AP1390"
+      ],
+      "message_tr": "Kalca artroplastisi sonrasi EK-3F-1 kalca protez bileseni (AP1390) eksik veya sifir faturalanmis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.604960_kr4000",
       "sut_section": "3.3.1",
       "specialty_annex": "EK-3H",
       "pairing_mode": "specialty_annex",
-      "procedure_codes": ["604960"],
-      "expected_material_codes": ["KR4000"],
-      "message_tr": "Acik kalp cerrahisi sonrasi EK-3H kalp pili/cihaz (KR4000) ayri faturalandirilmamis."
+      "procedure_codes": [
+        "604960"
+      ],
+      "expected_material_codes": [
+        "KR4000"
+      ],
+      "message_tr": "Acik kalp cerrahisi sonrasi EK-3H kalp pili/cihaz (KR4000) ayri faturalandirilmamis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.605020_kv1000",
       "sut_section": "3.3.2",
       "specialty_annex": "EK-3I",
       "pairing_mode": "specialty_annex",
-      "procedure_codes": ["605020"],
-      "expected_material_codes": ["KV1000"],
-      "message_tr": "Kapak cerrahisi sonrasi EK-3I biyolojik kapak protezi (KV1000) eksik veya sifir faturalanmis."
+      "procedure_codes": [
+        "605020"
+      ],
+      "expected_material_codes": [
+        "KV1000"
+      ],
+      "message_tr": "Kapak cerrahisi sonrasi EK-3I biyolojik kapak protezi (KV1000) eksik veya sifir faturalanmis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.700800_kr1150",
       "sut_section": "3.3.1",
       "specialty_annex": "EK-3H",
       "pairing_mode": "specialty_annex",
-      "procedure_codes": ["700800"],
-      "expected_material_codes": ["KR1150"],
-      "message_tr": "Koroner girisim islemi sonrasi EK-3H bare-metal stent (KR1150) ayri faturalandirilmamis."
+      "procedure_codes": [
+        "700800"
+      ],
+      "expected_material_codes": [
+        "KR1150"
+      ],
+      "message_tr": "Koroner girisim islemi sonrasi EK-3H bare-metal stent (KR1150) ayri faturalandirilmamis.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     }
-  ]
+  ],
+  "provenance_note": "WARNING: Rules in this file are operational heuristics / pilot estimates, NOT extracted from specific SUT clauses. They encode billing-practice knowledge rather than normative SUT text. verification_status=pilot_heuristic on every rule."
 }

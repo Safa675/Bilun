@@ -4,12 +4,3456 @@
   "effective_date": "2026-01-17",
   "sut_anchors": [
     "4.2",
+    "4.2.1",
+    "4.2.10",
     "4.2.13",
     "4.2.14.C",
-    "4.2.16"
+    "4.2.15",
+    "4.2.16",
+    "4.2.17",
+    "4.2.18",
+    "4.2.19",
+    "4.2.24",
+    "4.2.27",
+    "4.2.34",
+    "4.2.35",
+    "4.2.36",
+    "4.2.37",
+    "4.2.38",
+    "4.2.6",
+    "4.2.9"
   ],
-  "coverage_note": "R5 A2 pilot — 177 rules; §4.2.13 hepatitis + §4.2.16 formula batches merged.",
+  "coverage_note": "R5 TierB remap — 408 rules; §4.2.13 oral-switch sources remapped to in-force C004584/C004593.",
   "rules": [
+    {
+      "rule_id": "4.2.1.abatacept_jia_acr30_continuation",
+      "sut_section": "4.2.1.C-3",
+      "drug_names": [
+        "abatasept",
+        "abatacept",
+        "orencia"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Abatasept — juvenil artritte ilk 3 ay ACR pediatrik 30 yanıtı sonrası 3 ay süreli sağlık kurulu raporu ile tedaviye devam edilir (§4.2.1.C-3).",
+      "gate_b_sources": [
+        "C003670"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.abatacept_jia_acr50_continuation",
+      "sut_section": "4.2.1.C-3",
+      "drug_names": [
+        "abatasept",
+        "abatacept",
+        "orencia"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Abatasept — juvenil artritte ACR pediatrik 50 yanıtı ile 6 ay süreli sağlık kurulu raporu ile tedaviye devam edilir (§4.2.1.C-3).",
+      "gate_b_sources": [
+        "C003672"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.abatacept_ra_board",
+      "sut_section": "4.2.1.C-2",
+      "drug_names": [
+        "abatasept",
+        "abatacept",
+        "orencia"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Abatasept — anti-TNF yetersiz/kontrendike aktif romatoid artritte sağlık kurulu raporu gerekir (§4.2.1.C-2).",
+      "gate_b_sources": [
+        "C003645"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.abatacept_ra_tnf_failure_board",
+      "sut_section": "4.2.1.C-2",
+      "drug_names": [
+        "abatasept",
+        "abatacept",
+        "orencia"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Abatasept — anti-TNF yetersiz/kontrendike aktif romatoid artritte methotreksat ile kombine sağlık kurulu raporu gerekir (§4.2.1.C-2).",
+      "gate_b_sources": [
+        "C003645"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.adalimumab_crohn_adult_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "adalimumab",
+        "infliksimab",
+        "sertolizumab",
+        "humira",
+        "remicade"
+      ],
+      "icd10_ranges": [
+        "K50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "message_tr": "Adalimumab/infliksimab/sertolizumab — yetişkin Crohn hastalığında 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003629"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 4
+    },
+    {
+      "rule_id": "4.2.1.adalimumab_hs_dermatology_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "adalimumab",
+        "humira"
+      ],
+      "icd10_ranges": [
+        "L73",
+        "L73.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "dermatoloji"
+      ],
+      "message_tr": "Adalimumab — hidradenitis suppurativa'da antibiyotik yetersizliğinde 3 ay süreli dermatoloji sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003636"
+      ],
+      "prescriber_specialties": [
+        "dermatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.adalimumab_jia_uveitis_first_line",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "adalimumab",
+        "humira"
+      ],
+      "icd10_ranges": [
+        "M08",
+        "H20",
+        "H30"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji",
+        "çocuk endokrinoloji",
+        "göz hastalıkları"
+      ],
+      "message_tr": "Adalimumab — üveit eşlikli juvenil artritte ilk seçenek anti-TNF olarak 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003602"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji",
+        "çocuk endokrinoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.adalimumab_pediatric_crohn_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "adalimumab",
+        "infliksimab",
+        "humira",
+        "remicade"
+      ],
+      "icd10_ranges": [
+        "K50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları",
+        "çocuk gastroenteroloji"
+      ],
+      "message_tr": "Adalimumab/infliksimab — çocuk Crohn hastalığında konvansiyonel tedavi yetersizliğinde 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003630"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları",
+        "çocuk gastroenteroloji"
+      ],
+      "report_duration_months": 4
+    },
+    {
+      "rule_id": "4.2.1.adalimumab_pediatric_uveitis_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "adalimumab",
+        "humira"
+      ],
+      "icd10_ranges": [
+        "H20",
+        "H30"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "message_tr": "Adalimumab — çocuk non-enfeksiyöz kronik anterior üveitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003635"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.adalimumab_uveitis_adult_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "adalimumab",
+        "humira"
+      ],
+      "icd10_ranges": [
+        "H20",
+        "H30"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "göz hastalıkları"
+      ],
+      "message_tr": "Adalimumab — yetişkin non-enfeksiyöz üveitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003634"
+      ],
+      "prescriber_specialties": [
+        "göz hastalıkları"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.anakinra_canakinumab_fmf_amyloidosis",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "anakinra",
+        "kineret",
+        "kanakinumab",
+        "canakinumab",
+        "ilaris"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "nefroloji",
+        "romatoloji",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Anakinra/kanakinumab — amiloidozlu FMF tedavisinde romatoloji ve/veya nefroloji uzmanının yer aldığı 1 yıl süreli sağlık kurulu raporu gerekir (§4.2.1.C-7).",
+      "gate_b_sources": [
+        "C003813"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "nefroloji",
+        "romatoloji",
+        "klinik immunoloji"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.1.anakinra_canakinumab_fmf_amyloidosis_colchicine",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "anakinra",
+        "kineret",
+        "kanakinumab",
+        "canakinumab",
+        "ilaris"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "nefroloji",
+        "romatoloji",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Anakinra/kanakinumab — amiloidozlu FMF'de kolşisin yetersizliğinde romatoloji/nefroloji uzmanının yer aldığı 1 yıl süreli sağlık kurulu raporu gerekir (§4.2.1.C-7).",
+      "gate_b_sources": [
+        "C003802"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "nefroloji",
+        "romatoloji",
+        "klinik immunoloji"
+      ],
+      "report_duration_months": 12,
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.1.anakinra_canakinumab_fmf_board_report",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "anakinra",
+        "kineret",
+        "kanakinumab",
+        "canakinumab",
+        "ilaris"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Anakinra/kanakinumab — FMF tedavisinde resmi üçüncü basamak kurumda romatoloji uzmanının yer aldığı sağlık kurulu raporu gerekir (§4.2.1.C-7).",
+      "gate_b_sources": [
+        "C003812"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.anakinra_fmf_colchicine_add_on",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "anakinra",
+        "kineret"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Anakinra — FMF'de kolşisin yetersizliğinde atak/CRP/SAA bulgularının sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-7).",
+      "gate_b_sources": [
+        "C003806"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.anakinra_fmf_colchicine_failure",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "anakinra",
+        "kineret"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Anakinra — amiloidozu olmayan FMF'de kolşisin yetersizliğinde atak/CRP bilgilerinin sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-7).",
+      "gate_b_sources": [
+        "C003806"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "anakinra",
+        "kineret",
+        "kanakinumab",
+        "canakinumab",
+        "ilaris"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Anakinra/kanakinumab — FMF tedavisinde üçüncü basamak kurumda romatoloji uzman hekiminin yer aldığı sağlık kurulu raporu gerekir (§4.2.1.C-7).",
+      "gate_b_sources": [
+        "C003812"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_axial_as_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Anti-TNF — aksiyel tutulumlu ankilozan spondilitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003609"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_jia_acr30_continuation_c1",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "humira",
+        "enbrel",
+        "simponi",
+        "cimzia"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Anti-TNF — juvenil artritte ACR pediatrik 30 yanıtı sonrası 3 ay süreli sağlık kurulu raporu ile tedaviye devam edilir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003603"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_jia_acr50_continuation_c1",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "humira",
+        "enbrel",
+        "simponi",
+        "cimzia"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Anti-TNF — juvenil artritte ACR pediatrik 50 yanıtı ile 6 ay süreli sağlık kurulu raporu ile tedaviye devam edilir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003603"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_jia_acr_continuation",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "humira",
+        "enbrel"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Anti-TNF — juvenil artritte ACR pediatrik 30/50 yanıtı ile tedavi devamında 3–6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003603"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_jia_acr_monitoring_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "humira",
+        "enbrel",
+        "simponi",
+        "cimzia"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Anti-TNF — juvenil artritte tedavi devamında ACR pediatrik cevap kriterinin her sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003603"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_jia_dmard_failure_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "humira",
+        "enbrel"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji",
+        "çocuk endokrinoloji"
+      ],
+      "message_tr": "Anti-TNF — juvenil artritte NSAİ ve DMARD yetersizliğinde 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003602"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji",
+        "çocuk endokrinoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_jia_start_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "humira",
+        "enbrel"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji",
+        "çocuk endokrinoloji"
+      ],
+      "message_tr": "Anti-TNF — juvenil idiyopatik artritte NSAİ/methotrexat yetersizliğinde ACR pediatrik 30 yanıtı ile 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003593"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji",
+        "çocuk endokrinoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_peripheral_as_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Anti-TNF — periferik eklem tutulumlu ankilozan spondilitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003610"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_prescriber_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "humira",
+        "enbrel"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Anti-TNF ilaçlar — romatoid artritte romatoloji/klinik immunoloji/fiziksel tıp uzmanının yer aldığı en fazla 6 aylık sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003622"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_psoriasis_vulgaris_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "humira",
+        "enbrel"
+      ],
+      "icd10_ranges": [
+        "L40"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "dermatoloji"
+      ],
+      "message_tr": "Anti-TNF — plak psoriyaziste DMARD direncinde dermatoloji uzmanının yer aldığı 6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003625"
+      ],
+      "prescriber_specialties": [
+        "dermatoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_psoriatic_arthritis_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab"
+      ],
+      "icd10_ranges": [
+        "L40.5"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Anti-TNF — psöriyatik artritte DMARD yetersizliğinde sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003617"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_ra_das28_initiation",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "etanersept",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "humira",
+        "enbrel"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Anti-TNF — erişkin romatoid artritte DMARD yetersizliğinde DAS28 takibi ile 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003587"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.anti_tnf_uc_conv_failure_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "adalimumab",
+        "remicade",
+        "humira"
+      ],
+      "icd10_ranges": [
+        "K51"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları",
+        "çocuk gastroenteroloji"
+      ],
+      "message_tr": "Anti-TNF — ülseratif kolitte konvansiyonel tedavi yetersizliğinde 6 ay süreli uzman hekim raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003631"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları",
+        "çocuk gastroenteroloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.apremilast_psa_dmard_second_line",
+      "sut_section": "4.2.1.C-13",
+      "drug_names": [
+        "apremilast",
+        "otezla"
+      ],
+      "icd10_ranges": [
+        "L40.5"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ],
+      "message_tr": "Apremilast — DMARD yetersiz psöriyatik artritte romatoloji/klinik immünoloji sağlık kurulu raporu gerekir (§4.2.1.C-13).",
+      "gate_b_sources": [
+        "C003888"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.apremilast_psoriasis_dermatology_board",
+      "sut_section": "4.2.1.C-13",
+      "drug_names": [
+        "apremilast",
+        "otezla"
+      ],
+      "icd10_ranges": [
+        "L40"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "dermatoloji"
+      ],
+      "message_tr": "Apremilast — sistemik tedavi yetersiz plak psoriyaziste dermatoloji uzman hekim raporu gerekir (§4.2.1.C-13).",
+      "gate_b_sources": [
+        "C003889"
+      ],
+      "prescriber_specialties": [
+        "dermatoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.baricitinib_ad_specialist_board",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "barisitinib",
+        "olumiant",
+        "abrositinib",
+        "cibinqo"
+      ],
+      "icd10_ranges": [
+        "L20"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "dermatoloji",
+        "immünoloji",
+        "immünoloji ve alerji"
+      ],
+      "message_tr": "Barisitinib/abrositinib — atopik dermatitte dermatoloji/immünoloji uzman hekimlerinin yer aldığı 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003766"
+      ],
+      "prescriber_specialties": [
+        "dermatoloji",
+        "immünoloji",
+        "immünoloji ve alerji"
+      ],
+      "report_duration_months": 4
+    },
+    {
+      "rule_id": "4.2.1.bimekizumab_psoriasis_pasi_systemic_failure",
+      "sut_section": "4.2.1.C-14",
+      "drug_names": [
+        "bimekizumab",
+        "bimzelx"
+      ],
+      "icd10_ranges": [
+        "L40"
+      ],
+      "report_required": true,
+      "message_tr": "Bimekizumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-14).",
+      "gate_b_sources": [
+        "C003894"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.canakinumab_fmf_anakinra_failure_switch",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "kanakinumab",
+        "canakinumab",
+        "ilaris"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki durumunun sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-7).",
+      "gate_b_sources": [
+        "C003799"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.1.canakinumab_fmf_anakinra_switch",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "kanakinumab",
+        "canakinumab",
+        "ilaris"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki durumunun sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-7).",
+      "gate_b_sources": [
+        "C003807"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.canakinumab_fmf_continuation_report",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "kanakinumab",
+        "canakinumab",
+        "ilaris"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Kanakinumab — FMF tedavi devamında atak sıklık/şiddet azalmasının sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-7).",
+      "gate_b_sources": [
+        "C003808"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.canakinumab_fmf_dose_escalation",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "kanakinumab",
+        "canakinumab",
+        "ilaris"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Kanakinumab — FMF'de 150 mg yetersizliğinde 300 mg doza geçiş gerekçesinin sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-7).",
+      "gate_b_sources": [
+        "C003811"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.crohn_fistulizing_month4_cdai_report",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "adalimumab",
+        "humira",
+        "infliksimab",
+        "remicade",
+        "sertolizumab",
+        "cimzia"
+      ],
+      "icd10_ranges": [
+        "K50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "çocuk cerrahisi"
+      ],
+      "message_tr": "Fistülize/şiddetli Crohn — adalimumab/infliksimab/sertolizumab başlangıcında 4 ay süreli sağlık kurulu raporu; 4. ayda CDAI 70 puan düşüşü değerlendirilir (§4.2.1.C-1 (10)).",
+      "gate_b_sources": [
+        "C003627"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "çocuk cerrahisi"
+      ],
+      "report_duration_months": 4
+    },
+    {
+      "rule_id": "4.2.1.fmf_jia_acr_pediatric_stop_c7",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "anakinra",
+        "kineret",
+        "kanakinumab",
+        "canakinumab",
+        "ilaris"
+      ],
+      "icd10_ranges": [
+        "M08",
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji",
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "nefroloji"
+      ],
+      "message_tr": "Anakinra/tosilizumab/kanakinumab — tedavi devamında ACR pediatrik yanıt kriteri 3 ayda bir değerlendirilmeli; yanıt alınamayan hastalarda tedavi sonlandırılır (§4.2.1.C-7 (2)).",
+      "gate_b_sources": [
+        "C003787",
+        "C003790"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.gold_preparations_ra_report",
+      "sut_section": "4.2.1.B",
+      "drug_names": [
+        "altın preparat",
+        "gold",
+        "aurothiomalate",
+        "sodyum aurotiyomalat"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Altın preparatları — romatoid artritte DMARD yetersizliğinde bir yıllık uzman hekim raporu gerekir (§4.2.1.B).",
+      "gate_b_sources": [
+        "C003565"
+      ],
+      "prescriber_specialties": [
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "romatoloji"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.1.guselkumab_psoriasis_pasi_systemic_failure",
+      "sut_section": "4.2.1.C-11",
+      "drug_names": [
+        "guselkumab",
+        "tremfya"
+      ],
+      "icd10_ranges": [
+        "L40"
+      ],
+      "report_required": true,
+      "message_tr": "Guselkumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-11).",
+      "gate_b_sources": [
+        "C003878"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.inflix_cert_gol_as_second_line",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "simponi",
+        "cimzia"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz ankilozan spondilitte BASDAİ yanıtı ile 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003614"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.inflix_cert_gol_psa_psarc_second_line",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab",
+        "remicade",
+        "simponi",
+        "cimzia"
+      ],
+      "icd10_ranges": [
+        "L40.5"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz psöriyatik artritte PSARC yanıtı ile sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003621"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.inflix_cert_gol_ra_second_line",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz romatoid artritte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003591"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.inflix_peripheral_as_basdai_continuation",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "remicade"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "İnfliksimab — periferik ankilozan spondilitte BASDAİ yanıtı sonrası 6 ay süreli sağlık kurulu raporu ile tedaviye devam edilir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003609"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.inflix_peripheral_as_second_line_romato_board",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "remicade"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "İnfliksimab — periferik ankilozan spondilitte diğer anti-TNF yetersizliğinde romatoloji uzmanının yer aldığı 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003609"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.inflix_peripheral_as_second_line_start",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "remicade"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "İnfliksimab — periferik eklem tutulumlu ankilozan spondilitte diğer anti-TNF yetersizliğinin 3 ay süreli sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003609"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.inflix_psa_second_line_psarc",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "golimumab",
+        "sertolizumab",
+        "certolizumab"
+      ],
+      "icd10_ranges": [
+        "L40.5"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz psöriyatik artritte PSARC yanıtı ile 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003621"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.infliximab_as_basdai_second_line",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "remicade"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "İnfliksimab — diğer anti-TNF yetersiz ankilozan spondilitte BASDAİ yanıtı ile 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003609"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.infliximab_ra_das28_second_line",
+      "sut_section": "4.2.1.C-1",
+      "drug_names": [
+        "infliksimab",
+        "remicade"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "İnfliksimab — diğer anti-TNF yetersiz romatoid artritte DAS28 yanıtı ile 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
+      "gate_b_sources": [
+        "C003591"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.ixekizumab_psa_second_line",
+      "sut_section": "4.2.1.C-10",
+      "drug_names": [
+        "ixekizumab",
+        "iksekizumab",
+        "taltz"
+      ],
+      "icd10_ranges": [
+        "L40.5"
+      ],
+      "report_required": true,
+      "message_tr": "İxekizumab — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte sağlık kurulu raporunda önceki tedavi yetersizliği belirtilmelidir (§4.2.1.C-10).",
+      "gate_b_sources": [
+        "C003872"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.ixekizumab_psoriasis_pasi_systemic_failure",
+      "sut_section": "4.2.1.C-10",
+      "drug_names": [
+        "ixekizumab",
+        "iksekizumab",
+        "taltz"
+      ],
+      "icd10_ranges": [
+        "L40"
+      ],
+      "report_required": true,
+      "message_tr": "İxekizumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-10).",
+      "gate_b_sources": [
+        "C003867"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.jak_efficacy_continuation_romato_immuno",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "barisitinib",
+        "upadasitinib",
+        "abrositinib",
+        "xeljanz",
+        "olumiant",
+        "rinvoq",
+        "cibinqo"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06",
+        "L40.5",
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ],
+      "message_tr": "JAK inhibitörleri — tedavi devamında etkinlik yanıtının romatoloji veya immünoloji uzman hekim raporunda belirtilmesi gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003781"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "immünoloji",
+        "klinik immunoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.jak_ibd_gi_prescriber",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "upadasitinib",
+        "rinvoq"
+      ],
+      "icd10_ranges": [
+        "K51",
+        "K50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Upadasitinib — IBD tedavisinde sağlık kurulu raporuna dayanılarak gastroenteroloji/genel cerrahi/iç hastalıkları uzman hekimlerince reçete düzenlenmelidir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003770"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.jak_pjia_pediatric_tertiary_board",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "barisitinib",
+        "upadasitinib",
+        "abrositinib",
+        "xeljanz",
+        "olumiant",
+        "rinvoq",
+        "cibinqo"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "JAK inhibitörleri — juvenil artritte çocuk romatoloji uzmanının yer aldığı üçüncü basamak sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003775"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.jak_psa_second_line_initiation",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "barisitinib",
+        "upadasitinib",
+        "abrositinib",
+        "xeljanz",
+        "olumiant",
+        "rinvoq",
+        "cibinqo"
+      ],
+      "icd10_ranges": [
+        "L40.5"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "JAK inhibitörleri — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte sağlık kurulu raporunda önceki tedavi yetersizliği belirtilmelidir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003741",
+        "C003741"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.jak_ra_dmard_initiation",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "barisitinib",
+        "upadasitinib",
+        "abrositinib",
+        "xeljanz",
+        "olumiant",
+        "rinvoq",
+        "cibinqo"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "JAK inhibitörleri — romatoid artritte DMARD yetersizliğinde (DAS28>5.1) 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003738"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.jak_ra_university_prescriber_board",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "barisitinib",
+        "upadasitinib",
+        "abrositinib",
+        "xeljanz",
+        "olumiant",
+        "rinvoq",
+        "cibinqo"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ],
+      "message_tr": "JAK inhibitörleri — romatoid artritte üniversite/eğitim hastanesi romatoloji/klinik immunoloji/fiziksel tıp sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003739"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.jia_acr_pediatric_6mo_continuation_c6",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "barisitinib",
+        "upadasitinib",
+        "xeljanz",
+        "olumiant",
+        "rinvoq"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "JAK inhibitörleri — juvenil artritte tedavi devamında ACR pediatrik cevap kriteri 6 ayda bir değerlendirilmeli ve her sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-6 c).",
+      "gate_b_sources": [
+        "C003774"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.kanakinumab_fmf_3mo_response_c7",
+      "sut_section": "4.2.1.C-7",
+      "drug_names": [
+        "kanakinumab",
+        "canakinumab",
+        "ilaris"
+      ],
+      "icd10_ranges": [
+        "E85.0",
+        "E85"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "nefroloji"
+      ],
+      "message_tr": "Kanakinumab — FMF tedavisinde 3 aylık yanıt değerlendirmesi yapılmalı; yanıt alınamayan hastalarda tedavi sonlandırılır (§4.2.1.C-7 (3)).",
+      "gate_b_sources": [
+        "C003800"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "nefroloji"
+      ],
+      "report_duration_months": 3,
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.1.leflunomid_ra_psa_report",
+      "sut_section": "4.2.1.A",
+      "drug_names": [
+        "leflunomid",
+        "arava"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06",
+        "L40.5"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Leflunomid — romatoid/psoriatik artritte sulfasalazin veya methotrexat yetersiz/kontrendike olduğunda uzman hekim raporu gerekir (§4.2.1.A).",
+      "gate_b_sources": [
+        "C003563"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.risankizumab_psoriasis_pasi_systemic_failure",
+      "sut_section": "4.2.1.C-12",
+      "drug_names": [
+        "risankizumab",
+        "skyrizi"
+      ],
+      "icd10_ranges": [
+        "L40"
+      ],
+      "report_required": true,
+      "message_tr": "Risankizumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-12).",
+      "gate_b_sources": [
+        "C003883"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.rituximab_gpa_mpa_nephrology",
+      "sut_section": "4.2.1.C-2",
+      "drug_names": [
+        "rituksimab",
+        "rituximab",
+        "mabthera"
+      ],
+      "icd10_ranges": [
+        "M31",
+        "M30"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nefroloji",
+        "romatoloji",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Rituksimab — siklofosfamid dirençli GPA/MPA tedavisinde nefroloji/immünoloji 1 ay süreli sağlık kurulu raporu gerekir; 6 aydan önce tekrar kullanılamaz (§4.2.1.C-2).",
+      "gate_b_sources": [
+        "C003651"
+      ],
+      "prescriber_specialties": [
+        "nefroloji",
+        "romatoloji",
+        "klinik immunoloji"
+      ],
+      "report_duration_months": 1
+    },
+    {
+      "rule_id": "4.2.1.rituximab_pemphigus_dermatology",
+      "sut_section": "4.2.1.C-2",
+      "drug_names": [
+        "rituksimab",
+        "rituximab",
+        "mabthera"
+      ],
+      "icd10_ranges": [
+        "L10"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "dermatoloji"
+      ],
+      "message_tr": "Rituksimab — pemfigus vulgaris tedavisinde üçüncü basamak kurumda dermatoloji 6 ay süreli sağlık kurulu raporu; PDAİ skoru ve yanıt değerlendirmesi belirtilir (§4.2.1.C-2).",
+      "gate_b_sources": [
+        "C003659"
+      ],
+      "prescriber_specialties": [
+        "dermatoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.rituximab_ra_6mo_renewal",
+      "sut_section": "4.2.1.C-2",
+      "drug_names": [
+        "rituksimab",
+        "rituximab",
+        "mabthera"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Rituksimab — romatoid artritte her 6 aydan sonraki kullanım için tedaviye gerekliliğinin belirtildiği yeni sağlık kurulu raporu gerekir (§4.2.1.C-2).",
+      "gate_b_sources": [
+        "C003652"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.rituximab_ra_das28_continuation",
+      "sut_section": "4.2.1.C-2",
+      "drug_names": [
+        "rituksimab",
+        "rituximab",
+        "mabthera"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Rituksimab — romatoid artritte tedavi devamında DAS28 skorları 6 ay süreli sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-2).",
+      "gate_b_sources": [
+        "C003646"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.rituximab_ra_report_section_header",
+      "sut_section": "4.2.1.C-2",
+      "drug_names": [
+        "rituksimab",
+        "rituximab",
+        "mabthera"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji"
+      ],
+      "message_tr": "Rituksimab — romatoid artritte sağlık kurulu raporu romatoloji uzman hekiminin yer aldığı kurumda düzenlenmelidir (§4.2.1.C-2).",
+      "gate_b_sources": [
+        "C003647"
+      ],
+      "prescriber_specialties": [
+        "romatoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.rituximab_ra_romatoloji_board",
+      "sut_section": "4.2.1.C-2",
+      "drug_names": [
+        "rituksimab",
+        "rituximab",
+        "mabthera"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji"
+      ],
+      "message_tr": "Rituksimab — romatoid artritte romatoloji kurumunda en az bir romatoloji uzmanının yer aldığı sağlık kurulu raporu gerekir (§4.2.1.C-2).",
+      "gate_b_sources": [
+        "C003647",
+        "C003648"
+      ],
+      "prescriber_specialties": [
+        "romatoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.rituximab_ra_romatoloji_institution_board",
+      "sut_section": "4.2.1.C-2",
+      "drug_names": [
+        "rituksimab",
+        "rituximab",
+        "mabthera"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji"
+      ],
+      "message_tr": "Rituksimab — romatoid artritte romatoloji uzman hekiminin bulunduğu kurumda en az bir romatoloji uzmanının yer aldığı sağlık kurulu raporu gerekir (§4.2.1.C-2 a).",
+      "gate_b_sources": [
+        "C003648"
+      ],
+      "prescriber_specialties": [
+        "romatoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.rituximab_ra_university_tertiary_board",
+      "sut_section": "4.2.1.C-2",
+      "drug_names": [
+        "rituksimab",
+        "rituximab",
+        "mabthera"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ],
+      "message_tr": "Rituksimab — romatoid artritte üniversite/eğitim hastanesi üçüncü basamak kurumda romatoloji/klinik immunoloji/fiziksel tıp uzmanının yer aldığı sağlık kurulu raporu gerekir (§4.2.1.C-2).",
+      "gate_b_sources": [
+        "C003649"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.sekukinumab_hs_16wk_continuation_c9",
+      "sut_section": "4.2.1.C-9",
+      "drug_names": [
+        "sekukinumab",
+        "secukinumab",
+        "cosentyx"
+      ],
+      "icd10_ranges": [
+        "L73.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "dermatoloji"
+      ],
+      "message_tr": "Sekukinumab — hidradenitis suppurativada 16 haftalık değerlendirme sonrası devam kriterlerinin belirtildiği en fazla 6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-9 b).",
+      "gate_b_sources": [
+        "C003862"
+      ],
+      "prescriber_specialties": [
+        "dermatoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.sekukinumab_hs_adalimumab_failure",
+      "sut_section": "4.2.1.C-9",
+      "drug_names": [
+        "sekukinumab",
+        "secukinumab",
+        "cosentyx"
+      ],
+      "icd10_ranges": [
+        "L73.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Sekukinumab — hidradenitis suppurativada adalimumab yetersizliğinde 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-9).",
+      "gate_b_sources": [
+        "C003861"
+      ],
+      "report_duration_months": 4
+    },
+    {
+      "rule_id": "4.2.1.sekukinumab_psa_second_line",
+      "sut_section": "4.2.1.C-9",
+      "drug_names": [
+        "sekukinumab",
+        "secukinumab",
+        "cosentyx"
+      ],
+      "icd10_ranges": [
+        "L40.5"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Sekukinumab — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte sağlık kurulu raporunda önceki tedavi yetersizliği belirtilmelidir (§4.2.1.C-9).",
+      "gate_b_sources": [
+        "C003856"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.sekukinumab_psoriasis_pasi_systemic_failure",
+      "sut_section": "4.2.1.C-9",
+      "drug_names": [
+        "sekukinumab",
+        "secukinumab",
+        "cosentyx"
+      ],
+      "icd10_ranges": [
+        "L40"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Sekukinumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-9).",
+      "gate_b_sources": [
+        "C003852"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_dha_sc_efficacy_continuation",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M31.6"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "immünoloji ve alerji"
+      ],
+      "message_tr": "Tosilizumab subkütan — dev hücreli arteritte 3 ay etkinlik değerlendirmesi sonrası 6 ay süreli romatoloji/immünoloji sağlık kurulu raporu gerekir (§4.2.1.C-5).",
+      "gate_b_sources": [
+        "C003722"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "immünoloji ve alerji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_dha_sc_initiation",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M31.6"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "immünoloji ve alerji"
+      ],
+      "message_tr": "Tosilizumab subkütan — dev hücreli arteritte koşulları sağlayan hastalarda 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-5).",
+      "gate_b_sources": [
+        "C003719"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "immünoloji ve alerji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_dha_sc_steroid_contraindicated",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M31.6"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "immünoloji ve alerji"
+      ],
+      "message_tr": "Tosilizumab subkütan — dev hücreli arteritte yüksek doz steroid kontrendike olduğunda 3 ay süreli romatoloji/immünoloji sağlık kurulu raporu gerekir (§4.2.1.C-5).",
+      "gate_b_sources": [
+        "C003719"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "immünoloji ve alerji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_jia_acr_pediatric_3mo_c5",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tosilizumab — juvenil artritte tedavi devamında ACR pediatrik yanıt kriteri 3 ayda bir değerlendirilmeli ve her sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-5 (4)).",
+      "gate_b_sources": [
+        "C003706",
+        "C003712"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_jia_c5_acr30_continuation",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tosilizumab — juvenil artritte ilk 3 ay ACR pediatrik 30 yanıtı sonrası 3 ay süreli sağlık kurulu raporu ile tedaviye devam edilir (§4.2.1.C-5).",
+      "gate_b_sources": [
+        "C003699"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_jia_c5_acr50_continuation",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tosilizumab — juvenil artritte ACR pediatrik 50 yanıtı ile 6 ay süreli sağlık kurulu raporu ile tedaviye devam edilir (§4.2.1.C-5).",
+      "gate_b_sources": [
+        "C003699"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_jia_c5_prior_therapy_failure",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tosilizumab — NSAİ/methotrexat/anti-TNF sonrası ACR pediatrik 30 yanıtı alınamayan juvenil artritte 3 ay süreli çocuk romatoloji sağlık kurulu raporu gerekir (§4.2.1.C-5).",
+      "gate_b_sources": [
+        "C003698"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_pediatric_anti_tnf_failure",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji",
+        "çocuk endokrinoloji"
+      ],
+      "message_tr": "Tosilizumab — anti-TNF yetersiz juvenil artritte methotreksat ile kombine 3 ay süreli çocuk romatoloji sağlık kurulu raporu gerekir (§4.2.1.C-3).",
+      "gate_b_sources": [
+        "C003669"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji",
+        "çocuk endokrinoloji"
+      ],
+      "report_duration_months": 3,
+      "section_fix_note": "Section corrected from 4.2.1.C-3 (Abatasept) to 4.2.1.C-5 (Tosilizumab) — was mislabeled."
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_ra_board",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Tosilizumab — aktif romatoid artritte methotreksat ile birlikte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-3).",
+      "gate_b_sources": [
+        "C003664"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "report_duration_months": 3,
+      "section_fix_note": "Section corrected from 4.2.1.C-3 (Abatasept) to 4.2.1.C-5 (Tosilizumab) — was mislabeled."
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_ra_c5_methotrexat_combo",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tosilizumab — DMARD/anti-TNF yetersiz romatoid artritte methotreksat ile kombine 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-5).",
+      "gate_b_sources": [
+        "C003692"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_ra_c5_university_das",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tosilizumab — anti-TNF yetersiz aktif romatoid artritte (DAS28>5.1) üniversite/eğitim hastanesi 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-5).",
+      "gate_b_sources": [
+        "C003691"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_ra_das28_06_continuation_c3",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Tosilizumab — romatoid artritte 3. ay DAS28 skorunda 0,6 puandan fazla düşüş yeni 3 ay süreli sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-3 b).",
+      "gate_b_sources": [
+        "C003665"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "report_duration_months": 3,
+      "section_fix_note": "Section corrected from 4.2.1.C-3 (Abatasept) to 4.2.1.C-5 (Tosilizumab) — was mislabeled."
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_ra_das28_06_continuation_c5",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Tosilizumab — C-5 romatoid artritte 3. ay DAS28 skorunda 0,6 puandan fazla düşüş yeni 3 ay süreli sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-5 b).",
+      "gate_b_sources": [
+        "C003693"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_ra_das28_continuation_c3",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tosilizumab — romatoid artritte tedavi devamında DAS28 skorları 6 ay süreli sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-3).",
+      "gate_b_sources": [
+        "C003667"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 6,
+      "section_fix_note": "Section corrected from 4.2.1.C-3 (Abatasept) to 4.2.1.C-5 (Tosilizumab) — was mislabeled."
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_ra_das28_continuation_c5",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tosilizumab — C-5 romatoid artritte tedavi devamında DAS28 skorları 6 ay süreli sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-5).",
+      "gate_b_sources": [
+        "C003695"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_ra_university_board",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tosilizumab — aktif romatoid artritte DMARD/anti-TNF yetersizliğinde üniversite/eğitim hastanesi 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-3).",
+      "gate_b_sources": [
+        "C003664"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3,
+      "section_fix_note": "Section corrected from 4.2.1.C-3 (Abatasept) to 4.2.1.C-5 (Tosilizumab) — was mislabeled."
+    },
+    {
+      "rule_id": "4.2.1.tocilizumab_sjia_anakinra_response",
+      "sut_section": "4.2.1.C-5",
+      "drug_names": [
+        "tosilizumab",
+        "tocilizumab",
+        "actemra",
+        "roactemra",
+        "anakinra",
+        "kineret"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tosilizumab/anakinra — sistemik juvenil artritte ACR pediatrik 50 yanıtı ile 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-5).",
+      "gate_b_sources": [
+        "C003705",
+        "C003711"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tofacitinib_axial_as_board",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "upadasitinib",
+        "xeljanz",
+        "rinvoq"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Tofacitinib/upadasitinib — anti-TNF yetersiz aksiyel/periferik ankilozan spondilitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003745",
+        "C003746"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tofacitinib_axial_as_initiation",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "xeljanz"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Tofacitinib — aksiyel tutulumlu ankilozan spondilitte anti-TNF yetersizliğinde 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003745"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tofacitinib_peripheral_as_initiation",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "xeljanz"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Tofacitinib — periferik eklem tutulumlu ankilozan spondilitte anti-TNF yetersizliğinde 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003746"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tofacitinib_pjia_second_line",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "xeljanz"
+      ],
+      "icd10_ranges": [
+        "M08"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Tofacitinib — metotreksat/TNF/IL-6 yetersiz poliartiküler juvenil artritte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003772"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tofacitinib_ra_board",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "barisitinib",
+        "upadasitinib",
+        "xeljanz",
+        "olumiant",
+        "rinvoq"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Tofacitinib/barisitinib/upadasitinib — anti-TNF yetersiz romatoid artritte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003738"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.tofacitinib_ra_prescriber_board_c6",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "tofacitinib",
+        "barisitinib",
+        "upadasitinib",
+        "xeljanz",
+        "olumiant",
+        "rinvoq"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ],
+      "message_tr": "Tofacitinib/barisitinib — romatoid artritte romatoloji veya üniversite/eğitim hastanesi klinik immunoloji/fiziksel tıp uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6 (2)).",
+      "gate_b_sources": [
+        "C003727"
+      ],
+      "prescriber_specialties": [
+        "romatoloji",
+        "klinik immunoloji",
+        "fiziksel tıp"
+      ],
+      "report_duration_months": 6,
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.1.upadacitinib_ad_dermatology_board",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "upadasitinib",
+        "rinvoq"
+      ],
+      "icd10_ranges": [
+        "L20"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "dermatoloji"
+      ],
+      "message_tr": "Upadasitinib — atopik dermatitte üçüncü basamak kurumda üç dermatoloji uzmanının yer aldığı 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003766"
+      ],
+      "prescriber_specialties": [
+        "dermatoloji"
+      ],
+      "report_duration_months": 4
+    },
+    {
+      "rule_id": "4.2.1.upadacitinib_anti_tnf_second_line",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "upadasitinib",
+        "rinvoq"
+      ],
+      "icd10_ranges": [
+        "M45"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji"
+      ],
+      "message_tr": "Upadasitinib — anti-TNF yetersizliğinde 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003749",
+        "C003778"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.upadacitinib_crohn_anti_tnf",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "upadasitinib",
+        "rinvoq"
+      ],
+      "icd10_ranges": [
+        "K50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "message_tr": "Upadasitinib — Crohn hastalığında anti-TNF yetersizliğinde doz/süre belirtilen 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003753"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.upadacitinib_uc_anti_tnf",
+      "sut_section": "4.2.1.C-6",
+      "drug_names": [
+        "upadasitinib",
+        "rinvoq"
+      ],
+      "icd10_ranges": [
+        "K51"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "message_tr": "Upadasitinib — ülseratif kolitte anti-TNF yetersizliğinde gastroenteroloji/genel cerrahi uzman hekim raporu gerekir (§4.2.1.C-6).",
+      "gate_b_sources": [
+        "C003755"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.1.ustekinumab_crohn_anti_tnf_failure",
+      "sut_section": "4.2.1.C-4",
+      "drug_names": [
+        "ustekinumab",
+        "stelara"
+      ],
+      "icd10_ranges": [
+        "K50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "message_tr": "Ustekinumab — yetişkin Crohn hastalığında anti-TNF yetersizliğinde 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-4).",
+      "gate_b_sources": [
+        "C003686"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 4
+    },
+    {
+      "rule_id": "4.2.1.ustekinumab_psa_dmard_tnf_failure",
+      "sut_section": "4.2.1.C-4",
+      "drug_names": [
+        "ustekinumab",
+        "stelara"
+      ],
+      "icd10_ranges": [
+        "L40.5"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "message_tr": "Ustekinumab — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-4).",
+      "gate_b_sources": [
+        "C003682"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "romatoloji",
+        "fiziksel tıp",
+        "klinik immunoloji",
+        "çocuk sağlığı",
+        "çocuk romatoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.1.ustekinumab_psoriasis_pasi_report",
+      "sut_section": "4.2.1.C-4",
+      "drug_names": [
+        "ustekinumab",
+        "stelara"
+      ],
+      "icd10_ranges": [
+        "L40"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "dermatoloji"
+      ],
+      "message_tr": "Ustekinumab — plak psoriyaziste sağlık kurulu raporunda başlangıç PASI değeri ve tedavi şeması belirtilmelidir (§4.2.1.C-4).",
+      "gate_b_sources": [
+        "C003677"
+      ],
+      "prescriber_specialties": [
+        "dermatoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.1.vedolizumab_crohn_anti_tnf_initiation",
+      "sut_section": "4.2.1.C-8",
+      "drug_names": [
+        "vedolizumab",
+        "entyvio"
+      ],
+      "icd10_ranges": [
+        "K50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "message_tr": "Vedolizumab — anti-TNF yetersiz Crohn hastalığında doz/süre belirtilen 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-8).",
+      "gate_b_sources": [
+        "C003839",
+        "C003839"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 4
+    },
+    {
+      "rule_id": "4.2.1.vedolizumab_uc_anti_tnf_second_line",
+      "sut_section": "4.2.1.C-8",
+      "drug_names": [
+        "vedolizumab",
+        "entyvio"
+      ],
+      "icd10_ranges": [
+        "K51"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "message_tr": "Vedolizumab — anti-TNF yetersiz ülseratif kolitte gastroenteroloji/genel cerrahi uzman hekim raporu gerekir (§4.2.1.C-8).",
+      "gate_b_sources": [
+        "C003836",
+        "C003840"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 6,
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.1.vedolizumab_uc_report",
+      "sut_section": "4.2.1.C-4",
+      "drug_names": [
+        "vedolizumab",
+        "entyvio"
+      ],
+      "icd10_ranges": [
+        "K51"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "message_tr": "Vedolizumab — anti-TNF yetersiz ülseratif kolitte gastroenteroloji/genel cerrahi uzman hekim raporu gerekir (§4.2.1.C-4).",
+      "gate_b_sources": [
+        "C003687"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "genel cerrahi",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.10.eliglustat_cyp2d6_report",
+      "sut_section": "4.2.10.A-3",
+      "drug_names": [
+        "eliglustat",
+        "cerdelga"
+      ],
+      "icd10_ranges": [
+        "E75.22"
+      ],
+      "message_tr": "Eliglustat — CYP2D6 metabolizör tipi (OM/HM/YM) raporda belirtilmeli; 6 aylık sağlık kurulu raporu ve uzman reçetesi gerekir (§4.2.10.A-3/A-4).",
+      "gate_b_sources": [
+        "C004252",
+        "C004257",
+        "C004258"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk endokrinolojisi ve metabolizma",
+        "çocuk metabolizma",
+        "endokrinoloji ve metabolizma",
+        "gastroenteroloji"
+      ],
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "çocuk endokrinolojisi ve metabolizma",
+        "çocuk metabolizma",
+        "endokrinoloji ve metabolizma",
+        "gastroenteroloji",
+        "çocuk sağlığı ve hastalıkları",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.10.fabry_board_report_6mo",
+      "sut_section": "4.2.10.B-3",
+      "drug_names": [
+        "agalsidase",
+        "replagal",
+        "fabrazyme",
+        "migalastat",
+        "galafold"
+      ],
+      "icd10_ranges": [
+        "E75.21"
+      ],
+      "message_tr": "Fabry hastalığı tedavisi — metabolizma/endokrinoloji uzmanı dahil sağlık kurulu raporu (6 ay) ve uzman reçetesi gerekir (§4.2.10.B-3).",
+      "gate_b_sources": [
+        "C004299",
+        "C004300"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "endokrinoloji ve metabolizma",
+        "gastroenteroloji",
+        "nöroloji",
+        "nefroloji"
+      ],
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "çocuk metabolizma",
+        "endokrinoloji ve metabolizma",
+        "gastroenteroloji",
+        "nöroloji",
+        "nefroloji",
+        "çocuk sağlığı ve hastalıkları",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.10.gaucher_board_report_6mo",
+      "sut_section": "4.2.10.A-4",
+      "drug_names": [
+        "imiglucerase",
+        "cerezyme",
+        "velaglucerase",
+        "vprive",
+        "miglustat"
+      ],
+      "icd10_ranges": [
+        "E75.22"
+      ],
+      "message_tr": "Gaucher hastalığı tedavisi — çocuk endokrinolojisi/metabolizma veya gastroenteroloji uzman hekimlerinin yer aldığı 6 aylık sağlık kurulu raporu ve uzman reçetesi gerekir (§4.2.10.A-4).",
+      "gate_b_sources": [
+        "C004257",
+        "C004258"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk endokrinolojisi ve metabolizma",
+        "çocuk metabolizma",
+        "endokrinoloji ve metabolizma",
+        "gastroenteroloji"
+      ],
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "çocuk endokrinolojisi ve metabolizma",
+        "çocuk metabolizma",
+        "endokrinoloji ve metabolizma",
+        "gastroenteroloji",
+        "çocuk sağlığı ve hastalıkları",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.10.gaucher_enzyme_indication_types",
+      "sut_section": "4.2.10.A",
+      "drug_names": [
+        "imiglucerase",
+        "cerezyme",
+        "velaglucerase",
+        "vprive",
+        "eliglustat",
+        "cerdelga",
+        "miglustat",
+        "zavesca"
+      ],
+      "icd10_ranges": [
+        "E75.22"
+      ],
+      "message_tr": "Gaucher hastalığı enzim tedavisi — yalnızca Tip I (non nöropatik) ve Tip III (kronik nöropatik) formlarda endikedir; Tip II (akut nöropatik) formda enzim tedavisi yapılmaz (§4.2.10.A).",
+      "gate_b_sources": [
+        "C004209"
+      ]
+    },
+    {
+      "rule_id": "4.2.10.mps1_enzyme_start_date_report",
+      "sut_section": "4.2.10.C-2",
+      "drug_names": [
+        "laronidase",
+        "aldurazyme"
+      ],
+      "icd10_ranges": [
+        "E76.0"
+      ],
+      "message_tr": "Tip I Mukopolisakkaridoz enzim tedavisi — enzim tedavisine başlangıç tarihi her yenilenen raporda belirtilmelidir (§4.2.10.C-2).",
+      "gate_b_sources": [
+        "C004353"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "çocuk endokrinolojisi ve metabolizma",
+        "endokrinoloji ve metabolizma hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.10.mps_board_report_1yr",
+      "sut_section": "4.2.10.C-3",
+      "drug_names": [
+        "laronidase",
+        "aldurazyme",
+        "idursulfase",
+        "elaprase",
+        "galsulfase",
+        "naglazyme",
+        "elosulfase",
+        "vimizim"
+      ],
+      "icd10_ranges": [
+        "E76"
+      ],
+      "message_tr": "Mukopolisakkaridoz tedavisi — üçüncü basamak resmi sağlık kuruluşunda metabolizma uzmanlarının yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.10.C-3).",
+      "gate_b_sources": [
+        "C004363",
+        "C004364"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "çocuk endokrinolojisi ve metabolizma",
+        "endokrinoloji ve metabolizma hastalıkları"
+      ],
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "çocuk metabolizma",
+        "çocuk endokrinolojisi ve metabolizma",
+        "endokrinoloji ve metabolizma hastalıkları",
+        "çocuk sağlığı ve hastalıkları",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.10.npc_board_report_6mo",
+      "sut_section": "4.2.10.D-2",
+      "drug_names": [
+        "miglustat",
+        "zavesca"
+      ],
+      "icd10_ranges": [
+        "E75.24"
+      ],
+      "message_tr": "Niemann-Pick Tip C tedavisi — gastroenteroloji, çocuk metabolizma veya nöroloji uzman hekimlerinin yer aldığı 6 aylık sağlık kurulu raporu gerekir (§4.2.10.D-2).",
+      "gate_b_sources": [
+        "C004379",
+        "C004380"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "çocuk metabolizma",
+        "çocuk endokrinolojisi ve metabolizma",
+        "nöroloji"
+      ],
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "çocuk metabolizma",
+        "çocuk endokrinolojisi ve metabolizma",
+        "nöroloji",
+        "çocuk sağlığı ve hastalıkları",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.10.pompe_board_report_1yr",
+      "sut_section": "4.2.10.Ç-2",
+      "drug_names": [
+        "alglucosidase",
+        "myozyme",
+        "lumizyme"
+      ],
+      "icd10_ranges": [
+        "E74.02"
+      ],
+      "message_tr": "Pompe hastalığı tedavisi — gastroenteroloji, çocuk metabolizma veya nöroloji uzman hekimlerinin yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.10.Ç-2).",
+      "gate_b_sources": [
+        "C004371",
+        "C004372"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "çocuk metabolizma",
+        "çocuk endokrinolojisi ve metabolizma",
+        "nöroloji"
+      ],
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "çocuk metabolizma",
+        "çocuk endokrinolojisi ve metabolizma",
+        "nöroloji",
+        "çocuk sağlığı ve hastalıkları",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hbv_antiviral_report_renewal_initiation_f7",
+      "sut_section": "4.2.13.1",
+      "drug_names": [
+        "entekavir",
+        "tenofovir",
+        "lamivudin",
+        "telbivudin",
+        "adefovir"
+      ],
+      "icd10_ranges": [
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu yeni raporda belirtilmelidir (§4.2.13.1 (7)).",
+      "gate_b_sources": [
+        "C004601"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.13.hbv_antiviral_report_renewal_initiation_f8",
+      "sut_section": "4.2.13.1",
+      "drug_names": [
+        "entekavir",
+        "tenofovir",
+        "lamivudin",
+        "telbivudin",
+        "adefovir"
+      ],
+      "icd10_ranges": [
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu yeni raporda belirtilmelidir (§4.2.13.1 (8)).",
+      "gate_b_sources": [
+        "C004533"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.13.hbv_dna_initiation_board",
+      "sut_section": "4.2.13.1",
+      "drug_names": [
+        "entekavir",
+        "tenofovir",
+        "lamivudin",
+        "telbivudin",
+        "adefovir"
+      ],
+      "icd10_ranges": [
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HBV oral antiviral başlangıcı — HBV DNA ≥10.000 kopya/ml ve biyopsi sonuçları rapor ekinde belirtilmelidir (§4.2.13.1).",
+      "gate_b_sources": [
+        "C004540",
+        "C004540"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları",
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ]
+    },
     {
       "rule_id": "4.2.13.hbv_entekavir_board",
       "sut_section": "4.2.13.1",
@@ -32,6 +3476,30 @@
       ]
     },
     {
+      "rule_id": "4.2.13.hbv_immunosuppression_lamivudin_prophylaxis",
+      "sut_section": "4.2.13.1.2",
+      "drug_names": [
+        "lamivudin",
+        "entekavir",
+        "tenofovir"
+      ],
+      "icd10_ranges": [
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HBsAg(+) immünsupresif/kemoterapi/monoklonal antikor tedavisi — lamivudin profilaksisi tedavi süresince ve sonrası en fazla 12 ay rapor gerekir (§4.2.13.1.2).",
+      "gate_b_sources": [
+        "C004614"
+      ],
+      "report_duration_months": 12
+    },
+    {
       "rule_id": "4.2.13.hbv_lamivudin_board",
       "sut_section": "4.2.13.1",
       "drug_names": [
@@ -50,6 +3518,58 @@
       "message_tr": "Lamivudin — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).",
       "gate_b_sources": [
         "C004572"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hbv_oral_antiviral_switch_adult_report",
+      "sut_section": "4.2.13.1",
+      "drug_names": [
+        "entekavir",
+        "tenofovir",
+        "lamivudin",
+        "telbivudin",
+        "adefovir"
+      ],
+      "icd10_ranges": [
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "Erişkin HBV oral antiviral değişimi veya yeni oral antiviral eklenmesi — gerekçe yeni veya mevcut sağlık kurulu raporunda belirtilmelidir (§4.2.13.1 ç/e).",
+      "gate_b_sources": [
+        "C004584"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hbv_oral_antiviral_switch_pediatric_report",
+      "sut_section": "4.2.13.1",
+      "drug_names": [
+        "entekavir",
+        "tenofovir",
+        "lamivudin",
+        "telbivudin",
+        "adefovir"
+      ],
+      "icd10_ranges": [
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları",
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ],
+      "message_tr": "Çocuk HBV oral antiviral değişimi veya yeni oral antiviral eklenmesi — gerekçe yeni veya mevcut sağlık kurulu raporunda belirtilmelidir (§4.2.13.1 d).",
+      "gate_b_sources": [
+        "C004593"
       ]
     },
     {
@@ -99,6 +3619,31 @@
       ]
     },
     {
+      "rule_id": "4.2.13.hcv_acute_interferon_24w_monotherapy",
+      "sut_section": "4.2.13.E-1",
+      "drug_names": [
+        "interferon",
+        "pegile interferon",
+        "peginterferon",
+        "pegasys",
+        "peg intron"
+      ],
+      "icd10_ranges": [
+        "B17.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "Akut hepatit C — HCV RNA pozitif raporda belirtilerek 24 hafta interferon monoterapisi; ribavirin eklenmez (§4.2.13.E-1).",
+      "gate_b_sources": [
+        "C004634"
+      ],
+      "report_duration_months": 24,
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
       "rule_id": "4.2.13.hcv_acute_interferon_report",
       "sut_section": "4.2.13.3.1",
       "drug_names": [
@@ -121,6 +3666,102 @@
       ]
     },
     {
+      "rule_id": "4.2.13.hcv_daa_child_pugh_report",
+      "sut_section": "4.2.13.3.2",
+      "drug_names": [
+        "sofosbuvir",
+        "ledipasvir",
+        "velpatasvir",
+        "glekaprevir",
+        "pibrentasvir",
+        "daklatasvir",
+        "simeprevir",
+        "ombitasvir",
+        "paritaprevir",
+        "dasabuvir"
+      ],
+      "icd10_ranges": [
+        "B18.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HCV DAA — Child-Pugh sınıflamasını kanıtlayıcı belgeler ve tedavi şeması üçüncü basamak uzman hekim raporunda belirtilmelidir (§4.2.13.3.2).",
+      "gate_b_sources": [
+        "C004897"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları",
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hcv_daa_tertiary_gastro_once",
+      "sut_section": "4.2.13.3.2",
+      "drug_names": [
+        "sofosbuvir",
+        "ledipasvir",
+        "velpatasvir",
+        "glekaprevir",
+        "pibrentasvir",
+        "daklatasvir",
+        "simeprevir",
+        "ombitasvir",
+        "paritaprevir",
+        "dasabuvir"
+      ],
+      "icd10_ranges": [
+        "B18.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HCV DAA — üçüncü basamak kurumda gastroenteroloji/enfeksiyon uzman raporu ve tedavi şeması; bir defaya mahsus (§4.2.13.3.2).",
+      "gate_b_sources": [
+        "C004897"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları",
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hcv_genotype_b_48w_monitoring",
+      "sut_section": "4.2.13.3.2.B",
+      "drug_names": [
+        "interferon",
+        "pegile interferon",
+        "peginterferon",
+        "pegasys",
+        "peg intron",
+        "ribavirin",
+        "rebetol",
+        "copegus"
+      ],
+      "icd10_ranges": [
+        "B18.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HCV genotip 1/4 peginterferon+ribavirin — 48 hafta tedavi; 12. hafta HCV RNA monitoring ve erken kesme kriterleri raporda belirtilmelidir (§4.2.13.3.2.B).",
+      "gate_b_sources": [
+        "C004912",
+        "C004912"
+      ],
+      "report_duration_months": 48
+    },
+    {
       "rule_id": "4.2.13.hcv_glecaprevir_pibrentasvir_board",
       "sut_section": "4.2.13.3.2",
       "drug_names": [
@@ -138,7 +3779,72 @@
       "message_tr": "Glekaprevir/pibrentasvir — kronik HCV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.3.2).",
       "gate_b_sources": [
         "C004815"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.13.hcv_pediatric_early_stop_rechallenge",
+      "sut_section": "4.2.13.3.2.B",
+      "drug_names": [
+        "interferon",
+        "pegile interferon",
+        "peginterferon",
+        "pegasys",
+        "peg intron",
+        "ribavirin",
+        "rebetol",
+        "copegus"
+      ],
+      "icd10_ranges": [
+        "B18.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları",
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ],
+      "message_tr": "Pediatrik kronik HCV — 12. haftadan önce komplikasyonla kesilen interferon+ribavirin tedavisi yeniden başlatma kuralları (§4.2.13.3.2.B).",
+      "gate_b_sources": [
+        "C004916"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları",
+        "çocuk sağlığı",
+        "iç hastalıkları"
       ]
+    },
+    {
+      "rule_id": "4.2.13.hcv_reteatment_prior_therapy_report",
+      "sut_section": "4.2.13.3.2.A",
+      "drug_names": [
+        "interferon",
+        "pegile interferon",
+        "peginterferon",
+        "pegasys",
+        "peg intron",
+        "ribavirin",
+        "rebetol",
+        "copegus",
+        "boceprevir",
+        "telaprevir"
+      ],
+      "icd10_ranges": [
+        "B18.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HCV yeniden tedavi — önceki peginterferon/ribavirin/PI deneyimi sağlık raporunda belirtilmelidir (§4.2.13.3.2.A).",
+      "gate_b_sources": [
+        "C004760",
+        "C004851"
+      ],
+      "verification_status": "struck_clause_no_replacement"
     },
     {
       "rule_id": "4.2.13.hcv_ribavirin_combo_report",
@@ -158,7 +3864,36 @@
       "message_tr": "HCV ribavirin kombinasyonu — kronik hepatit C endikasyonu ve uzman hekim raporu gerekir (§4.2.13).",
       "gate_b_sources": [
         "C004641"
-      ]
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.13.hcv_ribavirin_genotype_duration",
+      "sut_section": "4.2.13.E-2",
+      "drug_names": [
+        "ribavirin",
+        "rebetol",
+        "copegus",
+        "interferon",
+        "pegile interferon",
+        "peginterferon",
+        "pegasys",
+        "peg intron"
+      ],
+      "icd10_ranges": [
+        "B18.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HCV ribavirin kombinasyonu — genotip 1/4 için 48 hafta; 12. hafta HCV RNA 2 log azalmama halinde süre sınırı uygulanır (§4.2.13.E-2).",
+      "gate_b_sources": [
+        "C004642"
+      ],
+      "report_duration_months": 48,
+      "verification_status": "struck_clause_no_replacement"
     },
     {
       "rule_id": "4.2.13.hcv_sofosbuvir_ledipasvir_board",
@@ -177,9 +3912,132 @@
       ],
       "message_tr": "Sofosbuvir/ledipasvir — kronik HCV endikasyonu ve gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.2).",
       "gate_b_sources": [
-        "C004690",
+        "C004902",
         "C004897"
       ]
+    },
+    {
+      "rule_id": "4.2.13.hcv_specialist_report_criteria",
+      "sut_section": "4.2.13.3.2",
+      "drug_names": [
+        "sofosbuvir",
+        "ledipasvir",
+        "velpatasvir",
+        "glekaprevir",
+        "pibrentasvir",
+        "daklatasvir",
+        "simeprevir",
+        "ombitasvir",
+        "paritaprevir",
+        "dasabuvir",
+        "interferon",
+        "pegile interferon",
+        "peginterferon",
+        "pegasys",
+        "peg intron",
+        "ribavirin",
+        "rebetol",
+        "copegus"
+      ],
+      "icd10_ranges": [
+        "B18.2",
+        "B17.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HCV uzman hekim raporu — HCV RNA, siroz durumu, Child-Pugh B/C kanıtı, genotip ve önceki tedaviler belirtilmelidir (§4.2.13.3.2).",
+      "gate_b_sources": [
+        "C004898"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hdv_interferon_board",
+      "sut_section": "4.2.13.2",
+      "drug_names": [
+        "interferon",
+        "pegile interferon",
+        "peginterferon",
+        "pegasys",
+        "peg intron",
+        "entekavir",
+        "tenofovir",
+        "lamivudin",
+        "telbivudin",
+        "adefovir"
+      ],
+      "icd10_ranges": [
+        "B18.0",
+        "B17.0",
+        "B16",
+        "B18.0",
+        "B18.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "HDV(+) kronik hepatit B — interferon/pegile interferon; anti-HDV ve HBV DNA reçete/raporda belirtilmelidir (§4.2.13.2).",
+      "gate_b_sources": [
+        "C004628"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.13.hepatitis_prior_therapy_documentation",
+      "sut_section": "4.2.13",
+      "drug_names": [
+        "entekavir",
+        "tenofovir",
+        "lamivudin",
+        "telbivudin",
+        "adefovir",
+        "interferon",
+        "pegile interferon",
+        "peginterferon",
+        "pegasys",
+        "peg intron",
+        "ribavirin",
+        "rebetol",
+        "copegus",
+        "sofosbuvir",
+        "ledipasvir",
+        "velpatasvir",
+        "glekaprevir",
+        "pibrentasvir",
+        "daklatasvir",
+        "simeprevir",
+        "ombitasvir",
+        "paritaprevir",
+        "dasabuvir"
+      ],
+      "icd10_ranges": [
+        "B15",
+        "B16",
+        "B17",
+        "B18",
+        "B19"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "enfeksiyon hastalıkları"
+      ],
+      "message_tr": "Hepatit tedavisi — önceki ilaçlar, tanı ve tedavi başlama/kesilme kriterleri raporda belirtilmelidir; oral antiviral ilk rapor en fazla 6 ay (§4.2.13).",
+      "gate_b_sources": [
+        "C004506"
+      ],
+      "verification_status": "struck_clause_no_replacement"
     },
     {
       "rule_id": "4.2.13.hepatitis_viral_gastro_inf_report",
@@ -202,7 +4060,7 @@
       ],
       "message_tr": "Viral hepatit ilaçları — gastroenteroloji veya enfeksiyon hastalıkları uzman hekim ilaç kullanım raporu gerekir (§4.2.13).",
       "gate_b_sources": [
-        "C004501"
+        "C004503"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -3991,6 +7849,269 @@
       ]
     },
     {
+      "rule_id": "4.2.15.clopidogrel_acs_no_report_acute",
+      "sut_section": "4.2.15.A",
+      "drug_names": [
+        "klopidogrel",
+        "plavix"
+      ],
+      "icd10_ranges": [
+        "I21",
+        "I22",
+        "I20",
+        "I24"
+      ],
+      "message_tr": "Klopidogrel akut koroner sendrom — kardiyoloji, kalp damar cerrahisi, iç hastalıkları veya acil tıp uzmanı rapor aranmaksızın reçete edebilir (§4.2.15.A-2).",
+      "gate_b_sources": [
+        "C005777"
+      ],
+      "prescriber_specialties": [
+        "kardiyoloji",
+        "kalp damar cerrahisi",
+        "iç hastalıkları",
+        "acil tıp"
+      ]
+    },
+    {
+      "rule_id": "4.2.15.clopidogrel_cabg_board",
+      "sut_section": "4.2.15.B",
+      "drug_names": [
+        "klopidogrel",
+        "plavix"
+      ],
+      "icd10_ranges": [
+        "I25"
+      ],
+      "message_tr": "Klopidogrel CABG sonrası — en az bir kalp damar cerrahisi uzmanının yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.15.B-1).",
+      "gate_b_sources": [
+        "C005782"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "kalp damar cerrahisi",
+        "kardiyoloji",
+        "genel cerrahi"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.15.clopidogrel_family_medicine_renewal",
+      "sut_section": "4.2.15.A",
+      "drug_names": [
+        "klopidogrel",
+        "plavix"
+      ],
+      "icd10_ranges": [
+        "I25",
+        "I70",
+        "I63",
+        "I65",
+        "I66"
+      ],
+      "message_tr": "Klopidogrel rapor yenileme — ilk iki rapor dönemi (toplam 24 ay) sonrası aile hekimliği uzmanı en fazla 12 aylık rapor düzenleyebilir (§4.2.15.A).",
+      "gate_b_sources": [
+        "C005778"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "aile hekimliği"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.15.clopidogrel_peripheral_stent",
+      "sut_section": "4.2.15.A",
+      "drug_names": [
+        "klopidogrel",
+        "plavix"
+      ],
+      "icd10_ranges": [
+        "I70",
+        "I63",
+        "I65",
+        "I66",
+        "Z95.1",
+        "Z95.5"
+      ],
+      "message_tr": "Klopidogrel periferik/serebral stent — kardiyoloji, iç hastalıkları, nöroloji, kalp damar cerrahisi, beyin cerrahisi veya girişimsel radyoloji uzmanı rapor aranmaksızın reçete edebilir (§4.2.15.A-4).",
+      "gate_b_sources": [
+        "C005780"
+      ],
+      "prescriber_specialties": [
+        "kardiyoloji",
+        "iç hastalıkları",
+        "nöroloji",
+        "kalp damar cerrahisi",
+        "acil tıp",
+        "beyin cerrahisi",
+        "radyoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.15.clopidogrel_stent_no_report",
+      "sut_section": "4.2.15.A",
+      "drug_names": [
+        "klopidogrel",
+        "plavix"
+      ],
+      "icd10_ranges": [
+        "Z95.1",
+        "Z95.5"
+      ],
+      "message_tr": "Klopidogrel koroner stent — kardiyoloji veya kalp damar cerrahisi uzmanı rapor aranmaksızın stent öncesi 24 saat ve taburcu sonrası 4 hafta reçete edebilir (§4.2.15.A-1).",
+      "gate_b_sources": [
+        "C005776"
+      ],
+      "prescriber_specialties": [
+        "kardiyoloji",
+        "kalp damar cerrahisi"
+      ]
+    },
+    {
+      "rule_id": "4.2.15.clopidogrel_valve_cad_report",
+      "sut_section": "4.2.15.A",
+      "drug_names": [
+        "klopidogrel",
+        "plavix"
+      ],
+      "icd10_ranges": [
+        "Z95.2",
+        "Z95.3",
+        "Z95.4",
+        "I25",
+        "I70",
+        "I63",
+        "I65",
+        "I66"
+      ],
+      "message_tr": "Klopidogrel kapak biyoprotezi / KAH / periferik arter / inme — kardiyoloji, iç hastalıkları, nöroloji, kalp damar cerrahisi veya acil tıp uzman raporu (en fazla 12 ay) gerekir (§4.2.15.A-3).",
+      "gate_b_sources": [
+        "C005779"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "kardiyoloji",
+        "iç hastalıkları",
+        "nöroloji",
+        "kalp damar cerrahisi",
+        "acil tıp"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.15.dabigatran_cardiology_board",
+      "sut_section": "4.2.15.D",
+      "drug_names": [
+        "dabigatran",
+        "pradaxa"
+      ],
+      "icd10_ranges": [
+        "I25",
+        "I70",
+        "I63",
+        "I65",
+        "I66"
+      ],
+      "message_tr": "Dabigatran — tanımlı endikasyonlarda geçiş gerekçeli en az bir kardiyoloji uzmanının yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.15.D-3).",
+      "gate_b_sources": [
+        "C005823"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "kardiyoloji"
+      ],
+      "prescriber_specialties": [
+        "kardiyoloji",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 12,
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.15.ranolazin_stable_angina_board",
+      "sut_section": "4.2.15.F",
+      "drug_names": [
+        "ranolazin",
+        "ranexa"
+      ],
+      "icd10_ranges": [
+        "I20"
+      ],
+      "message_tr": "Ranolazin — kronik stabil anginada beta blokör/CCB intoleransında kardiyoloji uzman raporu (en fazla 12 ay) ve kardiyoloji/iç hastalıkları reçetesi gerekir (§4.2.15.F).",
+      "gate_b_sources": [
+        "C005870"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "kardiyoloji"
+      ],
+      "prescriber_specialties": [
+        "kardiyoloji",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.16.celiac_gluten_free_1yr_gastro_report",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "glutensiz",
+        "özel formüllü un",
+        "ozel formul",
+        "çölyak",
+        "coelyak"
+      ],
+      "icd10_ranges": [
+        "K90.0"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji"
+      ],
+      "message_tr": "Çölyak glutensiz ürün — gastroenteroloji uzman hekim 1 yıl süreli rapor gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C005883",
+        "C005894"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji"
+      ],
+      "report_duration_months": 12,
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.16.celiac_gluten_free_3yr_board",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "glutensiz un",
+        "glutensiz makarna",
+        "çölyak",
+        "glutensiz bisküvi"
+      ],
+      "icd10_ranges": [
+        "K90.0"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji"
+      ],
+      "message_tr": "Çölyak glutensiz ürün — gastroenteroloji (veya yoksa çocuk sağlığı/iç hastalıkları) 3 yıl süreli rapor gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C006007",
+        "C006007",
+        "C006007",
+        "C006007",
+        "C006007",
+        "C006007"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 36
+    },
+    {
       "rule_id": "4.2.16.celiac_gluten_free_report",
       "sut_section": "4.2.16",
       "drug_names": [
@@ -4027,8 +8148,137 @@
       ],
       "message_tr": "Kistik fibrozis özel maması — gastroenteroloji/göğüs hastalıkları uzman hekim raporu gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C005947",
+        "C005999",
         "C005999"
+      ]
+    },
+    {
+      "rule_id": "4.2.16.infant_cmpa_amino_acid_severe_formula",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "aminoasit mama",
+        "neocate",
+        "alfamino",
+        "pirinç proteini",
+        "aminoasit bazlı"
+      ],
+      "icd10_ranges": [
+        "T78.1",
+        "K52.2",
+        "L27.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk gastroenteroloji",
+        "çocuk immünoloji",
+        "çocuk alerji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Ağır CMPA vakalarında aminoasit/pirinç proteini bazlı mama — çocuk gastroenteroloji/immünoloji-alerji uzman hekim raporu gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C005948"
+      ],
+      "prescriber_specialties": [
+        "çocuk gastroenteroloji",
+        "çocuk immünoloji",
+        "çocuk alerji",
+        "çocuk sağlığı"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.16.infant_cmpa_hydrolyzed_formula_report",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "hidrolize mama",
+        "hidrolize",
+        "inek sütü alerjisi",
+        "cmpa"
+      ],
+      "icd10_ranges": [
+        "T78.1",
+        "K52.2",
+        "L27.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk gastroenteroloji",
+        "çocuk immünoloji",
+        "çocuk alerji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "İnek sütü/çoklu gıda protein alerjisi hidrolize mama — çocuk gastroenteroloji/immünoloji-alerji (veya çocuk sağlığı) uzman hekim raporu gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C005948"
+      ],
+      "prescriber_specialties": [
+        "çocuk gastroenteroloji",
+        "çocuk immünoloji",
+        "çocuk alerji",
+        "çocuk sağlığı"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.16.infant_cmpa_medical_formula_2025",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "tıbbi mama",
+        "tibbi mama",
+        "medical formula",
+        "cmpa mama"
+      ],
+      "icd10_ranges": [
+        "T78.1",
+        "K52.2",
+        "L27.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk gastroenteroloji",
+        "çocuk immünoloji",
+        "çocuk alerji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "İki yaşına kadar CMPA tıbbi mama — çocuk gastroenteroloji/alerji/immünoloji (veya çocuk sağlığı) uzman hekim raporu gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C006000"
+      ],
+      "prescriber_specialties": [
+        "çocuk gastroenteroloji",
+        "çocuk immünoloji",
+        "çocuk alerji",
+        "çocuk sağlığı"
+      ]
+    },
+    {
+      "rule_id": "4.2.16.malabsorption_special_formula_report",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "malabsorbsiyon",
+        "tedavi edici mama",
+        "malabsorbsiyon maması"
+      ],
+      "icd10_ranges": [
+        "K90",
+        "K91",
+        "E73"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "gastroenteroloji",
+        "çocuk metabolizma",
+        "metabolizma hastalıkları"
+      ],
+      "message_tr": "Malabsorbsiyona neden olan hastalıkta özel mama — gastroenteroloji/metabolizma uzman hekim raporu gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C005981"
+      ],
+      "prescriber_specialties": [
+        "gastroenteroloji",
+        "çocuk metabolizma",
+        "çocuk sağlığı",
+        "iç hastalıkları"
       ]
     },
     {
@@ -4069,6 +8319,118 @@
       ]
     },
     {
+      "rule_id": "4.2.16.metabolic_formula_prescriber_fallback",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "doğuştan metabolik",
+        "metabolik formül",
+        "metabolik formul"
+      ],
+      "icd10_ranges": [
+        "E70",
+        "E71",
+        "E72",
+        "E74"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji",
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ],
+      "message_tr": "Metabolik özel formül — uzman hekim bulunmadığında çocuk sağlığı veya iç hastalıkları uzman hekim raporu ile reçete edilebilir (§4.2.16).",
+      "gate_b_sources": [
+        "C005981",
+        "C005983"
+      ],
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.16.pediatric_metabolic_formula_3yr_board",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "metabolik mama",
+        "fenilketonüri",
+        "pku",
+        "özel formül",
+        "ozel formul"
+      ],
+      "icd10_ranges": [
+        "E70",
+        "E71",
+        "E72",
+        "E74"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji",
+        "çocuk endokrinoloji",
+        "çocuk gastroenteroloji"
+      ],
+      "message_tr": "Doğuştan metabolik hastalık özel formülü — çocuk metabolizma/endokrinoloji/gastroenteroloji uzman hekim 3 yıl süreli rapor gerekir (§4.2.16).",
+      "gate_b_sources": [
+        "C005983"
+      ],
+      "prescriber_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji",
+        "çocuk endokrinoloji",
+        "çocuk gastroenteroloji",
+        "çocuk sağlığı"
+      ],
+      "report_duration_months": 36
+    },
+    {
+      "rule_id": "4.2.16.protein_metabolism_formula_diet_report",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "özel formüllü un",
+        "ozel formul un",
+        "aminoasit metabolizması",
+        "organik asidemi",
+        "üre siklus"
+      ],
+      "icd10_ranges": [
+        "E70",
+        "E71",
+        "E72",
+        "E74"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji"
+      ],
+      "message_tr": "Protein metabolizması bozukluğu özel formüllü un — kısıtlı diyet nedeniyle hayati öneme haiz ürünler uzman hekim raporuna dayanılarak karşılanır (§4.2.16 (3)).",
+      "gate_b_sources": [
+        "C005993",
+        "C005993",
+        "C005993",
+        "C005993",
+        "C005993",
+        "C005993"
+      ],
+      "prescriber_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji"
+      ]
+    },
+    {
       "rule_id": "4.2.16.protein_metabolism_formula_report",
       "sut_section": "4.2.16",
       "drug_names": [
@@ -4091,8 +8453,2322 @@
       ],
       "message_tr": "Protein metabolizması bozukluğu özel formülü — uzman hekim raporu gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C005877",
+        "C005982",
         "C005993"
+      ]
+    },
+    {
+      "rule_id": "4.2.16.protein_metabolism_specialist_prescriber",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "özel formüllü un",
+        "ozel formul",
+        "aminoasit metabolizması",
+        "protein metabolizması"
+      ],
+      "icd10_ranges": [
+        "E70",
+        "E71",
+        "E72",
+        "E74"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji"
+      ],
+      "message_tr": "Protein metabolizması bozukluğu özel formül — çocuk metabolizma/endokrinoloji/gastroenteroloji uzman hekim raporu gerekir (§4.2.16 (2)).",
+      "gate_b_sources": [
+        "C005982"
+      ],
+      "prescriber_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.16.special_formula_all_prescriber_with_report",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "özel formül mama",
+        "ozel formul mama",
+        "hastalığa özel mama"
+      ],
+      "icd10_ranges": [
+        "E70",
+        "E71",
+        "E72",
+        "E74",
+        "E84",
+        "K90.0",
+        "T78.1",
+        "K52.2",
+        "L27.2"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji",
+        "çocuk gastroenteroloji",
+        "çocuk immünoloji",
+        "çocuk alerji",
+        "çocuk sağlığı"
+      ],
+      "message_tr": "Hastalığa özel özel mama — uzman hekim raporu olmadan reçete edilemez; rapor sonrası tüm hekimler reçete edebilir (§4.2.16).",
+      "gate_b_sources": [
+        "C005908"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.16.special_formula_ek4b_specialist_report",
+      "sut_section": "4.2.16",
+      "drug_names": [
+        "özel mama",
+        "ozel mama",
+        "tıbbi mama",
+        "metabolik mama",
+        "kistik fibrozis maması"
+      ],
+      "icd10_ranges": [
+        "E70",
+        "E71",
+        "E72",
+        "E74",
+        "E84",
+        "K90.0"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji"
+      ],
+      "message_tr": "EK-4/B özel mama — metabolizma/endokrinoloji/gastroenteroloji uzman hekim raporu gerekir; yoksa çocuk sağlığı/iç hastalıkları (§4.2.16).",
+      "gate_b_sources": [
+        "C005981",
+        "C005908"
+      ],
+      "prescriber_specialties": [
+        "çocuk metabolizma",
+        "metabolizma hastalıkları",
+        "endokrinoloji",
+        "gastroenteroloji",
+        "çocuk sağlığı",
+        "iç hastalıkları"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.17.bisphosphonate_ho_no_bmd",
+      "sut_section": "4.2.17.A",
+      "drug_names": [
+        "bifosfonat",
+        "etidronat"
+      ],
+      "icd10_ranges": [
+        "M84"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "fiziksel tıp",
+        "ortopedi",
+        "romatoloji",
+        "endokrinoloji",
+        "kadın hastalıkları"
+      ],
+      "message_tr": "Heterotopik ossifikasyon endikasyonlu bifosfonat — prospektüs doz/sürelerinde KMY ölçümü aranmaksızın kullanılabilir (§4.2.17.A).",
+      "gate_b_sources": [
+        "C006026"
+      ]
+    },
+    {
+      "rule_id": "4.2.17.bisphosphonate_specialist_report",
+      "sut_section": "4.2.17.A",
+      "drug_names": [
+        "bifosfonat",
+        "alendronat",
+        "risedronat",
+        "zoledronat",
+        "ibandronat",
+        "etidronat"
+      ],
+      "icd10_ranges": [
+        "M80",
+        "M81",
+        "M82"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "fiziksel tıp",
+        "ortopedi",
+        "romatoloji",
+        "endokrinoloji",
+        "kadın hastalıkları"
+      ],
+      "message_tr": "Bifosfonat grubu — iç hastalıkları, fizik tedavi, ortopedi, romatoloji, endokrinoloji veya kadın doğum uzman hekim raporu gerekir (§4.2.17.A).",
+      "gate_b_sources": [
+        "C006019",
+        "C006027"
+      ],
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "fiziksel tıp",
+        "ortopedi",
+        "romatoloji",
+        "endokrinoloji",
+        "kadın hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.17.calcitonin_tertiary_bisph_fail",
+      "sut_section": "4.2.17.A",
+      "drug_names": [
+        "kalsitonin",
+        "miacalcic",
+        "calcitonin"
+      ],
+      "icd10_ranges": [
+        "M80",
+        "M81",
+        "M82"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "fiziksel tıp",
+        "ortopedi",
+        "romatoloji",
+        "endokrinoloji",
+        "kadın hastalıkları"
+      ],
+      "message_tr": "Kalsitonin — ağrılı vertebral kırığı olmayan, bifosfonat yanıtsız/tolere edilemeyen osteoporozda üçüncü basamak kurum ve uzman hekim raporu gerekir (§4.2.17.A).",
+      "gate_b_sources": [
+        "C006041"
+      ]
+    },
+    {
+      "rule_id": "4.2.17.calcitonin_vertebral_fracture_report",
+      "sut_section": "4.2.17.A",
+      "drug_names": [
+        "kalsitonin",
+        "miacalcic",
+        "calcitonin"
+      ],
+      "icd10_ranges": [
+        "M80",
+        "M81",
+        "M48.5"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "fiziksel tıp",
+        "ortopedi",
+        "romatoloji",
+        "endokrinoloji",
+        "kadın hastalıkları"
+      ],
+      "message_tr": "Kalsitonin — ağrılı vertebral kırığı olan osteoporozda sağlık kurulu raporu ve en fazla 3 aylık tedavi dozu (§4.2.17.A).",
+      "gate_b_sources": [
+        "C006040"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.17.denosumab_board_report",
+      "sut_section": "4.2.17.A",
+      "drug_names": [
+        "denosumab",
+        "prolia"
+      ],
+      "icd10_ranges": [
+        "M80",
+        "M81",
+        "M82",
+        "C61",
+        "C50"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "fiziksel tıp",
+        "ortopedi",
+        "romatoloji",
+        "endokrinoloji",
+        "kadın hastalıkları"
+      ],
+      "message_tr": "Denosumab — bifosfonat yanıtsız/tolere edilemeyen veya renal yetmezlik nedeniyle bifosfonat kullanılamayan osteoporozda sağlık kurulu raporu gerekir (§4.2.17.A).",
+      "gate_b_sources": [
+        "C006039"
+      ]
+    },
+    {
+      "rule_id": "4.2.17.osteoporosis_bmd_planning",
+      "sut_section": "4.2.17.A",
+      "drug_names": [
+        "denosumab",
+        "stronsiyum",
+        "raloksifen",
+        "kalsitonin"
+      ],
+      "icd10_ranges": [
+        "M80",
+        "M81",
+        "M82"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "fiziksel tıp",
+        "ortopedi",
+        "romatoloji",
+        "endokrinoloji",
+        "kadın hastalıkları"
+      ],
+      "message_tr": "Osteoporoz ilaç tedavisi — rapor tarihinden önce son iki yıl içinde KMY ölçümü planlanmalı; ölçüm yılda birden sık yapılamaz (§4.2.17.A).",
+      "gate_b_sources": [
+        "C006019"
+      ]
+    },
+    {
+      "rule_id": "4.2.17.secondary_osteoporosis_steroid_board",
+      "sut_section": "4.2.17.A",
+      "drug_names": [
+        "denosumab"
+      ],
+      "icd10_ranges": [
+        "M05",
+        "M06",
+        "K50",
+        "K51",
+        "M45",
+        "E05",
+        "J44",
+        "E10",
+        "Z94"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "fiziksel tıp",
+        "ortopedi",
+        "romatoloji",
+        "endokrinoloji",
+        "kadın hastalıkları"
+      ],
+      "message_tr": "Sekonder osteoporoz (steroid, organ nakli, romatolojik hastalık vb.) — uzman hekim raporu ve KMY kriterleri gerekir (§4.2.17.A).",
+      "gate_b_sources": [
+        "C006025"
+      ]
+    },
+    {
+      "rule_id": "4.2.17.strontium_raloxifene_bisph_fail",
+      "sut_section": "4.2.17.A",
+      "drug_names": [
+        "stronsiyum",
+        "raloksifen"
+      ],
+      "icd10_ranges": [
+        "M80",
+        "M81",
+        "M82"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "iç hastalıkları",
+        "fiziksel tıp",
+        "ortopedi",
+        "romatoloji",
+        "endokrinoloji",
+        "kadın hastalıkları"
+      ],
+      "message_tr": "Stronsiyum ranelat / raloksifen — bifosfonat tolere edilemeyen veya yanıtsız osteoporozlu hastalarda uzman hekim raporu gerekir (§4.2.17.A).",
+      "gate_b_sources": [
+        "C006031"
+      ]
+    },
+    {
+      "rule_id": "4.2.17.teriparatid_severe_osteoporosis_board",
+      "sut_section": "4.2.17.D",
+      "drug_names": [
+        "teriparatid",
+        "forteo",
+        "romosozumab",
+        "evenity"
+      ],
+      "icd10_ranges": [
+        "M80",
+        "M81",
+        "M82"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "endokrinoloji",
+        "fizik tedavi",
+        "fiziksel tıp",
+        "geriatri"
+      ],
+      "message_tr": "Teriparatid / romosozumab — 65+ yaş, T≤-3,5 ve ≥2 kırık ile röntgen tanılı şiddetli osteoporozda 24 haftalık sağlık kurulu raporu gerekir (§4.2.17.D).",
+      "gate_b_sources": [
+        "C006053"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.18.orlistat_monthly_prescription",
+      "sut_section": "4.2.18",
+      "drug_names": [
+        "orlistat",
+        "xenical"
+      ],
+      "icd10_ranges": [
+        "E66"
+      ],
+      "message_tr": "Orlistat — reçeteler birer aylık düzenlenmelidir (§4.2.18).",
+      "gate_b_sources": [
+        "C006059"
+      ],
+      "report_duration_months": 1
+    },
+    {
+      "rule_id": "4.2.19.topiramate_migraine_prophylaxis",
+      "sut_section": "4.2.19",
+      "drug_names": [
+        "topiramat",
+        "topiramate"
+      ],
+      "icd10_ranges": [
+        "G43"
+      ],
+      "message_tr": "Topiramat profilaktik migren — diğer profilaktikler 6 ay etkisiz kaldıktan sonra nöroloji uzman hekim raporu ile başlanır (§4.2.19).",
+      "gate_b_sources": [
+        "C006063"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji"
+      ],
+      "prescriber_specialties": [
+        "nöroloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.19.triptan_neurology_prescriber",
+      "sut_section": "4.2.19",
+      "drug_names": [
+        "triptan",
+        "sumatriptan",
+        "zolmitriptan",
+        "rizatriptan",
+        "eletriptan",
+        "naratriptan",
+        "almotriptan",
+        "frovatriptan"
+      ],
+      "icd10_ranges": [
+        "G43"
+      ],
+      "message_tr": "Triptanlar — migren endikasyonunda nöroloji uzman hekimi reçetesi gerekir (§4.2.19).",
+      "gate_b_sources": [
+        "C006062"
+      ],
+      "prescriber_specialties": [
+        "nöroloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.24.biologic_tertiary_board",
+      "sut_section": "4.2.24.A",
+      "drug_names": [
+        "mepolizumab",
+        "benralizumab",
+        "nucala",
+        "fasenra"
+      ],
+      "icd10_ranges": [
+        "J45",
+        "J46"
+      ],
+      "message_tr": "Mepolizumab/benralizumab — üçüncü basamak kurumda alerji/immünoloji uzmanının yer aldığı sağlık kurulu raporu ve göğüs hastalıkları/alerji reçetesi gerekir (§4.2.24.A-3).",
+      "gate_b_sources": [
+        "C006142"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "alerji",
+        "immünoloji",
+        "göğüs hastalıkları"
+      ],
+      "prescriber_specialties": [
+        "göğüs hastalıkları",
+        "alerji",
+        "immünoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.24.copd_inhaler_prescriber",
+      "sut_section": "4.2.24.B",
+      "drug_names": [
+        "formeterol",
+        "salmeterol",
+        "indakaterol",
+        "tiotropium",
+        "glikopironyum",
+        "vilanterol",
+        "umeklidinyum",
+        "olodaterol",
+        "beclometazon",
+        "flutikazon",
+        "budesonid"
+      ],
+      "icd10_ranges": [
+        "J44",
+        "J45",
+        "J46"
+      ],
+      "message_tr": "KOAH/astım inhale kombinasyonları — göğüs hastalıkları, göğüs cerrahisi, iç hastalıkları veya çocuk sağlığı uzman hekim reçetesi gerekir (§4.2.24.B-1).",
+      "gate_b_sources": [
+        "C006160"
+      ],
+      "report_required": true,
+      "prescriber_specialties": [
+        "göğüs hastalıkları",
+        "göğüs cerrahisi",
+        "alerji",
+        "iç hastalıkları",
+        "çocuk sağlığı"
+      ]
+    },
+    {
+      "rule_id": "4.2.24.formeterol_salmeterol_prescriber",
+      "sut_section": "4.2.24.A",
+      "drug_names": [
+        "formeterol",
+        "salmeterol",
+        "vilanterol",
+        "seretide",
+        "symbicort"
+      ],
+      "icd10_ranges": [
+        "J45",
+        "J46",
+        "J44",
+        "J30"
+      ],
+      "message_tr": "Formeterol/salmeterol/vilanterol — göğüs hastalıkları, göğüs cerrahisi, alerji, iç hastalıkları veya çocuk sağlığı uzman hekim reçetesi gerekir; uzman raporu ile devam reçetesi diğer hekimlere açılır (§4.2.24.A-1).",
+      "gate_b_sources": [
+        "C006124"
+      ],
+      "report_required": true,
+      "prescriber_specialties": [
+        "göğüs hastalıkları",
+        "göğüs cerrahisi",
+        "alerji",
+        "iç hastalıkları",
+        "çocuk sağlığı"
+      ]
+    },
+    {
+      "rule_id": "4.2.24.laba_lama_ics_triple_prior",
+      "sut_section": "4.2.24.B",
+      "drug_names": [
+        "indakaterol",
+        "glikopironyum",
+        "flutikazon",
+        "vilanterol",
+        "umeklidinyum",
+        "trelegy",
+        "trimbow"
+      ],
+      "icd10_ranges": [
+        "J44"
+      ],
+      "message_tr": "LABA+LAMA+İKS üçlü kombinasyon — en az 3 ay İKS+LABA veya İKS+LAMA sonrası göğüs hastalıkları uzman sağlık kurulu raporu gerekir (§4.2.24.B-4).",
+      "gate_b_sources": [
+        "C006171"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "göğüs hastalıkları",
+        "göğüs cerrahisi",
+        "alerji",
+        "iç hastalıkları",
+        "çocuk sağlığı"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.24.laba_mono_invalid_prescription",
+      "sut_section": "4.2.24.B",
+      "drug_names": [
+        "formeterol",
+        "salmeterol",
+        "indakaterol",
+        "vilanterol",
+        "tiotropium",
+        "glikopironyum",
+        "olodaterol"
+      ],
+      "icd10_ranges": [
+        "J44",
+        "J45",
+        "J46"
+      ],
+      "message_tr": "LABA/LAMA/İKS mono veya sabit doz dışı kombinasyon reçetesi — bedel karşılanmaz (§4.2.24.B-7).",
+      "gate_b_sources": [
+        "C006174"
+      ]
+    },
+    {
+      "rule_id": "4.2.24.montelukast_antihistamine_combo",
+      "sut_section": "4.2.24.C",
+      "drug_names": [
+        "montelukast",
+        "antihistaminik",
+        "singulair"
+      ],
+      "icd10_ranges": [
+        "J30",
+        "J45",
+        "J46"
+      ],
+      "message_tr": "Montelukast+antihistaminik kombinasyonları — KBB, iç hastalıkları, çocuk sağlığı, göğüs hastalıkları veya alerji uzman reçetesi/raporu gerekir (§4.2.24.C-1).",
+      "gate_b_sources": [
+        "C006184"
+      ],
+      "report_required": true,
+      "prescriber_specialties": [
+        "kulak burun boğaz",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "göğüs hastalıkları",
+        "alerji"
+      ]
+    },
+    {
+      "rule_id": "4.2.24.montelukast_prescriber_report",
+      "sut_section": "4.2.24.A",
+      "drug_names": [
+        "montelukast",
+        "zafirlukast",
+        "singulair"
+      ],
+      "icd10_ranges": [
+        "J45",
+        "J46",
+        "J30"
+      ],
+      "message_tr": "Montelukast/zafirlukast — iç hastalıkları, çocuk sağlığı, göğüs hastalıkları veya alerji uzman hekim reçetesi veya uzman hekim raporu gerekir (§4.2.24.A-2).",
+      "gate_b_sources": [
+        "C006125"
+      ],
+      "report_required": true,
+      "prescriber_specialties": [
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "göğüs hastalıkları",
+        "alerji"
+      ]
+    },
+    {
+      "rule_id": "4.2.24.nasal_cs_pediatric_prescriber",
+      "sut_section": "4.2.24.Ç",
+      "drug_names": [
+        "nasal kortikosteroid",
+        "flutikazon",
+        "mometazon",
+        "budesonid",
+        "avamys",
+        "nasonex"
+      ],
+      "icd10_ranges": [
+        "J30"
+      ],
+      "message_tr": "Nasal kortikosteroid — 2-5 yaş grubunda yalnızca çocuk sağlığı, alerji, klinik immünoloji, KBB veya aile hekimliği uzman reçetesi gerekir (§4.2.24.Ç-1).",
+      "gate_b_sources": [
+        "C006192"
+      ],
+      "report_required": true,
+      "prescriber_specialties": [
+        "çocuk sağlığı",
+        "alerji",
+        "klinik immünoloji",
+        "kulak burun boğaz",
+        "aile hekimliği"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.anti_rh_specialist_prescription",
+      "sut_section": "4.2.27.B",
+      "drug_names": [
+        "anti rh",
+        "anti-rh",
+        "rho(d)",
+        "micrhogam",
+        "winrho",
+        "rhogam"
+      ],
+      "icd10_ranges": [
+        "O26",
+        "O03",
+        "O04",
+        "Z33",
+        "Z34"
+      ],
+      "message_tr": "Anti-Rh — doğum sonu, düşük, küretaj, antenatal veya 28. gebelik haftasında uzman hekim reçetesi gerekir (§4.2.27.B).",
+      "gate_b_sources": [
+        "C006267",
+        "C006268"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.anticoagulant_bleed_reversal_one_day",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "protrombin kompleksi",
+        "prothrombin complex",
+        "beriplex",
+        "octaplex",
+        "k vitamini",
+        "vitamin k",
+        "konakion"
+      ],
+      "icd10_ranges": [
+        "T45",
+        "D68",
+        "K72"
+      ],
+      "message_tr": "Kumarin/NOAK kaynaklı aktif kanama — kanama yeri belirtilerek en fazla 1 günlük doz ve hematoloji sevki (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006239"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.27.apcc_bleeding_board",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "feiba",
+        "apcc",
+        "aktifleştirilmiş protrombin",
+        "activated prothrombin"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68"
+      ],
+      "message_tr": "aPCC kanama tedavisi — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu ile en fazla 3 günlük doz (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006246"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.apcc_prophylaxis_board",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "feiba",
+        "apcc",
+        "aktifleştirilmiş protrombin",
+        "activated prothrombin"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68"
+      ],
+      "message_tr": "aPCC proflaksisi — FVIII inhibitör <5 BU oluncaya kadar haftalık 4500 ünite sınırı; 6 aya kadar süreli sağlık kurulu raporu (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006247"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.27.coagulation_emergency_one_day",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "faktör viii",
+        "faktör ix",
+        "factor viii",
+        "factor ix",
+        "hemofil",
+        "alfinity",
+        "koagulasyon faktörü"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68"
+      ],
+      "message_tr": "Koagülasyon faktörü acil müracaat — takip karnesi yoksa el yazısı ile belirtilerek en fazla 1 günlük doz ve hematoloji sevki (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006228"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.coagulation_factor_board_report",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "faktör viii",
+        "faktör ix",
+        "factor viii",
+        "factor ix",
+        "hemofil",
+        "alfinity",
+        "koagulasyon faktörü"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68",
+        "D69"
+      ],
+      "message_tr": "Koagülasyon faktörü — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu; hematoloji/iç hastalıkları/çocuk sağlığı uzman reçetesi (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006215"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "prescriber_specialties": [
+        "hematoloji",
+        "iç hastalıkları",
+        "çocuk sağlığı"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.27.coumarin_active_bleed_one_day",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "protrombin kompleksi",
+        "prothrombin complex",
+        "beriplex",
+        "octaplex",
+        "kombine koagülasyon",
+        "k vitamini",
+        "vitamin k",
+        "konakion"
+      ],
+      "icd10_ranges": [
+        "T45",
+        "D68",
+        "K72"
+      ],
+      "message_tr": "Kumarin kaynaklı aktif kanama — kanama yeri belirtilerek uzman hekimlerce en fazla 1 günlük doz; idame yalnızca hematoloji uzman hekimlerince (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006222"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.27.emicizumab_hematology_monthly_prescription",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "emicizumab",
+        "hemlibra"
+      ],
+      "icd10_ranges": [
+        "D66"
+      ],
+      "message_tr": "Emicizumab — 3 ay süreli sağlık kurulu raporu; yalnızca hematoloji uzman reçetesi; ilk 3 aylık tedavi birer aylık dozda reçetelenir (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006264"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "report_duration_months": 3,
+      "prescriber_specialties": [
+        "hematoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.factor_annual_board_report",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "faktör viii",
+        "faktör ix",
+        "factor viii",
+        "factor ix",
+        "hemofil",
+        "alfinity",
+        "koagulasyon faktörü"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68",
+        "D69"
+      ],
+      "message_tr": "Koagülasyon faktörü — 1 yıllık sağlık kurulu raporu; ilk rapor üçüncü basamak resmi sağlık kurumunda düzenlenmeli (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006225"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "hematoloji",
+        "iç hastalıkları",
+        "çocuk sağlığı"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.factor_seven_a_bleeding_board",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "faktör viia",
+        "factor viia",
+        "novoseven",
+        "eptacog alfa"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68",
+        "D69"
+      ],
+      "message_tr": "Faktör VIIa kanama tedavisi — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu gerekir (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006230",
+        "C006232"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.27.factor_seven_a_prophylaxis_board",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "faktör viia",
+        "factor viia",
+        "novoseven",
+        "eptacog alfa"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68"
+      ],
+      "message_tr": "Faktör VIIa proflaksisi — inhibitörlü hemofili hastalarında 3 aya kadar süreli sağlık kurulu raporu gerekir (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006233"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.27.hemophilia_acute_bleed_report",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "faktör viii",
+        "faktör ix",
+        "factor viii",
+        "factor ix",
+        "hemofil",
+        "alfinity"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68"
+      ],
+      "message_tr": "Hemofili akut kanama/cerrahi — 3 güne kadar süreli yeni hematoloji uzman hekim raporu gerekir (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006227"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.hemophilia_emergency_one_day",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "faktör viii",
+        "faktör ix",
+        "factor viii",
+        "factor ix",
+        "hemofil"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68"
+      ],
+      "message_tr": "Hemofili acil müracaat — takip karnesi yoksa el yazısı ile belirtilerek en fazla 1 günlük doz ve hematoloji sevki (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006228"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.human_albumin_inpatient_hypoalbuminemia",
+      "sut_section": "4.2.27.Ç",
+      "drug_names": [
+        "human albumin",
+        "human albümin",
+        "albümin",
+        "albumin",
+        "albutein"
+      ],
+      "icd10_ranges": [
+        "E86",
+        "R77",
+        "K70",
+        "N04",
+        "R63"
+      ],
+      "message_tr": "Human albümin — yalnızca yatarak tedavi gören hastalarda albümin ≤2.5 g/dl için uzman hekim reçetesi; laboratuvar sonuçları epikrizde belirtilir (§4.2.27.Ç).",
+      "gate_b_sources": [
+        "C006274"
+      ],
+      "inpatient_only": true
+    },
+    {
+      "rule_id": "4.2.27.itt_poor_response_exclusion",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "faktör viii",
+        "factor viii",
+        "hemofil"
+      ],
+      "icd10_ranges": [
+        "D66"
+      ],
+      "message_tr": "İTT kötü yanıt kriterleri (inhibitör tanısı 5 yıl+ veya tepe titresi >200 BU/ml) — Kurumca karşılanmaz; raporda belirtilmeli (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006250"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.itt_tertiary_hematology_board",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "faktör viii",
+        "factor viii",
+        "hemofil",
+        "immun tolerans"
+      ],
+      "icd10_ranges": [
+        "D66"
+      ],
+      "message_tr": "İmmün tolerans tedavisi — üçüncü basamak kurumda üç hematoloji uzmanının 6 aya kadar süreli sağlık kurulu raporu; yalnızca hematoloji reçetesi (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006249"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "hematoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.pcc_acquired_coagulopathy_board",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "protrombin kompleksi",
+        "prothrombin complex",
+        "beriplex",
+        "octaplex",
+        "kombine koagülasyon",
+        "k vitamini",
+        "vitamin k",
+        "konakion"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68",
+        "D69"
+      ],
+      "message_tr": "Kombine koagülasyon faktörü/protrombin kompleksi — kazanılmış koagülasyon bozukluğunda tanı ve faktör düzeyini gösteren hematoloji sağlık kurulu raporu ile bir dozda reçete (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006220"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.27.prophylaxis_acute_bleed_3day_report",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "faktör viii",
+        "faktör ix",
+        "factor viii",
+        "factor ix",
+        "hemofil",
+        "alfinity",
+        "koagulasyon faktörü"
+      ],
+      "icd10_ranges": [
+        "D66",
+        "D67",
+        "D68"
+      ],
+      "message_tr": "Proflaksi hastasında akut kanama/cerrahi — 3 güne kadar süreli yeni hematoloji uzman hekim raporu gerekir (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006257"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.vwf_acute_bleed_3day_report",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "von willebrand",
+        "wilate",
+        "haemate",
+        "vwf"
+      ],
+      "icd10_ranges": [
+        "D68.0",
+        "D68"
+      ],
+      "message_tr": "Von Willebrand akut kanama/cerrahi — 3 güne kadar süreli yeni hematoloji uzman hekim raporu gerekir (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006257"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.27.vwf_factor_board_report",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "von willebrand",
+        "wilate",
+        "haemate",
+        "vwf"
+      ],
+      "icd10_ranges": [
+        "D68.0",
+        "D68"
+      ],
+      "message_tr": "Von Willebrand faktör — tanı ve faktör düzeyini gösteren 1 yıllık hematoloji sağlık kurulu raporu gerekir (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006255"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.27.vwf_weekly_unit_cap_board",
+      "sut_section": "4.2.27.A",
+      "drug_names": [
+        "von willebrand",
+        "wilate",
+        "haemate",
+        "vwf",
+        "faktör viii",
+        "factor viii"
+      ],
+      "icd10_ranges": [
+        "D68.0",
+        "D68"
+      ],
+      "message_tr": "Von Willebrand/ağır profilaksi — haftalık faktör kullanımı 4500 üniteyi geçemez; aşım gerekçeleri 6 aya kadar süreli yeni raporda belirtilir (§4.2.27.A).",
+      "gate_b_sources": [
+        "C006256"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.34.alemtuzumab_neurology_report",
+      "sut_section": "4.2.34",
+      "drug_names": [
+        "alemtuzumab",
+        "lemtrada"
+      ],
+      "icd10_ranges": [
+        "G35"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji"
+      ],
+      "message_tr": "Alemtuzumab — EDSS 7 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl) ve nöroloji reçetesi gerekir (§4.2.34).",
+      "gate_b_sources": [
+        "C006676"
+      ],
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "nöroloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.34.cladribine_report_body_weight",
+      "sut_section": "4.2.34",
+      "drug_names": [
+        "kladribin",
+        "cladribine",
+        "mavenclad"
+      ],
+      "icd10_ranges": [
+        "G35"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji"
+      ],
+      "message_tr": "Kladribin — nöroloji uzman hekim raporunda güncel vücut ağırlığı belirtilmeli; en fazla 1 yıllık rapor ve nöroloji reçetesi gerekir (§4.2.34).",
+      "gate_b_sources": [
+        "C006670"
+      ],
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "nöroloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.34.fingolimod_neurology_report",
+      "sut_section": "4.2.34",
+      "drug_names": [
+        "fingolimod",
+        "gilenia"
+      ],
+      "icd10_ranges": [
+        "G35"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji"
+      ],
+      "message_tr": "Fingolimod — EDSS 5,5 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl) ve nöroloji reçetesi gerekir (§4.2.34).",
+      "gate_b_sources": [
+        "C006634"
+      ],
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "nöroloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.34.first_line_dmt_neurology_report",
+      "sut_section": "4.2.34",
+      "drug_names": [
+        "beta interferon",
+        "interferon beta",
+        "avonex",
+        "rebif",
+        "glatiramer",
+        "glatiramer asetat",
+        "copolymer",
+        "copaxone",
+        "teriflunomid",
+        "aubagio",
+        "dimetil fumarat",
+        "tecfidera"
+      ],
+      "icd10_ranges": [
+        "G35"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji"
+      ],
+      "message_tr": "Beta interferon, glatiramer asetat, teriflunomid veya dimetil fumarat — EDSS 5,5 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl) ve nöroloji reçetesi gerekir (§4.2.34).",
+      "gate_b_sources": [
+        "C006626"
+      ],
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "nöroloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.34.natalizumab_neurology_report",
+      "sut_section": "4.2.34",
+      "drug_names": [
+        "natalizumab",
+        "tysabri"
+      ],
+      "icd10_ranges": [
+        "G35"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji"
+      ],
+      "message_tr": "Natalizumab — EDSS 5,5 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl) ve nöroloji reçetesi gerekir (§4.2.34).",
+      "gate_b_sources": [
+        "C006640"
+      ],
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "nöroloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.34.ocrelizumab_rrms_report",
+      "sut_section": "4.2.34",
+      "drug_names": [
+        "okrelizumab",
+        "ocrelizumab",
+        "ocrevus"
+      ],
+      "icd10_ranges": [
+        "G35"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji"
+      ],
+      "message_tr": "Okrelizumab — EDSS 7 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl) ve nöroloji reçetesi gerekir (§4.2.34).",
+      "gate_b_sources": [
+        "C006646"
+      ],
+      "report_duration_months": 12,
+      "prescriber_specialties": [
+        "nöroloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.35.duloxetine_diabetic_neuropathy_prescriber",
+      "sut_section": "4.2.35.A",
+      "drug_names": [
+        "duloksetin",
+        "duloxetine",
+        "cymbalta"
+      ],
+      "icd10_ranges": [
+        "E11",
+        "G63"
+      ],
+      "report_required": false,
+      "message_tr": "Duloksetin — diyabetik periferal nöropatik ağrıda endokrinoloji veya üçüncü basamak nöroloji uzman hekimi reçetesi gerekir (§4.2.35.A).",
+      "gate_b_sources": [
+        "C006694"
+      ],
+      "prescriber_specialties": [
+        "endokrinoloji",
+        "nöroloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.35.neuropathic_pain_specialist_report",
+      "sut_section": "4.2.35.A",
+      "drug_names": [
+        "gabapentin",
+        "pregabalin",
+        "alfa lipoik",
+        "lipoik asit",
+        "thioctic acid"
+      ],
+      "icd10_ranges": [
+        "G60",
+        "G62",
+        "G63",
+        "B02.2",
+        "M79.2"
+      ],
+      "report_required": true,
+      "message_tr": "Nöropatik ağrı ilaçları — nöroloji, romatoloji, ortopedi veya endokrinoloji uzman hekim raporu gerekir (§4.2.35.A).",
+      "gate_b_sources": [
+        "C006697"
+      ],
+      "report_specialties": [
+        "nöroloji",
+        "beyin cerrahisi",
+        "fiziksel tıp",
+        "fizik tedavi",
+        "anestezi",
+        "immünoloji",
+        "cilt hastalıkları",
+        "romatoloji",
+        "ortopedi",
+        "endokrinoloji",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.35.pregabalin_fibromyalgia_board_6mo",
+      "sut_section": "4.2.35.B",
+      "drug_names": [
+        "pregabalin",
+        "lyrica"
+      ],
+      "icd10_ranges": [
+        "M79.7",
+        "M79.1"
+      ],
+      "report_required": true,
+      "message_tr": "Pregabalin fibromiyalji — ikinci/üçüncü basamak sağlık kurulu raporu (en fazla 6 ay) ve romatoloji/ortopedi/fizik tedavi/nöroloji/algoloji uzman reçetesi gerekir (§4.2.35.B).",
+      "gate_b_sources": [
+        "C006705"
+      ],
+      "report_specialties": [
+        "romatoloji",
+        "ortopedi",
+        "fizik tedavi",
+        "nöroloji",
+        "algoloji"
+      ],
+      "report_duration_months": 6,
+      "prescriber_specialties": [
+        "romatoloji",
+        "ortopedi",
+        "fizik tedavi",
+        "nöroloji",
+        "algoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.36.amantadine_hcl_parkinson_report",
+      "sut_section": "4.2.36",
+      "drug_names": [
+        "amantadin hidroklorür",
+        "amantadin hcl",
+        "amantadine hydrochloride",
+        "amantix"
+      ],
+      "icd10_ranges": [
+        "G20",
+        "G21"
+      ],
+      "message_tr": "Amantadin hidroklorür — yalnızca parkinson hastalığında nöroloji veya geriatri uzman hekim raporu gerekir (§4.2.36).",
+      "gate_b_sources": [
+        "C006711"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji",
+        "geriatri"
+      ]
+    },
+    {
+      "rule_id": "4.2.36.amantadine_sulfate_report",
+      "sut_section": "4.2.36",
+      "drug_names": [
+        "amantadin sülfat",
+        "amantadine sulfate",
+        "pk-merz"
+      ],
+      "icd10_ranges": [
+        "G20",
+        "G21",
+        "G24",
+        "G25"
+      ],
+      "message_tr": "Amantadin sülfat — parkinson veya ilaç kaynaklı ekstrapiramidal reaksiyonlarda nöroloji/geriatri uzman hekim raporu gerekir (§4.2.36).",
+      "gate_b_sources": [
+        "C006709"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji",
+        "geriatri"
+      ]
+    },
+    {
+      "rule_id": "4.2.36.parkinson_dopamine_agonists_report",
+      "sut_section": "4.2.36",
+      "drug_names": [
+        "apomorfin",
+        "kabergolin",
+        "entakapon",
+        "rasagilin",
+        "rasajilin",
+        "pergolid",
+        "pramipexol",
+        "bornaprin",
+        "ropinirol"
+      ],
+      "icd10_ranges": [
+        "G20",
+        "G21"
+      ],
+      "message_tr": "Parkinson dopamin agonistleri — nöroloji veya geriatri uzman hekim raporuna dayanılarak reçete edilir (§4.2.36).",
+      "gate_b_sources": [
+        "C006707"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji",
+        "geriatri"
+      ]
+    },
+    {
+      "rule_id": "4.2.36.tolcapone_tertiary_neurology_report",
+      "sut_section": "4.2.36",
+      "drug_names": [
+        "tolkapon",
+        "tolcapone"
+      ],
+      "icd10_ranges": [
+        "G20",
+        "G21"
+      ],
+      "message_tr": "Tolkapon — entakapon dirençli vakalarda nöroloji/geriatri uzman hekim raporu ile nöroloji veya iç hastalıkları uzmanı tarafından en fazla 1 aylık reçete (§4.2.36).",
+      "gate_b_sources": [
+        "C006708"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nöroloji",
+        "geriatri"
+      ],
+      "report_duration_months": 1,
+      "prescriber_specialties": [
+        "nöroloji",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.37.pegvisomant_endocrine_prescriber",
+      "sut_section": "4.2.37.A",
+      "drug_names": [
+        "pegvisomant",
+        "somavert"
+      ],
+      "icd10_ranges": [
+        "E22.0",
+        "E22"
+      ],
+      "report_required": true,
+      "message_tr": "Pegvisomant — endokrinoloji ve metabolizma uzman hekimi reçetesi gerekir; raporda yaşa uygun IGF-1 referans aralığı belirtilmelidir (§4.2.37.A).",
+      "gate_b_sources": [
+        "C006716",
+        "C006718"
+      ],
+      "report_specialties": [
+        "endokrinoloji",
+        "metabolizma"
+      ],
+      "prescriber_specialties": [
+        "endokrinoloji",
+        "metabolizma"
+      ]
+    },
+    {
+      "rule_id": "4.2.37.pegvisomant_init_board_2mo",
+      "sut_section": "4.2.37.A",
+      "drug_names": [
+        "pegvisomant",
+        "somavert"
+      ],
+      "icd10_ranges": [
+        "E22.0",
+        "E22"
+      ],
+      "report_required": true,
+      "message_tr": "Pegvisomant başlangıç — IGF-1 kontrolü sonrası en fazla 2 ay süreli sağlık kurulu raporu gerekir (§4.2.37.A).",
+      "gate_b_sources": [
+        "C006715"
+      ],
+      "report_specialties": [
+        "endokrinoloji",
+        "metabolizma"
+      ],
+      "report_duration_months": 2
+    },
+    {
+      "rule_id": "4.2.38.analog_insulin_pioglitazone_specialist",
+      "sut_section": "4.2.38",
+      "drug_names": [
+        "analog insülin",
+        "insulin lispro",
+        "insulin aspart",
+        "insulin glargine",
+        "insulin detemir",
+        "insulin degludec",
+        "pioglitazon",
+        "actos"
+      ],
+      "icd10_ranges": [
+        "E10",
+        "E11",
+        "E13",
+        "E14"
+      ],
+      "message_tr": "Analog insülinler ve pioglitazon — endokrinoloji, iç hastalıkları, çocuk sağlığı veya kardiyoloji uzman hekim raporu/reçetesi gerekir (§4.2.38).",
+      "gate_b_sources": [
+        "C006727"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "endokrinoloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "kardiyoloji"
+      ],
+      "prescriber_specialties": [
+        "endokrinoloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "kardiyoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.38.degludec_aspart_unstable_glucose_board",
+      "sut_section": "4.2.38",
+      "drug_names": [
+        "insülin degludek",
+        "insulin degludec",
+        "ryzodeg",
+        "degludec",
+        "insülin aspart",
+        "insulin aspart"
+      ],
+      "icd10_ranges": [
+        "E10",
+        "E11",
+        "E13",
+        "E14"
+      ],
+      "message_tr": "İnsülin degludek+aspart kombinasyonu — labil glisemi/hipoglisemi riskinde endokrinoloji içeren sağlık kurulu raporu (24 ay) ve uzman reçetesi gerekir (§4.2.38).",
+      "gate_b_sources": [
+        "C006730"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "endokrinoloji"
+      ],
+      "prescriber_specialties": [
+        "endokrinoloji",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 24
+    },
+    {
+      "rule_id": "4.2.38.dpp4_gliptin_specialist_report",
+      "sut_section": "4.2.38",
+      "drug_names": [
+        "sitagliptin",
+        "vildagliptin",
+        "saksagliptin",
+        "linagliptin",
+        "alogliptin",
+        "januvia",
+        "gliptin",
+        "dpp-4"
+      ],
+      "icd10_ranges": [
+        "E10",
+        "E11",
+        "E13",
+        "E14"
+      ],
+      "message_tr": "DPP-4 antagonistleri — metformin/sülfonilüre maksimum dozda yetersiz kontrol sonrası endokrinoloji veya iç hastalıkları uzman hekim raporu gerekir (§4.2.38).",
+      "gate_b_sources": [
+        "C006735"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "endokrinoloji",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.38.first_line_oral_antidiabetic",
+      "sut_section": "4.2.38",
+      "drug_names": [
+        "metformin",
+        "glucophage",
+        "sulfonilüre",
+        "glibenklamid",
+        "gliklazid",
+        "gliclazide",
+        "akarboz",
+        "acarbose",
+        "insan insülin",
+        "human insulin"
+      ],
+      "icd10_ranges": [
+        "E10",
+        "E11",
+        "E13",
+        "E14"
+      ],
+      "message_tr": "Metformin, sulfonilüreler, alfa glukozidaz inhibitörleri ve insan insülinleri — tip 1/2 diyabet endikasyonunda tüm hekimler reçete edebilir (§4.2.38).",
+      "gate_b_sources": [
+        "C006723"
+      ]
+    },
+    {
+      "rule_id": "4.2.38.glargine_lixisenatide_obesity_report",
+      "sut_section": "4.2.38",
+      "drug_names": [
+        "liksisenatid",
+        "lixisenatide",
+        "soliqua",
+        "xultophy",
+        "insülin glarjin liksisenatid",
+        "insulin glargine lixisenatide"
+      ],
+      "icd10_ranges": [
+        "E10",
+        "E11",
+        "E13",
+        "E14"
+      ],
+      "message_tr": "İnsülin glarjin+liksisenatid kombinasyonu — VKİ≥35, pankreatit öyküsü olmayan tip 2 diyabette 1 yıllık endokrinoloji uzman hekim raporu gerekir (§4.2.38).",
+      "gate_b_sources": [
+        "C006747"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "endokrinoloji"
+      ],
+      "prescriber_specialties": [
+        "endokrinoloji",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.6.adult_somatropin_board_report",
+      "sut_section": "4.2.6.A-2",
+      "drug_names": [
+        "somatropin",
+        "somatrogon",
+        "büyüme hormonu",
+        "buyume hormonu",
+        "genotropin",
+        "norditropin",
+        "omnitrope",
+        "saizen",
+        "nutropin"
+      ],
+      "icd10_ranges": [
+        "E23.0",
+        "E23.1",
+        "E23.7",
+        "E34.3"
+      ],
+      "message_tr": "Erişkin büyüme hormonu — erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl) ve endokrinoloji veya iç hastalıkları uzman hekim reçetesi gerekir (§4.2.6.A-2).",
+      "gate_b_sources": [
+        "C003998"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "endokrinoloji"
+      ],
+      "prescriber_specialties": [
+        "endokrinoloji",
+        "iç hastalıkları"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.6.ckd_gh_nephro_endo_board",
+      "sut_section": "4.2.6.A-5",
+      "drug_names": [
+        "somatropin",
+        "somatrogon",
+        "büyüme hormonu",
+        "buyume hormonu",
+        "genotropin",
+        "norditropin",
+        "omnitrope",
+        "saizen",
+        "nutropin"
+      ],
+      "icd10_ranges": [
+        "N18",
+        "N19",
+        "N25"
+      ],
+      "report_required": true,
+      "message_tr": "KBY ilişkili büyüme bozukluğu somatropin — çocuk nefroloji ve çocuk endokrinoloji uzman hekimlerinin yer aldığı 6 aylık sağlık kurulu raporu gerekir (§4.2.6.A-5).",
+      "gate_b_sources": [
+        "C004030"
+      ],
+      "report_specialties": [
+        "çocuk nefroloji",
+        "çocuk endokrinoloji",
+        "nefroloji"
+      ],
+      "prescriber_specialties": [
+        "çocuk endokrinoloji"
+      ],
+      "report_duration_months": 6
+    },
+    {
+      "rule_id": "4.2.6.general_gh_age_group_board",
+      "sut_section": "4.2.6.A",
+      "drug_names": [
+        "somatropin",
+        "somatrogon",
+        "büyüme hormonu",
+        "buyume hormonu",
+        "genotropin",
+        "norditropin",
+        "omnitrope",
+        "saizen",
+        "nutropin"
+      ],
+      "icd10_ranges": [
+        "E23.0",
+        "E23.1",
+        "E23.7",
+        "E34.3"
+      ],
+      "report_required": true,
+      "message_tr": "Büyüme hormonu — yaş grubuna göre endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl) ve endokrinoloji uzman reçetesi gerekir (§4.2.6.A).",
+      "gate_b_sources": [
+        "C003941"
+      ],
+      "report_specialties": [
+        "endokrinoloji"
+      ],
+      "prescriber_specialties": [
+        "endokrinoloji"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.6.laron_mecasermin_continuation_board",
+      "sut_section": "4.2.6.B-2",
+      "drug_names": [
+        "mecasermin",
+        "rhigf",
+        "rh igf",
+        "igf-1",
+        "igf1",
+        "increlex"
+      ],
+      "icd10_ranges": [
+        "E34.31",
+        "E34.3"
+      ],
+      "message_tr": "Laron sendromu rhIGF-I (mecasermin) devam tedavisi — epifiz hatları açık hastalarda yılda bir yenilenen sağlık kurulu raporu gerekir (§4.2.6.B-2).",
+      "gate_b_sources": [
+        "C004039"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk endokrinoloji",
+        "çocuk endokrinolojisi ve metabolizma"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.6.laron_mecasermin_initiation_board",
+      "sut_section": "4.2.6.B",
+      "drug_names": [
+        "mecasermin",
+        "rhigf",
+        "rh igf",
+        "igf-1",
+        "igf1",
+        "increlex"
+      ],
+      "icd10_ranges": [
+        "E34.31",
+        "E34.3"
+      ],
+      "report_required": true,
+      "message_tr": "Laron sendromu rhIGF-I (mecasermin) başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu ve reçete gerekir (§4.2.6.B).",
+      "gate_b_sources": [
+        "C004033"
+      ],
+      "report_specialties": [
+        "çocuk endokrinoloji",
+        "çocuk endokrinolojisi ve metabolizma"
+      ],
+      "prescriber_specialties": [
+        "çocuk endokrinoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.6.pediatric_gh_monitoring_board",
+      "sut_section": "4.2.6.A-1",
+      "drug_names": [
+        "somatropin",
+        "somatrogon",
+        "büyüme hormonu",
+        "buyume hormonu",
+        "genotropin",
+        "norditropin",
+        "omnitrope",
+        "saizen",
+        "nutropin"
+      ],
+      "icd10_ranges": [
+        "E23.0",
+        "E23.1",
+        "E23.7",
+        "E34.3"
+      ],
+      "report_required": true,
+      "message_tr": "Pediatrik büyüme hormonu devam tedavisi — endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu ve epifiz hatları takibi gerekir (§4.2.6.A-1).",
+      "gate_b_sources": [
+        "C003957"
+      ],
+      "report_specialties": [
+        "endokrinoloji"
+      ],
+      "report_duration_months": 12,
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.6.pediatric_gh_renewal_board",
+      "sut_section": "4.2.6.A-1",
+      "drug_names": [
+        "somatropin",
+        "somatrogon",
+        "büyüme hormonu",
+        "buyume hormonu",
+        "genotropin",
+        "norditropin",
+        "omnitrope",
+        "saizen",
+        "nutropin"
+      ],
+      "icd10_ranges": [
+        "E23.0",
+        "E23.1",
+        "E23.7",
+        "E34.3"
+      ],
+      "report_required": true,
+      "message_tr": "Pediatrik büyüme hormonu yenileme — epifiz hatları açık hastalarda 1 yıllık sağlık kurulu raporu gerekir (§4.2.6.A-1).",
+      "gate_b_sources": [
+        "C003982"
+      ],
+      "report_specialties": [
+        "çocuk endokrinoloji",
+        "çocuk endokrinolojisi ve metabolizma"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.6.pediatric_somatropin_initiation_board",
+      "sut_section": "4.2.6.A-1",
+      "drug_names": [
+        "somatropin",
+        "somatrogon",
+        "büyüme hormonu",
+        "buyume hormonu",
+        "genotropin",
+        "norditropin",
+        "omnitrope",
+        "saizen",
+        "nutropin"
+      ],
+      "icd10_ranges": [
+        "E23.0",
+        "E23.1",
+        "E23.7",
+        "E34.3"
+      ],
+      "report_required": true,
+      "message_tr": "Pediatrik somatropin başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.6.A-1).",
+      "gate_b_sources": [
+        "C003966",
+        "C003956"
+      ],
+      "report_specialties": [
+        "çocuk endokrinoloji",
+        "çocuk endokrinolojisi ve metabolizma"
+      ],
+      "prescriber_specialties": [
+        "çocuk endokrinoloji"
+      ],
+      "report_duration_months": 12,
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.6.pws_somatropin_tertiary_board",
+      "sut_section": "4.2.6.A-4",
+      "drug_names": [
+        "somatropin",
+        "somatrogon",
+        "büyüme hormonu",
+        "buyume hormonu",
+        "genotropin",
+        "norditropin",
+        "omnitrope",
+        "saizen",
+        "nutropin"
+      ],
+      "icd10_ranges": [
+        "Q87.1"
+      ],
+      "report_required": true,
+      "message_tr": "Prader-Willi sendromu somatropin — üçüncü basamak kurumda çocuk endokrinoloji uzman hekiminin yer aldığı 3 aylık sağlık kurulu raporu gerekir (§4.2.6.A-4).",
+      "gate_b_sources": [
+        "C004016"
+      ],
+      "report_specialties": [
+        "çocuk endokrinoloji",
+        "çocuk endokrinolojisi ve metabolizma"
+      ],
+      "prescriber_specialties": [
+        "çocuk endokrinoloji"
+      ],
+      "report_duration_months": 3
+    },
+    {
+      "rule_id": "4.2.6.turner_somatropin_pediatric_board",
+      "sut_section": "4.2.6.A-3",
+      "drug_names": [
+        "somatropin",
+        "somatrogon",
+        "büyüme hormonu",
+        "buyume hormonu",
+        "genotropin",
+        "norditropin",
+        "omnitrope",
+        "saizen",
+        "nutropin"
+      ],
+      "icd10_ranges": [
+        "Q96"
+      ],
+      "message_tr": "Turner sendromu somatropin — epifizleri açık, klinik/genetik tanılı hastada en az bir çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl) ve çocuk endokrinoloji uzman reçetesi gerekir (§4.2.6.A-3).",
+      "gate_b_sources": [
+        "C004003"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk endokrinoloji"
+      ],
+      "prescriber_specialties": [
+        "çocuk endokrinoloji"
+      ],
+      "report_duration_months": 12
+    },
+    {
+      "rule_id": "4.2.9.esa_ckd_iron_hb_nephrology_report",
+      "sut_section": "4.2.9.A-1",
+      "drug_names": [
+        "eritropoietin",
+        "epoetin",
+        "darbepoetin",
+        "aranesp",
+        "binocrit",
+        "eprex",
+        "mircera",
+        "retacrit",
+        "neo recormon",
+        "metoksipolietilen glikol"
+      ],
+      "icd10_ranges": [
+        "N18"
+      ],
+      "message_tr": "KBY anemisi ESA — TSAT/ferritin ve Hb kriterleri; demir eksikliğinde önce demir tedavisi; hedef Hb 11-12 g/dl; tetkik sonuçları raporda belirtilir (§4.2.9.A-1).",
+      "gate_b_sources": [
+        "C004130"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz"
+      ],
+      "report_duration_months": 1,
+      "prescriber_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz"
+      ]
+    },
+    {
+      "rule_id": "4.2.9.esa_ckd_legacy_nephrology_prescriber",
+      "sut_section": "4.2.9.A-1",
+      "drug_names": [
+        "eritropoietin",
+        "epoetin",
+        "darbepoetin",
+        "aranesp",
+        "binocrit",
+        "eprex",
+        "mircera",
+        "retacrit",
+        "neo recormon",
+        "metoksipolietilen glikol"
+      ],
+      "icd10_ranges": [
+        "N18"
+      ],
+      "message_tr": "KBY anemisi ESA — nefroloji veya diyaliz sertifikalı uzman hekim raporuna dayanılarak nefroloji/diyaliz sertifikalı hekimlerce reçete edilir (§4.2.9.A-1).",
+      "gate_b_sources": [
+        "C004122"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz"
+      ],
+      "prescriber_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.9.esa_ckd_monthly_nephrology_report",
+      "sut_section": "4.2.9.A-1",
+      "drug_names": [
+        "eritropoietin",
+        "epoetin",
+        "darbepoetin",
+        "roksadustat",
+        "aranesp",
+        "binocrit",
+        "eprex",
+        "mircera",
+        "retacrit",
+        "neo recormon"
+      ],
+      "icd10_ranges": [
+        "N18"
+      ],
+      "message_tr": "KBY anemisi ESA — ferritin/TSAT/Hb kriterleri, nefroloji/diyaliz uzman raporu; muadil ESA kullanımı; bir defada en fazla 1 aylık reçete (§4.2.9.A).",
+      "gate_b_sources": [
+        "C004127",
+        "C004128",
+        "C004130",
+        "C004131"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz"
+      ],
+      "report_duration_months": 1,
+      "prescriber_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz"
+      ]
+    },
+    {
+      "rule_id": "4.2.9.esa_legacy_muadil_monthly_report",
+      "sut_section": "4.2.9.A",
+      "drug_names": [
+        "eritropoietin",
+        "epoetin",
+        "darbepoetin",
+        "aranesp",
+        "binocrit",
+        "eprex",
+        "mircera",
+        "retacrit",
+        "neo recormon",
+        "metoksipolietilen glikol"
+      ],
+      "icd10_ranges": [
+        "N18",
+        "D46",
+        "D47"
+      ],
+      "message_tr": "Eritropoietin alfa-beta-zeta, metoksipolietilen glikol epoetin beta ve darbepoetin endikasyon muadili olarak kullanılabilir; raporda doz/süre belirtilir ve bir defada en fazla 1 aylık reçete verilir (§4.2.9.A).",
+      "gate_b_sources": [
+        "C004127",
+        "C004128"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz",
+        "hematoloji"
+      ],
+      "report_duration_months": 1
+    },
+    {
+      "rule_id": "4.2.9.etelcalcetide_dialysis_ckd_only",
+      "sut_section": "4.2.9.E",
+      "drug_names": [
+        "etelkalsedid",
+        "etelcalcetide",
+        "mimpara",
+        "parsabiv"
+      ],
+      "icd10_ranges": [
+        "N18"
+      ],
+      "message_tr": "Etelkalsedid — yalnızca hemodiyaliz KBY endikasyonunda karşılanır; paratiroid karsinomu, primer hiperparatiroidizm veya diyalizsiz KBY endikasyonlarında bedel karşılanmaz (§4.2.9.E).",
+      "gate_b_sources": [
+        "C004200"
+      ]
+    },
+    {
+      "rule_id": "4.2.9.mds_esa_hematology_report",
+      "sut_section": "4.2.9.A-2",
+      "drug_names": [
+        "eritropoietin",
+        "epoetin",
+        "darbepoetin",
+        "aranesp",
+        "binocrit"
+      ],
+      "icd10_ranges": [
+        "D46",
+        "D47"
+      ],
+      "message_tr": "MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile tedaviye başlanır; hematoloji uzman hekim raporu ve hemogram sonucu reçetede belirtilir (§4.2.9.A-2).",
+      "gate_b_sources": [
+        "C004135",
+        "C004137"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "prescriber_specialties": [
+        "hematoloji",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.9.mds_esa_initiation_hematology_report",
+      "sut_section": "4.2.9.A-2",
+      "drug_names": [
+        "eritropoietin",
+        "epoetin",
+        "darbepoetin",
+        "aranesp",
+        "binocrit"
+      ],
+      "icd10_ranges": [
+        "D46",
+        "D47"
+      ],
+      "message_tr": "MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile başlanır; hedef Hb 12 g/dl; hematoloji uzman raporu ve hemogram reçetede belirtilir (§4.2.9.A-2).",
+      "gate_b_sources": [
+        "C004136"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji"
+      ],
+      "prescriber_specialties": [
+        "hematoloji",
+        "iç hastalıkları"
+      ]
+    },
+    {
+      "rule_id": "4.2.9.paricalcitol_oral_pd_nephrology_report",
+      "sut_section": "4.2.9.C-2",
+      "drug_names": [
+        "parikalsitol",
+        "paricalcitol",
+        "zemplar"
+      ],
+      "icd10_ranges": [
+        "N18"
+      ],
+      "message_tr": "Parikalsitol oral — evre 5 KBY periton diyaliz hastalarında PTH/Ca/P kriterleri; nefroloji raporu; tetkikler 3 ayda bir tekrarlanır (§4.2.9.C-2).",
+      "gate_b_sources": [
+        "C004160"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz"
+      ],
+      "report_duration_months": 3,
+      "prescriber_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz"
+      ],
+      "verification_status": "struck_clause_no_replacement"
+    },
+    {
+      "rule_id": "4.2.9.roksadustat_esa_switch_dialysis_report",
+      "sut_section": "4.2.9.A-1",
+      "drug_names": [
+        "roksadustat",
+        "evrenzo",
+        "roxadustat"
+      ],
+      "icd10_ranges": [
+        "N18"
+      ],
+      "message_tr": "Roksadustat — stabil diyaliz hastasında ESA'dan geçişte klinik neden raporda belirtilmeli; başlangıç dozu önceki 4 haftalık ortalama ESA dozuna göre ayarlanır (§4.2.9.A-1).",
+      "gate_b_sources": [
+        "C004134"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz"
+      ],
+      "report_duration_months": 1,
+      "prescriber_specialties": [
+        "nefroloji",
+        "iç hastalıkları",
+        "çocuk sağlığı",
+        "diyaliz"
       ]
     }
   ]

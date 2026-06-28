@@ -32,7 +32,8 @@
         "C006473",
         "C006562"
       ],
-      "message_tr": "Aflibersept (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 3 yükleme dozu; göz hastalıkları uzmanınca reçete (§4.2.33.A)."
+      "message_tr": "Aflibersept (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 3 yükleme dozu; göz hastalıkları uzmanınca reçete (§4.2.33.A).",
+      "verification_status": "struck_clause_no_replacement"
     },
     {
       "rule_id": "4.2.33.A.anti_vegf_switch_after_bevacizumab_failure",
@@ -152,7 +153,8 @@
         "C006473",
         "C006562"
       ],
-      "message_tr": "Ranibizumab (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla birer ay arayla 3 kez yükleme dozu; ardışık/kombine kullanım yasak (§4.2.33.A)."
+      "message_tr": "Ranibizumab (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 4-6 hafta arayla 3 kez yükleme dozu; ardışık/kombine kullanım yasak (§4.2.33.A).",
+      "verification_status": "struck_clause_no_replacement"
     },
     {
       "rule_id": "4.2.33.A.verteporfin_wet_amd",
@@ -247,7 +249,9 @@
       "gate_b_sources": [
         "C006564"
       ],
-      "message_tr": "Deksametazon intravitreal implant (RVDT/SRVT) — her göz için yılda maksimum 2 uygulama; 3 göz hastalıkları uzmanı sağlık kurulu raporu (§4.2.33.B)."
+      "message_tr": "Deksametazon intravitreal implant (RVDT/SRVT) — her göz için yılda maksimum 2 uygulama; 3 göz hastalıkları uzmanı sağlık kurulu raporu (§4.2.33.B).",
+      "verification_status": "content_needs_verification",
+      "content_note": "The 'max 2/year' and '3-specialist board' claims are not supported by the cited clause C006564 (which says '1 defaya mahsus'). The 2/year figure appears to come from C006558 (§4.2.33(12)) which is not cited. Needs re-sourcing."
     },
     {
       "rule_id": "4.2.33.B.ranibizumab_rvdt_loading_protocol",
@@ -272,7 +276,8 @@
         "C006481"
       ],
       "report_duration_months": 3,
-      "loading_dose_count": 3
+      "loading_dose_count": 3,
+      "verification_status": "struck_clause_no_replacement"
     },
     {
       "rule_id": "4.2.33.B.ranibizumab_rvdt_srvt",
@@ -538,7 +543,8 @@
         "C006508",
         "C006575"
       ],
-      "message_tr": "Siklosporin göz damlası — 3 göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.E)."
+      "message_tr": "Siklosporin göz damlası — 3 göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.E).",
+      "verification_status": "struck_clause_no_replacement"
     },
     {
       "rule_id": "4.2.33.E.sisteamin_sistinozis",

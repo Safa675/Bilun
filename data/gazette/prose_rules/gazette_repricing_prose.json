@@ -1,90 +1,142 @@
 {
   "rule_set_id": "gazette_repricing",
-  "title": "Prospective gazette repricing after tebliğ amendments",
+  "title": "Same-period gazette list price review after tebliğ amendments",
   "effective_date": "2026-01-17",
-  "sut_anchors": ["1.1", "2.2"],
-  "rebill_permitted_default": true,
+  "sut_anchors": [
+    "1.1",
+    "2.2"
+  ],
+  "detector_enabled": true,
+  "rebill_permitted_default": false,
+  "review_only": true,
   "increase_only": true,
-  "max_days_after_service": 90,
+  "max_days_after_service": 30,
   "excluded_procedure_categories": [],
-  "message_tr": "Hizmet tarihinden sonra yürürlüğe giren tebliğ ile liste fiyatı artmış; yeniden fatura/adjustment yasal izin gerektirir.",
+  "message_tr": "Hizmet tarihinden sonra en geç 30 gün içinde yürürlüğe giren tebliğ ile EK-2B/2C liste fiyatı artmış; fatura satırı eski listeyi yansıtıyorsa manuel inceleme işaretlenir. Geçmiş dönem veya sonlandırılmış faturalar için otomatik düzeltme önerilmez — MEDULA dönem/iptal kuralları fatura masasında doğrulanmalıdır.",
   "rules": [
     {
       "rule_id": "repricing.600150",
-      "procedure_codes": ["600150"],
+      "procedure_codes": [
+        "600150"
+      ],
       "catalog": "ek2b",
       "sut_section": "2.2",
-      "message_tr": "600150 işlemi 2026-01-17 tebliğ öncesi hizmet tarihinde eski EK-2/B list fiyatı ile faturalanmış olabilir."
+      "message_tr": "600150 işlemi 2026-01-17 tebliğ öncesi hizmet tarihinde eski EK-2/B list fiyatı ile faturalanmış olabilir — liste fiyat kontrolü (manuel).",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "repricing.600160",
-      "procedure_codes": ["600160"],
+      "procedure_codes": [
+        "600160"
+      ],
       "catalog": "ek2b",
       "sut_section": "2.2",
-      "message_tr": "600160 işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için prospektif repricing gözden geçirmesi."
+      "message_tr": "600160 işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "repricing.600560",
-      "procedure_codes": ["600560"],
+      "procedure_codes": [
+        "600560"
+      ],
       "catalog": "ek2b",
       "sut_section": "2.2",
-      "message_tr": "600560 işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için prospektif repricing gözden geçirmesi."
+      "message_tr": "600560 işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "repricing.600710",
-      "procedure_codes": ["600710"],
+      "procedure_codes": [
+        "600710"
+      ],
       "catalog": "ek2b",
       "sut_section": "2.2",
-      "message_tr": "600710 işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için prospektif repricing gözden geçirmesi."
+      "message_tr": "600710 işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "repricing.610170",
-      "procedure_codes": ["610170", "610171"],
+      "procedure_codes": [
+        "610170",
+        "610171"
+      ],
       "catalog": "ek2b",
       "sut_section": "2.2",
-      "message_tr": "610170/610171 işlemleri 2026-01-17 tebliğ sonrası EK-2/B liste artışı için prospektif repricing gözden geçirmesi."
+      "message_tr": "610170/610171 işlemleri 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "repricing.610200",
-      "procedure_codes": ["610200", "610201"],
+      "procedure_codes": [
+        "610200",
+        "610201"
+      ],
       "catalog": "ek2b",
       "sut_section": "2.2",
-      "message_tr": "610200/610201 işlemleri 2026-01-17 tebliğ sonrası EK-2/B liste artışı için prospektif repricing gözden geçirmesi."
+      "message_tr": "610200/610201 işlemleri 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "repricing.701450",
-      "procedure_codes": ["701450"],
+      "procedure_codes": [
+        "701450"
+      ],
       "catalog": "ek2b",
       "sut_section": "2.2",
-      "message_tr": "701450 kolonoskopi işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için prospektif repricing gözden geçirmesi."
+      "message_tr": "701450 kolonoskopi işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "repricing.609270",
-      "procedure_codes": ["609270"],
+      "procedure_codes": [
+        "609270"
+      ],
       "catalog": "ek2c",
       "sut_section": "2.2",
-      "message_tr": "609270 paket kodu tebliğ sonrası EK-2/C list artışı için prospektif repricing gözden geçirmesi."
+      "message_tr": "609270 paket kodu tebliğ sonrası EK-2/C list artışı için manuel liste fiyat kontrolü.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "repricing.609300",
-      "procedure_codes": ["609300"],
+      "procedure_codes": [
+        "609300"
+      ],
       "catalog": "ek2c",
       "sut_section": "2.2",
-      "message_tr": "609300 paket kodu tebliğ sonrası EK-2/C list artışı için prospektif repricing gözden geçirmesi."
+      "message_tr": "609300 paket kodu tebliğ sonrası EK-2/C list artışı için manuel liste fiyat kontrolü.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "repricing.616190",
-      "procedure_codes": ["616190"],
+      "procedure_codes": [
+        "616190"
+      ],
       "catalog": "ek2c",
       "sut_section": "2.2",
-      "message_tr": "616190 paket kodu tebliğ sonrası EK-2/C list artışı için prospektif repricing gözden geçirmesi."
+      "message_tr": "616190 paket kodu tebliğ sonrası EK-2/C list artışı için manuel liste fiyat kontrolü.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "repricing.602100",
-      "procedure_codes": ["602100"],
+      "procedure_codes": [
+        "602100"
+      ],
       "catalog": "ek2c",
       "sut_section": "2.2",
-      "message_tr": "602100 paket kodu tebliğ sonrası EK-2/C list artışı için prospektif repricing gözden geçirmesi."
+      "message_tr": "602100 paket kodu tebliğ sonrası EK-2/C list artışı için manuel liste fiyat kontrolü.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     }
-  ]
+  ],
+  "provenance_note": "WARNING: Rules in this file are operational heuristics / pilot estimates, NOT extracted from specific SUT clauses. They encode billing-practice knowledge rather than normative SUT text. verification_status=pilot_heuristic on every rule."
 }

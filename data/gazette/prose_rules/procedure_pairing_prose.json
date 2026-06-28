@@ -2,61 +2,102 @@
   "rule_set_id": "procedure_pairing_addon",
   "title": "Same-session procedure add-on pairing uplift",
   "effective_date": "2026-01-17",
-  "sut_anchors": ["2.2.2.A.(5)", "2.2.2.B"],
+  "sut_anchors": [
+    "2.2.2.A.(5)",
+    "2.2.2.B"
+  ],
   "rules": [
     {
       "rule_id": "pairing.701450_701460",
       "sut_section": "2.2.2.A.(5)",
-      "trigger_procedure_codes": ["701450"],
-      "expected_addon_procedure_codes": ["701460"],
+      "trigger_procedure_codes": [
+        "701450"
+      ],
+      "expected_addon_procedure_codes": [
+        "701460"
+      ],
       "addon_factor": 0.3,
       "same_incision": true,
-      "message_tr": "Kolonoskopi (701450) ile aynı seansta kolonoskopik polipektomi (701460) eksik veya sıfır faturalanmış."
+      "message_tr": "Kolonoskopi (701450) ile aynı seansta kolonoskopik polipektomi (701460) eksik veya sıfır faturalanmış.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.701540_701410",
       "sut_section": "2.2.2.A.(5)",
-      "trigger_procedure_codes": ["701540", "701550"],
-      "expected_addon_procedure_codes": ["701410"],
+      "trigger_procedure_codes": [
+        "701540",
+        "701550"
+      ],
+      "expected_addon_procedure_codes": [
+        "701410"
+      ],
       "addon_factor": 0.3,
       "same_incision": true,
-      "message_tr": "ÖGD (701540/701550) ile aynı seansta gastroskopik polipektomi (701410) eksik veya sıfır faturalanmış."
+      "message_tr": "ÖGD (701540/701550) ile aynı seansta gastroskopik polipektomi (701410) eksik veya sıfır faturalanmış.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.701530_701410",
       "sut_section": "2.2.2.A.(5)",
-      "trigger_procedure_codes": ["701530"],
-      "expected_addon_procedure_codes": ["701410"],
+      "trigger_procedure_codes": [
+        "701530"
+      ],
+      "expected_addon_procedure_codes": [
+        "701410"
+      ],
       "addon_factor": 0.3,
       "same_incision": true,
-      "message_tr": "Özefagogastroskopi (701530) ile aynı seansta gastroskopik polipektomi (701410) eksik veya sıfır faturalanmış."
+      "message_tr": "Özefagogastroskopi (701530) ile aynı seansta gastroskopik polipektomi (701410) eksik veya sıfır faturalanmış.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.701400_701460",
       "sut_section": "2.2.2.A.(5)",
-      "trigger_procedure_codes": ["701400"],
-      "expected_addon_procedure_codes": ["701460"],
+      "trigger_procedure_codes": [
+        "701400"
+      ],
+      "expected_addon_procedure_codes": [
+        "701460"
+      ],
       "addon_factor": 0.3,
       "same_incision": true,
-      "message_tr": "Rektosigmoidoskopi/biyopsi (701400) ile aynı seansta kolonoskopik polipektomi (701460) eksik veya sıfır faturalanmış."
+      "message_tr": "Rektosigmoidoskopi/biyopsi (701400) ile aynı seansta kolonoskopik polipektomi (701460) eksik veya sıfır faturalanmış.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.701545_701411",
       "sut_section": "2.2.2.A.(5)",
-      "trigger_procedure_codes": ["701545"],
-      "expected_addon_procedure_codes": ["701411"],
+      "trigger_procedure_codes": [
+        "701545"
+      ],
+      "expected_addon_procedure_codes": [
+        "701411"
+      ],
       "addon_factor": 0.3,
       "same_incision": true,
-      "message_tr": "Konfokal lazer endomikroskopik üst GİS endoskopi (701545) ile aynı seansta endoskopik mukoza rezeksiyonu (701411) eksik veya sıfır faturalanmış."
+      "message_tr": "Konfokal lazer endomikroskopik üst GİS endoskopi (701545) ile aynı seansta endoskopik mukoza rezeksiyonu (701411) eksik veya sıfır faturalanmış.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     },
     {
       "rule_id": "pairing.701430_701440",
       "sut_section": "2.2.2.A.(5)",
-      "trigger_procedure_codes": ["701430"],
-      "expected_addon_procedure_codes": ["701440"],
+      "trigger_procedure_codes": [
+        "701430"
+      ],
+      "expected_addon_procedure_codes": [
+        "701440"
+      ],
       "addon_factor": 0.3,
       "same_incision": true,
-      "message_tr": "GİS stent yerleştirme (701430) ile aynı seansta koledok taş çıkarma (701440) eksik veya sıfır faturalanmış."
+      "message_tr": "GİS stent yerleştirme (701430) ile aynı seansta koledok taş çıkarma (701440) eksik veya sıfır faturalanmış.",
+      "verification_status": "pilot_heuristic",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
     }
-  ]
+  ],
+  "provenance_note": "WARNING: Rules in this file are operational heuristics / pilot estimates, NOT extracted from specific SUT clauses. They encode billing-practice knowledge rather than normative SUT text. verification_status=pilot_heuristic on every rule."
 }
