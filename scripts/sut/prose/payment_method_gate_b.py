@@ -249,12 +249,20 @@ def build_encoded_manifest(
     return {
         "manifest_version": "wave2-v1",
         "rule_set_id": "payment_method_2_2",
-        "scope_note": f"§2.2 package vs itemized vs tier-override ({len(rules)} JSON rules)",
+        "scope_note": f"§2.2 package vs itemized vs tier-override ({len(rules)} JSON rules, C2 batch-1–4)",
         "rules_in_json": len(rules),
+        "session_fraction_status": "PARTIAL",
         "gate_b_sources_encoded": encoded,
         "encoded_clause_ids": encoded,
         "gate_b_sources_by_rule": per_rule_sources,
-        "related_rule_sets": ["session_pricing_2_2_2_B.json"],
+        "related_rule_sets": [
+            {
+                "rule_set_id": "session_pricing_2_2_2_B",
+                "json_path": "session_pricing_2_2_2_B.json",
+                "manifest": "L2.2_session_pricing_2_2_2_B_encoded_manifest.json",
+                "note": "§2.2.2.B session-fraction remains PARTIAL — see session_pricing.py",
+            }
+        ],
     }
 
 

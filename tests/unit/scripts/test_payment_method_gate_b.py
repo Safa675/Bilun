@@ -51,17 +51,26 @@ def test_gate_b_csv_columns(gate_b_frame) -> None:
         assert col in gate_b_frame.columns
 
 
+def test_manifest_related_session_pricing_cross_ref() -> None:
+    payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    related = payload.get("related_rule_sets") or []
+    assert related
+    entry = related[0]
+    assert entry["rule_set_id"] == "session_pricing_2_2_2_B"
+    assert payload.get("session_fraction_status") == "PARTIAL"
+
+
 def test_manifest_exists_with_encoded_clauses() -> None:
     assert MANIFEST.is_file()
     payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
     encoded = payload.get("gate_b_sources_encoded") or payload.get("encoded_clause_ids") or []
-    assert payload.get("rules_in_json", 0) >= 18
-    assert len(encoded) >= 20
+    assert payload.get("rules_in_json", 0) >= 39
+    assert len(encoded) >= 38
 
 
 def test_prose_json_rules_have_gate_b_sources() -> None:
     payload = json.loads(PROSE_JSON.read_text(encoding="utf-8"))
-    assert len(payload["rules"]) >= 18
+    assert len(payload["rules"]) >= 39
     for rule in payload["rules"]:
         sources = rule.get("gate_b_sources") or []
         assert sources, f"missing gate_b_sources on {rule['rule_id']}"

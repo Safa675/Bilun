@@ -29,7 +29,16 @@ _COMPOSITOR_CLAUSE_TRACES: dict[str, list[str]] = {
     "copay_exemption_ek4d": ["C000326", "C000362"],
     "copay_exemption_visit_type": ["C000359", "C000360"],
     "copay_exemption_occupational": ["C000355"],
-    "copay_exemption_patient_status": ["C000378"],
+    "copay_exemption_patient_status": [
+        "C000365",
+        "C000366",
+        "C000367",
+        "C000369",
+        "C000370",
+        "C000375",
+        "C000378",
+        "C000379",
+    ],
 }
 
 

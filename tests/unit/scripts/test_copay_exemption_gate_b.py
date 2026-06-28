@@ -46,8 +46,11 @@ def test_json_rules_map_to_expected_clause_ids() -> None:
 
     mapping = map_json_rules_to_clause_ids(_RULES, _CLAUSES)
     assert set(mapping) == {
+        "1.8.1.(6).farkli_kurum_artis",
         "1.8.2.(1)",
         "1.8.2.(2)",
+        "1.8.2.(3).enjektabl_kutu",
+        "1.8.3.(1).protez_ortez",
         "1.8.3.(2)",
         "1.8.4.(1)",
         "1.8.5.(2).askeri_tatbikat",
@@ -57,6 +60,8 @@ def test_json_rules_map_to_expected_clause_ids() -> None:
         "1.8.5.(10).organ_nakli",
         "1.8.5.(14).kanun_2828",
         "1.8.5.(17).iade_malzeme",
+        "1.8.5.(18).polis_akademisi",
+        "1.8.5.(19).harp_okulu",
         "1.8.5.(20).deprem_protez",
     }
     assert mapping["1.8.2.(1)"] == ["C000314"]
@@ -68,17 +73,19 @@ def test_manifest_has_gate_b_sources_encoded_union() -> None:
 
     manifest = build_encoded_manifest(_RULES, _CLAUSES)
     encoded = manifest["gate_b_sources_encoded"]
-    assert len(encoded) >= 18
-    assert len(encoded) <= 24
-    assert "C000314" in encoded
+    assert len(encoded) >= 30
+    assert len(encoded) <= 33
     assert "C000364" in encoded
     assert "C000361" in encoded
     assert "C000326" in encoded
     assert "C000362" in encoded
     assert "C000355" in manifest["compositor_clause_traces"]["copay_exemption_occupational"]
-    assert "C000378" in manifest["compositor_clause_traces"]["copay_exemption_patient_status"]
+    patient_status = manifest["compositor_clause_traces"]["copay_exemption_patient_status"]
+    assert "C000378" in patient_status
+    assert "C000365" in patient_status
+    assert "C000379" in patient_status
     assert "C000355" not in manifest["compositor_clause_traces"]["copay_exemption_visit_type"]
-    assert manifest["rules_in_json"] == 12
+    assert manifest["rules_in_json"] == 17
 
 
 def test_gate_b_artifacts_on_disk() -> None:
