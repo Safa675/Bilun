@@ -69,3 +69,6 @@ htmlcov/
 # Logs
 *.log
 logs/
+
+# Stray root lockfile (no root package.json; real one is frontend/package-lock.json)
+/package-lock.json
