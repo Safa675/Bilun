@@ -276,8 +276,8 @@ class TestGazetteRepricingSyntheticDemo:
             for row in report.gazette_repricing.opportunities
             if row.get("claim_id") == demo_claim.claim_id
         ]
-        # The demo claim is dated 2024-06-01; the 2026-01-01 tebliğ is ~579 days
-        # after service, so it falls outside the 90-day prospective window.
+        # The demo claim is dated 2024-06-01; the 2026-01-01 tebliğ is well beyond
+        # the 30-day same-period window.
         assert demo_rows == []
         assert report.gazette_repricing_try == 0.0
         assert report.gazette_repricing.confirmed_repricing_try == 0.0

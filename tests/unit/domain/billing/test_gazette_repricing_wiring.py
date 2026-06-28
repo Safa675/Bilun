@@ -14,8 +14,7 @@ from src.bilun.domain.claims.patient_context import PatientClaimContext
 
 
 def _ctx() -> PatientClaimContext:
-    # Service date is kept within 90 days of the 2026-01-01 tebliğ so the
-    # line is still flagged as a prospective repricing opportunity.
+    # Service date within 30 days of the 2026-01-01 tebliğ (2025-12-02 = 30 days).
     claim = ClaimHeader(
         claim_id="F-DEMO-001",
         patient_id="P1",
@@ -26,8 +25,8 @@ def _ctx() -> PatientClaimContext:
         department="Genel",
         admission_date=None,
         discharge_date=None,
-        claim_start_date=date(2025, 12, 1),
-        claim_end_date=date(2025, 12, 1),
+        claim_start_date=date(2025, 12, 2),
+        claim_end_date=date(2025, 12, 2),
         primary_icd10="L98.9",
         package_candidate=False,
         expected_total_billed_try=Decimal("449.73"),
@@ -40,7 +39,7 @@ def _ctx() -> PatientClaimContext:
         claim_id="F-DEMO-001",
         patient_id="P1",
         episode_id="E1",
-        procedure_date=date(2025, 12, 1),
+        procedure_date=date(2025, 12, 2),
         procedure_code="600150",
         procedure_name="Proc",
         procedure_category="islem",

@@ -83,7 +83,7 @@ class TestPaymentMethodTierStar:
         assert result.kind == "DRG_MANDATORY"
         assert result.trace.rule_id == "2.2.1.B-1.a"
 
-    def test_unknown_tier_defaults_conservative(self) -> None:
+    def test_unknown_tier_reports_missing_inputs_for_override_eligible_code(self) -> None:
         from src.bilun.domain.prose_rules import resolve_payment_method
 
         result = resolve_payment_method(
@@ -91,7 +91,9 @@ class TestPaymentMethodTierStar:
             care_setting="inpatient",
             facility_tier="",
         )
-        assert result.kind == "DRG_MANDATORY"
+        assert result.kind == "MISSING_INPUTS"
+        assert result.payment_method == "unknown"
+        assert "facility_tier" in result.trace.detail
 
     def test_ek2b_only_is_itemized(self) -> None:
         from src.bilun.domain.prose_rules.catalog_membership import (

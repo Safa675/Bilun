@@ -157,6 +157,117 @@ def _drug_indication_manifest_stats() -> dict[str, Any]:
     }
 
 
+@lru_cache(maxsize=1)
+def _drug_indication_subsection_coverage() -> dict[str, dict[str, Any]]:
+    """Per-subsection encoded/total fractions from Gate B manifests (A4 partial)."""
+    manifest_dir = _PROSE_RULES_DIR.parent / "prose_manifests"
+    stats: dict[str, dict[str, Any]] = {}
+
+    def _record(section_key: str, *, encoded: int, total: int) -> None:
+        stats[section_key] = {
+            "encoded_clause_count": encoded,
+            "clause_total": total,
+            "encoded_clause_pct": round(100.0 * encoded / total, 1) if total else 0.0,
+        }
+
+    path_4214c = manifest_dir / "L4.2_drug_indication_4.2.14.C_manifest.json"
+    if path_4214c.is_file():
+        m = json.loads(path_4214c.read_text(encoding="utf-8"))
+        _record(
+            "4.2.14.C",
+            encoded=len(m.get("encoded_clause_ids") or []),
+            total=int(m.get("section_clause_total") or 0),
+        )
+
+    path_4213_4216 = manifest_dir / "L4.2_drug_indication_4213_4216_manifest.json"
+    if path_4213_4216.is_file():
+        m = json.loads(path_4213_4216.read_text(encoding="utf-8"))
+        traces = m.get("clause_traces") or []
+        encoded_4213 = {
+            str(trace["clause_id"])
+            for trace in traces
+            if str(trace.get("section_id") or "").startswith("4.2.13")
+            and trace.get("manifest_status") == "encoded"
+        }
+        encoded_4216 = {
+            str(trace["clause_id"])
+            for trace in traces
+            if str(trace.get("section_id") or "").startswith("4.2.16")
+            and trace.get("manifest_status") == "encoded"
+        }
+        _record(
+            "4.2.13",
+            encoded=len(encoded_4213),
+            total=int(m.get("section_4.2.13_clause_total") or 0),
+        )
+        _record(
+            "4.2.16",
+            encoded=len(encoded_4216),
+            total=int(m.get("section_4.2.16_clause_total") or 0),
+        )
+
+    path_4233 = manifest_dir / "L4.33_anti_vegf_4.2.33_manifest.json"
+    if path_4233.is_file():
+        m = json.loads(path_4233.read_text(encoding="utf-8"))
+        _record(
+            "4.2.33",
+            encoded=len(m.get("encoded_clause_ids") or []),
+            total=int(m.get("section_clause_total") or 0),
+        )
+
+    path_4217 = manifest_dir / "L4.2_drug_indication_4217_manifest.json"
+    if path_4217.is_file():
+        m = json.loads(path_4217.read_text(encoding="utf-8"))
+        _record(
+            "4.2.17",
+            encoded=len(m.get("encoded_clause_ids") or []),
+            total=int(m.get("section_4.2.17_clause_total") or m.get("section_clause_total") or 0),
+        )
+
+    path_4219 = manifest_dir / "L4.2_drug_indication_4219_manifest.json"
+    if path_4219.is_file():
+        m = json.loads(path_4219.read_text(encoding="utf-8"))
+        _record(
+            "4.2.19",
+            encoded=len(m.get("encoded_clause_ids") or []),
+            total=int(m.get("section_4.2.19_clause_total") or m.get("section_clause_total") or 0),
+        )
+
+    for section_key, manifest_name, total_key in (
+        ("4.2.34", "L4.2_drug_indication_4234_manifest.json", "section_clause_total"),
+        ("4.2.38", "L4.2_drug_indication_4238_manifest.json", "section_clause_total"),
+        ("4.2.35", "L4.2_drug_indication_4235_4237_manifest.json", "section_4.2.35_clause_total"),
+        ("4.2.37", "L4.2_drug_indication_4235_4237_manifest.json", "section_4.2.37_clause_total"),
+        ("4.2.18", "L4.2_drug_indication_4218_4236_manifest.json", "section_4.2.18_clause_total"),
+        ("4.2.36", "L4.2_drug_indication_4218_4236_manifest.json", "section_4.2.36_clause_total"),
+        ("4.2.10", "L4.2_drug_indication_4210_manifest.json", "section_clause_total"),
+        ("4.2.6", "L4.2_drug_indication_4206_manifest.json", "section_4.2.6_clause_total"),
+        ("4.2.9", "L4.2_drug_indication_4209_4227_manifest.json", "section_4.2.9_clause_total"),
+        ("4.2.27", "L4.2_drug_indication_4209_4227_manifest.json", "section_4.2.27_clause_total"),
+        ("4.2.1", "L4.2_drug_indication_4201_manifest.json", "section_clause_total"),
+    ):
+        path = manifest_dir / manifest_name
+        if not path.is_file():
+            continue
+        m = json.loads(path.read_text(encoding="utf-8"))
+        if section_key in ("4.2.35", "4.2.37", "4.2.18", "4.2.36", "4.2.9", "4.2.27"):
+            traces = m.get("clause_traces") or []
+            prefix = section_key
+            enc_ids = {
+                str(t["clause_id"])
+                for t in traces
+                if str(t.get("section_id") or "").startswith(prefix)
+                and t.get("manifest_status") == "encoded"
+            }
+            encoded_n = len(enc_ids)
+        else:
+            encoded_n = len(m.get("encoded_clause_ids") or [])
+        total = int(m.get(total_key) or m.get("section_clause_total") or 0)
+        _record(section_key, encoded=encoded_n, total=total)
+
+    return stats
+
+
 def drug_indication_v1_stop_conditions() -> dict[str, Any]:
     """Phase 5 v1 completion criteria — honest met/unmet flags.
 
@@ -204,6 +315,7 @@ def drug_indication_coverage_scope() -> dict[str, Any]:
     section_4214c = sum(1 for rule in rules if rule.get("sut_section") == "4.2.14.C")
     tier_b_rules = sum(1 for rule in rules if _has_tier_b_constraints(rule))
     manifest_stats = _drug_indication_manifest_stats()
+    subsection_coverage = _drug_indication_subsection_coverage()
     return {
         "rule_set_id": _RULE_SET_ID,
         "prose_engine_status": "partial",
@@ -225,6 +337,7 @@ def drug_indication_coverage_scope() -> dict[str, Any]:
         "inn_named_clause_count": manifest_stats.get("inn_named_clause_count", 0),
         "inn_named_actionable_pct": manifest_stats.get("inn_named_actionable_pct", 0.0),
         "tier_c_defer_themes_summary": manifest_stats.get("tier_c_defer_themes_summary") or {},
+        "subsection_coverage": subsection_coverage,
         "sut_anchors": anchors,
         "note": (
             "Phase 0–5 — INN + ICD-10 + sağlık kurulu raporu matcher; Tier B adds report "
@@ -723,42 +836,40 @@ def evaluate_drug_indication_line(
             or "İlaç endikasyonu fatura tanıları ile uyumlu değil (§4.2).",
         }
 
-    if not report_required:
-        return None
+    if report_required:
+        if report_present is False:
+            return {
+                "drug_claim_line_id": drug_line.drug_claim_line_id,
+                "claim_id": claim.claim_id,
+                "drug_name": drug_line.drug_name,
+                "rule_id": rule.get("rule_id"),
+                "sut_section": rule.get("sut_section"),
+                "primary_icd10": claim.primary_icd10,
+                "matched_icd10_codes": icd_codes,
+                "violation_kind": "missing_board_report",
+                "severity": "error",
+                "report_specialties": list(rule.get("report_specialties") or []),
+                "message_tr": rule.get("message_tr")
+                or "Uzmanlık sağlık kurulu raporu eksik (§4.2).",
+            }
 
-    if report_present is False:
-        return {
-            "drug_claim_line_id": drug_line.drug_claim_line_id,
-            "claim_id": claim.claim_id,
-            "drug_name": drug_line.drug_name,
-            "rule_id": rule.get("rule_id"),
-            "sut_section": rule.get("sut_section"),
-            "primary_icd10": claim.primary_icd10,
-            "matched_icd10_codes": icd_codes,
-            "violation_kind": "missing_board_report",
-            "severity": "error",
-            "report_specialties": list(rule.get("report_specialties") or []),
-            "message_tr": rule.get("message_tr")
-            or "Uzmanlık sağlık kurulu raporu eksik (§4.2).",
-        }
-
-    if report_present is None:
-        return {
-            "drug_claim_line_id": drug_line.drug_claim_line_id,
-            "claim_id": claim.claim_id,
-            "drug_name": drug_line.drug_name,
-            "rule_id": rule.get("rule_id"),
-            "sut_section": rule.get("sut_section"),
-            "primary_icd10": claim.primary_icd10,
-            "matched_icd10_codes": icd_codes,
-            "violation_kind": "needs_report_verification",
-            "severity": "review",
-            "report_specialties": list(rule.get("report_specialties") or []),
-            "message_tr": (
-                rule.get("message_tr")
-                or "Sağlık kurulu raporu durumu doğrulanmalı (§4.2)."
-            ),
-        }
+        if report_present is None:
+            return {
+                "drug_claim_line_id": drug_line.drug_claim_line_id,
+                "claim_id": claim.claim_id,
+                "drug_name": drug_line.drug_name,
+                "rule_id": rule.get("rule_id"),
+                "sut_section": rule.get("sut_section"),
+                "primary_icd10": claim.primary_icd10,
+                "matched_icd10_codes": icd_codes,
+                "violation_kind": "needs_report_verification",
+                "severity": "review",
+                "report_specialties": list(rule.get("report_specialties") or []),
+                "message_tr": (
+                    rule.get("message_tr")
+                    or "Sağlık kurulu raporu durumu doğrulanmalı (§4.2)."
+                ),
+            }
 
     tier_b_hit = _evaluate_tier_b_constraints(
         rule=rule,

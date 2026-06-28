@@ -11,6 +11,7 @@ PaymentMethodKind = Literal[
     "DRG_MANDATORY",
     "DRG_OVERRIDABLE",
     "ITEMIZED",
+    "MISSING_INPUTS",
     "NOT_IN_SUT",
 ]
 PatientCopayProfile = Literal["sgk_income_recipient", "other"]

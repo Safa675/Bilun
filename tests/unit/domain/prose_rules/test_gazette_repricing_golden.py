@@ -91,6 +91,8 @@ def test_gazette_repricing_golden_case(case: dict) -> None:
         float(case["expected_recoverable_repricing_try"]), rel=0.01
     )
     assert row["included_in_sgk_total"] is case["expected_included_in_sgk_total"]
+    assert row["rebill_permitted"] is False
+    assert row["review_only"] is True
 
 
 def test_gazette_repricing_corpus_wave1_size() -> None:

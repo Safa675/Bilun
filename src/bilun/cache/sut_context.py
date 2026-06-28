@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections import Counter
 from decimal import Decimal
 from typing import Any
 
@@ -101,6 +102,10 @@ def build_sut_patient_alerts_cache(
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     n_exempt_patients = 0
+    n_exempt_ek1a = 0
+    n_exempt_status_only = 0
+    n_exempt_both = 0
+    category_counts: Counter[str] = Counter()
     n_patients_with_surcharge_flags = 0
     n_patients_with_copay_rate_flags = 0
     n_patients_with_surcharge_unavailable = 0
@@ -151,6 +156,21 @@ def build_sut_patient_alerts_cache(
         is_exempt = bool(copay_exemption.get("exempt"))
 
         n_exempt_patients += int(is_exempt)
+        if is_exempt:
+            categories = {
+                str(source.get("category") or "")
+                for source in copay_exemption.get("exemption_sources", [])
+            }
+            has_ek1a = "ek1a_chronic" in categories
+            has_status = bool(categories - {"ek1a_chronic"})
+            if has_ek1a:
+                n_exempt_ek1a += 1
+            if has_status and not has_ek1a:
+                n_exempt_status_only += 1
+            if has_ek1a and has_status:
+                n_exempt_both += 1
+            for source in copay_exemption.get("exemption_sources", []):
+                category_counts[str(source.get("category") or "unknown")] += 1
         if is_exact_output(surcharge_exposure):
             n_patients_with_surcharge_flags += int(surcharge_count > 0)
         else:
@@ -270,7 +290,14 @@ def build_sut_patient_alerts_cache(
     summary: dict[str, Any] = {
         "n_total_patients": n_total_patients,
         "n_exempt_patients": n_exempt_patients,
+        "n_exempt_ek1a_patients": n_exempt_ek1a,
+        "n_exempt_status_only_patients": n_exempt_status_only,
+        "n_exempt_ek1a_and_status_patients": n_exempt_both,
         "exemption_rate": round(n_exempt_patients / max(n_total_patients, 1), 4),
+        "exemption_by_category": [
+            {"category": category, "count": count}
+            for category, count in category_counts.most_common()
+        ],
         "n_patients_with_surcharge_flags": n_patients_with_surcharge_flags,
         "n_patients_with_copay_rate_flags": n_patients_with_copay_rate_flags,
         "total_surcharge_flags": total_surcharge_flags,

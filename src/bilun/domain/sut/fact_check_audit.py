@@ -43,9 +43,9 @@ SUPPLEMENTAL_FACT_CHECK_RULES: dict[str, dict[str, Any]] = {
         "medula_overlap": "ADDITIVE",
         "fact_check_units": ("SUT-4.2.14.C",),
         "fact_check_note": (
-            "SUT-4.2.14.C: partial INN+ICD+report corpus (103 JSON rules, 25 Tier B); "
-            "~240 manifest-encoded clauses vs ~3.6k registry-partial gap rows "
-            "(549 Tier-C deferred in encode manifest). "
+            "SUT-4.2.14.C: partial INN+ICD+report corpus; §4.2 motor-bound encode "
+            "~25% of 2,369 classified clauses (599 manifest-encoded; pilots 4.2.14.C, "
+            "4.2.13/16, 4.2.33, 4.2.17). "
             "Not to be confused with audit unit L4.2 (EK-2C DRG pricing)."
         ),
     },
@@ -71,7 +71,7 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
         "ADDITIVE",
         ("payment_method_package", "payment_method_itemized", "payment_method_tier_override"),
         note=(
-            "§2.2 Gate B: ~21 JSON rules / ~20 encoded clauses (~23% of §2.2 corpus); "
+            "§2.2 Gate B: 42 JSON rules / 41 manifest clause IDs (~33% of §2.2 coverage rows encoded); "
             "§2.2.2.B session-fraction PARTIAL (session_pricing_2_2_2_B manifest cross-ref)."
         ),
     ),
@@ -217,7 +217,11 @@ FACT_CHECK_AUDIT_UNITS: tuple[FactCheckAuditUnit, ...] = (
         "PARTIAL",
         "ADDITIVE",
         ("lab_billing",),
-        "Duplicate detection HEURISTIC; hemogram core fixed",
+        note=(
+            "Duplicate detection HEURISTIC; hemogram core fixed. "
+            "§2.2.2.B same-session multi-procedure session-fraction remains PARTIAL/unimplemented "
+            "in lab optimizer (session_pricing_2_2_2_B manifest; runtime in session_pricing.py)."
+        ),
     ),
     FactCheckAuditUnit(
         "L3.2",

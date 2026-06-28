@@ -190,6 +190,10 @@ class CopayOptimization:
     is_exempt: bool = False
     exemption_disease: str = ""
     exemption_range: str = ""
+    exemption_sources: list[dict[str, Any]] = field(default_factory=list)
+    categories_not_evaluated: list[dict[str, Any]] = field(default_factory=list)
+    primary_exemption_category: str | None = None
+    copay_primary_outcome: str = "none"
     savings_beneficiary: str = COPAY_SAVINGS_BENEFICIARY_PATIENT_AND_SGK
     gap_kind: str = COPAY_GAP_KIND_EXEMPTION_CORRECTION
     visit_copay_savings_try: float = 0.0  # procedure-line exemption gap (legacy name)

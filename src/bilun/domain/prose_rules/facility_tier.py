@@ -11,6 +11,8 @@ from ..claims.models import ClaimHeader
 
 Basamak = Literal[2, 3]
 
+FACILITY_TIER_MISSING_INPUT = "facility_tier"
+
 _UNIVERSITY_PROVIDER_TYPES = frozenset(
     {
         "universite",
@@ -52,14 +54,27 @@ def _canonicalize_provider(raw: str | None) -> str:
     return _canonicalize_tier(raw)
 
 
+def _unresolved_tier_context(raw: str) -> TierContext:
+    return TierContext(
+        raw_tier=raw,
+        basamak=None,
+        is_university_eah=False,
+        used_default=True,
+    )
+
+
 @dataclass(frozen=True)
 class TierContext:
     """Resolved hospital tier for prose-rule evaluation."""
 
     raw_tier: str
-    basamak: Basamak
+    basamak: Basamak | None
     is_university_eah: bool
     used_default: bool
+
+    @property
+    def resolved(self) -> bool:
+        return not self.used_default and self.basamak is not None
 
     @property
     def is_third_tier(self) -> bool:
@@ -78,7 +93,9 @@ def normalize_facility_tier(
 ) -> TierContext:
     """Map a claim facility tier string to basamak + university flags.
 
-    Unknown or empty values default to basamak 2 (conservative: no §2.2.2(2) override).
+    Empty or unmapped values are returned unresolved (``used_default=True``,
+    ``basamak=None``) so callers can surface ``missing_inputs`` instead of
+    silently assuming basamak 2.
     """
     raw = str(facility_tier or "").strip()
     canonical = _canonicalize_tier(raw)
@@ -92,27 +109,9 @@ def normalize_facility_tier(
     elif canonical.startswith("2_") or canonical.startswith("1_"):
         basamak, is_university = 2, False
     elif not canonical:
-        basamak, is_university = 2, False
-        return TierContext(
-            raw_tier=raw,
-            basamak=basamak,
-            is_university_eah=is_university,
-            used_default=True,
-        )
+        return _unresolved_tier_context(raw)
     else:
-        basamak, is_university = 2, False
-        used_default = True
-        provider_canonical = _canonicalize_provider(provider_type)
-        if provider_canonical in _UNIVERSITY_PROVIDER_TYPES:
-            is_university = True
-            if basamak == 2:
-                basamak = 3
-        return TierContext(
-            raw_tier=raw,
-            basamak=basamak,
-            is_university_eah=is_university,
-            used_default=used_default,
-        )
+        return _unresolved_tier_context(raw)
 
     provider_canonical = _canonicalize_provider(provider_type)
     if not is_university and provider_canonical in _UNIVERSITY_PROVIDER_TYPES:

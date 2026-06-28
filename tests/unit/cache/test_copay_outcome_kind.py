@@ -12,6 +12,7 @@ from src.bilun.domain.optimization import (
     analyze_surcharge_exposure,
     evaluate_copay_exemption,
 )
+from src.bilun.domain.claims.models import PatientCopayProfile
 from src.bilun.domain.optimization.copay_exemption_context import (
     CopayExemptionInput,
     build_copay_inputs_by_patient,
@@ -121,3 +122,29 @@ def test_partial_exempt_outcome_kind(monkeypatch) -> None:
     row = payload["patients"][0]
     assert row["copay_exemption"]["outcome_kind"] == "partial_exempt"
     assert row["copay_primary_outcome"] == "partial_exempt"
+
+
+def test_patient_alerts_summary_exemption_by_category() -> None:
+    payload = build_sut_patient_alerts_cache(
+        ["P-EXEMPT"],
+        {"P-EXEMPT": ["E11.9"]},
+        evaluate_copay_exemption_fn=evaluate_copay_exemption,
+        analyze_surcharge_exposure_fn=analyze_surcharge_exposure,
+        analyze_copay_rate_exposure_fn=analyze_copay_rate_exposure,
+        copay_inputs_by_pid={
+            "P-EXEMPT": CopayExemptionInput(
+                diagnoses=["E11.9"],
+                patient_profile=PatientCopayProfile(
+                    patient_id="P-EXEMPT",
+                    sgk_benefit_class="yesil_kart",
+                ),
+                has_chronic_health_report=True,
+            )
+        },
+    )
+
+    summary = payload["summary"]
+    assert "exemption_by_category" in summary
+    assert summary["n_exempt_patients"] == 1
+    categories = {row["category"] for row in summary["exemption_by_category"]}
+    assert "yesil_kart" in categories

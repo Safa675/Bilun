@@ -236,6 +236,13 @@ def _build_0039_104_context() -> PatientClaimContext:
 def test_sentetik_0039_104_equivalent() -> None:
     result = optimize_copay_from_claims(_build_0039_104_context(), _EK1A_EXEMPTION)
 
+    assert result.exemption_sources
+    assert result.exemption_sources[0]["category"] == "ek1a_chronic"
+    assert result.copay_primary_outcome == "exempt"
+    assert result.primary_exemption_category is None or isinstance(
+        result.primary_exemption_category, str
+    )
+
     # Günübirlik muayene is excluded from EK-1A; labs never qualify.
     assert result.visit_copay_savings_try == 0.0
     assert result.rx_copay_savings_try == pytest.approx(442.76)

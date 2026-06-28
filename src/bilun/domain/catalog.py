@@ -332,6 +332,8 @@ def lookup_ek2a_visit_price_try(
         return None, "unavailable"
 
     tier_ctx = normalize_facility_tier(facility_tier, provider_type=provider_type)
+    if not tier_ctx.resolved or tier_ctx.basamak is None:
+        return None, "missing_facility_tier"
     column = "U1" if tier_ctx.basamak == 3 and tier_ctx.is_university_eah else (
         "A1" if tier_ctx.basamak == 3 else "B"
     )

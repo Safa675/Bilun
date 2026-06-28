@@ -295,6 +295,145 @@ def _l14_corpus_row_count() -> int:
         return 0
 
 
+_PAYMENT_METHOD_MOTORS = (
+    "payment_method_package",
+    "payment_method_itemized",
+    "payment_method_tier_override",
+)
+_L22_CORPUS_PATH = PROSE_CORPUS_DIR / "L2.2_payment_method_prose.csv"
+_L18_CORPUS_PATH = PROSE_CORPUS_DIR / "L1.8_copay_exemption_prose.csv"
+
+_COPAY_MOTORS = (
+    "copay_rate_general",
+    "copay_exemption_ek1a",
+    "copay_exemption_ek4d",
+    "copay_exemption_visit_type",
+)
+
+
+def _l18_corpus_row_count() -> int:
+    try:
+        return pl.read_csv(_L18_CORPUS_PATH, columns=["clause_id"]).height
+    except (FileNotFoundError, pl.exceptions.ColumnNotFoundError):
+        return 0
+
+
+def _copay_exemption_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
+    from src.bilun.domain.prose_rules.copay_general import load_decision_table
+
+    manifest_stats = _load_prose_manifest_stats("L1.8_copay_exemption_encoded_manifest.json")
+    rules_on_disk = len((load_decision_table().get("rules") or []))
+    scoped = clause_frame.filter(
+        pl.col("section_id").str.starts_with("1.8")
+        & pl.col("primary_rule_id").is_in(list(_COPAY_MOTORS))
+    )
+    classified_rows = scoped.height
+    gap_rows = (
+        scoped.filter(pl.col("has_algorithmic_gap") == True).height
+        if "has_algorithmic_gap" in scoped.columns
+        else 0
+    )
+    encoded_rows = (
+        scoped.filter(pl.col("has_rule_encoding") == True).height
+        if "has_rule_encoding" in scoped.columns
+        else 0
+    )
+    unencoded_gap_rows = (
+        scoped.filter(
+            (pl.col("has_algorithmic_gap") == True)
+            & (pl.col("has_rule_encoding") == False)
+        ).height
+        if {"has_algorithmic_gap", "has_rule_encoding"}.issubset(set(scoped.columns))
+        else gap_rows
+    )
+    return {
+        "rule_id": "copay_general_1_8",
+        "registry_status": "partial",
+        "prose_engine_status": "partial",
+        "classified_clause_rows": classified_rows,
+        "encoded_clause_rows": encoded_rows,
+        "algorithmic_gap_rows": gap_rows,
+        "unencoded_gap_rows": unencoded_gap_rows,
+        "encoded_clause_pct": round(100.0 * encoded_rows / classified_rows, 1)
+        if classified_rows
+        else 0.0,
+        "gap_pct_of_classified": round(100.0 * gap_rows / classified_rows, 1)
+        if classified_rows
+        else 0.0,
+        "prose_rules_on_disk": rules_on_disk,
+        "manifest_traced_clause_count": manifest_stats.get("manifest_traced_clause_count"),
+        "corpus_export_rows": _l18_corpus_row_count(),
+        "honesty_note": (
+            "§1.8 copay motors share one Gate B manifest; "
+            f"{rules_on_disk} JSON rules trace "
+            f"{manifest_stats.get('manifest_traced_clause_count', 0):,} clause IDs. "
+            "Compositor modules (EK-1A, visit type, patient status) carry manifest traces "
+            "beyond on-disk JSON exemption rows."
+        ),
+    }
+
+
+def _l22_corpus_row_count() -> int:
+    try:
+        return pl.read_csv(_L22_CORPUS_PATH, columns=["clause_id"]).height
+    except (FileNotFoundError, pl.exceptions.ColumnNotFoundError):
+        return 0
+
+
+def _payment_method_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
+    from src.bilun.domain.prose_rules.payment_method import load_decision_table
+
+    manifest_stats = _load_prose_manifest_stats("L2.2_payment_method_encoded_manifest.json")
+    rules_on_disk = len((load_decision_table().get("rules") or []))
+    scoped = clause_frame.filter(
+        pl.col("section_id").str.starts_with("2.2")
+        & pl.col("primary_rule_id").is_in(list(_PAYMENT_METHOD_MOTORS))
+    )
+    classified_rows = scoped.height
+    gap_rows = (
+        scoped.filter(pl.col("has_algorithmic_gap") == True).height
+        if "has_algorithmic_gap" in scoped.columns
+        else 0
+    )
+    encoded_rows = (
+        scoped.filter(pl.col("has_rule_encoding") == True).height
+        if "has_rule_encoding" in scoped.columns
+        else 0
+    )
+    unencoded_gap_rows = (
+        scoped.filter(
+            (pl.col("has_algorithmic_gap") == True)
+            & (pl.col("has_rule_encoding") == False)
+        ).height
+        if {"has_algorithmic_gap", "has_rule_encoding"}.issubset(set(scoped.columns))
+        else gap_rows
+    )
+    return {
+        "rule_id": "payment_method_2_2",
+        "registry_status": "partial",
+        "prose_engine_status": "partial",
+        "classified_clause_rows": classified_rows,
+        "encoded_clause_rows": encoded_rows,
+        "algorithmic_gap_rows": gap_rows,
+        "unencoded_gap_rows": unencoded_gap_rows,
+        "encoded_clause_pct": round(100.0 * encoded_rows / classified_rows, 1)
+        if classified_rows
+        else 0.0,
+        "gap_pct_of_classified": round(100.0 * gap_rows / classified_rows, 1)
+        if classified_rows
+        else 0.0,
+        "prose_rules_on_disk": rules_on_disk,
+        "manifest_traced_clause_count": manifest_stats.get("manifest_traced_clause_count"),
+        "corpus_export_rows": _l22_corpus_row_count(),
+        "honesty_note": (
+            "§2.2 payment motors share one Gate B manifest; "
+            f"{rules_on_disk} JSON rules trace "
+            f"{manifest_stats.get('manifest_traced_clause_count', 0):,} clause IDs. "
+            "§2.2.2.B session-fraction stays PARTIAL (session_pricing_2_2_2_B)."
+        ),
+    }
+
+
 def _specialty_materials_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
     from src.bilun.domain.prose_rules.specialty_materials import load_specialty_materials_rules
 
@@ -411,6 +550,7 @@ def _drug_indication_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[
         "encode_tier_c_deferred_count": scope.get("encode_tier_C_deferred_count", 0),
         "section_4.2.14.C_clause_total": scope.get("section_4.2.14.C_clause_total", 828),
         "clause_trace_complete": scope.get("clause_trace_complete", False),
+        "subsection_coverage": scope.get("subsection_coverage") or {},
         "honesty_note": (
             "Registry stays partial while §4.2 clauses classify here; "
             f"{encoded_rows:,} rows have JSON/manifest encoding vs "
@@ -645,6 +785,8 @@ def coverage_summary() -> dict[str, Any]:
             "drug_indication_prose": _drug_indication_partial_engine_summary(clause_frame),
             "material_bundling_prose": _material_bundling_partial_engine_summary(clause_frame),
             "specialty_materials_prose": _specialty_materials_partial_engine_summary(clause_frame),
+            "payment_method_2_2": _payment_method_partial_engine_summary(clause_frame),
+            "copay_general_1_8": _copay_exemption_partial_engine_summary(clause_frame),
         },
         "gap_composition": _gap_composition_summary(clause_frame),
         "registry": {

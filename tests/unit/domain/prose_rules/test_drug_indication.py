@@ -18,8 +18,16 @@ from src.bilun.domain.prose_rules.drug_indication import (
 
 _PHASE2_ONCOLOGY_RULE_COUNT = 164  # §4.2.14.C oncology corpus
 _A2_4213_4216_RULE_COUNT = 13
+_A3_4217_RULE_COUNT = 9
+_A4_4219_RULE_COUNT = 2
 _ANTI_VEGF_RULE_COUNT = 29
-_MERGED_RULE_COUNT = _PHASE2_ONCOLOGY_RULE_COUNT + _A2_4213_4216_RULE_COUNT + _ANTI_VEGF_RULE_COUNT
+_MERGED_RULE_COUNT = (
+    _PHASE2_ONCOLOGY_RULE_COUNT
+    + _A2_4213_4216_RULE_COUNT
+    + _A3_4217_RULE_COUNT
+    + _A4_4219_RULE_COUNT
+    + _ANTI_VEGF_RULE_COUNT
+)
 
 
 def _claim(*, primary_icd10: str = "C34.9") -> ClaimHeader:
@@ -111,6 +119,11 @@ def test_drug_indication_coverage_scope_phase2() -> None:
     assert scope["manifest_coverage_pct"] == 100.0
     assert scope["tier_a_pending_count"] >= 0
     assert scope["inn_named_clause_count"] >= 500
+    subsection = scope.get("subsection_coverage") or {}
+    assert "4.2.14.C" in subsection
+    assert subsection["4.2.14.C"]["encoded_clause_count"] > 0
+    if "4.2.19" in subsection:
+        assert subsection["4.2.19"]["encoded_clause_count"] >= 2
     stop = scope["v1_stop_conditions"]
     assert stop["v1_manifest_complete"] is True
     assert stop["v1_corpus_complete"] is True

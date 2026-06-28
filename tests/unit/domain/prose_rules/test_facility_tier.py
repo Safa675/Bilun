@@ -42,17 +42,22 @@ class TestNormalizeFacilityTier:
         assert normalize_facility_tier("2_basamak_resmi").basamak == 2
         assert normalize_facility_tier("3_basamak_resmi").basamak == 3
 
-    def test_unknown_defaults_conservatively_to_basamak_2(self) -> None:
-        from src.bilun.domain.prose_rules.facility_tier import normalize_facility_tier
+    def test_unresolved_tier_reports_missing_input(self) -> None:
+        from src.bilun.domain.prose_rules.facility_tier import (
+            FACILITY_TIER_MISSING_INPUT,
+            normalize_facility_tier,
+        )
 
         ctx = normalize_facility_tier("")
-        assert ctx.basamak == 2
+        assert ctx.basamak is None
         assert ctx.used_default is True
+        assert ctx.resolved is False
         assert ctx.allows_section_2_2_2_override is False
 
         ctx = normalize_facility_tier("devlet")
-        assert ctx.basamak == 2
+        assert ctx.basamak is None
         assert ctx.used_default is True
+        assert ctx.resolved is False
 
     def test_legacy_numeric_tier(self) -> None:
         from src.bilun.domain.prose_rules.facility_tier import normalize_facility_tier

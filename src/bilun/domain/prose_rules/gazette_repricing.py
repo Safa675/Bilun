@@ -1,4 +1,4 @@
-"""Prospective gazette repricing — stale EK-2B/EK-2C price after tebliğ amendment."""
+"""Prospective gazette list-price review — stale EK-2B/EK-2C rate after tebliğ."""
 
 from __future__ import annotations
 
@@ -137,8 +137,19 @@ def _line_payable_per_unit(line: ProcedureClaimLine) -> float:
     return float(line.unit_price_try)
 
 
-def _rebill_permitted(rules: dict[str, Any]) -> bool:
+def _detector_enabled(rules: dict[str, Any]) -> bool:
+    """Whether the review detector runs (distinct from per-row rebill permission)."""
+    if "detector_enabled" in rules:
+        return bool(rules.get("detector_enabled"))
     return bool(rules.get("rebill_permitted_default", True))
+
+
+def _rebill_permitted_on_output(rules: dict[str, Any]) -> bool:
+    return bool(rules.get("rebill_permitted_default", False))
+
+
+def _review_only(rules: dict[str, Any]) -> bool:
+    return bool(rules.get("review_only", True))
 
 
 def _max_days_after_service(rules: dict[str, Any]) -> int | None:
@@ -165,12 +176,19 @@ def detect_gazette_repricing_opportunities(
     claim: ClaimHeader,
     claim_procs: list[ProcedureClaimLine],
 ) -> list[dict[str, Any]]:
-    """Flag lines still priced at pre-amendment gazette rates after a tebliğ increase."""
+    """Flag lines still priced at pre-amendment gazette rates after a tebliğ increase.
+
+    Uses a configurable post-service window (default 30 days) as a same-period
+    heuristic. Output is review-only; ``rebill_permitted`` on each row reflects
+    config and does not imply automatic MEDULA rebill.
+    """
     rules = load_gazette_repricing_rules()
-    if not _rebill_permitted(rules):
+    if not _detector_enabled(rules):
         return []
 
     max_days = _max_days_after_service(rules)
+    rebill_permitted = _rebill_permitted_on_output(rules)
+    review_only = _review_only(rules)
     opportunities: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
 
@@ -214,8 +232,10 @@ def detect_gazette_repricing_opportunities(
         detail = message or (
             f"Procedure {code} on {service_date} was priced at {old_price:.2f} TRY/unit "
             f"but tebliğ {increase['amendment_date']} raised the gazette list to "
-            f"{new_price:.2f} TRY/unit. Prospective repricing review only."
+            f"{new_price:.2f} TRY/unit. Manual same-period list review only."
         )
+        if review_only and "SGK" not in detail and "sgk" not in detail.lower():
+            detail = f"{detail} Yalnızca inceleme — SGK artış toplamına dahil değil."
 
         opportunities.append(
             {
@@ -238,6 +258,8 @@ def detect_gazette_repricing_opportunities(
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "recommendation_kind": "prospective_repricing",
                 "review_kind": "needs_billing_review",
+                "rebill_permitted": rebill_permitted,
+                "review_only": review_only,
                 "included_in_sgk_total": False,
                 "sut_section_id": "2.2",
                 "rule_id": f"gazette_repricing.{code}",

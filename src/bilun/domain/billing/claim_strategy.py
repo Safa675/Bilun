@@ -17,6 +17,7 @@ from src.bilun.domain.prose_rules.session_pricing import (
     _line_itemized_payable,
     compute_session_adjusted_itemized_total,
 )
+from src.bilun.domain.prose_rules.facility_tier import FACILITY_TIER_MISSING_INPUT
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_OPTIONAL_OVERRIDE,
     SAVINGS_CATEGORY_SGK_UPLIFT,
@@ -29,7 +30,7 @@ from .demo_vignette_lookup import (
     hypothetical_package_total_try,
     recommended_package_code_for_claim,
 )
-from .types import EXACTNESS_STATUS_EXACT, BillingStrategyRecommendation
+from .types import EXACTNESS_STATUS_EXACT, EXACTNESS_STATUS_MISSING_INPUTS, BillingStrategyRecommendation
 
 _PROSE_RULE_SOURCE = (
     "SUT §2.2 prose rules (payment_method_2_2) + EK-2B/EK-2C catalog membership"
@@ -185,6 +186,8 @@ def _infer_current_billing(claim_procs: list[ProcedureClaimLine]) -> str:
 
 
 def _aggregate_claim_kind(line_results: list[PaymentMethodResult]) -> PaymentMethodKind | None:
+    if any(result.kind == "MISSING_INPUTS" for result in line_results):
+        return None
     kinds = {result.kind for result in line_results if result.kind != "NOT_IN_SUT"}
     if not kinds:
         return None
@@ -283,6 +286,7 @@ def recommend_billing_strategy_from_claims(
     """Recommend package vs itemized billing per SUT §2.2 prose rules."""
 
     recommendations: list[dict] = []
+    tier_inputs_missing = False
 
     for line in ctx.procedure_lines:
         claim = _claim_for_line(line, ctx.claims)
@@ -321,6 +325,8 @@ def recommend_billing_strategy_from_claims(
             claim,
             care_setting=care_setting,
         )
+        if mandated.kind == "MISSING_INPUTS":
+            tier_inputs_missing = True
         # Only emit the informational mandated-method line when we did NOT
         # already emit a compliance_violation for the same procedure line.
         # Emitting both produced a duplicate that inflated action_count while
@@ -490,19 +496,33 @@ def recommend_billing_strategy_from_claims(
             }
         )
 
+    required_inputs_missing = (
+        [FACILITY_TIER_MISSING_INPUT] if tier_inputs_missing else []
+    )
+    exactness_status = (
+        EXACTNESS_STATUS_MISSING_INPUTS
+        if tier_inputs_missing
+        else EXACTNESS_STATUS_EXACT
+    )
+    unavailable_reason = (
+        "facility_tier required for §2.2.2(2) optional override eligibility"
+        if tier_inputs_missing
+        else None
+    )
+
     if not recommendations:
         return BillingStrategyRecommendation(
             recommendations=[],
-            exactness_status=EXACTNESS_STATUS_EXACT,
-            unavailable_reason=None,
-            required_inputs_missing=[],
+            exactness_status=exactness_status,
+            unavailable_reason=unavailable_reason,
+            required_inputs_missing=required_inputs_missing,
             rule_source=_PROSE_RULE_SOURCE,
         )
 
     return BillingStrategyRecommendation(
         recommendations=recommendations,
-        exactness_status=EXACTNESS_STATUS_EXACT,
-        unavailable_reason=None,
-        required_inputs_missing=[],
+        exactness_status=exactness_status,
+        unavailable_reason=unavailable_reason,
+        required_inputs_missing=required_inputs_missing,
         rule_source=_PROSE_RULE_SOURCE,
     )

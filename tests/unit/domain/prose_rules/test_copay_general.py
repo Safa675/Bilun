@@ -1,4 +1,4 @@
-"""Golden Gate B + JSON integrity for §1.8 copay_general_1_8 (D3 batch-1)."""
+"""Golden Gate B + JSON integrity for §1.8 copay_general_1_8 (D3 batch-1/2)."""
 
 from __future__ import annotations
 
@@ -12,9 +12,10 @@ pytestmark = pytest.mark.unit
 _ROOT = Path(__file__).resolve().parents[4]
 _PROSE_JSON = _ROOT / "data/gazette/prose_rules/copay_general_1_8.json"
 _MANIFEST = _ROOT / "data/gazette/prose_manifests/L1.8_copay_exemption_encoded_manifest.json"
-_GOLDEN_PATH = _ROOT / "data/gazette/prose_rules/golden/copay_general_1_8_batch1.json"
-_BATCH1_MIN_RULES = 12
-_BATCH1_MIN_ENCODED = 18
+_GOLDEN_BATCH1 = _ROOT / "data/gazette/prose_rules/golden/copay_general_1_8_batch1.json"
+_GOLDEN_BATCH2 = _ROOT / "data/gazette/prose_rules/golden/copay_general_1_8_batch2.json"
+_BATCH1_MIN_RULES = 17
+_BATCH1_MIN_ENCODED = 30
 
 
 def _load_rules() -> list[dict]:
@@ -27,8 +28,11 @@ def _rules_by_id() -> dict[str, dict]:
 
 
 def _load_golden_cases() -> list[dict]:
-    payload = json.loads(_GOLDEN_PATH.read_text(encoding="utf-8"))
-    return list(payload["cases"])
+    cases: list[dict] = []
+    for path in (_GOLDEN_BATCH1, _GOLDEN_BATCH2):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        cases.extend(payload["cases"])
+    return cases
 
 
 def test_prose_json_has_batch1_rule_count() -> None:
@@ -75,3 +79,12 @@ def test_batch1_control_exam_waives_visit_copay_only() -> None:
     rule = _rules_by_id()["1.8.5.(4).kontrol_muayenesi"]
     assert rule["action"]["waives_sections"] == ["1.8.1"]
     assert rule["gate_b_sources"] == ["C000358"]
+
+
+def test_batch2_academy_exemption_rules_waive_visit_drug_material() -> None:
+    polis = _rules_by_id()["1.8.5.(18).polis_akademisi"]
+    harp = _rules_by_id()["1.8.5.(19).harp_okulu"]
+    assert polis["gate_b_sources"] == ["C000372"]
+    assert harp["gate_b_sources"] == ["C000373"]
+    assert polis["action"]["waives_sections"] == ["1.8.1", "1.8.2", "1.8.3"]
+    assert harp["action"]["waives_sections"] == ["1.8.1", "1.8.2", "1.8.3"]

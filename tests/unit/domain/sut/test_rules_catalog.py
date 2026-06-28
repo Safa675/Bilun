@@ -250,11 +250,13 @@ class TestCoverageSummary:
         assert di["encoded_clause_rows"] > 0
         assert di["algorithmic_gap_rows"] > di["encoded_clause_rows"]
         assert di["unencoded_gap_rows"] > 0
-        assert di["prose_rules_on_disk"] >= 131
-        # Tier-C deferred shrank after in-force strike filtering (~69 superseded removed).
-        assert di["encode_tier_c_deferred_count"] >= 200
+        assert di["prose_rules_on_disk"] >= 188
+        assert di["encode_tier_c_deferred_count"] >= 40
         # EMR-blocked clauses are honestly flagged (ECOG/progresyon/lab).
         assert di["emr_blocked_rows"] > 0
+        subsections = di.get("subsection_coverage") or {}
+        assert "4.2.14.C" in subsections
+        assert subsections["4.2.14.C"]["encoded_clause_count"] > 0
 
     @_needs_coverage
     def test_coverage_summary_exposes_material_partial_engines(self) -> None:
@@ -267,6 +269,26 @@ class TestCoverageSummary:
         assert mb.get("kdv_pricing_clauses", 0) >= 2
         assert sp["prose_rules_on_disk"] >= 49
         assert sp["manifest_traced_clause_count"] >= 84
+
+    @_needs_coverage
+    def test_coverage_summary_exposes_payment_method_partial_engine(self) -> None:
+        summary = rc.coverage_summary()
+        pm = summary["partial_engines"]["payment_method_2_2"]
+        assert pm["rule_id"] == "payment_method_2_2"
+        assert pm["prose_rules_on_disk"] >= 26
+        assert pm["manifest_traced_clause_count"] >= 27
+        assert pm["encoded_clause_rows"] > 0
+        assert pm["classified_clause_rows"] > 0
+
+    @_needs_coverage
+    def test_coverage_summary_exposes_copay_partial_engine(self) -> None:
+        summary = rc.coverage_summary()
+        copay = summary["partial_engines"]["copay_general_1_8"]
+        assert copay["rule_id"] == "copay_general_1_8"
+        assert copay["prose_rules_on_disk"] >= 17
+        assert copay["manifest_traced_clause_count"] >= 30
+        assert copay["encoded_clause_rows"] >= 30
+        assert copay["classified_clause_rows"] > 0
 
     @_needs_coverage
     def test_coverage_summary_gap_composition_footnote(self) -> None:

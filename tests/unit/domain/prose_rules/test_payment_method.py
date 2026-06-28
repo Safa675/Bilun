@@ -1,4 +1,4 @@
-"""Golden Gate B + JSON integrity for §2.2 payment_method_2_2 (C2 batch-1)."""
+"""Golden Gate B + JSON integrity for §2.2 payment_method_2_2 (C2 batches)."""
 
 from __future__ import annotations
 
@@ -14,8 +14,10 @@ _PROSE_JSON = _ROOT / "data/gazette/prose_rules/payment_method_2_2.json"
 _MANIFEST = _ROOT / "data/gazette/prose_manifests/L2.2_payment_method_encoded_manifest.json"
 _GOLDEN_BATCH1 = _ROOT / "data/gazette/prose_rules/golden/payment_method_2_2_batch1.json"
 _GOLDEN_BATCH2 = _ROOT / "data/gazette/prose_rules/golden/payment_method_2_2_batch2.json"
-_BATCH2_MIN_RULES = 18
-_BATCH2_MIN_ENCODED = 20
+_GOLDEN_BATCH3 = _ROOT / "data/gazette/prose_rules/golden/payment_method_2_2_batch3.json"
+_GOLDEN_BATCH4 = _ROOT / "data/gazette/prose_rules/golden/payment_method_2_2_batch4.json"
+_BATCH4_MIN_RULES = 39
+_BATCH4_MIN_ENCODED = 38
 
 
 def _load_rules() -> list[dict]:
@@ -32,9 +34,9 @@ def _load_golden_cases(path: Path) -> list[dict]:
     return list(payload["cases"])
 
 
-def test_prose_json_has_batch2_rule_count() -> None:
+def test_prose_json_has_batch4_rule_count() -> None:
     rules = _load_rules()
-    assert len(rules) >= _BATCH2_MIN_RULES
+    assert len(rules) >= _BATCH4_MIN_RULES
 
 
 def test_all_rules_have_gate_b_sources() -> None:
@@ -54,12 +56,15 @@ def test_manifest_encoded_clause_ids_match_json() -> None:
     )
     encoded = sorted(manifest.get("encoded_clause_ids") or manifest.get("gate_b_sources_encoded") or [])
     assert encoded == from_json
-    assert len(encoded) >= _BATCH2_MIN_ENCODED
+    assert len(encoded) >= _BATCH4_MIN_ENCODED
 
 
 @pytest.mark.parametrize(
     "case",
-    _load_golden_cases(_GOLDEN_BATCH1) + _load_golden_cases(_GOLDEN_BATCH2),
+    _load_golden_cases(_GOLDEN_BATCH1)
+    + _load_golden_cases(_GOLDEN_BATCH2)
+    + _load_golden_cases(_GOLDEN_BATCH3)
+    + _load_golden_cases(_GOLDEN_BATCH4),
     ids=lambda c: c["clause_id"],
 )
 def test_gate_b_golden_clause_maps_to_rule(case: dict) -> None:
@@ -74,7 +79,7 @@ def test_batch1_itemized_basis_rule_shape() -> None:
     assert rule["gate_b_sources"] == ["C000639"]
 
 
-def test_batch1_gunubirlik_no_day_bed_rule_shape() -> None:
-    rule = _rules_by_id()["2.2.2.(4).gunubirlik_no_day_bed"]
-    assert rule["action"]["bill_day_bed"] is False
-    assert rule["gate_b_sources"] == ["C000636"]
+def test_batch3_home_health_daily_cap_rule_shape() -> None:
+    rule = _rules_by_id()["2.2.1.B-3.(1).home_health_daily_cap"]
+    assert rule["action"]["max_bill_count"] == 1
+    assert rule["gate_b_sources"] == ["C000618"]

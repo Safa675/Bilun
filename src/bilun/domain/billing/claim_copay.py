@@ -256,6 +256,18 @@ def optimize_copay_from_claims(
     result.rx_copay_savings_by_ground = {
         ground: round(float(amount), 2) for ground, amount in rx_by_ground.items() if amount > 0
     }
+    result.exemption_sources = exemption_sources
+    result.primary_exemption_category = copay_exemption.get("primary_exemption_category")
+    result.categories_not_evaluated = list(
+        copay_exemption.get("categories_not_evaluated") or []
+    )
+    if is_exempt:
+        result.copay_primary_outcome = "exempt"
+    elif partial_exempt:
+        result.copay_primary_outcome = "partial_exempt"
+    else:
+        result.copay_primary_outcome = "none"
+
     result.exactness_status = EXACTNESS_STATUS_EXACT
     result.unavailable_reason = None
     result.required_inputs_missing = []

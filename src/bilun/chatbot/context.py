@@ -112,6 +112,12 @@ def build_cohort_context(data: dict[str, Any]) -> str:
             fmt="{category} ({count} patients)",
             max_items=6,
         )
+    n_status_only = copay.get("n_exempt_status_only_patients")
+    n_ek1a_only = copay.get("n_exempt_ek1a_patients")
+    if isinstance(n_status_only, int) and isinstance(n_ek1a_only, int):
+        lines.append(
+            f"  Status-only exempt: {n_status_only}; EK-1A (any): {n_ek1a_only}"
+        )
     if copay.get("top_diseases"):
         _format_list_section(
             lines,
@@ -316,6 +322,26 @@ def build_patient_context(data: dict[str, Any]) -> str:
     if opt_copay:
         exempt = opt_copay.get("exempt")
         lines.append(f"  Copay exempt: {'YES' if exempt else 'NO'}")
+        sources = opt_copay.get("exemption_sources") or []
+        if sources:
+            _format_list_section(
+                lines,
+                "Exemption grounds",
+                sources,
+                key="category",
+                fmt="{category} ({rule_source})",
+                max_items=5,
+            )
+        not_evaluated = opt_copay.get("categories_not_evaluated") or []
+        if not_evaluated:
+            _format_list_section(
+                lines,
+                "Categories not evaluated",
+                not_evaluated,
+                key="category",
+                fmt="{category}",
+                max_items=5,
+            )
         if exempt and opt_copay.get("qualifying_diagnoses"):
             for qd in opt_copay["qualifying_diagnoses"][:5]:
                 lines.append(
@@ -529,6 +555,14 @@ def _append_billing_sections(
         exempt = copay.get("is_exempt")
         if exempt is not None:
             lines.append(f"    Exempt: {'YES' if exempt else 'NO'}")
+        sources = copay.get("exemption_sources") or []
+        if sources:
+            categories = ", ".join(
+                str(source.get("category") or "?") for source in sources[:5]
+            )
+            lines.append(f"    Exemption basis: {categories}")
+        if copay.get("copay_primary_outcome") and copay.get("copay_primary_outcome") != "none":
+            lines.append(f"    Copay outcome: {copay['copay_primary_outcome']}")
         if copay.get("exemption_disease"):
             lines.append(f"    Qualifying disease: {copay['exemption_disease']}")
         if is_full and copay.get("exemption_range"):

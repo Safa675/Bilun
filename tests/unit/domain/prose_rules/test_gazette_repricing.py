@@ -13,8 +13,7 @@ from src.bilun.domain.prose_rules.gazette_repricing import (
 
 
 def _claim(**overrides) -> ClaimHeader:
-    # Service date is kept within 90 days of the 2026-01-01 tebliğ so the
-    # line is still flagged as a prospective repricing opportunity.
+    # Service date within 30 days of the 2026-01-01 tebliğ (2025-12-02 = 30 days).
     base = {
         "claim_id": "F-DEMO-001",
         "patient_id": "P1",
@@ -25,8 +24,8 @@ def _claim(**overrides) -> ClaimHeader:
         "department": "Genel",
         "admission_date": None,
         "discharge_date": None,
-        "claim_start_date": date(2025, 12, 1),
-        "claim_end_date": date(2025, 12, 1),
+        "claim_start_date": date(2025, 12, 2),
+        "claim_end_date": date(2025, 12, 2),
         "primary_icd10": "L98.9",
         "package_candidate": False,
         "expected_total_billed_try": Decimal("449.73"),
@@ -44,7 +43,7 @@ def _proc_line(**overrides) -> ProcedureClaimLine:
         "claim_id": "F-DEMO-001",
         "patient_id": "P1",
         "episode_id": "E1",
-        "procedure_date": date(2025, 12, 1),
+        "procedure_date": date(2025, 12, 2),
         "procedure_code": "600150",
         "procedure_name": "Proc",
         "procedure_category": "islem",
@@ -75,6 +74,8 @@ class TestGazetteRepricing:
         assert rows[0]["amended_list_price_try"] == 539.68
         assert rows[0]["recoverable_repricing_try"] == 89.95
         assert rows[0]["included_in_sgk_total"] is False
+        assert rows[0]["rebill_permitted"] is False
+        assert rows[0]["review_only"] is True
         assert rows[0]["recommendation_kind"] == "prospective_repricing"
 
     def test_skips_when_payable_already_at_new_price(self) -> None:
@@ -91,7 +92,7 @@ class TestGazetteRepricing:
         assert rows == []
 
     def test_skips_when_amendment_is_beyond_window(self) -> None:
-        # 2024-06-01 → 2026-01-01 is ~579 days, well beyond the 90-day window.
+        # 2024-06-01 → 2026-01-01 is well beyond the 30-day window.
         rows = detect_gazette_repricing_opportunities(
             _claim(
                 claim_start_date=date(2024, 6, 1),
@@ -101,9 +102,24 @@ class TestGazetteRepricing:
         )
         assert rows == []
 
+    def test_skips_when_amendment_is_31_days_after_service(self) -> None:
+        # 2025-12-01 → 2026-01-01 is 31 days; max window is 30.
+        rows = detect_gazette_repricing_opportunities(
+            _claim(
+                claim_start_date=date(2025, 12, 1),
+                claim_end_date=date(2025, 12, 1),
+            ),
+            [_proc_line(procedure_date=date(2025, 12, 1))],
+        )
+        assert rows == []
+
 
 def test_gazette_repricing_rules_corpus_seeded() -> None:
     rules = load_gazette_repricing_rules()
+    assert rules.get("max_days_after_service") == 30
+    assert rules.get("detector_enabled") is True
+    assert rules.get("rebill_permitted_default") is False
+    assert rules.get("review_only") is True
     assert len(rules.get("rules", [])) >= 10
     codes = {code for rule in rules["rules"] for code in rule.get("procedure_codes", [])}
     assert "600150" in codes

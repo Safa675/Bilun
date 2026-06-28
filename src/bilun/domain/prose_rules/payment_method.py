@@ -19,7 +19,11 @@ from .catalog_membership import (
     procedure_has_star,
     procedure_prose_drg_locked,
 )
-from .facility_tier import TierContext, normalize_facility_tier
+from .facility_tier import (
+    FACILITY_TIER_MISSING_INPUT,
+    TierContext,
+    normalize_facility_tier,
+)
 from .types import (
     CareSetting,
     PaymentMethod,
@@ -36,6 +40,54 @@ _RULES_PATH = _PROSE_RULES_DIR / "payment_method_2_2.json"
 def _load_payment_method_rules() -> dict:
     with _RULES_PATH.open(encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def _classification_requires_resolved_tier(
+    *,
+    in_ek2b: bool,
+    in_ek2c: bool,
+    has_star: bool,
+    prose_drg_locked: bool,
+    care_setting: CareSetting,
+) -> bool:
+    """True when §2.2.2(2) vs mandatory package hinges on exact facility tier."""
+    if not in_ek2c or not in_ek2b:
+        return False
+    if prose_drg_locked or has_star:
+        return False
+    if care_setting == "outpatient":
+        return False
+    return True
+
+
+def _missing_facility_tier_result(
+    normalized: str,
+    *,
+    in_ek2b: bool,
+    in_ek2c: bool,
+    has_star: bool,
+) -> PaymentMethodResult:
+    return PaymentMethodResult(
+        procedure_code=normalized,
+        payment_method="unknown",
+        kind="MISSING_INPUTS",
+        in_ek2b=in_ek2b,
+        in_ek2c=in_ek2c,
+        has_star=has_star,
+        bill_materials_separately=False,
+        bill_drugs_separately=False,
+        visit_fee_annex=None,
+        payment_method_tr="",
+        trace=ProseRuleTrace(
+            rule_id="missing_input.facility_tier",
+            sut_section="2.2",
+            rule_set_id=_RULE_SET_ID,
+            detail=(
+                f"Procedure {normalized} requires resolved {FACILITY_TIER_MISSING_INPUT} "
+                "to determine §2.2.2(2) optional override eligibility."
+            ),
+        ),
+    )
 
 
 def _classify_payment_method_kind(
@@ -124,6 +176,19 @@ def resolve_payment_method(
         procedure_prose_drg_locked(normalized, as_of_date=as_of_date) if in_ek2c else False
     )
     tier = normalize_facility_tier(facility_tier, provider_type=provider_type)
+    if _classification_requires_resolved_tier(
+        in_ek2b=in_ek2b,
+        in_ek2c=in_ek2c,
+        has_star=has_star,
+        prose_drg_locked=prose_locked,
+        care_setting=care_setting,
+    ) and not tier.resolved:
+        return _missing_facility_tier_result(
+            normalized,
+            in_ek2b=in_ek2b,
+            in_ek2c=in_ek2c,
+            has_star=has_star,
+        )
     kind = _classify_payment_method_kind(
         normalized=normalized,
         in_ek2b=in_ek2b,
@@ -255,6 +320,9 @@ def check_payment_method_compliance(
     kind = mandated.kind
 
     if kind == "NOT_IN_SUT":
+        is_compliant = True
+        detail = mandated.trace.detail
+    elif kind == "MISSING_INPUTS":
         is_compliant = True
         detail = mandated.trace.detail
     elif kind == "DRG_OVERRIDABLE":

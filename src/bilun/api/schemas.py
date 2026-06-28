@@ -308,6 +308,10 @@ class CopayOptimizationResponse(BillingExactnessResponse):
     is_exempt: bool = False
     exemption_disease: str = ""
     exemption_range: str = ""
+    exemption_sources: list[dict[str, Any]] = Field(default_factory=list)
+    categories_not_evaluated: list[dict[str, Any]] = Field(default_factory=list)
+    primary_exemption_category: str | None = None
+    copay_primary_outcome: str = "none"
     savings_beneficiary: str = "patient_and_sgk"
     gap_kind: str = "exemption_correction"
     visit_copay_savings_try: float = 0.0
@@ -898,6 +902,7 @@ class PartialEngineCoverage(BaseModel):
     corpus_export_rows: int | None = None
     kdv_pricing_clauses: int | None = None
     section_4_2_14_C_clause_total: int = Field(default=828, alias="section_4.2.14.C_clause_total")
+    subsection_coverage: dict[str, dict[str, int | float]] = Field(default_factory=dict)
     honesty_note: str = ""
 
     model_config = ConfigDict(extra="allow", populate_by_name=True)
@@ -909,6 +914,8 @@ class PartialEnginesCoverage(BaseModel):
     drug_indication_prose: PartialEngineCoverage | None = None
     material_bundling_prose: PartialEngineCoverage | None = None
     specialty_materials_prose: PartialEngineCoverage | None = None
+    payment_method_2_2: PartialEngineCoverage | None = None
+    copay_general_1_8: PartialEngineCoverage | None = None
 
     model_config = ConfigDict(extra="allow")
 
