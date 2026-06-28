@@ -66,6 +66,8 @@ def _generate_patients(num_patients: int, rng: np.random.Generator) -> list[dict
         record_day = rng.integers(1, 29)
         record_date = f"{record_year}-{record_month:02d}-{record_day:02d}"
         sgk_class = "yesil_kart" if rng.random() < 0.06 else "standard"
+        if i == 35:
+            sgk_class = "yesil_kart"
         veteran_status = "none"
         if rng.random() < 0.025:
             veteran_status = str(rng.choice(["gazi", "sehit", "yakin"]))
@@ -121,6 +123,9 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
             "SENTETIK-HASTA-0031",
             "SENTETIK-HASTA-0032",
             "SENTETIK-HASTA-0033",
+            "SENTETIK-HASTA-0034",
+            "SENTETIK-HASTA-0035",
+            "SENTETIK-HASTA-0036",
         ):
             num_episodes = 1
         else:
@@ -319,6 +324,19 @@ def _assign_scenarios(patients: list[dict], rng: np.random.Generator) -> tuple[l
                 episode_row["servis_adi"] = "ortopedi"
                 episode_row["birincil_icd10"] = "M17.9"
                 episode_row["_all_codes"] = ["M17.9"]
+            elif pid == "SENTETIK-HASTA-0034" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "acil"
+                episode_row["_copay_exemption_demo"] = "acil_servis"
+                episode_row["servis_adi"] = "acil_servis"
+            elif pid == "SENTETIK-HASTA-0035" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "poliklinik"
+                episode_row["_copay_exemption_demo"] = "yesil_kart"
+            elif pid == "SENTETIK-HASTA-0036" and ep_idx == 0:
+                episode_row["gelis_tipi"] = "poliklinik"
+                episode_row["birincil_icd10"] = "E11.9"
+                episode_row["tum_icd10_kodlari"] = "E11.9"
+                episode_row["_all_codes"] = ["E11.9"]
+                episode_row["_copay_exemption_demo"] = "ek1a_chronic"
             elif pid == "SENTETIK-HASTA-0038" and ep_idx == 0:
                 visit_date = "2023-10-06"
                 episode_row["gelis_tipi"] = "yatis"

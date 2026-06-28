@@ -26,15 +26,25 @@ _DRUG_4213_4216_MANIFEST = (
     Path(__file__).resolve().parents[3]
     / "data/gazette/prose_manifests/L4.2_drug_indication_4213_4216_manifest.json"
 )
+_DRUG_4217_MANIFEST = (
+    Path(__file__).resolve().parents[3]
+    / "data/gazette/prose_manifests/L4.2_drug_indication_4217_manifest.json"
+)
+_DRUG_4219_MANIFEST = (
+    Path(__file__).resolve().parents[3]
+    / "data/gazette/prose_manifests/L4.2_drug_indication_4219_manifest.json"
+)
 _MANIFEST_DIR = Path(__file__).resolve().parents[3] / "data/gazette/prose_manifests"
+_PAYMENT_METHOD_22_MANIFEST = "L2.2_payment_method_encoded_manifest.json"
+_SESSION_PRICING_22_MANIFEST = "L2.2_session_pricing_2_2_2_B_encoded_manifest.json"
 _WAVE2_MANIFESTS: dict[str, str] = {
     "gazette_repricing": "L2.2_gazette_repricing_encoded_manifest.json",
     "procedure_pairing": "L2.2_procedure_pairing_encoded_manifest.json",
     "material_pairing": "L3.1_material_pairing_encoded_manifest.json",
-    "payment_method_package": "L2.2_payment_method_encoded_manifest.json",
-    "payment_method_itemized": "L2.2_payment_method_encoded_manifest.json",
-    "payment_method_tier_override": "L2.2_payment_method_encoded_manifest.json",
-    "drg_unbundling": "L2.2_session_pricing_2_2_2_B_encoded_manifest.json",
+    "payment_method_package": _PAYMENT_METHOD_22_MANIFEST,
+    "payment_method_itemized": _PAYMENT_METHOD_22_MANIFEST,
+    "payment_method_tier_override": _PAYMENT_METHOD_22_MANIFEST,
+    "drg_unbundling": _SESSION_PRICING_22_MANIFEST,
     "copay_rate_general": "L1.8_copay_exemption_encoded_manifest.json",
     "copay_exemption_ek1a": "L1.8_copay_exemption_encoded_manifest.json",
     "copay_exemption_visit_type": "L1.8_copay_exemption_encoded_manifest.json",
@@ -127,6 +137,29 @@ def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
         encoded |= _manifest_clause_ids_from_payload(
             json.loads(_DRUG_4213_4216_MANIFEST.read_text(encoding="utf-8"))
         )
+    if _DRUG_4217_MANIFEST.is_file():
+        encoded |= _manifest_clause_ids_from_payload(
+            json.loads(_DRUG_4217_MANIFEST.read_text(encoding="utf-8"))
+        )
+    if _DRUG_4219_MANIFEST.is_file():
+        encoded |= _manifest_clause_ids_from_payload(
+            json.loads(_DRUG_4219_MANIFEST.read_text(encoding="utf-8"))
+        )
+    for name in (
+        "L4.2_drug_indication_4234_manifest.json",
+        "L4.2_drug_indication_4238_manifest.json",
+        "L4.2_drug_indication_4218_4236_manifest.json",
+        "L4.2_drug_indication_4235_4237_manifest.json",
+        "L4.2_drug_indication_4210_manifest.json",
+        "L4.2_drug_indication_4206_manifest.json",
+        "L4.2_drug_indication_4209_4227_manifest.json",
+        "L4.2_drug_indication_4201_manifest.json",
+    ):
+        path = _MANIFEST_DIR / name
+        if path.is_file():
+            encoded |= _manifest_clause_ids_from_payload(
+                json.loads(path.read_text(encoding="utf-8"))
+            )
     return encoded
 
 
@@ -135,6 +168,15 @@ def _load_wave2_encoded_clause_ids(rule_id: str) -> frozenset[str]:
     if not manifest_name:
         return frozenset()
     return _load_encoded_clause_ids(manifest_name)
+
+
+def _section_22_manifest_encoding(clause_id: str, section_id: str) -> bool:
+    """§2.2 Gate B encode is honest even when classification picks another motor."""
+    if not section_id.startswith("2.2"):
+        return False
+    if clause_id in _load_encoded_clause_ids(_PAYMENT_METHOD_22_MANIFEST):
+        return True
+    return clause_id in _load_encoded_clause_ids(_SESSION_PRICING_22_MANIFEST)
 
 _STATUS_RANK: dict[str, int] = {
     "implemented": 0,
@@ -219,6 +261,10 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
             has_rule_encoding = clause_id in _load_encoded_clause_ids(manifest_name)
         else:
             has_rule_encoding = False
+
+        section_id = str(row.get("section_id") or "")
+        if not has_rule_encoding and _section_22_manifest_encoding(clause_id, section_id):
+            has_rule_encoding = True
 
         rows.append(
             {

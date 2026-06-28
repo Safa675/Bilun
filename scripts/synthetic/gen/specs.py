@@ -4,6 +4,28 @@ from typing import Any
 
 PAYMENT_METHOD_COMPLIANCE_DEMO_TAG = "payment_method_compliance_demo"
 
+_COPAY_EXEMPTION_DEMO_SPECS: dict[str, dict[str, Any]] = {
+    "acil_servis": {
+        "scenario_tag": "copay_exemption_acil_demo",
+        "expected_category": "acil_servis",
+    },
+    "yesil_kart": {
+        "scenario_tag": "copay_exemption_yesil_kart_demo",
+        "expected_category": "yesil_kart",
+    },
+    "ek1a_chronic": {
+        "scenario_tag": "copay_exemption_ek1a_demo",
+        "expected_category": "ek1a_chronic",
+        "primary_icd10": "E11.9",
+    },
+}
+
+COPAY_EXEMPTION_DEMO_PATIENTS: dict[str, str] = {
+    "SENTETIK-HASTA-0034": "acil_servis",
+    "SENTETIK-HASTA-0035": "yesil_kart",
+    "SENTETIK-HASTA-0036": "ek1a_chronic",
+}
+
 _DRUG_INDICATION_DEMO_SPECS: dict[str, dict[str, Any]] = {
     "bevacizumab_missing_report": {
         "scenario_tag": "sgk_drug_indication_bevacizumab_missing_report",

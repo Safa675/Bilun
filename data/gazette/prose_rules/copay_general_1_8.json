@@ -166,6 +166,75 @@
         "waives_sections": ["1.8.3"]
       },
       "gate_b_sources": ["C000374"]
+    },
+    {
+      "rule_id": "1.8.5.(18).polis_akademisi",
+      "sut_section": "1.8.5.(18)",
+      "service_type": "copay_exemption",
+      "exemption_category": "polis_akademisi",
+      "condition": {
+        "student_status": "police_academy_egm_sponsored"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": ["1.8.1", "1.8.2", "1.8.3"]
+      },
+      "gate_b_sources": ["C000372"]
+    },
+    {
+      "rule_id": "1.8.5.(19).harp_okulu",
+      "sut_section": "1.8.5.(19)",
+      "service_type": "copay_exemption",
+      "exemption_category": "harp_okulu",
+      "condition": {
+        "student_status": "military_academy_tsk_sponsored"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": ["1.8.1", "1.8.2", "1.8.3"]
+      },
+      "gate_b_sources": ["C000373"]
+    },
+    {
+      "rule_id": "1.8.1.(6).farkli_kurum_artis",
+      "sut_section": "1.8.1.(6)",
+      "service_type": "copay_surcharge",
+      "surcharge_try": 5.0,
+      "condition": {
+        "visit_context": "repeat_specialty_within_10_days_different_facility",
+        "excluded_from_surcharge": [
+          "first_tier_facility",
+          "ek1a_chronic",
+          "electronic_referral",
+          "emergency"
+        ]
+      },
+      "gate_b_sources": ["C000312"]
+    },
+    {
+      "rule_id": "1.8.2.(3).enjektabl_kutu",
+      "sut_section": "1.8.2.(3)",
+      "service_type": "drug_injectable_box_count",
+      "condition": {
+        "drug_forms": ["injectable", "serum", "nutrition_product", "magistral"]
+      },
+      "action": {
+        "box_counting": "one_box_per_line_item"
+      },
+      "gate_b_sources": ["C000325"]
+    },
+    {
+      "rule_id": "1.8.3.(1).protez_ortez",
+      "sut_section": "1.8.3.(1)",
+      "service_type": "material",
+      "rates": {
+        "sgk_income_recipient": 0.1,
+        "other": 0.2
+      },
+      "condition": {
+        "line_kind": "external_prosthesis_orthosis"
+      },
+      "gate_b_sources": ["C000333"]
     }
   ],
   "exemptions_ref": {

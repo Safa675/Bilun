@@ -70,6 +70,9 @@
     "0031": "medula_rejection_0411_drug_report_missing",
     "0032": "medula_rejection_1102_uncontracted_facility",
     "0033": "sgk_claim_readiness_uts_barcode_missing",
+    "0034": "copay_exemption_acil_demo",
+    "0035": "copay_exemption_yesil_kart_demo",
+    "0036": "copay_exemption_ek1a_demo",
     "0038": "payment_method_compliance_demo"
   }
 }

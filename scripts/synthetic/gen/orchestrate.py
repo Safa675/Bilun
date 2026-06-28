@@ -38,6 +38,7 @@ from gen.reconcile import _build_normalized_ek2c1_copay_rates
 from gen.specs import (
     PAYMENT_METHOD_COMPLIANCE_DEMO_TAG,
     _CLAIM_READINESS_DEMO_SPECS,
+    _COPAY_EXEMPTION_DEMO_SPECS,
     _DRUG_INDICATION_DEMO_SPECS,
     _MATERIAL_PROSE_DEMO_SPECS,
     _MEDULA_DEMO_SPECS,
@@ -133,6 +134,12 @@ def _generate_claims_and_lines(
         material_prose_demo = episode.get("_sgk_material_prose_demo")
         claim_readiness_demo = episode.get("_sgk_claim_readiness_demo")
         payment_method_compliance_demo = episode.get("_payment_method_compliance_demo")
+        copay_exemption_demo = episode.get("_copay_exemption_demo")
+        copay_exemption_spec = (
+            _COPAY_EXEMPTION_DEMO_SPECS.get(str(copay_exemption_demo))
+            if copay_exemption_demo
+            else None
+        )
         drug_indication_spec = (
             _DRUG_INDICATION_DEMO_SPECS.get(str(drug_indication_demo))
             if drug_indication_demo
@@ -151,6 +158,8 @@ def _generate_claims_and_lines(
         scenario_tag = (
             PAYMENT_METHOD_COMPLIANCE_DEMO_TAG
             if payment_method_compliance_demo
+            else copay_exemption_spec["scenario_tag"]
+            if copay_exemption_spec
             else medula_demo_spec["scenario_tag"]
             if medula_demo_spec
             else drug_indication_spec["scenario_tag"]
@@ -201,6 +210,8 @@ def _generate_claims_and_lines(
             or drug_indication_demo
             or material_prose_demo
             or claim_readiness_demo
+            or payment_method_compliance_demo
+            or copay_exemption_demo
         ) or rng.random() < 0.15
         if payment_method_compliance_demo:
             facility_tier = "2_basamak_kamu"

@@ -74,6 +74,38 @@
       ]
     },
     {
+      "rule_id": "2.2.(5).interim_supplier_spa_reimbursement",
+      "sut_section": "2.2",
+      "condition": {
+        "provider_type": "medical_supplier_or_spa",
+        "contract_status": "pending"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "tıbbi malzeme tedarikçisi/kaplıca — sözleşme öncesi kişiye ödeme (Kurum faturalandırması yok)",
+        "billable": false,
+        "payer": "individual_reimbursement"
+      },
+      "gate_b_sources": [
+        "C000523"
+      ]
+    },
+    {
+      "rule_id": "2.2.(6).workplace_polyclinic_homecare_no_pay",
+      "sut_section": "2.2",
+      "condition": {
+        "provider_type": "workplace_health_or_polyclinic_or_homecare_center"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "işyeri sağlık birimi/özel poliklinik/evde bakım merkezi — Kurumdan ücret talep edilemez",
+        "billable": false
+      },
+      "gate_b_sources": [
+        "C000524"
+      ]
+    },
+    {
       "rule_id": "2.2.(8).contracted_tetkik_mandatory",
       "sut_section": "2.2",
       "condition": {
@@ -142,6 +174,112 @@
       ]
     },
     {
+      "rule_id": "2.2.1.B-1.(3).deferred_ek2a2_no_second_visit",
+      "sut_section": "2.2.1.B-1",
+      "condition": {
+        "care_setting": "outpatient",
+        "procedure_in_annex": "EK-2/A-2",
+        "deferred_same_provider": true
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "randevulu EK-2/A-2 işlem — EK-2/A muayene ikinci kez faturalandırılamaz",
+        "bill_visit_fee": false,
+        "visit_fee_annex": "EK-2/A"
+      },
+      "gate_b_sources": [
+        "C000563"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-1.(4).same_day_outpatient_to_inpatient",
+      "sut_section": "2.2.1.B-1",
+      "condition": {
+        "care_setting": "inpatient",
+        "same_day_outpatient_visit": true,
+        "procedure_in_annex": "EK-2/C"
+      },
+      "action": {
+        "payment_method": "package",
+        "payment_method_tr": "aynı gün ayaktan→yatarak EK-2/C — ayakta işlemler B-1(1) esas",
+        "bill_materials_separately": true,
+        "bill_drugs_separately": true
+      },
+      "gate_b_sources": [
+        "C000564"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-1.(5).multi_specialty_same_day_no_visit",
+      "sut_section": "2.2.1.B-1",
+      "condition": {
+        "care_setting": "inpatient",
+        "same_day_multi_specialty_outpatient": true,
+        "procedure_in_annex": "EK-2/C"
+      },
+      "action": {
+        "payment_method": "package",
+        "payment_method_tr": "aynı gün çoklu uzmanlık ayakta sonrası yatarak EK-2/C — EK-2/A muayene faturalandırılamaz",
+        "bill_visit_fee": false,
+        "visit_fee_annex": "EK-2/A"
+      },
+      "gate_b_sources": [
+        "C000565"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-1.(6).followup_specialty_no_visit_fee",
+      "sut_section": "2.2.1.B-1",
+      "condition": {
+        "care_setting": "outpatient",
+        "visit_sequence": "followup_same_day"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "aynı gün takip uzmanlık — EK-2/A muayene yok; EK-2/B poliklinik + EK-2/A-2",
+        "bill_visit_fee": false,
+        "visit_fee_annex": "EK-2/B"
+      },
+      "gate_b_sources": [
+        "C000566"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-1.(7).main_side_specialty_split",
+      "sut_section": "2.2.1.B-1",
+      "condition": {
+        "care_setting": "outpatient",
+        "visit_sequence": "side_specialty_same_day"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "yan dal ayakta ödeme; ana dal EK-2/B poliklinik + EK-2/A-2",
+        "visit_fee_annex": "EK-2/B",
+        "main_specialty_bill_visit_fee": false
+      },
+      "gate_b_sources": [
+        "C000567"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-1.(8).reported_therapy_subsequent_days",
+      "sut_section": "2.2.1.B-1",
+      "condition": {
+        "care_setting": "outpatient",
+        "therapy_type": "reported_hyperbaric_physio_eswl",
+        "visit_sequence": "subsequent_day_after_report"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "sağlık raporlu hiperbarik/fizik tedavi/ESWL-ESWT — rapor sonrası günlerde EK-2/B + EK-2/A-2",
+        "bill_visit_fee": true,
+        "visit_fee_annex": "EK-2/A-2"
+      },
+      "gate_b_sources": [
+        "C000568"
+      ]
+    },
+    {
       "rule_id": "2.2.1.B-1.a",
       "sut_section": "2.2.1.B-1.a",
       "condition": {
@@ -175,6 +313,22 @@
       ]
     },
     {
+      "rule_id": "2.2.1.B-1.c.training_hospital_outpatient",
+      "sut_section": "2.2.1.B-1",
+      "condition": {
+        "care_setting": "outpatient",
+        "facility_type": "training_research_hospital"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "eğitim/araştırma hastanesi ayakta — EK-2/B poliklinik + EK-2/A-2 esas",
+        "visit_fee_annex": "EK-2/B"
+      },
+      "gate_b_sources": [
+        "C000573"
+      ]
+    },
+    {
       "rule_id": "2.2.1.B-2.(2).g.no_visit_fee",
       "sut_section": "2.2.1.B-2",
       "condition": {
@@ -191,6 +345,149 @@
       },
       "gate_b_sources": [
         "C000606"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-2.(4).training_hospital_inpatient",
+      "sut_section": "2.2.1.B-2",
+      "condition": {
+        "care_setting": "inpatient",
+        "facility_type": "training_research_hospital"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "eğitim/araştırma hastanesi yatarak — EK-2/B ve EK-2/Ç puanları esas",
+        "bill_materials_separately": true,
+        "bill_drugs_separately": true
+      },
+      "gate_b_sources": [
+        "C000612"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-2.a.itemized_ek2b_ek2c_basis",
+      "sut_section": "2.2.1.B-2",
+      "condition": {
+        "care_setting": "inpatient",
+        "payment_method_path": "itemized"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "hizmet başına ödeme — EK-2/B ve EK-2/Ç puanları esas",
+        "bill_materials_separately": true,
+        "bill_drugs_separately": true
+      },
+      "gate_b_sources": [
+        "C000592"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-3.(1).home_health_daily_cap",
+      "sut_section": "2.2.1.B-3",
+      "condition": {
+        "care_setting": "home",
+        "line_type": "home_health",
+        "procedure_code": "P920010"
+      },
+      "action": {
+        "payment_method": "package",
+        "payment_method_tr": "evde sağlık P920010 — günde en fazla bir adet",
+        "max_bill_count": 1,
+        "procedure_in_annex": "EK-2/C"
+      },
+      "gate_b_sources": [
+        "C000618"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-3.(2).home_health_10day_cooldown",
+      "sut_section": "2.2.1.B-3",
+      "condition": {
+        "care_setting": "outpatient",
+        "line_type": "home_health",
+        "procedure_code": "P920010",
+        "prior_outpatient_same_provider_days_lt": 10
+      },
+      "action": {
+        "payment_method": "package",
+        "payment_method_tr": "ayaktan başvuru günü dahil 10 gün içinde P920010 evde sağlık ikinci kez faturalandırılamaz",
+        "billable": false,
+        "max_bill_count": 0
+      },
+      "gate_b_sources": [
+        "C000619"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-3.(4).epidermolysis_home_wound_care",
+      "sut_section": "2.2.1.B-3",
+      "condition": {
+        "care_setting": "home",
+        "line_type": "home_health",
+        "diagnosis": "epidermolysis_bullosa",
+        "procedure_code": "530533"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "epidermolizis bülloza evde yara bakımı — EK-2/B 530533 esas",
+        "procedure_in_annex": "EK-2/B"
+      },
+      "gate_b_sources": [
+        "C000621"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-4.(1).telehealth_520032_billing",
+      "sut_section": "2.2.1.B-4",
+      "condition": {
+        "care_setting": "outpatient",
+        "line_type": "telehealth",
+        "procedure_code": "520032"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "uzaktan hasta değerlendirme — EK-2/B 520032 işlem kodu esas",
+        "procedure_in_annex": "EK-2/B"
+      },
+      "gate_b_sources": [
+        "C000624"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-4.(4).same_specialty_10day_no_visit",
+      "sut_section": "2.2.1.B-4",
+      "condition": {
+        "care_setting": "outpatient",
+        "same_specialty_repeat_days_lt": 10,
+        "emergency_excluded": true,
+        "procedure_in_annex": "EK-2/A"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "aynı uzmanlık 10 gün içinde tekrar ayakta — EK-2/A muayene yok (acil hariç)",
+        "bill_visit_fee": false,
+        "billable": false
+      },
+      "gate_b_sources": [
+        "C000627"
+      ]
+    },
+    {
+      "rule_id": "2.2.1.B-4.(5).same_specialty_10day_no_telehealth",
+      "sut_section": "2.2.1.B-4",
+      "condition": {
+        "care_setting": "outpatient",
+        "same_specialty_repeat_days_lt": 10,
+        "emergency_excluded": true,
+        "procedure_code": "520032"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "aynı uzmanlık 10 gün içinde tekrar — 520032 uzaktan değerlendirme yok (acil hariç)",
+        "billable": false
+      },
+      "gate_b_sources": [
+        "C000628"
       ]
     },
     {
@@ -349,6 +646,61 @@
       ]
     },
     {
+      "rule_id": "2.2.2.A(4).ivd_kit_control_no_pay",
+      "sut_section": "2.2.2.A",
+      "condition": {
+        "care_setting": "inpatient",
+        "line_type": "ivd_kit_control",
+        "excluded_test_types": [
+          "seroconversion_panel",
+          "confirmatory"
+        ]
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "invitro diyagnostik kit kontrol testleri (serokonversiyon/doğrulama hariç) Kurumca karşılanmaz",
+        "billable": false
+      },
+      "gate_b_sources": [
+        "C000644"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.A(6).training_hospital_itemized",
+      "sut_section": "2.2.2.A",
+      "condition": {
+        "care_setting": "inpatient",
+        "payment_method_path": "itemized",
+        "facility_type": "training_research_hospital"
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "eğitim/araştırma hastanesi hizmet başına ödeme — EK-2/B ve EK-2/Ç esas",
+        "bill_materials_separately": true,
+        "bill_drugs_separately": true
+      },
+      "gate_b_sources": [
+        "C000652"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.A.cross_specialty_uplift_25pt",
+      "sut_section": "2.2.2.A",
+      "condition": {
+        "care_setting": "inpatient",
+        "payment_method_path": "itemized",
+        "cross_specialty": true
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "farklı uzmanlık dallarında yüzdelik oran +25 puan",
+        "rate_uplift_points": 25
+      },
+      "gate_b_sources": [
+        "C000649"
+      ]
+    },
+    {
       "rule_id": "2.2.2.C.(1).complication_itemized_discount",
       "sut_section": "2.2.2.C",
       "condition": {
@@ -363,6 +715,24 @@
       },
       "gate_b_sources": [
         "C000703"
+      ]
+    },
+    {
+      "rule_id": "2.2.2.C.(2).comorbidity_itemized",
+      "sut_section": "2.2.2.C",
+      "condition": {
+        "care_setting": "inpatient",
+        "event_type": "comorbidity_care",
+        "primary_treatment_in_progress": true
+      },
+      "action": {
+        "payment_method": "itemized",
+        "payment_method_tr": "eşlik eden hastalık hizmetleri hizmet başına ödeme",
+        "bill_materials_separately": true,
+        "bill_drugs_separately": true
+      },
+      "gate_b_sources": [
+        "C000704"
       ]
     }
   ],

@@ -5,7 +5,7 @@
   "cases": [
     {
       "case_id": "repricing_600150_pre_tebliğ",
-      "service_date": "2025-12-01",
+      "service_date": "2025-12-02",
       "procedure_code": "600150",
       "procedure_category": "islem",
       "stale_payable_per_unit": 449.73,
@@ -16,7 +16,7 @@
     },
     {
       "case_id": "repricing_600160_pre_tebliğ",
-      "service_date": "2025-12-01",
+      "service_date": "2025-12-02",
       "procedure_code": "600160",
       "procedure_category": "islem",
       "stale_payable_per_unit": 1648.9,
@@ -27,7 +27,7 @@
     },
     {
       "case_id": "repricing_701450_pre_tebliğ",
-      "service_date": "2025-12-01",
+      "service_date": "2025-12-02",
       "procedure_code": "701450",
       "procedure_category": "islem",
       "stale_payable_per_unit": 733.1,
@@ -38,7 +38,7 @@
     },
     {
       "case_id": "repricing_p609270_pre_tebliğ",
-      "service_date": "2025-12-01",
+      "service_date": "2025-12-02",
       "procedure_code": "P609270",
       "procedure_category": "paket",
       "stale_payable_per_unit": 23308.3,

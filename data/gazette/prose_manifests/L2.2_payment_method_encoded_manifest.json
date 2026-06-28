@@ -1,20 +1,38 @@
 {
   "manifest_version": "wave2-v1",
   "rule_set_id": "payment_method_2_2",
-  "scope_note": "§2.2 package vs itemized vs tier-override (21 JSON rules, C2 batch-1+2)",
-  "rules_in_json": 21,
+  "scope_note": "§2.2 package vs itemized vs tier-override (42 JSON rules, C2 batch-1–4)",
+  "rules_in_json": 42,
+  "session_fraction_status": "PARTIAL",
   "gate_b_sources_encoded": [
     "C000521",
+    "C000523",
+    "C000524",
     "C000526",
     "C000530",
     "C000531",
     "C000532",
     "C000538",
     "C000562",
+    "C000563",
+    "C000564",
+    "C000565",
+    "C000566",
+    "C000567",
+    "C000568",
     "C000571",
     "C000572",
+    "C000573",
     "C000576",
+    "C000592",
     "C000606",
+    "C000612",
+    "C000618",
+    "C000619",
+    "C000621",
+    "C000624",
+    "C000627",
+    "C000628",
     "C000633",
     "C000634",
     "C000635",
@@ -23,20 +41,41 @@
     "C000639",
     "C000640",
     "C000641",
-    "C000703"
+    "C000644",
+    "C000649",
+    "C000652",
+    "C000703",
+    "C000704"
   ],
   "encoded_clause_ids": [
     "C000521",
+    "C000523",
+    "C000524",
     "C000526",
     "C000530",
     "C000531",
     "C000532",
     "C000538",
     "C000562",
+    "C000563",
+    "C000564",
+    "C000565",
+    "C000566",
+    "C000567",
+    "C000568",
     "C000571",
     "C000572",
+    "C000573",
     "C000576",
+    "C000592",
     "C000606",
+    "C000612",
+    "C000618",
+    "C000619",
+    "C000621",
+    "C000624",
+    "C000627",
+    "C000628",
     "C000633",
     "C000634",
     "C000635",
@@ -45,7 +84,11 @@
     "C000639",
     "C000640",
     "C000641",
-    "C000703"
+    "C000644",
+    "C000649",
+    "C000652",
+    "C000703",
+    "C000704"
   ],
   "gate_b_sources_by_rule": {
     "2.2.(12).no_pay_without_documentation": [
@@ -60,6 +103,12 @@
     "2.2.(3).aesthetic_must_not_bill": [
       "C000521"
     ],
+    "2.2.(5).interim_supplier_spa_reimbursement": [
+      "C000523"
+    ],
+    "2.2.(6).workplace_polyclinic_homecare_no_pay": [
+      "C000524"
+    ],
     "2.2.(8).contracted_tetkik_mandatory": [
       "C000526"
     ],
@@ -72,14 +121,59 @@
     "2.2.1.B-1.(2).ten_day_same_specialty_no_visit": [
       "C000562"
     ],
+    "2.2.1.B-1.(3).deferred_ek2a2_no_second_visit": [
+      "C000563"
+    ],
+    "2.2.1.B-1.(4).same_day_outpatient_to_inpatient": [
+      "C000564"
+    ],
+    "2.2.1.B-1.(5).multi_specialty_same_day_no_visit": [
+      "C000565"
+    ],
+    "2.2.1.B-1.(6).followup_specialty_no_visit_fee": [
+      "C000566"
+    ],
+    "2.2.1.B-1.(7).main_side_specialty_split": [
+      "C000567"
+    ],
+    "2.2.1.B-1.(8).reported_therapy_subsequent_days": [
+      "C000568"
+    ],
     "2.2.1.B-1.a": [
       "C000571"
     ],
     "2.2.1.B-1.b": [
       "C000572"
     ],
+    "2.2.1.B-1.c.training_hospital_outpatient": [
+      "C000573"
+    ],
     "2.2.1.B-2.(2).g.no_visit_fee": [
       "C000606"
+    ],
+    "2.2.1.B-2.(4).training_hospital_inpatient": [
+      "C000612"
+    ],
+    "2.2.1.B-2.a.itemized_ek2b_ek2c_basis": [
+      "C000592"
+    ],
+    "2.2.1.B-3.(1).home_health_daily_cap": [
+      "C000618"
+    ],
+    "2.2.1.B-3.(2).home_health_10day_cooldown": [
+      "C000619"
+    ],
+    "2.2.1.B-3.(4).epidermolysis_home_wound_care": [
+      "C000621"
+    ],
+    "2.2.1.B-4.(1).telehealth_520032_billing": [
+      "C000624"
+    ],
+    "2.2.1.B-4.(4).same_specialty_10day_no_visit": [
+      "C000627"
+    ],
+    "2.2.1.B-4.(5).same_specialty_10day_no_telehealth": [
+      "C000628"
     ],
     "2.2.2.(1).itemized": [
       "C000633"
@@ -108,8 +202,20 @@
     "2.2.2.A(3).companion_fee_itemized": [
       "C000641"
     ],
+    "2.2.2.A(4).ivd_kit_control_no_pay": [
+      "C000644"
+    ],
+    "2.2.2.A(6).training_hospital_itemized": [
+      "C000652"
+    ],
+    "2.2.2.A.cross_specialty_uplift_25pt": [
+      "C000649"
+    ],
     "2.2.2.C.(1).complication_itemized_discount": [
       "C000703"
+    ],
+    "2.2.2.C.(2).comorbidity_itemized": [
+      "C000704"
     ]
   },
   "related_rule_sets": [
@@ -119,6 +225,5 @@
       "manifest": "L2.2_session_pricing_2_2_2_B_encoded_manifest.json",
       "note": "§2.2.2.B session-fraction remains PARTIAL — see session_pricing.py"
     }
-  ],
-  "session_fraction_status": "PARTIAL"
+  ]
 }

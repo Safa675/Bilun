@@ -350,6 +350,18 @@ PAYMENT_METHOD_COMPLIANCE_DEMO_PATIENTS: dict[str, str] = {
     "SENTETIK-HASTA-0038": PAYMENT_METHOD_COMPLIANCE_DEMO_TAG,
 }
 
+COPAY_EXEMPTION_DEMO_PATIENTS: dict[str, str] = {
+    "SENTETIK-HASTA-0034": "copay_exemption_acil_demo",
+    "SENTETIK-HASTA-0035": "copay_exemption_yesil_kart_demo",
+    "SENTETIK-HASTA-0036": "copay_exemption_ek1a_demo",
+}
+
+COPAY_EXEMPTION_DEMO_EXPECTED_CATEGORY: dict[str, str] = {
+    "SENTETIK-HASTA-0034": "acil_servis",
+    "SENTETIK-HASTA-0035": "yesil_kart",
+    "SENTETIK-HASTA-0036": "ek1a_chronic",
+}
+
 DRUG_INDICATION_WORKBOOK_COLUMNS = (
     "uzmanlik_kurulu_raporu_var",
     "rapor_suresi_ay",
@@ -543,6 +555,96 @@ def _validate_payment_method_compliance_demos(
             _error(
                 errors,
                 f"Payment-method compliance demo patient {patient_id} missing billed paket line",
+            )
+
+
+def _validate_copay_exemption_demos(
+    tables: dict[str, pd.DataFrame],
+    errors: list[str],
+) -> None:
+    from src.bilun.domain.claims.models import PatientCopayProfile
+    from src.bilun.domain.optimization import evaluate_copay_exemption
+    from src.bilun.domain.optimization.copay_exemption_types import CopayExemptionInput
+
+    claims = tables.get("fatura_basliklari")
+    episodes = tables.get("basvurular")
+    diagnoses = tables.get("tani_satirlari")
+    profiles = tables.get("hasta_katilim_payi_profilleri")
+    if claims is None or claims.empty:
+        return
+
+    for patient_id, scenario_tag in COPAY_EXEMPTION_DEMO_PATIENTS.items():
+        patient_claims = claims[_strings(claims["hasta_id"]) == patient_id]
+        if patient_claims.empty:
+            _error(errors, f"Missing claim for copay exemption demo patient {patient_id}")
+            continue
+        matching = patient_claims[_strings(patient_claims["senaryo_etiketi"]) == scenario_tag]
+        if matching.empty:
+            _error(
+                errors,
+                f"Patient {patient_id} missing scenario_tag {scenario_tag!r}",
+            )
+            continue
+
+        expected_category = COPAY_EXEMPTION_DEMO_EXPECTED_CATEGORY[patient_id]
+        if expected_category == "yesil_kart" and profiles is not None and not profiles.empty:
+            profile_row = profiles[_strings(profiles["hasta_id"]) == patient_id]
+            if profile_row.empty:
+                _error(errors, f"Patient {patient_id} missing copay profile row")
+                continue
+            benefit = str(profile_row.iloc[0].get("sgk_yararlanma_sinifi") or "").strip()
+            if benefit != "yesil_kart":
+                _error(
+                    errors,
+                    f"Patient {patient_id} expected sgk_yararlanma_sinifi=yesil_kart, got {benefit!r}",
+                )
+
+        if expected_category == "acil_servis" and episodes is not None and not episodes.empty:
+            ep_rows = episodes[_strings(episodes["hasta_id"]) == patient_id]
+            if ep_rows.empty or not (_strings(ep_rows["gelis_tipi"]) == "acil").any():
+                _error(errors, f"Patient {patient_id} expected gelis_tipi=acil episode")
+
+        diag_codes: list[str] = []
+        if diagnoses is not None and not diagnoses.empty:
+            diag_codes = [
+                str(code).strip()
+                for code in diagnoses.loc[
+                    _strings(diagnoses["hasta_id"]) == patient_id, "icd10_kodu"
+                ].tolist()
+                if str(code).strip()
+            ]
+
+        profile = None
+        if profiles is not None and not profiles.empty:
+            profile_rows = profiles[_strings(profiles["hasta_id"]) == patient_id]
+            if not profile_rows.empty:
+                row = profile_rows.iloc[0]
+                profile = PatientCopayProfile(
+                    patient_id=patient_id,
+                    sgk_benefit_class=str(row.get("sgk_yararlanma_sinifi") or "standard"),
+                    veteran_martyr_status=str(row.get("gazi_sehit_durumu") or "none"),
+                    national_service_status=str(row.get("vatani_hizmet_durumu") or "none"),
+                    elderly_allowance_2022=bool(row.get("yasli_aylik_2022")),
+                    birth_year=int(row.get("dogum_yili") or 1970),
+                )
+
+        visit_types = [
+            str(row.get("fatura_tipi") or "").strip()
+            for _, row in matching.iterrows()
+            if str(row.get("fatura_tipi") or "").strip()
+        ]
+        copay_input = CopayExemptionInput(
+            diagnoses=diag_codes,
+            patient_profile=profile,
+            claim_visit_types=tuple(visit_types),
+        )
+        result = evaluate_copay_exemption(copay_input)
+        categories = {str(s.get("category") or "") for s in result.get("exemption_sources") or []}
+        if expected_category not in categories:
+            _error(
+                errors,
+                f"Patient {patient_id} copay demo expected category {expected_category!r}, "
+                f"got {sorted(categories)}",
             )
 
 
@@ -1178,6 +1280,7 @@ def main() -> None:
         _validate_medula_playbook_demos(tables, errors)
         _validate_claim_readiness_demos(tables, errors)
         _validate_payment_method_compliance_demos(tables, errors)
+        _validate_copay_exemption_demos(tables, errors)
         _validate_packaged_claim_mandatory_side_procedures(tables, errors)
         _validate_vignette_manifest_alignment(tables, errors)
         _validate_tier_a_credibility(tables, errors)
