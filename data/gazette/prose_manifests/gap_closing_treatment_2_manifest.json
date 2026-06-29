@@ -1,0 +1,185 @@
+{
+  "manifest_version": "gap-v1",
+  "rule_set_id": "gap_closing_treatment_2",
+  "rules_in_json": 44,
+  "encoded_clause_ids": [
+    "C000620",
+    "C000654",
+    "C000655",
+    "C000661",
+    "C000662",
+    "C000665",
+    "C000677",
+    "C000681",
+    "C000686",
+    "C000694",
+    "C000697",
+    "C000701",
+    "C000714",
+    "C000726",
+    "C000727",
+    "C000827",
+    "C000850",
+    "C001055",
+    "C001136",
+    "C001206",
+    "C001207",
+    "C001210",
+    "C001310",
+    "C001332",
+    "C001401",
+    "C001403",
+    "C001405",
+    "C001409",
+    "C001410",
+    "C001413",
+    "C001431",
+    "C001433",
+    "C001446",
+    "C001449",
+    "C001451",
+    "C001497",
+    "C001541",
+    "C001567",
+    "C001572",
+    "C001579",
+    "C001591",
+    "C001600",
+    "C001603",
+    "C001604"
+  ],
+  "gate_b_sources_by_rule": {
+    "2.2.1.B-3.(3).materials_supplied_by_provider": [
+      "C000620"
+    ],
+    "2.2.2.B.(1).diagnosis_based_ek2c": [
+      "C000654"
+    ],
+    "2.2.2.B.(2).non_diagnosis_fee_for_service": [
+      "C000655"
+    ],
+    "2.2.2.B.(3b).different_specialty_25pt_uplift": [
+      "C000661"
+    ],
+    "2.2.2.B.(4).planned_thoracic_chest_tube_no_separate_bill": [
+      "C000662"
+    ],
+    "2.2.2.B.(5).training_research_hospital_specialist_consult": [
+      "C000665"
+    ],
+    "2.2.2.B-1.(d).inpatient_medications_bundled": [
+      "C000677"
+    ],
+    "2.2.2.B-1.(e).blood_components_bundled_with_fraction": [
+      "C000681"
+    ],
+    "2.2.2.B-1.(diagnostics_bundled).no_separate_bill": [
+      "C000686"
+    ],
+    "2.2.2.B-1.(4).duration_exceeded_separate_bill": [
+      "C000694"
+    ],
+    "2.2.2.B-2.(1).pre_procedure_death_fee_for_service": [
+      "C000697"
+    ],
+    "2.2.2.B-3.(1).early_discharge_same_specialty_no_repeat_fee": [
+      "C000701"
+    ],
+    "2.3.(1).emergency_24h_window": [
+      "C000714"
+    ],
+    "2.3.1.(4).uncontracted_emergency_fee_for_service": [
+      "C000726"
+    ],
+    "2.3.1.(5).unstabilized_24h_inpatient_sut": [
+      "C000727"
+    ],
+    "2.4.2.A.(6).transplant_except_dialysis_unable": [
+      "C000827"
+    ],
+    "2.4.2.B-2.(4).mesenchymal_stem_cell_separate_bill": [
+      "C000850"
+    ],
+    "2.4.4.F-3.(1).private_physio_2_4_4_F_rules": [
+      "C001055"
+    ],
+    "2.4.4.G-b.(2).risk_scoring_records_required": [
+      "C001136"
+    ],
+    "2.4.4.H.(1).icu_standards_required": [
+      "C001206"
+    ],
+    "2.4.4.H.(2).icu_bundled_with_abc_procedures": [
+      "C001207"
+    ],
+    "2.4.4.H.(5).platelet_pheresis_separate_bill": [
+      "C001210"
+    ],
+    "2.4.4.J.(4).thermal_daily_allowance_until_contracted": [
+      "C001332"
+    ],
+    "2.4.4.I-2.(1).pgt_for_sibling_stem_cell_donor": [
+      "C001310"
+    ],
+    "2.5.1.(3).overseas_assignment_insurance_no_pay": [
+      "C001401"
+    ],
+    "2.5.1.(5).overseas_no_travel_daily_companion": [
+      "C001403"
+    ],
+    "2.5.1.(6).trnc_contracted_exists_no_uncontracted": [
+      "C001405"
+    ],
+    "2.5.2.(1).overseas_reciprocity_required": [
+      "C001409"
+    ],
+    "2.5.2.(2).trnc_as_overseas": [
+      "C001410"
+    ],
+    "2.5.3.A.(1).overseas_referral_only_if_not_domestic": [
+      "C001413"
+    ],
+    "2.5.3.A-2.(2).overseas_duration_cannot_exceed_report": [
+      "C001431"
+    ],
+    "2.5.3.A-2.(4).organ_transplant_wait_in_host_country": [
+      "C001433"
+    ],
+    "2.5.3.A-3.(6).overseas_unrelated_treatment_no_pay": [
+      "C001446"
+    ],
+    "2.5.3.A-3.(8).overseas_unauthorized_different_treatment": [
+      "C001449"
+    ],
+    "2.5.3.B.(1).overseas_sample_only_no_patient_travel": [
+      "C001451"
+    ],
+    "2.6.1.A.(5).dialysis_travel_nearest_center": [
+      "C001497"
+    ],
+    "2.6.1.B-3.(3).vehicle_assigned_no_companion_travel": [
+      "C001541"
+    ],
+    "2.6.2.(3).same_day_referral_no_daily_allowance": [
+      "C001567"
+    ],
+    "2.6.3.(2).companion_bed_meal_bundled_inpatient": [
+      "C001572"
+    ],
+    "2.6.4.(c).non_listed_control_checkups_no_pay": [
+      "C001579"
+    ],
+    "2.6.6.(3).unlicensed_thermal_no_pay": [
+      "C001591"
+    ],
+    "2.6.8.(2).unreferral_death_no_funeral": [
+      "C001600"
+    ],
+    "2.6.9.(1).intra_settlement_no_travel_daily": [
+      "C001603"
+    ],
+    "2.6.9.(2).unreferral_outside_settlement_no_travel": [
+      "C001604"
+    ]
+  }
+}
