@@ -1,0 +1,180 @@
+{
+  "manifest_version": "r6-v1",
+  "rule_set_id": "treatment_pricing_2_4_r6_rest",
+  "scope_note": "§2.4 remaining (r6-rest) clauses: §2.4.1 diş tedavileri/ortodonti/implant/protez + özel-sözleşmesiz sunucu diş üniteleri (2.4.1.A/B/B-1/B-2/B-3), §2.4.2.A organ-doku nakli/kadavra donör/ABO uyumsuz, §2.4.2.B-1 kemik iliği nakli HLA/temin/nakliye, §2.4.2.B-2 mezenkimal kök hücre nakli ve §2.4.3 aşı bedelleri. Modalities: NO_PAY, MUST_BILL, COVERAGE, MUST_NOT_BILL, REGULATORY_ACTION, MANDATORY.",
+  "source_csv": "tasks/encode_waves/REM_2_4.csv",
+  "rules_added": 42,
+  "rules_skipped_dup": [],
+  "encoded_clause_ids": [
+    "C000734",
+    "C000742",
+    "C000747",
+    "C000748",
+    "C000752",
+    "C000753",
+    "C000754",
+    "C000755",
+    "C000760",
+    "C000762",
+    "C000787",
+    "C000791",
+    "C000794",
+    "C000795",
+    "C000799",
+    "C000800",
+    "C000804",
+    "C000805",
+    "C000807",
+    "C000810",
+    "C000812",
+    "C000813",
+    "C000816",
+    "C000821",
+    "C000824",
+    "C000827",
+    "C000830",
+    "C000832",
+    "C000833",
+    "C000834",
+    "C000835",
+    "C000838",
+    "C000839",
+    "C000840",
+    "C000842",
+    "C000847",
+    "C000849",
+    "C000850",
+    "C000852",
+    "C000855",
+    "C000856",
+    "C000857"
+  ],
+  "gate_b_sources_by_rule": {
+    "2.4.1.(1).precious_metal_dental_materials_no_pay": [
+      "C000734"
+    ],
+    "2.4.1.(2).endosseous_implant_base_no_pay": [
+      "C000742"
+    ],
+    "2.4.1.(2).implant_exception_4_per_jaw_750tl": [
+      "C000747"
+    ],
+    "2.4.1.(3).prosthesis_renewal_within_4_years_no_pay": [
+      "C000748"
+    ],
+    "2.4.1.(a).adult_orthodontics_18plus_no_pay": [
+      "C000752"
+    ],
+    "2.4.1.(b).early_orthodontic_p407321_p407322": [
+      "C000753"
+    ],
+    "2.4.1.(c).fixed_orthodontics_class1_2_3_min_intervals": [
+      "C000754"
+    ],
+    "2.4.1.(c_cleft).cleft_lip_palate_orthodontics_age_windows": [
+      "C000755"
+    ],
+    "2.4.1.A.(1).contracted_public_dental_ek2c_prosthesis_inclusive": [
+      "C000760"
+    ],
+    "2.4.1.A.(2).disabled_or_special_need_child_ga_sedo_2x": [
+      "C000762"
+    ],
+    "2.4.1.B.(1).private_uncontracted_dental_units_scope": [
+      "C000787"
+    ],
+    "2.4.1.B-1.(1).private_uncontracted_dental_default_no_pay": [
+      "C000791"
+    ],
+    "2.4.1.B-1.(2).disabled_child_private_dental_report_10_biz_days": [
+      "C000794"
+    ],
+    "2.4.1.B-1.(3).non_communicative_disabled_ga_unit_documentation": [
+      "C000795"
+    ],
+    "2.4.1.B-1.(5).orthodontics_3_dentist_board_report_6mo": [
+      "C000799"
+    ],
+    "2.4.1.B-1.(6).post_treatment_control_form_public_dentist_approval": [
+      "C000800"
+    ],
+    "2.4.1.B-2.(1).disabled_or_special_need_child_ek2c_fee": [
+      "C000804"
+    ],
+    "2.4.1.B-2.(2).private_uncontracted_orthodontics_per_2_4_1_4": [
+      "C000805"
+    ],
+    "2.4.1.B-2.(4).disabled_prosthesis_no_separate_material_casting_labor": [
+      "C000807"
+    ],
+    "2.4.1.B-2.(5).orthodontic_invoices_ek2c3_stage_payment": [
+      "C000810"
+    ],
+    "2.4.1.B-3.(1).self_referral_board_signer_treatment_no_pay": [
+      "C000812"
+    ],
+    "2.4.1.B-3.(2).star_and_7_1_orthodontics_specialist_required": [
+      "C000813"
+    ],
+    "2.4.2.A.(1).organ_tissue_transplant_recipient_donor_covered": [
+      "C000816"
+    ],
+    "2.4.2.A.(4).domestic_organ_transfer_per_2_6": [
+      "C000821"
+    ],
+    "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c": [
+      "C000824"
+    ],
+    "2.4.2.A.(6).abo_incompatible_kidney_transplant_no_pay": [
+      "C000827"
+    ],
+    "2.4.2.B-1.(1).hla_compatibility_tests_relatives_max30": [
+      "C000830"
+    ],
+    "2.4.2.B-1.(3).marrow_bank_stage1_705090_110_verify_705100_120": [
+      "C000832"
+    ],
+    "2.4.2.B-1.(4).high_res_dna_hla_confirmation_max25": [
+      "C000833"
+    ],
+    "2.4.2.B-1.(5).domestic_unrelated_marrow_cord_procurement_ek2c": [
+      "C000834"
+    ],
+    "2.4.2.B-1.(6).foreign_hla_confirmation_7of8_max10x25": [
+      "C000835"
+    ],
+    "2.4.2.B-1.(9).marrow_cord_transport_euro_caps": [
+      "C000838"
+    ],
+    "2.4.2.B-1.(10).foreign_sourcing_activation_cancellation_fees": [
+      "C000839"
+    ],
+    "2.4.2.B-1.(11).bone_marrow_transplant_ek2c_licensed_center": [
+      "C000840"
+    ],
+    "2.4.2.B-1.(12).pre_2013_foreign_marrow_screening_retroactive": [
+      "C000842"
+    ],
+    "2.4.2.B-2.(1).mesenchymal_stem_cell_transplant_moh_approval": [
+      "C000847"
+    ],
+    "2.4.2.B-2.(3).mesenchymal_704_981_production_center_required": [
+      "C000849"
+    ],
+    "2.4.2.B-2.(4).mesenchymal_within_allo_15d_before_90d_after_bundle": [
+      "C000850"
+    ],
+    "2.4.3.(A).non_eip_vaccines_high_risk_report": [
+      "C000852"
+    ],
+    "2.4.3.(B).influenza_vaccine_annual_risk_groups_sep_mar": [
+      "C000855"
+    ],
+    "2.4.3.(C).pneumococcal_vaccine_5_year_risk_groups": [
+      "C000856"
+    ],
+    "2.4.3.(D).hepatitis_a_vaccine_max_2_yearly_seronegative": [
+      "C000857"
+    ]
+  }
+}

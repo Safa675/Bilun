@@ -1,0 +1,229 @@
+{
+  "description": "Gate B golden — definitions_2_6",
+  "cases": [
+    {
+      "clause_id": "C001470",
+      "expected_rule_id": "2.6.1.(1).travel_daily_companion_conditions"
+    },
+    {
+      "clause_id": "C001472",
+      "expected_rule_id": "2.6.1.(1b).referral_by_contracted_2_3_step"
+    },
+    {
+      "clause_id": "C001475",
+      "expected_rule_id": "2.6.1.(1).conditions_required"
+    },
+    {
+      "clause_id": "C001479",
+      "expected_rule_id": "2.6.1.A.(1).nearest_provider_referral_principle"
+    },
+    {
+      "clause_id": "C001487",
+      "expected_rule_id": "2.6.1.A.(2).travel_by_nearest_provider_distance"
+    },
+    {
+      "clause_id": "C001494",
+      "expected_rule_id": "2.6.1.A.(2a).third_step_referral_distance_waived"
+    },
+    {
+      "clause_id": "C001495",
+      "expected_rule_id": "2.6.1.A.(3).board_control_examination_travel"
+    },
+    {
+      "clause_id": "C001496",
+      "expected_rule_id": "2.6.1.A.(4).thermal_spa_travel_nearest"
+    },
+    {
+      "clause_id": "C001504",
+      "expected_rule_id": "2.6.1.B.(3).referral_form_vehicle_required"
+    },
+    {
+      "clause_id": "C001507",
+      "expected_rule_id": "2.6.1.B.(4).e_sevk_signed_standards"
+    },
+    {
+      "clause_id": "C001513",
+      "expected_rule_id": "2.6.1.B.(7).non_medula_facility_wet_signature"
+    },
+    {
+      "clause_id": "C001515",
+      "expected_rule_id": "2.6.1.B-1.(1).unspecified_vehicle_default_fee"
+    },
+    {
+      "clause_id": "C001516",
+      "expected_rule_id": "2.6.1.B-1.(2).free_travel_ticket_invoice_required"
+    },
+    {
+      "clause_id": "C001530",
+      "expected_rule_id": "2.6.1.B-2.(1).routine_vehicle_ek2l_tariff"
+    },
+    {
+      "clause_id": "C001531",
+      "expected_rule_id": "2.6.1.B-2.(2).ministry_tariff_override"
+    },
+    {
+      "clause_id": "C001537",
+      "expected_rule_id": "2.6.1.B-3.(1b).non_routine_travel_accepted"
+    },
+    {
+      "clause_id": "C001540",
+      "expected_rule_id": "2.6.1.B-3.(2b).dialysis_transport_health_board_specialist"
+    },
+    {
+      "clause_id": "C001544",
+      "expected_rule_id": "2.6.1.B-4.(1).non_routine_invoice_required"
+    },
+    {
+      "clause_id": "C001545",
+      "expected_rule_id": "2.6.1.B-4.(2).private_vehicle_routine_fee"
+    },
+    {
+      "clause_id": "C001547",
+      "expected_rule_id": "2.6.1.B-4.(4).scheduled_air_economy_plus_boarding"
+    },
+    {
+      "clause_id": "C001548",
+      "expected_rule_id": "2.6.1.B-4.(5).ground_ambulance_min_price"
+    },
+    {
+      "clause_id": "C001549",
+      "expected_rule_id": "2.6.1.B-4.(6).air_ambulance_scoped"
+    },
+    {
+      "clause_id": "C001558",
+      "expected_rule_id": "2.6.1.B-4.(7).funeral_vehicle_municipal_tariff"
+    },
+    {
+      "clause_id": "C001561",
+      "expected_rule_id": "2.6.2.(1a).outpatient_daily_allowance_window"
+    },
+    {
+      "clause_id": "C001562",
+      "expected_rule_id": "2.6.2.(1b).inpatient_daily_allowance_travel_days_only"
+    },
+    {
+      "clause_id": "C001563",
+      "expected_rule_id": "2.6.2.(1c).no_bed_waiting_daily_cap_5"
+    },
+    {
+      "clause_id": "C001565",
+      "expected_rule_id": "2.6.2.(1c_ext).outpatient_over_10_days_documented"
+    },
+    {
+      "clause_id": "C001566",
+      "expected_rule_id": "2.6.2.(2).daily_allowance_coefficients"
+    },
+    {
+      "clause_id": "C001568",
+      "expected_rule_id": "2.6.2.(4).continuation_specialty_daily_allowance"
+    },
+    {
+      "clause_id": "C001569",
+      "expected_rule_id": "2.6.2.(5).continuation_provider_daily_allowance"
+    },
+    {
+      "clause_id": "C001571",
+      "expected_rule_id": "2.6.3.(1).companion_one_person_documentation"
+    },
+    {
+      "clause_id": "C001573",
+      "expected_rule_id": "2.6.3.(3).icu_companion_daily_allowance"
+    },
+    {
+      "clause_id": "C001577",
+      "expected_rule_id": "2.6.4.(b).control_call_document_required"
+    },
+    {
+      "clause_id": "C001582",
+      "expected_rule_id": "2.6.5.(1).organ_transplant_transfer_documented"
+    },
+    {
+      "clause_id": "C001583",
+      "expected_rule_id": "2.6.5.(2).organ_transplant_fee_per_2_6_1_B4"
+    },
+    {
+      "clause_id": "C001585",
+      "expected_rule_id": "2.6.5.(4).bone_marrow_travel_per_2_6_1_B4_6"
+    },
+    {
+      "clause_id": "C001586",
+      "expected_rule_id": "2.6.5.(5).limb_replantation_air_ambulance"
+    },
+    {
+      "clause_id": "C001587",
+      "expected_rule_id": "2.6.5.(6).donor_travel_daily_companion"
+    },
+    {
+      "clause_id": "C001589",
+      "expected_rule_id": "2.6.6.(1).thermal_spa_health_board_report"
+    },
+    {
+      "clause_id": "C001590",
+      "expected_rule_id": "2.6.6.(2).thermal_spa_5_business_day_application"
+    },
+    {
+      "clause_id": "C001592",
+      "expected_rule_id": "2.6.6.(4).thermal_spa_companion_documented"
+    },
+    {
+      "clause_id": "C001593",
+      "expected_rule_id": "2.6.6.(5).thermal_spa_travel_routine_vehicle_fee"
+    },
+    {
+      "clause_id": "C001599",
+      "expected_rule_id": "2.6.8.(1).death_outside_settlement_funeral_capped"
+    },
+    {
+      "clause_id": "C001605",
+      "expected_rule_id": "2.6.9.(3).non_contracted_referral_emergency_accepted"
+    },
+    {
+      "clause_id": "C001606",
+      "expected_rule_id": "2.6.9.(4).missing_specialist_documented_travel"
+    },
+    {
+      "clause_id": "C001608",
+      "expected_rule_id": "2.6.9.(6).scope_5510_md60_scope_travel"
+    },
+    {
+      "clause_id": "C001610",
+      "expected_rule_id": "2.6.9.(8).disability_pension_funding_source"
+    },
+    {
+      "clause_id": "C001497",
+      "expected_rule_id": "2.6.1.A.(5).dialysis_service_courtesy_no_travel"
+    },
+    {
+      "clause_id": "C001541",
+      "expected_rule_id": "2.6.1.B-3.(3).vehicle_allocated_escort_no_travel"
+    },
+    {
+      "clause_id": "C001567",
+      "expected_rule_id": "2.6.2.(3).same_day_application_no_daily_allowance"
+    },
+    {
+      "clause_id": "C001572",
+      "expected_rule_id": "2.6.3.(2).companion_ek2b_point_no_separate_daily"
+    },
+    {
+      "clause_id": "C001579",
+      "expected_rule_id": "2.6.4.(c).non_listed_control_call_not_covered"
+    },
+    {
+      "clause_id": "C001591",
+      "expected_rule_id": "2.6.6.(3).unlicensed_thermal_spa_not_covered"
+    },
+    {
+      "clause_id": "C001600",
+      "expected_rule_id": "2.6.8.(2).funeral_transport_without_referral_not_covered"
+    },
+    {
+      "clause_id": "C001603",
+      "expected_rule_id": "2.6.9.(1).intra_settlement_transport_no_travel_daily"
+    },
+    {
+      "clause_id": "C001604",
+      "expected_rule_id": "2.6.9.(2).unreferred_cross_settlement_no_travel_daily"
+    }
+  ]
+}

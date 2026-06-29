@@ -1,0 +1,233 @@
+{
+  "manifest_version": "gap-v1",
+  "rule_set_id": "definitions_2_6",
+  "rules_in_json": 56,
+  "encoded_clause_ids": [
+    "C001470",
+    "C001472",
+    "C001475",
+    "C001479",
+    "C001487",
+    "C001494",
+    "C001495",
+    "C001496",
+    "C001497",
+    "C001504",
+    "C001507",
+    "C001513",
+    "C001515",
+    "C001516",
+    "C001530",
+    "C001531",
+    "C001537",
+    "C001540",
+    "C001541",
+    "C001544",
+    "C001545",
+    "C001547",
+    "C001548",
+    "C001549",
+    "C001558",
+    "C001561",
+    "C001562",
+    "C001563",
+    "C001565",
+    "C001566",
+    "C001567",
+    "C001568",
+    "C001569",
+    "C001571",
+    "C001572",
+    "C001573",
+    "C001577",
+    "C001579",
+    "C001582",
+    "C001583",
+    "C001585",
+    "C001586",
+    "C001587",
+    "C001589",
+    "C001590",
+    "C001591",
+    "C001592",
+    "C001593",
+    "C001599",
+    "C001600",
+    "C001603",
+    "C001604",
+    "C001605",
+    "C001606",
+    "C001608",
+    "C001610"
+  ],
+  "gate_b_sources_by_rule": {
+    "2.6.1.(1).travel_daily_companion_conditions": [
+      "C001470"
+    ],
+    "2.6.1.(1b).referral_by_contracted_2_3_step": [
+      "C001472"
+    ],
+    "2.6.1.(1).conditions_required": [
+      "C001475"
+    ],
+    "2.6.1.A.(1).nearest_provider_referral_principle": [
+      "C001479"
+    ],
+    "2.6.1.A.(2).travel_by_nearest_provider_distance": [
+      "C001487"
+    ],
+    "2.6.1.A.(2a).third_step_referral_distance_waived": [
+      "C001494"
+    ],
+    "2.6.1.A.(3).board_control_examination_travel": [
+      "C001495"
+    ],
+    "2.6.1.A.(4).thermal_spa_travel_nearest": [
+      "C001496"
+    ],
+    "2.6.1.B.(3).referral_form_vehicle_required": [
+      "C001504"
+    ],
+    "2.6.1.B.(4).e_sevk_signed_standards": [
+      "C001507"
+    ],
+    "2.6.1.B.(7).non_medula_facility_wet_signature": [
+      "C001513"
+    ],
+    "2.6.1.B-1.(1).unspecified_vehicle_default_fee": [
+      "C001515"
+    ],
+    "2.6.1.B-1.(2).free_travel_ticket_invoice_required": [
+      "C001516"
+    ],
+    "2.6.1.B-2.(1).routine_vehicle_ek2l_tariff": [
+      "C001530"
+    ],
+    "2.6.1.B-2.(2).ministry_tariff_override": [
+      "C001531"
+    ],
+    "2.6.1.B-3.(1b).non_routine_travel_accepted": [
+      "C001537"
+    ],
+    "2.6.1.B-3.(2b).dialysis_transport_health_board_specialist": [
+      "C001540"
+    ],
+    "2.6.1.B-4.(1).non_routine_invoice_required": [
+      "C001544"
+    ],
+    "2.6.1.B-4.(2).private_vehicle_routine_fee": [
+      "C001545"
+    ],
+    "2.6.1.B-4.(4).scheduled_air_economy_plus_boarding": [
+      "C001547"
+    ],
+    "2.6.1.B-4.(5).ground_ambulance_min_price": [
+      "C001548"
+    ],
+    "2.6.1.B-4.(6).air_ambulance_scoped": [
+      "C001549"
+    ],
+    "2.6.1.B-4.(7).funeral_vehicle_municipal_tariff": [
+      "C001558"
+    ],
+    "2.6.2.(1a).outpatient_daily_allowance_window": [
+      "C001561"
+    ],
+    "2.6.2.(1b).inpatient_daily_allowance_travel_days_only": [
+      "C001562"
+    ],
+    "2.6.2.(1c).no_bed_waiting_daily_cap_5": [
+      "C001563"
+    ],
+    "2.6.2.(1c_ext).outpatient_over_10_days_documented": [
+      "C001565"
+    ],
+    "2.6.2.(2).daily_allowance_coefficients": [
+      "C001566"
+    ],
+    "2.6.2.(4).continuation_specialty_daily_allowance": [
+      "C001568"
+    ],
+    "2.6.2.(5).continuation_provider_daily_allowance": [
+      "C001569"
+    ],
+    "2.6.3.(1).companion_one_person_documentation": [
+      "C001571"
+    ],
+    "2.6.3.(3).icu_companion_daily_allowance": [
+      "C001573"
+    ],
+    "2.6.4.(b).control_call_document_required": [
+      "C001577"
+    ],
+    "2.6.5.(1).organ_transplant_transfer_documented": [
+      "C001582"
+    ],
+    "2.6.5.(2).organ_transplant_fee_per_2_6_1_B4": [
+      "C001583"
+    ],
+    "2.6.5.(4).bone_marrow_travel_per_2_6_1_B4_6": [
+      "C001585"
+    ],
+    "2.6.5.(5).limb_replantation_air_ambulance": [
+      "C001586"
+    ],
+    "2.6.5.(6).donor_travel_daily_companion": [
+      "C001587"
+    ],
+    "2.6.6.(1).thermal_spa_health_board_report": [
+      "C001589"
+    ],
+    "2.6.6.(2).thermal_spa_5_business_day_application": [
+      "C001590"
+    ],
+    "2.6.6.(4).thermal_spa_companion_documented": [
+      "C001592"
+    ],
+    "2.6.6.(5).thermal_spa_travel_routine_vehicle_fee": [
+      "C001593"
+    ],
+    "2.6.8.(1).death_outside_settlement_funeral_capped": [
+      "C001599"
+    ],
+    "2.6.9.(3).non_contracted_referral_emergency_accepted": [
+      "C001605"
+    ],
+    "2.6.9.(4).missing_specialist_documented_travel": [
+      "C001606"
+    ],
+    "2.6.9.(6).scope_5510_md60_scope_travel": [
+      "C001608"
+    ],
+    "2.6.9.(8).disability_pension_funding_source": [
+      "C001610"
+    ],
+    "2.6.1.A.(5).dialysis_service_courtesy_no_travel": [
+      "C001497"
+    ],
+    "2.6.1.B-3.(3).vehicle_allocated_escort_no_travel": [
+      "C001541"
+    ],
+    "2.6.2.(3).same_day_application_no_daily_allowance": [
+      "C001567"
+    ],
+    "2.6.3.(2).companion_ek2b_point_no_separate_daily": [
+      "C001572"
+    ],
+    "2.6.4.(c).non_listed_control_call_not_covered": [
+      "C001579"
+    ],
+    "2.6.6.(3).unlicensed_thermal_spa_not_covered": [
+      "C001591"
+    ],
+    "2.6.8.(2).funeral_transport_without_referral_not_covered": [
+      "C001600"
+    ],
+    "2.6.9.(1).intra_settlement_transport_no_travel_daily": [
+      "C001603"
+    ],
+    "2.6.9.(2).unreferred_cross_settlement_no_travel_daily": [
+      "C001604"
+    ]
+  }
+}
