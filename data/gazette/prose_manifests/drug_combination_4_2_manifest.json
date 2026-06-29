@@ -1,0 +1,241 @@
+{
+  "manifest_version": "d42-v1",
+  "rule_set_id": "drug_combination_4_2",
+  "rules_in_json": 53,
+  "encoded_clause_ids": [
+    "C003581",
+    "C003605",
+    "C003831",
+    "C003918",
+    "C003938",
+    "C004055",
+    "C004057",
+    "C004125",
+    "C004179",
+    "C004201",
+    "C004303",
+    "C004489",
+    "C004497",
+    "C004961",
+    "C005054",
+    "C005064",
+    "C005111",
+    "C005224",
+    "C005241",
+    "C005364",
+    "C005406",
+    "C005411",
+    "C005547",
+    "C005551",
+    "C005568",
+    "C005589",
+    "C005606",
+    "C005608",
+    "C005614",
+    "C005710",
+    "C005715",
+    "C005751",
+    "C005752",
+    "C005753",
+    "C005754",
+    "C005755",
+    "C005756",
+    "C005758",
+    "C005759",
+    "C005760",
+    "C005761",
+    "C005762",
+    "C005764",
+    "C005765",
+    "C005838",
+    "C006013",
+    "C006042",
+    "C006044",
+    "C006116",
+    "C006148",
+    "C006163",
+    "C006200",
+    "C006343",
+    "C006420",
+    "C006530",
+    "C006550",
+    "C006627",
+    "C006628",
+    "C006699",
+    "C006743",
+    "C006749",
+    "C007051",
+    "C007209"
+  ],
+  "gate_b_sources_by_rule": {
+    "4.2.1.C.(3).dual_anti_tnf_or_biologic_combo_no_pay": [
+      "C003581"
+    ],
+    "4.2.1.C-1.(2).as_nsaid_failure_required": [
+      "C003605"
+    ],
+    "4.2.1.C-7.(3).anakinra_with_biologic_dmard_no_pay": [
+      "C003831"
+    ],
+    "4.2.3.(6).allergy_vaccine_oral_no_pay": [
+      "C003918"
+    ],
+    "4.2.5.(3).out_of_indication_no_pay": [
+      "C003938"
+    ],
+    "4.2.7.(3).heparin_in_hemodialysis_no_pay": [
+      "C004055"
+    ],
+    "4.2.7.(4).distinct_lmw_heparin_combo_no_pay": [
+      "C004057"
+    ],
+    "4.2.9.A.(1).epoetin_out_of_indication": [
+      "C004125"
+    ],
+    "4.2.9.C-c.(6).cinacalcet_etelcalsetid_combo_no_pay": [
+      "C004179"
+    ],
+    "4.2.9.E.(7).cinacalcet_etelcalsetid_combo_no_pay": [
+      "C004201"
+    ],
+    "4.2.10.B-3.(4).ms_treatment_switch_6mo_rule": [
+      "C004303"
+    ],
+    "4.2.12.B-1.(ivig_indication_required)": [
+      "C004489"
+    ],
+    "4.2.12.B-2.(birdshot_retinochoroidopathy_no_pay)": [
+      "C004497"
+    ],
+    "4.2.14.C.(breast).ribociclib_palbociclib_after_ai_progression": [
+      "C004961"
+    ],
+    "4.2.14.C.(renal).temsirolimus_poor_prognosis_3of6": [
+      "C005054"
+    ],
+    "4.2.14.C.(renal).rcc_tki_sequential_combo_no_pay": [
+      "C005064",
+      "C005111"
+    ],
+    "4.2.14.C.(melanoma).braf_sequential_no_pay": [
+      "C005224"
+    ],
+    "4.2.14.C.(alk).alk_tki_after_progression_seq_combo_no_pay": [
+      "C005241",
+      "C005406",
+      "C005411",
+      "C005614"
+    ],
+    "4.2.14.C.(glioblastoma).bevacizumab_after_temozolomide": [
+      "C005364"
+    ],
+    "4.2.14.C.(myeloma).pi_combo_no_pay": [
+      "C005547",
+      "C005551",
+      "C005606",
+      "C005710",
+      "C005715"
+    ],
+    "4.2.14.C.(myeloma).cross_resistance_daratumumab_isatuximab_no_pay": [
+      "C005608"
+    ],
+    "4.2.14.C.(breast).fulvestrant_after_ai_adjuvant": [
+      "C005568",
+      "C005589"
+    ],
+    "4.2.14.C.(pembro_nsclc_pdl1_lt_50).tier_c_review": [
+      "C005751",
+      "C005752"
+    ],
+    "4.2.14.C.(pembro_nsclc_pdl1_ge_50).tier_c_review": [
+      "C005753"
+    ],
+    "4.2.14.C.(pembro_tnbc_neoadjuvant).tier_c_review": [
+      "C005754"
+    ],
+    "4.2.14.C.(pembro_tnbc_pdl1_cps10).tier_c_review": [
+      "C005755"
+    ],
+    "4.2.14.C.(pembro_nasopharyngeal).tier_c_review": [
+      "C005756"
+    ],
+    "4.2.14.C.(atezo_nsclc_adjuvant_pdl1_50).tier_c_review": [
+      "C005758"
+    ],
+    "4.2.14.C.(atezo_nsclc_pdl1_50).tier_c_review": [
+      "C005759"
+    ],
+    "4.2.14.C.(atezo_sclc_2l).tier_c_review": [
+      "C005760"
+    ],
+    "4.2.14.C.(atezo_sclc_extensive_1l).tier_c_review": [
+      "C005761"
+    ],
+    "4.2.14.C.(atezo_hcc_bevacizumab).tier_c_review": [
+      "C005762"
+    ],
+    "4.2.14.C.(durva_biliary_pdl1_1).tier_c_review": [
+      "C005764"
+    ],
+    "4.2.14.C.(durva_nsclc_stage3_pdl1_1).tier_c_review": [
+      "C005765"
+    ],
+    "4.2.15.D-1.(4).doac_combo_no_pay": [
+      "C005838"
+    ],
+    "4.2.16.(8).out_of_ek4b_no_pay": [
+      "C006013"
+    ],
+    "4.2.17.A.(9).active_vitamin_d_osteoporosis_no_pay": [
+      "C006042"
+    ],
+    "4.2.17.B.(1).calcitonin_6mo_cap": [
+      "C006044"
+    ],
+    "4.2.23.(3).antifungal_prophylaxis_neutropenia_10d": [
+      "C006116"
+    ],
+    "4.2.24.A.(7).laba_iks_mono_offlabel_no_pay": [
+      "C006148"
+    ],
+    "4.2.24.B.(laba_lama_iks_combo_no_pay)": [
+      "C006163"
+    ],
+    "4.2.25.(3).pregabalin_2nd_3rd_step": [
+      "C006200"
+    ],
+    "4.2.28.C.(3).bile_acid_sequestrant_t2dm_no_pay": [
+      "C006343"
+    ],
+    "4.2.30.A.(9).epoprostenol_dialysis_no_pay": [
+      "C006420"
+    ],
+    "4.2.33.(c).anti_vegf_same_eye_combo_no_pay": [
+      "C006530"
+    ],
+    "4.2.33.(8).loading_dose_required_before_switch": [
+      "C006550"
+    ],
+    "4.2.34.(2).ms_dmt_clinically_isolated_syndrome_no_pay": [
+      "C006627"
+    ],
+    "4.2.34.(3).ms_dmt_combo_no_pay": [
+      "C006628"
+    ],
+    "4.2.35.A.(5).capsaicin_postherpetic_diabetic_neuralgia": [
+      "C006699"
+    ],
+    "4.2.38.(c).dpp4_combo_no_pay": [
+      "C006743"
+    ],
+    "4.2.38.(8).empagliflozin_linagliptin_combo_indication": [
+      "C006749"
+    ],
+    "4.2.49.C.(5).sma_smn2_modifier_1yr_switch_no_pay": [
+      "C007051"
+    ],
+    "4.2.71.(3).tafamidis_advanced_heart_failure_no_pay": [
+      "C007209"
+    ]
+  }
+}

@@ -1,0 +1,320 @@
+{
+  "description": "Gate B golden — drug_combination_4_2 clause → rule_id provenance",
+  "cases": [
+    {
+      "clause_id": "C003581",
+      "expected_rule_id": "4.2.1.C.(3).dual_anti_tnf_or_biologic_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C003605",
+      "expected_rule_id": "4.2.1.C-1.(2).as_nsaid_failure_required",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C003831",
+      "expected_rule_id": "4.2.1.C-7.(3).anakinra_with_biologic_dmard_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C003918",
+      "expected_rule_id": "4.2.3.(6).allergy_vaccine_oral_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C003938",
+      "expected_rule_id": "4.2.5.(3).out_of_indication_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C004055",
+      "expected_rule_id": "4.2.7.(3).heparin_in_hemodialysis_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C004057",
+      "expected_rule_id": "4.2.7.(4).distinct_lmw_heparin_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C004125",
+      "expected_rule_id": "4.2.9.A.(1).epoetin_out_of_indication",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C004179",
+      "expected_rule_id": "4.2.9.C-c.(6).cinacalcet_etelcalsetid_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C004201",
+      "expected_rule_id": "4.2.9.E.(7).cinacalcet_etelcalsetid_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C004303",
+      "expected_rule_id": "4.2.10.B-3.(4).ms_treatment_switch_6mo_rule",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C004489",
+      "expected_rule_id": "4.2.12.B-1.(ivig_indication_required)",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C004497",
+      "expected_rule_id": "4.2.12.B-2.(birdshot_retinochoroidopathy_no_pay)",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C004961",
+      "expected_rule_id": "4.2.14.C.(breast).ribociclib_palbociclib_after_ai_progression",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005054",
+      "expected_rule_id": "4.2.14.C.(renal).temsirolimus_poor_prognosis_3of6",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005064",
+      "expected_rule_id": "4.2.14.C.(renal).rcc_tki_sequential_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005111",
+      "expected_rule_id": "4.2.14.C.(renal).rcc_tki_sequential_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005224",
+      "expected_rule_id": "4.2.14.C.(melanoma).braf_sequential_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005241",
+      "expected_rule_id": "4.2.14.C.(alk).alk_tki_after_progression_seq_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005406",
+      "expected_rule_id": "4.2.14.C.(alk).alk_tki_after_progression_seq_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005411",
+      "expected_rule_id": "4.2.14.C.(alk).alk_tki_after_progression_seq_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005614",
+      "expected_rule_id": "4.2.14.C.(alk).alk_tki_after_progression_seq_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005364",
+      "expected_rule_id": "4.2.14.C.(glioblastoma).bevacizumab_after_temozolomide",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005547",
+      "expected_rule_id": "4.2.14.C.(myeloma).pi_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005551",
+      "expected_rule_id": "4.2.14.C.(myeloma).pi_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005606",
+      "expected_rule_id": "4.2.14.C.(myeloma).pi_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005710",
+      "expected_rule_id": "4.2.14.C.(myeloma).pi_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005715",
+      "expected_rule_id": "4.2.14.C.(myeloma).pi_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005608",
+      "expected_rule_id": "4.2.14.C.(myeloma).cross_resistance_daratumumab_isatuximab_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005568",
+      "expected_rule_id": "4.2.14.C.(breast).fulvestrant_after_ai_adjuvant",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005589",
+      "expected_rule_id": "4.2.14.C.(breast).fulvestrant_after_ai_adjuvant",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005751",
+      "expected_rule_id": "4.2.14.C.(pembro_nsclc_pdl1_lt_50).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005752",
+      "expected_rule_id": "4.2.14.C.(pembro_nsclc_pdl1_lt_50).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005753",
+      "expected_rule_id": "4.2.14.C.(pembro_nsclc_pdl1_ge_50).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005754",
+      "expected_rule_id": "4.2.14.C.(pembro_tnbc_neoadjuvant).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005755",
+      "expected_rule_id": "4.2.14.C.(pembro_tnbc_pdl1_cps10).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005756",
+      "expected_rule_id": "4.2.14.C.(pembro_nasopharyngeal).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005758",
+      "expected_rule_id": "4.2.14.C.(atezo_nsclc_adjuvant_pdl1_50).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005759",
+      "expected_rule_id": "4.2.14.C.(atezo_nsclc_pdl1_50).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005760",
+      "expected_rule_id": "4.2.14.C.(atezo_sclc_2l).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005761",
+      "expected_rule_id": "4.2.14.C.(atezo_sclc_extensive_1l).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005762",
+      "expected_rule_id": "4.2.14.C.(atezo_hcc_bevacizumab).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005764",
+      "expected_rule_id": "4.2.14.C.(durva_biliary_pdl1_1).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005765",
+      "expected_rule_id": "4.2.14.C.(durva_nsclc_stage3_pdl1_1).tier_c_review",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C005838",
+      "expected_rule_id": "4.2.15.D-1.(4).doac_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006013",
+      "expected_rule_id": "4.2.16.(8).out_of_ek4b_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006042",
+      "expected_rule_id": "4.2.17.A.(9).active_vitamin_d_osteoporosis_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006044",
+      "expected_rule_id": "4.2.17.B.(1).calcitonin_6mo_cap",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006116",
+      "expected_rule_id": "4.2.23.(3).antifungal_prophylaxis_neutropenia_10d",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006148",
+      "expected_rule_id": "4.2.24.A.(7).laba_iks_mono_offlabel_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006163",
+      "expected_rule_id": "4.2.24.B.(laba_lama_iks_combo_no_pay)",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006200",
+      "expected_rule_id": "4.2.25.(3).pregabalin_2nd_3rd_step",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006343",
+      "expected_rule_id": "4.2.28.C.(3).bile_acid_sequestrant_t2dm_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006420",
+      "expected_rule_id": "4.2.30.A.(9).epoprostenol_dialysis_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006530",
+      "expected_rule_id": "4.2.33.(c).anti_vegf_same_eye_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006550",
+      "expected_rule_id": "4.2.33.(8).loading_dose_required_before_switch",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006627",
+      "expected_rule_id": "4.2.34.(2).ms_dmt_clinically_isolated_syndrome_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006628",
+      "expected_rule_id": "4.2.34.(3).ms_dmt_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006699",
+      "expected_rule_id": "4.2.35.A.(5).capsaicin_postherpetic_diabetic_neuralgia",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006743",
+      "expected_rule_id": "4.2.38.(c).dpp4_combo_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C006749",
+      "expected_rule_id": "4.2.38.(8).empagliflozin_linagliptin_combo_indication",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C007051",
+      "expected_rule_id": "4.2.49.C.(5).sma_smn2_modifier_1yr_switch_no_pay",
+      "encode_batch": "D42-1"
+    },
+    {
+      "clause_id": "C007209",
+      "expected_rule_id": "4.2.71.(3).tafamidis_advanced_heart_failure_no_pay",
+      "encode_batch": "D42-1"
+    }
+  ]
+}
