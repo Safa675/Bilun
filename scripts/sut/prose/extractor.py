@@ -90,22 +90,39 @@ _RG_AMENDMENT_RE = re.compile(
 )
 
 _DEONTIC_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    # Order matters: first match wins. Keep MUST_NOT_BILL / NO_PAY (billing-relevant) first.
     ("MUST_NOT_BILL", re.compile(r"faturalandırılamaz|faturalandırılmayacaktır|faturalandırılmayacak|ayrıca faturalandırılmayacaktır", re.I)),
-    ("MUST_BILL", re.compile(r"faturalandırılır|faturalandırılabilir|ayrıca faturalandırılabilir", re.I)),
-    ("NO_PAY", re.compile(r"ödenmez|karşılanmaz|bedelleri Kurumca karşılanmaz", re.I)),
-    ("NO_COPAY", re.compile(r"katılım payı alınmaz|katılım payından muaf", re.I)),
+    ("MUST_BILL", re.compile(r"faturalandırılır|faturalandırılabilir|ayrıca faturalandırılabilir|faturalandırılacaktır|faturalandırılmalıdır", re.I)),
+    ("NO_PAY", re.compile(r"ödenmez|karşılanmaz|bedelleri Kurumca karşılanmaz|ödenmeyecektir|ödenmemesi", re.I)),
+    # Affirmative coverage / payment — complements NO_PAY (regex had karşılanmaz but not karşılanır).
+    ("COVERAGE", re.compile(r"karşılanır|karşılanacaktır|ödenir|ödenecektir", re.I)),
+    ("NO_COPAY", re.compile(r"katılım payı alınmaz|katılım payından muaf|muaf tutulur", re.I)),
     ("COPAY_REQUIRED", re.compile(r"katılım payı alınır", re.I)),
-    ("PROHIBITED", re.compile(r"yapılamaz|yasaktır", re.I)),
-    ("MANDATORY", re.compile(r"zorundadır|uyulacaktır", re.I)),
+    # Prohibition: -ebil-mez / -ama-z negated passives + explicit yasak.
+    ("PROHIBITED", re.compile(r"yapılamaz|yasaktır|kullanılamaz|alınamaz|verilemez|edilemez|uygulanmaz|talep edilemez|başvurulamaz|kesilemez|sorgulanamaz", re.I)),
+    # Obligation / necessity — full gerek-* + zorunlu-* family (regex had only zorundadır/uyulacaktır).
+    ("MANDATORY", re.compile(r"zorundadır|zorunludur|zorunda|uyulacaktır|uyulması|gerekmektedir|gereklidir|gerekir|esastır|şarttır", re.I)),
+    # Permission: -ebil-ir affirmative passives (e.g. sevk edilebilir, reçete edilebilir).
+    ("PERMISSION", re.compile(r"yapılabilir|edilebilir|kullanılabilir|uygulanabilir|verilebilir|alınabilir|başvurulabilir|talep edilebilir", re.I)),
+    # Exemption / outside-scope.
+    ("EXEMPTION", re.compile(r"muafiyet|istisnadır", re.I)),
 ]
 
+# Marker gates WHETHER a clause carries deontic content (must stay a superset of every stem in
+# _DEONTIC_PATTERNS, else a verb is classified but its marker never fires → NULL modality).
 _DEONTIC_MARKER_RE = re.compile(
-    r"(faturalandırıl(?:ır|amaz|mayacaktır|mayacak|abilir)|"
-    r"öden(?:mez|ir)|karşılanmaz|"
-    r"alın(?:maz|ır)|"
-    r"yapılamaz|yasaktır|"
-    r"zorundadır|uyulacaktır|"
-    r"hariç)",
+    r"(faturalandırıl(?:ır|amaz|mayacaktır|mayacak|abilir|malıdır|acaktır)|"  # billing both polarities
+    r"karşılan(?:maz|ır|mayacaktır|mayacak|acaktır)|"  # coverage both polarities
+    r"öden(?:mez|ir|ecektir|meyecektir|memesi)|"  # payment both polarities
+    r"alın(?:maz|ır|abilir|acaktır)|"  # copay both polarities
+    r"yapıl(?:amaz|abilir)|"  # yapılamaz / yapılabilir
+    r"kullanıl(?:amaz|abilir)|uygulan(?:amaz|abilir)|"  # prohibition / permission
+    r"(?:alınamaz|verilemez|edilemez|istemez|talep edilemez|başvurulamaz|kesilemez|sorgulanamaz)|"  # prohibition
+    r"(?:verilebilir|alınabilir|başvurulabilir|talep edilebilir)|"  # permission
+    r"yasaktır|"  # explicit prohibition
+    r"(?:zorundadır|zorunludur|zorunda|uyulacaktır|uyulması|gerekmektedir|gereklidir|gerekir|esastır|şarttır)|"  # obligation
+    r"(?:muaf tutulur|muafiyet|istisnadır)|"  # exemption
+    r"hariç)",  # outside-scope marker (previously the sole REGULATORY_ACTION trigger)
     re.IGNORECASE,
 )
 

@@ -37,7 +37,13 @@ _DRUG_4219_MANIFEST = (
 _MANIFEST_DIR = Path(__file__).resolve().parents[3] / "data/gazette/prose_manifests"
 _PAYMENT_METHOD_22_MANIFEST = "L2.2_payment_method_encoded_manifest.json"
 _SESSION_PRICING_22_MANIFEST = "L2.2_session_pricing_2_2_2_B_encoded_manifest.json"
+_DEFINITIONS_2_6_MANIFEST = "L2.6_definitions_manifest.json"
+_TREATMENT_PRICING_2_4_MANIFEST = "L2.4_treatment_pricing_wave2_manifest.json"
 _WAVE2_MANIFESTS: dict[str, str] = {
+    # §2.6 definitions/scope clauses encode runtime-billing gates.
+    "definitions": _DEFINITIONS_2_6_MANIFEST,
+    # §2.4 treatment-package pricing (incl. §2.4.4) wave encodes.
+    "pricing_ek2b": _TREATMENT_PRICING_2_4_MANIFEST,
     "gazette_repricing": "L2.2_gazette_repricing_encoded_manifest.json",
     "procedure_pairing": "L2.2_procedure_pairing_encoded_manifest.json",
     "material_pairing": "L3.1_material_pairing_encoded_manifest.json",
@@ -154,6 +160,18 @@ def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
         "L4.2_drug_indication_4206_manifest.json",
         "L4.2_drug_indication_4209_4227_manifest.json",
         "L4.2_drug_indication_4201_manifest.json",
+        # R6 deontic-wave manifests (encoded 2026-06-29): oncology §4.2.14,
+        # rheumatology/biologics §4.2.1/13/33/34, small-mid §4.2 sub-sections,
+        # and metabolic/mid §4.2 sub-sections.
+        "L4.2_drug_indication_4_2_14_wave2_manifest.json",
+        "L4.2_drug_indication_rheum_biologics_manifest.json",
+        "L4.2_drug_indication_small_mid_manifest.json",
+        "L4.2_drug_indication_metabolic_mid_manifest.json",
+        "L4_drug_ek4a_r6_manifest.json",  # R6 §4.1/4.3-4.7 drug provisions
+        "L4.2_drug_indication_eye_mid_b_r6_manifest.json",  # R6 §4.2 eye/mid-B
+        "L4.2_drug_indication_eye_mid_a_r6_manifest.json",  # R6 §4.2 eye/mid-A
+        "L4.2_drug_indication_tail_a_r6_manifest.json",  # R6 §4.2 tail
+        "L4.2_drug_indication_tail_b_r6_manifest.json",  # R6 §4.2 tail
     ):
         path = _MANIFEST_DIR / name
         if path.is_file():
@@ -177,6 +195,68 @@ def _section_22_manifest_encoding(clause_id: str, section_id: str) -> bool:
     if clause_id in _load_encoded_clause_ids(_PAYMENT_METHOD_22_MANIFEST):
         return True
     return clause_id in _load_encoded_clause_ids(_SESSION_PRICING_22_MANIFEST)
+
+
+# --- R6 deontic-wave section overrides (2026-06-29) -------------------------
+# These clauses are encoded in their own dedicated manifests, but the
+# classifier sometimes routes them to a different primary motor than the one
+# the manifest is keyed to (e.g. NO_PAY drug clauses → exclusion_ek3b2,
+# §3.3 → specialty_materials fallback). The overrides ensure has_rule_encoding
+# reflects the encode regardless of the classification motor.
+
+
+def _section_2_4_4_manifest_encoding(clause_id: str, section_id: str) -> bool:
+    """§2.4 treatment-pricing wave encodes (incl. §2.4.4)."""
+    if not section_id.startswith("2.4"):
+        return False
+    return (clause_id in _load_encoded_clause_ids(_TREATMENT_PRICING_2_4_MANIFEST)
+            or clause_id in _load_encoded_clause_ids("L2.4_treatment_pricing_r6_rest_manifest.json"))
+
+
+def _section_3_3_specialty_encoding(clause_id: str, section_id: str) -> bool:
+    """§3.3 specialty-materials wave encodes."""
+    if not section_id.startswith("3.3"):
+        return False
+    return clause_id in _load_encoded_clause_ids("L4.4_specialty_prose_encoded_manifest.json")
+
+
+def _section_drug_indication_wave_encoding(clause_id: str, section_id: str) -> bool:
+    """§4.2 drug-indication wave encodes (oncology/rheum/small-mid/metabolic).
+
+    Catches clauses the classifier routes to exclusion_ek3b2/material_exclusion
+    instead of drug_indication_prose. Also covers §4.1/4.3-4.7 drug provisions
+    (drug_ek4a motor) encoded in the r6 wave.
+    """
+    if section_id.startswith("4.2"):
+        return clause_id in _load_drug_indication_encoded_clause_ids()
+    if section_id.startswith(("4.1", "4.3", "4.4", "4.5", "4.6", "4.7")):
+        return clause_id in _load_encoded_clause_ids("L4_drug_ek4a_r6_manifest.json")
+    return False
+
+
+def _section_definitions_2_6_encoding(clause_id: str, section_id: str) -> bool:
+    """§2.6 definitions encodes (non_algorithmic but runtime-relevant)."""
+    if not section_id.startswith("2.6"):
+        return False
+    return clause_id in _load_encoded_clause_ids(_DEFINITIONS_2_6_MANIFEST)
+
+
+def _section_r6_misc_encoding(clause_id: str, section_id: str) -> bool:
+    """R6 wave encodes across §1.5-1.10 (referral/surcharge), §2.2/2.3/2.5
+    (payment/pricing), §5.x/§6.x (billing docs / misc), §3.x leftover materials.
+
+    These clauses classify under non-algorithmic or fallback motors, so the
+    dedicated r6 manifests must be checked via section-scoped overrides.
+    """
+    if section_id.startswith(("1.5", "1.6", "1.7", "1.9", "1.10")):
+        return clause_id in _load_encoded_clause_ids("L_r6_referral_encoded_manifest.json")
+    if section_id.startswith(("5.", "6.", "1.8", "1.1", "1.11")):
+        return clause_id in _load_encoded_clause_ids("L_r6_billing_def_encoded_manifest.json")
+    if section_id.startswith(("2.2", "2.3", "2.5")):
+        return clause_id in _load_encoded_clause_ids("L2_payment_pricing_r6_manifest.json")
+    if section_id.startswith(("3.1", "3.2")):
+        return clause_id in _load_encoded_clause_ids("L_r6_specialty_leftover_manifest.json")
+    return False
 
 _STATUS_RANK: dict[str, int] = {
     "implemented": 0,
@@ -263,8 +343,20 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
             has_rule_encoding = False
 
         section_id = str(row.get("section_id") or "")
-        if not has_rule_encoding and _section_22_manifest_encoding(clause_id, section_id):
-            has_rule_encoding = True
+        if not has_rule_encoding:
+            # Section-specific overrides: reflect encodes whose manifest motor
+            # differs from the classifier's primary_rule_id.
+            for _override in (
+                _section_22_manifest_encoding,
+                _section_2_4_4_manifest_encoding,
+                _section_3_3_specialty_encoding,
+                _section_drug_indication_wave_encoding,
+                _section_definitions_2_6_encoding,
+                _section_r6_misc_encoding,
+            ):
+                if _override(clause_id, section_id):
+                    has_rule_encoding = True
+                    break
 
         rows.append(
             {

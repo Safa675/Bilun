@@ -21,7 +21,10 @@ _KEYWORDS = (
     "ayrıca faturalandırılmaz",
 )
 _PREFIXES = ("3.1", "3.2")
-_DEONTIC_MODALITIES = frozenset({"MUST_NOT_BILL", "NO_PAY"})
+# Admit prohibition + obligation clauses too: the deontic detector now reliably tags
+# yapılamaz/yasaktır (PROHIBITED) and zorunludur/gerekmektedir (MANDATORY), both of which carry
+# real bundling rules (e.g. "tıbbi uygunluk aranması zorunlu", "ayıplı mal iadesi yapılamaz").
+_DEONTIC_MODALITIES = frozenset({"MUST_NOT_BILL", "NO_PAY", "PROHIBITED", "MANDATORY"})
 
 # Prose rows that duplicate annex-list enforcement (heuristic on Turkish excerpt).
 _EK3B1_TEXT_PATTERNS = (
@@ -137,7 +140,10 @@ def _suggested_condition_type(excerpt: str, deontic: str) -> str:
 
 
 def load_candidate_clauses(clauses_path: Path) -> pl.DataFrame:
-    """§3.1–3.2 rows matching Gate B keyword or NO_PAY / MUST_NOT_BILL deontic."""
+    """§3.1–3.2 rows matching Gate B keyword or a billable/prohibitive/mandatory deontic modality.
+
+    Admission: keyword match OR deontic_modality ∈ {MUST_NOT_BILL, NO_PAY, PROHIBITED, MANDATORY}.
+    """
     df = in_force_polars_filter(pl.read_parquet(clauses_path))
     text_col = regulatory_text_column(df)
 
