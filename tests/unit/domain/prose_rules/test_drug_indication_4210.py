@@ -121,7 +121,7 @@ def test_lsd4210_manifest_template_on_disk() -> None:
     assert manifest.get("section_id") == "4.2.10"
     assert manifest.get("section_clause_total") == 131
     assert manifest.get("tier_a_pending_count") == 0
-    assert manifest.get("encoded_clause_count") == 13
+    assert manifest.get("encoded_clause_count") == 15
     assert manifest.get("tier_c_deferred_count") == 116
 
 

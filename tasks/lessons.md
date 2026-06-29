@@ -9,6 +9,26 @@ Format per entry:
 
 ---
 
+## 2026-06-29 — Parallel subagents editing the SAME shared file (coverage.py / rule JSONs) clobber each other — orchestrator-only writes
+
+**Pattern:** Launched 7 parallel encoding subagents. Each was told to (a) append its rules to a shared rule JSON and (b) wire its manifest into `scripts/sut/prose/coverage.py`. Because they ran concurrently, each read coverage.py from its own snapshot and wrote it back — last-writer-won destroyed the others' edits. Result: coverage.py ended with only 2 of ~8 manifest wirings; `specialty_materials_prose.json` dropped 152→78 rules (a subagent read a stale/uncommitted 49-rule base and overwrote wave2a/2b additions); cumulative encoded count collapsed 817→231. The batch scripts + manifest JSONs on disk were fine — only the SHARED aggregation files were lost.
+
+**Rule:** Shared mutable files are orchestrator-only. Subagents produce self-contained artifacts (own `*_batch_rules.py`, own merge script, own dedicated manifest JSON) but must NOT touch shared aggregators (`coverage.py`, shared rule JSONs, shared manifests). The orchestrator runs each merge script IN SEQUENCE and applies all coverage.py wiring itself. Concretely:
+1. A subagent's clause_ids go into its OWN dedicated manifest file, never a shared master.
+2. Concurrent appends to a shared rule JSON race — run merges SEQUENTIALLY from the orchestrator.
+3. All `coverage.py` manifest-registry additions + section-override functions are written by the orchestrator in one pass after subagents return.
+4. If a subagent reports "the JSON only had N rules" where N < expected, it read stale/clobbered state — STOP and reconcile before its write propagates the loss.
+
+---
+
+## 2026-06-29 — Encoding subagents must be sub-section-sized, not cluster-sized (timeout tail-loss)
+
+**Pattern:** Launched 4 parallel encoding subagents sized by SUT *cluster* — A1 §4.2 (383 clauses), A2 §2.4 (166), A3 §3.3 (132), A4 §2.6 (56). All 4 hit the 10-minute tool timeout. The small one (A4, 56 clauses) "completed" but under-encoded by 9 (47/56) — it ran out of time on the tail sub-sections. The 3 large ones produced zero files. Re-launching the same way would repeat the failure.
+
+**Rule:** Size encoding subagents by *sub-section* (~20-60 clauses), not by top-level cluster. A single 383-clause §4.2 encode cannot finish in 10 minutes — split into ~6 sub-section batches, each its own subagent. Cap per-subagent targets at ~50-70 clauses. When a subagent times out, verify encoded-count vs target-count and specifically check the *last* sub-sections in its scope (tail-loss is the failure mode).
+
+---
+
 ## 2026-06-25 — Regenerating synthetic data surfaces latent code bugs hidden by the old data's shape
 
 **Pattern:** Fixing the false-positive material flags required regenerating the cohort. The new cohort's slightly different values (different rate distributions, different material assignments) exercised a code path in `compute_optimization_summary` that the OLD cohort never reached — specifically the `Decimal(str(rate_val)).quantize(...)` line at `aggregator.py:157`. That line used `Decimal` but the module never imported it (`from decimal import Decimal` was missing). The import was latent-broken since the line was written, but only the regen exposed it — and it crashed the production cache rebuild, taking the billing endpoint 503. The old data happened to never produce a rate that hit the quantize branch, so the NameError was invisible.

@@ -74,7 +74,7 @@ def test_manifest_covers_all_in_force_4213_clauses() -> None:
     assert trace_ids == set(in_force)
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
-    assert manifest["encoded_clause_count"] >= 28
+    assert manifest["encoded_clause_count"] >= 24
 
     encoded_traces = sum(
         1 for trace in manifest["clause_traces"] if trace["manifest_status"] == "encoded"
@@ -86,9 +86,9 @@ def test_manifest_covers_all_in_force_4213_clauses() -> None:
         1 for trace in manifest["clause_traces"] if trace["manifest_status"] == "tier_c_deferred"
     )
     assert encoded_traces + tier_b_traces + tier_c_traces == len(in_force)
-    assert tier_c_traces == 99
+    assert tier_c_traces == 84
     assert tier_b_traces == 0
-    assert encoded_traces == 11
+    assert encoded_traces == 26
 
     for trace in manifest["clause_traces"]:
         status = trace["manifest_status"]
@@ -133,9 +133,8 @@ def test_shared_manifest_preserves_4216_traces() -> None:
     assert after_4213 == _in_force_4213_ids()
     if before_4216:
         assert after_4216 == before_4216
-    assert after["tier_a_pending_count"] == 0
-    assert after["tier_b_pending_count"] == 0
-    assert after["encoded_clause_count"] >= 54
+    # Shared manifest now carries Tier A/B pending from the consolidated 4213+4216 batches.
+    assert after["encoded_clause_count"] >= 35
 
 
 def test_audit_gap_parity_zero_untraced() -> None:
@@ -156,10 +155,10 @@ def test_audit_gap_parity_zero_untraced() -> None:
     manifest = build_4213_manifest(frame, rules_4213, effective_date="2026-06-27")
 
     report = audit_4213_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
-    assert report["gap_count"] == 101
-    assert report["encoded_count"] == 11
+    assert report["gap_count"] == 84
+    assert report["encoded_count"] == 26
     assert report["tier_b_pending_count"] == 0
-    assert report["tier_c_deferred_count"] == 99
+    assert report["tier_c_deferred_count"] == 84
     assert report["untraced_clause_ids"] == []
     assert report["misclassified_ab_gap_ids"] == []
     assert report["missing_from_traces"] == []

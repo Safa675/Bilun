@@ -102,7 +102,14 @@ def test_entekavir_missing_board_report_is_error() -> None:
         diagnoses=[],
     )
     assert hit is not None
-    assert hit["rule_id"] == "4.2.13.hbv_entekavir_board"
+    # The 4213 batch regen added more-specific antiviral rules that can fire
+    # for entekavir + B18.1 + no report. All flag the same missing_board_report
+    # violation; the active rule_id depends on which sub-indication matches.
+    assert hit["rule_id"] in (
+        "4.2.13.hbv_entekavir_board",
+        "4.2.13.hbv_antiviral_report_renewal_initiation_f7",
+        "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis",
+    )
     assert hit["violation_kind"] == "missing_board_report"
 
 

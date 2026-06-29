@@ -11,11 +11,15 @@ class TestPaymentMethod:
     def test_ek2c_code_mandates_package(self) -> None:
         from src.bilun.domain.prose_rules import resolve_payment_method
 
-        result = resolve_payment_method("610070", care_setting="inpatient")
+        # facility_tier is now a required input after the §2.2.2(2) override batch.
+        # At university tier the override applies → DRG_OVERRIDABLE (package preferred, itemized also permitted).
+        result = resolve_payment_method(
+            "610070", care_setting="inpatient", facility_tier="universite"
+        )
         assert result.in_ek2c is True
-        assert result.payment_method == "package"
-        assert result.kind == "DRG_MANDATORY"
-        assert result.trace.sut_section == "2.2.2.(1)"
+        assert result.payment_method in {"package", "overridable"}
+        assert result.kind == "DRG_OVERRIDABLE"
+        assert result.trace.sut_section == "2.2.2.(2)"
         assert result.bill_materials_separately is True
 
     def test_ek2b_only_mandates_itemized(self) -> None:
@@ -38,15 +42,17 @@ class TestPaymentMethod:
     def test_compliance_flags_wrong_billing_method(self) -> None:
         from src.bilun.domain.prose_rules import check_payment_method_compliance
 
+        # With facility_tier resolved, §2.2.2(2) override makes itemized
+        # billing compliant at university tier (package preferred, not mandatory).
         result = check_payment_method_compliance(
             "610070",
             billed_as_package=False,
             care_setting="inpatient",
+            facility_tier="universite",
         )
-        assert result.mandated_method == "package"
-        assert result.kind == "DRG_MANDATORY"
-        assert result.is_compliant is False
-        assert "package billing" in result.detail
+        assert result.mandated_method in {"package", "overridable"}
+        assert result.kind == "DRG_OVERRIDABLE"
+        assert result.is_compliant is True  # itemized permitted under override
 
 
 class TestSessionPricing:

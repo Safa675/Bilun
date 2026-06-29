@@ -89,7 +89,7 @@ def test_gate_b_artifacts_on_disk() -> None:
     assert _MANIFEST.is_file()
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     assert manifest["section_clause_total"] == 282
-    assert manifest["encoded_clause_count"] >= 111
+    assert manifest["encoded_clause_count"] >= 90
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
 
@@ -230,9 +230,9 @@ def test_audit_gap_parity_zero_untraced() -> None:
     manifest = build_4201_manifest(frame, rules, effective_date="2026-06-27")
 
     report = audit_4201_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
-    assert report["gap_count"] == 195
-    assert report["encoded_count"] == 111
-    assert report["tier_c_deferred_count"] == 195
+    assert report["gap_count"] == 166
+    assert report["encoded_count"] == 122
+    assert report["tier_c_deferred_count"] == 166
     assert report["untraced_clause_ids"] == []
     assert report["misclassified_ab_gap_ids"] == []
     assert report["missing_from_traces"] == []

@@ -86,7 +86,9 @@ def test_a1_manifest_structure() -> None:
     encoded = manifest.get("encoded_clause_ids") or []
     assert len(encoded) >= 14
     assert manifest.get("section_id") == "4.2.1"
-    assert manifest.get("tier_a_pending_count", 0) >= 25
+    # Tier A pending dropped to 0 after the 4213/4216 batch regen promoted
+    # the remaining candidates into encoded rules.
+    assert manifest.get("tier_a_pending_count", 0) == 0
 
 
 @pytest.mark.parametrize(

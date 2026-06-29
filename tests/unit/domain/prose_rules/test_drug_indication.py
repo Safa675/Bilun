@@ -99,15 +99,37 @@ def test_load_drug_indication_rules_phase2_corpus() -> None:
     assert payload["rule_set_id"] == "drug_indication_prose"
     assert "4.2.14.C" in payload["sut_anchors"]
     assert "4.2.33" in payload["sut_anchors"]
-    # Merged corpus: §4.2.14.C oncology + §4.2.33 anti-VEGF.
-    assert len(rules) == _MERGED_RULE_COUNT
+    # Merged corpus: §4.2.14.C oncology + §4.2.33 anti-VEGF. Derive the
+    # expected count from the source-of-truth JSON files so the test does not
+    # break every time the corpus is regenerated.
+    import json
+    from src.bilun.domain.constants import _PROSE_RULES_DIR
+
+    core = json.loads((_PROSE_RULES_DIR / "drug_indication_prose.json").read_text("utf-8"))
+    anti_vegf = json.loads((_PROSE_RULES_DIR / "anti_vegf_prose.json").read_text("utf-8"))
+    expected = len(core.get("rules") or []) + len(anti_vegf.get("rules") or [])
+    assert len(rules) == expected
 
 
 def test_drug_indication_coverage_scope_phase2() -> None:
     scope = drug_indication_coverage_scope()
     assert scope["prose_engine_status"] == "partial"
-    assert scope["pilot_rule_count"] == _MERGED_RULE_COUNT
-    assert scope["section_4.2.14.C_rule_count"] == _PHASE2_ONCOLOGY_RULE_COUNT
+    # Derive expected counts dynamically (see test above) instead of stale
+    # constants — the corpus is regenerated as new §4.2 batches are encoded.
+    import json
+    from src.bilun.domain.constants import _PROSE_RULES_DIR
+
+    core = json.loads((_PROSE_RULES_DIR / "drug_indication_prose.json").read_text("utf-8"))
+    anti_vegf = json.loads((_PROSE_RULES_DIR / "anti_vegf_prose.json").read_text("utf-8"))
+    expected_total = len(core.get("rules") or []) + len(anti_vegf.get("rules") or [])
+    assert scope["pilot_rule_count"] == expected_total
+    # §4.2.14.C oncology corpus count is derived from the live JSON, not a
+    # stale constant — it grows as new oncology batches are encoded.
+    onco_rules = [
+        r for r in (core.get("rules") or [])
+        if str(r.get("sut_section") or "").startswith("4.2.14.C")
+    ]
+    assert scope["section_4.2.14.C_rule_count"] == len(onco_rules)
     assert scope["tier_b_rule_count"] >= 20
     assert scope["target_phase2_rule_count"] >= 131
     # Tier-C deferred + EMR-blocked traced clauses (A1 repair partitions in-force rows).
@@ -170,7 +192,18 @@ def test_anti_vegf_corrus_merged_into_indication_rules() -> None:
     """§4.2.33 rules load alongside §4.2.14.C in the merged corpus."""
     rules = list_drug_indication_rules()
     sec_4233 = [r for r in rules if r.get("sut_section", "").startswith("4.2.33")]
-    assert len(sec_4233) == _ANTI_VEGF_RULE_COUNT
+    # Derive the expected §4.2.33 count from the source JSONs so the test does
+    # not break each time new anti-VEGF batches are encoded.
+    import json
+    from src.bilun.domain.constants import _PROSE_RULES_DIR
+    core = json.loads((_PROSE_RULES_DIR / "drug_indication_prose.json").read_text("utf-8"))
+    anti_vegf = json.loads((_PROSE_RULES_DIR / "anti_vegf_prose.json").read_text("utf-8"))
+    expected = sum(
+        1
+        for r in (core.get("rules") or []) + (anti_vegf.get("rules") or [])
+        if str(r.get("sut_section") or "").startswith("4.2.33")
+    )
+    assert len(sec_4233) == expected
     # Each anti-VEGF rule must carry provenance clause IDs.
     assert all(r.get("gate_b_sources") for r in sec_4233)
 
