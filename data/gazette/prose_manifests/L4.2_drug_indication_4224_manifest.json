@@ -155,18 +155,6 @@
       ]
     },
     {
-      "clause_id": "C006182",
-      "section_id": "4.2.24.B",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 10,
-      "defer_themes": [
-        "moh_patient_approval"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C006125",
       "section_id": "4.2.24.A",
       "encode_tier": "A",
@@ -230,6 +218,18 @@
     {
       "clause_id": "C006155",
       "section_id": "4.2.24.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 7,
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006182",
+      "section_id": "4.2.24.B",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
@@ -352,6 +352,18 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
+      "signal_score": 4,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C006169",
+      "section_id": "4.2.24.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Teofilinle kombine olarak kullanılamaz.",
       "signal_score": 4,
       "defer_themes": [
         "clinical_pathway"
@@ -520,18 +532,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "Roflumilast",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C006169",
-      "section_id": "4.2.24.B",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Teofilinle kombine olarak kullanılamaz.",
       "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"

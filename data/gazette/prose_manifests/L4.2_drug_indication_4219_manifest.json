@@ -2,27 +2,28 @@
   "manifest_version": "r5-a4-v1",
   "section_id": "4.2.19",
   "effective_date": "2026-06-27",
-  "rules_in_json": 2,
+  "rules_in_json": 3,
   "section_4.2.19_clause_total": 4,
   "section_clause_total": 4,
-  "encoded_clause_count": 2,
+  "encoded_clause_count": 3,
   "encoded_clause_ids": [
     "C006062",
-    "C006063"
+    "C006063",
+    "C006064"
   ],
   "gate_b_sources_encoded": [
     "C006062",
-    "C006063"
+    "C006063",
+    "C006064"
   ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
-    "C006061",
-    "C006064"
+    "C006061"
   ],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 2,
+  "tier_c_deferred_count": 1,
   "clause_traces": [
     {
       "clause_id": "C006061",
@@ -59,12 +60,11 @@
       "clause_id": "C006064",
       "section_id": "4.2.19",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.19.migraine.neurology_1yr_report_monthly_dose_coverage"
+      ]
     }
   ]
 }

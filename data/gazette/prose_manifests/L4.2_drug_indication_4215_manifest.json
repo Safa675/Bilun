@@ -100,22 +100,6 @@
       ]
     },
     {
-      "clause_id": "C005835",
-      "section_id": "4.2.15.D-1",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Yukarıda tanımlanan durumların belirtildiği",
-      "signal_score": 10
-    },
-    {
-      "clause_id": "C005859",
-      "section_id": "4.2.15.D-2",
-      "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Yukarıda tanımlanan durumların belirtildiği kardiyoloji",
-      "signal_score": 10
-    },
-    {
       "clause_id": "C005870",
       "section_id": "4.2.15.F",
       "encode_tier": "A",
@@ -158,6 +142,22 @@
       "linked_rule_ids": [
         "4.2.15.clopidogrel_peripheral_stent"
       ]
+    },
+    {
+      "clause_id": "C005835",
+      "section_id": "4.2.15.D-1",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Yukarıda tanımlanan durumların belirtildiği",
+      "signal_score": 7
+    },
+    {
+      "clause_id": "C005859",
+      "section_id": "4.2.15.D-2",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Yukarıda tanımlanan durumların belirtildiği kardiyoloji",
+      "signal_score": 7
     },
     {
       "clause_id": "C005782",

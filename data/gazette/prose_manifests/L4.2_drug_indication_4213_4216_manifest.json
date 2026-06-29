@@ -2,22 +2,31 @@
   "manifest_version": "r5-a2-v1",
   "section_id": "4.2.13,4.2.16",
   "effective_date": "2026-06-27",
-  "rules_in_json": 41,
+  "rules_in_json": 59,
   "section_4.2.13_clause_total": 110,
-  "section_4.2.16_clause_total": 62,
-  "section_clause_total": 172,
-  "encoded_clause_count": 35,
+  "section_4.2.16_clause_total": 44,
+  "section_clause_total": 154,
+  "encoded_clause_count": 52,
   "encoded_clause_ids": [
     "C004503",
     "C004506",
+    "C004509",
     "C004533",
     "C004540",
+    "C004551",
+    "C004552",
     "C004572",
+    "C004579",
+    "C004581",
     "C004584",
+    "C004589",
+    "C004591",
     "C004593",
     "C004601",
     "C004604",
     "C004614",
+    "C004616",
+    "C004620",
     "C004628",
     "C004634",
     "C004636",
@@ -30,7 +39,9 @@
     "C004897",
     "C004898",
     "C004902",
+    "C004911",
     "C004912",
+    "C004913",
     "C004916",
     "C005883",
     "C005894",
@@ -39,22 +50,37 @@
     "C005981",
     "C005982",
     "C005983",
+    "C005984",
+    "C005985",
     "C005993",
+    "C005998",
     "C005999",
     "C006000",
-    "C006007"
+    "C006007",
+    "C006011",
+    "C006012",
+    "C006013"
   ],
   "gate_b_sources_encoded": [
     "C004503",
     "C004506",
+    "C004509",
     "C004533",
     "C004540",
+    "C004551",
+    "C004552",
     "C004572",
+    "C004579",
+    "C004581",
     "C004584",
+    "C004589",
+    "C004591",
     "C004593",
     "C004601",
     "C004604",
     "C004614",
+    "C004616",
+    "C004620",
     "C004628",
     "C004634",
     "C004636",
@@ -67,7 +93,9 @@
     "C004897",
     "C004898",
     "C004902",
+    "C004911",
     "C004912",
+    "C004913",
     "C004916",
     "C005883",
     "C005894",
@@ -76,10 +104,16 @@
     "C005981",
     "C005982",
     "C005983",
+    "C005984",
+    "C005985",
     "C005993",
+    "C005998",
     "C005999",
     "C006000",
-    "C006007"
+    "C006007",
+    "C006011",
+    "C006012",
+    "C006013"
   ],
   "tier_a_pending_clause_ids": [
     "C005875",
@@ -109,7 +143,6 @@
     "C004504",
     "C004507",
     "C004508",
-    "C004509",
     "C004510",
     "C004512",
     "C004513",
@@ -121,23 +154,17 @@
     "C004544",
     "C004545",
     "C004550",
-    "C004551",
-    "C004552",
     "C004553",
     "C004573",
     "C004578",
-    "C004579",
     "C004580",
-    "C004581",
     "C004582",
     "C004583",
     "C004585",
     "C004586",
     "C004587",
     "C004588",
-    "C004589",
     "C004590",
-    "C004591",
     "C004592",
     "C004594",
     "C004595",
@@ -154,10 +181,8 @@
     "C004611",
     "C004613",
     "C004615",
-    "C004616",
     "C004617",
     "C004619",
-    "C004620",
     "C004621",
     "C004622",
     "C004623",
@@ -187,8 +212,6 @@
     "C004908",
     "C004909",
     "C004910",
-    "C004911",
-    "C004913",
     "C004914",
     "C004915",
     "C004917",
@@ -199,10 +222,6 @@
     "C004922",
     "C004923",
     "C005874",
-    "C005882",
-    "C005887",
-    "C005893",
-    "C005898",
     "C005899",
     "C005902",
     "C005903",
@@ -212,30 +231,12 @@
     "C005909",
     "C005911",
     "C005912",
-    "C005919",
-    "C005926",
-    "C005933",
-    "C005940",
-    "C005946",
-    "C005953",
-    "C005959",
-    "C005965",
-    "C005971",
-    "C005976",
     "C005977",
-    "C005980",
-    "C005984",
-    "C005985",
-    "C005992",
-    "C005998",
-    "C006006",
-    "C006011",
-    "C006012",
-    "C006013"
+    "C005980"
   ],
   "tier_a_pending_count": 9,
   "tier_b_pending_count": 8,
-  "tier_c_deferred_count": 129,
+  "tier_c_deferred_count": 96,
   "clause_traces": [
     {
       "clause_id": "C004498",
@@ -317,12 +318,11 @@
       "clause_id": "C004509",
       "section_id": "4.2.13",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "moh_patient_approval"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.acute_hbv_severe_antiviral_coverage"
+      ]
     },
     {
       "clause_id": "C004510",
@@ -460,23 +460,21 @@
       "clause_id": "C004551",
       "section_id": "4.2.13.1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.1.pegifn_adult_hbv_criteria"
+      ]
     },
     {
       "clause_id": "C004552",
       "section_id": "4.2.13.1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.1.pegifn_paediatric_24wk"
+      ]
     },
     {
       "clause_id": "C004553",
@@ -527,12 +525,11 @@
       "clause_id": "C004579",
       "section_id": "4.2.13.1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.1.lamivudine_telbivudine_wk24_switch"
+      ]
     },
     {
       "clause_id": "C004580",
@@ -549,12 +546,11 @@
       "clause_id": "C004581",
       "section_id": "4.2.13.1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.1.tdf_taf_entecavir_year1_switch"
+      ]
     },
     {
       "clause_id": "C004582",
@@ -636,12 +632,11 @@
       "clause_id": "C004589",
       "section_id": "4.2.13.1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.1.paediatric_lamivudine_wk24_switch"
+      ]
     },
     {
       "clause_id": "C004590",
@@ -658,12 +653,11 @@
       "clause_id": "C004591",
       "section_id": "4.2.13.1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.1.paediatric_tdf_taf_entecavir_year1_switch"
+      ]
     },
     {
       "clause_id": "C004592",
@@ -875,12 +869,11 @@
       "clause_id": "C004616",
       "section_id": "4.2.13.1.2",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis"
+      ]
     },
     {
       "clause_id": "C004617",
@@ -908,12 +901,11 @@
       "clause_id": "C004620",
       "section_id": "4.2.13.1.3",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.1.3.transplant_oral_antiviral_coverage"
+      ]
     },
     {
       "clause_id": "C004621",
@@ -1300,12 +1292,11 @@
       "clause_id": "C004911",
       "section_id": "4.2.13.3.2.B",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.3.2.B.hcv_ifn_ribavirin_combination"
+      ]
     },
     {
       "clause_id": "C004912",
@@ -1314,6 +1305,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration",
         "4.2.13.hcv_genotype_b_48w_monitoring",
         "4.2.13.hcv_genotype_b_48w_monitoring"
       ]
@@ -1322,12 +1314,11 @@
       "clause_id": "C004913",
       "section_id": "4.2.13.3.2.B",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "3-18 yaş çocuklarda",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.13.3.2.B.paediatric_hcv_ribavirin_pegifn"
+      ]
     },
     {
       "clause_id": "C004914",
@@ -1464,17 +1455,6 @@
       "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
-      "clause_id": "C005882",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir. .",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C005883",
       "section_id": "4.2.16",
       "encode_tier": "A",
@@ -1485,33 +1465,11 @@
       ]
     },
     {
-      "clause_id": "C005887",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C005888",
       "section_id": "4.2.16",
       "encode_tier": "B",
       "manifest_status": "tier_b_pending",
       "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
-    },
-    {
-      "clause_id": "C005893",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C005894",
@@ -1522,17 +1480,6 @@
       "linked_rule_ids": [
         "4.2.16.celiac_gluten_free_1yr_gastro_report"
       ]
-    },
-    {
-      "clause_id": "C005898",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C005899",
@@ -1659,33 +1606,11 @@
       "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
-      "clause_id": "C005919",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C005921",
       "section_id": "4.2.16",
       "encode_tier": "B",
       "manifest_status": "tier_b_pending",
       "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
-    },
-    {
-      "clause_id": "C005926",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C005928",
@@ -1695,17 +1620,6 @@
       "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
-      "clause_id": "C005933",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C005935",
       "section_id": "4.2.16",
       "encode_tier": "B",
@@ -1713,33 +1627,11 @@
       "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
-      "clause_id": "C005940",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C005941",
       "section_id": "4.2.16",
       "encode_tier": "B",
       "manifest_status": "tier_b_pending",
       "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
-    },
-    {
-      "clause_id": "C005946",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C005947",
@@ -1767,33 +1659,11 @@
       "heuristic_inn": "Çölyak hastalığında"
     },
     {
-      "clause_id": "C005953",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "15 yaş üstü için 108",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C005955",
       "section_id": "4.2.16",
       "encode_tier": "A",
       "manifest_status": "tier_a_pending",
       "heuristic_inn": "Çölyak hastalığında"
-    },
-    {
-      "clause_id": "C005959",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C005961",
@@ -1803,17 +1673,6 @@
       "heuristic_inn": "Çölyak hastalığında"
     },
     {
-      "clause_id": "C005965",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C005967",
       "section_id": "4.2.16",
       "encode_tier": "A",
@@ -1821,33 +1680,11 @@
       "heuristic_inn": "Çölyak hastalığında"
     },
     {
-      "clause_id": "C005971",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C005972",
       "section_id": "4.2.16",
       "encode_tier": "A",
       "manifest_status": "tier_a_pending",
       "heuristic_inn": "Çölyak hastalığında"
-    },
-    {
-      "clause_id": "C005976",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C005977",
@@ -1910,23 +1747,21 @@
       "clause_id": "C005984",
       "section_id": "4.2.16",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.16.adult_metabolic_3yr_report_all_prescribe"
+      ]
     },
     {
       "clause_id": "C005985",
       "section_id": "4.2.16",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.16.glycogen_starch_products_2yr_4boxes"
+      ]
     },
     {
       "clause_id": "C005987",
@@ -1934,17 +1769,6 @@
       "encode_tier": "B",
       "manifest_status": "tier_b_pending",
       "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
-    },
-    {
-      "clause_id": "C005992",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C005993",
@@ -1961,17 +1785,6 @@
         "4.2.16.protein_metabolism_formula_diet_report",
         "4.2.16.protein_metabolism_formula_report"
       ]
-    },
-    {
-      "clause_id": "C005998",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C005999",
@@ -2002,17 +1815,6 @@
       "heuristic_inn": "Çölyak hastalığında"
     },
     {
-      "clause_id": "C006006",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C006007",
       "section_id": "4.2.16",
       "encode_tier": "A",
@@ -2029,37 +1831,24 @@
       ]
     },
     {
-      "clause_id": "C006011",
-      "section_id": "4.2.16",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "tutar ödenir.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
       "clause_id": "C006012",
       "section_id": "4.2.16",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.16.ckd_children_growth_sds_3bottles"
+      ]
     },
     {
       "clause_id": "C006013",
       "section_id": "4.2.16",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Yukarıda belirtilen hastalıklarda kullanılan ürünler",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.16.ek4b_unlisted_products_nopay"
+      ]
     }
   ]
 }
