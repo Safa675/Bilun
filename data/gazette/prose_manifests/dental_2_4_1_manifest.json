@@ -1,0 +1,61 @@
+{
+  "manifest_version": "t1-v1",
+  "rule_set_id": "dental_2_4_1",
+  "rules_in_json": 10,
+  "encoded_clause_ids": [
+    "C000734",
+    "C000742",
+    "C000747",
+    "C000748",
+    "C000752",
+    "C000760",
+    "C000762",
+    "C000791",
+    "C000807",
+    "C000812"
+  ],
+  "gate_b_sources_encoded": [
+    "C000734",
+    "C000742",
+    "C000747",
+    "C000748",
+    "C000752",
+    "C000760",
+    "C000762",
+    "C000791",
+    "C000807",
+    "C000812"
+  ],
+  "gate_b_sources_by_rule": {
+    "2.4.1.(1).precious_metal_no_pay": [
+      "C000734"
+    ],
+    "2.4.1.(2).bone_implant_no_pay_default": [
+      "C000742"
+    ],
+    "2.4.1.(2).bone_implant_exception_board_report": [
+      "C000747"
+    ],
+    "2.4.1.(3).prosthesis_4yr_renewal_cap": [
+      "C000748"
+    ],
+    "2.4.1.(4a).orthodontics_over_18_no_pay": [
+      "C000752"
+    ],
+    "2.4.1.A.(1).public_facility_ek2c_pricing": [
+      "C000760"
+    ],
+    "2.4.1.A.(2).disabled_special_needs_2x_pricing": [
+      "C000762"
+    ],
+    "2.4.1.B-1.(1).private_uncontracted_dental_no_pay": [
+      "C000791"
+    ],
+    "2.4.1.B-2.(4).private_disabled_2x_pricing": [
+      "C000807"
+    ],
+    "2.4.1.B-3.(1).treating_physician_continuity": [
+      "C000812"
+    ]
+  }
+}

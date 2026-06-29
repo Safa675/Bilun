@@ -1,0 +1,221 @@
+{
+  "manifest_version": "t1-v1",
+  "rule_set_id": "treatment_pricing_2_4",
+  "rules_in_json": 39,
+  "encoded_clause_ids": [
+    "C000864",
+    "C000876",
+    "C000884",
+    "C000927",
+    "C000938",
+    "C000939",
+    "C000940",
+    "C000944",
+    "C000953",
+    "C000954",
+    "C000955",
+    "C000964",
+    "C000968",
+    "C001014",
+    "C001017",
+    "C001018",
+    "C001065",
+    "C001071",
+    "C001072",
+    "C001087",
+    "C001102",
+    "C001109",
+    "C001110",
+    "C001119",
+    "C001120",
+    "C001127",
+    "C001128",
+    "C001129",
+    "C001208",
+    "C001215",
+    "C001216",
+    "C001242",
+    "C001261",
+    "C001296",
+    "C001297",
+    "C001298",
+    "C001300",
+    "C001331",
+    "C001338",
+    "C001340",
+    "C001345",
+    "C001346",
+    "C001349",
+    "C001366"
+  ],
+  "gate_b_sources_encoded": [
+    "C000864",
+    "C000876",
+    "C000884",
+    "C000927",
+    "C000938",
+    "C000939",
+    "C000940",
+    "C000944",
+    "C000953",
+    "C000954",
+    "C000955",
+    "C000964",
+    "C000968",
+    "C001014",
+    "C001017",
+    "C001018",
+    "C001065",
+    "C001071",
+    "C001072",
+    "C001087",
+    "C001102",
+    "C001109",
+    "C001110",
+    "C001119",
+    "C001120",
+    "C001127",
+    "C001128",
+    "C001129",
+    "C001208",
+    "C001215",
+    "C001216",
+    "C001242",
+    "C001261",
+    "C001296",
+    "C001297",
+    "C001298",
+    "C001300",
+    "C001331",
+    "C001338",
+    "C001340",
+    "C001345",
+    "C001346",
+    "C001349",
+    "C001366"
+  ],
+  "gate_b_sources_by_rule": {
+    "2.4.4.A.(3).eswl_session_cap_6mo": [
+      "C000864"
+    ],
+    "2.4.4.B.(8).sudden_hearing_loss_20session_cap": [
+      "C000876"
+    ],
+    "2.4.4.C.(2).radiosurgery_ek2c_conditional": [
+      "C000884"
+    ],
+    "2.4.4.D-1.(7).hemodialysis_ek2c_pricing": [
+      "C000938"
+    ],
+    "2.4.4.D-1.(8).hemodialysis_consumables_reuse_prohibited": [
+      "C000939"
+    ],
+    "2.4.4.D-1.(9).private_dialysis_session_cap_excess": [
+      "C000940"
+    ],
+    "2.4.4.D-1.(11).hemodialysis_bundled_tests_no_separate_bill": [
+      "C000944"
+    ],
+    "2.4.4.D-1.(6).home_hemodialysis_ek2c_pricing": [
+      "C000953"
+    ],
+    "2.4.4.D-1.(7ev).home_hemodialysis_device_no_pay": [
+      "C000954"
+    ],
+    "2.4.4.D-1.(8ev).home_hemodialysis_session_cap_excess": [
+      "C000955"
+    ],
+    "2.4.4.D-2.(2).apd_device_no_pay": [
+      "C000964"
+    ],
+    "2.4.4.E.(2).angio_ptca_same_session_25pct": [
+      "C000968"
+    ],
+    "2.4.4.F-2.(4).physio_session_cap_per_day": [
+      "C001014"
+    ],
+    "2.4.4.F-2.(7).physio_start_within_15d": [
+      "C001017"
+    ],
+    "2.4.4.F-2.(8).physio_report_modification_5d": [
+      "C001018"
+    ],
+    "2.4.4.F-4.(4).eswt_no_combo_with_physio": [
+      "C001065"
+    ],
+    "2.4.4.F-5.(3).robotic_rehab_ek2c_pricing": [
+      "C001071"
+    ],
+    "2.4.4.F-5.(4).robotic_rehab_no_combo": [
+      "C001072"
+    ],
+    "2.4.4.F-6.(3).sport_hydro_physio_p915030": [
+      "C001087"
+    ],
+    "2.4.4.G-1.tier3_public_facility_only": [
+      "C001102",
+      "C001109",
+      "C001110"
+    ],
+    "2.4.4.G-2.tier3_public_facility_only": [
+      "C001119",
+      "C001120",
+      "C001127",
+      "C001128"
+    ],
+    "2.4.4.G-2.(3).elective_genetic_test_no_pay": [
+      "C001129"
+    ],
+    "2.4.4.H.(3).pacu_no_icu_bill": [
+      "C001208"
+    ],
+    "2.4.4.H.(7).same_day_multi_level_one_icu_fee": [
+      "C001215"
+    ],
+    "2.4.4.H.(8).icu_admission_discharge_fee_for_service": [
+      "C001216"
+    ],
+    "2.4.4.I.(3).ophthalmology_15d_same_specialty_bundle": [
+      "C001242"
+    ],
+    "2.4.4.I-1.(1).ivf_ek2c_package_price": [
+      "C001296"
+    ],
+    "2.4.4.I-1.(2).ivf_age40_no_pay": [
+      "C001261"
+    ],
+    "2.4.4.I-1.(2).ivf_freezing_ek2b": [
+      "C001297"
+    ],
+    "2.4.4.I-1.(3).ivf_cancellation_10pct_discount": [
+      "C001298"
+    ],
+    "2.4.4.I-1.(5).ivf_multi_embryo_multi_birth_no_pay": [
+      "C001300"
+    ],
+    "2.4.4.J.(3).thermal_unlicensed_no_pay": [
+      "C001331"
+    ],
+    "2.4.4.K.(1).palliative_accreditation_required": [
+      "C001338"
+    ],
+    "2.4.4.K.(3).palliative_non_accredited_bed_no_pay": [
+      "C001340"
+    ],
+    "2.4.4.K.(5).palliative_p560000_once_per_day": [
+      "C001345"
+    ],
+    "2.4.4.K.(6).palliative_ek2c_procedure_same_day_no_double": [
+      "C001346"
+    ],
+    "2.4.4.K.(7).palliative_bundled_no_separate_bill": [
+      "C001349"
+    ],
+    "2.4.4.N.(1).eb_wound_care_3rd_step_public": [
+      "C001366"
+    ],
+    "2.4.4.C-c.(5).photopheresis_ek2b_pricing": [
+      "C000927"
+    ]
+  }
+}
