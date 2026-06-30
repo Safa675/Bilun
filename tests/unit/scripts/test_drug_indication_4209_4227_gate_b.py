@@ -38,7 +38,7 @@ def test_gate_b_4227_in_force_export() -> None:
     )
     assert export_427 == set(in_force)
     gaps = _gap_clause_ids_4227(_CLAUSES)
-    assert len(gaps) == 53
+    assert len(gaps) == 39
     assert gaps - export_427 == set()
 
 

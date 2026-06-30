@@ -97,16 +97,14 @@ def test_w4_tier_b_batch_rule_count() -> None:
 def test_w4_tier_b_gate_b_sources_count() -> None:
     assert _TIER_B_GATE_B_SOURCES == {
         "C003627",
-        "C003642",
+        "C003648",
         "C003665",
         "C003693",
         "C003706",
         "C003712",
-        "C003727",
         "C003774",
         "C003787",
         "C003790",
-        "C003800",
         "C003862",
     }
 

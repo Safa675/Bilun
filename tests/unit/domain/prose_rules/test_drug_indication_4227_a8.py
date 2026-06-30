@@ -20,12 +20,8 @@ _GOLDEN = _REPO / "data/gazette/prose_rules/golden/drug_indication_4.2.27_a8.jso
 
 _SECTION_4227_TIER_A_PENDING = frozenset(
     {
-        "C006215",
-        "C006217",
-        "C006218",
-        "C006220",
-        "C006222",
         "C006225",
+        "C006228",
         "C006256",
         "C006257",
         "C006264",

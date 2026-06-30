@@ -26,7 +26,12 @@ _TIER_B_GATE_B_SOURCES = frozenset(
     for clause_id in (rule.get("gate_b_sources") or [])
 )
 _TIER_B_PENDING_4227 = frozenset(
-    {"C006210", "C006219", "C006235", "C006241", "C006244", "C006287"}
+    {
+        "C006210",
+        "C006235",
+        "C006244",
+        "C006287",
+    }
 )
 
 

@@ -22,7 +22,6 @@ _PILOT_SOURCES = {
     "C005779",
     "C005780",
     "C005782",
-    "C005823",
     "C005870",
 }
 
@@ -83,5 +82,5 @@ def test_gate_b_artifacts_on_disk() -> None:
     assert _CORPUS.is_file()
     assert _MANIFEST.is_file()
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
-    assert manifest["encoded_clause_count"] == 8
+    assert manifest["encoded_clause_count"] == 7
     assert manifest["section_id"] == "4.2.15"

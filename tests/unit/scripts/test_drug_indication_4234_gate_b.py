@@ -85,5 +85,5 @@ def test_gate_b_artifacts_on_disk() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     assert manifest["section_clause_total"] == 48
     assert manifest["tier_a_pending_count"] == 0
-    assert manifest["encoded_clause_count"] == 6
-    assert manifest["tier_c_deferred_count"] == 42
+    assert manifest["encoded_clause_count"] == 18
+    assert manifest["tier_c_deferred_count"] == 32

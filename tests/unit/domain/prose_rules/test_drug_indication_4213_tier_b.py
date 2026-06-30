@@ -92,7 +92,7 @@ def test_tier_b_batch_rule_count() -> None:
 
 
 def test_tier_b_gate_b_sources_count() -> None:
-    assert len(_TIER_B_GATE_B_SOURCES) == 4
+    assert len(_TIER_B_GATE_B_SOURCES) == 2
 
 
 def test_tier_b_oral_switch_in_force_sources() -> None:

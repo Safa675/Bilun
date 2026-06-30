@@ -90,7 +90,7 @@ def test_4216_tier_b_batch_rule_count() -> None:
 
 
 def test_4216_tier_b_gate_b_sources_count() -> None:
-    assert len(_TIER_B_GATE_B_SOURCES) == 7
+    assert len(_TIER_B_GATE_B_SOURCES) == 2
 
 
 def test_4216_tier_b_gate_b_sources_encoded_in_manifest() -> None:

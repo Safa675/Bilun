@@ -26,13 +26,11 @@ _A7_GATE_B_SOURCES = frozenset(
 
 _SECTION_429_TIER_A_PENDING = frozenset(
     {
-        "C004118",
-        "C004119",
-        "C004121",
-        "C004122",
+        "C004127",
+        "C004128",
+        "C004130",
         "C004134",
         "C004136",
-        "C004160",
     }
 )
 

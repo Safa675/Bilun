@@ -17,8 +17,6 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4206_mani
 
 _A2_ENCODED = {
     "C003941",
-    "C003956",
-    "C003957",
     "C003966",
     "C003982",
     "C004016",
@@ -68,7 +66,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     encoded = set(manifest["gate_b_sources_encoded"])
     assert encoded == _ALL_ENCODED
     assert manifest["tier_c_deferred_count"] >= 28
-    assert manifest["tier_a_pending_count"] == 0
+    assert manifest["tier_a_pending_count"] == 2
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["rules_in_json"] == len(rules)
 

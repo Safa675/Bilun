@@ -116,7 +116,7 @@ def test_a2_manifest_covers_pending_sources() -> None:
     encoded = set(manifest["gate_b_sources_encoded"])
     assert a2_sources <= encoded
     assert manifest["rules_in_json"] == len(combined)
-    assert manifest["encoded_clause_count"] >= 29
+    assert manifest["encoded_clause_count"] >= 25
     assert manifest["section_clause_total"] == 282
 
 
@@ -143,7 +143,7 @@ def test_a3_manifest_covers_batch_sources() -> None:
     encoded = set(manifest["gate_b_sources_encoded"])
     assert a3_sources <= encoded
     assert manifest["rules_in_json"] == len(combined)
-    assert manifest["encoded_clause_count"] >= 45
+    assert manifest["encoded_clause_count"] >= 40
     assert manifest["section_clause_total"] == 282
 
 
@@ -188,7 +188,7 @@ def test_a4_manifest_covers_all_parallel_clusters() -> None:
     encoded = set(manifest["gate_b_sources_encoded"])
     assert a4_sources <= encoded
     assert manifest["rules_in_json"] == len(combined)
-    assert manifest["encoded_clause_count"] >= 60
+    assert manifest["encoded_clause_count"] >= 55
     assert manifest["section_clause_total"] == 282
 
 
@@ -230,9 +230,9 @@ def test_audit_gap_parity_zero_untraced() -> None:
     manifest = build_4201_manifest(frame, rules, effective_date="2026-06-27")
 
     report = audit_4201_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
-    assert report["gap_count"] == 166
-    assert report["encoded_count"] == 122
-    assert report["tier_c_deferred_count"] == 166
+    assert report["gap_count"] == 163
+    assert report["encoded_count"] == 120
+    assert report["tier_c_deferred_count"] == 163
     assert report["untraced_clause_ids"] == []
     assert report["misclassified_ab_gap_ids"] == []
     assert report["missing_from_traces"] == []

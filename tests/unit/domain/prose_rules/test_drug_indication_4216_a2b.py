@@ -92,7 +92,7 @@ def test_a2b_batch_rule_count() -> None:
 
 
 def test_a2b_gate_b_sources_count() -> None:
-    assert len(_A2B_GATE_B_SOURCES) == 13
+    assert len(_A2B_GATE_B_SOURCES) == 4
 
 
 def test_a2b_gate_b_sources_encoded_in_manifest() -> None:

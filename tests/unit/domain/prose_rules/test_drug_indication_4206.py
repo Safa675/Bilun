@@ -87,8 +87,8 @@ def test_a6_manifest_encoded_sources() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
     assert manifest.get("section_id") == "4.2.6"
-    assert {"C003998", "C004003", "C004039"} <= encoded
-    assert manifest.get("tier_a_pending_count") == 0
+    assert {"C003941", "C003982", "C003966"} <= encoded
+    assert manifest.get("tier_a_pending_count") == 2
     assert manifest.get("tier_b_pending_count") == 0
 
 

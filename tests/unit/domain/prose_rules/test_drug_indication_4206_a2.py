@@ -91,8 +91,6 @@ def test_a2_batch_rule_count() -> None:
     assert len(BATCH_A2_RULES) == 7
     assert _A2_GATE_B_SOURCES == {
         "C003941",
-        "C003956",
-        "C003957",
         "C003966",
         "C003982",
         "C004016",

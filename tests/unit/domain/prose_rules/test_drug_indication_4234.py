@@ -102,8 +102,8 @@ def test_ms4234_manifest_template_on_disk() -> None:
     assert manifest.get("section_id") == "4.2.34"
     assert manifest.get("section_clause_total") == 48
     assert manifest.get("tier_a_pending_count") == 0
-    assert manifest.get("encoded_clause_count") == 6
-    assert manifest.get("tier_c_deferred_count") == 42
+    assert manifest.get("encoded_clause_count") == 18
+    assert manifest.get("tier_c_deferred_count") == 32
 
 
 @pytest.mark.parametrize(

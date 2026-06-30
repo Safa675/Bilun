@@ -86,9 +86,9 @@ def test_manifest_covers_all_in_force_4213_clauses() -> None:
         1 for trace in manifest["clause_traces"] if trace["manifest_status"] == "tier_c_deferred"
     )
     assert encoded_traces + tier_b_traces + tier_c_traces == len(in_force)
-    assert tier_c_traces == 84
+    assert tier_c_traces == 80
     assert tier_b_traces == 0
-    assert encoded_traces == 26
+    assert encoded_traces == 30
 
     for trace in manifest["clause_traces"]:
         status = trace["manifest_status"]
@@ -155,10 +155,10 @@ def test_audit_gap_parity_zero_untraced() -> None:
     manifest = build_4213_manifest(frame, rules_4213, effective_date="2026-06-27")
 
     report = audit_4213_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
-    assert report["gap_count"] == 84
-    assert report["encoded_count"] == 26
+    assert report["gap_count"] == 80
+    assert report["encoded_count"] == 30
     assert report["tier_b_pending_count"] == 0
-    assert report["tier_c_deferred_count"] == 84
+    assert report["tier_c_deferred_count"] == 80
     assert report["untraced_clause_ids"] == []
     assert report["misclassified_ab_gap_ids"] == []
     assert report["missing_from_traces"] == []

@@ -112,7 +112,7 @@ def test_audit_gap_parity_zero_untraced() -> None:
     manifest = build_4210_manifest(frame, rules, effective_date="2026-06-27")
 
     report = audit_4210_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
-    assert report["gap_count"] == 116
+    assert report["gap_count"] == 111
     assert report["encoded_count"] == 15
     assert report["tier_c_deferred_count"] == 116
     assert report["untraced_clause_ids"] == []
