@@ -72,3 +72,7 @@ logs/
 
 # Stray root lockfile (no root package.json; real one is frontend/package-lock.json)
 /package-lock.json
+
+# TypeScript incremental build cache (regenerated every build; no source value)
+*.tsbuildinfo
+
