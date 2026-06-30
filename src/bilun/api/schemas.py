@@ -974,6 +974,10 @@ class RuleClause(BaseModel):
     section_path: str | None = None
     chapter: str | None = None
     clause_type: str | None = None
+    clause_number: int | None = None
+    clause_letter: str | None = None
+    clause_coordinate: str | None = None
+    is_heading: bool = False
     text_tr: str | None = None
     annex_refs: list[str] = Field(default_factory=list)
     procedure_codes: list[str] = Field(default_factory=list)

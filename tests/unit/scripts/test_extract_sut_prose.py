@@ -10,7 +10,9 @@ import pandas as pd
 import pytest
 
 from scripts.sut.prose.extractor import (
+    _build_clause_coordinate,
     _extract_annex_refs,
+    _extract_clause_coordinate,
     _extract_percentages,
     _extract_procedure_codes,
     _extract_sut_section_refs,
@@ -87,6 +89,31 @@ class TestParsingHelpers:
         refs = _extract_sut_section_refs(text)
         assert "2.2(5)" in refs
 
+    def test_extract_clause_coordinate_fikra(self) -> None:
+        assert _extract_clause_coordinate("(3) Bu hüküm uygulanır.") == (3, None)
+
+    def test_extract_clause_coordinate_bent(self) -> None:
+        assert _extract_clause_coordinate("a) Birinci bent metni") == (None, "a")
+
+    def test_extract_clause_coordinate_uppercase_bent_lowered(self) -> None:
+        # _BENT_RE uses IGNORECASE; the letter is normalized to lowercase.
+        assert _extract_clause_coordinate("A) Birinci bent metni") == (None, "a")
+
+    def test_extract_clause_coordinate_none_for_prose_and_headings(self) -> None:
+        assert _extract_clause_coordinate("Genel Hükümler") == (None, None)
+        # Numbered items ("1) ...") are now real clauses and DO carry a number.
+        assert _extract_clause_coordinate("1) Numaralı liste maddesi") == (1, None)
+        assert _extract_clause_coordinate("(Değişik: 12.04.2026) metin") == (None, None)
+
+    def test_build_clause_coordinate_combines_section_number_letter(self) -> None:
+        assert _build_clause_coordinate("3.3.3.A", 1, "a") == "3.3.3.A.(1).a"
+        assert _build_clause_coordinate("3.3.3.A", 1, None) == "3.3.3.A.(1)"
+        assert _build_clause_coordinate("3.3.3.A", None, "b") == "3.3.3.A.b"
+
+    def test_build_clause_coordinate_null_when_empty(self) -> None:
+        assert _build_clause_coordinate(None, None, None) is None
+        assert _build_clause_coordinate(None, 1, None) == "(1)"
+
 
 @pytest.mark.skipif(not _ACTIVE_DOCX, reason="consolidated SUT docx not present")
 class TestDocxExtraction:
@@ -112,6 +139,43 @@ class TestDocxExtraction:
             "source_effective_date",
         }
         assert required.issubset(clauses.columns)
+
+    def test_clause_coordinate_columns_present(self, clauses: pd.DataFrame) -> None:
+        assert {"clause_number", "clause_letter", "clause_coordinate"}.issubset(
+            clauses.columns
+        )
+
+    def test_fikra_rows_carry_clause_number(self, clauses: pd.DataFrame) -> None:
+        fikra = clauses[clauses["clause_type"] == "fikra"]
+        assert not fikra.empty
+        # Every fikra must have a parsed integer clause_number.
+        assert fikra["clause_number"].notna().all()
+        assert fikra["clause_number"].dtype.kind in {"i", "u"}
+        # Fıkra never carries a bent letter.
+        assert fikra["clause_letter"].isna().all()
+        # The coordinate string contains the parsed number in parentheses.
+        first = fikra.iloc[0]
+        assert f"({int(first['clause_number'])})" in first["clause_coordinate"]
+
+    def test_bent_rows_carry_clause_letter(self, clauses: pd.DataFrame) -> None:
+        bent = clauses[clauses["clause_type"] == "bent"]
+        assert not bent.empty
+        assert bent["clause_letter"].notna().all()
+        # Bent carries a single lowercase Turkish letter, no number.
+        assert bent["clause_number"].isna().all()
+        sample = bent["clause_letter"].dropna().astype(str)
+        assert sample.str.len().eq(1).all()
+        assert sample.str.fullmatch(r"[a-zçğıöşü]").all()
+
+    def test_headings_and_prose_have_null_coordinate_parts(
+        self, clauses: pd.DataFrame
+    ) -> None:
+        for ct in ("section_heading", "chapter", "amendment"):
+            rows = clauses[clauses["clause_type"] == ct]
+            if rows.empty:
+                continue
+            assert rows["clause_number"].isna().all(), f"{ct} should have null number"
+            assert rows["clause_letter"].isna().all(), f"{ct} should have null letter"
 
     def test_in_force_subset_of_rows(self, clauses: pd.DataFrame) -> None:
         assert clauses["is_in_force"].sum() < len(clauses)

@@ -480,6 +480,10 @@ export interface RuleClause {
   section_path: string | null;
   chapter: string | null;
   clause_type: string | null;
+  clause_number: number | null;
+  clause_letter: string | null;
+  clause_coordinate: string | null;
+  is_heading: boolean;
   text_tr: string | null;
   annex_refs: string[];
   procedure_codes: string[];
@@ -539,6 +543,10 @@ export interface ClauseCoverageSummary {
   algorithmic_gaps: number;
   algorithmic_gap_pct: number;
   top_gap_categories: TopGapCategory[];
+  clause_type_breakdown: Record<string, number>;
+  numbered_clause_count: number;
+  prose_clause_count: number;
+  structural_clause_count: number;
 }
 
 export interface ZeroClauseMatch {
@@ -748,6 +756,7 @@ export async function listClauses(
     has_encoding?: boolean;
     primary_rule_id?: string;
     exclude_non_algorithmic?: boolean;
+    exclude_headings?: boolean;
   },
   options?: RequestInit,
 ): Promise<SectionClausesResponse> {
@@ -760,6 +769,7 @@ export async function listClauses(
   if (params?.has_encoding !== undefined) qs.set("has_encoding", String(params.has_encoding));
   if (params?.primary_rule_id) qs.set("primary_rule_id", params.primary_rule_id);
   if (params?.exclude_non_algorithmic) qs.set("exclude_non_algorithmic", "true");
+  if (params?.exclude_headings) qs.set("exclude_headings", "true");
   const query = qs.toString();
   return requestJSON<SectionClausesResponse>(
     `/api/rules/clauses${query ? `?${query}` : ""}`,

@@ -45,7 +45,7 @@ from src.bilun.domain.sut.embeddings import (  # noqa: E402
 )
 
 # Clause types that carry answerable regulatory prose.
-_EMBEDDABLE_TYPES = ("fikra", "bent", "prose", "amendment")
+_EMBEDDABLE_TYPES = ("fikra", "bent", "numbered_item", "prose", "amendment")
 
 
 def _content_hash(text: str) -> str:

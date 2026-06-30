@@ -103,10 +103,19 @@ class TestClauseDrilldown:
             "matched_rule_ids",
             "has_algorithmic_gap",
             "has_rule_encoding",
+            "clause_type",
+            "clause_number",
+            "clause_letter",
+            "clause_coordinate",
+            "is_heading",
         ):
             assert key in first
         assert isinstance(first["annex_refs"], list)
         assert isinstance(first["matched_rule_ids"], list)
+        # is_heading must agree with the structural clause_type values.
+        assert first["is_heading"] == (
+            first["clause_type"] in {"section_heading", "chapter"}
+        )
 
     def test_primary_clauses_sorted_first(self) -> None:
         clauses, _ = rc.get_rule_clauses("copay_rate_ek2c1")
@@ -233,6 +242,35 @@ class TestCoverageSummary:
         assert summary["registry"]["total_rules"] == len(RULE_REGISTRY)
         assert sum(s["count"] for s in summary["registry"]["by_status"]) == len(RULE_REGISTRY)
         assert summary["meta"]["generated_at"] is not None
+
+    @_needs_coverage
+    def test_coverage_summary_exposes_clause_type_breakdown(self) -> None:
+        summary = rc.coverage_summary()
+        clauses = summary["clauses"]
+        # The breakdown separates numbered clauses from prose + structural.
+        breakdown = clauses["clause_type_breakdown"]
+        assert isinstance(breakdown, dict)
+        # Real numbered clauses (fikra/bent) must be present.
+        assert breakdown.get("fikra", 0) > 0
+        assert breakdown.get("bent", 0) > 0
+        # Structural scaffolding must be present.
+        assert breakdown.get("section_heading", 0) > 0
+        # The roll-up counts are consistent with the breakdown and the total.
+        total = clauses["total_extracted"]
+        assert (
+            clauses["numbered_clause_count"]
+            + clauses["prose_clause_count"]
+            + clauses["structural_clause_count"]
+            <= total
+        )
+        assert clauses["numbered_clause_count"] == (
+            breakdown.get("fikra", 0)
+            + breakdown.get("bent", 0)
+            + breakdown.get("numbered_item", 0)
+        )
+        assert clauses["structural_clause_count"] == (
+            breakdown.get("section_heading", 0) + breakdown.get("chapter", 0)
+        )
 
     @_needs_coverage
     def test_coverage_summary_exposes_zero_clause_matches(self) -> None:

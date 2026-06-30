@@ -120,6 +120,7 @@ def list_all_clauses(
     has_encoding: bool | None = None,
     primary_rule_id: str | None = None,
     exclude_non_algorithmic: bool = False,
+    exclude_headings: bool = False,
 ):
     """Search across all in-force SUT clauses (global Hükümler browser)."""
     if page < 1:
@@ -137,6 +138,7 @@ def list_all_clauses(
         has_encoding=has_encoding,
         primary_rule_id=primary_rule_id,
         exclude_non_algorithmic=exclude_non_algorithmic,
+        exclude_headings=exclude_headings,
         limit=per_page,
         offset=offset,
     )

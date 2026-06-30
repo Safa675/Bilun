@@ -84,6 +84,9 @@ def _has_actionable_signal(row: pd.Series) -> bool:
     # deontic or annex signals — fixes C000002 false missing/gap.
     if clause_type in {"chapter", "section_heading", "amendment", "prose"}:
         return has_normative_or_annex
+    # numbered_item falls through here (not in either set). Its result is
+    # `has_normative_or_annex` — identical to the prose branch above — so the
+    # reclassification from prose is behavior-preserving for coverage gating.
     return bool(has_normative_or_annex or clause_type in {"fikra", "bent"})
 
 

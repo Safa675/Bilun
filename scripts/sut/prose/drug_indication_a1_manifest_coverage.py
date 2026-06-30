@@ -122,7 +122,7 @@ def _is_non_actionable_row(row: dict[str, Any]) -> bool:
     if clause_type == "bent" and not deontic:
         return True
     text = str(row.get("text_tr") or "").strip()
-    if clause_type == "prose" and len(text) < 40 and not deontic:
+    if clause_type in {"prose", "numbered_item"} and len(text) < 40 and not deontic:
         return True
     return False
 

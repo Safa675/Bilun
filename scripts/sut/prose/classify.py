@@ -190,7 +190,7 @@ def _fallback_rule_id(
     if clause_type in {"chapter", "amendment"} and not deontic_modality:
         return None
 
-    if deontic_modality and clause_type in {"fikra", "bent", "prose"}:
+    if deontic_modality and clause_type in {"fikra", "bent", "numbered_item", "prose"}:
         return "material_bundling_prose" if deontic_modality in {"MUST_NOT_BILL", "NO_PAY"} else None
 
     return None

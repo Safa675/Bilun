@@ -153,9 +153,15 @@ function UtilizationChip({ clause }: { clause: RuleClause }) {
 function GlossaryStrip({
   clauseCount,
   ruleEngineCount,
+  numberedClauseCount,
+  proseClauseCount,
+  structuralClauseCount,
 }: {
   clauseCount: number;
   ruleEngineCount: number;
+  numberedClauseCount: number;
+  proseClauseCount: number;
+  structuralClauseCount: number;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -219,6 +225,13 @@ function GlossaryStrip({
             <dt className="font-semibold text-[var(--text-primary)]">Hüküm</dt>
             <dd>
               {t("sections.ruleDatabase.coverage.glossary.hukum", { count: fmtNum(clauseCount) })}
+            </dd>
+            <dd className="mt-1 text-[var(--text-muted)]">
+              {t("sections.ruleDatabase.coverage.glossary.hukumTurleri", {
+                numbered: fmtNum(numberedClauseCount),
+                prose: fmtNum(proseClauseCount),
+                structural: fmtNum(structuralClauseCount),
+              })}
             </dd>
           </div>
           <div>
@@ -473,6 +486,9 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
       <GlossaryStrip
         clauseCount={clauses.total_extracted}
         ruleEngineCount={registry.total_rules}
+        numberedClauseCount={clauses.numbered_clause_count ?? 0}
+        proseClauseCount={clauses.prose_clause_count ?? 0}
+        structuralClauseCount={clauses.structural_clause_count ?? 0}
       />
 
       <div className="grid grid-cols-2 gap-6">
@@ -995,6 +1011,7 @@ function ClauseBrowserPanel({
   const [gapFilter, setGapFilter] = useState(false);
   const [encodingFilter, setEncodingFilter] = useState(false);
   const [hideReferans, setHideReferans] = useState(true);
+  const [hideHeadings, setHideHeadings] = useState(true);
   const [ruleFilter, setRuleFilter] = useState<string>("");
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<SectionClausesResponse | null>(null);
@@ -1040,7 +1057,7 @@ function ClauseBrowserPanel({
   // Reset to page 1 on any filter change.
   useEffect(() => {
     setPage(1);
-  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, ruleFilter, hideReferans]);
+  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, ruleFilter, hideReferans, hideHeadings]);
 
   // Abort-aware fetch.
   useEffect(() => {
@@ -1061,6 +1078,7 @@ function ClauseBrowserPanel({
             has_encoding: encodingFilter || undefined,
             primary_rule_id: ruleFilter || undefined,
             exclude_non_algorithmic: hideReferans || undefined,
+            exclude_headings: hideHeadings || undefined,
           },
           { signal: controller.signal },
         );
@@ -1087,7 +1105,7 @@ function ClauseBrowserPanel({
       active = false;
       controller.abort();
     };
-  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, ruleFilter, hideReferans, page, t]);
+  }, [debouncedQuery, statusFilter, gapFilter, encodingFilter, ruleFilter, hideReferans, hideHeadings, page, t]);
 
   const clauses = result?.clauses ?? [];
   const totalPages = result?.total_pages ?? 0;
@@ -1131,6 +1149,15 @@ function ClauseBrowserPanel({
               }`}
             >
               {t("sections.ruleDatabase.clauses.filterHideReferans")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setHideHeadings((v) => !v)}
+              className={`sut-section-btn sut-section-btn-compact text-[11px] ${
+                hideHeadings ? "sut-section-btn-active" : ""
+              }`}
+            >
+              {t("sections.ruleDatabase.clauses.filterHideHeadings")}
             </button>
             <button
               type="button"

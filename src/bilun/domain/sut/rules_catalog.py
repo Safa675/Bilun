@@ -53,9 +53,13 @@ _CLAUSE_COLUMNS: tuple[str, ...] = (
     "section_path",
     "chapter",
     "clause_type",
+    "clause_number",
+    "clause_letter",
+    "clause_coordinate",
     "text_tr",
     "in_force_text",
     "is_in_force",
+    "is_heading",
     "annex_refs",
     "procedure_codes",
     "percentages",
@@ -645,6 +649,10 @@ def coverage_summary() -> dict[str, Any]:
                 "algorithmic_gaps": 0,
                 "algorithmic_gap_pct": 0.0,
                 "top_gap_categories": [],
+                "clause_type_breakdown": {},
+                "numbered_clause_count": 0,
+                "prose_clause_count": 0,
+                "structural_clause_count": 0,
             },
             "partial_engines": {},
             "gap_composition": {
@@ -711,6 +719,31 @@ def coverage_summary() -> dict[str, Any]:
         else 0
     )
     algorithmic_gap_pct = round(algorithmic_gaps / total_extracted * 100, 1) if total_extracted else 0.0
+
+    # Clause-type breakdown so the UI can separate real numbered clauses
+    # (fikra/bent) from prose paragraphs and structural scaffolding
+    # (section_heading/chapter). is_heading already exists on the coverage
+    # frame; clause_type may be absent on legacy artifacts.
+    clause_type_breakdown: dict[str, int] = {}
+    numbered_clause_count = 0
+    structural_clause_count = 0
+    prose_clause_count = 0
+    if "clause_type" in clause_frame.columns:
+        type_counts = (
+            clause_frame.group_by("clause_type")
+            .agg(pl.len().alias("count"))
+            .sort("count", descending=True)
+        )
+        for row in type_counts.iter_rows(named=True):
+            ct = row["clause_type"] or "unknown"
+            count = int(row["count"])
+            clause_type_breakdown[ct] = clause_type_breakdown.get(ct, 0) + count
+            if ct in {"fikra", "bent", "numbered_item"}:
+                numbered_clause_count += count
+            elif ct in {"section_heading", "chapter"}:
+                structural_clause_count += count
+            elif ct == "prose":
+                prose_clause_count += count
 
     top_gap_categories: list[dict[str, Any]] = []
     if "primary_rule_category" in clause_frame.columns:
@@ -780,6 +813,10 @@ def coverage_summary() -> dict[str, Any]:
             "algorithmic_gaps": algorithmic_gaps,
             "algorithmic_gap_pct": algorithmic_gap_pct,
             "top_gap_categories": top_gap_categories,
+            "clause_type_breakdown": clause_type_breakdown,
+            "numbered_clause_count": numbered_clause_count,
+            "prose_clause_count": prose_clause_count,
+            "structural_clause_count": structural_clause_count,
         },
         "partial_engines": {
             "drug_indication_prose": _drug_indication_partial_engine_summary(clause_frame),
@@ -1019,6 +1056,10 @@ def _clause_payload(row: dict[str, Any], rule_id: str) -> dict[str, Any]:
         "section_path": row.get("section_path"),
         "chapter": row.get("chapter"),
         "clause_type": row.get("clause_type"),
+        "clause_number": row.get("clause_number"),
+        "clause_letter": row.get("clause_letter"),
+        "clause_coordinate": row.get("clause_coordinate"),
+        "is_heading": bool(row.get("is_heading")),
         "text_tr": clause_display_text(row),
         "annex_refs": _json_list(row.get("annex_refs")),
         "procedure_codes": _json_list(row.get("procedure_codes")),
@@ -1138,6 +1179,7 @@ def list_clauses(
     has_encoding: bool | None = None,
     primary_rule_id: str | None = None,
     exclude_non_algorithmic: bool = False,
+    exclude_headings: bool = False,
     limit: int | None = None,
     offset: int = 0,
 ) -> tuple[list[dict[str, Any]], int]:
@@ -1174,6 +1216,14 @@ def list_clauses(
         frame = frame.filter(pl.col("primary_rule_id") == primary_rule_id)
     if exclude_non_algorithmic and frame.height > 0:
         frame = frame.filter(pl.col("coverage_status") != "non_algorithmic")
+    if exclude_headings and frame.height > 0:
+        # Drop structural scaffolding (section/chapter headings) so the browser
+        # shows only real rule clauses + prose. is_heading is propagated from
+        # the extractor; fall back to clause_type for legacy artifacts.
+        if "is_heading" in frame.columns:
+            frame = frame.filter(pl.col("is_heading") != True)  # noqa: E712
+        elif "clause_type" in frame.columns:
+            frame = frame.filter(~pl.col("clause_type").is_in(["section_heading", "chapter"]))
 
     if frame.height == 0:
         return [], 0

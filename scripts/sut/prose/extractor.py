@@ -9,7 +9,10 @@ Phase 1 output schema (sut_clauses.parquet):
   parent_section_id      — immediate parent section
   section_path           — full hierarchy joined by /
   chapter                — BIRINCI BOLUM, IKINCI BOLUM, ...
-  clause_type            — chapter | section_heading | fikra | bent | amendment | prose
+  clause_type            — chapter | section_heading | fikra | bent | numbered_item | amendment | prose
+  clause_number          — int | null — parsed fıkra number, e.g. (3) -> 3
+  clause_letter          — str | null — parsed bent letter, e.g. a) -> "a"
+  clause_coordinate      — str | null — section + number + letter, e.g. 3.3.3.A.(1).a
   text_tr                — legacy paragraph text (all runs joined; audit only)
   in_force_text          — yürürlükteki metin (non-strike runs only)
   is_in_force            — bool — len(in_force_text.strip()) > 0
@@ -368,7 +371,61 @@ def _classify_clause_type(
         return "fikra"
     if _BENT_RE.match(text):
         return "bent"
+    if _NUMBERED_ITEM_RE.match(text):
+        # Enumerated list items ("1) ...", "2) ...") are real clauses but use a
+        # different numbering convention than fıkra "(N)". Keep them distinct
+        # from stray-label prose so they can be matched/indented in the UI.
+        return "numbered_item"
     return "prose"
+
+
+def _extract_clause_coordinate(
+    text: str,
+) -> tuple[int | None, str | None]:
+    """Read the parsed fıkra number / bent letter from ``text``.
+
+    Mirrors the boolean checks in :func:`_classify_clause_type` but returns
+    capture group 1 instead of discarding it, so the row can carry the
+    explicit clause coordinate (``(3)`` -> ``(3, None)``, ``a)`` ->
+    ``(None, "a")``, ``2)`` -> ``(2, None)`` for numbered items). Returns
+    ``(None, None)`` for headings/prose/amendment.
+    """
+    fikra_match = _FIKRA_RE.match(text)
+    if fikra_match is not None:
+        return int(fikra_match.group(1)), None
+    bent_match = _BENT_RE.match(text)
+    if bent_match is not None:
+        return None, bent_match.group(1).lower()
+    # Numbered items ("1) ...") carry no capture group in _NUMBERED_ITEM_RE,
+    # so re-extract the leading integer to populate clause_number consistently.
+    numbered_match = _NUMBERED_ITEM_RE.match(text)
+    if numbered_match is not None:
+        digits = re.match(r"\d+", text)
+        if digits is not None:
+            return int(digits.group(0)), None
+    return None, None
+
+
+def _build_clause_coordinate(
+    section_id: str | None,
+    clause_number: int | None,
+    clause_letter: str | None,
+) -> str | None:
+    """Combine a section id with a clause number/letter into a coordinate.
+
+    e.g. section ``3.3.3.A``, fıkra ``1``, bent ``a`` -> ``3.3.3.A.(1).a``.
+    Returns None when there is neither a section nor a clause number/letter.
+    """
+    parts: list[str] = []
+    if section_id:
+        parts.append(section_id)
+    if clause_number is not None:
+        parts.append(f"({clause_number})")
+    if clause_letter is not None:
+        parts.append(clause_letter)
+    if not parts:
+        return None
+    return ".".join(parts)
 
 
 @dataclass
@@ -443,6 +500,10 @@ class SutClauseExtractor:
             clause_type = _classify_clause_type(
                 text, is_chapter, section_heading, is_amendment
             )
+            clause_number, clause_letter = _extract_clause_coordinate(text)
+            clause_coordinate = _build_clause_coordinate(
+                section_id, clause_number, clause_letter
+            )
 
             rows.append(
                 {
@@ -453,6 +514,9 @@ class SutClauseExtractor:
                     "section_path": section_path,
                     "chapter": self._chapter,
                     "clause_type": clause_type,
+                    "clause_number": clause_number,
+                    "clause_letter": clause_letter,
+                    "clause_coordinate": clause_coordinate,
                     "text_tr": text,
                     "in_force_text": in_force_text,
                     "is_in_force": is_in_force,
@@ -479,6 +543,10 @@ class SutClauseExtractor:
         frame = pd.DataFrame(rows)
         if frame.empty:
             return frame
+
+        # Keep clause_number as a proper nullable integer, not float64, so the
+        # parsed fıkra numbers survive the int|null mix as integers.
+        frame["clause_number"] = frame["clause_number"].astype("Int64")
 
         frame.insert(0, "clause_id", [f"C{i:06d}" for i in range(1, len(frame) + 1)])
         return frame
