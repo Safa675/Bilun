@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unicodedata
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
@@ -69,6 +70,11 @@ def _rule_tier_b_score(rule: dict[str, Any]) -> int:
         score += 15
     if _has_prior_therapy_requirement(rule):
         score += 15
+    # Board-report rules are more specific than generic coverage/dose rules —
+    # prefer them so the correct violation (missing_board_report) fires instead
+    # of a generic rule silently passing.
+    if rule.get("report_required"):
+        score += 8
     return score
 
 
@@ -354,12 +360,26 @@ def drug_indication_coverage_scope() -> dict[str, Any]:
 
 
 def _drug_name_matches(drug_name: str, rule_names: list[str]) -> bool:
+    """Match a billed drug name against a rule's INN tokens.
+
+    Uses word-boundary matching so short tokens like ``sama`` or ``saba`` do not
+    false-positive inside longer drug names (e.g. ``sama`` in ``fosamax``).
+    Drug names follow the SGK format ``"BRAND DOSE (INN)"`` where the INN is a
+    parenthesized or whitespace-delimited token, so a whole-word/whole-phrase
+    match is the correct semantics.
+    """
     normalized = _normalize_tr(drug_name)
     if not normalized:
         return False
     for inn in rule_names:
         token = _normalize_tr(inn)
-        if token and token in normalized:
+        if not token:
+            continue
+        # Build a regex that matches `token` only at a word boundary. Word
+        # boundaries here include start/end of string, whitespace, parentheses,
+        # and the + separator used in combo tokens like "saba+sama".
+        pattern = r"(?<![\w)])" + re.escape(token) + r"(?![\w(])"
+        if re.search(pattern, normalized):
             return True
     return False
 
