@@ -255,3 +255,36 @@ class TestProseInventoryEndpoint:
         first = model.engines[0]
         assert first.rule_set_id
         assert first.file_name.endswith(".json")
+
+    # Orphan rule JSONs (produced by encode-waves generators but with no
+    # runtime loader) must NOT appear as engines — otherwise the dashboard
+    # over-reports live rule counts. See _wired_prose_rule_filenames().
+    _ORPHAN_RULE_SETS = {
+        "definitions_2_6",
+        "dental_2_4_1",
+        "drug_combination_4_2",
+        "gap_closing_misc",
+        "gap_closing_treatment_2",
+        "treatment_pricing_2_4",
+    }
+
+    def test_excludes_orphan_engines_without_loaders(self) -> None:
+        payload = rules_route.get_prose_inventory()
+        listed = {e["rule_set_id"] for e in payload["engines"]}
+        leaked = listed & self._ORPHAN_RULE_SETS
+        assert not leaked, f"orphan engines without loaders leaked into inventory: {leaked}"
+
+    def test_wired_engines_present(self) -> None:
+        """The known-wired engines must still be listed after filtering."""
+        payload = rules_route.get_prose_inventory()
+        listed = {e["rule_set_id"] for e in payload["engines"]}
+        # Engines that load via a _RULES_PATH constant but are absent from
+        # registry domain_modules — the loader scan is what keeps them listed.
+        for required in {
+            "specialty_materials_prose",
+            "material_bundling_prose",
+            "payment_method_2_2",
+            "session_pricing_2_2_2_B",
+            "drug_indication_prose",
+        }:
+            assert required in listed, f"wired engine {required} missing from inventory"

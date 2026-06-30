@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import json
 import logging
+import re
+from functools import lru_cache
 from typing import Any
 
 import polars as pl
@@ -993,13 +995,69 @@ def list_sections(
 
 
 def _prose_rule_files() -> list[Path]:
-    """JSON prose rule engine files (excluding schema files)."""
+    """JSON prose rule engine files that are actually wired into the runtime.
+
+    A prose rule JSON is "wired" iff at least one runtime loader opens it OR
+    a ``RULE_REGISTRY`` entry names it in ``domain_modules``. Files that sit on
+    disk without a loader (orphan encode-waves artifacts) are excluded so the
+    inventory reflects engines that actually execute, not just files that exist.
+    Schema files (``*.schema.json``) are always excluded.
+    """
     if not _PROSE_RULES_DIR.exists():
         return []
+
+    wired_names = _wired_prose_rule_filenames()
     return sorted(
         p for p in _PROSE_RULES_DIR.glob("*.json")
-        if not p.name.endswith(".schema.json")
+        if not p.name.endswith(".schema.json") and p.name in wired_names
     )
+
+
+@lru_cache(maxsize=1)
+def _wired_prose_rule_filenames() -> frozenset[str]:
+    """Filenames of prose rule JSONs that have a runtime loader or registry entry.
+
+    Computed as the union of:
+    - JSONs named in any ``RuleRegistryEntry.domain_modules``; and
+    - JSONs opened by a ``_RULES_PATH``/``_PATH`` constant in the loader modules
+      under ``src/bilun/domain/prose_rules/`` and ``src/bilun/domain/materials/``.
+
+    The loader scan is necessary because 4 wired engines (specialty_materials,
+    material_bundling, payment_method, session_pricing) list only their ``.py``
+    in the registry, not the JSON — so the registry alone undercounts.
+    """
+    names: set[str] = set()
+
+    # (1) Registry-referenced JSONs.
+    for entry in RULE_REGISTRY:
+        for module in entry.domain_modules:
+            if module.endswith(".json") and "prose_rules/" in module:
+                names.add(Path(module).name)
+
+    # (2) Loader-opened JSONs (scan loader modules for bare prose_rules filenames).
+    loader_dirs = [
+        Path(__file__).resolve().parent.parent / "prose_rules",
+        Path(__file__).resolve().parent.parent / "materials",
+    ]
+    json_ref = re.compile(r'["\']([A-Za-z0-9_.\-]+\.json)["\']')
+    for loader_dir in loader_dirs:
+        if not loader_dir.is_dir():
+            continue
+        for py_file in loader_dir.glob("*.py"):
+            try:
+                text = py_file.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            for match in json_ref.finditer(text):
+                candidate = match.group(1)
+                # bare filename (no slash) = a JSON this loader opens directly.
+                if "/" not in candidate:
+                    names.add(candidate)
+
+    # Keep only names that actually exist in prose_rules/ (loader scan can pick
+    # up manifest/code-list filenames that live elsewhere).
+    existing = {p.name for p in _PROSE_RULES_DIR.glob("*.json")}
+    return frozenset(names & existing)
 
 
 def prose_inventory() -> dict[str, Any]:
