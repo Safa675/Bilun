@@ -2,7 +2,7 @@
   "rule_set_id": "specialty_materials_prose",
   "title": "SUT §3.3 specialty annex material prose (partial)",
   "effective_date": "2026-06-02",
-  "coverage_note": "L4.4 partial encode: 49 §3.3 prose rules (0 added, 3 source patches). §3.3.1–3.3.8 partial batches.",
+  "coverage_note": "L4.4 partial encode: 202 §3.3 prose rules (0 added, 0 source patches). §3.3.1–3.3.8 partial batches.",
   "sut_anchors": [
     "3.3.1",
     "3.3.11",
@@ -672,8 +672,7 @@
       "sut_section": "3.3.7.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C003072",
-        "C002225"
+        "C003072"
       ],
       "condition": {
         "wheelchair_stand_device_duplicate_billing": true
@@ -690,9 +689,7 @@
       "sut_section": "3.3.7.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C003073",
-        "C002208",
-        "C002226"
+        "C003073"
       ],
       "condition": {
         "stand_up_wheelchair_early_renewal": true
@@ -3619,5 +3616,5 @@
     }
   ],
   "rules_added": 52,
-  "rules_in_json": 101
+  "rules_in_json": 202
 }

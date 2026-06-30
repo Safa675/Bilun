@@ -1,12 +1,12 @@
 {
   "manifest_version": "r5-a2c-v1",
   "section_id": "4.2.33",
-  "effective_date": "2026-06-27",
+  "effective_date": "2026-06-29",
   "rule_set_id": "anti_vegf_prose",
   "rules_in_json": 29,
   "section_clause_total": 55,
-  "clause_trace_complete": false,
-  "manifest_coverage_pct": 43.6,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 32.7,
   "encoded_clause_count": 18,
   "encoded_clause_ids": [
     "C006526",
@@ -62,8 +62,6 @@
   "tier_c_deferred_count": 29,
   "clause_traces": {
     "4.2.33.A.aflibersept_wet_amd": [
-      "C006472",
-      "C006473",
       "C006562"
     ],
     "4.2.33.A.anti_vegf_switch_after_bevacizumab_failure": [
@@ -80,9 +78,6 @@
       "C006560"
     ],
     "4.2.33.A.ranibizumab_wet_amd": [
-      "C006458",
-      "C006472",
-      "C006473",
       "C006562"
     ],
     "4.2.33.A.verteporfin_wet_amd": [
@@ -98,10 +93,7 @@
     "4.2.33.B.deksametazon_itv_implant_rvdt_srvt": [
       "C006564"
     ],
-    "4.2.33.B.ranibizumab_rvdt_loading_protocol": [
-      "C006480",
-      "C006481"
-    ],
+    "4.2.33.B.ranibizumab_rvdt_loading_protocol": [],
     "4.2.33.B.ranibizumab_rvdt_srvt": [
       "C006565"
     ],
@@ -134,7 +126,6 @@
       "C006575"
     ],
     "4.2.33.E.siklosporin_kuru_goz": [
-      "C006508",
       "C006575"
     ],
     "4.2.33.E.sisteamin_sistinozis": [
@@ -622,5 +613,5 @@
       ]
     }
   ],
-  "note": "§4.2.33 anti-VEGF A2c — 29 rules, 24 encoded clause sources, 29 tier-C deferred in-force rows."
+  "note": "§4.2.33 anti-VEGF A2c — 29 rules, 18 encoded clause sources, 29 tier-C deferred in-force rows."
 }

@@ -1,40 +1,33 @@
 {
   "manifest_version": "r5-a6-v1",
   "section_id": "4.2.9,4.2.27",
-  "effective_date": "2026-06-27",
+  "effective_date": "2026-06-29",
   "rules_in_json": 30,
-  "section_4.2.9_clause_total": 58,
+  "section_4.2.9_clause_total": 59,
   "section_4.2.27_clause_total": 69,
   "section_4.2.9_tier_a_count": 13,
-  "section_4.2.9_tier_c_count": 41,
+  "section_4.2.9_tier_c_count": 42,
   "section_4.2.27_tier_a_count": 16,
   "section_4.2.27_tier_c_count": 49,
-  "section_clause_total": 127,
-  "encoded_clause_count": 36,
+  "section_clause_total": 128,
+  "encoded_clause_count": 29,
   "encoded_clause_ids": [
     "C004127",
     "C004128",
     "C004130",
     "C004131",
+    "C004134",
     "C004135",
+    "C004136",
     "C004137",
     "C004200",
     "C006210",
-    "C006215",
-    "C006217",
-    "C006218",
-    "C006219",
-    "C006220",
-    "C006222",
     "C006225",
     "C006227",
     "C006228",
-    "C006230",
     "C006232",
     "C006233",
     "C006235",
-    "C006239",
-    "C006241",
     "C006244",
     "C006246",
     "C006247",
@@ -54,25 +47,18 @@
     "C004128",
     "C004130",
     "C004131",
+    "C004134",
     "C004135",
+    "C004136",
     "C004137",
     "C004200",
     "C006210",
-    "C006215",
-    "C006217",
-    "C006218",
-    "C006219",
-    "C006220",
-    "C006222",
     "C006225",
     "C006227",
     "C006228",
-    "C006230",
     "C006232",
     "C006233",
     "C006235",
-    "C006239",
-    "C006241",
     "C006244",
     "C006246",
     "C006247",
@@ -116,6 +102,7 @@
     "C004141",
     "C004147",
     "C004148",
+    "C004151",
     "C004155",
     "C004157",
     "C004158",
@@ -196,7 +183,7 @@
   ],
   "tier_a_pending_count": 7,
   "tier_b_pending_count": 4,
-  "tier_c_deferred_count": 90,
+  "tier_c_deferred_count": 91,
   "clause_traces": [
     {
       "clause_id": "C004113",
@@ -442,6 +429,17 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C004151",
+      "section_id": "4.2.9.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Sevelamer ve lantanyum karbonat kombine olarak kullanılamaz.",
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -867,6 +865,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Acil müracaatlarda",
       "linked_rule_ids": [
+        "4.2.27.coagulation_emergency_one_day",
         "4.2.27.hemophilia_emergency_one_day"
       ]
     },
@@ -973,6 +972,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Kazanılmış (edinsel) koagülasyon bozukluklarında (K vitamini yetersizliği",
       "linked_rule_ids": [
+        "4.2.27.vitamin_k_acquired_coagulopathy_referral",
         "4.2.27.vitamin_k_emergency_one_day_no_report"
       ]
     },
@@ -1109,6 +1109,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "koagulasyon_faktoru",
       "linked_rule_ids": [
+        "4.2.27.prophylaxis_acute_bleed_3day_report",
         "4.2.27.vwf_acute_bleed_3day_report"
       ]
     },
@@ -1529,6 +1530,6 @@
   "section_4.2.27_gap_audit": {
     "untraced_before": 0,
     "untraced_after": 0,
-    "gap_count": 53
+    "gap_count": 39
   }
 }

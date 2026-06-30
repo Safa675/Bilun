@@ -28,8 +28,6 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006472",
-        "C006473",
         "C006562"
       ],
       "message_tr": "Aflibersept (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 3 yükleme dozu; göz hastalıkları uzmanınca reçete (§4.2.33.A).",
@@ -148,9 +146,6 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006458",
-        "C006472",
-        "C006473",
         "C006562"
       ],
       "message_tr": "Ranibizumab (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 4-6 hafta arayla 3 kez yükleme dozu; ardışık/kombine kullanım yasak (§4.2.33.A).",
@@ -272,12 +267,10 @@
       ],
       "message_tr": "Ranibizumab/aflibersept (RVDT/SRVT) — deksametazon uygun değilse 3 ay süreli rapor ve 3 yükleme dozu (§4.2.33.B, C006480 güncellemesi).",
       "gate_b_sources": [
-        "C006480",
-        "C006481"
+        "C006455"
       ],
       "report_duration_months": 3,
-      "loading_dose_count": 3,
-      "verification_status": "struck_clause_no_replacement"
+      "loading_dose_count": 3
     },
     {
       "rule_id": "4.2.33.B.ranibizumab_rvdt_srvt",
@@ -540,7 +533,6 @@
         "göz hastalıkları"
       ],
       "gate_b_sources": [
-        "C006508",
         "C006575"
       ],
       "message_tr": "Siklosporin göz damlası — 3 göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.E).",

@@ -13,9 +13,9 @@
       "primary_icd10": "N18.5",
       "report_present": true,
       "prescriber_specialty": "nefroloji",
-      "report_duration_months": 1,
       "expect_violation": null,
-      "rule_id": "4.2.9.esa_ckd_monthly_nephrology_report"
+      "rule_id": "4.2.9.esa_ckd_monthly_nephrology_report",
+      "report_duration_months": 1
     },
     {
       "drug_name": "ARANESP 40 MCG (DARBEPETIN)",
@@ -30,9 +30,9 @@
       "primary_icd10": "N18.5",
       "report_present": true,
       "report_duration_months": 1,
-      "prescriber_specialty": "nefroloji",
       "expect_violation": null,
-      "rule_id": "4.2.9.esa_ckd_monthly_nephrology_report"
+      "rule_id": "4.2.9.esa_ckd_monthly_nephrology_report",
+      "prescriber_specialty": "nefroloji"
     },
     {
       "drug_name": "BINOCRIT 4000 IU (EPOETIN ALFA)",
@@ -47,7 +47,8 @@
       "report_present": true,
       "prescriber_specialty": "hematoloji",
       "expect_violation": null,
-      "rule_id": "4.2.9.mds_esa_hematology_report"
+      "rule_id": "4.2.9.mds_esa_hematology_report",
+      "report_duration_months": 1
     },
     {
       "drug_name": "MIMPARA 30 MG (ETELCALCETIDE)",
@@ -61,7 +62,8 @@
       "primary_icd10": "N18.5",
       "report_present": null,
       "expect_violation": null,
-      "rule_id": "4.2.9.etelcalcetide_dialysis_ckd_only"
+      "rule_id": "4.2.9.etelcalcetide_dialysis_ckd_only",
+      "prescriber_specialty": "nefroloji"
     },
     {
       "drug_name": "HEMOFIL M 1000 IU (FACTOR VIII)",
@@ -75,7 +77,9 @@
       "primary_icd10": "D66",
       "report_present": true,
       "expect_violation": null,
-      "rule_id": "4.2.27.hemophilia_acute_bleed_report"
+      "rule_id": "4.2.27.hemophilia_acute_bleed_report",
+      "report_duration_months": 1,
+      "prescriber_specialty": "nefroloji"
     },
     {
       "drug_name": "NOVOSEVEN 1 MG (FACTOR VIIA)",
@@ -90,7 +94,8 @@
       "report_present": true,
       "prescriber_specialty": "hematoloji",
       "expect_violation": null,
-      "rule_id": "4.2.27.factor_seven_a_bleeding_board"
+      "rule_id": "4.2.27.factor_seven_a_bleeding_board",
+      "report_duration_months": 1
     },
     {
       "drug_name": "NOVOSEVEN 1 MG (FACTOR VIIA)",
@@ -106,7 +111,8 @@
       "report_present": true,
       "report_duration_months": 6,
       "expect_violation": null,
-      "rule_id": "4.2.27.apcc_prophylaxis_board"
+      "rule_id": "4.2.27.apcc_prophylaxis_board",
+      "prescriber_specialty": "nefroloji"
     },
     {
       "drug_name": "WILATE 500 IU (VON WILLEBRAND)",
@@ -121,14 +127,16 @@
       "report_present": true,
       "report_duration_months": 12,
       "expect_violation": null,
-      "rule_id": "4.2.27.vwf_factor_board_report"
+      "rule_id": "4.2.27.vwf_factor_board_report",
+      "prescriber_specialty": "nefroloji"
     },
     {
       "drug_name": "MICRHOGAM 300 MCG (ANTI-RH)",
       "primary_icd10": "O26.9",
       "report_present": null,
       "expect_violation": null,
-      "rule_id": "4.2.27.anti_rh_specialist_prescription"
+      "rule_id": "4.2.27.anti_rh_specialist_prescription",
+      "prescriber_specialty": "nefroloji"
     },
     {
       "drug_name": "MICRHOGAM 300 MCG (ANTI-RH)",

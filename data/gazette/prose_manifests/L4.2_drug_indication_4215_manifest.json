@@ -5,7 +5,7 @@
   "rules_in_json": 8,
   "section_4.2.15_clause_total": 59,
   "section_clause_total": 59,
-  "encoded_clause_count": 8,
+  "encoded_clause_count": 7,
   "encoded_clause_ids": [
     "C005776",
     "C005777",
@@ -13,7 +13,6 @@
     "C005779",
     "C005780",
     "C005782",
-    "C005823",
     "C005870"
   ],
   "gate_b_sources_encoded": [
@@ -23,7 +22,6 @@
     "C005779",
     "C005780",
     "C005782",
-    "C005823",
     "C005870"
   ],
   "tier_a_pending_clause_ids": [

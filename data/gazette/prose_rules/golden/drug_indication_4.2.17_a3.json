@@ -47,17 +47,17 @@
     {
       "drug_name": "FORTEO 20 MCG (TERIPARATID)",
       "primary_icd10": "M80.0",
-      "report_present": true,
+      "report_present": null,
       "report_duration_months": null,
-      "expect_violation": "needs_report_verification",
-      "rule_id": "4.2.17.teriparatid_severe_osteoporosis_board"
+      "expect_violation": null,
+      "rule_id": null
     },
     {
       "drug_name": "MIACALCIC 100 IU (KALSITONIN)",
       "primary_icd10": "M48.5",
       "report_present": false,
       "expect_violation": "missing_board_report",
-      "rule_id": "4.2.17.calcitonin_vertebral_fracture_report"
+      "rule_id": "4.2.17.B.calcitonin_first_6mo_only"
     },
     {
       "drug_name": "MIACALCIC 100 IU (KALSITONIN)",

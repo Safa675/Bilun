@@ -22,6 +22,16 @@
     "2.4.4.J",
     "2.4.4.K",
     "2.4.4.N",
+    "2.4.1",
+    "2.4.1.A",
+    "2.4.1.B",
+    "2.4.1.B-1",
+    "2.4.1.B-2",
+    "2.4.1.B-3",
+    "2.4.2.A",
+    "2.4.2.B-1",
+    "2.4.2.B-2",
+    "2.4.3",
     "2.4.4.F-1",
     "2.4.4.F-3",
     "2.4.4.L",
@@ -757,6 +767,937 @@
       },
       "gate_b_sources": [
         "C000927"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.(1).precious_metal_dental_no_pay",
+      "sut_section": "2.4.1",
+      "condition": {
+        "procedure_category": "dental_restorative",
+        "material_category_in": [
+          "gold",
+          "platinum",
+          "palladium+platinum",
+          "iridium+platinum",
+          "iropal",
+          "argenco_23",
+          "bego_gold_ewl",
+          "polliag_m"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "diş tedavileri sırasında; altın, platin, paladyum+platin, irrudyum+platin, iropal gibi kıymetli madenler ile argenco 23, bego gold EWL ve polliag-M gibi bileşiminde kıymetli maden bulunan maddelerin bedelleri ödenmez",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000734"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.(2).dental_implant_no_pay",
+      "sut_section": "2.4.1",
+      "condition": {
+        "procedure_category": "dental_implant",
+        "board_report_with_radiographs_present": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "kemik içi implantların bedelleri ödenmez",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000742"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.(2).dental_implant_board_report_max4_per_jaw",
+      "sut_section": "2.4.1",
+      "condition": {
+        "procedure_category": "dental_implant",
+        "board_report_with_radiographs_present": true,
+        "implants_per_jaw": {
+          "min": 5
+        },
+        "patient_category": "standard_beneficiary"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "her bir çene için en fazla 4 adet EK-2/Ç kemik içi implant uygulaması işlem bedeli ile her implant için 750 TL üzerinden faturalandırılabilir; vazife/harp malullerinde her implant için en fazla 2500 TL",
+        "annex_basis": "EK-2/Ç",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000747"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.(3).prosthesis_renewal_4yr_no_pay",
+      "sut_section": "2.4.1",
+      "condition": {
+        "procedure_category_any": [
+          "removable_prosthesis",
+          "fixed_prosthesis"
+        ],
+        "years_since_prior_prosthesis": {
+          "max": 3.99
+        },
+        "exception_in": [
+          "traffic_accident",
+          "work_accident_oral_jaw_trauma",
+          "neoplastic_jaw_loss",
+          "cancer_weight_loss_with_board_report"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "hareketli ve sabit protezlerin yenilenme süresi 4 yıldır; bu süreden önce yenilenen protez bedelleri Kurumca ödenmez; trafik kazası/iş kazası ağız-çene travması, neoplazi veya kansere bağlı kil kaybında 3 diş hekimi sağlık kurulu raporuyla süre aranmaz",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000748"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.(a).adult_orthodontics_18plus_no_pay",
+      "sut_section": "2.4.1",
+      "condition": {
+        "procedure_category": "orthodontics",
+        "patient_age_years": {
+          "min": 18
+        },
+        "treatment_started_before_age_18": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "18 yaşını doldurmuş kişilerin ortodontik diş tedavilerine ilişkin giderler Kurumca ödenmez; 18 yaşından önce başlayıp devam edenler karşılanır",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000752"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.(b).early_orthodontics_mixed_dentition_coverage",
+      "sut_section": "2.4.1",
+      "condition": {
+        "procedure_code_any": [
+          "P407321",
+          "P407322"
+        ],
+        "patient_age_years": {
+          "min": 6,
+          "max": 14
+        },
+        "prescriber_specialty_any": [
+          "orthodontics_specialist",
+          "orthodontics_phd"
+        ],
+        "treatment_documented_complete": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "süt ve karma dişlenme döneminde dental/iskeletsel maloklüzyon için erken ortodontik tedavi (P407321/P407322) 6-14 yaş, ortodonti uzmanı/doktoralı hekim tarafından yapıldığı ve belgelendiği halde Karşılanır; başlangıç ve bitiş aşamaları arasında en az 3 ay olmalı",
+        "annex_basis": "EK-2/Ç",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000753"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.(c).fixed_orthodontics_class_1_2_3_coverage",
+      "sut_section": "2.4.1",
+      "condition": {
+        "procedure_category": "fixed_orthodontics",
+        "malocclusion_class_any": [
+          "class_I",
+          "class_II",
+          "class_III",
+          "orthognathic_surgery"
+        ],
+        "prescriber_specialty_any": [
+          "orthodontics_specialist",
+          "orthodontics_phd"
+        ],
+        "min_months_start_to_treatment": 6,
+        "min_months_treatment_to_retention": 4
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "Sınıf I, II, III ve ortognatik cerrahide sabit ortodontik tedaviler EK-2/Ç işlem kodları üzerinden, tedavi tamamlandığı belgelenmek ve ortodonti uzmanı/doktoralı hekim tarafından yapılması halinde Kurumca karşılanır; başlangıç-tedavi arası en az 6 ay, tedavi-pekiştirme arası en az 4 ay olmalı",
+        "annex_basis": "EK-2/Ç"
+      },
+      "gate_b_sources": [
+        "C000754"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.(c2).cleft_lip_palate_orthodontics_coverage",
+      "sut_section": "2.4.1",
+      "condition": {
+        "procedure_code_any": [
+          "P407342",
+          "P407343",
+          "P407344"
+        ],
+        "diagnosis_category": "cleft_lip_palate",
+        "facility_in": [
+          "university_dental_faculty"
+        ],
+        "prescriber_specialty_any": [
+          "orthodontics_specialist",
+          "orthodontics_phd"
+        ],
+        "documented_with_photographs": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "yarık dudak-damak / yarık damak ortodontik tedavileri EK-2/Ç (P407342/P407343/P407344) üzerinden, üniversite diş hekimliği fakültelerinde operasyon öncesi/sonrası fotoğrafla belgelendiğinde ortodonti uzmanı/doktoralı hekimi tarafından Kurumca karşılanır",
+        "annex_basis": "EK-2/Ç",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000755"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.A.(1).public_dental_ek2c_university_50pct_uplift",
+      "sut_section": "2.4.1.A",
+      "condition": {
+        "procedure_category": "dental",
+        "facility_in": [
+          "contracted_public"
+        ],
+        "procedure_code_not_in": [
+          "401051",
+          "401060",
+          "401070",
+          "401080",
+          "401090",
+          "401100",
+          "401110",
+          "401120",
+          "401130",
+          "401135",
+          "401150",
+          "401170"
+        ],
+        "facility_is_university_dental_faculty": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "resmi sunucularda diş tedavi bedellerinde EK-2/Ç uygulanır; protez ücretine döküm/işçilik dâhildir ayrıca ödenmez; üniversite diş hekimliği fakülteleri (istisna kodlar hariç) EK-2/Ç puanlara %50 oranında ilave edilerek faturalandırılır",
+        "annex_basis": "EK-2/Ç"
+      },
+      "gate_b_sources": [
+        "C000760"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.A.(2).disabled_or_special_needs_dental_ga_2x",
+      "sut_section": "2.4.1.A",
+      "condition": {
+        "procedure_category": "dental",
+        "facility_in": [
+          "contracted_public"
+        ],
+        "patient_category_any": [
+          "disabled_40pct_or_more",
+          "special_needs_child_mild_or_above"
+        ],
+        "anesthesia_type_any": [
+          "general_anesthesia",
+          "sedoanalgesia"
+        ],
+        "disability_report_attached": false
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "resmi sunucuda %40 ve üzeri engelli veya hafif düzey ve üstü özel gereksinimli çocuk hastalarda genel anestezi/sedo-analjezi altındaki diş tedavileri EK-2/Ç işlem puanı bedellerinin iki katı olarak faturalandırılır; 5378 sayılı Kanun Yönetmeliğine uygun rapor faturaya eklenir",
+        "annex_basis": "EK-2/Ç"
+      },
+      "gate_b_sources": [
+        "C000762"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B.(1).private_or_noncontract_public_dental_scoping",
+      "sut_section": "2.4.1.B",
+      "condition": {
+        "procedure_category": "dental",
+        "facility_category_any": [
+          "private",
+          "non_contracted_public"
+        ],
+        "patient_category_not_in": [
+          "5510_60_c1_c3",
+          "5510_gss_general_health_insured"
+        ]
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "5510 sayılı Kanunun 60/c-1, 60/c-3 bentleri ile 12/13/14 fıkraları kapsamı dışındaki kişilerin özel sunucu ve Kurumla sözleşmesi olmayan resmi sunucu diş ünitelerindeki ağız ve diş sağlığı hizmetleri aşağıdaki şekilde yapılır"
+      },
+      "gate_b_sources": [
+        "C000787"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-1.(1).private_dental_orthodontics_disabled_excepted_no_pay",
+      "sut_section": "2.4.1.B-1",
+      "condition": {
+        "procedure_category": "dental",
+        "facility_category_any": [
+          "private",
+          "non_contracted_public"
+        ],
+        "procedure_category_not_in": [
+          "orthodontics"
+        ],
+        "patient_category_not_in": [
+          "disabled_40pct_or_more",
+          "special_needs_child_mild_or_above"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "ortodontik diş tedavileri ile %40 ve üzerinde engelli kişiler hariç kapsamdaki kişilerin özel/Kurumla sözleşmesi olmayan resmi sunucu diş ünitelerinde yapılan ağız ve diş sağlığı tedavileri Kurumca ödenmez",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000791"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-1.(2).disabled_dental_documentation_10bizday_start",
+      "sut_section": "2.4.1.B-1",
+      "condition": {
+        "procedure_category": "dental",
+        "facility_category_any": [
+          "private",
+          "non_contracted_public"
+        ],
+        "patient_category_any": [
+          "disabled_40pct_or_more",
+          "special_needs_child_mild_or_above"
+        ],
+        "disability_or_special_needs_documented": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "%40+ engelli veya özel gereksinimli çocuğun diş tedavisinin ödenmesi için engellilik/özel gereksinim durumu belgelendirilmeli; ADSM/ağız-diş sağlığı hastanesi/üniversite diş hekimliği fakültesince sağlık raporu düzenlenmiş olmalı; rapor tarihinden itibaren 10 iş günü içinde tedaviye başlanmalı",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000794"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-1.(3).communication_impaired_ga_facility_requirement",
+      "sut_section": "2.4.1.B-1",
+      "condition": {
+        "procedure_category": "dental",
+        "patient_category": "communication_impaired_cognitively_disabled",
+        "anesthesia_type_any": [
+          "general_anesthesia",
+          "sedoanalgesia"
+        ],
+        "facility_has_ga_unit_under_anesthesiology_reanimasyon": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "iletişim kurulamayan/algılama güçlüğü yaşanan özürlü kişilerin diş tedavisinde GA/sedo-analjezi bedelinin ödenebilmesi için tedavinin anesteziyoloji ve reanimasyon uzmanı sorumluluğunda GA uygulanabilen, asgari tıbbi malzeme/ilaç bulunan ünitelerde (ADSM/tıp merkezi/hastane ameliyathane/GA ünitesi) yapıldığı belgelendirilmelidir",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000795"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-1.(5).orthodontics_3dentist_board_report_6mo",
+      "sut_section": "2.4.1.B-1",
+      "condition": {
+        "procedure_category": "orthodontics",
+        "facility_category_any": [
+          "private",
+          "non_contracted_public"
+        ],
+        "board_report_with_orthodontist_present": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "ortodontik tedavi gereksinimi olan hastalar için ADSM/ağız-diş sağlığı hastanesi/üniversite diş hekimliği fakültesince en az bir ortodonti uzmanının/doktoralı hekimin yer aldığı üç diş hekimi sağlık kurulu raporu düzenlenmeli; tedavinin estetik olmadığı ve maloklüzyon tipi belirtilmeli; rapor tarihinden itibaren 6 ay içinde tedaviye başlanmalı",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000799"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-1.(6).dental_control_form_approval_required",
+      "sut_section": "2.4.1.B-1",
+      "condition": {
+        "procedure_category_any": [
+          "dental",
+          "orthodontics"
+        ],
+        "facility_category_any": [
+          "private",
+          "non_contracted_public"
+        ],
+        "control_form_approved_by_contracted_public_dentist": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "özel/Kurumla sözleşmesi olmayan resmi sunucuca yapılan diş tedavisi sonrasında EK-2/Ç-2 Diş Tedavileri Kontrol Formu ve/veya EK-2/Ç-3 ortodontik tedavi kontrol formu, diş ünitesi bulunan protokollü sözleşmeli resmi sunucuda görevli diş hekimi tarafından onaylanmalı",
+        "annex_basis": "EK-2/Ç-2",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000800"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-2.(1).disabled_dental_services_ek2c_coverage",
+      "sut_section": "2.4.1.B-2",
+      "condition": {
+        "procedure_category": "dental",
+        "facility_category_any": [
+          "private",
+          "non_contracted_public"
+        ],
+        "patient_category_any": [
+          "disabled_40pct_or_more",
+          "special_needs_child_mild_or_above"
+        ],
+        "procedure_in_ek2c": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "özel/Kurumla sözleşmesi olmayan resmi sunucudan %40+ engelli/özel gereksinimli çocuk hastaya verilen ağız ve diş sağlığı hizmeti bedelleri EK-2/Ç listesinde yer alması şartıyla işlem bedelleri üzerinden ödenir",
+        "annex_basis": "EK-2/Ç",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000804"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-2.(2).private_orthodontics_per_2_4_1_4_coverage",
+      "sut_section": "2.4.1.B-2",
+      "condition": {
+        "procedure_category": "orthodontics",
+        "facility_category_any": [
+          "private",
+          "non_contracted_public"
+        ]
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "özel/Kurumla sözleşmesi olmayan resmi sunucu diş ünitelerinde uygulanan ortodontik tedavi bedelleri SUT'un 2.4.1(4) fıkrasına göre ödenir"
+      },
+      "gate_b_sources": [
+        "C000805"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-2.(4).disabled_prosthesis_casting_labor_no_pay",
+      "sut_section": "2.4.1.B-2",
+      "condition": {
+        "procedure_category": "dental_prosthesis",
+        "facility_category_any": [
+          "private",
+          "non_contracted_public"
+        ],
+        "patient_category_any": [
+          "disabled_40pct_or_more",
+          "special_needs_child_mild_or_above"
+        ],
+        "charge_type_in": [
+          "casting_fee",
+          "labor_fee"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "engelli/özel gereksinimli çocuk hastalara verilen ağız ve diş sağlığı hizmeti kapsamındaki protez tedavileri için malzeme dâhil döküm ve işçilik ücreti ödenmez",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000807"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-2.(5).orthodontics_payment_per_stage_ek2c3",
+      "sut_section": "2.4.1.B-2",
+      "condition": {
+        "procedure_category": "orthodontics",
+        "stage_completed": false
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "ortodontik tedavi uygulanan kişilere ait faturaların ödemeleri EK-2/Ç-3 listesinde yer alan formlar üzerinden her bir aşama tamamlandığında bedelleri ödenir",
+        "annex_basis": "EK-2/Ç-3"
+      },
+      "gate_b_sources": [
+        "C000810"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-3.(1).board_signer_self_dealing_no_pay",
+      "sut_section": "2.4.1.B-3",
+      "condition": {
+        "procedure_category_any": [
+          "dental",
+          "orthodontics"
+        ],
+        "treating_provider_is_board_signer_or_relative_or_partner": true
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "sağlık kurulu raporunda imzası bulunan hekimin kendisinin, birinci derece yakınının veya bunların ortaklarının özel muayenehane/özel sunucu tarafından tedavi ettiği hastaların giderleri ödenmez",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000812"
+      ]
+    },
+    {
+      "rule_id": "2.4.1.B-3.(2).star_marked_or_orthodontics_specialist_required",
+      "sut_section": "2.4.1.B-3",
+      "condition": {
+        "procedure_in_ek2c_star_marked": true,
+        "procedure_section": "7.1_diagnosis_based_orthodontics",
+        "performed_by_specialist_or_phd_dentist": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "EK-2/Ç listesinde (*) işaretli tedaviler ile '7.1 Tanıya dayalı ortodontik tedavi işlemleri' başlığı altındaki tedavilerin karşılanabilmesi için konularında uzman veya doktoralı diş hekimi tarafından yapıldığının belgelendirilmesi gerekmektedir",
+        "annex_basis": "EK-2/Ç",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000813"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.A.(1).organ_tissue_transplant_coverage",
+      "sut_section": "2.4.2.A",
+      "condition": {
+        "procedure_category": "organ_tissue_transplant",
+        "subject_any": [
+          "recipient",
+          "donor"
+        ],
+        "compliant_with_law_2238": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "2238 sayılı Kanun hükümleri dikkate alınmak şartıyla organ/doku nakli tedavilerine ilişkin giderler ile verici durumundaki kişinin bu tedaviye ilişkin giderleri Kurum tarafından karşılanır"
+      },
+      "gate_b_sources": [
+        "C000816"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.A.(4).organ_transport_transfer_cost_coverage",
+      "sut_section": "2.4.2.A",
+      "condition": {
+        "procedure_category": "organ_tissue_transplant",
+        "organ_located_in_country": true,
+        "expense_type": "recipient_organ_transport_round_trip"
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "yurt içinde organın bulunması halinde hastanın/organın bulunduğu yer arasındaki gidiş-dönüş nakliye/transfer masrafları SUT'un 2.6 maddesi doğrultusunda Kurumca karşılanır"
+      },
+      "gate_b_sources": [
+        "C000821"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.A.(5).cadaver_donor_procurement_p911146",
+      "sut_section": "2.4.2.A",
+      "condition": {
+        "procedure_code_any": [
+          "P911146"
+        ],
+        "donor_type": "cadaver",
+        "notified_by_national_coordination_center": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "Ulusal Organ ve Doku Nakli Koordinasyon Merkezince bildirilen her kadavra donör için donörü temin eden sunucuya EK-2/C 'P911146 Kadavra donör temini' bedeli karşılanır; bu bedele kadavra organ alım işlemleri dâhildir",
+        "annex_basis": "EK-2/C"
+      },
+      "gate_b_sources": [
+        "C000824"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.A.(6).abo_incompatible_kidney_transplant_apheresis_no_bill",
+      "sut_section": "2.4.2.A",
+      "condition": {
+        "procedure_category": "kidney_transplant",
+        "abo_blood_group_compatible": false,
+        "exception_no_dialysis_option_with_tier3_board_report": false,
+        "charge_type_in": [
+          "apheresis",
+          "medical_material_for_apheresis"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "herhangi bir diyalizle tedavisi mümkün olmayan (3. basamak sağlık kurulu raporuyla belgelenen) hastalar hariç ABO uyumsuz böbrek nakli giderleri Kurumca karşılanmaz; yapılacak aferez ve tıbbi malzeme bedelleri ayrıca faturalandırılamaz",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000827"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-1.(1).hla_typing_relative_donor_coverage",
+      "sut_section": "2.4.2.B-1",
+      "condition": {
+        "procedure_category": "bone_marrow_transplant",
+        "test_type_any": [
+          "molecular_typing",
+          "serological_typing"
+        ],
+        "donor_candidate_is_relative": true,
+        "relative_candidates_tested": {
+          "min": 1
+        }
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "kemik iliği naklinde hastaların anne/baba/kardeş/çocuğundan HLA uyumlu verici bulmak için yapılan doku uyumluluk testleri ile uygun verici bulunamayanlarda 30 adayı geçmemek üzere HLA doku grubu belirleme testleri Kurum tarafından karşılanır"
+      },
+      "gate_b_sources": [
+        "C000830"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-1.(3).bone_marrow_bank_billing_codes_mandatory",
+      "sut_section": "2.4.2.B-1",
+      "condition": {
+        "procedure_category": "bone_marrow_donor_typing",
+        "stage": "first_phase_typing"
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "kemik iliği doku bilgi bankalarınca birinci aşama işlemler EK-2/B '705.090' ve '705.110', adres/serolojik doğrulama ve onay işlemleri '705.100' ve '705.120' işlem kodları üzerinden faturalandırılmalı",
+        "annex_basis": "EK-2/B"
+      },
+      "gate_b_sources": [
+        "C000832"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-1.(4).high_res_dna_hla_confirmation_domestic_25_cap",
+      "sut_section": "2.4.2.B-1",
+      "condition": {
+        "procedure_category": "bone_marrow_transplant",
+        "test_type": "high_resolution_dna_hla_confirmation",
+        "laboratory_licensed_by_moh": true,
+        "total_candidates": {
+          "min": 26
+        }
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "yurt içi ön taramada belirlenen verici adaylarının Bakanlıkça ruhsatlandırılmış doku tipleme laboratuvarlarında yüksek çözünürlük DNA ve HLA doğrulama testleri toplam 25 adayı geçmemek üzere Kurumca karşılanır",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000833"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-1.(5).unrelated_marrow_cord_blood_procurement_ek2c",
+      "sut_section": "2.4.2.B-1",
+      "condition": {
+        "procedure_category": "bone_marrow_transplant",
+        "donor_type": "unrelated_domestic",
+        "procedure_in_ek2c": false
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "akraba dışı kemik iliği vericisinin yurt içinde bulunması halinde 'yurt içi kemik iliği/kordon kanı temini' bedeli EK-2/C üzerinden kemik iliği doku bilgi bankasına fatura bedelini aşmamak üzere karşılanır",
+        "annex_basis": "EK-2/C"
+      },
+      "gate_b_sources": [
+        "C000834"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-1.(6).foreign_marrow_samples_dna_hla_coverage",
+      "sut_section": "2.4.2.B-1",
+      "condition": {
+        "procedure_category": "bone_marrow_transplant",
+        "domestic_match_found": false,
+        "hla_match_degree": {
+          "min": 7,
+          "of": 8
+        },
+        "samples_per_batch": {
+          "max": 10
+        },
+        "total_samples": {
+          "max": 25
+        }
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "yurt içinde uygun verici bulunmayan hastalar için yurt dışı kemik iliği bankaları aracılığıyla en az 7/8 doku uyumu gösteren kan örnekleri (tek seferde en fazla 10, toplamda 25'i geçmemek) yurt içi doku bankası/ruhsatlı laboratuvarda yüksek çözünürlük DNA ile HLA analizine tabi tutulur; bedelleri Kurumca karşılanır"
+      },
+      "gate_b_sources": [
+        "C000835"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-1.(9).marrow_cord_transport_euro_caps",
+      "sut_section": "2.4.2.B-1",
+      "condition": {
+        "procedure_category": "bone_marrow_transplant",
+        "expense_type": "marrow_cord_transport_to_turkey",
+        "origin_continent_in": [
+          "americas",
+          "australia"
+        ],
+        "transport_eur": {
+          "min": 4500.01
+        }
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "kemik iliğinin Türkiye'deki nakil merkezine getirilmesi; Amerika/Avustralya için 4.500 Euro, diğer ülkeler için 2.000 Euro, kordon kanı tankı nakli için 5.000 Euro karşılığı TL'yi geçmemek üzere fatura karşılığı Kurumca ödenir; organizasyon, kurye taşıma ve konaklama dâhildir",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000838"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-1.(10).foreign_marrow_screening_advance_payment_coverage",
+      "sut_section": "2.4.2.B-1",
+      "condition": {
+        "procedure_category": "bone_marrow_transplant",
+        "expense_type_any": [
+          "foreign_donor_screening",
+          "advanced_donor_tests",
+          "health_check",
+          "sample_transport",
+          "stem_cell_collection",
+          "cancellation_fee",
+          "deferral_fee",
+          "cord_blood_storage_2yr",
+          "activation_fee"
+        ],
+        "bank_is_wmda_member": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "yurt dışı kemik iliği/kordon kanı sürecinde tarama, ileri test, sağlık kontrol, kan örneği transfer, kök hücre toplama, iptal/erteleme/saklama ve aktivasyon bedelleri WMDA üye bankalarca belirlenen ücretler üzerinden Kurumca (İstanbul Sosyal Güvenlik İl Müdürlüğü) avans/havale ile ödenir; kişiye fatura düzenlenmişse kişiye ödenir",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000839"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-1.(11).bone_marrow_transplant_licensed_center_ek2c",
+      "sut_section": "2.4.2.B-1",
+      "condition": {
+        "procedure_category": "bone_marrow_transplant",
+        "facility_licensed_for_bone_marrow_transplant": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "kemik iliği nakli (hematopoietik kök hücre nakli) tedavisi Bakanlıkça ruhsatlandırılmış ve çalışma izni almış kemik iliği nakli merkezlerince uygulanır; bedelleri EK-2/C 'Kemik İliği Nakli' işlem puanları üzerinden Kurumca karşılanır",
+        "annex_basis": "EK-2/C",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000840"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-1.(12).pre_2013_foreign_marrow_invoice_coverage",
+      "sut_section": "2.4.2.B-1",
+      "condition": {
+        "procedure_category": "bone_marrow_transplant",
+        "invoice_date_before": "2013-05-01",
+        "previously_unpaid_under_prior_sut": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "1/5/2013 öncesi SUT kuralları gereği karşılanamayan yurt dışı kemik iliği/kordon kanı tarama ve temin fatura bedelleri yukarıdaki hükümler doğrultusunda Kurumca karşılanır"
+      },
+      "gate_b_sources": [
+        "C000842"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-2.(2).mesenchymal_stem_cell_board_moh_approval_coverage",
+      "sut_section": "2.4.2.B-2",
+      "condition": {
+        "procedure_category": "mesenchymal_stem_cell_transplant",
+        "indication_in_board_report": false,
+        "moh_approval_per_patient": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "yapılan mezenkimal kök hücre nakli tedavi bedeli; durumun sağlık kurulu raporunda belirtilmesi ve raporun Sağlık Bakanlığı tarafından her hasta için ayrı onaylanarak izin verilmesi halinde Kurumca karşılanır",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000847"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-2.(3).mesenchymal_stem_cell_production_center_mandatory",
+      "sut_section": "2.4.2.B-2",
+      "condition": {
+        "procedure_code_any": [
+          "704.981"
+        ],
+        "stem_cell_production_in_moh_designated_center": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "'mezenkimal kök hücre nakli (üretim dâhil)' EK-2/B '704.981' işlemi için üretimin Bakanlıkça tanımlanan Kök Hücre Üretim Merkezinde yapılmış olması şarttır",
+        "annex_basis": "EK-2/B",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000849"
+      ]
+    },
+    {
+      "rule_id": "2.4.2.B-2.(4).mesenchymal_within_allo_bmt_window_no_bill",
+      "sut_section": "2.4.2.B-2",
+      "condition": {
+        "procedure_code_any": [
+          "704.981"
+        ],
+        "days_from_allogeneic_bmt": {
+          "min": -15,
+          "max": 90
+        }
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "mezenkimal kök hücre nakli allojenik kemik iliği nakli öncesi 15 gün ve/veya sonrası 90 gün içinde uygulandığında kemik iliği nakli bedeline dâhil olur, ayrıca faturalandırılmaz",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000850"
+      ]
+    },
+    {
+      "rule_id": "2.4.3.A.non_gbep_vaccine_high_risk_coverage",
+      "sut_section": "2.4.3",
+      "condition": {
+        "procedure_category": "vaccine",
+        "in_gbep_program": false,
+        "patient_high_risk_category": true,
+        "health_report_present": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Genişletilmiş Bağışıklama Programı kapsamında olmayan aşı bedelleri; kronik böbrek yetmezliği, kistik fibrozis, KOAH, kanser, HIV/AIDS, splenektomi ve immünsupresif tedaviye bağlı bağışıklık durumu olumsuz etkilenen yüksek riskli kişilerin bu durumunu belirten sağlık raporuna istinaden karşılanır",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000852"
+      ]
+    },
+    {
+      "rule_id": "2.4.3.B.influenza_vaccine_annual_sept_mar_coverage",
+      "sut_section": "2.4.3",
+      "condition": {
+        "procedure_category": "influenza_vaccine",
+        "patient_category_any": [
+          "age_65_plus",
+          "nursing_home_resident",
+          "pregnant_2nd_3rd_trimester",
+          "chronic_pulmonary_cardiovascular",
+          "chronic_metabolic_diabetes",
+          "chronic_renal_dysfunction",
+          "hemoglobinopathy",
+          "immune_deficiency",
+          "immunosuppressive_therapy",
+          "child_6mo_18yr_long_term_asa"
+        ],
+        "season_window_sep_to_mar": false,
+        "prior_dose_in_same_year": true
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "grip aşısı bedeli; 65 yaş ve üzeri ile huzurevinde kalanlar rapor aranmaksızın, diğer risk grupları sağlık raporuyla Eylül-Mart döneminde tüm hekimlerce reçete edildiğinde yılda bir defaya mahsus karşılanır",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000855"
+      ]
+    },
+    {
+      "rule_id": "2.4.3.C.pneumococcal_vaccine_5yr_coverage",
+      "sut_section": "2.4.3",
+      "condition": {
+        "procedure_category": "pneumococcal_polysaccharide_vaccine",
+        "patient_category_any": [
+          "asplenia_splenectomy_sickle_cell",
+          "immunosuppression",
+          "chronic_renal_nephrotic",
+          "chronic_heart",
+          "chronic_lung_asthma",
+          "chronic_liver_cirrhosis",
+          "chronic_metabolic_diabetes",
+          "hemoglobinopathy",
+          "csf_leak_cranial_defect",
+          "age_65_plus"
+        ],
+        "years_since_prior_dose": {
+          "max": 4.99
+        },
+        "health_report_present_or_age_65_plus": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "pnömokok aşısı (polisakkarit) bedeli; 2 yaş üstü risk gruplarında sağlık raporuyla, 65 yaş ve üzeri rapor aranmaksızın beş yılda bir kez karşılanır",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000856"
+      ]
+    },
+    {
+      "rule_id": "2.4.3.D.hepatitis_a_vaccine_annual_2x_coverage",
+      "sut_section": "2.4.3",
+      "condition": {
+        "procedure_category": "hepatitis_a_vaccine",
+        "patient_category_any": [
+          "chronic_liver_disease",
+          "clotting_factor_concentrate_recipient"
+        ],
+        "hepatitis_a_seronegative": true,
+        "patient_age_years": {
+          "min": 1
+        },
+        "doses_within_year": {
+          "min": 3
+        }
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "hepatit A aşısı bedeli; kronik karaciğer hastalığı olan veya pıhtılaşma faktörü konsantresi alan Hepatit A seronegatif 1 yaş üstü çocuk ve erişkinlerde sağlık raporuyla tüm hekimlerce reçete edilmesi halinde en fazla yılda iki kez karşılanır",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C000857"
       ]
     },
     {
@@ -2723,859 +3664,6 @@
       "gate_b_sources": [
         "C001327"
       ]
-    },
-    {
-      "rule_id": "2.4.1.(1).precious_metal_dental_materials_no_pay",
-      "sut_section": "2.4.1",
-      "condition": {
-        "procedure_category": "dental_treatment",
-        "material_is_precious_metal": true
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "diş tedavileri sırasında; altın, platin, paladyum+platin, irrudyum+platin, iropal gibi kıymetli madenler ile argenco 23, bego gold EWL ve polliag-M gibi bileşiminde kıymetli maden bulunan maddelerin bedelleri ödenmez",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000734"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.(2).endosseous_implant_base_no_pay",
-      "sut_section": "2.4.1",
-      "condition": {
-        "procedure_category": "dental_implant_endosseous",
-        "implant_exception_conditions_met": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "kemik içi implantların bedelleri ödenmez",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000742"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.(2).implant_exception_4_per_jaw_750tl",
-      "sut_section": "2.4.1",
-      "condition": {
-        "procedure_category": "dental_implant_endosseous",
-        "university_board_report_with_surgery_prosthesis_periodontology": true,
-        "radiographic_evidence_attached": true,
-        "implant_count_per_jaw": {
-          "min": 1,
-          "max": 4
-        }
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "rutin protetik tedavi ile tedavi edilemeyeceği implantın zorunlu olduğu üniversite diş hekimliği fakültesi sağlık kurulu raporuyla belgelendirilmek şartıyla her bir çene için en fazla 4 adet EK-2/Ç “kemik içi implant uygulaması” bedeli ile her implant için 750 TL, vazife/harp malullerinde en fazla 2500 TL üzerinden faturalandırılır",
-        "billing_method": "procedure_package",
-        "annex_basis": "EK-2/Ç"
-      },
-      "gate_b_sources": [
-        "C000747"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.(3).prosthesis_renewal_within_4_years_no_pay",
-      "sut_section": "2.4.1",
-      "condition": {
-        "procedure_category": "dental_prosthesis_replacement",
-        "years_since_last_prosthesis": {
-          "max": 3.99
-        },
-        "exception_traffic_work_accident_or_neoplasm_or_weight_loss": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "hareketli ve sabit protezlerin yenilenme süresi 4 yıldır; bu süreden önce yenilenen protez bedelleri Kurumca ödenmez",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000748"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.(a).adult_orthodontics_18plus_no_pay",
-      "sut_section": "2.4.1",
-      "condition": {
-        "procedure_category": "orthodontic_treatment",
-        "patient_age": {
-          "min": 18
-        },
-        "treatment_started_before_age_18_and_ongoing": false,
-        "started_before_gss_effective_date": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "18 yaşını doldurmuş kişilerin ortodontik diş tedavilerine ilişkin giderler Kurumca ödenmez; ancak tedavi 18 yaşından önce başlamış ve devam ediyorsa karşılanır",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000752"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.(b).early_orthodontic_p407321_p407322",
-      "sut_section": "2.4.1",
-      "condition": {
-        "procedure_code_any": [
-          "P407321",
-          "P407322"
-        ],
-        "patient_age": {
-          "min": 6,
-          "max": 14
-        },
-        "performed_by_orthodontist_or_doctor": true,
-        "min_3_months_between_start_and_end_phase": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "dental ve iskeletsel malokluzyonu düzeltmek için yapılan erken ortodontik uygulamalar P407321/P407322 işlem kodları üzerinden, 6-14 yaş, ortodonti uzmanı/doktoralı hekim ve başlangıç-bitiş aşamaları arası en az 3 ay olması şartıyla Kurumca karşılanır",
-        "procedure_package": "EK-2/Ç-7.1",
-        "annex_basis": "EK-2/Ç"
-      },
-      "gate_b_sources": [
-        "C000753"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.(c).fixed_orthodontics_class1_2_3_min_intervals",
-      "sut_section": "2.4.1",
-      "condition": {
-        "procedure_category": "fixed_orthodontic_treatment",
-        "malocclusion_class_any": [
-          "class_I",
-          "class_II",
-          "class_III",
-          "orthognathic"
-        ],
-        "performed_by_orthodontist_or_doctor": true,
-        "months_between_start_and_treatment_phase": {
-          "min": 6
-        },
-        "months_between_treatment_and_retention_phase": {
-          "min": 4
-        }
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "sınıf I/II/III ve ortognatik cerrahide sabit ortodontik tedaviler EK-2/Ç 7.1 işlem kodları üzerinden; başlangıç ile tedavi aşamaları arası en az 6 ay, tedavi ile pekiştirme aşamaları arası en az 4 ay olması ve ortodonti uzmanı/doktoralı hekim tarafından yapılması şartıyla Kurumca karşılanır",
-        "procedure_package": "EK-2/Ç-7.1",
-        "annex_basis": "EK-2/Ç"
-      },
-      "gate_b_sources": [
-        "C000754"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.(c_cleft).cleft_lip_palate_orthodontics_age_windows",
-      "sut_section": "2.4.1",
-      "condition": {
-        "procedure_code_any": [
-          "P407342",
-          "P407343",
-          "P407344"
-        ],
-        "facility_is_university_dental_faculty": true,
-        "performed_by_orthodontist_or_doctor": true,
-        "pre_post_op_photos_documented": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "yarık dudak-damak/damak şekillendirme ve ortodontik tedaviler P407342/P407343/P407344 kodları üzerinden; doğum sonrası şekillendirme 60 ay öncesi, karışık dişlenme 6-12 yaş, daimi dişlenme 12 yaş sonrası, üniversite diş hekimliği fakültesinde fotoğrafla belgelendirmek ve ortodonti uzmanı/doktoralı hekim tarafından yapılması şartıyla karşılanır",
-        "procedure_package": "EK-2/Ç-7.1",
-        "annex_basis": "EK-2/Ç"
-      },
-      "gate_b_sources": [
-        "C000755"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.A.(1).contracted_public_dental_ek2c_prosthesis_inclusive",
-      "sut_section": "2.4.1.A",
-      "condition": {
-        "facility_type": "contracted_public_health_provider",
-        "procedure_category": "dental_treatment_prosthesis",
-        "separate_casting_or_labor_fee_charged": true
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "sözleşmeli resmi sunucularda diş tedavi bedelleri EK-2/Ç Listesi uygulanır; protez tedavilerinde ayrıca döküm ve işçilik ücreti ödenmez (malzeme/döküm/işçilik protez ücretine dahildir)",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000760"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.A.(2).disabled_or_special_need_child_ga_sedo_2x",
-      "sut_section": "2.4.1.A",
-      "condition": {
-        "facility_type": "contracted_public_health_provider",
-        "procedure_category": "dental_treatment_under_anesthesia",
-        "patient_disabled_40pct_or_special_need_child": true,
-        "anesthesia_or_sedo_analgesia": true,
-        "disability_report_attached_to_invoice": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "sözleşmeli resmi sunucularda %40 ve üzeri engelli kişiler ile hafif düzey ve üstü özel gereksinimli çocuk hastalarda genel anestezi veya sedo-analjezi altında verilen diş tedavileri EK-2/Ç işlem puanı bedellerinin iki katı olarak faturalandırılır",
-        "billing_method": "multiplier_2x",
-        "annex_basis": "EK-2/Ç"
-      },
-      "gate_b_sources": [
-        "C000762"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B.(1).private_uncontracted_dental_units_scope",
-      "sut_section": "2.4.1.B",
-      "condition": {
-        "facility_type_any": [
-          "private_provider",
-          "uncontracted_public_provider"
-        ],
-        "patient_in_general_scope_not_in_5510_excluded_groups": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "5510 sayılı Kanun 60/c-1 veya 60/c-3 bentleri ile 12/13/14. fıkra kapsamı hariç diğer kişilerin özel sağlık hizmeti sunucuları ile Kurumla sözleşmesi olmayan resmi sunucular diş ünitelerindeki ağız ve diş sağlığı hizmetleri aşağıdaki şekilde yapılır",
-        "billing_method": "procedure_package"
-      },
-      "gate_b_sources": [
-        "C000787"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-1.(1).private_uncontracted_dental_default_no_pay",
-      "sut_section": "2.4.1.B-1",
-      "condition": {
-        "facility_type_any": [
-          "private_provider",
-          "uncontracted_public_provider"
-        ],
-        "procedure_category_any": [
-          "orthodontic_treatment",
-          "dental_treatment"
-        ],
-        "patient_disabled_40pct_or_above": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "ortodontik diş tedavileri ile %40 ve üzerinde engelli kişiler hariç, kapsamdaki kişilerin özel sağlık hizmeti sunucuları ile Kurumla sözleşmesi olmayan resmi sunucularındaki diş ünitelerinde yapılan ağız ve diş sağlığına ilişkin tedaviler Kurumca ödenmez",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000791"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-1.(2).disabled_child_private_dental_report_10_biz_days",
-      "sut_section": "2.4.1.B-1",
-      "condition": {
-        "patient_disabled_40pct_or_special_need_child": true,
-        "facility_type_any": [
-          "private_provider",
-          "uncontracted_public_provider"
-        ],
-        "disability_or_special_need_documented": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "%40 ve üzeri engelli veya hafif düzey ve üstü özel gereksinimli çocukların özel/sözleşmesiz sunuculardaki diş tedavilerinin ödenebilmesi için engellilik/özel gereksinim durumu belgelendirilmeli; ADSM/ADSH/üniversite diş hekimliği tarafından sağlık raporu düzenlenmeli ve rapor tarihinden itibaren 10 iş günü içinde tedaviye başlanmalıdır",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000794"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-1.(3).non_communicative_disabled_ga_unit_documentation",
-      "sut_section": "2.4.1.B-1",
-      "condition": {
-        "patient_communication_impaired_disabled": true,
-        "procedure_category": "dental_treatment_under_anesthesia",
-        "limited_sedation_not_feasible": true,
-        "ga_or_sedo_analgesia_unit_documented": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "iletişim kurulamayan/algılama güçlüğü yaşanan engelli kişilerin diş tedavilerinde sınırlı uyuşturma mümkün değilse genel anestezi veya sedo-analjezi bedelinin ödenebilmesi için anesteziyoloji ve reanimasyon uzmanı sorumluluğunda, ADSM/tıp merkezi/hastane ameliyathane ve genel anestezi ünitelerinde yapıldığının belgelendirilmesi gerekmektedir",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000795"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-1.(5).orthodontics_3_dentist_board_report_6mo",
-      "sut_section": "2.4.1.B-1",
-      "condition": {
-        "procedure_category": "orthodontic_treatment",
-        "facility_type_any": [
-          "private_provider",
-          "uncontracted_public_provider"
-        ],
-        "health_board_report_by_3_dentists": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "ortodontik tedavi gereksinimi olan hastalar ADSM/ADSH/üniversite diş hekimliği fakültelerince (ortodonti uzmanı/doktoralı hekim katılımlı) üç diş hekimi tarafından düzenlenen sağlık kurulu raporu ile özel/sözleşmesiz sunuculara başvurabilir; raporda estetik olmadığı ve maloklüzyon tipi belirtilmeli ve rapor tarihinden 6 ay içinde başlanmalıdır",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000799"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-1.(6).post_treatment_control_form_public_dentist_approval",
-      "sut_section": "2.4.1.B-1",
-      "condition": {
-        "facility_type_any": [
-          "private_provider",
-          "uncontracted_public_provider"
-        ],
-        "procedure_category_any": [
-          "dental_treatment",
-          "orthodontic_treatment"
-        ],
-        "control_form_approved_by_contracted_public_dentist": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "özel/sözleşmesiz sunucularca yapılan diş tedavileri sonrasında EK-2/Ç-2 “Diş Tedavileri Kontrol Formu” ve/veya EK-2/Ç-3 “Tanıya Dayalı Ortodontik Tedavi Kontrol Formu”ndaki tedavinin yapıldığına dair bölümün sözleşmeli resmi sunucuda görevli diş hekimi tarafından onaylanması gerekmektedir",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000800"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-2.(1).disabled_or_special_need_child_ek2c_fee",
-      "sut_section": "2.4.1.B-2",
-      "condition": {
-        "patient_disabled_40pct_or_special_need_child": true,
-        "facility_type_any": [
-          "private_provider",
-          "uncontracted_public_provider"
-        ],
-        "procedure_in_ek2c_list": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "özel/sözleşmesiz sunuculardan %40 ve üzeri engelli kişilere veya hafif düzey ve üstü özel gereksinimli çocuk hastalara verilen ağız ve diş sağlığı hizmetlerinin ücretleri EK-2/Ç listesinde yer alması şartıyla işlem bedelleri üzerinden ödenir",
-        "billing_method": "procedure_package",
-        "annex_basis": "EK-2/Ç"
-      },
-      "gate_b_sources": [
-        "C000804"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-2.(2).private_uncontracted_orthodontics_per_2_4_1_4",
-      "sut_section": "2.4.1.B-2",
-      "condition": {
-        "procedure_category": "orthodontic_treatment",
-        "facility_type_any": [
-          "private_provider",
-          "uncontracted_public_provider"
-        ]
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "özel/sözleşmesiz sunucu diş ünitelerinde uygulanan ortodontik tedavi bedelleri SUT’un 2.4.1(4) fıkrasına göre ödenir",
-        "billing_method": "procedure_package"
-      },
-      "gate_b_sources": [
-        "C000805"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-2.(4).disabled_prosthesis_no_separate_material_casting_labor",
-      "sut_section": "2.4.1.B-2",
-      "condition": {
-        "patient_disabled_40pct_or_special_need_child": true,
-        "procedure_category": "dental_prosthesis",
-        "facility_type_any": [
-          "private_provider",
-          "uncontracted_public_provider"
-        ],
-        "separate_material_casting_labor_fee_charged": true
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "%40 ve üzeri engelli/özel gereksinimli çocuk hastalara verilen ağız ve diş sağlığı hizmetleri kapsamında uygulanan protez tedavileri için malzeme dahil döküm ve işçilik ücreti ödenmez",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000807"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-2.(5).orthodontic_invoices_ek2c3_stage_payment",
-      "sut_section": "2.4.1.B-2",
-      "condition": {
-        "procedure_category": "orthodontic_treatment",
-        "stage_completed": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "ortodontik tedavi uygulanan kişilere ait faturaların ödemeleri EK-2/Ç-3 Listesinde yer alan formlar üzerinden her bir aşama tamamlandığında bedelleri ödenir",
-        "billing_method": "procedure_package",
-        "annex_basis": "EK-2/Ç-3"
-      },
-      "gate_b_sources": [
-        "C000810"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-3.(1).self_referral_board_signer_treatment_no_pay",
-      "sut_section": "2.4.1.B-3",
-      "condition": {
-        "treating_provider_is_board_signer_or_first_degree_relative_or_partner": true
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "sağlık kurulu raporunda imzası bulunan hekimin kendisinin, birinci derece yakınının veya bunların ortaklarının özel muayenehanelerince/özel sunucularınca tedavi edilmesi halinde söz konusu tedavi giderleri ödenmez",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000812"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.1.B-3.(2).star_and_7_1_orthodontics_specialist_required",
-      "sut_section": "2.4.1.B-3",
-      "condition": {
-        "procedure_in_ek2c_star_marked_or_section_7_1": true,
-        "performed_by_specialist_or_doctor_dentist": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "EK-2/Ç Listesinde (*) işaretli tedaviler ile “7.1 Tanıya dayalı ortodontik tedavi işlemleri” bölümündeki tedavilerin karşılanabilmesi için tedavinin konularında uzman veya doktoralı diş hekimleri tarafından yapıldığının belgelendirilmesi gerekmektedir",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000813"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.A.(1).organ_tissue_transplant_recipient_donor_covered",
-      "sut_section": "2.4.2.A",
-      "condition": {
-        "procedure_category_any": [
-          "organ_transplant",
-          "tissue_transplant"
-        ],
-        "compliant_with_2238_law": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "organ veya doku nakline gerek görülmesi halinde 2238 sayılı Kanun hükümleri dikkate alınmak şartıyla organ/doku nakli tedavilerine ilişkin giderler ile verici durumundaki kişinin bu tedaviye ilişkin giderleri Kurum tarafından karşılanır",
-        "billing_method": "procedure_package"
-      },
-      "gate_b_sources": [
-        "C000816"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.A.(4).domestic_organ_transfer_per_2_6",
-      "sut_section": "2.4.2.A",
-      "condition": {
-        "organ_found_in_country": true,
-        "service_category": "patient_transfer_for_transplant"
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "yurt içinde organın bulunması halinde hastanın organın bulunduğu yere veya organ nakli yapılacak merkezin bulunduğu yere getirilmesine ilişkin gidiş-dönüş nakliye/transfer masrafları SUT’un 2.6 maddesi doğrultusunda Kurumca karşılanır",
-        "billing_method": "fee_for_service"
-      },
-      "gate_b_sources": [
-        "C000821"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c",
-      "sut_section": "2.4.2.A",
-      "condition": {
-        "procedure_code_any": [
-          "P911146"
-        ],
-        "donor_reported_by_national_coordination_center": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "Ulusal Organ ve Doku Nakli Koordinasyon Merkezince bildirilen her bir kadavra donör için donörü temin eden sunucuya EK-2/C “P911146 Kadavra donör temini” bedeli karşılanır; bedele kadavra organ alım işlemleri dahildir",
-        "billing_method": "fee_for_service",
-        "annex_basis": "EK-2/C"
-      },
-      "gate_b_sources": [
-        "C000824"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.A.(6).abo_incompatible_kidney_transplant_no_pay",
-      "sut_section": "2.4.2.A",
-      "condition": {
-        "procedure_category": "abo_incompatible_kidney_transplant",
-        "patient_unable_for_any_dialysis_with_tier3_board_report": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "herhangi bir diyaliz yöntemiyle tedavisi mümkün olmayan (sözleşmeli 3. basamak sunucu sağlık kurulu raporuyla belgelenen) hastalar hariç, ABO kan grubu uyumsuz böbrek nakline ilişkin giderler Kurumca karşılanmaz; ABO uyumsuz nakilde uygulanacak aferez işlemi ve tıbbi malzeme bedelleri ayrıca faturalandırılamaz",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000827"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-1.(1).hla_compatibility_tests_relatives_max30",
-      "sut_section": "2.4.2.B-1",
-      "condition": {
-        "procedure_category": "bone_marrow_transplant",
-        "test_type": "hla_compatibility_typing",
-        "candidate_count": {
-          "max": 30
-        }
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "kemik iliği nakli tedavilerinde hastanın anne/baba/kardeş/çocuğundan HLA uyumlu verici bulmak için yapılan doku uyumluluk testleri ile uygun vericisi bulunamayan hastaların 30 adayı geçmemek üzere HLA doku grubu belirleme testleri Kurum tarafından karşılanır",
-        "billing_method": "fee_for_service"
-      },
-      "gate_b_sources": [
-        "C000830"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-1.(3).marrow_bank_stage1_705090_110_verify_705100_120",
-      "sut_section": "2.4.2.B-1",
-      "condition": {
-        "procedure_category": "bone_marrow_donor_typing",
-        "billing_outside_codes": [
-          "705.090",
-          "705.110",
-          "705.100",
-          "705.120"
-        ]
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "kemik iliği doku bilgi bankalarınca birinci aşama işlemler EK-2/B “705.090” ve “705.110” kodları üzerinden, adres/serolojik doku tipi doğrulama ve onay alma işlemleri “705.100” ve “705.120” kodları üzerinden faturalandırılması gerekmektedir",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000832"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-1.(4).high_res_dna_hla_confirmation_max25",
-      "sut_section": "2.4.2.B-1",
-      "condition": {
-        "procedure_category": "bone_marrow_donor_confirmation",
-        "lab_licensed_by_moh": true,
-        "candidate_count": {
-          "max": 25
-        }
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "yurt içi ön taramalarda belirlenen verici adaylarının Bakanlıkça ruhsatlandırılmış doku tipleme laboratuvarlarında yapılan yüksek çözünürlük DNA testi ile HLA doku grubu doğrulama testleri giderleri toplam 25 adayı geçmemek üzere Kurum tarafından karşılanır",
-        "billing_method": "fee_for_service"
-      },
-      "gate_b_sources": [
-        "C000833"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-1.(5).domestic_unrelated_marrow_cord_procurement_ek2c",
-      "sut_section": "2.4.2.B-1",
-      "condition": {
-        "procedure_category": "unrelated_marrow_or_cord_procurement_domestic",
-        "donor_found_in_country": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "akraba dışı kemik iliği vericisinin ülkemizde bulunması halinde “yurt içi kemik iliği temini/kordon kanı temini” bedeli EK-2/C Listesi üzerinden fatura bedelini aşmamak üzere karşılanır",
-        "billing_method": "fee_for_service",
-        "annex_basis": "EK-2/C"
-      },
-      "gate_b_sources": [
-        "C000834"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-1.(6).foreign_hla_confirmation_7of8_max10x25",
-      "sut_section": "2.4.2.B-1",
-      "condition": {
-        "procedure_category": "bone_marrow_donor_confirmation_foreign",
-        "hla_match_7_of_8_or_better": true,
-        "samples_per_batch": {
-          "max": 10
-        },
-        "total_candidates": {
-          "max": 25
-        }
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "yurt içinde uygun vericisi bulunmayan hastalar için yurt dışı kemik iliği bankaları aracılığıyla en az 7/8 doku tipi uyumu gösteren kan örnekleri (bir defada en fazla 10, toplamda 25 kişiyi geçmemek üzere) yüksek çözünürlük DNA yöntemi ile HLA doku grubu analizine tabi tutulur; test bedelleri Kurum tarafından karşılanır",
-        "billing_method": "fee_for_service"
-      },
-      "gate_b_sources": [
-        "C000835"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-1.(9).marrow_cord_transport_euro_caps",
-      "sut_section": "2.4.2.B-1",
-      "condition": {
-        "service_category": "foreign_marrow_or_cord_transport",
-        "transport_amount_within_euro_caps": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "kemik iliğinin Türkiye’deki nakil merkezine getirilmesi Amerika/Avustralya için 4.500 Euro, diğer ülkeler için 2.000 Euro; kordon kanının taşıma tankıyla getirilip geri iletilmesi 5.000 Euro’yu geçmemek şartıyla fatura karşılığı Kurumca ödenir",
-        "billing_method": "fee_for_service"
-      },
-      "gate_b_sources": [
-        "C000838"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-1.(10).foreign_sourcing_activation_cancellation_fees",
-      "sut_section": "2.4.2.B-1",
-      "condition": {
-        "service_category_any": [
-          "foreign_donor_screening",
-          "donor_advanced_tests",
-          "health_check_costs",
-          "stem_cell_collection",
-          "process_cancellation_fee",
-          "postponement_fee",
-          "cord_blood_storage_2y",
-          "activation_fee"
-        ],
-        "bank_is_wmda_member": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "yurt dışından kemik iliği/kordon kanı getirtilme sürecindeki verici taraması, ileri testler, sağlık kontrolü, kök hücre toplama, işlem iptal bedeli, erteleme ücreti, kordon kanı saklama (2 yıla kadar) ve aktivasyon ücretleri Kurumca avans/havale veya kişiye ödenir",
-        "billing_method": "fee_for_service"
-      },
-      "gate_b_sources": [
-        "C000839"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-1.(11).bone_marrow_transplant_ek2c_licensed_center",
-      "sut_section": "2.4.2.B-1",
-      "condition": {
-        "procedure_category": "bone_marrow_transplant",
-        "facility_is_moh_licensed_transplant_center": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "kemik iliği nakli (hematopoietik kök hücre nakli) tedavisi Bakanlıkça ruhsatlandırılmış ve çalışma izni almış nakil merkezlerince uygulanır; tedavi bedelleri EK-2/C “Kemik İliği Nakli” başlığı altındaki işlem puanları esas alınarak Kurumca karşılanır",
-        "billing_method": "procedure_package",
-        "annex_basis": "EK-2/C"
-      },
-      "gate_b_sources": [
-        "C000840"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-1.(12).pre_2013_foreign_marrow_screening_retroactive",
-      "sut_section": "2.4.2.B-1",
-      "condition": {
-        "procedure_category": "foreign_marrow_screening_procurement",
-        "invoice_date_before_2013_05_01": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "1/5/2013 tarihinden önceki SUT kuralları gereği karşılanamayan yurt dışındaki kemik iliği bankaları aracılığıyla yapılan kemik iliği/kordon kanı tarama ve teminine ilişkin fatura bedelleri yukarıdaki hükümler doğrultusunda Kurumca karşılanır",
-        "billing_method": "fee_for_service"
-      },
-      "gate_b_sources": [
-        "C000842"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-2.(1).mesenchymal_stem_cell_transplant_moh_approval",
-      "sut_section": "2.4.2.B-2",
-      "condition": {
-        "procedure_category": "mesenchymal_stem_cell_transplant",
-        "condition_specified_in_board_report": true,
-        "moh_approval_per_patient": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "mezenkimal kök hücre nakli tedavi bedeli, durumların sağlık kurulu raporunda belirtilmesi ve raporun Sağlık Bakanlığınca her hasta için ayrı ayrı onaylanarak izin verilmesi halinde Kurumca karşılanır",
-        "billing_method": "procedure_package"
-      },
-      "gate_b_sources": [
-        "C000847"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-2.(3).mesenchymal_704_981_production_center_required",
-      "sut_section": "2.4.2.B-2",
-      "condition": {
-        "procedure_code_any": [
-          "704.981"
-        ],
-        "production_in_moh_defined_stem_cell_center": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "“mezenkimal kök hücre nakli (üretimi dahil)” EK-2/B “704.981” kodu ile yer almakta olup bedelinin faturalandırılabilmesi için üretimin Sağlık Bakanlığınca Kök Hücre Üretim Merkezi olarak tanımlanan merkezlerde yapılmış olması şarttır",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000849"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.2.B-2.(4).mesenchymal_within_allo_15d_before_90d_after_bundle",
-      "sut_section": "2.4.2.B-2",
-      "condition": {
-        "procedure_category": "mesenchymal_stem_cell_transplant",
-        "applied_within_allo_15d_before_or_90d_after": true,
-        "separately_billed": true
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "mezenkimal kök hücre nakli tedavisi kemik iliği nakil bedellerine dahil olmayıp ayrıca faturalandırılabilir; ancak allojenik kemik iliği nakli öncesi 15 gün ve/veya sonrası 90 gün içerisinde uygulandığı takdirde kemik iliği nakli bedeline dahil olup ayrıca faturalandırılmaz",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "C000850"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.3.(A).non_eip_vaccines_high_risk_report",
-      "sut_section": "2.4.3",
-      "condition": {
-        "vaccine_not_in_expanded_immunization_program": true,
-        "patient_high_risk_category": true,
-        "health_report_present": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "Bakanlık “Genişletilmiş Bağışıklama Programı” kapsamında olmayan aşı bedelleri; kronik böbrek yetmezliği, kistik fibrozis, KOAH, kanser, HIV/AIDS, splenektomi olanlar ile immünsupresif tedaviye bağlı yüksek riskli kişilerin sağlık raporuna istinaden karşılanır",
-        "billing_method": "procedure_package"
-      },
-      "gate_b_sources": [
-        "C000852"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.3.(B).influenza_vaccine_annual_risk_groups_sep_mar",
-      "sut_section": "2.4.3",
-      "condition": {
-        "procedure_category": "influenza_vaccine",
-        "patient_in_risk_group_or_65plus_or_care_home": true,
-        "prescribed_between_september_and_march": true,
-        "already_administered_this_year": false
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "grip aşısı bedeli; 65 yaş ve üzeri ile yaşlı bakımevi/huzurevinde kalanlara rapor aranmaksızın; gebeliğin 2./3. trimesterindeki gebeler, kronik pulmoner/kardiyovasküler/metabolik/renal hastalığı veya immün yetmezliği olanlar ile uzun süreli asetil salisilik asit alan çocuklara sağlık raporuna dayanılarak her Eylül-Mart döneminde bir defaya mahsus karşılanır",
-        "billing_method": "procedure_package"
-      },
-      "gate_b_sources": [
-        "C000855"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.3.(C).pneumococcal_vaccine_5_year_risk_groups",
-      "sut_section": "2.4.3",
-      "condition": {
-        "procedure_category": "pneumococcal_polysaccharide_vaccine",
-        "patient_in_risk_group_or_65plus": true,
-        "years_since_last_pneumococcal": {
-          "min": 5
-        }
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "pnömokok aşısı (polisakkarit) bedeli; aspleni/dalak disfonksiyonu/splenektomi, orak hücre, immün yetmezlik/baskılanma, kronik renal/kalp/akciğer/karaciğer/metabolik hastalık, hemoglobinopati, beyin omurilik sıvısı sızıntısı bulunan risk gruplarına sağlık raporuyla 5 yılda bir, 65 yaş ve üzeri kişilere rapor aranmaksızın beş yılda bir karşılanır",
-        "billing_method": "procedure_package"
-      },
-      "gate_b_sources": [
-        "C000856"
-      ],
-      "encode_batch": "R6_REST"
-    },
-    {
-      "rule_id": "2.4.3.(D).hepatitis_a_vaccine_max_2_yearly_seronegative",
-      "sut_section": "2.4.3",
-      "condition": {
-        "procedure_category": "hepatitis_a_vaccine",
-        "patient_seronegative": true,
-        "patient_has_chronic_liver_disease_or_clotting_factor_concentrate": true,
-        "patient_age": {
-          "min": 1
-        },
-        "doses_within_year": {
-          "max": 2
-        },
-        "health_report_present": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "hepatit A aşısı bedeli; kronik karaciğer hastalığı olan veya pıhtılaşma faktörü konsantresi alan ve hepatit A seronegatif olan 1 yaş üzeri çocuk/erişkinlere sağlık raporuna dayanılarak tüm hekimlerce reçete edilmesi halinde en fazla yılda iki kez karşılanır",
-        "billing_method": "procedure_package"
-      },
-      "gate_b_sources": [
-        "C000857"
-      ],
-      "encode_batch": "R6_REST"
     }
   ]
 }

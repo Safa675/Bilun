@@ -5,7 +5,7 @@
   "rules_in_json": 137,
   "section_4.2.1_clause_total": 282,
   "section_clause_total": 282,
-  "encoded_clause_count": 122,
+  "encoded_clause_count": 120,
   "encoded_clause_ids": [
     "C003563",
     "C003565",
@@ -69,7 +69,7 @@
     "C003712",
     "C003719",
     "C003722",
-    "C003727",
+    "C003737",
     "C003738",
     "C003739",
     "C003741",
@@ -90,11 +90,9 @@
     "C003775",
     "C003778",
     "C003781",
+    "C003783",
     "C003787",
     "C003790",
-    "C003799",
-    "C003800",
-    "C003802",
     "C003806",
     "C003807",
     "C003808",
@@ -105,7 +103,7 @@
     "C003818",
     "C003820",
     "C003831",
-    "C003836",
+    "C003832",
     "C003839",
     "C003840",
     "C003848",
@@ -193,7 +191,7 @@
     "C003712",
     "C003719",
     "C003722",
-    "C003727",
+    "C003737",
     "C003738",
     "C003739",
     "C003741",
@@ -214,11 +212,9 @@
     "C003775",
     "C003778",
     "C003781",
+    "C003783",
     "C003787",
     "C003790",
-    "C003799",
-    "C003800",
-    "C003802",
     "C003806",
     "C003807",
     "C003808",
@@ -229,7 +225,7 @@
     "C003818",
     "C003820",
     "C003831",
-    "C003836",
+    "C003832",
     "C003839",
     "C003840",
     "C003848",
@@ -333,7 +329,6 @@
     "C003720",
     "C003721",
     "C003723",
-    "C003737",
     "C003740",
     "C003742",
     "C003744",
@@ -358,7 +353,6 @@
     "C003779",
     "C003780",
     "C003782",
-    "C003783",
     "C003784",
     "C003785",
     "C003786",
@@ -384,7 +378,6 @@
     "C003828",
     "C003829",
     "C003830",
-    "C003832",
     "C003833",
     "C003837",
     "C003838",
@@ -426,7 +419,7 @@
   ],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 166,
+  "tier_c_deferred_count": 163,
   "clause_traces": [
     {
       "clause_id": "C003561",
@@ -836,7 +829,8 @@
       "heuristic_inn": "Amiloidozu olan FMF hastalığı tedavisinde",
       "signal_score": 9,
       "linked_rule_ids": [
-        "4.2.1.anakinra_canakinumab_fmf_amyloidosis"
+        "4.2.1.anakinra_canakinumab_fmf_amyloidosis",
+        "4.2.1.anakinra_canakinumab_fmf_amyloidosis_colchicine"
       ]
     },
     {
@@ -847,7 +841,6 @@
       "heuristic_inn": "Fistülize",
       "signal_score": 9,
       "linked_rule_ids": [
-        "4.2.1.vedolizumab_crohn_anti_tnf_initiation",
         "4.2.1.vedolizumab_crohn_anti_tnf_initiation"
       ]
     },
@@ -971,7 +964,6 @@
       "heuristic_inn": "anti_tnf",
       "signal_score": 8,
       "linked_rule_ids": [
-        "4.2.1.jak_psa_second_line_initiation",
         "4.2.1.jak_psa_second_line_initiation"
       ]
     },
@@ -1704,13 +1696,12 @@
       "clause_id": "C003832",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
       "signal_score": 4,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber"
+      ]
     },
     {
       "clause_id": "C003858",
@@ -2062,13 +2053,13 @@
       "clause_id": "C003783",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "2.1.C-7 – Kanakinumab (Ek:RG-12/12/2024-32750/7-a md. Yürürlük:20/12/2024)",
       "signal_score": 2,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.1.canakinumab_fmf_anakinra_failure_switch",
+        "4.2.1.kanakinumab_fmf_3mo_response_c7"
+      ]
     },
     {
       "clause_id": "C003784",
@@ -2399,13 +2390,12 @@
       "clause_id": "C003737",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "2.1.C-6 –Tofacitinib",
       "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.1.tofacitinib_ra_prescriber_board_c6"
+      ]
     },
     {
       "clause_id": "C003752",
