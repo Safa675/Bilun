@@ -259,12 +259,13 @@ class TestProseInventoryEndpoint:
     # Orphan rule JSONs (produced by encode-waves generators but with no
     # runtime loader) must NOT appear as engines — otherwise the dashboard
     # over-reports live rule counts. See _wired_prose_rule_filenames().
+    # NOTE: definitions_2_6, dental_2_4_1, gap_closing_misc, and
+    # gap_closing_treatment_2 were wired (loaders + registry entries) and
+    # removed from this set. drug_combination_4_2 and treatment_pricing_2_4
+    # remain orphans — their conditions need clinical data (pdl1, ecog,
+    # sessions_within_6mo) absent from the claim model.
     _ORPHAN_RULE_SETS = {
-        "definitions_2_6",
-        "dental_2_4_1",
         "drug_combination_4_2",
-        "gap_closing_misc",
-        "gap_closing_treatment_2",
         "treatment_pricing_2_4",
     }
 
