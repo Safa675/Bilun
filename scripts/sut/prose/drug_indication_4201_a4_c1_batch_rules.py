@@ -77,7 +77,7 @@ BATCH_A4_C1_RULES: list[dict[str, Any]] = [
             "Anti-TNF — juvenil artritte ACR pediatrik 30 yanıtı sonrası "
             "3 ay süreli sağlık kurulu raporu ile tedaviye devam edilir (§4.2.1.C-1)."
         ),
-        gate_b_sources=["C003598"],
+        gate_b_sources=["C003603"],
     ),
     _rule(
         "4.2.1.anti_tnf_jia_acr50_continuation_c1",
@@ -91,7 +91,7 @@ BATCH_A4_C1_RULES: list[dict[str, Any]] = [
             "Anti-TNF — juvenil artritte ACR pediatrik 50 yanıtı ile "
             "6 ay süreli sağlık kurulu raporu ile tedaviye devam edilir (§4.2.1.C-1)."
         ),
-        gate_b_sources=["C003598"],
+        gate_b_sources=["C003603"],
     ),
     _rule(
         "4.2.1.inflix_peripheral_as_second_line_start",
@@ -103,7 +103,7 @@ BATCH_A4_C1_RULES: list[dict[str, Any]] = [
             "İnfliksimab — periferik eklem tutulumlu ankilozan spondilitte diğer anti-TNF "
             "yetersizliğinin 3 ay süreli sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-1)."
         ),
-        gate_b_sources=["C003613"],
+        gate_b_sources=["C003609"],
     ),
     _rule(
         "4.2.1.inflix_peripheral_as_basdai_continuation",
@@ -115,7 +115,7 @@ BATCH_A4_C1_RULES: list[dict[str, Any]] = [
             "İnfliksimab — periferik ankilozan spondilitte BASDAİ yanıtı sonrası "
             "6 ay süreli sağlık kurulu raporu ile tedaviye devam edilir (§4.2.1.C-1)."
         ),
-        gate_b_sources=["C003613"],
+        gate_b_sources=["C003609"],
     ),
     _rule(
         "4.2.1.anti_tnf_jia_acr_monitoring_board",
@@ -128,7 +128,7 @@ BATCH_A4_C1_RULES: list[dict[str, Any]] = [
             "Anti-TNF — juvenil artritte tedavi devamında ACR pediatrik cevap kriterinin "
             "her sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-1)."
         ),
-        gate_b_sources=["C003598"],
+        gate_b_sources=["C003603"],
     ),
     _rule(
         "4.2.1.inflix_peripheral_as_second_line_romato_board",
@@ -141,6 +141,6 @@ BATCH_A4_C1_RULES: list[dict[str, Any]] = [
             "İnfliksimab — periferik ankilozan spondilitte diğer anti-TNF yetersizliğinde "
             "romatoloji uzmanının yer aldığı 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1)."
         ),
-        gate_b_sources=["C003613"],
+        gate_b_sources=["C003609"],
     ),
 ]

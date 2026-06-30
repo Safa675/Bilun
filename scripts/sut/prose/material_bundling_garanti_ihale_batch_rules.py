@@ -84,7 +84,7 @@ GARANTI_IHALE_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.2.1.A.(3).supplier_contract_pricing_path",
         "sut_section": "3.2.1",
         "deontic": "REGULATORY_ACTION",
-        "gate_b_sources": ["C001842"],
+        "gate_b_sources": [],
         "condition": {"supplier_contract_pricing_path": True},
         "action": {
             "material_outcome": "review_required",

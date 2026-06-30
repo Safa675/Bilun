@@ -84,7 +84,7 @@ BATCH_A8_RULES: list[dict[str, Any]] = [
             "sağlık kurulu raporu; hematoloji/iç hastalıkları/çocuk sağlığı uzman reçetesi "
             "(§4.2.27.A)."
         ),
-        gate_b_sources=["C006215"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.27.prophylaxis_acute_bleed_3day_report",
@@ -97,7 +97,7 @@ BATCH_A8_RULES: list[dict[str, Any]] = [
             "Proflaksi hastasında akut kanama/cerrahi — 3 güne kadar süreli yeni hematoloji "
             "uzman hekim raporu gerekir (§4.2.27.A)."
         ),
-        gate_b_sources=["C006217"],
+        gate_b_sources=["C006257"],
     ),
     _rule(
         "4.2.27.coagulation_emergency_one_day",
@@ -110,7 +110,7 @@ BATCH_A8_RULES: list[dict[str, Any]] = [
             "Koagülasyon faktörü acil müracaat — takip karnesi yoksa el yazısı ile belirtilerek "
             "en fazla 1 günlük doz ve hematoloji sevki (§4.2.27.A)."
         ),
-        gate_b_sources=["C006218"],
+        gate_b_sources=["C006228"],
     ),
     _rule(
         "4.2.27.pcc_acquired_coagulopathy_board",
@@ -124,7 +124,7 @@ BATCH_A8_RULES: list[dict[str, Any]] = [
             "bozukluğunda tanı ve faktör düzeyini gösteren hematoloji sağlık kurulu raporu "
             "ile bir dozda reçete (§4.2.27.A)."
         ),
-        gate_b_sources=["C006220"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.27.coumarin_active_bleed_one_day",
@@ -135,7 +135,7 @@ BATCH_A8_RULES: list[dict[str, Any]] = [
             "Kumarin kaynaklı aktif kanama — kanama yeri belirtilerek uzman hekimlerce "
             "en fazla 1 günlük doz; idame yalnızca hematoloji uzman hekimlerince (§4.2.27.A)."
         ),
-        gate_b_sources=["C006222"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.27.factor_annual_board_report",

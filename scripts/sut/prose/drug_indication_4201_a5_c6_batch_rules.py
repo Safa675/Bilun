@@ -82,7 +82,7 @@ BATCH_A5_C6_RULES: list[dict[str, Any]] = [
             "JAK inhibitörleri — romatoid artritte DMARD yetersizliğinde (DAS28>5.1) "
             "3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6)."
         ),
-        gate_b_sources=["C003726"],
+        gate_b_sources=["C003738"],
     ),
     _rule(
         "4.2.1.jak_psa_second_line_initiation",
@@ -93,7 +93,7 @@ BATCH_A5_C6_RULES: list[dict[str, Any]] = [
             "JAK inhibitörleri — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte "
             "sağlık kurulu raporunda önceki tedavi yetersizliği belirtilmelidir (§4.2.1.C-6)."
         ),
-        gate_b_sources=["C003730", "C003741"],
+        gate_b_sources=["C003741", "C003741"],
     ),
     _rule(
         "4.2.1.tofacitinib_axial_as_initiation",
@@ -105,7 +105,7 @@ BATCH_A5_C6_RULES: list[dict[str, Any]] = [
             "Tofacitinib — aksiyel tutulumlu ankilozan spondilitte anti-TNF yetersizliğinde "
             "3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6)."
         ),
-        gate_b_sources=["C003734"],
+        gate_b_sources=["C003745"],
     ),
     _rule(
         "4.2.1.tofacitinib_peripheral_as_initiation",
@@ -117,7 +117,7 @@ BATCH_A5_C6_RULES: list[dict[str, Any]] = [
             "Tofacitinib — periferik eklem tutulumlu ankilozan spondilitte anti-TNF "
             "yetersizliğinde 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6)."
         ),
-        gate_b_sources=["C003735"],
+        gate_b_sources=["C003746"],
     ),
     _rule(
         "4.2.1.jak_ra_university_prescriber_board",
@@ -186,7 +186,7 @@ BATCH_A5_C6_RULES: list[dict[str, Any]] = [
             "Upadasitinib — atopik dermatitte üçüncü basamak kurumda üç dermatoloji "
             "uzmanının yer aldığı 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6)."
         ),
-        gate_b_sources=["C003765"],
+        gate_b_sources=["C003766"],
     ),
     _rule(
         "4.2.1.baricitinib_ad_specialist_board",

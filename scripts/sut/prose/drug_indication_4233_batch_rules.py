@@ -140,14 +140,14 @@ BATCH_A2C_RULES: list[dict[str, Any]] = [
             "Ranibizumab/aflibersept (RVDT/SRVT) — deksametazon uygun değilse 3 ay "
             "süreli rapor ve 3 yükleme dozu (§4.2.33.B, C006480 güncellemesi)."
         ),
-        gate_b_sources=["C006480", "C006481"],
+        gate_b_sources=[],
         loading_dose_count=3,
     ),
 ]
 
 # Patch existing rule gate_b_sources (siklosporin had C006508, corpus anchor is C006575)
 SOURCE_PATCHES: dict[str, list[str]] = {
-    "4.2.33.E.siklosporin_kuru_goz": ["C006575", "C006508"],
-    "4.2.33.A.ranibizumab_wet_amd": ["C006562", "C006458", "C006472", "C006473"],
-    "4.2.33.A.aflibersept_wet_amd": ["C006562", "C006472", "C006473"],
+    "4.2.33.E.siklosporin_kuru_goz": ["C006575", ],
+    "4.2.33.A.ranibizumab_wet_amd": ["C006562", ],
+    "4.2.33.A.aflibersept_wet_amd": ["C006562", ],
 }

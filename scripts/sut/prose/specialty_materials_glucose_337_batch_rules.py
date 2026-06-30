@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-GLUCOSE_METER_BATCH_CLAUSE_IDS: frozenset[str] = frozenset({"C001928", "C002875"})
+GLUCOSE_METER_BATCH_CLAUSE_IDS: frozenset[str] = frozenset({"C002875", "C002875"})
 
 SPECIALTY_337_BATCH_CLAUSE_IDS: frozenset[str] = frozenset({"C003072", "C003073"})
 
@@ -13,7 +13,7 @@ GLUCOSE_337_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.2.b.glucose_meter_early_renewal",
         "sut_section": "3.3.2",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001928", "C002875"],
+        "gate_b_sources": ["C002875", "C002875"],
         "condition": {"glucose_meter_early_renewal": True},
         "action": {
             "material_outcome": "no_pay",
@@ -28,7 +28,7 @@ GLUCOSE_337_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.2.b.glucose_meter_early_renewal_keyword",
         "sut_section": "3.3.2",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001928", "C002875"],
+        "gate_b_sources": ["C002875", "C002875"],
         "condition": {
             "material_name_any": [
                 "kan sekeri olcum cihaz",

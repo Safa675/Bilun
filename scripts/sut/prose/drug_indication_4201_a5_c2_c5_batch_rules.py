@@ -56,7 +56,7 @@ BATCH_A5_C2_C5_RULES: list[dict[str, Any]] = [
             "Rituksimab — romatoid artritte sağlık kurulu raporu romatoloji uzman "
             "hekiminin yer aldığı kurumda düzenlenmelidir (§4.2.1.C-2)."
         ),
-        gate_b_sources=["C003641"],
+        gate_b_sources=["C003647"],
     ),
     _rule(
         "4.2.1.tocilizumab_dha_sc_steroid_contraindicated",
@@ -71,6 +71,6 @@ BATCH_A5_C2_C5_RULES: list[dict[str, Any]] = [
             "kontrendike olduğunda 3 ay süreli romatoloji/immünoloji sağlık kurulu "
             "raporu gerekir (§4.2.1.C-5)."
         ),
-        gate_b_sources=["C003717"],
+        gate_b_sources=["C003719"],
     ),
 ]

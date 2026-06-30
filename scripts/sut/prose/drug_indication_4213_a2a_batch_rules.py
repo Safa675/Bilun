@@ -70,7 +70,7 @@ BATCH_A2A_RULES: list[dict[str, Any]] = [
             "Hepatit tedavisi — önceki ilaçlar, tanı ve tedavi başlama/kesilme kriterleri "
             "raporda belirtilmelidir; oral antiviral ilk rapor en fazla 6 ay (§4.2.13)."
         ),
-        gate_b_sources=["C004506"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.13.hbv_dna_initiation_board",
@@ -82,7 +82,7 @@ BATCH_A2A_RULES: list[dict[str, Any]] = [
             "HBV oral antiviral başlangıcı — HBV DNA ≥10.000 kopya/ml ve biyopsi sonuçları "
             "rapor ekinde belirtilmelidir (§4.2.13.1)."
         ),
-        gate_b_sources=["C004514", "C004535"],
+        gate_b_sources=["C004540", "C004540"],
     ),
     _rule(
         "4.2.13.hbv_immunosuppression_lamivudin_prophylaxis",
@@ -118,7 +118,7 @@ BATCH_A2A_RULES: list[dict[str, Any]] = [
             "Akut hepatit C — HCV RNA pozitif raporda belirtilerek 24 hafta interferon "
             "monoterapisi; ribavirin eklenmez (§4.2.13.E-1)."
         ),
-        gate_b_sources=["C004634"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.13.hcv_ribavirin_genotype_duration",
@@ -130,7 +130,7 @@ BATCH_A2A_RULES: list[dict[str, Any]] = [
             "HCV ribavirin kombinasyonu — genotip 1/4 için 48 hafta; 12. hafta HCV RNA "
             "2 log azalmama halinde süre sınırı uygulanır (§4.2.13.E-2)."
         ),
-        gate_b_sources=["C004642"],
+        gate_b_sources=["C004912"],
     ),
     _rule(
         "4.2.13.hcv_daa_tertiary_gastro_once",
@@ -142,7 +142,7 @@ BATCH_A2A_RULES: list[dict[str, Any]] = [
             "HCV DAA — üçüncü basamak kurumda gastroenteroloji/enfeksiyon uzman raporu ve "
             "tedavi şeması; bir defaya mahsus (§4.2.13.3.2)."
         ),
-        gate_b_sources=["C004679"],
+        gate_b_sources=["C004897"],
     ),
     _rule(
         "4.2.13.hcv_daa_child_pugh_report",
@@ -154,7 +154,7 @@ BATCH_A2A_RULES: list[dict[str, Any]] = [
             "HCV DAA — Child-Pugh sınıflamasını kanıtlayıcı belgeler ve tedavi şeması "
             "üçüncü basamak uzman hekim raporunda belirtilmelidir (§4.2.13.3.2)."
         ),
-        gate_b_sources=["C004814"],
+        gate_b_sources=["C004897"],
     ),
     _rule(
         "4.2.13.hcv_specialist_report_criteria",
@@ -177,7 +177,7 @@ BATCH_A2A_RULES: list[dict[str, Any]] = [
             "HCV yeniden tedavi — önceki peginterferon/ribavirin/PI deneyimi "
             "sağlık raporunda belirtilmelidir (§4.2.13.3.2.A)."
         ),
-        gate_b_sources=["C004760", "C004851"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.13.hcv_genotype_b_48w_monitoring",
@@ -189,7 +189,7 @@ BATCH_A2A_RULES: list[dict[str, Any]] = [
             "HCV genotip 1/4 peginterferon+ribavirin — 48 hafta tedavi; 12. hafta HCV RNA "
             "monitoring ve erken kesme kriterleri raporda belirtilmelidir (§4.2.13.3.2.B)."
         ),
-        gate_b_sources=["C004724", "C004795"],
+        gate_b_sources=["C004912", "C004912"],
     ),
     _rule(
         "4.2.13.hcv_pediatric_early_stop_rechallenge",

@@ -6,25 +6,25 @@ from typing import Any
 
 SPECIALTY_334_BATCH_CLAUSE_IDS: frozenset[str] = frozenset(
     {
-        "C002006",
-        "C002008",
-        "C002011",
-        "C002012",
-        "C002013",
-        "C002014",
-        "C002027",
-        "C002028",
-        "C002054",
-        "C002056",
-        "C002061",
-        "C002062",
-        "C002064",
-        "C002078",
-        "C002085",
-        "C002087",
-        "C002089",
-        "C002090",
-        "C002093",
+       
+       
+       
+       
+        "C002934",
+       
+        "C002970",
+        "C002970",
+       
+       
+        "C002936",
+        "C002937",
+        "C002939",
+        "C002953",
+        "C002962",
+        "C002964",
+        "C002966",
+        "C002967",
+        "C002970",
         "C002934",
         "C002936",
         "C002937",
@@ -43,7 +43,7 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.(2).tissue_bank_unauthorized_product",
         "sut_section": "3.3.4",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002006", "C002054"],
+        "gate_b_sources": [],
         "condition": {"tissue_bank_unauthorized_product": True},
         "action": {
             "material_outcome": "no_pay",
@@ -58,15 +58,14 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.(4).dermis_allograft_no_pay",
         "sut_section": "3.3.4",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002008", "C002056", "C002934"],
+        "gate_b_sources": ["C002934"],
         "condition": {
             "material_name_any": [
                 "dermis allogreft",
                 "epidermis allogreft",
                 "dermis xenogreft",
                 "sentetik greft dermis",
-                "allogreft dermis",
-            ]
+                "allogreft dermis"]
         },
         "action": {
             "material_outcome": "no_pay",
@@ -81,7 +80,7 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.A.(1).bone_stimulator_combined_use",
         "sut_section": "3.3.4.A",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002011", "C002087", "C002964"],
+        "gate_b_sources": ["C002964", "C002964"],
         "condition": {"bone_stimulator_combined_use": True},
         "action": {
             "material_outcome": "no_pay",
@@ -96,7 +95,7 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.A.(2).bone_stimulator_hypertrophic_nonunion",
         "sut_section": "3.3.4.A",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002012", "C002089", "C002966"],
+        "gate_b_sources": ["C002966", "C002966"],
         "condition": {"bone_stimulator_hypertrophic_nonunion": True},
         "action": {
             "material_outcome": "no_pay",
@@ -111,7 +110,7 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.A.(3).bone_stimulator_with_autograft",
         "sut_section": "3.3.4.A",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002013", "C002090", "C002967"],
+        "gate_b_sources": ["C002934", "C002967", "C002967"],
         "condition": {"bone_stimulator_with_autograft": True},
         "action": {
             "material_outcome": "no_pay",
@@ -126,7 +125,7 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.A.(4).bone_stimulator_benign_tumor",
         "sut_section": "3.3.4.A",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002014"],
+        "gate_b_sources": [],
         "condition": {"bone_stimulator_benign_tumor_use": True},
         "action": {
             "material_outcome": "no_pay",
@@ -141,7 +140,7 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.(8).open_physis_primary_fracture_graft",
         "sut_section": "3.3.4",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002027", "C002061", "C002936"],
+        "gate_b_sources": ["C002970", "C002936", "C002936"],
         "condition": {"open_physis_primary_fracture_graft": True},
         "action": {
             "material_outcome": "no_pay",
@@ -156,7 +155,7 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.(9).adult_primary_fracture_bone_stimulator",
         "sut_section": "3.3.4",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002028", "C002093", "C002970"],
+        "gate_b_sources": ["C002970", "C002970", "C002970"],
         "condition": {"adult_primary_fracture_bone_stimulator": True},
         "action": {
             "material_outcome": "no_pay",
@@ -171,7 +170,7 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.(6).hip_arthroplasty_graft_no_pay",
         "sut_section": "3.3.4",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002062", "C002937"],
+        "gate_b_sources": ["C002937", "C002937"],
         "condition": {"hip_arthroplasty_graft_claim": True},
         "action": {
             "material_outcome": "no_pay",
@@ -186,7 +185,7 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.(11).graft_allograft_xenograft_combined",
         "sut_section": "3.3.4",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002064", "C002939"],
+        "gate_b_sources": ["C002939", "C002939"],
         "condition": {"graft_allograft_xenograft_combined": True},
         "action": {
             "material_outcome": "no_pay",
@@ -201,13 +200,12 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.A.(17).synthetic_tendon_graft",
         "sut_section": "3.3.4.A",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002078", "C002953"],
+        "gate_b_sources": ["C002953", "C002953"],
         "condition": {
             "material_name_any": [
                 "sentetik tendon",
                 "tendon greft",
-                "tendon yerine",
-            ]
+                "tendon yerine"]
         },
         "action": {
             "material_outcome": "no_pay",
@@ -222,7 +220,7 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.4.B.c.primary_ligament_tendon_graft",
         "sut_section": "3.3.4.B",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002085", "C002962"],
+        "gate_b_sources": ["C002962", "C002962"],
         "condition": {"primary_ligament_tendon_injury_graft": True},
         "action": {
             "material_outcome": "no_pay",
@@ -232,5 +230,4 @@ SPECIALTY_334_BATCH_RULES: list[dict[str, Any]] = [
                 "hiçbir durumda karşılanmaz (§3.3.4.B(c))."
             ),
         },
-    },
-]
+    }]

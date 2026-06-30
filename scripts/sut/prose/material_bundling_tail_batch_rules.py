@@ -9,7 +9,7 @@ GATE_B_TAIL_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.1.(15).separate_billing_not_authorized",
         "sut_section": "3.1.1",
         "deontic": "MUST_NOT_BILL",
-        "gate_b_sources": ["C001635", "C002695", "C001823"],
+        "gate_b_sources": ["C002695", "C002695", ],
         "condition": {"separate_billing_not_authorized": True},
         "action": {
             "material_outcome": "must_not_bill_separately",
@@ -25,7 +25,7 @@ GATE_B_TAIL_BATCH_RULES: list[dict[str, Any]] = [
 # KDV clauses implemented in pricing layer, not prose JSON.
 KDV_PRICING_CLAUSE_IDS: frozenset[str] = frozenset(
     {
-        "C001630",
+        "C002692",
         "C002692",
     }
 )

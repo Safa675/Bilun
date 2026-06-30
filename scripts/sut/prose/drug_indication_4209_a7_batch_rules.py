@@ -76,7 +76,7 @@ BATCH_A7_RULES: list[dict[str, Any]] = [
             "darbepoetin endikasyon muadili olarak kullanılabilir; raporda doz/süre "
             "belirtilir ve bir defada en fazla 1 aylık reçete verilir (§4.2.9.A)."
         ),
-        gate_b_sources=["C004118", "C004119"],
+        gate_b_sources=["C004127", "C004128"],
     ),
     _rule(
         "4.2.9.esa_ckd_iron_hb_nephrology_report",
@@ -92,7 +92,7 @@ BATCH_A7_RULES: list[dict[str, Any]] = [
             "demir tedavisi; hedef Hb 11-12 g/dl; tetkik sonuçları raporda belirtilir "
             "(§4.2.9.A-1)."
         ),
-        gate_b_sources=["C004121"],
+        gate_b_sources=["C004130"],
     ),
     _rule(
         "4.2.9.esa_ckd_legacy_nephrology_prescriber",
@@ -107,7 +107,7 @@ BATCH_A7_RULES: list[dict[str, Any]] = [
             "dayanılarak nefroloji/diyaliz sertifikalı hekimlerce reçete edilir "
             "(§4.2.9.A-1)."
         ),
-        gate_b_sources=["C004122"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.9.roksadustat_esa_switch_dialysis_report",
@@ -152,6 +152,6 @@ BATCH_A7_RULES: list[dict[str, Any]] = [
             "Parikalsitol oral — evre 5 KBY periton diyaliz hastalarında PTH/Ca/P kriterleri; "
             "nefroloji raporu; tetkikler 3 ayda bir tekrarlanır (§4.2.9.C-2)."
         ),
-        gate_b_sources=["C004160"],
+        gate_b_sources=[],
     ),
 ]

@@ -93,7 +93,7 @@ BATCH_4227_TIER_B_RULES: list[dict[str, Any]] = [
             "kurulu raporu; hafif-orta kanamada 3 doza, şiddetli kanama/cerrahide 12 doza "
             "kadar uzman reçetesi (§4.2.27.A (3))."
         ),
-        gate_b_sources=["C006219"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.27.coagulopathy_hospital_one_day_prescriber",
@@ -120,7 +120,7 @@ BATCH_4227_TIER_B_RULES: list[dict[str, Any]] = [
             "kanama yeri belirtilerek en fazla bir günlük doz ve hematoloji sevki "
             "(§4.2.27.A (2))."
         ),
-        gate_b_sources=["C006241"],
+        gate_b_sources=["C006244"],
     ),
     _rule(
         "4.2.27.vitamin_k_emergency_one_day_no_report",

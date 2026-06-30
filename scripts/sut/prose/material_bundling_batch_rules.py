@@ -11,10 +11,10 @@ GATE_B_BATCH_RULES: list[dict[str, Any]] = [
         "sut_section": "3.1.1",
         "deontic": "NO_PAY",
         "gate_b_sources": [
-            "C001618",
-            "C001619",
             "C002684",
-            "C001636",
+            "C002684",
+            "C002684",
+            "C002696",
             "C002696",
         ],
         "condition": {"titubb_uts_incomplete": True},
@@ -28,7 +28,7 @@ GATE_B_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.1.(17).barcode_sut_mismatch",
         "sut_section": "3.1.1",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001637", "C002697"],
+        "gate_b_sources": ["C002697", "C002697"],
         "condition": {
             "material_name_any": [
                 "barkod-sut uyumsuz",
@@ -66,11 +66,11 @@ GATE_B_BATCH_RULES: list[dict[str, Any]] = [
         "sut_section": "3.1.2",
         "deontic": "NO_PAY",
         "gate_b_sources": [
-            "C001834",
-            "C001837",
-            "C001840",
-            "C001845",
-            "C001849",
+           
+           
+           
+            "C002828",
+            "C002831",
             "C002824",
             "C002828",
             "C002831",
@@ -86,7 +86,7 @@ GATE_B_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.2.(7).lost_stolen_miat",
         "sut_section": "3.1.2",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001664", "C002707", "C002720"],
+        "gate_b_sources": ["C002720", "C002707", "C002720"],
         "condition": {
             "material_name_any": [
                 "kaybolması",
@@ -180,7 +180,7 @@ GATE_B_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.3.(2).branch_unlisted_material",
         "sut_section": "3.1.3",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001762", "C002789"],
+        "gate_b_sources": ["C002789"],
         "condition": {
             "material_name_any": [
                 "listelerde yer almayan branş",

@@ -67,7 +67,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "Viral hepatit ilaçları — gastroenteroloji veya enfeksiyon hastalıkları "
             "uzman hekim ilaç kullanım raporu gerekir (§4.2.13)."
         ),
-        gate_b_sources=["C004501"],
+        gate_b_sources=["C004503"],
     ),
     _rule(
         "4.2.13.hbv_entekavir_board",
@@ -124,7 +124,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "HCV ribavirin kombinasyonu — kronik hepatit C endikasyonu ve "
             "uzman hekim raporu gerekir (§4.2.13)."
         ),
-        gate_b_sources=["C004641"],
+        gate_b_sources=["C004911"],
     ),
     _rule(
         "4.2.13.hcv_sofosbuvir_ledipasvir_board",
@@ -135,7 +135,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "Sofosbuvir/ledipasvir — kronik HCV endikasyonu ve gastroenteroloji/enfeksiyon "
             "uzman hekim raporu gerekir (§4.2.13.3.2)."
         ),
-        gate_b_sources=["C004690", "C004897"],
+        gate_b_sources=["C004902", "C004897"],
     ),
     _rule(
         "4.2.13.hcv_glecaprevir_pibrentasvir_board",
@@ -146,7 +146,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "Glekaprevir/pibrentasvir — kronik HCV endikasyonu ve uzman hekim raporu "
             "gerekir (§4.2.13.3.2)."
         ),
-        gate_b_sources=["C004815"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.16.metabolic_formula_pediatric_report",
@@ -172,7 +172,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "Protein metabolizması bozukluğu özel formülü — uzman hekim raporu "
             "gerekir (§4.2.16)."
         ),
-        gate_b_sources=["C005877", "C005993"],
+        gate_b_sources=["C005982", "C005993"],
     ),
     _rule(
         "4.2.16.cystic_fibrosis_formula_report",
@@ -184,7 +184,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "Kistik fibrozis özel maması — gastroenteroloji/göğüs hastalıkları "
             "uzman hekim raporu gerekir (§4.2.16)."
         ),
-        gate_b_sources=["C005947", "C005999"],
+        gate_b_sources=["C005999", "C005999"],
     ),
     _rule(
         "4.2.16.celiac_gluten_free_report",

@@ -6,7 +6,7 @@ from typing import Any
 
 # Strict §3.3.1 only (not 3.3.10+).
 WOUND_331_PILOT_CLAUSE_IDS: frozenset[str] = frozenset(
-    {"C001877", "C001915", "C001923", "C002856"}
+    {"C002856", "C002856"}
 )
 
 WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
@@ -14,7 +14,7 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.1.(10).wound_dressing_cover_no_pay",
         "sut_section": "3.3.1",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001877"],
+        "gate_b_sources": [],
         "condition": {
             "material_name_any": [
                 "yara ort",
@@ -26,8 +26,7 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
                 "temizlik urunu",
                 "temizlik ürün",
                 "bariyer krem",
-                "bariyer sprey",
-            ]
+                "bariyer sprey"]
         },
         "action": {
             "material_outcome": "no_pay",
@@ -41,7 +40,7 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.1.(10).wound_hydrojel_additive_no_pay",
         "sut_section": "3.3.1",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001877"],
+        "gate_b_sources": [],
         "condition": {
             "material_name_any": [
                 "hidrojel",
@@ -53,8 +52,7 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
                 "polisakkarid",
                 "hyaluronik",
                 "tibbi bal",
-                "tıbbi bal",
-            ]
+                "tıbbi bal"]
         },
         "action": {
             "material_outcome": "no_pay",
@@ -68,13 +66,12 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.1.(10).wound_debridman_no_pay",
         "sut_section": "3.3.1",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001877"],
+        "gate_b_sources": [],
         "condition": {
             "material_name_any": [
                 "larva debridman",
                 "ultrasonik debridman",
-                "debridman sarf",
-            ]
+                "debridman sarf"]
         },
         "action": {
             "material_outcome": "no_pay",
@@ -86,13 +83,12 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.1.(10).wound_biostimulation_no_pay",
         "sut_section": "3.3.1",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001877"],
+        "gate_b_sources": [],
         "condition": {
             "material_name_any": [
                 "biyostimul",
                 "topikal oksijen",
-                "wound biostim",
-            ]
+                "wound biostim"]
         },
         "action": {
             "material_outcome": "no_pay",
@@ -107,7 +103,7 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.1.(10).skin_substitute_non_burn_flag",
         "sut_section": "3.3.1",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001915", "C002856"],
+        "gate_b_sources": ["C002856", "C002856"],
         "condition": {"skin_substitute_non_burn_use": True},
         "action": {
             "material_outcome": "no_pay",
@@ -122,15 +118,14 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.1.(10).skin_substitute_keyword_no_pay",
         "sut_section": "3.3.1",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001877", "C001915", "C002856"],
+        "gate_b_sources": ["C002856", "C002856"],
         "condition": {
             "material_name_any": [
                 "deri esdeger",
                 "deri eşdeğer",
                 "deri taklit",
                 "deri taklid",
-                "skin substitute",
-            ]
+                "skin substitute"]
         },
         "action": {
             "material_outcome": "no_pay",
@@ -145,7 +140,7 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.1.(13).immunobullous_patient_dispensed",
         "sut_section": "3.3.1",
         "deontic": "MUST_BILL",
-        "gate_b_sources": ["C001923"],
+        "gate_b_sources": [],
         "condition": {"immunobullous_wound_care_patient_supply": True},
         "action": {
             "material_outcome": "review_required",
@@ -160,7 +155,7 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.1.(13).immunobullous_non_moh_supply",
         "sut_section": "3.3.1",
         "deontic": "MUST_BILL",
-        "gate_b_sources": ["C001923"],
+        "gate_b_sources": [],
         "condition": {"immunobullous_wound_care_non_moh_facility": True},
         "action": {
             "material_outcome": "review_required",
@@ -170,5 +165,4 @@ WOUND_331_BATCH_RULES: list[dict[str, Any]] = [
                 "sunucusunca temin/uygulanmalı (§3.3.1(13))."
             ),
         },
-    },
-]
+    }]

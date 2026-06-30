@@ -96,7 +96,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "İnfliksimab — diğer anti-TNF yetersiz romatoid artritte DAS28 yanıtı ile "
             "3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1)."
         ),
-        gate_b_sources=["C003590"],
+        gate_b_sources=["C003591"],
     ),
     _rule(
         "4.2.1.anti_tnf_jia_start_board",
@@ -124,7 +124,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "Anti-TNF — juvenil artritte NSAİ ve DMARD yetersizliğinde "
             "3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1)."
         ),
-        gate_b_sources=["C003596"],
+        gate_b_sources=["C003602"],
     ),
     _rule(
         "4.2.1.adalimumab_jia_uveitis_first_line",
@@ -150,7 +150,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "İnfliksimab — diğer anti-TNF yetersiz ankilozan spondilitte BASDAİ yanıtı ile "
             "3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1)."
         ),
-        gate_b_sources=["C003608"],
+        gate_b_sources=["C003609"],
     ),
     _rule(
         "4.2.1.inflix_psa_second_line_psarc",
@@ -162,7 +162,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz psöriyatik artritte "
             "PSARC yanıtı ile 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1)."
         ),
-        gate_b_sources=["C003620"],
+        gate_b_sources=["C003621"],
     ),
     _rule(
         "4.2.1.anti_tnf_psoriasis_vulgaris_board",
@@ -244,7 +244,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "Abatasept — anti-TNF yetersiz/kontrendike aktif romatoid artritte "
             "methotreksat ile kombine sağlık kurulu raporu gerekir (§4.2.1.C-2)."
         ),
-        gate_b_sources=["C003639"],
+        gate_b_sources=["C003645"],
     ),
     _rule(
         "4.2.1.tocilizumab_ra_university_board",
@@ -257,7 +257,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "Tosilizumab — aktif romatoid artritte DMARD/anti-TNF yetersizliğinde "
             "üniversite/eğitim hastanesi 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-3)."
         ),
-        gate_b_sources=["C003663"],
+        gate_b_sources=["C003664"],
     ),
     _rule(
         "4.2.1.tocilizumab_pediatric_anti_tnf_failure",

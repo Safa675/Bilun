@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 OTHER_3_3_TAIL_CLAUSE_IDS: frozenset[str] = frozenset(
-    {"C002323", "C002328", "C002345", "C003146", "C003159"}
+    {"C003146", "C003159"}
 )
 
 OTHER_3_3_TAIL_BATCH_RULES: list[dict[str, Any]] = [
@@ -13,7 +13,7 @@ OTHER_3_3_TAIL_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.12.(4).dental_prosthesis_adhesive_no_pay",
         "sut_section": "3.3.12",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002323", "C002328", "C003146"],
+        "gate_b_sources": ["C003146"],
         "condition": {
             "material_name_any": [
                 "protez yapistirici",
@@ -21,8 +21,7 @@ OTHER_3_3_TAIL_BATCH_RULES: list[dict[str, Any]] = [
                 "protez temizleme",
                 "ozel icerikli dis macun",
                 "özel içerikli diş macun",
-                "denture adhesive",
-            ]
+                "denture adhesive"]
         },
         "action": {
             "material_outcome": "no_pay",
@@ -37,7 +36,7 @@ OTHER_3_3_TAIL_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.12.(4).dental_prosthesis_adhesive_flag",
         "sut_section": "3.3.12",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002323", "C002328", "C003146"],
+        "gate_b_sources": ["C003146"],
         "condition": {"dental_prosthesis_adhesive_claim": True},
         "action": {
             "material_outcome": "no_pay",
@@ -52,7 +51,7 @@ OTHER_3_3_TAIL_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.16.(4).dual_mesh_primary_hernia_no_pay",
         "sut_section": "3.3.16",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002345", "C003159"],
+        "gate_b_sources": ["C003159"],
         "condition": {"dual_mesh_primary_hernia_repair": True},
         "action": {
             "material_outcome": "no_pay",
@@ -67,14 +66,13 @@ OTHER_3_3_TAIL_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.3.16.(4).dual_mesh_primary_hernia_keyword",
         "sut_section": "3.3.16",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C002345", "C003159"],
+        "gate_b_sources": ["C003159"],
         "condition": {
             "material_name_any": [
                 "cift yuzlu yama",
                 "çift yüzlü yama",
                 "dual mesh",
-                "hernia mesh",
-            ]
+                "hernia mesh"]
         },
         "action": {
             "material_outcome": "review_required",
@@ -84,5 +82,4 @@ OTHER_3_3_TAIL_BATCH_RULES: list[dict[str, Any]] = [
                 "(§3.3.14/16(4))."
             ),
         },
-    },
-]
+    }]

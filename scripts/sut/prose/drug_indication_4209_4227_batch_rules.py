@@ -144,7 +144,7 @@ BATCH_A6_RULES: list[dict[str, Any]] = [
             "Faktör VIIa kanama tedavisi — tanı, faktör ve inhibitör düzeyini gösteren "
             "hematoloji sağlık kurulu raporu gerekir (§4.2.27.A)."
         ),
-        gate_b_sources=["C006230", "C006232"],
+        gate_b_sources=["C006232"],
     ),
     _rule(
         "4.2.27.factor_seven_a_prophylaxis_board",
@@ -177,7 +177,7 @@ BATCH_A6_RULES: list[dict[str, Any]] = [
             "Kumarin/NOAK kaynaklı aktif kanama — kanama yeri belirtilerek en fazla "
             "1 günlük doz ve hematoloji sevki (§4.2.27.A)."
         ),
-        gate_b_sources=["C006239"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.27.apcc_bleeding_board",

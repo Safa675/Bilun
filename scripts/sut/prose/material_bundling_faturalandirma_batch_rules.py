@@ -14,7 +14,7 @@ FATURALANDIRMA_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.4.(1).diagnosis_bundled_sut_rules_apply",
         "sut_section": "3.1.4",
         "deontic": "REGULATORY_ACTION",
-        "gate_b_sources": ["C001799", "C002800"],
+        "gate_b_sources": ["C002800", "C002800"],
         "condition": {"diagnosis_bundled_material_scope": True},
         "action": {
             "material_outcome": "review_required",
@@ -29,7 +29,7 @@ FATURALANDIRMA_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.3.(4).cross_branch_billing_unauthorized",
         "sut_section": "3.1.3",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001789", "C002791"],
+        "gate_b_sources": ["C002791"],
         "condition": {"cross_branch_material_unauthorized": True},
         "action": {
             "material_outcome": "no_pay",
@@ -44,7 +44,7 @@ FATURALANDIRMA_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.2.b.ortez_protez_contract_billing_invalid",
         "sut_section": "3.1.2",
         "deontic": "REGULATORY_ACTION",
-        "gate_b_sources": ["C002739", "C002740"],
+        "gate_b_sources": ["C002740", "C002740"],
         "condition": {"ortez_protez_contract_billing_invalid": True},
         "action": {
             "material_outcome": "review_required",

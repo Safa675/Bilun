@@ -687,7 +687,9 @@ WAVE_BATCH_RULES: list[dict] = [
         "rule_id": "4.2.33.maintenance_monthly_supply_report",
         "sut_section": "4.2.33",
         "gate_b_sources": ["C006528"],
-        "drug_names": ["bevacizumab", "ranibizumab", "aflibersept", "brolusizumab"],
+        # NOTE: drug_names omitted at top level — this is a procedural/frequency rule, not an
+        # indication-eligibility rule. Top-level drug_names would make _drug_name_matches pick it
+        # up and shadow the real indication rules. Applicable drugs recorded under condition.
         "icd10_codes": ["H35.3", "H35.0", "H34.8"],
         "report_required": True,
         "report_duration_months": 1,
@@ -705,7 +707,7 @@ WAVE_BATCH_RULES: list[dict] = [
         "rule_id": "4.2.33.loading_dose_mandatory_numbered",
         "sut_section": "4.2.33",
         "gate_b_sources": ["C006529"],
-        "drug_names": ["bevacizumab", "ranibizumab", "aflibersept", "brolusizumab"],
+        # drug_names omitted (procedural rule — see note above)
         "icd10_codes": ["H35.3", "H35.0", "H34.8"],
         "report_required": True,
         "report_specialties": ["göz hastalıkları"],
@@ -720,7 +722,7 @@ WAVE_BATCH_RULES: list[dict] = [
         "rule_id": "4.2.33.same_eye_combo_nopay",
         "sut_section": "4.2.33",
         "gate_b_sources": ["C006530"],
-        "drug_names": ["bevacizumab", "ranibizumab", "aflibersept", "brolusizumab", "dek sametazon intravitreal implant"],
+        # drug_names omitted (procedural no-pay rule — see note above)
         "pay": False,
         "action": {
             "enforcement": "no-pay condition: aynı anda aynı gözde kombine anti-VEGF kullanımı; farklı göz kullanımları kombine sayılmaz",
@@ -733,7 +735,7 @@ WAVE_BATCH_RULES: list[dict] = [
         "rule_id": "4.2.33.eligibility_at_least_one_criterion_a",
         "sut_section": "4.2.33",
         "gate_b_sources": ["C006541"],
-        "drug_names": ["bevacizumab", "ranibizumab", "aflibersept", "brolusizumab"],
+        # drug_names omitted (procedural eligibility rule — see note above)
         "icd10_codes": ["H35.3", "H35.0", "H34.8"],
         "report_required": True,
         "report_specialties": ["göz hastalıkları"],
@@ -748,7 +750,7 @@ WAVE_BATCH_RULES: list[dict] = [
         "rule_id": "4.2.33.eligibility_at_least_one_criterion_b",
         "sut_section": "4.2.33",
         "gate_b_sources": ["C006545"],
-        "drug_names": ["bevacizumab", "ranibizumab", "aflibersept", "brolusizumab"],
+        # drug_names omitted (procedural eligibility rule — see note above)
         "icd10_codes": ["H35.3", "H35.0", "H34.8"],
         "report_required": True,
         "report_specialties": ["göz hastalıkları"],
@@ -763,7 +765,7 @@ WAVE_BATCH_RULES: list[dict] = [
         "rule_id": "4.2.33.incomplete_loading_dose_switch_nopay",
         "sut_section": "4.2.33",
         "gate_b_sources": ["C006550"],
-        "drug_names": ["bevacizumab", "ranibizumab", "aflibersept", "brolusizumab"],
+        # drug_names omitted (procedural no-pay rule — see note above)
         "pay": False,
         "action": {
             "enforcement": "no-pay condition: yükleme dozu tamamlanmadan diğer etkin maddeli ilacın kullanımı",

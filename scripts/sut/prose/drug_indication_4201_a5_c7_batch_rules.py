@@ -62,7 +62,7 @@ BATCH_A5_C7_RULES: list[dict[str, Any]] = [
             "Anakinra — FMF'de kolşisin yetersizliğinde atak/CRP/SAA bulgularının "
             "sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-7)."
         ),
-        gate_b_sources=["C003798"],
+        gate_b_sources=["C003806"],
     ),
     _rule(
         "4.2.1.canakinumab_fmf_anakinra_failure_switch",
@@ -74,7 +74,7 @@ BATCH_A5_C7_RULES: list[dict[str, Any]] = [
             "Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki "
             "durumunun sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-7)."
         ),
-        gate_b_sources=["C003799"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber",
@@ -87,7 +87,7 @@ BATCH_A5_C7_RULES: list[dict[str, Any]] = [
             "Anakinra/kanakinumab — FMF tedavisinde üçüncü basamak kurumda romatoloji "
             "uzman hekiminin yer aldığı sağlık kurulu raporu gerekir (§4.2.1.C-7)."
         ),
-        gate_b_sources=["C003801"],
+        gate_b_sources=["C003832"],
     ),
     _rule(
         "4.2.1.anakinra_canakinumab_fmf_amyloidosis_colchicine",
@@ -102,6 +102,6 @@ BATCH_A5_C7_RULES: list[dict[str, Any]] = [
             "romatoloji/nefroloji uzmanının yer aldığı 1 yıl süreli sağlık kurulu "
             "raporu gerekir (§4.2.1.C-7)."
         ),
-        gate_b_sources=["C003802"],
+        gate_b_sources=["C003813"],
     ),
 ]

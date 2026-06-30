@@ -98,7 +98,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "aldığı 1 yıllık sağlık kurulu raporu ve epifiz hatları takibi gerekir "
             "(§4.2.6.A-1)."
         ),
-        gate_b_sources=["C003957"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.6.pediatric_somatropin_initiation_board",
@@ -112,7 +112,7 @@ BATCH_A2_RULES: list[dict[str, Any]] = [
             "Pediatrik somatropin başlangıcı — çocuk endokrinoloji uzman hekiminin yer "
             "aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.6.A-1)."
         ),
-        gate_b_sources=["C003966", "C003956"],
+        gate_b_sources=["C003966", ],
     ),
     _rule(
         "4.2.6.pediatric_gh_renewal_board",

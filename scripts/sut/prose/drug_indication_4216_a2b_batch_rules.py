@@ -14,26 +14,22 @@ _METABOLIC_REPORT = [
     "çocuk metabolizma",
     "metabolizma hastalıkları",
     "endokrinoloji",
-    "gastroenteroloji",
-]
+    "gastroenteroloji"]
 _PEDS_METABOLIC_REPORT = _METABOLIC_REPORT + [
     "çocuk endokrinoloji",
-    "çocuk gastroenteroloji",
-]
+    "çocuk gastroenteroloji"]
 _CMPA_REPORT = [
     "çocuk gastroenteroloji",
     "çocuk immünoloji",
     "çocuk alerji",
-    "çocuk sağlığı",
-]
+    "çocuk sağlığı"]
 _SPECIAL_FORMULA_FALLBACK = [
     "çocuk metabolizma",
     "metabolizma hastalıkları",
     "endokrinoloji",
     "gastroenteroloji",
     "çocuk sağlığı",
-    "iç hastalıkları",
-]
+    "iç hastalıkları"]
 
 
 def _rule(
@@ -79,7 +75,7 @@ BATCH_A2B_4216_RULES: list[dict[str, Any]] = [
             "EK-4/B özel mama — metabolizma/endokrinoloji/gastroenteroloji uzman hekim "
             "raporu gerekir; yoksa çocuk sağlığı/iç hastalıkları (§4.2.16)."
         ),
-        gate_b_sources=["C005875", "C005908"],
+        gate_b_sources=["C005981"],
     ),
     _rule(
         "4.2.16.pediatric_metabolic_formula_3yr_board",
@@ -93,7 +89,7 @@ BATCH_A2B_4216_RULES: list[dict[str, Any]] = [
             "Doğuştan metabolik hastalık özel formülü — çocuk metabolizma/endokrinoloji/"
             "gastroenteroloji uzman hekim 3 yıl süreli rapor gerekir (§4.2.16)."
         ),
-        gate_b_sources=["C005910"],
+        gate_b_sources=["C005983"],
     ),
     _rule(
         "4.2.16.celiac_gluten_free_1yr_gastro_report",
@@ -107,7 +103,7 @@ BATCH_A2B_4216_RULES: list[dict[str, Any]] = [
             "Çölyak glutensiz ürün — gastroenteroloji uzman hekim 1 yıl süreli "
             "rapor gerekir (§4.2.16)."
         ),
-        gate_b_sources=["C005883", "C005894"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.16.celiac_gluten_free_3yr_board",
@@ -122,13 +118,12 @@ BATCH_A2B_4216_RULES: list[dict[str, Any]] = [
             "hastalıkları) 3 yıl süreli rapor gerekir (§4.2.16)."
         ),
         gate_b_sources=[
-            "C005950",
-            "C005955",
-            "C005961",
-            "C005967",
-            "C005972",
-            "C006002",
-        ],
+            "C006007",
+            "C006007",
+            "C006007",
+            "C006007",
+            "C006007",
+            "C006007"],
     ),
     _rule(
         "4.2.16.infant_cmpa_hydrolyzed_formula_report",
@@ -141,7 +136,7 @@ BATCH_A2B_4216_RULES: list[dict[str, Any]] = [
             "İnek sütü/çoklu gıda protein alerjisi hidrolize mama — çocuk gastroenteroloji/"
             "immünoloji-alerji (veya çocuk sağlığı) uzman hekim raporu gerekir (§4.2.16)."
         ),
-        gate_b_sources=["C005948"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.16.infant_cmpa_amino_acid_severe_formula",
@@ -154,7 +149,7 @@ BATCH_A2B_4216_RULES: list[dict[str, Any]] = [
             "Ağır CMPA vakalarında aminoasit/pirinç proteini bazlı mama — çocuk "
             "gastroenteroloji/immünoloji-alerji uzman hekim raporu gerekir (§4.2.16)."
         ),
-        gate_b_sources=["C005948"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.16.infant_cmpa_medical_formula_2025",
@@ -180,7 +175,7 @@ BATCH_A2B_4216_RULES: list[dict[str, Any]] = [
             "Malabsorbsiyona neden olan hastalıkta özel mama — gastroenteroloji/metabolizma "
             "uzman hekim raporu gerekir (§4.2.16)."
         ),
-        gate_b_sources=["C005875"],
+        gate_b_sources=["C005981"],
     ),
     _rule(
         "4.2.16.metabolic_formula_prescriber_fallback",
@@ -193,7 +188,7 @@ BATCH_A2B_4216_RULES: list[dict[str, Any]] = [
             "Metabolik özel formül — uzman hekim bulunmadığında çocuk sağlığı veya "
             "iç hastalıkları uzman hekim raporu ile reçete edilebilir (§4.2.16)."
         ),
-        gate_b_sources=["C005875", "C005910"],
+        gate_b_sources=["C005981", "C005983"],
     ),
     _rule(
         "4.2.16.special_formula_all_prescriber_with_report",
@@ -205,6 +200,5 @@ BATCH_A2B_4216_RULES: list[dict[str, Any]] = [
             "Hastalığa özel özel mama — uzman hekim raporu olmadan reçete edilemez; "
             "rapor sonrası tüm hekimler reçete edebilir (§4.2.16)."
         ),
-        gate_b_sources=["C005908"],
-    ),
-]
+        gate_b_sources=[],
+    )]

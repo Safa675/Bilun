@@ -168,6 +168,6 @@ BATCH_A15_RULES: list[dict[str, Any]] = [
             "Dabigatran — tanımlı endikasyonlarda geçiş gerekçeli en az bir kardiyoloji "
             "uzmanının yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.15.D-3)."
         ),
-        gate_b_sources=["C005823"],
+        gate_b_sources=[],
     ),
 ]

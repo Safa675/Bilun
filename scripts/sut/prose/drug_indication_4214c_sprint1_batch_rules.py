@@ -30,7 +30,7 @@ SOURCE_PATCHES: dict[str, list[str]] = {
     "4.2.14.C.(3).sorafenib_hcc_rcc_board": ["C005050"],
     "4.2.14.C.(15).afatinib_egfr_nsclc_board": ["C005336", "C005339"],
     "4.2.14.C.ekulizumab_ahus_1mo_nephrology": ["C005400"],
-    "4.2.14.C.ekulizumab_ahus_6mo_nephrology": ["C005417"],
+    "4.2.14.C.ekulizumab_ahus_6mo_nephrology": ["C005434"],
     "4.2.14.C.aferez_1mo_heme_board": ["C005355"],
 }
 
@@ -99,7 +99,7 @@ SPRINT1_NEW_RULES: list[dict[str, Any]] = [
         "prescriber_specialties": ["dermatoloji", "tıbbi onkoloji", "plastik cerrahi"],
         "message_tr": "Topikal fluorourasil — yalnızca dermatoloji/onkoloji/plastik cerrahi reçetesi (§4.2.14.C).",
         "encode_batch": "S1A",
-        "gate_b_sources": ["C005176"],
+        "gate_b_sources": ["C005189"],
     },
     _rule(
         "4.2.14.C.aksitinib_rcc_board",
@@ -136,7 +136,7 @@ SPRINT1_NEW_RULES: list[dict[str, Any]] = [
         message_tr="Karmustin — beyin tümörü endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
         batch="S1A",
     )
-    | {"gate_b_sources": ["C005286"]},
+    | {"gate_b_sources": ["C005243"]},
     _rule(
         "4.2.14.C.mifamurtide_osteosarcoma_board",
         ["mifamurtide"],
@@ -145,7 +145,7 @@ SPRINT1_NEW_RULES: list[dict[str, Any]] = [
         message_tr="Mifamurtide — yüksek riskli osteosarkom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
         batch="S1A",
     )
-    | {"gate_b_sources": ["C005298"]},
+    | {"gate_b_sources": ["C005302"]},
     _rule(
         "4.2.14.C.brentuximab_hodgkin_board",
         ["brentuksimab", "brentuximab"],
@@ -173,7 +173,7 @@ SPRINT1_NEW_RULES: list[dict[str, Any]] = [
         message_tr="Ekulizumab — jeneralize miyastenia gravis endikasyonu ve nöroloji sağlık kurulu raporu gerekir (§4.2.14.C).",
         batch="S1A",
     )
-    | {"gate_b_sources": ["C005430", "C005436"]},
+    | {"gate_b_sources": ["C005483", "C005436"]},
     _rule(
         "4.2.14.C.eculizumab_nmosd_neurology_board",
         ["ekulizumab", "eculizumab"],
@@ -183,7 +183,7 @@ SPRINT1_NEW_RULES: list[dict[str, Any]] = [
         message_tr="Ekulizumab — NMOSB endikasyonu ve nöroloji sağlık kurulu raporu gerekir (§4.2.14.C).",
         batch="S1A",
     )
-    | {"gate_b_sources": ["C005448", "C005458", "C005471"]},
+    | {"gate_b_sources": ["C005454", "C005481", "C005483"]},
     _rule(
         "4.2.14.C.dinutuximab_neuroblastoma_board",
         ["dinutuksimab", "dinutuximab"],
@@ -285,7 +285,7 @@ SPRINT1_NEW_RULES: list[dict[str, Any]] = [
         batch="S1B",
         prescriber_specialties=["nöroloji"],
     )
-    | {"gate_b_sources": ["C005459"]},
+    | {"gate_b_sources": ["C005482"]},
     _rule(
         "4.2.14.C.eculizumab_mg_12wk_adult_neurology",
         ["ekulizumab", "eculizumab"],
@@ -296,7 +296,7 @@ SPRINT1_NEW_RULES: list[dict[str, Any]] = [
         report_duration_months=3,
         prescriber_specialties=["nöroloji"],
     )
-    | {"gate_b_sources": ["C005469"]},
+    | {"gate_b_sources": ["C005481"]},
     _rule(
         "4.2.14.C.ribociclib_nsai_combo_breast",
         ["ribosiklib", "ribociclib"],
@@ -319,22 +319,22 @@ PENDING_CLAUSE_IDS: frozenset[str] = frozenset(
         "C005084",
         "C005100",
         "C005102",
-        "C005176",
+        "C005189",
         "C005177",
         "C005179",
         "C005184",
-        "C005286",
-        "C005298",
+        "C005243",
+        "C005302",
         "C005318",
         "C005329",
         "C005336",
         "C005339",
         "C005358",
-        "C005430",
+        "C005483",
         "C005436",
-        "C005448",
-        "C005458",
-        "C005471",
+        "C005454",
+        "C005481",
+        "C005483",
         "C005619",
         "C005647",
         "C005683",
@@ -346,9 +346,9 @@ PENDING_CLAUSE_IDS: frozenset[str] = frozenset(
         "C005087",
         "C005355",
         "C005400",
-        "C005417",
-        "C005459",
-        "C005469",
+        "C005434",
+        "C005482",
+        "C005481",
         "C005570",
     ]
 )

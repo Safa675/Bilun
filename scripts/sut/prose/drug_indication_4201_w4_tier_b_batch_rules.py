@@ -90,7 +90,7 @@ BATCH_4201_W4_TIER_B_RULES: list[dict[str, Any]] = [
             "Rituksimab — romatoid artritte romatoloji uzman hekiminin bulunduğu kurumda "
             "en az bir romatoloji uzmanının yer aldığı sağlık kurulu raporu gerekir (§4.2.1.C-2 a)."
         ),
-        gate_b_sources=["C003642"],
+        gate_b_sources=["C003648"],
     ),
     _rule(
         "4.2.1.tocilizumab_ra_das28_06_continuation_c3",
@@ -146,7 +146,7 @@ BATCH_4201_W4_TIER_B_RULES: list[dict[str, Any]] = [
             "hastanesi klinik immunoloji/fiziksel tıp uzmanının yer aldığı en fazla 6 ay "
             "süreli sağlık kurulu raporu gerekir (§4.2.1.C-6 (2))."
         ),
-        gate_b_sources=["C003727"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.1.jia_acr_pediatric_6mo_continuation_c6",
@@ -190,7 +190,7 @@ BATCH_4201_W4_TIER_B_RULES: list[dict[str, Any]] = [
             "Kanakinumab — FMF tedavisinde 3 aylık yanıt değerlendirmesi yapılmalı; "
             "yanıt alınamayan hastalarda tedavi sonlandırılır (§4.2.1.C-7 (3))."
         ),
-        gate_b_sources=["C003800"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.1.sekukinumab_hs_16wk_continuation_c9",

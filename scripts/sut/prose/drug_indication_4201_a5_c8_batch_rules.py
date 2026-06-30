@@ -55,7 +55,7 @@ BATCH_A5_C8_RULES: list[dict[str, Any]] = [
             "Vedolizumab — anti-TNF yetersiz Crohn hastalığında doz/süre belirtilen "
             "4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-8)."
         ),
-        gate_b_sources=["C003835", "C003839"],
+        gate_b_sources=["C003839", "C003839"],
     ),
     _rule(
         "4.2.1.vedolizumab_uc_anti_tnf_second_line",
@@ -69,6 +69,6 @@ BATCH_A5_C8_RULES: list[dict[str, Any]] = [
             "Vedolizumab — anti-TNF yetersiz ülseratif kolitte gastroenteroloji/genel "
             "cerrahi uzman hekim raporu gerekir (§4.2.1.C-8)."
         ),
-        gate_b_sources=["C003836", "C003840"],
+        gate_b_sources=["C003840"],
     ),
 ]

@@ -11,7 +11,7 @@ _EK3_HEADER_IDS_PATH = Path("data/gazette/prose_manifests/L1.4_ek3_annex_header_
 # §3.2.2(1) — list-price ceiling handled in kdv_price_reviews + catalog lookup.
 EK3C_LIST_PRICE_CEILING_CLAUSE_IDS: frozenset[str] = frozenset(
     {
-        "C001851",
+        "C002833",
         "C002833",
     }
 )
@@ -19,7 +19,7 @@ EK3C_LIST_PRICE_CEILING_CLAUSE_IDS: frozenset[str] = frozenset(
 # Scope-only rows (no standalone claim-field rule in this batch).
 EK3_SCOPE_ONLY_CLAUSE_IDS: frozenset[str] = frozenset(
     {
-        "C001649",
+        "C002708",
         "C002708",
         "C002745",
     }
@@ -30,7 +30,7 @@ EK3_LIST_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.1.(8).ek3c_inpatient_external_supply_invalid",
         "sut_section": "3.1.1",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001626", "C002751"],
+        "gate_b_sources": ["C002751"],
         "condition": {"ek3c_inpatient_external_supply_invalid": True},
         "action": {
             "material_outcome": "no_pay",
@@ -46,7 +46,7 @@ EK3_LIST_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.2.2.(2).ek3c_list_price_missing",
         "sut_section": "3.2.2",
         "deontic": "REGULATORY_ACTION",
-        "gate_b_sources": ["C001852", "C002834"],
+        "gate_b_sources": ["C002834", "C002834"],
         "condition": {"ek3c_list_price_missing": True},
         "action": {
             "material_outcome": "review_required",
@@ -61,7 +61,7 @@ EK3_LIST_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.1.(13).ek3_quality_documentation_incomplete",
         "sut_section": "3.1.1",
         "deontic": "REGULATORY_ACTION",
-        "gate_b_sources": ["C001631", "C002693"],
+        "gate_b_sources": ["C002693", "C002693"],
         "condition": {"ek3_quality_documentation_incomplete": True},
         "action": {
             "material_outcome": "review_required",
@@ -91,7 +91,7 @@ EK3_LIST_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.2.(4).ek3c_custom_order_billing_invalid",
         "sut_section": "3.1.2",
         "deontic": "REGULATORY_ACTION",
-        "gate_b_sources": ["C001650", "C002709"],
+        "gate_b_sources": ["C002709", "C002709"],
         "condition": {"ek3c_custom_order_billing_invalid": True},
         "action": {
             "material_outcome": "review_required",
@@ -106,7 +106,7 @@ EK3_LIST_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.2.(5).ek3c_medical_appropriateness_incomplete",
         "sut_section": "3.1.2",
         "deontic": "NO_PAY",
-        "gate_b_sources": ["C001655", "C002713"],
+        "gate_b_sources": ["C002713", "C002713"],
         "condition": {"ek3c_medical_appropriateness_incomplete": True},
         "action": {
             "material_outcome": "no_pay",
@@ -121,7 +121,7 @@ EK3_LIST_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.2.c.ek3c_custom_garment_contract_invalid",
         "sut_section": "3.1.2",
         "deontic": "REGULATORY_ACTION",
-        "gate_b_sources": ["C001654", "C002712"],
+        "gate_b_sources": ["C002712", "C002712"],
         "condition": {"ek3c_custom_garment_contract_invalid": True},
         "action": {
             "material_outcome": "review_required",
@@ -151,7 +151,7 @@ EK3_LIST_BATCH_RULES: list[dict[str, Any]] = [
         "rule_id": "3.1.2.(1).ek3c_outpatient_material_scope",
         "sut_section": "3.1.2",
         "deontic": "REGULATORY_ACTION",
-        "gate_b_sources": ["C001641", "C002700"],
+        "gate_b_sources": ["C002700", "C002700"],
         "condition": {"ek3c_outpatient_material_scope": True},
         "action": {
             "material_outcome": "review_required",

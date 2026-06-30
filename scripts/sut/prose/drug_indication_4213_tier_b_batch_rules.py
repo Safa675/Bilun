@@ -69,7 +69,7 @@ BATCH_4213_TIER_B_RULES: list[dict[str, Any]] = [
             "başlandığı tarihteki mevzuata uygun olduğu yeni raporda belirtilmelidir "
             "(§4.2.13.1 (7))."
         ),
-        gate_b_sources=["C004601"],
+        gate_b_sources=[],
     ),
     _rule(
         "4.2.13.hbv_antiviral_report_renewal_initiation_f8",
@@ -81,6 +81,6 @@ BATCH_4213_TIER_B_RULES: list[dict[str, Any]] = [
             "başlandığı tarihteki mevzuata uygun olduğu yeni raporda belirtilmelidir "
             "(§4.2.13.1 (8))."
         ),
-        gate_b_sources=["C004533"],
+        gate_b_sources=[],
     ),
 ]

@@ -53,7 +53,7 @@ BATCH_4216_TIER_B_RULES: list[dict[str, Any]] = [
             "Protein metabolizması bozukluğu özel formül — çocuk metabolizma/endokrinoloji/"
             "gastroenteroloji uzman hekim raporu gerekir (§4.2.16 (2))."
         ),
-        gate_b_sources=["C005888"],
+        gate_b_sources=["C005982"],
     ),
     _rule(
         "4.2.16.protein_metabolism_formula_diet_report",
@@ -71,6 +71,6 @@ BATCH_4216_TIER_B_RULES: list[dict[str, Any]] = [
             "Protein metabolizması bozukluğu özel formüllü un — kısıtlı diyet nedeniyle "
             "hayati öneme haiz ürünler uzman hekim raporuna dayanılarak karşılanır (§4.2.16 (3))."
         ),
-        gate_b_sources=["C005914", "C005921", "C005928", "C005935", "C005941", "C005987"],
+        gate_b_sources=["C005993", "C005993", "C005993", "C005993", "C005993", "C005993"],
     ),
 ]
