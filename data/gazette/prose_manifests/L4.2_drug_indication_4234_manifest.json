@@ -5,11 +5,9 @@
   "rules_in_json": 18,
   "section_4.2.34_clause_total": 48,
   "section_clause_total": 48,
-  "encoded_clause_count": 18,
+  "encoded_clause_count": 16,
   "encoded_clause_ids": [
     "C006626",
-    "C006627",
-    "C006628",
     "C006630",
     "C006634",
     "C006636",
@@ -598,5 +596,13 @@
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     }
-  ]
+  ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "encode_tier_C_deferred_count": 32,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 33.3
 }

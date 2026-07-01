@@ -2,18 +2,25 @@
   "manifest_version": "r5-lsd4210-v1",
   "section_id": "4.2.10",
   "effective_date": "2026-06-29",
-  "rules_in_json": 10,
+  "rules_in_json": 15,
   "section_4.2.10_clause_total": 131,
   "section_clause_total": 131,
-  "encoded_clause_count": 15,
+  "encoded_clause_count": 22,
   "encoded_clause_ids": [
     "C004209",
+    "C004221",
+    "C004223",
     "C004235",
     "C004252",
+    "C004254",
     "C004257",
     "C004258",
+    "C004296",
     "C004299",
     "C004300",
+    "C004303",
+    "C004304",
+    "C004348",
     "C004353",
     "C004357",
     "C004363",
@@ -25,12 +32,19 @@
   ],
   "gate_b_sources_encoded": [
     "C004209",
+    "C004221",
+    "C004223",
     "C004235",
     "C004252",
+    "C004254",
     "C004257",
     "C004258",
+    "C004296",
     "C004299",
     "C004300",
+    "C004303",
+    "C004304",
+    "C004348",
     "C004353",
     "C004357",
     "C004363",
@@ -55,9 +69,7 @@
     "C004218",
     "C004219",
     "C004220",
-    "C004221",
     "C004222",
-    "C004223",
     "C004224",
     "C004225",
     "C004226",
@@ -84,7 +96,6 @@
     "C004250",
     "C004251",
     "C004253",
-    "C004254",
     "C004255",
     "C004259",
     "C004260",
@@ -117,20 +128,16 @@
     "C004293",
     "C004294",
     "C004295",
-    "C004296",
     "C004297",
     "C004298",
     "C004301",
     "C004302",
-    "C004303",
-    "C004304",
     "C004305",
     "C004343",
     "C004344",
     "C004345",
     "C004346",
     "C004347",
-    "C004348",
     "C004349",
     "C004350",
     "C004351",
@@ -162,7 +169,7 @@
   ],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 116,
+  "tier_c_deferred_count": 109,
   "clause_traces": [
     {
       "clause_id": "C004206",
@@ -310,12 +317,11 @@
       "clause_id": "C004221",
       "section_id": "4.2.10.A-1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.10.A-1.bucket_a.c004221"
+      ]
     },
     {
       "clause_id": "C004222",
@@ -332,12 +338,11 @@
       "clause_id": "C004223",
       "section_id": "4.2.10.A-1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.10.A-1.bucket_a.c004223"
+      ]
     },
     {
       "clause_id": "C004224",
@@ -445,7 +450,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Daha önceki SUT hükümlerine göre tedaviye başlanan hastalarda tedavi",
       "linked_rule_ids": [
-        "4.2.10.gaucher_enzyme_legacy_continuation_report"
+        "4.2.10.A3.continuation_improvement_break_reeligibility"
       ]
     },
     {
@@ -649,12 +654,11 @@
       "clause_id": "C004254",
       "section_id": "4.2.10.A-3",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.10.A3.continuation_improvement_break_reeligibility"
+      ]
     },
     {
       "clause_id": "C004255",
@@ -1035,13 +1039,11 @@
       "clause_id": "C004296",
       "section_id": "4.2.10.B-2",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "mutation_panel",
-        "moh_patient_approval"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: mutation_panel, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.10.B2.moh_kub_mutations_evaluated"
+      ]
     },
     {
       "clause_id": "C004297",
@@ -1113,23 +1115,21 @@
       "clause_id": "C004303",
       "section_id": "4.2.10.B-3",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.10.B3.no_change_within_6mo"
+      ]
     },
     {
       "clause_id": "C004304",
       "section_id": "4.2.10.B-3",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Enzim tedavisi ile oral migalastat tedavisi kombine olarak kullanılamaz.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.10.B3.enzyme_migalastat_combo_nopay"
+      ]
     },
     {
       "clause_id": "C004305",
@@ -1201,12 +1201,11 @@
       "clause_id": "C004348",
       "section_id": "4.2.10.C-1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "mutation_panel"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: mutation_panel. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.10.C1.two_compatible_analyses_ms_exclusion"
+      ]
     },
     {
       "clause_id": "C004349",
@@ -1302,7 +1301,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "İlk rapor tarihinden sonra yapılan yıllık değerlendirmelerde",
       "linked_rule_ids": [
-        "4.2.10.mps1_annual_evaluation_continuation"
+        "4.2.10.mps1_enzyme_start_date_report"
       ]
     },
     {
@@ -1596,5 +1595,13 @@
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     }
-  ]
+  ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "encode_tier_C_deferred_count": 109,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 16.8
 }

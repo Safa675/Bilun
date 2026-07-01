@@ -2,28 +2,37 @@
   "manifest_version": "r5-a5-v1",
   "section_id": "4.2.38",
   "effective_date": "2026-06-27",
-  "rules_in_json": 5,
+  "rules_in_json": 8,
   "section_4.2.38_clause_total": 22,
   "section_clause_total": 22,
-  "encoded_clause_count": 5,
+  "encoded_clause_count": 10,
   "encoded_clause_ids": [
     "C006723",
     "C006727",
     "C006730",
     "C006735",
-    "C006747"
+    "C006739",
+    "C006740",
+    "C006741",
+    "C006745",
+    "C006747",
+    "C006749"
   ],
   "gate_b_sources_encoded": [
     "C006723",
     "C006727",
     "C006730",
     "C006735",
-    "C006747"
+    "C006739",
+    "C006740",
+    "C006741",
+    "C006743",
+    "C006745",
+    "C006747",
+    "C006749"
   ],
   "tier_a_pending_clause_ids": [],
-  "tier_b_pending_clause_ids": [
-    "C006745"
-  ],
+  "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C006721",
     "C006722",
@@ -33,18 +42,14 @@
     "C006734",
     "C006736",
     "C006738",
-    "C006739",
-    "C006740",
-    "C006741",
     "C006742",
     "C006744",
     "C006746",
-    "C006748",
-    "C006749"
+    "C006748"
   ],
   "tier_a_pending_count": 0,
-  "tier_b_pending_count": 1,
-  "tier_c_deferred_count": 16,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 12,
   "clause_traces": [
     {
       "clause_id": "C006721",
@@ -178,34 +183,31 @@
       "clause_id": "C006739",
       "section_id": "4.2.38",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.38.first_line_oral_antidiabetic"
+      ]
     },
     {
       "clause_id": "C006740",
       "section_id": "4.2.38",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.38.diab.empagliflozin_linagliptin_basal_insulin_permission"
+      ]
     },
     {
       "clause_id": "C006741",
       "section_id": "4.2.38",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.38.first_line_oral_antidiabetic"
+      ]
     },
     {
       "clause_id": "C006742",
@@ -233,8 +235,11 @@
       "clause_id": "C006745",
       "section_id": "4.2.38",
       "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "Sodyum-glukoz ko-transporter 2 (SGLT2) inhibitörleri (dapagliflozin"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sodyum-glukoz ko-transporter 2 (SGLT2) inhibitörleri (dapagliflozin",
+      "linked_rule_ids": [
+        "4.2.38.diab.empagliflozin_linagliptin_specialty_combo_nopay"
+      ]
     },
     {
       "clause_id": "C006746",
@@ -272,12 +277,19 @@
       "clause_id": "C006749",
       "section_id": "4.2.38",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.38.diab.empagliflozin_linagliptin_specialty_combo_nopay"
+      ]
     }
-  ]
+  ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "encode_tier_C_deferred_count": 12,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 45.5
 }

@@ -2,26 +2,42 @@
   "manifest_version": "r5-a5-v1",
   "section_id": "4.2.35,4.2.37",
   "effective_date": "2026-06-27",
-  "rules_in_json": 5,
+  "rules_in_json": 12,
   "section_4.2.35_clause_total": 17,
   "section_4.2.37_clause_total": 9,
   "section_clause_total": 26,
-  "encoded_clause_count": 6,
+  "encoded_clause_count": 14,
   "encoded_clause_ids": [
+    "C006692",
+    "C006693",
     "C006694",
+    "C006696",
     "C006697",
+    "C006699",
+    "C006703",
     "C006705",
+    "C006714",
     "C006715",
     "C006716",
-    "C006718"
+    "C006717",
+    "C006718",
+    "C006720"
   ],
   "gate_b_sources_encoded": [
+    "C006692",
+    "C006693",
     "C006694",
+    "C006696",
     "C006697",
+    "C006699",
+    "C006703",
     "C006705",
+    "C006714",
     "C006715",
     "C006716",
-    "C006718"
+    "C006717",
+    "C006718",
+    "C006720"
   ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
@@ -30,26 +46,18 @@
     "C006687",
     "C006688",
     "C006691",
-    "C006692",
-    "C006693",
     "C006695",
-    "C006696",
     "C006698",
-    "C006699",
     "C006700",
     "C006702",
-    "C006703",
     "C006704",
     "C006712",
     "C006713",
-    "C006714",
-    "C006717",
-    "C006719",
-    "C006720"
+    "C006719"
   ],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 20,
+  "tier_c_deferred_count": 12,
   "clause_traces": [
     {
       "clause_id": "C006681",
@@ -99,23 +107,21 @@
       "clause_id": "C006692",
       "section_id": "4.2.35.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.35.A.gabapentin_6mo_report_combo_nopay"
+      ]
     },
     {
       "clause_id": "C006693",
       "section_id": "4.2.35.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.35.A.pregabalin_6mo_report_combo_nopay"
+      ]
     },
     {
       "clause_id": "C006694",
@@ -142,12 +148,11 @@
       "clause_id": "C006696",
       "section_id": "4.2.35.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.35.A.diabetic_neuropathic_pain_specialists"
+      ]
     },
     {
       "clause_id": "C006697",
@@ -174,12 +179,11 @@
       "clause_id": "C006699",
       "section_id": "4.2.35.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.35.A.capsaicin_phn_dpn_arthritis_nopay"
+      ]
     },
     {
       "clause_id": "C006700",
@@ -207,12 +211,11 @@
       "clause_id": "C006703",
       "section_id": "4.2.35.B",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.35.B.chronic_msk_fibromyalgia_specialists"
+      ]
     },
     {
       "clause_id": "C006704",
@@ -261,12 +264,11 @@
       "clause_id": "C006714",
       "section_id": "4.2.37.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "akromegali_ilac",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.37.A.acromegaly.pegvisomant_somatostatin_failure_permission"
+      ]
     },
     {
       "clause_id": "C006715",
@@ -292,12 +294,11 @@
       "clause_id": "C006717",
       "section_id": "4.2.37.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.37.pegvisomant_init_board_2mo"
+      ]
     },
     {
       "clause_id": "C006718",
@@ -324,12 +325,19 @@
       "clause_id": "C006720",
       "section_id": "4.2.37.B",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "akromegali_ilac",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.37.B.bucket_a.c006720"
+      ]
     }
-  ]
+  ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "encode_tier_C_deferred_count": 12,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 53.8
 }

@@ -2,63 +2,90 @@
   "manifest_version": "r5-a6-a2-v1",
   "section_id": "4.2.6",
   "effective_date": "2026-06-27",
-  "rules_in_json": 10,
+  "rules_in_json": 35,
   "section_4.2.6_clause_total": 42,
   "section_clause_total": 42,
-  "encoded_clause_count": 9,
+  "encoded_clause_count": 18,
   "encoded_clause_ids": [
     "C003941",
+    "C003942",
+    "C003956",
+    "C003957",
+    "C003965",
     "C003966",
+    "C003977",
+    "C003979",
     "C003982",
+    "C003997",
     "C003998",
     "C004003",
+    "C004013",
     "C004016",
+    "C004024",
     "C004030",
     "C004033",
     "C004039"
   ],
   "gate_b_sources_encoded": [
     "C003941",
+    "C003942",
+    "C003956",
+    "C003957",
+    "C003965",
     "C003966",
+    "C003977",
+    "C003979",
     "C003982",
+    "C003997",
     "C003998",
     "C004003",
+    "C004013",
     "C004016",
+    "C004024",
     "C004030",
     "C004033",
-    "C004039"
+    "C004039",
+    "C007124",
+    "C007125",
+    "C007128",
+    "C007130",
+    "C007134",
+    "C007137",
+    "C007139",
+    "C007142",
+    "C007143",
+    "C007145",
+    "C007146",
+    "C007149",
+    "C007150",
+    "C007152",
+    "C007162",
+    "C007165",
+    "C007169",
+    "C007170",
+    "C007171"
   ],
-  "tier_a_pending_clause_ids": [
-    "C003956",
-    "C003957"
-  ],
+  "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C003940",
-    "C003942",
     "C003953",
     "C003954",
     "C003955",
-    "C003965",
     "C003976",
-    "C003977",
     "C003978",
-    "C003979",
     "C003991",
     "C003992",
     "C003994",
     "C003995",
     "C003996",
-    "C003997",
     "C004001",
     "C004002",
     "C004012",
-    "C004013",
     "C004014",
     "C004017",
     "C004018",
     "C004023",
-    "C004024",
     "C004027",
     "C004031",
     "C004032",
@@ -66,9 +93,9 @@
     "C004037",
     "C004040"
   ],
-  "tier_a_pending_count": 2,
+  "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 31,
+  "tier_c_deferred_count": 24,
   "clause_traces": [
     {
       "clause_id": "C003940",
@@ -95,12 +122,11 @@
       "clause_id": "C003942",
       "section_id": "4.2.6.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose"
+      ]
     },
     {
       "clause_id": "C003953",
@@ -139,26 +165,31 @@
       "clause_id": "C003956",
       "section_id": "4.2.6.A-1",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "buyume_hormonu"
+      "manifest_status": "encoded",
+      "heuristic_inn": "buyume_hormonu",
+      "linked_rule_ids": [
+        "4.2.6.A1.neurosecretory_bioinactive_gh_somatropin"
+      ]
     },
     {
       "clause_id": "C003957",
       "section_id": "4.2.6.A-1",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "buyume_hormonu"
+      "manifest_status": "encoded",
+      "heuristic_inn": "buyume_hormonu",
+      "linked_rule_ids": [
+        "4.2.6.pediatric_gh_monitoring_board"
+      ]
     },
     {
       "clause_id": "C003965",
       "section_id": "4.2.6.A-1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "2.6.A-1 – Çocuklarda somatropin ve somatrogon kullanım ilkeleri",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.6.pediatric_gh_monitoring_board"
+      ]
     },
     {
       "clause_id": "C003966",
@@ -185,12 +216,11 @@
       "clause_id": "C003977",
       "section_id": "4.2.6.A-1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.6.A1.neurosecretory_bioinactive_gh_somatropin"
+      ]
     },
     {
       "clause_id": "C003978",
@@ -207,12 +237,11 @@
       "clause_id": "C003979",
       "section_id": "4.2.6.A-1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.6.A1.somatropin_listed_cases_no_condition"
+      ]
     },
     {
       "clause_id": "C003982",
@@ -283,12 +312,11 @@
       "clause_id": "C003997",
       "section_id": "4.2.6.A-2",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.6.A2.insulin_tolerance_test_peak_gh_report"
+      ]
     },
     {
       "clause_id": "C003998",
@@ -347,12 +375,11 @@
       "clause_id": "C004013",
       "section_id": "4.2.6.A-4",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.6.A4.prader_willi_gh_no_stimulation_test"
+      ]
     },
     {
       "clause_id": "C004014",
@@ -412,12 +439,11 @@
       "clause_id": "C004024",
       "section_id": "4.2.6.A-5",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "KBY evresi evre III",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.6.A5.ckd_dialysis_children_gh_coverage"
+      ]
     },
     {
       "clause_id": "C004027",
@@ -515,5 +541,13 @@
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     }
-  ]
+  ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "encode_tier_C_deferred_count": 24,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 42.9
 }

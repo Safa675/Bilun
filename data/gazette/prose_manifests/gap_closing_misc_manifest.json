@@ -1,7 +1,7 @@
 {
   "manifest_version": "gap-v1",
   "rule_set_id": "gap_closing_misc",
-  "rules_in_json": 40,
+  "rules_in_json": 41,
   "encoded_clause_ids": [
     "C000097",
     "C000099",
@@ -11,6 +11,7 @@
     "C000324",
     "C000326",
     "C000337",
+    "C000347",
     "C000359",
     "C000361",
     "C000362",
@@ -164,6 +165,9 @@
     ],
     "6.3.2.(b).same_function_prior_material_warranty_no_pay": [
       "C008243"
+    ],
+    "1.8.3.(1b).uncontracted_dental_prosthesis_copay": [
+      "C000347"
     ]
   }
 }

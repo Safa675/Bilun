@@ -2,14 +2,13 @@
   "manifest_version": "r5-a1-v1",
   "section_id": "4.2.1",
   "effective_date": "2026-06-27",
-  "rules_in_json": 137,
+  "rules_in_json": 139,
   "section_4.2.1_clause_total": 282,
   "section_clause_total": 282,
-  "encoded_clause_count": 120,
+  "encoded_clause_count": 128,
   "encoded_clause_ids": [
     "C003563",
     "C003565",
-    "C003581",
     "C003587",
     "C003591",
     "C003593",
@@ -38,6 +37,7 @@
     "C003647",
     "C003648",
     "C003649",
+    "C003650",
     "C003651",
     "C003652",
     "C003657",
@@ -52,7 +52,9 @@
     "C003672",
     "C003676",
     "C003677",
+    "C003679",
     "C003682",
+    "C003683",
     "C003684",
     "C003686",
     "C003687",
@@ -67,6 +69,7 @@
     "C003706",
     "C003711",
     "C003712",
+    "C003714",
     "C003719",
     "C003722",
     "C003737",
@@ -83,6 +86,7 @@
     "C003755",
     "C003758",
     "C003766",
+    "C003769",
     "C003770",
     "C003772",
     "C003773",
@@ -93,6 +97,7 @@
     "C003783",
     "C003787",
     "C003790",
+    "C003791",
     "C003806",
     "C003807",
     "C003808",
@@ -101,11 +106,14 @@
     "C003813",
     "C003814",
     "C003818",
+    "C003819",
     "C003820",
+    "C003827",
     "C003831",
     "C003832",
     "C003839",
     "C003840",
+    "C003844",
     "C003848",
     "C003850",
     "C003852",
@@ -160,6 +168,7 @@
     "C003647",
     "C003648",
     "C003649",
+    "C003650",
     "C003651",
     "C003652",
     "C003657",
@@ -174,7 +183,9 @@
     "C003672",
     "C003676",
     "C003677",
+    "C003679",
     "C003682",
+    "C003683",
     "C003684",
     "C003686",
     "C003687",
@@ -189,6 +200,7 @@
     "C003706",
     "C003711",
     "C003712",
+    "C003714",
     "C003719",
     "C003722",
     "C003737",
@@ -205,6 +217,7 @@
     "C003755",
     "C003758",
     "C003766",
+    "C003769",
     "C003770",
     "C003772",
     "C003773",
@@ -215,6 +228,7 @@
     "C003783",
     "C003787",
     "C003790",
+    "C003791",
     "C003806",
     "C003807",
     "C003808",
@@ -223,11 +237,14 @@
     "C003813",
     "C003814",
     "C003818",
+    "C003819",
     "C003820",
+    "C003827",
     "C003831",
     "C003832",
     "C003839",
     "C003840",
+    "C003844",
     "C003848",
     "C003850",
     "C003852",
@@ -288,7 +305,6 @@
     "C003637",
     "C003638",
     "C003644",
-    "C003650",
     "C003653",
     "C003654",
     "C003655",
@@ -302,10 +318,8 @@
     "C003674",
     "C003675",
     "C003678",
-    "C003679",
     "C003680",
     "C003681",
-    "C003683",
     "C003685",
     "C003688",
     "C003689",
@@ -322,7 +336,6 @@
     "C003709",
     "C003710",
     "C003713",
-    "C003714",
     "C003715",
     "C003716",
     "C003718",
@@ -346,7 +359,6 @@
     "C003764",
     "C003767",
     "C003768",
-    "C003769",
     "C003771",
     "C003776",
     "C003777",
@@ -358,7 +370,6 @@
     "C003786",
     "C003788",
     "C003789",
-    "C003791",
     "C003792",
     "C003794",
     "C003804",
@@ -367,14 +378,12 @@
     "C003815",
     "C003816",
     "C003817",
-    "C003819",
     "C003821",
     "C003822",
     "C003823",
     "C003824",
     "C003825",
     "C003826",
-    "C003827",
     "C003828",
     "C003829",
     "C003830",
@@ -384,7 +393,6 @@
     "C003841",
     "C003842",
     "C003843",
-    "C003844",
     "C003845",
     "C003846",
     "C003847",
@@ -419,239 +427,8 @@
   ],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 163,
+  "tier_c_deferred_count": 154,
   "clause_traces": [
-    {
-      "clause_id": "C003561",
-      "section_id": "4.2.1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1 – Leflunomid",
-      "signal_score": 15,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003629",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Yetişkinlerde",
-      "signal_score": 14,
-      "linked_rule_ids": [
-        "4.2.1.adalimumab_crohn_adult_board"
-      ]
-    },
-    {
-      "clause_id": "C003577",
-      "section_id": "4.2.1.C",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1.C-Biyolojik ajanlar (Anti-TNF ilaçlar",
-      "signal_score": 13,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003609",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İnfliksimab",
-      "signal_score": 13,
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_axial_as_board",
-        "4.2.1.inflix_peripheral_as_basdai_continuation",
-        "4.2.1.inflix_peripheral_as_second_line_romato_board",
-        "4.2.1.inflix_peripheral_as_second_line_start",
-        "4.2.1.infliximab_as_basdai_second_line"
-      ]
-    },
-    {
-      "clause_id": "C003614",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İnfliksimab",
-      "signal_score": 13,
-      "linked_rule_ids": [
-        "4.2.1.inflix_cert_gol_as_second_line"
-      ]
-    },
-    {
-      "clause_id": "C003745",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Aksiyel tutulumlu ankilozan spondilitli hastalarda",
-      "signal_score": 13,
-      "linked_rule_ids": [
-        "4.2.1.tofacitinib_axial_as_board",
-        "4.2.1.tofacitinib_axial_as_initiation"
-      ]
-    },
-    {
-      "clause_id": "C003746",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Periferik eklem tutulumlu ankilozan spondilitli hastalarda",
-      "signal_score": 13,
-      "linked_rule_ids": [
-        "4.2.1.tofacitinib_axial_as_board",
-        "4.2.1.tofacitinib_peripheral_as_initiation"
-      ]
-    },
-    {
-      "clause_id": "C003610",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Periferik eklem tutulumlu ankilozan spondilitli hastalarda",
-      "signal_score": 11,
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_peripheral_as_board"
-      ]
-    },
-    {
-      "clause_id": "C003888",
-      "section_id": "4.2.1.C-13",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Psöriyatik artritli hastalarda",
-      "signal_score": 11,
-      "linked_rule_ids": [
-        "4.2.1.apremilast_psa_dmard_second_line"
-      ]
-    },
-    {
-      "clause_id": "C003563",
-      "section_id": "4.2.1.A",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.leflunomid_ra_psa_report"
-      ]
-    },
-    {
-      "clause_id": "C003591",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İnfliksimab",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.inflix_cert_gol_ra_second_line",
-        "4.2.1.infliximab_ra_das28_second_line"
-      ]
-    },
-    {
-      "clause_id": "C003621",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İnfliksimab",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.inflix_cert_gol_psa_psarc_second_line",
-        "4.2.1.inflix_psa_second_line_psarc"
-      ]
-    },
-    {
-      "clause_id": "C003622",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Anti-TNF ilaçlar",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_prescriber_board"
-      ]
-    },
-    {
-      "clause_id": "C003630",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çocuklarda",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.adalimumab_pediatric_crohn_board"
-      ]
-    },
-    {
-      "clause_id": "C003631",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_uc_conv_failure_board"
-      ]
-    },
-    {
-      "clause_id": "C003687",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Ülseratif kolit hastalığında",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.vedolizumab_uc_report"
-      ]
-    },
-    {
-      "clause_id": "C003749",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.upadacitinib_anti_tnf_second_line"
-      ]
-    },
-    {
-      "clause_id": "C003755",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Ülseratif kolit hastalığında",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.upadacitinib_uc_anti_tnf"
-      ]
-    },
-    {
-      "clause_id": "C003806",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.anakinra_fmf_colchicine_add_on",
-        "4.2.1.anakinra_fmf_colchicine_failure"
-      ]
-    },
-    {
-      "clause_id": "C003840",
-      "section_id": "4.2.1.C-8",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Ülseratif kolit hastalığında",
-      "signal_score": 10,
-      "linked_rule_ids": [
-        "4.2.1.vedolizumab_uc_anti_tnf_second_line"
-      ]
-    },
     {
       "clause_id": "C003558",
       "section_id": "4.2.1",
@@ -665,1446 +442,24 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003587",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_ra_das28_initiation"
-      ]
-    },
-    {
-      "clause_id": "C003602",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.adalimumab_jia_uveitis_first_line",
-        "4.2.1.anti_tnf_jia_dmard_failure_board"
-      ]
-    },
-    {
-      "clause_id": "C003605",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.C.ankylosing_spondylitis_nsaids_failure_report"
-      ]
-    },
-    {
-      "clause_id": "C003617",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Psöriyatik artritli hastalarda",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_psoriatic_arthritis_board"
-      ]
-    },
-    {
-      "clause_id": "C003627",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "(Değişik: RG- 07/10/2016- 29850/ 15 md. Yürürlük: 15/10/2016) Fistülize",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.crohn_fistulizing_month4_cdai_report"
-      ]
-    },
-    {
-      "clause_id": "C003634",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Yetişkinlerde",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.adalimumab_uveitis_adult_board"
-      ]
-    },
-    {
-      "clause_id": "C003635",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "2 yaşından itibaren çocuklarda",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.adalimumab_pediatric_uveitis_board"
-      ]
-    },
-    {
-      "clause_id": "C003651",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Romatoloji",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.rituximab_gpa_mpa_nephrology"
-      ]
-    },
-    {
-      "clause_id": "C003664",
-      "section_id": "4.2.1.C-3",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Aktif romatoid artriti bulunan",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_ra_board",
-        "4.2.1.tocilizumab_ra_university_board"
-      ]
-    },
-    {
-      "clause_id": "C003686",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Yetişkinlerde",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.ustekinumab_crohn_anti_tnf_failure"
-      ]
-    },
-    {
-      "clause_id": "C003691",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "anti_tnf",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_ra_c5_university_das"
-      ]
-    },
-    {
-      "clause_id": "C003692",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Aktif romatoid artriti bulunan",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_ra_c5_methotrexat_combo"
-      ]
-    },
-    {
-      "clause_id": "C003753",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Orta ilâ şiddetli aktif crohn hastalığında",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.upadacitinib_crohn_anti_tnf"
-      ]
-    },
-    {
-      "clause_id": "C003812",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.anakinra_canakinumab_fmf_board_report",
-        "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber"
-      ]
-    },
-    {
-      "clause_id": "C003813",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Amiloidozu olan FMF hastalığı tedavisinde",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.anakinra_canakinumab_fmf_amyloidosis",
-        "4.2.1.anakinra_canakinumab_fmf_amyloidosis_colchicine"
-      ]
-    },
-    {
-      "clause_id": "C003839",
-      "section_id": "4.2.1.C-8",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Fistülize",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.vedolizumab_crohn_anti_tnf_initiation"
-      ]
-    },
-    {
-      "clause_id": "C003889",
-      "section_id": "4.2.1.C-13",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Apremilast",
-      "signal_score": 9,
-      "linked_rule_ids": [
-        "4.2.1.apremilast_psoriasis_dermatology_board"
-      ]
-    },
-    {
-      "clause_id": "C003565",
-      "section_id": "4.2.1.B",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Romatoid artritli hastalarda",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.gold_preparations_ra_report"
-      ]
-    },
-    {
-      "clause_id": "C003593",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "anti_tnf",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_jia_start_board"
-      ]
-    },
-    {
-      "clause_id": "C003625",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "anti_tnf",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_psoriasis_vulgaris_board"
-      ]
-    },
-    {
-      "clause_id": "C003636",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.adalimumab_hs_dermatology_board"
-      ]
-    },
-    {
-      "clause_id": "C003645",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Methotreksat ile kombinasyon halinde",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.abatacept_ra_board",
-        "4.2.1.abatacept_ra_tnf_failure_board"
-      ]
-    },
-    {
-      "clause_id": "C003682",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "anti_tnf",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.ustekinumab_psa_dmard_tnf_failure"
-      ]
-    },
-    {
-      "clause_id": "C003698",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "anti_tnf",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_jia_c5_prior_therapy_failure"
-      ]
-    },
-    {
-      "clause_id": "C003738",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Romatoid artritli erişkin hastalarda",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.jak_ra_dmard_initiation",
-        "4.2.1.tofacitinib_ra_board"
-      ]
-    },
-    {
-      "clause_id": "C003739",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Romatoid artritli erişkin hastalarda",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.jak_ra_university_prescriber_board"
-      ]
-    },
-    {
-      "clause_id": "C003741",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "anti_tnf",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.jak_psa_second_line_initiation"
-      ]
-    },
-    {
-      "clause_id": "C003807",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.canakinumab_fmf_anakinra_switch"
-      ]
-    },
-    {
-      "clause_id": "C003856",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "anti_tnf",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.sekukinumab_psa_second_line"
-      ]
-    },
-    {
-      "clause_id": "C003872",
-      "section_id": "4.2.1.C-10",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "anti_tnf",
-      "signal_score": 8,
-      "linked_rule_ids": [
-        "4.2.1.ixekizumab_psa_second_line"
-      ]
-    },
-    {
-      "clause_id": "C003659",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İlacın üçüncü basamak sağlık kurumlarında",
-      "signal_score": 7,
-      "linked_rule_ids": [
-        "4.2.1.rituximab_pemphigus_dermatology"
-      ]
-    },
-    {
-      "clause_id": "C003669",
-      "section_id": "4.2.1.C-3",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "anti_tnf",
-      "signal_score": 7,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_pediatric_anti_tnf_failure"
-      ]
-    },
-    {
-      "clause_id": "C003699",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 7,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_jia_c5_acr30_continuation",
-        "4.2.1.tocilizumab_jia_c5_acr50_continuation"
-      ]
-    },
-    {
-      "clause_id": "C003705",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 7,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_sjia_anakinra_response"
-      ]
-    },
-    {
-      "clause_id": "C003711",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 7,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_sjia_anakinra_response"
-      ]
-    },
-    {
-      "clause_id": "C003722",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İlacın etkinliği",
-      "signal_score": 7,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_dha_sc_efficacy_continuation"
-      ]
-    },
-    {
-      "clause_id": "C003781",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İlacın etkinliği",
-      "signal_score": 7,
-      "linked_rule_ids": [
-        "4.2.1.jak_efficacy_continuation_romato_immuno"
-      ]
-    },
-    {
-      "clause_id": "C003861",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 7,
-      "linked_rule_ids": [
-        "4.2.1.sekukinumab_hs_adalimumab_failure"
-      ]
-    },
-    {
-      "clause_id": "C003603",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "anti_tnf",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_jia_acr30_continuation_c1",
-        "4.2.1.anti_tnf_jia_acr50_continuation_c1",
-        "4.2.1.anti_tnf_jia_acr_continuation",
-        "4.2.1.anti_tnf_jia_acr_monitoring_board"
-      ]
-    },
-    {
-      "clause_id": "C003670",
-      "section_id": "4.2.1.C-3",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.abatacept_jia_acr30_continuation"
-      ]
-    },
-    {
-      "clause_id": "C003672",
-      "section_id": "4.2.1.C-3",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.abatacept_jia_acr50_continuation"
-      ]
-    },
-    {
-      "clause_id": "C003719",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_dha_sc_initiation",
-        "4.2.1.tocilizumab_dha_sc_steroid_contraindicated"
-      ]
-    },
-    {
-      "clause_id": "C003742",
-      "section_id": "4.2.1.C-6",
+      "clause_id": "C003559",
+      "section_id": "4.2.1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 6,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003766",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Üçüncü basamak resmi sağlık hizmeti sunucularında",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.baricitinib_ad_specialist_board",
-        "4.2.1.upadacitinib_ad_dermatology_board"
-      ]
-    },
-    {
-      "clause_id": "C003769",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 6,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003770",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Sağlık kurulu raporuna dayanılarak",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.jak_ibd_gi_prescriber"
-      ]
-    },
-    {
-      "clause_id": "C003775",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Sağlık Kurulu raporlarının",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.jak_pjia_pediatric_tertiary_board"
-      ]
-    },
-    {
-      "clause_id": "C003787",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.fmf_jia_acr_pediatric_stop_c7"
-      ]
-    },
-    {
-      "clause_id": "C003790",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.fmf_jia_acr_pediatric_stop_c7"
-      ]
-    },
-    {
-      "clause_id": "C003808",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.canakinumab_fmf_continuation_report"
-      ]
-    },
-    {
-      "clause_id": "C003811",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.canakinumab_fmf_dose_escalation"
-      ]
-    },
-    {
-      "clause_id": "C003831",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 6,
-      "linked_rule_ids": [
-        "4.2.1.C.anakinra_biologic_jak_combo_nopay"
-      ]
-    },
-    {
-      "clause_id": "C003857",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 6,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003873",
-      "section_id": "4.2.1.C-10",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 6,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003623",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.C.biologic_administration_setting"
-      ]
-    },
-    {
-      "clause_id": "C003647",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Sağlık kurulu raporları aşağıdaki şekilde düzenlenir:",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.rituximab_ra_report_section_header",
-        "4.2.1.rituximab_ra_romatoloji_board"
-      ]
-    },
-    {
-      "clause_id": "C003667",
-      "section_id": "4.2.1.C-3",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavinin devamında DAS 28 kriterine 6 ayda bir bakılır",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_ra_das28_continuation_c3"
-      ]
-    },
-    {
-      "clause_id": "C003677",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Raporda",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.ustekinumab_psoriasis_pasi_report"
-      ]
-    },
-    {
-      "clause_id": "C003678",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 5,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003695",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavinin devamında DAS 28 kriterine 6 ayda bir bakılır",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_ra_das28_continuation_c5"
-      ]
-    },
-    {
-      "clause_id": "C003772",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Metotreksata yanıtsız",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.tofacitinib_pjia_second_line"
-      ]
-    },
-    {
-      "clause_id": "C003778",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.upadacitinib_anti_tnf_second_line"
-      ]
-    },
-    {
-      "clause_id": "C003849",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 5,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003850",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.C.tertiary_immunology_6mo_internal_coverage_c9"
-      ]
-    },
-    {
-      "clause_id": "C003852",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Siklosporin",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.sekukinumab_psoriasis_pasi_systemic_failure"
-      ]
-    },
-    {
-      "clause_id": "C003853",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 5,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003854",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.C.psoriasis_tertiary_dermatology_6mo_pasi_c9"
-      ]
-    },
-    {
-      "clause_id": "C003867",
-      "section_id": "4.2.1.C-10",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Siklosporin",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.ixekizumab_psoriasis_pasi_systemic_failure"
-      ]
-    },
-    {
-      "clause_id": "C003869",
-      "section_id": "4.2.1.C-10",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c10"
-      ]
-    },
-    {
-      "clause_id": "C003878",
-      "section_id": "4.2.1.C-11",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Siklosporin",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.guselkumab_psoriasis_pasi_systemic_failure"
-      ]
-    },
-    {
-      "clause_id": "C003880",
-      "section_id": "4.2.1.C-11",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c11"
-      ]
-    },
-    {
-      "clause_id": "C003883",
-      "section_id": "4.2.1.C-12",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Siklosporin",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.risankizumab_psoriasis_pasi_systemic_failure"
-      ]
-    },
-    {
-      "clause_id": "C003885",
-      "section_id": "4.2.1.C-12",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c12"
-      ]
-    },
-    {
-      "clause_id": "C003894",
-      "section_id": "4.2.1.C-14",
-      "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Siklosporin",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.bimekizumab_psoriasis_pasi_systemic_failure"
-      ]
-    },
-    {
-      "clause_id": "C003896",
-      "section_id": "4.2.1.C-14",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 5,
-      "linked_rule_ids": [
-        "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c14"
-      ]
-    },
-    {
-      "clause_id": "C003652",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.rituximab_ra_6mo_renewal"
-      ]
-    },
-    {
-      "clause_id": "C003665",
-      "section_id": "4.2.1.C-3",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İlaca başlandıktan 3 ay sonra yapılan değerlendirmede DAS 28 skorunda 0",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_ra_das28_06_continuation_c3"
-      ]
-    },
-    {
-      "clause_id": "C003676",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.C.4210_psoriasis_tertiary_dermatology_1yr"
-      ]
-    },
-    {
-      "clause_id": "C003679",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003684",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.C.rheum_pmr_coverage_6mo_report"
-      ]
-    },
-    {
-      "clause_id": "C003693",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İlaca başlandıktan 3 ay sonra yapılan değerlendirmede DAS 28 skorunda 0",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_ra_das28_06_continuation_c5"
-      ]
-    },
-    {
-      "clause_id": "C003714",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
+      "heuristic_inn": "(Değişik:RG-08/06/2017-30090/10-a md. Yürürlük:16/06/2017)",
+      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003743",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.C.rheum_6mo_report_coverage_c6"
-      ]
-    },
-    {
-      "clause_id": "C003747",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.C.tertiary_immunology_rheum_internal_coverage_c6"
-      ]
-    },
-    {
-      "clause_id": "C003750",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.C.tertiary_immunology_rheum_internal_coverage_c6_b"
-      ]
-    },
-    {
-      "clause_id": "C003773",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.C.paediatric_acr30_acr50_continue_c6"
-      ]
-    },
-    {
-      "clause_id": "C003786",
-      "section_id": "4.2.1.C-7",
+      "clause_id": "C003561",
+      "section_id": "4.2.1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003789",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003791",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003819",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003827",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003832",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber"
-      ]
-    },
-    {
-      "clause_id": "C003858",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.C.rheum_pmr_6mo_coverage_c9"
-      ]
-    },
-    {
-      "clause_id": "C003862",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "16 haftalık ilaç kullanım süresi sonunda yapılan değerlendirmede",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.sekukinumab_hs_16wk_continuation_c9"
-      ]
-    },
-    {
-      "clause_id": "C003863",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.C.three_dermatologists_tertiary_report_c9"
-      ]
-    },
-    {
-      "clause_id": "C003868",
-      "section_id": "4.2.1.C-10",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003874",
-      "section_id": "4.2.1.C-10",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "linked_rule_ids": [
-        "4.2.1.C.rheum_pmr_6mo_coverage_c10"
-      ]
-    },
-    {
-      "clause_id": "C003879",
-      "section_id": "4.2.1.C-11",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003884",
-      "section_id": "4.2.1.C-12",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003895",
-      "section_id": "4.2.1.C-14",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 4,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003646",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "linked_rule_ids": [
-        "4.2.1.rituximab_ra_das28_continuation"
-      ]
-    },
-    {
-      "clause_id": "C003648",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Romatoloji uzman hekiminin bulunduğu sağlık kurum/kuruluşlarında",
-      "signal_score": 3,
-      "linked_rule_ids": [
-        "4.2.1.rituximab_ra_romatoloji_board",
-        "4.2.1.rituximab_ra_romatoloji_institution_board"
-      ]
-    },
-    {
-      "clause_id": "C003649",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "linked_rule_ids": [
-        "4.2.1.rituximab_ra_university_tertiary_board"
-      ]
-    },
-    {
-      "clause_id": "C003666",
-      "section_id": "4.2.1.C-3",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "linked_rule_ids": [
-        "4.2.1.C.das28_1p2_improvement_continue"
-      ]
-    },
-    {
-      "clause_id": "C003680",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003683",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003694",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "linked_rule_ids": [
-        "4.2.1.C.das28_1p2_improvement_continue_c5"
-      ]
-    },
-    {
-      "clause_id": "C003704",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003706",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
-      "signal_score": 3,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_jia_acr_pediatric_3mo_c5"
-      ]
-    },
-    {
-      "clause_id": "C003710",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003712",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
-      "signal_score": 3,
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_jia_acr_pediatric_3mo_c5"
-      ]
-    },
-    {
-      "clause_id": "C003744",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003768",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Tofacitinibin ülseratif kolit hastalığında kullanımı",
-      "signal_score": 3,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003774",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavinin devamında ACR pediatrik cevap kriterine 6 ayda bir bakılır",
-      "signal_score": 3,
-      "linked_rule_ids": [
-        "4.2.1.jia_acr_pediatric_6mo_continuation_c6"
-      ]
-    },
-    {
-      "clause_id": "C003818",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "linked_rule_ids": [
-        "4.2.1.C.anakinra_kanakinumab_sequencing"
-      ]
-    },
-    {
-      "clause_id": "C003844",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003848",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "linked_rule_ids": [
-        "4.2.1.C.start_therapy_finding_coverage_c9"
-      ]
-    },
-    {
-      "clause_id": "C003890",
-      "section_id": "4.2.1.C-13",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 3,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003585",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1.C-1 - Anti-TNF (tümor nekrözis faktör) ilaçlar",
-      "signal_score": 2,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003624",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 2,
-      "linked_rule_ids": [
-        "4.2.1.C.anti_tnf_dmard_combination"
-      ]
-    },
-    {
-      "clause_id": "C003740",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Tofacitinib ve upadasitinibin psöriatik artritli erişkin hastalarda kullanımı",
-      "signal_score": 2,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003754",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Upadasitinibin ülseratif kolit hastalığında kullanımı",
-      "signal_score": 2,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003783",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "2.1.C-7 – Kanakinumab (Ek:RG-12/12/2024-32750/7-a md. Yürürlük:20/12/2024)",
-      "signal_score": 2,
-      "linked_rule_ids": [
-        "4.2.1.canakinumab_fmf_anakinra_failure_switch",
-        "4.2.1.kanakinumab_fmf_3mo_response_c7"
-      ]
-    },
-    {
-      "clause_id": "C003784",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 2,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003825",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 2,
-      "defer_themes": [
-        "response_assessment",
-        "moh_patient_approval"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003829",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Erişkin başlangıçlı Still Hastalığı (AOSD) tedavisinde orta ve yüksek şiddette",
-      "signal_score": 2,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003843",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Aktif ankilozan spondilitli erişkin hastalarda",
-      "signal_score": 2,
+      "heuristic_inn": "2.1 – Leflunomid",
+      "signal_score": 15,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2123,6 +478,17 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003563",
+      "section_id": "4.2.1.A",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.leflunomid_ra_psa_report"
+      ]
+    },
+    {
       "clause_id": "C003564",
       "section_id": "4.2.1.B",
       "encode_tier": "C",
@@ -2135,577 +501,15 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003579",
-      "section_id": "4.2.1.C",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003580",
-      "section_id": "4.2.1.C",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Ara vermeden",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003586",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Erişkin ve Juvenil Romatoid Artrit",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003601",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Juvenil romatoid artritli (poliartiküler-idiyopatik-kronik) hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003604",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "C",
+      "clause_id": "C003565",
+      "section_id": "4.2.1.B",
+      "encode_tier": "A",
       "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "linked_rule_ids": [
-        "4.2.1.C.juvenile_ra_das28_activity_scoring"
-      ]
-    },
-    {
-      "clause_id": "C003628",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Crohn hastalığı",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003633",
-      "section_id": "4.2.1.C-1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Üveit hastalığı",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003637",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1.C-2 – Rituksimab",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003644",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "Romatoid artritli hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003655",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003656",
-      "section_id": "4.2.1.C-2",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Pemfigus vulgaris tedavisi için önerilen ilk rituksimab dozu 1000 mg'dır",
-      "signal_score": 1,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003660",
-      "section_id": "4.2.1.C-3",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1.C-3 -Abatasept",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003661",
-      "section_id": "4.2.1.C-3",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Romatoid artritli erişkin hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003668",
-      "section_id": "4.2.1.C-3",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Juvenil romatoid artritli (poliartiküler-idiyopatik) hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003674",
-      "section_id": "4.2.1.C-4",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1.C-4 - Ustekinumab",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003688",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1.C-5 -Tosilizumab",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003689",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Romatoid artritli erişkin hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003703",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003709",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003718",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Tosilizumabın Dev Hücreli Arteriti (DHA) hastalığında kullanımı",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003720",
-      "section_id": "4.2.1.C-5",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "defer_themes": [
-        "response_assessment",
-        "moh_patient_approval"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003737",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "2.1.C-6 –Tofacitinib",
-      "signal_score": 1,
+      "signal_score": 8,
       "linked_rule_ids": [
-        "4.2.1.tofacitinib_ra_prescriber_board_c6"
+        "4.2.1.gold_preparations_ra_report"
       ]
-    },
-    {
-      "clause_id": "C003752",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Upadasitinibin crohn hastalığında kullanımı",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003757",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003758",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "linked_rule_ids": [
-        "4.2.1.C.12_week_response_criteria_continue_c6"
-      ]
-    },
-    {
-      "clause_id": "C003771",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Tofacitinibin poliartiküler juvenil idiyopatik artrit hastalığında kullanımı",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003779",
-      "section_id": "4.2.1.C-6",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "defer_themes": [
-        "response_assessment",
-        "moh_patient_approval"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003814",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "linked_rule_ids": [
-        "4.2.1.C.pre_effective_date_starter_continuation"
-      ]
-    },
-    {
-      "clause_id": "C003816",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003817",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "defer_themes": [
-        "mutation_panel"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: mutation_panel. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003820",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "encoded",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "linked_rule_ids": [
-        "4.2.1.C.moh_offlabel_approval_coverage_c7"
-      ]
-    },
-    {
-      "clause_id": "C003823",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Kanakinumab 7",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003824",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Anakinra erişkinler",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003826",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "",
-      "signal_score": 1,
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003828",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Erişkin Başlangıçlı Still Hastalığında (AOSD) anakinra kullanım ilkeleri",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003830",
-      "section_id": "4.2.1.C-7",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Sistemik özellikleri olmayan (artiküler fenotip) AOSD’de",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003838",
-      "section_id": "4.2.1.C-8",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1.C-8 – Vedolizumab",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003842",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1.C-9- Sekukinumab",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003847",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "MR/sintigrafi ile gösterilmiş aktif sakroileit/spondilit",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003851",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003855",
-      "section_id": "4.2.1.C-9",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Aktif psöriatik artritli erişkin hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003866",
-      "section_id": "4.2.1.C-10",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003871",
-      "section_id": "4.2.1.C-10",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Aktif psöriatik artritli erişkin hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003877",
-      "section_id": "4.2.1.C-11",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003882",
-      "section_id": "4.2.1.C-12",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003887",
-      "section_id": "4.2.1.C-13",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "2.1.C-13 - Apremilast",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003893",
-      "section_id": "4.2.1.C-14",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
-      "signal_score": 1,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
-    },
-    {
-      "clause_id": "C003559",
-      "section_id": "4.2.1",
-      "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "(Değişik:RG-08/06/2017-30090/10-a md. Yürürlük:16/06/2017)",
-      "signal_score": 0,
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C003566",
@@ -2780,12 +584,48 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003577",
+      "section_id": "4.2.1.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.C-Biyolojik ajanlar (Anti-TNF ilaçlar",
+      "signal_score": 13,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
       "clause_id": "C003578",
       "section_id": "4.2.1.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG-02/11/2024- 32710/3 md. Yürürlük: 09/11/2024)",
       "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003579",
+      "section_id": "4.2.1.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003580",
+      "section_id": "4.2.1.C",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Ara vermeden",
+      "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2828,6 +668,41 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003585",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.C-1 - Anti-TNF (tümor nekrözis faktör) ilaçlar",
+      "signal_score": 2,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003586",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Erişkin ve Juvenil Romatoid Artrit",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003587",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.anti_tnf_ra_das28_initiation"
+      ]
+    },
+    {
       "clause_id": "C003588",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
@@ -2838,6 +713,18 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003591",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İnfliksimab",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.inflix_cert_gol_ra_second_line",
+        "4.2.1.infliximab_ra_das28_second_line"
+      ]
     },
     {
       "clause_id": "C003592",
@@ -2852,6 +739,17 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003593",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "anti_tnf",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.anti_tnf_jia_start_board"
+      ]
+    },
+    {
       "clause_id": "C003594",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
@@ -2862,6 +760,66 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003601",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Juvenil romatoid artritli (poliartiküler-idiyopatik-kronik) hastalarda",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003602",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.adalimumab_jia_uveitis_first_line",
+        "4.2.1.anti_tnf_jia_dmard_failure_board"
+      ]
+    },
+    {
+      "clause_id": "C003603",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "anti_tnf",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.anti_tnf_jia_acr30_continuation_c1",
+        "4.2.1.anti_tnf_jia_acr50_continuation_c1",
+        "4.2.1.anti_tnf_jia_acr_continuation",
+        "4.2.1.anti_tnf_jia_acr_monitoring_board"
+      ]
+    },
+    {
+      "clause_id": "C003604",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "linked_rule_ids": [
+        "4.2.1.C.juvenile_ra_das28_activity_scoring"
+      ]
+    },
+    {
+      "clause_id": "C003605",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.C.ankylosing_spondylitis_nsaids_failure_report"
+      ]
     },
     {
       "clause_id": "C003606",
@@ -2876,6 +834,32 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003609",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İnfliksimab",
+      "signal_score": 13,
+      "linked_rule_ids": [
+        "4.2.1.anti_tnf_axial_as_board",
+        "4.2.1.inflix_peripheral_as_basdai_continuation",
+        "4.2.1.inflix_peripheral_as_second_line_romato_board",
+        "4.2.1.inflix_peripheral_as_second_line_start",
+        "4.2.1.infliximab_as_basdai_second_line"
+      ]
+    },
+    {
+      "clause_id": "C003610",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Periferik eklem tutulumlu ankilozan spondilitli hastalarda",
+      "signal_score": 11,
+      "linked_rule_ids": [
+        "4.2.1.anti_tnf_peripheral_as_board"
+      ]
+    },
+    {
       "clause_id": "C003611",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
@@ -2886,6 +870,17 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003614",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İnfliksimab",
+      "signal_score": 13,
+      "linked_rule_ids": [
+        "4.2.1.inflix_cert_gol_as_second_line"
+      ]
     },
     {
       "clause_id": "C003615",
@@ -2900,6 +895,17 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003617",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Psöriyatik artritli hastalarda",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.anti_tnf_psoriatic_arthritis_board"
+      ]
+    },
+    {
       "clause_id": "C003618",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
@@ -2910,6 +916,62 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003621",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İnfliksimab",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.inflix_cert_gol_psa_psarc_second_line",
+        "4.2.1.inflix_psa_second_line_psarc"
+      ]
+    },
+    {
+      "clause_id": "C003622",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Anti-TNF ilaçlar",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.anti_tnf_prescriber_board"
+      ]
+    },
+    {
+      "clause_id": "C003623",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.C.biologic_administration_setting"
+      ]
+    },
+    {
+      "clause_id": "C003624",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 2,
+      "linked_rule_ids": [
+        "4.2.1.C.anti_tnf_dmard_combination"
+      ]
+    },
+    {
+      "clause_id": "C003625",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "anti_tnf",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.anti_tnf_psoriasis_vulgaris_board"
+      ]
     },
     {
       "clause_id": "C003626",
@@ -2924,12 +986,125 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003627",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "(Değişik: RG- 07/10/2016- 29850/ 15 md. Yürürlük: 15/10/2016) Fistülize",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.crohn_fistulizing_month4_cdai_report"
+      ]
+    },
+    {
+      "clause_id": "C003628",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Crohn hastalığı",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003629",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Yetişkinlerde",
+      "signal_score": 14,
+      "linked_rule_ids": [
+        "4.2.1.adalimumab_crohn_adult_board"
+      ]
+    },
+    {
+      "clause_id": "C003630",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Çocuklarda",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.adalimumab_pediatric_crohn_board"
+      ]
+    },
+    {
+      "clause_id": "C003631",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.anti_tnf_uc_conv_failure_board"
+      ]
+    },
+    {
       "clause_id": "C003632",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek:RG- 28/12/2018- 30639/ 12-b md. Yürürlük: 08/01/2019)",
       "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003633",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Üveit hastalığı",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003634",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Yetişkinlerde",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.adalimumab_uveitis_adult_board"
+      ]
+    },
+    {
+      "clause_id": "C003635",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "2 yaşından itibaren çocuklarda",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.adalimumab_pediatric_uveitis_board"
+      ]
+    },
+    {
+      "clause_id": "C003636",
+      "section_id": "4.2.1.C-1",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.adalimumab_hs_dermatology_board"
+      ]
+    },
+    {
+      "clause_id": "C003637",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.C-2 – Rituksimab",
+      "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -2948,16 +1123,107 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
-      "clause_id": "C003650",
+      "clause_id": "C003644",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
-      "heuristic_inn": "Siklofosfamide dirençli veya siklofosfamid tedavisi verilemeyen ciddi",
-      "signal_score": 0,
+      "heuristic_inn": "Romatoid artritli hastalarda",
+      "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003645",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Methotreksat ile kombinasyon halinde",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.abatacept_ra_board",
+        "4.2.1.abatacept_ra_tnf_failure_board"
+      ]
+    },
+    {
+      "clause_id": "C003646",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.rituximab_ra_das28_continuation"
+      ]
+    },
+    {
+      "clause_id": "C003647",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sağlık kurulu raporları aşağıdaki şekilde düzenlenir:",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.rituximab_ra_report_section_header",
+        "4.2.1.rituximab_ra_romatoloji_board"
+      ]
+    },
+    {
+      "clause_id": "C003648",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Romatoloji uzman hekiminin bulunduğu sağlık kurum/kuruluşlarında",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.rituximab_ra_romatoloji_board",
+        "4.2.1.rituximab_ra_romatoloji_institution_board"
+      ]
+    },
+    {
+      "clause_id": "C003649",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.rituximab_ra_university_tertiary_board"
+      ]
+    },
+    {
+      "clause_id": "C003650",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Siklofosfamide dirençli veya siklofosfamid tedavisi verilemeyen ciddi",
+      "signal_score": 0,
+      "linked_rule_ids": [
+        "4.2.1.C-2.bucket_b.C003650"
+      ]
+    },
+    {
+      "clause_id": "C003651",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Romatoloji",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.rituximab_gpa_mpa_nephrology"
+      ]
+    },
+    {
+      "clause_id": "C003652",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.rituximab_ra_6mo_renewal"
+      ]
     },
     {
       "clause_id": "C003653",
@@ -2984,6 +1250,30 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003655",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003656",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Pemfigus vulgaris tedavisi için önerilen ilk rituksimab dozu 1000 mg'dır",
+      "signal_score": 1,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
       "clause_id": "C003657",
       "section_id": "4.2.1.C-2",
       "encode_tier": "C",
@@ -3006,6 +1296,41 @@
       ]
     },
     {
+      "clause_id": "C003659",
+      "section_id": "4.2.1.C-2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İlacın üçüncü basamak sağlık kurumlarında",
+      "signal_score": 7,
+      "linked_rule_ids": [
+        "4.2.1.rituximab_pemphigus_dermatology"
+      ]
+    },
+    {
+      "clause_id": "C003660",
+      "section_id": "4.2.1.C-3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.C-3 -Abatasept",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003661",
+      "section_id": "4.2.1.C-3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Romatoid artritli erişkin hastalarda",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
       "clause_id": "C003662",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
@@ -3016,6 +1341,85 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003664",
+      "section_id": "4.2.1.C-3",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Aktif romatoid artriti bulunan",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_ra_board",
+        "4.2.1.tocilizumab_ra_university_board"
+      ]
+    },
+    {
+      "clause_id": "C003665",
+      "section_id": "4.2.1.C-3",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İlaca başlandıktan 3 ay sonra yapılan değerlendirmede DAS 28 skorunda 0",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_ra_das28_06_continuation_c3"
+      ]
+    },
+    {
+      "clause_id": "C003666",
+      "section_id": "4.2.1.C-3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.C.das28_1p2_improvement_continue"
+      ]
+    },
+    {
+      "clause_id": "C003667",
+      "section_id": "4.2.1.C-3",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavinin devamında DAS 28 kriterine 6 ayda bir bakılır",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_ra_das28_continuation_c3"
+      ]
+    },
+    {
+      "clause_id": "C003668",
+      "section_id": "4.2.1.C-3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Juvenil romatoid artritli (poliartiküler-idiyopatik) hastalarda",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003669",
+      "section_id": "4.2.1.C-3",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "anti_tnf",
+      "signal_score": 7,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_pediatric_anti_tnf_failure"
+      ]
+    },
+    {
+      "clause_id": "C003670",
+      "section_id": "4.2.1.C-3",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.abatacept_jia_acr30_continuation"
+      ]
     },
     {
       "clause_id": "C003671",
@@ -3030,12 +1434,35 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003672",
+      "section_id": "4.2.1.C-3",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.abatacept_jia_acr50_continuation"
+      ]
+    },
+    {
       "clause_id": "C003673",
       "section_id": "4.2.1.C-3",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG- 25/07/2014- 29071/ 19-d md. Yürürlük: 07/08/2014 )",
       "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003674",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.C-4 - Ustekinumab",
+      "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -3054,6 +1481,63 @@
       "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003676",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.C.4210_psoriasis_tertiary_dermatology_1yr"
+      ]
+    },
+    {
+      "clause_id": "C003677",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Raporda",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.ustekinumab_psoriasis_pasi_report"
+      ]
+    },
+    {
+      "clause_id": "C003678",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003679",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.ustekinumab_psoriasis_pasi_report"
+      ]
+    },
+    {
+      "clause_id": "C003680",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
       "clause_id": "C003681",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
@@ -3066,12 +1550,91 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003682",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "anti_tnf",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.ustekinumab_psa_dmard_tnf_failure"
+      ]
+    },
+    {
+      "clause_id": "C003683",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.C.rheum_pmr_coverage_6mo_report"
+      ]
+    },
+    {
+      "clause_id": "C003684",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.C.rheum_pmr_coverage_6mo_report"
+      ]
+    },
+    {
       "clause_id": "C003685",
       "section_id": "4.2.1.C-4",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek:RG-26/10/2021-31640/1-c md. Yürürlük: 04/11/2021)",
       "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003686",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Yetişkinlerde",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.ustekinumab_crohn_anti_tnf_failure"
+      ]
+    },
+    {
+      "clause_id": "C003687",
+      "section_id": "4.2.1.C-4",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Ülseratif kolit hastalığında",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.vedolizumab_uc_report"
+      ]
+    },
+    {
+      "clause_id": "C003688",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.C-5 -Tosilizumab",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003689",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Romatoid artritli erişkin hastalarda",
+      "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -3088,6 +1651,61 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003691",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "anti_tnf",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_ra_c5_university_das"
+      ]
+    },
+    {
+      "clause_id": "C003692",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Aktif romatoid artriti bulunan",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_ra_c5_methotrexat_combo"
+      ]
+    },
+    {
+      "clause_id": "C003693",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İlaca başlandıktan 3 ay sonra yapılan değerlendirmede DAS 28 skorunda 0",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_ra_das28_06_continuation_c5"
+      ]
+    },
+    {
+      "clause_id": "C003694",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.C.das28_1p2_improvement_continue_c5"
+      ]
+    },
+    {
+      "clause_id": "C003695",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavinin devamında DAS 28 kriterine 6 ayda bir bakılır",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_ra_das28_continuation_c5"
+      ]
     },
     {
       "clause_id": "C003696",
@@ -3112,6 +1730,29 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003698",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "anti_tnf",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_jia_c5_prior_therapy_failure"
+      ]
+    },
+    {
+      "clause_id": "C003699",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 7,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_jia_c5_acr30_continuation",
+        "4.2.1.tocilizumab_jia_c5_acr50_continuation"
+      ]
     },
     {
       "clause_id": "C003700",
@@ -3150,6 +1791,52 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003703",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003704",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003705",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 7,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_sjia_anakinra_response"
+      ]
+    },
+    {
+      "clause_id": "C003706",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_jia_acr_pediatric_3mo_c5"
+      ]
+    },
+    {
       "clause_id": "C003707",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
@@ -3174,6 +1861,52 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003709",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003710",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003711",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 7,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_sjia_anakinra_response"
+      ]
+    },
+    {
+      "clause_id": "C003712",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_jia_acr_pediatric_3mo_c5"
+      ]
+    },
+    {
       "clause_id": "C003713",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
@@ -3184,6 +1917,17 @@
         "response_assessment"
       ],
       "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003714",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_jia_c5_prior_therapy_failure"
+      ]
     },
     {
       "clause_id": "C003715",
@@ -3210,6 +1954,43 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003718",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Tosilizumabın Dev Hücreli Arteriti (DHA) hastalığında kullanımı",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003719",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_dha_sc_initiation",
+        "4.2.1.tocilizumab_dha_sc_steroid_contraindicated"
+      ]
+    },
+    {
+      "clause_id": "C003720",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
       "clause_id": "C003721",
       "section_id": "4.2.1.C-5",
       "encode_tier": "C",
@@ -3220,6 +2001,17 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003722",
+      "section_id": "4.2.1.C-5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İlacın etkinliği",
+      "signal_score": 7,
+      "linked_rule_ids": [
+        "4.2.1.tocilizumab_dha_sc_efficacy_continuation"
+      ]
     },
     {
       "clause_id": "C003723",
@@ -3234,6 +2026,133 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003737",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "2.1.C-6 –Tofacitinib",
+      "signal_score": 1,
+      "linked_rule_ids": [
+        "4.2.1.tofacitinib_ra_prescriber_board_c6"
+      ]
+    },
+    {
+      "clause_id": "C003738",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Romatoid artritli erişkin hastalarda",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.jak_ra_dmard_initiation",
+        "4.2.1.tofacitinib_ra_board"
+      ]
+    },
+    {
+      "clause_id": "C003739",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Romatoid artritli erişkin hastalarda",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.jak_ra_university_prescriber_board"
+      ]
+    },
+    {
+      "clause_id": "C003740",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Tofacitinib ve upadasitinibin psöriatik artritli erişkin hastalarda kullanımı",
+      "signal_score": 2,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003741",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "anti_tnf",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.jak_psa_second_line_initiation"
+      ]
+    },
+    {
+      "clause_id": "C003742",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 6,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003743",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.C.rheum_6mo_report_coverage_c6"
+      ]
+    },
+    {
+      "clause_id": "C003744",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003745",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Aksiyel tutulumlu ankilozan spondilitli hastalarda",
+      "signal_score": 13,
+      "linked_rule_ids": [
+        "4.2.1.tofacitinib_axial_as_board",
+        "4.2.1.tofacitinib_axial_as_initiation"
+      ]
+    },
+    {
+      "clause_id": "C003746",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Periferik eklem tutulumlu ankilozan spondilitli hastalarda",
+      "signal_score": 13,
+      "linked_rule_ids": [
+        "4.2.1.tofacitinib_axial_as_board",
+        "4.2.1.tofacitinib_peripheral_as_initiation"
+      ]
+    },
+    {
+      "clause_id": "C003747",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.C.tertiary_immunology_rheum_internal_coverage_c6"
+      ]
+    },
+    {
       "clause_id": "C003748",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
@@ -3244,6 +2163,28 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003749",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.upadacitinib_anti_tnf_second_line"
+      ]
+    },
+    {
+      "clause_id": "C003750",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.C.tertiary_immunology_rheum_internal_coverage_c6_b"
+      ]
     },
     {
       "clause_id": "C003751",
@@ -3258,6 +2199,52 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003752",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Upadasitinibin crohn hastalığında kullanımı",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003753",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Orta ilâ şiddetli aktif crohn hastalığında",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.upadacitinib_crohn_anti_tnf"
+      ]
+    },
+    {
+      "clause_id": "C003754",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Upadasitinibin ülseratif kolit hastalığında kullanımı",
+      "signal_score": 2,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003755",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Ülseratif kolit hastalığında",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.upadacitinib_uc_anti_tnf"
+      ]
+    },
+    {
       "clause_id": "C003756",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
@@ -3268,6 +2255,29 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003757",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003758",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "linked_rule_ids": [
+        "4.2.1.C.12_week_response_criteria_continue_c6"
+      ]
     },
     {
       "clause_id": "C003759",
@@ -3342,6 +2352,18 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003766",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Üçüncü basamak resmi sağlık hizmeti sunucularında",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.baricitinib_ad_specialist_board",
+        "4.2.1.upadacitinib_ad_dermatology_board"
+      ]
+    },
+    {
       "clause_id": "C003767",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
@@ -3352,6 +2374,96 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003768",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Tofacitinibin ülseratif kolit hastalığında kullanımı",
+      "signal_score": 3,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003769",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.C.paediatric_acr30_acr50_continue_c6"
+      ]
+    },
+    {
+      "clause_id": "C003770",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sağlık kurulu raporuna dayanılarak",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.jak_ibd_gi_prescriber"
+      ]
+    },
+    {
+      "clause_id": "C003771",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Tofacitinibin poliartiküler juvenil idiyopatik artrit hastalığında kullanımı",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003772",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Metotreksata yanıtsız",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.tofacitinib_pjia_second_line"
+      ]
+    },
+    {
+      "clause_id": "C003773",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.C.paediatric_acr30_acr50_continue_c6"
+      ]
+    },
+    {
+      "clause_id": "C003774",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavinin devamında ACR pediatrik cevap kriterine 6 ayda bir bakılır",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.jia_acr_pediatric_6mo_continuation_c6"
+      ]
+    },
+    {
+      "clause_id": "C003775",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sağlık Kurulu raporlarının",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.jak_pjia_pediatric_tertiary_board"
+      ]
     },
     {
       "clause_id": "C003776",
@@ -3378,6 +2490,30 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003778",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.upadacitinib_anti_tnf_second_line"
+      ]
+    },
+    {
+      "clause_id": "C003779",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
       "clause_id": "C003780",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
@@ -3390,12 +2526,47 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003781",
+      "section_id": "4.2.1.C-6",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İlacın etkinliği",
+      "signal_score": 7,
+      "linked_rule_ids": [
+        "4.2.1.jak_efficacy_continuation_romato_immuno"
+      ]
+    },
+    {
       "clause_id": "C003782",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG- 18/06/2016- 29746/ 10-f md. Yürürlük: 25/06/2016)",
       "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003783",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "2.1.C-7 – Kanakinumab (Ek:RG-12/12/2024-32750/7-a md. Yürürlük:20/12/2024)",
+      "signal_score": 2,
+      "linked_rule_ids": [
+        "4.2.1.canakinumab_fmf_anakinra_failure_switch",
+        "4.2.1.kanakinumab_fmf_3mo_response_c7"
+      ]
+    },
+    {
+      "clause_id": "C003784",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 2,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -3414,6 +2585,29 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003786",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003787",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.fmf_jia_acr_pediatric_stop_c7"
+      ]
+    },
+    {
       "clause_id": "C003788",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
@@ -3424,6 +2618,40 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003789",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003790",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.fmf_jia_acr_pediatric_stop_c7"
+      ]
+    },
+    {
+      "clause_id": "C003791",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.anakinra_canakinumab_fmf_board_report"
+      ]
     },
     {
       "clause_id": "C003792",
@@ -3474,6 +2702,40 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003806",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.anakinra_fmf_colchicine_add_on",
+        "4.2.1.anakinra_fmf_colchicine_failure"
+      ]
+    },
+    {
+      "clause_id": "C003807",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.canakinumab_fmf_anakinra_switch"
+      ]
+    },
+    {
+      "clause_id": "C003808",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.canakinumab_fmf_continuation_report"
+      ]
+    },
+    {
       "clause_id": "C003809",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
@@ -3486,6 +2748,52 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003811",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.canakinumab_fmf_dose_escalation"
+      ]
+    },
+    {
+      "clause_id": "C003812",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.anakinra_canakinumab_fmf_board_report",
+        "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber"
+      ]
+    },
+    {
+      "clause_id": "C003813",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Amiloidozu olan FMF hastalığı tedavisinde",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.anakinra_canakinumab_fmf_amyloidosis",
+        "4.2.1.anakinra_canakinumab_fmf_amyloidosis_colchicine"
+      ]
+    },
+    {
+      "clause_id": "C003814",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "linked_rule_ids": [
+        "4.2.1.C.pre_effective_date_starter_continuation"
+      ]
+    },
+    {
       "clause_id": "C003815",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
@@ -3496,6 +2804,63 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003816",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003817",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: mutation_panel. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003818",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.C.anakinra_kanakinumab_sequencing"
+      ]
+    },
+    {
+      "clause_id": "C003819",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber"
+      ]
+    },
+    {
+      "clause_id": "C003820",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "linked_rule_ids": [
+        "4.2.1.C.moh_offlabel_approval_coverage_c7"
+      ]
     },
     {
       "clause_id": "C003821",
@@ -3522,6 +2887,124 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003823",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Kanakinumab 7",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003824",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Anakinra erişkinler",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003825",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 2,
+      "defer_themes": [
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003826",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 1,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003827",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber"
+      ]
+    },
+    {
+      "clause_id": "C003828",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Erişkin Başlangıçlı Still Hastalığında (AOSD) anakinra kullanım ilkeleri",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003829",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Erişkin başlangıçlı Still Hastalığı (AOSD) tedavisinde orta ve yüksek şiddette",
+      "signal_score": 2,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003830",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Sistemik özellikleri olmayan (artiküler fenotip) AOSD’de",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003831",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 6,
+      "linked_rule_ids": [
+        "4.2.1.C.anakinra_biologic_jak_combo_nopay"
+      ]
+    },
+    {
+      "clause_id": "C003832",
+      "section_id": "4.2.1.C-7",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber"
+      ]
+    },
+    {
       "clause_id": "C003833",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
@@ -3546,6 +3029,40 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003838",
+      "section_id": "4.2.1.C-8",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.C-8 – Vedolizumab",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003839",
+      "section_id": "4.2.1.C-8",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Fistülize",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.vedolizumab_crohn_anti_tnf_initiation"
+      ]
+    },
+    {
+      "clause_id": "C003840",
+      "section_id": "4.2.1.C-8",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Ülseratif kolit hastalığında",
+      "signal_score": 10,
+      "linked_rule_ids": [
+        "4.2.1.vedolizumab_uc_anti_tnf_second_line"
+      ]
+    },
+    {
       "clause_id": "C003841",
       "section_id": "4.2.1.C-8",
       "encode_tier": "C",
@@ -3556,6 +3073,41 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003842",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.C-9- Sekukinumab",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003843",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Aktif ankilozan spondilitli erişkin hastalarda",
+      "signal_score": 2,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003844",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.C-9.bucket_a.c003844"
+      ]
     },
     {
       "clause_id": "C003845",
@@ -3582,6 +3134,144 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003847",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "MR/sintigrafi ile gösterilmiş aktif sakroileit/spondilit",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003848",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 3,
+      "linked_rule_ids": [
+        "4.2.1.C.start_therapy_finding_coverage_c9"
+      ]
+    },
+    {
+      "clause_id": "C003849",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003850",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.C.tertiary_immunology_6mo_internal_coverage_c9"
+      ]
+    },
+    {
+      "clause_id": "C003851",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003852",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Siklosporin",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.sekukinumab_psoriasis_pasi_systemic_failure"
+      ]
+    },
+    {
+      "clause_id": "C003853",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003854",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.C.psoriasis_tertiary_dermatology_6mo_pasi_c9"
+      ]
+    },
+    {
+      "clause_id": "C003855",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Aktif psöriatik artritli erişkin hastalarda",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003856",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "anti_tnf",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.sekukinumab_psa_second_line"
+      ]
+    },
+    {
+      "clause_id": "C003857",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 6,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003858",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.C.rheum_pmr_6mo_coverage_c9"
+      ]
+    },
+    {
       "clause_id": "C003859",
       "section_id": "4.2.1.C-9",
       "encode_tier": "C",
@@ -3604,6 +3294,39 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003861",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "biyolojik_ajan",
+      "signal_score": 7,
+      "linked_rule_ids": [
+        "4.2.1.sekukinumab_hs_adalimumab_failure"
+      ]
+    },
+    {
+      "clause_id": "C003862",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "16 haftalık ilaç kullanım süresi sonunda yapılan değerlendirmede",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.sekukinumab_hs_16wk_continuation_c9"
+      ]
+    },
+    {
+      "clause_id": "C003863",
+      "section_id": "4.2.1.C-9",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.C.three_dermatologists_tertiary_report_c9"
+      ]
     },
     {
       "clause_id": "C003864",
@@ -3630,6 +3353,52 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003866",
+      "section_id": "4.2.1.C-10",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003867",
+      "section_id": "4.2.1.C-10",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Siklosporin",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.ixekizumab_psoriasis_pasi_systemic_failure"
+      ]
+    },
+    {
+      "clause_id": "C003868",
+      "section_id": "4.2.1.C-10",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003869",
+      "section_id": "4.2.1.C-10",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c10"
+      ]
+    },
+    {
       "clause_id": "C003870",
       "section_id": "4.2.1.C-10",
       "encode_tier": "C",
@@ -3640,6 +3409,52 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003871",
+      "section_id": "4.2.1.C-10",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Aktif psöriatik artritli erişkin hastalarda",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003872",
+      "section_id": "4.2.1.C-10",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "anti_tnf",
+      "signal_score": 8,
+      "linked_rule_ids": [
+        "4.2.1.ixekizumab_psa_second_line"
+      ]
+    },
+    {
+      "clause_id": "C003873",
+      "section_id": "4.2.1.C-10",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 6,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003874",
+      "section_id": "4.2.1.C-10",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "linked_rule_ids": [
+        "4.2.1.C.rheum_pmr_6mo_coverage_c10"
+      ]
     },
     {
       "clause_id": "C003875",
@@ -3666,6 +3481,52 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003877",
+      "section_id": "4.2.1.C-11",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003878",
+      "section_id": "4.2.1.C-11",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Siklosporin",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.guselkumab_psoriasis_pasi_systemic_failure"
+      ]
+    },
+    {
+      "clause_id": "C003879",
+      "section_id": "4.2.1.C-11",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003880",
+      "section_id": "4.2.1.C-11",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c11"
+      ]
+    },
+    {
       "clause_id": "C003881",
       "section_id": "4.2.1.C-12",
       "encode_tier": "C",
@@ -3678,12 +3539,104 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
+      "clause_id": "C003882",
+      "section_id": "4.2.1.C-12",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003883",
+      "section_id": "4.2.1.C-12",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Siklosporin",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.risankizumab_psoriasis_pasi_systemic_failure"
+      ]
+    },
+    {
+      "clause_id": "C003884",
+      "section_id": "4.2.1.C-12",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003885",
+      "section_id": "4.2.1.C-12",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c12"
+      ]
+    },
+    {
       "clause_id": "C003886",
       "section_id": "4.2.1.C-12",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG-19/10/2023-32344/3-ç md. Yürürlük: 27/10/2023)",
       "signal_score": 0,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003887",
+      "section_id": "4.2.1.C-13",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.C-13 - Apremilast",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003888",
+      "section_id": "4.2.1.C-13",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Psöriyatik artritli hastalarda",
+      "signal_score": 11,
+      "linked_rule_ids": [
+        "4.2.1.apremilast_psa_dmard_second_line"
+      ]
+    },
+    {
+      "clause_id": "C003889",
+      "section_id": "4.2.1.C-13",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Apremilast",
+      "signal_score": 9,
+      "linked_rule_ids": [
+        "4.2.1.apremilast_psoriasis_dermatology_board"
+      ]
+    },
+    {
+      "clause_id": "C003890",
+      "section_id": "4.2.1.C-13",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 3,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -3712,6 +3665,60 @@
         "clinical_pathway"
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003893",
+      "section_id": "4.2.1.C-14",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Orta veya şiddetli plak psöriazisli erişkin hastalarda",
+      "signal_score": 1,
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003894",
+      "section_id": "4.2.1.C-14",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Siklosporin",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.bimekizumab_psoriasis_pasi_systemic_failure"
+      ]
+    },
+    {
+      "clause_id": "C003895",
+      "section_id": "4.2.1.C-14",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "signal_score": 4,
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+    },
+    {
+      "clause_id": "C003896",
+      "section_id": "4.2.1.C-14",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "signal_score": 5,
+      "linked_rule_ids": [
+        "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c14"
+      ]
     }
-  ]
+  ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "encode_tier_C_deferred_count": 154,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 45.4
 }

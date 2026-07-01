@@ -6,9 +6,10 @@
   "rules_in_json": 29,
   "section_clause_total": 55,
   "clause_trace_complete": true,
-  "manifest_coverage_pct": 32.7,
-  "encoded_clause_count": 18,
+  "manifest_coverage_pct": 34.5,
+  "encoded_clause_count": 19,
   "encoded_clause_ids": [
+    "C006455",
     "C006526",
     "C006527",
     "C006548",
@@ -93,7 +94,9 @@
     "4.2.33.B.deksametazon_itv_implant_rvdt_srvt": [
       "C006564"
     ],
-    "4.2.33.B.ranibizumab_rvdt_loading_protocol": [],
+    "4.2.33.B.ranibizumab_rvdt_loading_protocol": [
+      "C006455"
+    ],
     "4.2.33.B.ranibizumab_rvdt_srvt": [
       "C006565"
     ],
@@ -155,7 +158,10 @@
     {
       "clause_id": "C006455",
       "section_id": "4.2.33",
-      "manifest_status": "non_actionable"
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.B.ranibizumab_rvdt_loading_protocol"
+      ]
     },
     {
       "clause_id": "C006524",
@@ -613,5 +619,5 @@
       ]
     }
   ],
-  "note": "§4.2.33 anti-VEGF A2c — 29 rules, 18 encoded clause sources, 29 tier-C deferred in-force rows."
+  "note": "§4.2.33 anti-VEGF A2c — 29 rules, 19 encoded clause sources, 29 tier-C deferred in-force rows."
 }

@@ -98,7 +98,9 @@
   "kdv_pricing_clause_ids": [
     "C002692"
   ],
-  "separate_billing_allowlist_clause_ids": [],
+  "separate_billing_allowlist_clause_ids": [
+    "C001823"
+  ],
   "ek3c_list_price_ceiling_clause_ids": [
     "C002833"
   ],

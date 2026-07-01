@@ -1,11 +1,11 @@
 {
-  "tier_c_total": 549,
-  "classified_rows": 549,
+  "tier_c_total": 34,
+  "classified_rows": 34,
   "bucket_counts": {
-    "A": 38,
-    "B": 122,
-    "C": 184,
-    "D": 205
+    "A": 4,
+    "B": 9,
+    "C": 9,
+    "D": 12
   },
-  "note": "§4.2.14.C Tier-C classification. A=encodable now, B=model-ext (biomarker/prior-therapy), C=EMR-blocked (ECOG/progresyon/lab), D=non-actionable (heading/amendment/fragment). Classification by actual clause text, not manifest theme labels (which are unreliable)."
+  "note": "§4.2.14.C Tier-C classification. A=encodable now, B=model-ext, C=EMR-blocked, D=non-actionable. Uses scripts.sut.prose.tier_c_classify."
 }

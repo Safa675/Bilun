@@ -2,7 +2,7 @@
   "manifest_version": "r5-a6-v1",
   "section_id": "4.2.9,4.2.27",
   "effective_date": "2026-06-29",
-  "rules_in_json": 30,
+  "rules_in_json": 55,
   "section_4.2.9_clause_total": 59,
   "section_4.2.27_clause_total": 69,
   "section_4.2.9_tier_a_count": 13,
@@ -10,112 +10,171 @@
   "section_4.2.27_tier_a_count": 16,
   "section_4.2.27_tier_c_count": 49,
   "section_clause_total": 128,
-  "encoded_clause_count": 29,
+  "encoded_clause_count": 69,
   "encoded_clause_ids": [
-    "C004127",
-    "C004128",
-    "C004130",
-    "C004131",
-    "C004134",
-    "C004135",
-    "C004136",
-    "C004137",
-    "C004200",
-    "C006210",
-    "C006225",
-    "C006227",
-    "C006228",
-    "C006232",
-    "C006233",
-    "C006235",
-    "C006244",
-    "C006246",
-    "C006247",
-    "C006249",
-    "C006250",
-    "C006255",
-    "C006256",
-    "C006257",
-    "C006264",
-    "C006267",
-    "C006268",
-    "C006274",
-    "C006287"
-  ],
-  "gate_b_sources_encoded": [
-    "C004127",
-    "C004128",
-    "C004130",
-    "C004131",
-    "C004134",
-    "C004135",
-    "C004136",
-    "C004137",
-    "C004200",
-    "C006210",
-    "C006225",
-    "C006227",
-    "C006228",
-    "C006232",
-    "C006233",
-    "C006235",
-    "C006244",
-    "C006246",
-    "C006247",
-    "C006249",
-    "C006250",
-    "C006255",
-    "C006256",
-    "C006257",
-    "C006264",
-    "C006267",
-    "C006268",
-    "C006274",
-    "C006287"
-  ],
-  "tier_a_pending_clause_ids": [
+    "C004113",
+    "C004117",
     "C004118",
     "C004119",
     "C004121",
     "C004122",
+    "C004125",
+    "C004126",
+    "C004127",
+    "C004128",
+    "C004130",
+    "C004131",
     "C004134",
     "C004136",
-    "C004160"
-  ],
-  "tier_b_pending_clause_ids": [
-    "C004117",
-    "C004126",
+    "C004137",
+    "C004141",
+    "C004147",
+    "C004151",
+    "C004160",
+    "C004166",
+    "C004167",
     "C004168",
-    "C004173"
+    "C004173",
+    "C004176",
+    "C004179",
+    "C004197",
+    "C004199",
+    "C004200",
+    "C004201",
+    "C004204",
+    "C004205",
+    "C006210",
+    "C006225",
+    "C006227",
+    "C006228",
+    "C006232",
+    "C006233",
+    "C006234",
+    "C006235",
+    "C006243",
+    "C006244",
+    "C006246",
+    "C006247",
+    "C006249",
+    "C006250",
+    "C006253",
+    "C006255",
+    "C006256",
+    "C006257",
+    "C006261",
+    "C006262",
+    "C006263",
+    "C006264",
+    "C006265",
+    "C006267",
+    "C006268",
+    "C006269",
+    "C006271",
+    "C006272",
+    "C006274",
+    "C006275",
+    "C006286",
+    "C006287",
+    "C006290",
+    "C006292",
+    "C006293",
+    "C006294",
+    "C006297",
+    "C006301"
   ],
-  "tier_c_deferred_clause_ids": [
+  "gate_b_sources_encoded": [
     "C004113",
+    "C004117",
+    "C004118",
+    "C004119",
+    "C004121",
+    "C004122",
+    "C004125",
+    "C004126",
+    "C004127",
+    "C004128",
+    "C004130",
+    "C004131",
+    "C004134",
+    "C004135",
+    "C004136",
+    "C004137",
+    "C004141",
+    "C004147",
+    "C004151",
+    "C004160",
+    "C004166",
+    "C004167",
+    "C004168",
+    "C004173",
+    "C004176",
+    "C004179",
+    "C004197",
+    "C004199",
+    "C004200",
+    "C004201",
+    "C004204",
+    "C004205",
+    "C006210",
+    "C006225",
+    "C006227",
+    "C006228",
+    "C006232",
+    "C006233",
+    "C006234",
+    "C006235",
+    "C006243",
+    "C006244",
+    "C006246",
+    "C006247",
+    "C006249",
+    "C006250",
+    "C006253",
+    "C006255",
+    "C006256",
+    "C006257",
+    "C006261",
+    "C006262",
+    "C006263",
+    "C006264",
+    "C006265",
+    "C006267",
+    "C006268",
+    "C006269",
+    "C006271",
+    "C006272",
+    "C006274",
+    "C006275",
+    "C006286",
+    "C006287",
+    "C006290",
+    "C006292",
+    "C006293",
+    "C006294",
+    "C006297",
+    "C006301"
+  ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_clause_ids": [
     "C004115",
     "C004116",
     "C004120",
     "C004123",
     "C004124",
-    "C004125",
     "C004129",
     "C004132",
     "C004133",
-    "C004141",
-    "C004147",
     "C004148",
-    "C004151",
     "C004155",
     "C004157",
     "C004158",
     "C004162",
     "C004163",
     "C004165",
-    "C004166",
-    "C004167",
     "C004170",
     "C004171",
-    "C004176",
     "C004177",
-    "C004179",
     "C004181",
     "C004185",
     "C004186",
@@ -125,76 +184,52 @@
     "C004193",
     "C004194",
     "C004196",
-    "C004197",
     "C004198",
-    "C004199",
-    "C004201",
-    "C004204",
-    "C004205",
     "C006211",
     "C006213",
     "C006214",
     "C006226",
     "C006229",
     "C006231",
-    "C006234",
     "C006236",
     "C006242",
-    "C006243",
     "C006245",
     "C006248",
     "C006251",
     "C006252",
-    "C006253",
     "C006254",
     "C006258",
     "C006259",
     "C006260",
-    "C006261",
-    "C006262",
-    "C006263",
-    "C006265",
     "C006266",
-    "C006269",
     "C006270",
-    "C006271",
-    "C006272",
     "C006273",
-    "C006275",
     "C006276",
     "C006277",
     "C006284",
     "C006285",
-    "C006286",
     "C006288",
     "C006289",
-    "C006290",
     "C006291",
-    "C006292",
-    "C006293",
-    "C006294",
     "C006295",
     "C006296",
-    "C006297",
     "C006298",
     "C006299",
-    "C006300",
-    "C006301"
+    "C006300"
   ],
-  "tier_a_pending_count": 7,
-  "tier_b_pending_count": 4,
-  "tier_c_deferred_count": 91,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 59,
   "clause_traces": [
     {
       "clause_id": "C004113",
       "section_id": "4.2.9",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "2.9 - Eritropoietin",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.paricalcitol_oral_pd_nephrology_report"
+      ]
     },
     {
       "clause_id": "C004115",
@@ -222,22 +257,31 @@
       "clause_id": "C004117",
       "section_id": "4.2.9.A",
       "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "Tetkik sonuç belgesinin tarihi ve sonucu reçete veya raporda belirtilir."
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tetkik sonuç belgesinin tarihi ve sonucu reçete veya raporda belirtilir.",
+      "linked_rule_ids": [
+        "4.2.9.esa_ckd_iron_hb_nephrology_report"
+      ]
     },
     {
       "clause_id": "C004118",
       "section_id": "4.2.9.A",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Eritropoietin alfa-beta-zeta"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Eritropoietin alfa-beta-zeta",
+      "linked_rule_ids": [
+        "4.2.9.esa_legacy_muadil_monthly_report"
+      ]
     },
     {
       "clause_id": "C004119",
       "section_id": "4.2.9.A",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "esa"
+      "manifest_status": "encoded",
+      "heuristic_inn": "esa",
+      "linked_rule_ids": [
+        "4.2.9.esa_legacy_muadil_monthly_report"
+      ]
     },
     {
       "clause_id": "C004120",
@@ -254,15 +298,21 @@
       "clause_id": "C004121",
       "section_id": "4.2.9.A-1",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Eritropoietin alfa-beta-zeta"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Eritropoietin alfa-beta-zeta",
+      "linked_rule_ids": [
+        "4.2.9.esa_ckd_iron_hb_nephrology_report"
+      ]
     },
     {
       "clause_id": "C004122",
       "section_id": "4.2.9.A-1",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Eritropoietin alfa-beta-zeta"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Eritropoietin alfa-beta-zeta",
+      "linked_rule_ids": [
+        "4.2.9.esa_ckd_legacy_nephrology_prescriber"
+      ]
     },
     {
       "clause_id": "C004123",
@@ -290,19 +340,21 @@
       "clause_id": "C004125",
       "section_id": "4.2.9.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.A.renal.esa_roxadustat_offlabel_nopay"
+      ]
     },
     {
       "clause_id": "C004126",
       "section_id": "4.2.9.A",
       "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "Tetkik sonuç belgesinin tarihi ve sonucu reçete veya raporda belirtilir."
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tetkik sonuç belgesinin tarihi ve sonucu reçete veya raporda belirtilir.",
+      "linked_rule_ids": [
+        "4.2.9.esa_ckd_iron_hb_nephrology_report"
+      ]
     },
     {
       "clause_id": "C004127",
@@ -311,7 +363,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Eritropoietin alfa-beta-zeta",
       "linked_rule_ids": [
-        "4.2.9.esa_ckd_monthly_nephrology_report"
+        "4.2.9.esa_ckd_monthly_nephrology_report",
+        "4.2.9.esa_legacy_muadil_monthly_report"
       ]
     },
     {
@@ -321,7 +374,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Eritropoietin",
       "linked_rule_ids": [
-        "4.2.9.esa_ckd_monthly_nephrology_report"
+        "4.2.9.esa_ckd_monthly_nephrology_report",
+        "4.2.9.esa_legacy_muadil_monthly_report"
       ]
     },
     {
@@ -342,6 +396,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Eritropoietin alfa-beta-zeta",
       "linked_rule_ids": [
+        "4.2.9.esa_ckd_iron_hb_nephrology_report",
         "4.2.9.esa_ckd_monthly_nephrology_report"
       ]
     },
@@ -352,6 +407,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Eritropoietin alfa-beta-zeta",
       "linked_rule_ids": [
+        "4.2.9.esa_ckd_legacy_nephrology_prescriber",
         "4.2.9.esa_ckd_monthly_nephrology_report"
       ]
     },
@@ -381,15 +437,22 @@
       "clause_id": "C004134",
       "section_id": "4.2.9.A-1",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Mevcut durumda bir ESA tedavisi alırken durumu stabil olan diyaliz hastalarında"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Mevcut durumda bir ESA tedavisi alırken durumu stabil olan diyaliz hastalarında",
+      "linked_rule_ids": [
+        "4.2.9.roksadustat_esa_switch_dialysis_report"
+      ]
     },
     {
       "clause_id": "C004136",
       "section_id": "4.2.9.A-2",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "esa"
+      "manifest_status": "encoded",
+      "heuristic_inn": "esa",
+      "linked_rule_ids": [
+        "4.2.9.mds_esa_hematology_report",
+        "4.2.9.mds_esa_initiation_hematology_report"
+      ]
     },
     {
       "clause_id": "C004137",
@@ -405,23 +468,21 @@
       "clause_id": "C004141",
       "section_id": "4.2.9.B",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.B.renal.phosphate_binder_prior_3mo_use_mandatory"
+      ]
     },
     {
       "clause_id": "C004147",
       "section_id": "4.2.9.B",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.B.renal.phosphate_binders_dialysis_report_coverage"
+      ]
     },
     {
       "clause_id": "C004148",
@@ -438,12 +499,11 @@
       "clause_id": "C004151",
       "section_id": "4.2.9.B",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Sevelamer ve lantanyum karbonat kombine olarak kullanılamaz.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.B.renal.sevelamer_lanthanum_combination_prohibited"
+      ]
     },
     {
       "clause_id": "C004155",
@@ -482,8 +542,11 @@
       "clause_id": "C004160",
       "section_id": "4.2.9.C-2",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Parikalsitolün oral formları"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Parikalsitolün oral formları",
+      "linked_rule_ids": [
+        "4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage"
+      ]
     },
     {
       "clause_id": "C004162",
@@ -522,30 +585,31 @@
       "clause_id": "C004166",
       "section_id": "4.2.9.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.C.renal.paricalcitol_parenteral_hemodialysis_coverage"
+      ]
     },
     {
       "clause_id": "C004167",
       "section_id": "4.2.9.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage"
+      ]
     },
     {
       "clause_id": "C004168",
       "section_id": "4.2.9.C",
       "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "En fazla 3 ay öncesine ait albumin ile düzeltilmiş serum kalsiyum düzeyi"
+      "manifest_status": "encoded",
+      "heuristic_inn": "En fazla 3 ay öncesine ait albumin ile düzeltilmiş serum kalsiyum düzeyi",
+      "linked_rule_ids": [
+        "4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage"
+      ]
     },
     {
       "clause_id": "C004170",
@@ -573,19 +637,21 @@
       "clause_id": "C004173",
       "section_id": "4.2.9.Ç",
       "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "Hemodiyaliz veya periton diyaliz tedavisi altındaki hastalarda"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Hemodiyaliz veya periton diyaliz tedavisi altındaki hastalarda",
+      "linked_rule_ids": [
+        "4.2.9.esa_ckd_monthly_nephrology_report"
+      ]
     },
     {
       "clause_id": "C004176",
       "section_id": "4.2.9.Ç",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Opere olmuş ancak nüks olan hastalardan",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.Ç.bucket_b.C004176"
+      ]
     },
     {
       "clause_id": "C004177",
@@ -602,12 +668,11 @@
       "clause_id": "C004179",
       "section_id": "4.2.9.Ç",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.C.renal.cinacalcet_etelcalcetide_combination_nopay_variant"
+      ]
     },
     {
       "clause_id": "C004181",
@@ -712,12 +777,11 @@
       "clause_id": "C004197",
       "section_id": "4.2.9.E",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.E.renal.etelcalcetide_hemodialysis_report_coverage"
+      ]
     },
     {
       "clause_id": "C004198",
@@ -734,12 +798,11 @@
       "clause_id": "C004199",
       "section_id": "4.2.9.E",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Etelkalsetid etken maddeli ilacın yalnızca",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.E.renal.etelcalcetide_adult_hdi_secondary_hpt_coverage"
+      ]
     },
     {
       "clause_id": "C004200",
@@ -748,6 +811,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Etelkalsetid etken maddeli ilacın",
       "linked_rule_ids": [
+        "4.2.9.E.renal.etelcalcetide_adult_hdi_secondary_hpt_coverage",
         "4.2.9.etelcalcetide_dialysis_ckd_only"
       ]
     },
@@ -755,34 +819,31 @@
       "clause_id": "C004201",
       "section_id": "4.2.9.E",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.E.renal.cinacalcet_etelcalcetide_combination_nopay"
+      ]
     },
     {
       "clause_id": "C004204",
       "section_id": "4.2.9.F",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.F.renal.hyperkalemia_k_binder_report_coverage"
+      ]
     },
     {
       "clause_id": "C004205",
       "section_id": "4.2.9.F",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.F.renal.hyperkalemia_max_2_attacks_6_boxes_coverage"
+      ]
     },
     {
       "clause_id": "C006210",
@@ -791,7 +852,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "2.27 - Faktör ve diğer kan ürünlerinin reçete edilme ilkeleri",
       "linked_rule_ids": [
-        "4.2.27.coagulation_prescribing_principles_header"
+        "4.2.27.coagulation_factor_board_report"
       ]
     },
     {
@@ -834,6 +895,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Hastanın tanısı",
       "linked_rule_ids": [
+        "4.2.27.coagulation_factor_board_report",
         "4.2.27.factor_annual_board_report"
       ]
     },
@@ -898,6 +960,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Hastanın tanısını",
       "linked_rule_ids": [
+        "4.2.27.coagulation_factor_board_report",
         "4.2.27.factor_seven_a_bleeding_board"
       ]
     },
@@ -908,6 +971,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Proflaksi tedavisinde",
       "linked_rule_ids": [
+        "4.2.27.coagulation_factor_board_report",
         "4.2.27.factor_seven_a_prophylaxis_board"
       ]
     },
@@ -915,12 +979,11 @@
       "clause_id": "C006234",
       "section_id": "4.2.27.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Kombine koagülasyon faktörü/protrombinkompleksi konsantreleri",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.pcc_acquired_coagulopathy_board"
+      ]
     },
     {
       "clause_id": "C006235",
@@ -929,7 +992,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Konjenital ve kazanılmış (edinsel) koagülasyon bozukluğu olan hastalarda",
       "linked_rule_ids": [
-        "4.2.27.coagulopathy_hospital_one_day_prescriber"
+        "4.2.27.A.acquired_coagulopathy_bleed_report_free"
       ]
     },
     {
@@ -958,12 +1021,13 @@
       "clause_id": "C006243",
       "section_id": "4.2.27.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.A.coumarin_noac_bleed_report_free",
+        "4.2.27.anticoagulant_bleed_reversal_one_day",
+        "4.2.27.coumarin_active_bleed_one_day"
+      ]
     },
     {
       "clause_id": "C006244",
@@ -972,8 +1036,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Kazanılmış (edinsel) koagülasyon bozukluklarında (K vitamini yetersizliği",
       "linked_rule_ids": [
-        "4.2.27.vitamin_k_acquired_coagulopathy_referral",
-        "4.2.27.vitamin_k_emergency_one_day_no_report"
+        "4.2.27.A.acquired_coagulopathy_bleed_report_free"
       ]
     },
     {
@@ -994,6 +1057,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Hafif orta  şiddetteki kanamalarda",
       "linked_rule_ids": [
+        "4.2.27.A.coumarin_noac_bleed_report_free",
         "4.2.27.apcc_bleeding_board"
       ]
     },
@@ -1004,7 +1068,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Proflaksi tedavisinde",
       "linked_rule_ids": [
-        "4.2.27.apcc_prophylaxis_board"
+        "4.2.27.apcc_prophylaxis_board",
+        "4.2.27.coagulation_factor_board_report"
       ]
     },
     {
@@ -1064,12 +1129,11 @@
       "clause_id": "C006253",
       "section_id": "4.2.27.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.A.itt_bypassing_agent_acute_only"
+      ]
     },
     {
       "clause_id": "C006254",
@@ -1150,34 +1214,31 @@
       "clause_id": "C006261",
       "section_id": "4.2.27.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.A.emicizumab_paediatric_prophylaxis"
+      ]
     },
     {
       "clause_id": "C006262",
       "section_id": "4.2.27.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.A.emicizumab_inhibitor_prophylaxis"
+      ]
     },
     {
       "clause_id": "C006263",
       "section_id": "4.2.27.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.factor_seven_a_bleeding_board"
+      ]
     },
     {
       "clause_id": "C006264",
@@ -1193,12 +1254,11 @@
       "clause_id": "C006265",
       "section_id": "4.2.27.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.A.emicizumab_dosing_schedule"
+      ]
     },
     {
       "clause_id": "C006266",
@@ -1235,12 +1295,11 @@
       "clause_id": "C006269",
       "section_id": "4.2.27.B",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.B.anti_d_itp_iv_report"
+      ]
     },
     {
       "clause_id": "C006270",
@@ -1257,23 +1316,21 @@
       "clause_id": "C006271",
       "section_id": "4.2.27.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.C.factor_viia_3day_haematology_report"
+      ]
     },
     {
       "clause_id": "C006272",
       "section_id": "4.2.27.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.C.factor_viia_reuse_documentation"
+      ]
     },
     {
       "clause_id": "C006273",
@@ -1300,12 +1357,11 @@
       "clause_id": "C006275",
       "section_id": "4.2.27.Ç",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.C.albumin_inpatient_3day_report"
+      ]
     },
     {
       "clause_id": "C006276",
@@ -1355,12 +1411,11 @@
       "clause_id": "C006286",
       "section_id": "4.2.27.D",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_discontinuation_criteria"
+      ]
     },
     {
       "clause_id": "C006287",
@@ -1369,7 +1424,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "1-5 yaş arası pediyatrik popülasyonda başlangıç dozu günde bir kez 25 mg",
       "linked_rule_ids": [
-        "4.2.27.eltrombopag_pediatric_dosing_report"
+        "4.2.27.D.eltrombopag_dose_titration"
       ]
     },
     {
@@ -1398,12 +1453,11 @@
       "clause_id": "C006290",
       "section_id": "4.2.27.D",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "prior_therapy"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: prior_therapy. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_dose_titration"
+      ]
     },
     {
       "clause_id": "C006291",
@@ -1420,34 +1474,31 @@
       "clause_id": "C006292",
       "section_id": "4.2.27.D",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "prior_therapy"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: prior_therapy. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_discontinuation_criteria"
+      ]
     },
     {
       "clause_id": "C006293",
       "section_id": "4.2.27.D",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_discontinuation_criteria"
+      ]
     },
     {
       "clause_id": "C006294",
       "section_id": "4.2.27.D",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_dose_titration"
+      ]
     },
     {
       "clause_id": "C006295",
@@ -1475,12 +1526,11 @@
       "clause_id": "C006297",
       "section_id": "4.2.27.D",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_discontinuation_criteria"
+      ]
     },
     {
       "clause_id": "C006298",
@@ -1519,17 +1569,24 @@
       "clause_id": "C006301",
       "section_id": "4.2.27.D",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "prior_therapy"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: prior_therapy. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.27.D.eltrombopag_dose_titration"
+      ]
     }
   ],
   "section_4.2.27_gap_audit": {
     "untraced_before": 0,
     "untraced_after": 0,
-    "gap_count": 39
-  }
+    "gap_count": 31
+  },
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "encode_tier_C_deferred_count": 59,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 53.9
 }

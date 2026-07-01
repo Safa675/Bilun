@@ -2,23 +2,28 @@
   "manifest_version": "r5-a3-v1",
   "section_id": "4.2.17",
   "effective_date": "2026-06-27",
-  "rules_in_json": 15,
+  "rules_in_json": 17,
   "section_4.2.17_clause_total": 34,
   "section_clause_total": 34,
-  "encoded_clause_count": 15,
+  "encoded_clause_count": 20,
   "encoded_clause_ids": [
     "C006018",
     "C006019",
     "C006025",
     "C006026",
     "C006027",
+    "C006028",
     "C006031",
+    "C006033",
     "C006035",
     "C006039",
     "C006040",
     "C006041",
     "C006042",
     "C006044",
+    "C006046",
+    "C006048",
+    "C006051",
     "C006053",
     "C006054",
     "C006055"
@@ -29,22 +34,23 @@
     "C006025",
     "C006026",
     "C006027",
+    "C006028",
     "C006031",
+    "C006033",
     "C006035",
     "C006039",
     "C006040",
     "C006041",
     "C006042",
     "C006044",
+    "C006046",
+    "C006048",
+    "C006051",
     "C006053",
     "C006054",
     "C006055"
   ],
-  "tier_a_pending_clause_ids": [
-    "C006028",
-    "C006033",
-    "C006051"
-  ],
+  "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C006015",
@@ -59,14 +65,12 @@
     "C006036",
     "C006037",
     "C006045",
-    "C006046",
-    "C006048",
     "C006050",
     "C006052"
   ],
-  "tier_a_pending_count": 3,
+  "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 16,
+  "tier_c_deferred_count": 14,
   "clause_traces": [
     {
       "clause_id": "C006015",
@@ -200,8 +204,11 @@
       "clause_id": "C006028",
       "section_id": "4.2.17.A",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "osteoporoz_ilac"
+      "manifest_status": "encoded",
+      "heuristic_inn": "osteoporoz_ilac",
+      "linked_rule_ids": [
+        "4.2.17.A.osteoporosis_2yr_report_combo_one_paid"
+      ]
     },
     {
       "clause_id": "C006030",
@@ -228,8 +235,11 @@
       "clause_id": "C006033",
       "section_id": "4.2.17.A",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "Denosumab"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Denosumab",
+      "linked_rule_ids": [
+        "4.2.17.A.hormone_ablation_cancer_high_fracture"
+      ]
     },
     {
       "clause_id": "C006034",
@@ -339,23 +349,21 @@
       "clause_id": "C006046",
       "section_id": "4.2.17.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.17.C.bucket_a.c006046"
+      ]
     },
     {
       "clause_id": "C006048",
       "section_id": "4.2.17.Ç",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.17.Ç.bucket_a.c006048"
+      ]
     },
     {
       "clause_id": "C006050",
@@ -372,8 +380,11 @@
       "clause_id": "C006051",
       "section_id": "4.2.17.D",
       "encode_tier": "A",
-      "manifest_status": "tier_a_pending",
-      "heuristic_inn": "osteoporoz_ilac"
+      "manifest_status": "encoded",
+      "heuristic_inn": "osteoporoz_ilac",
+      "linked_rule_ids": [
+        "4.2.17.D.week24_response_teriparatide_romosozumab"
+      ]
     },
     {
       "clause_id": "C006052",
@@ -416,5 +427,13 @@
         "4.2.17.D.bmd_measurement_twice_yearly"
       ]
     }
-  ]
+  ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "encode_tier_C_deferred_count": 14,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 58.8
 }

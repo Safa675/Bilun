@@ -1,0 +1,4076 @@
+{
+  "catalog_id": "drug_indication_tier_c_emr_blocked",
+  "effective_date": "2026-07-01",
+  "runtime_status": "emr_blocked_catalog",
+  "clauses": [
+    {
+      "clause_id": "C003553",
+      "sut_section": "4.2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Aşağıda belirtilen düzenlemeler, SUT’ta bulunan özel düzenlemeler saklı kalmak kaydıyla, ayakta ve yatarak tedaviler için geçerlidir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003558",
+      "sut_section": "4.2.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "-",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003579",
+      "sut_section": "4.2.1.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Tedaviye uzun süre ara veren (Rituksimab için 12 ay diğer etkin maddeler için 6 ay ve daha uzun süre) hastalarda özel düzenlemeler saklı kalmak kaydıyla yeniden başlangıç kriterleri aranır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003580",
+      "sut_section": "4.2.1.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Ara vermeden; etkisizlik veya yan etki nedeniyle ilaç değişiminin yapılması halinde özel düzenlemeler saklı kalmak kaydıyla tedaviye başlangıç dozu ile başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003582",
+      "sut_section": "4.2.1.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Tedavi basamaklarında değişiklik yapılması halinde tedavinin başlandığı tarihteki Sağlık Uygulama Tebliğinde yer alan başlangıç kriterleri geçerlidir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003655",
+      "sut_section": "4.2.1.C-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Pemfigus Hastalığı Alan İndeksi (PDAİ)>15 olan ve sistemik steoid ve/veya immunsupresan ile en az 1 aylık tedaviyi takiben yeni lezyon çıkışı varsa ya da iyileşme sağlanamıyorsa hastaya rituksimab tedavisi başlanabilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003656",
+      "sut_section": "4.2.1.C-2",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "yanıt değerlendir"
+      ],
+      "message_tr": "b) Pemfigus vulgaris tedavisi için önerilen ilk rituksimab dozu 1000 mg'dır, IV infüzyon olarak uygulanır, ardından iki hafta sonra glukokortikoidlerin azaltıcı seyri ile kombinasyon halinde ikinci bir 1000 mg IV infüzyonu yapılır. Tedaviyi takiben yapılan yanıt değerlendirmesinde hastada yeni lezyon çıkışı varsa ya da iyileşme sağlanamıyorsa rituksimab tedavisi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003675",
+      "sut_section": "4.2.1.C-4",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "(1) Sistemik tedaviye yanıt vermeyen, kontrendike olan veya bu tedaviyi tolere edemeyen yetişkinlerde orta ile şiddetli plak tip psoriyazis tedavisinde;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003678",
+      "sut_section": "4.2.1.C-4",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "c) İlaca başlandıktan sonra 28. haftada yapılan değerlendirmede PASI değerine bakılır, başlangıç PASI değerine göre PASI 75 yanıtını sağlamayan (başlangıca göre en az %75 PASI iyileşmesi görülmeyen) hastalarda tedavi sonlandırılır. 28.haftada bakılan PASI değeri reçete/raporda belirtilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003680",
+      "sut_section": "4.2.1.C-4",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "d) Tedaviye başlandıktan 1 yıl sonra yeni düzenlenecek raporda yukarıdaki kriterlerle, hastanın tedaviden fayda gördüğünün belirtilmesi koşulu ile tedaviye devam edilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003704",
+      "sut_section": "4.2.1.C-5",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Nonsteroid antiinflamatuvar ilaç ve sistemik steroid tedavisi ile üçüncü ayın sonunda remisyona girmemiş hastalarda tosilizumab veya anakinra tedavisine geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003710",
+      "sut_section": "4.2.1.C-5",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "2) Nonsteroid antiinflamatuvar ilaçlar ve sistemik kortikosteroidler ile üçüncü ayın sonunda ACR pediatrik 50 yanıtının elde edilemediği durumlarda tosilizumab veya anakinra tedavisine geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003720",
+      "sut_section": "4.2.1.C-5",
+      "defer_themes": [
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "required_emr_fields": [
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "message_tr": "a) Yüksek doz kortikosteroidle birlikte Sağlık Bakanlığından onaylı olması halinde methotreksat, leflunomid, azatioprinin herhangi birinin 3 ay süre ile kullanılmış olmasına rağmen yanıt alınamaması durumunda.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003742",
+      "sut_section": "4.2.1.C-6",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "b) 12 haftalık ilaç kullanım süresi sonunda yapılan değerlendirmede psöriatik artrit yanıt kriterlerine (PSARC) göre yeterli cevap alındığının yeni düzenlenecek reçete/raporda belirtilmesi halinde tedaviye devam edilir. Yanıt alınamaması halinde tedavi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003748",
+      "sut_section": "4.2.1.C-6",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(5) Upadasitinibin radyografik olmayan aksiyal spondiloartritli (nr-axSpA) erişkin hastalarda kullanımı;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003756",
+      "sut_section": "4.2.1.C-6",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(8) Upadasitinib (Değişik:RG-25/03/2025-32852/2-e md.Yürürlük:04/04/2025), barisitinib ve abrositinibin orta/şiddetli atopik dermatit tedavisinde kullanımı;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003757",
+      "sut_section": "4.2.1.C-6",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) İki aydan uzun süreli sistemik kortikosteroid ve siklosporin kullanımından yarar görmeyen veya bu ilaçları tolere edemeyen veya bu ilaçların kontrendike olduğu orta ve şiddetli atopik dermatitli 12 yaş ve üzeri hastalarda upadasitinib veya abrositinib (Değişik:RG-25/03/2025-32852/2-e md. Yürürlük:04/04/2025), 18 yaş ve üzeri hastalarda barisitinib ile tedaviye başlanabilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003762",
+      "sut_section": "4.2.1.C-6",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "c) Yukarıdaki kriterlerin hiçbirinin sağlanamaması durumu tedavide yanıtsızlık olarak değerlendirilir ve tedaviye son verilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003763",
+      "sut_section": "4.2.1.C-6",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "ç) Tedavi süresince tolere edilemeyen bir yan etki ya da tedaviye yanıtsızlık gelişmesi durumunda, mevcut tedavi sonlandırılarak başka bir JAK inhibitörüne ara verilmeden geçilebilir ve 12 haftalık tedavi değerlendirme süresi yeniden başlar.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003779",
+      "sut_section": "4.2.1.C-6",
+      "defer_themes": [
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "required_emr_fields": [
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "message_tr": "a) Yüksek doz kortikosteroidle birlikte Sağlık Bakanlığından onaylı olması halinde methotreksat, leflunomid, azatioprinin herhangi birinin 3 ay süre ile kullanılmış olmasına rağmen yanıt alınamaması durumunda.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003784",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Sistemik juvenil idiyopatik artriti (SJİA) bulunan (Değişik:RG-12/12/2024-32750/7-b md. Yürürlük: 20/12/2024) hastalardan anakinra için 8 ay ve üzeri ve vücut ağırlığı 10 kg ve üzerinde olan, kanakinumab için 2 yaş ve üzerinde olan çocuklarda;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003786",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "1) Nonsteroid antiinflamatuvar ilaç ve sistemik steroid tedavisi ile üçüncü ayın sonunda remisyona girmemiş olup, tosilizumab veya anakinra tedavisi alan hastalardan; anakinra veya tosilizumab ile 3 aylık tedaviye rağmen ACR pediatrik 50 yanıtına ulaşamayan hastalarda kanakinumab tedavisine geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003789",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Nonsteroid antiinflamatuvar ilaçlar ve sistemik kortikosteroidler ile toplam 3 aylık tedavi sonrasında ACR pediatrik 50 cevabının elde edilemediği ve tosilizumab veya anakinra tedavisine geçilen hastalardan; tosilizumab veya anakinra ile 3 aylık tedaviye rağmen ACR pediyatrik 50 ulaşamayan hastalarda kanakinumab tedavisine geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003804",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Ailevi Akdeniz Ateşi (FMF) olan vücut ağırlığı 7,5 kg üzerinde 2 yaş ve üstü çocuklar ile yetişkin hastaların tedavisinde;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003816",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Periyodik ateş sendromlarından TRAPS (Tümör nekroz edici faktör reseptoru 1 ile ilişkili periodik ateş sendromları), HIDS (Hiperİmmünglobülin D Sendromu) / MKD (Mevalonat Kinaz eksikliği) tanısında kanakinumab kullanımı:",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003817",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "a) Genetik olarak kanıtlanmış patojenik mutasyon ile tanı almış TRAPS (Tümör nekroz edici faktör reseptoru 1 ile ilişkili periodik ateş sendromları), HIDS (Hiperİmmünglobülin D sendromu) / MKD (mevalonat kinaz eksikliği) hastalarında anakinra ile tedaviye başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003823",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Kanakinumab 7,5 kg vücut ağırlığının üzerinde olan 2 yaş ve üstü çocuklar ile yetişkinlerde Kriyopirin İlişkili Periyodik Sendromlardan (CAPS); Ailevi Soğuk Otoinflamatuar Sendrom (FCAS)/Ailevi Soğuk Ürtiker (FCU), Muckle-Wells Sendromu (MWS), Neonatal Başlangıçlı Multisistem İnflamatuar Hastalık (NOMID)/Kronik İnfantil Nörolojik, Kütanöz, Artiküler Sendrom (CINCA) tedavisinde kullanılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003824",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Anakinra erişkinler, adolesanlar, çocuklar ve vücut ağırlığı 10 kg veya üzeri 8 aylık ve daha büyük infantlarda Kriyopirin İlişkili Periyodik Sendromlardan (CAPS); Ailevi Soğuk Otoinflamatuar Sendrom (FCAS), Muckle-Wells Sendromu (MWS), Neonatal Başlangıçlı Multisistem İnflamatuar Hastalık (NOMID)/Kronik İnfantil Nörolojik, Kütanöz, Artiküler Sendrom (CINCA) tedavisinde kullanılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003825",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "required_emr_fields": [
+        "endikasyon dışı onay"
+      ],
+      "message_tr": "3) Tedaviye anakinra ile başlanır (Ailevi Soğuk Ürtiker (FCU) endikasyonunda ayrıca Sağlık Bakanlığı endikasyon dışı onayı aranır). Anakinra tedavisine yanıt alınamaması veya anakinra tedavisi altındayken anakinra kullanılmasını engelleyecek ciddi klinik yan etki oluşması halinde kanakinumab tedavisine geçilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003826",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "yanıt değerlendir"
+      ],
+      "message_tr": "4) Kanakinumab tedavisinde 6 ay sonunda yapılacak yanıt değerlendirmesine göre yanıt alınamayan hastalarda tedavi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003829",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Erişkin başlangıçlı Still Hastalığı (AOSD) tedavisinde orta ve yüksek şiddette, aktif sistemik özellikleri olan erişkinlerde, glukokortikoidler ve en az 1 hastalık modifiye edici antiromatizmal ilaçlar (DMARD’lar) veya konvansiyonel immunosupresifler ile 3 aylık tedaviye rağmen hastalık aktivitesi devam eden hastalarda anakinra kullanılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003830",
+      "sut_section": "4.2.1.C-7",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Sistemik özellikleri olmayan (artiküler fenotip) AOSD’de, Steroid Olmayan Anti-inflamatuvar İlaçlar (NSAİİ’ler), glukokortikoidler ve bir veya daha fazla hastalık modifiye edici antiromatizmal ilaçlar (DMARD’lar) veya konvansiyonel immunosupresifler ile 3 aylık tedaviye rağmen hastalık aktivitesi devam eden hastalarda kullanılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003849",
+      "sut_section": "4.2.1.C-9",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "b) 16 haftalık ilaç kullanım süresi sonunda BASDAİ’de en az 2 birim düzelme olduğunun yeni düzenlenecek reçete/raporda belirtilmesi halinde tedaviye devam edilir. BASDAİ’de 2 birimden daha az düzelme olması tedaviye yanıtsızlık olarak değerlendirilerek ilaç kullanımı sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003853",
+      "sut_section": "4.2.1.C-9",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "b) 16 haftalık ilaç kullanım süresi sonunda başlangıç PASI değerine göre en az %75 iyileşme olduğunun yeni düzenlenecek reçete/raporda belirtilmesi halinde tedaviye devam edilir. Başlangıç PASI değerine göre %75 iyileşme sağlanamaması tedaviye yanıtsızlık olarak değerlendirilerek ilaç kullanımı sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003857",
+      "sut_section": "4.2.1.C-9",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "b) 16 haftalık ilaç kullanım süresi sonunda yapılan değerlendirmede psöriatik artrit yanıt kriterlerine (PSARC) göre yeterli cevap alındığının yeni düzenlenecek reçete/raporda belirtilmesi halinde tedaviye devam edilir. Yanıt alınamaması halinde tedavi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003868",
+      "sut_section": "4.2.1.C-10",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "b) 16 haftalık ilaç kullanım süresi sonunda başlangıç PASI değerine göre en az %75 iyileşme olduğunun yeni düzenlenecek raporda belirtilmesi halinde tedaviye devam edilir. Başlangıç PASI değerine göre %75 iyileşme sağlanamaması tedaviye yanıtsızlık olarak değerlendirilerek ilaç kullanımı sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003873",
+      "sut_section": "4.2.1.C-10",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "b) 16 haftalık ilaç kullanım süresi sonunda yapılan değerlendirmede psöriatik artrit yanıt kriterlerine (PSARC) göre yeterli cevap alındığının yeni düzenlenecek reçete/raporda belirtilmesi halinde tedaviye devam edilir. Yanıt alınamaması halinde tedavi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003879",
+      "sut_section": "4.2.1.C-11",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "b) 16 haftalık ilaç kullanım süresi sonunda başlangıç PASI değerine göre en az %75 iyileşme olduğunun yeni düzenlenecek raporda belirtilmesi halinde tedaviye devam edilir. Başlangıç PASI değerine göre %75 iyileşme sağlanamaması tedaviye yanıtsızlık olarak değerlendirilerek ilaç kullanımı sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003884",
+      "sut_section": "4.2.1.C-12",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "b) 16 haftalık ilaç kullanım süresi sonunda başlangıç PASI değerine göre en az %75 iyileşme olduğunun yeni düzenlenecek raporda belirtilmesi halinde tedaviye devam edilir. Başlangıç PASI değerine göre %75 iyileşme sağlanamaması tedaviye yanıtsızlık olarak değerlendirilerek ilaç kullanımı sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003890",
+      "sut_section": "4.2.1.C-13",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Sağlık kurulu raporları en fazla 6’şar ay süreli olarak düzenlenir. Tedaviye uzun süre ara veren (6 ay ve daha uzun süre) hastalarda yeniden başlangıç kriterleri aranır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003895",
+      "sut_section": "4.2.1.C-14",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "b) 16 haftalık ilaç kullanım süresi sonunda başlangıç PASI değerine göre en az %75 iyileşme olduğunun yeni düzenlenecek raporda belirtilmesi halinde tedaviye devam edilir. Başlangıç PASI değerine göre %75 iyileşme sağlanamaması tedaviye yanıtsızlık olarak değerlendirilerek ilaç kullanımı sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003911",
+      "sut_section": "4.2.2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(9) Antidepresanlar ve antipsikotikler için düzenlenecek uzman hekim raporunda ilacın kullanılacağı süre belirtilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003919",
+      "sut_section": "4.2.3",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(7) Arı venom alerjisinde kullanılan arı venom aşıları, alerji, immünoloji, immünoloji ve alerji, çocuk sağlığı ve hastalıkları uzman hekimlerinden biri tarafından düzenlenen uzman hekim raporuna dayanılarak, uzman hekimler tarafından reçete edilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003971",
+      "sut_section": "4.2.6.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "4) Puberte’de; izleme süresi ve büyüme hızı hastanın diğer bulgularına göre çocuk endokrinolojisi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimince değerlendirilmesi,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003975",
+      "sut_section": "4.2.6.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "3) Pubertal dönem için sadece epifizlerin açık olması, (Puberte kıstasları: erkeklerde gonadarj (testis hacimlerinin) 4 ml ve üzerine çıkması, kızlarda T2 düzeyinde telarşın olması pubertenin başlangıcı olarak kabul edilecektir.)",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003976",
+      "sut_section": "4.2.6.A-1",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "c) Ötiroid hastalarda uygulanan büyüme hormonu uyarı testlerinden en az ikisine (laboratuvarın kriterlerine göre) yetersiz yanıt alınarak izole büyüme hormonu eksikliği veya büyüme hormonunun diğer hipofiz hormonlarının eksikliği ile birlikte olması (hipopituitarizm),",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003978",
+      "sut_section": "4.2.6.A-1",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "d) Epifizlerin açık olması dışında başkaca şartlar aranmaksızın; moleküler genetik testlerle hipotalamo-hipofiz gelişim defekti gösterilmiş organik büyüme hormonu eksikliği veya hipotalamo-hipofiz aksını/hipofiz bölgesini etkileyen intrakraniyal cerrahilere bağlı büyüme hormonu eksikliği tespit edilmesi,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003980",
+      "sut_section": "4.2.6.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Gestasyonel yaşa göre doğum ağırlığı ve/veya boy uzunluğu standart sapması <-2 doğmuş olup 4 yaş ve üzerinde büyümeyi yakalayamamış (son yıl süresince uzama hızı standard sapması <0) olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003981",
+      "sut_section": "4.2.6.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Gestasyonel yaşa göre küçük doğmuş kısa boylu çocuklarda mevcut uzunluk standart sapması <-2,5 ve anne-babaya uyarlanmış standart sapması <-1 olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003992",
+      "sut_section": "4.2.6.A-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Epifiz hatları açık olan erişkin yaştaki hastaların büyüme hormonu kullanım esasları, çocuk yaş grubu ile aynıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003994",
+      "sut_section": "4.2.6.A-2",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "a) Çocukluk yaş grubunda büyüme hormonu eksikliği tanısı konulup, büyüme hormonu tedavisi verilen ve epifizleri kapandığı için tedavisi kesilen hastalarda tekrarlanan iki adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003995",
+      "sut_section": "4.2.6.A-2",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "b) Erişkin yaş grubunda hipotalamohipofizer hastalıklara bağlı büyüme hormonu eksikliği düşünülen hastalarda, 2 adet büyüme hormonu uyarı testine yetersiz yanıt alınmışsa (kontrendikasyon yoksa testlerden biri insülin tolerans testi olarak tercih edilmelidir) erişkin dozda büyüme hormonu tedavisi başlanabilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C003996",
+      "sut_section": "4.2.6.A-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Hipofiz hormonlarından (prolaktin ve büyüme hormonu dışında) bir veya daha fazla ek ön hipofiz hormonu eksikliği varsa, bir adet büyüme hormonu uyarı testi (kontrendikasyon yoksa insülin tolerans testi tercih edilmelidir) tanı için yeterlidir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004015",
+      "sut_section": "4.2.6.A-4",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Şiddetli obezite (ideal ağırlığının %225 üzerinde olması), kontrol edilemeyen diyabet, tedavi edilemeyen obstrüktif uyku apnesi, aktif kanser, aktif psikozu olmaması.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004017",
+      "sut_section": "4.2.6.A-4",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Büyüme hormonu infant ve çocuklarda 0,5 mg/m²/gün dozunda başlanır. Klinik cevaba göre ve serum IGF1 düzeyi fizyolojik düzeylerde kalmak şartıyla 3-6 ayda bir 1 mg/ m²/gün dozuna geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004018",
+      "sut_section": "4.2.6.A-4",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Serum IGF1 düzeyi +2 SD üzerine çıktığında tedaviye ara verilir. Serum IGF1 düzeyi +2 SD altına düştüğünde tedaviye yukarıdaki koşullarda yeniden başlanabilir. Solunum yolu enfeksiyonlarında iyileşme sağlanıncaya kadar tedavi başlanmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004019",
+      "sut_section": "4.2.6.A-4",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "progresyon"
+      ],
+      "message_tr": "(5) Kontrol edilemeyen diyabet, tedavi edilemeyen obstrüktif uyku apnesi, aktif kanser, aktif psikoz, progresyon gösteren skolyoz durumlarında tedavi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004025",
+      "sut_section": "4.2.6.A-5",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Persistan büyüme geriliği olması (boyun yaş ve cinsiyete göre 3 persentilin altında (-2 SD altında) ve yıllık büyüme hızının 25 persentilin altında olması) veya",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004026",
+      "sut_section": "4.2.6.A-5",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Böbrek naklinden 1 yıl sonra steroid tedavisi almaksızın spontan büyümenin olmaması (boyun yaş ve cinsiyete göre 3 persentilin altında (-2 SD altında) ve yıllık büyüme hızının 25 persentilin altında olması) veya",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004027",
+      "sut_section": "4.2.6.A-5",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) Nefropatik sistinozise bağlı KBY hastası çocuklarda boyun yaş ve cinsiyete göre 3 persentilin altında (-2 SD altında) ve yıllık büyüme hızının 25 persentilin altında olması halinde büyüme hormonu tedavisine başlanabilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004028",
+      "sut_section": "4.2.6.A-5",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Epifiz hatları kapalı olanlara, persistan ağır sekonder hiperparatiroidizmi olanlara (Paratiroid hormonun 500 pikogram(pg)/ml ve üzerinde olması), proliferatif veya şiddetli nonproliferatif diyabetik retinopatisi olanlara, renal transplantasyonun ilk 1 yıl içerisindeki hastalara veya aktif kanserlilere tedavi başlanmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004031",
+      "sut_section": "4.2.6.A-5",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "(5) Epifiz hatları kapandığında, böbrek nakli sırasında, persistan ağır sekonder hiperparatiroidizmde (Paratiroid hormonun 500 pikogram(pg)/ml ve üzerinde olması), intrakraniyal hipertansiyonda, femoral epifiz başının kaydığı durumlarda, en az 6 aylık büyüme hormonu tedavisine rağmen yeterli yanıt alınamaması durumunda (yılda 2 cm ve üzeri büyüme olmaması), kemik maturasyonunun hızlandığı durumlarda veya tahmini GFR’de açıklanamayan azalma durumunda tedavi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004035",
+      "sut_section": "4.2.6.B-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) İlgili uzman hekim tarafından en az 6 ay süreyle büyüme hızı izlendikten sonra büyümeyi etkileyen sistemik bir hastalığı veya beslenme bozukluğu olmadığı tespit edilen hastalarda; boy (-3) standart sapmanın altında, yıllık büyüme hızı yaş ve cinse göre 25 persentilin altında, serum IGF-I düzeyi < -2 SD, serum IGFBP-3 düzeyi < -1 SD, bazal veya uyarılmış büyüme hormonu düzeyi > 10 mcg/L, somatomedin jenerasyon testinde büyüme hormonu uyarısına IGF-I artışının yetersiz oldu",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004040",
+      "sut_section": "4.2.6.B-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Yenilenen raporlarda tedavi öncesi ve tedaviyle sağlanan büyüme hızı, ulaştığı boy skalası ve epifiz hatlarının durumu belirtilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004092",
+      "sut_section": "4.2.8.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) (Değişik:RG- 19/10/2023-32344/5 md. Yürürlük:27/10/2023) 5 yaş altı (Değişik:RG- 19/10/2023-32344/5 md. Yürürlük:27/10/2023) çocuklar için yaşa göre ağırlık (< -2SD),",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004093",
+      "sut_section": "4.2.8.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) (Değişik:RG- 19/10/2023-32344/5 md. Yürürlük:27/10/2023) 5 yaş ve üstü çocuklar için vücut kütle indeksi (VKİ) (< -2SD),",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004101",
+      "sut_section": "4.2.8.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Son 6 ayda %5 ten fazla 6 aydan daha uzun sürede ise %10 dan fazla istemsiz kilo kaybı veya (Ek: RG-25/03/2025-32852/6-b md. Yürürlük:04/04/2025) Dünya Sağlık Örgütü (DSÖ) referans değerleri doğrultusunda hesaplanan VKİ 70 yaş ve üzerinde 22’ nin altında, 70 yaş altında ise 20’ nin altında ve",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004103",
+      "sut_section": "4.2.8.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "3) Besin alımında azalma (1 hafta süreyle enerji ihtiyacının %50’sinden az alım veya 2 hafta süreyle alımda herhangi bir azalma veya besin sindirimini/emilimini bozan herhangi bir gastrointestinal sistem hastalığı)",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004132",
+      "sut_section": "4.2.9.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Tedaviye başlama ve idame dozu, sırasıyla; darbepoetin için 0.25-0.75 mcg/kg/hafta ve idame dozu 0.13-0.35 mcg/kg/hafta, eritropoietin alfa-beta-zeta için tedaviye başlangıç dozu 50-150 IU/kg/hafta ve idame dozu 25- 75 IU/kg/haftadır. Metoksipolietilen glikol epoetin beta için ise tedaviye başlama dozu iki haftada bir; 0,4-0,94 mcg/kg, idame dozu ise ayda bir 0,8-1,88 mcg/kg dır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004133",
+      "sut_section": "4.2.9.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Roksadustat için mevcut durumda eritropoez uyarıcı ajan (ESA) tedavisi almayan hastalarda başlangıç dozu en fazla, ağırlığı 100 kg'dan az olan hastalarda haftada üç kez 70 mg ve ağırlığı 100 kg ve üzeri hastalarda haftada üç kez 100 mg'dır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004144",
+      "sut_section": "4.2.9.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "düzeltilmiş kalsiyum"
+      ],
+      "message_tr": "c) Kt/V değeri 1,4’ün üzerinde olmasına rağmen düzeltilmiş kalsiyum ve fosfor çarpımı 55’in üzerinde olan veya",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004148",
+      "sut_section": "4.2.9.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Her reçetede fosfor düzeyini gösterir son 1 ay içinde yapılmış tetkik sonuç belgesinin tarihi ve sonucu belirtilir. Bir defada en fazla (Değişik: RG- 25/07/2014- 29071/ 23 md. Yürürlük: 07/08/2014 ) bir aylık dozda ilaç verilir. Fosfor düzeyi 3,5 mg/dl'nin altında olduğu durumlarda tedavi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004149",
+      "sut_section": "4.2.9.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Fosfor düzeyinin (Değişik: RG- 07/10/2016- 29850/ 18-c md. Yürürlük: 15/10/2016) 4 mg/dl'nin üzerine çıkması durumunda tedaviye ilk başlama kriterleri aranarak tekrar başlanabilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004162",
+      "sut_section": "4.2.9.C",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "required_emr_fields": [
+        "prior_therapy"
+      ],
+      "message_tr": "(1) Albumin ile düzeltilmiş serum kalsiyum düzeyi 10,2 mg/dl ve serum fosfor düzeyi 5,5 mg/dl’nin altında olmak koşuluyla; parathormon (PTH) düzeyi 600 pg/ml’nin üzerinde olan hastalarda veya PTH düzeyi 300 pg/ml’nin üzerinde olmak koşuluyla PTH düzeyinde bir önceki ölçüme göre %25’in üzerinde artış tespit edilen hastalarda parikalsitol tedavisi başlanabilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004163",
+      "sut_section": "4.2.9.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) PTH düzeyinin 150 pg/ml’nin altına düşmesi, albümin ile düzeltilmiş serum kalsiyum düzeyinin 10,5 mg/dl’nin üzerine çıkması veya serum fosfor düzeyinin 6 mg/dl’nin üzerine çıkması durumunda parikalsitol tedavisi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004171",
+      "sut_section": "4.2.9.Ç",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) (Değişik: RG-21/03/2018-30367/ 18-b md. Yürürlük: 01/04/2018) Hemodiyaliz veya periton diyaliz tedavisi altındaki hastalardan albumin ile düzeltilmiş serum kalsiyum değeri ≤8,4 mg/dl olanlarda cinacalcet tedavisi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004172",
+      "sut_section": "4.2.9.Ç",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Yukarıdaki hasta gruplarında PTH düzeyi (Değişik: RG-28/04/2021-31468/11-c md. Yürürlük:06/05/2021) 300 pg/ml’nin altına düşen hastalarda cinacalcet tedavisi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004174",
+      "sut_section": "4.2.9.Ç",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(5) Serum kalsiyum düzeyleri temelinde paratroidektomi endike olduğu halde (ilgili tedavi kılavuzlarında tanımlandığı şekilde) paratiroidektominin klinik açıdan uygun olmadığı veya kontrendike olduğu primer hiperparatiroidili hastalarda hiperkalseminin düşürülmesi endikasyonunda;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004181",
+      "sut_section": "4.2.9.D",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Serum albumin düzeyi < 3,5 g/dL olan; Evre 4 KBH (glomerüler filtrasyon hızı <30 ml/dak) veya Evre 5 KBH (diyaliz hastaları dahil) hastalarında;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004186",
+      "sut_section": "4.2.9.D",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Tedavinin ilk 6 ayının sonunda başlangıç serum albümin düzeyinde %25’lik artış sağlanamayan hastalarda veya",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004187",
+      "sut_section": "4.2.9.D",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Tedavinin ilk 3 ayının sonunda ve/veya tedavinin devamında serum albümin düzeyi 4 g/dL’nin üzerine çıkan tüm hastalarda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004190",
+      "sut_section": "4.2.9.D",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Bu hastalarda, nefroloji (Değişik:RG-16/03/2023-32134/23-b md. Yürürlük:24/03/2023) , iç hastalıkları veya çocuk sağlığı ve hastalıkları uzman hekimlerinden birinin düzenlediği ve yukarıdaki hususların belirtildiği 1 yıl süreli sağlık raporuna istinaden 3 aylık dozda bu hekimlerce veya diyaliz sertifikalı tüm hekimler tarafından reçete edilebilir. Her reçetelemede serum albumin düzeyine ait yeni tetkik sonuç belgesinin tarihi ve sonucu reçete veya raporda belirtilir. Deva",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004193",
+      "sut_section": "4.2.9.E",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Hemodiyaliz tedavisi altında bulunan albumin ile düzeltilmiş serum kalsiyum değeri ≥8,5 mg/dl, parathormon (PTH) düzeyi 600 pg/ml ve üzerinde olduğu belgelenen hastalarda etelkalsetid tedavisi başlanabilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004194",
+      "sut_section": "4.2.9.E",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Hemodiyaliz tedavisi altındaki hastalardan albumin ile düzeltilmiş serum kalsiyum değerinin ≤8,4 mg/dl olması veya PTH düzeyinin 300 pg/ml’nin altına düşmesi halinde etelkalsetid tedavisi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004198",
+      "sut_section": "4.2.9.E",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) En fazla 3 ay öncesine ait albümin ile düzeltilmiş serum kalsiyum düzeyi ve PTH düzeyi sonuçları her reçetede veya raporda belirtilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004208",
+      "sut_section": "4.2.10.A",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "(1) Periferik kandan veya dokudan enzim (glucocerebrosidase) düzeyinin veya mutasyon analiz sonuçlarının hastalıkla uyumlu olmasına göre tanı konulmuş olmalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004212",
+      "sut_section": "4.2.10.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Hastanın hemoglobin değerinin erişkinler için 8 ile 10 g/dl arasında olması, çocuklar için yaşa göre normalin alt sınırının 2 g/dl altında olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004217",
+      "sut_section": "4.2.10.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) Karaciğer hacminin herhangi bir görüntüleme yöntemi ile en az 1,25 kat artmış olduğunun tespit edilmesi,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004219",
+      "sut_section": "4.2.10.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "d) DEXA ile kemik mineral dansite Z skorunun hastanın yaş grubuna göre -1,5 ile -2,5 SD arasında olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004222",
+      "sut_section": "4.2.10.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Birinci fıkrada sıralanan hükümler doğrultusunda ilk tedavi başlangıcından itibaren 6 ncı ayın sonunda tedaviye başlangıç kriter/kriterlerinde düzelme görülmez ise 1 yıl boyunca 2 haftada bir gün en fazla 60 IU/kg uygulanacaktır. Yapılacak bu tedavi sonrasında başlangıca göre düzelme göstermeyen hastalarda enzim tedavisi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004229",
+      "sut_section": "4.2.10.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) Karaciğer hacminin herhangi bir görüntüleme yöntemi ile en az (Değişik: RG-16/06/2020-31157/4-a md. Yürürlük: 24/06/2020) 2,5 kat artmış olduğunun tespit edilmesi,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004230",
+      "sut_section": "4.2.10.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "ç) Dalak hacminin herhangi bir görüntüleme yöntemi ile en az (Değişik: RG-16/06/2020-31157/4-a md. Yürürlük: 24/06/2020) 15 kat artmış olduğunun tespit edilmesi,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004231",
+      "sut_section": "4.2.10.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "d) DEXA ile kemik mineral dansite Z skorunun erişkin hastanın yaş grubuna göre -2,5 SD altında olması, çocuklarda boy ve/veya kilo gelişiminin yaşa göre -2 SD altında olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004234",
+      "sut_section": "4.2.10.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Üçüncü fıkrada sıralanan hükümler doğrultusunda, 2 (iki) haftada bir gün 60 IU/kg dozunda enzim tedavisi uygulanan hastalarda birinci yılın sonunda yapılan değerlendirmede hastanın tedaviye başlamasına esas olan kriter/kriterlerde düzelme göstermeyen hastalarda enzim tedavisi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004241",
+      "sut_section": "4.2.10.A-2",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "(2) Miglustat tedavisine yanıt, enzim tedavisinden miglustat tedavisine geçişe neden olan kriter/kriterler açısından takip edilir. Birinci yılın sonunda tedaviye başlanmasına esas olan bu kriter/kriterlerde düzelme göstermeyen hastalarda miglustat tedavisi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004247",
+      "sut_section": "4.2.10.A-3",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) Karaciğer hacminin herhangi bir görüntüleme yöntemi ile en az 1,25 kat artmış olduğunun tespit edilmesi,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004253",
+      "sut_section": "4.2.10.A-3",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Yukarıda sıralanan hükümler doğrultusunda, eliglustat tedavisi uygulanan hastalarda birinci yılın sonunda yapılan değerlendirmede hastanın tedaviye başlamasına esas olan kriter/kriterlerde düzelme göstermeyen hastalarda tedavi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004259",
+      "sut_section": "4.2.10.A-4",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Hastanın takip ve tedavi edildiği sağlık kurumlarında, hastalar adına dosyalar açılacak ve tüm bilgiler bu dosyada muhafaza edilecektir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004263",
+      "sut_section": "4.2.10.B",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "(1) Fabry hastalığı tanısı lökosit içi α-galaktozidaz A enzim eksikliği ve mutasyon analiz sonuçlarının hastalıkla uyumlu olması ile konulmuş olmalıdır. Bu maddenin yürürlük tarihi öncesinde tanı almış hastalar bu madde hükümleri kapsamında değerlendirilmez.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004276",
+      "sut_section": "4.2.10.B-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Enzim tedavisi uygulanan hastalarda birinci yılın sonunda yapılan değerlendirmede hastanın tedaviye başlamasına esas olan kriter/kriterlerde düzelme göstermeyen hastalarda enzim tedavisi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004284",
+      "sut_section": "4.2.10.B-2",
+      "defer_themes": [
+        "mutation_panel",
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "mutation_panel",
+        "response_assessment"
+      ],
+      "message_tr": "(1) Fabry hastalığı tanısı almış ve migalastat etkin maddesine yanıtlı olduğu bilinen mutasyona sahip 45 kg ve üzerinde olan 12 yaş ve üzeri adolesanlar ile yetişkinlerde aşağıdaki kriterlerden herhangi birisinin varlığında oral migalastat tedavisine başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004295",
+      "sut_section": "4.2.10.B-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Oral migalastat tedavisi GFR <30 ml/dk/1.73 m2 altında olan hastalarda veya gebelikte veya laktasyon döneminde kullanılmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004297",
+      "sut_section": "4.2.10.B-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Oral migalastat tedavisi uygulanan hastalarda birinci yılın sonunda yapılan değerlendirmede hastanın tedaviye başlamasına esas olan kriter/kriterlerde düzelme göstermeyen hastalarda migalastat tedavisi kesilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004301",
+      "sut_section": "4.2.10.B-3",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Hastanın takip ve tedavi edildiği sağlık hizmeti sunucularında, hastalar adına dosyalar açılacak ve tüm bilgiler bu dosyada muhafaza edilecektir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004302",
+      "sut_section": "4.2.10.B-3",
+      "defer_themes": [
+        "mutation_panel",
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "required_emr_fields": [
+        "mutation_panel",
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "message_tr": "(3) Oral migalastat tedavisi için, Sağlık Bakanlığınca onaylı kısa ürün bilgisinde uygunluğu kabul edilen migalastata yanıtlı olan mutasyonlar raporda belirtilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004345",
+      "sut_section": "4.2.10.C-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Periferik kandan lökosit içi ya da dokudan enzim (Tip I için; L-İduronidase, Tip II için; İduronidate -2 sulfatase, Tip IVA için N-Acetyl galactoseamine-6-sulphatase, Tip VI için; N-Acetyl Galactoseamine-4-Sulfatase, Tip VII için betaglucronidase) düzeyleri;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004346",
+      "sut_section": "4.2.10.C-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) İdrar glikozaminoglikan analizinde hastalık tipine özgü glikozaminoglikan analizi (Tip I ve Tip II için heparan ve dermatan sülfat, Tip IVA için keratan sülfat ve kondroidin sülfat, Tip VI için dermatan sülfat, Tip VII için kondroidin sülfat, heparan ve dermatan sülfat);",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004347",
+      "sut_section": "4.2.10.C-1",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "(3) Moleküler genetik analiz sonuçları (Tip I için IDUA geni, Tip II için IDS geni, Tip IVA için GALNS geni, Tip VI için ARSB geni, Tip VII için GUSB geni)",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004351",
+      "sut_section": "4.2.10.C-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Tip I, II, IVA, VI ve VII hastalarında yardım almadan yer değiştirecek şekilde tüm vücudunu hareket ettirebilen ve solunum cihazına sürekli bağlı olmayan hastalarda tedaviye başlanır. (6 ay ve daha uzun süre kesintisiz ve hareketsiz olarak solunum cihazına bağlı olan hastalarda tedaviye başlanmaz.)",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004352",
+      "sut_section": "4.2.10.C-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) 24 ay (2 yaş) ve altındaki hastalarda yardım almadan yer değiştirecek şekilde tüm vücudunu hareket ettirebilme kriteri aranmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004354",
+      "sut_section": "4.2.10.C-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Tedavi başlangıcında; ekokardiyografi (ejeksiyon fraksiyonu veya fraksiyonel kısalma ve miyokard kalınlığı), abdominal ultrasonografi veya abdominal manyetik rezonans (karaciğer, dalak boyutu veya hacmi), koopere olan hastalarda solunum fonksiyon testi (FVC) ve yürüyebilen 2 yaş üzeri hastalarda 6 dakika yürüme testi yapılır ve sonuçları kaydedilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004355",
+      "sut_section": "4.2.10.C-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(5) Herhangi bir sebeple tedaviye 6 ay ve daha uzun süreli ara veren hastalarda başlangıç kriterleri aranır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004358",
+      "sut_section": "4.2.10.C-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(a) Yardım almadan yer değiştirecek şekilde tüm vücudunu hareket ettirme yeteneğini kaybetmeyen (Yürümeyen ancak, vücudunu yardım almadan hareket ettirme yeteneği olan hastalarda 6 dakika yürüme testi yerine bu yeteneğini koruma şartı aranır.),",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004360",
+      "sut_section": "4.2.10.C-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(c) Tedavi başlangıcında kaydedilen değerleri (ekokardiyografi, abdominal ultrasonografi veya abdominal manyetik rezonans, solunum fonksiyon testi, 6 dakika yürüme testi) korunmuş olan veya bu değerlerden herhangi birinde bu hastalığa bağlı nedenlerle %30’dan daha fazla kötüleşme olmayan,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004365",
+      "sut_section": "4.2.10.C-3",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Hastanın takip ve tedavi edildiği sağlık kurumlarında, hastalar adına dosyalar açılacak ve tüm bilgiler bu dosyada muhafaza edilecektir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004367",
+      "sut_section": "4.2.10.Ç",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "(1) Periferik kandan veya dokudan enzim (α-glucosidase) düzeyinin veya mutasyon analiz sonuçlarının hastalıkla uyumlu olmasına göre tanı konulmuş olmalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004370",
+      "sut_section": "4.2.10.Ç-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) İki yaş üstündeki hastalarda ise yaşam kalitesini bozacak derecede kas veya solunum sistemi veya kalp tutulumunun olması durumunda enzim replasman tedavisi başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004373",
+      "sut_section": "4.2.10.Ç-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Hastanın takip ve tedavi edildiği sağlık kurumlarında, hastalar adına dosyalar açılacak ve tüm bilgiler bu dosyada muhafaza edilecektir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004375",
+      "sut_section": "4.2.10.D",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "(1) Filipin Boyası veya moleküler analiz veya fonksiyonel çalışma ile Niemann-Pick Tip C tanısı kesinleşmiş olmalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004377",
+      "sut_section": "4.2.10.D-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Niemann-Pick Tip C tanısı kesinleştirilen ve nörolojik bulgusu saptanan her hastada tedaviye başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004378",
+      "sut_section": "4.2.10.D-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Tedavinin başlangıcından itibaren 6 ncı ayın sonunda nörolojik bulguları başlangıca göre stabil kalan veya düzelme görülen hastalarda tedaviye devam edilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004381",
+      "sut_section": "4.2.10.D-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Hastanın takip ve tedavi edildiği sağlık kurumlarında, hastalar adına dosyalar açılacak ve tüm bilgiler bu dosyada muhafaza edilecektir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004401",
+      "sut_section": "4.2.11",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Glokom ilaçları ile tedaviye göz sağlığı ve hastalıkları uzman hekimi tarafından başlanacaktır. Göz sağlığı ve hastalıkları uzman hekimi tarafından düzenlenen uzman hekim raporuna dayanılarak diğer hekimlerce de reçete edilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004433",
+      "sut_section": "4.2.12.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "4) Nakilden 14 gün sonra HBsAg negatif ve AntiHBs düzeyi>100 IU/l ise aylık 2.000 IU SC HBIg idame tedavisi uygulamasına geçilebilir. Bu sürenin de sonunda AntiHBs düzeyinden bağımsız olarak aylık 2.000 IU SC HBIg idame tedavisi uygulamasına geçilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004438",
+      "sut_section": "4.2.12.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Düşük risk grubu hastalarda her halukarda karaciğer naklinden 1 yıl, yüksek risk grubu hastalardan karaciğer nakli öncesi hepatoselüler kanseri bulunan hastalarda karaciğer naklinden 10 yıl, diğer yüksek risk grubu hastalarda karaciğer naklinden 5 yıl sonra HBIg tedavisi sonlandırılır. Delta virüs veya HIV ile ko-enfekte olan hastalarda ise karaciğer naklinden sonra ömür boyu HBIg tedavisi devam eder.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004482",
+      "sut_section": "4.2.12.B-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Profilaktik antibiyotiklerin başarısız veya kontrendike olduğu Kronik Lenfositik Lösemi (KLL) hastalarındaki hipogamaglobulinemi ve rekürren bakteriyel enfeksiyonlarda veya Multipl Miyelom (MM) hastalarındaki hipogamaglobulinemi ve rekürren bakteriyel enfeksiyonlarda veya allojenik hematopoietik kök hücre transplantasyonu öncesinde veya sonrasında hipogamaglobulinemi endikasyonlarında 1 yıl süre ile hematoloji veya çocuk hematolojisi ve onkolojisi uzman hekimleri tarafında",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004485",
+      "sut_section": "4.2.12.B-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "d) Kawasaki hastalığında 1 yıl süre ile romatoloji, immünoloji, immünoloji ve alerji, kardiyoloji, enfeksiyon hastalıkları ve klinik mikrobiyoloji veya çocuk enfeksiyon hastalıkları uzman hekimleri tarafından,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004488",
+      "sut_section": "4.2.12.B-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "g) Bulber tutulumu olan myastenia graviste 2 gr/kg dozunda (0,4 gr/kg/gün olarak ilk 5 günde) 1 yıl süre ile nöroloji uzman hekimi tarafından,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004493",
+      "sut_section": "4.2.12.B-2",
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "required_emr_fields": [
+        "moh_patient_approval"
+      ],
+      "message_tr": "(1) Aşağıda yer alan (Ek:RG-25/03/2025-32852/8-b md. Yürürlük:04/04/2025)Sağlık Bakanlığınca onaylı endikasyonlar için;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004494",
+      "sut_section": "4.2.12.B-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Antikor üretiminin bozulduğu primer (konjenital) immün yetmezlik sendromlarında 1 yıl süre ile hematoloji, göğüs hastalıkları (Ek:RG-25/03/2025-32852/8-b md.Yürürlük:04/04/2025), immünoloji veya immünoloji ve alerji uzman hekimleri tarafından,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004495",
+      "sut_section": "4.2.12.B-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Profilaktik antibiyotiklerin başarısız veya kontrendike olduğu Kronik Lenfositik Lösemi (KLL) hastalarındaki hipogamaglobulinemi ve rekürren bakteriyel enfeksiyonlarda veya Multipl Miyelom (MM) hastalarındaki hipogamaglobulinemi ve rekürren bakteriyel enfeksiyonlarda veya allojenik hematopoietik kök hücre transplantasyonu öncesinde veya sonrasında hipogamaglobulinemi endikasyonlarında 1 yıl süre ile hematoloji veya çocuk hematolojisi ve onkolojisi uzman hekimleri tarafında",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004496",
+      "sut_section": "4.2.12.B-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) Kronik inflamatuvar demiyelinizan polinöropatisi olan hastalarda IVIG ile stabilizasyondan sonra tedaviye SC immunglobulin ile devam edilecek ise yalnızca erişkinlerde bu tanıda SC kullanım dozu 0,4 g/kg/hafta, idame tedavisi en fazla 1 yıl süre ile nöroloji uzman hekimleri tarafından,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004541",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1- Erişkin hastalarda; karaciğer biyopsisinde Histolojik Aktivite İndeksi (HAI) ≥6 veya fibrozis ≥2 olanlar ile 2-18 yaş grubu hastalarda; “ALT normalin üst sınırının 2 katından daha yüksek ve karaciğer biyopsisinde HAI ≥4” veya “ALT düzeyine bakılmaksızın fibrozis ≥ 2” olan hastalarda veya,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004542",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2- Erişkin hastalarda; en az 3 ay ara ile tekrarlanan testlerde ALT normalin üst sınırının üzerinde ve FIB-4 skoru >1.45 veya APRI > 0.5 üzerinde olanlarda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004544",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) 40 yaş üzerinde ve HBV DNA 20.000 IU/mL veya üzerinde olan hastalarda biyopsi yapılmadan oral antiviraller ile tedaviye başlanabilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004580",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Oral antiviral tedavi almakta olan hastalarda negatif (-) olan HBV DNA’nın pozitifleşmesi veya HBV DNA düzeyinin 10 kat yükselmesi ile başka bir oral antivirale geçilebilir veya almakta oldukları tedaviye ikinci bir oral antiviral eklenebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004582",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "ç) Oral antiviral tedavisi almakta olan hastalarda gebelik oluşması durumunda oral antiviral değişiminde bu koşullar aranmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004585",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "f) Adefovir tedavisinden koşul aranmaksızın tenofovir disoproksil fumarat veya tenofovir alafenamid fumarat veya entekavire geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004590",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Oral antiviral tedavi almakta olan çocuk hastalarda negatif (-) olan HBV DNA’nın pozitifleşmesi veya HBV DNA düzeyinin 10 kat yükselmesi ile yaş grubu göz önüne alınarak başka bir oral antivirale geçilebilir veya almakta oldukları tedaviye ikinci bir oral antiviral eklenebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004592",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "4) Kullanılan antivirale karşı yan etki gelişmesi halinde koşul aranmaksızın çocuğun yaşı göz önüne alınarak başka bir antivirale geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004594",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "6) Adefovir tedavisinden koşul aranmaksızın çocuğun yaşı göz önüne alınarak tenofovir disoproksil fumarat veya tenofovir alafenamid fumarat veya entekavire geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004596",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Her yenilenen raporda tek başına HBsAg pozitifliği veya HBsAg negatifliği ile birlikte Anti-HBs negatifliği raporda belirtilmelidir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004597",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Oral antiviral tedavi, HBsAg negatif hastalarda Anti-HBs pozitifleştikten sonra en fazla 12 ay daha sürdürülür.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004602",
+      "sut_section": "4.2.13.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(7) Antiviral tedavi almakta olan HBsAg pozitifliği devam eden hastalarda; klinik, laboratuvar, görüntüleme ve gerekmesi halinde karaciğer biyopsisi verilerinin değerlendirilmesi sonucunda verilecek karara göre tedaviye devam edilir. Tedaviye ara verilmesi durumunda bu fıkra hükümleri uygulanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004610",
+      "sut_section": "4.2.13.1.1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Karaciğer sirozunda HBV DNA (+) olan hastalarda tedaviye başlanılabilir ve bu durum raporda belirtilir. Tedavi süreleri; HBV DNA (+) olanlar için kronik hepatit B tedavisinde olduğu gibidir. (Ek: RG-02/11/2024-32710/13-c md. Yürürlük:09/11/2024) Kronik Hepatit B’ye bağlı karaciğer sirozu tanısı için, biyopsi kanıtı olmayan hastalarda, trombosit sayısının 150.000/mm³’ün altında veya protrombin zamanının 3 saniye ve/veya üzerinde olması koşulu aranır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004615",
+      "sut_section": "4.2.13.1.2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) İmmünsupresif ilaç tedavisi veya sitotoksik kemoterapi veya monoklonal antikor tedavisi uygulanmakta olan kronik hepatit B hastalarında ise tedavi süreleri ve ilaç seçimi kronik hepatit tedavi prensiplerinde belirlendiği şekildedir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004623",
+      "sut_section": "4.2.13.1.4",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "ishak"
+      ],
+      "message_tr": "(1) Karaciğer biyopsisi ile ilgili kurallar Ishak skorlamasına göre (pediatrik hastalarda Knodell skorlamasına göre) belirlenmiştir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004894",
+      "sut_section": "4.2.13.3.2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Kronik Hepatit C’ye bağlı kompanse (Child-Pugh A) karaciğer sirozu olan hastalarda; histopatolojik tanı olmadığı durumda trombosit sayısının 150.000/mm³’ün altında veya protrombin zamanının 3 saniye ve/veya üzerinde olması koşulu aranır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004895",
+      "sut_section": "4.2.13.3.2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Kronik Hepatit C’ye bağlı dekompanse (Child-Pugh B veya Child-Pugh C) karaciğer sirozu olan hastalarda; asit sıvısının varlığı veya hepatik ensefalopati veya sarılık (total bilirubin >3 mg/dl) veya özefagus varis kanaması olması koşulları aranır. Dekompanse karaciğer sirozu olan erişkin hastalarda HCV genotip tayini yapılır. Bunun dışındaki erişkin hastalar için genotip tayini gerekmez.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004896",
+      "sut_section": "4.2.13.3.2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Çocuk hastalarda “4.2.13.3.2.B- Çocuk hastalarda Kronik Hepatit C tedavisi” maddesinde tanımlı durumlarda genotip tayini yapılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004901",
+      "sut_section": "4.2.13.3.2.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Nonsirotik hastalarda; tedavi süresi (Sofosbuvir+Velpatasvir+Voxilaprevir) ile toplam 8 hafta ya da (Glekaprevir+Pibrentasvir) ile toplam 8 haftadır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004905",
+      "sut_section": "4.2.13.3.2.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Daha önce NS5A inhibitörü olan ilaçlar haricindeki ilaçlar ile tedavi deneyimli, nonsirotik hastalarda tedavi süresi (Sofosbuvir+Velpatasvir+Voxilaprevir) ile toplam 12 hafta ya da (Glekaprevir+Pibrentasvir) ile toplam 8 haftadır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004906",
+      "sut_section": "4.2.13.3.2.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Daha önce NS5A inhibitörü olan ilaçlar haricindeki ilaçlar ile tedavi deneyimli, kompanse sirotik hastalarda tedavi süresi (Sofosbuvir+Velpatasvir+Voxilaprevir) ile toplam 12 hafta ya da (Glekaprevir+Pibrentasvir) ile toplam 12 haftadır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004907",
+      "sut_section": "4.2.13.3.2.A",
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "required_emr_fields": [
+        "moh_patient_approval"
+      ],
+      "message_tr": "(3) Daha önce NS5A inhibitörü veya proteaz inhibitörü olan ilaçlar ile tedavi deneyimi olan, nonsirotik veya kompanse sirotik hastalarda tedavi süresi (Sofosbuvir+Velpatasvir+Voxilaprevir) ile toplam 12 hafta ya da Sağlık Bakanlığınca hasta bazında verilen ilaç kullanım onayı ile mümkün olacak şekilde (Glekaprevir+Pibrentasvir)+Ribavirin veya (Glekaprevir+Pibrentasvir) ile toplam 16 haftadır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004914",
+      "sut_section": "4.2.13.3.2.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(5) 12-18 yaş daha önce tedavi almamış çocuklarda; genotip tayinine gerek duyulmaksızın tedavi süresi (Glekaprevir+Pibrentasvir) ile toplam 8 haftadır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004917",
+      "sut_section": "4.2.13.3.2.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Daha önce Hepatit C tedavisi deneyimli 12 ilâ 18 yaş Kronik Hepatit C çocuk hastalarında tedavi süresi;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C004981",
+      "sut_section": "4.2.14.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b. Daha önce tedavi edilmemiş evre III-IV folliküler lenfomalı hastalarda kemoterapi ile kombinasyon halinde,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005039",
+      "sut_section": "4.2.14.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "6) Dasatinib (Ek: RG- 04/09/2019- 30878/ 23-b md. Yürürlük: 12/09/2019), bosutinib ve nilotinib kombine olarak kullanılamayacaktır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005057",
+      "sut_section": "4.2.14.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "düzeltilmiş kalsiyum"
+      ],
+      "message_tr": "3) Düzeltilmiş kalsiyum düzeyinin 10mg/dl nin üzerinde olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005263",
+      "sut_section": "4.2.14.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Primer miyelofibrosis, post polistemik miyelofibrosis veya esansiyel trombositemi sonrası ikincil miyelofibrosis tanılı hastalarda splenomegaliye bağlı semptomların tedavisinde aşağıdaki koşulların tümünü taşıyan hastalarda ilaca başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005273",
+      "sut_section": "4.2.14.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "hematokrit"
+      ],
+      "message_tr": "a. Hematokriti <%45 tutmak için ayda 1’den fazla flebotomi ihtiyacının devam etmesi veya",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005279",
+      "sut_section": "4.2.14.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "5) Polisitemi Vera (PV) tanılı hastaların 32 haftalık tedavisinin sonunda, dalak büyüklüğünde minimum %35 küçülme ve tam kan sayımının normalize olması (lökosit, hemoglobin/HCT, trombosit sayılarının referans değerler arasında olması) halinde tedaviye devam edilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005484",
+      "sut_section": "4.2.14.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "14) PNH hastalarında 6 aylık ilaç kullanım süresi sonunda; klinik fayda gören, granülosit klonu pozitifliğinin devam ettiği akım sitometrik olarak gösterilmiş ve transfüzyon bağımsız olgularda tedaviye devam edilir. Tetkik sonuçları rapor ekinde yer almalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005488",
+      "sut_section": "4.2.14.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "17) Pediatrik jeneralize miyastenia gravis hastalarında tedavi olmamış timoma, klinik olarak düzelme olmamış ağır enfeksiyon varlığında ekulizumab tedavisi kullanılmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005641",
+      "sut_section": "4.2.14.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "3) Hastanın tedaviden fayda gördüğünün yeni düzenlenecek her raporda belirtilmesi halinde tedaviye devam edilir. Tedaviden fayda sağlamayan hastaların tedavisi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005783",
+      "sut_section": "4.2.15.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) İleri evre periferik arter hastalığı olup (doppler veya anjiyografik olarak hastalığı tespit edilmiş ve klas 3 veya klas 4 semptomları olan) operasyon yapılamayan hastalarda;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005784",
+      "sut_section": "4.2.15.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Doppler veya anjiyografi ile periferik arter hastalığı tespit edilmiş olan ve eşlik eden hastalıklar nedeniyle operasyonu yüksek riskli olan hastalarda;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005813",
+      "sut_section": "4.2.15.Ç",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) 75 yaşın altında 60 kg’ın üstündeki serebrovasküler olay öyküsü olmayan akut koroner sendromlu olup;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005816",
+      "sut_section": "4.2.15.Ç",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Klopidogrel tedavisi altında iken stent trombozu gelişen akut koroner sendromlu (AKS) hastalarda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005832",
+      "sut_section": "4.2.15.D-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) En az 2 ay süre ile varfarin kullanılmasından sonra en az birer hafta ara ile yapılan son 5 ölçümün en az üçünde varfarin ile hedeflenen INR değerinin 2-3 arasında tutulamadığı durumlarda varfarin kesilerek dabigatran veya rivaroksaban veya apiksaban (Ek:RG-09/09/2017- 30175/21-c md.Yürürlük: 23/09/2017) veya edoksaban tedavisine geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005833",
+      "sut_section": "4.2.15.D-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Varfarin tedavisi altında iken serebrovasküler olay geçirenlerde doğrudan dabigatran veya rivaroksaban veya apiksaban (Ek:RG-09/09/2017- 30175/21-c md.Yürürlük: 23/09/2017) veya edoksaban tedavisine geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005856",
+      "sut_section": "4.2.15.D-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Rivaroksaban, dabigatran (Ek:RG-10/05/2018-30417/ 14-b md. Yürürlük:18/05/2018), edoksaban ve apiksaban; Derin Ven Trombozu (DVT) tedavisi ile akut DVT sonrası tekrarlayan DVT ve Pulmoner Embolizmin (PE) önlenmesinde veya Pulmoner Embolizm (PE) tedavisi ile tekrarlayan PE ve DVT’nin önlenmesinde kullanılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005857",
+      "sut_section": "4.2.15.D-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Yukarıdaki durumlarda; öncesinde en az 2 ay süre ile varfarin kullanılmasından sonra en az birer hafta ara ile yapılan son 5 ölçümün en az üçünde varfarin ile hedeflenen INR değerinin 2-3 arasında tutulamaması halinde varfarin kesilerek rivaroksaban veya dabigatran veya apiksaban (EK:RG-10/05/2018-30417/14-b md.Yürürlük:18/05/2018) veya edoksaban tedavisine geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005858",
+      "sut_section": "4.2.15.D-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Tekrarlayan idiopatik pulmoner embolisi olan veya homozigot trombofilisi olan veya daha önce venöz tromboemboli (VTE) geçiren aktif kanser hastaları veya immobil (raporda nedeni belirtilmek koşuluyla) hastalarda varfarin kullanımı koşulu aranmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005867",
+      "sut_section": "4.2.15.E",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) EKG'de en az iki ardışık derivasyonda 1mm ve üzeri persistan ST segment yükselme göstermesi ve troponin/CK-MB pozitif olması (STEMI) veya,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C005868",
+      "sut_section": "4.2.15.E",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Persistan göğüs ağrısı bulunması ve EKG'de en az iki ardışık derivasyonda 1mm den derin ST depresyonu veya R dalgasının dominant olduğu en az iki ardışık derivasyonda 1mm den derin T negatifliği veya persistan olmayan ST segment yükselmesi göstermesi ve miyokard nekrozunu gösteren troponin/CK-MB pozitif olması (NSTEMI),",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006014",
+      "sut_section": "4.2.16",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(9) Üçüncü ve altıncı fıkralarda belirtilen ödemeye ilişkin izlenecek yöntem Kurum tarafından ayrıca duyurulur.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006020",
+      "sut_section": "4.2.17.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) 75 yaş ve üzerindeki hastalar ile raporunda osteoporotik patolojik kalça kırığı belirtilen hastalarda KMY ölçümü şartı aranmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006022",
+      "sut_section": "4.2.17.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Patolojik kırığı olan hastalarda lomber bölgeden posteroanterior yapılan KMY ölçümünde lomber total (L1-4 veya L2-4) veya femur total veya femur boynu KMY ölçümünde “T” değerlerinden herhangi birinin -1 veya daha düşük olması durumunda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006023",
+      "sut_section": "4.2.17.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Patolojik kırığı olmayan 65 yaş ve üzeri hastalarda, lomber bölgeden posteroanterior yapılan KMY ölçümünde lomber total (L1-4 veya L2-4) veya femur total veya femur boynu KMY ölçümünde “T” değerlerinden herhangi birinin -2,5 veya daha düşük olması durumunda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006024",
+      "sut_section": "4.2.17.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) Patolojik kırığı olmayan 65 yaş altı hastalarda; lomber bölgeden posteroanterior yapılan kemik mineral yoğunluk (KMY) ölçümünde lomber total (L1-4 veya L2-4) veya femur total veya femur boynu KMY ölçümünde “T” değerlerinden herhangi birinin -3 veya daha düşük olması durumunda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006036",
+      "sut_section": "4.2.17.A",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "2) Bifosfonatları tolere edemeyen veya yeterli yanıt alınamayan (Ek:RG-16/03/2023-32134/27-a md.Yürürlük: 24/03/2023) veya renal yetmezlik nedeniyle bifosfonatları kullanamayan osteoporozlu hastalardan;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006037",
+      "sut_section": "4.2.17.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Postmenopozal osteoporozu bulunan kadın veya osteoporozu bulunan erkek hastaların tedavisinde veya",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006038",
+      "sut_section": "4.2.17.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Yüksek kırık riski olan yetişkin hastalarda uzun dönem glukokortikoid tedavisiyle ilişkili kemik kaybının tedavisinde",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006057",
+      "sut_section": "4.2.18",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "required_emr_fields": [
+        "prior_therapy"
+      ],
+      "message_tr": "(1) (Değişik: RG- 30/08/2014- 29104/ 16 md. Yürürlük: 06/09/2014 Endokrinoloji ve metabolizma uzman hekimi tarafından düzenlenen en fazla üç ay süreli uzman hekim raporuna dayanılarak tüm hekimler tarafından reçete edilebilir. Yazılan her reçeteye, hastanın bir önceki reçeteye göre kaybettiği kilo, diyet ve egzersize uyduğu, BMI değeri hekim tarafından yazılarak kaşe ve imza onayı yapılacaktır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006058",
+      "sut_section": "4.2.18",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Daha önce dört ardışık hafta boyunca yalnızca diyetle en az 2,5 kg’lık bir kilo kaybı ve obez hastalarda vücut kitle indeksi (BMI) ≥ 40 kg/m2 olmalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006060",
+      "sut_section": "4.2.18",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Tedavinin 12 haftası sonunda hastalarda başlangıçtaki vücut ağırlığının en az %5'ini kaybetmesi halinde tedavinin devamına karar verilirse, yeni bir rapor daha düzenlenerek tedavi üçer aylık sürelerle uzatılabilecektir. 12 hafta sonunda vücut ağırlığının en az %5’inin kaybolmaması halinde tedavi kesilecektir. Bu ilacın kullanımı hastanın hayatı boyunca 2 yılı geçmeyecektir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006076",
+      "sut_section": "4.2.20",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Yüksek risk taşıyan bebeklerde RSV’nin neden olduğu ciddi alt solunum yolu hastalığının önlenmesinde;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006077",
+      "sut_section": "4.2.20",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) RSV sezonunda takvim yaşı 12 aydan küçük olup gebelik yaşı 29 0/7 haftadan küçük veya doğum ağırlığı 1000 g altında olan preterm bebeklerde veya",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006078",
+      "sut_section": "4.2.20",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) RSV sezonunda takvim yaşı 90 gün ve daha küçük gebelik yaşı 29 0/7-31 6/7 hafta arası olan preterm bebeklerde veya",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006079",
+      "sut_section": "4.2.20",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "required_emr_fields": [
+        "prior_therapy"
+      ],
+      "message_tr": "c) RSV sezonu başlangıcından önceki son 6 ay içinde kronik akciğer hastalığı için bronkodilatör, oksijen, diüretik veya kortikosteroid tedavilerinden en az birisini alan 2 yaşından küçük bebeklerde veya",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006080",
+      "sut_section": "4.2.20",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "ç) RSV sezonu başlangıcında 2 yaşından küçük; siyanotik doğuştan kalp hastalığı, konjestif kalp yetersizliği tedavisi gerektiren asiyanotik doğuştan kalp hastalığı, opere edildiği halde rezidiv hemodinamik bozukluk nedeniyle konjestif kalp yetersizliği tedavisi almaya devam eden, pulmoner arteriyel hipertansiyon veya hemodinamik bozukluk nedeniyle tedavi alması gereken kardiyomiyopati hastalığı olan bebeklerde",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006093",
+      "sut_section": "4.2.23",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Hematolojik malignitesi olan veya kemik iliği transplantasyonu yapılan ve nötropeni geliştirmesi beklenen (<500 hücre/ml) hastalardaki derin fungal (mantar) enfeksiyonlarının profilaksisinde kullanılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006097",
+      "sut_section": "4.2.23",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) İnvazif mantar enfeksiyonu gelişme riski yüksek olan ve uzun süreli nötropeni oluşabileceği düşünülen akut miyeloid lösemi (AML) veya miyelodisplastik sendrom (MDS) nedeniyle remisyon-indüksiyon kemoterapisi alan hastalarda.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006098",
+      "sut_section": "4.2.23",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) İnvazif mantar enfeksiyonu gelişme riski yüksek olan ve Graft versus host hastalığına yönelik olarak yüksek doz immünsupresif tedavi alan allojenik hematopoetik kök hücre transplantı (HSCT) alıcısı olan hastalarda.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006105",
+      "sut_section": "4.2.23",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(5) Anidulofungin, nötropenik olmayan (Mutlak nötrofil sayısı ≥ 500/mm3 olacak ve laboratuvar sonucu aranacaktır.) erişkin hastalarda, invazif kandidiyazis vakalarında reçetelendirilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006115",
+      "sut_section": "4.2.23",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Allojenik hematopoietik kök hücre nakli (HSCT) yapılan hastalarda veya akut lenfositer lösemi (ALL) hastalarında nötropenik dönemde ve takip eden bir hafta içinde veya mukoziti olan otolog hematopoietik kök hücre nakli yapılan hastalarda nötropenik dönemde aspergilloz ve candida enfeksiyonlarının profilaksisinde kullanılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006120",
+      "sut_section": "4.2.23",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(8) Vorikonazol 200 mg tablet; nötropeni olması beklenen hematopoietik kök hücre nakli alıcısı hastaların aspergilloz ve candida enfeksiyonlarının profilaksi endikasyonunda da kullanılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006128",
+      "sut_section": "4.2.24.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Aşağıdaki kriterlerin tümünü karşılayan “(Değişik:RG-21/04/2022-31816/5-a md.Yürürlük:29/04/2022) Eozinofilik (Ek:RG-04/09/2019-30878/26-a md.Yürürlük:12/09/2019) Ağır Persistan Astım” tanılı hastalarda;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006136",
+      "sut_section": "4.2.24.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Mepolizumab 6 yaş ve üzeri çocuklar ile adölesanlar ve yetişkinlerde, benralizumab yalnızca yetişkinlerde,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006137",
+      "sut_section": "4.2.24.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Mepolizumab kullanımında kan eozinofil sayımının ≥300 hücre/µl olması (uzun süredir düzenli sistemik steroid kullanan hastalarda ise tedavi altında ≥150 hücre/µl olması), benralizumab kullanımında ise kan eozinofil sayımının ≥300 hücre/µl olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006138",
+      "sut_section": "4.2.24.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "3) En az 6 aydır düzenli sistemik steroid altında kontrollü veya kontrolsüz astımı olması ve/veya yüksek doz inhaler kortikosteroid (>800 mcg/gün budesonid veya eşdeğeri (Ek:RG-21/04/2022-31816/5-c md.Yürürlük:29/04/2022), 6-11 yaş için >400 mcg/gün budesonid veya eşdeğeri) ve inhaler uzun etkili beta iki agonist (Değişik:RG-30/12/2020-31350/6 md. Yürürlük:08/01/2021) kombinasyonunu en az 1 (bir) yıldır kullanmakta olmasına rağmen kontrolsüz astımı olması (en az 3 gün sistemi",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006161",
+      "sut_section": "4.2.24.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Beklometazon+formoterol+glikopronyum etken maddelerini sabit dozda içeren veya flutikazon furoat+umeklidinyum+vilanterol etken maddelerini sabit doz kombinasyonu şeklinde içeren ürünlerin;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006165",
+      "sut_section": "4.2.24.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Roflumilast; uzun etkili bronkodilatör ve/veya inhale kortikosteroid tedavisine rağmen en az 2 yıl boyunca her yıl için; yılda en az 3 ay öksürük, balgam şikayeti olan ve yılda en az iki atak geçiren ağır kronik obstruktif akciğer hastalarında;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006166",
+      "sut_section": "4.2.24.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Solunum fonksiyon testi (SFT) kriteri olarak, FEV1/FVC değeri %70’in altında olmak koşulu ile FEV1≤%50 olanlarda mevcut tedaviye ek olarak kullanılmaya başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006168",
+      "sut_section": "4.2.24.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) Sağlık raporunda hastanın kullandığı uzun etkili bronkodilatör ve/veya inhale kortikosteroid tedavi şeması ile diğer durumlar belirtilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006207",
+      "sut_section": "4.2.26",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Levosimendan; İnvaziv hemodinamik monitarizasyon yapılabildiği yoğun bakım ünitelerinde yatan hastalar için veya akut kalp yetmezliği, dekompanse kalp yetmezliğinin akut dönemindeki yatan hastalar için;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006208",
+      "sut_section": "4.2.26",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "(2) Milrinon; klasik bakım tedavisine yanıt vermeyen şiddetli konjestif kalp yetmezliğinin kısa süreli tedavisinde ve kalp cerrahisi sonrası düşük çıkış (out put) durumlarını da içeren akut kalp yetmezliği olan yatan hastalar için;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006209",
+      "sut_section": "4.2.26",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Kardiyoloji, kalp damar cerrahisi, anestezi ve reanimasyon, iç hastalıkları (Ek: RG- 05/08/2015- 29436/ 18 md. Yürürlük: 13/08/2015) ,yoğun bakım ile acil uzman hekimlerinden biri tarafından düzenlenen ve bu durumlarını belirtir uzman hekim raporuna dayanılarak bu hekimlerce tabela/reçeteye yazılabilirler.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006226",
+      "sut_section": "4.2.27.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Faktör düzeyi (Değişik: RG-07/10/2016- 29850/ 32-a md. Yürürlük:15/10/2016) % l veya altında ve/veya ayda üçten fazla kanaması olan proflaksi hastalarında haftalık faktör kullanım miktarı 4500 üniteyi geçemez. Haftalık faktör kullanımının 4500 üniteyi geçmesi gerektiği durumlarda, bu duruma sebep olan gerekçelerin belirtileceği (Değişik:RG-25/03/2025-32852/14-a md. Yürürlük:04/04/2025) 6 aya kadar süreli yeni rapor düzenlenir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006252",
+      "sut_section": "4.2.27.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) İmmun tolerans tedaviye haftada 3 kez 50 IU/kg dozunda en az 6 ay süreyle uygulanacak şekilde başlanır. İlaçlar aylık dozlar halinde reçete edilir. Bu süre sonunda FVIII:C aktivitesi ve inhibitör titresine bakılır. %20 ve üzerinde inhibitör titresinde azalma olması halinde bu durumun raporda belirtilmesi koşuluyla (Değişik:RG-25/03/2025-32852/14-ç md. Yürürlük:04/04/2025) 6 aya kadar süreli yeni rapor düzenlenerek tedaviye devam edilebilecektir. FVIII:C aktivitesinin ≥ % 6",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006260",
+      "sut_section": "4.2.27.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Konjenital faktör VIII eksikliği olan inhibitörlü ya da inhibitörsüz hemofili A hastalarının rutin profilaksi tedavisinde aşağıdaki koşullarda kullanılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006276",
+      "sut_section": "4.2.27.Ç",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) (Ek: RG-16/06/2020-31157/16 md. Yürürlük: 24/06/2020) Kan albümin düzeyi ölçümleri Konjenital Nefrotik Sendrom tanılı bebeklerde 15 günde bir, Nefrotik Sendrom tanılı çocuk hastalarda haftada bir yapılır. Plazmaferezde veya karaciğer nakli yapılmış hastalarda kan albümin düzeyi şartı aranmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006288",
+      "sut_section": "4.2.27.D",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Trombosit sayısının 250.000 üzerine çıkması veya günlük 75 mg’ lık tedavi dozuna rağmen 4 haftalık tedavi sonrası trombosit sayısının 30.000’ in altında kalması durumunda tedavi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006289",
+      "sut_section": "4.2.27.D",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Trombosit sayısı 250.000’ i aştığı için tedavisi kesilen vakalarda trombosit sayısı 100.000 ve altına düştüğünde 25 mg’ lık günlük doz ile tedaviye yeniden başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006298",
+      "sut_section": "4.2.27.D",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Başlangıç dozu, gerçek vücut ağırlığı baz alınarak 1 mcg/kg’dir. Uygulanacak romiplostim hacmi vücut ağırlığına, gereken doza ve ürünün konsantrasyonuna göre hesaplanır. 2 haftalık tedaviye rağmen trombosit sayısının 50.000’in altında olması durumunda doz haftalık 1 mcg/kg’lık artışlarla haftalık maksimum 10 mcg/kg’a artırılabilir. Trombosit sayısı 200.000-400.000 arasında olduğunda doz haftalık 1 mcg/kg azaltılır. Trombosit sayısı 400.000 ve üzerine yükseldiğinde tedavi ",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006299",
+      "sut_section": "4.2.27.D",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) 10 mcg/kg’lik en yüksek haftalık dozda uygulanan 4 haftalık romiplostim tedavisinin ardından kanama riski devam eden ve trombosit değerleri yükselmeyen hastalarda tedavi kesilmelidir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006300",
+      "sut_section": "4.2.27.D",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Trombosit sayısı 400.000’ i aştığı için tedavisi kesilen vakalarda trombosit sayısı 200.000 ve altına düştüğünde 1 mcg/kg haftalık doz ile tedaviye yeniden başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006307",
+      "sut_section": "4.2.28.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Statinler (Ek: RG-10/05/2018-30417/ 17-b md. Yürürlük:18/05/2018) ve kolestiramin, daha önce kullanmayan hastalarda, uzman hekim raporuna dayanılarak kullanılmaya başlanır;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006311",
+      "sut_section": "4.2.28.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "ç) (Değişik: RG- 04/05/2013- 28637/ 15-a md. Yürürlük: 11/05/2013) LDL düzeyinin 70 mg/dL’nin üstünde olduğu durumlarda; diabetes mellitus, akut koroner sendrom, geçirilmiş Mİ, geçirilmiş inme, koroner arter hastalığı, periferik arter hastalığı, abdominal aort anevrizması veya karotid arter hastalığı olanlarda.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006319",
+      "sut_section": "4.2.28.A-1",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(5) Kolestiramin; birinci, ikinci ve üçüncü fıkralarda yer alan kullanım koşulları esas alınmak üzere, kardiyoloji, kalp ve damar cerrahisi, endokrinoloji, iç hastalıkları, nöroloji uzman hekimlerince düzenlenecek uzman hekim raporuna dayanılarak tüm hekimlerce reçete edilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006324",
+      "sut_section": "4.2.28.A-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Kardiyovasküler hastalık veya kalp transplantasyonu geçirmiş olan veya homozigot ailevi hiperkolesterolemili ve LDL düzeyi 400 mg/dl ve üstünde olanlarda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006325",
+      "sut_section": "4.2.28.A-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) LDL düzeyi 190 mg/dl ve üstünde olan ve ek olarak birden fazla yakın aile bireyinde erken başlangıçlı kardiyovasküler hastalık bulunan veya en az bir risk faktörü bulunanlarda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006328",
+      "sut_section": "4.2.28.A-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) LDL düzeyinin 160 mg/dl’nin üstünde olduğu ve ek olarak aile öyküsü veya iki ek risk faktörü bulunanlarda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006329",
+      "sut_section": "4.2.28.A-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "3) LDL düzeyinin 130 mg/dl’nin üstünde olduğu ve ek olarak klinik kardiyovasküler sistem hastalığı veya üç ek risk faktörü bulunanlarda.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006330",
+      "sut_section": "4.2.28.A-2",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Ek risk faktörleri; hipertansiyon, VKI persentile ≥%95, HDL-C <40 mg/dl, diyabet, kronik böbrek yetmezliği, son dönem böbrek hastalığı, geçirilmiş böbrek nakli, Kawasaki hastalığı, kronik inflamatuvar hastalık, HIV enfeksiyonu veya nefrotik sendromdur.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006335",
+      "sut_section": "4.2.28.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Trigliserid düzeyinin 200 mg/dL üstünde olan; diabetes mellitus, akut koroner sendrom, geçirilmiş MI, geçirilmiş inme, koroner arter hastalığı, periferik arter hastalığı, abdominal aort anevrizması veya karotid arter hastalığı olanlarda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006336",
+      "sut_section": "4.2.28.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "kardiyoloji, kalp ve damar cerrahisi, endokrinoloji, iç hastalıkları, (Ek: RG- 04/05/2013- 28637/ 15-b md. Yürürlük: 11/05/2013) nöroloji uzman hekimlerince düzenlenecek uzman hekim raporuna dayanılarak tüm hekimlerce reçete edilir. (Ek: RG-10/05/2018-30417/ 18-b md. Yürürlük:18/05/2018) Tedaviye 6 ay veya daha uzun süre ara veren hastalarda bu madde kapsamındaki başlangıç kriterleri yeniden aranır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006346",
+      "sut_section": "4.2.28.Ç",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) En az 6 ay süreyle statin aldığı halde, LDL düzeyinin 100 mg/dL’nin üstünde olduğu; diabetes mellitus, akut koroner sendrom, geçirilmiş MI, geçirilmiş inme, koroner arter hastalığı, periferik arter hastalığı, abdominal aort anevrizması veya karotid arter hastalığı olanlarda veya,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006347",
+      "sut_section": "4.2.28.Ç",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Trigliserit düzeyinin 500 mg/dL’nin (diabetes mellitus hastalığında 200 mg/dL) üstünde olduğu durumlarda tek başına veya fibrik asit türevi ile kombine olarak,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006350",
+      "sut_section": "4.2.28.D",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "required_emr_fields": [
+        "prior_therapy"
+      ],
+      "message_tr": "(1) Raporlu hastalarda raporun yenilenmesi durumunda, yapılan tetkik sonucu dikkate alınmadan, daha önce alınmış ilacın teminine esas olan bir önceki raporun düzenlenme tarihi veya tedaviye başlama tarihi ve başlama değerlerinin raporda belirtilmesi yeterlidir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006351",
+      "sut_section": "4.2.28.D",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "required_emr_fields": [
+        "prior_therapy"
+      ],
+      "message_tr": "(2) Ancak yeni yapılan tetkikin sonucu başlama değerlerine uygunsa önceki rapora ait bilgilere gerek olmaksızın yeni rapor düzenlenir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006399",
+      "sut_section": "4.2.30.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) DSÖ Grup I pulmoner arteriyel hipertansiyon tanısı sağ kalp kateterizasyonu ile doğrulanan ve sağ kalp keterizasyonu vazoreaktivite testi negatif olan ve pulmoner arter kama basıncı < 15 mmHg olan hastalarda; a) Fonksiyonel kapasiteleri NYHA sınıf II veya III olan hastalarda mono veya ikili kombinasyon (yetişkin için sadece ambrisentan veya masitentan ile tadalafil veya sildenafil kombinasyonu, 1-17 yaş için sadece bosentan ile sildenafil kombinasyonu (Ek:RG-23/05/2026-33",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006400",
+      "sut_section": "4.2.30.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Fonksiyonel kapasiteleri NYHA sınıf IV olan hastalarda mono, ikili veya üçlü kombinasyon tedavisine başlanması halinde,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006401",
+      "sut_section": "4.2.30.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) Epoprostenol etkin maddeli ilacın yalnızca; fonksiyonel kapasitelerinin NYHA sınıf III veya IV olan hastalarda kullanılması halinde,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006402",
+      "sut_section": "4.2.30.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "ç) Treprostinil sodyum etkin maddeli ilacın yalnızca; fonksiyonel kapasitelerinin NYHA sınıf III olan idiyopatik veya kalıtsal hastalarda kullanılması halinde,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006404",
+      "sut_section": "4.2.30.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "d) Masitentan+tadalafil etkin maddelerini sabit dozda içeren ilaçlar; son 3 ayda masitentan 10 mg ve tadalafil 40 mg (20 mg x 2) dozlarını içeren ilaçların birlikte kullanımı ile stabilize olan hastalarda tedaviye başlanması halinde,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006407",
+      "sut_section": "4.2.30.A",
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "required_emr_fields": [
+        "moh_patient_approval"
+      ],
+      "message_tr": "a) Sildenafil etkin maddeli ilaçlardan Sağlık Bakanlığınca onaylı endikasyonunda 1-17 yaş pulmoner arteryel hipertansiyon endikasyonu bulunan ilaçlar için 7 yaş altı hastalarda klinik efor kapasitesi koşulu aranmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006425",
+      "sut_section": "4.2.30",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Ventilasyon perfüzyon sintigrafisi, pulmoner anjiyografi, çok kesitli spiral BT anjiyografi veya manyetik rezonans anjiyografi yöntemlerinden en az ikisi ile tromboemboli tanısı konulmuş ve",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006427",
+      "sut_section": "4.2.30",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) En az 3 aylık antikoagülan tedavisi sonrasında ortalama PAB değerinde bir düşüş olmayanlarda kullanılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006429",
+      "sut_section": "4.2.30",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Her üç aylık tedavi sonunda egzersiz kapasitesinde (6 dakika yürüme testi) düzelme olması (Ek:RG-18/06/2016-29746/19 md.Yürürlük:25/06/2016) /stabil kalması veya DSÖ fonksiyonel sınıfında iyileşme olması (Ek:RG- 18/06/2016-29746/19 md.Yürürlük:25/06/2016) /stabil kalması halinde tedaviye devam edilir. Bu durumların belirtileceği devam raporlarında ayrıca başlangıç kriterleri aranmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006431",
+      "sut_section": "4.2.31",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Kırım Kongo kanamalı ateşinde ribavirin, enfeksiyon hastalıkları, çocuk sağlığı hastalıkları veya iç hastalıkları uzman hekimince veya bu hekimlerden biri tarafından düzenlenen uzman hekim raporuna dayanılarak diğer hekimlerce de reçete edilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006531",
+      "sut_section": "4.2.33",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "(2) Raporlarda; hasta anamnezi, görme keskinliği, lezyona ait renkli resim, Fundus Fluorescein Anjiografi (FFA) (kontrendikasyonu yoksa) ve Optik Koherens Tomografi (OKT) bulguları ile tedaviye yanıta ilişkin kriter esasları yer alacaktır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006539",
+      "sut_section": "4.2.33",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Başlangıç tedavisine göre görme keskinliğinde azalma olmaması veya en az bir sıra (5 harf) kazanç olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006543",
+      "sut_section": "4.2.33",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Başlangıç tedavisine göre görme keskinliğinde azalma olması veya en az bir sıra (5 harf) kayıp olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006546",
+      "sut_section": "4.2.33",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "required_emr_fields": [
+        "prior_therapy"
+      ],
+      "message_tr": "(4) Tedavinin etkinliğine yönelik değerlendirme kriterlerinin tamamı; yükleme dozu uygulamalarında ilk muayene değerlendirme kriterleriyle, idame tedavilerde bir önceki muayenede tespit edilen değerlendirme kriterleriyle mukayese edilerek raporda belirtilecektir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006547",
+      "sut_section": "4.2.33",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "(5) Tedavinin başladığı veya idame tedaviye geçildiği tarihte yürürlükte bulunan Tebliğde belirtilmiş OKT bulgularına göre tedavi görmekte olan hastaların hâlihazırdaki OKT’ de merkezi fovea kalınlığının 250 mikron ve üzerinde olması durumunda tedaviyi yürüten hekim tarafından “hastanın tedaviye yanıt verdiğinin” raporda belirtilmesi kaydıyla mevcut anti-VEGF ilaç ile tedaviye devam edilmesi mümkündür.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006632",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Birbirini takip eden MRG'lerde lezyon yükünde (yeni T2 lezyon, aktif lezyon veya mevcut lezyonda büyüme) artış,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006633",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "edss"
+      ],
+      "message_tr": "3) Doğrulanmış (6 ay içinde geri dönüşümsüz) EDSS ölçeğinde en az 0,5 puan artışı.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006638",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Birbirini takip eden MRG'lerde lezyon yükünde (yeni T2 lezyon, aktif lezyon veya mevcut lezyonda büyüme) artış,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006639",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "edss"
+      ],
+      "message_tr": "3) Doğrulanmış (6 ay içinde geri dönüşümsüz) EDSS ölçeğinde en az 0,5 puan artışı.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006644",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Birbirini takip eden MRG'lerde lezyon yükünde (yeni T2 lezyon, aktif lezyon veya mevcut lezyonda büyüme) artış,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006645",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "edss"
+      ],
+      "message_tr": "3) Doğrulanmış (6 ay içinde geri dönüşümsüz) EDSS ölçeğinde en az 0,5 puan artışı.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006661",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "edss"
+      ],
+      "message_tr": "3) Doğrulanmış (6 ay içinde geri dönüşümsüz) EDSS ölçeğinde en az 0,5 puan artışı.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006664",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Birbirini takip eden MRG’lerde lezyon yükünde (yeni T2 lezyon, aktif lezyon veya mevcut lezyonda büyüme) artış,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006665",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "edss"
+      ],
+      "message_tr": "3) Doğrulanmış (6 ay içinde geri dönüşümsüz) EDSS ölçeğinde en az 0,5 puan artışı.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006667",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "required_emr_fields": [
+        "moh_patient_approval"
+      ],
+      "message_tr": "ç) Kladribin tedavisi başlanmasından itibaren 4 (dört) yıllık süre zarfında beta interferon, glatiramer asetat, teriflunomid, dimetilfumarat, fingolimod, alemtuzumab, okrelizumab veya natalizumab etken maddelerini içeren ilaçlardan herhangi birinin kullanımı Sağlık Bakanlığından hasta bazında alınacak endikasyon dışı ilaç kullanım onayı ile mümkündür.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006669",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "edss"
+      ],
+      "message_tr": "e) Tedavi altında iken EDSS 7 ve üzerinde olan MS hastalarında kladribin tedavisi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006674",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Birbirini takip eden MRG'lerde lezyon yükünde (yeni T2 lezyon, aktif lezyon veya mevcut lezyonda büyüme) artış,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006675",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "edss"
+      ],
+      "message_tr": "3) Doğrulanmış (6 ay içinde geri dönüşümsüz) EDSS ölçeğinde en az 0,5 puan artışı.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006677",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "required_emr_fields": [
+        "moh_patient_approval"
+      ],
+      "message_tr": "c) Alemtuzumab tedavisi başlanmasından itibaren 5 (beş) yıllık süre zarfında beta interferon, glatiramer asetat, teriflunomid, dimetil fumarat, fingolimod, okrelizumab, kladribin veya natalizumab etken maddelerini içeren ilaçlardan herhangi birinin kullanımı Sağlık Bakanlığından hasta bazında alınacak endikasyon dışı ilaç kullanım onayı ile mümkündür.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006680",
+      "sut_section": "4.2.34",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "edss"
+      ],
+      "message_tr": "b) Güncel Multipl Skleroz (MS) tanı kriterlerini karşılayan EDSS skoru 7 ve üzerinde olan hastalarda tedavi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006724",
+      "sut_section": "4.2.38",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Repaglinid (Ek: RG- 21/04/2015- 29333/ 13 md. Yürürlük: 30/04/2015) (kombinasyonları dahil) , nateglinid ve diğer oral antidiyabetiklerin kombine preperatları; endokrinoloji, iç hastalıkları, çocuk sağlığı ve hastalıkları, kardiyoloji ve aile hekimliği uzman hekimlerince veya bu hekimlerce düzenlenen uzman hekim raporuna dayanılarak tüm hekimlerce reçete edilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006738",
+      "sut_section": "4.2.38",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(5) Eksenatid; vücut kitle indeksi tedavi başlangıcında 35 kg/m2’nin üzerinde olan ve tedavi öncesi anamnezde akut pankreatit geçirilme öyküsü bulunmayan tip 2 diyabet hastalarında;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006753",
+      "sut_section": "4.2.39",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Bu kremler, UVA ve UVB ışınlarının her ikisini de etkin şekilde bloke eden, SPF en az 30 olan, fiziksel (çinko oksit veya titanyum dioksit içeren) ve/veya kombine filtre içeren özelliklerde olmalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006755",
+      "sut_section": "4.2.40",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Pramipeksol hidroklorür ve ropinirol etken maddelerini içeren ilaçlar; nöroloji (Ek:RG-07/10/2016-29850/40 md. Yürürlük:15/10/2016), geriatri veya psikiyatri uzman hekimi tarafından veya bu uzman hekimin düzenlediği uzman hekim raporuna dayanılarak tüm hekimlerce reçete edilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006765",
+      "sut_section": "4.2.41",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "ferritin"
+      ],
+      "message_tr": "g) Demir eksikliği anemisi bulunan (saturasyon <%20 ve/veya ferritin <100 mcg/l) evre III, IV, V kronik böbrek hastaları",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006771",
+      "sut_section": "4.2.41",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "k) Prediyaliz [hemodiyaliz ve periton diyaliz öncesi son dönem (evre V) KBY hastaları] hastalarının anemisi.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006781",
+      "sut_section": "4.2.42.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(5) İlaçlar, düzenlenen rapora istinaden tedavinin yapıldığı sağlık hizmeti sunucusu kadın hastalıkları uzman hekimlerince reçete edilecektir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006784",
+      "sut_section": "4.2.42.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Kadın infertilitesinde anovulasyonla birlikte seyreden aşağıdaki durumlar, OI ve/veya IUI işleminde istisnai haller olarak kabul edilir:",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006790",
+      "sut_section": "4.2.42.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) IVF işleminde; SUT’un 2.4.4.İ.1 maddesine uygun olan hastalarda ilaç kullanım esasları aşağıda belirtilmiştir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006791",
+      "sut_section": "4.2.42.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) SUT’un 2.4.4.İ.1.2 maddesinde belirtilen IVF tedavisi kurallarına göre düzenlenmiş raporlarda ayrıca hastanın kullanacağı ilaç ile ilgili aşağıda belirtilen durumlar hakkındaki bilgiler de yer alacaktır:",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006846",
+      "sut_section": "4.2.46.A",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "tedaviye yanıt"
+      ],
+      "message_tr": "a) Tedaviye yanıtsızlık veya intolerans gelişmişse bu durum sağlık kurulu raporunda belirtilmelidir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006849",
+      "sut_section": "4.2.46.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(5) Üst solunum yolu açıklığını etkileyebilecek baş-boyun tümörü olan, trakeostomi ile takip edilen, ilacın başlandığı tarihte yoğun bakımda izlenilen hastalarda Forced Vital Kapasitesi (FVC) ve karbonmonoksit difüzyon kapasitesi (DLCO) değerleri aranmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006854",
+      "sut_section": "4.2.46.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Forced Vital Kapasitesi (FVC)’nde %5 ve üzerinde ve/veya Karbonmonoksit difüzyon kapasitesi (DLCO)’nde %10 ve üzerinde düşüş olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006892",
+      "sut_section": "4.2.47",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) (Değişik:RG-16/03/2023-32134/34 md.Yürürlük:24/03/2023) Konjenital jeneralize lipodistrofi tanısında;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006894",
+      "sut_section": "4.2.47",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "hba1c"
+      ],
+      "message_tr": "a) En az 6 ay düzenli diyet eşliğinde metformin veya glitazon içeren tedavi ile kombine günlük en az 1,5 ünite/kg insülin kullanımına rağmen HbA1c ≥ %8 olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006895",
+      "sut_section": "4.2.47",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) En az 6 ay düzenli fibrat grubu ilaçlar ile trigliserid düşürücü tedaviye rağmen Trigliserid > 300 mg/dl olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006901",
+      "sut_section": "4.2.47",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "hba1c"
+      ],
+      "message_tr": "a) Başlangıç HbA1c düzeyinde en az 1,5 (%) düşüş olması ve bu düzeyin 6 aydan sonra da korunmaya devam edilmesi,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C006902",
+      "sut_section": "4.2.47",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Başlangıç trigliserid düzeyinde en az %30 oranında düşüş olması ve bu düzeyin 6 aydan sonra da korunmaya devam edilmesi,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007008",
+      "sut_section": "4.2.49",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "(1) Ulusal Yenidoğan SMA Tarama Programı kapsamında, tarama sonucu genetik analizi (5qSMA; homozigot gen delesyonu veya homozigot gen mutasyonu veya bileşik heterozigot gen mutasyonu) olan ve bu hastalardan;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007009",
+      "sut_section": "4.2.49",
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "required_emr_fields": [
+        "moh_patient_approval"
+      ],
+      "message_tr": "a) SMN2 kopya sayısı 1 olan, intrauterin etkilenme bulguları gösteren ve/veya yenidoğan döneminde ağır semptomatik olan ve/veya otonomik disfonksiyon bulguları veya solunum yetmezliği nedeniyle invaziv solunum desteğine ihtiyacı olan bebekler için Sağlık Bakanlığınca hasta bazında verilen onaya dayanılarak ilaca başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007012",
+      "sut_section": "4.2.49",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Nusinersen tedavisi için hastalarda lomber ponksiyon prosedürleri, BOS sirkülasyonu veya güvenlilik değerlendirmelerini engelleyebilecek bir beyin veya spinal kord hastalığı veya öyküsü olmamalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007014",
+      "sut_section": "4.2.49",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Nusinersen tedavisi için hastalarda bakteriyel menenjit veya viral ensefalit hastalığı veya öyküsü olmamalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007015",
+      "sut_section": "4.2.49",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(5) Nusinersen ve risdiplam tedavileri için hastalarda hipoksik iskemik ensefalopati tanısı almamış olmalı ve hipoksik doğuma bağlı nörolojik sekelleri bulunmamalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007019",
+      "sut_section": "4.2.49.A",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "a) Genetik (5qSMA; homozigot gen delesyonu veya homozigot gen mutasyonu veya bileşik heterozigot gen mutasyonu olan ve SMN2 kopya sayısının en az 1 olduğunun gösterilmesi kaydıyla) ve klinik olarak SMA Tip-1 tanısı konmuş, klinik belirti ve bulguları SMA Tip-1 ile uyumlu olarak ≤ 6 ay (180 gün) iken başlayan hastalarda tedaviye başlanabilir. İlk 4 doz ilaç kullanımı başlangıç ve yükleme tedavisi, beşinci ve takip eden dozlar idame tedavileridir. Yükleme tedavisi tamamlandıkta",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007020",
+      "sut_section": "4.2.49.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Lomber ponksiyon prosedürleri, BOS sirkülasyonu veya güvenlilik değerlendirmelerini engelleyebilecek bir beyin veya spinal kord hastalığı veya öyküsü olmamalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007023",
+      "sut_section": "4.2.49.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "d) Hipoksik iskemik ensefalopati tanısı almamış olmalı ve hipoksik doğuma bağlı nörolojik sekelleri bulunmamalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007027",
+      "sut_section": "4.2.49.A",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "a) Genetik (5qSMA; homozigot gen delesyonu veya homozigot gen mutasyonu veya bileşik heterozigot gen mutasyonu olan ve SMN2 kopya sayısının en az 1 olduğunun gösterilmesi kaydıyla) ve klinik olarak SMA Tip-1 tanısı konmuş, klinik belirti ve bulguları SMA Tip-1 ile uyumlu olarak ≤ 6 ay (180 gün) iken başlayan hastalarda tedaviye başlanabilir. Tedavi sürecinde 3 haftadan uzun ve günde kesintisiz 16 saatten fazla süre ile kalıcı invaziv mekanik solunum desteği ihtiyacı olan ve p",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007028",
+      "sut_section": "4.2.49.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Hipoksik iskemik ensefalopati tanısı almamış olmalı ve hipoksik doğuma bağlı nörolojik sekelleri bulunmamalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007033",
+      "sut_section": "4.2.49.B",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "a) Genetik (5qSMA; homozigot gen delesyonu veya homozigot gen mutasyonu veya bileşik heterozigot gen mutasyonu olan ve SMN2 kopya sayısının en az 2 olduğunun gösterilmesi kaydıyla) ve klinik olarak SMA Tip-2 veya SMA Tip-3 tanısı konmuş, klinik belirti ve bulguları SMA Tip-2 veya SMA Tip-3 ile uyumlu olarak ≥ 6 ay (180 gün) iken başlamış olan, invaziv/non invaziv mekanik solunum desteği ihtiyacı olmayan ve normal yutma refleksine sahip oral beslenebilen hastalarda tedaviye ba",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007034",
+      "sut_section": "4.2.49.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Lomber ponksiyon prosedürleri, BOS sirkülasyonu veya güvenlilik değerlendirmelerini engelleyebilecek bir beyin veya spinal kord hastalığı veya öyküsü olmamalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007037",
+      "sut_section": "4.2.49.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "d) Hipoksik iskemik ensefalopati tanısı almamış olmalı ve hipoksik doğuma bağlı nörolojik sekelleri bulunmamalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007039",
+      "sut_section": "4.2.49.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) İlk 4 doz ilaç kullanımı başlangıç ve yükleme tedavisidir. Beşinci ve takip eden dozlar idame tedavileridir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007043",
+      "sut_section": "4.2.49.B",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "a) Genetik (5qSMA; homozigot gen delesyonu veya homozigot gen mutasyonu veya bileşik heterozigot gen mutasyonu olan ve SMN2 kopya sayısının en az 2 olduğunun gösterilmesi kaydıyla) ve klinik olarak SMA Tip-2 veya SMA Tip-3 tanısı konmuş, klinik belirti ve bulguları SMA Tip-2 veya SMA Tip-3 ile uyumlu olarak ≥ 6 ay (180 gün) iken başlamış olan, invaziv/non invaziv mekanik solunum desteği ihtiyacı olmayan ve normal yutma refleksine sahip oral beslenebilen hastalarda tedaviye ba",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007044",
+      "sut_section": "4.2.49.B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Hipoksik iskemik ensefalopati tanısı almamış olmalı ve hipoksik doğuma bağlı nörolojik sekelleri bulunmamalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007050",
+      "sut_section": "4.2.49.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Gen temelli tedavilerin tümü [gen replasman tedavisi ve SMN2 modifiye eden tedaviler (nusinersen, risdiplam)] birlikte kullanılmamalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007052",
+      "sut_section": "4.2.49.C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(6) İlaç değişimi yapılması halinde, nusinersen tedavisi kullanmakta olan hastaların risdiplam ile tedaviye devam etmesi durumunda son nusinersen uygulama dozu üzerinden en az 4 ay süre geçmesi halinde risdiplam ile tedaviye başlanır. Risdiplam tedavisi kullanmakta olan hastaların nusinersen ile tedaviye devam etmesi durumunda son risdiplam uygulama dozu üzerinden en az 15 gün süre geçmesi halinde nusinersen ile tedaviye başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007099",
+      "sut_section": "4.2.57",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "Yukarıdaki kriterlerin hiçbirinin sağlanamaması durumu tedavide yanıtsızlık olarak değerlendirilir ve tedaviye son verilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007101",
+      "sut_section": "4.2.57",
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "response_assessment"
+      ],
+      "message_tr": "(4) Dupilumab tedavisine yanıtsızlık durumunda dupilumab öncesinde kullanılmamış olması şartıyla abrositinib (Ek:RG- 26/04/2025- 32882/ 8 md. Yürürlük: 04/04/2025), barisitinib veya upadasitinib tedavilerinden herhangi birine geçilebilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007109",
+      "sut_section": "4.2.60",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Üre döngüsü enzim bozukluklarının tedavisinde aşağıda belirtilen enzimlerden en az biri eksik olan hastalarda kullanılması halinde,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007116",
+      "sut_section": "4.2.60",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Aşağıdaki kalıtsal metabolik hastalıklardan en az birine sahip hiperamonemik kriz durumunda olan hastaların tedavisinde kullanılması halinde,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007123",
+      "sut_section": "4.2.60",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Lizinurik protein intoleransı (Ek:RG-28/04/2021-31468/22 md. Yürürlük:28/04/2021) ve/veya Non-ketotik hiperglisinemi (glisin metabolizması bozuklukları/glisin ensefalopatisi) endikasyonunda,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007144",
+      "sut_section": "4.2.65",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Maksimum tedavi süresi yılda 8 (sekiz) hafta olup bu süre boyunca en fazla kullanılabilecek ilaç kutu adedi 8 (sekiz)’dir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007153",
+      "sut_section": "4.2.67",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Son bir ay içinde 2 defa yapılan ölçüm sonunda CKD-EPI formülü ile hesaplanmış aşağıdaki glomerüler filtrasyon hızı değeri aranır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007159",
+      "sut_section": "4.2.67",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) En az 4 yıllık takip süresinde yapılmış ve yılda en az 1 kez yapılan toplam 5 ölçüme göre yıllık ortalama GFR düşüşü ≥3 ml/dk/1.73m2",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007168",
+      "sut_section": "4.2.69",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "(1) Sükraz-izomaltaz eksikliği klinik tablosu bulunan ve sükraz-izomaltaz (SI) geninde homozigot mutasyonu ya da bileşik heterozigot mutasyonu genetik analiz ile kanıtlanmış jeneralize sükraz-izomaltaz eksikliği olan;",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007177",
+      "sut_section": "4.2.70.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(1) Vahşi tip veya herediter tip transtiretin aracılı amiloidoz kardiyomiyopati (ATTR-KM) tanısı aşağıdaki kriterlere uygun olarak alınmalıdır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007180",
+      "sut_section": "4.2.70.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Serbest plazma hafif zincir Kappa/serbest plazma hafif zincir Lambda oranının < 0,25 veya >1,62 olması (GFR < 45 ml/dk/1,72m2 halinde Kappa/Lambda oranının ≥ 2,0 olması) ve",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007185",
+      "sut_section": "4.2.70.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "ç) Monoklonal gamapati dışlanmış hastalarda, 99mTc-PYP, DPD veya HMDP kardiyak sintigrafisiyle Türk Nükleer Tıp Derneğinin kardiyak amiloidoz güncel tanı rehberine göre Grade II-III kardiyak tutulumu olduğunun belirtilmesi.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007187",
+      "sut_section": "4.2.70.A",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "1) Mutasyonun VUS (variance unknown significans) olması durumunda hastalığı ispatlayıcı biyopsi (endomiyokardiyal veya multiple ekstrakardiyak biyopsi) bulgusunun olması.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007188",
+      "sut_section": "4.2.70.A",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "2) Mutasyonun olası patojenik veya patojenik olması halinde destekleyici klinik bulguları var ise herediter TTR kardiyak amiloidoz kabul edilmesi,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007189",
+      "sut_section": "4.2.70.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(2) Vahşi tip veya herediter transtiretin aracılı amiloidoz kardiyomiyopatisi (ATTR-KM) tanısı almış erişkin hastalar aşağıdaki kriterlerin tamamını sağladığı takdirde ilaç başlanması uygundur.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007191",
+      "sut_section": "4.2.70.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Son bir yıl içerisinde en az bir kez kalp yetersizliği (ICD-10 kodları) tanısı ile ayaktan ya da yatarak tedavi almış olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007192",
+      "sut_section": "4.2.70.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) N-terminal pro-B-tip natriüretik peptid (NT-proBNP) seviyesinin 600 pg/ml üzerinde (Ek:RG-02/11/2024- 32710/25 md. Yürürlük:09/11/2024) veya B-tip natriüretik peptid (BNP) seviyesinin 150 pg/ml üzerinde olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007193",
+      "sut_section": "4.2.70.A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "ç) Altı dakika yürüme mesafesinin 100 m’nin üzerinde olması ve NYHA fonksiyonel kapasite I-III olması,",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007202",
+      "sut_section": "4.2.70.B",
+      "defer_themes": [
+        "mutation_panel",
+        "response_assessment"
+      ],
+      "required_emr_fields": [
+        "mutation_panel",
+        "response_assessment"
+      ],
+      "message_tr": "(1) TTR geni mutasyonu gösterilen ve klinik olarak semptomatik olan ve nöropati varlığının desteklendiği (sinir iletim testi veya R-R interval analizi veya sempatik deri yanıtı veya kantitatif duyu testleri veya deri biyopsisi (ince/küçük lif yoğunluğu değerlendirilmesi) veya korneal konfokal mikroskopi yöntemlerinden en az biri ile tespit edilmiş) Evre 1 semptomatik polinöropati (desteksiz dışarıda yürüyebilen) tanısı konulan yetişkin hastalarda periferik nörolojik bozukluğu",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007214",
+      "sut_section": "4.2.72",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "a) Mitokondriyal DNA veya nükleer DNA’da mitokondriyal hastalığa yol açtığı bilinen gende patojenik mutasyon saptanması sonucunda mitokondriyal hastalık tanısı kesinleşmiş hastalar.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007215",
+      "sut_section": "4.2.72",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) Mitokondriyal hastalık tanısı genetik çalışmalar ile kesinleşmemiş hastalarda ise aşağıdaki kriterlerden en az ikisi karşılanan hastalar:",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007218",
+      "sut_section": "4.2.72",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "3) Biyokimyasal tetkiklerde (kanda açil karnitin veya karnitin analizi veya idrar-kan aminoasitleri veya idrar organik asit veya kan gazı analizi veya kan laktat yüksekliği) anlamlı bulguların görülmesi.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007219",
+      "sut_section": "4.2.72",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "4) Görüntüleme incelemelerinde klinik olarak mitokondriyal hastalığı destekleyici bulguların görülmesi.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007247",
+      "sut_section": "4.2.73",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Kistik fibrozise ait klinik bulgularının olduğu raporda belirtilen veya kistik fibrozis yenidoğan tarama testi pozitif olan.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007248",
+      "sut_section": "4.2.73",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) İki kez yapılan ter testi sonucu normal değerlerin üzerinde (klor değeri ≥60 mmol/L veya kondüktivite değeri ise ≥90 mmol/L) olan veya kistik fibrozise neden olan 2 KFTR (Kistik Fibrozis Transmembran Regülatör) varyantı olan (CFTR2 veya CF France isimli kistik fibrozis veri tabanlarından güncel kanıtının olduğu raporda belirtilen).",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007249",
+      "sut_section": "4.2.73",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "2) Genetik testin yapıldığı merkezin, test raporu tarihinin ve numarasının raporda yer aldığı, en az bir F508del mutasyonu olan veya KFTR (Kistik Fibrozis Transmembran Regülatör) geninde ilacın etkinliğinin gösterildiği en az bir varyantı olan.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007252",
+      "sut_section": "4.2.73",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "Kistik fibrozis yenidoğan taraması pozitif olup tanısı belirsiz hastalarda [Kistik Fibrozis Kesin Olmayan Tanı (KFKOT/CFSPID) veya KFTR İlişkili Metabolik Sendrom (KİMS)] veya KFTR-ilişkili hastalarda (KFTR-İH/ CFTR-RD) tedaviye başlanmaz. CHILD- PUGH skorlamasına göre grup C ağır karaciğer hastalığı olanlarda tedaviye başlanmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007253",
+      "sut_section": "4.2.73",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "required_emr_fields": [
+        "prior_therapy"
+      ],
+      "message_tr": "Tedavi başlamadan önceki ter testi değeri, son 1 yıl içerisindeki akut pulmoner alevlenme sıklığı, solunum fonksiyon testine koopere olan hastalarda tedavi başlanmadan önceki son 1 yıl içerisindeki FEV1 değeri kaydedilir ve raporda belirtilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007255",
+      "sut_section": "4.2.73",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "1) Ter testi değerinin tedavi başlangıcında belirtilen değerden en az %20 azalması veya 20 mmol/L azalması.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007256",
+      "sut_section": "4.2.73",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "2) Hastanın klinik olarak stabil olduğu dönemde yapılan solunum fonksiyon testinde başlangıç değerine göre FEV1 yüzdesinde en az %5 artış olması.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007257",
+      "sut_section": "4.2.73",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "3) Hastanın tedavi öncesine göre akut pulmoner alevlenme sıklığında en az %20 oranında azalma olması.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007259",
+      "sut_section": "4.2.73",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "Sonraki devam raporlarında başlangıca göre tedaviden fayda sağlandığının belirtilmesi koşuluyla tedaviye devam edilir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007261",
+      "sut_section": "4.2.73",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(4) Sonlandırma kriterleri: Devam kriterlerinden hiçbirini sağlamayan hastalarda tedavi sonlandırılır. Tedaviye 6 aydan fazla süre ile ara veren hastalarda başlangıç kriterleri aranır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007270",
+      "sut_section": "4.2.75",
+      "defer_themes": [
+        "mutation_panel"
+      ],
+      "required_emr_fields": [
+        "mutation_panel"
+      ],
+      "message_tr": "a) Genetik testin yapıldığı merkezin adının, test raporu tarih ve numarasının raporda belirtildiği, FGFR3 geninde p.Gly380Arg c.1138G>A veya p.Gly380Arg c.1138G>C veya p.Gly382Arg c.1144G>A mutasyonuna sahip, kemik yaşı kızlarda 15 yaşından ve erkeklerde 16 yaşından küçük olup epifizi açık olan, 4 aylık ve üzeri akondroplazi hastalarında tedaviye başlanır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007275",
+      "sut_section": "4.2.75",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) İlk devam raporunda; tedavinin birinci yılında, tedavi öncesi uzama hızına göre en az 1,5 cm ve üzerinde uzayan (Tedavi öncesi ve tedavi sonrası uzama hızı raporda belirtilmelidir.),",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007279",
+      "sut_section": "4.2.75",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "(3) Sonlandırma kriterleri: Tedavi ile yıllık uzama hızı 2 cm ve altında olan veya epifizi kapanmış veya kemik yaşı kızlarda 15 yaş ve üzeri, erkeklerde 16 yaş ve üzeri olan hastalarda tedavi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007281",
+      "sut_section": "4.2.75",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "a) Daha önce akondroplazi teşhisiyle vosoritide kullanan, epifizi açık olan ve tedavi altındayken yıllık uzama hızı 2 cm’den fazla olan 4 aylık ve üzeri hastalarda tedaviye devam edilir. Hastanın, ilacı 1 yıldan az süreyle kullanımı söz konusu ise raporda bu durumun belirtilmesi koşuluyla yıllık uzama hızı kriteri aranmaz.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007282",
+      "sut_section": "4.2.75",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "b) İlaca başlangıç tarihinin ve başlangıç kriterlerine uygun olduğunu gösterir genetik test sonuçları ve tarihleri ilk raporda belirtilmelidir.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007283",
+      "sut_section": "4.2.75",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "c) Tedavi ile yıllık uzama hızı 2 cm ve altında olan veya epifizi kapanmış veya kemik yaşı kızlarda 15 yaş ve üzeri, erkeklerde 16 yaş ve üzeri olan hastalarda tedavi sonlandırılır.",
+      "manifest_status": "emr_blocked"
+    },
+    {
+      "clause_id": "C007284",
+      "sut_section": "4.2.75",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "required_emr_fields": [
+        "clinical_pathway"
+      ],
+      "message_tr": "ç) Vosoritide tedavisine son 1 yıl içerisinde kesintisiz 6 ay ve üzeri ara veren hastalarda başlangıç kriterleri aranır.",
+      "manifest_status": "emr_blocked"
+    }
+  ]
+}
