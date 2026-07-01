@@ -200,6 +200,11 @@
       "clause_id": "C008243",
       "expected_rule_id": "6.3.2.(b).same_function_prior_material_warranty_no_pay",
       "encode_batch": "Gmisc"
+    },
+    {
+      "clause_id": "C000347",
+      "expected_rule_id": "1.8.3.(1b).uncontracted_dental_prosthesis_copay",
+      "encode_batch": null
     }
   ]
 }

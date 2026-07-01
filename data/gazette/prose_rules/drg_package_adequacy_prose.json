@@ -1,5 +1,5 @@
 {
-  "rule_set_id": "drg_package_adequacy",
+  "rule_set_id": "drg_package_adequacy_prose",
   "title": "EK-2/C package code adequacy (coding review)",
   "effective_date": "2026-01-17",
   "sut_anchors": [

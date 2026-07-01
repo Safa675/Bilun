@@ -17,12 +17,32 @@
       "encode_batch": "D1"
     },
     {
+      "clause_id": "C000744",
+      "expected_rule_id": "2.4.1.(2).bone_implant_exception_board_report",
+      "encode_batch": "D1"
+    },
+    {
+      "clause_id": "C000745",
+      "expected_rule_id": "2.4.1.(2).bone_implant_exception_board_report",
+      "encode_batch": "D1"
+    },
+    {
+      "clause_id": "C000746",
+      "expected_rule_id": "2.4.1.(2).bone_implant_exception_board_report",
+      "encode_batch": "D1"
+    },
+    {
       "clause_id": "C000748",
       "expected_rule_id": "2.4.1.(3).prosthesis_4yr_renewal_cap",
       "encode_batch": "D1"
     },
     {
       "clause_id": "C000752",
+      "expected_rule_id": "2.4.1.(4a).orthodontics_over_18_no_pay",
+      "encode_batch": "D1"
+    },
+    {
+      "clause_id": "C000751",
       "expected_rule_id": "2.4.1.(4a).orthodontics_over_18_no_pay",
       "encode_batch": "D1"
     },
@@ -50,6 +70,11 @@
       "clause_id": "C000812",
       "expected_rule_id": "2.4.1.B-3.(1).treating_physician_continuity",
       "encode_batch": "D1"
+    },
+    {
+      "clause_id": "C000763",
+      "expected_rule_id": "2.4.1.A.(3).disabled_ga_no_extra_50pct_surcharge",
+      "encode_batch": null
     }
   ]
 }
