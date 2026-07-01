@@ -25,6 +25,12 @@ jobs:
       - name: Run Python tests
         run: python -m pytest -q
 
+      - name: Check generated SUT rule artifacts
+        run: python scripts/sut/compile_rules.py --check
+
+      - name: Audit manifest bucket/trace parity
+        run: python scripts/sut/audit_manifest_parity.py --drug-only
+
   frontend:
     runs-on: ubuntu-latest
     defaults:
