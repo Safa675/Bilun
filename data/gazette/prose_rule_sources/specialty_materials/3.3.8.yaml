@@ -1,0 +1,31 @@
+section_id: 3.3.8
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.8.(1).ortopedi_travmatoloji_3_basamak_must_bill
+  sut_section: 3.3.8
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003075
+  condition:
+    material_name_any:
+    - ortopedi ve travmatoloji
+    - ortopedi implant
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Ortopedi ve travmatoloji branşı ameliyatlarında kullanılan tıbbi malzemeler — eğitim verme yetkisi olan 3.
+      basamak resmi sunucularda uygulanması halinde bedeli Kurumca karşılanır (§3.3.8(1)).
+- rule_id: 3.3.8.(2).ortopedi_danisma_kurulu_onay_must_bill
+  sut_section: 3.3.8
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003093
+  condition:
+    material_name_any:
+    - ortopedi ve travmatoloji
+    - ortopedi implant
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Belirtilen tıbbi malzemeler — eğitim verme yetkisi olan 3. basamak resmi sunucularda uygulanması ve Sağlık
+      Bakanlığı Ortopedi Bilimsel Danışma Kurulundan her hasta için onay alınması şartıyla bedeli Kurumca karşılanır (§3.3.8(2)).

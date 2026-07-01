@@ -1,0 +1,34 @@
+section_id: 3.3.14
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.14.(2).cift_yuzlu_mesh_defekt_goruntu_must_bill
+  sut_section: 3.3.14
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003154
+  condition:
+    material_name_any:
+    - çift yüzlü yama
+    - cift yuzlu yama
+    - mesh
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Çift yüzlü yamalar (meshler) — özellikli vakalarda ameliyat öncesi karın duvarı defektinin görüntüsünün epikrize
+      eklenmesi, mesh ve defekt boyutlarının ilişkilendirilmesi ve genel cerrahi/göğüs cerrahisi/plastik rekonstrüktif cerrahi
+      sağlık kurulu raporuyla 3. basamakta bedeli Kurumca karşılanır (§3.3.14(2)).
+- rule_id: 3.3.14.c.hiatus_diyafragma_herni_must_bill
+  sut_section: 3.3.14
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003158
+  condition:
+    material_name_any:
+    - çift yüzlü yama
+    - cift yuzlu yama
+    - mesh
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Çift yüzlü yama (mesh) — hiatus ve diyafragma hernilerinin açık ve laparoskopik onarımlarında kullanılması
+      durumunda bedeli Kurumca karşılanır (§3.3.14 c).

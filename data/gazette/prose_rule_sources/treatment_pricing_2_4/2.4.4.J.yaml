@@ -1,0 +1,86 @@
+section_id: 2.4.4.J
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.J.(3).thermal_unlicensed_no_pay
+  sut_section: 2.4.4.J
+  condition:
+    procedure_category: thermal_spa
+    facility_not_ministry_licensed: true
+  action:
+    billable: false
+    denial_tr: Sağlık Bakanlığı işletme izni verilmeyen kaplıcalarda tedavi bedelleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C001331
+- rule_id: 2.4.4.J.(1).thermal_spa_board_report_required
+  sut_section: 2.4.4.J
+  condition:
+    procedure_category: thermal_spa_balneotherapy
+    provider_type: public
+    health_board_report_present: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: kaplıca tedavileri için resmi sunucularca en az bir fiziksel tıp ve rehabilitasyon veya tıbbi ekoloji ve hidroklimatoloji
+      uzmanının yer aldığı sağlık kurulu raporu düzenlenmelidir; raporda tanı, tedavi, seans ve gün sayısı zorunludur
+    severity: error
+  gate_b_sources:
+  - C001329
+- rule_id: 2.4.4.J.(2).thermal_spa_start_within_6_months_else_new_report
+  sut_section: 2.4.4.J
+  condition:
+    procedure_category: thermal_spa_balneotherapy
+    months_from_report_to_treatment:
+      min: 7
+  action:
+    billable: false
+    enforcement: report_validity
+    message_tr: sağlık kurulu raporunun düzenlendiği tarihten itibaren 6 ay içerisinde tedaviye başlanamaması halinde yeniden
+      sağlık kurulu raporu düzenlenmesi gerekmektedir
+    severity: error
+  gate_b_sources:
+  - C001330
+- rule_id: 2.4.4.J.(3).thermal_spa_unlicensed_facility_not_covered
+  sut_section: 2.4.4.J
+  condition:
+    procedure_category: thermal_spa_balneotherapy
+    facility_has_moh_operation_permit: false
+  action:
+    billable: false
+    enforcement: facility_licensing_gate
+    message_tr: Sağlık Bakanlığınca işletme izni verilmeyen kaplıcalarda tedavi görenlerin kaplıca tedavilerine ait bedeller
+      Kurumca karşılanmaz
+    severity: error
+  gate_b_sources:
+  - C001331
+- rule_id: 2.4.4.J.(4).thermal_spa_uncontracted_only_702020_per_day
+  sut_section: 2.4.4.J
+  condition:
+    procedure_category: thermal_spa_balneotherapy
+    facility_contracted_with_institution: false
+    procedure_code_not_any:
+    - '702020'
+    procedures_per_day:
+      min: 2
+  action:
+    billable: false
+    enforcement: patient_reimbursement_limit
+    message_tr: Bakanlık izinli ancak sözleşmeli olmayan kaplıca tesislerinde hasta tarafından karşılanan giderler için fatura
+      ve sağlık raporuna dayanılarak her gün için bir adet '702.020 banyo-kaplıca' bedeli hastaya ödenir; diğer işlemler karşılanmaz
+    severity: error
+  gate_b_sources:
+  - C001332
+- rule_id: 2.4.4.J.(5).thermal_spa_travel_per diem_per_2_6
+  sut_section: 2.4.4.J
+  condition:
+    procedure_category: thermal_spa_balneotherapy
+    expense_category_any:
+    - travel
+    - per_diem
+    - companion
+  action:
+    billable: true
+    enforcement: coverage_cross_reference
+    message_tr: kaplıca tedavileri ile ilgili yol, gündelik ve refakatçi giderleri SUT'un 2.6 maddesi hükümlerine göre karşılanır
+  gate_b_sources:
+  - C001333

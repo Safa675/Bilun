@@ -1,0 +1,47 @@
+section_id: 4.2.9.A-2
+rules:
+- rule_id: 4.2.9.mds_esa_hematology_report
+  sut_section: 4.2.9.A-2
+  drug_names:
+  - eritropoietin
+  - epoetin
+  - darbepoetin
+  - aranesp
+  - binocrit
+  icd10_ranges:
+  - D46
+  - D47
+  message_tr: MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile tedaviye başlanır; hematoloji uzman hekim raporu ve hemogram
+    sonucu reçetede belirtilir (§4.2.9.A-2).
+  gate_b_sources:
+  - C004135
+  - C004136
+  - C004137
+  report_required: true
+  report_specialties:
+  - hematoloji
+  prescriber_specialties:
+  - hematoloji
+  - iç hastalıkları
+- rule_id: 4.2.9.mds_esa_initiation_hematology_report
+  sut_section: 4.2.9.A-2
+  drug_names:
+  - eritropoietin
+  - epoetin
+  - darbepoetin
+  - aranesp
+  - binocrit
+  icd10_ranges:
+  - D46
+  - D47
+  message_tr: MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile başlanır; hedef Hb 12 g/dl; hematoloji uzman raporu ve hemogram
+    reçetede belirtilir (§4.2.9.A-2).
+  gate_b_sources:
+  - C004136
+  report_required: true
+  report_specialties:
+  - hematoloji
+  prescriber_specialties:
+  - hematoloji
+  - iç hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,45 @@
+section_id: 4.2.67
+rules:
+- rule_id: 4.2.67.renal.adpkd_tolvaptan_initiation_criteria_regulatory
+  sut_section: 4.2.67
+  gate_b_sources:
+  - C007152
+  drug_names:
+  - tolvaptan
+  icd10_codes:
+  - Q61.2
+  - Q61.3
+  report_required: true
+  report_specialties:
+  - nefroloji
+  action:
+    enforcement: 'regulatory action: aşağıdaki kriterlerin tümünü karşılayan 18 (18,0)-55 (55,0 hariç) yaş arası, GFR''i 25
+      ml/dk''nın üzerinde ADPKD tanısı almış hastalarda tedaviye başlanır'
+    message_tr: Aşağıdaki kriterlerin tümünü karşılayan 18 (18,0) - 55 (55,0 hariç) yaş arası, GFR'si 25ml/dk'nın üzerinde
+      ADPKD tanısı almış hastalarda tedaviye başlanır (§4.2.67).
+- rule_id: 4.2.67.renal.adpkd_tolvaptan_tertiary_nephrology_1yr_coverage
+  sut_section: 4.2.67
+  gate_b_sources:
+  - C007162
+  drug_names:
+  - tolvaptan
+  icd10_codes:
+  - Q61.2
+  - Q61.3
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - nefroloji
+  prescriber_specialties:
+  - nefroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basamakta en az bir nefroloji uzmanının yer aldığı sağlık kurulu raporuyla nefroloji uzmanlarınca
+      reçete edilirse ödenir; rapor en fazla 1 yıl geçerli olup başlangıç kriterleri raporda belirtilir; maksimum doz günde
+      120 mg'yi aşmamalı; GFR<25 ml/dk olduğunda ilaç sonlandırılır
+    message_tr: Üçüncü basamak resmi sağlık hizmeti sunucularında en az bir nefroloji uzman hekiminin yer aldığı sağlık kurulu
+      raporuna dayanılarak nefroloji uzmanlarınca reçete edilmesi halinde bedeli ödenir. Rapor en fazla 1 yıl süreyle geçerli
+      olup, yukarıda yer alan kriterler belirtilir. Maksimum doz günde 120 mg'yi aşmamalıdır. GFR<25 ml/dk olduğunda ilaç
+      sonlandırılır (§4.2.67).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

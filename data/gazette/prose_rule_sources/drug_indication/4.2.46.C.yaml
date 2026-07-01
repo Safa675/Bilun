@@ -1,0 +1,52 @@
+section_id: 4.2.46.C
+rules:
+- rule_id: 4.2.46.C.ssc_ild_nintedanib_criteria
+  sut_section: 4.2.46.C
+  gate_b_sources:
+  - C006867
+  drug_names:
+  - nintedanib
+  icd10_codes:
+  - M34
+  - J84.1
+  - J84.9
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: sistemik skleroza bağlı interstisyel akciğer hastalarında DLCO≥%30, FVC≥%50 ve HRCT ile >%10 fibrozis varsa
+      nintedanib başlanırsa ödenir
+    message_tr: Karbonmonoksit difüzyon kapasitesi (DLCO) ≥%30, Forced Vital Kapasitesi (FVC) ≥%50 ve toraks yüksek çözünürlüklü
+      bilgisayarlı tomografi (HRCT) ile %10'dan fazla fibrozis alanı varlığı gösteren sistemik skleroza bağlı interstisyel
+      akciğer hastalarında nintedanib ile tedaviye başlanması halinde bedeli Kurumca karşılanır (§4.2.46.C).
+- rule_id: 4.2.46.C.ssc_ild_tertiary_rheum_pulmonology_1yr
+  sut_section: 4.2.46.C
+  gate_b_sources:
+  - C006868
+  - C006870
+  - C006871
+  drug_names:
+  - nintedanib
+  icd10_codes:
+  - M34
+  - J84.1
+  - J84.9
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - romatoloji
+  - göğüs hastalıkları
+  prescriber_specialties:
+  - göğüs hastalıkları
+  - romatoloji
+  - iç hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basmakta en az bir romatoloji ve bir göğüs hastalıkları uzmanı içeren 1 yıl süreli sağlık kurulu raporuyla
+      göğüs hastalıkları/romatoloji/iç hastalıkları uzmanlarınca reçete; raporda DLCO, FVC ve HRCT tarihleri belirtilmeli
+    message_tr: Bu durumların belirtildiği üçüncü basamak sağlık kurumlarında en az bir romatoloji uzman hekimi ve en az bir
+      göğüs hastalıkları uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna dayanılarak göğüs hastalıkları, romatoloji
+      veya iç hastalıkları uzman hekimlerince reçetelenir. Sağlık kurulu raporunda DLCO, FVC değerlerinin tarihi ile HRCT
+      görüntüleme raporunun tarihi belirtilmesi gerekmektedir (§4.2.46.C).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

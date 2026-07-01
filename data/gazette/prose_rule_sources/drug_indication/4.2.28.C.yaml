@@ -1,0 +1,66 @@
+section_id: 4.2.28.C
+rules:
+- rule_id: 4.2.28.C.bile_acid_sequestrant_dm2_nopay
+  sut_section: 4.2.28.C
+  gate_b_sources:
+  - C006343
+  drug_names:
+  - kolesevelam
+  - safra asidi tutucu
+  - kolestiramin
+  - kolestipol
+  icd10_codes:
+  - E11
+  pay: false
+  action:
+    enforcement: 'no-pay condition: safra asidi tutucu ilaçların Tip-2 diyabetes mellitus tedavisinde kullanımı'
+    message_tr: Safra asidi tutucu ilaçların Tip-2 diyabetes mellitus tedavisinde kullanılması halinde Kurumca bedelleri karşılanmaz
+      (§4.2.28.C).
+- rule_id: 4.2.28.C.ezetimibe_ldl100_statin
+  sut_section: 4.2.28.C
+  gate_b_sources:
+  - C006340
+  drug_names:
+  - ezetimib
+  - ezetimibe
+  icd10_codes:
+  - E78
+  report_required: true
+  report_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  - nöroloji
+  - kalp damar cerrahisi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: ≥6 ay statine rağmen LDL >100 mg/dL belgelenmişse; kardiyoloji/iç hastalıkları/nöroloji/kalp damar cerrahisi
+      uzman raporuyla tüm hekimlerce
+    message_tr: En az 6 ay boyunca statinlerle tedavi edilmiş olmasına rağmen LDL düzeyi 100 mg/dL'nin üzerinde kalan hastalarda
+      bu durumun belgelenmesi koşuluyla kardiyoloji, iç hastalıkları, nöroloji ya da kalp damar cerrahisi uzmanlarından birinin
+      raporuna istinaden tüm hekimlerce reçete edilebilir (§4.2.28.C).
+- rule_id: 4.2.28.C.ezetimibe_statin_intolerance
+  sut_section: 4.2.28.C
+  gate_b_sources:
+  - C006341
+  drug_names:
+  - ezetimib
+  - ezetimibe
+  icd10_codes:
+  - E78
+  report_required: true
+  report_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  - nöroloji
+  - kalp damar cerrahisi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: AST/ALT ≥3xÜS veya CPK ≥2xÜS nedeniyle statin kullanılamadığı belgelenirse; kardiyoloji/iç hastalıkları/nöroloji/kalp
+      damar cerrahisi uzman raporuyla tüm hekimlerce
+    message_tr: Karaciğer enzimlerinden (AST/SGOT veya ALT/SGPT) en az birinin normalin üst sınırının ≥3 katı üstüne çıkması
+      veya kreatin fosfokinaz düzeylerinin ≥2 kat üzerine çıkması nedeniyle statin kullanılamadığının belgelenmesi koşuluyla
+      kardiyoloji, iç hastalıkları, nöroloji ya da kalp damar cerrahisi uzmanlarından birinin raporuyla tüm hekimlerce reçete
+      edilebilir (§4.2.28.C).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

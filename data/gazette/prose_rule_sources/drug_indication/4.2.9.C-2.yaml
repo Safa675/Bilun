@@ -1,0 +1,27 @@
+section_id: 4.2.9.C-2
+rules:
+- rule_id: 4.2.9.paricalcitol_oral_pd_nephrology_report
+  sut_section: 4.2.9.C-2
+  drug_names:
+  - parikalsitol
+  - paricalcitol
+  - zemplar
+  icd10_ranges:
+  - N18
+  message_tr: Parikalsitol oral — evre 5 KBY periton diyaliz hastalarında PTH/Ca/P kriterleri; nefroloji raporu; tetkikler
+    3 ayda bir tekrarlanır (§4.2.9.C-2).
+  gate_b_sources:
+  - C004113
+  report_required: true
+  report_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+  report_duration_months: 3
+  prescriber_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+source_note: Exported from drug_indication_prose.json (YAML source migration)

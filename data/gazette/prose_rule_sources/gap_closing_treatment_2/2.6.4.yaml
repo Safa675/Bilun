@@ -1,0 +1,14 @@
+section_id: 2.6.4
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.6.4.(c).non_listed_control_checkups_no_pay
+  sut_section: 2.6.4
+  condition:
+    control_checkup: true
+    disease_not_in_listed_controls: true
+  action:
+    billable: false
+    denial_tr: listelenen tedavi/hastalıklar dışındaki kontrol amaçlı çağrılar ödenmez
+    severity: error
+  gate_b_sources:
+  - C001579

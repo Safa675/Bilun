@@ -1,0 +1,17 @@
+section_id: 3.3.11
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 3.3.11.(1).local_anesthesia_graft_membrane_billable
+  sut_section: 3.3.11
+  condition:
+    material_category_any:
+    - graft
+    - membrane
+    - healing_material
+    anesthesia_type: local
+    not_in_excluded_list: true
+  action:
+    billable: true
+    payment_tr: lokal anestezi altında cerrahide greft/membran iyileştirici malzemeler faturalandırılabilir
+  gate_b_sources:
+  - C003143

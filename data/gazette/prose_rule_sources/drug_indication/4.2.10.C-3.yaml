@@ -1,0 +1,33 @@
+section_id: 4.2.10.C-3
+rules:
+- rule_id: 4.2.10.mps_board_report_1yr
+  sut_section: 4.2.10.C-3
+  drug_names:
+  - laronidase
+  - aldurazyme
+  - idursulfase
+  - elaprase
+  - galsulfase
+  - naglazyme
+  - elosulfase
+  - vimizim
+  icd10_ranges:
+  - E76
+  message_tr: Mukopolisakkaridoz tedavisi — üçüncü basamak resmi sağlık kuruluşunda metabolizma uzmanlarının yer aldığı 1
+    yıllık sağlık kurulu raporu gerekir (§4.2.10.C-3).
+  gate_b_sources:
+  - C004363
+  - C004364
+  report_required: true
+  report_specialties:
+  - çocuk metabolizma
+  - çocuk endokrinolojisi ve metabolizma
+  - endokrinoloji ve metabolizma hastalıkları
+  report_duration_months: 12
+  prescriber_specialties:
+  - çocuk metabolizma
+  - çocuk endokrinolojisi ve metabolizma
+  - endokrinoloji ve metabolizma hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  - iç hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

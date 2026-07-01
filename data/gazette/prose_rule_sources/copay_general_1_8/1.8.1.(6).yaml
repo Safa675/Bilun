@@ -1,0 +1,16 @@
+section_id: 1.8.1.(6)
+source_note: Exported from copay_general_1_8.json (YAML source migration)
+rules:
+- rule_id: 1.8.1.(6).farkli_kurum_artis
+  sut_section: 1.8.1.(6)
+  service_type: copay_surcharge
+  surcharge_try: 5.0
+  condition:
+    visit_context: repeat_specialty_within_10_days_different_facility
+    excluded_from_surcharge:
+    - first_tier_facility
+    - ek1a_chronic
+    - electronic_referral
+    - emergency
+  gate_b_sources:
+  - C000312

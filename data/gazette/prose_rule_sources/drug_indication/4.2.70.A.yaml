@@ -1,0 +1,77 @@
+section_id: 4.2.70.A
+rules:
+- rule_id: 4.2.70.A.continuation_15mo_no_hf_admission
+  sut_section: 4.2.70.A
+  gate_b_sources:
+  - C007199
+  drug_names:
+  - tafamidis
+  - akoramidis
+  icd10_codes:
+  - E85
+  report_required: true
+  action:
+    enforcement: 15. ay değerlendirmesinde son 6 ayda kalp yetersizliği nedeniyle ≥1 hastaneye yatış veya IV diüretik ile
+      ≥1 acil başvuru olmaması koşuluyla tedaviye devam; kriter sağlanmazsa tedavi sonlandırılır
+    message_tr: On beşinci ayın sonunda yapılan değerlendirmede son altı ayda kalp yetersizliği nedeniyle bir ve üzeri hastaneye
+      yatışının veya son altı ayda intravenöz diüretik ihtiyacı ile bir veya üzeri acil servis başvurusu olmaması ve bu durumların
+      raporda belirtilmesi koşuluyla tedaviye devam edilebilir. İlaç devam kriterlerinin karşılanamadığı durumlarda tedaviye
+      son verilir (§4.2.70.A).
+- rule_id: 4.2.70.A.continuation_gfr_6mwt_nyha_criteria
+  sut_section: 4.2.70.A
+  gate_b_sources:
+  - C007198
+  drug_names:
+  - tafamidis
+  - akoramidis
+  icd10_codes:
+  - E85
+  report_required: true
+  report_duration_months: 3
+  action:
+    enforcement: her 3 ayda bir değerlendirmede tahmini GFR>30 ml/dk/1,72m², ciddi karaciğer yetmezliği gelişmemiş, 6 dakika
+      yürüme >100 m ve NYHA I-III korunursa 3 aylık raporlarla devam
+    message_tr: İlaca başlanan hastalarda her üç ayda bir yapılan değerlendirmede tahmini GFR'nin 30 ml/dk/1,72m²'nin üzerinde
+      olması, ciddi karaciğer yetmezliğinin gelişmemiş olması ve altı dakika yürüme mesafesinin 100 m'nin üzerinde olması
+      ve NYHA fonksiyonel kapasite I-III olmasının korunması halinde bu durumların raporda belirtilmesi koşuluyla 3 aylık
+      raporlarla ilaca devam edilebilir (§4.2.70.A).
+- rule_id: 4.2.70.A.tertiary_3cardiology_3mo_report
+  sut_section: 4.2.70.A
+  gate_b_sources:
+  - C007197
+  drug_names:
+  - tafamidis
+  - akoramidis
+  icd10_codes:
+  - E85
+  report_required: true
+  report_duration_months: 3
+  report_specialties:
+  - kardiyoloji
+  prescriber_specialties:
+  - kardiyoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basmakta tanı ve ilaca başlama kriterlerini sağlayan üç kardiyoloji uzmanından oluşan 3 ay süreli
+      sağlık kurulu raporuyla kardiyoloji uzmanlarınca reçete edilirse ödenir
+    message_tr: Üçüncü basamak resmi sağlık hizmeti sunucularında hastalığın tanı kriterleri ile ilaca başlama kriterlerini
+      sağlayan ve bu durumların belirtildiği üç kardiyoloji uzman hekiminden oluşan 3 ay süreli sağlık kurulu raporuna istinaden
+      kardiyoloji uzman hekimlerince reçetelenmesi halinde bedeli Kurumca karşılanır (§4.2.70.A).
+- rule_id: 4.2.70.A.ttr_sintigraphy_mutation_analysis
+  sut_section: 4.2.70.A
+  gate_b_sources:
+  - C007186
+  drug_names:
+  - tafamidis
+  - akoramidis
+  icd10_codes:
+  - E85
+  report_required: true
+  action:
+    enforcement: nükleer sintigrafide tipik TTR kardiyak amiloid tutulumu varsa TTR genetik mutasyon analizi yapılmalıdır;
+      mutasyon yoksa vahşi tip, varsa herediter kabul edilir
+    message_tr: Nükleer sintigrafide tipik TTR kardiyak amiloid tutulumu olması halinde TTR genetik mutasyon analizinin yapılması
+      gereklidir. Analizde mutasyon saptanmaması halinde vahşi tip TTR kardiyak amiloidoz kabul edilir, mutasyon saptanması
+      halinde herediter kabul edilir (§4.2.70.A).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

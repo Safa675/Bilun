@@ -1,0 +1,17 @@
+section_id: 3.3.24
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.24.(1).sinus_tarsi_vidasi_cocuk_must_bill
+  sut_section: 3.3.24
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003197
+  condition:
+    material_name_any:
+    - sinüs tarsi vidası
+    - sinus tarsi vidasi
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Sinüs tarsi vidası — esnek, ağrılı 8-14 yaş vaka grubunda eğitim verme yetkisi bulunan 3. basamak resmi sunucularda
+      kullanılması halinde bedelleri Kurumca karşılanır (§3.3.24(1)).

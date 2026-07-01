@@ -1,0 +1,410 @@
+{
+  "drug_indication_4201_a2_batch_rules.py:BATCH_A2_RULES": [
+    "4.2.1.anti_tnf_ra_das28_initiation",
+    "4.2.1.infliximab_ra_das28_second_line",
+    "4.2.1.anti_tnf_jia_start_board",
+    "4.2.1.anti_tnf_jia_dmard_failure_board",
+    "4.2.1.adalimumab_jia_uveitis_first_line",
+    "4.2.1.infliximab_as_basdai_second_line",
+    "4.2.1.inflix_psa_second_line_psarc",
+    "4.2.1.anti_tnf_psoriasis_vulgaris_board",
+    "4.2.1.adalimumab_pediatric_crohn_board",
+    "4.2.1.anti_tnf_uc_conv_failure_board",
+    "4.2.1.adalimumab_pediatric_uveitis_board",
+    "4.2.1.adalimumab_hs_dermatology_board",
+    "4.2.1.abatacept_ra_tnf_failure_board",
+    "4.2.1.tocilizumab_ra_university_board",
+    "4.2.1.tocilizumab_pediatric_anti_tnf_failure"
+  ],
+  "drug_indication_4201_a3_batch_rules.py:BATCH_A3_RULES": [
+    "4.2.1.anti_tnf_jia_acr_continuation",
+    "4.2.1.inflix_cert_gol_as_second_line",
+    "4.2.1.inflix_cert_gol_psa_psarc_second_line",
+    "4.2.1.rituximab_gpa_mpa_nephrology",
+    "4.2.1.rituximab_pemphigus_dermatology",
+    "4.2.1.tocilizumab_ra_das28_continuation_c3",
+    "4.2.1.abatacept_jia_acr30_continuation",
+    "4.2.1.abatacept_jia_acr50_continuation",
+    "4.2.1.ustekinumab_psoriasis_pasi_report",
+    "4.2.1.ustekinumab_psa_dmard_tnf_failure",
+    "4.2.1.ustekinumab_crohn_anti_tnf_failure",
+    "4.2.1.tocilizumab_ra_c5_university_das",
+    "4.2.1.tocilizumab_ra_c5_methotrexat_combo",
+    "4.2.1.tocilizumab_ra_das28_continuation_c5",
+    "4.2.1.tocilizumab_sjia_anakinra_response"
+  ],
+  "drug_indication_4201_a4_c1_batch_rules.py:BATCH_A4_C1_RULES": [
+    "4.2.1.anti_tnf_jia_acr30_continuation_c1",
+    "4.2.1.anti_tnf_jia_acr50_continuation_c1",
+    "4.2.1.inflix_peripheral_as_second_line_start",
+    "4.2.1.inflix_peripheral_as_basdai_continuation",
+    "4.2.1.anti_tnf_jia_acr_monitoring_board",
+    "4.2.1.inflix_peripheral_as_second_line_romato_board"
+  ],
+  "drug_indication_4201_a4_c2_batch_rules.py:BATCH_A4_C2_RULES": [
+    "4.2.1.rituximab_ra_das28_continuation",
+    "4.2.1.rituximab_ra_romatoloji_board",
+    "4.2.1.rituximab_ra_university_tertiary_board",
+    "4.2.1.rituximab_ra_6mo_renewal"
+  ],
+  "drug_indication_4201_a4_c5_batch_rules.py:BATCH_A4_C5_RULES": [
+    "4.2.1.tocilizumab_jia_c5_prior_therapy_failure",
+    "4.2.1.tocilizumab_jia_c5_acr30_continuation",
+    "4.2.1.tocilizumab_jia_c5_acr50_continuation",
+    "4.2.1.tocilizumab_dha_sc_initiation",
+    "4.2.1.tocilizumab_dha_sc_efficacy_continuation"
+  ],
+  "drug_indication_4201_a4_c7_batch_rules.py:BATCH_A4_C7_RULES": [
+    "4.2.1.anakinra_fmf_colchicine_failure",
+    "4.2.1.canakinumab_fmf_anakinra_switch",
+    "4.2.1.canakinumab_fmf_continuation_report",
+    "4.2.1.canakinumab_fmf_dose_escalation",
+    "4.2.1.anakinra_canakinumab_fmf_board_report",
+    "4.2.1.anakinra_canakinumab_fmf_amyloidosis"
+  ],
+  "drug_indication_4201_a5_c10_14_batch_rules.py:BATCH_A5_C10_14_RULES": [
+    "4.2.1.ixekizumab_psoriasis_pasi_systemic_failure",
+    "4.2.1.ixekizumab_psa_second_line",
+    "4.2.1.guselkumab_psoriasis_pasi_systemic_failure",
+    "4.2.1.risankizumab_psoriasis_pasi_systemic_failure",
+    "4.2.1.bimekizumab_psoriasis_pasi_systemic_failure"
+  ],
+  "drug_indication_4201_a5_c2_c5_batch_rules.py:BATCH_A5_C2_C5_RULES": [
+    "4.2.1.rituximab_ra_report_section_header",
+    "4.2.1.tocilizumab_dha_sc_steroid_contraindicated"
+  ],
+  "drug_indication_4201_a5_c6_batch_rules.py:BATCH_A5_C6_RULES": [
+    "4.2.1.jak_ra_dmard_initiation",
+    "4.2.1.jak_psa_second_line_initiation",
+    "4.2.1.tofacitinib_axial_as_initiation",
+    "4.2.1.tofacitinib_peripheral_as_initiation",
+    "4.2.1.jak_ra_university_prescriber_board",
+    "4.2.1.upadacitinib_anti_tnf_second_line",
+    "4.2.1.upadacitinib_crohn_anti_tnf",
+    "4.2.1.upadacitinib_uc_anti_tnf",
+    "4.2.1.upadacitinib_ad_dermatology_board",
+    "4.2.1.baricitinib_ad_specialist_board",
+    "4.2.1.jak_ibd_gi_prescriber",
+    "4.2.1.tofacitinib_pjia_second_line",
+    "4.2.1.jak_pjia_pediatric_tertiary_board",
+    "4.2.1.jak_efficacy_continuation_romato_immuno"
+  ],
+  "drug_indication_4201_a5_c7_batch_rules.py:BATCH_A5_C7_RULES": [
+    "4.2.1.anakinra_fmf_colchicine_add_on",
+    "4.2.1.canakinumab_fmf_anakinra_failure_switch",
+    "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber",
+    "4.2.1.anakinra_canakinumab_fmf_amyloidosis_colchicine"
+  ],
+  "drug_indication_4201_a5_c8_batch_rules.py:BATCH_A5_C8_RULES": [
+    "4.2.1.vedolizumab_crohn_anti_tnf_initiation",
+    "4.2.1.vedolizumab_uc_anti_tnf_second_line"
+  ],
+  "drug_indication_4201_a5_c9_c13_batch_rules.py:BATCH_A5_C9_C13_RULES": [
+    "4.2.1.sekukinumab_psoriasis_pasi_systemic_failure",
+    "4.2.1.sekukinumab_psa_second_line",
+    "4.2.1.sekukinumab_hs_adalimumab_failure",
+    "4.2.1.apremilast_psa_dmard_second_line",
+    "4.2.1.apremilast_psoriasis_dermatology_board"
+  ],
+  "drug_indication_4201_pilot_batch_rules.py:BATCH_A1_RULES": [
+    "4.2.1.leflunomid_ra_psa_report",
+    "4.2.1.gold_preparations_ra_report",
+    "4.2.1.anti_tnf_prescriber_board",
+    "4.2.1.inflix_cert_gol_ra_second_line",
+    "4.2.1.anti_tnf_axial_as_board",
+    "4.2.1.anti_tnf_peripheral_as_board",
+    "4.2.1.anti_tnf_psoriatic_arthritis_board",
+    "4.2.1.adalimumab_crohn_adult_board",
+    "4.2.1.adalimumab_uveitis_adult_board",
+    "4.2.1.abatacept_ra_board",
+    "4.2.1.tocilizumab_ra_board",
+    "4.2.1.tofacitinib_ra_board",
+    "4.2.1.tofacitinib_axial_as_board",
+    "4.2.1.vedolizumab_uc_report"
+  ],
+  "drug_indication_4201_w4_tier_b_batch_rules.py:BATCH_4201_W4_TIER_B_RULES": [
+    "4.2.1.crohn_fistulizing_month4_cdai_report",
+    "4.2.1.rituximab_ra_romatoloji_institution_board",
+    "4.2.1.tocilizumab_ra_das28_06_continuation_c3",
+    "4.2.1.tocilizumab_ra_das28_06_continuation_c5",
+    "4.2.1.tocilizumab_jia_acr_pediatric_3mo_c5",
+    "4.2.1.tofacitinib_ra_prescriber_board_c6",
+    "4.2.1.jia_acr_pediatric_6mo_continuation_c6",
+    "4.2.1.fmf_jia_acr_pediatric_stop_c7",
+    "4.2.1.kanakinumab_fmf_3mo_response_c7",
+    "4.2.1.sekukinumab_hs_16wk_continuation_c9"
+  ],
+  "drug_indication_4206_a2_batch_rules.py:BATCH_A2_RULES": [
+    "4.2.6.general_gh_age_group_board",
+    "4.2.6.pediatric_gh_monitoring_board",
+    "4.2.6.pediatric_somatropin_initiation_board",
+    "4.2.6.pediatric_gh_renewal_board",
+    "4.2.6.pws_somatropin_tertiary_board",
+    "4.2.6.ckd_gh_nephro_endo_board",
+    "4.2.6.laron_mecasermin_initiation_board"
+  ],
+  "drug_indication_4206_batch_rules.py:BATCH_A6_RULES": [
+    "4.2.6.adult_somatropin_board_report",
+    "4.2.6.turner_somatropin_pediatric_board",
+    "4.2.6.laron_mecasermin_continuation_board"
+  ],
+  "drug_indication_4209_4227_batch_rules.py:BATCH_A6_RULES": [
+    "4.2.9.esa_ckd_monthly_nephrology_report",
+    "4.2.9.mds_esa_hematology_report",
+    "4.2.9.etelcalcetide_dialysis_ckd_only",
+    "4.2.27.hemophilia_acute_bleed_report",
+    "4.2.27.hemophilia_emergency_one_day",
+    "4.2.27.factor_seven_a_bleeding_board",
+    "4.2.27.factor_seven_a_prophylaxis_board",
+    "4.2.27.anticoagulant_bleed_reversal_one_day",
+    "4.2.27.apcc_bleeding_board",
+    "4.2.27.apcc_prophylaxis_board",
+    "4.2.27.itt_tertiary_hematology_board",
+    "4.2.27.itt_poor_response_exclusion",
+    "4.2.27.vwf_factor_board_report",
+    "4.2.27.anti_rh_specialist_prescription"
+  ],
+  "drug_indication_4209_a7_batch_rules.py:BATCH_A7_RULES": [
+    "4.2.9.esa_legacy_muadil_monthly_report",
+    "4.2.9.esa_ckd_iron_hb_nephrology_report",
+    "4.2.9.esa_ckd_legacy_nephrology_prescriber",
+    "4.2.9.roksadustat_esa_switch_dialysis_report",
+    "4.2.9.mds_esa_initiation_hematology_report",
+    "4.2.9.paricalcitol_oral_pd_nephrology_report"
+  ],
+  "drug_indication_4210_batch_rules.py:BATCH_LSD4210_RULES": [
+    "4.2.10.gaucher_enzyme_indication_types",
+    "4.2.10.eliglustat_cyp2d6_report",
+    "4.2.10.gaucher_board_report_6mo",
+    "4.2.10.fabry_board_report_6mo",
+    "4.2.10.mps1_enzyme_start_date_report",
+    "4.2.10.mps_board_report_1yr",
+    "4.2.10.pompe_board_report_1yr",
+    "4.2.10.npc_board_report_6mo"
+  ],
+  "drug_indication_4213_4216_batch_rules.py:BATCH_A2_RULES": [
+    "4.2.13.hepatitis_viral_gastro_inf_report",
+    "4.2.13.hbv_entekavir_board",
+    "4.2.13.hbv_tenofovir_board",
+    "4.2.13.hbv_lamivudin_board",
+    "4.2.13.hbv_oral_report_duration_6mo",
+    "4.2.13.hcv_acute_interferon_report",
+    "4.2.13.hcv_ribavirin_combo_report",
+    "4.2.13.hcv_sofosbuvir_ledipasvir_board",
+    "4.2.13.hcv_glecaprevir_pibrentasvir_board",
+    "4.2.16.metabolic_formula_pediatric_report",
+    "4.2.16.protein_metabolism_formula_report",
+    "4.2.16.cystic_fibrosis_formula_report",
+    "4.2.16.celiac_gluten_free_report"
+  ],
+  "drug_indication_4213_a2a_batch_rules.py:BATCH_A2A_RULES": [
+    "4.2.13.hepatitis_prior_therapy_documentation",
+    "4.2.13.hbv_dna_initiation_board",
+    "4.2.13.hbv_immunosuppression_lamivudin_prophylaxis",
+    "4.2.13.hdv_interferon_board",
+    "4.2.13.hcv_acute_interferon_24w_monotherapy",
+    "4.2.13.hcv_ribavirin_genotype_duration",
+    "4.2.13.hcv_daa_tertiary_gastro_once",
+    "4.2.13.hcv_daa_child_pugh_report",
+    "4.2.13.hcv_specialist_report_criteria",
+    "4.2.13.hcv_reteatment_prior_therapy_report",
+    "4.2.13.hcv_genotype_b_48w_monitoring",
+    "4.2.13.hcv_pediatric_early_stop_rechallenge"
+  ],
+  "drug_indication_4213_tier_b_batch_rules.py:BATCH_4213_TIER_B_RULES": [
+    "4.2.13.hbv_oral_antiviral_switch_adult_report",
+    "4.2.13.hbv_oral_antiviral_switch_pediatric_report",
+    "4.2.13.hbv_antiviral_report_renewal_initiation_f7",
+    "4.2.13.hbv_antiviral_report_renewal_initiation_f8"
+  ],
+  "drug_indication_4214c_batch_rules.py:BATCH_A1": [
+    "4.2.14.C.(15).atezolizumab_nsclc_board",
+    "4.2.14.C.(15).durvalumab_nsclc_board",
+    "4.2.14.C.(15).avelumab_merkel_board",
+    "4.2.14.C.(15).osimertinib_egfr_nsclc_board",
+    "4.2.14.C.(15).afatinib_egfr_nsclc_board",
+    "4.2.14.C.(15).brigatinib_alk_nsclc_board",
+    "4.2.14.C.(15).lorlatinib_alk_ros1_board",
+    "4.2.14.C.(15).pemetrexed_nsclc_board"
+  ],
+  "drug_indication_4214c_batch_rules.py:BATCH_A2": [
+    "4.2.14.C.(2).daratumumab_mm_board",
+    "4.2.14.C.(2).lenalidomide_mm_board",
+    "4.2.14.C.(2).pomalidomide_mm_board",
+    "4.2.14.C.(2).azacitidine_mds_board",
+    "4.2.14.C.(2).decitabine_mds_board",
+    "4.2.14.C.(2).blinatumomab_all_board",
+    "4.2.14.C.(2).rituximab_lymphoma_board",
+    "4.2.14.C.(2).obinutuzumab_cll_board",
+    "4.2.14.C.(2).elranatamab_mm_board",
+    "4.2.14.C.(2).midostaurin_aml_board",
+    "4.2.14.C.(2).gilteritinib_aml_board",
+    "4.2.14.C.(2).fedratinib_mpn_board"
+  ],
+  "drug_indication_4214c_batch_rules.py:BATCH_A3": [
+    "4.2.14.C.(3).dasatinib_cml_board",
+    "4.2.14.C.(3).nilotinib_cml_board",
+    "4.2.14.C.(3).imatinib_cml_gist_board",
+    "4.2.14.C.(3).bosutinib_cml_board",
+    "4.2.14.C.(3).sorafenib_hcc_rcc_board",
+    "4.2.14.C.(3).sunitinib_rcc_board",
+    "4.2.14.C.(3).pazopanib_rcc_board",
+    "4.2.14.C.(3).regorafenib_crc_board",
+    "4.2.14.C.(3).cabozantinib_rcc_board",
+    "4.2.14.C.(3).dabrafenib_melanoma_board",
+    "4.2.14.C.(3).vemurafenib_melanoma_board",
+    "4.2.14.C.(3).trametinib_melanoma_board",
+    "4.2.14.C.(3).enzalutamide_prostate_board",
+    "4.2.14.C.(3).abiraterone_prostate_board",
+    "4.2.14.C.(3).apalutamide_prostate_board",
+    "4.2.14.C.(3).darolutamide_prostate_board",
+    "4.2.14.C.(3).olaparib_parpi_board",
+    "4.2.14.C.(3).temsirolimus_rcc_board",
+    "4.2.14.C.(3).everolimus_oncology_board",
+    "4.2.14.C.(3).sirolimus_oncology_board"
+  ],
+  "drug_indication_4214c_batch_rules.py:BATCH_A4": [
+    "4.2.14.C.(1).trastuzumab_her2_board",
+    "4.2.14.C.(1).pertuzumab_her2_board",
+    "4.2.14.C.(1).lapatinib_her2_board",
+    "4.2.14.C.(1).trastuzumab_emtansine_board",
+    "4.2.14.C.(1).panitumumab_crc_board",
+    "4.2.14.C.(1).ramucirumab_crc_board",
+    "4.2.14.C.(1).aflibercept_crc_board",
+    "4.2.14.C.(1).kabazitaxel_prostate_board",
+    "4.2.14.C.(1).paclitaxel_oncology_board",
+    "4.2.14.C.(1).vismodegib_bcc_board",
+    "4.2.14.C.(1).sonidegib_bcc_board",
+    "4.2.14.C.(1).interferon_oncology_board",
+    "4.2.14.C.(1).fotemustine_oncology_board",
+    "4.2.14.C.(1).temozolomide_oncology_board",
+    "4.2.14.C.(1).denosumab_oncology_board",
+    "4.2.14.C.(1).zoledronate_oncology_board",
+    "4.2.14.C.(1).idelalisib_cll_board",
+    "4.2.14.C.(1).gemtuzumab_aml_board",
+    "4.2.14.C.(1).niraparib_parpi_board",
+    "4.2.14.C.(1).etoposide_oncology_board"
+  ],
+  "drug_indication_4214c_sprint1_batch_rules.py:SPRINT1_NEW_RULES": [
+    "4.2.14.C.fluorouracil_topical_prescriber_only"
+  ],
+  "drug_indication_4214c_tier_b_batch_rules.py:PHASE2_TIER_B_RULES": [
+    "4.2.14.C.fulvestrant_6mo_hr_breast",
+    "4.2.14.C.fulvestrant_12mo_hr_breast",
+    "4.2.14.C.trastuzumab_3mo_ecg_board",
+    "4.2.14.C.ribociclib_6mo_hr_breast",
+    "4.2.14.C.palbociclib_6mo_hr_breast",
+    "4.2.14.C.ribociclib_12mo_hr_breast",
+    "4.2.14.C.palbociclib_12mo_hr_breast",
+    "4.2.14.C.bcg_intravesical_12mo_urology",
+    "4.2.14.C.alemtuzumab_cll_heme",
+    "4.2.14.C.tioguanin_fikra2_heme",
+    "4.2.14.C.tiotepa_fikra2_heme",
+    "4.2.14.C.clofarabine_fikra2_heme",
+    "4.2.14.C.bendamustine_fikra2_heme",
+    "4.2.14.C.ibrutinib_3mo_cll",
+    "4.2.14.C.nivolumab_6mo_nsclc",
+    "4.2.14.C.pembrolizumab_6mo_nsclc",
+    "4.2.14.C.erlotinib_6mo_nsclc",
+    "4.2.14.C.nivolumab_12mo_nsclc",
+    "4.2.14.C.ekulizumab_ahus_1mo_nephrology",
+    "4.2.14.C.ekulizumab_ahus_6mo_nephrology",
+    "4.2.14.C.trastuzumab_metastatic_prescriber_oncology",
+    "4.2.14.C.fikra1_second_tier_prescriber",
+    "4.2.14.C.fikra2_second_tier_prescriber",
+    "4.2.14.C.inpatient_hospital_supply_yatarak",
+    "4.2.14.C.aferez_1mo_heme_board"
+  ],
+  "drug_indication_4215_pilot_batch_rules.py:BATCH_A15_RULES": [
+    "4.2.15.clopidogrel_stent_no_report",
+    "4.2.15.clopidogrel_acs_no_report_acute",
+    "4.2.15.clopidogrel_family_medicine_renewal",
+    "4.2.15.clopidogrel_valve_cad_report",
+    "4.2.15.clopidogrel_peripheral_stent",
+    "4.2.15.clopidogrel_cabg_board",
+    "4.2.15.ranolazin_stable_angina_board",
+    "4.2.15.dabigatran_cardiology_board"
+  ],
+  "drug_indication_4216_a2b_batch_rules.py:BATCH_A2B_4216_RULES": [
+    "4.2.16.special_formula_ek4b_specialist_report",
+    "4.2.16.pediatric_metabolic_formula_3yr_board",
+    "4.2.16.celiac_gluten_free_1yr_gastro_report",
+    "4.2.16.celiac_gluten_free_3yr_board",
+    "4.2.16.infant_cmpa_hydrolyzed_formula_report",
+    "4.2.16.infant_cmpa_amino_acid_severe_formula",
+    "4.2.16.infant_cmpa_medical_formula_2025",
+    "4.2.16.malabsorption_special_formula_report",
+    "4.2.16.metabolic_formula_prescriber_fallback",
+    "4.2.16.special_formula_all_prescriber_with_report"
+  ],
+  "drug_indication_4216_tier_b_batch_rules.py:BATCH_4216_TIER_B_RULES": [
+    "4.2.16.protein_metabolism_specialist_prescriber",
+    "4.2.16.protein_metabolism_formula_diet_report"
+  ],
+  "drug_indication_4217_batch_rules.py:BATCH_A3_RULES": [
+    "4.2.17.osteoporosis_bmd_planning",
+    "4.2.17.secondary_osteoporosis_steroid_board",
+    "4.2.17.bisphosphonate_ho_no_bmd",
+    "4.2.17.bisphosphonate_specialist_report",
+    "4.2.17.strontium_raloxifene_bisph_fail",
+    "4.2.17.denosumab_board_report",
+    "4.2.17.calcitonin_vertebral_fracture_report",
+    "4.2.17.calcitonin_tertiary_bisph_fail",
+    "4.2.17.teriparatid_severe_osteoporosis_board"
+  ],
+  "drug_indication_4218_4236_batch_rules.py:BATCH_A5_RULES": [
+    "4.2.18.orlistat_monthly_prescription",
+    "4.2.36.parkinson_dopamine_agonists_report",
+    "4.2.36.tolcapone_tertiary_neurology_report",
+    "4.2.36.amantadine_sulfate_report",
+    "4.2.36.amantadine_hcl_parkinson_report"
+  ],
+  "drug_indication_4219_batch_rules.py:BATCH_A4_RULES": [
+    "4.2.19.triptan_neurology_prescriber",
+    "4.2.19.topiramate_migraine_prophylaxis"
+  ],
+  "drug_indication_4224_pilot_batch_rules.py:BATCH_A24_RULES": [
+    "4.2.24.formeterol_salmeterol_prescriber",
+    "4.2.24.montelukast_prescriber_report",
+    "4.2.24.biologic_tertiary_board",
+    "4.2.24.copd_inhaler_prescriber",
+    "4.2.24.montelukast_antihistamine_combo",
+    "4.2.24.nasal_cs_pediatric_prescriber",
+    "4.2.24.laba_lama_ics_triple_prior",
+    "4.2.24.laba_mono_invalid_prescription"
+  ],
+  "drug_indication_4227_a8_batch_rules.py:BATCH_A8_RULES": [
+    "4.2.27.coagulation_factor_board_report",
+    "4.2.27.prophylaxis_acute_bleed_3day_report",
+    "4.2.27.coagulation_emergency_one_day",
+    "4.2.27.pcc_acquired_coagulopathy_board",
+    "4.2.27.coumarin_active_bleed_one_day",
+    "4.2.27.factor_annual_board_report",
+    "4.2.27.vwf_weekly_unit_cap_board",
+    "4.2.27.vwf_acute_bleed_3day_report",
+    "4.2.27.emicizumab_hematology_monthly_prescription",
+    "4.2.27.human_albumin_inpatient_hypoalbuminemia"
+  ],
+  "drug_indication_4234_batch_rules.py:BATCH_MS4234_RULES": [
+    "4.2.34.first_line_dmt_neurology_report",
+    "4.2.34.fingolimod_neurology_report",
+    "4.2.34.natalizumab_neurology_report",
+    "4.2.34.ocrelizumab_rrms_report",
+    "4.2.34.cladribine_report_body_weight",
+    "4.2.34.alemtuzumab_neurology_report"
+  ],
+  "drug_indication_4235_4237_batch_rules.py:BATCH_A5_RULES": [
+    "4.2.35.duloxetine_diabetic_neuropathy_prescriber",
+    "4.2.35.neuropathic_pain_specialist_report",
+    "4.2.35.pregabalin_fibromyalgia_board_6mo",
+    "4.2.37.pegvisomant_init_board_2mo",
+    "4.2.37.pegvisomant_endocrine_prescriber"
+  ],
+  "drug_indication_4238_batch_rules.py:BATCH_A5_RULES": [
+    "4.2.38.first_line_oral_antidiabetic",
+    "4.2.38.analog_insulin_pioglitazone_specialist",
+    "4.2.38.degludec_aspart_unstable_glucose_board",
+    "4.2.38.dpp4_gliptin_specialist_report",
+    "4.2.38.glargine_lixisenatide_obesity_report"
+  ]
+}

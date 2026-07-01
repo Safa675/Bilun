@@ -201,9 +201,9 @@ def gate_b_summary(enriched: pl.DataFrame) -> dict[str, int]:
         return {}
     summary: dict[str, int] = {"total": enriched.height}
     for col in ("encode_tier", "encode_priority", "duplicate_of"):
-        for key, count in enriched.group_by(col).len().iter_rows():
+        for key, count in sorted(enriched.group_by(col).len().iter_rows()):
             summary[f"{col}:{key}"] = int(count)
-    return summary
+    return dict(sorted(summary.items()))
 
 
 def clause_ids_for_drug_names(

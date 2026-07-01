@@ -1,0 +1,51 @@
+section_id: 2.4.4.L
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.L.(1).diskoplasty_ek2c_3rd_step_only
+  sut_section: 2.4.4.L
+  condition:
+    procedure_code_any:
+    - P551120
+    - P615895
+    - P615991
+    billing_basis: other
+  action:
+    billable: true
+    enforcement: pricing_basis
+    message_tr: P551120, P615895 ve P615991 kodlu işlemler sadece SUT EK-2/C Listesinde belirtilen puanlar üzerinden faturalandırılır;
+      bedelleri algoloji, beyin cerrahisi ve ortopedi ve travmatoloji branş hekimlerince üçüncü basamak sunucularında yapılması
+      halinde Kurumca karşılanır
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001352
+- rule_id: 2.4.4.L.(2).diskoplasty_3_specialty_board_report_required
+  sut_section: 2.4.4.L
+  condition:
+    procedure_code_any:
+    - P551120
+    - P615895
+    - P615991
+    health_board_report_present: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: transsakral girişimle kamera eşliğinde lomber epidural diskoplasti/adezyolizis/nöroplasti amaçlı işlemlerin
+      yapılabilmesi için algoloji, nöroloji, fiziksel tıp ve rehabilitasyon, ortopedi ve travmatoloji ile beyin cerrahisi
+      branşlarından herhangi üç uzman hekim tarafından oluşturulan sağlık kurulu raporu düzenlenmesi gerekir
+    severity: error
+  gate_b_sources:
+  - C001353
+- rule_id: 2.4.4.L.(3).diskoplasty_covered_when_conditions_met
+  sut_section: 2.4.4.L
+  condition:
+    procedure_code_any:
+    - P551120
+    - P615895
+    - P615991
+    conditions_met: true
+  action:
+    billable: true
+    enforcement: coverage
+    message_tr: uygun şartlarda yapılan işlemin bedeli Kurumca karşılanır
+  gate_b_sources:
+  - C001360

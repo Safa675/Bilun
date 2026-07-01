@@ -1,0 +1,76 @@
+section_id: 4.2.23
+rules:
+- rule_id: 4.2.23.itraconazole_oral_ek4e_105
+  sut_section: 4.2.23
+  gate_b_sources:
+  - C006094
+  drug_names:
+  - itrakonazol
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: itrakonazol'ün oral formları (solüsyon hariç) SUT eki EK-4/E 10.5 maddesinde belirtildiği şekilde reçetelenir
+    message_tr: Itrakonazol'ün oral formları (solüsyon formları hariç), SUT eki Sistemik Antimikrobik ve Diğer İlaçların Reçeteleme
+      Kuralları Listesi'nin (EK-4/E) 10.5 maddesinde belirtildiği şekilde reçetelenebilecektir (§4.2.23).
+- rule_id: 4.2.23.neutropenia_prophylaxis_nopay
+  sut_section: 4.2.23
+  gate_b_sources:
+  - C006092
+  - C006103
+  - C006104
+  - C006116
+  drug_names:
+  - posakonazol
+  - itrakonazol
+  - vorikonazol
+  - flukonazol
+  pay: false
+  action:
+    enforcement: 'no-pay condition: 10 gün veya daha uzun süreyle nötropeni olması beklenen diğer hastalarda aspergilloz ve
+      candida enfeksiyonlarının profilaksisi endikasyonunda ödenmez'
+    message_tr: 10 gün veya daha uzun süreyle nötropeni olması beklenen diğer hastalarda aspergilloz ve candida enfeksiyonlarının
+      profilaksisi endikasyonunda ödenmez (§4.2.23).
+- rule_id: 4.2.23.posaconazole_parenteral_oral_unable
+  sut_section: 4.2.23
+  gate_b_sources:
+  - C006096
+  drug_names:
+  - posakonazol
+  report_required: true
+  action:
+    enforcement: posakonazol'ün parenteral formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir; invazif
+      mantar enfeksiyonu profilaksisi endikasyonu
+    message_tr: Belirtilen hastalardaki invazif mantar enfeksiyonlarının profilaksisinde kullanılır. Posakonazol'ün parenteral
+      formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir (§4.2.23).
+- rule_id: 4.2.23.systemic_fungal_infection_coverage
+  sut_section: 4.2.23
+  gate_b_sources:
+  - C006090
+  - C006100
+  - C006101
+  - C006118
+  drug_names:
+  - itrakonazol
+  - posakonazol
+  - vorikonazol
+  - flukonazol
+  - kasopofungin
+  - anidulafungin
+  - mikafungin
+  icd10_codes:
+  - B37
+  - B44
+  - B45
+  - B49
+  - B40
+  - B43
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: bu maddedeki etken maddeli ilaçların sistemik mantar enfeksiyonları tedavisinde kullanımı bedelleri Kurumca
+      karşılanır
+    message_tr: Bu maddede belirtilen etken maddeli ilaçların sistemik mantar enfeksiyonları tedavisinde kullanılması halinde
+      bedelleri Kurumca karşılanır (§4.2.23).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

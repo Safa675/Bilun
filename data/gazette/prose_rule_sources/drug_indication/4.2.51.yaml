@@ -1,0 +1,52 @@
+section_id: 4.2.51
+rules:
+- rule_id: 4.2.51.neuro.droxidopa_dbh_deficiency_coverage
+  sut_section: 4.2.51
+  gate_b_sources:
+  - C007058
+  drug_names:
+  - droxidopa
+  - northera
+  - dihidroksifenilserin
+  - L-DOPS
+  icd10_codes:
+  - G90.3
+  - I95.1
+  condition:
+    coverage_note: true
+  action:
+    enforcement: enzim düzeyi ve/veya moleküler tetkikle dopamin beta hidroksilaz eksikliği tespit edilen ve diğer tedavi
+      seçeneklerine yanıt alınamayan semptomatik nörojenik ortostatik hipotansiyon tedavisinde ödenir
+    message_tr: Enzim düzeyi ölçülmek suretiyle ve/veya moleküler tetkik ile dopamin beta hidroksilaz eksikliğinin tespit
+      edildiği ve diğer tedavi seçeneklerine yanıt alınamayan semptomatik nörojenik ortostatik hipotansiyon hastalığının tedavisinde
+      kullanılması halinde bedelleri Kurumca karşılanır (§4.2.51).
+- rule_id: 4.2.51.neuro.droxidopa_tertiary_metabolism_cardiology_coverage
+  sut_section: 4.2.51
+  gate_b_sources:
+  - C007059
+  drug_names:
+  - droxidopa
+  - northera
+  - dihidroksifenilserin
+  - L-DOPS
+  icd10_codes:
+  - G90.3
+  - I95.1
+  report_required: true
+  report_specialties:
+  - metabolizma hastalıkları
+  - endokrinoloji
+  - kardiyoloji
+  prescriber_specialties:
+  - metabolizma hastalıkları
+  - endokrinoloji
+  - kardiyoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basamak resmi sağlık hizmet sunucusunda metabolizma hastalıkları, endokrinoloji ve kardiyoloji uzmanının
+      yer aldığı sağlık kurulu raporuyla bu uzmanlarca reçete edilirse ödenir
+    message_tr: Üçüncü basamak resmi sağlık hizmet sunucularında düzenlenen metabolizma hastalıkları, endokrinoloji ve kardiyoloji
+      uzmanının yer aldığı sağlık kurulu raporuna dayanılarak metabolizma hastalıkları, endokrinoloji ve kardiyoloji uzman
+      hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.51).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

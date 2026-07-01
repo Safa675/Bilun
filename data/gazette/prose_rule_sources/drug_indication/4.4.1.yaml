@@ -1,0 +1,81 @@
+section_id: 4.4.1
+rules:
+- rule_id: 4.4.1.discount_reference_basis_regulatory
+  sut_section: 4.4.1
+  gate_b_sources:
+  - C007725
+  action:
+    enforcement: 'regulatory: in the public-institution discounts and additional-discount provisions, reference/equivalent/price-protected
+      status is determined per MoH legislation; discount applications for status changes are evaluated by the Institution'
+    message_tr: Kamu kurum iskontoları ve ilave iskonto uygulamalarında ilaçların referans, eşdeğer, fiyat korumalı gibi durumlarının
+      belirlenmesinde Sağlık Bakanlığı düzenlemeleri esas alınır; durum değişikliklerine ilişkin iskonto uygulamaları Kurumca
+      değerlendirilir (§4.4.1).
+- rule_id: 4.4.1.discount_reference_basis_regulatory_dup
+  sut_section: 4.4.1
+  gate_b_sources:
+  - C008258
+  action:
+    enforcement: 'regulatory (duplicate provision): public-institution discounts and additional discounts — reference/equivalent/price-protected
+      status per MoH legislation; status-change discounts evaluated by the Institution'
+    message_tr: Kamu kurum iskontoları ve ilave iskonto uygulamalarında ilaçların referans, eşdeğer, fiyat korumalı durumlarının
+      belirlenmesinde Sağlık Bakanlığı düzenlemeleri esas alınır; durum değişikliklerine ilişkin iskonto uygulamaları Kurumca
+      değerlendirilir (§4.4.1).
+- rule_id: 4.4.1.new_molecule_1year_additional_discount_exempt
+  sut_section: 4.4.1
+  gate_b_sources:
+  - C007745
+  condition:
+    new_molecule_ek4a_entry: true
+    additional_discount_exempt_months: 12
+  action:
+    enforcement: 'exemption: new molecules / therapy-innovation products not previously in EK-4/A, upon admission, are exempt
+      from additional discounts for 1 year from entry date; for §4.3(8)-paid drugs this period starts from EK-4/A entry-request
+      date; the 1-year exemption per molecule ends when the period for the first-entering pharmaceutical form across all forms
+      ends'
+    message_tr: Piyasaya verilecek, EK-4/A'da bulunmayan yeni moleküller ile tedaviye yenilik getirecek ürünlerin EK-4/A'ya
+      kabulü halinde, listeye girdiği tarihten itibaren 1 yıl ilave iskontolardan muaf tutulur; §4.3 sekizinci fıkra kapsamında
+      ödenen ilaçlar için bu süre EK-4/A giriş talep tarihinden başlar; molekülün ilave iskontodan muafiyet süresi tüm farmasötik
+      formlar için listeye ilk giren formun süresi bitiminde sona erer (§4.4.1).
+- rule_id: 4.4.1.new_molecule_1year_additional_discount_exempt_dup
+  sut_section: 4.4.1
+  gate_b_sources:
+  - C008278
+  condition:
+    new_molecule_ek4a_entry: true
+    additional_discount_exempt_months: 12
+  action:
+    enforcement: 'exemption (duplicate provision): new molecules / therapy-innovation products admitted to EK-4/A exempt from
+      additional discounts for 1 year; §4.3(8)-paid drugs start from EK-4/A entry-request date; exemption ends when the first-entering
+      form''s period ends'
+    message_tr: Yeni moleküller ile tedaviye yenilik getirecek ürünlerin EK-4/A'ya kabulü halinde listeye girdiği tarihten
+      itibaren 1 yıl ilave iskontolardan muaf tutulur; §4.3 sekizinci fıkra kapsamındaki ilaçlar için EK-4/A giriş talep tarihinden
+      başlar; muafiyet süresi ilk giren formun süresi bitiminde sona erer (§4.4.1).
+- rule_id: 4.4.1.provider_cannot_charge_price_gap_prohibited
+  sut_section: 4.4.1
+  gate_b_sources:
+  - C007747
+  pay: false
+  action:
+    enforcement: 'prohibited: outpatient/inpatient contracted providers invoice their own-pharmacy-supplied drugs at the equivalent-drug
+      max unit price per the above rules, applying public discount + 3.5% pharmacist discount; if a gap exists between purchase
+      price and equivalent-drug max paid price, the difference may NOT be charged to the person; ''depocu fiyatlı ilaçlar''
+      (no free-pharmacy sale) are billed at depot price with EK-4/A discounts (incl. special), no pharmacist discount'
+    message_tr: Ayakta/yatarak tedavi sunan sözleşmeli sunucular, kendi eczanelerinden temin ettikleri ilaçları da Kurum eşdeğer
+      ilaç azami birim bedeli esas alınarak kamu kurum iskontosu ve %3,5 eczacı indirimi uygulanarak fatura eder; satın alma
+      bedeli ile eşdeğer ilacın Kurumca ödenen azami fiyatı arasındaki fark kişilerden talep edilemez; serbest eczane satışı
+      olmayan 'depocu fiyatlı ilaçlar'a depocu satış fiyatı üzerinden EK-4/A indirimleri (özel iskontolar dahil) uygulanır,
+      ek olarak eczacı indirimi uygulanmaz (§4.4.1).
+- rule_id: 4.4.1.provider_cannot_charge_price_gap_prohibited_dup
+  sut_section: 4.4.1
+  gate_b_sources:
+  - C008280
+  pay: false
+  action:
+    enforcement: 'prohibited (duplicate provision): contracted providers invoice own-pharmacy drugs at equivalent-drug max
+      unit price with public discount + 3.5% pharmacist discount; the gap between purchase and max-paid price may NOT be charged
+      to the person; ''depocu fiyatlı ilaçlar'' use depot price + EK-4/A discounts, no pharmacist discount'
+    message_tr: Sözleşmeli sunucular kendi eczanelerinden temin ettikleri ilaçları eşdeğer ilaç azami birim bedeli üzerinden
+      kamu kurum iskontosu ve %3,5 eczacı indirimiyle fatura eder; satın alma bedeli ile azami ödenen fiyat arasındaki fark
+      kişilerden talep edilemez; 'depocu fiyatlı ilaçlar'a depocu satış fiyatı üzerinden EK-4/A indirimleri uygulanır, eczacı
+      indirimi uygulanmaz (§4.4.1).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

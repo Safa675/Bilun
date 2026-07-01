@@ -1,0 +1,61 @@
+section_id: 4.2.33.Ç
+source_note: Exported from anti_vegf_prose.json (YAML source migration)
+rules:
+- rule_id: 4.2.33.Ç.bevacizumab_dmo
+  sut_section: 4.2.33.Ç
+  drug_names:
+  - bevacizumab
+  icd10_codes:
+  - E10.3
+  - E11.3
+  - E13.3
+  - E14.3
+  indication_tr: Diyabetik maküler ödem (DMÖ)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  loading_dose_count: 3
+  gate_b_sources:
+  - C006570
+  - C006571
+  message_tr: Bevacizumab (DMÖ) — ilk tedavi; günübirlik kapsamda 3 yükleme dozu; cevapsızlıkta 1 kez deksametazon ITV (§4.2.33.Ç).
+- rule_id: 4.2.33.Ç.deksametazon_itv_dmo
+  sut_section: 4.2.33.Ç
+  drug_names:
+  - deksametazon
+  icd10_codes:
+  - E10.3
+  - E11.3
+  - E13.3
+  - E14.3
+  indication_tr: Diyabetik maküler ödem (DMÖ) — bevacizumab kontrendike ise
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  max_applications_per_year: 2
+  gate_b_sources:
+  - C006570
+  message_tr: Deksametazon ITV implant (DMÖ) — bevacizumab kontrendike ise 1 defaya mahsus; yılda maks 2 (§4.2.33.Ç).
+- rule_id: 4.2.33.Ç.deksametazon_timing_after_anti_vegf
+  sut_section: 4.2.33.Ç
+  drug_names:
+  - deksametazon
+  icd10_codes:
+  - E10.3
+  - E11.3
+  - E13.3
+  - E14.3
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  message_tr: Deksametazon ITV — anti-VEGF yükleme sonrası idame sırasında veya anti-VEGF kontrendikasyonunda; yılda maks
+    2 uygulama (§4.2.33/12).
+  gate_b_sources:
+  - C006558
+  max_applications_per_year: 2

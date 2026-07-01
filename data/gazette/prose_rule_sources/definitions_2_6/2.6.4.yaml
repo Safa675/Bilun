@@ -1,0 +1,25 @@
+section_id: 2.6.4
+rules:
+- rule_id: 2.6.4.(b).control_call_document_required
+  sut_section: 2.6.4
+  gate_b_sources:
+  - C001577
+  condition:
+    definition_scope: Kontrol çağrısı sevklerinde kontrol çağrı belgesinin ibraz zorunluluğu
+    applies_to: 1. basamak kontrol çağrısı sevkleri
+  action:
+    enforcement: gate
+    message_tr: Kontrol çağrısı sevklerinde yol gideri ödenirken kontrol çağrı belgesi sevk belgesiyle birlikte ibraz edilmelidir;
+      hekim imza/kaşesi olmayan belge kabul edilmez.
+- rule_id: 2.6.4.(c).non_listed_control_call_not_covered
+  sut_section: 2.6.4
+  gate_b_sources:
+  - C001579
+  condition:
+    expense_not_covered: ilk_fikrada_sayilmayan_tedavi_hastalik_kontrol_cagrisi_giderleri
+    applies_to: Birinci fıkra kapsamı dışındaki tedavi/hastalık kontrol çağrıları
+  action:
+    enforcement: reject
+    message_tr: Birinci fıkrada sayılan tedaviler/hastalıklar dışında kalan tedavilerin/hastalıkların kontrol amaçlı çağrılarına
+      ilişkin giderler Kurumca karşılanmaz.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

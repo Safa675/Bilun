@@ -1,0 +1,27 @@
+section_id: 2.5.3.A-2
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.5.3.A-2.(2).overseas_duration_cannot_exceed_report
+  sut_section: 2.5.3.A-2
+  condition:
+    overseas_treatment_days:
+      min: 1
+    report_duration_exceeded: true
+    medical_extension_unapproved: true
+  action:
+    billable: false
+    denial_tr: yurt dışı tedavi süresi raporu geçemez; Kurum onaysız uzatma ödenmez
+    severity: error
+  gate_b_sources:
+  - C001431
+- rule_id: 2.5.3.A-2.(4).organ_transplant_wait_in_host_country
+  sut_section: 2.5.3.A-2
+  condition:
+    overseas_organ_transplant: true
+    host_country_wait_documented: false
+  action:
+    billable: false
+    denial_tr: organ nakli için yurt dışına gönderilenin organ teminine kadar bekleme süresi hedef ülkede geçmeli (belgeli)
+    severity: error
+  gate_b_sources:
+  - C001433

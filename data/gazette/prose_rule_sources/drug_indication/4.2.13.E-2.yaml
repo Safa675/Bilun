@@ -1,0 +1,39 @@
+section_id: 4.2.13.E-2
+rules:
+- rule_id: 4.2.13.hcv_ribavirin_combo_report
+  sut_section: 4.2.13.E-2
+  drug_names:
+  - ribavirin
+  icd10_ranges:
+  - B18.2
+  - B17.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HCV ribavirin kombinasyonu — kronik hepatit C endikasyonu ve uzman hekim raporu gerekir (§4.2.13).
+  gate_b_sources:
+  - C004911
+- rule_id: 4.2.13.hcv_ribavirin_genotype_duration
+  sut_section: 4.2.13.E-2
+  drug_names:
+  - ribavirin
+  - rebetol
+  - copegus
+  - interferon
+  - pegile interferon
+  - peginterferon
+  - pegasys
+  - peg intron
+  icd10_ranges:
+  - B18.2
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HCV ribavirin kombinasyonu — genotip 1/4 için 48 hafta; 12. hafta HCV RNA 2 log azalmama halinde süre sınırı
+    uygulanır (§4.2.13.E-2).
+  gate_b_sources:
+  - C004912
+  report_duration_months: 48
+source_note: Exported from drug_indication_prose.json (YAML source migration)

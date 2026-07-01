@@ -1,0 +1,48 @@
+section_id: 4.2.15.D-2
+rules:
+- rule_id: 4.2.15.D_2.report_renewal_to_continue
+  sut_section: 4.2.15.D-2
+  gate_b_sources:
+  - C005860
+  drug_names:
+  - klopidogrel
+  - prasugrel
+  - tikagrelor
+  report_required: true
+  action:
+    enforcement: rapor süresi bitiminde tedaviye devam kararı verilirse bu durumun belirtildiği yeni rapor düzenlenerek tedaviye
+      devam
+    message_tr: Rapor süresinin bitiminde ilaç tedavisinin devamına karar verilmesi halinde, bu durumun belirtildiği yeni
+      rapor düzenlenerek tedaviye devam edilebilir (§4.2.15.D-2).
+- rule_id: 4.2.15.D_2.three_specialty_1yr_report
+  sut_section: 4.2.15.D-2
+  gate_b_sources:
+  - C005859
+  drug_names:
+  - klopidogrel
+  - prasugrel
+  - tikagrelor
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  - göğüs hastalıkları
+  - kalp damar cerrahisi
+  - nöroloji
+  prescriber_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  - göğüs hastalıkları
+  - kalp damar cerrahisi
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: tanımlı durumların; aynı uzmanlıktan üçünün veya bu uzmanlıklardan herhangi üçünün bulunduğu 1 yıl süreli
+      sağlık kurulu raporuyla reçete edilirse ödenir; ilk iki rapor (24 ay) sonrası aile hekimleri de rapor düzenleyebilir
+    message_tr: Tanımlanan durumların belirtildiği kardiyoloji, iç hastalıkları, göğüs hastalıkları, kalp damar cerrahisi
+      uzman hekimlerinden aynı uzmanlık dalından üçünün veya bu uzmanlık dallarından herhangi üçünün bulunduğu 1 yıl süreli
+      sağlık kurulu raporuyla bu uzmanlarca reçete edilmesi halinde bedeli ödenir; ilk iki rapor süresi (toplam 24 ay) sonunda
+      sonraki raporlar bu uzmanlarca ve aile hekimlerince düzenlenen rapora istinaden reçete edilebilir (§4.2.15.D-2).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

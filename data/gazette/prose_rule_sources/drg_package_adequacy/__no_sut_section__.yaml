@@ -1,0 +1,22 @@
+section_id: null
+source_note: Exported from drg_package_adequacy_prose.json (YAML source migration)
+rules:
+- rule_id: adequacy.609270
+  package_code: '609270'
+  ek2c_group: A3
+  required_procedure_codes:
+  - '600150'
+  message_tr: Temel paket 609270 yalnızca 600150 işlem ayak izini gerektirir.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.
+- rule_id: adequacy.609300
+  package_code: '609300'
+  ek2c_group: A3
+  required_procedure_codes:
+  - '600150'
+  - '600160'
+  message_tr: Genişletilmiş paket 609300; 600150 ve 600160 birlikte gerçekleştirildiğinde kod gözden geçirilmelidir.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.

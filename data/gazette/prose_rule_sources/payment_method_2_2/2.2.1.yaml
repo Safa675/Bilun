@@ -1,0 +1,15 @@
+section_id: 2.2.1
+source_note: Exported from payment_method_2_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.1.(20).class3_package_surcharge
+  sut_section: 2.2.1
+  condition:
+    facility_class: EK-2/A-1.Sınıf-3
+    procedure_in_annex: EK-2/C-1
+  action:
+    payment_method: package
+    payment_method_tr: Sınıf-3 EK-2/C-1 işlem oranı ilavesi ile paket
+    bill_materials_separately: true
+    bill_drugs_separately: true
+  gate_b_sources:
+  - C000538

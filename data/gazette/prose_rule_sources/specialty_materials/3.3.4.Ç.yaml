@@ -1,0 +1,37 @@
+section_id: 3.3.4.Ç
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.4.C.(1).dura_defect_uncovered_by_autograft
+  sut_section: 3.3.4.Ç
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002972
+  condition:
+    dura_defect_uncovered_by_autograft: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Otojen greftlerle kapatılamayan dura defekti olan vakalarda bedeli Kurumca karşılanır (§3.3.4.Ç(1)).
+- rule_id: 3.3.4.C.(2).dura_graft_coverage_general
+  sut_section: 3.3.4.Ç
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002973
+  condition:
+    dura_graft_indication_coverage: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Dura greftleri tanımlı endikasyonlarda kullanılması halinde Kurumca karşılanır (§3.3.4.Ç(2)).
+- rule_id: 3.3.4.C.c.intramedullary_intradural_spinal_coverage
+  sut_section: 3.3.4.Ç
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002976
+  condition:
+    dura_graft_intramedullary_intradural_spinal: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Dekompresyon/disk/kırık cerrahisi hariç intramedüller/intradural spinal cerrahide dura grefti Kurumca karşılanır
+      (§3.3.4.Ç(c)).

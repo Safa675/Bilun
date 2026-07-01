@@ -1,0 +1,60 @@
+section_id: 4.2.28.A-1
+rules:
+- rule_id: 4.2.28.A_1.high_dose_statin_report
+  sut_section: 4.2.28.A-1
+  gate_b_sources:
+  - C006317
+  drug_names:
+  - rosuvastatin 20 mg ve üzeri
+  - atorvastatin 40 mg ve üzeri
+  - simvastatin 40 mg ve üzeri
+  - pravastatin 40 mg ve üzeri
+  - fluvastatin 80 mg ve üzeri
+  icd10_codes:
+  - E78
+  report_required: true
+  report_specialties:
+  - kardiyoloji
+  - kalp damar cerrahisi
+  - endokrinoloji
+  - geriatri
+  - nöroloji
+  - iç hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'rosuvastatin ≥20 mg, atorvastatin/simvastatin/pravastatin ≥40 mg, fluvastatin ≥80 mg (kombinasyonları dahil):
+      bu uzmanlarca düzenlenen raporla tüm hekimlerce; ilk rapor (24 ay) sonrası devam raporları aile hekimliğince de düzenlenebilir'
+    message_tr: Rosuvastatinin 20 mg ve üzeri, atorvastatin/simvastatin/pravastatinin 40 mg ve üzeri, fluvastatinin 80 mg
+      ve üzeri dozları (kombinasyonları dahil) kardiyoloji, kalp damar cerrahisi, endokrinoloji, geriatri, nöroloji veya iç
+      hastalıkları uzmanlarınca düzenlenen rapora dayanılarak tüm hekimlerce reçete edilir; ilk rapor süresi (24 ay) sonunda
+      devam raporlarının aile hekimliği uzmanlarınca da düzenlenmesi halinde bedelleri Kurumca karşılanır (§4.2.28.A-1).
+- rule_id: 4.2.28.A_1.initial_report_two_lipid_panels
+  sut_section: 4.2.28.A-1
+  gate_b_sources:
+  - C006316
+  drug_names:
+  - statin
+  - atorvastatin
+  - rosuvastatin
+  - simvastatin
+  - pravastatin
+  - fluvastatin
+  icd10_codes:
+  - E78
+  report_required: true
+  report_specialties:
+  - kardiyoloji
+  - kalp damar cerrahisi
+  - endokrinoloji
+  - iç hastalıkları
+  - nöroloji
+  - geriatri
+  action:
+    enforcement: ilk raporda son 6 ay içinde ≥1 hafta arayla iki kan lipid ölçümünün de yüksek olduğunu gösteren tetkik; rapor
+      süresince tetkik değerlendirilmez, yenilemede lipid istenmez; ≥6 ay ara verilirse başlangıç kriterleri aranır
+    message_tr: Tedaviye başlamaya esas ilk uzman raporunda, rapor öncesi son 6 ay içinde (a/b/c bentleri için) en az bir
+      hafta ara ile iki kez yapılmış kan lipid ölçümlerinin her ikisinin de yüksek olduğunu gösteren tetkik belirtilir; rapor
+      süresince tetkikler değerlendirilmez, yenilemede lipid sonucu istenmez, ≥6 ay ara verilirse başlangıç kriterleri yeniden
+      aranır (§4.2.28.A-1).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

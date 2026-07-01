@@ -1,0 +1,14 @@
+section_id: 4.1.8
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 4.1.8.(3).ek4d_no_copay_ek4f_copay
+  sut_section: 4.1.8
+  condition:
+    drug_in_ek4f_list: true
+    drug_in_ek4d_list: false
+  action:
+    billable: true
+    copay_required: true
+    payment_tr: EK-4/F'de olup EK-4/D'de olmayan ilaçlardan katılım payı alınır
+  gate_b_sources:
+  - C003537

@@ -1,0 +1,17 @@
+section_id: 4.2.24.A
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.24.A.(7).laba_iks_mono_offlabel_no_pay
+  sut_section: 4.2.24.A
+  condition:
+    drug_class_any:
+    - laba
+    - inhaled_corticosteroid
+    prescribed_as: mono_or_offlabel_combo
+  action:
+    billable: false
+    denial_tr: LABA ve İKS mono veya sabit doz kombinasyonu dışında reçete edilirse ödenmez
+    severity: error
+  gate_b_sources:
+  - C006148
+  gate_b_sources_extra: []

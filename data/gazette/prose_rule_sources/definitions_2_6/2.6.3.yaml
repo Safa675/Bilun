@@ -1,0 +1,42 @@
+section_id: 2.6.3
+rules:
+- rule_id: 2.6.3.(1).companion_one_person_documentation
+  sut_section: 2.6.3
+  gate_b_sources:
+  - C001571
+  condition:
+    definition_scope: Bir kişiyle sınırlı refakatçi gideri için tıbbi gereklilik + refakat teyiti
+    applies_to: Refakatçi gideri
+    max_companions: 1
+    documentation_exempt_for:
+    - 40_pct_disabled
+    - organ_tissue_transplant
+    - limb_replantation
+    - under_18
+  action:
+    enforcement: gate
+    message_tr: Refakatçi gideri bir kişiyle sınırlıdır; sevk eden sunucu tıbbi gerekliliği, müracaat edilen sunucu refakat
+      eşliğini elektronik/ EK-2/F ile belirtmelidir (%40+ engelli, nakil/replantasyon ve 18 yaş altı için koşul aranmaz).
+- rule_id: 2.6.3.(3).icu_companion_daily_allowance
+  sut_section: 2.6.3
+  gate_b_sources:
+  - C001573
+  condition:
+    definition_scope: Yoğun bakım yatarak tedavi süresince sunucuda kalınmayan günler için refakatçiye gündelik
+    applies_to: Refakatçi — yoğun bakım
+  action:
+    enforcement: gate
+    message_tr: Hastanın yoğun bakım yatarak tedavi süresince, sunucuda kalınmayan her gün için refakatçiye gündelik ödenir.
+- rule_id: 2.6.3.(2).companion_ek2b_point_no_separate_daily
+  sut_section: 2.6.3
+  gate_b_sources:
+  - C001572
+  condition:
+    expense_not_billed: ayrica_gundelik_veya_outpatient_refakat_kodu
+    applies_to: Yatarak tedavide refakatçi yatak/yemek gideri ve günübirlik tedaviler
+  action:
+    enforcement: reject
+    message_tr: Yatarak tedavi sırasında refakatçinin yatak ve yemek giderleri, sunucuca Kuruma fatura edilmesi halinde SUT
+      eki EK-2/B “refakat” puanı esas alınarak karşılanır; ayrıca bu günler için ilgililere gündelik ödenmez. Günübirlik tedavilerde
+      SUT eki EK-2/B “refakat” kodu faturalandırılamaz.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

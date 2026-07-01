@@ -1,0 +1,30 @@
+section_id: 4.2.56
+rules:
+- rule_id: 4.2.56.meta.classic_pku_sapropterin_metabolic_coverage
+  sut_section: 4.2.56
+  gate_b_sources:
+  - C007079
+  drug_names:
+  - sapropterin
+  - sapropterin dihidroklorür
+  icd10_codes:
+  - E70.0
+  report_required: true
+  report_specialties:
+  - çocuk metabolizma hastalıkları
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  prescriber_specialties:
+  - çocuk metabolizma hastalıkları
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: '8 yaş ve üzerinde, diyete uyum gösteremeyen ve tıbbi mama kullanamayan klasik fenilketonüri: çocuk metabolizma
+      hastalıkları veya çocuk endokrinolojisi ve metabolizma hastalıkları uzmanının raporuyla bu hekimlerce veya çocuk sağlığı
+      ve hastalıkları uzmanlarınca reçete edilirse ödenir'
+    message_tr: 8 yaş ve üzerinde, diyete uyum gösteremeyen ve tıbbi mama kullanamayan klasik fenilketonüri hastalığında,
+      çocuk metabolizma hastalıkları veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimi tarafından düzenlenen
+      uzman hekim raporuna dayanılarak bu hekimlerce veya çocuk sağlığı ve hastalıkları uzman hekimlerince reçete edilmesi
+      halinde bedelleri Kurumca karşılanır (§4.2.56).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

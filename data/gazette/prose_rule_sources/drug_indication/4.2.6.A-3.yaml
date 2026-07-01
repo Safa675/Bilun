@@ -1,0 +1,27 @@
+section_id: 4.2.6.A-3
+rules:
+- rule_id: 4.2.6.turner_somatropin_pediatric_board
+  sut_section: 4.2.6.A-3
+  drug_names:
+  - somatropin
+  - somatrogon
+  - büyüme hormonu
+  - buyume hormonu
+  - genotropin
+  - norditropin
+  - omnitrope
+  - saizen
+  - nutropin
+  icd10_ranges:
+  - Q96
+  message_tr: Turner sendromu somatropin — epifizleri açık, klinik/genetik tanılı hastada en az bir çocuk endokrinoloji uzman
+    hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl) ve çocuk endokrinoloji uzman reçetesi gerekir (§4.2.6.A-3).
+  gate_b_sources:
+  - C004003
+  report_required: true
+  report_specialties:
+  - çocuk endokrinoloji
+  prescriber_specialties:
+  - çocuk endokrinoloji
+  report_duration_months: 12
+source_note: Exported from drug_indication_prose.json (YAML source migration)

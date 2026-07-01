@@ -1,0 +1,18 @@
+section_id: 1.8.5.(14)
+source_note: Exported from copay_general_1_8.json (YAML source migration)
+rules:
+- rule_id: 1.8.5.(14).kanun_2828
+  sut_section: 1.8.5.(14)
+  service_type: copay_exemption
+  exemption_category: kanun_2828
+  condition:
+    legal_basis: '2828'
+    patient_status: protection_care_rehab_beneficiary
+  action:
+    copay_treatment: no_copay
+    waives_sections:
+    - 1.8.1
+    - 1.8.2
+    - 1.8.3
+  gate_b_sources:
+  - C000368

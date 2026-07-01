@@ -1,0 +1,29 @@
+section_id: 4.2.10.D-2
+rules:
+- rule_id: 4.2.10.npc_board_report_6mo
+  sut_section: 4.2.10.D-2
+  drug_names:
+  - miglustat
+  - zavesca
+  icd10_ranges:
+  - E75.24
+  message_tr: Niemann-Pick Tip C tedavisi — gastroenteroloji, çocuk metabolizma veya nöroloji uzman hekimlerinin yer aldığı
+    6 aylık sağlık kurulu raporu gerekir (§4.2.10.D-2).
+  gate_b_sources:
+  - C004379
+  - C004380
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - çocuk metabolizma
+  - çocuk endokrinolojisi ve metabolizma
+  - nöroloji
+  report_duration_months: 6
+  prescriber_specialties:
+  - gastroenteroloji
+  - çocuk metabolizma
+  - çocuk endokrinolojisi ve metabolizma
+  - nöroloji
+  - çocuk sağlığı ve hastalıkları
+  - iç hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

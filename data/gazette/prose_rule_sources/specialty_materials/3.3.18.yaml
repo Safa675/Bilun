@@ -1,0 +1,17 @@
+section_id: 3.3.18
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.18.b.brons_dilatasyon_balonu_must_bill
+  sut_section: 3.3.18
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003185
+  condition:
+    material_name_any:
+    - bronş dilatasyon balonu
+    - brons dilatasyon balonu
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Bronş dilatasyon balonları — trakeobronşiyal malign/benign darlıkların dilatasyonu ve hayatı tehdit eden hemoptizilerde
+      kanayan tarafın ana bronşunu oblitere etmek durumlarında kullanılması halinde bedeli Kurumca karşılanır (§3.3.18).

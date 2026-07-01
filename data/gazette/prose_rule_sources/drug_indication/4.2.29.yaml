@@ -1,0 +1,63 @@
+section_id: 4.2.29
+rules:
+- rule_id: 4.2.29.hormones.dienogest_monocomponent_coverage
+  sut_section: 4.2.29
+  gate_b_sources:
+  - C006361
+  drug_names:
+  - dienogest
+  report_specialties:
+  - kadın hastalıkları ve doğum
+  prescriber_specialties:
+  - tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: tek başına dienogest etken maddeli ilaçlar kadın hastalıkları ve doğum uzmanlarınca veya bu uzmanların raporuyla
+      tüm hekimlerce reçete edilirse ödenir
+    message_tr: Tek başına dienogest etkin maddesi içeren ilaçlar kadın hastalıkları ve doğum uzman hekimlerince veya bu uzman
+      hekimler tarafından düzenlenen uzman hekim raporuna dayanılarak tüm hekimlerce reçete edilmesi halinde bedeli Kurumca
+      karşılanır (§4.2.29).
+- rule_id: 4.2.29.hormones.estrogen_hrt_progestogen_prescription_permission
+  sut_section: 4.2.29
+  gate_b_sources:
+  - C006359
+  drug_names:
+  - östradiol
+  - konjüge östrojen
+  - tibolon
+  - progestojen
+  - östrojen
+  - hormon replasman tedavisi
+  action:
+    enforcement: östrojenler ve hormon replasman tedavisi ilaçları (östradiol/konjüge östrojen+progestojen, yalnız östrojen,
+      tibolon) ile progestojenler endokrinoloji/KDİ/iç hastalıkları/ortopedi/FTR/aile hekimliği uzmanlarınca veya bu uzmanların
+      raporuyla tüm hekimlerce reçete edilebilir
+    message_tr: Bu grup ilaçların bütün formlarından; östrojenler ve hormon replasman tedavisinde kullanılanlar (östradiol
+      ya da konjüge östrojen ve progestojen kombinasyonları, yalnız östrojen içerenler ve tibolon içerenler) ile progestojenler;
+      endokrinoloji, kadın hastalıkları ve doğum, iç hastalıkları, ortopedi ve travmatoloji, fiziksel tıp ve rehabilitasyon
+      ve aile hekimliği uzman hekimlerince veya bu uzman hekimler tarafından düzenlenen uzman hekim raporuna dayanılarak tüm
+      hekimlerce reçete edilebilir (§4.2.29).
+- rule_id: 4.2.29.hormones.progesteron_topical_infertility_coverage
+  sut_section: 4.2.29
+  gate_b_sources:
+  - C006362
+  drug_names:
+  - progesteron
+  - progesterone
+  icd10_codes:
+  - N97
+  - N46
+  report_specialties:
+  - kadın hastalıkları ve doğum
+  prescriber_specialties:
+  - tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: tek başına progesteron etken maddeli ve infertilite endikasyonlu topikal ilaçlar kadın hastalıkları ve doğum
+      uzmanlarınca veya bu hekimlerin prospektüs endikasyonlarıyla uyumlu raporuyla diğer hekimlerce reçete edilirse ödenir
+    message_tr: Tek başına progesteron etkin maddesi içeren ve infertilite tedavisi endikasyonu olan topikal ilaçlar kadın
+      hastalıkları ve doğum uzman hekimlerince veya bu hekimlerce düzenlenen prospektüs endikasyonlarıyla uyumlu uzman hekim
+      raporuna istinaden diğer hekimlerce reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.29).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

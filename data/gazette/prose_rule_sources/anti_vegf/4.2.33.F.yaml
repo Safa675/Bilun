@@ -1,0 +1,20 @@
+section_id: 4.2.33.F
+source_note: Exported from anti_vegf_prose.json (YAML source migration)
+rules:
+- rule_id: 4.2.33.F.ranibizumab_rop
+  sut_section: 4.2.33.F
+  drug_names:
+  - ranibizumab
+  icd10_codes:
+  - H35.1
+  - P35.1
+  indication_tr: Prematüre retinopatisi (ROP) — zon I/II evre 3+ veya APROP
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  gate_b_sources:
+  - C006586
+  message_tr: Ranibizumab (ROP) — prematüre bebeklerde zon I/II evre 3+ veya APROP tanısı; çocuk göz hastalıkları uzmanı raporu
+    (§4.2.33.F).

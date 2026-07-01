@@ -1,0 +1,78 @@
+section_id: 2.4.4.G-1
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.G-1.tier3_public_facility_only
+  sut_section: 2.4.4.G-1
+  condition:
+    procedure_category: genetic_metabolic_test
+    facility_tier_not_in:
+    - third_step_public
+    - ghdm_licensed_2nd_private
+  action:
+    billable: false
+    denial_tr: genetik/metabolik tetkikler sözleşmeli 3. basamak resmi veya ruhsatlı GHDM'li 2. basamak/3. basamak özel sunucularca
+      yapılmalı; otherwise ödenmez
+    severity: error
+  gate_b_sources:
+  - C001102
+  - C001109
+  - C001110
+- rule_id: 2.4.4.G-1.(1).cytogenetic_tests_scope_header
+  sut_section: 2.4.4.G-1
+  condition:
+    test_category: cytogenetic
+    annex_list: EK-2/B
+    in_molecular_cytogenetic_subheader_9B1: false
+  action:
+    billable: true
+    enforcement: facility_routing
+    message_tr: EK-2/B '9.B. Sitogenetik Tetkikler' kodları ('9.B.1. Moleküler Sitogenetik Tetkikler' hariç) aşağıdaki faturalandırma
+      kurallarına tabidir
+  gate_b_sources:
+  - C001096
+- rule_id: 2.4.4.G-1.(a_b).cytogenetic_3rd_step_public_or_licensed_ghdm
+  sut_section: 2.4.4.G-1
+  condition:
+    test_category: cytogenetic
+    facility_not_in:
+    - contracted_3rd_step_public
+    - licensed_ghdm_2nd_step_public
+    - licensed_ghdm_3rd_step_private
+  action:
+    billable: false
+    enforcement: facility_gate
+    message_tr: sitogenetik tetkikler sözleşmeli 3. basamak resmi sunucularca; yapılamayan tetkikler ruhsatlı GHDM'den hizmet
+      alımıyla; bünyesinde ruhsatlı GHDM bulunan 2. basamak sunucu veya 3. basamak özel sunucularda faturalandırılır
+    severity: error
+  gate_b_sources:
+  - C001102
+- rule_id: 2.4.4.G-1.(a).cytogenetic_molecular_3rd_step_public_service_procurement
+  sut_section: 2.4.4.G-1
+  condition:
+    test_category: cytogenetic_molecular
+    facility_not_in:
+    - contracted_3rd_step_public
+    service_procurement_from_licensed: false
+  action:
+    billable: false
+    enforcement: facility_gate
+    message_tr: sözleşmeli 3. basamak resmi sunucular tarafından faturalandırılır; yapılamayan tetkikler hizmet alımı yöntemiyle
+      sağlanarak faturalandırılabilir
+    severity: error
+  gate_b_sources:
+  - C001109
+- rule_id: 2.4.4.G-1.(b).cytogenetic_molecular_licensed_ghdm_facilities
+  sut_section: 2.4.4.G-1
+  condition:
+    test_category: cytogenetic_molecular
+    facility_not_in:
+    - licensed_ghdm_2nd_step_public
+    - licensed_ghdm_3rd_step_private
+  action:
+    billable: false
+    enforcement: facility_gate
+    message_tr: bünyelerinde Sağlık Bakanlığı ruhsatlı GHDM bulunan 2. basamak sunucuları ile 3. basamak özel sağlık hizmeti
+      sunucularında yapılması halinde faturalandırılır
+    severity: error
+  gate_b_sources:
+  - C001110

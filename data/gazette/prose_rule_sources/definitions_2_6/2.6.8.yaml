@@ -1,0 +1,25 @@
+section_id: 2.6.8
+rules:
+- rule_id: 2.6.8.(1).death_outside_settlement_funeral_capped
+  sut_section: 2.6.8
+  gate_b_sources:
+  - C001599
+  condition:
+    definition_scope: Yerleşim yeri dışında sevk edilip vefat edenin cenaze naklinin sevk mesafesini aşmamak üzere
+    applies_to: Cenaze nakli
+  action:
+    enforcement: gate
+    message_tr: Yerleşim yeri dışına sevk edilen ve vefat eden kişinin cenaze nakil gideri, sevkin düzenlendiği sunucunun
+      yerleşim yeri mesafesini aşmamak üzere Kurumca karşılanır.
+- rule_id: 2.6.8.(2).funeral_transport_without_referral_not_covered
+  sut_section: 2.6.8
+  gate_b_sources:
+  - C001600
+  condition:
+    expense_not_covered: sevk_edilmeksizin_muracaat_edilen_sunucuda_vefat
+    applies_to: Sevk edilmeksizin müracaat edilen sunucuda vefat eden kişilerin cenaze nakli
+  action:
+    enforcement: reject
+    message_tr: Sevk edilmeksizin müracaat edilen sağlık hizmeti sunucusunda vefat eden kişilerin cenaze nakline ilişkin giderler
+      Kurumca karşılanmaz.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

@@ -1,0 +1,28 @@
+section_id: 2.2.2.C
+source_note: Exported from payment_method_2_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.2.C.(1).complication_itemized_discount
+  sut_section: 2.2.2.C
+  condition:
+    care_setting: inpatient
+    event_type: post_procedure_complication
+    same_provider: true
+  action:
+    payment_method: itemized
+    payment_method_tr: komplikasyon bedelleri hizmet başına ödeme — %10 indirimli
+    discount_rate: 0.1
+  gate_b_sources:
+  - C000703
+- rule_id: 2.2.2.C.(2).comorbidity_itemized
+  sut_section: 2.2.2.C
+  condition:
+    care_setting: inpatient
+    event_type: comorbidity_care
+    primary_treatment_in_progress: true
+  action:
+    payment_method: itemized
+    payment_method_tr: eşlik eden hastalık hizmetleri hizmet başına ödeme
+    bill_materials_separately: true
+    bill_drugs_separately: true
+  gate_b_sources:
+  - C000704

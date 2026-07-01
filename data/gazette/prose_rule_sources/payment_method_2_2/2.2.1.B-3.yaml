@@ -1,0 +1,43 @@
+section_id: 2.2.1.B-3
+source_note: Exported from payment_method_2_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.1.B-3.(1).home_health_daily_cap
+  sut_section: 2.2.1.B-3
+  condition:
+    care_setting: home
+    line_type: home_health
+    procedure_code: P920010
+  action:
+    payment_method: package
+    payment_method_tr: evde sağlık P920010 — günde en fazla bir adet
+    max_bill_count: 1
+    procedure_in_annex: EK-2/C
+  gate_b_sources:
+  - C000618
+- rule_id: 2.2.1.B-3.(2).home_health_10day_cooldown
+  sut_section: 2.2.1.B-3
+  condition:
+    care_setting: outpatient
+    line_type: home_health
+    procedure_code: P920010
+    prior_outpatient_same_provider_days_lt: 10
+  action:
+    payment_method: package
+    payment_method_tr: ayaktan başvuru günü dahil 10 gün içinde P920010 evde sağlık ikinci kez faturalandırılamaz
+    billable: false
+    max_bill_count: 0
+  gate_b_sources:
+  - C000619
+- rule_id: 2.2.1.B-3.(4).epidermolysis_home_wound_care
+  sut_section: 2.2.1.B-3
+  condition:
+    care_setting: home
+    line_type: home_health
+    diagnosis: epidermolysis_bullosa
+    procedure_code: '530533'
+  action:
+    payment_method: itemized
+    payment_method_tr: epidermolizis bülloza evde yara bakımı — EK-2/B 530533 esas
+    procedure_in_annex: EK-2/B
+  gate_b_sources:
+  - C000621

@@ -1,0 +1,125 @@
+section_id: 2.4.4.K
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.K.(1).palliative_accreditation_required
+  sut_section: 2.4.4.K
+  condition:
+    procedure_code_any:
+    - P560000
+    facility_not_palliative_accredited: true
+  action:
+    billable: false
+    denial_tr: palyatif bakım; Bakanlıkça tescilli yataklı tesis veya tıp fakülteli üniversite ARA-M'den yapılmazsa ödenmez
+    severity: error
+  gate_b_sources:
+  - C001338
+- rule_id: 2.4.4.K.(3).palliative_non_accredited_bed_no_pay
+  sut_section: 2.4.4.K
+  condition:
+    procedure_code_any:
+    - P560000
+    bed_not_palliative_certified: true
+  action:
+    billable: false
+    denial_tr: tescil dışı yataktan palyatif bakım hizmeti gönderilirse bedeller ödenmez
+    severity: error
+  gate_b_sources:
+  - C001340
+- rule_id: 2.4.4.K.(5).palliative_p560000_once_per_day
+  sut_section: 2.4.4.K
+  condition:
+    procedure_code_any:
+    - P560000
+    p560000_per_day_count:
+      min: 2
+  action:
+    billable: false
+    denial_tr: P560000 palyatif bakım günde en fazla 1 kez faturalandırılır
+    severity: error
+  gate_b_sources:
+  - C001345
+- rule_id: 2.4.4.K.(6).palliative_ek2c_procedure_same_day_no_double
+  sut_section: 2.4.4.K
+  condition:
+    procedure_code_any:
+    - P560000
+    same_day_ek2c_procedure: true
+  action:
+    billable: true
+    payment_tr: palyatif bakım altında EK-2/C işlem yapılırsa işlem bedeli alınır, 2.2.2.B-1(3) sürelerinde palyatif bedel
+      ödenmez
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001346
+- rule_id: 2.4.4.K.(7).palliative_bundled_no_separate_bill
+  sut_section: 2.4.4.K
+  condition:
+    procedure_code_any:
+    - P560000
+    diagnostic_procedure_separately_billed_within_palliative: true
+  action:
+    billable: false
+    denial_tr: palyatif bakımda tanı/tedavi işlemleri 2.2.2.B-1(e) kapsamında ayrı faturalanamaz (işlem dahil)
+    severity: error
+  gate_b_sources:
+  - C001349
+- rule_id: 2.4.4.K.(1).palliative_care_certified_facilities_only
+  sut_section: 2.4.4.K
+  condition:
+    procedure_category: palliative_care
+    facility_not_in:
+    - moh_certified_inpatient_palliative
+    - state_univ_med_faculty_hospital
+    - foundation_univ_med_faculty_hospital
+  action:
+    billable: false
+    enforcement: facility_certification_gate
+    message_tr: palyatif bakım tedavisi, Bakanlığınca palyatif bakım verme konusunda tescil edilmiş Bakanlığa bağlı yataklı
+      sağlık tesislerince ve tıp fakültesi bulunan devlet/vakıf üniversiteleri SAUM'lerince faturalandırılır
+    severity: error
+  gate_b_sources:
+  - C001338
+- rule_id: 2.4.4.K.(3).palliative_care_unregistered_bed_not_covered
+  sut_section: 2.4.4.K
+  condition:
+    procedure_category: palliative_care
+    bed_registration_status: unregistered_palliative
+  action:
+    billable: false
+    enforcement: exclusion
+    message_tr: palyatif bakım vermeye yetkili sunucunun tescil edilmiş palyatif bakım yatakları dışındaki herhangi bir yataktan
+      göndermesi durumunda bu hizmet bedelleri Kurumca karşılanmaz
+    severity: error
+  gate_b_sources:
+  - C001340
+- rule_id: 2.4.4.K.(5).palliative_care_p560000_once_per_day
+  sut_section: 2.4.4.K
+  condition:
+    procedure_category: palliative_care
+    procedure_code_any:
+    - P560000
+    instances_per_day:
+      min: 2
+  action:
+    billable: false
+    enforcement: daily_frequency_cap
+    message_tr: palyatif bakım tedavisi EK-2/C'deki P560000 SUT kodundan günde en fazla 1 kez faturalandırılır
+    annex_basis: EK-2/C
+    severity: error
+  gate_b_sources:
+  - C001345
+- rule_id: 2.4.4.K.(6).palliative_care_ek2c_procedure_no_palliative_fee
+  sut_section: 2.4.4.K
+  condition:
+    procedure_category: palliative_care
+    concomitant_ek2c_procedure_on_same_day: true
+    palliative_fee_billed_same_day: true
+  action:
+    billable: false
+    enforcement: bundling_prohibition
+    message_tr: palyatif bakım tedavisi gören hastaya EK-2/C işlemi yapılması durumunda işlem bedeli faturalandırılır; 2.2.2.B-1(3)
+      sürelerinde palyatif bakım adı altında herhangi bir bedel ödenmez
+    annex_basis: EK-2/C
+    severity: error
+  gate_b_sources:
+  - C001346

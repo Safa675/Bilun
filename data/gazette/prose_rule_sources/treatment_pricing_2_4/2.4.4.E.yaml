@@ -1,0 +1,31 @@
+section_id: 2.4.4.E
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.E.(2).angio_ptca_same_session_25pct
+  sut_section: 2.4.4.E
+  condition:
+    same_session_procedures:
+    - PTCA_or_stent
+    - coronary_angiography
+  action:
+    billable: true
+    payment_tr: aynı seansta PTCA/stent + anjiografi ise PTCA/stent tam, anjiografi %25'i EK-2/C üzerinden faturalandırılır
+    annex_basis: EK-2/C
+    fraction_applied_to_secondary: 0.25
+  gate_b_sources:
+  - C000968
+- rule_id: 2.4.4.E.(4).angio_pcı_per_physician_daily_cap_15
+  sut_section: 2.4.4.E
+  condition:
+    procedure_category_any:
+    - coronary_angiography
+    - percutaneous_coronary_intervention
+    cases_per_physician_per_day:
+      min: 16
+  action:
+    billable: false
+    denial_tr: anjiografi ve perkütan koroner girişim için işlemi yapan sunucuda görevli ilgili hekim sayısı esas alınarak
+      her hekim için günlük en fazla 15 hastaya yapılan işlem bedeli karşılanır
+    severity: error
+  gate_b_sources:
+  - C000970

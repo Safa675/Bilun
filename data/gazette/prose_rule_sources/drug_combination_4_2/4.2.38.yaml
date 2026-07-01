@@ -1,0 +1,31 @@
+section_id: 4.2.38
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.38.(c).dpp4_combo_no_pay
+  sut_section: 4.2.38
+  condition:
+    drug_class: dpp4_antagonist
+    concurrent_drug_class_any:
+    - dpp4_antagonist
+    two_distinct_active_ingredients_concurrent: true
+  action:
+    billable: false
+    denial_tr: DPP-4 antagonistleri birlikte kullanılırsa ödenmez
+    severity: error
+  gate_b_sources:
+  - C006743
+- rule_id: 4.2.38.(8).empagliflozin_linagliptin_combo_indication
+  sut_section: 4.2.38
+  condition:
+    diagnosis_any:
+    - E11
+    drug_name_any:
+    - empagliflozin_linagliptin_combo
+    inadequate_glycemic_control_on_metformin_sulfonylurea: false
+  action:
+    billable: false
+    denial_tr: empagliflozin+linagliptin kombi; metformin/sülfonilüre + empagliflozin veya linagliptin ile yetersiz glisemik
+      kontrol olmadıkça ödenmez
+    severity: error
+  gate_b_sources:
+  - C006749

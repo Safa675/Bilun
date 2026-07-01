@@ -1,0 +1,74 @@
+section_id: 3.3.10
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.10.a.sakropelvik_konsey_must_bill
+  sut_section: 3.3.10
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003115
+  condition:
+    material_name_any:
+    - sakropelvik
+    - sakro-pelvik
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Eğitim kliniği olan 3. basamak resmi sunucularda genel cerrahi, gastroenteroloji, nöroloji ve psikiyatri kliniklerince
+      4 branşlı sağlık kurulu raporuna istinaden bedeli Kurumca karşılanır (§3.3.10 a).
+- rule_id: 3.3.10.c.anal_tetkik_rapor_eki_regulatory
+  sut_section: 3.3.10
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003123
+  condition:
+    material_name_any:
+    - sakropelvik
+    - sakro-pelvik
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Anal manometre, anal EMG, endoanal ultrason vb. tetkik sonuçlarının sağlık kurulu rapor ekinde yer alması
+      gerekmektedir (§3.3.10 ç).
+- rule_id: 3.3.10.a.idyopatik_asiri_aktif_mesane_konsey_must_bill
+  sut_section: 3.3.10
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003127
+  condition:
+    material_name_any:
+    - asiri aktif mesane
+    - aşırı aktif mesane
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Eğitim kliniği olan 3. basamak resmi sunucularda üroloji, nöroloji ve psikiyatri kliniklerince 3 branşlı sağlık
+      kurulu raporuna istinaden bedeli Kurumca karşılanır (§3.3.10 a).
+- rule_id: 3.3.10.(2).refraktor_aktif_mesane_regulatory
+  sut_section: 3.3.10
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003140
+  condition:
+    material_name_any:
+    - asiri aktif mesane
+    - aşırı aktif mesane
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Refraktör idyopatik aşırı aktif mesane — antimuskarinik ve intradetrüsör botulinum toksin tedavisine cevap
+      vermeyen ve en az 2 yıldır izlemde olan hastalarda uygulanabilir (§3.3.10(2)).
+- rule_id: 3.3.10.(3).agrilı_mesane_sendromu_regulatory
+  sut_section: 3.3.10
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003141
+  condition:
+    material_name_any:
+    - agrilı mesane
+    - ağrılı mesane
+    - interstisyel sistit
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Ağrılı mesane sendromu (interstisyel sistit) — tanıdan en az 2 yıl geçmiş ve tüm oral/intravezikal tedavilere
+      cevap vermeyen hastalara uygulanabilir (§3.3.10(3)).

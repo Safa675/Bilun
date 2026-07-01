@@ -1,0 +1,15 @@
+section_id: 2.6.1.A
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.6.1.A.(5).dialysis_travel_nearest_center
+  sut_section: 2.6.1.A
+  condition:
+    procedure_category: dialysis
+    travel_to_farther_center: true
+    no_medical_reason: true
+  action:
+    billable: false
+    denial_tr: diyaliz yol gideri en yakın diyaliz merkezi esas alınır; daha uzak mesafe ödenmez
+    severity: error
+  gate_b_sources:
+  - C001497

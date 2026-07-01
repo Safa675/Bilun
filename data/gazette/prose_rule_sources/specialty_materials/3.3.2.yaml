@@ -1,0 +1,96 @@
+section_id: 3.3.2
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.2.b.glucose_meter_early_renewal
+  sut_section: 3.3.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002875
+  condition:
+    glucose_meter_early_renewal: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Kan şekeri ölçüm cihazı yenilenme süresi 2 yıl — erken temin bedeli ödenmez (§3.3.2(b)).
+- rule_id: 3.3.2.b.glucose_meter_early_renewal_keyword
+  sut_section: 3.3.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002875
+  condition:
+    material_name_any:
+    - kan sekeri olcum cihaz
+    - kan şekeri ölçüm cihaz
+    - glukometre
+    - glucose meter
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Kan şekeri ölçüm cihazı — 2 yıllık MIAT kontrolü gerekli (§3.3.2(b)).
+- rule_id: 3.3.2.(1).kan_sekeri_olcum_cubugu_must_bill
+  sut_section: 3.3.2
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002873
+  condition:
+    material_name_any:
+    - kan sekeri olcum cubugu
+    - kan şekeri ölçüm çubuğu
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Diyabet/hipoglisemi/gestasyonel diyabet veya oral antidiyabetik kullanan hastaların kan şekeri ölçüm çubuğu
+      bedelleri — belirlenen esaslar doğrultusunda Kurumca karşılanır (§3.3.2(1)).
+- rule_id: 3.3.2.a.diyabet_uzman_raporu_regulatory
+  sut_section: 3.3.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002874
+  condition:
+    material_name_any:
+    - kan sekeri olcum cubugu
+    - kan şekeri ölçüm çubuğu
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Diyabetli hastalar için aile hekimi / endokrinoloji ve metabolizma / iç hastalıkları / çocuk sağlığı uzman
+      hekimlerinden biri tarafından uzman hekim raporu düzenlenmesi gerekmektedir (§3.3.2 a).
+- rule_id: 3.3.2.b.kan_sekeri_cihaz_yenileme_no_pay
+  sut_section: 3.3.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002875
+  condition:
+    glucose_meter_early_renewal: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Kan şekeri ölçüm cihazı yenilenme süresi 2 yıldır; bu süreden önce temin edilen cihaz bedeli Kurumca ödenmez
+      (§3.3.2 b).
+- rule_id: 3.3.2.kan_sekeri_cubugu_recete_must_bill
+  sut_section: 3.3.2
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002881
+  condition:
+    material_name_any:
+    - kan sekeri olcum cubugu
+    - kan şekeri ölçüm çubuğu
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Kan şekeri ölçüm çubukları — reçete edilmesi halinde bedeli Kurumca karşılanır (§3.3.2).
+- rule_id: 3.3.2.c.fatura_ekleri_regulatory
+  sut_section: 3.3.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002882
+  condition:
+    material_name_any:
+    - kan sekeri olcum cubugu
+    - kan şekeri ölçüm çubuğu
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Kan şekeri ölçüm çubuğu faturalarına sağlık raporu fotokopisi (e-rapor hariç) ile reçete asılları (e-reçete
+      hariç) eklenecektir (§3.3.2 ç).

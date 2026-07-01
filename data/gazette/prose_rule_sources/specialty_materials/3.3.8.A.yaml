@@ -1,0 +1,25 @@
+section_id: 3.3.8.A
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.8.A.d.paraplegia_standing_table_over_age
+  sut_section: 3.3.8.A
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003074
+  condition:
+    paraplegia_standing_table_over_age_limit: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Parapleji — 8 yaş üstü standing table bedeli karşılanmaz (§3.3.8.A(d)).
+- rule_id: 3.3.8.A.(3).paraplegia_wheelchair_no_pay
+  sut_section: 3.3.8.A
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003074
+  condition:
+    paraplegia_wheelchair_separate_billing: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Parapleji kapsamında ayrıca tekerlekli sandalye — karşılanmaz (§3.3.8.A(3)).

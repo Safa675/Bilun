@@ -1,0 +1,14 @@
+section_id: 4.1.7
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 4.1.7.(2).ek4g_inpatient_only
+  sut_section: 4.1.7
+  condition:
+    drug_in_ek4g_list: true
+    care_setting: outpatient
+  action:
+    billable: false
+    denial_tr: EK-4/G ilaçları ayakta reçete edilirse ödenmez (özel hükümler hariç)
+    severity: error
+  gate_b_sources:
+  - C003533

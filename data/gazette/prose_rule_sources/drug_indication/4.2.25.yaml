@@ -1,0 +1,118 @@
+section_id: 4.2.25
+rules:
+- rule_id: 4.2.25.gabapentin_1yr_report_combo_nopay
+  sut_section: 4.2.25
+  gate_b_sources:
+  - C006204
+  drug_names:
+  - gabapentin
+  - pregabalin
+  icd10_codes:
+  - G40
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: gabapentin 2/3. basamakta en az bir nöroloji uzmanı içeren 1 yıllık sağlık kurulu raporuyla nöroloji uzmanlarınca
+      reçete edilirse ödenir; pregabalin ve gabapentin kombine kullanılamaz
+    message_tr: Gabapentin etken maddeli ilaçların ikinci veya üçüncü basamak sağlık hizmeti sunucularında düzenlenen en az
+      bir nöroloji uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna istinaden nöroloji uzman hekimlerince reçete
+      edilmesi halinde bedelleri Kurumca karşılanır. Pregabalin ve gabapentin kombine olarak kullanılamaz (§4.2.25).
+- rule_id: 4.2.25.lacosamide_16yr_partial_2aed_6mo
+  sut_section: 4.2.25
+  gate_b_sources:
+  - C006202
+  drug_names:
+  - lakozamid
+  - lacosamide
+  icd10_codes:
+  - G40
+  report_required: true
+  report_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 16 yaş ve üzeri parsiyel başlangıçlı epilepside (ikincil jeneralize olan/olmayan) en az 2 antiepileptik tek/kombine
+      6 ay kullanıp yanıtsız olana ek tedavi/monoterapi; nöroloji uzman raporuyla tüm uzmanlarca reçete
+    message_tr: Lakozamid; 16 yaş ve üzerindeki parsiyel başlangıçlı epilepsi hastalarında ikincil jeneralize olan veya olmayan
+      nöbetlerin tedavisinde, en az iki antiepileptik ilacın en az 6 ay süreyle tek başına veya kombine kullanımından sonra
+      tedaviye yanıt alınamayan hastalarda ek tedavi veya monoterapi olarak, bu durumların belirtildiği nöroloji uzman hekim
+      raporuna dayanılarak tüm uzman hekimlerce reçete edilebilir (§4.2.25).
+- rule_id: 4.2.25.new_gen_antiepileptics_coverage
+  sut_section: 4.2.25
+  gate_b_sources:
+  - C006198
+  drug_names:
+  - lamotrigin
+  - topiramat
+  - vigabatrin
+  - levatirasetam
+  - levetirasetam
+  icd10_codes:
+  - G40
+  report_required: true
+  report_specialties:
+  - nöroloji
+  - beyin cerrahisi
+  prescriber_specialties:
+  - tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: yeni nesil antiepileptikler nöroloji/beyin cerrahisi uzmanınca veya bu uzmanlardan birinin düzenlediği uzman
+      raporuyla tüm hekimlerce reçete edilirse ödenir
+    message_tr: Yeni nesil antiepileptiklerin (lamotrigin, topiramat, vigabatrin, levatirasetam) nöroloji veya beyin cerrahisi
+      uzman hekimleri tarafından veya bu uzman hekimlerden biri tarafından düzenlenen uzman hekim raporuna dayanılarak tüm
+      hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.25).
+- rule_id: 4.2.25.pregabalin_1yr_report_no_gad
+  sut_section: 4.2.25
+  gate_b_sources:
+  - C006200
+  drug_names:
+  - pregabalin
+  icd10_codes:
+  - G40
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: pregabalin mono/sabit doz kombinasyonları 2/3. basamakta en az bir nöroloji uzmanı içeren 1 yıllık sağlık
+      kurulu raporuyla nöroloji uzmanlarınca reçete edilirse ödenir; yaygın anksiyete bozukluğu endikasyonunda ödenmez
+    message_tr: Pregabalin etken maddeli ilaçların mono veya sabit doz kombinasyonlarının ikinci veya üçüncü basamak sağlık
+      hizmeti sunucularında düzenlenen en az bir nöroloji uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna istinaden
+      nöroloji uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır; yaygın anksiyete bozukluğu endikasyonunda
+      ödenmez (§4.2.25).
+- rule_id: 4.2.25.zonisamide_neurology_1yr_report
+  sut_section: 4.2.25
+  gate_b_sources:
+  - C006199
+  drug_names:
+  - zonisamit
+  - zonisamid
+  icd10_codes:
+  - G40
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: zonisamit nöroloji uzmanlarınca veya nöroloji uzmanınca düzenlenen 1 yıl süreli raporla tüm hekimlerce reçete
+      edilirse ödenir
+    message_tr: Zonisamit etken maddeli ilaçların nöroloji uzman hekimleri tarafından veya bu uzman hekimler tarafından düzenlenen
+      1 yıl süreli uzman hekim raporuna dayanılarak tüm hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.25).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

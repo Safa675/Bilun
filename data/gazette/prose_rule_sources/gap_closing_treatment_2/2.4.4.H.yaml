@@ -1,0 +1,38 @@
+section_id: 2.4.4.H
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.H.(1).icu_standards_required
+  sut_section: 2.4.4.H
+  condition:
+    procedure_category: icu
+    facility_icu_certified: false
+  action:
+    billable: false
+    denial_tr: yoğun bakım üniteleri standartları/personel/yatak/cihaz şartlarını sağlamazsa ödenmez
+    severity: error
+  gate_b_sources:
+  - C001206
+- rule_id: 2.4.4.H.(2).icu_bundled_with_abc_procedures
+  sut_section: 2.4.4.H
+  condition:
+    procedure_category: icu
+    concurrent_abc_group_procedure_bundled: true
+  action:
+    billable: true
+    payment_tr: yoğun bakım sürerken EK-2/C A/B/C grubu işlem; işlem puanı eklenerek faturalandırılır
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001207
+- rule_id: 2.4.4.H.(5).platelet_pheresis_separate_bill
+  sut_section: 2.4.4.H
+  condition:
+    procedure_code_any:
+    - '705440'
+    - '705441'
+    - '705442'
+    - '705443'
+  action:
+    billable: true
+    payment_tr: trombosit süspansiyonu/aferez trombosit bedelleri ayrıca faturalandırılabilir
+  gate_b_sources:
+  - C001210

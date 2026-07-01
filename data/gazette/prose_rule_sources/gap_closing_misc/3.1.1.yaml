@@ -1,0 +1,24 @@
+section_id: 3.1.1
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 3.1.1.(7).ek3b_listed_materials_no_pay
+  sut_section: 3.1.1
+  condition:
+    material_in_ek3b_list: true
+  action:
+    billable: false
+    denial_tr: EK-3/B'de yer alan malzemelerin bedelleri Kurumca karşılanmaz (SUT istisnaları hariç)
+    severity: error
+  gate_b_sources:
+  - C002689
+- rule_id: 3.1.1.(10).ek3_prices_kdv_excluded
+  sut_section: 3.1.1
+  condition:
+    material_in_ek3_list: true
+    kdv_included_in_price: true
+  action:
+    billable: false
+    denial_tr: EK-3 malzeme fiyatları KDV hariç; KDV eklenerek faturalandırılamaz
+    severity: error
+  gate_b_sources:
+  - C002692

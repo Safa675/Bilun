@@ -1,0 +1,30 @@
+section_id: 4.2.10.Ç-2
+rules:
+- rule_id: 4.2.10.pompe_board_report_1yr
+  sut_section: 4.2.10.Ç-2
+  drug_names:
+  - alglucosidase
+  - myozyme
+  - lumizyme
+  icd10_ranges:
+  - E74.02
+  message_tr: Pompe hastalığı tedavisi — gastroenteroloji, çocuk metabolizma veya nöroloji uzman hekimlerinin yer aldığı 1
+    yıllık sağlık kurulu raporu gerekir (§4.2.10.Ç-2).
+  gate_b_sources:
+  - C004371
+  - C004372
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - çocuk metabolizma
+  - çocuk endokrinolojisi ve metabolizma
+  - nöroloji
+  report_duration_months: 12
+  prescriber_specialties:
+  - gastroenteroloji
+  - çocuk metabolizma
+  - çocuk endokrinolojisi ve metabolizma
+  - nöroloji
+  - çocuk sağlığı ve hastalıkları
+  - iç hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

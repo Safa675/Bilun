@@ -1,0 +1,17 @@
+section_id: 2.4.4.İ
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.I-d.(1).ivf_records_kept_and_presented_on_audit
+  sut_section: 2.4.4.İ
+  condition:
+    procedure_category: ivf_art
+    procedure_records_maintained: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: sözleşmeli/protokollü üremeye yardımcı tedavi merkezlerinde IVF kapsamında yapılan her türlü tıbbi işlemin
+      kaydının tutulması ve tutulan kayıtların denetim esnasında ibrazı zorunludur; kayıtların doğru tutulması ve muhafazasında
+      merkez sorumlusu ile ruhsat sahibi kişiler müşterek ve müteselsilen yükümlüdür
+    severity: error
+  gate_b_sources:
+  - C001302

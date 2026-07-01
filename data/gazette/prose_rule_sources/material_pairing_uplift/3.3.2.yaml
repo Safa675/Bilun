@@ -1,0 +1,40 @@
+section_id: 3.3.2
+source_note: Exported from material_pairing_uplift.json (YAML source migration)
+rules:
+- rule_id: pairing.700944_kv1012
+  sut_section: 3.3.2
+  specialty_annex: EK-3I
+  pairing_mode: specialty_annex
+  procedure_codes:
+  - '700944'
+  expected_material_codes:
+  - KV1012
+  message_tr: Transkateter aortik kapak implantasyonu sonrasi EK-3I TAVI seti (KV1012) eksik veya sifir faturalanmis.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.
+- rule_id: pairing.604670_kv1002
+  sut_section: 3.3.2
+  specialty_annex: EK-3I
+  pairing_mode: specialty_annex
+  procedure_codes:
+  - '604670'
+  - '604690'
+  expected_material_codes:
+  - KV1002
+  message_tr: Acik mitral kapak islemi sonrasi EK-3I stentli biyolojik kalp kapagi (KV1002) eksik veya sifir faturalanmis.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.
+- rule_id: pairing.605020_kv1000
+  sut_section: 3.3.2
+  specialty_annex: EK-3I
+  pairing_mode: specialty_annex
+  procedure_codes:
+  - '605020'
+  expected_material_codes:
+  - KV1000
+  message_tr: Kapak cerrahisi sonrasi EK-3I biyolojik kapak protezi (KV1000) eksik veya sifir faturalanmis.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.

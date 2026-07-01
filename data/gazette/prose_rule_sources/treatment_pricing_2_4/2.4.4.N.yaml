@@ -1,0 +1,20 @@
+section_id: 2.4.4.N
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.N.(1).eb_wound_care_3rd_step_public
+  sut_section: 2.4.4.N
+  condition:
+    diagnosis_any:
+    - Q810
+    - Q811
+    - Q812
+    - Q813
+    procedure_category: wound_care
+    facility_tier_not_in:
+    - third_step_public
+  action:
+    billable: false
+    denial_tr: epidermolizis bülloza yara bakımı 3. basamak resmi sunucularca yapılmalı
+    severity: error
+  gate_b_sources:
+  - C001366

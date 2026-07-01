@@ -1,0 +1,69 @@
+section_id: 4.2.74
+rules:
+- rule_id: 4.2.74.card.sgli_hfref_dapagliflozin_empagliflozin_cardiology_1yr_coverage
+  sut_section: 4.2.74
+  gate_b_sources:
+  - C007265
+  drug_names:
+  - dapagliflozin
+  - empagliflozin
+  icd10_codes:
+  - I50.0
+  - I50.1
+  - I50.2
+  - I50.3
+  - I50.4
+  - I50.8
+  - I50.9
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - kardiyoloji
+  prescriber_specialties:
+  - tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: dapagliflozin veya empagliflozin; standart kalp yetmezliği tedavisini (ACEi/ARB'den birini + beta blokör
+      + aldosteron antagonisti) kullanıyor (veya kullanamıyorsa gerekçesi raporda) olması koşuluyla; düşük ejeksiyon fraksiyonlu
+      (sol ventrikül EF≤%40) semptomatik (NYHA II-IV) kronik kalp yetersizliği ve eGFR uygun (empagliflozin ≥20, dapagliflozin
+      ≥25 mL/dk/1,73 m²) hastalarda standart tedaviye ilave kullanılırsa başlanır; kardiyoloji uzmanının yer aldığı 1 yıl
+      süreli raporla tüm hekimlerce reçete edilirse ödenir
+    message_tr: Dapagliflozin veya empagliflozin; standart kalp yetmezliği tedavisini (anjiyotensin dönüştürücü enzim inhibitörleri
+      veya anjiyotensin reseptör blokörleri grubundan birini ve beta blokör ve aldosteron antagonistleri) kullanıyor olması
+      veya kullanamıyorsa, her birinin kullanılamama gerekçesinin raporda belirtilmesi koşuluyla; düşük ejeksiyon fraksiyonlu
+      (sol ventrikül EF değeri ≤ %40) semptomatik (NHYA sınıf II-IV) kronik kalp yetersizliği bulunan ve eGFR düzeyi uygun
+      olan (empagliflozin için eGFR ≥20 mL/dak /1,73 m², dapagliflozin için eGFR ≥ 25 mL/dak /1,73 m²) hastalarda, standart
+      tedaviye ilave olarak kullanılması halinde tedaviye başlanır. Bu durumların belirtildiği en az bir kardiyoloji uzman
+      hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna istinaden tüm hekimler tarafından reçete edilmesi halinde bedelleri
+      Kurumca karşılanır (§4.2.74).
+- rule_id: 4.2.74.renal.sgli_ckd_proteinuria_dapagliflozin_empagliflozin_nephrology_coverage
+  sut_section: 4.2.74
+  gate_b_sources:
+  - C007266
+  drug_names:
+  - dapagliflozin
+  - empagliflozin
+  icd10_codes:
+  - N18.3
+  - N18.4
+  - N18.5
+  - N18.6
+  report_required: true
+  report_specialties:
+  - nefroloji
+  prescriber_specialties:
+  - tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: dapagliflozin veya empagliflozin; kronik böbrek hastalığında RAAS inhibitörü alan ve en az 3 ay persistan
+      proteinürisi olan (idrar ACR≥200 mg/g veya PCR>300 mg/g) ve eGFR uygun (empagliflozin ≥20, dapagliflozin ≥25 mL/dk/1,73
+      m²) hastalarda başlanır; nefroloji uzmanının yer aldığı sağlık kurulu raporuyla tüm hekimlerce reçete edilirse ödenir
+    message_tr: Dapagliflozin veya empagliflozin, kronik böbrek hastalığının tedavisinde; renin-anjiyotensin-aldosteron sistemi
+      inhibitörü alan ve en az 3 ay süreli persistan proteinürisi olan (idrar ACR (Albumin/Kreatinin oranı) ≥ 200mg/g veya
+      PCR (Protein/Kreatinin oranı) >300mg/g) ve eGFR düzeyi uygun olan (empagliflozin için eGFR ≥ 20 mL/dak /1,73 m², dapagliflozin
+      için eGFR ≥ 25 mL/dak /1,73 m²) hastalarda tedaviye başlanır. Bu durumların belirtildiği en az bir nefroloji uzman hekiminin
+      yer aldığı sağlık kurulu raporuna istinaden tüm hekimler tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır
+      (§4.2.74).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

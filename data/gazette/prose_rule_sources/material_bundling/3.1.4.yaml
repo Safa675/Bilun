@@ -1,0 +1,26 @@
+section_id: 3.1.4
+source_note: Exported from material_bundling_prose.json (YAML source migration)
+rules:
+- rule_id: 3.1.4.(1).diagnosis_bundled_sut_rules_apply
+  sut_section: 3.1.4
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002800
+  condition:
+    diagnosis_bundled_material_scope: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Tanıya dayalı paket dahil malzeme — §3.1–3.2 SUT kuralları geçerlidir (§3.1.4(1)).
+- rule_id: 3.1.4.diagnosis_package_material_unbundled
+  sut_section: 3.1.4
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002818
+  - C002801
+  condition:
+    diagnosis_package_material_unbundled: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Tanıya dayalı paket dışı malzeme — EK-2/C ve SUT paket kurallarına uygunluk doğrulanmalı (§3.1.4).

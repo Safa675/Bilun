@@ -1,0 +1,58 @@
+section_id: 2.2.2.B
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.2.B.(1).diagnosis_based_ek2c
+  sut_section: 2.2.2.B
+  condition:
+    payment_method: diagnosis_based
+  action:
+    billable: true
+    payment_tr: tanıya dayalı işlem EK-2/C üzerinden
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C000654
+- rule_id: 2.2.2.B.(2).non_diagnosis_fee_for_service
+  sut_section: 2.2.2.B
+  condition:
+    payment_method: fee_for_service
+    not_in_drg_package: true
+  action:
+    billable: true
+    payment_tr: tanıya dayalı dışındaki işlemler hizmet başına ödeme
+    annex_basis: EK-2/B
+  gate_b_sources:
+  - C000655
+- rule_id: 2.2.2.B.(3b).different_specialty_25pt_uplift
+  sut_section: 2.2.2.B
+  condition:
+    same_session_different_specialty: true
+  action:
+    billable: true
+    payment_tr: farklı uzmanlık dallarında yapılan işlemlerde yüzdelik oranlar 25 puan artırılır
+    annex_basis: EK-2/C
+    point_uplift: 25
+  gate_b_sources:
+  - C000661
+- rule_id: 2.2.2.B.(4).planned_thoracic_chest_tube_no_separate_bill
+  sut_section: 2.2.2.B
+  condition:
+    procedure_category: planned_thoracic_surgery
+    chest_tube_separately_billed: true
+  action:
+    billable: false
+    denial_tr: göğüs bölgesi planlı ameliyatlarda kapalı göğüs drenajı/tüpü ayrı faturalanamaz
+    severity: error
+  gate_b_sources:
+  - C000662
+- rule_id: 2.2.2.B.(5).training_research_hospital_specialist_consult
+  sut_section: 2.2.2.B
+  condition:
+    facility_tier_in:
+    - training_research
+    - university_medical_center
+    procedure_category: specialist_consultation
+  action:
+    billable: true
+    payment_tr: eğitim araştırma/üniversite hastanelerinde uzman konsültasyonu faturalandırılabilir
+  gate_b_sources:
+  - C000665

@@ -1,0 +1,59 @@
+section_id: 2.6.6
+rules:
+- rule_id: 2.6.6.(1).thermal_spa_health_board_report
+  sut_section: 2.6.6
+  gate_b_sources:
+  - C001589
+  condition:
+    definition_scope: Kaplıca yol/gündelik/refakatçi giderinin tedavi sağlık kurulu raporuna dayanması
+    applies_to: Kaplıca tedavisi
+  action:
+    enforcement: gate
+    message_tr: Kaplıca tedavisine ilişkin yol, gündelik ve refakatçi giderleri, tedavi için düzenlenen sağlık kurulu raporuna
+      dayanılarak karşılanır.
+- rule_id: 2.6.6.(2).thermal_spa_5_business_day_application
+  sut_section: 2.6.6
+  gate_b_sources:
+  - C001590
+  condition:
+    definition_scope: Sağlık kurulu raporu günü dahil 5 işgününde kaplıca tesisine müracaat zorunluluğu
+    applies_to: Kaplıca tedavisi — müracaat süresi
+    business_day_window: 5
+  action:
+    enforcement: gate
+    message_tr: Sağlık kurulu raporunun düzenlendiği gün dahil 5 işgününde kaplıca tesisine müracaat edilmelidir; süre kaçırılırsa
+      rapor geçerliliği içinde e-sevk/EK-2/F ile yeniden müracaat zorunludur.
+- rule_id: 2.6.6.(4).thermal_spa_companion_documented
+  sut_section: 2.6.6
+  gate_b_sources:
+  - C001592
+  condition:
+    definition_scope: Kaplıca refakatçisinin tıbbi gereklik bildirimi + tesis tarafından refakat teyiti
+    applies_to: Kaplıca — refakatçi
+    documentation_exempt_for_under_18: true
+  action:
+    enforcement: gate
+    message_tr: Raporda/sevk formunda refakatin tıbben gerekli olduğu belirtilmeli (18 yaş altı hariç) ve tesis refakatçi
+      kalındığını belgelemelidir; bu durumda refakatçinin yol/gündeliği karşılanır.
+- rule_id: 2.6.6.(5).thermal_spa_travel_routine_vehicle_fee
+  sut_section: 2.6.6
+  gate_b_sources:
+  - C001593
+  condition:
+    definition_scope: Kaplıca yol giderlerinin mutat taşıt bedeli üzerinden ödenmesi
+    applies_to: Kaplıca tedavisi — yol gideri
+  action:
+    enforcement: gate
+    message_tr: Kaplıca yol giderleri, mutat taşıt bedeli üzerinden ödenir.
+- rule_id: 2.6.6.(3).unlicensed_thermal_spa_not_covered
+  sut_section: 2.6.6
+  gate_b_sources:
+  - C001591
+  condition:
+    expense_not_covered: isletme_izni_verilmeyen_kaplica_giderleri
+    applies_to: Sağlık Bakanlığınca işletme izni verilmeyen kaplıcalar
+  action:
+    enforcement: reject
+    message_tr: Sağlık Bakanlığınca işletme izni verilmeyen kaplıcalarda tedavi görenlere ve refakatçilerine ait giderler
+      Kurumca karşılanmaz.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

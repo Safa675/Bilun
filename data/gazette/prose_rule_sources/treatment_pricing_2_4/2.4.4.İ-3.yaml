@@ -1,0 +1,83 @@
+section_id: 2.4.4.İ-3
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.I-3.(1).pgt_hereditary_ek2k_max_3_cycles
+  sut_section: 2.4.4.İ-3
+  condition:
+    procedure_category: preimplantation_genetic_diagnosis
+    diagnosis_in:
+    - ek2k_hereditary_disease
+    patient_married: true
+    has_healthy_child_in_current_marriage: false
+    pgt_ivf_cycles_lifetime:
+      min: 4
+  action:
+    billable: false
+    enforcement: cycle_cap
+    message_tr: EK-2/K'de yer alan kalıtsal bir hastalığı olan veya taşıyıcı olduğu belgelenen, mevcut evliliğinde sağlam
+      çocuğu olmayan evli çiftin PGT ile IVF tedavisine ilişkin giderleri, şartların birlikte gerçekleşmesi halinde en fazla
+      üç deneme (siklus) ile sınırlı olarak Kurumca karşılanır
+    annex_basis: EK-2/K
+    severity: error
+  gate_b_sources:
+  - C001317
+- rule_id: 2.4.4.I-3.(4).pgt_hereditary_ek2k_genetic_report_required
+  sut_section: 2.4.4.İ-3
+  condition:
+    procedure_category: preimplantation_genetic_diagnosis
+    diagnosis_in:
+    - ek2k_hereditary_disease
+    medical_geneticist_signed_genetic_report: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: sağlam çocuk doğmasına yönelik PGT ile IVF tedavi bedelleri EK-2/K tanılarında Kurumca karşılanır; bu tanılara
+      ait evli çiftin tıbbi genetik uzman imzalı genetik danışmanlık notu ile klinik yorumun yapıldığı genetik tanı raporu
+      bulunmalıdır
+    annex_basis: EK-2/K
+    severity: error
+  gate_b_sources:
+  - C001320
+- rule_id: 2.4.4.I-3.(6).pgt_embryo_max8_numbered_report_to_institution
+  sut_section: 2.4.4.İ-3
+  condition:
+    procedure_category: preimplantation_genetic_diagnosis
+    embryos_numbered_count:
+      min: 9
+  action:
+    billable: false
+    enforcement: documentation_and_cap
+    message_tr: üremeye yardımcı tedavi merkezi tarafından elde edilen IVF'ye uygun embriyoların en fazla sekiz adet olmak
+      üzere numaralandırılması gerekir; embriyoların 'sağlıklı/taşıyıcı/hasta' olarak belirtildiği analiz sonuçlarını içeren
+      raporların Kuruma incelemeye esas belge olarak gönderilmesi gereklidir
+    severity: error
+  gate_b_sources:
+  - C001322
+- rule_id: 2.4.4.I-3.(10).pgt_healthy_embryo_freezing_if_cycles_remaining
+  sut_section: 2.4.4.İ-3
+  condition:
+    procedure_category: preimplantation_genetic_diagnosis
+    embryo_freezing_of_untransferred_healthy: true
+    ivf_cycle_entitlement_remaining: false
+  action:
+    billable: false
+    enforcement: coverage_condition
+    message_tr: PGT ile elde edilen ve transfer edilmeyen sağlıklı embriyo veya embriyoların freezing işlemi, IVF deneme hakkının
+      bulunması durumunda Kurumca karşılanır
+    severity: error
+  gate_b_sources:
+  - C001326
+- rule_id: 2.4.4.I-3.(11).pgt_frozen_embryo_transfer_ek2c
+  sut_section: 2.4.4.İ-3
+  condition:
+    procedure_category: ivf_art
+    is_frozen_embryo_transfer: true
+    billing_basis: other
+  action:
+    billable: true
+    enforcement: pricing_basis
+    message_tr: IVF tedavisinin freezing işlemi uygulanan embriyonun transferi ile yapılması durumunda işlemler EK-2/C'deki
+      'Freezing işlemi uygulanan embriyonun transferi' işlemi üzerinden faturalandırılır; bu işlem deneme sayısına dâhil edilecektir
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001327

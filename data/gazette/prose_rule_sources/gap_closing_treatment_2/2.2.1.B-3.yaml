@@ -1,0 +1,15 @@
+section_id: 2.2.1.B-3
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.1.B-3.(3).materials_supplied_by_provider
+  sut_section: 2.2.1.B-3
+  condition:
+    procedure_category_any:
+    - inpatient_surgery
+    - drg_package
+  action:
+    billable: true
+    payment_tr: kullanılan tıbbi malzeme sunucu tarafından temin zorunludur; Kurumca bedeli karşılanmayanlar hariç faturalandırılabilir
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C000620

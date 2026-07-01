@@ -1,0 +1,111 @@
+section_id: 4.2.49.B
+rules:
+- rule_id: 4.2.49.B.neuro.risdiplam_all_criteria_coverage
+  sut_section: 4.2.49.B
+  gate_b_sources:
+  - C007032
+  drug_names:
+  - risdiplam
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'risdiplam: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir'
+    message_tr: Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.B).
+- rule_id: 4.2.49.B.neuro.risdiplam_all_criteria_coverage_b
+  sut_section: 4.2.49.B
+  gate_b_sources:
+  - C007042
+  drug_names:
+  - risdiplam
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'risdiplam: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir'
+    message_tr: Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.B).
+- rule_id: 4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_a
+  sut_section: 4.2.49.B
+  gate_b_sources:
+  - C007040
+  drug_names:
+  - risdiplam
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  action:
+    enforcement: 'mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik
+      açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir'
+    message_tr: Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi,
+      yaşa ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi
+      gereklidir (§4.2.49.B).
+- rule_id: 4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_b
+  sut_section: 4.2.49.B
+  gate_b_sources:
+  - C007045
+  drug_names:
+  - risdiplam
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  action:
+    enforcement: 'mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik
+      açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir'
+    message_tr: Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi,
+      yaşa ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda belirtilmesi
+      gereklidir (§4.2.49.B).
+- rule_id: 4.2.49.B.neuro.risdiplam_no_implanted_csf_shunt
+  sut_section: 4.2.49.B
+  gate_b_sources:
+  - C007035
+  drug_names:
+  - risdiplam
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  action:
+    enforcement: 'mandatory: BOS drenajı için implante edilmiş bir şant veya implante edilmiş bir BOS kateteri bulunmamalıdır'
+    message_tr: BOS drenajı için implante edilmiş bir şant veya implante edilmiş bir BOS kateteri bulunmaması gerekmektedir
+      (§4.2.49.B).
+- rule_id: 4.2.49.B.neuro.risdiplam_no_lumbar_puncture_contraindication
+  sut_section: 4.2.49.B
+  gate_b_sources:
+  - C007038
+  drug_names:
+  - risdiplam
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  action:
+    enforcement: 'mandatory: lomber ponksiyon uygulanmasına engel bir durum olmadığı sağlık kurulu raporunda belirtilmiş olmalıdır'
+    message_tr: Lomber ponksiyon uygulanmasına engel bir durum olmadığının sağlık kurulu raporunda belirtilmiş olması gerekmektedir
+      (§4.2.49.B).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,13 @@
+section_id: 2.6.3
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.6.3.(2).companion_bed_meal_bundled_inpatient
+  sut_section: 2.6.3
+  condition:
+    inpatient_treatment: true
+    companion_present_documented: true
+  action:
+    billable: true
+    payment_tr: yatarak tedavide refakatçi yatak/yemek/temel ihtiyaç bedelleri tanıya dayalı pakete dahil
+  gate_b_sources:
+  - C001572

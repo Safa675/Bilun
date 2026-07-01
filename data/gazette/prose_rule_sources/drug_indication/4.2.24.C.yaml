@@ -1,0 +1,77 @@
+section_id: 4.2.24.C
+rules:
+- rule_id: 4.2.24.C.resp.rhinitis_azelastine_fluticasone_combo
+  sut_section: 4.2.24.C
+  gate_b_sources:
+  - C006188
+  drug_names:
+  - azelastin hidroklorür
+  - flutikazon propiyonat
+  icd10_codes:
+  - J30.1
+  - J30.2
+  - J30.3
+  prescriber_specialties:
+  - alerji ve immünoloji
+  - kulak burun boğaz
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  - göğüs hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: mevsimsel/pereniyal alerjik rinitte intranazal antihistaminik veya glukokortikoid monoterapisi yetersizse;
+      azelastin+flutikazon sabit doz kombinasyonu ≥12 yaşta belirlenen uzmanlarca reçete
+    message_tr: Mevsimsel ve pereniyal alerjik rinit semptomlarının giderilmesinde intranazal antihistaminik veya glukokortikoid
+      monoterapilerinin yeterli olmadığı durumlarda; azelastin hidroklorür ve flutikazon propiyonat etken maddelerini içeren
+      sabit doz kombine preparatları 12 yaş ve üzeri hastalarda alerji ve immünoloji, kulak burun boğaz, iç hastalıkları,
+      çocuk sağlığı ve hastalıkları, göğüs hastalıkları uzman hekimlerince reçete edilmesi halinde Kurumca bedelleri karşılanır
+      (§4.2.24.C).
+- rule_id: 4.2.24.C.resp.rhinitis_intranazal_steroid_antihistamine_couse
+  sut_section: 4.2.24.C
+  gate_b_sources:
+  - C006190
+  drug_names:
+  - mono intranazal kortikosteroid
+  - mono intranazal antihistaminik
+  icd10_codes:
+  - J30.1
+  - J30.2
+  - J30.3
+  prescriber_specialties:
+  - alerji ve immünoloji
+  - kulak burun boğaz
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  - göğüs hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: mevsimsel/pereniyal alerjik rinitte monoterapi yetersizse; mono intranazal kortikosteroid ve mono intranazal
+      antihistaminik belirlenen uzmanlarca birlikte reçete
+    message_tr: Mevsimsel ve pereniyal alerjik rinit semptomlarının giderilmesinde intranazal antihistaminik veya glukokortikoid
+      monoterapilerinin yeterli olmadığı durumlarda; mono intranazal kortikosteroid ve mono intranazal antihistaminik ilaçların
+      birlikte kullanımı alerji ve immünoloji, kulak burun boğaz, iç hastalıkları, çocuk sağlığı ve hastalıkları, göğüs hastalıkları
+      uzman hekimlerince birlikte reçete edilmesi halinde Kurumca bedelleri karşılanır (§4.2.24.C).
+- rule_id: 4.2.24.montelukast_antihistamine_combo
+  sut_section: 4.2.24.C
+  drug_names:
+  - montelukast
+  - antihistaminik
+  - singulair
+  icd10_ranges:
+  - J30
+  - J45
+  - J46
+  message_tr: Montelukast+antihistaminik kombinasyonları — KBB, iç hastalıkları, çocuk sağlığı, göğüs hastalıkları veya alerji
+    uzman reçetesi/raporu gerekir (§4.2.24.C-1).
+  gate_b_sources:
+  - C006184
+  report_required: true
+  prescriber_specialties:
+  - kulak burun boğaz
+  - iç hastalıkları
+  - çocuk sağlığı
+  - göğüs hastalıkları
+  - alerji
+source_note: Exported from drug_indication_prose.json (YAML source migration)

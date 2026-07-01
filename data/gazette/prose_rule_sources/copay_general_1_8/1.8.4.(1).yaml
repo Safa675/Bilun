@@ -1,0 +1,18 @@
+section_id: 1.8.4.(1)
+source_note: Exported from copay_general_1_8.json (YAML source migration)
+rules:
+- rule_id: 1.8.4.(1)
+  sut_section: 1.8.4.(1)
+  service_type: ivf_treatment
+  rates_by_attempt:
+    '1':
+      sgk_income_recipient: 0.3
+      other: 0.3
+    '2':
+      sgk_income_recipient: 0.25
+      other: 0.25
+    '3':
+      sgk_income_recipient: 0.2
+      other: 0.2
+  gate_b_sources:
+  - C000352

@@ -1,0 +1,37 @@
+section_id: 4.2.14.B
+rules:
+- rule_id: 4.2.14.B.gcsf_granulocyte_colony_stimulating_factors
+  sut_section: 4.2.14.B
+  gate_b_sources:
+  - C004933
+  drug_names:
+  - filgrastim
+  - lenograstim
+  - pegfilgrastim
+  - lipegfilgrastim
+  report_required: true
+  report_specialties:
+  - hematoloji
+  - tıbbi onkoloji
+  - enfeksiyon
+  - radyasyon onkolojisi
+  - göğüs hastalıkları
+  - üroloji
+  - kadın hastalıkları ve doğum
+  report_duration_months: 6
+  prescriber_specialties:
+  - hematoloji
+  - tıbbi onkoloji
+  - enfeksiyon
+  - radyasyon onkolojisi
+  - göğüs hastalıkları
+  - üroloji
+  - kadın hastalıkları ve doğum
+  - iç hastalıkları
+  - çocuk hastalıkları
+  action:
+    enforcement: G-CSF dispensed ≤ 1-month doses; lenograstim ≤4 vials/day only for peripheral blood progenitor cell mobilization
+    message_tr: Filgrastim/lenograstim/pegfilgrastim/lipegfilgrastim; ilgili uzmanların yer aldığı 6 aylık sağlık kurulu raporuyla,
+      belirlenen uzmanlarca en fazla birer aylık dozda reçete edilir. Lenograstim günde 4 flakona kadar yalnızca periferik
+      kan progenitör hücre mobilizasyonunda (§4.2.14.B(2)).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

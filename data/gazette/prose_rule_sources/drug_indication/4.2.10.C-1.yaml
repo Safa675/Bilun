@@ -1,0 +1,14 @@
+section_id: 4.2.10.C-1
+rules:
+- rule_id: 4.2.10.C1.two_compatible_analyses_ms_exclusion
+  sut_section: 4.2.10.C-1
+  gate_b_sources:
+  - C004348
+  report_required: true
+  action:
+    enforcement: analiz sonuçlarından en az ikisi hastalıkla uyumlu olmalı ve raporda belirtilmeli; Tip II, IVA, VI hastalarında
+      multiple sülfataz eksikliği enzimatik/moleküler genetik ile dışlanmış olmalıdır
+    message_tr: Belirtilen analiz sonuçlarından en az ikisinin hastalıkla uyumlu olması ve ilaç raporunda sonuçların belirtilmesi
+      gerekmektedir. Tip II, IVA ve VI hastalarında multiple sülfataz eksikliği enzimatik ya da moleküler genetik analiz sonuçları
+      ile dışlanmış olmalıdır (§4.2.10.C-1).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

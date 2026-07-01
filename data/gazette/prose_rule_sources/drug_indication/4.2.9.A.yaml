@@ -1,0 +1,53 @@
+section_id: 4.2.9.A
+rules:
+- rule_id: 4.2.9.A.renal.esa_roxadustat_offlabel_nopay
+  sut_section: 4.2.9.A
+  gate_b_sources:
+  - C004125
+  drug_names:
+  - eritropoietin
+  - darbepoietin
+  - roksadustat
+  icd10_codes:
+  - D63.1
+  - N18
+  pay: false
+  action:
+    enforcement: 'no-pay condition: eritropoietin/darbepoietin kronik böbrek yetmezliği ilişkili anemi ve myelodisplastik
+      sendrom dışındaki endikasyonlarda; roksadustat kronik böbrek yetmezliği ilişkili anemi dışındaki endikasyonlarda karşılanmaz'
+    message_tr: Eritropoietin ve darbepoietin preparatları kronik böbrek yetmezliği ile ilişkili anemi ve myelodisplastik
+      sendrom dışındaki endikasyonlarda, roksadustat preparatları ise kronik böbrek yetmezliği ile ilişkili anemi dışındaki
+      endikasyonlarda Kurumca karşılanmaz (§4.2.9.A).
+- rule_id: 4.2.9.esa_legacy_muadil_monthly_report
+  sut_section: 4.2.9.A
+  drug_names:
+  - eritropoietin
+  - epoetin
+  - darbepoetin
+  - aranesp
+  - binocrit
+  - eprex
+  - mircera
+  - retacrit
+  - neo recormon
+  - metoksipolietilen glikol
+  icd10_ranges:
+  - N18
+  - D46
+  - D47
+  message_tr: Eritropoietin alfa-beta-zeta, metoksipolietilen glikol epoetin beta ve darbepoetin endikasyon muadili olarak
+    kullanılabilir; raporda doz/süre belirtilir ve bir defada en fazla 1 aylık reçete verilir (§4.2.9.A).
+  gate_b_sources:
+  - C004118
+  - C004119
+  - C004127
+  - C004128
+  report_required: true
+  report_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+  - hematoloji
+  report_duration_months: 1
+source_note: Exported from drug_indication_prose.json (YAML source migration)

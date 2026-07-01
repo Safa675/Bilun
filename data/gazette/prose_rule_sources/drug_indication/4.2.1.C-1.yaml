@@ -1,0 +1,778 @@
+section_id: 4.2.1.C-1
+rules:
+- rule_id: 4.2.1.C.ankylosing_spondylitis_nsaids_failure_report
+  sut_section: 4.2.1.C-1
+  gate_b_sources:
+  - C003605
+  drug_names:
+  - anti-tnf
+  - biyolojik ajan
+  icd10_codes:
+  - M45
+  - M46.0
+  - M46.1
+  - M46.8
+  - M46.9
+  report_required: true
+  report_duration_months: 3
+  report_specialties:
+  - romatoloji
+  - fiziksel tıp ve rehabilitasyon
+  action:
+    enforcement: 'aksiyel SpA/AS: ≥3 NSAİİ maksimum dozda yetersiz (BASDAİ>5) + ESH>28 veya CRP↑ veya MR/sintigrafi aktif
+      sakroilit; başlangıç 3 ay, devam 6 ay rapor'
+    message_tr: 'Aksiyel tutulumlu ankilozan spondilit/non-radyografik aksiyel spondilartrit: en az 3 NSAİİ maksimum dozda
+      yetersiz (BASDAİ>5), ESH>28 mm/s veya CRP↑ veya MR/sintigrafi ile aktif sakroilit varsa 3 ay süreli sağlık kurulu raporuyla
+      başlanır; 3. ay değerlendirmesinde yetersiz cevap (BASDAİ''de <2 düzelme) devamında bedeli ödenmez, cevap alınırsa 6
+      ay süreli rapor gerekir (§4.2.1.C-1).'
+- rule_id: 4.2.1.C.anti_tnf_dmard_combination
+  sut_section: 4.2.1.C-1
+  gate_b_sources:
+  - C003624
+  drug_names:
+  - anti-tnf
+  - metotreksat
+  - sulfasalazin
+  - leflunomid
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'permission: anti-TNF ilaçlar diğer antiromatizmal ilaçlarla kombine kullanılabilir'
+    message_tr: Anti-TNF ilaçlar diğer antiromatizmal ilaçlar ile kombine olarak da kullanılabilir (§4.2.1.C-1).
+- rule_id: 4.2.1.C.biologic_administration_setting
+  sut_section: 4.2.1.C-1
+  gate_b_sources:
+  - C003623
+  drug_names:
+  - anti-tnf
+  - biyolojik ajan
+  report_required: true
+  report_specialties:
+  - fiziksel tıp ve rehabilitasyon
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  action:
+    enforcement: IV formlar ilgili uzman bulunan kurumda; SC ilk dozlar uzman gözetiminde; eğitim + 'Mahallinde tedavisi sürdürülebilir'
+      ibaresi ile 12 haftalık dozlar halinde reçete
+    message_tr: İntravenöz formlar fiziksel tıp/iç hastalıkları/çocuk sağlığı uzmanının bulunduğu kurumda uygulanır; subkütan
+      ilk dozlar uzman gözetiminde yapılır, enjeksiyon eğitimi ve 'Mahallinde tedavisi sürdürülebilir' rapor ibaresiyle 12
+      haftalık dozlar halinde reçete edilebilir (§4.2.1.C-1).
+- rule_id: 4.2.1.C.juvenile_ra_das28_activity_scoring
+  sut_section: 4.2.1.C-1
+  gate_b_sources:
+  - C003604
+  drug_names:
+  - anti-tnf
+  - biyolojik ajan
+  icd10_codes:
+  - M08.0
+  report_required: true
+  report_specialties:
+  - romatoloji
+  - fiziksel tıp ve rehabilitasyon
+  action:
+    enforcement: ≥18 yaş juvenil romatoid artrit (poliartiküler) — DAS28 skorlaması esastır; <18 yaş ACR pediatrik yanıt alınanlarda
+      DAS28 aranmaz, alevlenmede erişkin koşulları geçerli
+    message_tr: 18 yaş ve üzerinde juvenil romatoid artritli hastalarda DAS28 skoruna göre hastalık aktivite ölçümü esastır;
+      <18 yaş ACR pediatrik yanıt alınan mevcut tedaviye devam edilebilir, alevlenmede erişkin (DAS28) koşulları geçerlidir
+      (§4.2.1.C-1).
+- rule_id: 4.2.1.adalimumab_crohn_adult_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - adalimumab
+  - infliksimab
+  - sertolizumab
+  - humira
+  - remicade
+  icd10_ranges:
+  - K50
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - iç hastalıkları
+  message_tr: Adalimumab/infliksimab/sertolizumab — yetişkin Crohn hastalığında 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003629
+  prescriber_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - iç hastalıkları
+  report_duration_months: 4
+- rule_id: 4.2.1.adalimumab_hs_dermatology_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - adalimumab
+  - humira
+  icd10_ranges:
+  - L73
+  - L73.2
+  report_required: true
+  report_specialties:
+  - dermatoloji
+  message_tr: Adalimumab — hidradenitis suppurativa'da antibiyotik yetersizliğinde 3 ay süreli dermatoloji sağlık kurulu raporu
+    gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003636
+  prescriber_specialties:
+  - dermatoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.adalimumab_jia_uveitis_first_line
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - adalimumab
+  - humira
+  icd10_ranges:
+  - M08
+  - H20
+  - H30
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  - çocuk endokrinoloji
+  - göz hastalıkları
+  message_tr: Adalimumab — üveit eşlikli juvenil artritte ilk seçenek anti-TNF olarak 3 ay süreli sağlık kurulu raporu gerekir
+    (§4.2.1.C-1).
+  gate_b_sources:
+  - C003602
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  - çocuk endokrinoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.adalimumab_pediatric_crohn_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - adalimumab
+  - infliksimab
+  - humira
+  - remicade
+  icd10_ranges:
+  - K50
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - iç hastalıkları
+  - çocuk gastroenteroloji
+  message_tr: Adalimumab/infliksimab — çocuk Crohn hastalığında konvansiyonel tedavi yetersizliğinde 4 ay süreli sağlık kurulu
+    raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003630
+  prescriber_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - iç hastalıkları
+  - çocuk gastroenteroloji
+  report_duration_months: 4
+- rule_id: 4.2.1.adalimumab_pediatric_uveitis_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - adalimumab
+  - humira
+  icd10_ranges:
+  - H20
+  - H30
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  message_tr: Adalimumab — çocuk non-enfeksiyöz kronik anterior üveitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003635
+  prescriber_specialties:
+  - göz hastalıkları
+  report_duration_months: 3
+- rule_id: 4.2.1.adalimumab_uveitis_adult_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - adalimumab
+  - humira
+  icd10_ranges:
+  - H20
+  - H30
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  message_tr: Adalimumab — yetişkin non-enfeksiyöz üveitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003634
+  prescriber_specialties:
+  - göz hastalıkları
+  report_duration_months: 3
+- rule_id: 4.2.1.anti_tnf_axial_as_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  icd10_ranges:
+  - M45
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  message_tr: Anti-TNF — aksiyel tutulumlu ankilozan spondilitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003609
+  report_duration_months: 3
+- rule_id: 4.2.1.anti_tnf_jia_acr30_continuation_c1
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - humira
+  - enbrel
+  - simponi
+  - cimzia
+  icd10_ranges:
+  - M08
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Anti-TNF — juvenil artritte ACR pediatrik 30 yanıtı sonrası 3 ay süreli sağlık kurulu raporu ile tedaviye devam
+    edilir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003603
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.anti_tnf_jia_acr50_continuation_c1
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - humira
+  - enbrel
+  - simponi
+  - cimzia
+  icd10_ranges:
+  - M08
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Anti-TNF — juvenil artritte ACR pediatrik 50 yanıtı ile 6 ay süreli sağlık kurulu raporu ile tedaviye devam
+    edilir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003603
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 6
+- rule_id: 4.2.1.anti_tnf_jia_acr_continuation
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - humira
+  - enbrel
+  icd10_ranges:
+  - M08
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Anti-TNF — juvenil artritte ACR pediatrik 30/50 yanıtı ile tedavi devamında 3–6 ay süreli sağlık kurulu raporu
+    gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003603
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.anti_tnf_jia_acr_monitoring_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - humira
+  - enbrel
+  - simponi
+  - cimzia
+  icd10_ranges:
+  - M08
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Anti-TNF — juvenil artritte tedavi devamında ACR pediatrik cevap kriterinin her sağlık kurulu raporunda belirtilmesi
+    gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003603
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+- rule_id: 4.2.1.anti_tnf_jia_dmard_failure_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - humira
+  - enbrel
+  icd10_ranges:
+  - M08
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  - çocuk endokrinoloji
+  message_tr: Anti-TNF — juvenil artritte NSAİ ve DMARD yetersizliğinde 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003602
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  - çocuk endokrinoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.anti_tnf_jia_start_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - humira
+  - enbrel
+  icd10_ranges:
+  - M08
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  - çocuk endokrinoloji
+  message_tr: Anti-TNF — juvenil idiyopatik artritte NSAİ/methotrexat yetersizliğinde ACR pediatrik 30 yanıtı ile 3 ay süreli
+    sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003593
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  - çocuk endokrinoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.anti_tnf_peripheral_as_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  icd10_ranges:
+  - M45
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  message_tr: Anti-TNF — periferik eklem tutulumlu ankilozan spondilitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003610
+  report_duration_months: 3
+- rule_id: 4.2.1.anti_tnf_prescriber_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - humira
+  - enbrel
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  message_tr: Anti-TNF ilaçlar — romatoid artritte romatoloji/klinik immunoloji/fiziksel tıp uzmanının yer aldığı en fazla
+    6 aylık sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003622
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  report_duration_months: 6
+- rule_id: 4.2.1.anti_tnf_psoriasis_vulgaris_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - humira
+  - enbrel
+  icd10_ranges:
+  - L40
+  report_required: true
+  report_specialties:
+  - dermatoloji
+  message_tr: Anti-TNF — plak psoriyaziste DMARD direncinde dermatoloji uzmanının yer aldığı 6 ay süreli sağlık kurulu raporu
+    gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003625
+  prescriber_specialties:
+  - dermatoloji
+  report_duration_months: 6
+- rule_id: 4.2.1.anti_tnf_psoriatic_arthritis_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  icd10_ranges:
+  - L40.5
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  message_tr: Anti-TNF — psöriyatik artritte DMARD yetersizliğinde sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003617
+- rule_id: 4.2.1.anti_tnf_ra_das28_initiation
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - etanersept
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - humira
+  - enbrel
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Anti-TNF — erişkin romatoid artritte DMARD yetersizliğinde DAS28 takibi ile 3 ay süreli sağlık kurulu raporu
+    gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003587
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.anti_tnf_uc_conv_failure_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - adalimumab
+  - remicade
+  - humira
+  icd10_ranges:
+  - K51
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - iç hastalıkları
+  - çocuk gastroenteroloji
+  message_tr: Anti-TNF — ülseratif kolitte konvansiyonel tedavi yetersizliğinde 6 ay süreli uzman hekim raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003631
+  prescriber_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - iç hastalıkları
+  - çocuk gastroenteroloji
+  report_duration_months: 6
+- rule_id: 4.2.1.crohn_fistulizing_month4_cdai_report
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - adalimumab
+  - humira
+  - infliksimab
+  - remicade
+  - sertolizumab
+  - cimzia
+  icd10_ranges:
+  - K50
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - çocuk cerrahisi
+  message_tr: Fistülize/şiddetli Crohn — adalimumab/infliksimab/sertolizumab başlangıcında 4 ay süreli sağlık kurulu raporu;
+    4. ayda CDAI 70 puan düşüşü değerlendirilir (§4.2.1.C-1 (10)).
+  gate_b_sources:
+  - C003627
+  prescriber_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - çocuk cerrahisi
+  report_duration_months: 4
+- rule_id: 4.2.1.inflix_cert_gol_as_second_line
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - simponi
+  - cimzia
+  icd10_ranges:
+  - M45
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz ankilozan spondilitte BASDAİ yanıtı ile 3 ay süreli
+    sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003614
+  report_duration_months: 3
+- rule_id: 4.2.1.inflix_cert_gol_psa_psarc_second_line
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  - remicade
+  - simponi
+  - cimzia
+  icd10_ranges:
+  - L40.5
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz psöriyatik artritte PSARC yanıtı ile sağlık kurulu
+    raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003621
+  report_duration_months: 3
+- rule_id: 4.2.1.inflix_cert_gol_ra_second_line
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  message_tr: İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz romatoid artritte 3 ay süreli sağlık kurulu raporu
+    gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003591
+  report_duration_months: 3
+- rule_id: 4.2.1.inflix_peripheral_as_basdai_continuation
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - remicade
+  icd10_ranges:
+  - M45
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: İnfliksimab — periferik ankilozan spondilitte BASDAİ yanıtı sonrası 6 ay süreli sağlık kurulu raporu ile tedaviye
+    devam edilir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003609
+  report_duration_months: 6
+- rule_id: 4.2.1.inflix_peripheral_as_second_line_romato_board
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - remicade
+  icd10_ranges:
+  - M45
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: İnfliksimab — periferik ankilozan spondilitte diğer anti-TNF yetersizliğinde romatoloji uzmanının yer aldığı
+    3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003609
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.inflix_peripheral_as_second_line_start
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - remicade
+  icd10_ranges:
+  - M45
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: İnfliksimab — periferik eklem tutulumlu ankilozan spondilitte diğer anti-TNF yetersizliğinin 3 ay süreli sağlık
+    kurulu raporunda belirtilmesi gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003609
+  report_duration_months: 3
+- rule_id: 4.2.1.inflix_psa_second_line_psarc
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - golimumab
+  - sertolizumab
+  - certolizumab
+  icd10_ranges:
+  - L40.5
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz psöriyatik artritte PSARC yanıtı ile 3 ay süreli
+    sağlık kurulu raporu gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003621
+  report_duration_months: 3
+- rule_id: 4.2.1.infliximab_as_basdai_second_line
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - remicade
+  icd10_ranges:
+  - M45
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: İnfliksimab — diğer anti-TNF yetersiz ankilozan spondilitte BASDAİ yanıtı ile 3 ay süreli sağlık kurulu raporu
+    gerekir (§4.2.1.C-1).
+  gate_b_sources:
+  - C003609
+  report_duration_months: 3
+- rule_id: 4.2.1.infliximab_ra_das28_second_line
+  sut_section: 4.2.1.C-1
+  drug_names:
+  - infliksimab
+  - remicade
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: İnfliksimab — diğer anti-TNF yetersiz romatoid artritte DAS28 yanıtı ile 3 ay süreli sağlık kurulu raporu gerekir
+    (§4.2.1.C-1).
+  gate_b_sources:
+  - C003591
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 3
+source_note: Exported from drug_indication_prose.json (YAML source migration)

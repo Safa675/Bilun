@@ -1,0 +1,50 @@
+section_id: 3.1.3
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.1.3.not_in_list_material_karsilanmaz
+  sut_section: 3.1.3
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002789
+  condition:
+    material_not_in_sut_lists_without_contract: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: SUT eki listelerde yer almayan ve Kurumla sözleşmeli olmayan tıbbi malzeme bedelleri Kurumca karşılanmaz (§3.1.3(2)).
+- rule_id: 3.1.3.serbest_kodsuz_medula_giris_karsilanmaz
+  sut_section: 3.1.3
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002794
+  condition:
+    material_entered_as_serbest_kodsuz_in_medula: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Malzemeler serbest kodsuz olarak MEDULA-Hastane'ye girilemez; girilirse hiçbir koşulda bedelleri Kurumca karşılanmaz
+      (§3.1.3(7)).
+- rule_id: 3.1.3.demirbas_ve_reusable_sarf_karsilanmaz
+  sut_section: 3.1.3
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002795
+  condition:
+    demirbas_or_reusable_accessory_spare_part_claimed: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Demirbaş malzemeler ile bunların tamir/bakım-onarım, yedek parça, aksesuar ve tekrar kullanılabilir sarf bedelleri
+      Kurumca karşılanmaz (§3.1.3(8)).
+- rule_id: 3.1.3.sunucu_temin_reusable_malzeme_karsilanmaz
+  sut_section: 3.1.3
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002796
+  condition:
+    reusable_material_supplied_by_sunucu_claimed: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Sağlık hizmeti sunucusu tarafından temin edilen tekrar kullanılabilir tıbbi malzeme bedelleri Kurumca karşılanmaz
+      (§3.1.3(9)).

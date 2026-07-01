@@ -1,0 +1,292 @@
+section_id: 4.2.24.A
+rules:
+- rule_id: 4.2.24.A.resp.iks_one_per_prescription_coverage
+  sut_section: 4.2.24.A
+  gate_b_sources:
+  - C006147
+  drug_names:
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J45
+  condition:
+    coverage_note: true
+  action:
+    enforcement: aynı reçetede İKS mono veya sabit doz kombinasyonu içeren müstahzarlardan yalnızca bir müstahzarın bedeli
+      ödenir
+    message_tr: Aynı reçetede bulunan inhale kortikosteroidi (İKS) mono veya sabit doz kombinasyonu şeklinde içeren müstahzarlardan
+      yalnızca bir müstahzarın bedeli Kurumca karşılanır (§4.2.24.A).
+- rule_id: 4.2.24.A.resp.laba_iks_mono_or_combined_coverage
+  sut_section: 4.2.24.A
+  gate_b_sources:
+  - C006145
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti
+  - laba
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J45
+  condition:
+    coverage_note: true
+  action:
+    enforcement: LABA ve İKS gruplarında mono olarak yer alan ürünler tek başına veya birlikte reçete edilirse ödenir
+    message_tr: Uzun etkili solunum yolu beta-agonistleri (LABA) ve inhale kortikosteroidler (İKS) gruplarında mono olarak
+      yer alan ürünlerin tek başına veya birlikte reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.24.A).
+- rule_id: 4.2.24.A.resp.laba_iks_otherwise_nopay
+  sut_section: 4.2.24.A
+  gate_b_sources:
+  - C006148
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti
+  - laba
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J45
+  pay: false
+  action:
+    enforcement: 'no-pay condition: LABA ve İKS mono veya sabit doz kombinasyonu gruplarındaki ürünlerin diğer şekillerde
+      reçete edilmesi'
+    message_tr: Uzun etkili solunum yolu beta-agonistleri (LABA) ve inhale kortikosteroidlerin (İKS) mono veya sabit doz kombinasyonu
+      gruplarında yer alan ürünlerin diğer şekillerde reçete edilmesi halinde bedelleri Kurumca karşılanmaz (§4.2.24.A).
+- rule_id: 4.2.24.A.resp.laba_one_per_prescription_coverage
+  sut_section: 4.2.24.A
+  gate_b_sources:
+  - C006146
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti
+  - laba
+  icd10_codes:
+  - J45
+  condition:
+    coverage_note: true
+  action:
+    enforcement: aynı reçetede LABA mono veya sabit doz kombinasyonu içeren müstahzarlardan yalnızca bir müstahzarın bedeli
+      ödenir
+    message_tr: Aynı reçetede bulunan uzun etkili solunum yolu beta-agonistini (LABA) mono veya sabit doz kombinasyonu şeklinde
+      içeren müstahzarlardan yalnızca bir müstahzarın bedeli Kurumca karşılanır (§4.2.24.A).
+- rule_id: 4.2.24.A.resp.nebul_respiratory_first_box_report
+  sut_section: 4.2.24.A
+  gate_b_sources:
+  - C006155
+  drug_names:
+  - nebül formu solunum sistemi ilaçları
+  icd10_codes:
+  - J45
+  report_required: true
+  report_specialties:
+  - göğüs hastalıkları
+  - immünoloji
+  - immünoloji ve alerji
+  - alerji
+  - çocuk sağlığı ve hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: nebül solunum ilaçları Bakanlık onaylı endikasyonda tüm hekimlerce raporsuz en fazla 1 kutu; devamı göğüs/immünoloji(-alerji)/alerji/çocuk
+      uzman raporuyla tüm hekimlerce reçete edilirse ödenir; aynı gruptan iki nebül kombine kullanılamaz
+    message_tr: Nebül formundaki solunum sistemi ilaçları Sağlık Bakanlığınca onaylı endikasyonlarında kullanılması koşulu
+      ile tüm hekimlerce raporsuz olarak en fazla bir kutu reçete edilmesi halinde, göğüs hastalıkları, immünoloji, immünoloji
+      ve alerji, alerji veya çocuk sağlığı ve hastalıkları tarafından düzenlenen uzman hekim raporuna dayanılarak tüm hekimlerce
+      reçete edilmesi halinde bedelleri Kurumca karşılanır. Aynı grupta yer alan etkin maddeleri içeren iki ayrı nebül formundaki
+      ilaçlar kombine olarak kullanılamaz (§4.2.24.A).
+- rule_id: 4.2.24.A.resp.saba_sama_inhale_exemption
+  sut_section: 4.2.24.A
+  gate_b_sources:
+  - C006149
+  drug_names:
+  - kısa etkili solunum yolu beta-agonisti
+  - saba
+  - kısa etkili antikolinerjik
+  - sama
+  - saba+sama
+  icd10_codes:
+  - J45
+  action:
+    enforcement: 'exemption: SABA veya SABA+SAMA inhale formları ile nebülizatörle uygulanan İKS, 4.2.24.A hükümlerinden istisnadır'
+    message_tr: Kısa etkili solunum yolu beta-agonistini (SABA) veya kısa etkili solunum yolu beta-agonistini (SABA) ve obstrüktif
+      solunum yolu hastalıklarında kullanılan kısa etkili antikolinerjik maddeyi (SAMA) kombine olarak içeren ürünler (SABA+SAMA)
+      ile nebülizatörle uygulanan inhale kortikosteroidler (İKS), inhale formları 4.2.24.A numaralı maddesinde yer alan hükümlerden
+      istisnadır (§4.2.24.A).
+- rule_id: 4.2.24.A.resp.tertiary_allergy_board_coverage
+  sut_section: 4.2.24.A
+  gate_b_sources:
+  - C006142
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti
+  - laba
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J45
+  report_required: true
+  report_specialties:
+  - alerji
+  - immünoloji ve alerji hastalıkları
+  prescriber_specialties:
+  - göğüs hastalıkları
+  - alerji
+  - immünoloji ve alerji hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basamakta en az bir alerji veya immünoloji ve alerji hastalıkları uzmanının yer aldığı sağlık kurulu
+      raporuyla göğüs hastalıkları, alerji veya immünoloji ve alerji hastalıkları uzmanlarınca reçete edilirse ödenir
+    message_tr: Üçüncü basamak resmi sağlık hizmeti sunucularında, en az bir alerji veya immünoloji ve alerji hastalıkları
+      uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak göğüs hastalıkları, alerji veya immünoloji ve alerji hastalıkları
+      uzman hekimleri tarafından reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.24.A).
+- rule_id: 4.2.24.A.resp.triple_combo_asthma_maintenance_a
+  sut_section: 4.2.24.A
+  gate_b_sources:
+  - C006151
+  drug_names:
+  - beklometazon+formoterol+glikopironyum
+  - flutikazonfuroat+umeklidinyum+vilanterol
+  icd10_codes:
+  - J45
+  report_required: true
+  report_specialties:
+  - göğüs hastalıkları
+  - göğüs cerrahisi
+  - alerji
+  - iç hastalıkları
+  prescriber_specialties:
+  - göğüs hastalıkları
+  - göğüs cerrahisi
+  - alerji
+  - iç hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: LABA+orta doz İKS ile yeterince kontrol edilemeyen ve önceki yıl ≥1 astım alevlenmesi olan erişkin idame
+      tedavisinde belirlenen uzmanlarca reçete edilirse ödenir; bir uzman raporu varsa diğer hekimlerce de devamı reçete edilebilir
+    message_tr: Beklometazon+formoterol+glikopronyum veya flutikazonfuroat 100 mcg + umeklidinyum+ vilanterol etken maddelerini
+      sabit dozda içeren ürünler; uzun etkili beta-2 agonist ve orta doz inhale kortikosteroid kombinasyonu ile yeterince
+      kontrol edilemeyen ve önceki yıl bir veya daha fazla astım alevlenmesi yaşayan erişkin hastaların idame tedavisinde
+      göğüs hastalıkları, göğüs cerrahisi, alerji, iç hastalıkları uzman hekimleri tarafından reçete edilir. Bu uzman hekimlerden
+      biri tarafından düzenlenen uzman hekim raporu mevcut ise tedavinin devamı için diğer hekimlerce de reçete edilmesi halinde
+      bedelleri Kurumca karşılanır (§4.2.24.A).
+- rule_id: 4.2.24.A.resp.triple_combo_asthma_maintenance_b
+  sut_section: 4.2.24.A
+  gate_b_sources:
+  - C006153
+  drug_names:
+  - flutikazonfuroat+umeklidinyum+vilanterol
+  icd10_codes:
+  - J45
+  report_required: true
+  report_specialties:
+  - göğüs hastalıkları
+  - alerji
+  prescriber_specialties:
+  - göğüs hastalıkları
+  - alerji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: flutikazonfuroat 100 mcg+umeklidinyum+vilanterol veya LABA+yüksek doz İKS ile yeterince kontrol edilemeyen
+      ve önceki yıl ≥1 astım alevlenmesi olan erişkin idame tedavisinde göğüs hastalıkları veya alerji uzmanlarınca reçete
+      edilirse ödenir; bir uzman raporu varsa diğer hekimlerce de devamı reçete edilebilir
+    message_tr: Flutikazonfuroat 200 mcg + umeklidinyum + vilanterol etken maddelerini sabit dozda içeren ürünler; flutikazonfuroat
+      100 mcg + umeklidinyum + vilanterol veya uzun etkili beta-2 agonist ve yüksek doz inhale kortikosteroid kombinasyonu
+      ile yeterince kontrol edilemeyen ve önceki yıl bir veya daha fazla astım alevlenmesi yaşayan erişkin hastaların idame
+      tedavisinde göğüs hastalıkları veya alerji uzman hekimleri tarafından reçete edilir. Bu uzman hekimlerden biri tarafından
+      düzenlenen uzman hekim raporu mevcut ise tedavinin devamı için diğer hekimlerce de reçete edilmesi halinde bedelleri
+      Kurumca karşılanır (§4.2.24.A).
+- rule_id: 4.2.24.A.resp.week16_response_allergy_board_coverage
+  sut_section: 4.2.24.A
+  gate_b_sources:
+  - C006143
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti
+  - laba
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J45
+  report_required: true
+  report_specialties:
+  - alerji
+  - immünoloji ve alerji hastalıkları
+  prescriber_specialties:
+  - göğüs hastalıkları
+  - alerji
+  - immünoloji ve alerji hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: ilk tedaviye yanıt üçüncü basamakta 16. haftada değerlendirilir ve tedaviye devam uygun görülürse bu durum
+      belirtilen alerji/immünoloji-alerji uzmanlı sağlık kurulu raporuyla göğüs/alerji uzmanlarınca reçete edilirse ödenir
+    message_tr: İlk tedaviye yanıtın üçüncü basamak resmi sağlık hizmeti sunucularında 16 ncı haftada değerlendirilmesi ve
+      tedaviye devamın uygun görülmesi halinde bu durumun belirtildiği en az bir alerji veya immünoloji ve alerji hastalıkları
+      uzman hekiminin yer aldığı sağlık kurulu raporu ile göğüs hastalıkları, alerji veya immünoloji ve alerji hastalıkları
+      uzman hekimleri tarafından reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.24.A).
+- rule_id: 4.2.24.biologic_tertiary_board
+  sut_section: 4.2.24.A
+  drug_names:
+  - mepolizumab
+  - benralizumab
+  - nucala
+  - fasenra
+  icd10_ranges:
+  - J45
+  - J46
+  message_tr: Mepolizumab/benralizumab — üçüncü basamak kurumda alerji/immünoloji uzmanının yer aldığı sağlık kurulu raporu
+    ve göğüs hastalıkları/alerji reçetesi gerekir (§4.2.24.A-3).
+  gate_b_sources:
+  - C006142
+  report_required: true
+  report_specialties:
+  - alerji
+  - immünoloji
+  - göğüs hastalıkları
+  prescriber_specialties:
+  - göğüs hastalıkları
+  - alerji
+  - immünoloji
+- rule_id: 4.2.24.formeterol_salmeterol_prescriber
+  sut_section: 4.2.24.A
+  drug_names:
+  - formeterol
+  - salmeterol
+  - vilanterol
+  - seretide
+  - symbicort
+  icd10_ranges:
+  - J45
+  - J46
+  - J44
+  - J30
+  message_tr: Formeterol/salmeterol/vilanterol — göğüs hastalıkları, göğüs cerrahisi, alerji, iç hastalıkları veya çocuk sağlığı
+    uzman hekim reçetesi gerekir; uzman raporu ile devam reçetesi diğer hekimlere açılır (§4.2.24.A-1).
+  gate_b_sources:
+  - C006124
+  report_required: true
+  prescriber_specialties:
+  - göğüs hastalıkları
+  - göğüs cerrahisi
+  - alerji
+  - iç hastalıkları
+  - çocuk sağlığı
+- rule_id: 4.2.24.montelukast_prescriber_report
+  sut_section: 4.2.24.A
+  drug_names:
+  - montelukast
+  - zafirlukast
+  - singulair
+  icd10_ranges:
+  - J45
+  - J46
+  - J30
+  message_tr: Montelukast/zafirlukast — iç hastalıkları, çocuk sağlığı, göğüs hastalıkları veya alerji uzman hekim reçetesi
+    veya uzman hekim raporu gerekir (§4.2.24.A-2).
+  gate_b_sources:
+  - C006125
+  report_required: true
+  prescriber_specialties:
+  - iç hastalıkları
+  - çocuk sağlığı
+  - göğüs hastalıkları
+  - alerji
+source_note: Exported from drug_indication_prose.json (YAML source migration)

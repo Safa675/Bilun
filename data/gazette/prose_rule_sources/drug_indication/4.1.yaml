@@ -1,0 +1,18 @@
+section_id: '4.1'
+rules:
+- rule_id: 4.1.prior_agent_condition_medula_recording_nopay
+  sut_section: '4.1'
+  gate_b_sources:
+  - C003401
+  condition:
+    prior_agent_use_condition: true
+  pay: false
+  action:
+    enforcement: 'no-pay condition: another active substance usage is required as a condition, the relevant SUT provision
+      usage must be recorded in MEDULA; if not recorded the cost is not covered (except patients who started before effective
+      date); overseas/referral use requires GSS approval + supply document'
+    message_tr: Başka bir etkin madde/maddelerin kullanılmış olması şartı belirtilen ilaçların ilgili SUT hükmü kapsamında
+      kullanıldığına dair MEDULA kaydının yer alması gerekir; MEDULA sisteminde yer almaması halinde Kurumca bedeli karşılanmaz
+      (yürürlük öncesi başlayanlar hariç). Sevkli yurtdışı tedavi/ikili güvenlik sözleşmesi gibi istisnai durumlarda GSS Genel
+      Müdürlüğü onayı ve temin/kullanım belgesi şarttır (§4.1).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

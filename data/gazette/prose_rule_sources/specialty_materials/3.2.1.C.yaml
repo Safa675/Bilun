@@ -1,0 +1,14 @@
+section_id: 3.2.1.C
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.2.1.C.not_in_list_invoice_karsilanmaz
+  sut_section: 3.2.1.C
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002831
+  condition:
+    material_not_in_sut_lists_invoiced_for_payment: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: SUT ve eki listelerde yer almayan tıbbi malzemenin fatura edilmesi halinde bedelleri Kurumca karşılanmaz (§3.2.1.C(2)).

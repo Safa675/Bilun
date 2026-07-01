@@ -1,0 +1,50 @@
+section_id: 2.2.2.B-1
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.2.B-1.(d).inpatient_medications_bundled
+  sut_section: 2.2.2.B-1
+  condition:
+    payment_method: diagnosis_based
+    drug_category: inpatient_medication
+  action:
+    billable: false
+    denial_tr: yatış dönemi ilaçları tanıya dayalı pakete dahildir (kan ürünleri ayrı; kanama durdurucu yapıştırıcılar hariç)
+    severity: error
+  gate_b_sources:
+  - C000677
+- rule_id: 2.2.2.B-1.(e).blood_components_bundled_with_fraction
+  sut_section: 2.2.2.B-1
+  condition:
+    payment_method: diagnosis_based
+    drug_category: blood_component
+    procedure_code_any:
+    - '705371'
+    - '705430'
+    - '705440'
+  action:
+    billable: true
+    payment_tr: kan bileşenleri tanıya dayalı pakette puanların düşülerek faturalandırılır
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C000681
+- rule_id: 2.2.2.B-1.(diagnostics_bundled).no_separate_bill
+  sut_section: 2.2.2.B-1
+  condition:
+    payment_method: diagnosis_based
+    diagnostic_procedure_separately_billed: true
+  action:
+    billable: false
+    denial_tr: tanı ve tedavi kapsamındaki işlemler pakete dahil; ayrı faturalanamaz
+    severity: error
+  gate_b_sources:
+  - C000686
+- rule_id: 2.2.2.B-1.(4).duration_exceeded_separate_bill
+  sut_section: 2.2.2.B-1
+  condition:
+    payment_method: diagnosis_based
+    package_duration_exceeded: true
+  action:
+    billable: true
+    payment_tr: süre aşımında verilen hizmetler ayrıca faturalandırılır
+  gate_b_sources:
+  - C000694

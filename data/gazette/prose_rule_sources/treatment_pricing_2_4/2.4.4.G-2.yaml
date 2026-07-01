@@ -1,0 +1,120 @@
+section_id: 2.4.4.G-2
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.G-2.tier3_public_facility_only
+  sut_section: 2.4.4.G-2
+  condition:
+    procedure_category: molecular_genetic_test
+    facility_tier_not_in:
+    - third_step_public
+    - ghdm_licensed_2nd_private
+  action:
+    billable: false
+    denial_tr: moleküler/genetik tetkikler sözleşmeli 3. basamak resmi veya ruhsatlı GHDM'li sunucularca yapılmalı (preimplantasyon/prenatal/hematolojik/organ
+      doku nakli eşleri hariç yönetmelik kapsamında)
+    severity: error
+  gate_b_sources:
+  - C001119
+  - C001120
+  - C001127
+  - C001128
+- rule_id: 2.4.4.G-2.(3).elective_genetic_test_no_pay
+  sut_section: 2.4.4.G-2
+  condition:
+    procedure_category: molecular_genetic_test
+    elective_non_medical_indication: true
+  action:
+    billable: false
+    denial_tr: adli/tıbbi endikasyon dışında kişinin isteğine bağlı genetik tetkikler ödenmez
+    severity: error
+  gate_b_sources:
+  - C001129
+- rule_id: 2.4.4.G-2.(1).molecular_genetic_tests_scope_header
+  sut_section: 2.4.4.G-2
+  condition:
+    test_category: molecular_genetic
+    annex_list: EK-2/B
+    in_oncologic_molecular_subheader_9C1: false
+  action:
+    billable: true
+    enforcement: facility_routing
+    message_tr: EK-2/B '9.C. Moleküler Genetik Tetkikler' kodları ('9.C.1. Onkolojik Moleküler Tetkikler' hariç) aşağıdaki
+      faturalandırma kurallarına tabidir
+  gate_b_sources:
+  - C001113
+- rule_id: 2.4.4.G-2.(a).molecular_genetic_3rd_step_public_ghdm_procurement
+  sut_section: 2.4.4.G-2
+  condition:
+    test_category: molecular_genetic
+    facility_not_in:
+    - contracted_3rd_step_public
+    service_procurement_from_licensed_ghdm: false
+  action:
+    billable: false
+    enforcement: facility_gate
+    message_tr: sözleşmeli 3. basamak resmi sunucular tarafından faturalandırılır; yapılamayan tetkikler ruhsatlı GHDM'den
+      hizmet alımı yöntemiyle sağlanarak faturalandırılabilir
+    severity: error
+  gate_b_sources:
+  - C001119
+- rule_id: 2.4.4.G-2.(b).molecular_genetic_licensed_ghdm_facilities_exceptions
+  sut_section: 2.4.4.G-2
+  condition:
+    test_category: molecular_genetic
+    facility_not_in:
+    - licensed_ghdm_2nd_step_public
+    - licensed_ghdm_3rd_step_private
+    is_exception_category: false
+  action:
+    billable: false
+    enforcement: facility_gate
+    message_tr: ruhsatlı GHDM bulunan 2. basamak sunucu veya 3. basamak özel sunucuda yapılması halinde faturalandırılır;
+      preimplantasyon/prenatal/hematolojik malignite ve nakil alıcı-verici adayları için başka ruhsatlı GHDM'den hizmet alımıyla
+      faturalandırılabilir
+    severity: error
+  gate_b_sources:
+  - C001120
+- rule_id: 2.4.4.G-2.(a_onc).molecular_genetic_oncologic_3rd_step_public_procurement
+  sut_section: 2.4.4.G-2
+  condition:
+    test_category: molecular_genetic_oncologic
+    facility_not_in:
+    - contracted_3rd_step_public
+    service_procurement_from_licensed: false
+  action:
+    billable: false
+    enforcement: facility_gate
+    message_tr: sözleşmeli 3. basamak resmi sunucular tarafından faturalandırılır; yapılamayan tetkikler hizmet alımı yöntemiyle
+      sağlanarak faturalandırılabilir
+    severity: error
+  gate_b_sources:
+  - C001127
+- rule_id: 2.4.4.G-2.(b_onc).molecular_genetic_oncologic_licensed_ghdm
+  sut_section: 2.4.4.G-2
+  condition:
+    test_category: molecular_genetic_oncologic
+    facility_not_in:
+    - licensed_ghdm_2nd_step_public
+    - licensed_ghdm_3rd_step_private
+  action:
+    billable: false
+    enforcement: facility_gate
+    message_tr: bünyelerinde Sağlık Bakanlığı ruhsatlı GHDM bulunan 2. basamak sunucuları ile 3. basamak özel sağlık hizmeti
+      sunucularında yapılması halinde faturalandırılır
+    severity: error
+  gate_b_sources:
+  - C001128
+- rule_id: 2.4.4.G-2.(3).molecular_genetic_self_requested_not_covered
+  sut_section: 2.4.4.G-2
+  condition:
+    test_category: molecular_genetic
+    indication_is_self_requested: true
+    indication_is_forensic_or_medical: false
+  action:
+    billable: false
+    enforcement: exclusion
+    message_tr: adli veya tıbbi endikasyonlara bağlı zorunluluklar dışında kişinin kendi isteğine bağlı yapılan tetkikler
+      Kurumca karşılanmaz; ayrıntılı rapor, imzalı orijinal cihaz çıktısı ve endikasyon belirten istem formu faturaya eklenmelidir
+    severity: error
+  gate_b_sources:
+  - C001129

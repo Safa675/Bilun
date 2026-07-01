@@ -1,0 +1,84 @@
+section_id: 4.2.36
+rules:
+- rule_id: 4.2.36.amantadine_hcl_parkinson_report
+  sut_section: 4.2.36
+  drug_names:
+  - amantadin hidroklorür
+  - amantadin hcl
+  - amantadine hydrochloride
+  - amantix
+  icd10_ranges:
+  - G20
+  - G21
+  message_tr: Amantadin hidroklorür — yalnızca parkinson hastalığında nöroloji veya geriatri uzman hekim raporu gerekir (§4.2.36).
+  gate_b_sources:
+  - C006711
+  report_required: true
+  report_specialties:
+  - nöroloji
+  - geriatri
+- rule_id: 4.2.36.amantadine_sulfate_report
+  sut_section: 4.2.36
+  drug_names:
+  - amantadin sülfat
+  - amantadine sulfate
+  - pk-merz
+  icd10_ranges:
+  - G20
+  - G21
+  - G24
+  - G25
+  message_tr: Amantadin sülfat — parkinson veya ilaç kaynaklı ekstrapiramidal reaksiyonlarda nöroloji/geriatri uzman hekim
+    raporu gerekir (§4.2.36).
+  gate_b_sources:
+  - C006709
+  report_required: true
+  report_specialties:
+  - nöroloji
+  - geriatri
+- rule_id: 4.2.36.parkinson_dopamine_agonists_report
+  sut_section: 4.2.36
+  drug_names:
+  - apomorfin
+  - kabergolin
+  - entakapon
+  - rasagilin
+  - rasagiline
+  - rasajilin
+  - pergolid
+  - pramipexol
+  - pramipexole
+  - bornaprin
+  - ropinirol
+  - ropinirole
+  icd10_ranges:
+  - G20
+  - G21
+  message_tr: Parkinson dopamin agonistleri — nöroloji veya geriatri uzman hekim raporuna dayanılarak reçete edilir (§4.2.36).
+  gate_b_sources:
+  - C006707
+  report_required: true
+  report_specialties:
+  - nöroloji
+  - geriatri
+- rule_id: 4.2.36.tolcapone_tertiary_neurology_report
+  sut_section: 4.2.36
+  drug_names:
+  - tolkapon
+  - tolcapone
+  icd10_ranges:
+  - G20
+  - G21
+  message_tr: Tolkapon — entakapon dirençli vakalarda nöroloji/geriatri uzman hekim raporu ile nöroloji veya iç hastalıkları
+    uzmanı tarafından en fazla 1 aylık reçete (§4.2.36).
+  gate_b_sources:
+  - C006708
+  report_required: true
+  report_specialties:
+  - nöroloji
+  - geriatri
+  report_duration_months: 1
+  prescriber_specialties:
+  - nöroloji
+  - iç hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

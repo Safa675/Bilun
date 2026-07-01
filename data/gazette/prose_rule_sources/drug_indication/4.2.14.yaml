@@ -1,0 +1,33 @@
+section_id: 4.2.14
+rules:
+- rule_id: 4.2.14.offlabel_oncology_board_report
+  sut_section: 4.2.14
+  gate_b_sources:
+  - C004927
+  - C005767
+  condition:
+    coverage_note: true
+  report_required: true
+  report_specialties:
+  - tıbbi onkoloji
+  - hematoloji
+  action:
+    enforcement: off-label oncology drug requires health board report incl. protocol + prior chemo
+    message_tr: Kanserde endikasyon dışı ilaç kullanımı; tedavi protokolünü ve daha önceki kemoterapiyi içeren, tıbbi onkoloji
+      veya hematoloji uzmanının yer aldığı sağlık kurulu raporu gerektirir (§4.2.14(3)). Mikozis fungoides'te interferon-alfa-2b
+      için 3 dermatoloji uzmanı alternatifi geçerlidir.
+- rule_id: 4.2.14.outpatient_chemo_dose_cycle
+  sut_section: 4.2.14
+  gate_b_sources:
+  - C004925
+  - C004926
+  condition:
+    coverage_note: true
+  drug_names: []
+  prescriber_specialties: []
+  report_required: true
+  action:
+    enforcement: outpatient chemo dispense ≤ one treatment cycle; if no defined cycle, ≤ 3 months dose
+    message_tr: 'Ayakta kemoterapi: tedavi protokolünü gösteren sağlık kurulu/uzman hekim raporuna dayalı olarak, kür tanımına
+      uyuyorsa bir kürlük, aksi halde en fazla 3 aylık dozda ilaç verilir (§4.2.14(1)).'
+source_note: Exported from drug_indication_prose.json (YAML source migration)

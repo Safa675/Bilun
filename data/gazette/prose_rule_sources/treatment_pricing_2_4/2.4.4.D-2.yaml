@@ -1,0 +1,57 @@
+section_id: 2.4.4.D-2
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.D-2.(2).apd_device_no_pay
+  sut_section: 2.4.4.D-2
+  condition:
+    procedure_code_any:
+    - P5010060
+    device_maintenance_spare_part_billed: true
+  action:
+    billable: false
+    denial_tr: APD cihaz bedeli ve bakım/onarım/yedek parça bedelleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C000964
+- rule_id: 2.4.4.D-2.(1).peritoneal_hemofiltration_plasmapheresis_fee_for_service
+  sut_section: 2.4.4.D-2
+  condition:
+    procedure_category_any:
+    - peritoneal_dialysis
+    - hemofiltration
+    - plasmapheresis
+    diagnosis_any:
+    - N18
+    - N19
+  action:
+    billable: true
+    payment_tr: böbrek yetmezliği periton diyalizi, hemofiltrasyon ve plazmaferez ile tetkik/tahlil ve diyalize ilişkin diğer
+      tedaviler hizmet başı ödeme yöntemiyle karşılanır
+    annex_basis: fee_for_service
+  gate_b_sources:
+  - C000957
+- rule_id: 2.4.4.D-2.(1).sapd_monitoring_and_fluid_limits
+  sut_section: 2.4.4.D-2
+  condition:
+    procedure_category: continuous_ambulatory_peritoneal_dialysis
+    report_by_nephrology_specialist: false
+  action:
+    billable: false
+    denial_tr: SAPD raporu erişkin/çocuk nefroloji uzmanınca düzenlenir; izleme bedeli erişkin ayda en fazla 2, çocuk ayda
+      en fazla 3; değişim sıvısı ayda en fazla 150 torba; aminoasit/iCODEKSTRİN günde en fazla 1 kez karşılanır
+    severity: error
+  gate_b_sources:
+  - C000959
+- rule_id: 2.4.4.D-2.(1).apd_board_report_nephrology
+  sut_section: 2.4.4.D-2
+  condition:
+    procedure_category: automated_peritoneal_dialysis
+    facility_has_peritoneal_dialysis_unit: false
+    nephrology_specialist_on_board: false
+  action:
+    billable: false
+    denial_tr: aletli periton diyalizi tedavilerine yönelik sağlık kurulu raporları, bünyesinde periton diyalizi ünitesi bulunan
+      sunucu sağlık kurullarınca, kurulda nefroloji uzman hekimi yer almak üzere düzenlenmelidir
+    severity: error
+  gate_b_sources:
+  - C000963

@@ -1,0 +1,18 @@
+section_id: 3.3.3.D
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.3.D.(1).kalici_cift_gorme_prizma_must_bill
+  sut_section: 3.3.3.D
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002928
+  condition:
+    material_name_any:
+    - prizma
+    - prizmatik
+    - çift görme
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Kalıcı çift görme (6 ay ve üzeri) paralitik/restriktrif şaşılıkta — 3 göz sağlığı uzmanı içeren sağlık kurulu
+      raporuyla bedeli Kurumca karşılanır (§3.3.3.D(1)).

@@ -1,0 +1,35 @@
+section_id: 2.6.1.B
+rules:
+- rule_id: 2.6.1.B.(3).referral_form_vehicle_required
+  sut_section: 2.6.1.B
+  gate_b_sources:
+  - C001504
+  condition:
+    definition_scope: Sevk formunda sevk vasıtasının belirtilmesi zorunluluğu
+    applies_to: Sevk formu
+  action:
+    enforcement: gate
+    message_tr: Sevk formunda sevk vasıtası belirtilmelidir; belirtilmemişse mutat taşıt ücreti ödenir.
+- rule_id: 2.6.1.B.(4).e_sevk_signed_standards
+  sut_section: 2.6.1.B
+  gate_b_sources:
+  - C001507
+  condition:
+    definition_scope: E-sevkin Kurum yöntem/standartlarla (elektronik imza, şifre) imzalanması şartı
+    applies_to: Elektronik sevk
+  action:
+    enforcement: gate
+    message_tr: E-sevk, Kurumca belirlenen yöntem ve standartlarla (elektronik imza/şifre) imzalanmalıdır; aksi halde geçersiz
+      sayılır.
+- rule_id: 2.6.1.B.(7).non_medula_facility_wet_signature
+  sut_section: 2.6.1.B
+  gate_b_sources:
+  - C001513
+  condition:
+    definition_scope: MEDULA altyapısı olmayan sunucularda elektronik kabul yapılamaması halinde ıslak imza
+    applies_to: 1. basamak/diyaliz/kaplıca vb. MEDULA'sız sunucular
+  action:
+    enforcement: gate
+    message_tr: MEDULA olmayan sunucuda elektronik kabul yapılamazsa ilgili hekimce başvuru/ayrılış, tedavi, istirahat ve
+      refakat bilgileri ıslak imza ile onaylanmalıdır.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

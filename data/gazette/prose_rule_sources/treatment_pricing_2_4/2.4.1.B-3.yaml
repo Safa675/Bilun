@@ -1,0 +1,27 @@
+section_id: 2.4.1.B-3
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.1.B-3.(1).self_referral_board_signer_treatment_no_pay
+  sut_section: 2.4.1.B-3
+  condition:
+    treating_provider_is_board_signer_or_first_degree_relative_or_partner: true
+  action:
+    billable: false
+    denial_tr: sağlık kurulu raporunda imzası bulunan hekimin kendisinin, birinci derece yakınının veya bunların ortaklarının
+      özel muayenehanelerince/özel sunucularınca tedavi edilmesi halinde söz konusu tedavi giderleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C000812
+- rule_id: 2.4.1.B-3.(2).star_and_7_1_orthodontics_specialist_required
+  sut_section: 2.4.1.B-3
+  condition:
+    procedure_in_ek2c_star_marked_or_section_7_1: true
+    performed_by_specialist_or_doctor_dentist: false
+  action:
+    billable: false
+    denial_tr: EK-2/Ç Listesinde (*) işaretli tedaviler ile “7.1 Tanıya dayalı ortodontik tedavi işlemleri” bölümündeki tedavilerin
+      karşılanabilmesi için tedavinin konularında uzman veya doktoralı diş hekimleri tarafından yapıldığının belgelendirilmesi
+      gerekmektedir
+    severity: error
+  gate_b_sources:
+  - C000813

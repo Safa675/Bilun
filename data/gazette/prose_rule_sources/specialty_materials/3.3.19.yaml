@@ -1,0 +1,18 @@
+section_id: 3.3.19
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.19.(1).damar_kapama_ultrasonik_prob_must_bill
+  sut_section: 3.3.19
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003187
+  condition:
+    material_name_any:
+    - damar kapama probu
+    - ultrasonik cerrahi prob
+    - doku füzyonu
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Damar kapama ve kesme probu ile ultrasonik cerrahi problar — 3. basamak resmi sunucularda kullanılması halinde
+      bedelleri Kurumca karşılanır (§3.3.19(1)).

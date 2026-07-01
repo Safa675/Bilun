@@ -1,0 +1,27 @@
+section_id: 4.5.3
+rules:
+- rule_id: 4.5.3.inpatient_drug_cost_coverage
+  sut_section: 4.5.3
+  gate_b_sources:
+  - C007801
+  condition:
+    coverage_note: true
+    inpatient_care: true
+  action:
+    enforcement: 'coverage: drug costs arising from inpatient treatment in health institutions are covered by the Institution,
+      provided SUT provisions are followed'
+    message_tr: Sağlık kurum ve kuruluşlarında yatarak sağlanan tedaviler sonucu doğan ilaç bedelleri SUT hükümlerine uyulmak
+      kaydıyla Kurum tarafından karşılanır (§4.5.3).
+- rule_id: 4.5.3.outpatient_drug_net_payment_coverage
+  sut_section: 4.5.3
+  gate_b_sources:
+  - C007802
+  condition:
+    coverage_note: true
+    outpatient_care: true
+  action:
+    enforcement: 'coverage: from outpatient-treatment drug amounts, after deducting the drug institution discount + pharmacy
+      discount + patient copay, the remainder is paid by the Institution'
+    message_tr: Ayakta yapılan tedavilerde kullanılan ilaç bedellerinden, ilaç kurum indirimi, eczane indirimi ve hasta katılım
+      payı düşüldükten sonra kalan tutarlar Kurum tarafından ödenecektir (§4.5.3).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

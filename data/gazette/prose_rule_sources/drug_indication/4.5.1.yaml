@@ -1,0 +1,39 @@
+section_id: 4.5.1
+rules:
+- rule_id: 4.5.1.contracted_pharmacy_supply_coverage
+  sut_section: 4.5.1
+  gate_b_sources:
+  - C007794
+  condition:
+    coverage_note: true
+    contracted_pharmacy: true
+  action:
+    enforcement: 'coverage: prescribed drugs procured from Institution-contracted pharmacies are paid'
+    message_tr: Reçete edilen ilaçların Kurumla sözleşme yapan eczanelerden temini halinde bedelleri ödenir (§4.5.1).
+- rule_id: 4.5.1.non_contracted_pharmacy_nopay_except_emergency
+  sut_section: 4.5.1
+  gate_b_sources:
+  - C007795
+  pay: false
+  condition:
+    non_contracted_pharmacy: true
+    emergency_case: false
+  action:
+    enforcement: 'no-pay condition: drugs procured from non-Institution-contracted pharmacies are NOT covered except in emergencies;
+      emergency procurement from non-contracted pharmacies is covered if the Institution accepts the emergency, with public
+      discount + highest pharmacist discount + patient copay deducted and the remainder paid to the person; full price coupons
+      (with drug name) must be pasted on the prescription + a pharmacy invoice for the dispensed drugs/amount must be submitted;
+      KKTC pre-contract prescriptions follow the same discount/calculation'
+    message_tr: Acil haller dışında Kurum ile sözleşmesi olmayan eczanelerden temin edilen ilaçların bedelleri Kurumca karşılanmaz;
+      sözleşmesiz eczaneden acil hal nedeniyle temin edilen ilaç bedelleri acil halin Kurumca kabulü şartıyla karşılanır;
+      kamu iskontosu, en yüksek eczacı iskontosu ve katılım payı düşüldükten sonra kalan kısım ilgiliye ödenir; ödeme için
+      ilaç fiyat kupürlerinin tamamı ismiyle reçeteye yapıştırılması ve eczane faturasının ibrazı zorunludur; KKTC'de eczane
+      sözleşmesine kadar sözleşmeli sunucu reçeteleri aynı şekilde ödenir (§4.5.1).
+- rule_id: 4.5.1.payment_dispensing_date_retail_price_regulatory
+  sut_section: 4.5.1
+  gate_b_sources:
+  - C007796
+  action:
+    enforcement: 'regulatory: in Institution drug payment, the retail sale prices on the drug dispensing date are the basis'
+    message_tr: Kurum ilaç ödemesinde, ilacın veriliş tarihindeki perakende satış fiyatları esas alınır (§4.5.1).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,18 @@
+section_id: 4.2.23
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.23.(3).antifungal_prophylaxis_neutropenia_10d
+  sut_section: 4.2.23
+  condition:
+    drug_category_any:
+    - antifungal_prophylaxis
+    indication: aspergillus_candida_prophylaxis
+    expected_neutropenia_days:
+      max: 9
+  action:
+    billable: false
+    denial_tr: ≥10 gün nötropeni beklenen diğer hastalarda aspergilloz/candida profilaksisi; 10 gün altı nötropeni bekleniyorsa
+      ödenmez
+    severity: error
+  gate_b_sources:
+  - C006116

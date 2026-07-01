@@ -1,0 +1,68 @@
+section_id: 4.2.7
+rules:
+- rule_id: 4.2.7.hemodialysis_heparin_nopay
+  sut_section: 4.2.7
+  gate_b_sources:
+  - C004055
+  drug_names:
+  - heparin
+  - düşük molekül ağırlıklı heparin
+  pay: false
+  action:
+    enforcement: 'no-pay condition: hemodiyaliz tedavilerinde heparinler tanıya dayalı işlem puanına dahil olduğu için reçete
+      edilse dahi ödenmez'
+    message_tr: Hemodiyaliz tedavilerinde, heparinler tanıya dayalı işlem puanına dahil olduğundan reçete edilse dahi bedeli
+      ödenmez (§4.2.7).
+- rule_id: 4.2.7.inpatient_emergency_no_report
+  sut_section: 4.2.7
+  gate_b_sources:
+  - C004054
+  drug_names:
+  - düşük molekül ağırlıklı heparin
+  - heparin
+  report_required: false
+  action:
+    enforcement: yatan hastalarda veya acil müdahale gerektiren durumlarda acil servislerde rapor aranmaksızın tüm hekimler
+      tarafından reçete edilebilir
+    message_tr: Yatan hastalarda veya acil müdahale gerektiren durumlarda acil servislerde rapor aranmaksızın tüm hekimler
+      tarafından reçete edilebilir (§4.2.7).
+- rule_id: 4.2.7.lmwh_6mo_report_extended_pregnancy
+  sut_section: 4.2.7
+  gate_b_sources:
+  - C004053
+  drug_names:
+  - düşük molekül ağırlıklı heparin
+  - heparin
+  report_required: true
+  report_duration_months: 6
+  prescriber_specialties:
+  - onkoloji
+  - hematoloji
+  - kalp damar cerrahisi
+  - kardiyoloji
+  - göğüs hastalıkları
+  - iç hastalıkları
+  - genel cerrahi
+  - nöroloji
+  - kadın hastalıkları ve doğum
+  condition:
+    coverage_note: true
+  action:
+    enforcement: ≤6 ay süreli ilaç dozunu gösteren uzman hekim raporuyla başlanır, tüm hekimlerce reçete; >6 ay kullanımda
+      listede uzmanı bulunan sağlık kurulu raporu; gebelerde kadın doğum uzmanınca 10 ay süreli uzman raporu
+    message_tr: Uzman hekim tarafından düzenlenen en fazla 6 ay süreli kullanılacak ilacın dozunu gösteren uzman hekim raporuna
+      dayanılarak tedaviye başlanır ve tüm hekimler tarafından reçete edilebilir. Düşük molekül ağırlıklı heparinlerin 6 aydan
+      daha uzun sürede kullanımında ilgili uzman hekimlerin bulunduğu sağlık kurulu raporu gereklidir; gebelerde kadın hastalıkları
+      ve doğum uzman hekimince düzenlenen 10 ay süreli uzman hekim raporuyla reçete edilirse bedeli Kurumca karşılanır (§4.2.7).
+- rule_id: 4.2.7.lmwh_different_active_combo_nopay
+  sut_section: 4.2.7
+  gate_b_sources:
+  - C004057
+  drug_names:
+  - düşük molekül ağırlıklı heparin
+  pay: false
+  action:
+    enforcement: 'no-pay condition: farklı etken maddeli düşük molekül ağırlıklı heparinlerin birlikte kullanımı'
+    message_tr: Farklı etken maddeli düşük molekül ağırlıklı heparinlerin birlikte kullanılması halinde bedelleri Kurumca
+      karşılanmaz (§4.2.7).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

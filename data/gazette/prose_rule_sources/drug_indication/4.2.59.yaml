@@ -1,0 +1,39 @@
+section_id: 4.2.59
+rules:
+- rule_id: 4.2.59.onco.relapsed_ptcl_hematology_3mo_coverage
+  sut_section: 4.2.59
+  gate_b_sources:
+  - C007107
+  drug_names:
+  - pralatreksat
+  - belinostat
+  icd10_codes:
+  - C84.0
+  - C84.1
+  - C84.2
+  - C84.3
+  - C84.4
+  - C84.5
+  - C84.6
+  - C84.7
+  - C84.8
+  - C84.9
+  report_required: true
+  report_duration_months: 3
+  report_specialties:
+  - hematoloji
+  - hematoloji-onkoloji
+  prescriber_specialties:
+  - hematoloji
+  - hematoloji-onkoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: relaps refrakter periferik T hücreli lenfoma tedavisinde uygundur; üçüncü basamakta en az bir hematoloji
+      veya hematoloji-onkoloji uzmanının yer aldığı 3 ay süreli sağlık kurulu raporuyla ilgili uzmanlarca reçete edilirse
+      ödenir
+    message_tr: Relaps Refrakter Periferik T Hücreli Lenfoma hastalarında tedavi olarak kullanımı uygundur. Üçüncü basamak
+      resmi sağlık hizmet sunucularında düzenlenen en az bir hematoloji veya hematoloji-onkoloji uzmanının yer aldığı 3 (üç)
+      ay süreli sağlık kurulu raporuna dayanılarak ilgili uzman hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır
+      (§4.2.59).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

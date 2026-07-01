@@ -1,0 +1,21 @@
+section_id: 4.2.49.C
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.49.C.(5).sma_smn2_modifier_1yr_switch_no_pay
+  sut_section: 4.2.49.C
+  condition:
+    diagnosis_any:
+    - G121
+    drug_name_set_any_two:
+    - nusinersen
+    - risdiplam
+    switch_within_months:
+      max: 12
+    functional_decline_or_life_threatening_ae: false
+  action:
+    billable: false
+    denial_tr: SMA SMN2 modifiye edici tedaviler (nusinersen/risdiplam) arasında 1 yıldan kısa geçiş ödenmez (fonksiyonel
+      bozulma/ağır AE hariç)
+    severity: error
+  gate_b_sources:
+  - C007051

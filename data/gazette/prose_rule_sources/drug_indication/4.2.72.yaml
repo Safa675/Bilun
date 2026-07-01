@@ -1,0 +1,21 @@
+section_id: 4.2.72
+rules:
+- rule_id: 4.2.72.meta.mitochondrial_cytopathy_supplementary_foods_880tl_coverage
+  sut_section: 4.2.72
+  gate_b_sources:
+  - C007213
+  - C007221
+  drug_names:
+  - takviye edici gıdalar (mitokondriyal sitopati)
+  icd10_codes:
+  - E88.8
+  - G71.3
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: mitokondriyal sitopati hastalığında tedaviye yardımcı olarak kullanılan takviye edici gıdaların bedelleri
+      aylık nakden 880,00 TL olarak sağlık kurulu raporu ile şahıs bazında ödenir
+    message_tr: Mitokondriyal sitopati hastalığında tedaviye yardımcı olarak kullanılan takviye edici gıdaların bedelleri
+      aylık nakden 880,00 (sekiz yüz seksen) TL olarak sağlık kurulu raporu ile şahıs bazında ödenir (§4.2.72).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

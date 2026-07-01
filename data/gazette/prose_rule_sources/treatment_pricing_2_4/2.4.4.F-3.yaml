@@ -1,0 +1,82 @@
+section_id: 2.4.4.F-3
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.F-3.(1).private_provider_physio_compliance_with_F1_F2
+  sut_section: 2.4.4.F-3
+  condition:
+    provider_type: private
+    procedure_category: physiotherapy_rehab
+  action:
+    billable: false
+    enforcement: compliance_review
+    message_tr: özel sağlık hizmeti sunucularınca yapılacak fizik tedavi ve rehabilitasyon işlemlerinde SUT'un 2.4.4.F-1 ve
+      2.4.4.F-2 madde hükümleri ile birlikte F-3 maddesindeki düzenlemelere de uyulmalıdır
+    severity: error
+  gate_b_sources:
+  - C001055
+- rule_id: 2.4.4.F-3.(a).private_inpatient_60_sessions_d_group_excluded
+  sut_section: 2.4.4.F-3
+  condition:
+    provider_type: private
+    treatment_setting: inpatient
+    procedure_category: physiotherapy_rehab
+    diagnosis_in_ek2d2_d_group: false
+    patient_category: duty_or_war_veteran_or_disabled
+    diagnosis_in:
+    - ek2d2_star_marked
+  action:
+    billable: true
+    enforcement: session_cap_override
+    message_tr: özel sunucularda yatarak fizik tedavide EK-2/D-2 (D) grubu hariç diğer tanılarda yılda en fazla 60 seans;
+      vazife/harp malullerine 2.4.4.F-2(3) raporlarına istinaden (*) tanılarda seans kısıtlaması olmaksızın fatura edilir
+    annex_basis: EK-2/D-2
+  gate_b_sources:
+  - C001056
+- rule_id: 2.4.4.F-3.(c).physio_session_min_60min_50pct_on_early_end
+  sut_section: 2.4.4.F-3
+  condition:
+    provider_type: private
+    procedure_category: physiotherapy_rehab
+    session_minutes:
+      max: 59
+    early_end_medically_accepted: true
+  action:
+    billable: true
+    enforcement: partial_payment
+    message_tr: fizik tedavi ve rehabilitasyon seansları en az 60 dakika uygulanır; tıbbi nedenlerle süreden önce bitmesi
+      halinde, gerekçesi Kurumca kabul edilirse tedavi puanının %50'si ödenir
+  gate_b_sources:
+  - C001058
+- rule_id: 2.4.4.F-3.(c2).private_pmr_outpatient_daily_exam_cap_48
+  sut_section: 2.4.4.F-3
+  condition:
+    provider_type: private
+    procedure_category: physiotherapy_rehab
+    visit_type: outpatient_non_emergency
+    daily_exams_per_physician:
+      min: 49
+  action:
+    billable: false
+    enforcement: daily_exam_cap
+    message_tr: özel sunucuda fiziksel tıp ve rehabilitasyon ayaktan başvurularda günlük muayene sınırı (acil hariç) çalışan
+      hekimlerin saat×6 ile bulunur; her hekim için günlük muayene sayısı her halükârda 48'i geçemez
+    severity: error
+  gate_b_sources:
+  - C001059
+- rule_id: 2.4.4.F-3.(d).private_outpatient_physio_group_caps_8h
+  sut_section: 2.4.4.F-3
+  condition:
+    provider_type: private
+    procedure_category: physiotherapy_rehab
+    visit_type: outpatient
+    daily_billing_hours_per_physician:
+      min: 9
+  action:
+    billable: false
+    enforcement: physician_hour_and_case_cap
+    message_tr: özel sunucuda ayaktan fizik tedavi, hekim başına günlük en fazla 8 saat üzerinden fatura edilir; 1 uzman+1
+      fizyoterapist için (A) grubu günlük ≤8, (A)+(B) ≤16; 1 uzman+2 fizyoterapist için (A)+(B) ≤16; ilave (C) ≤32, (C)+(D)
+      ≤64 hasta; yatarak FTR'de bu sayılar dikkate alınmaz
+    severity: error
+  gate_b_sources:
+  - C001060

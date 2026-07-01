@@ -1,0 +1,13 @@
+section_id: 2.6.2
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.6.2.(3).same_day_referral_no_daily_allowance
+  sut_section: 2.6.2
+  condition:
+    referral_arrival_same_day_as_treatment_end: true
+  action:
+    billable: false
+    denial_tr: sevk sunucuya müracaat ile tedavi bitiş aynı gün ise gündelik ödenmez
+    severity: error
+  gate_b_sources:
+  - C001567

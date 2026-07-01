@@ -1,0 +1,109 @@
+section_id: '4.3'
+rules:
+- rule_id: 4.3.ek4c_ek4d_copay_exempt
+  sut_section: '4.3'
+  gate_b_sources:
+  - C007292
+  condition:
+    copay_exempt: true
+    overseas_drug: true
+    ek4d_list: true
+  action:
+    enforcement: 'no-copay: among overseas drugs, those that fall within EK-4/D scope do not incur patient copay'
+    message_tr: Bu ilaçlardan EK-4/D Listesi kapsamında olanlardan hasta katılım payı alınmaz (§4.3).
+- rule_id: 4.3.ek4c_self_procured_bank_payment_coverage
+  sut_section: '4.3'
+  gate_b_sources:
+  - C007291
+  condition:
+    coverage_note: true
+    overseas_drug: true
+  action:
+    enforcement: 'coverage: EK-4/C drugs procured by beneficiary''s own means (domestic/overseas) — drug cost paid via bank
+      to the beneficiary under Institution legislation; amount cannot exceed the Institution''s cost-of-supply for the same
+      drug (incl. different-financial-model drugs); for different-financial-model overseas drugs, paid at cost-of-supply if
+      protocol-supplier unavailability within protocol period is documented'
+    message_tr: EK-4/C'deki ilaçların kişinin kendi imkânlarıyla (yurt içinden/dışından) temini halinde ilaç bedelleri Kurumca
+      belirlenen mevzuat kapsamında hak sahibi adına banka aracılığıyla ödenir; ödenecek bedel aynı ilacın Kuruma mal oluş
+      bedelini geçemez; farklı finansal model kapsamındaki yurtdışı ilaçlarının kişilerce temini halinde protokol tedarikçiden
+      belirlenen sürede temin edilemediği belgelendirilirse Kuruma mal oluş bedeli üzerinden ödenir (§4.3).
+- rule_id: 4.3.non_ek4c_overseas_drug_nopay
+  sut_section: '4.3'
+  gate_b_sources:
+  - C007290
+  pay: false
+  condition:
+    overseas_drug: true
+    not_in_ek4c_list: true
+  action:
+    enforcement: 'no-pay condition: overseas-procured payable drugs are listed in EK-4/C ''Yurt Dışı İlaç Fiyat Listesi'';
+      drugs not in the list are NOT covered (list published on Institution website); for EK-4/C inclusion applications (equivalent-drug
+      registrations excepted) a tertiary public-provider health-board report + tertiary public-provider prescription must
+      be submitted to the Institution'
+    message_tr: Yurt dışından temini halinde bedeli ödenecek ilaçlar EK-4/C 'Yurt Dışı İlaç Fiyat Listesi'nde belirtilmiştir;
+      listede yer almayan ilaçların bedelleri Kurumca ödenmez; EK-4/C'ye alınma başvurularının (eşdeğer ilaç kaydı hariç)
+      değerlendirilebilmesi için üçüncü basamak resmi sunucuda düzenlenmiş sağlık kurulu raporu ve reçetesinin Kuruma ibrazı
+      gerekir (§4.3).
+- rule_id: 4.3.overseas_drug_specialist_report_90day_coverage
+  sut_section: '4.3'
+  gate_b_sources:
+  - C007293
+  report_required: true
+  report_specialties:
+  - uzman hekim
+  prescriber_specialties:
+  - uzman hekim
+  condition:
+    coverage_note: true
+    overseas_drug: true
+    max_days_per_dispense: 90
+  action:
+    enforcement: 'coverage: overseas-treatment drugs per specialist-physician report (with SUT special provisions reserved)
+      — specialists may prescribe up to 90-day dose; report must state active substance, daily dose, application plan and
+      duration'
+    message_tr: Tedavi için yurt dışından getirtilecek ilaçların, uzman hekim raporuna dayanılarak uzman hekimlerce en fazla
+      90 günlük doza kadar reçete edilmesi halinde bedelleri ödenir; raporda etken madde, günlük doz, uygulama planı ve süresi
+      belirtilir (§4.3).
+- rule_id: 4.3.overseas_licensed_distributed_copay_exempt
+  sut_section: '4.3'
+  gate_b_sources:
+  - C007297
+  report_required: true
+  report_specialties:
+  - uzman hekim
+  prescriber_specialties:
+  - uzman hekim
+  condition:
+    overseas_drug: true
+    copay_exempt: true
+    ek4d_list: true
+    max_days_per_dispense: 30
+  action:
+    enforcement: 'no-copay/coverage: drugs procured overseas with MoH permission that later gain domestic license + distribution
+      document — from EK-4/A entry-request date (distribution doc date basis), within max review period, per specialist report
+      + MoH use approval, specialists may prescribe up to 1-month amounts during the approval period; MoH retail price with
+      §4.4.1 discounts (incl. special) then tiered pharmacy discount, paid per beneficiary invoices; per-box cap = EK-4/C
+      price after §4.4.1 base discount; EK-4/D-scope drugs incur no patient copay; §4.5.2(1) 4-business-day period does not
+      apply; report + Rx must be after MoH use-approval date'
+    message_tr: Bakanlık izniyle yurt dışından temin edilen ilacın ülkemizde ruhsat alıp dağıtım belgesi alması halinde, dağıtım
+      belgesi tarihi esas alınarak EK-4/A giriş talebinden sonuçlandırılacağı maksimum süre içinde, uzman hekim raporu ve
+      Bakanlık kullanım onayına dayanılarak onayda belirtilen süre boyunca uzman hekimlerce en fazla birer aylık miktarlarda
+      reçete edilmesi koşuluyla, Bakanlık perakende satış fiyatı üzerinden §4.4.1 indirimleri (özel iskontolar dahil) uygulanıp
+      kademeli eczane iskontosu uygulanarak sözleşmeli eczane faturalarına dayanılarak ödeme yapılır; her kutu için EK-4/C
+      kayıtlı fiyatın §4.4.1 baz iskonto sonrası tutarından fazla ödenemez; EK-4/D kapsamında olanlardan katılım payı alınmaz;
+      §4.5.2(1) 4 iş günlük süre aranmaz; rapor ve reçetenin onay tarihi sonrası düzenlenmesi esastır (§4.3).
+- rule_id: 4.3.overseas_procurement_permission
+  sut_section: '4.3'
+  gate_b_sources:
+  - C007288
+  condition:
+    overseas_drug: true
+  action:
+    enforcement: 'permission: drugs needed for Institution beneficiaries and not procurable domestically may be procured from
+      overseas when MoH confirms domestic unavailability + mandatory use and grants supply permission; a protocol between
+      TEB and the Institution is in force; MoH may authorize other parties via legislation'
+    message_tr: Kurum sağlık yardımlarından yararlandırılan kişiler için gerekli görülen ve yurt içinden sağlanması mümkün
+      olmayan ilaçların, yurt içinde bulunmadığı ve kullanılmasının zorunlu olduğu Sağlık Bakanlığınca onaylanarak teminine
+      izin verildiği takdirde yurt dışından temini mümkündür; bu amaçla TEB ile Kurum arasında protokol yürürlüktedir; Bakanlıkça
+      yetkilendirilen diğer taraflarla da protokol yapılabilir (§4.3).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

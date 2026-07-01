@@ -1,0 +1,16 @@
+section_id: 2.4.4.Ğ
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.G-b.(2).risk_scoring_records_required
+  sut_section: 2.4.4.Ğ
+  condition:
+    procedure_category_any:
+    - ' cardiac_surgery'
+    - drg_high_risk
+    risk_scoring_documents_in_file: false
+  action:
+    billable: false
+    denial_tr: risk puanlamasına esas bilgi ve belgeler hasta dosyasında saklanmalı; yoksa ödenmez
+    severity: error
+  gate_b_sources:
+  - C001136

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bilun.local/schemas/definitions_2_6.schema.json",
+  "title": "SUT §2.6 definitions / scope prose",
+  "allOf": [
+    { "$ref": "base_rule_set.schema.json" },
+    {
+      "type": "object",
+      "properties": {
+        "rule_set_id": { "const": "definitions_2_6" }
+      }
+    }
+  ],
+  "$defs": {
+    "rule": {
+      "allOf": [
+        { "$ref": "base_rule_set.schema.json#/$defs/rule" },
+        {
+          "type": "object",
+          "required": ["condition", "action"],
+          "properties": {
+            "condition": { "type": "object", "minProperties": 1 },
+            "action": {
+              "type": "object",
+              "required": ["message_tr"],
+              "properties": {
+                "enforcement": { "type": "string" },
+                "message_tr": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "properties": {
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    }
+  }
+}

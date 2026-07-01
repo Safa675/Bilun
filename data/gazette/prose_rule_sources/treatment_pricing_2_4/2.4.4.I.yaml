@@ -1,0 +1,53 @@
+section_id: 2.4.4.I
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.I.(3).ophthalmology_15d_same_specialty_bundle
+  sut_section: 2.4.4.I
+  condition:
+    provider_type: private_2nd_3rd_step
+    specialty: ophthalmology
+    same_specialty_visit_within_15d: true
+    is_emergency: false
+  action:
+    billable: false
+    denial_tr: göz hastalıklarında özel 2/3. basamak ayaktan başvuru dahil 15 gün içinde aynı uzmanlık tekrar başvuru pakete
+      dahildir
+    severity: error
+  gate_b_sources:
+  - C001242
+- rule_id: 2.4.4.I.(2).ophthalmology_outpatient_daily_exam_cap_45
+  sut_section: 2.4.4.I
+  condition:
+    specialty: ophthalmology
+    provider_type: private
+    visit_type: outpatient_non_emergency
+    daily_exams_per_physician:
+      min: 46
+  action:
+    billable: false
+    enforcement: daily_exam_cap_with_time_deduction
+    message_tr: göz hastalıkları 2./3. basamak özel sunucularında ayaktan günlük muayene sınırı (acil hariç) hekim saat×4,5
+      ile bulunur, küsurat üste tamamlanır, her hekim için 45'i geçemez; belirli işlem kodları için çalışma saatinden 30/60
+      dakika düşülür, hekim günlük ≤8, sunucu ≤16 adet bu işlemleri fatura edebilir
+    annex_basis: EK-2/C
+    severity: error
+  gate_b_sources:
+  - C001241
+- rule_id: 2.4.4.I.(3).ophthalmology_15day_revisit_ek2a2_only
+  sut_section: 2.4.4.I
+  condition:
+    specialty: ophthalmology
+    provider_type: private
+    visit_type: outpatient
+    is_emergency: false
+    revisit_within_15d_same_specialty: true
+    procedure_list: EK-2/A
+  action:
+    billable: false
+    enforcement: revisit_scope_restriction
+    message_tr: aynı özel sunucuya göz hastalıkları ayaktan başvuru günü dâhil 15 gün içindeki tekrar ayaktan başvurularda
+      yalnızca EK-2/A-2 Listesindeki işlemler faturalandırılır; EK-2/A Listesindeki tutarlar faturalandırılamaz
+    annex_basis: EK-2/A-2
+    severity: error
+  gate_b_sources:
+  - C001242

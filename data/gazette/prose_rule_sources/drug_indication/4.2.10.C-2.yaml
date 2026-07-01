@@ -1,0 +1,20 @@
+section_id: 4.2.10.C-2
+rules:
+- rule_id: 4.2.10.mps1_enzyme_start_date_report
+  sut_section: 4.2.10.C-2
+  drug_names:
+  - laronidase
+  - aldurazyme
+  icd10_ranges:
+  - E76.0
+  message_tr: Tip I Mukopolisakkaridoz enzim tedavisi — enzim tedavisine başlangıç tarihi her yenilenen raporda belirtilmelidir
+    (§4.2.10.C-2).
+  gate_b_sources:
+  - C004353
+  - C004357
+  report_required: true
+  report_specialties:
+  - çocuk metabolizma
+  - çocuk endokrinolojisi ve metabolizma
+  - endokrinoloji ve metabolizma hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

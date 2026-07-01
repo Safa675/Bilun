@@ -1,0 +1,13 @@
+section_id: 2.4.4.F-3
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.F-3.(1).private_physio_2_4_4_F_rules
+  sut_section: 2.4.4.F-3
+  condition:
+    provider_type: private
+    procedure_category: physiotherapy_rehab
+  action:
+    billable: true
+    payment_tr: özel sunucularda fizik tedavi 2.4.4.F-1/F-2 + bu maddeler çerçevesinde
+  gate_b_sources:
+  - C001055

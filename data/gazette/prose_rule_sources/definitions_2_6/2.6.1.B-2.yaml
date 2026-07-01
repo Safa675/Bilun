@@ -1,0 +1,30 @@
+section_id: 2.6.1.B-2
+rules:
+- rule_id: 2.6.1.B-2.(1).routine_vehicle_ek2l_tariff
+  sut_section: 2.6.1.B-2
+  gate_b_sources:
+  - C001530
+  condition:
+    definition_scope: Mutat taşıt giderlerinin SUT EK-2/L KDV dahil ücretleri üzerinden ödenmesi
+    applies_to: Yerleşim yeri dışı mutat taşıt gideri
+  action:
+    enforcement: gate
+    message_tr: Mutat taşıt gideri, varsa fatura/bilet tutarını aşmamak üzere SUT eki EK-2/L'deki KDV dahil ücretler üzerinden
+      ödenir.
+- rule_id: 2.6.1.B-2.(2).ministry_tariff_override
+  sut_section: 2.6.1.B-2
+  gate_b_sources:
+  - C001531
+  condition:
+    definition_scope: Ulaştırma Bakanlığı daha düşük taban/tavan ücreti varsa en düşüğün esas alınması
+    applies_to: Mutat taşıt — karayolu şehirlerarası
+    coefficients:
+      0-25_km: 0.3
+      26-50_km: 0.4
+      51-75_km: 0.5
+      76-100_km: 0.8
+  action:
+    enforcement: gate
+    message_tr: Bakanlığın EK-2/L'den düşük ücret yayınlaması halinde ilgili mesafe için en düşük ücret esas alınır; 0-100
+      km tanımsızsa 101 km ücreti katsayılarla (0.3/0.4/0.5/0.8) hesaplanır.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

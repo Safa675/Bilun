@@ -1,0 +1,63 @@
+section_id: 3.1.2
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.1.2.kayip_calinti_miat_dolana_kadar_yenilenmez
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002720
+  condition:
+    material_lost_or_stolen_before_miat_expiry: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Kurumca karşılanan tıbbi malzeme kaybolduğunda/çalındığında miat süresi doluncaya kadar yenisinin bedeli Kurumca
+      karşılanmaz (§3.1.2(7)).
+- rule_id: 3.1.2.b.miatli_arizali_malzeme_yenileme
+  sut_section: 3.1.2
+  deontic: MUST_NOT_BILL
+  gate_b_sources:
+  - C002727
+  condition:
+    miatli_material_early_renewal_misrouted_responsible: true
+  action:
+    material_outcome: must_not_bill_separately
+    severity: warning
+    message_tr: Miat dolmadan kasıt/kusur dışı arızalanan EK-3/C-2 ve C-3 malzeme — garanti içinde satıcı firma, garanti dışında
+      Kurum tarafından süresinden önce yenilenir; faturalama yetkili tarafa yöneltilmelidir (§3.1.2(b)).
+- rule_id: 3.1.2.c.protez_ortez_early_renewal_75pct_coverage
+  sut_section: 3.1.2
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002728
+  condition:
+    protez_ortez_early_renewal_repair_cost_over_75pct: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: EK-3/C-2 protez/ortezde bakım-onarım mümkün değilse ve ilgili parçaların onarım bedeli protez/ortez bedelinin
+      %75'ini aşıyorsa, resmi sunucu sağlık raporuyla süresinden önce yenileme Kurumca karşılanır (§3.1.2(c)).
+- rule_id: 3.1.2.c_protez_ortez_ara_urun_renewal_coverage
+  sut_section: 3.1.2
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002729
+  condition:
+    protez_ortez_intermediate_part_renewal_documented: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: EK-3/C-2 protez/ortezin miat süresi içinde ara ürünlerinden biri yenilenip protez/ortez kullanılabiliyorsa,
+      bakım-onarım gereken parçaların bedelleri Kurumca karşılanır (§3.1.2(ç)).
+- rule_id: 3.1.2.e.garanti_sonu_kullanilamaz_yenileme_coverage
+  sut_section: 3.1.2
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002744
+  condition:
+    ek3c2_c5_material_unusable_after_warranty_health_board: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: EK-3/C-2 ve C-5 malzemenin garanti süresi sonunda kullanılamaz olduğu FTR + ortopedi/travmatoloji sağlık kurulu
+      raporuyla belgelendirilirse, miat süresi dikkate alınmadan yenileme Kurumca karşılanır (§3.1.2(e)).

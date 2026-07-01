@@ -1,0 +1,13 @@
+section_id: 2.6.8
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.6.8.(2).unreferral_death_no_funeral
+  sut_section: 2.6.8
+  condition:
+    patient_died_unreferred: true
+  action:
+    billable: false
+    denial_tr: sevk edilmeksizin müracaat edilen sunucuda vefat edenlerin cenaze nakil giderleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C001600

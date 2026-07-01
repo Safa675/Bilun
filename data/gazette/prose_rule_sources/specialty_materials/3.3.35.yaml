@@ -1,0 +1,25 @@
+section_id: 3.3.35
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.35.in_ear_hearing_aid_underage
+  sut_section: 3.3.35
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003289
+  condition:
+    hearing_in_ear_under_age_limit: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Yaş sınırı altında kulak/kanal içi işitme cihazı — karşılanmaz (§3.3.35).
+- rule_id: 3.3.35.(6).hearing_ear_mold_first_fitting
+  sut_section: 3.3.35
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003302
+  condition:
+    hearing_ear_mold_with_initial_device: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: İşitme cihazı ilk alımında kulak kalıbı — ayrıca karşılanmaz (§3.3.35(6)).

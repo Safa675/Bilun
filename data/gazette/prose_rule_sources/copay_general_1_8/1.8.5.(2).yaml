@@ -1,0 +1,17 @@
+section_id: 1.8.5.(2)
+source_note: Exported from copay_general_1_8.json (YAML source migration)
+rules:
+- rule_id: 1.8.5.(2).askeri_tatbikat
+  sut_section: 1.8.5.(2)
+  service_type: copay_exemption
+  exemption_category: askeri_tatbikat
+  condition:
+    care_context: military_exercise_maneuver
+  action:
+    copay_treatment: no_copay
+    waives_sections:
+    - 1.8.1
+    - 1.8.2
+    - 1.8.3
+  gate_b_sources:
+  - C000356

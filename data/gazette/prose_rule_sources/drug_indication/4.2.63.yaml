@@ -1,0 +1,32 @@
+section_id: 4.2.63
+rules:
+- rule_id: 4.2.63.gi.wilson_dpenicillamine_intolerant_trientine_coverage
+  sut_section: 4.2.63
+  gate_b_sources:
+  - C007137
+  drug_names:
+  - trientin
+  - trientin hidroklorür
+  icd10_codes:
+  - E83.0
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - gastroenteroloji
+  - nöroloji
+  prescriber_specialties:
+  - gastroenteroloji
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: enfeksiyon dışı ateş, lenfadenopati, proteinüri, döküntü, lupus benzeri etkiler, kemik iliği baskılanması
+      yan etkileri (anemi/nötropeni/trombositopeni), nörolojik semptom kötüleşmesinden biri/birkaçıyla D-penisilamine tolere
+      edemeyen Wilson'da; en az biri gastroenteroloji olmak üzere gastroenteroloji ve/veya nöroloji uzmanlarının 6 ay süreli
+      raporuyla uzmanlarca reçete edilirse ödenir
+    message_tr: Enfeksiyona bağlı olmayan ateş, lenfadenopati, proteinüri, ciltte döküntü, lupus benzeri etkiler, kemik iliği
+      baskılanmasıyla oluşan yan etkiler (anemi, nötropeni veya trombositopeni), nörolojik semptomlarda kötüleşme durumlarından
+      bir veya birkaçını göstererek D-Penisilamin etken maddeli ilacı tolere edemeyen Wilson hastalarının tedavisinde, en
+      az biri gastroenteroloji uzman hekimi olmak kaydıyla; gastroenteroloji ve/veya nöroloji uzman hekimlerinin yer aldığı
+      6 ay süreli sağlık kurulu raporuna istinaden uzman hekimlerce reçete edilmesi halinde Kurumca bedelleri karşılanır (§4.2.63).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

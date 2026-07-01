@@ -1,0 +1,25 @@
+section_id: 1.8.2
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 1.8.2.copay_required_outpatient
+  sut_section: 1.8.2
+  condition:
+    care_setting: outpatient
+    exemption_ek1a_or_ek4d: false
+  action:
+    billable: true
+    copay_required: true
+    payment_tr: ayakta tedavi katılım payı alınır
+  gate_b_sources:
+  - C000324
+- rule_id: 1.8.2.(3).ek4d_exempt_no_copay
+  sut_section: 1.8.2
+  condition:
+    drug_in_ek4d_list: true
+    health_report_present: true
+  action:
+    billable: true
+    copay_required: false
+    payment_tr: EK-4/D Hasta Katılım Payından Muaf İlaçlar Listesi'nde katılım payı alınmaz
+  gate_b_sources:
+  - C000326

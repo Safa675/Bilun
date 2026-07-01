@@ -1,0 +1,25 @@
+section_id: 4.2.6.B
+rules:
+- rule_id: 4.2.6.laron_mecasermin_initiation_board
+  sut_section: 4.2.6.B
+  drug_names:
+  - mecasermin
+  - rhigf
+  - rh igf
+  - igf-1
+  - igf1
+  - increlex
+  icd10_ranges:
+  - E34.31
+  - E34.3
+  report_required: true
+  message_tr: Laron sendromu rhIGF-I (mecasermin) başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu
+    raporu ve reçete gerekir (§4.2.6.B).
+  gate_b_sources:
+  - C004033
+  report_specialties:
+  - çocuk endokrinoloji
+  - çocuk endokrinolojisi ve metabolizma
+  prescriber_specialties:
+  - çocuk endokrinoloji
+source_note: Exported from drug_indication_prose.json (YAML source migration)

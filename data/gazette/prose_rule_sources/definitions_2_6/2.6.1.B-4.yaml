@@ -1,0 +1,72 @@
+section_id: 2.6.1.B-4
+rules:
+- rule_id: 2.6.1.B-4.(1).non_routine_invoice_required
+  sut_section: 2.6.1.B-4
+  gate_b_sources:
+  - C001544
+  condition:
+    definition_scope: Mutat taşıt dışı araçla sevkte bilet/fatura ibraz zorunluluğu
+    applies_to: Mutat taşıt dışı sevk
+  action:
+    enforcement: gate
+    message_tr: Mutat taşıt dışı araçla sevkte bilet/fatura ibrazı zorunludur; ibraz edilemezse mutat taşıt bedeli üzerinden
+      ödeme yapılır.
+- rule_id: 2.6.1.B-4.(2).private_vehicle_routine_fee
+  sut_section: 2.6.1.B-4
+  gate_b_sources:
+  - C001545
+  condition:
+    definition_scope: Kişilerin özel araçları ile gidiş/dönüşünde mutat taşıt ücreti ödenmesi
+    applies_to: Özel araç ile sevk
+  action:
+    enforcement: gate
+    message_tr: Kişilerin özel araçları ile sağlık hizmeti sunucusuna gidiş/dönüşünde mutat taşıt ücreti ödenir.
+- rule_id: 2.6.1.B-4.(4).scheduled_air_economy_plus_boarding
+  sut_section: 2.6.1.B-4
+  gate_b_sources:
+  - C001547
+  condition:
+    definition_scope: Tarifeli uçak için ekonomi sınıf bedeli + uçak seyahatini teyitleme (biniş/QR)
+    applies_to: Uçak ile sevk
+  action:
+    enforcement: gate
+    message_tr: Tarifeli uçak için ibraz edilen bilet/fatura tutarı ekonomi sınıf bedeli üzerinden ödenir; uçak sevklerinde
+      fatura/bilet yanında biniş kartı veya eşleşen QR çıktısı ibraz edilmelidir.
+- rule_id: 2.6.1.B-4.(5).ground_ambulance_min_price
+  sut_section: 2.6.1.B-4
+  gate_b_sources:
+  - C001548
+  condition:
+    definition_scope: Kara ambulansı/hasta nakil aracı ücretinin yönetmelik asgari fiyatları esas alınması
+    applies_to: Kara ambulansı / hasta nakil aracı
+  action:
+    enforcement: gate
+    message_tr: Kara ambulansı/nakil aracı ücreti, Ambulanslar Yönetmeliği md.28 asgari fiyatları esas alınır; resmi tarifenin
+      altındaki faturada fatura bedeli üzerinden ödenir.
+- rule_id: 2.6.1.B-4.(6).air_ambulance_scoped
+  sut_section: 2.6.1.B-4
+  gate_b_sources:
+  - C001549
+  condition:
+    definition_scope: Hava ambulansının yalnızca uzuv replantasyonu/2.4.2 kapsamı ile ödenmesi + kule/ucucu kayıt
+    applies_to: Hava ambulansı / özel hava taşıtı
+    scopes:
+    - uzuv_replantasyonu_acil
+    - 2.4.2_kapsami
+    - organ_doku_nakli
+  action:
+    enforcement: gate
+    message_tr: Hava ambulansı yalnızca uzuv replantasyonu gerektiren acil hizmet ve 2.4.2 kapsamı için ödenir; ödemede ilk
+      kule teması 'ambulans görevi' ile kurulmuş ve uçucu/teknik kayıtlar ibraz edilmelidir.
+- rule_id: 2.6.1.B-4.(7).funeral_vehicle_municipal_tariff
+  sut_section: 2.6.1.B-4
+  gate_b_sources:
+  - C001558
+  condition:
+    definition_scope: Cenaze nakil aracı ücretinin ilgili belediye tarifesi üzerinden ödenmesi
+    applies_to: Cenaze nakil aracı
+  action:
+    enforcement: gate
+    message_tr: Cenaze nakil aracı ücreti, ilgili belediyece onaylanan ücret tarifesi üzerinden fatura tutarını aşmamak kaydıyla
+      Kurumca karşılanır.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

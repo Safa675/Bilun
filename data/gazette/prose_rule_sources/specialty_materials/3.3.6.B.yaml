@@ -1,0 +1,44 @@
+section_id: 3.3.6.B
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.6.B.evde_uzun_sureli_oksijen_must_bill
+  sut_section: 3.3.6.B
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003051
+  condition:
+    material_name_any:
+    - oksijen konsantratör
+    - uzun sureli oksijen
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Evde uzun süreli oksijen tedavisi cihazı bedelleri — Kurumca karşılanır (§3.3.6.B).
+- rule_id: 3.3.6.B.(6).tasinabilir_oksijen_efor_must_bill
+  sut_section: 3.3.6.B
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003058
+  condition:
+    material_name_any:
+    - taşınabilir oksijen
+    - tasinabilir oksijen
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Taşınabilir oksijen komponentli cihaz — istirahatte PaO2 > 55 / SaO2 > %88 iken eforla desatüre olan mobilize/aktif/öğrenci
+      hastalarda istirahat ve efor kan gazları raporda belgelendirilirse bedeli Kurumca karşılanır (§3.3.6.B(6)).
+- rule_id: 3.3.6.B.(7).oksijen_konsantrator_tup_must_bill
+  sut_section: 3.3.6.B
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003059
+  condition:
+    material_name_any:
+    - oksijen tüpü
+    - oksijen tupu
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Oksijen konsantratörü verilen kişilere, raporda belirtilmek koşuluyla oksijen tüpü önerilmesi halinde bedeli
+      Kurumca karşılanır (§3.3.6.B(7)).

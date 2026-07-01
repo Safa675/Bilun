@@ -1,0 +1,16 @@
+section_id: 1.8.2.(3)
+source_note: Exported from copay_general_1_8.json (YAML source migration)
+rules:
+- rule_id: 1.8.2.(3).enjektabl_kutu
+  sut_section: 1.8.2.(3)
+  service_type: drug_injectable_box_count
+  condition:
+    drug_forms:
+    - injectable
+    - serum
+    - nutrition_product
+    - magistral
+  action:
+    box_counting: one_box_per_line_item
+  gate_b_sources:
+  - C000325

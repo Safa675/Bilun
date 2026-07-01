@@ -1,0 +1,14 @@
+section_id: 2.2.2.B-3
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.2.B-3.(1).early_discharge_same_specialty_no_repeat_fee
+  sut_section: 2.2.2.B-3
+  condition:
+    early_discharge: true
+    same_specialty_readmission_within_package_window: true
+  action:
+    billable: false
+    denial_tr: taburcu olduktan sonra aynı sunucu aynı uzmanlıkta paket süresi içinde tekrar muayene/kabul ayrı ödenmez
+    severity: error
+  gate_b_sources:
+  - C000701

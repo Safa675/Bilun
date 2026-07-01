@@ -1,0 +1,36 @@
+section_id: 3.3.4.B
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.4.B.c.primary_ligament_tendon_graft
+  sut_section: 3.3.4.B
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002962
+  condition:
+    primary_ligament_tendon_injury_graft: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Primer tekli bağ tendon yaralanmasında greft — hiçbir durumda karşılanmaz (§3.3.4.B(c)).
+- rule_id: 3.3.4.B.a.reconstruction_revision_one_unit_cap
+  sut_section: 3.3.4.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002960
+  condition:
+    reconstruction_revision_one_unit_cap: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Rekonstrüksiyon revizyon ameliyatlarında en fazla 1 adet kullanıldığında Kurumca karşılanır (§3.3.4.B(a)).
+- rule_id: 3.3.4.B.b.multi_ligament_reconstruction_two_unit_cap
+  sut_section: 3.3.4.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002961
+  condition:
+    multi_ligament_reconstruction_two_unit_cap: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Çoklu bağ rekonstrüksiyon ameliyatlarında en fazla 2 adet kullanıldığında Kurumca karşılanır (§3.3.4.B(b)).

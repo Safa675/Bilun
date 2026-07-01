@@ -319,7 +319,11 @@ def _parse_args() -> argparse.Namespace:
 
 
 if __name__ == "__main__":
-    from scripts.sut.prose.drug_indication_4215_pilot_batch_rules import BATCH_A15_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A15_RULES = load_legacy_drug_batch(
+        "drug_indication_4215_pilot_batch_rules.py:BATCH_A15_RULES"
+    )
 
     args = _parse_args()
     repo = _PROJECT_ROOT

@@ -1,0 +1,13 @@
+section_id: 4.2.16
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.16.(8).out_of_ek4b_no_pay
+  sut_section: 4.2.16
+  condition:
+    product_not_in_ek4b: true
+  action:
+    billable: false
+    denial_tr: EK-4/B listesinde yer almayan ürünler ödenmez
+    severity: error
+  gate_b_sources:
+  - C006013

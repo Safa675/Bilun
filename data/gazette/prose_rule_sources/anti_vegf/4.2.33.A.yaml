@@ -1,0 +1,126 @@
+section_id: 4.2.33.A
+source_note: Exported from anti_vegf_prose.json (YAML source migration)
+rules:
+- rule_id: 4.2.33.A.aflibersept_wet_amd
+  sut_section: 4.2.33.A
+  drug_names:
+  - aflibersept
+  icd10_codes:
+  - H35.3
+  indication_tr: Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  report_duration_months: 3
+  prescriber_specialties:
+  - göz hastalıkları
+  loading_dose_count: 3
+  gate_b_sources:
+  - C006562
+  message_tr: Aflibersept (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 3 yükleme dozu; göz hastalıkları uzmanınca reçete
+    (§4.2.33.A).
+  verification_status: struck_clause_no_replacement
+- rule_id: 4.2.33.A.anti_vegf_switch_after_bevacizumab_failure
+  sut_section: 4.2.33.A
+  drug_names:
+  - ranibizumab
+  - aflibersept
+  icd10_codes:
+  - H35.3
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  message_tr: Ranibizumab/aflibersept (YAŞ AMD) — bevacizumab tedavisine cevapsızlıkta göz hastalıkları uzmanı raporu ile
+    geçiş (§4.2.33.A/2).
+  gate_b_sources:
+  - C006562
+  report_duration_months: 3
+  loading_dose_count: 3
+- rule_id: 4.2.33.A.bevacizumab_first_line_wet_amd
+  sut_section: 4.2.33.A
+  drug_names:
+  - bevacizumab
+  icd10_codes:
+  - H35.3
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  message_tr: Bevacizumab (YAŞ AMD) — ilk tedavi seçeneği; göz hastalıkları uzmanı sağlık kurulu raporu ve reçete şartı (§4.2.33.A/1).
+  gate_b_sources:
+  - C006561
+  report_duration_months: 3
+- rule_id: 4.2.33.A.bevacizumab_wet_amd
+  sut_section: 4.2.33.A
+  drug_names:
+  - bevacizumab
+  icd10_codes:
+  - H35.3
+  indication_tr: Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  loading_dose_count: 3
+  gate_b_sources:
+  - C006526
+  - C006527
+  message_tr: Bevacizumab (YAŞ AMD) — günübirlik tedavi kapsamında, göz hastalıkları uzmanı raporuyla 3 yükleme dozu (1,25
+    mg/0,1 ml); ilk tedavi seçeneği (§4.2.33).
+- rule_id: 4.2.33.A.pegaptanib_wet_amd
+  sut_section: 4.2.33.A
+  drug_names:
+  - pegaptanib
+  icd10_codes:
+  - H35.3
+  indication_tr: Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  report_duration_months: 3
+  prescriber_specialties:
+  - göz hastalıkları
+  gate_b_sources:
+  - C006560
+  message_tr: Pegaptanib — 3 göz hastalıkları uzmanının yer aldığı 3 ay süreli sağlık kurulu raporu ve göz hastalıkları uzmanınca
+    reçete şartı (§4.2.33.A).
+- rule_id: 4.2.33.A.ranibizumab_wet_amd
+  sut_section: 4.2.33.A
+  drug_names:
+  - ranibizumab
+  icd10_codes:
+  - H35.3
+  indication_tr: Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  report_duration_months: 3
+  prescriber_specialties:
+  - göz hastalıkları
+  loading_dose_count: 3
+  gate_b_sources:
+  - C006562
+  message_tr: Ranibizumab (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 4-6 hafta arayla 3 kez yükleme dozu; ardışık/kombine
+    kullanım yasak (§4.2.33.A).
+  verification_status: struck_clause_no_replacement
+- rule_id: 4.2.33.A.verteporfin_wet_amd
+  sut_section: 4.2.33.A
+  drug_names:
+  - verteporfin
+  - vertaporfin
+  icd10_codes:
+  - H35.3
+  indication_tr: Yaş tip yaşa bağlı makula dejenerasyonu (YAŞ AMD)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  report_duration_months: 3
+  prescriber_specialties:
+  - göz hastalıkları
+  gate_b_sources:
+  - C006561
+  message_tr: Verteporfin (YAŞ AMD) — 3 ay süreli sağlık kurulu raporu ve göz hastalıkları uzmanı reçetesi (§4.2.33.A).

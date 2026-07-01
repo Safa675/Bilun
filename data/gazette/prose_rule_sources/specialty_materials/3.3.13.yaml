@@ -1,0 +1,19 @@
+section_id: 3.3.13
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.13.(1).kikirdak_hucre_kulturu_danisma_onay_must_bill
+  sut_section: 3.3.13
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003151
+  condition:
+    material_name_any:
+    - kıkırdak hücre kültürü
+    - kikirdak hucre kulturu
+    - otolog kondrosit
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Kıkırdak hücre kültürleri — EK-2/B 612731/612975 ve EK-2/C P612731/P612975 kodlarıyla birlikte, eğitim verme
+      yetkisi olan 3. basamak resmi sunucularda ve Ortopedi Bilimsel Danışma Kurulundan her hasta için onay alınması şartıyla
+      bedelleri Kurumca karşılanır (§3.3.13(1)).

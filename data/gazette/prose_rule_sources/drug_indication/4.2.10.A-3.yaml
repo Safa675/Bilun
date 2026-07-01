@@ -1,0 +1,44 @@
+section_id: 4.2.10.A-3
+rules:
+- rule_id: 4.2.10.A3.continuation_improvement_break_reeligibility
+  sut_section: 4.2.10.A-3
+  gate_b_sources:
+  - C004235
+  - C004254
+  report_required: true
+  action:
+    enforcement: düzelmeye devam kararı verilenlerde yeni raporda başlangıç kriterlerinden birinde düzelme belirtilirse tedaviye
+      devam; ≥1 yıl ara verilirse başlangıç kriterleri yeniden aranır; <1 yıl ara verilirse başlangıç kriterleri aranmaksızın
+      devam
+    message_tr: Tedavide düzelme sağlanan ve ilacın kullanımına devam edilmesine karar verilen hastalarda; düzenlenecek yeni
+      raporlarda başlangıç kriterlerinden herhangi birinde düzelme olduğu belirtilirse tedaviye devam edilebilir. Bir yıl
+      veya daha uzun süreyle ara verilirse başlangıç kriterleri aranır; bir yıldan kısa süreyle ara verilirse başlangıç kriterleri
+      aranmaksızın tedaviye devam edilebilir (§4.2.10.A-3).
+- rule_id: 4.2.10.eliglustat_cyp2d6_report
+  sut_section: 4.2.10.A-3
+  drug_names:
+  - eliglustat
+  - cerdelga
+  icd10_ranges:
+  - E75.22
+  message_tr: Eliglustat — CYP2D6 metabolizör tipi (OM/HM/YM) raporda belirtilmeli; 6 aylık sağlık kurulu raporu ve uzman
+    reçetesi gerekir (§4.2.10.A-3/A-4).
+  gate_b_sources:
+  - C004252
+  - C004257
+  - C004258
+  report_required: true
+  report_specialties:
+  - çocuk endokrinolojisi ve metabolizma
+  - çocuk metabolizma
+  - endokrinoloji ve metabolizma
+  - gastroenteroloji
+  report_duration_months: 6
+  prescriber_specialties:
+  - çocuk endokrinolojisi ve metabolizma
+  - çocuk metabolizma
+  - endokrinoloji ve metabolizma
+  - gastroenteroloji
+  - çocuk sağlığı ve hastalıkları
+  - iç hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

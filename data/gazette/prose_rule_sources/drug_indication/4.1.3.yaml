@@ -1,0 +1,67 @@
+section_id: 4.1.3
+rules:
+- rule_id: 4.1.3.copay_exemption_report_icd10_diagnosis
+  sut_section: 4.1.3
+  gate_b_sources:
+  - C003438
+  report_required: true
+  condition:
+    copay_exemption_report: true
+  action:
+    enforcement: 'exemption: copay-exemption health reports must carry diagnosis and ICD-10 code; no abbreviations except
+      those in EK-4/Ç; no abbreviations in active-substance name'
+    message_tr: Hasta katılım payı muafiyeti için düzenlenen sağlık raporlarında teşhis ve ICD-10 kodu yer alır; SUT eki EK-4/Ç
+      Listesi kısaltmaları hariç teşhislerde ve etken madde isminde kısaltma yapılmaz (§4.1.3).
+- rule_id: 4.1.3.health_report_1_10_specialist_electronic
+  sut_section: 4.1.3
+  gate_b_sources:
+  - C003436
+  report_required: true
+  action:
+    enforcement: 'regulatory: reports issued per SUT §1.10; per §1.10.1 by specialist physician, SUT §1.10.2 health-board
+      reports also valid; MEDULA-using providers issue reports electronically and chief-physician approves electronically'
+    message_tr: Sağlık raporlarının düzenlenmesinde SUT 1.10 maddesi dikkate alınır; bu raporlar SUT'taki istisnalar saklı
+      kalmak kaydıyla 1.10.1 doğrultusunda uzman hekimce düzenlenir, 1.10.2'ye göre düzenlenen sağlık kurulu raporları da
+      geçerlidir; MEDULA kullanan sunucular raporları elektronik düzenler ve başhekimlikçe elektronik onaylanır (§4.1.3).
+- rule_id: 4.1.3.health_report_format_moh_medula_mandatory
+  sut_section: 4.1.3
+  gate_b_sources:
+  - C003435
+  report_required: true
+  action:
+    enforcement: 'mandatory: health report formats, attestations, stamps and other practices must comply with MoH legislation
+      and MEDULA system rules'
+    message_tr: Sağlık raporu formatları ile bu raporların tasdik, mühür ve diğer uygulamalarında Sağlık Bakanlığı mevzuatı
+      ve MEDULA sistemindeki düzenlemelere uyulacaktır (§4.1.3).
+- rule_id: 4.1.3.report_active_substance_dose_rule
+  sut_section: 4.1.3
+  gate_b_sources:
+  - C003437
+  report_required: true
+  action:
+    enforcement: 'regulatory: except drugs with special rules, report need not state dose — active substance name suffices;
+      for such drugs dose/daily dose written on prescription; if dose is detailed in the report that dose cannot be exceeded'
+    message_tr: Özel düzenlemesi olan ilaçlar hariç raporda doz belirtilmesi şart olmayıp etken madde adının yazılması yeterlidir;
+      bu ilaçların etken madde miktarı ve günlük dozu reçeteyle düzenlenir; raporda doz ayrıntılı belirtilmişse bu doz aşılamaz
+      (§4.1.3).
+- rule_id: 4.1.3.report_max_2_year_validity
+  sut_section: 4.1.3
+  gate_b_sources:
+  - C003439
+  report_required: true
+  report_duration_months: 24
+  action:
+    enforcement: 'regulatory: health reports valid up to 2 years except drugs with special SUT provisions'
+    message_tr: Sağlık raporları, SUT'ta yer alan özel düzenlemeler hariç en fazla iki yıl süreyle geçerlidir (§4.1.3).
+- rule_id: 4.1.3.report_validity_on_sut_change
+  sut_section: 4.1.3
+  gate_b_sources:
+  - C003443
+  report_required: true
+  action:
+    enforcement: 'regulatory: on SUT change reports remain valid until expiry if they comply with new provisions; non-compliant
+      reports become valid only if re-conformed under SUT §4.1.3(6) (except reports the Institution declares valid until expiry)'
+    message_tr: Sağlık raporları SUT değişikliği olması halinde yeni hükümlere uygun olması kaydıyla süresi sonuna kadar geçerlidir;
+      değişiklik sonrası SUT hükümlerine uygun olmayan raporlar 4.1.3(6) kapsamında yeni hükümlere uygun hale getirilebilirse
+      geçerlidir (Kurumca süresi sonuna kadar geçerli duyurulanlar hariç) (§4.1.3).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,53 @@
+section_id: 4.1.6
+rules:
+- rule_id: 4.1.6.ek4d_chronic_3month_dose_coverage
+  sut_section: 4.1.6
+  gate_b_sources:
+  - C003526
+  report_required: true
+  report_duration_months: 12
+  condition:
+    coverage_note: true
+    max_days_per_dispense: 90
+    ek4d_list: true
+  action:
+    enforcement: 'coverage: EK-4/D disease drugs paid up to 3-month treatment dose per health report; specialists of the branches
+      that may report per SUT may prescribe up to 1-year dose, with pharmacy supply of up to 3-month amounts during the Rx
+      period; EXCLUDES colored-receipt drugs, off-label-approval drugs, overseas-procured drugs, §4.2.1/4.2.10/4.2.14 drugs
+      and Institution-designated drugs'
+    message_tr: EK-4/D Listesindeki hastalıklarda kullanılacak ilaçlar sağlık raporuna dayanılarak en fazla 3 aylık tedavi
+      dozunda reçete edilirse ödenir; ilgili uzmanlık dallarınca en fazla 1 yıllık dozda reçete ve bu reçeteye istinaden en
+      fazla üçer aylık dozda sözleşmeli eczanelerden temini halinde Kurumca ödenir; renkli reçeteli, endikasyon dışı onaylı,
+      yurt dışından temin edilen ve 4.2.1/4.2.10/4.2.14 ilaçları ile Kurumca belirlenecek ilaçlar hariçtir (§4.1.6).
+- rule_id: 4.1.6.ek4d_copay_exempt
+  sut_section: 4.1.6
+  gate_b_sources:
+  - C003527
+  report_required: true
+  condition:
+    copay_exempt: true
+    ek4d_list: true
+  action:
+    enforcement: 'no-copay: for EK-4/D listed active substances, when a health report is issued matching the diagnoses under
+      the relevant heading, drugs prescribed on that report are exempt from patient copay'
+    message_tr: EK-4/D Listesindeki etken maddeler için ilgili başlıktaki tanılara uygun sağlık raporu düzenlenmesi halinde
+      bu rapora istinaden reçete edilen ilaçlar katılım payından muaf tutulur (§4.1.6).
+- rule_id: 4.1.6.ek4d_overseas_duty_1year_coverage
+  sut_section: 4.1.6
+  gate_b_sources:
+  - C003529
+  report_required: true
+  condition:
+    coverage_note: true
+    max_days_per_dispense: 365
+    ek4d_list: true
+    overseas_duty_personnel: true
+  action:
+    enforcement: 'coverage: overseas-duty personnel + co-resident spouse/dependents — EK-4/D drugs paid up to 1-year treatment
+      dose per patient-named prescription + health report + overseas-duty official document; if SUT report duration <1 year,
+      drugs given for report duration'
+    message_tr: Sürekli görevle yurt dışına gönderilenler ile yurt dışında birlikte yaşadıkları eş ve bakmakla yükümlü olduğu
+      kişilere, EK-4/D hastalıklarında kullanılacak ilaçların hasta adına düzenlenmiş reçete, sağlık raporu ve yurt dışı görevine
+      dair resmi belge ibrazına dayanılarak en fazla bir yıllık tedavi dozunda reçete edilmesi halinde bedelleri ödenir (SUT'ta
+      süresi 1 yıldan az olan raporlarda rapor süresi kadar ilaç verilir) (§4.1.6).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

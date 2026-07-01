@@ -1,0 +1,152 @@
+section_id: 4.2.30.A
+rules:
+- rule_id: 4.2.30.A.bosentan_32mg_paediatric_dysphagia
+  sut_section: 4.2.30.A
+  gate_b_sources:
+  - C006422
+  drug_names:
+  - bosentan 32 mg
+  icd10_codes:
+  - I27.0
+  - I27.2
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: bosentan 32 mg; PAH'da koşulları sağlayan 30 kg altı pediatrik veya kilo sınırı aranmaksızın yutma güçlüğü
+      olan (yoğun bakım/entübe/ağızdan beslenemeyen/nazogastrik) hastalarda
+    message_tr: Bosentan etkin maddesini 32 mg dozunda içeren ilaçlar pulmoner arteriyel hipertansiyonda yukarıdaki koşulları
+      sağlayan 30 kg altı pediatrik hastalar veya kilo sınırı aranmaksızın yutma güçlüğü olan (yoğun bakımda/entübe/ağızdan
+      beslenemeyen/nazogastrik beslenme zorunluluğu olan) hastalarda reçetelenirse bedeli Kurumca karşılanır (§4.2.30.A).
+- rule_id: 4.2.30.A.epoprostenol_dialysis_nopay
+  sut_section: 4.2.30.A
+  gate_b_sources:
+  - C006420
+  drug_names:
+  - epoprostenol
+  icd10_codes:
+  - Z99.2
+  - N18
+  pay: false
+  action:
+    enforcement: 'no-pay condition: epoprostenol etken maddeli ilacın böbrek diyalizi endikasyonunda kullanımı'
+    message_tr: Epoprostenol etken maddeli ilacın böbrek diyalizi endikasyonunda bedeli Kurumca karşılanmaz (§4.2.30.A).
+- rule_id: 4.2.30.A.era_combination_prohibited
+  sut_section: 4.2.30.A
+  gate_b_sources:
+  - C006415
+  drug_names:
+  - bosentan
+  - masitentan
+  - ambrisentan
+  icd10_codes:
+  - I27.0
+  - I27.2
+  pay: false
+  action:
+    enforcement: 'no-pay condition: bosentan, masitentan ve ambrisentan kombine kullanılamaz'
+    message_tr: Bosentan, masitentan ve ambrisentan kombine kullanılamaz (§4.2.30.A).
+- rule_id: 4.2.30.A.pah_3month_control_escalation
+  sut_section: 4.2.30.A
+  gate_b_sources:
+  - C006406
+  - C006408
+  drug_names:
+  - bosentan
+  - ambrisentan
+  - masitentan
+  - sildenafil
+  - tadalafil
+  - riociguat
+  - seleksipag
+  - iloprost
+  icd10_codes:
+  - I27.0
+  - I27.2
+  report_required: true
+  action:
+    enforcement: 3. ay kontrolünde efor kapasitesi/hemodinami/ekokardiyografide düzelme/stabilite varsa tedaviye devam; PAB
+      azalmaz veya fonksiyonel kapasite düzelmezse monodan ikiliye, ikiliden üçlü kombinasyona geçilir; kombineye geçilince
+      başlangıç kriteri ve PAB azalması aranmaz
+    message_tr: Üç aylık tedavi sonrası kontrolde klinik efor kapasitesi (6 dakika yürüme/kardiyopulmoner egzersiz), hemodinami
+      veya ekokardiyografik verilerde düzelme/stabilite varsa tedaviye devam edilir; üçüncü ayda PAB'da azalma olmaması veya
+      fonksiyonel kapasite düzelmemesi halinde mono tedavide ikiliye, ikili kombinasyonda üçlüye geçilebilir; kombine tedaviye
+      geçilince başlangıç kriterleri ve PAB azalması şartı aranmaz (§4.2.30.A).
+- rule_id: 4.2.30.A.pah_general_coverage
+  sut_section: 4.2.30.A
+  gate_b_sources:
+  - C006405
+  drug_names:
+  - bosentan
+  - ambrisentan
+  - masitentan
+  - sildenafil
+  - tadalafil
+  - riociguat
+  - seleksipag
+  - iloprost
+  - epoprostenol
+  - treprostinil
+  icd10_codes:
+  - I27.0
+  - I27.2
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: tanımlı PAH koşullarının sağlanması halinde bedeli Kurumca karşılanır
+    message_tr: Pulmoner arteriyel hipertansiyon ilaçlarının tanımlı koşulların sağlanması halinde bedeli Kurumca karşılanır
+      (§4.2.30.A).
+- rule_id: 4.2.30.A.pde5_sgc_combination_prohibited
+  sut_section: 4.2.30.A
+  gate_b_sources:
+  - C006416
+  drug_names:
+  - sildenafil
+  - riociguat
+  - tadalafil
+  icd10_codes:
+  - I27.0
+  - I27.2
+  pay: false
+  action:
+    enforcement: 'no-pay condition: sildenafil, riociguat ve tadalafil kombine kullanılamaz'
+    message_tr: Sildenafil, riociguat ve tadalafil kombine kullanılamaz (§4.2.30.A).
+- rule_id: 4.2.30.A.prostacyclin_selexipag_combination_prohibited
+  sut_section: 4.2.30.A
+  gate_b_sources:
+  - C006418
+  drug_names:
+  - iloprost trometamol
+  - epoprostenol
+  - treprostinil sodyum
+  - seleksipag
+  icd10_codes:
+  - I27.0
+  - I27.2
+  pay: false
+  action:
+    enforcement: 'no-pay condition: inhaler iloprost trometamol, epoprostenol, treprostinil sodyum ve seleksipag kombine kullanılamaz'
+    message_tr: İloprost trometamol (inhaler formu), epoprostenol, treprostinil sodyum ve seleksipag kombine kullanılamaz
+      (§4.2.30.A).
+- rule_id: 4.2.30.A.selexipag_combination_only
+  sut_section: 4.2.30.A
+  gate_b_sources:
+  - C006414
+  drug_names:
+  - seleksipag
+  - selexipag
+  - uptravi
+  icd10_codes:
+  - I27.0
+  - I27.2
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: seleksipag yalnız ERA ve/veya PDE-5 inhibitörü ile tedavinin yetersiz olduğu hastalarda kombinasyon (inhaler
+      iloprost trometamol ile birlikte kullanım hariç)
+    message_tr: Seleksipag yalnızca endotelin reseptör antagonisti (ERA) ve/veya fosfodiesteraz Tip 5 (PDE-5) inhibitörü ile
+      tedavinin yetersiz olduğu hastalarda kombinasyon tedavisi şeklinde (inhaler iloprost trometamol ile birlikte kullanımı
+      hariç) kullanılması halinde bedeli Kurumca karşılanır (§4.2.30.A).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

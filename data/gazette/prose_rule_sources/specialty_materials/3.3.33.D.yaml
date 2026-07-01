@@ -1,0 +1,49 @@
+section_id: 3.3.33.D
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.33.D.(1).brainstem_implant_health_board
+  sut_section: 3.3.33.D
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003378
+  condition:
+    brainstem_implant_unilateral_health_board: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Beyin sapı implantı — 3 KBB uzmanı + odyolog/psikolog/dil-konuşma terapisti değerlendirmeli sağlık kurulu
+      raporuyla tek taraflı uygulamada Kurumca karşılanır (§3.3.33.D(1)).
+- rule_id: 3.3.33.D.(2).brainstem_implant_bilateral_profound
+  sut_section: 3.3.33.D
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003379
+  condition:
+    brainstem_implant_bilateral_profound_loss: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Bilateral çok ileri derecede sensörinöral işitme kaybında beyin sapı implantı Kurumca karşılanır (§3.3.33.D(2)).
+- rule_id: 3.3.33.D.(3).brainstem_implant_kurum_odeme
+  sut_section: 3.3.33.D
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003383
+  condition:
+    brainstem_implant_criteria_kurum_odeme: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Beyin sapı implantı — tanımlı kriterleri sağlayanlarda bedeli Kurumca karşılanır (§3.3.33.D).
+- rule_id: 3.3.33.D.(5).brainstem_implant_commission_approval
+  sut_section: 3.3.33.D
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003385
+  condition:
+    brainstem_implant_commission_outside_criteria: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Kriterleri taşımayan hastalarda İşitsel İmplantlar Komisyonu onayıyla beyin sapı implantı Kurumca karşılanır
+      (§3.3.33.D(5)).

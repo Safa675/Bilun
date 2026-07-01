@@ -1,0 +1,224 @@
+section_id: 3.1.1
+source_note: Exported from material_bundling_prose.json (YAML source migration)
+rules:
+- rule_id: 3.1.1.(11).missing_material_code
+  sut_section: 3.1.1
+  deontic: MUST_HAVE_CODE
+  condition:
+    requires_material_code: true
+    material_code_missing: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Malzeme SUT kodu eksik — EK-3/C eşlemesi ve işlem eşlemesi yapılamaz (§3.1.1(11)).
+- rule_id: 3.1.1.(11).procedure_pairing
+  sut_section: 3.1.1
+  deontic: MUST_PAIR_PROCEDURE
+  condition:
+    material_in_ek3c: true
+    procedure_pairing_required: true
+  action:
+    material_outcome: no_pay
+    severity: warning
+    message_tr: EK-3/C malzemesi faturalı işlemle eşleşmiyor — işlem kodu veya procedure_line_id gerekli (§3.1.1(11)).
+- rule_id: 3.1.1.(2).titubb_uts_incomplete
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002684
+  condition:
+    titubb_uts_incomplete: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: TİTUBB/ÜTS kayıt-bildirim tamamlanmamış — Kurumca karşılanmaz (§3.1.1(2)).
+- rule_id: 3.1.1.(17).barcode_sut_mismatch
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002697
+  condition:
+    material_name_any:
+    - barkod-sut uyumsuz
+    - barkod sut uyumsuz
+    - sut kodu eşleşme hatalı
+    - sut kodu eslesme hatali
+    barcode_sut_mismatch: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Barkod–SUT kodu eşleştirme hatası — malzeme ödenmez (§3.1.1(17)).
+- rule_id: 3.1.1.(9).non_reimbursed_procedure_material
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002691
+  condition:
+    material_name_any:
+    - karşılanmayan işlem malzemesi
+    - karsilanmayan islem malzemesi
+    - ödenmeyen işleme ait malzeme
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Bedeli karşılanmayan işleme ait malzeme — Kurumca karşılanmaz (§3.1.1(9)).
+- rule_id: 3.1.1.(5).procurement_screen_incomplete
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002682
+  condition:
+    procurement_record_incomplete: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: İhale/doğrudan temin sonuç bilgileri eksik — malzeme bedeli Kurumca karşılanmaz (§3.1.1(5)).
+- rule_id: 3.1.1.(11).procedure_not_reimbursed_link
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002682
+  condition:
+    procedure_not_reimbursed: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Bedeli karşılanmayan işleme ait malzeme — Kurumca karşılanmaz (§3.1.1(11)/(12)).
+- rule_id: 3.1.1.(14).foreign_facility_overhead
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002694
+  condition:
+    foreign_facility: true
+  action:
+    material_outcome: no_pay
+    severity: warning
+    message_tr: Yurt dışı sunucuda işletme/hazine/SHÇEK kesintileri — malzeme ek giderleri Kurumca karşılanmaz (§3.1.1(12)/(14)).
+- rule_id: 3.1.1.(18).facility_procedure_restriction
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002698
+  condition:
+    facility_procedure_restriction_violation: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Malzemedeki sunucu kısıtına uymayan işlem — bedel ödenmez (§3.1.1(16)/(18)).
+- rule_id: 3.1.1.(15).separate_billing_not_authorized
+  sut_section: 3.1.1
+  deontic: MUST_NOT_BILL
+  gate_b_sources:
+  - C002695
+  condition:
+    separate_billing_not_authorized: true
+  action:
+    material_outcome: must_not_bill_separately
+    severity: warning
+    message_tr: EK-3 listesinde olup ilgili ekte ayrıca faturalandırma izni belirtilmeyen malzeme — ilave faturalandırma riski
+      (EK-3 listesi / §3.1).
+- rule_id: 3.1.1.(16).medula_code_undefined_on_date
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002696
+  condition:
+    medula_code_undefined_on_date: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: SUT kodu işlem tarihinde MEDULA'da tanımlı değil — malzeme bedeli Kurumca karşılanmaz (§3.1.1(14)/(16)).
+- rule_id: 3.1.1.(4).ihale_dts_mandatory_fields_incomplete
+  sut_section: 3.1.1
+  deontic: MANDATORY
+  gate_b_sources:
+  - C002686
+  condition:
+    ihale_dts_mandatory_fields_incomplete: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: İhale/DTS ekranında İKN, TİTUBB/ÜTS, fiyat ve zorunlu alanlar eksik — malzeme bedeli karşılanmaz (§3.1.1(4)).
+- rule_id: 3.1.1.(8).ek3c_inpatient_external_supply_invalid
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002751
+  condition:
+    ek3c_inpatient_external_supply_invalid: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Yatarak tedavi sırasında EK-3/C malzemesi dışarıdan reçete yolu uygunsuz — sözleşmeli merkez/kurallara uygun
+      temin gerekir (§3.1.1(8)/(19)).
+- rule_id: 3.1.1.(13).ek3_quality_documentation_incomplete
+  sut_section: 3.1.1
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002693
+  condition:
+    ek3_quality_documentation_incomplete: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: EK-3 malzemesi için kalite/ürün güvenliği belgeleri eksik — Kurum talep edebilir (§3.1.1(11)/(13)).
+- rule_id: 3.1.1.(6).inpatient_facility_supply_violation
+  sut_section: 3.1.1
+  deontic: MANDATORY
+  gate_b_sources:
+  - C002687
+  condition:
+    inpatient_material_facility_supply_violation: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Yatarak tedavide malzeme kurumca temin edilmeli — hastaya reçete ile dışarıdan temin uygunsuz (§3.1.1(5)/(6)).
+- rule_id: 3.1.1.(7).non_reimbursed_inpatient_patient_charge
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002682
+  condition:
+    non_reimbursed_inpatient_patient_charge: true
+  action:
+    material_outcome: no_pay
+    severity: warning
+    message_tr: Karşılanmayan yatarak malzeme — hasta bilgilendirme/mahsup kurallarına uygun faturalandırma (§3.1.1(7)).
+- rule_id: 3.1.1.facility_contract_material_supply_scope
+  sut_section: 3.1.1
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002688
+  - C002825
+  - C002715
+  condition:
+    facility_contract_material_supply_scope: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Sözleşmeli kurum malzeme temin kapsamı — ilgili SUT temin/teslim şartları geçerlidir.
+- rule_id: 3.1.1.(3).ismarlama_device_component_titubb_incomplete
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002682
+  condition:
+    ismarlama_device_component_titubb_incomplete: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Ismarlama cihaz bileşeni (Tıbbi Cihaz Yönetmeliği kapsamı) için ayrı TİTUBB kayıt/bildirim tamamlanmalı —
+      nihai ürün muafiyeti bileşenlere uygulanmaz (§3.1.1(3)).
+- rule_id: 3.1.1.(4).titubb_uts_barcode_documentation_missing
+  sut_section: 3.1.1
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002685
+  condition:
+    titubb_uts_barcode_documentation_missing: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: TİTUBB/ÜTS barkod bilgisi hasta dosyasında muhafaza/ibraz edilmeli (§3.1.1(3)/(4); EK-3/A <100 TL yatarak
+      istisnası hariç).

@@ -1,0 +1,125 @@
+section_id: 2.4.4.H
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.H.(3).pacu_no_icu_bill
+  sut_section: 2.4.4.H
+  condition:
+    procedure_category: post_anesthesia_care_pacu
+    icu_fee_billed: true
+  action:
+    billable: false
+    denial_tr: anestezi sonrası bakım (PACU) için yoğun bakım bedelleri faturalandırılamaz
+    severity: error
+  gate_b_sources:
+  - C001208
+- rule_id: 2.4.4.H.(7).same_day_multi_level_one_icu_fee
+  sut_section: 2.4.4.H
+  condition:
+    same_day_multi_level_icu: true
+    patient_transferred_between_levels: false
+  action:
+    billable: true
+    payment_tr: aynı gün birden fazla basamakta yoğun bakım için tek yoğun bakım bedeli
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001215
+- rule_id: 2.4.4.H.(8).icu_admission_discharge_fee_for_service
+  sut_section: 2.4.4.H
+  condition:
+    icu_day_is:
+    - admission_day
+    - discharge_or_death_day
+    - transfer_out_day
+  action:
+    billable: true
+    payment_tr: yoğun bakıma giriş/çıkış/vefat/sevk günü hizmet başına ödeme yöntemiyle
+    annex_basis: EK-2/B
+  gate_b_sources:
+  - C001216
+- rule_id: 2.4.4.H.(1).icu_unleveled_level1_unregistered_not_billable
+  sut_section: 2.4.4.H
+  condition:
+    procedure_category: intensive_care
+    bed_registration_status: unregistered
+  action:
+    billable: false
+    enforcement: facility_registration_gate
+    message_tr: Bakanlıkça seviyelendirilmemiş yoğun bakım yatakları 1. basamak yoğun bakım fiyatından; tescil edilmemiş yoğun
+      bakım yataklarında verilen tedaviler faturalandırılamaz
+    severity: error
+  gate_b_sources:
+  - C001206
+- rule_id: 2.4.4.H.(2).icu_group_de_bundled_abc_addon_same_day
+  sut_section: 2.4.4.H
+  condition:
+    procedure_category: intensive_care
+    concomitant_procedure_group_in:
+    - D
+    - E
+  action:
+    billable: false
+    enforcement: bundling_prohibition
+    message_tr: yoğun bakım tedavisi sürerken uygulanan D ve E grubu işlemler yoğun bakım bedellerine dâhildir, ayrıca faturalandırılamaz;
+      A/B/C grubu işlem yapılan gün tanıya dayalı yoğun bakım puanı + EK-2/B işlem puanı faturalandırılabilir
+    annex_basis: EK-2/C
+    severity: error
+  gate_b_sources:
+  - C001207
+- rule_id: 2.4.4.H.(3).icu_pacu_no_icu_fee
+  sut_section: 2.4.4.H
+  condition:
+    procedure_category: post_anesthesia_care
+  action:
+    billable: false
+    enforcement: exclusion
+    message_tr: anestezi sonrası bakım hizmetleri (PACU) için yoğun bakım bedelleri faturalandırılamaz
+    severity: error
+  gate_b_sources:
+  - C001208
+- rule_id: 2.4.4.H.(5).icu_platelet_apheresis_and_material_billable
+  sut_section: 2.4.4.H
+  condition:
+    procedure_category: intensive_care
+    procedure_code_any:
+    - '705440'
+    - '705441'
+    - '705442'
+    - '705443'
+    - '705371'
+    - '705430'
+    - '705372'
+    - '705373'
+  action:
+    billable: true
+    enforcement: add_on_billing
+    message_tr: trombosit süspansiyonu (705440-705443) ve 'aferez trombosit' bedelleri ile ilgili tıbbi malzeme bedelleri
+      ayrıca faturalandırılır; 705371/705430 için puanın %36'sı, 705372/705373 için %24'ü sunucunca ayrıca faturalandırılır
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001210
+- rule_id: 2.4.4.H.(7).icu_single_fee_multiple_levels_same_day
+  sut_section: 2.4.4.H
+  condition:
+    procedure_category: intensive_care
+    icu_levels_same_day_same_provider:
+      min: 2
+  action:
+    billable: true
+    enforcement: single_fee_consolidation
+    message_tr: aynı sunucuda aynı gün birden fazla basamakta yoğun bakım tedavisi gören hasta için bir yoğun bakım bedeli
+      faturalandırılır; basamak değişikliği epikriz notunda belirtilir
+  gate_b_sources:
+  - C001215
+- rule_id: 2.4.4.H.(8).icu_admission_discharge_day_fee_for_service
+  sut_section: 2.4.4.H
+  condition:
+    procedure_category: intensive_care
+    day_is_admission_or_discharge_or_death_or_transfer: true
+  action:
+    billable: true
+    enforcement: fee_for_service
+    message_tr: yoğun bakımda yatan hastanın yattığı ilk gün ile vefat ettiği, yoğun bakımdan çıkarıldığı veya başka sunucunun
+      yoğun bakımına sevk edildiği gün verilen sağlık hizmetleri hizmet başına ödeme yöntemiyle faturalandırılır
+    annex_basis: fee_for_service
+  gate_b_sources:
+  - C001216

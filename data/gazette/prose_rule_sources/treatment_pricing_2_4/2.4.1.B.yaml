@@ -1,0 +1,18 @@
+section_id: 2.4.1.B
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.1.B.(1).private_uncontracted_dental_units_scope
+  sut_section: 2.4.1.B
+  condition:
+    facility_type_any:
+    - private_provider
+    - uncontracted_public_provider
+    patient_in_general_scope_not_in_5510_excluded_groups: true
+  action:
+    billable: true
+    payment_tr: 5510 sayılı Kanun 60/c-1 veya 60/c-3 bentleri ile 12/13/14. fıkra kapsamı hariç diğer kişilerin özel sağlık
+      hizmeti sunucuları ile Kurumla sözleşmesi olmayan resmi sunucular diş ünitelerindeki ağız ve diş sağlığı hizmetleri
+      aşağıdaki şekilde yapılır
+    billing_method: procedure_package
+  gate_b_sources:
+  - C000787

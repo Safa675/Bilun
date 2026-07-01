@@ -1,0 +1,135 @@
+section_id: 2.4.1
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.1.(1).precious_metal_dental_materials_no_pay
+  sut_section: 2.4.1
+  condition:
+    procedure_category: dental_treatment
+    material_is_precious_metal: true
+  action:
+    billable: false
+    denial_tr: diş tedavileri sırasında; altın, platin, paladyum+platin, irrudyum+platin, iropal gibi kıymetli madenler ile
+      argenco 23, bego gold EWL ve polliag-M gibi bileşiminde kıymetli maden bulunan maddelerin bedelleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C000734
+- rule_id: 2.4.1.(2).endosseous_implant_base_no_pay
+  sut_section: 2.4.1
+  condition:
+    procedure_category: dental_implant_endosseous
+    implant_exception_conditions_met: false
+  action:
+    billable: false
+    denial_tr: kemik içi implantların bedelleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C000742
+- rule_id: 2.4.1.(2).implant_exception_4_per_jaw_750tl
+  sut_section: 2.4.1
+  condition:
+    procedure_category: dental_implant_endosseous
+    university_board_report_with_surgery_prosthesis_periodontology: true
+    radiographic_evidence_attached: true
+    implant_count_per_jaw:
+      min: 1
+      max: 4
+  action:
+    billable: true
+    payment_tr: rutin protetik tedavi ile tedavi edilemeyeceği implantın zorunlu olduğu üniversite diş hekimliği fakültesi
+      sağlık kurulu raporuyla belgelendirilmek şartıyla her bir çene için en fazla 4 adet EK-2/Ç “kemik içi implant uygulaması”
+      bedeli ile her implant için 750 TL, vazife/harp malullerinde en fazla 2500 TL üzerinden faturalandırılır
+    billing_method: procedure_package
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000747
+- rule_id: 2.4.1.(3).prosthesis_renewal_within_4_years_no_pay
+  sut_section: 2.4.1
+  condition:
+    procedure_category: dental_prosthesis_replacement
+    years_since_last_prosthesis:
+      max: 3.99
+    exception_traffic_work_accident_or_neoplasm_or_weight_loss: false
+  action:
+    billable: false
+    denial_tr: hareketli ve sabit protezlerin yenilenme süresi 4 yıldır; bu süreden önce yenilenen protez bedelleri Kurumca
+      ödenmez
+    severity: error
+  gate_b_sources:
+  - C000748
+- rule_id: 2.4.1.(a).adult_orthodontics_18plus_no_pay
+  sut_section: 2.4.1
+  condition:
+    procedure_category: orthodontic_treatment
+    patient_age:
+      min: 18
+    treatment_started_before_age_18_and_ongoing: false
+    started_before_gss_effective_date: false
+  action:
+    billable: false
+    denial_tr: 18 yaşını doldurmuş kişilerin ortodontik diş tedavilerine ilişkin giderler Kurumca ödenmez; ancak tedavi 18
+      yaşından önce başlamış ve devam ediyorsa karşılanır
+    severity: error
+  gate_b_sources:
+  - C000752
+- rule_id: 2.4.1.(b).early_orthodontic_p407321_p407322
+  sut_section: 2.4.1
+  condition:
+    procedure_code_any:
+    - P407321
+    - P407322
+    patient_age:
+      min: 6
+      max: 14
+    performed_by_orthodontist_or_doctor: true
+    min_3_months_between_start_and_end_phase: true
+  action:
+    billable: true
+    payment_tr: dental ve iskeletsel malokluzyonu düzeltmek için yapılan erken ortodontik uygulamalar P407321/P407322 işlem
+      kodları üzerinden, 6-14 yaş, ortodonti uzmanı/doktoralı hekim ve başlangıç-bitiş aşamaları arası en az 3 ay olması şartıyla
+      Kurumca karşılanır
+    procedure_package: EK-2/Ç-7.1
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000753
+- rule_id: 2.4.1.(c).fixed_orthodontics_class1_2_3_min_intervals
+  sut_section: 2.4.1
+  condition:
+    procedure_category: fixed_orthodontic_treatment
+    malocclusion_class_any:
+    - class_I
+    - class_II
+    - class_III
+    - orthognathic
+    performed_by_orthodontist_or_doctor: true
+    months_between_start_and_treatment_phase:
+      min: 6
+    months_between_treatment_and_retention_phase:
+      min: 4
+  action:
+    billable: true
+    payment_tr: sınıf I/II/III ve ortognatik cerrahide sabit ortodontik tedaviler EK-2/Ç 7.1 işlem kodları üzerinden; başlangıç
+      ile tedavi aşamaları arası en az 6 ay, tedavi ile pekiştirme aşamaları arası en az 4 ay olması ve ortodonti uzmanı/doktoralı
+      hekim tarafından yapılması şartıyla Kurumca karşılanır
+    procedure_package: EK-2/Ç-7.1
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000754
+- rule_id: 2.4.1.(c_cleft).cleft_lip_palate_orthodontics_age_windows
+  sut_section: 2.4.1
+  condition:
+    procedure_code_any:
+    - P407342
+    - P407343
+    - P407344
+    facility_is_university_dental_faculty: true
+    performed_by_orthodontist_or_doctor: true
+    pre_post_op_photos_documented: true
+  action:
+    billable: true
+    payment_tr: yarık dudak-damak/damak şekillendirme ve ortodontik tedaviler P407342/P407343/P407344 kodları üzerinden; doğum
+      sonrası şekillendirme 60 ay öncesi, karışık dişlenme 6-12 yaş, daimi dişlenme 12 yaş sonrası, üniversite diş hekimliği
+      fakültesinde fotoğrafla belgelendirmek ve ortodonti uzmanı/doktoralı hekim tarafından yapılması şartıyla karşılanır
+    procedure_package: EK-2/Ç-7.1
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000755

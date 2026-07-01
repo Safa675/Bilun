@@ -1,0 +1,36 @@
+section_id: 2.5.1
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.5.1.(3).overseas_assignment_insurance_no_pay
+  sut_section: 2.5.1
+  condition:
+    patient_overseas_temp_or_permanent_assignment: true
+    kurum_purchased_insurance_abroad: true
+  action:
+    billable: false
+    denial_tr: yurt dışına görevle gönderilenler için Kurum sigorta yaptırmışsa sağlık giderleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C001401
+- rule_id: 2.5.1.(5).overseas_no_travel_daily_companion
+  sut_section: 2.5.1
+  condition:
+    patient_overseas_temp_or_permanent_assignment: true
+  action:
+    billable: false
+    denial_tr: yurt dışına görevle gönderilenler için yol/gündelik/refakatçi/cenaze giderleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C001403
+- rule_id: 2.5.1.(6).trnc_contracted_exists_no_uncontracted
+  sut_section: 2.5.1
+  condition:
+    patient_in_trnc: true
+    trnc_contracted_provider_exists: true
+    is_emergency: false
+  action:
+    billable: false
+    denial_tr: KKTC'de sözleşmeli sunucu varken sözleşmesiz sunucudan acil dışı hizmet ödenmez
+    severity: error
+  gate_b_sources:
+  - C001405

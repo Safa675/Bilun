@@ -1,0 +1,14 @@
+section_id: 2.5.3.A
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.5.3.A.(1).overseas_referral_only_if_not_domestic
+  sut_section: 2.5.3.A
+  condition:
+    treatment_overseas: true
+    treatment_available_domestic: true
+  action:
+    billable: false
+    denial_tr: yurt dışı tedavi sadece yurt içinde sağlanamayan hizmetler için
+    severity: error
+  gate_b_sources:
+  - C001413

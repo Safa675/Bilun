@@ -1,0 +1,19 @@
+section_id: 4.2.35.A
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.35.A.(5).capsaicin_postherpetic_diabetic_neuralgia
+  sut_section: 4.2.35.A
+  condition:
+    drug_name_any:
+    - kapsaisin
+    formulation: cream_mono
+    indication_not_in:
+    - postherpetic_neuralgia
+    - diabetic_peripheral_polyneuropathy
+  action:
+    billable: false
+    denial_tr: kapsaisin krem sadece açık lezyon iyileştikten sonra postherpetik nevralji veya ağrılı diyabetik periferik
+      polinöropatide ödenir
+    severity: error
+  gate_b_sources:
+  - C006699

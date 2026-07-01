@@ -1,0 +1,16 @@
+section_id: 3.3.4
+source_note: Exported from material_pairing_uplift.json (YAML source migration)
+rules:
+- rule_id: pairing.612480_ap1390
+  sut_section: 3.3.4
+  specialty_annex: EK-3F-1
+  pairing_mode: specialty_annex
+  procedure_codes:
+  - '612480'
+  - '612510'
+  expected_material_codes:
+  - AP1390
+  message_tr: Kalca artroplastisi sonrasi EK-3F-1 kalca protez bileseni (AP1390) eksik veya sifir faturalanmis.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.

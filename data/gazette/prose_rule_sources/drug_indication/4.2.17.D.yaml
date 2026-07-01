@@ -1,0 +1,56 @@
+section_id: 4.2.17.D
+rules:
+- rule_id: 4.2.17.D.bmd_measurement_twice_yearly
+  sut_section: 4.2.17.D
+  gate_b_sources:
+  - C006055
+  drug_names:
+  - teriparatid
+  - romosozumab
+  icd10_codes:
+  - M80
+  - M81
+  action:
+    enforcement: teriparatid veya romosozumab kullananlarda kemik mineral yoğunluğu ölçümü yılda 2 kez yapılabilir
+    message_tr: Teriparatid veya romosozumab kullanan hastalarda kemik mineral yoğunluğu ölçümü yılda 2 kez yapılabilir (§4.2.17.D).
+- rule_id: 4.2.17.D.week24_response_teriparatide_romosozumab
+  sut_section: 4.2.17.D
+  gate_b_sources:
+  - C006051
+  - C006054
+  drug_names:
+  - teriparatid
+  - romosozumab
+  icd10_codes:
+  - M80
+  - M81
+  report_required: true
+  action:
+    enforcement: 24. hafta yanıt değerlendirmesi; yanıt verene teriparatid için 52 haftalık, romosozumab için 6 aylık yeni
+      raporla devam; teriparatid ömür boyu toplam 76 hafta, romosozumab 12 ay sınırını geçemez
+    message_tr: 24 hafta sonunda yanıt değerlendirmesi yapılır. Tedaviye yanıt veren hastalarda bu durumun kanıtlandığı raporla
+      teriparatid için 52 hafta, romosozumab için 6 ay süreli yeni bir sağlık kurulu raporu düzenlenmesi halinde tedaviye
+      devam edilebilir. Teriparatid ile toplam tedavi süresi ömür boyu 76 haftayı, romosozumab ile 12 ayı geçmeyecektir (§4.2.17.D).
+- rule_id: 4.2.17.teriparatid_severe_osteoporosis_board
+  sut_section: 4.2.17.D
+  drug_names:
+  - teriparatid
+  - forteo
+  - romosozumab
+  - evenity
+  icd10_ranges:
+  - M80
+  - M81
+  - M82
+  report_required: true
+  report_specialties:
+  - endokrinoloji
+  - fizik tedavi
+  - fiziksel tıp
+  - geriatri
+  message_tr: Teriparatid / romosozumab — 65+ yaş, T≤-3,5 ve ≥2 kırık ile röntgen tanılı şiddetli osteoporozda 24 haftalık
+    sağlık kurulu raporu gerekir (§4.2.17.D).
+  gate_b_sources:
+  - C006053
+  report_duration_months: 6
+source_note: Exported from drug_indication_prose.json (YAML source migration)

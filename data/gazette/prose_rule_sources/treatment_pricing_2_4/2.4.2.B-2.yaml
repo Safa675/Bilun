@@ -1,0 +1,43 @@
+section_id: 2.4.2.B-2
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.2.B-2.(1).mesenchymal_stem_cell_transplant_moh_approval
+  sut_section: 2.4.2.B-2
+  condition:
+    procedure_category: mesenchymal_stem_cell_transplant
+    condition_specified_in_board_report: true
+    moh_approval_per_patient: true
+  action:
+    billable: true
+    payment_tr: mezenkimal kök hücre nakli tedavi bedeli, durumların sağlık kurulu raporunda belirtilmesi ve raporun Sağlık
+      Bakanlığınca her hasta için ayrı ayrı onaylanarak izin verilmesi halinde Kurumca karşılanır
+    billing_method: procedure_package
+  gate_b_sources:
+  - C000847
+- rule_id: 2.4.2.B-2.(3).mesenchymal_704_981_production_center_required
+  sut_section: 2.4.2.B-2
+  condition:
+    procedure_code_any:
+    - '704.981'
+    production_in_moh_defined_stem_cell_center: false
+  action:
+    billable: false
+    denial_tr: “mezenkimal kök hücre nakli (üretimi dahil)” EK-2/B “704.981” kodu ile yer almakta olup bedelinin faturalandırılabilmesi
+      için üretimin Sağlık Bakanlığınca Kök Hücre Üretim Merkezi olarak tanımlanan merkezlerde yapılmış olması şarttır
+    severity: error
+  gate_b_sources:
+  - C000849
+- rule_id: 2.4.2.B-2.(4).mesenchymal_within_allo_15d_before_90d_after_bundle
+  sut_section: 2.4.2.B-2
+  condition:
+    procedure_category: mesenchymal_stem_cell_transplant
+    applied_within_allo_15d_before_or_90d_after: true
+    separately_billed: true
+  action:
+    billable: false
+    denial_tr: mezenkimal kök hücre nakli tedavisi kemik iliği nakil bedellerine dahil olmayıp ayrıca faturalandırılabilir;
+      ancak allojenik kemik iliği nakli öncesi 15 gün ve/veya sonrası 90 gün içerisinde uygulandığı takdirde kemik iliği nakli
+      bedeline dahil olup ayrıca faturalandırılmaz
+    severity: error
+  gate_b_sources:
+  - C000850

@@ -1,0 +1,32 @@
+section_id: 4.2.1.C
+rules:
+- rule_id: 4.2.1.C.anti_tnf_biologic_combo_nopay
+  sut_section: 4.2.1.C
+  gate_b_sources:
+  - C003581
+  drug_names:
+  - anti-tnf
+  - infliksimab
+  - etanersept
+  - adalimumab
+  - golimumab
+  - sertolizumab
+  - rituximab
+  - abatacept
+  - toksilizumab
+  - anakinra
+  - kanakinumab
+  icd10_codes:
+  - M05
+  - M06
+  - M45
+  - M46
+  - M07
+  - M08
+  pay: false
+  action:
+    enforcement: 'no-pay condition: two different diagnoses + two different anti-TNF or two different non-anti-TNF biologic
+      agents prescribed together for the same patient'
+    message_tr: Aynı hasta için iki farklı tanı ile iki farklı anti-TNF veya anti-TNF dışındaki iki farklı biyolojik ajanın
+      birlikte kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.1.C).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

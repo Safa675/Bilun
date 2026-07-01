@@ -1,0 +1,130 @@
+section_id: 4.2.33
+rules:
+- rule_id: 4.2.33.dexamethasone_ivt_implant_frequency
+  sut_section: 4.2.33
+  gate_b_sources:
+  - C006556
+  drug_names:
+  - dek sametazon intravitreal implant
+  - ozurdex
+  icd10_codes:
+  - H35.3
+  - H35.0
+  - H34.8
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: anti-VEGF sonrası en erken 1 ay sonra; yılda en fazla 4 defa; ardışık uygulamada ≥3 ay aralık; bevacizumab
+      yükleme sonrası 3. ayda hekim uygun görürse deksametazon devam veya beva/ranibi/aflibersept idameye geçiş
+    message_tr: Deksametazon intravitreal implant; anti-VEGF sonrası en erken 1 ay sonra olmak kaydıyla yılda en fazla 4 defa,
+      aynı göze ardışık uygulamada iki doz arasında ≥3 ay olmalıdır; bevacizumab yükleme dozu sonrası deksametazon yapılan
+      hastanın 3. ay kontrolünde hekim uygun görürse aynı ilaçla devam veya yükleme dozu zorunluluğu olmaksızın beva/ranibi/aflibersept
+      idameye geçilebilir (§4.2.33).
+- rule_id: 4.2.33.eligibility_at_least_one_criterion_a
+  sut_section: 4.2.33
+  gate_b_sources:
+  - C006541
+  icd10_codes:
+  - H35.3
+  - H35.0
+  - H34.8
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  action:
+    enforcement: tanımlı koşullardan en az birinin tespit edilmiş olması gerekir
+    message_tr: İlgili endikasyon koşullarından herhangi birinin tespit edilmiş olması gerekmektedir (§4.2.33).
+- rule_id: 4.2.33.eligibility_at_least_one_criterion_b
+  sut_section: 4.2.33
+  gate_b_sources:
+  - C006545
+  icd10_codes:
+  - H35.3
+  - H35.0
+  - H34.8
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  action:
+    enforcement: tanımlı koşullardan en az birinin tespit edilmiş olması gerekir
+    message_tr: İlgili endikasyon koşullarından herhangi birinin tespit edilmiş olması gerekmektedir (§4.2.33).
+- rule_id: 4.2.33.incomplete_loading_dose_switch_nopay
+  sut_section: 4.2.33
+  gate_b_sources:
+  - C006550
+  pay: false
+  action:
+    enforcement: 'no-pay condition: yükleme dozu tamamlanmadan diğer etkin maddeli ilacın kullanımı'
+    message_tr: Yükleme dozu aranan durumlarda yükleme dozu tamamlanmaksızın diğer etkin maddeli ilacın kullanımı halinde
+      bu ilaç bedelleri Kurumca karşılanmaz (§4.2.33).
+- rule_id: 4.2.33.loading_dose_mandatory_numbered
+  sut_section: 4.2.33
+  gate_b_sources:
+  - C006529
+  - C006559
+  icd10_codes:
+  - H35.3
+  - H35.0
+  - H34.8
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  action:
+    enforcement: ilk başlananlarda yükleme dozlarının tamamlanması esastır; e-reçete/raporda kaçıncı doz olduğu belirtilmeli
+    message_tr: İlk defa tedaviye başlanan hastalarda yükleme dozlarının tamamlanması esastır; düzenlenecek elektronik reçete/tek
+      hekim veya sağlık kurulu raporunda yükleme dozunun kaçıncı doz olduğu belirtilmelidir (§4.2.33).
+- rule_id: 4.2.33.maintenance_monthly_supply_report
+  sut_section: 4.2.33
+  gate_b_sources:
+  - C006528
+  icd10_codes:
+  - H35.3
+  - H35.0
+  - H34.8
+  report_required: true
+  report_duration_months: 1
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'idame: bevacizumab tek hekim 1 aylık, diğerleri 3 göz uzmanı 1 aylık; ayakta/günübirlik aylık temin; yanıt
+      her raporda'
+    message_tr: İdame tedavide deksametazon intravitreal implant ve verteporfin hariç, yükleme dozu sonrası bevacizumab için
+      göz hastalıkları uzmanınca 1 ay süreli tek hekim raporuyla günübirlik, diğerleri için 3 göz uzmanınca 1 aylık sağlık
+      kurulu raporuyla ayakta tedavi kapsamında ve aylık teminle ödenir; yanıt her raporda belirtilir (§4.2.33).
+- rule_id: 4.2.33.rvo_glaucoma_ranibizumab_aflibercept
+  sut_section: 4.2.33
+  gate_b_sources:
+  - C006557
+  drug_names:
+  - ranibizumab
+  - aflibersept
+  icd10_codes:
+  - H34.8
+  - H34.9
+  - H40
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  action:
+    enforcement: retinal ven tıkanıklığı + glokomda bevacizumab yükleme sonrası yetersiz cevap raporla dokümante edilirse
+      deksametazon implant olmadan ranibizumab/aflibersepte geçiş
+    message_tr: Retinal ven tıkanıklığı tanılı glokomun eşlik ettiği hastalarda bevacizumab ile yükleme dozu sonrası yetersiz
+      cevap alınması durumunda, bu durumun raporda belirtilmesi kaydıyla deksametazon intravitreal implant kullanılmaksızın
+      ranibizumab veya aflibercept ile tedaviye devam edilebilir (§4.2.33).
+- rule_id: 4.2.33.same_eye_combo_nopay
+  sut_section: 4.2.33
+  gate_b_sources:
+  - C006530
+  pay: false
+  action:
+    enforcement: 'no-pay condition: aynı anda aynı gözde kombine anti-VEGF kullanımı; farklı göz kullanımları kombine sayılmaz'
+    message_tr: Bu etkin maddeleri içeren ilaçların aynı anda aynı gözde kombine olarak kullanılması halinde bedelleri Kurumca
+      karşılanmaz; farklı göze kullanımlar kombine kullanım olarak değerlendirilmez (§4.2.33).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

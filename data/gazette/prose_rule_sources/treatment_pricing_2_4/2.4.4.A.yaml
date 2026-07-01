@@ -1,0 +1,20 @@
+section_id: 2.4.4.A
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.A.(3).eswl_session_cap_6mo
+  sut_section: 2.4.4.A
+  condition:
+    procedure_code_any:
+    - P2125301
+    - P2125302
+    same_side_kidney_ureter: true
+    sessions_within_6mo:
+      min: 4
+  action:
+    billable: false
+    denial_tr: 6 aylık dönemde aynı taraf böbrek/üreter taşı için 3 seanstan fazlası ödenmez; 2-3. seans için radyolojik/sonografik
+      belge zorunlu
+    annex_basis: EK-2/C
+    severity: error
+  gate_b_sources:
+  - C000864

@@ -1,0 +1,209 @@
+section_id: 4.2.15.A
+rules:
+- rule_id: 4.2.15.A.acs_report_free_then_12mo_report
+  sut_section: 4.2.15.A
+  gate_b_sources:
+  - C005777
+  drug_names:
+  - klopidogrel
+  - clopidogrel
+  - prasugrel
+  - tikagrelor
+  icd10_codes:
+  - I21
+  - I20.0
+  report_required: true
+  report_duration_months: 12
+  prescriber_specialties:
+  - kardiyoloji
+  - kalp damar cerrahisi
+  - iç hastalıkları
+  - acil tıp
+  action:
+    enforcement: 'akut koroner sendrom (ST yükselmeli/ST yükselmesiz MI, anstabil anjina): yatan/müşahede hastada kardiyoloji/KDC/iç
+      hastalıkları/acil tıp uzmanınca raporsuz reçete; taburcu sonra ≤4 hafta raporsuz veya ≤12 ay süreli uzman raporuyla
+      tüm hekimlerce'
+    message_tr: Akut koroner sendrom tanısıyla yatırılan/müşahedeye alınan, EKG/troponin pozitif NSTEMI veya anstabil anjina
+      ve STEMI hastalarında kardiyoloji, kalp damar cerrahisi, iç hastalıkları veya acil tıp uzmanlarınca rapor aranmaksızın
+      reçete edilebilir; taburcu sonra 4 haftayı geçmemek üzere raporsuz veya bu uzmanların ≤12 ay süreli raporuyla tüm hekimlerce
+      reçete edilebilir (§4.2.15.A).
+- rule_id: 4.2.15.A.coronary_stent_report_free_window
+  sut_section: 4.2.15.A
+  gate_b_sources:
+  - C005776
+  drug_names:
+  - ' klopidogrel'
+  - clopidogrel
+  - prasugrel
+  - tikagrelor
+  report_required: false
+  prescriber_specialties:
+  - kardiyoloji
+  - kalp damar cerrahisi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: koroner stent öncesi kardiyoloji/KDC uzmanınca raporsuz 24 saat önceden başlanabilir; stent sonrası taburcu
+      olunca raporsuz 4 haftalık doz
+    message_tr: Koroner artere stent uygulanacak hastalarda kardiyoloji veya kalp damar cerrahisi uzman hekimleri tarafından
+      rapor aranmaksızın 24 saat öncesinden başlanabilir; stent takılan hastada taburcu olmasından itibaren rapor aranmaksızın
+      4 haftalık doz bu hekimler tarafından reçete edilebilir (§4.2.15.A).
+- rule_id: 4.2.15.A.high_risk_vascular_12mo_report
+  sut_section: 4.2.15.A
+  gate_b_sources:
+  - C005779
+  drug_names:
+  - klopidogrel
+  - clopidogrel
+  icd10_codes:
+  - I25.1
+  - I70
+  - I63
+  report_required: true
+  report_duration_months: 12
+  prescriber_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  - nöroloji
+  - kalp damar cerrahisi
+  - acil tıp
+  action:
+    enforcement: 'kalp kapak biyoprotezi / anjiyografik KAH / tıkayıcı periferik arter hast. / serebral iskemik olay: ilgili
+      uzmandan ≤12 ay süreli raporla tüm hekimlerce; ilk iki rapor (24 ay) sonrası aile hekimliği de rapor düzenleyebilir'
+    message_tr: Kalp kapak biyoprotezi bulunan, anjiografik olarak belgelenmiş koroner arter hastalığı, tıkayıcı periferik
+      arter hastalığı veya serebral iskemik olay (iskemik inme) saptananlarda kardiyoloji/iç hastalıkları/nöroloji/kalp damar
+      cerrahisi/acil tıp uzmanlarından birinin ≤12 ay süreli raporuyla tüm hekimlerce reçete edilebilir; ilk iki rapor süresi
+      (toplam 24 ay) sonunda sonraki raporlar en fazla 12 ay sürelerle aile hekimliği uzmanlarınca da düzenlenebilir (§4.2.15.A).
+- rule_id: 4.2.15.A.intravascular_device_report_free_window
+  sut_section: 4.2.15.A
+  gate_b_sources:
+  - C005780
+  drug_names:
+  - klopidogrel
+  - clopidogrel
+  icd10_codes:
+  - I70
+  - I63
+  - I65
+  - I66
+  report_required: false
+  prescriber_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  - nöroloji
+  - kalp damar cerrahisi
+  - beyin cerrahi
+  - radyoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'girişimsel periferik/serebral intravasküler stent/stentgraft/kaplı stent/cihaz (koil, trispan, onyx) sonrası:
+      ilgili uzmanlarca raporsuz 24 saat önceden başlanır, stent takılan taburcu olunca raporsuz 4 haftalık doz'
+    message_tr: Girişimsel periferik/serebral işlemler sonucu intrakraniyal dahil tüm intravasküler stent/stentgraft/kaplı
+      stent veya cihaz (koil, trispan, onyx vb.) yerleştirilenlerde kardiyoloji/iç hastalıkları/nöroloji/kalp damar cerrahisi/beyin
+      cerrahi veya girişimsel radyoloji yapan radyoloji uzmanınca rapor aranmaksızın 24 saat önceden başlanır; stent takılan
+      hastanın taburcu olmasından itibaren rapor aranmaksızın 4 haftalık doz bu hekimlerce reçete edilir (§4.2.15.A).
+- rule_id: 4.2.15.clopidogrel_acs_no_report_acute
+  sut_section: 4.2.15.A
+  drug_names:
+  - klopidogrel
+  - plavix
+  icd10_ranges:
+  - I21
+  - I22
+  - I20
+  - I24
+  message_tr: Klopidogrel akut koroner sendrom — kardiyoloji, kalp damar cerrahisi, iç hastalıkları veya acil tıp uzmanı rapor
+    aranmaksızın reçete edebilir (§4.2.15.A-2).
+  gate_b_sources:
+  - C005777
+  prescriber_specialties:
+  - kardiyoloji
+  - kalp damar cerrahisi
+  - iç hastalıkları
+  - acil tıp
+- rule_id: 4.2.15.clopidogrel_family_medicine_renewal
+  sut_section: 4.2.15.A
+  drug_names:
+  - klopidogrel
+  - plavix
+  icd10_ranges:
+  - I25
+  - I70
+  - I63
+  - I65
+  - I66
+  message_tr: Klopidogrel rapor yenileme — ilk iki rapor dönemi (toplam 24 ay) sonrası aile hekimliği uzmanı en fazla 12 aylık
+    rapor düzenleyebilir (§4.2.15.A).
+  gate_b_sources:
+  - C005778
+  report_required: true
+  report_specialties:
+  - aile hekimliği
+  report_duration_months: 12
+- rule_id: 4.2.15.clopidogrel_peripheral_stent
+  sut_section: 4.2.15.A
+  drug_names:
+  - klopidogrel
+  - plavix
+  icd10_ranges:
+  - I70
+  - I63
+  - I65
+  - I66
+  - Z95.1
+  - Z95.5
+  message_tr: Klopidogrel periferik/serebral stent — kardiyoloji, iç hastalıkları, nöroloji, kalp damar cerrahisi, beyin cerrahisi
+    veya girişimsel radyoloji uzmanı rapor aranmaksızın reçete edebilir (§4.2.15.A-4).
+  gate_b_sources:
+  - C005780
+  prescriber_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  - nöroloji
+  - kalp damar cerrahisi
+  - acil tıp
+  - beyin cerrahisi
+  - radyoloji
+- rule_id: 4.2.15.clopidogrel_stent_no_report
+  sut_section: 4.2.15.A
+  drug_names:
+  - klopidogrel
+  - plavix
+  icd10_ranges:
+  - Z95.1
+  - Z95.5
+  message_tr: Klopidogrel koroner stent — kardiyoloji veya kalp damar cerrahisi uzmanı rapor aranmaksızın stent öncesi 24
+    saat ve taburcu sonrası 4 hafta reçete edebilir (§4.2.15.A-1).
+  gate_b_sources:
+  - C005776
+  prescriber_specialties:
+  - kardiyoloji
+  - kalp damar cerrahisi
+- rule_id: 4.2.15.clopidogrel_valve_cad_report
+  sut_section: 4.2.15.A
+  drug_names:
+  - klopidogrel
+  - plavix
+  icd10_ranges:
+  - Z95.2
+  - Z95.3
+  - Z95.4
+  - I25
+  - I70
+  - I63
+  - I65
+  - I66
+  message_tr: Klopidogrel kapak biyoprotezi / KAH / periferik arter / inme — kardiyoloji, iç hastalıkları, nöroloji, kalp
+    damar cerrahisi veya acil tıp uzman raporu (en fazla 12 ay) gerekir (§4.2.15.A-3).
+  gate_b_sources:
+  - C005779
+  report_required: true
+  report_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  - nöroloji
+  - kalp damar cerrahisi
+  - acil tıp
+  report_duration_months: 12
+source_note: Exported from drug_indication_prose.json (YAML source migration)

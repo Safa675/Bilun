@@ -1,0 +1,43 @@
+section_id: 4.2.70.B
+rules:
+- rule_id: 4.2.70.B.als_stable_stage_3mo_6mo_maintenance
+  sut_section: 4.2.70.B
+  gate_b_sources:
+  - C007203
+  drug_names:
+  - edaravon
+  - riluzol
+  icd10_codes:
+  - G12.21
+  report_required: true
+  report_duration_months: 6
+  action:
+    enforcement: 3 ay sonra hastalık evresi değişmedi (ev dışında desteksiz yürüme devam) raporda belirtilirse 6 aylık idame
+      raporuyla devam; her raporda bu durum belirtilmeli; evre 2'ye geçişte (yürümede destek gereksinimi) tedavi sonlandırılır
+    message_tr: 3 ay sonra yapılan değerlendirmede klinik olarak hastalık evresinin değişmediğinin (hastanın ev dışında desteksiz
+      yürümeye devam ettiği) raporda belirtilmesi halinde 6 aylık idame rapor ile tedaviye devam edilebilir. Rapor süresinin
+      sonunda her raporda hastalık evresinin değişmediği belirtilmelidir. Tedavi, hastalığın evre 2'ye geçmesi (yürüme için
+      desteğe ihtiyaç duyulması) halinde sonlandırılır (§4.2.70.B).
+- rule_id: 4.2.70.B.als_tertiary_3neurology_report
+  sut_section: 4.2.70.B
+  gate_b_sources:
+  - C007204
+  drug_names:
+  - edaravon
+  - riluzol
+  icd10_codes:
+  - G12.21
+  report_required: true
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basmakta durumların belirtildiği üç nöroloji uzmanının bulunduğu sağlık kurulu raporuyla nöroloji
+      uzmanlarınca reçete edilirse ödenir
+    message_tr: Üçüncü basamak resmi sağlık hizmeti sunucularında yukarıdaki durumların belirtildiği üç nöroloji uzman hekiminin
+      bulunduğu sağlık kurulu raporuna dayanılarak nöroloji uzman hekimleri tarafından reçete edilmesi halinde bedeli Kurumca
+      karşılanır (§4.2.70.B).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

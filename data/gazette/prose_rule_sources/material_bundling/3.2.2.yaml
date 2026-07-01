@@ -1,0 +1,15 @@
+section_id: 3.2.2
+source_note: Exported from material_bundling_prose.json (YAML source migration)
+rules:
+- rule_id: 3.2.2.(2).ek3c_list_price_missing
+  sut_section: 3.2.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002834
+  condition:
+    ek3c_list_price_missing: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: EK-3/C listesinde fiyatı olmayan malzeme — piyasa araştırması ve benzer ürün en düşük fiyat esas alınmalı
+      (§3.2.2(2)).

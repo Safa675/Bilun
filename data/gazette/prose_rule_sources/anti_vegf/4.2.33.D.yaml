@@ -1,0 +1,81 @@
+section_id: 4.2.33.D
+source_note: Exported from anti_vegf_prose.json (YAML source migration)
+rules:
+- rule_id: 4.2.33.D.aflibersept_dmo
+  sut_section: 4.2.33.D
+  drug_names:
+  - aflibersept
+  icd10_codes:
+  - E10.3
+  - E11.3
+  - E13.3
+  - E14.3
+  indication_tr: Diyabetik maküler ödem (DMÖ)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  report_duration_months: 5
+  prescriber_specialties:
+  - göz hastalıkları
+  loading_dose_count: 3
+  gate_b_sources:
+  - C006526
+  message_tr: Aflibersept (DMÖ) — 5 ay süreli sağlık kurulu raporu (DMÖ'de aflibersept için), 3 yükleme dozu (§4.2.33.D/C006552).
+- rule_id: 4.2.33.D.bevacizumab_dmo
+  sut_section: 4.2.33.D
+  drug_names:
+  - bevacizumab
+  icd10_codes:
+  - E10.3
+  - E11.3
+  - E13.3
+  - E14.3
+  indication_tr: Diyabetik maküler ödem (DMÖ)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  loading_dose_count: 3
+  gate_b_sources:
+  - C006548
+  message_tr: Bevacizumab (DMÖ) — ilk tedavi seçeneği; günübirlik kapsamda 3 yükleme dozu (1,25 mg) (§4.2.33).
+- rule_id: 4.2.33.D.deksametazon_itv_dmo
+  sut_section: 4.2.33.D
+  drug_names:
+  - deksametazon
+  icd10_codes:
+  - E10.3
+  - E11.3
+  - E13.3
+  - E14.3
+  indication_tr: Diyabetik maküler ödem (DMÖ)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  max_applications_per_year: 2
+  gate_b_sources:
+  - C006526
+  message_tr: Deksametazon ITV implant (DMÖ) — her göz için yılda maksimum 2 uygulama (§4.2.33.D/B).
+- rule_id: 4.2.33.D.ranibizumab_dmo
+  sut_section: 4.2.33.D
+  drug_names:
+  - ranibizumab
+  icd10_codes:
+  - E10.3
+  - E11.3
+  - E13.3
+  - E14.3
+  indication_tr: Diyabetik maküler ödem (DMÖ)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  report_duration_months: 3
+  prescriber_specialties:
+  - göz hastalıkları
+  loading_dose_count: 3
+  gate_b_sources:
+  - C006526
+  message_tr: Ranibizumab (DMÖ) — 3 ay süreli sağlık kurulu raporu, 3 yükleme dozu; her uygulama için yeni rapor (§4.2.33.D).

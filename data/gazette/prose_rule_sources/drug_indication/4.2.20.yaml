@@ -1,0 +1,60 @@
+section_id: 4.2.20
+rules:
+- rule_id: 4.2.20.palivizumab.coverage_closing_clause
+  sut_section: 4.2.20
+  gate_b_sources:
+  - C006081
+  drug_names:
+  - palivizumab
+  - synagis
+  icd10_codes:
+  - B97.4
+  - J12.1
+  - J21.0
+  - P23
+  condition:
+    coverage_note: true
+  action:
+    enforcement: koşulları sağlanarak kullanılması halinde bedelleri Kurumca karşılanır
+    message_tr: Kullanılması halinde bedelleri Kurumca karşılanır (§4.2.20).
+- rule_id: 4.2.20.palivizumab.rsv_season_paediatric_coverage
+  sut_section: 4.2.20
+  gate_b_sources:
+  - C006075
+  drug_names:
+  - palivizumab
+  - synagis
+  icd10_codes:
+  - B97.4
+  - J12.1
+  - J21.0
+  - P23
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - çocuk alerjisi
+  - çocuk immünolojisi ve alerji hastalıkları
+  - çocuk enfeksiyon hastalıkları
+  - çocuk göğüs hastalıkları
+  - çocuk kardiyolojisi
+  - neonatoloji
+  - çocuk sağlığı ve hastalıkları
+  prescriber_specialties:
+  - çocuk alerjisi
+  - çocuk immünolojisi ve alerji hastalıkları
+  - çocuk enfeksiyon hastalıkları
+  - çocuk göğüs hastalıkları
+  - çocuk kardiyolojisi
+  - neonatoloji
+  - çocuk sağlığı ve hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: palivizumab RSV sezonu (Ekim–Mart) içinde ilgili çocuk uzmanlarından birinin 1 yıllık uzman raporuyla bu
+      uzmanlar veya çocuk sağlığı uzmanlarınca en fazla 5 doz ve maksimum 2 yaşa kadar reçete edilirse ödenir
+    message_tr: Palivizumab etken maddeli ilaç; Respiratuar Sinsitiyal Virüs (RSV) sezonu boyunca (Ekim ile Mart ayları arasında)
+      çocuk alerjisi, çocuk immünolojisi ve alerji hastalıkları, çocuk enfeksiyon hastalıkları, çocuk göğüs hastalıkları,
+      çocuk kardiyolojisi veya neonatoloji uzman hekimlerinden biri tarafından düzenlenen 1 yıl süreli uzman hekim raporuna
+      dayanılarak bu uzman hekimler veya çocuk sağlığı ve hastalıkları uzman hekimlerince en fazla 5 doz ve maksimum 2 yaşa
+      kadar reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.20).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

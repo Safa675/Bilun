@@ -1,0 +1,16 @@
+section_id: 1.9.1
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 1.9.1.(7).foundation_university_2_3_step_private_inpatient_bundled
+  sut_section: 1.9.1
+  condition:
+    facility_tier_in:
+    - foundation_university
+    - private_2nd_3rd_step
+    care_setting: inpatient
+    same_admission_number: true
+  action:
+    billable: true
+    payment_tr: aynı başvuru altında yatarak tedavide Kurumca karşılanan sağlık hizmetleri pakete dahil
+  gate_b_sources:
+  - C000410

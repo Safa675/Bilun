@@ -1,0 +1,20 @@
+section_id: 2.4.1.B-1
+source_note: Exported from dental_2_4_1.json (YAML source migration)
+rules:
+- rule_id: 2.4.1.B-1.(1).private_uncontracted_dental_no_pay
+  sut_section: 2.4.1.B-1
+  condition:
+    procedure_category: dental_treatment
+    facility_type_any:
+    - private
+    - public_uncontracted
+    patient_category_not_in:
+    - orthodontics_excluded
+    - disabled_40_pct_or_more
+  action:
+    billable: false
+    denial_tr: ortodontik tedavi ve ≥%40 engelliler hariç; özel sunucular ve sözleşmesiz resmi sunucu diş ünitelerindeki diş
+      tedavileri ödenmez
+    severity: error
+  gate_b_sources:
+  - C000791

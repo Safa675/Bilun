@@ -1,0 +1,34 @@
+section_id: 2.4.4.F-1
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.F-1.(a).physio_up_to_30_sessions_specialist_or_3rd_step
+  sut_section: 2.4.4.F-1
+  condition:
+    procedure_category: physiotherapy_rehab
+    sessions:
+      min: 1
+      max: 30
+    prescriber_specialty_any:
+    - physical_medicine_rehabilitation
+    diagnosis_in_ek2d2_plexus_excluding_congenital: true
+    facility_tier_in:
+    - third_step_public
+    - moh_2nd_step_public
+  action:
+    billable: true
+    payment_tr: 30 seansa kadar fizik tedavi ve rehabilitasyon fiziksel tıp ve rehabilitasyon uzmanınca; EK-2/D-2 pleksus
+      bozukluklarında (doğumsal hariç) 3. basamak veya Sağlık Bakanlığı 2. basamak fiziksel tıp ve rehabilitasyon uzmanınca
+      düzenlenir
+  gate_b_sources:
+  - C000984
+- rule_id: 2.4.4.F-1.health_report_required
+  sut_section: 2.4.4.F-1
+  condition:
+    procedure_category: physiotherapy_rehab
+    health_report_present: false
+  action:
+    billable: false
+    denial_tr: fizik tedavi ve rehabilitasyon için SUT 2.4.4.F-1 maddesine uygun sağlık raporu düzenlenmesi gerekmektedir
+    severity: error
+  gate_b_sources:
+  - C000991

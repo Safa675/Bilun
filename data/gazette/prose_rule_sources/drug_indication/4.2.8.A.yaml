@@ -1,0 +1,213 @@
+section_id: 4.2.8.A
+rules:
+- rule_id: 4.2.8.A.adult_dysphagia_special_enteral_2boxes
+  sut_section: 4.2.8.A
+  gate_b_sources:
+  - C004109
+  drug_names:
+  - özel tıbbi amaçlı beslenme ürünü
+  - enteral beslenme ürünü
+  report_required: true
+  report_specialties:
+  - nöroloji
+  - kulak burun boğaz
+  - genel cerrahi
+  - beyin cerrahi
+  - anestezi ve yoğun bakım
+  - geriatri
+  - tıbbi onkoloji
+  - radyasyon onkolojisi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: inme, kronik nörolojik bozukluk, baş-boyun kanseri/cerrahi rezeksiyon sonucu yutma güçlüğü çeken yetişkinlerde;
+      bu uzmanlardan en az birinin bulunduğu sağlık kurulu raporuyla tüm uzman hekimlerce; raporda ürün adı/günlük miktar,
+      aylık en fazla iki kutu
+    message_tr: İnme, kronik nörolojik bozukluklar ve baş boyun kanserleri ve cerrahi rezeksiyonda görülen yutma güçlüğü çeken
+      yetişkin hastalarda; bu durumun belirtildiği nöroloji, kulak burun boğaz, genel cerrahi, beyin cerrahi, anestezi ve
+      yoğun bakım, geriatri, tıbbi onkoloji, radyasyon onkolojisi uzmanlarından en az birinin bulunduğu sağlık kurulu raporuna
+      istinaden tüm uzman hekimlerce reçete edilebilir; raporda ürünün adı ve günlük kullanım miktarı belirtilerek aylık en
+      fazla iki kutu yazılır (§4.2.8.A).
+- rule_id: 4.2.8.A.adult_malnutrition_1200kcal_3mo_report
+  sut_section: 4.2.8.A
+  gate_b_sources:
+  - C004104
+  drug_names:
+  - enteral beslenme ürünü
+  icd10_codes:
+  - E40
+  - E41
+  - E42
+  - E43
+  - E44
+  - E46
+  report_required: true
+  report_duration_months: 3
+  condition:
+    coverage_note: true
+  action:
+    enforcement: diyetetik tedavi/obezite cerrahisi kilo kayıpları malnütrisyon sayılmaz; bu durumların belirtildiği 3 ay
+      süreli sağlık kurulu raporuyla tüm hekimlerce günlük en fazla 1200 kcal dozda reçete edilirse ödenir
+    message_tr: Diyetetik tedaviler ve/veya obezite cerrahisi sonucu oluşan kilo kayıpları malnütrisyon olarak değerlendirilmez;
+      tanımlanan malnütrisyon durumlarının belirtildiği 3 ay süreli sağlık kurulu raporuna dayanılarak tüm hekimlerce günlük
+      en fazla 1200 kcal dozda reçete edilirse bedeli Kurumca ödenir (§4.2.8.A).
+- rule_id: 4.2.8.A.adult_malnutrition_waived_6mo_report
+  sut_section: 4.2.8.A
+  gate_b_sources:
+  - C004105
+  drug_names:
+  - enteral beslenme ürünü
+  icd10_codes:
+  - E40
+  - E41
+  - E42
+  - E43
+  - E44
+  - E46
+  report_required: true
+  report_duration_months: 6
+  condition:
+    coverage_note: true
+  action:
+    enforcement: yatan, kanser veya tüp ile (sonda/gastrostomi/jejunostomi/gastrojejunostomi) beslenenlerde malnütrisyon koşulları
+      aranmaz; yatan dışında 6 ay süreli sağlık kurulu raporuyla tüm hekimlerce
+    message_tr: Yatan hastalar, kanser hastaları veya tüp ile beslenen hastalarda (orogastrik/nazogastrik/nazoenterik sonda
+      veya gastrostomi/jejunostomi/gastrojejunostomi) yukarıdaki malnütrisyon koşulları aranmaz; yatan hastalar dışında bu
+      durumların belirtildiği 6 ay süreli sağlık kurulu raporuyla tüm hekimlerce reçete edilirse bedeli Kurumca ödenir (§4.2.8.A).
+- rule_id: 4.2.8.A.bcaa_enriched_hepatic_encephalopathy
+  sut_section: 4.2.8.A
+  gate_b_sources:
+  - C004110
+  drug_names:
+  - dallı zincirli aminoasit
+  - bcaa
+  - dallı zincirli aminoasitlerden zengin enteral beslenme
+  icd10_codes:
+  - K72
+  - K70
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - iç hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: karaciğer yetmezliği olan orta/ağır (evre 2 ve üzeri) ensefalopatili hastalarda malnütrisyon kriterleri aranmaz;
+      gastroenteroloji veya iç hastalıkları uzman raporuyla tüm hekimlerce
+    message_tr: Dallı zincirli aminoasitlerden zengin enteral beslenme ürünleri; karaciğer yetmezliği olan orta ve ağır (evre
+      2 ve üzeri) ensefalopati gelişmiş hastalarda kullanılabilir, malnütrisyon kriterleri aranmaz; gastroenteroloji veya
+      iç hastalıkları uzman hekim raporuna dayanılarak tüm hekimlerce reçete edilebilir (§4.2.8.A).
+- rule_id: 4.2.8.A.enteral_report_fields_30day_dose
+  sut_section: 4.2.8.A
+  gate_b_sources:
+  - C004098
+  - C004106
+  drug_names:
+  - enteral beslenme ürünü
+  icd10_codes:
+  - E40
+  - E41
+  - E42
+  - E43
+  - E44
+  - E46
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: raporda ürün adı, günlük kalori ihtiyacı, hasta vücut ağırlığı/boyu ve DSÖ referanslarına göre SD/VKİ ile
+      belirlenen günlük kullanım miktarı açıkça belirtilerek en fazla 30 günlük dozda reçete edilirse ödenir
+    message_tr: Raporlarda beslenme ürününün adı, günlük kalori ihtiyacı, hastanın vücut ağırlığı, boyu ve yaşa göre ağırlık
+      DSÖ referans değerlerine göre hesaplanan SD veya VKİ değerlerine göre belirlenen günlük kullanım miktarı açıkça belirtilerek
+      en fazla 30 günlük dozda reçete edilirse Kurumca bedeli ödenir (§4.2.8.A).
+- rule_id: 4.2.8.A.malnutrition_waived_conditions_6mo_report
+  sut_section: 4.2.8.A
+  gate_b_sources:
+  - C004097
+  drug_names:
+  - enteral beslenme ürünü
+  icd10_codes:
+  - E40
+  - E41
+  - E42
+  - E43
+  - E44
+  - E46
+  - C00
+  - K50
+  report_required: true
+  report_duration_months: 6
+  condition:
+    coverage_note: true
+  action:
+    enforcement: yatan, doğuştan metabolik hastalık, kanser, kistik fibrozis, crohn, yanık veya orogastrik/nazogastrik/nazoenterik
+      sonda/gastrostomi/jejunostomi ile beslenenlerde malnütrisyon koşulları aranmaz; yatan dışında 6 ay süreli sağlık kurulu
+      raporuyla tüm hekimlerce
+    message_tr: Yatan hastalarda, doğuştan metabolik hastalığı olanlarda, kanser, kistikfibrozis, crohn, yanık hastalarında
+      veya sonda/gastrostomi/jejunostomi ile beslenenlerde malnütrisyon koşulları aranmaz; yatan hastalar dışında bu durumların
+      belirtildiği uzman hekimlerce düzenlenen 6 ay süreli sağlık kurulu raporuyla tüm hekimlerce reçete edilirse bedeli Kurumca
+      ödenir (§4.2.8.A).
+- rule_id: 4.2.8.A.paediatric_dysphagia_special_enteral_2boxes
+  sut_section: 4.2.8.A
+  gate_b_sources:
+  - C004108
+  drug_names:
+  - özel tıbbi amaçlı beslenme ürünü
+  - çocuk enteral beslenme
+  report_required: true
+  report_specialties:
+  - çocuk gastroenteroloji
+  - çocuk metabolizma
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  - çocuk yoğun bakım
+  - çocuk sağlığı ve hastalıkları
+  prescriber_specialties:
+  - çocuk gastroenteroloji
+  - çocuk metabolizma
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  - çocuk yoğun bakım
+  - çocuk sağlığı ve hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 1 yaş üzeri yutma/yutkunma bozukluklu çocukta bu uzmanlardan en az birinin bulunduğu sağlık kurulu raporuyla
+      bu hekimler ve çocuk sağlığı uzmanlarınca reçete; raporda ürün adı ve günlük kullanım miktarı, en fazla iki kutu
+    message_tr: 1 yaş üzeri yutma/yutkunma bozukluğu olan çocuklarda bu durumun belirtildiği çocuk gastroenteroloji, çocuk
+      metabolizma, çocuk endokrinolojisi ve metabolizma hastalıkları ve çocuk yoğun bakım uzmanlarından en az birinin bulunduğu
+      sağlık kurulu raporuna dayanılarak bu hekimler ve çocuk sağlığı ve hastalıkları uzmanlarınca reçete edilebilir; raporda
+      ürünün adı ve günlük kullanım miktarı belirtilerek en fazla iki kutu yazılır (§4.2.8.A).
+- rule_id: 4.2.8.A.paediatric_malnutrition_enteral_6mo_report
+  sut_section: 4.2.8.A
+  gate_b_sources:
+  - C004096
+  drug_names:
+  - enteral beslenme ürünü
+  - çocuk enteral beslenme
+  icd10_codes:
+  - E40
+  - E41
+  - E42
+  - E43
+  - E44
+  - E46
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - çocuk hastalıkları
+  - çocuk cerrahi
+  - çocuk gastroenteroloji
+  - çocuk nöroloji
+  - çocuk metabolizma
+  - çocuk endokrinoloji
+  - çocuk endokrinoloji ve metabolizma
+  condition:
+    coverage_note: true
+  action:
+    enforcement: malnütrisyon gelişmiş çocukta çocuk hastalıkları/çocuk cerrahi uzmanlarınca en fazla 6 ay süreli raporla
+      başlanır; süre sonunda koşullar devam ederse çocuk gastroenteroloji/nöroloji/metabolizma/cerrahi/endokrinoloji uzmanınca
+      en fazla 6 ay süreli raporla tüm hekimlerce
+    message_tr: Malnütrisyon gelişmiş çocuklarda bu durumların belirtildiği çocuk hastalıkları ve çocuk cerrahi uzmanlarınca
+      düzenlenen en fazla 6 ay süreli raporla başlanır; bu sürenin sonunda malnütrisyon koşulları devam ederse çocuk gastroenteroloji,
+      çocuk nöroloji, çocuk metabolizma, çocuk cerrahisi, çocuk endokrinoloji veya çocuk endokrinoloji ve metabolizma uzmanlarınca
+      düzenlenen en fazla 6 ay süreli raporla tüm hekimlerce reçete edilirse bedeli Kurumca ödenir (§4.2.8.A).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

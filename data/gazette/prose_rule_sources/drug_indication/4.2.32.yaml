@@ -1,0 +1,97 @@
+section_id: 4.2.32
+rules:
+- rule_id: 4.2.32.gadobutrol_over_15ml_reason
+  sut_section: 4.2.32
+  gate_b_sources:
+  - C006451
+  drug_names:
+  - gadobutrol
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: gadobutrol 15 ml'yi aşan (aşırı kilo, MR, MR anjiyografi gibi) durumlarda gerekçe reçeteye yazılırsa ödenir
+    message_tr: Gadobutrol 15 ml'yi aşan durumlarda (aşırı kilo, Manyetik Rezonans, MR anjiyografi gibi) gerekçesinin reçeteye
+      yazılması halinde bedeli Kurumca karşılanır (§4.2.32).
+- rule_id: 4.2.32.gadoteric_acid_standard_overdose_2boxes
+  sut_section: 4.2.32
+  gate_b_sources:
+  - C006452
+  drug_names:
+  - gadoterik asit
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: gadoterik asit standart 0,1 mmol/kg (0,2 ml/kg) dozda 1 kutu; standart dozu aşan durumlarda gerekçe reçetede,
+      en fazla 2 kutu yazılırsa ödenir
+    message_tr: Gadoterik asit standart 0,1 mmol/kg (0,2 ml/kg) uygun dozda 1 kutu reçete edilir. Standart dozu aşan durumlarda
+      gerekçesinin reçeteye yazılması halinde en fazla 2 kutu yazılması halinde bedeli Kurumca karşılanır (§4.2.32).
+- rule_id: 4.2.32.gadoxetate_liver_mr_max_1box
+  sut_section: 4.2.32
+  gate_b_sources:
+  - C006450
+  drug_names:
+  - gadoksetat
+  - gadoxetat
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: gadoksetat yalnızca karaciğer ve safra yolları MR kolanjiografi (kontrastlı) incelemelerinde; reçeteye en
+      fazla 1 kutu yazılırsa ödenir
+    message_tr: Gadoksetat; sadece karaciğer ve safra yolları manyetik rezonans kolanjiografi (kontrastlı) incelemelerinde
+      kullanılır. Reçeteye en fazla 1 kutu yazılması halinde bedeli Kurumca karşılanır (§4.2.32).
+- rule_id: 4.2.32.iodized_fatty_acid_interventional_radiology
+  sut_section: 4.2.32
+  gate_b_sources:
+  - C006454
+  drug_names:
+  - iyodize yağ asitleri etil esterleri
+  - lipiodol
+  report_required: true
+  prescriber_specialties:
+  - radyoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: reçeteye ön tanı/tetkik isteyen uzman veya radyoloji uzmanınca yazılırsa ödenir; iyodize yağ asitleri etil
+      esterleri yalnızca girişimsel radyoloji işlemini yapan radyoloji uzmanlarınca reçete edilebilir
+    message_tr: Reçeteye ön tanı ve istenilen tetkik, tetkiki isteyen uzman hekim veya radyoloji uzman hekimi tarafından yazılması
+      halinde bedeli Kurumca karşılanır. İyodize yağ asitleri etil esterleri yalnızca girişimsel radyoloji işlemini yapan
+      radyoloji uzman hekimlerince reçete edilebilir (§4.2.32).
+- rule_id: 4.2.32.iodized_fatty_acid_lymphography_tace
+  sut_section: 4.2.32
+  gate_b_sources:
+  - C006453
+  drug_names:
+  - iyodize yağ asitleri etil esterleri
+  - lipiodol
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: iyodize yağ asitleri etil esterleri tanısal radyolojide yalnızca lenfografide, girişimsel radyolojide yalnızca
+      erişkin orta evre HCC'de TAKE sırasında vasküler embolizasyon endikasyonunda ödenir
+    message_tr: İyodize yağ asitleri etil esterleri; tanısal radyolojide yalnızca lenfografide, girişimsel radyolojide ise
+      yalnızca erişkinlerde orta evredeki hepatoselüler karsinomun Trans Arteriyel Kemo Embolizasyonu sırasında vektorizasyon
+      ve cerrahi yapıştırıcılar ile birlikte vasküler embolizasyon endikasyonlarında kullanılması halinde bedeli Kurumca karşılanır
+      (§4.2.32).
+- rule_id: 4.2.32.nonionic_iodinated_contrast_coverage
+  sut_section: 4.2.32
+  gate_b_sources:
+  - C006449
+  drug_names:
+  - non-iyonik iyotlu kontrast madde
+  - non-iyonik radyo-opak madde
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: ayakta İVP/HSG/nonvasküler girişimsel/üretral/sistografi gibi tetkiklerde 1 kutu non-iyonik radyo-opak madde
+      ödenir; BT/BT anjiyo/DSA/anjiyo veya aşırı kilolularda 1 kutuyu aşan dozda gerekçe reçetede belirtilirse ödenir
+    message_tr: Non-iyonik iyotlu kontrast maddelerin; ayakta yapılan İVP ve HSG, nonvasküler girişimsel işlemler, üretrografi,
+      sistografi, voiding sistoüretrograki gibi tetkiklerde bir kutu kullanılması halinde bedelleri Kurumca karşılanır. BT,
+      BT anjiyografi, DSA, anjiografi tetkiklerinde veya aşırı kilolu hastalarda bir kutuyu aşan dozda gerekmesi halinde gerekçesi
+      reçeteye yazılır (§4.2.32).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

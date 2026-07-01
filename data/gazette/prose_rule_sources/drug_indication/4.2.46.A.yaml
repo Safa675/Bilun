@@ -1,0 +1,21 @@
+section_id: 4.2.46.A
+rules:
+- rule_id: 4.2.46.A.ipf_coverage
+  sut_section: 4.2.46.A
+  gate_b_sources:
+  - C006826
+  - C006836
+  - C006840
+  drug_names:
+  - pirfenidon
+  - nintedanib
+  icd10_codes:
+  - J84.1
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: idiopatik pulmoner fibroziste tanımlı koşullar sağlandığında pirfenidon/nintedanib bedeli Kurumca karşılanır
+    message_tr: İdiopatik pulmoner fibrozis tanılı hastalarda tanımlı koşulların sağlanması durumunda ilgili ilaç bedelleri
+      Kurumca karşılanır (§4.2.46.A).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

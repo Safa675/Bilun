@@ -1,0 +1,135 @@
+section_id: 4.2.1.C-4
+rules:
+- rule_id: 4.2.1.C.4210_psoriasis_tertiary_dermatology_1yr
+  sut_section: 4.2.1.C-4
+  gate_b_sources:
+  - C003676
+  drug_names:
+  - biyolojik ajan
+  - anti-tnf
+  - ustekinumab
+  - sekukinumab
+  - ipekizumab
+  icd10_codes:
+  - L40
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - dermatoloji
+  prescriber_specialties:
+  - dermatoloji
+  action:
+    enforcement: üçüncü basamak resmi sağlık hizmeti sunucusunda dermatoloji uzman hekiminin yer aldığı 1 yıl süreli rapor
+      + dermatoloji reçetesi
+    message_tr: Üçüncü basamak resmi sağlık hizmeti sunucularında dermatoloji uzman hekiminin yer aldığı 1 yıl süreli sağlık
+      kurulu raporuna dayanılarak dermatoloji uzman hekimlerince reçete edilebilir (§4.2.1.C-4).
+- rule_id: 4.2.1.C.rheum_pmr_coverage_6mo_report
+  sut_section: 4.2.1.C-4
+  gate_b_sources:
+  - C003683
+  - C003684
+  drug_names:
+  - anti-tnf
+  - biyolojik ajan
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - romatoloji
+  - fizik tedavi ve rehabilitasyon
+  prescriber_specialties:
+  - romatoloji
+  - fizik tedavi ve rehabilitasyon
+  condition:
+    coverage_note: true
+  action:
+    enforcement: romatoloji veya fizik tedavi/rehabilitasyon uzmanının yer aldığı en fazla 6 ay süreli raporla reçete edilirse
+      bedeli ödenir
+    message_tr: Bu durumların belirtildiği romatoloji veya fizik tedavi ve rehabilitasyon uzman hekiminin yer aldığı en fazla
+      6 ay süreli sağlık kurulu raporuna dayanılarak ilgili uzmanlarca reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.1.C-4).
+- rule_id: 4.2.1.ustekinumab_crohn_anti_tnf_failure
+  sut_section: 4.2.1.C-4
+  drug_names:
+  - ustekinumab
+  - stelara
+  icd10_ranges:
+  - K50
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - iç hastalıkları
+  message_tr: Ustekinumab — yetişkin Crohn hastalığında anti-TNF yetersizliğinde 4 ay süreli sağlık kurulu raporu gerekir
+    (§4.2.1.C-4).
+  gate_b_sources:
+  - C003686
+  prescriber_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - iç hastalıkları
+  report_duration_months: 4
+- rule_id: 4.2.1.ustekinumab_psa_dmard_tnf_failure
+  sut_section: 4.2.1.C-4
+  drug_names:
+  - ustekinumab
+  - stelara
+  icd10_ranges:
+  - L40.5
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Ustekinumab — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte 3 ay süreli sağlık kurulu raporu gerekir
+    (§4.2.1.C-4).
+  gate_b_sources:
+  - C003682
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.ustekinumab_psoriasis_pasi_report
+  sut_section: 4.2.1.C-4
+  drug_names:
+  - ustekinumab
+  - stelara
+  icd10_ranges:
+  - L40
+  report_required: true
+  report_specialties:
+  - dermatoloji
+  message_tr: Ustekinumab — plak psoriyaziste sağlık kurulu raporunda başlangıç PASI değeri ve tedavi şeması belirtilmelidir
+    (§4.2.1.C-4).
+  gate_b_sources:
+  - C003677
+  - C003679
+  prescriber_specialties:
+  - dermatoloji
+- rule_id: 4.2.1.vedolizumab_uc_report
+  sut_section: 4.2.1.C-4
+  drug_names:
+  - vedolizumab
+  - entyvio
+  icd10_ranges:
+  - K51
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - iç hastalıkları
+  message_tr: Vedolizumab — anti-TNF yetersiz ülseratif kolitte gastroenteroloji/genel cerrahi uzman hekim raporu gerekir
+    (§4.2.1.C-4).
+  gate_b_sources:
+  - C003687
+  prescriber_specialties:
+  - gastroenteroloji
+  - genel cerrahi
+  - iç hastalıkları
+  report_duration_months: 6
+source_note: Exported from drug_indication_prose.json (YAML source migration)

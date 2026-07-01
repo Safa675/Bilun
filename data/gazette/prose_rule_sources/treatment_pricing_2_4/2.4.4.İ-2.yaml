@@ -1,0 +1,17 @@
+section_id: 2.4.4.İ-2
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.I-2.(1).pgt_savior_sibling_conditions_otherwise_no_pay
+  sut_section: 2.4.4.İ-2
+  condition:
+    procedure_category: preimplantation_genetic_diagnosis
+    savior_sibling_conditions_met: false
+  action:
+    billable: false
+    enforcement: exclusion
+    message_tr: hasta çocuğun tedavisi amaçlı PGT ile uygun kök hücre verici kardeş doğmasına yönelik IVF, kemik iliği transplantasyon
+      merkezi bulunan Bakanlığa bağlı 3. basamak/tıp fakülteli üniversite sağlık kurullarınca düzenlenen genetik uzmanlı raporla
+      yapılması şartıyla Kurumca karşılanır; bu durum ve İ-3 dışında PGT ve birlikte yapılan IVF bedelleri Kurumca karşılanmaz
+    severity: error
+  gate_b_sources:
+  - C001310

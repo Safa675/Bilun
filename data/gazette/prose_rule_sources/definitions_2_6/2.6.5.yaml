@@ -1,0 +1,57 @@
+section_id: 2.6.5
+rules:
+- rule_id: 2.6.5.(1).organ_transplant_transfer_documented
+  sut_section: 2.6.5
+  gate_b_sources:
+  - C001582
+  condition:
+    definition_scope: Organ naklinde hasta/organ nakline gidiş-dönüş transfer masrafının koordinasyon tutanağıyla
+    applies_to: Organ nakli tedavisi
+  action:
+    enforcement: gate
+    message_tr: Organ naklinde gidiş-dönüş nakliye/transfer masrafı, Ulusal/Bölge Koordinasyon Merkezi tutanığıyla belirlenen
+      ulaşım aracı esas alınarak karşılanır.
+- rule_id: 2.6.5.(2).organ_transplant_fee_per_2_6_1_B4
+  sut_section: 2.6.5
+  gate_b_sources:
+  - C001583
+  condition:
+    definition_scope: Koordinasyonca belirlenen ulaşım aracı bedelinin 2.6.1.B-4 doğrultusunda ödenmesi
+    applies_to: Organ nakli — transfer bedeli
+  action:
+    enforcement: gate
+    message_tr: Koordinasyonca belirlenen ulaşım aracı için 2.6.1.B-4 doğrultusunda tespit edilen bedel, fatura/bilet tutarını
+      aşmamak üzere ödenir.
+- rule_id: 2.6.5.(4).bone_marrow_travel_per_2_6_1_B4_6
+  sut_section: 2.6.5
+  gate_b_sources:
+  - C001585
+  condition:
+    definition_scope: Kemik iliği/kordon kanı nakli yol giderinin 2.6.1.B-4(6) doğrultusunda karşılanması
+    applies_to: Kemik iliği / kordon kanı nakli
+  action:
+    enforcement: gate
+    message_tr: Kemik iliği/kordon kanı nakli yol giderleri, SUT 2.6.1.B-4(6) fıkrası doğrultusunda karşılanır.
+- rule_id: 2.6.5.(5).limb_replantation_air_ambulance
+  sut_section: 2.6.5
+  gate_b_sources:
+  - C001586
+  condition:
+    definition_scope: Uzuv replantasyonu acil hizmeti için hava ambulansı sevkinin belgelendirilmesi koşuluyla bedel
+    applies_to: Uzuv replantasyonu — hava ambulansı
+  action:
+    enforcement: gate
+    message_tr: Uzuv replantasyonu acil hizmeti için hava ambulansı sevki gerekli görülüp belgelendirilirse, 2.6.1.B-4(6)
+      doğrultusunda bedel fatura/bilet tutarını aşmamak üzere ödenir.
+- rule_id: 2.6.5.(6).donor_travel_daily_companion
+  sut_section: 2.6.5
+  gate_b_sources:
+  - C001587
+  condition:
+    definition_scope: Donörün sağlık finansmanı Kurumca karşılanıyorsa mevzuata uygun sevkiyle yol/gündelik/refakatçi
+    applies_to: Donör (verici)
+  action:
+    enforcement: gate
+    message_tr: Donörün sağlık giderleri finansmanı Kurumca karşılanıyorsa, mevzuata uygun sevk edilmesi halinde yol, gündelik
+      ve refakatçi giderleri Kurumca karşılanır.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

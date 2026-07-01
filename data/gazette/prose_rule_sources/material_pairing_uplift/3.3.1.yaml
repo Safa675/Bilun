@@ -1,0 +1,79 @@
+section_id: 3.3.1
+source_note: Exported from material_pairing_uplift.json (YAML source migration)
+rules:
+- rule_id: pairing.700910_kr1151
+  sut_section: 3.3.1
+  specialty_annex: EK-3H
+  pairing_mode: specialty_annex
+  procedure_codes:
+  - '700910'
+  - '700890'
+  expected_material_codes:
+  - KR1151
+  message_tr: Koroner anjiyoplasti/stent islemi sonrasi EK-3H ilac salinimli koroner stent (KR1151) ayri faturalandirilmamis.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.
+- rule_id: pairing.700920_kr1152
+  sut_section: 3.3.1
+  specialty_annex: EK-3H
+  pairing_mode: specialty_annex
+  procedure_codes:
+  - '700920'
+  - '700930'
+  expected_material_codes:
+  - KR1152
+  message_tr: Koroner stent islemi sonrasi EK-3H ilac salinimli stent (KR1152) ayri faturalandirilmamis.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.
+- rule_id: pairing.700710_kr1000
+  sut_section: 3.3.1
+  specialty_annex: EK-3H
+  pairing_mode: specialty_annex
+  procedure_codes:
+  - '700710'
+  - '700700'
+  - '700730'
+  expected_material_codes:
+  - KR1000
+  message_tr: ICD implantasyonu sonrasi EK-3H ICD cihazi (KR1000) eksik veya sifir faturalanmis.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.
+- rule_id: pairing.606152_kr3000
+  sut_section: 3.3.1
+  specialty_annex: EK-3H
+  pairing_mode: specialty_annex
+  procedure_codes:
+  - '606152'
+  expected_material_codes:
+  - KR3000
+  message_tr: Fenestre endovaskuler aort anevrizma islemi sonrasi EK-3H EVAR stentgreft (KR3000) eksik veya sifir faturalanmis.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.
+- rule_id: pairing.604960_kr4000
+  sut_section: 3.3.1
+  specialty_annex: EK-3H
+  pairing_mode: specialty_annex
+  procedure_codes:
+  - '604960'
+  expected_material_codes:
+  - KR4000
+  message_tr: Acik kalp cerrahisi sonrasi EK-3H kalp pili/cihaz (KR4000) ayri faturalandirilmamis.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.
+- rule_id: pairing.700800_kr1150
+  sut_section: 3.3.1
+  specialty_annex: EK-3H
+  pairing_mode: specialty_annex
+  procedure_codes:
+  - '700800'
+  expected_material_codes:
+  - KR1150
+  message_tr: Koroner girisim islemi sonrasi EK-3H bare-metal stent (KR1150) ayri faturalandirilmamis.
+  verification_status: pilot_heuristic
+  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
+    practice, not the SUT text. Do not cite as SUT provenance in audit.

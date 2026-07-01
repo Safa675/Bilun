@@ -1,0 +1,67 @@
+section_id: 2.4.3
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.3.(A).non_eip_vaccines_high_risk_report
+  sut_section: 2.4.3
+  condition:
+    vaccine_not_in_expanded_immunization_program: true
+    patient_high_risk_category: true
+    health_report_present: true
+  action:
+    billable: true
+    payment_tr: Bakanlık “Genişletilmiş Bağışıklama Programı” kapsamında olmayan aşı bedelleri; kronik böbrek yetmezliği,
+      kistik fibrozis, KOAH, kanser, HIV/AIDS, splenektomi olanlar ile immünsupresif tedaviye bağlı yüksek riskli kişilerin
+      sağlık raporuna istinaden karşılanır
+    billing_method: procedure_package
+  gate_b_sources:
+  - C000852
+- rule_id: 2.4.3.(B).influenza_vaccine_annual_risk_groups_sep_mar
+  sut_section: 2.4.3
+  condition:
+    procedure_category: influenza_vaccine
+    patient_in_risk_group_or_65plus_or_care_home: true
+    prescribed_between_september_and_march: true
+    already_administered_this_year: false
+  action:
+    billable: true
+    payment_tr: grip aşısı bedeli; 65 yaş ve üzeri ile yaşlı bakımevi/huzurevinde kalanlara rapor aranmaksızın; gebeliğin
+      2./3. trimesterindeki gebeler, kronik pulmoner/kardiyovasküler/metabolik/renal hastalığı veya immün yetmezliği olanlar
+      ile uzun süreli asetil salisilik asit alan çocuklara sağlık raporuna dayanılarak her Eylül-Mart döneminde bir defaya
+      mahsus karşılanır
+    billing_method: procedure_package
+  gate_b_sources:
+  - C000855
+- rule_id: 2.4.3.(C).pneumococcal_vaccine_5_year_risk_groups
+  sut_section: 2.4.3
+  condition:
+    procedure_category: pneumococcal_polysaccharide_vaccine
+    patient_in_risk_group_or_65plus: true
+    years_since_last_pneumococcal:
+      min: 5
+  action:
+    billable: true
+    payment_tr: pnömokok aşısı (polisakkarit) bedeli; aspleni/dalak disfonksiyonu/splenektomi, orak hücre, immün yetmezlik/baskılanma,
+      kronik renal/kalp/akciğer/karaciğer/metabolik hastalık, hemoglobinopati, beyin omurilik sıvısı sızıntısı bulunan risk
+      gruplarına sağlık raporuyla 5 yılda bir, 65 yaş ve üzeri kişilere rapor aranmaksızın beş yılda bir karşılanır
+    billing_method: procedure_package
+  gate_b_sources:
+  - C000856
+- rule_id: 2.4.3.(D).hepatitis_a_vaccine_max_2_yearly_seronegative
+  sut_section: 2.4.3
+  condition:
+    procedure_category: hepatitis_a_vaccine
+    patient_seronegative: true
+    patient_has_chronic_liver_disease_or_clotting_factor_concentrate: true
+    patient_age:
+      min: 1
+    doses_within_year:
+      max: 2
+    health_report_present: true
+  action:
+    billable: true
+    payment_tr: hepatit A aşısı bedeli; kronik karaciğer hastalığı olan veya pıhtılaşma faktörü konsantresi alan ve hepatit
+      A seronegatif olan 1 yaş üzeri çocuk/erişkinlere sağlık raporuna dayanılarak tüm hekimlerce reçete edilmesi halinde
+      en fazla yılda iki kez karşılanır
+    billing_method: procedure_package
+  gate_b_sources:
+  - C000857

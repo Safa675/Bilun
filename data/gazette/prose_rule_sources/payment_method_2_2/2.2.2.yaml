@@ -1,0 +1,39 @@
+section_id: 2.2.2
+source_note: Exported from payment_method_2_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.2.(3).short_stay_day_bed
+  sut_section: 2.2.2
+  condition:
+    care_setting: inpatient
+    stay_duration_hours_lt: 24
+  action:
+    payment_method: itemized
+    payment_method_tr: 24 saatten kısa yatışta gündüz yatak bedeli
+    bed_fee_basis: day_rate
+  gate_b_sources:
+  - C000635
+- rule_id: 2.2.2.(4).gunubirlik_no_day_bed
+  sut_section: 2.2.2
+  condition:
+    care_setting: inpatient
+    visit_type: gunubirlik
+    procedure_in_annex: EK-2/C
+  action:
+    payment_method: package
+    payment_method_tr: günübirlik EK-2/C işlemlerde gündüz yatak bedeli yok
+    bill_day_bed: false
+  gate_b_sources:
+  - C000636
+- rule_id: 2.2.2.(5).gunubirlik_no_companion_fee
+  sut_section: 2.2.2
+  condition:
+    care_setting: inpatient
+    visit_type: gunubirlik
+    line_type: refakatci
+    procedure_in_annex: EK-2/B
+  action:
+    payment_method: itemized
+    payment_method_tr: günübirlik tedavide refakatçi bedeli ödenmez
+    billable: false
+  gate_b_sources:
+  - C000637

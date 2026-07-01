@@ -1,0 +1,26 @@
+section_id: 1.5.2
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 1.5.2.(2).uncontracted_provider_non_emergency_no_pay
+  sut_section: 1.5.2
+  condition:
+    facility_uncontracted: true
+    is_emergency: false
+    exception_2_2_5: false
+  action:
+    billable: false
+    denial_tr: acil dışında 2.2(5) istisnaları hariç sözleşmesiz sunucu ödenmez
+    severity: error
+  gate_b_sources:
+  - C000178
+- rule_id: 1.5.2.(3).contracted_provider_must_accept
+  sut_section: 1.5.2
+  condition:
+    facility_contracted: true
+    patient_turned_away: true
+  action:
+    billable: false
+    denial_tr: sözleşmeli sunucular Kurum yararlananlarını ayrım yapmaksızın kabul zorundadır
+    severity: error
+  gate_b_sources:
+  - C000179

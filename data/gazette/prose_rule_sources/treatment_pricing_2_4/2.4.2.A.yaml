@@ -1,0 +1,57 @@
+section_id: 2.4.2.A
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.2.A.(1).organ_tissue_transplant_recipient_donor_covered
+  sut_section: 2.4.2.A
+  condition:
+    procedure_category_any:
+    - organ_transplant
+    - tissue_transplant
+    compliant_with_2238_law: true
+  action:
+    billable: true
+    payment_tr: organ veya doku nakline gerek görülmesi halinde 2238 sayılı Kanun hükümleri dikkate alınmak şartıyla organ/doku
+      nakli tedavilerine ilişkin giderler ile verici durumundaki kişinin bu tedaviye ilişkin giderleri Kurum tarafından karşılanır
+    billing_method: procedure_package
+  gate_b_sources:
+  - C000816
+- rule_id: 2.4.2.A.(4).domestic_organ_transfer_per_2_6
+  sut_section: 2.4.2.A
+  condition:
+    organ_found_in_country: true
+    service_category: patient_transfer_for_transplant
+  action:
+    billable: true
+    payment_tr: yurt içinde organın bulunması halinde hastanın organın bulunduğu yere veya organ nakli yapılacak merkezin
+      bulunduğu yere getirilmesine ilişkin gidiş-dönüş nakliye/transfer masrafları SUT’un 2.6 maddesi doğrultusunda Kurumca
+      karşılanır
+    billing_method: fee_for_service
+  gate_b_sources:
+  - C000821
+- rule_id: 2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c
+  sut_section: 2.4.2.A
+  condition:
+    procedure_code_any:
+    - P911146
+    donor_reported_by_national_coordination_center: true
+  action:
+    billable: true
+    payment_tr: Ulusal Organ ve Doku Nakli Koordinasyon Merkezince bildirilen her bir kadavra donör için donörü temin eden
+      sunucuya EK-2/C “P911146 Kadavra donör temini” bedeli karşılanır; bedele kadavra organ alım işlemleri dahildir
+    billing_method: fee_for_service
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C000824
+- rule_id: 2.4.2.A.(6).abo_incompatible_kidney_transplant_no_pay
+  sut_section: 2.4.2.A
+  condition:
+    procedure_category: abo_incompatible_kidney_transplant
+    patient_unable_for_any_dialysis_with_tier3_board_report: false
+  action:
+    billable: false
+    denial_tr: herhangi bir diyaliz yöntemiyle tedavisi mümkün olmayan (sözleşmeli 3. basamak sunucu sağlık kurulu raporuyla
+      belgelenen) hastalar hariç, ABO kan grubu uyumsuz böbrek nakline ilişkin giderler Kurumca karşılanmaz; ABO uyumsuz nakilde
+      uygulanacak aferez işlemi ve tıbbi malzeme bedelleri ayrıca faturalandırılamaz
+    severity: error
+  gate_b_sources:
+  - C000827

@@ -1,0 +1,18 @@
+section_id: 4.2.12.B-1
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.12.B-1.(ivig_indication_required)
+  sut_section: 4.2.12.B-1
+  condition:
+    drug_category: ivig
+    indication_not_in:
+    - guillain_barre_acute
+    - myasthenia_bulbar
+    - listed_indications
+  action:
+    billable: false
+    denial_tr: IVIG sadece ilgili uzmanların yer aldığı sağlık kurulu raporu + ilgili uzmanca 1 aylık dozda reçete edilirse
+      ödenir
+    severity: error
+  gate_b_sources:
+  - C004489

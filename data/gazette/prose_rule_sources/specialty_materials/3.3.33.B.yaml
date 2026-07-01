@@ -1,0 +1,121 @@
+section_id: 3.3.33.B
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.33.B.cochlear_implant_coverage_general
+  sut_section: 3.3.33.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003332
+  condition:
+    cochlear_implant_commission_or_bilateral_criteria: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Koklear implant — İşitsel İmplantlar Komisyonu onayı veya bilateral ileri-çok ileri sensörinöral işitme kaybı
+      + işitme cihazından yarar görmeme sağlık kurulu raporu ile Kurumca karşılanır (§3.3.33.B).
+- rule_id: 3.3.33.B.(2).cochlear_implant_alternative_criteria
+  sut_section: 3.3.33.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003334
+  condition:
+    cochlear_implant_alternative_criteria_health_board: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Koklear implant — alternatif kriterlerden en az biri sağlık kurulu raporuyla belgelenirse Kurumca karşılanır
+      (§3.3.33.B(2)).
+- rule_id: 3.3.33.B.(5).cochlear_implant_meningitis
+  sut_section: 3.3.33.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003339
+  condition:
+    cochlear_implant_meningitis_post_hearing_loss: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Menenjit sonrası işitme kaybında koklear implant — 3 aylık binaural cihaz deneme şartı aranmaz, sağlık kurulu
+      raporuyla Kurumca karşılanır (§3.3.33.B(5)).
+- rule_id: 3.3.33.B.(6).cochlear_implant_auditory_neuropathy
+  sut_section: 3.3.33.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003340
+  condition:
+    cochlear_implant_auditory_neuropathy_no_benefit: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: İşitsel nöropati olgusunda en az 6 ay rehabilitasyondan yarar görmeme odyolojik + sağlık kurulu raporuyla
+      koklear implant Kurumca karşılanır (§3.3.33.B(6)).
+- rule_id: 3.3.33.B.c.bilateral_blindness_over_48m
+  sut_section: 3.3.33.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003344
+  condition:
+    cochlear_implant_bilateral_blindness_over_48_months: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: 48 ay üzeri ileri sensörinöral işitme kaybına eşlik eden bilateral körlük — koklear implant kriteri (§3.3.33.B(c)).
+- rule_id: 3.3.33.B.(8).cochlear_implant_internal_part_revision
+  sut_section: 3.3.33.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003345
+  condition:
+    cochlear_implant_internal_part_revision_no_term: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Enfeksiyon/kolesteatom/tümör ile iç parça işlevsizliğinde süre aranmaksızın yalnızca cerrahi iç parça bedeli
+      Kurumca karşılanır (§3.3.33.B(8)).
+- rule_id: 3.3.33.B.(10).cochlear_implant_audiologic_protocol
+  sut_section: 3.3.33.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003347
+  condition:
+    cochlear_implant_audiologic_protocol_required: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Koklear implant odyolojik değerlendirme (odyometri, timpanometri, stapes refleks, OAE, ABR) uygulanmalıdır
+      (§3.3.33.B(10)).
+- rule_id: 3.3.33.B.(10)a.cochlear_implant_threshold_over_2y
+  sut_section: 3.3.33.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003348
+  condition:
+    cochlear_implant_threshold_adult_child_criteria: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: 2 yaş üzeri çocuk/erişkinlerde bilateral 500-4000 Hz ortalaması >80 dB (veya asimetrik 70/90 dB) ve konuşmayı
+      ayırt etme <%30 koklear implant kriteri (§3.3.33.B(10)(a)).
+- rule_id: 3.3.33.B.(10)b.cochlear_implant_threshold_under_2y
+  sut_section: 3.3.33.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003349
+  condition:
+    cochlear_implant_threshold_infant_criteria: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: 2 yaş ve altı çocuklarda bilateral >90 dB HL sensörinöral işitme kaybı koklear implant kriteri (§3.3.33.B(10)(b)).
+- rule_id: 3.3.33.B.(11).cochlear_implant_minimum_kit_content
+  sut_section: 3.3.33.B
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003350
+  condition:
+    cochlear_implant_minimum_kit_content_check: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Koklear implant asgari çanta içeriği (işlemci, transmitter, pil, kablo, mıknatıs vb.) kontrol edilmelidir
+      (§3.3.33.B(11)).

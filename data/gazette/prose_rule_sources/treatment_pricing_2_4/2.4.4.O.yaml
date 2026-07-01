@@ -1,0 +1,54 @@
+section_id: 2.4.4.O
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.O.(a).bariatric_bmi40_4_specialty_board_report
+  sut_section: 2.4.4.O
+  condition:
+    procedure_category: bariatric_surgery
+    bmi:
+      min: 40.0001
+    health_board_report_present: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: BMI > 40 kg/m2 olan kişilerde; genel cerrahi, endokrinoloji (yoksa dahiliye), akıl ve ruh sağlığı hastalıkları
+      ile anestezi ve reanimasyon uzman hekimlerinin yer aldığı ve tıbbi endikasyonun belirtildiği sağlık kurulu raporu düzenlenmesi
+      gerekmektedir
+    severity: error
+  gate_b_sources:
+  - C001370
+- rule_id: 2.4.4.O.(b).bariatric_bmi35_40_comorbidity_board_report
+  sut_section: 2.4.4.O
+  condition:
+    procedure_category: bariatric_surgery
+    bmi:
+      min: 35.0
+      max: 40.0
+    has_comorbidity: true
+    health_board_report_present: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: BMI 35-40 kg/m2 ve eşlik eden hastalığı bulunan kişilerde; genel cerrahi, endokrinoloji (yoksa dahiliye),
+      akıl ve ruh sağlığı, anestezi ve reanimasyon uzmanları ile eşlik eden hastalığın branş uzmanının da yer aldığı ve tıbbi
+      endikasyonun belirtildiği sağlık kurulu raporu düzenlenmesi gerekmektedir
+    severity: error
+  gate_b_sources:
+  - C001371
+- rule_id: 2.4.4.O.(c).bariatric_bmi35_40_6mo_unsuccessful_weight_loss
+  sut_section: 2.4.4.O
+  condition:
+    procedure_category: bariatric_surgery
+    bmi:
+      min: 35.0
+      max: 40.0
+    has_comorbidity: true
+    documented_6mo_lifestyle_medical_failure: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: BMI 35-40 ve eşlik eden hastalığı bulunan kişilere düzenlenecek sağlık kurulu raporunda; uzman kontrolünde
+      en az 6 ay yaşam tarzı değişikliği ve/veya medikal tedavi ile kilo verilemediğinin belirtilmesi gerekmektedir
+    severity: error
+  gate_b_sources:
+  - C001372

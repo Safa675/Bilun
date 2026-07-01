@@ -1,0 +1,15 @@
+section_id: 2.4.2.A
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.4.2.A.(6).transplant_except_dialysis_unable
+  sut_section: 2.4.2.A
+  condition:
+    procedure_category: stem_cell_transplant
+    dialysis_unable_vascular_access: false
+    health_board_report: false
+  action:
+    billable: false
+    denial_tr: diyaliz mümkün olmayan (sağlık kurulu raporuyla belgeli) hastalar hariç kök hücre nakli koşulu
+    severity: error
+  gate_b_sources:
+  - C000827

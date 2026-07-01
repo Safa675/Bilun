@@ -1,0 +1,69 @@
+section_id: 4.2.9.B
+rules:
+- rule_id: 4.2.9.B.renal.phosphate_binder_prior_3mo_use_mandatory
+  sut_section: 4.2.9.B
+  gate_b_sources:
+  - C004141
+  drug_names:
+  - sevelamer
+  - lantanyum karbonat
+  - alüminyum klorür hidroksit
+  - fosfor düşürücü ilaçlar
+  icd10_codes:
+  - N18
+  - E83.3
+  report_required: true
+  report_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  action:
+    enforcement: 'mandatory: tedaviye başlamak için diğer fosfor düşürücü ilaçların en az 3 ay süreyle kullanılmış olması
+      ve bu hususun raporda belirtilmiş olması gerekir'
+    message_tr: Tedaviye başlamak için diğer fosfor düşürücü ilaçların en az 3 ay süreyle kullanılmış olması ve bu hususun
+      raporda belirtilmiş olması gerekir (§4.2.9.B).
+- rule_id: 4.2.9.B.renal.phosphate_binders_dialysis_report_coverage
+  sut_section: 4.2.9.B
+  gate_b_sources:
+  - C004147
+  drug_names:
+  - sevelamer
+  - lantanyum karbonat
+  - alüminyum klorür hidroksit
+  icd10_codes:
+  - N18
+  - Z99.2
+  report_required: true
+  report_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  prescriber_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  - diyaliz sertifikalı tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: hemodiyaliz/periton diyalizi hastasına nefroloji (veya diyaliz sertifikalı iç/çocuk)/iç/çocuk uzmanının raporuyla
+      sevelamer/lantanum/alüminyum klorür hidroksit; bu hekimlerce veya diyaliz sertifikalı tüm hekimlerce reçete
+    message_tr: Hemodiyaliz veya periton diyaliz tedavisi altındaki hastalara nefroloji, iç hastalıkları veya çocuk sağlığı
+      ve hastalıkları uzman hekimlerinden birinin düzenlediği ve yukarıdaki durumlardan sevelamer, lantanyum karbonat veya
+      alüminyum klorür hidroksit kullanımını gerektiren durumun belirtildiği uzman hekim raporuna dayanılarak bu hekimlerce
+      veya diyaliz sertifikalı tüm hekimler tarafından reçete edildiğinde bedeli ödenir (§4.2.9.B).
+- rule_id: 4.2.9.B.renal.sevelamer_lanthanum_combination_prohibited
+  sut_section: 4.2.9.B
+  gate_b_sources:
+  - C004151
+  drug_names:
+  - sevelamer
+  - lantanyum karbonat
+  icd10_codes:
+  - N18
+  - E83.3
+  pay: false
+  action:
+    enforcement: 'prohibited: sevelamer ve lantanyum karbonat kombine olarak kullanılamaz'
+    message_tr: Sevelamer ve lantanyum karbonat kombine olarak kullanılamaz (§4.2.9.B).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

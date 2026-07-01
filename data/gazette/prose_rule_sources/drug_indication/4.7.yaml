@@ -1,0 +1,40 @@
+section_id: '4.7'
+rules:
+- rule_id: 4.7.hemophilia_cardless_once_blood_product_prescription_mandatory
+  sut_section: '4.7'
+  gate_b_sources:
+  - C007821
+  report_required: true
+  report_specialties:
+  - sağlık kurulu
+  prescriber_specialties:
+  - uzman hekim
+  condition:
+    hemophilia: true
+    hemophilia_followup_card: false
+  action:
+    enforcement: 'mandatory: hemophilia patients who became ill before obtaining the follow-up card may have their drugs written
+      ONCE by the relevant specialist physician on the ''Kan Ürünleri Reçetesi'' based on a health-board report; since there
+      is no second cardless treatment opportunity, after treatment patients must promptly apply to Provincial Health Directorates
+      with the health-board report to obtain the hemophilia follow-up card'
+    message_tr: Hemofili takip karnesini alamadan herhangi bir nedenle hastalanmış olanların ilaçları, ilgili uzman hekimlerce
+      bir kereye mahsus olmak üzere sağlık kurulu raporuna istinaden 'Kan Ürünleri Reçetesi'ne yazılabilir; karnesiz ikinci
+      defa tedavi görme imkânı olmadığından tedaviden sonra hastaların sağlık kurulu raporuyla birlikte vakit geçirmeden hemofili
+      takip karnesi alabilmek için İl Sağlık Müdürlüklerine müracaat etmeleri gerekir (§4.7).
+- rule_id: 4.7.hemophilia_specialist_prescription_coverage
+  sut_section: '4.7'
+  gate_b_sources:
+  - C007816
+  prescriber_specialties:
+  - hematoloji
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  condition:
+    coverage_note: true
+    hemophilia: true
+  action:
+    enforcement: 'coverage: hemophilia prescriptions are covered when issued by a hematology, internal-medicine or pediatrics
+      specialist physician in accordance with the relevant legislation'
+    message_tr: Hemofili reçetelerinin hematoloji, iç hastalıkları veya çocuk sağlığı ve hastalıkları uzman hekimlerinden
+      biri tarafından ilgili mevzuata uygun olarak düzenlenmesi halinde bedelleri Kurumca karşılanır (§4.7).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

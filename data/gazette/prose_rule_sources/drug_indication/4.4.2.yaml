@@ -1,0 +1,37 @@
+section_id: 4.4.2
+rules:
+- rule_id: 4.4.2.internal_reference_pricing_6pct_buffer_regulatory
+  sut_section: 4.4.2
+  gate_b_sources:
+  - C007789
+  action:
+    enforcement: 'regulatory: in payments for internal-reference-pricing drugs, considering the drug having ≥1% market share,
+      up to 6% above the group''s cheapest drug price is taken into account'
+    message_tr: İç referans fiyatlandırması uygulaması kapsamındaki ilaç ödemelerinde, ilacın %1 pazar payına sahip olması
+      hususu gözetilerek grubun en ucuz ilaç bedelinin %6 fazlasına kadarı dikkate alınır (§4.4.2).
+- rule_id: 4.4.2.internal_reference_pricing_excess_nopay
+  sut_section: 4.4.2
+  gate_b_sources:
+  - C007790
+  pay: false
+  action:
+    enforcement: 'no-pay condition: in internal-reference-pricing groups, discounted unit prices (after §4.4.1 public discount)
+      compared to find cheapest; +6% added to find max payable unit price; per-box price derived per pack form is compared
+      with the drug''s public price — the portion of public price exceeding the max-unit-derived box price is NOT paid'
+    message_tr: Bu kapsamdaki gruplarda §4.4.1 kamu kurum iskontosuyla hesaplanan kamu fiyatı üzerinden gruptaki ilaçların
+      ortak en küçük birimi başına 'indirimli birim bedelleri' karşılaştırılarak en ucuz birim bedel bulunur; buna %6 ilave
+      edilerek ödenebilecek azami birim bedel bulunur, ambalaj formuna göre kutu bedeli hesaplanıp kamu fiyatıyla karşılaştırılır;
+      kamu fiyatının azami birim bedelden hesaplanan kutu fiyatını aşan kısmı ödenmez (§4.4.2).
+- rule_id: 4.4.2.internal_reference_pricing_substitution_prohibited
+  sut_section: 4.4.2
+  gate_b_sources:
+  - C007788
+  action:
+    enforcement: 'prohibited/rule: internal reference pricing — equivalent-group application groups same-active-same-dose
+      same-dosage-form drugs; these ARE substitutable in pharmacy; the Institution may also form non-substitutable groups
+      (per rational-use commissions w/ MoH) for drugs whose access would not be hindered'
+    message_tr: İç referans fiyatlandırması kapsamında eşdeğer grup uygulaması, aynı etkin maddeyi aynı dozda içeren benzer
+      dozaj formundaki ilaçları aynı eşdeğer grupta değerlendirir, bu gruptaki ilaçlar eczanede ikame edilebilir; Kurum akılcı
+      ilaç kullanımı çerçevesinde Bakanlığın da yer aldığı komisyonlarla erişimde zorluk oluşturmayacak ilaçlar için gruplar
+      oluşturabilir, bu gruptakiler eczanede ikame edilemez (§4.4.2).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,14 @@
+section_id: 2.6.6
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.6.6.(3).unlicensed_thermal_no_pay
+  sut_section: 2.6.6
+  condition:
+    procedure_category: thermal_spa
+    facility_not_ministry_licensed: true
+  action:
+    billable: false
+    denial_tr: Bakanlık işletme izni verilmeyen kaplıca tedavi ve refakatçi giderleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C001591

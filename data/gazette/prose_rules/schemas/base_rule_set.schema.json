@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bilun.local/schemas/base_rule_set.schema.json",
+  "title": "SUT prose rule set envelope",
+  "type": "object",
+  "required": ["rule_set_id", "title", "effective_date", "rules"],
+  "additionalProperties": true,
+  "properties": {
+    "rule_set_id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "effective_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "coverage_note": { "type": "string" },
+    "sut_anchors": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": ["rule_id", "sut_section", "gate_b_sources"],
+      "additionalProperties": true,
+      "properties": {
+        "rule_id": { "type": "string", "minLength": 1 },
+        "sut_section": { "type": "string", "minLength": 1 },
+        "gate_b_sources": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^C[0-9]{6}$" },
+          "minItems": 1
+        },
+        "encode_batch": { "type": "string" },
+        "message_tr": { "type": "string" },
+        "drug_names": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "icd10_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "icd10_ranges": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "report_required": { "type": "boolean" },
+        "report_specialties": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "report_duration_months": { "type": "integer", "minimum": 0 },
+        "prescriber_specialties": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "inpatient_only": { "type": "boolean" },
+        "condition": { "type": "object" },
+        "action": { "type": "object" },
+        "deontic": { "type": "string" },
+        "required_biomarkers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/biomarker_requirement" }
+        },
+        "requires_prior_therapy": { "$ref": "#/$defs/prior_therapy_requirement" }
+      }
+    },
+    "biomarker_requirement": {
+      "type": "object",
+      "required": ["marker", "status_any"],
+      "additionalProperties": false,
+      "properties": {
+        "marker": { "type": "string", "minLength": 1 },
+        "status_any": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        }
+      }
+    },
+    "prior_therapy_requirement": {
+      "type": "object",
+      "required": ["drug_or_class", "outcome"],
+      "additionalProperties": true,
+      "properties": {
+        "drug_or_class": { "type": "string", "minLength": 1 },
+        "outcome": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

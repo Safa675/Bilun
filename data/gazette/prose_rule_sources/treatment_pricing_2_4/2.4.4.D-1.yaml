@@ -1,0 +1,133 @@
+section_id: 2.4.4.D-1
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.D-1.(7).hemodialysis_ek2c_pricing
+  sut_section: 2.4.4.D-1
+  condition:
+    procedure_code_any:
+    - P5010046
+    - P5010047
+    diagnosis_any:
+    - N18
+    - N19
+  action:
+    billable: true
+    payment_tr: hemodiyaliz EK-2/C işlem puanı üzerinden faturalandırılır
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C000938
+- rule_id: 2.4.4.D-1.(8).hemodialysis_consumables_reuse_prohibited
+  sut_section: 2.4.4.D-1
+  condition:
+    procedure_code_any:
+    - P5010046
+    - P5010047
+    consumable_reuse_claimed: true
+  action:
+    billable: false
+    denial_tr: hemodiyaliz sarf malzemeleri hiçbir surette tekrar kullanılamaz (reuse)
+    severity: error
+  gate_b_sources:
+  - C000939
+- rule_id: 2.4.4.D-1.(9).private_dialysis_session_cap_excess
+  sut_section: 2.4.4.D-1
+  condition:
+    provider_type: private_dialysis_center
+    sessions_exceed_weekly_reported: true
+  action:
+    billable: false
+    denial_tr: özel diyaliz merkezlerinde sağlık raporundaki haftalık seans sayısının üstündeki ek diyaliz tedavi bedelleri
+      ödenmez
+    severity: error
+  gate_b_sources:
+  - C000940
+- rule_id: 2.4.4.D-1.(11).hemodialysis_bundled_tests_no_separate_bill
+  sut_section: 2.4.4.D-1
+  condition:
+    procedure_code_any:
+    - P5010046
+    - P5010047
+    bundled_test_separately_billed: true
+  action:
+    billable: false
+    denial_tr: Diyaliz Merkezleri Yönetmeliği kapsamındaki rutin/acil/sık tekrar tetkikler hemodiyaliz seansına dahildir;
+      ayrı faturalanamaz
+    severity: error
+  gate_b_sources:
+  - C000944
+- rule_id: 2.4.4.D-1.(6).home_hemodialysis_ek2c_pricing
+  sut_section: 2.4.4.D-1
+  condition:
+    procedure_code_any:
+    - P5010050
+    diagnosis_any:
+    - N18
+    - N19
+  action:
+    billable: true
+    payment_tr: ev hemodiyalizi EK-2/C 'ev hemodiyalizi' puanı üzerinden faturalandırılır
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C000953
+- rule_id: 2.4.4.D-1.(7ev).home_hemodialysis_device_no_pay
+  sut_section: 2.4.4.D-1
+  condition:
+    procedure_code_any:
+    - P5010050
+    device_maintenance_spare_part_billed: true
+  action:
+    billable: false
+    denial_tr: ev hemodiyalizi için hastaya kurulan cihaz bedeli ile bakım/onarım/yedek parça bedelleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C000954
+- rule_id: 2.4.4.D-1.(8ev).home_hemodialysis_session_cap_excess
+  sut_section: 2.4.4.D-1
+  condition:
+    procedure_code_any:
+    - P5010050
+    sessions_exceed_weekly_reported: true
+  action:
+    billable: false
+    denial_tr: ev hemodiyalizinde rapordaki haftalık seans üstü ek tedavi bedelleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C000955
+- rule_id: 2.4.4.D-1.(3).dialysis_prescription_by_center_physician
+  sut_section: 2.4.4.D-1
+  condition:
+    procedure_category: hemodialysis
+    non_diagnosis_based_drug_prescribed_outside_center: true
+  action:
+    billable: true
+    payment_tr: tanıya dayalı işlem kapsamı dışındaki hastaya gerekli ilaçlar, merkezde görevli hekimlerce SUT/esaslarına
+      uygun reçete edilir
+  gate_b_sources:
+  - C000934
+- rule_id: 2.4.4.D-1.(10).hemodialysis_min_4_hours
+  sut_section: 2.4.4.D-1
+  condition:
+    procedure_code_any:
+    - P5010046
+    - P5010047
+    session_hours:
+      max: 3.99
+    medical_necessity_exception: false
+  action:
+    billable: false
+    denial_tr: hemodiyaliz tedavisinin her bir seansı tıbbi zorunluluklar hariç en az 4 saat olarak uygulanır
+    severity: error
+  gate_b_sources:
+  - C000941
+- rule_id: 2.4.4.D-1.(3ev).home_dialysis_prescription_by_followup_center
+  sut_section: 2.4.4.D-1
+  condition:
+    procedure_code_any:
+    - P5010050
+    non_diagnosis_based_drug_prescribed_outside_followup_center: true
+  action:
+    billable: true
+    payment_tr: ev hemodiyalizi hastasına gerekli ilaçlar (tanıya dayalı işlem hariç), hastanın takip ve tedavisini yapan
+      merkezde görevli hekimlerce reçete edilir
+  gate_b_sources:
+  - C000950

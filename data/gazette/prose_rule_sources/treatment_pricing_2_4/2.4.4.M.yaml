@@ -1,0 +1,18 @@
+section_id: 2.4.4.M
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.M.(1).neuromonitoring_ek2d4_p703365_bypass_2_2_2b3
+  sut_section: 2.4.4.M
+  condition:
+    annex_list: EK-2/D-4
+    procedure_code_any:
+    - P703365
+    apply_2_2_2_b3_rules: true
+  action:
+    billable: true
+    enforcement: pricing_basis
+    message_tr: EK-2/D-4 Listesinde yer alan işlemlerin P703365 'Intraoperatif nöromonitörizasyon' ile birlikte uygulanması
+      şartıyla 2.2.2.B(3) kuralları uygulanmaksızın faturalandırılması halinde Kurumca karşılanır
+    annex_basis: EK-2/D-4
+  gate_b_sources:
+  - C001362

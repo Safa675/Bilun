@@ -1,0 +1,127 @@
+section_id: 4.2.65
+rules:
+- rule_id: 4.2.65.derm.diabetic_foot_4wk_response_continue_coverage
+  sut_section: 4.2.65
+  gate_b_sources:
+  - C007143
+  drug_names:
+  - epidermal büyüme faktörü (topikal)
+  icd10_codes:
+  - E10.5
+  - E11.5
+  - E12.5
+  - E13.5
+  - E14.5
+  - L97
+  report_required: true
+  report_duration_months: 1
+  report_specialties:
+  - enfeksiyon hastalıkları ve klinik mikrobiyoloji
+  - kalp ve damar cerrahisi
+  - ortopedi ve travmatoloji
+  - plastik, rekonstrüktif ve estetik cerrahi
+  - endokrinoloji ve metabolizma hastalıkları
+  - genel cerrahi
+  prescriber_specialties:
+  - enfeksiyon hastalıkları ve klinik mikrobiyoloji
+  - kalp ve damar cerrahisi
+  - ortopedi ve travmatoloji
+  - plastik, rekonstrüktif ve estetik cerrahi
+  - endokrinoloji ve metabolizma hastalıkları
+  - genel cerrahi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 4 haftalık tedavi sonrası yanıt alınan ve tedavinin devamı gereken hastalarda; 2./3. basamakta ilgili uzmanlardan
+      üçünün yer aldığı 4 hafta süreli uzman hekim raporuyla yine bu uzmanlarca 4 haftalık dozda reçete edilirse ödenir
+    message_tr: 4 (dört) haftalık tedavi sonrasında yanıt alınan hastalarda tedavinin devamının gerekmesi halinde; ikinci
+      basamak ya da üçüncü basamak resmi sağlık hizmeti sunucularında enfeksiyon hastalıkları ve klinik mikrobiyoloji, kalp
+      ve damar cerrahisi, ortopedi ve travmatoloji, plastik, rekonstrüktif ve estetik cerrahi, endokrinoloji ve metabolizma
+      hastalıkları veya genel cerrahi uzman hekimlerince düzenlenen 4 (dört) hafta süreli uzman hekim raporuna istinaden yine
+      bu uzman hekimler tarafından 4 (dört) haftalık dozda reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.65).
+- rule_id: 4.2.65.derm.diabetic_foot_osteomyelitis_softtissue_report_mandatory
+  sut_section: 4.2.65
+  gate_b_sources:
+  - C007146
+  drug_names:
+  - epidermal büyüme faktörü (topikal)
+  icd10_codes:
+  - E10.5
+  - E11.5
+  - E12.5
+  - E13.5
+  - E14.5
+  - L97
+  report_required: true
+  report_specialties:
+  - ortopedi ve travmatoloji
+  - enfeksiyon hastalıkları ve klinik mikrobiyoloji
+  action:
+    enforcement: 'mandatory: osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun ortopedi ve
+      travmatoloji uzmanınca, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının
+      enfeksiyon hastalıkları ve klinik mikrobiyoloji uzmanınca raporda belirtilmesi gerekir'
+    message_tr: Osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun ortopedi ve travmatoloji
+      uzman hekimi tarafından, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının
+      enfeksiyon hastalıkları ve klinik mikrobiyoloji hastalıkları uzman hekimi tarafından raporda belirtilmesi gerekmektedir
+      (§4.2.65).
+- rule_id: 4.2.65.derm.diabetic_foot_prior_conventional_tx_report_mandatory
+  sut_section: 4.2.65
+  gate_b_sources:
+  - C007145
+  drug_names:
+  - epidermal büyüme faktörü (topikal)
+  icd10_codes:
+  - E10.5
+  - E11.5
+  - E12.5
+  - E13.5
+  - E14.5
+  - L97
+  report_required: true
+  action:
+    enforcement: 'mandatory: topikal epidermal büyüme faktörü tedavisinden önce uygulanan konvansiyonel tedaviler ve uygulama
+      süreleri sağlık kurulu raporunda belirtilmelidir'
+    message_tr: Epidermal büyüme faktörü (topikal formu) tedavisi öncesinde uygulanan konvansiyonel tedaviler ve uygulama
+      sürelerinin sağlık kurulu raporunda belirtilmesi gerekmektedir (§4.2.65).
+- rule_id: 4.2.65.derm.diabetic_foot_wagner12_4wk_specialty_coverage
+  sut_section: 4.2.65
+  gate_b_sources:
+  - C007142
+  drug_names:
+  - epidermal büyüme faktörü (topikal)
+  icd10_codes:
+  - E10.5
+  - E11.5
+  - E12.5
+  - E13.5
+  - E14.5
+  - L97
+  report_required: true
+  report_duration_months: 1
+  report_specialties:
+  - enfeksiyon hastalıkları ve klinik mikrobiyoloji
+  - kalp ve damar cerrahisi
+  - ortopedi ve travmatoloji
+  - plastik, rekonstrüktif ve estetik cerrahi
+  - endokrinoloji ve metabolizma hastalıkları
+  - genel cerrahi
+  prescriber_specialties:
+  - enfeksiyon hastalıkları ve klinik mikrobiyoloji
+  - kalp ve damar cerrahisi
+  - ortopedi ve travmatoloji
+  - plastik, rekonstrüktif ve estetik cerrahi
+  - endokrinoloji ve metabolizma hastalıkları
+  - genel cerrahi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: konvansiyonel yara tedavisine rağmen iyileşmeyen kuru/yaş gangrensiz, osteomiyeliti ve enfeksiyonu tedavi
+      olmuş Wagner 1 veya 2 nöropatik diyabetik ayak ülserinde; 2./3. basamakta ilgili uzmanlardan üçünün yer aldığı 4 hafta
+      süreli uzman hekim raporuyla yine bu uzmanlarca 4 haftalık dozda reçete edilirse ödenir
+    message_tr: Konvansiyonel yara tedavi prensiplerinin uygulanmasına rağmen yarada iyileşmenin izlenmediği kuru veya yaş
+      gangrensiz, osteomiyeliti ve enfeksiyonu tedavi olmuş, Wagner 1 veya 2 nöropatik diyabetik ayak ülserleri olan hastalarda,
+      ikinci basamak ya da üçüncü basamak resmi sağlık hizmeti sunucularında enfeksiyon hastalıkları ve klinik mikrobiyoloji,
+      kalp ve damar cerrahisi, ortopedi ve travmatoloji, plastik, rekonstrüktif ve estetik cerrahi, endokrinoloji ve metabolizma
+      hastalıkları veya genel cerrahi uzman hekimlerince 4 (dört) hafta süreli uzman hekim raporuna istinaden yine bu uzman
+      hekimler tarafından 4 (dört) haftalık dozda reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.65).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

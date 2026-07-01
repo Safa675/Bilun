@@ -1,0 +1,432 @@
+section_id: 4.2.14.C
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.14.C.(breast).ribociclib_palbociclib_after_ai_progression
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C509
+    drug_name_any:
+    - ribosiklib
+    - palbosiklib
+    prior_ai_therapy_months:
+      min: 6
+    disease_progression: true
+  action:
+    billable: true
+    payment_tr: nüks/metastatik meme kanseri; 1. sıra AI ≥6 ay sonrası progresyonda ribosiklib/palbosiklib + AI kombinasyonu
+      ödenir
+  gate_b_sources:
+  - C004961
+- rule_id: 4.2.14.C.(renal).temsirolimus_poor_prognosis_3of6
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C64
+    - C65
+    - C66
+    drug_name_any:
+    - temsirolimus
+    poor_prognosis_criteria_met_count:
+      min: 3
+      of: 6
+    two_oncology_specialist_report: false
+  action:
+    billable: false
+    denial_tr: temsirolimus; metastatik RCC'de 6 kötü prognoz kriterinden ≥3 olan hastalarda 2 onkoloji uzmanı raporuyla ödenir
+    severity: error
+  gate_b_sources:
+  - C005054
+- rule_id: 4.2.14.C.(renal).rcc_tki_sequential_combo_no_pay
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C64
+    - C65
+    - C66
+    drug_name_set_any_two:
+    - temsirolimus
+    - sunitinib
+    - sorafenib
+    - pazopanib
+    sequential_or_combination: true
+  action:
+    billable: false
+    denial_tr: metastatik RCC'de temsirolimus/sunitinib/sorafenib/pazopanib ardışık veya kombine kullanılamaz; sadece biri
+      ödenir
+    severity: error
+  gate_b_sources:
+  - C005064
+  - C005111
+- rule_id: 4.2.14.C.(melanoma).braf_sequential_no_pay
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C43
+    drug_name_set_any_two:
+    - dabrafenib
+    - trametinib
+    - vemurafenib
+    - kobimetinib
+    sequential: true
+  action:
+    billable: false
+    denial_tr: dabrafenib/trametinib/vemurafenib/kobimetinib ardışık kullanılırsa ödenmez (kombinasyonu tanımlandığı şekliyle
+      mümkün)
+    severity: error
+  gate_b_sources:
+  - C005224
+- rule_id: 4.2.14.C.(alk).alk_tki_after_progression_seq_combo_no_pay
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C341
+    - C349
+    prior_drug_name_any:
+    - alektinib
+    - brigatinib
+    - lorlatinib
+    - seritinib
+    drug_name_any:
+    - krizotinib
+    after_progression: true
+  action:
+    billable: false
+    denial_tr: alektinib/brigatinib/lorlatinib/seritinib sonrası progresyonda krizotinib ardışık veya kombine kullanılırsa
+      ödenmez
+    severity: error
+  gate_b_sources:
+  - C005241
+  - C005406
+  - C005411
+  - C005614
+- rule_id: 4.2.14.C.(glioblastoma).bevacizumab_after_temozolomide
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C716
+    drug_name_any:
+    - bevacizumab
+    prior_temozolomide: true
+    recurrence_or_progression: true
+  action:
+    billable: true
+    payment_tr: glioblastoma (DSÖ IV); temozolomid sonrası nüks/progresyonda kemoterapi ile progresyona kadar bevacizumab
+      ödenir
+  gate_b_sources:
+  - C005364
+- rule_id: 4.2.14.C.(myeloma).pi_combo_no_pay
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C900
+    drug_name_set_any_two:
+    - iksazomib
+    - karfilzomib
+    - daratumumab
+    - isatuksimab
+    - elranatamab
+    - selineksor
+    - pomalidomid
+    combination: true
+  action:
+    billable: false
+    denial_tr: multiple myeloma'da iksazomib/karfilzomib/daratumumab/isatuksimab/elranatamab/selineksor/pomalidomid özel hükümler
+      dışında kombine kullanılırsa ödenmez
+    severity: error
+  gate_b_sources:
+  - C005547
+  - C005551
+  - C005606
+  - C005710
+  - C005715
+- rule_id: 4.2.14.C.(myeloma).cross_resistance_daratumumab_isatuximab_no_pay
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C900
+    drug_name_any:
+    - isatuksimab
+    prior_daratumumab_resistance: true
+  action:
+    billable: false
+    denial_tr: daratumumab direnci varsa isatuksimab ödenmez (tersi de geçerli)
+    severity: error
+  gate_b_sources:
+  - C005608
+- rule_id: 4.2.14.C.(breast).fulvestrant_after_ai_adjuvant
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C509
+    drug_name_any:
+    - fulvestrant
+    prior_adjuvant_ai_months:
+      min: 12
+    recurrence_within_months_after_ai:
+      max: 12
+  action:
+    billable: true
+    payment_tr: adjuvan AI ≥12 ay iken veya AI sonrası 12 ay içinde nüks/metastaz gelişirse fulvestrant + kombi ödenir
+  gate_b_sources:
+  - C005568
+  - C005589
+- rule_id: 4.2.14.C.(pembro_nsclc_pdl1_lt_50).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C341
+    - C349
+    drug_name_any:
+    - pembrolizumab
+    pdl1_expression_pct:
+      max: 49
+    ecog_score:
+      max: 1
+    egfr_alk_ros_mutation: false
+  action:
+    billable: null
+    denial_tr: 'Tier C (klinik doğrulama gerekli): pembrolizumab PD-L1 <%50 NSCLC''de ECOG 0-1 + mutasyon negatif + beyin
+      metastazı yok koşuluyla; PD-L1/ECOG doğrulanmalı'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - pdl1_expression_pct
+    - ecog_score
+    - brain_metastasis_status
+  gate_b_sources:
+  - C005751
+  - C005752
+- rule_id: 4.2.14.C.(pembro_nsclc_pdl1_ge_50).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C341
+    - C349
+    drug_name_any:
+    - pembrolizumab
+    pdl1_expression_pct:
+      min: 50
+    ecog_score:
+      max: 1
+  action:
+    billable: null
+    denial_tr: 'Tier C: pembrolizumab PD-L1 ≥%50 NSCLC''de ECOG 0-1; klinik alanlar doğrulanmalı'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - pdl1_expression_pct
+    - ecog_score
+  gate_b_sources:
+  - C005753
+- rule_id: 4.2.14.C.(pembro_tnbc_neoadjuvant).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C509
+    drug_name_any:
+    - pembrolizumab
+    tumor_size_cm:
+      min: 2
+    treatment_phase: neoadjuvant
+  action:
+    billable: null
+    denial_tr: 'Tier C: pembrolizumab triple-negatif meme kanseri neoadjuvan; tümör ≥2cm veya aksiller lenf+ kriterleri doğrulanmalı'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - tnbc_status
+    - tumor_size_cm
+    - lymph_node_status
+  gate_b_sources:
+  - C005754
+- rule_id: 4.2.14.C.(pembro_tnbc_pdl1_cps10).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C509
+    drug_name_any:
+    - pembrolizumab
+    pdl1_cps:
+      min: 10
+  action:
+    billable: null
+    denial_tr: 'Tier C: pembrolizumab PD-L1 CPS ≥10 metastatik/rezeke edilemeyen TNBC 1. basamak; CPS doğrulanmalı'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - pdl1_cps
+    - tnbc_status
+  gate_b_sources:
+  - C005755
+- rule_id: 4.2.14.C.(pembro_nasopharyngeal).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C110
+    - C111
+    - C119
+    drug_name_any:
+    - pembrolizumab
+    pdl1_cps:
+      min: 1
+  action:
+    billable: null
+    denial_tr: 'Tier C: pembrolizumab nazofarinks Ca PD-L1 CPS ≥%1; CPS/ECOG doğrulanmalı'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - pdl1_cps
+    - ecog_score
+  gate_b_sources:
+  - C005756
+- rule_id: 4.2.14.C.(atezo_nsclc_adjuvant_pdl1_50).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C341
+    - C349
+    drug_name_any:
+    - atezolizumab
+    stage: II-IIIA
+    pdl1_tc_pct:
+      min: 50
+    treatment_phase: adjuvant
+  action:
+    billable: null
+    denial_tr: 'Tier C: atezolizumab NSCLC Evre II-IIIA adjuvan PD-L1 TC ≥%50; evre/PD-L1 doğrulanmalı'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - pdl1_tc_pct
+    - tnm_stage
+  gate_b_sources:
+  - C005758
+- rule_id: 4.2.14.C.(atezo_nsclc_pdl1_50).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C341
+    - C349
+    drug_name_any:
+    - atezolizumab
+    pdl1_expression_pct:
+      min: 50
+    ecog_score:
+      max: 1
+  action:
+    billable: null
+    denial_tr: 'Tier C: atezolizumab NSCLC PD-L1 ≥%50 ECOG 0-1; klinik doğrulama gerekli'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - pdl1_expression_pct
+    - ecog_score
+  gate_b_sources:
+  - C005759
+- rule_id: 4.2.14.C.(atezo_sclc_2l).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C349
+    drug_name_any:
+    - atezolizumab
+    prior_chemo_lines:
+      min: 1
+      max: 2
+    progression: true
+  action:
+    billable: null
+    denial_tr: 'Tier C: atezolizumab NSCLC 1-2. basamak kemoterapi sonrası progresyon; doğrulanmalı'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - prior_chemo_lines
+    - progression_status
+  gate_b_sources:
+  - C005760
+- rule_id: 4.2.14.C.(atezo_sclc_extensive_1l).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C349
+    drug_name_any:
+    - atezolizumab
+    ecog_score:
+      max: 1
+    sclc_stage: extensive
+    treatment_line: 1
+  action:
+    billable: null
+    denial_tr: 'Tier C: atezolizumab yaygın evre SCLC 1. basamak ECOG 0-1; klinik doğrulama gerekli'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - ecog_score
+    - sclc_stage
+  gate_b_sources:
+  - C005761
+- rule_id: 4.2.14.C.(atezo_hcc_bevacizumab).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C220
+    drug_name_any:
+    - atezolizumab
+    concurrent_drug_name_any:
+    - bevacizumab
+    ecog_score:
+      max: 1
+    child_pugh: A
+  action:
+    billable: null
+    denial_tr: 'Tier C: atezolizumab+bevacizumab HCC ECOG 0-1 Child-Pugh A; doğrulanmalı'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - ecog_score
+    - child_pugh_score
+  gate_b_sources:
+  - C005762
+- rule_id: 4.2.14.C.(durva_biliary_pdl1_1).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C240
+    - C241
+    - C239
+    drug_name_any:
+    - durvalumab
+    pdl1_expression_pct:
+      min: 1
+    treatment_line: 1
+  action:
+    billable: null
+    denial_tr: 'Tier C: durvalumab safra yolu kanseri PD-L1 ≥%1 1. basamak; doğrulanmalı'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - pdl1_expression_pct
+  gate_b_sources:
+  - C005764
+- rule_id: 4.2.14.C.(durva_nsclc_stage3_pdl1_1).tier_c_review
+  sut_section: 4.2.14.C
+  condition:
+    diagnosis_any:
+    - C341
+    - C349
+    drug_name_any:
+    - durvalumab
+    stage: III
+    pdl1_expression_pct:
+      min: 1
+  action:
+    billable: null
+    denial_tr: 'Tier C: durvalumab NSCLC Evre 3 PD-L1 ≥%1 kemoradyoterapi sonrası; doğrulanmalı'
+    severity: review
+    tier: C
+    clinical_fields_needed:
+    - pdl1_expression_pct
+    - tnm_stage
+  gate_b_sources:
+  - C005765

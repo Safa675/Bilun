@@ -1,0 +1,125 @@
+section_id: 4.2.3
+rules:
+- rule_id: 4.2.3.allergy_vaccine_oral_forms_nopay
+  sut_section: 4.2.3
+  gate_b_sources:
+  - C003918
+  drug_names:
+  - alerji aşısı
+  - immünoterapi
+  pay: false
+  action:
+    enforcement: 'no-pay condition: alerji aşılarının oral formları ödenmez'
+    message_tr: Alerji aşılarının oral formları ödenmez (§4.2.3).
+- rule_id: 4.2.3.immunotherapy_break_restart_initial_dose
+  sut_section: 4.2.3
+  gate_b_sources:
+  - C003913
+  - C003915
+  - C003917
+  drug_names:
+  - immünoterapi
+  - aşı tedavisi
+  - alergoid immünoterapi
+  report_required: true
+  action:
+    enforcement: mevsim öncesi alergoid hariç aşı tedavisine ≥6 ay ara verilirse, çocukluk/erişkin her dönem için birer kez,
+      tedavi başlangıç tarihi ve başlangıç kriterleri yeni raporda belirtilerek başlangıç dozlarında yeniden başlanır
+    message_tr: Mevsim öncesi alergoid immünoterapi hariç, aşı tedavisine 6 ay ya da daha fazla ara verilmesi halinde, çocukluk
+      ve erişkin dönemlerine ait her bir dönem için birer defaya mahsus olmak üzere bu durum ile hastanın tedaviye başladığı
+      tarih ve o tarihteki başlangıç kriterlerinin yeni düzenlenecek raporda belirtilmesi koşuluyla başlangıç dozlarında tedaviye
+      yeniden başlanabilir; ilk reçetelendirme bu uzman hekimlerce yapılır (§4.2.3).
+- rule_id: 4.2.3.immunotherapy_continuation_prescribers
+  sut_section: 4.2.3
+  gate_b_sources:
+  - C003916
+  drug_names:
+  - immünoterapi
+  - alerji aşısı
+  report_required: true
+  prescriber_specialties:
+  - çocuk sağlığı ve hastalıkları
+  - kulak burun boğaz
+  - göz sağlığı ve hastalıkları
+  - göğüs hastalıkları
+  - dermatoloji
+  - iç hastalıkları
+  - aile hekimliği
+  condition:
+    coverage_note: true
+  action:
+    enforcement: sağlık kurulu raporuna dayalı tedavi devamı niteliğindeki reçeteler tanısal hekimlerin yanı sıra belirli
+      uzman hekimler/aile hekimi tarafından da yazılabilir
+    message_tr: Sağlık kurulu raporuna dayanılarak yapılan tedavinin devamı niteliğindeki diğer reçetelendirmeler, bu hekimlerin
+      yanı sıra çocuk sağlığı ve hastalıkları, kulak burun boğaz, göz sağlığı ve hastalıkları, göğüs hastalıkları, dermatoloji,
+      iç hastalıkları veya aile hekimliği uzman hekimi tarafından da yapılabilir (§4.2.3).
+- rule_id: 4.2.3.immunotherapy_duration_5yr_seasonal
+  sut_section: 4.2.3
+  gate_b_sources:
+  - C003920
+  drug_names:
+  - aşı tedavisi
+  - alergoid immünoterapi
+  - arı venom alerjisi
+  report_required: true
+  action:
+    enforcement: arı venom alerjisi hariç aşı tedavileri toplamda 5 yılı geçemez; mevsim öncesi alergoid immünoterapi her
+      yıl polen mevsimi öncesi ömür boyu en fazla 5 defa
+    message_tr: Aşı tedavileri, arı venom alerjisi hariç, toplamda 5 yılı geçemez. Mevsim öncesi allergoid immünoterapi her
+      yıl polen mevsimi öncesi dönemde ömür boyu en fazla 5 defaya mahsus olarak yapılabilir (§4.2.3).
+- rule_id: 4.2.3.immunotherapy_max_2_groups
+  sut_section: 4.2.3
+  gate_b_sources:
+  - C003914
+  drug_names:
+  - immünoterapi
+  - alerji aşısı
+  - alergoid immünoterapi
+  icd10_codes:
+  - Z88
+  - J30
+  condition:
+    coverage_note: true
+  action:
+    enforcement: en fazla 2 farklı grup solunum yolu alerjeni (polenler, ev tozu akarları, küf mantarları, hayvan epiteli)
+      için immunoterapi ödenir
+    message_tr: En fazla 2 farklı grup solunum yolu alerjeni için immunoterapi ödenir. Bu gruplar; polenler, ev tozu akarları,
+      küf mantarları ve hayvan epitelidir (§4.2.3).
+- rule_id: 4.2.3.poisoning_antidote_full_coverage_no_report
+  sut_section: 4.2.3
+  gate_b_sources:
+  - C003921
+  drug_names:
+  - antidot
+  - panzehir
+  icd10_codes:
+  - T36
+  - T37
+  - T38
+  - T39
+  - T40
+  - T41
+  - T42
+  - T43
+  - T44
+  - T45
+  - T50
+  - T51
+  - T52
+  - T53
+  - T54
+  - T55
+  - T56
+  - T57
+  - T58
+  - T59
+  - T60
+  - T62
+  - T65
+  report_required: false
+  condition:
+    coverage_note: true
+  action:
+    enforcement: zehirlenmelerde kullanılan antidotların bedelinin tamamı sağlık raporu aranmaksızın ödenir
+    message_tr: Zehirlenmelerde kullanılan antidotların bedelinin tamamı sağlık raporu aranmaksızın ödenir (§4.2.3).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

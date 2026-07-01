@@ -1,0 +1,77 @@
+section_id: 4.2.1.C-10
+rules:
+- rule_id: 4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c10
+  sut_section: 4.2.1.C-10
+  gate_b_sources:
+  - C003869
+  drug_names:
+  - biyolojik ajan
+  - ustekinumab
+  - sekukinumab
+  - ipekizumab
+  - guselkumab
+  - risankizumab
+  icd10_codes:
+  - L40
+  report_required: true
+  report_specialties:
+  - dermatoloji
+  prescriber_specialties:
+  - dermatoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basamakta dermatoloji uzmanı; başlangıçta 4 ay, sonra 6 ay süreli rapor; PASI ve yanıt her raporda
+    message_tr: Üçüncü basamak resmi sağlık hizmeti sunucularında dermatoloji uzman hekiminin yer aldığı başlangıçta 4 ay,
+      sonrasında 6'şar ay süreli sağlık kurulu raporuyla dermatoloji uzmanlarınca reçete edilirse bedelleri Kurumca karşılanır;
+      raporda PASI değeri ve tedaviye yanıt her raporda belirtilir (§4.2.1.C-10).
+- rule_id: 4.2.1.C.rheum_pmr_6mo_coverage_c10
+  sut_section: 4.2.1.C-10
+  gate_b_sources:
+  - C003874
+  drug_names:
+  - anti-tnf
+  - biyolojik ajan
+  - ustekinumab
+  - sekukinumab
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - romatoloji
+  - fizik tedavi ve rehabilitasyon
+  prescriber_specialties:
+  - romatoloji
+  - fizik tedavi ve rehabilitasyon
+  condition:
+    coverage_note: true
+  action:
+    enforcement: romatoloji veya fizik tedavi/rehabilitasyon uzmanının yer aldığı 6 ay süreli raporla reçete edilirse ödenir
+    message_tr: Romatoloji veya fizik tedavi ve rehabilitasyon uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporuna
+      dayanılarak ilgili uzmanlarca reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.1.C-10).
+- rule_id: 4.2.1.ixekizumab_psa_second_line
+  sut_section: 4.2.1.C-10
+  drug_names:
+  - ixekizumab
+  - iksekizumab
+  - taltz
+  icd10_ranges:
+  - L40.5
+  report_required: true
+  message_tr: İxekizumab — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte sağlık kurulu raporunda önceki tedavi yetersizliği
+    belirtilmelidir (§4.2.1.C-10).
+  gate_b_sources:
+  - C003872
+- rule_id: 4.2.1.ixekizumab_psoriasis_pasi_systemic_failure
+  sut_section: 4.2.1.C-10
+  drug_names:
+  - ixekizumab
+  - iksekizumab
+  - taltz
+  icd10_ranges:
+  - L40
+  report_required: true
+  message_tr: İxekizumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi
+    gerekir (§4.2.1.C-10).
+  gate_b_sources:
+  - C003867
+source_note: Exported from drug_indication_prose.json (YAML source migration)

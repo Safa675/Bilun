@@ -1,0 +1,98 @@
+section_id: 4.2.49.A
+rules:
+- rule_id: 4.2.49.A.neuro.nusinersen_all_criteria_coverage_a
+  sut_section: 4.2.49.A
+  gate_b_sources:
+  - C007018
+  drug_names:
+  - nusinersen
+  - nusinersen sodium
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'nusinersen sodium: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir'
+    message_tr: Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.A).
+- rule_id: 4.2.49.A.neuro.nusinersen_all_criteria_coverage_b
+  sut_section: 4.2.49.A
+  gate_b_sources:
+  - C007026
+  drug_names:
+  - nusinersen
+  - nusinersen sodium
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'nusinersen sodium: aşağıdaki kriterlerin tamamı sağlanırsa bedeli ödenir'
+    message_tr: Hastalarda aşağıda yer alan kriterlerin tamamının sağlanması halinde bedeli Kurumca karşılanır (§4.2.49.A).
+- rule_id: 4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_a
+  sut_section: 4.2.49.A
+  gate_b_sources:
+  - C007024
+  drug_names:
+  - nusinersen
+  - nusinersen sodium
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  action:
+    enforcement: 'mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik
+      açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir'
+    message_tr: Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi,
+      yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda
+      belirtilmesi gereklidir (§4.2.49.A).
+- rule_id: 4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_b
+  sut_section: 4.2.49.A
+  gate_b_sources:
+  - C007029
+  drug_names:
+  - nusinersen
+  - nusinersen sodium
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  action:
+    enforcement: 'mandatory: tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik
+      açıdan izlenmesi; yaşa/hastalığa özel standart değerlendirmeler yapılarak raporda belirtilmelidir'
+    message_tr: Tedavi süresince motor, bilişsel, beslenme, solunum, fizik tedavi rehabilitasyon ve ortopedik açıdan izlenmesi,
+      yaşa uygun ve hastalığa özel tanımlanmış ölçütlerle standart değerlendirmelerin yapılması ve sağlık kurulu raporunda
+      belirtilmesi gereklidir (§4.2.49.A).
+- rule_id: 4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a
+  sut_section: 4.2.49.A
+  gate_b_sources:
+  - C007021
+  drug_names:
+  - nusinersen
+  - nusinersen sodium
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  action:
+    enforcement: 'mandatory: BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmamalıdır'
+    message_tr: BOS drenajı için yerleştirilmiş bir şant veya BOS kateteri bulunmaması gerekmektedir (§4.2.49.A).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

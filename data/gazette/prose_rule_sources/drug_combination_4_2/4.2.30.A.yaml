@@ -1,0 +1,15 @@
+section_id: 4.2.30.A
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.30.A.(9).epoprostenol_dialysis_no_pay
+  sut_section: 4.2.30.A
+  condition:
+    drug_name_any:
+    - epoprostenol
+    indication: renal_dialysis
+  action:
+    billable: false
+    denial_tr: epoprostenol böbrek diyalizi endikasyonunda ödenmez
+    severity: error
+  gate_b_sources:
+  - C006420

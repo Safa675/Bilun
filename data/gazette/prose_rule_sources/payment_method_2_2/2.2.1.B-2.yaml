@@ -1,0 +1,41 @@
+section_id: 2.2.1.B-2
+source_note: Exported from payment_method_2_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.1.B-2.(2).g.no_visit_fee
+  sut_section: 2.2.1.B-2
+  condition:
+    care_setting: inpatient
+    payment_method_path: itemized
+    service_category: hizmet_basi_listed
+  action:
+    payment_method: itemized
+    payment_method_tr: hizmet başına ödeme — EK-2/A muayene tutarı faturalandırılamaz
+    visit_fee_annex: null
+    bill_materials_separately: true
+    bill_drugs_separately: true
+  gate_b_sources:
+  - C000606
+- rule_id: 2.2.1.B-2.(4).training_hospital_inpatient
+  sut_section: 2.2.1.B-2
+  condition:
+    care_setting: inpatient
+    facility_type: training_research_hospital
+  action:
+    payment_method: itemized
+    payment_method_tr: eğitim/araştırma hastanesi yatarak — EK-2/B ve EK-2/Ç puanları esas
+    bill_materials_separately: true
+    bill_drugs_separately: true
+  gate_b_sources:
+  - C000612
+- rule_id: 2.2.1.B-2.a.itemized_ek2b_ek2c_basis
+  sut_section: 2.2.1.B-2
+  condition:
+    care_setting: inpatient
+    payment_method_path: itemized
+  action:
+    payment_method: itemized
+    payment_method_tr: hizmet başına ödeme — EK-2/B ve EK-2/Ç puanları esas
+    bill_materials_separately: true
+    bill_drugs_separately: true
+  gate_b_sources:
+  - C000592

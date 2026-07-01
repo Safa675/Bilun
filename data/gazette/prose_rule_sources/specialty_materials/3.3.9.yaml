@@ -1,0 +1,47 @@
+section_id: 3.3.9
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.9.(1).medikal_çorap_saglik_kurulu_must_bill
+  sut_section: 3.3.9
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003099
+  condition:
+    material_name_any:
+    - medikal corap
+    - medikal çorap
+    - kompresyon
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Medikal çorap — genel cerrahi/dermatoloji/plastik cerrahi/kalp damar cerrahi/fizik tedavi uzmanlarından birinin
+      yer aldığı sağlık kurulu raporuna istinaden tüm hekimlerce reçete edilirse tüm evrelerde bedeli Kurumca karşılanır (§3.3.9(1)).
+- rule_id: 3.3.9.(3).standart_beden_medikal_corap_must_bill
+  sut_section: 3.3.9
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003101
+  condition:
+    material_name_any:
+    - medikal corap
+    - medikal çorap
+    - kompresyon
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Medikal çorap — standart bedenler üzerinden bedeli Kurumca karşılanır (§3.3.9(3)).
+- rule_id: 3.3.9.(5).medikal_corap_yilda_iki_kez_regulatory
+  sut_section: 3.3.9
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003103
+  condition:
+    material_name_any:
+    - medikal corap
+    - medikal çorap
+    - kompresyon
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Medikal çorap — ilgili hekimce uygun görülmesi halinde 6 ay arayla yılda en fazla 2 kez reçete edilebilir
+      (§3.3.9(5)).

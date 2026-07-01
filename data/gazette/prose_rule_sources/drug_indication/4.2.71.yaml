@@ -1,0 +1,69 @@
+section_id: 4.2.71
+rules:
+- rule_id: 4.2.71.onco.al_amyloidosis_daratumumab_cardiac_mayo_iiib_nopay
+  sut_section: 4.2.71
+  gate_b_sources:
+  - C007209
+  drug_names:
+  - daratumumab
+  icd10_codes:
+  - E85.0
+  - E85.4
+  - E85.9
+  - I50
+  pay: false
+  action:
+    enforcement: 'no-pay condition: NYHA Sınıf IIIB veya Sınıf IV kalp hastalığı olan veya Mayo Evre IIIB hafif zincir (AL)
+      amiloidozu olan hastalarda ödenmez'
+    message_tr: NYHA Sınıf IIIB veya Sınıf IV kalp hastalığı olan veya Mayo Evre IIIB hafif zincir (AL) amiloidozu olan hastalarda
+      ödenmez (§4.2.71).
+- rule_id: 4.2.71.onco.al_amyloidosis_daratumumab_cyborg_combo_coverage
+  sut_section: 4.2.71
+  gate_b_sources:
+  - C007207
+  drug_names:
+  - daratumumab
+  icd10_codes:
+  - E85.0
+  - E85.4
+  - E85.9
+  report_required: true
+  report_specialties:
+  - hematoloji
+  prescriber_specialties:
+  - hematoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: daratumumabın yalnızca SC formu; biyopsi ile AL tipi amiloid varlığı tespit edilmiş yeni teşhis sistemik
+      hafif zincir (AL) amiloidozlu yetişkinlerde siklofosfamid, bortezomib ve deksametazon ile kombine olarak progresyona
+      kadar kullanılırsa ödenir
+    message_tr: Daratumumabın yalnızca sc formu; biyopsi ile AL tipi amiloid varlığı tespit edilmiş yeni teşhis edilmiş sistemik
+      hafif zincir (AL) amiloidozlu yetişkin hastaların tedavisinde siklofosfamid, bortezomib ve deksametazon ile kombine
+      olarak progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır (§4.2.71).
+- rule_id: 4.2.71.onco.al_amyloidosis_daratumumab_response_hematology_3mo_coverage
+  sut_section: 4.2.71
+  gate_b_sources:
+  - C007208
+  drug_names:
+  - daratumumab
+  icd10_codes:
+  - E85.0
+  - E85.4
+  - E85.9
+  report_required: true
+  report_duration_months: 3
+  report_specialties:
+  - hematoloji
+  prescriber_specialties:
+  - hematoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 3. kür sonunda en az minör yanıt, 6. kür sonunda ve devam eden her 6 kür sonunda en az kısmi yanıt olduğu
+      belirtilen, hematoloji uzmanının yer aldığı en fazla 3 ay süreli sağlık kurulu raporuyla hematoloji uzmanlarınca reçete
+      edilirse ödenir
+    message_tr: Üçüncü kür sonunda en az minör yanıt, altıncı kür sonunda ve devam eden her 6 kür sonunda ise en az kısmi
+      yanıt olduğunun belirtildiği, hematoloji uzman hekiminin yer aldığı, en fazla 3 ay süreli sağlık kurulu raporuna istinaden
+      hematoloji uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.71).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

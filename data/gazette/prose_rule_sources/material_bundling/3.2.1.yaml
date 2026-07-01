@@ -1,0 +1,43 @@
+section_id: 3.2.1
+source_note: Exported from material_bundling_prose.json (YAML source migration)
+rules:
+- rule_id: 3.2.1.(2).procurement_price_refs_insufficient
+  sut_section: 3.2.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002821
+  condition:
+    procurement_price_refs_insufficient: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: İhale/DTS ekranında son bir yıl içinde en az 3 hastane fiyat referansı yok — listesiz veya fiyatsız malzeme
+      Kurumca karşılanmaz (§3.2.1(2)).
+- rule_id: 3.2.1.A.(3).supplier_contract_pricing_path
+  sut_section: 3.2.1
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002821
+  condition:
+    supplier_contract_pricing_path: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Tedarikçi sözleşmeli malzeme — ihale fiyatı ve SUT tavanı doğrulanmalı (§3.2.1.A(3)).
+- rule_id: 3.2.1.unlisted_material_surcharge_billing
+  sut_section: 3.2.1
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002823
+  - C002830
+  - C002690
+  - C002766
+  - C002790
+  - C002797
+  - C002827
+  condition:
+    unlisted_material_surcharge_billing: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Listesiz/fiyatsız malzeme — işletme gideri ve kesinti kurallarına uygun fiyat doğrulanmalı (§3.2.1).

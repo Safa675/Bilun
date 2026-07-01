@@ -1,0 +1,41 @@
+section_id: 4.2.61
+rules:
+- rule_id: 4.2.61.onco.carmustine_offlabel_bmt_conditioning_coverage
+  sut_section: 4.2.61
+  gate_b_sources:
+  - C007128
+  drug_names:
+  - karmustin
+  icd10_codes:
+  - C81
+  - C82
+  - C83
+  - C84
+  - C85
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - çocuk hematoloji ve onkoloji
+  - erişkin hematoloji
+  - hematoloji
+  prescriber_specialties:
+  - çocuk hematoloji ve onkoloji
+  - erişkin hematoloji
+  - hematoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: Sağlık Bakanlığından hasta bazında alınacak endikasyon dışı onaya dayanılarak üçüncü basamakta çocuk hematoloji
+      ve onkoloji veya erişkin hematoloji uzmanının yer aldığı 6 aylık sağlık kurulu raporuyla adı geçen hekimlerce reçete
+      edilirse ödenir; primer MSK lenfoması ve MSK tutulumu olan lenfomalar hariç Hodgkin/Non-Hodgkin lenfomada kemik iliği
+      nakli hazırlık rejiminde karmustin kontrendike ise raporda belirtilmesiyle ödenir; endikasyon dışı onay tarihi ve süresi
+      raporda belirtilir
+    message_tr: Sağlık Bakanlığından hasta bazında alınacak endikasyon dışı onaya dayanılarak, üçüncü basamak resmi sağlık
+      hizmet sunucularında çocuk hematoloji ve onkoloji uzman hekiminin veya erişkin hematoloji uzman hekiminin yer aldığı
+      6 aylık sağlık kurulu raporuna istinaden adı geçen hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır.
+      Sağlık Bakanlığından hasta bazında alınacak endikasyon dışı onaya dayanılarak, primer merkezi sinir sistemi lenfoması
+      ve merkezi sinir sistemi tutulumu olan lenfomalar hariç olmak üzere Hodgkin Lenfoma ve Non-Hodgkin Lenfoma hastalarındaki
+      kemik iliği nakli hazırlık rejimi kullanımında ise; söz konusu raporda karmustin kullanımının kontrendike olduğu durumların
+      belirtilmesi halinde bedelleri Kurumca karşılanır. Endikasyon dışı onay tarihi ve süresi sağlık kurulu raporunda belirtilir
+      (§4.2.61).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

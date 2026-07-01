@@ -1,0 +1,43 @@
+section_id: 3.3.3.B
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.3.B.(4).teleskopik_with_cap_kep
+  sut_section: 3.3.3.B
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002907
+  condition:
+    optical_telescopic_with_cap_claim: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Kapak kep reçeteli hastada yakın teleskopik gözlük — ayrıca karşılanmaz (§3.3.3.B(4)).
+- rule_id: 3.3.3.B.(4).teleskopic_keyword_no_pay
+  sut_section: 3.3.3.B
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002907
+  condition:
+    material_name_any:
+    - teleskopik gozluk
+    - teleskopik gözlük
+    - yakin teleskopik
+    - yakın teleskopik
+  action:
+    material_outcome: no_pay
+    severity: warning
+    message_tr: Yakın teleskopik gözlük — kapak kep kapsamı dışında ayrı ödeme şüphesi (§3.3.3.B(4)).
+- rule_id: 3.3.3.B.(1).teleskopik_gorme_3_basamak_must_bill
+  sut_section: 3.3.3.B
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002902
+  condition:
+    material_name_any:
+    - teleskopik
+    - teleskop
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Teleskopik görmeye yardımcı malzeme — iyi gören gözde düzeltmiş uzak görme keskinliği 3/10 ve altı hastalarda
+      3. basamak sağlık kurulu raporuna istinaden bedeli Kurumca karşılanır (§3.3.3.B(1)).

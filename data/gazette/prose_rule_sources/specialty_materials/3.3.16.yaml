@@ -1,0 +1,43 @@
+section_id: 3.3.16
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.16.(4).dual_mesh_primary_hernia_no_pay
+  sut_section: 3.3.16
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003159
+  condition:
+    dual_mesh_primary_hernia_repair: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Primer inguinal/femoral/umbilikal/epigastrik fıtık onarımında çift yüzlü mesh — karşılanmaz (§3.3.14/16(4)).
+- rule_id: 3.3.16.(4).dual_mesh_primary_hernia_keyword
+  sut_section: 3.3.16
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003159
+  condition:
+    material_name_any:
+    - cift yuzlu yama
+    - çift yüzlü yama
+    - dual mesh
+    - hernia mesh
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Çift yüzlü mesh — primer fıtık onarımı kapsamı dışı şüphesi (§3.3.14/16(4)).
+- rule_id: 3.3.16.(1).total_yuz_maskesi_noninvaziv_must_bill
+  sut_section: 3.3.16
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003170
+  condition:
+    material_name_any:
+    - total yüz maskesi
+    - total yuz maskesi
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Total yüz maskesi — noninvaziv mekanik ventilasyon ihtiyacı olan, yüz deformiteli/travmalı/yanıklı ya da oronazal
+      maskeye uyum sağlayamayan hastalarda kullanılması durumunda bedeli Kurumca karşılanır (§3.3.16(1)).

@@ -1,0 +1,79 @@
+section_id: 2.2.2.A
+source_note: Exported from payment_method_2_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.2.A(1).itemized_basis
+  sut_section: 2.2.2.A
+  condition:
+    care_setting: inpatient
+    payment_method_path: itemized
+  action:
+    payment_method: itemized
+    payment_method_tr: hizmet başına ödeme — EK-2/B ve EK-2/Ç esas
+    bill_materials_separately: true
+    bill_drugs_separately: true
+  gate_b_sources:
+  - C000639
+- rule_id: 2.2.2.A(2).itemized_materials_drugs
+  sut_section: 2.2.2.A
+  condition:
+    care_setting: inpatient
+    payment_method_path: itemized
+  action:
+    payment_method: itemized
+    payment_method_tr: hizmet başına ödeme — temin edilen ilaç/malzeme ayrı
+    bill_materials_separately: true
+    bill_drugs_separately: true
+  gate_b_sources:
+  - C000640
+- rule_id: 2.2.2.A(3).companion_fee_itemized
+  sut_section: 2.2.2.A
+  condition:
+    care_setting: inpatient
+    payment_method_path: itemized
+    line_type: refakatci
+  action:
+    payment_method: itemized
+    payment_method_tr: refakatçi bedeli — §2.6.3(2) esas
+    bill_materials_separately: false
+    bill_drugs_separately: false
+  gate_b_sources:
+  - C000641
+- rule_id: 2.2.2.A(4).ivd_kit_control_no_pay
+  sut_section: 2.2.2.A
+  condition:
+    care_setting: inpatient
+    line_type: ivd_kit_control
+    excluded_test_types:
+    - seroconversion_panel
+    - confirmatory
+  action:
+    payment_method: itemized
+    payment_method_tr: invitro diyagnostik kit kontrol testleri (serokonversiyon/doğrulama hariç) Kurumca karşılanmaz
+    billable: false
+  gate_b_sources:
+  - C000644
+- rule_id: 2.2.2.A(6).training_hospital_itemized
+  sut_section: 2.2.2.A
+  condition:
+    care_setting: inpatient
+    payment_method_path: itemized
+    facility_type: training_research_hospital
+  action:
+    payment_method: itemized
+    payment_method_tr: eğitim/araştırma hastanesi hizmet başına ödeme — EK-2/B ve EK-2/Ç esas
+    bill_materials_separately: true
+    bill_drugs_separately: true
+  gate_b_sources:
+  - C000652
+- rule_id: 2.2.2.A.cross_specialty_uplift_25pt
+  sut_section: 2.2.2.A
+  condition:
+    care_setting: inpatient
+    payment_method_path: itemized
+    cross_specialty: true
+  action:
+    payment_method: itemized
+    payment_method_tr: farklı uzmanlık dallarında yüzdelik oran +25 puan
+    rate_uplift_points: 25
+  gate_b_sources:
+  - C000649

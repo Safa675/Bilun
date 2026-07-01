@@ -1,0 +1,18 @@
+section_id: 2.4.4.Ö
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.O-u.(1).neuronavigation_ek2c_d5_bypass_2_2_2b3
+  sut_section: 2.4.4.Ö
+  condition:
+    procedure_code_any:
+    - P614981
+    apply_2_2_2_b3_rules: true
+  action:
+    billable: true
+    enforcement: pricing_basis
+    message_tr: intraoperatif nöronavigasyon işlem bedeli P614981 üzerinden ve 2.2.2.B(3) kuralları uygulanmaksızın faturalandırılır;
+      EK-2/D-5 Listesindeki işlemlerle birlikte uygulanıp beyin ve sinir cerrahisi ile kulak burun boğaz uzmanlarınca yapılması
+      halinde Kurumca karşılanır
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001377

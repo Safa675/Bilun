@@ -1,0 +1,14 @@
+section_id: 2.5.3.B
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.5.3.B.(1).overseas_sample_only_no_patient_travel
+  sut_section: 2.5.3.B
+  condition:
+    overseas_lab_sample_only: true
+    patient_sent_abroad: true
+  action:
+    billable: false
+    denial_tr: yurt dışı tetkik/tahlil için numune gönderilebilir; hasta yurt dışına gönderilemez
+    severity: error
+  gate_b_sources:
+  - C001451

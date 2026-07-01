@@ -1,0 +1,44 @@
+section_id: 4.1.2
+rules:
+- rule_id: 4.1.2.contracted_pharmacy_supply_coverage
+  sut_section: 4.1.2
+  gate_b_sources:
+  - C003430
+  condition:
+    coverage_note: true
+    max_days_per_dispense: 5
+  action:
+    enforcement: 'coverage: drugs not procured by contracted institutions but supplied by contracted pharmacies are paid up
+      to a 5-day dose (TB patients up to 1-month documented; chemotherapy course drugs up to 1-course amount), deducted from
+      the institution; EK-4/H chemo drugs require chief-physician proof of non-procurement for refund w/ pharmacist margin
+      removed; overseas / interim-payment drugs excepted'
+    message_tr: Temin edilemeyip sözleşmeli eczanelerce karşılanan reçete ilaç bedelleri 5 günlük dozu aşmamak kaydıyla (uzun
+      süre yatan tüberküloz hastalarına 1 aylık, kür protokolü ilaçlarda 1 küre yetecek miktarda) ödenir, ilgili kurumdan
+      mahsup edilir; EK-4/H kemoterapi ilaçları başhekimlik onayıyla temin edilemedi belgelendirilirse eczacı kârı düşülerek
+      iade edilir (yurtdışı/ara ödemeli ilaçlar hariç) (§4.1.2).
+- rule_id: 4.1.2.inpatient_drug_procurement_mandatory
+  sut_section: 4.1.2
+  gate_b_sources:
+  - C003428
+  condition:
+    inpatient_care: true
+    procurement_by_contracted_institution: true
+  action:
+    enforcement: 'mandatory: inpatient (admitted + day-care) drugs must be procured by contracted/protocol health institutions
+      (overseas drugs not authorized for hospital use excepted)'
+    message_tr: Yatarak tedavilerde kullanılacak ilaçların Kurumla sözleşmeli/protokollü sağlık kurum ve kuruluşlarınca temini
+      zorunludur (Sağlık Bakanlığınca hastanede kullanılmasına izin verilen yurtdışı ilaçlar hariç) (§4.1.2).
+- rule_id: 4.1.2.manual_prescription_inpatient_chief_approval_mandatory
+  sut_section: 4.1.2
+  gate_b_sources:
+  - C003429
+  condition:
+    manual_prescription: true
+    inpatient_care: true
+  action:
+    enforcement: 'mandatory: manual prescriptions for inpatient drugs not procurable by contracted institutions must carry
+      ''Yatan/Günübirlik Hasta'' phrase + chief-physician approval; overseas-drug prescriptions do not require these'
+    message_tr: Kurumla sözleşmeli/protokollü kuruluşlarca temin edilemeyen inpatient ilaçlar için düzenlenen manuel reçetelerde
+      'Yatan/Günübirlik Hasta' ibaresi ve başhekimlik onayı zorunludur; yurtdışı ilaç reçetelerinde bu ibare ve onay zorunlu
+      değildir (§4.1.2).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

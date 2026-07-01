@@ -1,0 +1,13 @@
+section_id: 2.6.1.B-3
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.6.1.B-3.(3).vehicle_assigned_no_companion_travel
+  sut_section: 2.6.1.B-3
+  condition:
+    patient_assigned_vehicle: true
+  action:
+    billable: false
+    denial_tr: vasıta tahsis edilen hastada eşlik eden refakatçiye ayrıca yol gideri ödenmez
+    severity: error
+  gate_b_sources:
+  - C001541

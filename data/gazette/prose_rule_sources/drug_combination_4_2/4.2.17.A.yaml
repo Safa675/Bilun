@@ -1,0 +1,18 @@
+section_id: 4.2.17.A
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.17.A.(9).active_vitamin_d_osteoporosis_no_pay
+  sut_section: 4.2.17.A
+  condition:
+    diagnosis_any:
+    - M81
+    - M82
+    drug_name_any:
+    - kalsitriol
+    - alfakalsidol
+  action:
+    billable: false
+    denial_tr: aktif D vitaminleri (kalsitriol/alfakalsidol) osteoporozda ödenmez (EK-4/D hariç)
+    severity: error
+  gate_b_sources:
+  - C006042

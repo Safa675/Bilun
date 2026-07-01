@@ -1,0 +1,113 @@
+section_id: 3.1.3
+source_note: Exported from material_bundling_prose.json (YAML source migration)
+rules:
+- rule_id: 3.1.3.(7).serbest_kodsuz
+  sut_section: 3.1.3
+  deontic: NO_PAY
+  condition:
+    material_name_any:
+    - serbest kodsuz
+    - kodsuz giriş
+    - kodsuz giris
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Serbest/kodsuz malzeme girişi — Kurumca karşılanmaz (§3.1.3(7)).
+- rule_id: 3.1.3.(8).demirbas
+  sut_section: 3.1.3
+  deontic: NO_PAY
+  condition:
+    material_name_any:
+    - demirbaş
+    - demirbas
+    - yedek parça
+    - yedek parca
+    - tamir bakım
+    - tamir bakim
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Demirbaş / yedek parça / tamir-bakım — ayrıca faturalandırılamaz (§3.1.3(8)).
+- rule_id: 3.1.3.(9).reusable_provider
+  sut_section: 3.1.3
+  deontic: NO_PAY
+  condition:
+    material_name_any:
+    - tekrar kullanılabilir
+    - tekrar kullanilabilir
+    - yeniden kullanılabilir
+    - yeniden kullanilabilir
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Tekrar kullanılabilir malzeme — sunucu temini; ayrıca ödenmez (§3.1.3(9)).
+- rule_id: 3.1.3.(2).branch_unlisted_material
+  sut_section: 3.1.3
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002789
+  condition:
+    material_name_any:
+    - listelerde yer almayan branş
+    - listelerde yer almayan brans
+    - branş listesinde yok
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Branş EK-3 listesinde olmayan malzeme — Kurumca karşılanmaz (§3.1.3(2)).
+- rule_id: 3.1.3.(11).diagnosis_bundled_medula
+  sut_section: 3.1.3
+  deontic: MUST_NOT_BILL
+  gate_b_sources:
+  - C002798
+  condition:
+    diagnosis_bundled_no_separate_bill: true
+  action:
+    material_outcome: must_not_bill_separately
+    severity: warning
+    message_tr: Tanıya dayalı paket kapsamı — ayrıca faturalandırılamaz; MEDULA kaydı gerekir (§3.1.3(11)).
+- rule_id: 3.1.3.(4).cross_branch_billing_unauthorized
+  sut_section: 3.1.3
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002791
+  condition:
+    cross_branch_material_unauthorized: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Branş listesinde olmayan malzeme — cross-list SUT kodu ve geri ödeme kurallarına uygun faturalandırılmalı
+      (§3.1.3(4)).
+- rule_id: 3.1.3.(10).lab_material_separate_billing
+  sut_section: 3.1.3
+  deontic: MUST_NOT_BILL
+  gate_b_sources:
+  - C002765
+  condition:
+    lab_material_separate_billing: true
+  action:
+    material_outcome: must_not_bill_separately
+    severity: error
+    message_tr: Laboratuvar malzemesi işlem bedeline dahil — ayrıca faturalandırılamaz (§3.1.3(10)).
+- rule_id: 3.1.3.(3).shared_consumable_wrong_branch_billing
+  sut_section: 3.1.3
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002765
+  condition:
+    shared_consumable_wrong_branch_billing: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Çok branşlı sarf malzemesi kullanıldığı branştan faturalandırılmalı (§3.1.3(3)).
+- rule_id: 3.1.3.effective_date_transition_scope
+  sut_section: 3.1.3
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C008292
+  condition:
+    material_effective_date_transition_scope: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: §3.1.3 geçiş hükmü — yürürlük tarihi ve fiyat geçişi doğrulanmalı (RG geçiş metni).

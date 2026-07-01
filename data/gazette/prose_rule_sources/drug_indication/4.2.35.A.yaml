@@ -1,0 +1,178 @@
+section_id: 4.2.35.A
+rules:
+- rule_id: 4.2.35.A.capsaicin_phn_dpn_arthritis_nopay
+  sut_section: 4.2.35.A
+  gate_b_sources:
+  - C006699
+  drug_names:
+  - kapsaisin
+  icd10_codes:
+  - B02
+  - G63.2
+  - M13
+  - M15
+  - M79
+  report_required: true
+  prescriber_specialties:
+  - tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: kapsaisin mono krem yalnızca açık deri lezyonları iyileştikten sonra postherpetik nevralji/ağrılı diyabetik
+      periferik polinöropati semptomatik tedavisinde ilgili uzman/uzman raporuyla ödenir; artrit/osteoartrit/kas-eklem ağrısında
+      reçete edilirse ödenmez
+    message_tr: Kapsaisin etken maddesini mono olarak krem formunda içeren ürünlerin yalnızca açık deri lezyonlarının iyileşmesinden
+      sonra herpes zoster enfeksiyonlarına eşlik veya takip eden nevraljinin (postherpetik nevralji) veya ağrılı diyabetik
+      periferik polinöropatinin semptomatik tedavisinde ilgili uzman hekimce/uzman raporuyla tüm hekimlerce reçete edilmesi
+      halinde bedeli ödenir; artrit, osteoartrit, kas ve eklem ağrılarının semptomatik tedavisinde reçete edilmesi halinde
+      bedeli Kurumca karşılanmaz (§4.2.35.A).
+- rule_id: 4.2.35.A.diabetic_neuropathic_pain_specialists
+  sut_section: 4.2.35.A
+  gate_b_sources:
+  - C006696
+  drug_names:
+  - gabapentin
+  - pregabalin
+  - duloksetin
+  icd10_codes:
+  - E10
+  - E11
+  - G63.2
+  - G63.9
+  report_required: true
+  prescriber_specialties:
+  - tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: diyabetik nöropatik ağrı/periferal diyabetik polinöropati tedavisinde ilgili uzman hekimce veya uzman raporuyla
+      tüm hekimlerce reçete edilebilir
+    message_tr: Diyabetik nöropatik ağrı ve periferal diyabetik polinöropati semptomlarının tedavisinde; nöroloji, beyin cerrahisi,
+      fiziksel tıp ve rehabilitasyon, anestezi ve reanimasyon, immünoloji, romatoloji, iç hastalıkları veya endokrinoloji
+      ve metabolizma hastalıkları uzman hekimi tarafından veya bu uzman hekimlerden birinin düzenlediği uzman hekim raporuna
+      dayanılarak tüm hekimlerce reçete edilebilir (§4.2.35.A).
+- rule_id: 4.2.35.A.gabapentin_6mo_report_combo_nopay
+  sut_section: 4.2.35.A
+  gate_b_sources:
+  - C006692
+  drug_names:
+  - gabapentin
+  - pregabalin
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - nöroloji
+  - beyin cerrahisi
+  - fiziksel tıp ve rehabilitasyon
+  - algoloji
+  - deri ve zührevi hastalıkları
+  - romatoloji
+  - ortopedi ve travmatoloji
+  - geriatri
+  - endokrinoloji ve metabolizma hastalıkları
+  prescriber_specialties:
+  - nöroloji
+  - beyin cerrahisi
+  - fiziksel tıp ve rehabilitasyon
+  - algoloji
+  - deri ve zührevi hastalıkları
+  - romatoloji
+  - ortopedi ve travmatoloji
+  - geriatri
+  - endokrinoloji ve metabolizma hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: gabapentin 2/3. basamakta ilgili uzmanlardan en az birinin yer aldığı 6 ay süreli sağlık kurulu raporuyla
+      bu hekimlerce reçete edilirse ödenir; pregabalin ve gabapentin kombine kullanılamaz
+    message_tr: Gabapentin etken maddeli ilaçların ilgili uzman hekimlerden en az birinin yer aldığı ikinci veya üçüncü basamak
+      sağlık hizmeti sunucularında düzenlenen 6 ay süreli sağlık kurulu raporuna istinaden bu hekimlerce reçete edilmesi halinde
+      bedelleri Kurumca karşılanır. Pregabalin ve gabapentin kombine olarak kullanılamaz (§4.2.35.A).
+- rule_id: 4.2.35.A.pregabalin_6mo_report_combo_nopay
+  sut_section: 4.2.35.A
+  gate_b_sources:
+  - C006693
+  drug_names:
+  - pregabalin
+  - gabapentin
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - romatoloji
+  - algoloji
+  - deri ve zührevi hastalıkları
+  - endokrinoloji ve metabolizma hastalıkları
+  - nöroloji
+  - fiziksel tıp ve rehabilitasyon
+  - nefroloji
+  - ortopedi ve travmatoloji
+  - geriatri
+  - beyin cerrahisi
+  prescriber_specialties:
+  - romatoloji
+  - algoloji
+  - deri ve zührevi hastalıkları
+  - endokrinoloji ve metabolizma hastalıkları
+  - nöroloji
+  - fiziksel tıp ve rehabilitasyon
+  - nefroloji
+  - ortopedi ve travmatoloji
+  - geriatri
+  - beyin cerrahisi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: pregabalin mono/sabit doz kombinasyonları 2/3. basamakta ilgili uzmanlardan en az birinin yer aldığı 6 ay
+      süreli sağlık kurulu raporuyla bu hekimlerce reçete edilirse ödenir; pregabalin ve gabapentin kombine kullanılamaz
+    message_tr: Pregabalin etken maddeli ilaçların mono veya sabit doz kombinasyonlarının ilgili uzman hekimlerden en az birinin
+      yer aldığı ikinci veya üçüncü basamak sağlık hizmeti sunucularında düzenlenen 6 ay süreli sağlık kurulu raporuna istinaden
+      bu hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır. Pregabalin ve gabapentin kombine olarak kullanılamaz
+      (§4.2.35.A).
+- rule_id: 4.2.35.duloxetine_diabetic_neuropathy_prescriber
+  sut_section: 4.2.35.A
+  drug_names:
+  - duloksetin
+  - duloxetine
+  - cymbalta
+  icd10_ranges:
+  - E11
+  - G63
+  report_required: false
+  message_tr: Duloksetin — diyabetik periferal nöropatik ağrıda endokrinoloji veya üçüncü basamak nöroloji uzman hekimi reçetesi
+    gerekir (§4.2.35.A).
+  gate_b_sources:
+  - C006694
+  prescriber_specialties:
+  - endokrinoloji
+  - nöroloji
+- rule_id: 4.2.35.neuropathic_pain_specialist_report
+  sut_section: 4.2.35.A
+  drug_names:
+  - gabapentin
+  - pregabalin
+  - alfa lipoik
+  - lipoik asit
+  - thioctic acid
+  icd10_ranges:
+  - G60
+  - G62
+  - G63
+  - B02.2
+  - M79.2
+  report_required: true
+  message_tr: Nöropatik ağrı ilaçları — nöroloji, romatoloji, ortopedi veya endokrinoloji uzman hekim raporu gerekir (§4.2.35.A).
+  gate_b_sources:
+  - C006697
+  report_specialties:
+  - nöroloji
+  - beyin cerrahisi
+  - fiziksel tıp
+  - fizik tedavi
+  - anestezi
+  - immünoloji
+  - cilt hastalıkları
+  - romatoloji
+  - ortopedi
+  - endokrinoloji
+  - iç hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,76 @@
+section_id: 2.4.4.Ç
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.C-c.(5).photopheresis_ek2b_pricing
+  sut_section: 2.4.4.Ç
+  condition:
+    procedure_code_any:
+    - P704941
+    - P704940
+  action:
+    billable: true
+    payment_tr: ekstrakorporeal fotoferez her seans EK-2/B 704941 veya 704940 üzerinden
+    annex_basis: EK-2/B
+  gate_b_sources:
+  - C000927
+- rule_id: 2.4.4.C-c.(1).photopheresis_3rd_step_board_report
+  sut_section: 2.4.4.Ç
+  condition:
+    procedure_category: extracorporeal_photopheresis
+    facility_not_in:
+    - contracted_3rd_step
+    - licensed_2nd_step_transplant_apheresis
+  action:
+    billable: false
+    enforcement: facility_and_documentation_gate
+    message_tr: ekstrakorporeal fotoferez tedavi bedellerinin ödenebilmesi için üçüncü basamak sunucularınca sağlık kurulu
+      raporu düzenlenmesi gerekir; kemik iliği/organ nakil ve terapötik aferez ruhsatlı ikinci basamaklar yalnızca GVHD veya
+      solid organ naklinde doku reddini önleme için rapor düzenleyebilir
+    severity: error
+  gate_b_sources:
+  - C000917
+- rule_id: 2.4.4.C-c.(2).photopheresis_covered_for_indication
+  sut_section: 2.4.4.Ç
+  condition:
+    procedure_category: extracorporeal_photopheresis
+    indication_accepted: true
+  action:
+    billable: true
+    enforcement: coverage
+    message_tr: uygun endikasyon nedeniyle uygulanması halinde bedelleri Kurumca karşılanır
+  gate_b_sources:
+  - C000924
+- rule_id: 2.4.4.C-c.(3).photopheresis_6mo_report_max26_cycles
+  sut_section: 2.4.4.Ç
+  condition:
+    procedure_category: extracorporeal_photopheresis
+    cycles_within_6mo_report:
+      min: 27
+  action:
+    billable: false
+    enforcement: report_and_cycle_cap
+    message_tr: sağlık kurulu raporunda tedavi programı ve süresi belirtilir; ECP 6 ayda bir düzenlenen (en az bir hematoloji
+      uzmanı dâhil üç imzalı) sağlık kurulu raporu ile en fazla 26 döngü için ödenir; komisyon onayıyla tedavi kesin sonuç
+      alınıncaya kadar uzatılabilir
+    severity: error
+  gate_b_sources:
+  - C000925
+- rule_id: 2.4.4.C-c.(4).photopheresis_other_indications_commission_approval
+  sut_section: 2.4.4.Ç
+  condition:
+    procedure_category: extracorporeal_photopheresis
+    indication_not_in:
+    - ctcl
+    - gvhd
+    - systemic_sclerosis
+    - solid_organ_rejection_prophylaxis
+    apheresis_photopheresis_commission_approval: false
+  action:
+    billable: false
+    enforcement: commission_approval_gate
+    message_tr: kutanöz T hücreli lenfoma, GVHD, sistemik sklerozis ve solid organ nakillerinde doku reddinin önlenmesi endikasyonlarında
+      ilk 26 döngü için sağlık kurulu raporu alınır; diğer kullanım alanlarında sağlık kurulu raporuna ek olarak Aferez-Fotoferez
+      Danışma Komisyonu'nun uygun görüşü alınması zorunludur
+    severity: error
+  gate_b_sources:
+  - C000926

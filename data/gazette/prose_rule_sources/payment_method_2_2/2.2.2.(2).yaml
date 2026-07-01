@@ -1,0 +1,19 @@
+section_id: 2.2.2.(2)
+source_note: Exported from payment_method_2_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.2.(2).override
+  sut_section: 2.2.2.(2)
+  condition:
+    care_setting: inpatient
+    facility_tier_basamak: 3
+    procedure_in_annex: EK-2/C
+    procedure_also_in_annex: EK-2/B
+    procedure_has_star: false
+  action:
+    payment_method: overridable
+    payment_method_tr: üçüncü basamak hastanelerde EK-2/B üzerinden faturalandırılabilir
+    allowed_methods:
+    - package
+    - itemized
+  gate_b_sources:
+  - C000634

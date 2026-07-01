@@ -1,0 +1,19 @@
+section_id: 3.3.10
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 3.3.10.(d).sphincter_contraindication_no_pay
+  sut_section: 3.3.10
+  condition:
+    material_category: anal_sphincter_device
+    diagnosis_or_condition_any:
+    - congenital_anorectal_malformation
+    - rectal_prolapse
+    - inflammatory_bowel_disease
+    - permanent_colostomy
+    - pregnancy
+  action:
+    billable: false
+    denial_tr: konjenital anal rektal malformasyon/rektal prolapsus/İBH/kolostomi/gebelikte kullanılırsa ödenmez
+    severity: error
+  gate_b_sources:
+  - C003124

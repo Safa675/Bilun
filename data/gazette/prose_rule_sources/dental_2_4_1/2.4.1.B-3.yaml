@@ -1,0 +1,15 @@
+section_id: 2.4.1.B-3
+source_note: Exported from dental_2_4_1.json (YAML source migration)
+rules:
+- rule_id: 2.4.1.B-3.(1).treating_physician_continuity
+  sut_section: 2.4.1.B-3
+  condition:
+    procedure_category: dental_treatment
+    treating_physician_different_from_board_signatory: true
+    patient_in_first_degree_relative_of_physician: true
+  action:
+    billable: false
+    denial_tr: sağlık kurulu raporunu düzenleyen hekim veya birinci derece yakını tarafından tedavi yapılıyorsa bedel ödenmez
+    severity: error
+  gate_b_sources:
+  - C000812

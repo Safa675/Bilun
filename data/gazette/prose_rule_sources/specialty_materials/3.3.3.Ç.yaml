@@ -1,0 +1,46 @@
+section_id: 3.3.3.Ç
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.3.C.(1).e_recete_imza_regulatory
+  sut_section: 3.3.3.Ç
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002920
+  condition:
+    material_name_any:
+    - e-recete
+    - e-reçete
+    - elektronik imza
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: E-reçeteler Kurumca belirlenen yöntem ve standartlarla (elektronik imza, şifre) imzalanma şarttır (§3.3.3.Ç(1)).
+- rule_id: 3.3.3.C.(2).medula_sgk_sifresi_regulatory
+  sut_section: 3.3.3.Ç
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002921
+  condition:
+    material_name_any:
+    - e-recete
+    - e-reçete
+    - manuel reçete
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Reçeteler MEDULA sisteminde SGK Hekim Şifresi ile düzenlenecektir; istisnalar hariç manuel reçete bedelleri
+      karşılanmayacaktır (§3.3.3.Ç(2)).
+- rule_id: 3.3.3.C.b.resmi_sunucu_e_recete_regulatory
+  sut_section: 3.3.3.Ç
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002924
+  condition:
+    material_name_any:
+    - e-recete
+    - e-reçete
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Resmi sunuculardan (kamu tabiplik, belediye poliklinik, 1. basamak, mediko-sosyal) düzenlenen reçeteler; MEDULA-Hastane
+      altyapısı kurulduğunda e-reçeteye geçiş zorunludur (§3.3.3.Ç b).

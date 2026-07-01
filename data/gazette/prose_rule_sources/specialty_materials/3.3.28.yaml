@@ -1,0 +1,18 @@
+section_id: 3.3.28
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.28.(1).hucresiz_kikirdak_matriks_danisma_must_bill
+  sut_section: 3.3.28
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003268
+  condition:
+    material_name_any:
+    - hücresiz kıkırdak matriks
+    - hucresiz kikirdak matriks
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Hücresiz kıkırdak matriksleri — EK-2/B 612732/612976 ve EK-2/C P612732/P612976 kodlarıyla birlikte, eğitim
+      verme yetkisi olan 3. basamak resmi sunucularda işlem başına en fazla 1 adet kullanılması halinde bedeli Kurumca karşılanır
+      (§3.3.28(1)).

@@ -1,0 +1,14 @@
+section_id: 2.4.4.İ-2
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.I-2.(1).pgt_for_sibling_stem_cell_donor
+  sut_section: 2.4.4.İ-2
+  condition:
+    procedure_category: preimplantation_genetic_diagnosis
+    sibling_stem_cell_donor_needed: true
+    no_other_medical_method: true
+  action:
+    billable: true
+    payment_tr: hasta çocuk + tedavi başka yolla mümkün değilse PGT ile uygun verici kardeş doğumu amaçlı tanı ödenir
+  gate_b_sources:
+  - C001310

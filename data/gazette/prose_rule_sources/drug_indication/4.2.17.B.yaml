@@ -1,0 +1,27 @@
+section_id: 4.2.17.B
+rules:
+- rule_id: 4.2.17.B.calcitonin_first_6mo_only
+  sut_section: 4.2.17.B
+  gate_b_sources:
+  - C006044
+  drug_names:
+  - kalsitonin
+  - calcitonin
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - fiziksel tıp ve rehabilitasyon
+  - ortopedi ve travmatoloji
+  - romatoloji
+  prescriber_specialties:
+  - fiziksel tıp ve rehabilitasyon
+  - ortopedi ve travmatoloji
+  - romatoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: kalsitonin tanı sonrası ilk 6 ay ilgili uzman raporuyla ödenir; bu sürenin üstündeki kullanım ödenmez
+    message_tr: Kalsitonin bu endikasyonda tanı konulduktan sonraki ilk altı ay süresince fiziksel tıp ve rehabilitasyon veya
+      ortopedi ve travmatoloji veya romatoloji uzman hekim raporuna dayanılarak bu uzman hekimlerce reçete edilir. Bu sürenin
+      üstündeki kullanımı ödenmez (§4.2.17.B).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

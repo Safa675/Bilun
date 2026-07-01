@@ -1,0 +1,37 @@
+section_id: 5.2.2
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 5.2.2.(a).monthly_prescription_period_close
+  sut_section: 5.2.2
+  condition:
+    prescription_period: monthly
+    period_not_closed_on_last_day: true
+  action:
+    billable: false
+    denial_tr: reçeteler ay son günü provizyon döneminin sonlandırılmasıyla faturalandırılır
+    severity: error
+  gate_b_sources:
+  - C008067
+- rule_id: 5.2.2.(b).blood_hemophilia_prescription_2x_monthly
+  sut_section: 5.2.2
+  condition:
+    drug_category_any:
+    - blood_product
+    - hemophilia_drug
+    billing_period_correct: false
+  action:
+    billable: false
+    denial_tr: kan ürünü/hemofili reçeteleri ayda iki dönem (1-15 ve 16-son, takip eden 3 iş günü) faturalandırılır
+    severity: error
+  gate_b_sources:
+  - C008068
+- rule_id: 5.2.2.(separate).prescriptions_billed_separately
+  sut_section: 5.2.2
+  condition:
+    prescriptions_consolidated_into_single_invoice: true
+  action:
+    billable: false
+    denial_tr: reçeteler ayrı ayrı faturalandırılmalıdır
+    severity: error
+  gate_b_sources:
+  - C008078

@@ -1,0 +1,14 @@
+section_id: 3.3.6
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.6.(2).returned_device_without_kurum_approval
+  sut_section: 3.3.6
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002997
+  condition:
+    returned_device_without_kurum_approval: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: İade cihaz — Kurum stok/onay olmadan hasta temini; karşılanmaz (§3.3.6(2)).

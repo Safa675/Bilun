@@ -1,0 +1,31 @@
+section_id: 3.3.15
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.15.(1).trakeobronsial_stent_gogus_kurulu_must_bill
+  sut_section: 3.3.15
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003163
+  condition:
+    material_name_any:
+    - trakeobronşiyal stent
+    - trakeobronsial stent
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Trakeobronşiyal stentler — 3. basamak resmi sunucularda göğüs hastalıkları ve/veya göğüs cerrahisi uzmanlarınca
+      düzenlenen sağlık kurulu raporuna istinaden bedeli Kurumca karşılanır (§3.3.15(1)).
+- rule_id: 3.3.15.trakeobronsial_stent_endikasyon_must_bill
+  sut_section: 3.3.15
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003168
+  condition:
+    material_name_any:
+    - trakeobronşiyal stent
+    - trakeobronsial stent
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Trakeobronşiyal stentler — malign/benign darlıklarda ve trakea özofageal fistüllerde kullanılmaları halinde
+      bedelleri Kurumca karşılanır (§3.3.15).

@@ -1,0 +1,29 @@
+section_id: 3.3.3
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.3.(2).optical_access_deadline_missed
+  sut_section: 3.3.3
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002888
+  condition:
+    optical_patient_access_deadline_missed: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Optik reçete/rapor — 10 işgünü müracaat veya sistem kayıt süresi aşıldı; karşılanmaz (§3.3.3(2)).
+- rule_id: 3.3.3.(1).gozluk_cam_cerceve_ek3d_must_bill
+  sut_section: 3.3.3
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002887
+  condition:
+    material_name_any:
+    - gözlük
+    - gozluk
+    - görmeye yardimci
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Gözlük cam/çerçeve ve nitelikli görmeye yardımcı malzeme bedelleri — göz sağlığı uzman hekimi sağlık kurulu
+      raporuna istinaden EK-3/D fiyatlarını aşmamak üzere Kurumca karşılanır (§3.3.3(1)).

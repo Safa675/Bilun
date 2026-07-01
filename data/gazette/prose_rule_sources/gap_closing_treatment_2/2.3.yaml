@@ -1,0 +1,14 @@
+section_id: '2.3'
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.3.(1).emergency_24h_window
+  sut_section: '2.3'
+  condition:
+    is_emergency: true
+    hours_since_onset:
+      max: 24
+  action:
+    billable: true
+    payment_tr: acil hal; olay sonrası ilk 24 saatte tıbbi müdahale
+  gate_b_sources:
+  - C000714

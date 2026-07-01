@@ -1,0 +1,55 @@
+section_id: 3.3.27
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.27.(1).kanama_durdurma_ek3a_must_bill
+  sut_section: 3.3.27
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003255
+  condition:
+    material_name_any:
+    - kanama durdurma
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: EK-3/A listesindeki kanama durdurmada kullanılan tıbbi malzemeler — geri ödeme kriterlerine uygun olmak şartıyla
+      Kurumca karşılanır (§3.3.27(1)).
+- rule_id: 3.3.27.(2).emilemeyen_kanama_acil_yat_must_bill
+  sut_section: 3.3.27
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003256
+  condition:
+    material_name_any:
+    - kanama durdurma
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Emilemeyen kanama durdurma malzemeleri — acil servis/yatarak tedavide epikrizde endikasyon belirtilmesi şartıyla
+      en fazla 2 adet Kurumca karşılanır (§3.3.27(2)).
+- rule_id: 3.3.27.c.travma_acik_kanamali_damar_regulatory
+  sut_section: 3.3.27
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003260
+  condition:
+    material_name_any:
+    - kanama durdurma
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Girişimsel/iatrojenik işlemler hariç; boyun, aksiller ve inguinal bölgenin direkt bası ile durdurulamayan
+      travmaya bağlı açık kanamalı damar yaralanmaları — endikasyon kriterlerindendir (§3.3.27 ç).
+- rule_id: 3.3.27.(3).emilebilen_kanama_yat_must_bill
+  sut_section: 3.3.27
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003261
+  condition:
+    material_name_any:
+    - kanama durdurma
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Emilebilen kanama durdurma malzemeleri — yatarak tedavide epikrizde endikasyon ve kullanılan malzeme sayısının
+      belirtilmesi şartıyla Kurumca karşılanır (§3.3.27(3)).

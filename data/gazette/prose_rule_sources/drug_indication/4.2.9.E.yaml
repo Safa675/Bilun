@@ -1,0 +1,82 @@
+section_id: 4.2.9.E
+rules:
+- rule_id: 4.2.9.E.renal.cinacalcet_etelcalcetide_combination_nopay
+  sut_section: 4.2.9.E
+  gate_b_sources:
+  - C004201
+  drug_names:
+  - cinacalcet
+  - etelkalsetid
+  icd10_codes:
+  - N18
+  pay: false
+  action:
+    enforcement: 'no-pay condition: cinacalcet ve etelkalsetid etken maddeli ilaçların birlikte kullanımı'
+    message_tr: Cinacalcet ve etelkalsetid etken maddeli ilaçların birlikte kullanılması halinde Kurumca bedelleri karşılanmaz
+      (§4.2.9.E).
+- rule_id: 4.2.9.E.renal.etelcalcetide_adult_hdi_secondary_hpt_coverage
+  sut_section: 4.2.9.E
+  gate_b_sources:
+  - C004199
+  - C004200
+  drug_names:
+  - etelkalsetid
+  icd10_codes:
+  - N18
+  - Z99.2
+  report_required: true
+  report_specialties:
+  - nefroloji
+  prescriber_specialties:
+  - nefroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: etelkalsetid yalnızca hemodiyaliz tedavisi alan kronik böbrek hastalığı olan yetişkin hastalardaki sekonder
+      hiperparatiroidizm tedavisinde kullanılırsa ödenir
+    message_tr: Etelkalsetid etken maddeli ilacın yalnızca; hemodiyaliz tedavisi alan kronik böbrek hastalığı olan yetişkin
+      hastalardaki sekonder hiperparatiroidizmin tedavisinde kullanılması halinde Kurumca bedelleri karşılanır (§4.2.9.E).
+- rule_id: 4.2.9.E.renal.etelcalcetide_hemodialysis_report_coverage
+  sut_section: 4.2.9.E
+  gate_b_sources:
+  - C004197
+  drug_names:
+  - etelkalsetid
+  icd10_codes:
+  - N18
+  - Z99.2
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  - diyaliz sertifikalı uzman hekimi
+  prescriber_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  - diyaliz sertifikalı uzman hekimi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: etelkalsetid yalnızca hemodiyaliz hastalarına nefroloji/iç/çocuk veya diyaliz sertifikalı uzmanın ≤6 ay raporuyla
+      bu hekimlerce en fazla 1 aylık dozda reçete
+    message_tr: Etelkalsetid yalnızca hemodiyaliz hastalarına yukarıda belirtilen koşullarda nefroloji, iç hastalıkları veya
+      çocuk sağlığı ve hastalıkları uzman hekimleri veya diyaliz sertifikalı uzman hekimi tarafından düzenlenen en fazla 6
+      ay süreli sağlık raporuna istinaden yine bu hekimler tarafından en fazla 1 aylık dozda reçete edilmesi halinde Kurumca
+      bedelleri karşılanır (§4.2.9.E).
+- rule_id: 4.2.9.etelcalcetide_dialysis_ckd_only
+  sut_section: 4.2.9.E
+  drug_names:
+  - etelkalsedid
+  - etelcalcetide
+  - mimpara
+  - parsabiv
+  icd10_ranges:
+  - N18
+  message_tr: Etelkalsedid — yalnızca hemodiyaliz KBY endikasyonunda karşılanır; paratiroid karsinomu, primer hiperparatiroidizm
+    veya diyalizsiz KBY endikasyonlarında bedel karşılanmaz (§4.2.9.E).
+  gate_b_sources:
+  - C004200
+source_note: Exported from drug_indication_prose.json (YAML source migration)

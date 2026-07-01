@@ -1,0 +1,26 @@
+section_id: 1.8.3
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 1.8.3.copay_required_inpatient_medication
+  sut_section: 1.8.3
+  condition:
+    care_setting: inpatient
+    exemption_applicable: false
+  action:
+    billable: true
+    copay_required: true
+    payment_tr: yatarak tedavi ilaçlarında katılım payı alınır
+  gate_b_sources:
+  - C000337
+- rule_id: 1.8.3.(1b).uncontracted_dental_prosthesis_copay
+  sut_section: 1.8.3
+  condition:
+    facility_uncontracted: true
+    procedure_category: dental_prosthesis
+    exemption_applicable: false
+  action:
+    billable: true
+    copay_required: true
+    payment_tr: sözleşmesiz serbest dişhekimliği/kurum ağız protezi katılım payı ödeme aşamasında alınır
+  gate_b_sources:
+  - C000347

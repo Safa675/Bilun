@@ -1,0 +1,118 @@
+section_id: 4.2.12.B-1
+rules:
+- rule_id: 4.2.12.B-1.immunglob.igm_enriched_ivig_septic_shock
+  sut_section: 4.2.12.B-1
+  gate_b_sources:
+  - C004491
+  drug_names:
+  - immunoglobulin m ile zenginleştirilmiş intravenöz immünglobulin
+  - igm ile zenginleştirilmiş ivig
+  icd10_codes:
+  - R57.2
+  - A41
+  report_required: true
+  prescriber_specialties:
+  - uzman hekim
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basamak yoğun bakımda yatan ciddi bakteriyel enfeksiyon kaynaklı septik şokta uygun antibiyotik/sıvı/vazopressör
+      tedaviye rağmen devam eden ciddi hipotansiyon (OAB≤65 mmHg, laktat≥2 mmol/L) tedavisinde uzman hekim tarafından kullanılırsa
+      ödenir
+    message_tr: Immunoglobulin M (IgM) ile zenginleştirilmiş intravenöz immünglobulinler; üçüncü basamak yoğun bakım ünitesinde
+      yatan ciddi bakteriyel enfeksiyon kaynaklı septik şokta olan hastaların; uygun antibiyotik, sıvı, vazopressör tedavilerine
+      rağmen devam eden ciddi hipotansiyon (ortalama arter basıncı ≤ 65 mmHg, 2mmol/L ve üzeri laktat seviyesi) tedavisinde
+      uzman hekim tarafından kullanılması halinde bedelleri Kurumca karşılanır (§4.2.12.B-1).
+- rule_id: 4.2.12.B-1.immunglob.ivig_board_report_1mo_dose_acute_emergency
+  sut_section: 4.2.12.B-1
+  gate_b_sources:
+  - C004481
+  - C004489
+  drug_names:
+  - intravenöz immünglobulin
+  - ivig
+  icd10_codes:
+  - G61.0
+  - G70.0
+  report_required: true
+  prescriber_specialties:
+  - uzman hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: ilgili bentlerdeki uzman hekimlerin yer aldığı sağlık kurulu raporuyla ilgili uzmanlarca 1 aylık dozda reçete
+      edilirse ödenir; akut Guillain-Barre ve bulber tutulumlu myastenia gravis tanılı acil durumlarda ilgili uzman hekim
+      raporuyla kullanılabilir; Birdshot retinokoroidopati ödenmez
+    message_tr: Düzenlenen, yukarıdaki bentlerde belirtilen ilgili uzman hekimlerin yer aldığı sağlık kurulu raporuna istinaden,
+      ilgili bentlerde belirtilen uzman hekimlerce 1 aylık dozda reçete edilmesi halinde bedelleri Kurumca karşılanır. Akut
+      guillain barre sendromu ve bulber tutulumu olan myastenia gravis tanılı acil durumlarda ilgili uzman hekim raporu ile
+      kullanılabilir. (Birdshot retinokoroidopati endikasyonu ödenmez.) (§4.2.12.B-1).
+- rule_id: 4.2.12.B-1.immunglob.ivig_cidp_steroid_failure
+  sut_section: 4.2.12.B-1
+  gate_b_sources:
+  - C004487
+  drug_names:
+  - intravenöz immünglobulin
+  - ivig
+  icd10_codes:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - nöroloji
+  action:
+    enforcement: kronik inflamatuvar demiyelinizan polinöropatide steroid tedavisine (puls+idame ≥6 ay) yetersiz cevap veya
+      steroid komplikasyonu/kontrendikasyonu varsa 2-5 ardışık günde en fazla 2 g/kg yükleme; yükleme dozuna yanıt alınamazsa
+      3 haftada bir 1 g/kg (1-2 günde); 2 ayda yanıt yoksa sonlandırılır; idame 1 yıl nöroloji uzmanınca
+    message_tr: Kronik inflamatuvar demiyelinizan polinöropati endikasyonunda steroid tedavisine (puls ve idame tedavisine
+      en az 6 ay) yetersiz cevap veya steroid tedavisine kanıtlanmış komplikasyon ve/veya kontrendikasyon durumlarında 2-5
+      ardışık günde bölünmüş dozlarda en fazla 2 g/kg yükleme dozunda, yükleme dozuna yanıt alınamaması durumunda 3 haftada
+      bir 1 g/kg total doz 1 veya 2 günde verilir ve 2 ay sonunda yanıt alınamazsa tedavi sonlandırılır. Başlangıç tedavisine
+      yanıt alınması halinde 3 haftada bir (0,4-1 g/kg) total doz 1 veya 2 günde, idame tedavide 1 yıl süre ile nöroloji uzman
+      hekimi tarafından (§4.2.12.B-1).
+- rule_id: 4.2.12.B-1.immunglob.ivig_guillain_barre_loading
+  sut_section: 4.2.12.B-1
+  gate_b_sources:
+  - C004484
+  drug_names:
+  - intravenöz immünglobulin
+  - ivig
+  icd10_codes:
+  - G61.0
+  report_required: true
+  report_duration_months: 1
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - nöroloji
+  action:
+    enforcement: Guillain-Barre sendromunda IVIG kritik fazda ilk tercih olarak 2 g/kg (0,4 g/kg/gün ilk 5 gün); tekrarı halinde
+      bir ay içinde 2 g/kg (0,4 g/kg/gün x5); 1 ay süreyle nöroloji uzmanınca
+    message_tr: Guillan-Barre sendromunda IVIG kritik fazda ilk tercih olarak 2 gr/kg dozunda (0,4 gr/kg/gün olarak ilk 5
+      günde, tekrarı gerekmesi halinde bir ay içinde 2 gr/kg dozunda (0,4 gr/kg/gün olarak 5 gün kullanılabilir.) 1 ay süre
+      ile nöroloji uzman hekimi tarafından (§4.2.12.B-1).
+- rule_id: 4.2.12.B-1.immunglob.ivig_multifocal_motor_neuropathy
+  sut_section: 4.2.12.B-1
+  gate_b_sources:
+  - C004486
+  drug_names:
+  - intravenöz immünglobulin
+  - ivig
+  icd10_codes:
+  - G60.8
+  - G61.8
+  report_required: true
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - nöroloji
+  action:
+    enforcement: multifokal motor nöropatide 2-5 günde bölünmüş dozlarda en fazla 2 g/kg yükleme dozu; yükleme tedavisine
+      yanıt alınırsa 2-6 haftada bir 1-2 g/kg tek doz; 2 ay sonunda yanıt alınamazsa tedavi sonlandırılır; idame 1 yıl nöroloji
+      uzmanınca
+    message_tr: Multifokal motor nöropati endikasyonunda, 2-5 günde bölünmüş dozlarda en fazla 2g/kg yükleme dozunda, yükleme
+      tedavisine yanıt alınması durumunda 2-6 haftada bir 1-2 g/kg tek dozda verilir ve 2 ay sonunda yanıt alınamazsa tedavi
+      sonlandırılır. Başlangıç tedavisine yanıt alınması halinde idame tedavide 1 yıl süre ile nöroloji uzman hekimi tarafından
+      (§4.2.12.B-1).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

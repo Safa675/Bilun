@@ -1,0 +1,19 @@
+section_id: 3.3.6.A-2
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.6.A-2.(1).bpap_kronik_solunum_regulatory
+  sut_section: 3.3.6.A-2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003032
+  condition:
+    material_name_any:
+    - bpap-s
+    - bpap s/t
+    - bpap avaps
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Kronik solunum yetmezliğinde yalnızca BPAP-S, BPAP S/T ve BPAP S/T AVAPS bedelleri Kurumca karşılanır; raporda
+      göğüs hastalıkları/nöroloji/anestezi-reanimasyon/yoğun bakım/çocuk göğüs hekimlerinden en az biri yer alıp reçete etmelidir
+      (§3.3.6.A-2(1)).

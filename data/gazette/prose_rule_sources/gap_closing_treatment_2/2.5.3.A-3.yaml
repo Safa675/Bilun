@@ -1,0 +1,27 @@
+section_id: 2.5.3.A-3
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.5.3.A-3.(6).overseas_unrelated_treatment_no_pay
+  sut_section: 2.5.3.A-3
+  condition:
+    overseas_treatment: true
+    treatment_not_related_to_referred_condition: true
+    is_complication: false
+  action:
+    billable: false
+    denial_tr: yurt dışına sevke konu hastalık dışındaki tedavi giderleri ödenmez (komplikasyon hariç)
+    severity: error
+  gate_b_sources:
+  - C001446
+- rule_id: 2.5.3.A-3.(8).overseas_unauthorized_different_treatment
+  sut_section: 2.5.3.A-3
+  condition:
+    overseas_treatment: true
+    treatment_differs_from_referral: true
+    approval_not_obtained: true
+  action:
+    billable: false
+    denial_tr: yurt dışında sevke konu tedavi dışında farklı tedavi önerilirse 2.5.3.A-1 hükmü uygulanır
+    severity: error
+  gate_b_sources:
+  - C001449

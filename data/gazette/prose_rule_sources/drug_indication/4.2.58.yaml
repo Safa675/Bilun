@@ -1,0 +1,27 @@
+section_id: 4.2.58
+rules:
+- rule_id: 4.2.58.derm.topical_hair_loss_2box_10box_tiers_coverage
+  sut_section: 4.2.58
+  gate_b_sources:
+  - C007104
+  drug_names:
+  - minoksidil (topikal)
+  - topikal saç dökülmesi ilaçları
+  icd10_codes:
+  - L63
+  - L64
+  - L65
+  prescriber_specialties:
+  - tüm hekimler
+  - dermatoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: ayakta tedavide aynı reçetede 2 kutuya kadar tüm hekimlerce, 2 kutu üzeri dermatoloji uzmanınca; dermatoloji
+      uzmanınca düzenlenen 1 yıl süreli rapora istinaden aynı reçetede 10 kutuya kadar tüm hekimlerce, 10 kutu üzeri dermatoloji
+      uzmanlarınca reçete edilirse ödenir
+    message_tr: Ayakta tedavilerde aynı reçetede 2 kutuya kadar tüm hekimlerce, 2 kutu üzeri kullanım gereken hallerde dermatoloji
+      uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır. Dermatoloji uzman hekimlerince düzenlenen 1
+      yıl süreli rapora istinaden aynı reçetede 10 kutuya kadar tüm hekimlerce, 10 kutu üzeri kullanım gereken hallerde dermatoloji
+      uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.58).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

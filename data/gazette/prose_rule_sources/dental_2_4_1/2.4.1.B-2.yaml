@@ -1,0 +1,20 @@
+section_id: 2.4.1.B-2
+source_note: Exported from dental_2_4_1.json (YAML source migration)
+rules:
+- rule_id: 2.4.1.B-2.(4).private_disabled_2x_pricing
+  sut_section: 2.4.1.B-2
+  condition:
+    procedure_category: dental_treatment
+    facility_type: private
+    patient_category_any:
+    - disabled_40_pct_or_more
+    - special_needs_child
+    procedure_under_ga_or_sedoanalgesia: true
+  action:
+    billable: true
+    payment_tr: özel sunucularda ≥%40 engelli veya özel gereksinimli çocuklara GA/sedoanaljezi altında diş tedavisi EK-2/Ç
+      puanının 2 katı
+    annex_basis: EK-2/Ç
+    multiplier: 2.0
+  gate_b_sources:
+  - C000807

@@ -1,0 +1,114 @@
+section_id: 4.2.6.A-1
+rules:
+- rule_id: 4.2.6.A1.neurosecretory_bioinactive_gh_somatropin
+  sut_section: 4.2.6.A-1
+  gate_b_sources:
+  - C003956
+  - C003977
+  drug_names:
+  - somatropin
+  - büyüme hormonu
+  report_required: true
+  action:
+    enforcement: boy sapması <-2 SD + yıllık uzama hızı yetersiz + kemik yaşı takvim yaşından >2 yıl geri (4 yaş altı/puberte
+      hariç); 2 GH uyarı testine yanıt alınanlarda uyku GH profili; nörosekretuar disfonksiyon veya IGF-1 <-2 SD ise IGF-1
+      jenerasyon testi ile biyoinaktif GH; yalnızca somatropin
+    message_tr: Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan, kemik yaşı takvim yaşına göre 2 yıldan
+      daha fazla geri olan (4 yaş altı veya puberte dönemi hariç), yapılan 2 büyüme hormonu uyarı testine yeterli yanıt alınan
+      hastalara uyku esnasında büyüme hormonu profili çıkartılmalı; nörosekretuar disfonksiyon veya serum IGF-1 <-2 SD olması
+      koşuluyla yapılacak IGF-1 jenerasyon testi ile biyoinaktif büyüme hormonu saptanması halinde (yalnızca somatropin) kullanılabilir
+      (§4.2.6.A-1).
+- rule_id: 4.2.6.A1.somatropin_listed_cases_no_condition
+  sut_section: 4.2.6.A-1
+  gate_b_sources:
+  - C003979
+  drug_names:
+  - somatropin
+  - büyüme hormonu
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: bu bendin uygulanmasında başkaca şart aranmaksızın belirtilen hallerde yalnızca somatropin kullanılabilir
+    message_tr: Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde yalnızca somatropin etkin maddeli ilaçlar
+      kullanılabilir (§4.2.6.A-1).
+- rule_id: 4.2.6.pediatric_gh_monitoring_board
+  sut_section: 4.2.6.A-1
+  drug_names:
+  - somatropin
+  - somatrogon
+  - büyüme hormonu
+  - buyume hormonu
+  - genotropin
+  - norditropin
+  - omnitrope
+  - saizen
+  - nutropin
+  icd10_ranges:
+  - E23.0
+  - E23.1
+  - E23.7
+  - E34.3
+  report_required: true
+  message_tr: Pediatrik büyüme hormonu devam tedavisi — endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu
+    ve epifiz hatları takibi gerekir (§4.2.6.A-1).
+  gate_b_sources:
+  - C003957
+  - C003965
+  report_specialties:
+  - endokrinoloji
+  report_duration_months: 12
+- rule_id: 4.2.6.pediatric_gh_renewal_board
+  sut_section: 4.2.6.A-1
+  drug_names:
+  - somatropin
+  - somatrogon
+  - büyüme hormonu
+  - buyume hormonu
+  - genotropin
+  - norditropin
+  - omnitrope
+  - saizen
+  - nutropin
+  icd10_ranges:
+  - E23.0
+  - E23.1
+  - E23.7
+  - E34.3
+  report_required: true
+  message_tr: Pediatrik büyüme hormonu yenileme — epifiz hatları açık hastalarda 1 yıllık sağlık kurulu raporu gerekir (§4.2.6.A-1).
+  gate_b_sources:
+  - C003982
+  report_specialties:
+  - çocuk endokrinoloji
+  - çocuk endokrinolojisi ve metabolizma
+  report_duration_months: 12
+- rule_id: 4.2.6.pediatric_somatropin_initiation_board
+  sut_section: 4.2.6.A-1
+  drug_names:
+  - somatropin
+  - somatrogon
+  - büyüme hormonu
+  - buyume hormonu
+  - genotropin
+  - norditropin
+  - omnitrope
+  - saizen
+  - nutropin
+  icd10_ranges:
+  - E23.0
+  - E23.1
+  - E23.7
+  - E34.3
+  report_required: true
+  message_tr: Pediatrik somatropin başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu
+    gerekir (§4.2.6.A-1).
+  gate_b_sources:
+  - C003966
+  report_specialties:
+  - çocuk endokrinoloji
+  - çocuk endokrinolojisi ve metabolizma
+  prescriber_specialties:
+  - çocuk endokrinoloji
+  report_duration_months: 12
+source_note: Exported from drug_indication_prose.json (YAML source migration)

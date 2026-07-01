@@ -1,0 +1,52 @@
+section_id: 4.2.15.C
+rules:
+- rule_id: 4.2.15.C.ivabradine_chf_hr75_1yr_report
+  sut_section: 4.2.15.C
+  gate_b_sources:
+  - C005793
+  drug_names:
+  - ivabradin
+  - ivabradine
+  icd10_codes:
+  - I50
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - kardiyoloji
+  prescriber_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'kronik kalp yetmezliği, sistolik disfonksiyon NYHA II-IV, sinüs ritminde, kalp hızı ≥75 yetişkin: kardiyoloji
+      1 yıl süreli raporu + kardiyoloji veya iç hastalıkları reçetesi'
+    message_tr: Kronik kalp yetmezliği tedavisinde sistolik disfonksiyonlu NYHA II-IV, sinüs ritminde olan ve kalp hızı 75
+      vuru/dakika ve üzeri yetişkinlerde kardiyoloji uzmanınca düzenlenen 1 yıl süreli uzman raporuyla kardiyoloji veya iç
+      hastalıkları uzmanlarınca reçete edilebilir (§4.2.15.C).
+- rule_id: 4.2.15.C.ivabradine_chronic_angina_1yr_report
+  sut_section: 4.2.15.C
+  gate_b_sources:
+  - C005792
+  - C005797
+  drug_names:
+  - ivabradin
+  - ivabradine
+  icd10_codes:
+  - I20.8
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - kardiyoloji
+  prescriber_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: normal sinüs ritimli kronik stabil anjina pektorisli, beta blokör ve/veya verapamil-diltiazem intoleransı/kontrendikasyonu
+      olan hastada kardiyoloji 1 yıl süreli raporu + kardiyoloji veya iç hastalıkları reçetesi
+    message_tr: Normal sinüs ritmi olan, kronik stabil angına pektorisli hastaların semptomatik tedavisinde beta blokör ve/veya
+      verapamil-diltiazem intoleransı veya kontrendikasyonu olanlarda kardiyoloji uzmanınca düzenlenen 1 yıl süreli uzman
+      raporuyla kardiyoloji veya iç hastalıkları uzmanınca reçete edilebilir (§4.2.15.C).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

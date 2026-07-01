@@ -1,0 +1,13 @@
+section_id: 2.4.4.J
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.J.(4).thermal_daily_allowance_until_contracted
+  sut_section: 2.4.4.J
+  condition:
+    procedure_category: thermal_spa
+    facility_uncontracted: true
+  action:
+    billable: true
+    payment_tr: işletme izinli kaplıca sözleşme yapılıncaya kadar; hasta öder, gün başına ödeme
+  gate_b_sources:
+  - C001332

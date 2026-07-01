@@ -1,0 +1,58 @@
+section_id: 4.2.62
+rules:
+- rule_id: 4.2.62.peds.infantile_haemangioma_peds_specialty_6mo_terminate
+  sut_section: 4.2.62
+  gate_b_sources:
+  - C007134
+  drug_names:
+  - propranolol
+  icd10_codes:
+  - D18.0
+  - D21
+  - Q82.5
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - çocuk hematolojisi ve onkolojisi
+  - çocuk hematolojisi
+  - çocuk onkolojisi
+  - çocuk kardiyolojisi
+  - neonatoloji
+  prescriber_specialties:
+  - çocuk hematolojisi ve onkolojisi
+  - çocuk hematolojisi
+  - çocuk onkolojisi
+  - çocuk kardiyolojisi
+  - neonatoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: bu durumların belirtildiği, çocuk hematolojisi ve onkolojisi/çocuk hematolojisi/çocuk onkolojisi/çocuk kardiyolojisi
+      veya neonatoloji uzmanlarından birinin ≤6 ay süreli raporuyla bu uzmanlarca reçete edilirse ödenir; tedavinin başlangıcından
+      itibaren 6. ayın sonunda sonlandırılır
+    message_tr: Bu durumların belirtildiği, çocuk hematolojisi ve onkolojisi, çocuk hematolojisi, çocuk onkolojisi, çocuk
+      kardiyolojisi veya neonatoloji uzman hekimlerinden biri tarafından düzenlenen en fazla 6 ay süreli uzman hekim raporuna
+      dayanılarak bu uzman hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır. Tedavinin başlangıcından itibaren
+      6 ncı ayın sonunda tedavi sonlandırılır (§4.2.62).
+- rule_id: 4.2.62.peds.infantile_haemangioma_systemic_initiation_coverage
+  sut_section: 4.2.62
+  gate_b_sources:
+  - C007130
+  drug_names:
+  - propranolol
+  icd10_codes:
+  - D18.0
+  - D21
+  - Q82.5
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 5 hafta-5 ay arası bebeklerde yutma güçlüğü, kanama/bası bulguları veya solunum güçlüğü vb. morbiditeyi önemli
+      derecede olumsuz etkileyecek durumlara sebep olan ve sistemik tedavi gerektirerek hızla çoğalan çocukluk çağı hemanjiyomlarında
+      tanımlı özelliklerden en az birini taşıyanda kullanılırsa bedeli ödenir
+    message_tr: 5 hafta-5 ay yaş aralığında olan bebeklerde yutma güçlüğü, kanama/bası bulguları veya solunum güçlüğü vb.
+      morbiditeyi önemli derecede olumsuz etkileyecek durumlara sebep olan ve sistemik tedavi gerektirerek hızla çoğalan çocukluk
+      çağı hemanjiyomlarının tedavisinde aşağıda belirtilen özelliklerden en az birini taşıyan hastalarda kullanılması halinde
+      bedelleri Kurumca karşılanır (§4.2.62).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,128 @@
+section_id: 4.2.13.3.2
+rules:
+- rule_id: 4.2.13.hcv_daa_child_pugh_report
+  sut_section: 4.2.13.3.2
+  drug_names:
+  - sofosbuvir
+  - ledipasvir
+  - velpatasvir
+  - glekaprevir
+  - pibrentasvir
+  - daklatasvir
+  - simeprevir
+  - ombitasvir
+  - paritaprevir
+  - dasabuvir
+  icd10_ranges:
+  - B18.2
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HCV DAA — Child-Pugh sınıflamasını kanıtlayıcı belgeler ve tedavi şeması üçüncü basamak uzman hekim raporunda
+    belirtilmelidir (§4.2.13.3.2).
+  gate_b_sources:
+  - C004897
+  prescriber_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - çocuk sağlığı
+  - iç hastalıkları
+- rule_id: 4.2.13.hcv_daa_tertiary_gastro_once
+  sut_section: 4.2.13.3.2
+  drug_names:
+  - sofosbuvir
+  - ledipasvir
+  - velpatasvir
+  - glekaprevir
+  - pibrentasvir
+  - daklatasvir
+  - simeprevir
+  - ombitasvir
+  - paritaprevir
+  - dasabuvir
+  icd10_ranges:
+  - B18.2
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HCV DAA — üçüncü basamak kurumda gastroenteroloji/enfeksiyon uzman raporu ve tedavi şeması; bir defaya mahsus
+    (§4.2.13.3.2).
+  gate_b_sources:
+  - C004679
+  - C004897
+  prescriber_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - çocuk sağlığı
+  - iç hastalıkları
+- rule_id: 4.2.13.hcv_glecaprevir_pibrentasvir_board
+  sut_section: 4.2.13.3.2
+  drug_names:
+  - glekaprevir
+  - pibrentasvir
+  icd10_ranges:
+  - B18.2
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: Glekaprevir/pibrentasvir — kronik HCV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.3.2).
+  gate_b_sources:
+  - C004892
+  legacy_provision: true
+- rule_id: 4.2.13.hcv_sofosbuvir_ledipasvir_board
+  sut_section: 4.2.13.3.2
+  drug_names:
+  - sofosbuvir
+  - ledipasvir
+  icd10_ranges:
+  - B18.2
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: Sofosbuvir/ledipasvir — kronik HCV endikasyonu ve gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.2).
+  gate_b_sources:
+  - C004897
+  - C004902
+- rule_id: 4.2.13.hcv_specialist_report_criteria
+  sut_section: 4.2.13.3.2
+  drug_names:
+  - sofosbuvir
+  - ledipasvir
+  - velpatasvir
+  - glekaprevir
+  - pibrentasvir
+  - daklatasvir
+  - simeprevir
+  - ombitasvir
+  - paritaprevir
+  - dasabuvir
+  - interferon
+  - pegile interferon
+  - peginterferon
+  - pegasys
+  - peg intron
+  - ribavirin
+  - rebetol
+  - copegus
+  icd10_ranges:
+  - B18.2
+  - B17.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HCV uzman hekim raporu — HCV RNA, siroz durumu, Child-Pugh B/C kanıtı, genotip ve önceki tedaviler belirtilmelidir
+    (§4.2.13.3.2).
+  gate_b_sources:
+  - C004898
+  - C004908
+  - C004918
+  - C004921
+  prescriber_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

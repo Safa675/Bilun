@@ -1,0 +1,35 @@
+section_id: 2.6.1
+rules:
+- rule_id: 2.6.1.(1).travel_daily_companion_conditions
+  sut_section: 2.6.1
+  gate_b_sources:
+  - C001470
+  condition:
+    definition_scope: Yol/gündelik/refakatçi gideri ödenebilmesi için önkoşullar
+    applies_to: Genel sağlık sigortalısı ve bakmakla yükümlü olduğu kişiler (5510 s. K. md.60/12-14 hariç)
+  action:
+    enforcement: gate
+    message_tr: Yol, gündelik ve refakatçi gideri ödenebilmesi için Kurumca finansmanı sağlanan hizmet kapsamında olması,
+      mevzuata uygun sevk ve (a)-(b)-(c) koşullarının sağlanması gerekir.
+- rule_id: 2.6.1.(1b).referral_by_contracted_2_3_step
+  sut_section: 2.6.1
+  gate_b_sources:
+  - C001472
+  condition:
+    definition_scope: Sevkin Kurumca belirlenen istisnalar hariç sözleşmeli 2. veya 3. basamak sunucusunca yapılması
+    applies_to: Yerleşim yeri dışı sevk
+  action:
+    enforcement: gate
+    message_tr: Sevk, istisnalar hariç sözleşmeli ikinci/üçüncü basamak sağlık hizmeti sunucusunca yapılmış olmalıdır; aksi
+      halde yol/gündelik/refakatçi gideri ödenmez.
+- rule_id: 2.6.1.(1).conditions_required
+  sut_section: 2.6.1
+  gate_b_sources:
+  - C001475
+  condition:
+    definition_scope: Ödeme için (a)-(b)-(c) koşullarının tamamı gerekmektedir
+    applies_to: Yol/gündelik/refakatçi gideri
+  action:
+    enforcement: gate
+    message_tr: Yol/gündelik/refakatçi gideri ödemesi için önkoşulların tamamı aranır; eksik koşul ödemeyi engeller.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

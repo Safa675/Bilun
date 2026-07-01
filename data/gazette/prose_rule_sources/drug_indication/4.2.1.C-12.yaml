@@ -1,0 +1,40 @@
+section_id: 4.2.1.C-12
+rules:
+- rule_id: 4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c12
+  sut_section: 4.2.1.C-12
+  gate_b_sources:
+  - C003885
+  drug_names:
+  - biyolojik ajan
+  - ustekinumab
+  - sekukinumab
+  - ipekizumab
+  - guselkumab
+  - risankizumab
+  icd10_codes:
+  - L40
+  report_required: true
+  report_specialties:
+  - dermatoloji
+  prescriber_specialties:
+  - dermatoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basamakta dermatoloji uzmanı; başlangıçta 4 ay, sonra 6 ay süreli rapor; PASI ve yanıt her raporda
+    message_tr: Üçüncü basamak resmi sağlık hizmeti sunucularında dermatoloji uzman hekiminin yer aldığı başlangıçta 4 ay,
+      sonrasında 6'şar ay süreli sağlık kurulu raporuyla dermatoloji uzmanlarınca reçete edilirse bedelleri Kurumca karşılanır;
+      raporda PASI değeri ve tedaviye yanıt her raporda belirtilir (§4.2.1.C-12).
+- rule_id: 4.2.1.risankizumab_psoriasis_pasi_systemic_failure
+  sut_section: 4.2.1.C-12
+  drug_names:
+  - risankizumab
+  - skyrizi
+  icd10_ranges:
+  - L40
+  report_required: true
+  message_tr: Risankizumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda
+    belirtilmesi gerekir (§4.2.1.C-12).
+  gate_b_sources:
+  - C003883
+source_note: Exported from drug_indication_prose.json (YAML source migration)

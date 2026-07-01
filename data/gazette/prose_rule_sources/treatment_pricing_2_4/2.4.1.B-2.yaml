@@ -1,0 +1,63 @@
+section_id: 2.4.1.B-2
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.1.B-2.(1).disabled_or_special_need_child_ek2c_fee
+  sut_section: 2.4.1.B-2
+  condition:
+    patient_disabled_40pct_or_special_need_child: true
+    facility_type_any:
+    - private_provider
+    - uncontracted_public_provider
+    procedure_in_ek2c_list: true
+  action:
+    billable: true
+    payment_tr: özel/sözleşmesiz sunuculardan %40 ve üzeri engelli kişilere veya hafif düzey ve üstü özel gereksinimli çocuk
+      hastalara verilen ağız ve diş sağlığı hizmetlerinin ücretleri EK-2/Ç listesinde yer alması şartıyla işlem bedelleri
+      üzerinden ödenir
+    billing_method: procedure_package
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000804
+- rule_id: 2.4.1.B-2.(2).private_uncontracted_orthodontics_per_2_4_1_4
+  sut_section: 2.4.1.B-2
+  condition:
+    procedure_category: orthodontic_treatment
+    facility_type_any:
+    - private_provider
+    - uncontracted_public_provider
+  action:
+    billable: true
+    payment_tr: özel/sözleşmesiz sunucu diş ünitelerinde uygulanan ortodontik tedavi bedelleri SUT’un 2.4.1(4) fıkrasına göre
+      ödenir
+    billing_method: procedure_package
+  gate_b_sources:
+  - C000805
+- rule_id: 2.4.1.B-2.(4).disabled_prosthesis_no_separate_material_casting_labor
+  sut_section: 2.4.1.B-2
+  condition:
+    patient_disabled_40pct_or_special_need_child: true
+    procedure_category: dental_prosthesis
+    facility_type_any:
+    - private_provider
+    - uncontracted_public_provider
+    separate_material_casting_labor_fee_charged: true
+  action:
+    billable: false
+    denial_tr: '%40 ve üzeri engelli/özel gereksinimli çocuk hastalara verilen ağız ve diş sağlığı hizmetleri kapsamında uygulanan
+      protez tedavileri için malzeme dahil döküm ve işçilik ücreti ödenmez'
+    severity: error
+  gate_b_sources:
+  - C000807
+- rule_id: 2.4.1.B-2.(5).orthodontic_invoices_ek2c3_stage_payment
+  sut_section: 2.4.1.B-2
+  condition:
+    procedure_category: orthodontic_treatment
+    stage_completed: true
+  action:
+    billable: true
+    payment_tr: ortodontik tedavi uygulanan kişilere ait faturaların ödemeleri EK-2/Ç-3 Listesinde yer alan formlar üzerinden
+      her bir aşama tamamlandığında bedelleri ödenir
+    billing_method: procedure_package
+    annex_basis: EK-2/Ç-3
+  gate_b_sources:
+  - C000810

@@ -1,0 +1,79 @@
+section_id: 2.4.4.F-5
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.F-5.(3).robotic_rehab_ek2c_pricing
+  sut_section: 2.4.4.F-5
+  condition:
+    procedure_category: robotic_rehab
+  action:
+    billable: true
+    payment_tr: robotik rehabilitasyon EK-2/D-2 grupları + EK-2/C puan üzerinden
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001071
+- rule_id: 2.4.4.F-5.(4).robotic_rehab_no_combo
+  sut_section: 2.4.4.F-5
+  condition:
+    procedure_category: robotic_rehab
+    same_day_physio_rehab: true
+  action:
+    billable: false
+    denial_tr: robotik rehabilitasyon diğer fizik tedavi/rehab ile birlikte faturalanamaz
+    severity: error
+  gate_b_sources:
+  - C001072
+- rule_id: 2.4.4.F-5.(2).robotic_rehab_double_star_indications_only
+  sut_section: 2.4.4.F-5
+  condition:
+    procedure_category: robotic_rehabilitation
+    diagnosis_in:
+    - ek2d2_double_star_marked
+    indication_in_ek2d2_double_star: false
+  action:
+    billable: false
+    enforcement: indication_gate
+    message_tr: robotik rehabilitasyon sistemi uygulaması EK-2/D-2 Listesinde yer alan (**) işaretli ICD-10 kodlarındaki tanılarda
+      uygulanması halinde karşılanır
+    annex_basis: EK-2/D-2
+    severity: error
+  gate_b_sources:
+  - C001070
+- rule_id: 2.4.4.F-5.(3).robotic_rehab_billed_ek2c_points
+  sut_section: 2.4.4.F-5
+  condition:
+    procedure_category: robotic_rehabilitation
+    billing_basis: other
+  action:
+    billable: true
+    enforcement: pricing_basis
+    message_tr: robotik rehabilitasyon sistemi uygulaması EK-2/D-2 grupları dikkate alınarak EK-2/C Listesindeki puanlar üzerinden
+      faturalandırılır
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001071
+- rule_id: 2.4.4.F-5.(4).robotic_rehab_not_with_other_physio
+  sut_section: 2.4.4.F-5
+  condition:
+    procedure_category: robotic_rehabilitation
+    billed_with_other_physiotherapy: true
+  action:
+    billable: false
+    enforcement: bundling_prohibition
+    message_tr: robotik rehabilitasyon sistemi uygulaması diğer fizik tedavi ve rehabilitasyon işlemleri ile birlikte faturalandırılamaz
+    severity: error
+  gate_b_sources:
+  - C001072
+- rule_id: 2.4.4.F-5.(5).robotic_rehab_30_sessions_annual_8_daily_per_system
+  sut_section: 2.4.4.F-5
+  condition:
+    procedure_category: robotic_rehabilitation
+    sessions_per_patient_per_year:
+      min: 31
+  action:
+    billable: false
+    enforcement: session_and_case_cap
+    message_tr: bir hasta için yılda en fazla 30 seans robotik rehabilitasyon uygulanabilir; 2./3. basamak sunucular her sistem
+      başına günlük en fazla 8, 4+ tam zamanlı PMR uzmanı olan sunucular ilave 6 hasta için seans faturalandırabilir
+    severity: error
+  gate_b_sources:
+  - C001077

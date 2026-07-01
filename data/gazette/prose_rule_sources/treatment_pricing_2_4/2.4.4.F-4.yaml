@@ -1,0 +1,60 @@
+section_id: 2.4.4.F-4
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.F-4.(4).eswt_no_combo_with_physio
+  sut_section: 2.4.4.F-4
+  condition:
+    procedure_code_any:
+    - P915010
+    same_day_physio_rehab: true
+  action:
+    billable: false
+    denial_tr: ESWT işlemi diğer fizik tedavi/rehab işlemleriyle aynı gün faturalanamaz
+    severity: error
+  gate_b_sources:
+  - C001065
+- rule_id: 2.4.4.F-4.(2).eswt_indication_limited
+  sut_section: 2.4.4.F-4
+  condition:
+    procedure_category: eswt_shock_wave
+    diagnosis_category_not_in:
+    - epin_calcanei
+    - plantar_fasciitis
+    - epicondylitis
+    - calcific_tendinitis
+  action:
+    billable: false
+    enforcement: indication_gate
+    message_tr: ESWT tedavisi yalnızca epin calcanei, plantar fasiit, epikondilit ve kalsifik tendinit tanılarında uygulanması
+      halinde Kurumca karşılanır
+    severity: error
+  gate_b_sources:
+  - C001063
+- rule_id: 2.4.4.F-4.(3).eswt_ek2c_2_regions_5_sessions
+  sut_section: 2.4.4.F-4
+  condition:
+    procedure_category: eswt_shock_wave
+    regions_within_year:
+      min: 3
+  action:
+    billable: false
+    enforcement: regional_session_cap
+    message_tr: ESWT EK-2/C Listesi esas alınarak karşılanır; bir hasta için bir yılda en fazla 2 farklı vücut bölgesi, bölge
+      başına en fazla 5 seans ödenir; ekstremite sağ ve sol ayrı bölge sayılır; F-2(5) bölge/seans/rapor kontrolleri hesaba
+      katılmaz
+    annex_basis: EK-2/C
+    severity: error
+  gate_b_sources:
+  - C001064
+- rule_id: 2.4.4.F-4.(4).eswt_not_with_other_physio
+  sut_section: 2.4.4.F-4
+  condition:
+    procedure_category: eswt_shock_wave
+    billed_with_other_physiotherapy: true
+  action:
+    billable: false
+    enforcement: bundling_prohibition
+    message_tr: ESWT işlemi diğer fizik tedavi ve rehabilitasyon işlemleri ile birlikte faturalandırılamaz
+    severity: error
+  gate_b_sources:
+  - C001065

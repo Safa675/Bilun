@@ -1,0 +1,108 @@
+section_id: 4.2.49.C
+rules:
+- rule_id: 4.2.49.C.neuro.nusinersen_tertiary_setting_report_durations
+  sut_section: 4.2.49.C
+  gate_b_sources:
+  - C007047
+  drug_names:
+  - nusinersen
+  - nusinersen sodium
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_duration_months: 4
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  - ortopedi ve travmatoloji
+  - beyin ve sinir cerrahisi
+  prescriber_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'nusinersen: Ulusal Yenidoğan SMA Tarama/SMA Tip-1 çocuk nöroloji raporu; Tip-2/3 en az biri çocuk nöroloji/nöroloji
+      olmak üzere ortopedi veya beyin-sinir cerrahisi; üçüncü basamak, ilk 4 uygulama 3 ay, sonraki 4 ay; her uygulama için
+      çocuk nöroloji/nöroloji reçetesi; koşullar raporda'
+    message_tr: Nusinersen tedavisi; Ulusal Yenidoğan SMA Tarama Programından gelen hastalar ile SMA Tip-1 hastalarında çocuk
+      nöroloji uzman hekiminin yer aldığı sağlık kurulu raporuna istinaden, SMA Tip-2 ve SMA Tip-3 hastalarında en az birisi
+      çocuk nöroloji/nöroloji uzmanı olmak üzere ortopedi ve travmatoloji veya beyin ve sinir cerrahisi uzman hekiminin yer
+      aldığı sağlık kurulu raporuna istinaden reçetelenir. İlk 4 uygulama için 3 ay süreli, sonraki uygulamalar için 4 ay
+      süreli Kurumca belirlenen üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen sağlık kurulu raporuna istinaden
+      üçüncü basamakta çocuk nöroloji veya nöroloji uzman hekimi tarafından her bir uygulama için ayrı ayrı reçete edilmesi
+      halinde bedeli Kurumca karşılanır; ilaç kullanımı koşulları raporda belirtilmelidir (§4.2.49.C).
+- rule_id: 4.2.49.C.neuro.risdiplam_tertiary_setting_report_durations
+  sut_section: 4.2.49.C
+  gate_b_sources:
+  - C007048
+  drug_names:
+  - risdiplam
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  prescriber_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'risdiplam: üçüncü basamakta çocuk nöroloji/nöroloji raporu; SMA Tip-1/tarama en fazla 3 ay, Tip-2/3 en fazla
+      6 ay; reçetede hasta kilosu; koşullar raporda; reçeteler en fazla 2 aylık dozda'
+    message_tr: Risdiplam tedavisi çocuk nöroloji/nöroloji uzman hekiminin yer aldığı; Ulusal Yenidoğan SMA Tarama Programından
+      gelen hastalar ile SMA Tip-1 hastalarında en fazla 3 ay süreli, SMA Tip-2 ve SMA Tip-3 hastalarında en fazla 6 ay süreli
+      Kurumca belirlenen üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen sağlık kurulu raporuna istinaden üçüncü
+      basamakta çocuk nöroloji veya nöroloji uzman hekimi tarafından reçete edilmesi halinde bedeli Kurumca karşılanır; reçetelerde
+      hastanın kilosu belirtilmelidir, ilaç kullanımı koşulları raporda belirtilmelidir, reçeteler en fazla 2 aylık dozda
+      olmalıdır (§4.2.49.C).
+- rule_id: 4.2.49.C.neuro.sma_designated_multidisciplinary_center_coverage
+  sut_section: 4.2.49.C
+  gate_b_sources:
+  - C007049
+  drug_names:
+  - nusinersen
+  - nusinersen sodium
+  - risdiplam
+  icd10_codes:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'nusinersen sodium ve risdiplam: tescilli yenidoğan/çocuk yoğun bakım + çocuk nörolojisi uzmanı + beslenme-diyetetik
+      ve fizik tedavi-rehabilitasyon multidisipliner sunulabilen Kurumca belirlenen üçüncü basamakta kullanılırsa ödenir'
+    message_tr: Nusinersen sodium ve risdiplam etkin maddeli ilaçların; tescili yapılmış yenidoğan ve çocuk yoğun bakım servisi
+      bulunan, bünyesinde çocuk nörolojisi uzmanının da yer aldığı, beslenme ve diyetetik ile fizik tedavi ve rehabilitasyon
+      hizmetlerinin multidisipliner bir yaklaşımla sunulabileceği Kurumca belirlenen üçüncü basamak resmi sağlık hizmeti sunucularında
+      kullanılması halinde bedeli Kurumca karşılanır (§4.2.49.C).
+- rule_id: 4.2.49.C.neuro.sma_modifying_switch_under_1yr_nopay
+  sut_section: 4.2.49.C
+  gate_b_sources:
+  - C007051
+  drug_names:
+  - nusinersen
+  - nusinersen sodium
+  - risdiplam
+  icd10_codes:
+  - G12.0
+  - G12.1
+  pay: false
+  action:
+    enforcement: 'no-pay condition: SMN2 modifiye eden tedaviler (nusinersen, risdiplam) arasında 1 yıldan kısa süre ile geçiş;
+      ancak fonksiyonel değerlendirmede bozulma veya belirgin hayatı tehdit eden yan etki olursa yeni raporla ilaç değişimi
+      yapılabilir'
+    message_tr: SMN2 modifiye eden tedaviler (nusinersen, risdiplam) arasında 1 yıldan kısa süre ile geçiş yapılması halinde
+      bedeli Kurumca karşılanmaz; ancak fonksiyonel değerlendirmelerde bozulma olması veya belirgin hayatı tehdit eden yan
+      etki ortaya çıkması durumunda yeni düzenlenecek sağlık kurulu raporunda belirtilmesi halinde ilaç değişimi yapılabilir
+      (§4.2.49.C).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

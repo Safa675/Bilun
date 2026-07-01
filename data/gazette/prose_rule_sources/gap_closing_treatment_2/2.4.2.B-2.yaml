@@ -1,0 +1,14 @@
+section_id: 2.4.2.B-2
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.4.2.B-2.(4).mesenchymal_stem_cell_separate_bill
+  sut_section: 2.4.2.B-2
+  condition:
+    procedure_code_any:
+    - P900100
+    stem_cell_type: mesenchymal
+  action:
+    billable: true
+    payment_tr: mezenkimal kök hücre nakli kemik iliği nakil bedellerine dahil değil; ayrı faturalanabilir
+  gate_b_sources:
+  - C000850

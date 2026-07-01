@@ -1,0 +1,32 @@
+section_id: 3.3.30
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.30.(1).bag_tendon_guclendirici_sutursuz_must_bill
+  sut_section: 3.3.30
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003272
+  condition:
+    material_name_any:
+    - kendinden sütursüz transosseöz
+    - kendinden sutursuz transosseoz
+    - transosseöz sistem
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Kendinden sütursüz transosseöz sistemi — işlem başına en fazla 1 adet kullanıldığında bedeli Kurumca karşılanır
+      (§3.3.30(1)).
+- rule_id: 3.3.30.(2).transosseoz_sutur_tasiyici_must_bill
+  sut_section: 3.3.30
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003273
+  condition:
+    material_name_any:
+    - transosseöz sistem sütür taşıyıcı
+    - transosseoz sistem sutur tasiyici
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Transosseöz sistem sütür taşıyıcı — işlem başına en fazla 1 adet kullanıldığında bedeli Kurumca karşılanır
+      (§3.3.30(2)).

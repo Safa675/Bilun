@@ -1,0 +1,115 @@
+section_id: 4.2.13.3.2.B
+rules:
+- rule_id: 4.2.13.3.2.B.hcv_geno1_4_rgtr_duration
+  sut_section: 4.2.13.3.2.B
+  gate_b_sources:
+  - C004724
+  - C004795
+  - C004912
+  drug_names:
+  - interferon
+  - peginterferon
+  - ribavirin
+  icd10_codes:
+  - B17.1
+  - B18.2
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  action:
+    enforcement: genotip 1/4 toplam 48 hafta; 12. hafta HCV RNA <2 log düşme → ≤16 hafta; 24. hafta pozitif → en geç 28. hafta
+      kesilir; RNA sonuçları raporda
+    message_tr: Genotip 1 ve 4 için tedavi 48 hafta; 12. haftada HCV RNA <2 log azalanlarda ≤16 hafta, 24. haftada pozitiflik
+      devam edenlerde en geç 28. hafta kesilir; 16. haftada 2 log azalan ve 28. haftada RNA negatif olanlarda sonuç reçete/raporda
+      belirtilir (§4.2.13.3.2.B).
+- rule_id: 4.2.13.3.2.B.hcv_ifn_ribavirin_combination
+  sut_section: 4.2.13.3.2.B
+  gate_b_sources:
+  - C004911
+  drug_names:
+  - interferon
+  - peginterferon
+  - ribavirin
+  icd10_codes:
+  - B17.1
+  - B18.2
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  action:
+    enforcement: 'kronik HCV: IFN+RBV veya PegIFN+RBV; RBV kontrendike ise tek başına IFN/PegIFN; tek başına RBV endikasyonu
+      yok'
+    message_tr: Kronik hepatit C tedavisinde İnterferon+Ribavirin veya Peginterferon+Ribavirin kullanılır; Ribavirin kontrendikasyonu
+      olanlarda tek başına İnterferon/Peginterferon kullanılabilir; tek başına Ribavirin endikasyonu yoktur (§4.2.13.3.2.B).
+- rule_id: 4.2.13.3.2.B.paediatric_hcv_ribavirin_pegifn
+  sut_section: 4.2.13.3.2.B
+  gate_b_sources:
+  - C004913
+  drug_names:
+  - ribavirin
+  - peginterferon
+  icd10_codes:
+  - B17.1
+  - B18.2
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  action:
+    enforcement: '3-18 yaş: ribavirin 15 mg/kg/gün (maks 1200 mg/gün); peginterferon daha önce interferon almamış çocuklarda'
+    message_tr: 3-18 yaş çocuklarda ribavirin 15 mg/kg/gün (maksimum 1.200 mg/gün); peginterferon daha önce interferon tedavisi
+      almamış hastalarda uygulanabilir (§4.2.13.3.2.B).
+- rule_id: 4.2.13.hcv_genotype_b_48w_monitoring
+  sut_section: 4.2.13.3.2.B
+  drug_names:
+  - interferon
+  - pegile interferon
+  - peginterferon
+  - pegasys
+  - peg intron
+  - ribavirin
+  - rebetol
+  - copegus
+  icd10_ranges:
+  - B18.2
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HCV genotip 1/4 peginterferon+ribavirin — 48 hafta tedavi; 12. hafta HCV RNA monitoring ve erken kesme kriterleri
+    raporda belirtilmelidir (§4.2.13.3.2.B).
+  gate_b_sources:
+  - C004912
+  report_duration_months: 48
+- rule_id: 4.2.13.hcv_pediatric_early_stop_rechallenge
+  sut_section: 4.2.13.3.2.B
+  drug_names:
+  - interferon
+  - pegile interferon
+  - peginterferon
+  - pegasys
+  - peg intron
+  - ribavirin
+  - rebetol
+  - copegus
+  icd10_ranges:
+  - B18.2
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - çocuk sağlığı
+  - iç hastalıkları
+  message_tr: Pediatrik kronik HCV — 12. haftadan önce komplikasyonla kesilen interferon+ribavirin tedavisi yeniden başlatma
+    kuralları (§4.2.13.3.2.B).
+  gate_b_sources:
+  - C004916
+  prescriber_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - çocuk sağlığı
+  - iç hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

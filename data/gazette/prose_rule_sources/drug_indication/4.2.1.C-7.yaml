@@ -1,0 +1,384 @@
+section_id: 4.2.1.C-7
+rules:
+- rule_id: 4.2.1.C.anakinra_biologic_jak_combo_nopay
+  sut_section: 4.2.1.C-7
+  gate_b_sources:
+  - C003831
+  drug_names:
+  - anakinra
+  pay: false
+  action:
+    enforcement: 'no-pay condition: anakinra biyolojik DMARD veya JAK inhibitörü ile kombine kullanılırsa bedeli ödenmez;
+      monoterapi veya konvansiyonel/sentetik DMARD kombinasyonuna izin var'
+    message_tr: Anakinra monoterapi veya diğer anti-inflamatuvar/konvansiyonel-sentetik DMARD'larla kombine verilebilir; biyolojik
+      DMARD ve JAK inhibitörleri ile kombine kullanılması halinde bedeli Kurumca karşılanmaz (§4.2.1.C-7).
+- rule_id: 4.2.1.C.anakinra_kanakinumab_sequencing
+  sut_section: 4.2.1.C-7
+  gate_b_sources:
+  - C003818
+  drug_names:
+  - anakinra
+  - kanakinumab
+  icd10_codes:
+  - M04
+  report_required: true
+  report_specialties:
+  - romatoloji
+  - çocuk sağlığı ve hastalıkları
+  action:
+    enforcement: anakinra 3 ay sonrası / yanıtsızlık / yan etki sonrası dokümante konsültasyonla kanakinumaba geçiş; aynı/azaltık/açılmış
+      dozla devam
+    message_tr: Anakinra ile 3 aylık tedavi sonrasında veya anakinraya yanıtsız/yan etki gelişenlerde dokümante konsültasyonla
+      kanakinumaba başlanır; yanıt alınanlarda aynı/azaltılmış/aralığı açılmış dozla tedaviye devam edilebilir (§4.2.1.C-7).
+- rule_id: 4.2.1.C.moh_offlabel_approval_coverage_c7
+  sut_section: 4.2.1.C-7
+  gate_b_sources:
+  - C003820
+  drug_names:
+  - anakinra
+  - kanakinumab
+  icd10_codes:
+  - M04
+  report_required: true
+  action:
+    enforcement: koşullar sağlanırsa ve her iki ilaç için Sağlık Bakanlığı endikasyon dışı onay belgesi alınırsa bedeli ödenir
+    message_tr: Tedavide yukarıdaki koşulların sağlandığı durumlarda her iki ilaç için ayrıca Sağlık Bakanlığı endikasyon
+      dışı onay belgesinin alınması halinde bedelleri Kurumca ödenir (§4.2.1.C-7).
+- rule_id: 4.2.1.C.pre_effective_date_starter_continuation
+  sut_section: 4.2.1.C-7
+  gate_b_sources:
+  - C003814
+  drug_names:
+  - anakinra
+  - kanakinumab
+  icd10_codes:
+  - M04
+  condition:
+    coverage_note: true
+  action:
+    enforcement: yürürlük öncesi başlayan hasta devam şartlarını sağlıyorsa bedeli ödenir
+    message_tr: Maddenin yürürlük tarihi öncesi ilaca başlamış hastaların yukarıdaki devam şartlarını sağlaması durumunda
+      bedelleri Kurumca karşılanır (§4.2.1.C-7).
+- rule_id: 4.2.1.anakinra_canakinumab_fmf_amyloidosis
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - anakinra
+  - kineret
+  - kanakinumab
+  - canakinumab
+  - ilaris
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - nefroloji
+  - romatoloji
+  - klinik immunoloji
+  message_tr: Anakinra/kanakinumab — amiloidozlu FMF tedavisinde romatoloji ve/veya nefroloji uzmanının yer aldığı 1 yıl süreli
+    sağlık kurulu raporu gerekir (§4.2.1.C-7).
+  gate_b_sources:
+  - C003813
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - nefroloji
+  - romatoloji
+  - klinik immunoloji
+  report_duration_months: 12
+- rule_id: 4.2.1.anakinra_canakinumab_fmf_amyloidosis_colchicine
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - anakinra
+  - kineret
+  - kanakinumab
+  - canakinumab
+  - ilaris
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - nefroloji
+  - romatoloji
+  - klinik immunoloji
+  message_tr: Anakinra/kanakinumab — amiloidozlu FMF'de kolşisin yetersizliğinde romatoloji/nefroloji uzmanının yer aldığı
+    1 yıl süreli sağlık kurulu raporu gerekir (§4.2.1.C-7).
+  gate_b_sources:
+  - C003813
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - nefroloji
+  - romatoloji
+  - klinik immunoloji
+  report_duration_months: 12
+- rule_id: 4.2.1.anakinra_canakinumab_fmf_board_report
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - anakinra
+  - kineret
+  - kanakinumab
+  - canakinumab
+  - ilaris
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Anakinra/kanakinumab — FMF tedavisinde resmi üçüncü basamak kurumda romatoloji uzmanının yer aldığı sağlık kurulu
+    raporu gerekir (§4.2.1.C-7).
+  gate_b_sources:
+  - C003791
+  - C003812
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+- rule_id: 4.2.1.anakinra_fmf_colchicine_add_on
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - anakinra
+  - kineret
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Anakinra — FMF'de kolşisin yetersizliğinde atak/CRP/SAA bulgularının sağlık kurulu raporunda belirtilmesi gerekir
+    (§4.2.1.C-7).
+  gate_b_sources:
+  - C003806
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+- rule_id: 4.2.1.anakinra_fmf_colchicine_failure
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - anakinra
+  - kineret
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Anakinra — amiloidozu olmayan FMF'de kolşisin yetersizliğinde atak/CRP bilgilerinin sağlık kurulu raporunda
+    belirtilmesi gerekir (§4.2.1.C-7).
+  gate_b_sources:
+  - C003806
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+- rule_id: 4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - anakinra
+  - kineret
+  - kanakinumab
+  - canakinumab
+  - ilaris
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Anakinra/kanakinumab — FMF tedavisinde üçüncü basamak kurumda romatoloji uzman hekiminin yer aldığı sağlık kurulu
+    raporu gerekir (§4.2.1.C-7).
+  gate_b_sources:
+  - C003812
+  - C003819
+  - C003827
+  - C003832
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+- rule_id: 4.2.1.canakinumab_fmf_anakinra_failure_switch
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - kanakinumab
+  - canakinumab
+  - ilaris
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki durumunun sağlık kurulu raporunda belirtilmesi
+    gerekir (§4.2.1.C-7).
+  gate_b_sources:
+  - C003783
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+- rule_id: 4.2.1.canakinumab_fmf_anakinra_switch
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - kanakinumab
+  - canakinumab
+  - ilaris
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki durumunun sağlık kurulu raporunda belirtilmesi
+    gerekir (§4.2.1.C-7).
+  gate_b_sources:
+  - C003807
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+- rule_id: 4.2.1.canakinumab_fmf_continuation_report
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - kanakinumab
+  - canakinumab
+  - ilaris
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Kanakinumab — FMF tedavi devamında atak sıklık/şiddet azalmasının sağlık kurulu raporunda belirtilmesi gerekir
+    (§4.2.1.C-7).
+  gate_b_sources:
+  - C003808
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+- rule_id: 4.2.1.canakinumab_fmf_dose_escalation
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - kanakinumab
+  - canakinumab
+  - ilaris
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Kanakinumab — FMF'de 150 mg yetersizliğinde 300 mg doza geçiş gerekçesinin sağlık kurulu raporunda belirtilmesi
+    gerekir (§4.2.1.C-7).
+  gate_b_sources:
+  - C003811
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+- rule_id: 4.2.1.fmf_jia_acr_pediatric_stop_c7
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - anakinra
+  - kineret
+  - kanakinumab
+  - canakinumab
+  - ilaris
+  icd10_ranges:
+  - M08
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - nefroloji
+  message_tr: Anakinra/tosilizumab/kanakinumab — tedavi devamında ACR pediatrik yanıt kriteri 3 ayda bir değerlendirilmeli;
+    yanıt alınamayan hastalarda tedavi sonlandırılır (§4.2.1.C-7 (2)).
+  gate_b_sources:
+  - C003787
+  - C003790
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.kanakinumab_fmf_3mo_response_c7
+  sut_section: 4.2.1.C-7
+  drug_names:
+  - kanakinumab
+  - canakinumab
+  - ilaris
+  icd10_ranges:
+  - E85.0
+  - E85
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - nefroloji
+  message_tr: Kanakinumab — FMF tedavisinde 3 aylık yanıt değerlendirmesi yapılmalı; yanıt alınamayan hastalarda tedavi sonlandırılır
+    (§4.2.1.C-7 (3)).
+  gate_b_sources:
+  - C003783
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - nefroloji
+  report_duration_months: 3
+  verification_status: struck_clause_no_replacement
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,11 @@
+section_id: 1.8.2.(1)
+source_note: Exported from copay_general_1_8.json (YAML source migration)
+rules:
+- rule_id: 1.8.2.(1)
+  sut_section: 1.8.2.(1)
+  service_type: drug
+  rates:
+    sgk_income_recipient: 0.1
+    other: 0.2
+  gate_b_sources:
+  - C000314

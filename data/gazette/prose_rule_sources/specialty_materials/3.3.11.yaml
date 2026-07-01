@@ -1,0 +1,47 @@
+section_id: 3.3.11
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.11.(1).greft_membran_sunucu_temin_regulatory
+  sut_section: 3.3.11
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003143
+  condition:
+    material_name_any:
+    - greft
+    - membran
+    - membran vb.
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Lokal anestezi altında cerrahi tedavilerde kullanılan greft, membran vb. iyileştirici malzemeler — sağlık
+      hizmeti sunucusu tarafından temin edilmek zorundadır; hasta aldırılırsa fatura hastaya ödenip sunucudan mahsup edilir
+      (§3.3.11(1)).
+- rule_id: 3.3.11.(2).greft_membran_sut_3_2_1_must_bill
+  sut_section: 3.3.11
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003144
+  condition:
+    material_name_any:
+    - greft
+    - membran
+    - membran vb.
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Bu kapsamdaki tıbbi malzeme bedelleri SUT 3.2.1.A ve 3.2.1.B doğrultusunda Kurumca karşılanır (§3.3.11(2)).
+- rule_id: 3.3.11.(3).dis_hekimi_saglik_kurulu_must_bill
+  sut_section: 3.3.11
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003145
+  condition:
+    material_name_any:
+    - greft
+    - membran
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Greft ve membran bedelleri — en az 1 periodontoloji/ağız diş çene cerrahisi uzmanı yer alan 3 diş hekimi imzalı
+      sağlık kurulu raporuna ve ekli radyograflara istinaden Kurumca karşılanır (§3.3.11(3)).

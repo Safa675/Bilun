@@ -1,0 +1,41 @@
+section_id: 4.2.48
+rules:
+- rule_id: 4.2.48.metabolic.bile_acid_zellweger_mandatory_report
+  sut_section: 4.2.48
+  gate_b_sources:
+  - C006912
+  drug_names:
+  - kolsik asit
+  - cholic acid
+  - cholbam
+  icd10_codes:
+  - E78.8
+  - Q87
+  - E88
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  - çocuk metabolizma hastalıkları
+  - erişkin endokrinoloji ve metabolizma hastalıkları
+  - çocuk gastroenterolojisi
+  - gastroenteroloji
+  prescriber_specialties:
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  - çocuk metabolizma hastalıkları
+  - erişkin endokrinoloji ve metabolizma hastalıkları
+  - çocuk gastroenterolojisi
+  - gastroenteroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: kalıtsal safra asidi metabolizması bozuklukları veya Zellweger spektrum bozukluğu; 3. basamakta çocuk endokrinoloji/çocuk
+      endokrin+metabolizma/çocuk metabolizma/erişkin endokrin+metabolizma/çocuk-erişkin gastroenteroloji uzmanlarından en
+      az ikisinin yer aldığı 6 ay süreli sağlık kurulu raporuyla bu uzmanlarca reçete; mevcut enzim eksikliğinin genetik doğrulaması
+      raporda belirtilmeli
+    message_tr: Kalıtsal safra asidi metabolizması bozuklukları veya Zellweger spektrum bozukluğu tanılı hastalarda; üçüncü
+      basamak resmi sağlık hizmet sunucularında çocuk endokrinoloji, çocuk endokrinolojisi ve metabolizma hastalıkları, çocuk
+      metabolizma hastalıkları, erişkin endokrinoloji ve metabolizma hastalıkları, çocuk ve erişkin gastroenteroloji uzman
+      hekimlerinden en az ikisinin yer aldığı 6 ay süreli sağlık kurulu raporuna dayanılarak bu uzman hekimlerce reçetelenir;
+      mevcut enzim eksikliğinin genetik olarak doğrulandığı test sonucunun raporda belirtilmesi gerekmektedir (§4.2.48).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

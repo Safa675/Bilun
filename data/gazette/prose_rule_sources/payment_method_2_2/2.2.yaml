@@ -1,0 +1,80 @@
+section_id: '2.2'
+source_note: Exported from payment_method_2_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.(12).no_pay_without_documentation
+  sut_section: '2.2'
+  condition:
+    provider_contract_status: contracted
+    documentation_on_request: false
+  action:
+    payment_method: itemized
+    payment_method_tr: bilgi/belge ibraz edilemeyen tetkik/tahlil bedeli ödenmez
+    billable: false
+  gate_b_sources:
+  - C000530
+- rule_id: 2.2.(13).health_report_single_bill
+  sut_section: '2.2'
+  condition:
+    line_type: health_report
+    report_annex: EK-2/B
+  action:
+    payment_method: itemized
+    payment_method_tr: sağlık raporu bedeli EK-2/B puanları — sadece bir adet
+    max_bill_count: 1
+  gate_b_sources:
+  - C000531
+- rule_id: 2.2.(14).committee_report_exam_fee
+  sut_section: '2.2'
+  condition:
+    requires_health_committee_report: true
+    line_type: examination
+  action:
+    payment_method: itemized
+    payment_method_tr: sağlık kurulu raporu için sadece bir adet muayene bedeli
+    max_bill_count: 1
+  gate_b_sources:
+  - C000532
+- rule_id: 2.2.(3).aesthetic_must_not_bill
+  sut_section: '2.2'
+  condition:
+    billing_purpose: aesthetic
+    work_injury_or_congenital_excluded: true
+  action:
+    payment_method: itemized
+    payment_method_tr: estetik amaçlı hizmetler Kuruma faturalandırılamaz
+    billable: false
+  gate_b_sources:
+  - C000521
+- rule_id: 2.2.(5).interim_supplier_spa_reimbursement
+  sut_section: '2.2'
+  condition:
+    provider_type: medical_supplier_or_spa
+    contract_status: pending
+  action:
+    payment_method: itemized
+    payment_method_tr: tıbbi malzeme tedarikçisi/kaplıca — sözleşme öncesi kişiye ödeme (Kurum faturalandırması yok)
+    billable: false
+    payer: individual_reimbursement
+  gate_b_sources:
+  - C000523
+- rule_id: 2.2.(6).workplace_polyclinic_homecare_no_pay
+  sut_section: '2.2'
+  condition:
+    provider_type: workplace_health_or_polyclinic_or_homecare_center
+  action:
+    payment_method: itemized
+    payment_method_tr: işyeri sağlık birimi/özel poliklinik/evde bakım merkezi — Kurumdan ücret talep edilemez
+    billable: false
+  gate_b_sources:
+  - C000524
+- rule_id: 2.2.(8).contracted_tetkik_mandatory
+  sut_section: '2.2'
+  condition:
+    provider_contract_status: contracted
+    care_setting: any
+  action:
+    payment_method: itemized
+    payment_method_tr: sözleşmeli kuruluş tetkik/tahlil zorunluluğu
+    tetkik_supply: in_house_or_procurement
+  gate_b_sources:
+  - C000526

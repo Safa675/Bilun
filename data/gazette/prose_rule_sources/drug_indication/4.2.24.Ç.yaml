@@ -1,0 +1,25 @@
+section_id: 4.2.24.Ç
+rules:
+- rule_id: 4.2.24.nasal_cs_pediatric_prescriber
+  sut_section: 4.2.24.Ç
+  drug_names:
+  - nasal kortikosteroid
+  - flutikazon
+  - mometazon
+  - budesonid
+  - avamys
+  - nasonex
+  icd10_ranges:
+  - J30
+  message_tr: Nasal kortikosteroid — 2-5 yaş grubunda yalnızca çocuk sağlığı, alerji, klinik immünoloji, KBB veya aile hekimliği
+    uzman reçetesi gerekir (§4.2.24.Ç-1).
+  gate_b_sources:
+  - C006192
+  report_required: true
+  prescriber_specialties:
+  - çocuk sağlığı
+  - alerji
+  - klinik immünoloji
+  - kulak burun boğaz
+  - aile hekimliği
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,385 @@
+section_id: 4.2.34
+rules:
+- rule_id: 4.2.34.alemtuzumab_neurology_report
+  sut_section: 4.2.34
+  drug_names:
+  - alemtuzumab
+  - lemtrada
+  icd10_ranges:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  message_tr: Alemtuzumab — EDSS 7 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl)
+    ve nöroloji reçetesi gerekir (§4.2.34).
+  gate_b_sources:
+  - C006676
+  report_duration_months: 12
+  prescriber_specialties:
+  - nöroloji
+- rule_id: 4.2.34.cis_dmt_nopay
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006627
+  drug_names:
+  - fampiridin
+  - beta interferon
+  - glatiramer asetat
+  - teriflunomid
+  - dimetil fumarat
+  - fingolimod
+  - okrelizumab
+  - kladribin
+  - natalizumab
+  - alemtuzumab
+  icd10_codes:
+  - G37.0
+  - G35
+  pay: false
+  action:
+    enforcement: 'no-pay condition: listelenen etken maddelerin Klinik İzole Sendrom tedavisinde kullanımı'
+    message_tr: Fampiridin, beta interferon, glatiramer asetat, teriflunomid, dimetil fumarat, fingolimod, okrelizumab, kladribin,
+      natalizumab ve alemtuzumab etken maddelerini içeren ilaçların Klinik İzole Sendrom tedavisinde kullanılması halinde
+      bedelleri Kurumca karşılanmaz (§4.2.34).
+- rule_id: 4.2.34.cladribine_extra_course_offlabel_approval
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006668
+  drug_names:
+  - kladribin
+  - cladribine
+  - mavenclad
+  icd10_codes:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: kladribin başlangıcından itibaren 4 yıl içinde 2 kür sonrası ilave her kür için Sağlık Bakanlığı hasta bazlı
+      endikasyon dışı onayı gerekir
+    message_tr: Kladribin tedavisi başlanmasından itibaren 4 yıllık süre içinde 2 kür tamamlanmasını takiben hekim tarafından
+      gerekli görülmesi halinde ilave edilecek her bir kür kladribin için Sağlık Bakanlığından alınacak endikasyon dışı ilaç
+      kullanım onayıyla bedeli Kurumca karşılanır (§4.2.34).
+- rule_id: 4.2.34.cladribine_report_body_weight
+  sut_section: 4.2.34
+  drug_names:
+  - kladribin
+  - cladribine
+  - mavenclad
+  icd10_ranges:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  message_tr: Kladribin — nöroloji uzman hekim raporunda güncel vücut ağırlığı belirtilmeli; en fazla 1 yıllık rapor ve nöroloji
+    reçetesi gerekir (§4.2.34).
+  gate_b_sources:
+  - C006670
+  report_duration_months: 12
+  prescriber_specialties:
+  - nöroloji
+- rule_id: 4.2.34.dmt_combination_nopay
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006628
+  drug_names:
+  - beta interferon
+  - glatiramer asetat
+  - teriflunomid
+  - dimetil fumarat
+  - fingolimod
+  - okrelizumab
+  - kladribin
+  - natalizumab
+  - alemtuzumab
+  icd10_codes:
+  - G35
+  pay: false
+  action:
+    enforcement: 'no-pay condition: fampiridin hariç MS DMT''lerinin kombine kullanımı'
+    message_tr: Fampiridin hariç olmak üzere beta interferon, glatiramer asetat, teriflunomid, dimetil fumarat, fingolimod,
+      okrelizumab, kladribin, natalizumab ve alemtuzumab etken maddelerini içeren ilaçların kombine kullanılması halinde bedelleri
+      Kurumca karşılanmaz (§4.2.34).
+- rule_id: 4.2.34.fingolimod_neurology_report
+  sut_section: 4.2.34
+  drug_names:
+  - fingolimod
+  - gilenia
+  icd10_ranges:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  message_tr: Fingolimod — EDSS 5,5 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl)
+    ve nöroloji reçetesi gerekir (§4.2.34).
+  gate_b_sources:
+  - C006634
+  report_duration_months: 12
+  prescriber_specialties:
+  - nöroloji
+- rule_id: 4.2.34.first_line_dmt_neurology_report
+  sut_section: 4.2.34
+  drug_names:
+  - beta interferon
+  - interferon beta
+  - avonex
+  - rebif
+  - glatiramer
+  - glatiramer asetat
+  - copolymer
+  - copaxone
+  - teriflunomid
+  - aubagio
+  - dimetil fumarat
+  - tecfidera
+  icd10_ranges:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  message_tr: Beta interferon, glatiramer asetat, teriflunomid veya dimetil fumarat — EDSS 5,5 altı relaps-remisyon MS'de
+    üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl) ve nöroloji reçetesi gerekir (§4.2.34).
+  gate_b_sources:
+  - C006626
+  report_duration_months: 12
+  prescriber_specialties:
+  - nöroloji
+- rule_id: 4.2.34.natalizumab_neurology_report
+  sut_section: 4.2.34
+  drug_names:
+  - natalizumab
+  - tysabri
+  icd10_ranges:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  message_tr: Natalizumab — EDSS 5,5 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl)
+    ve nöroloji reçetesi gerekir (§4.2.34).
+  gate_b_sources:
+  - C006640
+  report_duration_months: 12
+  prescriber_specialties:
+  - nöroloji
+- rule_id: 4.2.34.ocrelizumab_rrms_report
+  sut_section: 4.2.34
+  drug_names:
+  - okrelizumab
+  - ocrelizumab
+  - ocrevus
+  icd10_ranges:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  message_tr: Okrelizumab — EDSS 7 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl)
+    ve nöroloji reçetesi gerekir (§4.2.34).
+  gate_b_sources:
+  - C006646
+  report_duration_months: 12
+  prescriber_specialties:
+  - nöroloji
+- rule_id: 4.2.34.primary_progressive_ms_tertiary_neurology
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006648
+  drug_names:
+  - okrelizumab
+  icd10_codes:
+  - G35
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: EDSS≤7 primer progresif MS, güncel MS kriterleri; üçüncü basamak nöroloji uzmanı ≤1 yıl rapor + nöroloji
+      reçetesi
+    message_tr: Güncel MS tanı kriterlerini karşılayan ve EDSS 7 ve altında olan primer progresif MS hastalarında, üçüncü
+      basamak sağlık hizmeti sunucusunda nöroloji uzmanınca düzenlenen en fazla 1 yıl süreli rapor ve nöroloji reçetesiyle
+      bedelleri Kurumca karşılanır (§4.2.34).
+- rule_id: 4.2.34.rrms_edss5p5_high_activity
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006658
+  drug_names:
+  - fingolimod
+  - natalizumab
+  - kladribin
+  - okrelizumab
+  - alemtuzumab
+  icd10_codes:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: EDSS≤5.5 RRMS + ≥2 yüksek aktivite özelliği
+    message_tr: EDSS 5,5 ve altında olan relaps ve remisyonla seyreden MS hastalarında, aşağıda belirtilen yüksek hastalık
+      aktivitesi özelliklerinden en az ikisini taşıyanlarda kullanılması halinde bedelleri Kurumca karşılanır (§4.2.34).
+- rule_id: 4.2.34.rrms_edss7_high_activity_after_platform
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006662
+  drug_names:
+  - fingolimod
+  - natalizumab
+  - kladribin
+  - okrelizumab
+  - alemtuzumab
+  icd10_codes:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'EDSS≤7 RRMS: platform tedavilerinden ≥1 yıl kullanıp yanıtsız + ≥2 yüksek aktivite özelliği'
+    message_tr: EDSS 7 ve altında, relaps ve remisyonla seyreden MS hastalarında beta interferonlar, glatiramer asetat, teriflunomid
+      veya dimetil fumarat tedavilerinden birini/birkaçını toplam ≥1 yıl kullanıp yanıtsız kalan ve ≥2 yüksek aktivite özelliği
+      taşıyanlarda kullanılması halinde bedelleri Kurumca karşılanır (§4.2.34).
+- rule_id: 4.2.34.rrms_high_activity_after_advanced_dmt
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006672
+  drug_names:
+  - alemtuzumab
+  - lemtrada
+  - okrelizumab
+  icd10_codes:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'yüksek aktiviteli RRMS: fingolimod/natalizumab/kladribin/okrelizumab''tan biri/çoğu ≥1 yıl kullanıp yanıtsız
+      + ≥2 yüksek aktivite özelliği'
+    message_tr: Yüksek hastalık aktivitesi gösteren relaps/remisyon MS hastalarında fingolimod, natalizumab, kladribin veya
+      okrelizumab tedavilerinden birini/birkaçını toplam ≥1 yıl kullanıp yanıtsız kalan ve ≥2 yüksek aktivite özelliği taşıyanlarda
+      kullanılması halinde bedelleri Kurumca karşılanır (§4.2.34).
+- rule_id: 4.2.34.rrms_high_activity_after_platform_a
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006630
+  drug_names:
+  - fingolimod
+  - natalizumab
+  - kladribin
+  - okrelizumab
+  - alemtuzumab
+  icd10_codes:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'yüksek aktiviteli RRMS: beta-IFN/glatiramer/teriflunomid/dimetil fumarattan biri/çoğu ≥1 yıl kullanıp yanıtsız
+      + ≥2 yüksek aktivite özelliği'
+    message_tr: Yüksek hastalık aktivitesi gösteren relaps/remisyon MS hastalarında beta interferonlar, glatiramer asetat,
+      teriflunomid veya dimetil fumarat tedavilerinden birini/birkaçını toplam ≥1 yıl kullanıp yanıtsız kalan ve ≥2 yüksek
+      aktivite özelliği taşıyanlarda kullanılması halinde bedelleri Kurumca karşılanır (§4.2.34).
+- rule_id: 4.2.34.rrms_high_activity_after_platform_b
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006636
+  drug_names:
+  - fingolimod
+  - natalizumab
+  - kladribin
+  - okrelizumab
+  - alemtuzumab
+  icd10_codes:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'yüksek aktiviteli RRMS: platform tedavilerinden ≥1 yıl kullanıp yanıtsız + ≥2 yüksek aktivite özelliği'
+    message_tr: Yüksek hastalık aktivitesi gösteren relaps/remisyon MS hastalarında beta interferonlar, glatiramer asetat,
+      teriflunomid veya dimetil fumarat tedavilerinden birini/birkaçını toplam ≥1 yıl kullanıp yanıtsız kalan ve ≥2 yüksek
+      aktivite özelliği taşıyanlarda kullanılması halinde bedelleri Kurumca karşılanır (§4.2.34).
+- rule_id: 4.2.34.rrms_high_activity_after_platform_c
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006642
+  drug_names:
+  - fingolimod
+  - natalizumab
+  - kladribin
+  - okrelizumab
+  - alemtuzumab
+  icd10_codes:
+  - G35
+  report_required: true
+  report_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'yüksek aktiviteli relapsing remitting MS: platform tedavilerinden ≥1 yıl kullanıp yanıtsız + ≥2 yüksek aktivite
+      özelliği'
+    message_tr: Yüksek hastalık aktivitesi gösteren relapsing remitting multipl skleroz hastalarında beta interferonlar, glatiramer
+      asetat, teriflunomid veya dimetil fumarat tedavilerinden birini/birkaçını toplam ≥1 yıl kullanıp yanıtsız kalan ve ≥2
+      yüksek aktivite özelliği taşıyanlarda kullanılması halinde bedelleri Kurumca karşılanır (§4.2.34).
+- rule_id: 4.2.34.spms_edss4_tertiary_neurology_report
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006679
+  drug_names:
+  - siponimod
+  - okrelizumab
+  icd10_codes:
+  - G35
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: güncel MS kriterleri + EDSS≥4; üçüncü basamak nöroloji uzmanınca ≤1 yıl süreli rapor + nöroloji reçetesi
+    message_tr: Güncel MS tanı kriterlerini karşılayan EDSS 4 ve üzeri olan hastalarda, üçüncü basamak sağlık hizmeti sunucusunda
+      nöroloji uzmanınca düzenlenen en fazla 1 yıl süreli raporda bu durumun belirtilmesi koşuluyla nöroloji uzmanlarınca
+      reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.34).
+- rule_id: 4.2.34.tertiary_neurology_1yr_report_prescription
+  sut_section: 4.2.34
+  gate_b_sources:
+  - C006666
+  drug_names:
+  - fingolimod
+  - natalizumab
+  - kladribin
+  - okrelizumab
+  - alemtuzumab
+  icd10_codes:
+  - G35
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basamakta nöroloji uzmanınca ≤1 yıl süreli rapor + nöroloji reçetesi
+    message_tr: Üçüncü basamak sağlık hizmeti sunucularında nöroloji uzman hekimi tarafından düzenlenen en fazla 1 yıl süreli
+      raporda bu durumun belirtilmesi ve nöroloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır
+      (§4.2.34).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

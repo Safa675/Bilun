@@ -359,7 +359,11 @@ def write_gate_b_artifacts(
 if __name__ == "__main__":
     from datetime import date
 
-    from scripts.sut.prose.drug_indication_4235_4237_batch_rules import BATCH_A5_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A5_RULES = load_legacy_drug_batch(
+        "drug_indication_4235_4237_batch_rules.py:BATCH_A5_RULES"
+    )
 
     repo = _PROJECT_ROOT
     clauses = repo / "data/gazette/sut_clauses.parquet"

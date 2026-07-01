@@ -1,0 +1,15 @@
+section_id: 1.8.5.(17)
+source_note: Exported from copay_general_1_8.json (YAML source migration)
+rules:
+- rule_id: 1.8.5.(17).iade_malzeme
+  sut_section: 1.8.5.(17)
+  service_type: copay_exemption
+  exemption_category: iade_malzeme
+  condition:
+    line_kind: returned_medical_material
+  action:
+    copay_treatment: no_copay
+    waives_sections:
+    - 1.8.3
+  gate_b_sources:
+  - C000371

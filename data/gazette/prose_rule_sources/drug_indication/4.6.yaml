@@ -1,0 +1,57 @@
+section_id: '4.6'
+rules:
+- rule_id: 4.6.blood_component_procurement_coverage
+  sut_section: '4.6'
+  gate_b_sources:
+  - C007807
+  drug_names:
+  - kan ve kan bileşenleri
+  condition:
+    coverage_note: true
+    blood_component: true
+  action:
+    enforcement: 'coverage: 2nd/3rd-line institutions procure blood/components (RBC suspension, whole blood, platelets, plasma,
+      etc.) from MoH-licensed blood-service units and Kızılay blood units where present; institutions must NOT have patients
+      procure blood; if an institution that must procure fails to and the patient procures it, the invoice is paid to the
+      patient and deducted from the institution'
+    message_tr: İkinci ve üçüncü basamak kuruluşlarınca hastalar için gerekli görülen kan ve kan bileşenleri, Bakanlıkça ruhsatlandırılmış
+      kan hizmet birimleri ile Kızılay kan birimi bulunan yerlerde bu birimlerden temin edilir; kuruluşlarca hastalara kan
+      temin ettirilmez; temini zorunlu olduğu halde temin edilmeyerek hastaya aldırılan kan/komponent fatura bedeli hastaya
+      ödenir ve ilgili kuruluştan mahsup edilir (§4.6).
+- rule_id: 4.6.ek2b_blood_component_isbt_barcode_coverage
+  sut_section: '4.6'
+  gate_b_sources:
+  - C007808
+  drug_names:
+  - kan ve kan bileşenleri
+  condition:
+    coverage_note: true
+    blood_component: true
+    ek2b_list: true
+  action:
+    enforcement: 'coverage: blood/components used for EK-2/B-billed procedures and procured by institutions — paid by the
+      Institution per EK-2/B point values, provided the epicrisis states the component name, count and ISBT-128 blood-barcode
+      numbers'
+    message_tr: EK-2/B üzerinden faturalandırılan tedaviler için kullanılması gerekli görülen ve sağlık kurumlarınca temin
+      edilen kan ve kan bileşenlerinin bedelleri, epikrizde kan bileşeninin adı, sayısı ve ISBT 128 kan barkod numaralarının
+      belirtilmesi kaydıyla EK-2/B puanları esas alınarak Kurumca kuruma ödenir (§4.6).
+- rule_id: 4.6.ek2c_blood_component_drg_unbundling_must_bill
+  sut_section: '4.6'
+  gate_b_sources:
+  - C007809
+  drug_names:
+  - kan ve kan bileşenleri
+  pay: false
+  condition:
+    blood_component: true
+    ek2c_list: true
+    drg_bundled: true
+  action:
+    enforcement: 'must-bill/no-pay: blood/components used within EK-2/C procedures are included in diagnosis-based procedure
+      points and CANNOT be billed; exceptions — 705371/705430/705440 components billable at 36%, 705372/705373 at 24%, 705441
+      at 20%, 705442/705443 at 28%; all blood components must be recorded in MEDULA with ISBT-128 barcodes'
+    message_tr: EK-2/C kapsamındaki işlemler için kullanılan kan ve kan bileşenleri tanıya dayalı işlem puanlarına dâhil olduğundan
+      Kuruma fatura edilemez; 705371/705430/705440 kodlu bileşenler için %36'sı, 705372 ve 705373 için %24'ü, 705441 için
+      %20'si, 705442 ve 705443 için %28'i ayrıca faturalandırılır; tüm kan bileşenlerinin ISBT 128 barkod numaralarıyla MEDULA'ya
+      kaydedilmesi zorunludur (§4.6).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

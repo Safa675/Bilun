@@ -1,0 +1,125 @@
+section_id: 2.4.4.B
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.B.(8).sudden_hearing_loss_20session_cap
+  sut_section: 2.4.4.B
+  condition:
+    diagnosis_any:
+    - H911
+    - H912
+    sessions_after_20th: true
+    improvement_less_than_20db: true
+  action:
+    billable: false
+    denial_tr: 20. seans sonunda saf ses ortalamasında 20 dB düzelme yoksa sonraki seanslar ödenmez; son 30 gün odyolojik
+      test zorunlu
+    severity: error
+  gate_b_sources:
+  - C000876
+- rule_id: 2.4.4.B.(1).hbo_facility_coverage
+  sut_section: 2.4.4.B
+  condition:
+    procedure_category: hyperbaric_oxygen
+    facility_not_in:
+    - contracted_public_with_hbo_center
+    - licensed_private_2nd_3rd_step_hbo
+  action:
+    billable: false
+    denial_tr: HBO bedelleri bünyesinde hiperbarik oksijen tedavi merkezi bulunan sözleşmeli resmi sunucuda veya Yönetmelik
+      kapsamında faaliyet süren sözleşmeli özel 2./3. basamak sunucuda yapılması halinde Kurumca karşılanır
+    severity: error
+  gate_b_sources:
+  - C000869
+- rule_id: 2.4.4.B.(2).hbo_health_board_report
+  sut_section: 2.4.4.B
+  condition:
+    procedure_category: hyperbaric_oxygen
+    is_emergency: false
+    health_board_report_present: false
+  action:
+    billable: false
+    denial_tr: acil durumlar hariç HBO için 2./3. basamak sunucularca tanı ve uygulanması istenilen seans sayısını içeren
+      sağlık kurulu raporu düzenlenmelidir
+    severity: error
+  gate_b_sources:
+  - C000870
+- rule_id: 2.4.4.B.(6).hbo_start_10d_gap_7_biz_days
+  sut_section: 2.4.4.B
+  condition:
+    procedure_category: hyperbaric_oxygen
+    days_from_report_to_treatment:
+      min: 11
+  action:
+    billable: false
+    denial_tr: HBO tedavisine rapor tarihinden en geç 10 gün içinde başlanmalı; uzman onayıyla en fazla 7 iş günü kesintisiz
+      ara verilebilir, daha uzun arada yeni rapor düzenlenir
+    severity: error
+  gate_b_sources:
+  - C000874
+- rule_id: 2.4.4.B.(7).hbo_one_session_per_day
+  sut_section: 2.4.4.B
+  condition:
+    procedure_category: hyperbaric_oxygen
+    sessions_per_day:
+      min: 2
+    sudden_hearing_loss_or_emergency_first_7d: false
+  action:
+    billable: false
+    denial_tr: günde en fazla 1 seans HBO ödenir; ani işitme kaybı ve acil hastalarda tedavinin başladığı gün dahil ilk 7
+      günde günde birden fazla seans ödenir
+    severity: error
+  gate_b_sources:
+  - C000875
+- rule_id: 2.4.4.B.(9).hbo_crao_start_within_5d
+  sut_section: 2.4.4.B
+  condition:
+    diagnosis_any:
+    - H341
+    procedure_category: hyperbaric_oxygen
+    days_from_diagnosis_to_treatment:
+      min: 6
+  action:
+    billable: false
+    denial_tr: santral retinal arter tıkanıklığında HBO ödenebilmesi için tanıyı takiben 5 gün içinde tedaviye başlanmış olmalı
+    severity: error
+  gate_b_sources:
+  - C000877
+- rule_id: 2.4.4.B.(10).hbo_anoxic_encephalopathy_start_5d
+  sut_section: 2.4.4.B
+  condition:
+    diagnosis_any:
+    - G931
+    procedure_category: hyperbaric_oxygen
+    days_from_diagnosis_to_treatment:
+      min: 6
+  action:
+    billable: false
+    denial_tr: hipoksik/anoksik ensefalopati tanısında HBO ödenebilmesi için tanıyı takiben ilk 5 gün içinde tedaviye başlanmış
+      olmalı
+    severity: error
+  gate_b_sources:
+  - C000878
+- rule_id: 2.4.4.B.(12).hbo_ek2d3_indications_only
+  sut_section: 2.4.4.B
+  condition:
+    procedure_category: hyperbaric_oxygen
+    indication_in_ek2d3: false
+  action:
+    billable: false
+    denial_tr: HBO bedelleri yalnızca SUT eki EK-2/D-3 endikasyonları ve ICD-10 tanı kodları esas alınarak EK-2/C bedelleri
+      üzerinden karşılanır
+    annex_basis: EK-2/C
+    severity: error
+  gate_b_sources:
+  - C000880
+- rule_id: 2.4.4.B.(13).hbo_traffic_accident_no_session_limit
+  sut_section: 2.4.4.B
+  condition:
+    procedure_category: hyperbaric_oxygen
+    origin_is_traffic_accident: true
+  action:
+    billable: true
+    payment_tr: trafik kazası sonrası gerekli görülen HBO uygulamalarında EK-2/D-3 seans sayısı sınırlamaları dikkate alınmaz
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C000881

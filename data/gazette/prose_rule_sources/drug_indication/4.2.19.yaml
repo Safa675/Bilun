@@ -1,0 +1,65 @@
+section_id: 4.2.19
+rules:
+- rule_id: 4.2.19.migraine.neurology_1yr_report_monthly_dose_coverage
+  sut_section: 4.2.19
+  gate_b_sources:
+  - C006064
+  drug_names:
+  - topiramat
+  - topiramate
+  - triptan
+  - sumatriptan
+  - zolmitriptan
+  - rizatriptan
+  - eletriptan
+  - naratriptan
+  - almotriptan
+  - frovatriptan
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'migren: uzman hekim raporu 1 yıl geçerli; nöroloji uzmanınca düzenlenen uzman hekim raporuna dayanılarak
+      diğer hekimlerce en fazla birer aylık dozda reçete edilirse ödenir'
+    message_tr: Uzman hekim raporu 1 yıl süreyle geçerlidir ve nöroloji uzman hekimince düzenlenen uzman hekim raporuna dayanılarak
+      diğer hekimler tarafından en fazla birer aylık dozda reçete edilmesi halinde bedeli ödenir (§4.2.19).
+- rule_id: 4.2.19.topiramate_migraine_prophylaxis
+  sut_section: 4.2.19
+  drug_names:
+  - topiramat
+  - topiramate
+  icd10_ranges:
+  - G43
+  message_tr: Topiramat profilaktik migren — diğer profilaktikler 6 ay etkisiz kaldıktan sonra nöroloji uzman hekim raporu
+    ile başlanır (§4.2.19).
+  gate_b_sources:
+  - C006063
+  report_required: true
+  report_specialties:
+  - nöroloji
+  prescriber_specialties:
+  - nöroloji
+- rule_id: 4.2.19.triptan_neurology_prescriber
+  sut_section: 4.2.19
+  drug_names:
+  - triptan
+  - sumatriptan
+  - zolmitriptan
+  - rizatriptan
+  - eletriptan
+  - naratriptan
+  - almotriptan
+  - frovatriptan
+  icd10_ranges:
+  - G43
+  message_tr: Triptanlar — migren endikasyonunda nöroloji uzman hekimi reçetesi gerekir (§4.2.19).
+  gate_b_sources:
+  - C006062
+  prescriber_specialties:
+  - nöroloji
+source_note: Exported from drug_indication_prose.json (YAML source migration)

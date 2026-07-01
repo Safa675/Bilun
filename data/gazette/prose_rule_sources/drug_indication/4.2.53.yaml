@@ -1,0 +1,36 @@
+section_id: 4.2.53
+rules:
+- rule_id: 4.2.53.metabolic.nutrition_supplement_fatty_acid_coverage
+  sut_section: 4.2.53
+  gate_b_sources:
+  - C007071
+  drug_names:
+  - beslenme ürünü
+  - medical food
+  - diyete ek beslenme
+  - lipid emülsiyon
+  icd10_codes:
+  - E71.3
+  - E71.4
+  - K76
+  - E78
+  report_required: true
+  report_specialties:
+  - çocuk metabolizma hastalıkları
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  prescriber_specialties:
+  - çocuk metabolizma hastalıkları
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: çoklu açil CoA dehidrogenaz eksikliği hariç; yağ asidi oksidasyon bozuklukları, kolestatik karaciğer hastalıkları
+      veya lipoprotein metabolizması bozukluklarında diyete ek beslenme ürünü olarak çocuk metabolizma/çocuk endokrin+metabolizma
+      uzmanlarından en az birinin yer aldığı raporla bu hekimlerce veya çocuk sağlığı uzmanlarınca reçete edilirse ödenir
+    message_tr: Multiple açil CoA dehidrogenaz eksikliği hariç olmak üzere yağ asidi oksidasyon bozuklukları, kolestatik karaciğer
+      hastalıkları veya lipoprotein metabolizması bozukluklarında diyete ek beslenme ürünü olarak çocuk metabolizma hastalıkları
+      veya çocuk endokrinolojisi endokrinoloji ve metabolizma hastalıkları uzmanlarından en az birinin yer aldığı sağlık kurulu
+      raporu ile bu hekimlerce veya çocuk sağlığı ve hastalıkları uzman hekimlerince reçete edilmesi halinde bedeli Kurumca
+      karşılanır (§4.2.53).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

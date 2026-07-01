@@ -1,0 +1,60 @@
+section_id: 3.3.12
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.12.(4).dental_prosthesis_adhesive_no_pay
+  sut_section: 3.3.12
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003146
+  condition:
+    material_name_any:
+    - protez yapistirici
+    - protez yapıştırıcı
+    - protez temizleme
+    - ozel icerikli dis macun
+    - özel içerikli diş macun
+    - denture adhesive
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Protez yapıştırıcı / temizleme tableti / özel diş macunu — Kurumca karşılanmaz (§3.3.11–12).
+- rule_id: 3.3.12.(4).dental_prosthesis_adhesive_flag
+  sut_section: 3.3.12
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003146
+  condition:
+    dental_prosthesis_adhesive_claim: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Protez bakım/yapıştırıcı malzemesi — Kurumca karşılanmaz (§3.3.11–12).
+- rule_id: 3.3.12.(1).kulak_kepecesi_protezi_must_bill
+  sut_section: 3.3.12
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003148
+  condition:
+    material_name_any:
+    - kulak kepçesi protezi
+    - kulak kepecesi protezi
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Kulak kepçesi protezi — 3. basamak resmi sunucularda sağlık kurulu raporuna istinaden kulak burun boğaz veya
+      plastik rekonstrüktif ve estetik cerrahi hekimlerince uygulanması halinde bedeli Kurumca karşılanır (§3.3.12(1)).
+- rule_id: 3.3.12.(2).kulak_kepecesi_protezi_yenileme_must_bill
+  sut_section: 3.3.12
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003149
+  condition:
+    material_name_any:
+    - kulak kepçesi protezi
+    - kulak kepecesi protezi
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Kulak kepçesi protezi — ilgili dal uzmanlarınca düzenlenen sağlık kurulu raporuna istinaden kulak burun boğaz
+      veya plastik rekonstrüktif ve estetik cerrahi hekimlerince gerekli durumlarda yenilenmesi halinde bedeli Kurumca karşılanır
+      (§3.3.12(2)).

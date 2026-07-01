@@ -1,0 +1,58 @@
+section_id: 4.2.9.C
+rules:
+- rule_id: 4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage
+  sut_section: 4.2.9.C
+  gate_b_sources:
+  - C004160
+  - C004167
+  - C004168
+  drug_names:
+  - parikalsitol
+  icd10_codes:
+  - N18
+  - Z99.2
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - nefroloji
+  prescriber_specialties:
+  - nefroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: parikalsitol oral formları yalnızca periton diyalizi hastalarına nefroloji uzmanının ≤6 ay raporuyla nefroloji
+      uzmanınca en fazla 1 aylık dozda reçete
+    message_tr: Parikalsitolün oral formlarının yukarıda belirtilen koşullarda periton diyalizi hastalarına nefroloji uzman
+      hekimi tarafından düzenlenen en fazla 6 ay süreli sağlık raporuna istinaden nefroloji uzman hekimi tarafından en fazla
+      1 aylık dozda reçete edilmesi halinde Kurumca bedelleri karşılanır (§4.2.9.C).
+- rule_id: 4.2.9.C.renal.paricalcitol_parenteral_hemodialysis_coverage
+  sut_section: 4.2.9.C
+  gate_b_sources:
+  - C004166
+  drug_names:
+  - parikalsitol
+  icd10_codes:
+  - N18
+  - Z99.2
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  - diyaliz sertifikalı uzman hekimi
+  prescriber_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  - diyaliz sertifikalı uzman hekimi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: parikalsitol parenteral formları yalnızca hemodiyaliz hastalarına nefroloji/iç/çocuk veya diyaliz sertifikalı
+      uzmanın ≤6 ay raporuyla bu hekimlerce en fazla 1 aylık dozda reçete
+    message_tr: Parikalsitolün parenteral formlarının yalnızca hemodiyaliz hastalarına yukarıda belirtilen koşullarda nefroloji,
+      iç hastalıkları veya çocuk sağlığı ve hastalıkları uzman hekimleri veya diyaliz sertifikalı uzman hekimi tarafından
+      düzenlenen en fazla 6 ay süreli sağlık raporuna istinaden yine bu hekimler tarafından en fazla 1 aylık dozda reçete
+      edilmesi halinde Kurumca bedelleri karşılanır (§4.2.9.C).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

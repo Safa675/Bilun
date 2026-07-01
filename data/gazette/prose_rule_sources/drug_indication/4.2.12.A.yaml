@@ -1,0 +1,151 @@
+section_id: 4.2.12.A
+rules:
+- rule_id: 4.2.12.A.immunglob.cmv_ig_heart_lung_tx_coverage
+  sut_section: 4.2.12.A
+  gate_b_sources:
+  - C004440
+  drug_names:
+  - sitomegalavirüs immünglobulini
+  - sitomegalovirüs immünglobulini
+  - cmv immünglobulini
+  icd10_codes:
+  - B25
+  - Z94.1
+  - Z94.8
+  report_required: true
+  report_specialties:
+  - kardiyovasküler cerrahi
+  - kardiyoloji
+  - enfeksiyon hastalıkları
+  - göğüs cerrahisi
+  - göğüs hastalıkları
+  prescriber_specialties:
+  - uzman hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: yalnızca kalp ve/veya akciğer nakli alıcılarında donör CMV-IgG pozitif + alıcı negatif yüksek riskli immünsupresif
+      hastalarda CMV profilaksisinde; kalm naklinde kardiyovasküler cerrahi/kardiyoloji/enfeksiyon, akciğer naklinde göğüs
+      cerrahisi/göğüs hastalıkları/enfeksiyon sağlık kurulu raporuyla tabela/reçete uzman hekimlerce
+    message_tr: Sitomegalavirüs immunglobulini; yalnızca kalp ve/veya akciğer nakli alıcılarında, donör CMV-IgG pozitif, alıcı
+      negatif olan yüksek riskli ve immünosupresif tedaviye maruz kalan hastalarda, sitomegalovirüs enfeksiyonunun klinik
+      belirtilerinin profilaksisinde; bu durumların belirtildiği kalp naklinde kardiyovasküler cerrahi, kardiyoloji ve enfeksiyon
+      hastalıkları, akciğer naklinde göğüs cerrahisi, göğüs hastalıkları ve enfeksiyon hastalıkları uzman hekimlerinden oluşan
+      sağlık kurulu raporuna dayanılarak tabela/reçetelerin uzman hekimlerce düzenlenmesi halinde bedelleri Kurumca ödenir
+      (§4.2.12.A).
+- rule_id: 4.2.12.A.immunglob.hbig_anhepatic_phase_dose_by_risk
+  sut_section: 4.2.12.A
+  gate_b_sources:
+  - C004427
+  drug_names:
+  - hepatit b immünglobulini
+  - hbig
+  icd10_codes:
+  - B18.0
+  - B18.1
+  - Z94.4
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: karaciğer naklinin anhepatik fazında yüksek risk grubuna 10.000 IU, düşük risk grubuna 5.000 IU HBIg
+    message_tr: Karaciğer naklinin anhepatik fazında; yüksek risk grubu hastalarda 10.000 IU, düşük risk grubu hastalarda
+      5.000 IU HBIg kullanılması halinde bedelleri Kurumca karşılanır (§4.2.12.A).
+- rule_id: 4.2.12.A.immunglob.hbig_day14_antihbs_low_continuation
+  sut_section: 4.2.12.A
+  gate_b_sources:
+  - C004431
+  drug_names:
+  - hepatit b immünglobulini
+  - hbig
+  icd10_codes:
+  - B18.0
+  - B18.1
+  - Z94.4
+  report_required: true
+  action:
+    enforcement: nakilden 14 gün sonra AntiHBs<100 IU/l ise 7 gün boyunca her gün 2.000 IU HBIg; bu sürenin sonunda AntiHBs
+      düzeyinden bağımsız olarak aylık 2.000 IU HBIg idameye geçilir
+    message_tr: Nakilden 14 gün sonra AntiHBs düzeyinin<100 IU/l olması halinde 7 gün boyunca her gün 2.000 IU HBIg kullanılabilir.
+      Bu sürenin de sonunda AntiHBs düzeyinden bağımsız olarak aylık 2.000 IU HBIg idame tedavisi uygulamasına geçilir (§4.2.12.A).
+- rule_id: 4.2.12.A.immunglob.hbig_day7_hbsag_positive_continuation
+  sut_section: 4.2.12.A
+  gate_b_sources:
+  - C004430
+  drug_names:
+  - hepatit b immünglobulini
+  - hbig
+  icd10_codes:
+  - B18.0
+  - B18.1
+  - Z94.4
+  report_required: true
+  action:
+    enforcement: nakilden 7 gün sonra HBsAg pozitif ve/veya AntiHBs<100 IU/l ise 7 gün boyunca her gün 2.000 IU HBIg; 14.
+      günde AntiHBs bakılır, >100 IU/l ise aylık 2.000 IU idameye geçilir
+    message_tr: Nakilden 7 gün sonra HBsAg pozitif olması durumunda ve/veya AntiHBs düzeyi<100 IU/l 7 gün boyunca her gün
+      2.000 IU HBIg kullanılabilir. Nakilden 14 gün sonra AntiHBs düzeylerine yeniden bakılır. AntiHBs düzeyi>100 IU/l ise
+      aylık 2.000 IU HBIg idame tedavisi uygulamasına geçilir (§4.2.12.A).
+- rule_id: 4.2.12.A.immunglob.hbig_liver_tx_prophylaxis_risk_group
+  sut_section: 4.2.12.A
+  gate_b_sources:
+  - C004417
+  drug_names:
+  - hepatit b immünglobulini
+  - hbig
+  icd10_codes:
+  - B18.0
+  - B18.1
+  - Z94.4
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: HbsAg taşıyanlarda karaciğer transplantasyonu sonrası enfeksiyon profilaksisinde belirlenen risk grubu rapor/reçetede
+      belirtilirse ödenir
+    message_tr: Hepatit B immünglobulini (HBIg)'nin, Hepatit B virüs yüzey antijeni (HbsAg) taşıyan hastalarda karaciğer transplantasyonu
+      sonrası enfeksiyon profilaksisi endikasyonunda belirlenen risk grubuna göre aşağıdaki durumların rapor/reçetede belirtilmesi
+      halinde bedelleri Kurumca karşılanır (§4.2.12.A).
+- rule_id: 4.2.12.A.immunglob.hbig_posttx_day0_7_daily_maintenance
+  sut_section: 4.2.12.A
+  gate_b_sources:
+  - C004429
+  drug_names:
+  - hepatit b immünglobulini
+  - hbig
+  icd10_codes:
+  - B18.0
+  - B18.1
+  - Z94.4
+  report_required: true
+  action:
+    enforcement: nakil sonrası 7 gün boyunca her gün 2.000 IU HBIg; 7. gün HBsAg negatif ve/veya AntiHBs>100 IU/l ise aylık
+      2.000 IU HBIg idameye geçilir
+    message_tr: 7 gün boyunca her gün 2.000 IU HBIg kullanılabilir. Nakilden 7 gün sonra HBsAg ve AntiHBs düzeylerine bakılır.
+      HBsAg negatif olması durumunda ve/veya AntiHBs düzeyi>100 IU/l ise aylık 2.000 IU HBIg idame tedavisi uygulamasına geçilir
+      (§4.2.12.A).
+- rule_id: 4.2.12.A.immunglob.hbig_tetanus_ambulatory_coverage
+  sut_section: 4.2.12.A
+  gate_b_sources:
+  - C004416
+  drug_names:
+  - hepatit b immünglobulini
+  - tetanoz immünglobulini
+  icd10_codes:
+  - B16
+  - B18.0
+  - B18.1
+  - A33
+  - A35
+  report_required: true
+  prescriber_specialties:
+  - uzman hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: ayakta tedavide yalnızca Sağlık Bakanlığının onay verdiği endikasyon ve dozlarda, uzman hekim raporuna dayanılarak
+      uzman hekimlerce birer aylık dozda reçete edilirse ödenir
+    message_tr: Hepatit B ve tetanoz immünglobulinlerinin ayakta tedavide, sadece Sağlık Bakanlığının onay verdiği endikasyonlarda
+      ve dozlarda olmak üzere uzman hekim raporuna dayanılarak uzman hekimler tarafından birer aylık dozda reçete edilmesi
+      halinde bedelleri Kurumca karşılanır (§4.2.12.A).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

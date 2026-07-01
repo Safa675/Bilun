@@ -1,0 +1,172 @@
+section_id: 4.2.1.C-3
+rules:
+- rule_id: 4.2.1.C.das28_1p2_improvement_continue
+  sut_section: 4.2.1.C-3
+  gate_b_sources:
+  - C003666
+  drug_names:
+  - anti-tnf
+  - biyolojik ajan
+  icd10_codes:
+  - M05
+  - M06
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - romatoloji
+  - fiziksel tıp ve rehabilitasyon
+  action:
+    enforcement: rapor süresi sonunda DAS28'de toplam >1,2 puan düşme varsa yeni 6 ay süreli raporla tedaviye devam
+    message_tr: Raporun süresi sonunda DAS28 skorunda toplam 1,2 puandan fazla düşme olması halinde bu durumun yeni düzenlenecek
+      6 ay süreli sağlık kurulu raporunda belirtilmesi koşuluyla tedaviye devam edilebilir (§4.2.1.C-3).
+- rule_id: 4.2.1.abatacept_jia_acr30_continuation
+  sut_section: 4.2.1.C-3
+  drug_names:
+  - abatasept
+  - abatacept
+  - orencia
+  icd10_ranges:
+  - M08
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Abatasept — juvenil artritte ilk 3 ay ACR pediatrik 30 yanıtı sonrası 3 ay süreli sağlık kurulu raporu ile tedaviye
+    devam edilir (§4.2.1.C-3).
+  gate_b_sources:
+  - C003670
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.abatacept_jia_acr50_continuation
+  sut_section: 4.2.1.C-3
+  drug_names:
+  - abatasept
+  - abatacept
+  - orencia
+  icd10_ranges:
+  - M08
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Abatasept — juvenil artritte ACR pediatrik 50 yanıtı ile 6 ay süreli sağlık kurulu raporu ile tedaviye devam
+    edilir (§4.2.1.C-3).
+  gate_b_sources:
+  - C003672
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 6
+- rule_id: 4.2.1.tocilizumab_pediatric_anti_tnf_failure
+  sut_section: 4.2.1.C-3
+  drug_names:
+  - tosilizumab
+  - tocilizumab
+  - actemra
+  - roactemra
+  icd10_ranges:
+  - M08
+  report_required: true
+  report_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  - çocuk endokrinoloji
+  message_tr: Tosilizumab — anti-TNF yetersiz juvenil artritte methotreksat ile kombine 3 ay süreli çocuk romatoloji sağlık
+    kurulu raporu gerekir (§4.2.1.C-3).
+  gate_b_sources:
+  - C003669
+  prescriber_specialties:
+  - çocuk sağlığı
+  - çocuk romatoloji
+  - çocuk endokrinoloji
+  report_duration_months: 3
+- rule_id: 4.2.1.tocilizumab_ra_board
+  sut_section: 4.2.1.C-3
+  drug_names:
+  - tosilizumab
+  - tocilizumab
+  - actemra
+  - roactemra
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  message_tr: Tosilizumab — aktif romatoid artritte methotreksat ile birlikte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-3).
+  gate_b_sources:
+  - C003664
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  report_duration_months: 3
+- rule_id: 4.2.1.tocilizumab_ra_das28_continuation_c3
+  sut_section: 4.2.1.C-3
+  drug_names:
+  - tosilizumab
+  - tocilizumab
+  - actemra
+  - roactemra
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Tosilizumab — romatoid artritte tedavi devamında DAS28 skorları 6 ay süreli sağlık kurulu raporunda belirtilmelidir
+    (§4.2.1.C-3).
+  gate_b_sources:
+  - C003667
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 6
+- rule_id: 4.2.1.tocilizumab_ra_university_board
+  sut_section: 4.2.1.C-3
+  drug_names:
+  - tosilizumab
+  - tocilizumab
+  - actemra
+  - roactemra
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Tosilizumab — aktif romatoid artritte DMARD/anti-TNF yetersizliğinde üniversite/eğitim hastanesi 3 ay süreli
+    sağlık kurulu raporu gerekir (§4.2.1.C-3).
+  gate_b_sources:
+  - C003664
+  prescriber_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  report_duration_months: 3
+source_note: Exported from drug_indication_prose.json (YAML source migration)

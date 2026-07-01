@@ -1,0 +1,27 @@
+section_id: 2.4.4.Ğ
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.G-u.(1).risk_scored_coverage_via_annex
+  sut_section: 2.4.4.Ğ
+  condition:
+    procedure_category: risk_scored_payment
+    risk_score_documented: true
+  action:
+    billable: true
+    enforcement: coverage
+    message_tr: risk puanına göre ilgili işlem üzerinden karşılanır
+  gate_b_sources:
+  - C001135
+- rule_id: 2.4.4.G-u.(2).risk_score_records_kept_in_patient_file
+  sut_section: 2.4.4.Ğ
+  condition:
+    procedure_category: risk_scored_payment
+    risk_score_basis_documents_in_file: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: sözleşmeli/protokollü sağlık hizmeti sunucuları, risk puanlamasına esas teşkil eden bilgi ve belgeleri hasta
+      dosyasında saklamak zorundadır
+    severity: error
+  gate_b_sources:
+  - C001136

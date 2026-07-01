@@ -1,0 +1,108 @@
+section_id: 4.2.5
+rules:
+- rule_id: 4.2.5.botox.axillary_hyperhidrosis_tertiary_coverage
+  sut_section: 4.2.5
+  gate_b_sources:
+  - C003932
+  - C003935
+  drug_names:
+  - botulinum toksini
+  - botox
+  - dysport
+  - onabotulinumtoksin
+  - abobotulinumtoksin
+  icd10_codes:
+  - L74.5
+  - R61
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - endokrinoloji ve metabolizma
+  - göğüs cerrahisi
+  - dermatoloji
+  prescriber_specialties:
+  - endokrinoloji ve metabolizma
+  - göğüs cerrahisi
+  - dermatoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'inatçı şiddetli aksiller primer hiperhidroz: 1 yıl topikal tedaviye dirençli erişkinlerde; altta yatan metabolik/endokrin
+      bozukluk olmadığı belirtilmeli; 3. basamakta endokrinoloji+göğüs cerr.+dermatoloji birlikte ≤1 yıl rapor, ≤6 ayda bir;
+      tedavi ≤2 yıl; botox ≤50 ünite/koltuk altı, dysport ≤100 ünite/koltuk altı'
+    message_tr: Bir yıl süre ile topikal tedavi alan ve bu tedaviye dirençli olan, inatçı şiddetli aksiller primer hiperhidroz
+      tedavisinde erişkin hastalarda botulinum toksini kullanımı için altta yatabilecek metabolik ve endokrin bir bozukluğu
+      olmadığının belirtildiği, üçüncü basamak resmi sağlık hizmeti sunucularında endokrinoloji ve metabolizma, göğüs cerrahisi
+      ve dermatoloji uzman hekimlerinin birlikte yer aldığı en fazla bir yıl süreli sağlık kurulu raporu ile en fazla 6 ayda
+      bir uygulanması halinde bedelleri Kurumca karşılanır; tedavi süresi en fazla 2 yıldır, tek seansta her bir koltuk altı
+      için botox 50 üniteyi, dysport ise 100 üniteyi aşmamak üzere yapılabilir (§4.2.5).
+- rule_id: 4.2.5.botox.outside_indications_nopay
+  sut_section: 4.2.5
+  gate_b_sources:
+  - C003938
+  drug_names:
+  - botulinum toksini
+  - botox
+  - dysport
+  - onabotulinumtoksin
+  - abobotulinumtoksin
+  pay: false
+  action:
+    enforcement: 'no-pay condition: tanımlı endikasyonlar (a/b bentleri) dışında botulinum toksini kullanımı'
+    message_tr: Bu endikasyonlar dışında bedeli ödenmez (§4.2.5).
+- rule_id: 4.2.5.botox.paediatric_cerebral_palsy_tertiary_coverage
+  sut_section: 4.2.5
+  gate_b_sources:
+  - C003929
+  - C003930
+  - C003933
+  drug_names:
+  - botulinum toksini
+  - botox
+  - dysport
+  - onabotulinumtoksin
+  - abobotulinumtoksin
+  icd10_codes:
+  - G80
+  report_required: true
+  report_specialties:
+  - ortopedi
+  - fiziksel tıp ve rehabilitasyon
+  - çocuk nörolojisi
+  - çocuk sağlığı ve hastalıkları
+  prescriber_specialties:
+  - ortopedi
+  - fiziksel tıp ve rehabilitasyon
+  - çocuk nörolojisi
+  - çocuk sağlığı ve hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'pediatrik serebral palsi: 3. basamak (üniversite/eğitim-araştırma) veya FTR dal hastanesinde ortopedi/PMR/çocuk
+      nörolojisi/çocuk sağlığı uzmanının yer aldığı sağlık kurulu raporuyla bu uzmanlardan biri tarafından reçete; ≤18 yaş,
+      sistemik hastalık/kemik deformitesi/kanama diyatezi/fikst kontraktür olmayanlarda en fazla iki adaleye'
+    message_tr: Pediatrik serebral palsi endikasyonunda üçüncü basamak resmi sağlık hizmeti sunucularında ile fizik tedavi
+      ve rehabilitasyon dal hastanelerinde; ortopedi, fiziksel tıp ve rehabilitasyon, çocuk nörolojisi veya çocuk sağlığı
+      ve hastalıkları uzman hekimlerinin yer aldığı sağlık kurulu raporuna dayanılarak belirtilen uzman hekimlerden biri tarafından
+      reçete edilmesi halinde bedeli ödenir; 18 yaşa kadar sistemik hastalığı, kemiksel deformite, kanama diyatezi, fikst
+      kontraktür olmayan hastalarda en fazla iki adaleye uygulanır (§4.2.5).
+- rule_id: 4.2.5.botox.repeat_application_6mo_report_permission
+  sut_section: 4.2.5
+  gate_b_sources:
+  - C003936
+  drug_names:
+  - botulinum toksini
+  - botox
+  - dysport
+  - onabotulinumtoksin
+  - abobotulinumtoksin
+  report_required: true
+  report_specialties:
+  - uzman hekimler
+  action:
+    enforcement: tedaviden yarar görüp tekrarı düşünülenlerde 6 aylık periyotlarda her defasında yeni sağlık kurulu raporuyla
+      en fazla iki uygulama; tek seansta botox ≤300 ünite, dysport ≤1.000 ünite; bu endikasyonlar dışında ödenmez
+    message_tr: Yukarıda a ve b bentlerinde sıralanan endikasyonlar için tedaviden yarar görüp tekrarı düşünülen hastalarda
+      6 aylık periyotlarda her defasında yeni bir sağlık kurulu raporu düzenlenerek en fazla iki uygulama ve tek seansta botoks
+      için toplam 300 üniteyi, dysport için 1.000 üniteyi aşmamak üzere yapılabilir (§4.2.5).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

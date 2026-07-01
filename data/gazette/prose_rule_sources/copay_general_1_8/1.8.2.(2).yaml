@@ -1,0 +1,15 @@
+section_id: 1.8.2.(2)
+source_note: Exported from copay_general_1_8.json (YAML source migration)
+rules:
+- rule_id: 1.8.2.(2)
+  sut_section: 1.8.2.(2)
+  service_type: drug_prescription_flat
+  effective_from: '2026-01-01'
+  fees_try:
+    base_up_to_3_boxes: 3.76
+    per_extra_box: 1.25
+  legacy_fees_try:
+    base_up_to_3_boxes: 3.0
+    per_extra_box: 1.0
+  gate_b_sources:
+  - C000321

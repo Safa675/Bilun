@@ -1,0 +1,397 @@
+section_id: 3.1.2
+source_note: Exported from material_bundling_prose.json (YAML source migration)
+rules:
+- rule_id: 3.1.2.c.warranty_maintenance
+  sut_section: 3.1.2
+  deontic: MUST_NOT_BILL
+  condition:
+    material_name_any:
+    - garanti kapsam
+    - garanti süresi
+    - garanti suresi
+    - bakım onarım
+    - bakim onarim
+    - bakım ve onarım masrafları
+    - bakim ve onarim masraflari
+    - firma tarafından karşılan
+    - firma tarafindan karsilan
+  action:
+    material_outcome: must_not_bill_separately
+    severity: warning
+    message_tr: Garanti kapsamındaki bakım/onarım — ayrıca faturalandırılamaz (§3.1.2(c)).
+  gate_b_sources:
+  - C002741
+- rule_id: 3.1.2.(2).not_in_ek3c
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  condition:
+    material_not_in_ek3c: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Malzeme kodu EK-3/C listelerinde yok — Kurumca karşılanmaz (§3.1.2(2)).
+  gate_b_sources:
+  - C002707
+- rule_id: 3.1.2.(2).not_in_ek3
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002824
+  - C002828
+  - C002831
+  condition:
+    material_not_in_ek3: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Malzeme kodu EK-3 uzmanlık listelerinde yok — Kurumca karşılanmaz (§3.2.1 / §3.1.2).
+- rule_id: 3.1.2.(7).lost_stolen_miat
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002720
+  condition:
+    material_name_any:
+    - kaybolması
+    - kaybolmasi
+    - çalınması
+    - calinmasi
+    - çalıntı
+    - calinti
+  action:
+    material_outcome: no_pay
+    severity: warning
+    message_tr: Kayıp/çalıntı sonrası MIAT dolana kadar yeni malzeme ödenmez (§3.1.2(7)).
+- rule_id: 3.1.2.c.onarim_not_covered
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002724
+  condition:
+    material_name_any:
+    - kullanım kurallarına uyulmaması
+    - kullanim kurallarina uyulmamasi
+    - onarım masraf
+    - onarim masraf
+  action:
+    material_outcome: no_pay
+    severity: warning
+    message_tr: Kullanım kuralı ihlali onarım masrafı — Kurumca karşılanmaz (§3.1.2(c)).
+- rule_id: 3.1.2.ç.garanti_renewal_denied
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002742
+  condition:
+    material_name_any:
+    - garanti süresi içindeki yenilenme
+    - garanti suresi icindeki yenilenme
+  action:
+    material_outcome: no_pay
+    severity: warning
+    message_tr: Garanti süresi içi yenileme talebi — Kurumca karşılanmaz (§3.1.2(ç)).
+- rule_id: 3.1.2.d.duplicate_function_garanty
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002743
+  condition:
+    material_name_any:
+    - aynı işlevi gören
+    - ayni islevi goren
+    - birden fazla ürün çeşidi
+  action:
+    material_outcome: no_pay
+    severity: warning
+    message_tr: Aynı işlevli alternatif ürün — garanti süresi dolana kadar diğerleri ödenmez (§3.1.2(d)).
+- rule_id: 3.1.2.(17).device_consumable_excluded
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002749
+  condition:
+    material_name_any:
+    - karşılanmayan tıbbi cihaz
+    - karsilanmayan tibbi cihaz
+    - cihaza ait sarf
+    - cihaz sarf
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Karşılanmayan cihaza ait sarf/bakım — Kurumca karşılanmaz (§3.1.2(17)).
+- rule_id: 3.1.2.b.ortez_protez_contract_billing_invalid
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002740
+  condition:
+    ortez_protez_contract_billing_invalid: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Özel sözleşme yolu ortez/protez faturalandırması — komisyon tespiti ve sözleşme kapsamı doğrulanmalı (§3.1.2(b)).
+- rule_id: 3.1.2.(11).maintenance_cost_cap_exceeded
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002732
+  - C002733
+  condition:
+    maintenance_cost_exceeds_sut_cap: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Bakım/onarım toplam bedeli malzeme bedelinin %75'ini geçemez (§3.1.2(11)).
+- rule_id: 3.1.2.(8).protez_repair_documentation_incomplete
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002727
+  - C002728
+  - C002729
+  - C002744
+  condition:
+    protez_repair_documentation_incomplete: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Protez/ortez MIAT veya yenileme talebi — sağlık raporu/kurul belgesi gerekir (§3.1.2(8)).
+- rule_id: 3.1.2.(8).warranty_maintenance_procedure_incomplete
+  sut_section: 3.1.2
+  deontic: MANDATORY
+  gate_b_sources:
+  - C002723
+  condition:
+    warranty_maintenance_procedure_incomplete: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Garanti içi/dışı bakım-onarım başvuru prosedürü tamamlanmamış (§3.1.2(8)(b)).
+- rule_id: 3.1.2.(8).ortez_protez_maintenance_unverified
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002721
+  - C002722
+  condition:
+    ortez_protez_maintenance_unverified: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Ortez/protez bakım-onarım — garanti kapsamı ve Kurum tespiti doğrulanmalı (§3.1.2(8)).
+- rule_id: 3.1.2.(9).ek3c_miat_early_renewal_unauthorized
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002725
+  condition:
+    ek3c_miat_early_renewal_unauthorized: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: EK-3/C-2/C-3 malzemesi MIAT süresi dolmadan yenilenemez (§3.1.2(9)).
+- rule_id: 3.1.2.(4).ek3c_custom_order_billing_invalid
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002709
+  condition:
+    ek3c_custom_order_billing_invalid: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: EK-3/C 'I' (ısmarlama) malzemesi — kişiye özel üretim kuralları doğrulanmalı (§3.1.2(4)).
+- rule_id: 3.1.2.(5).ek3c_medical_appropriateness_incomplete
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002713
+  condition:
+    ek3c_medical_appropriateness_incomplete: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: EK-3/C-1 malzemesi için tıbbi uygunluk/rapor takibi tamamlanmamış (§3.1.2(5)).
+- rule_id: 3.1.2.c.ek3c_custom_garment_contract_invalid
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002712
+  condition:
+    ek3c_custom_garment_contract_invalid: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Lenfödem/yanık bası giysisi (ısmarlama) — sözleşme yolu doğrulanmalı (§3.1.2(c)).
+- rule_id: 3.1.2.(13).ek3c_force_majeure_renewal_claim
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002735
+  condition:
+    ek3c_force_majeure_renewal_claim: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Mücbir sebep belgeli EK-3/C yenileme — kullanım süresine bakılmaksızın yenileme yolu (§3.1.2(13)).
+- rule_id: 3.1.2.(1).ek3c_outpatient_material_scope
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002700
+  condition:
+    ek3c_outpatient_material_scope: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Ayakta tedavi EK-3/C listesi kapsamı — ilgili geri ödeme kuralları geçerlidir (§3.1.2(1)).
+- rule_id: 3.1.2.(6).prescription_quantity_exceeded
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002699
+  condition:
+    material_prescription_quantity_exceeded: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Reçete miktarı SUT limitini aşıyor — fazla adet Kurumca karşılanmaz (§3.1.2(6)).
+- rule_id: 3.1.2.report_prescription_invalid
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002759
+  - C002719
+  - C002753
+  - C002760
+  - C002764
+  - C002761
+  - C002792
+  - C002793
+  - C002758
+  - C002762
+  - C002734
+  - C002763
+  condition:
+    material_report_prescription_invalid: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Malzeme sağlık raporu/reçete süresi veya basamak şartı sağlanmıyor (§3.1.2 / §3.1.2.2).
+- rule_id: 3.1.2.b.material_invoice_documentation_incomplete
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002711
+  condition:
+    material_invoice_documentation_incomplete: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Fatura eki belge eksik (ruhsatname/sorumlu müdür vb.) — malzeme ödenmez (§3.1.2(b)).
+- rule_id: 3.1.2.g.wheelchair_dual_prescription_invalid
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002746
+  condition:
+    wheelchair_dual_prescription_invalid: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Manuel ve akülü tekerlekli sandalye aynı anda reçete edilemez (§3.1.2(g)).
+- rule_id: 3.1.2.(16).outpatient_contract_center_supply_required
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002748
+  condition:
+    outpatient_contract_center_supply_required: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Ayakta tedavi malzemesi sözleşmeli merkez/eczaneden temin edilmeli (§3.1.2(16)).
+- rule_id: 3.1.2.a.child_growth_miat_renewal_claim
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002726
+  condition:
+    child_growth_miat_renewal_claim: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Çocuk büyüme-gelişme MIAT yenileme — sağlık raporu ile erken yenileme koşulları (§3.1.2(a)).
+- rule_id: 3.1.2.(1).ek3c_list_field_definitions
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002706
+  condition:
+    ek3c_list_field_definition_scope: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: EK-3/C listelerinde SUT kodu, alan tanımı ve fiyat tanımları geçerlidir — liste eşleşmesi doğrulanmalı (§3.1.2(1)).
+- rule_id: 3.1.2.(4)a.ismarlama_licensed_center_supply
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002710
+  condition:
+    ismarlama_licensed_center_supply_required: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Ismarlama protez/ortez veya işitme cihazı — Sağlık Bakanlığı ruhsatlı merkezden temin şartı (§3.1.2(4)(a)).
+- rule_id: 3.1.2.(5).ek3c_optional_appropriateness_consumables
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002714
+  - C002716
+  - C002717
+  - C002718
+  - C002731
+  condition:
+    ek3c_optional_appropriateness_consumable: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Hasta alt bezi, sonda veya aspirasyon kateteri için tıbbi uygunluk zorunlu değil — ihtiyaç halinde aranabilir
+      (§3.1.2(5)).
+- rule_id: 3.1.2.(14).disabled_veteran_ortez_protez_billing
+  sut_section: 3.1.2
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002736
+  - C002737
+  - C002738
+  condition:
+    disabled_veteran_ortez_protez_billing_review: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: 3713 sayılı Kanun kapsamı malul/vazife malulü ortez-protez — liste fiyatı aşımı ve kapsam doğrulanmalı (§3.1.2(14)).
+- rule_id: 3.1.2.(15).terror_victim_ortez_protez_documentation
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002747
+  condition:
+    terror_victim_ortez_protez_documentation_incomplete: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: 3713/21 olay mağduru ortez-protez — mülki amirlik belgesi fatura ekinde olmalı (§3.1.2(15)).
+- rule_id: 3.1.2.(18).prescription_correction_authority
+  sut_section: 3.1.2
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002750
+  condition:
+    material_prescription_correction_invalid: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Reçete/rapor düzeltmesi yetkili hekim tarafından yapılmalı (§3.1.2(18)).

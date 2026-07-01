@@ -1,0 +1,46 @@
+section_id: 4.2.13.1.2
+rules:
+- rule_id: 4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis
+  sut_section: 4.2.13.1.2
+  gate_b_sources:
+  - C004616
+  drug_names:
+  - lamivudin
+  - telbivudin
+  - tenofovir
+  - entekavir
+  icd10_codes:
+  - B18.0
+  - B18.1
+  - Z21
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - tıbbi onkoloji
+  action:
+    enforcement: HBsAg neg + HBV DNA ve/veya anti-HBc pozitif iken immünsupresif/sitotoksik/monoklonal tedavi alanlara biyopsi/ALT/DNA
+      aranmadan lamivudin/telbivudin/TDF/TAF/entekavir; tedavi bitiminden sonra en fazla 12 ay
+    message_tr: HBsAg negatifken HBV DNA ve/veya anti-HBc pozitifliği ile immünsupresif/sitotoksik/monoklonal antikor tedavisi
+      alan hastalara ALT/biyopsi aranmadan lamivudin/telbivudin/TDF/TAF/entekavir; bu tedavilerin bitiminden sonra en fazla
+      12 ay boyunca antiviral kullanılabilir (§4.2.13.1.2).
+- rule_id: 4.2.13.hbv_immunosuppression_lamivudin_prophylaxis
+  sut_section: 4.2.13.1.2
+  drug_names:
+  - lamivudin
+  - entekavir
+  - tenofovir
+  icd10_ranges:
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HBsAg(+) immünsupresif/kemoterapi/monoklonal antikor tedavisi — lamivudin profilaksisi tedavi süresince ve sonrası
+    en fazla 12 ay rapor gerekir (§4.2.13.1.2).
+  gate_b_sources:
+  - C004614
+  report_duration_months: 12
+source_note: Exported from drug_indication_prose.json (YAML source migration)

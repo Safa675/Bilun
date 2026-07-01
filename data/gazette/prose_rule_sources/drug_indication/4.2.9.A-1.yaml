@@ -1,0 +1,127 @@
+section_id: 4.2.9.A-1
+rules:
+- rule_id: 4.2.9.esa_ckd_iron_hb_nephrology_report
+  sut_section: 4.2.9.A-1
+  drug_names:
+  - eritropoietin
+  - epoetin
+  - darbepoetin
+  - aranesp
+  - binocrit
+  - eprex
+  - mircera
+  - retacrit
+  - neo recormon
+  - metoksipolietilen glikol
+  icd10_ranges:
+  - N18
+  message_tr: KBY anemisi ESA — TSAT/ferritin ve Hb kriterleri; demir eksikliğinde önce demir tedavisi; hedef Hb 11-12 g/dl;
+    tetkik sonuçları raporda belirtilir (§4.2.9.A-1).
+  gate_b_sources:
+  - C004117
+  - C004121
+  - C004126
+  - C004130
+  report_required: true
+  report_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+  report_duration_months: 1
+  prescriber_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+- rule_id: 4.2.9.esa_ckd_legacy_nephrology_prescriber
+  sut_section: 4.2.9.A-1
+  drug_names:
+  - eritropoietin
+  - epoetin
+  - darbepoetin
+  - aranesp
+  - binocrit
+  - eprex
+  - mircera
+  - retacrit
+  - neo recormon
+  - metoksipolietilen glikol
+  icd10_ranges:
+  - N18
+  message_tr: KBY anemisi ESA — nefroloji veya diyaliz sertifikalı uzman hekim raporuna dayanılarak nefroloji/diyaliz sertifikalı
+    hekimlerce reçete edilir (§4.2.9.A-1).
+  gate_b_sources:
+  - C004122
+  - C004131
+  report_required: true
+  report_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+  prescriber_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+- rule_id: 4.2.9.esa_ckd_monthly_nephrology_report
+  sut_section: 4.2.9.A-1
+  drug_names:
+  - eritropoietin
+  - epoetin
+  - darbepoetin
+  - roksadustat
+  - aranesp
+  - binocrit
+  - eprex
+  - mircera
+  - retacrit
+  - neo recormon
+  icd10_ranges:
+  - N18
+  message_tr: KBY anemisi ESA — ferritin/TSAT/Hb kriterleri, nefroloji/diyaliz uzman raporu; muadil ESA kullanımı; bir defada
+    en fazla 1 aylık reçete (§4.2.9.A).
+  gate_b_sources:
+  - C004127
+  - C004128
+  - C004130
+  - C004131
+  - C004173
+  report_required: true
+  report_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+  report_duration_months: 1
+  prescriber_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+- rule_id: 4.2.9.roksadustat_esa_switch_dialysis_report
+  sut_section: 4.2.9.A-1
+  drug_names:
+  - roksadustat
+  - evrenzo
+  - roxadustat
+  icd10_ranges:
+  - N18
+  message_tr: Roksadustat — stabil diyaliz hastasında ESA'dan geçişte klinik neden raporda belirtilmeli; başlangıç dozu önceki
+    4 haftalık ortalama ESA dozuna göre ayarlanır (§4.2.9.A-1).
+  gate_b_sources:
+  - C004134
+  report_required: true
+  report_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+  report_duration_months: 1
+  prescriber_specialties:
+  - nefroloji
+  - iç hastalıkları
+  - çocuk sağlığı
+  - diyaliz
+source_note: Exported from drug_indication_prose.json (YAML source migration)

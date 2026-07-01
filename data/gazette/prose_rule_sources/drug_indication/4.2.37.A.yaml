@@ -1,0 +1,64 @@
+section_id: 4.2.37.A
+rules:
+- rule_id: 4.2.37.A.acromegaly.pegvisomant_somatostatin_failure_permission
+  sut_section: 4.2.37.A
+  gate_b_sources:
+  - C006714
+  drug_names:
+  - pegvisomant
+  - somavert
+  icd10_codes:
+  - E22.0
+  - E15
+  report_required: true
+  report_specialties:
+  - endokrinoloji ve metabolizma
+  prescriber_specialties:
+  - endokrinoloji ve metabolizma
+  action:
+    enforcement: aktif akromegali (cerrahi/radyoterapi sonrası veya uygun olmayan), ≥12 ay tam doz uzun etkili somatostatin
+      analoguna rağmen IGF-1 yüksek olanlarda pegvisomant; 3. basamak (üniversite/eğitim-araştırma) içinde en az bir endokrinoloji
+      ve metabolizma uzmanı yer alan sağlık kurulu raporu
+    message_tr: Cerrahi ve/veya radyasyon terapisine rağmen veya genel durumu operasyon ve/veya radyasyon terapisine uygun
+      olmayan aktif akromegalisi olan ve en az 12 aylık süre ile ve tam dozda uzun etkili somatostatin analogları ile tedaviye
+      rağmen IGF-1 düzeyleri yaşa göre belirlenen normal değerlerin üstünde kalan hastalarda kullanılabilir; bu hastalar için
+      eğitim ve araştırma ile üniversite hastanelerinde üçüncü basamak resmi sağlık hizmeti sunucularında içinde en az bir
+      endokrinoloji ve metabolizma uzmanının yer aldığı sağlık kurulu raporu düzenlenir (§4.2.37.A).
+- rule_id: 4.2.37.pegvisomant_endocrine_prescriber
+  sut_section: 4.2.37.A
+  drug_names:
+  - pegvisomant
+  - somavert
+  icd10_ranges:
+  - E22.0
+  - E22
+  report_required: true
+  message_tr: Pegvisomant — endokrinoloji ve metabolizma uzman hekimi reçetesi gerekir; raporda yaşa uygun IGF-1 referans
+    aralığı belirtilmelidir (§4.2.37.A).
+  gate_b_sources:
+  - C006716
+  - C006718
+  report_specialties:
+  - endokrinoloji
+  - metabolizma
+  prescriber_specialties:
+  - endokrinoloji
+  - metabolizma
+- rule_id: 4.2.37.pegvisomant_init_board_2mo
+  sut_section: 4.2.37.A
+  drug_names:
+  - pegvisomant
+  - somavert
+  icd10_ranges:
+  - E22.0
+  - E22
+  report_required: true
+  message_tr: Pegvisomant başlangıç — IGF-1 kontrolü sonrası en fazla 2 ay süreli sağlık kurulu raporu gerekir (§4.2.37.A).
+  gate_b_sources:
+  - C006715
+  - C006717
+  report_specialties:
+  - endokrinoloji
+  - metabolizma
+  report_duration_months: 2
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,19 @@
+section_id: 3.3.7.A
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.7.A.c.cocuk_standing_table_tetrapleji_must_bill
+  sut_section: 3.3.7.A
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003065
+  condition:
+    material_name_any:
+    - standing table
+    - standing masasi
+    - standing masası
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Çocuk standing table — herhangi bir nedene bağlı tetrapleji/parapleji veya ayakta durmanın tedaviye katkı
+      sağlayacağının belirtildiği 2-18 yaş hastalara bu hekimlerce reçete edilmesi halinde Kurumca bedeli karşılanır (§3.3.7.A
+      c).

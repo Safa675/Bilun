@@ -1,0 +1,33 @@
+section_id: 4.2.68
+rules:
+- rule_id: 4.2.68.neuro.lems_congenital_myasthenic_amifampridine_coverage
+  sut_section: 4.2.68
+  gate_b_sources:
+  - C007165
+  drug_names:
+  - amifampridin
+  - amifampridin fosfat
+  icd10_codes:
+  - G70.0
+  - G70.1
+  - G73.1
+  report_required: true
+  report_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  prescriber_specialties:
+  - çocuk nöroloji
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: elektrofizyolojik test ve/veya klinik değerlendirmeyle tanı konulmuş Lambert-Eaton Miyastenik Sendromlu (LEMS)
+      veya genetik analizle tanı konulmuş konjenital miyastenik sendromlu hastaların tedavisinde; üçüncü basamakta tanı kriterlerinin
+      belirtildiği, en az bir çocuk nöroloji ve/veya nöroloji uzmanının yer aldığı sağlık kurulu raporuyla bu uzmanlarca reçete
+      edilirse ödenir
+    message_tr: Elektrofizyolojik test ve/veya klinik değerlendirmeyle tanı konulmuş Lambert Eaton Miyastenik Sendromlu (LEMS)
+      veya genetik analiz ile tanı konulmuş konjenital miyastenik sendromlu hastaların tedavisi için, üçüncü basamak resmi
+      sağlık hizmet sunucularında düzenlenen ve yukarıda yer alan tanı kriterlerinin belirtildiği, en az bir çocuk nöroloji
+      ve/veya nöroloji uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak bu uzman hekimlerce reçete edilmesi halinde
+      bedelleri Kurumca karşılanır (§4.2.68).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

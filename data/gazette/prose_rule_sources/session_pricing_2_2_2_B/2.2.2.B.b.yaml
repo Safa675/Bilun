@@ -1,0 +1,12 @@
+section_id: 2.2.2.B.b
+source_note: Exported from session_pricing_2_2_2_B.json (YAML source migration)
+rules:
+- rule_id: 2.2.2.B.b
+  sut_section: 2.2.2.B.b
+  condition:
+    same_session: true
+    same_incision: false
+    all_in_ek2c: true
+  action:
+    highest_procedure_factor: 1.0
+    other_procedure_factor: 0.5

@@ -489,12 +489,22 @@ def write_gate_b_artifacts_from_prose(
 
 
 def _combined_4210_batch_rules() -> list[dict[str, Any]]:
-    from scripts.sut.prose.drug_indication_4210_batch_rules import BATCH_LSD4210_RULES
-    from scripts.sut.prose.drug_indication_4210_tier_b_batch_rules import (
-        BATCH_4210_TIER_B_RULES,
-    )
+    from scripts.sut.rule_sources import load_drug_sections_rules
 
-    return BATCH_LSD4210_RULES + BATCH_4210_TIER_B_RULES
+    return load_drug_sections_rules(
+        [
+            "4.2.10.A",
+            "4.2.10.A-3",
+            "4.2.10.A-4",
+            "4.2.10.B-2",
+            "4.2.10.B-3",
+            "4.2.10.C-1",
+            "4.2.10.C-2",
+            "4.2.10.C-3",
+            "4.2.10.D-2",
+            "4.2.10.Ç-2",
+        ]
+    )
 
 
 if __name__ == "__main__":

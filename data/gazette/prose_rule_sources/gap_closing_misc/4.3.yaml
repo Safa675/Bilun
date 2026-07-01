@@ -1,0 +1,35 @@
+section_id: '4.3'
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 4.3.(3).ek4c_overseas_listed_only
+  sut_section: '4.3'
+  condition:
+    drug_overseas_sourced: true
+    drug_not_in_ek4c_list: true
+  action:
+    billable: false
+    denial_tr: EK-4/C Yurt Dışı İlaç Fiyat Listesi'nde yer almayan ilaç ödenmez
+    severity: error
+  gate_b_sources:
+  - C007290
+- rule_id: 4.3.(5).ek4d_overseas_no_copay
+  sut_section: '4.3'
+  condition:
+    drug_overseas_sourced: true
+    drug_in_ek4d_list: true
+  action:
+    billable: true
+    copay_required: false
+    payment_tr: EK-4/D kapsamındaki yurt dışı temin ilaçlardan katılım payı alınmaz
+  gate_b_sources:
+  - C007292
+- rule_id: 4.3.(8).overseas_drug_domestic_license_continues
+  sut_section: '4.3'
+  condition:
+    drug_overseas_sourced: true
+    drug_obtained_domestic_license_after: true
+  action:
+    billable: true
+    payment_tr: yurt dışından temin edilip sonradan ruhsat/distribution belgesi alan ilaçlar kurallara göre
+  gate_b_sources:
+  - C007297

@@ -1,0 +1,95 @@
+section_id: 2.6.2
+rules:
+- rule_id: 2.6.2.(1a).outpatient_daily_allowance_window
+  sut_section: 2.6.2
+  gate_b_sources:
+  - C001561
+  condition:
+    definition_scope: Ayakta tedavide müracaat ile tedavi bitişi arası, istirahat dışı günler için gündelik
+    applies_to: Ayakta tedavi
+  action:
+    enforcement: gate
+    message_tr: Ayakta tedavide müracaat tarihi ile tedavinin sona erdiği tarih arasındaki istirahat raporu dışı günler için
+      gündelik ödenir.
+- rule_id: 2.6.2.(1b).inpatient_daily_allowance_travel_days_only
+  sut_section: 2.6.2
+  gate_b_sources:
+  - C001562
+  condition:
+    definition_scope: Yatarak tedavide hasta ve refakatçiye yalnızca gidiş/dönüş için gündelik
+    applies_to: Yatarak tedavi
+  action:
+    enforcement: gate
+    message_tr: Yatarak tedavide hasta ve refakatçisine yalnızca gidiş ve dönüş tarihi için gündelik ödenir.
+- rule_id: 2.6.2.(1c).no_bed_waiting_daily_cap_5
+  sut_section: 2.6.2
+  gate_b_sources:
+  - C001563
+  condition:
+    definition_scope: Yatak yokluğu nedeniyle yatırılmadan geçen günler için 5 günü geçmemek üzere gündelik
+    applies_to: Müracaat sonrası yatak bulunamaması
+    daily_allowance_cap_days: 5
+  action:
+    enforcement: gate
+    message_tr: Yatak bulunmaması nedeniyle yatırılmadan geçen günler, durumun belgelenmesi şartıyla 5 günü geçmemek üzere
+      gündelik olarak ödenir.
+- rule_id: 2.6.2.(1c_ext).outpatient_over_10_days_documented
+  sut_section: 2.6.2
+  gate_b_sources:
+  - C001565
+  condition:
+    definition_scope: Ayakta tedavinin 10 günü aşması halinde gerekçe sevk belgesinde belirtilince gündelik
+    applies_to: Ayakta tedavi — programlı tedaviler hariç
+    threshold_days: 10
+  action:
+    enforcement: gate
+    message_tr: Ayakta tedavi başvurudan itibaren 10 günü aşarsa, gerekçesi sevk belgesinde belirtilirse aşan süreler için
+      de gündelik ödenir (programlı tedaviler hariç).
+- rule_id: 2.6.2.(2).daily_allowance_coefficients
+  sut_section: 2.6.2
+  gate_b_sources:
+  - C001566
+  condition:
+    definition_scope: Gündeliklerin gösterge rakamı x devlet memuru katsayısı ile ödenmesi
+    applies_to: Gündelik hesabı
+    indicators:
+      intra_province: 100
+      inter_province: 200
+  action:
+    enforcement: gate
+    message_tr: Gündelik; il içi sevkte 100, iller arası sevkte 200 gösterge rakamının devlet memuru aylık katsayısı ile çarpımı
+      tutarınca ödenir (virgülden sonrası alınmaz).
+- rule_id: 2.6.2.(4).continuation_specialty_daily_allowance
+  sut_section: 2.6.2
+  gate_b_sources:
+  - C001568
+  condition:
+    definition_scope: Sevk edilen branş dışında tedavi devamı sevk edilip belgelendirilirse gündelik
+    applies_to: Ayakta tedavi — branş değişimi
+  action:
+    enforcement: gate
+    message_tr: Müracaat sonrası tedavinin devamı niteliğinde başka branşa sevk edilip belgelendirilirse, sevk edildiği branşta
+      ayakta tedavi görülen günler için de gündelik ödenir.
+- rule_id: 2.6.2.(5).continuation_provider_daily_allowance
+  sut_section: 2.6.2
+  gate_b_sources:
+  - C001569
+  condition:
+    definition_scope: Aynı yerleşim yerinde başka sunucuya tedavi devamı sevk edilip belgelendirilirse gündelik
+    applies_to: Ayakta tedavi — aynı yerleşimde sunucu değişimi
+  action:
+    enforcement: gate
+    message_tr: Aynı yerleşim yerinde başka sunucuya tedavinin devamı niteliğinde sevk edilip belgelendirilirse, ilk sunucuda
+      ayakta tedavi görülen günler için de gündelik ödenir.
+- rule_id: 2.6.2.(3).same_day_application_no_daily_allowance
+  sut_section: 2.6.2
+  gate_b_sources:
+  - C001567
+  condition:
+    expense_not_covered: muracaat_ve_tedavi_bitisi_ayni_gun_ise_gundelik
+    applies_to: Sevk edilen sağlık hizmeti sunucusuna müracaat — aynı gün biten tedavi
+  action:
+    enforcement: reject
+    message_tr: Sevk edilen sağlık hizmeti sunucusuna müracaat tarihi ile tedavinin sona erdiği tarihin aynı gün olması halinde
+      gündelik ödenmez.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

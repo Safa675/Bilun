@@ -1,0 +1,39 @@
+section_id: 3.3.33.C
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.33.C.(1).bone_anchored_hearing_aid_coverage
+  sut_section: 3.3.33.C
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003355
+  condition:
+    bone_anchored_hearing_aid_over_5y_criteria: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: 5 yaş üzeri bilateral işitme kaybı + konvansiyonel cihazdan yarar görmeme (3 KBB uzmanı + odyolog sağlık kurulu)
+      veya Komisyon onayıyla kemiğe monte işitme cihazı Kurumca karşılanır (§3.3.33.C(1)).
+- rule_id: 3.3.33.C.e.single_side_deaf_conductive_mixed
+  sut_section: 3.3.33.C
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003362
+  condition:
+    bone_anchored_hearing_aid_single_sided_deafness: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Tek kulak total işitme kaybı + karşı kulak iletim/mikst tip kaybında kemiğe monte cihaz Kurumca karşılanır
+      (§3.3.33.C(e)).
+- rule_id: 3.3.33.C.(4).headband_internal_part_coverage
+  sut_section: 3.3.33.C
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003364
+  condition:
+    bone_anchored_hearing_aid_headband_internal_part: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Kafa bandı uygulanan hastada cerrahi planlanan tarihte aktarıcı sistem + iç parça bedeli Kurumca karşılanır
+      (§3.3.33.C(4)).

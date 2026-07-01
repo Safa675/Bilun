@@ -1,0 +1,188 @@
+section_id: 3.3.4.A
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.4.A.(1).bone_stimulator_combined_use
+  sut_section: 3.3.4.A
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002964
+  condition:
+    bone_stimulator_combined_use: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Kemik yapımını uyaran materyallerin kombine kullanımı — karşılanmaz (§3.3.4.A(1)).
+- rule_id: 3.3.4.A.(2).bone_stimulator_hypertrophic_nonunion
+  sut_section: 3.3.4.A
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002966
+  condition:
+    bone_stimulator_hypertrophic_nonunion: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Hipertrofik nonunion/pseudoartrozda kemik uyarıcı malzeme — karşılanmaz (§3.3.4.A(2)/(3)).
+- rule_id: 3.3.4.A.(3).bone_stimulator_with_autograft
+  sut_section: 3.3.4.A
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002967
+  condition:
+    bone_stimulator_with_autograft: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Otojen greft ile birlikte kemik uyarıcı malzeme — karşılanmaz (§3.3.4.A(3)/(4)).
+- rule_id: 3.3.4.A.(4).bone_stimulator_benign_tumor
+  sut_section: 3.3.4.A
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002931
+  condition:
+    bone_stimulator_benign_tumor_use: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Agresif olmayan benign kemik tümöründe kemik uyarıcı — karşılanmaz (§3.3.4.A(4)).
+- rule_id: 3.3.4.A.(17).synthetic_tendon_graft
+  sut_section: 3.3.4.A
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002953
+  condition:
+    material_name_any:
+    - sentetik tendon
+    - tendon greft
+    - tendon yerine
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Tendon yerine sentetik greft — Kurumca karşılanmaz (§3.3.4.A(17)/(14)).
+- rule_id: 3.3.4.A.(1).allogreft_titubb_uts_registration
+  sut_section: 3.3.4.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002932
+  condition:
+    allogreft_titubb_uts_registration_required: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: İnsan dokusu kaynaklı ürünlerin (allogreft) MEDULA girişinde TİTUBB/ÜTS kaydı “Allogreft Ürün Onay Ekranı”nda
+      tamamlanmalı ve barkodlu gönderilmelidir (§3.3.4.A(1)).
+- rule_id: 3.3.4.A.(2).allogreft_donor_id_mandatory
+  sut_section: 3.3.4.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002933
+  condition:
+    allogreft_donor_id_mandatory: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Sunucu tarafından Donör ID MEDULA-Hastane ilgili alanına girilmesi zorunludur (§3.3.4.A(2)).
+- rule_id: 3.3.4.A.(7).graft_small_dimension_combination_prohibited
+  sut_section: 3.3.4.A
+  deontic: MUST_NOT_BILL
+  gate_b_sources:
+  - C002938
+  condition:
+    graft_small_dimension_combined_for_large_qty: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Küçük boyut/ölçüler bir arada kullanılarak listedeki büyük miktarlar elde edilemez (§3.3.4.A(7)).
+- rule_id: 3.3.4.A.e.corpectomy_cage_fill_coverage
+  sut_section: 3.3.4.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002946
+  condition:
+    corpectomy_interbody_cage_fill_graft_coverage: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Tümör/travma korpektomi boşluğuna titanyum/çelik interbody kafes içi doldurulduğunda (DBM hariç) bedeli Kurumca
+      karşılanır (§3.3.4.A(e)).
+- rule_id: 3.3.4.A.(10).synthetic_graft_30cc_cap
+  sut_section: 3.3.4.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002947
+  condition:
+    synthetic_graft_per_case_30cc_cap: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Sentetik greft kullanılan tüm uygulamalarda vaka başı 30 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.A(10)).
+- rule_id: 3.3.4.A.(11).allograft_xenograft_60cc_cap
+  sut_section: 3.3.4.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002948
+  condition:
+    allograft_xenograft_per_case_60cc_cap: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Allogreft/xenogreft kullanılan tüm uygulamalarda vaka başı 60 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.A(11)).
+- rule_id: 3.3.4.A.a.posterior_spinal_allograft_xenograft_cap
+  sut_section: 3.3.4.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002950
+  condition:
+    posterior_spinal_allograft_xenograft_per_level_cap: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Posterior spinal stabilizasyonda allogreft/xenogreft C1-T10 her seviye 5 cc, T11-S1 her seviye 10 cc’yi geçmemek
+      üzere Kurumca karşılanır (§3.3.4.A(a)).
+- rule_id: 3.3.4.A.b.posterior_spinal_synthetic_graft_cap
+  sut_section: 3.3.4.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002951
+  condition:
+    posterior_spinal_synthetic_graft_per_level_cap: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Posterior spinal stabilizasyonda sentetik greft C1-T10 her seviye 2,5 cc, T11-S1 her seviye 5 cc’yi geçmemek
+      üzere Kurumca karşılanır (§3.3.4.A(b)).
+- rule_id: 3.3.4.A.(13).bone_cyst_allograft_xenograft_120cc_cap
+  sut_section: 3.3.4.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002952
+  condition:
+    bone_cyst_allograft_xenograft_120cc_ct_documented: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Büyük kemik kisti cerrahisinde allogreft/xenogreft — koronal/aksiyel BT raporuyla 120 cc’yi geçmemek üzere
+      Kurumca karşılanır (§3.3.4.A(13)).
+- rule_id: 3.3.4.A.(15).fascia_temporalis_ent_only
+  sut_section: 3.3.4.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002954
+  condition:
+    fascia_temporalis_allograft_ent_only: true
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Fasiya Temporalis alan tanımındaki allogreftler yalnızca Kulak Burun Boğaz uzmanlık dalınca kullanıldığında
+      Kurumca karşılanır (§3.3.4.A(15)).
+- rule_id: 3.3.4.A.(17).graft_op_note_epikriz_mandatory
+  sut_section: 3.3.4.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002957
+  condition:
+    graft_op_note_epikriz_mandatory: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Greft adı ve miktarını içeren ameliyat notu MEDULA-Hastane epikriz alanına girilmelidir (§3.3.4.A(17)).

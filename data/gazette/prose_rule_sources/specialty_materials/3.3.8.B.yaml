@@ -1,0 +1,28 @@
+section_id: 3.3.8.B
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.8.B.(2).spinal_mobility_device_bundle_excluded
+  sut_section: 3.3.8.B
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003074
+  condition:
+    spinal_mobility_device_duplicate_billing: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Tekerlekli sandalye / ayakta dik durma / parapodium ayrıca ödenmez (§3.3.8.B(2)).
+- rule_id: 3.3.8.B.(2).spinal_mobility_device_keyword
+  sut_section: 3.3.8.B
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003074
+  condition:
+    material_name_any:
+    - parapodium
+    - ayakta dik durma
+    - ayakta dik konum
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Mobilite cihazı — §3.3.8.B kapsamında ayrı ödeme şüphesi.

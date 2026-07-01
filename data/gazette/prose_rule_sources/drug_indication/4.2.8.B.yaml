@@ -1,0 +1,23 @@
+section_id: 4.2.8.B
+rules:
+- rule_id: 4.2.8.B.parenteral_nutrition_30day_report
+  sut_section: 4.2.8.B
+  gate_b_sources:
+  - C004112
+  drug_names:
+  - parenteral beslenme ürünü
+  - parenteral nutrition
+  icd10_codes:
+  - E43
+  - E44
+  - E46
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: yatan hastalar dışında oral ve tüple beslenemeyenlere bu durumun sağlık kurulu raporunda belirtilmesi koşuluyla
+      uzman hekimce en fazla 30 günlük dozda reçete edilirse ödenir
+    message_tr: Yatan hastalar dışında, oral ve tüple beslenemeyen hastalara bu durumun sağlık kurulu raporunda belirtilmesi
+      kaydıyla uzman hekim tarafından en fazla 30 günlük dozda reçete edilmesi halinde parenteral beslenme ürünlerinin bedeli
+      ödenir (§4.2.8.B).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

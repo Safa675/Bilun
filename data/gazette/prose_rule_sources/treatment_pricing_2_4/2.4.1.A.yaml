@@ -1,0 +1,33 @@
+section_id: 2.4.1.A
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.1.A.(1).contracted_public_dental_ek2c_prosthesis_inclusive
+  sut_section: 2.4.1.A
+  condition:
+    facility_type: contracted_public_health_provider
+    procedure_category: dental_treatment_prosthesis
+    separate_casting_or_labor_fee_charged: true
+  action:
+    billable: false
+    denial_tr: sözleşmeli resmi sunucularda diş tedavi bedelleri EK-2/Ç Listesi uygulanır; protez tedavilerinde ayrıca döküm
+      ve işçilik ücreti ödenmez (malzeme/döküm/işçilik protez ücretine dahildir)
+    severity: error
+  gate_b_sources:
+  - C000760
+- rule_id: 2.4.1.A.(2).disabled_or_special_need_child_ga_sedo_2x
+  sut_section: 2.4.1.A
+  condition:
+    facility_type: contracted_public_health_provider
+    procedure_category: dental_treatment_under_anesthesia
+    patient_disabled_40pct_or_special_need_child: true
+    anesthesia_or_sedo_analgesia: true
+    disability_report_attached_to_invoice: true
+  action:
+    billable: true
+    payment_tr: sözleşmeli resmi sunucularda %40 ve üzeri engelli kişiler ile hafif düzey ve üstü özel gereksinimli çocuk
+      hastalarda genel anestezi veya sedo-analjezi altında verilen diş tedavileri EK-2/Ç işlem puanı bedellerinin iki katı
+      olarak faturalandırılır
+    billing_method: multiplier_2x
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000762

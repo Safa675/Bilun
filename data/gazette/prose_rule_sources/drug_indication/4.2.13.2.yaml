@@ -1,0 +1,32 @@
+section_id: 4.2.13.2
+rules:
+- rule_id: 4.2.13.hdv_interferon_board
+  sut_section: 4.2.13.2
+  drug_names:
+  - interferon
+  - pegile interferon
+  - peginterferon
+  - pegasys
+  - peg intron
+  - entekavir
+  - tenofovir
+  - lamivudin
+  - telbivudin
+  - adefovir
+  icd10_ranges:
+  - B18.0
+  - B17.0
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HDV(+) kronik hepatit B — interferon/pegile interferon; anti-HDV ve HBV DNA reçete/raporda belirtilmelidir (§4.2.13.2).
+  gate_b_sources:
+  - C004628
+  prescriber_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+source_note: Exported from drug_indication_prose.json (YAML source migration)

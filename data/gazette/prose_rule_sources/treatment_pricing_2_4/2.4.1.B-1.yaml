@@ -1,0 +1,86 @@
+section_id: 2.4.1.B-1
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.1.B-1.(1).private_uncontracted_dental_default_no_pay
+  sut_section: 2.4.1.B-1
+  condition:
+    facility_type_any:
+    - private_provider
+    - uncontracted_public_provider
+    procedure_category_any:
+    - orthodontic_treatment
+    - dental_treatment
+    patient_disabled_40pct_or_above: false
+  action:
+    billable: false
+    denial_tr: ortodontik diş tedavileri ile %40 ve üzerinde engelli kişiler hariç, kapsamdaki kişilerin özel sağlık hizmeti
+      sunucuları ile Kurumla sözleşmesi olmayan resmi sunucularındaki diş ünitelerinde yapılan ağız ve diş sağlığına ilişkin
+      tedaviler Kurumca ödenmez
+    severity: error
+  gate_b_sources:
+  - C000791
+- rule_id: 2.4.1.B-1.(2).disabled_child_private_dental_report_10_biz_days
+  sut_section: 2.4.1.B-1
+  condition:
+    patient_disabled_40pct_or_special_need_child: true
+    facility_type_any:
+    - private_provider
+    - uncontracted_public_provider
+    disability_or_special_need_documented: false
+  action:
+    billable: false
+    denial_tr: '%40 ve üzeri engelli veya hafif düzey ve üstü özel gereksinimli çocukların özel/sözleşmesiz sunuculardaki
+      diş tedavilerinin ödenebilmesi için engellilik/özel gereksinim durumu belgelendirilmeli; ADSM/ADSH/üniversite diş hekimliği
+      tarafından sağlık raporu düzenlenmeli ve rapor tarihinden itibaren 10 iş günü içinde tedaviye başlanmalıdır'
+    severity: error
+  gate_b_sources:
+  - C000794
+- rule_id: 2.4.1.B-1.(3).non_communicative_disabled_ga_unit_documentation
+  sut_section: 2.4.1.B-1
+  condition:
+    patient_communication_impaired_disabled: true
+    procedure_category: dental_treatment_under_anesthesia
+    limited_sedation_not_feasible: true
+    ga_or_sedo_analgesia_unit_documented: false
+  action:
+    billable: false
+    denial_tr: iletişim kurulamayan/algılama güçlüğü yaşanan engelli kişilerin diş tedavilerinde sınırlı uyuşturma mümkün
+      değilse genel anestezi veya sedo-analjezi bedelinin ödenebilmesi için anesteziyoloji ve reanimasyon uzmanı sorumluluğunda,
+      ADSM/tıp merkezi/hastane ameliyathane ve genel anestezi ünitelerinde yapıldığının belgelendirilmesi gerekmektedir
+    severity: error
+  gate_b_sources:
+  - C000795
+- rule_id: 2.4.1.B-1.(5).orthodontics_3_dentist_board_report_6mo
+  sut_section: 2.4.1.B-1
+  condition:
+    procedure_category: orthodontic_treatment
+    facility_type_any:
+    - private_provider
+    - uncontracted_public_provider
+    health_board_report_by_3_dentists: false
+  action:
+    billable: false
+    denial_tr: ortodontik tedavi gereksinimi olan hastalar ADSM/ADSH/üniversite diş hekimliği fakültelerince (ortodonti uzmanı/doktoralı
+      hekim katılımlı) üç diş hekimi tarafından düzenlenen sağlık kurulu raporu ile özel/sözleşmesiz sunuculara başvurabilir;
+      raporda estetik olmadığı ve maloklüzyon tipi belirtilmeli ve rapor tarihinden 6 ay içinde başlanmalıdır
+    severity: error
+  gate_b_sources:
+  - C000799
+- rule_id: 2.4.1.B-1.(6).post_treatment_control_form_public_dentist_approval
+  sut_section: 2.4.1.B-1
+  condition:
+    facility_type_any:
+    - private_provider
+    - uncontracted_public_provider
+    procedure_category_any:
+    - dental_treatment
+    - orthodontic_treatment
+    control_form_approved_by_contracted_public_dentist: false
+  action:
+    billable: false
+    denial_tr: özel/sözleşmesiz sunucularca yapılan diş tedavileri sonrasında EK-2/Ç-2 “Diş Tedavileri Kontrol Formu” ve/veya
+      EK-2/Ç-3 “Tanıya Dayalı Ortodontik Tedavi Kontrol Formu”ndaki tedavinin yapıldığına dair bölümün sözleşmeli resmi sunucuda
+      görevli diş hekimi tarafından onaylanması gerekmektedir
+    severity: error
+  gate_b_sources:
+  - C000800

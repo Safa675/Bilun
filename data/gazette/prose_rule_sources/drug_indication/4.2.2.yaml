@@ -1,0 +1,173 @@
+section_id: 4.2.2
+rules:
+- rule_id: 4.2.2.antidepressants_1yr_all_physicians
+  sut_section: 4.2.2
+  gate_b_sources:
+  - C003898
+  drug_names:
+  - trisiklik antidepresan
+  - tetrasiklik antidepresan
+  - ssri
+  - seçici serotonin gerialım inhibitörü
+  icd10_codes:
+  - F32
+  - F33
+  report_required: false
+  condition:
+    coverage_note: true
+  action:
+    enforcement: trisiklik/tetrasiklik/SSRI antidepresanlar tüm hekimlerce ≤1 yıl; gruplar arası geçiş veya >1 yıl kullanım
+      gerektiğinde psikiyatri uzman raporuyla tüm hekimlerce
+    message_tr: Trisiklik, tetrasiklik ve SSRI grubu antidepresanlar tüm hekimlerce toplam 1 yıl süre ile reçete edilebilir;
+      bu gruplar arasında ilaç değişimi gereken hallerde ve/veya bu ilaçların 1 yıldan uzun süre kullanılması gereken durumlarda
+      psikiyatri uzmanlarınca veya psikiyatri uzmanınca düzenlenen rapora dayanılarak tüm hekimlerce reçete edilmesi halinde
+      bedelleri Kurumca karşılanır (§4.2.2).
+- rule_id: 4.2.2.antipsychotics_psychiatry_report
+  sut_section: 4.2.2
+  gate_b_sources:
+  - C003901
+  drug_names:
+  - klozapin
+  - olanzapin
+  - risperidon
+  - amisülpirid
+  - ketiapin
+  - ziprosidon
+  - aripiprazol
+  - zotepin
+  - sertindol
+  - brekspiprazol
+  - lurasidon
+  - kariprazin
+  - paliperidon
+  icd10_codes:
+  - F20
+  - F29
+  report_required: true
+  report_specialties:
+  - psikiyatri
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'klozapin/olanzapin/risperidon/amisülpirid/ketiapin/ziprosidon/aripiprazol/zotepin/sertindol/brekspiprazol/lurasidon/kariprazin/paliperidon:
+      psikiyatri uzmanınca veya raporuyla tüm hekimlerce'
+    message_tr: Klozapin, olanzapin, olanzapin kombinasyonları, risperidon, amisülpirid, ketiapin, ziprosidon, aripiprazol,
+      zotepin, sertindol, brekspiprazol, lurasidon, kariprazin veya paliperidon içeren ürünlerin psikiyatri uzmanlarınca veya
+      psikiyatri uzmanınca düzenlenecek rapora dayanılarak tüm hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır
+      (§4.2.2).
+- rule_id: 4.2.2.atypical_antipsychotics_dementia
+  sut_section: 4.2.2
+  gate_b_sources:
+  - C003905
+  drug_names:
+  - atipik antipsikotik
+  icd10_codes:
+  - F00
+  - F01
+  - F02
+  - F03
+  report_required: true
+  report_specialties:
+  - psikiyatri
+  - nöroloji
+  - geriatri
+  condition:
+    coverage_note: true
+  action:
+    enforcement: demansta atipik antipsikotikler psikiyatri/nöroloji/geriatri uzmanı veya raporuyla tüm hekimlerce
+    message_tr: Atipik antipsikotik ilaçlar demansta; psikiyatri, nöroloji veya geriatri uzmanları tarafından veya bu hekimlerden
+      biri tarafından düzenlenen uzman raporuna dayanılarak tüm hekimler tarafından reçete edilebilir (§4.2.2).
+- rule_id: 4.2.2.lamotrigine_bipolar_disorder
+  sut_section: 4.2.2
+  gate_b_sources:
+  - C003909
+  drug_names:
+  - lamotrijin
+  - lamotrigine
+  icd10_codes:
+  - F31
+  report_required: true
+  report_specialties:
+  - psikiyatri
+  condition:
+    coverage_note: true
+  action:
+    enforcement: lamotrijin bipolar bozukluk endikasyonunda psikiyatri uzmanı veya raporuyla tüm hekimlerce
+    message_tr: Lamotrijin bipolar bozukluk endikasyonunda psikiyatri uzmanları tarafından veya bu hekimlerce düzenlenen uzman
+      raporuna dayanılarak tüm hekimlerce reçete edilebilir (§4.2.2).
+- rule_id: 4.2.2.parenteral_atypical_antipsychotics
+  sut_section: 4.2.2
+  gate_b_sources:
+  - C003902
+  drug_names:
+  - atipik antipsikotik parenteral
+  - risperidon depo
+  - aripiprazol depo
+  - paliperidon depo
+  icd10_codes:
+  - F20
+  - F29
+  report_required: true
+  report_specialties:
+  - psikiyatri
+  action:
+    enforcement: yeni nesil (atipik) antipsikotik parenteraller psikiyatri uzmanı veya raporuyla tüm hekimlerce; risperidon/aripiprazol/paliperidon
+      parenteral formları EK-4/F hükümlerine göre
+    message_tr: Yeni nesil (atipik) antipsikotiklerin parenteral formları psikiyatri uzmanı veya bu uzmanın düzenlediği rapora
+      dayanılarak tüm hekimlerce reçete edilebilir; bu gruptan risperidon, aripiprazol ve paliperidonun parenteral formları
+      EK-4/F hükümlerine göre reçete edilebilir (§4.2.2).
+- rule_id: 4.2.2.parenteral_atypical_emergency_single_dose
+  sut_section: 4.2.2
+  gate_b_sources:
+  - C003904
+  drug_names:
+  - atipik antipsikotik parenteral
+  icd10_codes:
+  - F20
+  - F29
+  report_required: false
+  action:
+    enforcement: acil servislerde, uzun salınımlı/depo etkili formlar hariç, atipik antipsikotik parenteraller tek doz tüm
+      hekimlerce
+    message_tr: Acil hallerde, acil servislerde, yeni nesil (atipik) antipsikotiklerin parenteral formları (uzun salınımlı/depo
+      etkili formları hariç) klinik şartlarda tek doz olarak tüm hekimler tarafından reçete edilebilir (§4.2.2).
+- rule_id: 4.2.2.typical_antipsychotics_all_physicians
+  sut_section: 4.2.2
+  gate_b_sources:
+  - C003903
+  drug_names:
+  - tipik antipsikotik
+  - haloperidol
+  - klorpromazin
+  icd10_codes:
+  - F20
+  - F29
+  report_required: false
+  condition:
+    coverage_note: true
+  action:
+    enforcement: atipik dışındaki antipsikotikler tüm hekimlerce yukarıdaki kısıtlamalar olmaksızın
+    message_tr: Yeni nesil (atipik) antipsikotikler dışındaki antipsikotik ilaçlar tüm hekimlerce yukarıdaki kısıtlamalar
+      olmaksızın reçete edilebilir (§4.2.2).
+- rule_id: 4.2.2.valproate_bipolar_disorder
+  sut_section: 4.2.2
+  gate_b_sources:
+  - C003906
+  drug_names:
+  - sodyum valproat
+  - valproik asit
+  - valproat
+  icd10_codes:
+  - F31
+  report_required: true
+  report_specialties:
+  - psikiyatri
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: sodyum valproat (kombinasyonları dahil) bipolar bozukluk endikasyonunda psikiyatri/nöroloji uzmanı veya raporuyla
+      tüm hekimlerce
+    message_tr: Sodyum valproat (kombinasyonları dahil) bipolar bozukluk endikasyonunda psikiyatri ve nöroloji uzmanları tarafından
+      veya bu hekimlerden birinin düzenlediği uzman raporuna dayanılarak tüm hekimlerce reçete edilebilir (§4.2.2).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

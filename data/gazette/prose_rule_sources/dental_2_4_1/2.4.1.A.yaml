@@ -1,0 +1,46 @@
+section_id: 2.4.1.A
+source_note: Exported from dental_2_4_1.json (YAML source migration)
+rules:
+- rule_id: 2.4.1.A.(1).public_facility_ek2c_pricing
+  sut_section: 2.4.1.A
+  condition:
+    procedure_category: dental_treatment
+    facility_type: public_contracted
+  action:
+    billable: true
+    payment_tr: resmi sözleşmeli sunucuda diş tedavi bedelleri EK-2/Ç uygulanır; protezde döküm/işçilik ayrı ödenmez (malzeme+işçilik
+      dahil)
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000760
+- rule_id: 2.4.1.A.(2).disabled_special_needs_2x_pricing
+  sut_section: 2.4.1.A
+  condition:
+    procedure_category: dental_treatment
+    procedure_under_ga_or_sedoanalgesia: true
+    patient_category_any:
+    - disabled_40_pct_or_more
+    - special_needs_child
+    facility_type: public_contracted
+  action:
+    billable: true
+    payment_tr: ≥%40 engelli veya özel gereksinimli çocuklara GA/sedoanaljezi altında diş tedavisi EK-2/Ç puan bedellerinin
+      2 katı olarak faturalandırılır
+    annex_basis: EK-2/Ç
+    multiplier: 2.0
+  gate_b_sources:
+  - C000762
+- rule_id: 2.4.1.A.(3).disabled_ga_no_extra_50pct_surcharge
+  sut_section: 2.4.1.A
+  condition:
+    procedure_category: dental_treatment
+    procedure_under_ga_or_sedoanalgesia: true
+    patient_category_any:
+    - disabled_40_pct_or_more
+    - special_needs_child
+    facility_type: university_dental_faculty
+  action:
+    billable: true
+    payment_tr: üniversite diş fakültesinde engelli/özel gereksinimli çocuk GA/sedo tedavisinde %50 ilave oran ayrıca uygulanmaz
+  gate_b_sources:
+  - C000763

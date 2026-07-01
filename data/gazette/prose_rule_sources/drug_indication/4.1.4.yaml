@@ -1,0 +1,102 @@
+section_id: 4.1.4
+rules:
+- rule_id: 4.1.4.course_protocol_one_course_coverage
+  sut_section: 4.1.4
+  gate_b_sources:
+  - C003482
+  condition:
+    coverage_note: true
+    course_protocol: true
+  action:
+    enforcement: 'coverage: course-protocol drugs paid one-course amount per each use'
+    message_tr: Kür protokolü uygulanan ilaçlarda her kullanımda 1 küre yetecek miktarda ilacın bedeli ödenir (§4.1.4).
+- rule_id: 4.1.4.ek4a_new_indication_offlabel_coverage
+  sut_section: 4.1.4
+  gate_b_sources:
+  - C003472
+  condition:
+    coverage_note: true
+    off_label_use: true
+  action:
+    enforcement: 'coverage: EK-4/A drug with SUT provision gains a new licensed indication after the provision''s effective
+      date — from refund-management application date until review finalization, with MoH patient-based off-label approval,
+      the new KÜB indication is covered'
+    message_tr: EK-4/A'da yer alan ve SUT'ta düzenlemesi olan ilaçlarda, yürürlük tarihinden sonra Sağlık Bakanlığınca yeni
+      ruhsatlı endikasyon eklendiğinde, başvuru tarihinden sonuçlandırılmasına kadar geçen sürede Bakanlıkça şahıs bazında
+      endikasyon dışı kullanım onayı olması halinde bedeli Kurumca karşılanır (§4.1.4).
+- rule_id: 4.1.4.first_prescription_1month_dose_coverage
+  sut_section: 4.1.4
+  gate_b_sources:
+  - C003481
+  condition:
+    coverage_note: true
+    max_days_per_dispense: 30
+  action:
+    enforcement: 'coverage: first-time drugs, even if reported, are paid by usage dose in periods not exceeding 1 month; pack
+      size reaching 4-week dose counts as 1-month dose; subsequent prescriptions follow general/special SUT provisions; different
+      pharmaceutical doses on continuation count as first treatment'
+    message_tr: İlk defa reçete edilecek ilaçlar raporlu olsa dahi kullanım dozuna göre bir ayı geçmeyecek sürelerde ödenir;
+      4 haftalık doza yetecek miktardaki ambalaj 1 aylık doz sayılır; sonraki reçetelerde SUT genel/özel düzenlemeleri esas
+      alınır; devam reçetelerindeki farklı farmasötik dozlar da ilk tedavi sayılır (§4.1.4).
+- rule_id: 4.1.4.non_reimbursed_indication_kub_nopay
+  sut_section: 4.1.4
+  gate_b_sources:
+  - C003473
+  pay: false
+  action:
+    enforcement: 'no-pay condition: use of a drug in an indication defined in the licensed KUB but not taken into reimbursement
+      scope by the Commissions is not covered'
+    message_tr: Bir ilacın ülkemizde onaylanmış Kısa Ürün Bilgisinde tanımlı olup ilgili Komisyonlarca geri ödeme kapsamına
+      alınmayan endikasyonlarda kullanılması halinde ilacın bedeli Kurumca karşılanmaz (§4.1.4).
+- rule_id: 4.1.4.offlabel_no_sut_condition_nopay
+  sut_section: 4.1.4
+  gate_b_sources:
+  - C003468
+  condition:
+    off_label_use: true
+  pay: false
+  action:
+    enforcement: 'no-pay condition: use outside licensed indication but with a SUT special-provision condition requires MoH
+      patient-based off-label approval; however if the drug IS in its licensed indication but the indication has NO SUT condition,
+      cost is NOT covered'
+    message_tr: Bir ilacın ülkemizde onaylanmış endikasyonunda tanımlı olmayıp SUT'ta özel düzenleme koşulu dışında kullanımı
+      Sağlık Bakanlığınca hasta bazında endikasyon dışı kullanım onayıyla mümkündür; ancak ilacın ödeme kapsamına alındığı
+      tarihte ülkemizde onaylı endikasyonunda tanımlı olmasına rağmen SUT'ta koşulu olmayan endikasyonlarda kullanılması halinde
+      bedeli Kurumca karşılanmaz (§4.1.4).
+- rule_id: 4.1.4.parenteral_magistral_no_report_10day_coverage
+  sut_section: 4.1.4
+  gate_b_sources:
+  - C003447
+  condition:
+    coverage_note: true
+    max_days_per_dispense: 10
+  action:
+    enforcement: 'coverage: parenteral forms + magistrals written without health report paid up to 10-day treatment cost;
+      daily dose mandatory on prescription; magistrals paid only when prescribed by relevant specialist physician, treatment
+      duration + purpose stated; magistral pricing uses MEDULA tariff, Institution-set ceiling'
+    message_tr: Sağlık raporu olmaksızın ilaçların parenteral formları ile majistrallerin reçeteye yazılması halinde en fazla
+      10 günlük tedavi bedeli ödenir; reçetede günlük doz belirtilir; majistraller sadece ilgili uzman hekimlerce reçete edilirse
+      ödenir, tedavi süresi/amacı reçetede belirtilir; majistral fiyatlandırması MEDULA tarife/fiyat/miktar esas alınır, Kurumca
+      belirlenen tutarı geçemez (§4.1.4).
+- rule_id: 4.1.4.topical_antifungal_6month_2box_coverage
+  sut_section: 4.1.4
+  gate_b_sources:
+  - C003483
+  drug_names:
+  - topikal antifungal
+  prescriber_specialties:
+  - dermatoloji
+  - kadın hastalıkları ve doğum
+  condition:
+    coverage_note: true
+    max_boxes_per_dispense: 2
+    max_supply_months: 6
+  action:
+    enforcement: 'coverage: topical antifungals (same form + active substance) up to 6-month total amount, max 2 boxes per
+      prescription; above the box count or >6-month tx requires prescription by dermatology or (in OBGYN indication) OBGYN
+      specialist, OR a 6-month specialist report enabling any physician to prescribe'
+    message_tr: Aynı farmasötik form ve etkin maddeye sahip topikal antifungallerden toplamda 6 aylık dozda ve bir reçetede
+      en fazla 2 kutu yazılabilir; üst sınırı aşan kullanımda veya 6 aydan uzun sürmesi gereken hallerde dermatoloji veya
+      endikasyona göre kadın hastalıkları ve doğum uzmanınca reçete edilmesi, ya da bu uzmanların 6 ay süreli raporuna istinaden
+      tüm hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.1.4).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

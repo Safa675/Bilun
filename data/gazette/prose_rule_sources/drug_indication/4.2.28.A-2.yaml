@@ -1,0 +1,50 @@
+section_id: 4.2.28.A-2
+rules:
+- rule_id: 4.2.28.A_2.paediatric_ldl_two_measurement
+  sut_section: 4.2.28.A-2
+  gate_b_sources:
+  - C006331
+  drug_names:
+  - statin
+  - atorvastatin
+  - rosuvastatin
+  - simvastatin
+  icd10_codes:
+  - E78
+  report_required: true
+  report_specialties:
+  - çocuk metabolizma hastalıkları
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  - çocuk kardiyolojisi
+  action:
+    enforcement: çocukta LDL tedavi öncesi son 6 ay içinde ≥1 hafta arayla iki ölçümde de başlangıç kriterlerini sağlamalı;
+      devam raporlarda yeni LDL istenmez; ≥6 ay ara verilirse başlangıç kriterleri aranır
+    message_tr: LDL düzeyinin tedaviye başlanmadan önceki son 6 ay içinde en az bir hafta ara ile yapılmış iki ölçümde de
+      başlama kriterlerini sağlaması ve tetkik sonuçlarının raporda belirtilmesi gerekir; devam eden raporlarda yeni LDL sonucu
+      aranmaz, ≥6 ay ara verenlerde başlangıç kriterleri yeniden aranır (§4.2.28.A-2).
+- rule_id: 4.2.28.A_2.paediatric_statin_6mo_report
+  sut_section: 4.2.28.A-2
+  gate_b_sources:
+  - C006322
+  drug_names:
+  - statin
+  - atorvastatin
+  - rosuvastatin
+  - simvastatin
+  icd10_codes:
+  - E78
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - çocuk metabolizma hastalıkları
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  - çocuk kardiyolojisi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: çocuklarda tanımlı koşullardan en az biri sağlanırsa çocuk metabolizma/çocuk endokrinoloji ve metabolizma/çocuk
+      kardiyoloji uzmanınca 6 ay süreli raporla tüm hekimlerce
+    message_tr: Statinler; çocuklarda tanımlanan koşullardan en az birinin sağlanması durumunda çocuk metabolizma hastalıkları
+      veya çocuk endokrinolojisi ve metabolizma hastalıkları veya çocuk kardiyolojisi uzmanınca düzenlenen 6 ay süreli uzman
+      raporuna dayanılarak tüm hekimlerce reçete edilirse bedeli Kurumca karşılanır (§4.2.28.A-2).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

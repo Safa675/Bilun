@@ -1,0 +1,17 @@
+section_id: 4.2.71
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.71.(3).tafamidis_advanced_heart_failure_no_pay
+  sut_section: 4.2.71
+  condition:
+    drug_name_any:
+    - tafamidis
+    nyha_class_any:
+    - IIIB
+    - IV
+  action:
+    billable: false
+    denial_tr: tafamidis NYHA IIIB/IV kalp hastalığında ödenmez
+    severity: error
+  gate_b_sources:
+  - C007209

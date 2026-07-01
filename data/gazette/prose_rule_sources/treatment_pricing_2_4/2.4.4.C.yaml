@@ -1,0 +1,29 @@
+section_id: 2.4.4.C
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.C.(2).radiosurgery_ek2c_conditional
+  sut_section: 2.4.4.C
+  condition:
+    procedure_category: radiosurgery
+    indication_met: false
+  action:
+    billable: false
+    denial_tr: radyocerrahi; cerrahi/medikal/klasik radyoterapiye cevap vermeyen veya uygun olmayan olgularda endikasyon karşılanmazsa
+      ödenmez
+    annex_basis: EK-2/C
+    severity: warning
+  gate_b_sources:
+  - C000884
+- rule_id: 2.4.4.C.(1).radiosurgery_board_report_required
+  sut_section: 2.4.4.C
+  condition:
+    procedure_category: radiosurgery
+    health_board_report_present: false
+  action:
+    billable: false
+    denial_tr: radyocerrahi bedelleri için; robotik lineer akselaratör (CyberKnife) işleminde radyasyon onkolojisi uzmanının
+      yer aldığı, Kobalt-60 (GammaKnife) işleminde en az 2 beyin cerrahi + 1 radyasyon onkolojisi uzmanının yer aldığı sağlık
+      kurulu raporu düzenlenmelidir
+    severity: error
+  gate_b_sources:
+  - C000883

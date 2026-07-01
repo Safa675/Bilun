@@ -1,0 +1,13 @@
+section_id: '5.2'
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 5.2.(2).medula_outage_provision_documented
+  sut_section: '5.2'
+  condition:
+    medula_provision_unavailable: true
+    outage_documented_by_general_directorate: true
+  action:
+    billable: true
+    payment_tr: MEDULA arızası nedeniyle provizyon alınamayan sürede hizmet bedeli tutanakla ödenir
+  gate_b_sources:
+  - C008050

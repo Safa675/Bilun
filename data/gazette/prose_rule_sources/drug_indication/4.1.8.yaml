@@ -1,0 +1,30 @@
+section_id: 4.1.8
+rules:
+- rule_id: 4.1.8.ek4f_copay_unless_ek4d
+  sut_section: 4.1.8
+  gate_b_sources:
+  - C003537
+  condition:
+    ek4f_list: true
+    copay_exempt: false
+  action:
+    enforcement: 'no-copay rule: EK-4/F drugs that are NOT in EK-4/D incur patient copay; those that are also within EK-4/D
+      scope do not incur copay'
+    message_tr: EK-4/F Listesinde yer alıp EK-4/D Listesinde yer almayan ilaçlardan hasta katılım payı alınır, EK-4/D kapsamında
+      olanlardan ise katılım payı alınmaz (§4.1.8).
+- rule_id: 4.1.8.ek4f_outpatient_report_3month_coverage
+  sut_section: 4.1.8
+  gate_b_sources:
+  - C003535
+  report_required: true
+  condition:
+    coverage_note: true
+    max_days_per_dispense: 90
+    ek4f_list: true
+  action:
+    enforcement: 'coverage: EK-4/F ''outpatient-report drugs'' — when outpatient use is needed, per SUT special provisions,
+      any physician may prescribe on the health report; paid up to 3-month treatment dose'
+    message_tr: EK-4/F 'Ayakta Tedavide Sağlık Raporu ile Verilebilecek İlaçlar Listesi' ilaçlarının ayakta tedavide kullanımı
+      gerektiği durumlarda, düzenlenen sağlık raporuna dayanılarak tüm hekimlerce reçete edilebilir; en fazla 3 aylık tedavi
+      dozunda reçete edilmesi halinde bedelleri ödenir (§4.1.8).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

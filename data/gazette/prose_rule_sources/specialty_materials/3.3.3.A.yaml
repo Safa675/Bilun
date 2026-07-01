@@ -1,0 +1,71 @@
+section_id: 3.3.3.A
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.3.A.(1).emergency_poliklinik_glasses
+  sut_section: 3.3.3.A
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002890
+  condition:
+    emergency_poliklinik_glasses_claim: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Acil poliklinik gözlük cam/çerçeve reçetesi — Kurumca karşılanmaz (§3.3.3.A(1)).
+- rule_id: 3.3.3.A.(4).ek3d_lens_upgrade_difference
+  sut_section: 3.3.3.A
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002893
+  condition:
+    optical_lens_upgrade_difference_claim: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: EK-3/D listesi dışı cam özelliği fark ücreti — Kurum karşılamaz (§3.3.3.A(4)).
+- rule_id: 3.3.3.A.(2).optisyenlik_muessesesi_temin_regulatory
+  sut_section: 3.3.3.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002891
+  condition:
+    material_name_any:
+    - gözlük
+    - gozluk
+    - görmeye yardimci
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Gözlük cam ve çerçeveleri — 5193 sayılı Kanuna uygun, Kurumla sözleşmeli optisyenlik müesseselerinden temin
+      edilebilir (§3.3.3.A(2)).
+- rule_id: 3.3.3.A.(3).cam_cerceve_fatura_must_bill
+  sut_section: 3.3.3.A
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002892
+  condition:
+    material_name_any:
+    - gözlük
+    - gozluk
+    - cam bedeli
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Cam bedelleri — çerçeve bedeli ile birlikte sözleşmeli optisyenlik müesseseleri tarafından Kuruma fatura edilebilir
+      (§3.3.3.A(3)).
+- rule_id: 3.3.3.A.(7).uzak_yakin_cok_odakli_must_bill
+  sut_section: 3.3.3.A
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002900
+  condition:
+    material_name_any:
+    - gözlük
+    - gozluk
+    - çok odaklı
+    - cok odakli
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Aynı reçetede uzak ve yakın iki gözlük reçete edilirse, hasta tercihiyle yeni reçete olmadan çok odaklı gözlük
+      bedeli Kurumca karşılanır; 18 yaş ve altında hekim reçetesi zorunludur (§3.3.3.A(7)).

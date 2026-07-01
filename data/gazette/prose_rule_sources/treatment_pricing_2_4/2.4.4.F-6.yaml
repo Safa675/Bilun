@@ -1,0 +1,66 @@
+section_id: 2.4.4.F-6
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.4.F-6.(3).sport_hydro_physio_p915030
+  sut_section: 2.4.4.F-6
+  condition:
+    procedure_code_any:
+    - P915030
+    prescriber_specialty_any:
+    - sport_medicine
+    - medical_ecology_hydroclimatology
+  action:
+    billable: true
+    payment_tr: spor hekimi/hidroklimatoloji uzmanınca EK-2/D-2 tanı + P915030 puanı
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001087
+- rule_id: 2.4.4.F-6.(1).sports_med_ecology_health_report_required
+  sut_section: 2.4.4.F-6
+  condition:
+    procedure_category_any:
+    - sports_medicine
+    - medical_ecology_hydroclimatology
+    provider_type: public
+    health_report_present: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: resmi sunucularda spor hekimliği / tıbbi ekoloji ve hidroklimatoloji uygulamalarının karşılanabilmesi için
+      ilgili hekim/uzman tarafından tedavi ve tedavi süresini belirten sağlık raporu düzenlenmelidir
+    severity: error
+  gate_b_sources:
+  - C001085
+- rule_id: 2.4.4.F-6.(2).sports_ecology_annual_region_session_caps
+  sut_section: 2.4.4.F-6
+  condition:
+    procedure_category_any:
+    - sports_medicine
+    - medical_ecology_hydroclimatology
+    sessions_same_region_within_1y:
+      min: 31
+  action:
+    billable: false
+    enforcement: regional_session_cap
+    message_tr: bir hasta için son bir yılda aynı bölgeden en fazla 30, iki farklı bölgeden en fazla 60 seans ödenir; aynı
+      bölgeye yılda en fazla 2 sağlık raporu; kontrollerde 2.4.4.F-2(5) sayıları da hesaba katılır
+    severity: error
+  gate_b_sources:
+  - C001086
+- rule_id: 2.4.4.F-6.(3).sports_ecology_physio_billed_p915030
+  sut_section: 2.4.4.F-6
+  condition:
+    procedure_category_any:
+    - sports_medicine
+    - medical_ecology_hydroclimatology
+    procedure_code_any:
+    - P915030
+    billing_basis: other
+  action:
+    billable: true
+    enforcement: pricing_basis
+    message_tr: spor hekimliği ile tıbbi ekoloji ve hidroklimatoloji uzmanlarınca EK-2/D-2 tanılarında yapılan FTR uygulamaları
+      EK-2/C'deki 'P915030' kodlu işlem puanı esas alınarak faturalandırılır
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001087

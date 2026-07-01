@@ -1,0 +1,23 @@
+section_id: 4.2.1.C-1
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.1.C-1.(2).as_nsaid_failure_required
+  sut_section: 4.2.1.C-1
+  condition:
+    diagnosis_any:
+    - M450
+    - M459
+    - M461
+    drug_class_any:
+    - anti_tnf
+    - il_17
+    - jak_inhibitor
+    nsaid_trial_count:
+      max: 2
+  action:
+    billable: false
+    denial_tr: aksiyel tutlumlu AS / radyografik AS kanıtı olmayan aksiyel spondilartrit; en az 3 NSAID yetersizliği olmadan
+      biyolojik başlanamaz
+    severity: error
+  gate_b_sources:
+  - C003605

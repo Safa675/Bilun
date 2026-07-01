@@ -1,0 +1,14 @@
+section_id: '1.10'
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 1.10.(1).medula_health_report_format_required
+  sut_section: '1.10'
+  condition:
+    facility_uses_medula_hospital: true
+    health_report_not_electronic: true
+  action:
+    billable: false
+    denial_tr: MEDULA hastane sistemini kullanan sunucular raporları elektronik kaydetmek zorunda
+    severity: error
+  gate_b_sources:
+  - C000460

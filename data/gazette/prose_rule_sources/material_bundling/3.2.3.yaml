@@ -1,0 +1,14 @@
+section_id: 3.2.3
+source_note: Exported from material_bundling_prose.json (YAML source migration)
+rules:
+- rule_id: 3.2.3.emergency_uncontracted_facility_material
+  sut_section: 3.2.3
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002836
+  condition:
+    emergency_uncontracted_facility_material: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Sözleşmesiz kurumda acil malzeme — SUT 2.3 acil ödeme koşulları doğrulanmalı (§3.2.3(1)).

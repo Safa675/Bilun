@@ -1,0 +1,15 @@
+section_id: 6.3.2
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 6.3.2.(b).same_function_prior_material_warranty_no_pay
+  sut_section: 6.3.2
+  condition:
+    material_acquired_after_20120728: true
+    same_function_prior_material_within_warranty: true
+  action:
+    billable: false
+    denial_tr: 28.07.2012 sonrası kurulu raporuyla temin edilen malzeme; aynı işlevi gören önceki malzeme garanti süresindeyse
+      ödenmez
+    severity: error
+  gate_b_sources:
+  - C008243

@@ -444,7 +444,7 @@ def write_gate_b_artifacts(
     effective_date: str,
     batch_rules: list[dict[str, Any]] | None = None,
 ) -> tuple[pl.DataFrame, dict[str, Any]]:
-    if batch_rules is None:
+    if batch_rules is None or batch_rules == []:
         payload = json.loads(rules_path.read_text(encoding="utf-8"))
         batch_rules = [
             rule
@@ -480,7 +480,11 @@ def write_gate_b_artifacts(
 if __name__ == "__main__":
     from datetime import date
 
-    from scripts.sut.prose.drug_indication_4209_4227_batch_rules import BATCH_A6_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A6_RULES = load_legacy_drug_batch(
+        "drug_indication_4209_4227_batch_rules.py:BATCH_A6_RULES"
+    )
 
     repo = _PROJECT_ROOT
     clauses = repo / "data/gazette/sut_clauses.parquet"

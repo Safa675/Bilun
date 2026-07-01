@@ -1,0 +1,32 @@
+section_id: 3.3.5
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.5.(1).enjektor_adet_ml_must_bill
+  sut_section: 3.3.5
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002986
+  condition:
+    material_name_any:
+    - enjektör
+    - enjektor
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Ayaktan tedavide reçeteye yazılan enjektabl ilaç adedine ve ml'sine uygun enjektör bedeli — Kurumca belirlenen
+      bedel üzerinden ödenir (§3.3.5(1)).
+- rule_id: 3.3.5.(2).insulin_kalem_igne_ucu_must_bill
+  sut_section: 3.3.5
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C002989
+  condition:
+    material_name_any:
+    - insülin kalem iğne ucu
+    - insulin kalem igne ucu
+    - kalem iğne ucu
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: İnsülin kalem iğne uçları — insülin kartuşları veya eksenatid etkin maddesi içeren ilaçlarla birlikte ya da
+      tek başına reçete edildiğinde bedeli Kurumca karşılanır (§3.3.5(2)).

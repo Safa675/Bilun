@@ -1,0 +1,41 @@
+section_id: 4.2.27.C
+rules:
+- rule_id: 4.2.27.C.factor_viia_3day_haematology_report
+  sut_section: 4.2.27.C
+  gate_b_sources:
+  - C006271
+  drug_names:
+  - rekombinan faktör viia
+  - rviia
+  - novoseven
+  icd10_codes:
+  - D66
+  - D67
+  - D68
+  report_required: true
+  report_specialties:
+  - hematoloji
+  action:
+    enforcement: günlük kullanım dozu ve süresini belirten hematoloji uzmanı raporuyla en fazla 3 günlük dozda reçete
+    message_tr: İlacın günlük kullanım dozu ve süresini belirten hematoloji uzmanınca düzenlenen uzman raporuna dayanılarak
+      en fazla 3 günlük dozda reçete edilebilir (§4.2.27.C).
+- rule_id: 4.2.27.C.factor_viia_reuse_documentation
+  sut_section: 4.2.27.C
+  gate_b_sources:
+  - C006272
+  drug_names:
+  - rekombinan faktör viia
+  - rviia
+  - novoseven
+  icd10_codes:
+  - D66
+  - D67
+  - D68
+  report_required: true
+  report_specialties:
+  - hematoloji
+  action:
+    enforcement: yeniden kullanımda bir önce verilen ilacın kullanıldığı ve günlük doz/süre yeni raporda kayıtlı olmalı
+    message_tr: Yeniden kullanımı gerektiğinde bir önce verilen ilacın kullanıldığının yeni düzenlenecek raporda belirtilmesi
+      ve bu raporda günlük kullanım dozu ve süresinin kayıtlı olması gereklidir (§4.2.27.C).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

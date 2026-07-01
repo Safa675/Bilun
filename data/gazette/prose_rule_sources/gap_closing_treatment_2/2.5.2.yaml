@@ -1,0 +1,24 @@
+section_id: 2.5.2
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.5.2.(1).overseas_reciprocity_required
+  sut_section: 2.5.2
+  condition:
+    treatment_overseas: true
+    no_reciprocity_agreement: true
+  action:
+    billable: false
+    denial_tr: yurt dışı sağlık hizmeti ödemesi karşılıklı sosyal güvenlik sözleşmesine bağlı
+    severity: error
+  gate_b_sources:
+  - C001409
+- rule_id: 2.5.2.(2).trnc_as_overseas
+  sut_section: 2.5.2
+  condition:
+    patient_turkish_citizen: true
+    treatment_in_trnc: true
+  action:
+    billable: true
+    payment_tr: KKTC'de sağlanan hizmet Türk vatandaşlarına yurt dışı hükümlerine göre ödenir
+  gate_b_sources:
+  - C001410

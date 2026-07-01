@@ -1,0 +1,13 @@
+section_id: 2.2.2.B-2
+source_note: Exported from gap_closing_treatment_2.json (YAML source migration)
+rules:
+- rule_id: 2.2.2.B-2.(1).pre_procedure_death_fee_for_service
+  sut_section: 2.2.2.B-2
+  condition:
+    patient_died_before_drg_procedure: true
+  action:
+    billable: true
+    payment_tr: tanıya dayalı işlem öncesi ölüm/paket kapsamına girmeyen müdahale; ameliyat/girişim kararına kadar hizmet
+      başına ödeme
+  gate_b_sources:
+  - C000697

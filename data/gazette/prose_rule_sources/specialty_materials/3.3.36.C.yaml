@@ -1,0 +1,14 @@
+section_id: 3.3.36.C
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.36.C.(3).speech_processor_under_5_years
+  sut_section: 3.3.36.C
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003363
+  condition:
+    speech_processor_under_5_years: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: 5 yaş altı konuşma işlemcisi (kafa bandı istisnası hariç) — karşılanmaz (§3.3.36.C(3)).

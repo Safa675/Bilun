@@ -1,0 +1,17 @@
+section_id: 4.1.9
+rules:
+- rule_id: 4.1.9.non_ek4a_drug_nopay
+  sut_section: 4.1.9
+  gate_b_sources:
+  - C003540
+  pay: false
+  condition:
+    not_in_ek4a_list: true
+  action:
+    enforcement: 'no-pay condition: Institution-paid drugs are listed in EK-4/A ''Bedeli Ödenecek İlaçlar Listesi''; drugs
+      without trade name and barcode/QR in this list are NEVER paid under any condition; overseas-procured drugs have special
+      provisions reserved'
+    message_tr: Kurumca bedeli ödenecek ilaçlar EK-4/A 'Bedeli Ödenecek İlaçlar Listesi'nde belirtilmiştir; ticari isimleri
+      ve barkod/karekod numaraları bu listede yer almayan ilaçların bedelleri hiçbir koşulda Kurumca ödenmez; yurt dışından
+      temin edilen ilaçlar için özel düzenlemeler saklıdır (§4.1.9).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

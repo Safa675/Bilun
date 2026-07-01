@@ -1,0 +1,108 @@
+section_id: 4.2.52
+rules:
+- rule_id: 4.2.52.gout.febuxostat_1yr_report_specialty_coverage
+  sut_section: 4.2.52
+  gate_b_sources:
+  - C007065
+  drug_names:
+  - febuxostat
+  icd10_codes:
+  - M10
+  - E79.0
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - iç hastalıkları
+  - nefroloji
+  - romatoloji
+  - fizik tedavi ve rehabilitasyon
+  prescriber_specialties:
+  - tüm uzman hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: iç hastalıkları/nefroloji/romatoloji/FTR uzmanlarından birinin laboratuvar sonuçlarını da içeren 1 yıllık
+      uzman raporuyla tüm uzman hekimlerce reçete edilirse ödenir
+    message_tr: İç hastalıkları, nefroloji, romatoloji veya fizik tedavi ve rehabilitasyon uzman hekimlerinden biri tarafından
+      düzenlenen, laboratuvar sonuçlarının da yer aldığı 1 yıl süreli uzman hekim raporuna dayanılarak tüm uzman hekimler
+      tarafından reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.52).
+- rule_id: 4.2.52.gout.febuxostat_hematology_3mo_report_coverage
+  sut_section: 4.2.52
+  gate_b_sources:
+  - C007068
+  drug_names:
+  - febuxostat
+  icd10_codes:
+  - C81
+  - C82
+  - C83
+  - C84
+  - C85
+  - C91
+  - C92
+  - C88
+  - N14
+  - E79.0
+  report_required: true
+  report_duration_months: 3
+  report_specialties:
+  - hematoloji
+  prescriber_specialties:
+  - hematoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: en az bir hematoloji uzmanının yer aldığı en fazla 3 ay süreli sağlık kurulu raporuyla hematoloji uzmanlarınca
+      reçete edilirse ödenir
+    message_tr: En az bir hematoloji uzman hekiminin yer aldığı en fazla 3 ay süreli sağlık kurulu raporuna istinaden hematoloji
+      uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.52).
+- rule_id: 4.2.52.gout.febuxostat_hyperuricemia_allopurinol_failure_coverage
+  sut_section: 4.2.52
+  gate_b_sources:
+  - C007064
+  drug_names:
+  - febuxostat
+  - febuxostat
+  - urik asit düşürücü
+  icd10_codes:
+  - M10
+  - E79.0
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: kronik hiperürisemi (gut atağında ÜA>6 mg/dl, atak yoksa >8 mg/dl); allopurinol ile 3 ay tedaviye rağmen
+      ÜA<6'ya düşmeyen veya allopurinol intolerans/kontrendikasyonu olanlarda başlanır; ÜA<3,5 olunca sonlanır; >6 ay ara
+      verilirse başlangıç kriterleri yeniden aranır
+    message_tr: Serum ürik asit düzeylerinin gut artriti atağı bulunması durumunda 6 mg/dl'nin üzerinde, gut artriti atağı
+      bulunmaması durumunda ise 8 mg/dl'nin üzerinde olduğu kronik hiperürisemi hastalarında, allopurinol ile 3 ay süreli
+      tedaviye rağmen serum ürik asit düzeyi 6 mg/dl'nin altına düşmeyen veya allopurinol intoleransı olan ve/veya kontrendikasyonu
+      olan hastalarda tedaviye başlanması halinde bedelleri Kurumca karşılanır; serum ürik asit düzeyleri 3,5 mg/dl'nin altına
+      düşen hastalarda tedavi sonlandırılır, 6 aydan uzun süre ara verildiğinde başlangıç kriterleri aranır (§4.2.52).
+- rule_id: 4.2.52.gout.febuxostat_tumor_lysis_hematologic_coverage
+  sut_section: 4.2.52
+  gate_b_sources:
+  - C007067
+  drug_names:
+  - febuxostat
+  icd10_codes:
+  - C81
+  - C82
+  - C83
+  - C84
+  - C85
+  - C91
+  - C92
+  - C88
+  - N14
+  - E79.0
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: hematolojik malignite için kemoterapi alan ve tümör lizis sendromu açısından orta veya yüksek riskli olup
+      allopurinol intoleransı/kontrendikasyonu olanlarda hiperüriseminin önlenmesi ve tedavisinde ödenir
+    message_tr: Hematolojik maligniteler için kemoterapi alan ve tümör lizis sendromu açısından orta veya yüksek dereceye
+      kadar riski olan allopurinol intoleransı ve/veya kontrendikasyonu olan hastalarda hiperüriseminin önlenmesi ve tedavisi
+      için kullanılması halinde bedelleri Kurumca karşılanır (§4.2.52).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

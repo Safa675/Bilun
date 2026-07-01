@@ -1,0 +1,73 @@
+section_id: 4.2.54
+rules:
+- rule_id: 4.2.54.inf.cutaneous_leishmaniasis_3mo_report_coverage
+  sut_section: 4.2.54
+  gate_b_sources:
+  - C007075
+  drug_names:
+  - miltefosin
+  - liposomal amfoterisin b
+  - amfoterisin b
+  - amphotericin b
+  icd10_codes:
+  - B55.1
+  - B55.2
+  - B21
+  report_required: true
+  report_duration_months: 3
+  report_specialties:
+  - enfeksiyon hastalıkları ve klinik mikrobiyoloji
+  - çocuk enfeksiyon hastalıkları
+  - deri ve zührevi hastalıkları
+  prescriber_specialties:
+  - enfeksiyon hastalıkları ve klinik mikrobiyoloji
+  - çocuk enfeksiyon hastalıkları
+  - deri ve zührevi hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: Leishmania braziliensis/guyanensis/panamensis kaynaklı kutanöz leishmaniasis; antimon bileşiklerine veya
+      amfoterisin B'ye yanıtsızlık/ciddi yan etki ile kontrendike veya bağışıklık sistemi baskılanmışda nüks; 3. basamakta
+      ≥1 enfeksiyon/çocuk enfeksiyon uzmanı + ≥1 deri ve zührevi hastalıkları uzmanının yer aldığı 3 ay süreli raporla bu
+      uzmanlardan biri tarafından reçete edilirse ödenir
+    message_tr: Leishmania braziliensis, leishmania guyanensis veya leishmania panamensis'in neden olduğu kutanöz leishmaniasis
+      tanısı almış hastaların tedavisinde; antimon bileşiklerine veya amphoterisin B tedavisine yanıtsızlık ya da ciddi yan
+      etki nedeniyle bu ilaçların kontrendike olduğu durumlarda veya bağışıklık sistemi baskılanmış hastalarda nüks gelişmesi
+      durumunda üçüncü basamak resmi sağlık hizmet sunucularında, en az bir enfeksiyon hastalıkları ve klinik mikrobiyoloji
+      veya çocuk enfeksiyon hastalıkları uzman hekimi ile en az bir deri ve zührevi hastalıkları uzman hekiminin yer aldığı
+      üç ay süreli sağlık kurulu raporuna istinaden enfeksiyon hastalıkları ve klinik mikrobiyoloji veya çocuk enfeksiyon
+      hastalıkları veya deri ve zührevi hastalıkları uzman hekimi tarafından reçete edilmesi halinde bedeli Kurumca karşılanır
+      (§4.2.54).
+- rule_id: 4.2.54.inf.visceral_leishmaniasis_amphotericin_coverage
+  sut_section: 4.2.54
+  gate_b_sources:
+  - C007074
+  drug_names:
+  - miltefosin
+  - liposomal amfoterisin b
+  - amfoterisin b
+  - amphotericin b
+  icd10_codes:
+  - B55.0
+  - B55.2
+  - B21
+  report_required: true
+  report_specialties:
+  - enfeksiyon hastalıkları ve klinik mikrobiyoloji
+  - çocuk enfeksiyon hastalıkları
+  prescriber_specialties:
+  - enfeksiyon hastalıkları ve klinik mikrobiyoloji
+  - çocuk enfeksiyon hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: Leishmania donovani kaynaklı visseral leishmaniasis; amfoterisin B'ye yanıtsızlık/ciddi yan etki ile kontrendike
+      olduğu veya HIV pozitif hastalarda amfoterisin B ile kombine olarak; 3. basamak resmi sağlık hizmet sunucusunda enfeksiyon
+      ve klinik mikrobiyoloji veya çocuk enfeksiyon uzmanınca düzenlenen rapora istinaden bu uzmanlarca reçete edilirse ödenir
+    message_tr: Leishmania donovani'nin neden olduğu visseral leishmaniasis tanısı almış hastaların tedavisinde; amphoterisin
+      B tedavisine yanıtsızlık ya da ciddi yan etki nedeniyle amphoterisin B tedavisinin kontrendike olduğu durumlarda veya
+      HIV pozitif hastalarda amphoterisin B ile kombine olarak üçüncü basamak resmi sağlık hizmet sunucularında, enfeksiyon
+      hastalıkları ve klinik mikrobiyoloji veya çocuk enfeksiyon hastalıkları uzman hekimince düzenlenen sağlık raporuna istinaden
+      enfeksiyon hastalıkları ve klinik mikrobiyoloji veya çocuk enfeksiyon hastalıkları uzman hekimi tarafından reçete edilmesi
+      halinde bedeli Kurumca karşılanır (§4.2.54).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

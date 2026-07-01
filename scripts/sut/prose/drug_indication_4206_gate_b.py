@@ -65,10 +65,12 @@ _TIER_A_CLAUSE_IDS = frozenset(
 
 
 def _all_4206_batch_rules() -> list[dict[str, Any]]:
-    from scripts.sut.prose.drug_indication_4206_a2_batch_rules import BATCH_A2_RULES
-    from scripts.sut.prose.drug_indication_4206_batch_rules import BATCH_A6_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
 
-    return [*BATCH_A6_RULES, *BATCH_A2_RULES]
+    return [
+        *load_legacy_drug_batch("drug_indication_4206_batch_rules.py:BATCH_A6_RULES"),
+        *load_legacy_drug_batch("drug_indication_4206_a2_batch_rules.py:BATCH_A2_RULES"),
+    ]
 
 
 def _normalize_tr(text: str) -> str:

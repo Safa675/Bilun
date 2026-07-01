@@ -1,0 +1,95 @@
+section_id: 4.1.5
+rules:
+- rule_id: 4.1.5.colored_prescription_eprescription_coverage
+  sut_section: 4.1.5
+  gate_b_sources:
+  - C003500
+  condition:
+    coverage_note: true
+    e_prescription: true
+  action:
+    enforcement: 'coverage: red/purple/orange/green prescriptions paid when issued as e-prescription; matbu (printed) colored
+      prescriptions paid only based on the Institution''s official-website notice that MEDULA-system causes prevented e-prescription
+      issuance in the stated periods'
+    message_tr: Kırmızı, mor, turuncu ve yeşil reçetelerin elektronik reçete olarak düzenlenmesi halinde bedelleri Kurumca
+      karşılanır; bu renkli matbu reçetelerin bedelleri, MEDULA kaynaklı nedenlerle (belirtilen sürelerde) e-reçete düzenlenemediğine
+      dair Kurumun resmi internet sitesindeki duyurusuna istinaden karşılanır (§4.1.5).
+- rule_id: 4.1.5.eprescription_signing_method_mandatory
+  sut_section: 4.1.5
+  gate_b_sources:
+  - C003485
+  condition:
+    e_prescription: true
+  action:
+    enforcement: 'mandatory: e-prescriptions must be signed by the Institution-determined methods/standards (electronic signature,
+      password)'
+    message_tr: E-reçete uygulamasında e-reçetelerin Kurumun belirlediği yöntem ve standartlarla (elektronik imza, şifre)
+      imzalanması şarttır (§4.1.5).
+- rule_id: 4.1.5.family_physician_mobile_health_service_mandatory
+  sut_section: 4.1.5
+  gate_b_sources:
+  - C003493
+  prescriber_specialties:
+  - aile hekimi
+  condition:
+    mobile_health_service_prescription: true
+  action:
+    enforcement: 'mandatory: family-physician ''gezici (mobile) health service'' prescriptions — must carry the phrase indicating
+      they are issued under mobile health service and be physician-approved'
+    message_tr: Aile hekimlerince 'gezici sağlık hizmeti' kapsamında düzenlenen reçeteler (reçetenin gezici sağlık hizmeti
+      kapsamında düzenlendiğini belirten ibarenin bulunması ve hekimce onaylanması zorunludur) (§4.1.5).
+- rule_id: 4.1.5.official_private_setting_prescriptions_mandatory
+  sut_section: 4.1.5
+  gate_b_sources:
+  - C003495
+  condition:
+    e_prescription: true
+  action:
+    enforcement: 'mandatory: prescriptions issued in various official/private settings (institution physicians, occupational
+      physicians, municipality polyclinics, care homes, non-family-medicine primary-care public providers, university medico-social
+      units, TSK first-line providers) — once they start using MEDULA hospital system or build infrastructure they must move
+      to e-prescription'
+    message_tr: Resmi ve özel sağlık kuruluşlarından; kamu idareleri bünyesindeki kurum hekimliklerinde, işyeri hekimliklerinde,
+      belediyelere ait polikliniklerde, huzur evlerinde, aile hekimliği dışındaki birinci basamak resmi sunucularda, üniversitelerin
+      mediko-sosyal birimlerinde, TSK'nın birinci basamak sunucularında düzenlenen reçeteler (MEDULA hastane sistemini kullanmaya
+      başlamaları veya teknik altyapı oluşturmaları halinde e-reçeteye geçmeleri zorunludur) (§4.1.5).
+- rule_id: 4.1.5.overseas_duty_official_document_mandatory
+  sut_section: 4.1.5
+  gate_b_sources:
+  - C003505
+  condition:
+    overseas_duty_personnel: true
+    e_prescription: true
+  action:
+    enforcement: 'mandatory: personnel sent on continuous overseas duty must state the date and number of the overseas-duty
+      official document on the e-prescription'
+    message_tr: Sürekli görevle yurt dışına gönderilenlerin yurt dışı görevine dair resmi belgenin tarih ve sayısının e-reçetede
+      belirtilmesi zorunludur (§4.1.5).
+- rule_id: 4.1.5.sgk_password_manual_nopay
+  sut_section: 4.1.5
+  gate_b_sources:
+  - C003486
+  pay: false
+  condition:
+    manual_prescription: true
+  action:
+    enforcement: 'regulatory/no-pay: institution prescriptions issued with SGK physician password; manual prescriptions and
+      pharmacy manual-entry prescriptions are NOT covered except Institution-determined exceptions; after Institution arrangements,
+      prescriptions signed with electronic signature from a set date'
+    message_tr: Sağlık kuruluşlarınca düzenlenecek reçeteler SGK Hekim Şifresi ile düzenlenir; Kurumca belirlenen istisnalar
+      hariç manuel reçetelerin bedelleri karşılanmaz; eczanelerce manuel giriş yapılan reçetelerin bedelleri karşılanmaz;
+      gerekli düzenleme sonrası reçeteler belirlenen tarihten itibaren elektronik imzayla imzalanır (§4.1.5).
+- rule_id: 4.1.5.work_accident_forensic_eprescription_only_nopay
+  sut_section: 4.1.5
+  gate_b_sources:
+  - C003524
+  pay: false
+  condition:
+    manual_prescription: true
+    work_accident_or_forensic_case: true
+  action:
+    enforcement: 'no-pay condition: work accident, occupational disease, forensic case and traffic-accident cases — prescriptions
+      ONLY as e-prescription; manual (non-e) prescriptions are NOT covered'
+    message_tr: İş kazası, meslek hastalığı, adli vaka ve trafik kazası durumlarında reçeteler sadece e-reçete olarak düzenlenir;
+      e-reçete haricinde manuel reçetelerin bedelleri Kurumca karşılanmaz (§4.1.5).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

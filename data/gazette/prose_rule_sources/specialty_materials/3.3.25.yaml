@@ -1,0 +1,18 @@
+section_id: 3.3.25
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.25.(1).omuz_balon_spacer_rotator_must_bill
+  sut_section: 3.3.25
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003199
+  condition:
+    material_name_any:
+    - omuz balon spacer
+    - absorbe olabilir omuz
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Absorbe olabilir omuz balon spacer — 3. basamak resmi sunucularda, tamir edilemeyen tam kat rotator cuff yırtıklarında
+      sağlık kurulu raporuyla belgelendirilmesi ve başka tıbbi malzeme kullanılmaması kaydıyla işlem başına en fazla 1 adet
+      kullanılması halinde bedeli Kurumca karşılanır (§3.3.25(1)).

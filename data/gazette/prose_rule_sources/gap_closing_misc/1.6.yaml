@@ -1,0 +1,13 @@
+section_id: '1.6'
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 1.6.(3).third_party_service_fraud_prohibited
+  sut_section: '1.6'
+  condition:
+    patient_proxy_service_fraud: true
+  action:
+    billable: false
+    denial_tr: kişinin kendi adına başkasının hizmet alması veya haksız menfaat sağlaması yasaktır
+    severity: error
+  gate_b_sources:
+  - C000183

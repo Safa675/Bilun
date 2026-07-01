@@ -1,0 +1,38 @@
+section_id: 3.1.3
+source_note: Exported from gap_closing_misc.json (YAML source migration)
+rules:
+- rule_id: 3.1.3.(7).medula_free_code_entry_no_pay
+  sut_section: 3.1.3
+  condition:
+    material_entered_as_medula_free_code: true
+  action:
+    billable: false
+    denial_tr: EK-3 listesindeki/olmayan malzemeler serbest kodsuz MEDULA-Hastane'ye girilemez; girilirse ödenmez
+    severity: error
+  gate_b_sources:
+  - C002794
+- rule_id: 3.1.3.(8).fixed_asset_repair_spare_part_no_pay
+  sut_section: 3.1.3
+  condition:
+    material_type_any:
+    - fixed_asset
+    - repair_maintenance
+    - spare_part
+    - accessory
+    - reusable_consumable
+  action:
+    billable: false
+    denial_tr: demirbaş malzeme + tamir/bakım/yedek parça/aksesuar/tekrar kullanılabilir sarf bedelleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C002795
+- rule_id: 3.1.3.(9).reusable_material_no_pay
+  sut_section: 3.1.3
+  condition:
+    material_reusable: true
+  action:
+    billable: false
+    denial_tr: sunucu tarafından temin edilen tekrar kullanılabilir malzemelerin bedelleri ödenmez
+    severity: error
+  gate_b_sources:
+  - C002796

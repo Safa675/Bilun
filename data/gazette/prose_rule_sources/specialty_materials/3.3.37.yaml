@@ -1,0 +1,14 @@
+section_id: 3.3.37
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.37.(4).hydrophilic_catheter_diaper_only
+  sut_section: 3.3.37
+  deontic: NO_PAY
+  gate_b_sources:
+  - C003394
+  condition:
+    incontinence_hydrophilic_catheter_diaper_only: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Yalnızca alt bez ödemesi alan hastada hidrofilik sonda — karşılanmaz (§3.3.37(4)).

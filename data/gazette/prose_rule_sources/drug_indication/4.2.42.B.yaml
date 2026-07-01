@@ -1,0 +1,40 @@
+section_id: 4.2.42.B
+rules:
+- rule_id: 4.2.42.B.ivf_normal_response_quota
+  sut_section: 4.2.42.B
+  gate_b_sources:
+  - C006792
+  - C006794
+  drug_names:
+  - gonadotropin
+  - fsh
+  - lh
+  - hmg
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: normal ovaryan yanıtlı grupta en fazla 3 uygulama, siklus başı 3000 IU'ye kadar, toplam 9000 IU gonadotropin;
+      IVF öncesi IUI işlemi yapılmış olması şartı aranır (2.4.4.İ-1-2'deki istisnalar hariç)
+    message_tr: Normal ovaryan yanıtlı hasta grubunda en fazla 3 uygulama, siklus başı 3000 IU'ye kadar, toplam 9000 IU gonadotropin
+      ödenir; bu grupta IVF tedavisi öncesi IUI işlemi yapılmış olması şartı aranır (SUT '2.4.4.İ-1-2-IVF sağlık kurulu raporu'
+      maddesinde IUI işlemi aranmayacak hastalar belirtilmiştir) (§4.2.42.B).
+- rule_id: 4.2.42.B.ivf_poor_response_quota
+  sut_section: 4.2.42.B
+  gate_b_sources:
+  - C006793
+  drug_names:
+  - gonadotropin
+  - fsh
+  - lh
+  - hmg
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: kötü ovaryan yanıtlı/düşük ovaryan rezervli grupta en fazla 3 uygulama, siklus başı 4500 IU'ye kadar, toplam
+      13500 IU gonadotropin; bu grupta IVF öncesi OI+IUI işlemi yapılmış olması şartı aranmaz
+    message_tr: Kötü ovaryan yanıtlı veya düşük ovaryan rezervli hasta grubunda en fazla 3 uygulama, siklus başı 4500 IU'ye
+      kadar toplam 13500 IU gonadotropin ödenir; bu grupta IVF tedavisi öncesi OI+IUI işlemi yapılmış olması şartı aranmaz
+      (§4.2.42.B).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,31 @@
+section_id: 4.1.1
+rules:
+- rule_id: 4.1.1.family_medicine_contracted_prescribe_coverage
+  sut_section: 4.1.1
+  gate_b_sources:
+  - C003412
+  prescriber_specialties:
+  - aile hekimliği sözleşmeli/yetkilendirilmiş hekim
+  - aile hekimliği uzman hekim
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'coverage: MoH family-medicine contracted/authorized physicians may prescribe all drugs a family-medicine
+      specialist can; specific SUT sections (4.2.13.1, 4.2.13.2, 4.2.15.B/C/Ç/D-1/D-2/E/F, 4.2.20, 4.2.38) prescribed per
+      health report by these physicians or family-medicine specialists are paid'
+    message_tr: Sağlık Bakanlığınca aile hekimliği sözleşmesi yapılan/yetkilendirilen hekimler, aile hekimliği uzman hekiminin
+      yazabildiği tüm ilaçları reçete edebilir; belirtilen SUT maddelerindeki ilaçlar sağlık raporuna istinaden bu hekimlerce
+      veya aile hekimliği uzmanlarınca reçete edilirse bedelleri Kurumca ödenir (§4.1.1).
+- rule_id: 4.1.1.prescription_diagnosis_mandatory
+  sut_section: 4.1.1
+  gate_b_sources:
+  - C003406
+  condition:
+    diagnosis_required: true
+  action:
+    enforcement: 'mandatory: prescriptions must carry diagnosis; no abbreviations except those in SUT ''Teşhis Kısaltmaları
+      Listesi'' (EK-4/Ç); supportive/anti-side-effect drugs need no separate diagnosis'
+    message_tr: Reçetelerde teşhis bilgisinin yer alması zorunludur; SUT eki 'Teşhis Kısaltmaları Listesi' (EK-4/Ç) kısaltmaları
+      hariç teşhislerde kısaltma yapılmaz; yan etki önlemek/tedaviyi desteklemek amacıyla reçete edilen ilaçlar için ayrıca
+      teşhis aranmaz (§4.1.1).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

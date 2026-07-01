@@ -45,8 +45,21 @@ def _extract_drugs(text: str) -> list[str]:
         "enzalutamide", "abiraterone", "cabazitaxel",
         "pembrolizumab", "nivolumab", "atezolizumab", "durvalumab",
         "eculizumab", "ravulizumab",
-        "interferon", "peginterferon",
+        "interferon", "peginterferon", "pegile interferon",
         "anagrelide", "ruxolitinib", "hydroxyurea", "hidroksiüre",
+        "sofosbuvir", "ledipasvir", "velpatasvir", "glecaprevir", "pibrentasvir",
+        "blinatumomab", "inotuzumab ozogamicin", "moxetumomab",
+        "secukinumab", "ustekinumab", "ixekizumab", "guselkumab", "risankizumab",
+        "adalimumab", "infliximab", "etanercept", "certolizumab", "golimumab",
+        "tocilizumab", "abatacept", "rituksimab", "belimumab", "anakinra",
+        "canakinumab", "tofacitinib", "baricitinib", "upadacitinib",
+        "apremilast", "methotrexate", "metotreksat", "leflunomid",
+        "eltrombopag", "romiplostim", "avatrombopag",
+        "pegfilgrastim", "filgrastim", "lenograstim",
+        "denosumab", "zoledronic", "zoledronat", "pamidronat", "ibandronat",
+        "voriconazole", "vorikonazol", "posakonazol", "amfoterisin", "amphotericin",
+        "bosentan", "ambrisentan", "macitentan", "riociguat", "selexipag",
+        "miglustat", "imigluserat", "eliglustat",
     ]
     lower = text.lower()
     found = []
@@ -159,6 +172,18 @@ def _extract_prior_therapy(text: str) -> dict | None:
     # Generic prior therapy
     if re.search(r"önceki\s+tedavi|dirençli|intolere", lower):
         return {"drug_or_class": "prior_therapy", "outcome": "resistant"}
+
+    if re.search(r"refrakter|tolere edemeyen|tolere edilemeyen", lower):
+        return {"drug_or_class": "prior_therapy", "outcome": "refractory_or_intolerant"}
+
+    if re.search(r"nüks|nuks", lower):
+        return {"drug_or_class": "prior_therapy", "outcome": "relapse"}
+
+    if re.search(r"bifosfonat.{0,50}kontrol", lower):
+        return {"drug_or_class": "bisphosphonate", "outcome": "failed"}
+
+    if re.search(r"üçüncü\s*basamak|ucuncu\s*basamak", lower):
+        return {"drug_or_class": "third_line_setting", "outcome": "required"}
 
     return None
 

@@ -1,0 +1,20 @@
+section_id: 3.3.23
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.23.(1).meniskus_tamiri_urun_must_bill
+  sut_section: 3.3.23
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003195
+  condition:
+    material_name_any:
+    - menisküs tamiri
+    - meniskus tamiri
+    - nitinol
+    - tek barlı
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Menisküs tamiri ürünleri — 55 yaş altında, eğitim verme yetkisi 3. basamak sunucularda 3 ortopedi uzmanı sağlık
+      kurulu raporuyla (Nitinol/Tek Barlı en fazla 1, Çift Barlı en fazla 2 adet) onarılabilir kıkırdak lezyonu veya dejeneratif
+      olmayan Zon-1/2 menisküs yırtığı olan vakalarda bedelleri Kurumca karşılanır (§3.3.23(1)).

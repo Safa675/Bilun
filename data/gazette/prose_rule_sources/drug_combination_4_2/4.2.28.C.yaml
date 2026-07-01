@@ -1,0 +1,15 @@
+section_id: 4.2.28.C
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.28.C.(3).bile_acid_sequestrant_t2dm_no_pay
+  sut_section: 4.2.28.C
+  condition:
+    diagnosis_any:
+    - E11
+    drug_class: bile_acid_sequestrant
+  action:
+    billable: false
+    denial_tr: safra asidi tutucu ilaçlar Tip-2 DM tedavisinde ödenmez
+    severity: error
+  gate_b_sources:
+  - C006343

@@ -1,0 +1,118 @@
+section_id: 4.2.42.A
+rules:
+- rule_id: 4.2.42.A.hypogonadotropic_oi_iui_quota
+  sut_section: 4.2.42.A
+  gate_b_sources:
+  - C006788
+  drug_names:
+  - gonadotropin
+  - fsh
+  - lh
+  - hmg
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: hipogonadotropik hipogonadizm; OI ve/veya IUI için en az 3 en fazla 6 uygulama, toplam 10000 IU gonadotropin
+      (FSH+LH veya HMG) ödenir
+    message_tr: Hipogonadotropik hipogonadizm; hastalarda OI ve/veya IUI işlemi için en az 3 en fazla 6 uygulama, toplam 10000
+      IU gonadotropin (FSH + LH veya HMG) ödenir (§4.2.42.A).
+- rule_id: 4.2.42.A.oi_iui_conditions_cumulative
+  sut_section: 4.2.42.A
+  gate_b_sources:
+  - C006777
+  drug_names:
+  - gonadotropin
+  - fsh
+  - lh
+  - hmg
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: OI/IUI koşullarının birlikte sağlanmış olması gerekmektedir
+    message_tr: OI ve/veya IUI tedavilerine ilişkin ödeme koşullarının birlikte sağlanmış olması gerekmektedir (§4.2.42.A).
+- rule_id: 4.2.42.A.oi_iui_eligibility_general
+  sut_section: 4.2.42.A
+  gate_b_sources:
+  - C006774
+  drug_names:
+  - gonadotropin
+  - fsh
+  - lh
+  - hmg
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: evli, evlat edinilmiş çocukları hariç çocuk sahibi olmayan GSS'li kadına veya erkeğin bakmakla yükümlü olduğu
+      karısına uygulanan OI ve/veya IUI tedavi giderlerinin ödenebilmesi için tanımlı şartlar
+    message_tr: Evli olmakla birlikte evlat edinilmiş çocukları hariç çocuk sahibi olmayan genel sağlık sigortalısı kadın
+      ise kendisine, erkek ise bakmakla yükümlü olduğu karısına uygulanan 'OI ve/veya IUI' tedavilerine ilişkin giderlerin
+      Kurumca ödenebilmesi için tanımlı koşullar (§4.2.42.A).
+- rule_id: 4.2.42.A.pcos_group_oi_iui_quota
+  sut_section: 4.2.42.A
+  gate_b_sources:
+  - C006785
+  drug_names:
+  - gonadotropin
+  - fsh
+  - lh
+  - hmg
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: PCOS; en az 3 en fazla 6 siklus klomifen sitrata yanıt alınamayanlarda toplam 6 uygulama, toplam 10000 IU
+      gonadotropin ödenir
+    message_tr: Polikistik Over Sendromu (PCOS); en az 3, en fazla 6 siklus klomifen sitrat tedavisine yanıt alınamayan (ovulasyon
+      sağlanamayan veya gebelik elde edilemeyen) hastalarda toplam 6 uygulama, toplam 10000 IU gonadotropin ödenir (§4.2.42.A).
+- rule_id: 4.2.42.A.repeat_application_new_report
+  sut_section: 4.2.42.A
+  gate_b_sources:
+  - C006780
+  drug_names:
+  - gonadotropin
+  - fsh
+  - lh
+  - hmg
+  report_required: true
+  action:
+    enforcement: birinci uygulamadan sonraki OI ve/veya IUI tedavisi için de yeniden sağlık kurulu raporu düzenlenmesi gerekir
+    message_tr: Birinci uygulamadan sonraki 'OI ve/veya IUI' tedavisi için de yeniden sağlık kurulu raporu düzenlenmesi gereklidir
+      (§4.2.42.A).
+- rule_id: 4.2.42.A.standard_group_oi_iui_quota
+  sut_section: 4.2.42.A
+  gate_b_sources:
+  - C006783
+  drug_names:
+  - gonadotropin
+  - fsh
+  - lh
+  - hmg
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: standart hasta grubunda (açıklanamayan infertilite/erkek infertilitesi/endometriyozis) siklus başı toplam
+      1000 IU, toplam 3 siklus (3000 IU) gonadotropin ödenir
+    message_tr: Standart hasta grubunda (açıklanamayan infertilite veya erkek infertilitesi veya endometriyozis olgularında)
+      uygulama (siklus) başına toplam 1000 IU, toplam 3 siklus (3000 IU) gonadotropin ödenir (§4.2.42.A).
+- rule_id: 4.2.42.A.treatment_within_6mo_report
+  sut_section: 4.2.42.A
+  gate_b_sources:
+  - C006775
+  - C006778
+  - C006779
+  drug_names:
+  - gonadotropin
+  - fsh
+  - lh
+  - hmg
+  report_required: true
+  action:
+    enforcement: sağlık kurulu raporunun düzenlendiği tarihten itibaren 6 ay içinde tedaviye başlanmazsa yeniden sağlık kurulu
+      raporu gerekir
+    message_tr: Sağlık kurulu raporunun düzenlendiği tarihten itibaren 6 ay içinde tedaviye başlanmaması halinde yeniden sağlık
+      kurulu raporu düzenlenmesi gereklidir (§4.2.42.A).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

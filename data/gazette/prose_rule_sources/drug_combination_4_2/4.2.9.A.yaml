@@ -1,0 +1,19 @@
+section_id: 4.2.9.A
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.9.A.(1).epoetin_out_of_indication
+  sut_section: 4.2.9.A
+  condition:
+    drug_name_any:
+    - eritropoietin
+    - darbepoietin
+    - roksadustat
+    indication_not_in:
+    - ckd_anemia
+    - mds_anemia
+  action:
+    billable: false
+    denial_tr: eritropoietin/darbepoietin sadece KBH-anemi ve MDS'de; roksadustat sadece KBH-anemi'de ödenir
+    severity: error
+  gate_b_sources:
+  - C004125

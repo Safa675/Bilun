@@ -1,0 +1,43 @@
+section_id: 4.2.27.B
+rules:
+- rule_id: 4.2.27.B.anti_d_itp_iv_report
+  sut_section: 4.2.27.B
+  gate_b_sources:
+  - C006269
+  drug_names:
+  - anti-d immünglobulin
+  - rhogam
+  - anti-d
+  icd10_codes:
+  - D69.3
+  report_required: true
+  report_specialties:
+  - hematoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: idiopatik (immün) trombositopenide (ITP) IV form Rh pozitif ve splenektomisiz hastalarda hematoloji uzmanınca
+      doz ve süre belirten raporla reçete
+    message_tr: İdiopatik (immün) trombositopenide (ITP/primer immün trombositopeni); intravenöz formu Rh pozitif ve splenektomisiz
+      hastalarda hematoloji uzmanınca doz ve kullanım süresi belirtilen uzman raporuna dayanılarak bu hekimlerce reçete edilebilir
+      (§4.2.27.B).
+- rule_id: 4.2.27.anti_rh_specialist_prescription
+  sut_section: 4.2.27.B
+  drug_names:
+  - anti rh
+  - anti-rh
+  - rho(d)
+  - micrhogam
+  - winrho
+  - rhogam
+  icd10_ranges:
+  - O26
+  - O03
+  - O04
+  - Z33
+  - Z34
+  message_tr: Anti-Rh — doğum sonu, düşük, küretaj, antenatal veya 28. gebelik haftasında uzman hekim reçetesi gerekir (§4.2.27.B).
+  gate_b_sources:
+  - C006267
+  - C006268
+source_note: Exported from drug_indication_prose.json (YAML source migration)

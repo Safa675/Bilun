@@ -1,0 +1,69 @@
+section_id: 2.6.1.A
+rules:
+- rule_id: 2.6.1.A.(1).nearest_provider_referral_principle
+  sut_section: 2.6.1.A
+  gate_b_sources:
+  - C001479
+  condition:
+    definition_scope: Sevkin teşhis/tedavinin sağlanabildiği en yakın sunucuya yapılması esastır
+    applies_to: Yerleşim yeri dışı sevk (tıbbi/zorunlu neden)
+  action:
+    enforcement: gate
+    message_tr: Sevk en yakın sunucuya yapılır; cihaz/uzman bulunmaması gibi zorunlu nedenlerle dış yerleşim yerine sevk varsa
+      istisnalar hariç mesafe kuralları uygulanır.
+- rule_id: 2.6.1.A.(2).travel_by_nearest_provider_distance
+  sut_section: 2.6.1.A
+  gate_b_sources:
+  - C001487
+  condition:
+    definition_scope: Yerleşim yeri mesafesi esas alınarak yol giderinin karşılanması
+    applies_to: Yerleşim yeri dışı sevk (en yakın sunucu)
+  action:
+    enforcement: gate
+    message_tr: Yol gideri, en yakın ilgili sunucunun bulunduğu yerleşim yeri mesafesi esas alınarak karşılanır.
+- rule_id: 2.6.1.A.(2a).third_step_referral_distance_waived
+  sut_section: 2.6.1.A
+  gate_b_sources:
+  - C001494
+  condition:
+    definition_scope: En yakın üçüncü basamak resmi sunucuya sevk için yerleşim yeri mesafesi aranmaz
+    applies_to: Tıbbi/zorunlu nedenle üçüncü basamağa sevk
+  action:
+    enforcement: gate
+    message_tr: Zorunlu nedenle sevk edilenlerin yol gideri, en yakın üçüncü basamak resmi sunucunun bulunduğu yerleşim yeri
+      mesafesi aranmaksızın sevk edildikleri yer üzerinden hesaplanır.
+- rule_id: 2.6.1.A.(3).board_control_examination_travel
+  sut_section: 2.6.1.A
+  gate_b_sources:
+  - C001495
+  condition:
+    definition_scope: Sürekli iş göremezlik/malullük tespiti ile 5510 md.94 kontrol muayeneleri için Kurum sevkleri
+    applies_to: Kurumca yerleşim yeri dışına yapılan kontrol sevkleri
+    ten_business_day_window: true
+  action:
+    enforcement: gate
+    message_tr: Kurumca yapılan kontrol sevklerinde yol/gündelik/refakatçi gideri karşılanır; sevk tebliğ günü dahil 10 işgününde
+      sunucuya müracaat zorunludur.
+- rule_id: 2.6.1.A.(4).thermal_spa_travel_nearest
+  sut_section: 2.6.1.A
+  gate_b_sources:
+  - C001496
+  condition:
+    definition_scope: Kaplıca tedavisinde yol giderinin en yakın kaplıca tesisi esas alınması
+    applies_to: Kaplıca tedavisi
+  action:
+    enforcement: gate
+    message_tr: Kaplıca yol gideri, tedavinin sağlanabildiği en yakın kaplıca tesisinin bulunduğu yerleşim yeri esas alınarak
+      ödenir.
+- rule_id: 2.6.1.A.(5).dialysis_service_courtesy_no_travel
+  sut_section: 2.6.1.A
+  gate_b_sources:
+  - C001497
+  condition:
+    expense_not_covered: diyaliz_sunucusunun_servis_hizmeti_vermesi_halinde_yol_gideri
+    applies_to: Servis hizmetinden faydalanan diyaliz hastaları
+  action:
+    enforcement: reject
+    message_tr: Diyaliz merkezinin/sağlık hizmeti sunucusunun servis hizmeti verdiğinin tespit edilmesi halinde, servis hizmetinden
+      faydalananlara bu mesafeler için ayrıca yol gideri ödenmez.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

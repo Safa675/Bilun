@@ -1,0 +1,74 @@
+section_id: 3.3.4
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.4.(2).tissue_bank_unauthorized_product
+  sut_section: 3.3.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002930
+  condition:
+    tissue_bank_unauthorized_product: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Onaylı doku bankası/tek dağıtıcı kapsamı dışı ürün — Kurumca karşılanmaz (§3.3.4(2)).
+- rule_id: 3.3.4.(4).dermis_allograft_no_pay
+  sut_section: 3.3.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002934
+  condition:
+    material_name_any:
+    - dermis allogreft
+    - epidermis allogreft
+    - dermis xenogreft
+    - sentetik greft dermis
+    - allogreft dermis
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Dermis/epidermis allogreft-xenogreft-sentetik greft — Kurumca karşılanmaz (§3.3.4(4)).
+- rule_id: 3.3.4.(8).open_physis_primary_fracture_graft
+  sut_section: 3.3.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002936
+  condition:
+    open_physis_primary_fracture_graft: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Açık epifiz hattı — patolojik olmayan primer kırıkta greft — karşılanmaz (§3.3.4(8)).
+- rule_id: 3.3.4.(9).adult_primary_fracture_bone_stimulator
+  sut_section: 3.3.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002970
+  condition:
+    adult_primary_fracture_bone_stimulator: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Yetişkin primer kırıkta kemik uyarıcı malzeme — karşılanmaz (§3.3.4(9)/(7)).
+- rule_id: 3.3.4.(6).hip_arthroplasty_graft_no_pay
+  sut_section: 3.3.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002937
+  condition:
+    hip_arthroplasty_graft_claim: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Tümör dışı kalça kırığı artroplastisinde greft — karşılanmaz (§3.3.4(6)/(9)).
+- rule_id: 3.3.4.(11).graft_allograft_xenograft_combined
+  sut_section: 3.3.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002939
+  condition:
+    graft_allograft_xenograft_combined: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Sentetik/allogreft/xenogreft kombine kullanım — karşılanmaz (§3.3.4(11)/(8)).

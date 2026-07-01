@@ -1,0 +1,101 @@
+section_id: 3.3.32
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.32.(1).dijital_isitme_cihazi_must_bill
+  sut_section: 3.3.32
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003283
+  condition:
+    material_name_any:
+    - işitme cihazı
+    - isitme cihazi
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: Dijital programlanabilir işitme cihazları (kulak arkası / kulak içi / kanal içi) — Kurumca bedeli karşılanır
+      (§3.3.32(1)).
+- rule_id: 3.3.32.(4).saf_ses_odyometri_icerik_regulatory
+  sut_section: 3.3.32
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003296
+  condition:
+    material_name_any:
+    - işitme cihazı
+    - isitme cihazi
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Saf ses odyometrisi 500-1000-2000-4000 Hz hava ve kemik yolu eşikleri ile konuşmayı ayırt etme skorunu içermelidir;
+      8 yaş üstünde test yapılamıyorsa gerekçesi belirtilmelidir (§3.3.32(4)).
+- rule_id: 3.3.32.a.cocuk_kbb_3_basamak_rapor_regulatory
+  sut_section: 3.3.32
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003298
+  condition:
+    material_name_any:
+    - işitme cihazı
+    - isitme cihazi
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: 0-18 yaş çocuklarda işitme cihazı için en az 1 KBB uzmanı yer alan 3. basamak resmi sunucu sağlık kurulu raporu
+      düzenlenmesi gerekmektedir (§3.3.32 a).
+- rule_id: 3.3.32.b.yetiskin_kbb_rapor_regulatory
+  sut_section: 3.3.32
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003299
+  condition:
+    material_name_any:
+    - işitme cihazı
+    - isitme cihazi
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: 18 yaş üzeri hastalarda işitme cihazı için en az 1 KBB uzmanı yer alan resmi sunucu sağlık kurulu raporu düzenlenmesi
+      gerekmektedir (§3.3.32 b).
+- rule_id: 3.3.32.c.kalici_isitme_kaybi_kriter_regulatory
+  sut_section: 3.3.32
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003300
+  condition:
+    material_name_any:
+    - işitme cihazı
+    - isitme cihazi
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: Sağlık kurulu raporlarında kalıcı işitme kaybı olduğu ve odyolojik kriterlerin sağlandığının belirtilmesi
+      gerekmektedir (§3.3.32 c).
+- rule_id: 3.3.32.c.odyolojik_esik_kriter_regulatory
+  sut_section: 3.3.32
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003301
+  condition:
+    material_name_any:
+    - işitme cihazı
+    - isitme cihazi
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: 500-1000-2000-4000 Hz hava yolu saf ses ortalaması 26 dB ve üzeri (ABR'de 30 dB ve üzeri) olmalıdır (§3.3.32
+      ç).
+- rule_id: 3.3.32.(7).cocuk_isitme_tutar_artis_must_bill
+  sut_section: 3.3.32
+  deontic: MUST_BILL
+  gate_b_sources:
+  - C003303
+  condition:
+    material_name_any:
+    - işitme cihazı
+    - isitme cihazi
+  action:
+    material_outcome: review_required
+    severity: info
+    message_tr: 18 yaş altı çocuklar için belirlenen işitme cihazı tutarı; 0-4 yaş %80, 5-12 yaş %60, 13-18 yaş %50 oranında
+      artırılarak Kurumca karşılanır (§3.3.32(7)).

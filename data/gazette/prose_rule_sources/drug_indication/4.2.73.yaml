@@ -1,0 +1,60 @@
+section_id: 4.2.73
+rules:
+- rule_id: 4.2.73.pulm.cftr_prior_modulator_report_criteria_mandatory
+  sut_section: 4.2.73
+  gate_b_sources:
+  - C007260
+  drug_names:
+  - elexakaftor/tezakaftor/ivakaftor ve ivakaftor
+  - ivakaftor
+  - tezakaftor
+  - lumakaftor
+  - elexakaftor
+  icd10_codes:
+  - E84.0
+  - E84.1
+  - E84.8
+  - E84.9
+  report_required: true
+  action:
+    enforcement: 'mandatory: daha önce KFTR modülatörü kullanan 24 ay ve üzeri hastalarda ilk raporda kullanmakta olduğu KFTR
+      modülatörüne başlangıç tarihinin ve başlangıç kriterlerine uygunluğunu gösteren test sonuçlarının tarihleriyle yer alması
+      gerekir; devam raporunda tedaviden fayda sağlandığı belirtilirse devam edilir; tedaviye başlama tarihinden önceki son
+      6 ay ve daha uzun ara verenlerde başlangıç kriterleri aranır'
+    message_tr: 'Daha önce KFTR Modülatörü kullanan hastalarda "Elexacaftor/ Tezacaftor /Ivacaftor and Ivacaftor" kullanım
+      kriterleri: Daha önce KFTR Modülatörü (ivacaftor, tezacaftor, lumacaftor ve elexacaftor''un tek başına veya kombinasyon
+      formları) başlanan, 24 aylık ve üzeri hastalarda düzenlenecek ilk raporda kullanmakta olduğu KFTR Modülatörüne başlangıç
+      tarihinin ve başlangıç kriterlerine uygun olduğunu gösterir test sonuçlarının tarihleriyle birlikte raporda yer alması
+      gerekmektedir. Bu hastalarda devam raporunda tedaviden fayda sağlandığının belirtilmesi koşuluyla tedaviye devam edilir.
+      Elexacaftor/ Tezacaftor /Ivacaftor and Ivacaftor tedavisine başlama tarihinden önceki son 6 ay ve daha uzun süre ile
+      KFTR Modülatörü tedavisine ara veren hastalarda başlangıç kriterleri aranır (§4.2.73).'
+- rule_id: 4.2.73.pulm.cftr_tertiary_pulmonology_6mo_coverage
+  sut_section: 4.2.73
+  gate_b_sources:
+  - C007262
+  drug_names:
+  - elexakaftor/tezakaftor/ivakaftor ve ivakaftor
+  - ivakaftor
+  - tezakaftor
+  - lumakaftor
+  - elexakaftor
+  icd10_codes:
+  - E84.0
+  - E84.1
+  - E84.8
+  - E84.9
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - göğüs hastalıkları
+  prescriber_specialties:
+  - göğüs hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'rapor ve reçeteleme koşulları: üçüncü basamakta en az bir göğüs hastalıkları uzmanının yer aldığı 6 ay süreli
+      sağlık kurulu raporuyla göğüs hastalıkları uzmanlarınca reçete edilirse ödenir'
+    message_tr: 'Rapor ve reçeteleme koşulları: Üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen en az bir göğüs
+      hastalıkları uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporuna istinaden göğüs hastalıkları uzman hekimlerince
+      reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.73).'
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Systemic cleanup: re-link or remove struck (non-in-force) clause_ids across
-all prose batch_rules modules, their rule JSONs, and manifests.
+prose rule YAML sources, runtime JSONs, and manifests.
 
 A struck clause_id means the SUT amendment repealed that text. Rules referencing
 struck clauses encode legacy/repealed law. This script finds, for each struck ref,
@@ -220,14 +220,14 @@ def main() -> None:
     struck_ids = set(df.filter(~pl.col("is_in_force"))["clause_id"].to_list())
     print(f"struck clause_ids in parquet: {len(struck_ids)}")
 
-    # first scan batch files to find which struck ids are actually referenced
+    # Scan YAML sources, rule JSONs, and manifests for struck references.
     referenced: set[str] = set()
-    for f in sorted(_BATCH_DIR.glob("*batch_rules.py")):
+    yaml_root = _REPO / "data/gazette/prose_rule_sources"
+    for f in sorted(yaml_root.rglob("*.yaml")):
         src = f.read_text(encoding="utf-8")
         for sid in struck_ids:
             if f'"{sid}"' in src:
                 referenced.add(sid)
-    # also JSONs
     for f in sorted(_RULES_DIR.glob("*.json")):
         if f.name.endswith(".schema.json"):
             continue
@@ -235,7 +235,7 @@ def main() -> None:
         for sid in struck_ids:
             if f'"{sid}"' in src:
                 referenced.add(sid)
-    print(f"struck ids referenced in batch/JSON files: {len(referenced)}")
+    print(f"struck ids referenced in YAML/JSON files: {len(referenced)}")
 
     mapping = build_replacement_map(df, referenced)
     print(f"found in-force replacements: {len(mapping)}")
@@ -252,15 +252,16 @@ def main() -> None:
         print("\n(dry run — re-run with --apply to make changes)")
         return
 
-    # Apply: batch files
-    print("\n=== applying to batch files ===")
+    # Apply: YAML sources
+    print("\n=== applying to YAML sources ===")
     total_r = total_rm = 0
-    for f in sorted(_BATCH_DIR.glob("*batch_rules.py")):
+    for f in sorted(yaml_root.rglob("*.yaml")):
         r, rm = clean_batch_file(f, mapping, struck_ids, apply=True)
         if r or rm:
-            print(f"  {f.name}: +{r} relinked, -{rm} removed")
-            total_r += r; total_rm += rm
-    print(f"batch files total: +{total_r} relinked, -{total_rm} removed")
+            print(f"  {f.relative_to(_REPO)}: +{r} relinked, -{rm} removed")
+            total_r += r
+            total_rm += rm
+    print(f"YAML sources total: +{total_r} relinked, -{total_rm} removed")
 
     # Apply: rule JSONs
     print("\n=== applying to rule JSONs ===")

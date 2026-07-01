@@ -1,0 +1,18 @@
+section_id: 4.2.10.B-3
+source_note: Exported from drug_combination_4_2.json (YAML source migration)
+rules:
+- rule_id: 4.2.10.B-3.(4).ms_treatment_switch_6mo_rule
+  sut_section: 4.2.10.B-3
+  condition:
+    drug_class_any:
+    - ms_dmt
+    treatment_switch_within_months:
+      max: 6
+    medical_reason_documented: false
+  action:
+    billable: false
+    denial_tr: 6 aydan kısa sürede MS tedavi seçenekleri arasında geçiş; anaflaksi/ilaç reaksiyonu dışında tıbbi gerekçe yoksa
+      ödenmez
+    severity: error
+  gate_b_sources:
+  - C004303

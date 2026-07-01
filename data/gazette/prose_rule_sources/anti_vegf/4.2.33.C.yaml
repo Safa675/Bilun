@@ -1,0 +1,69 @@
+section_id: 4.2.33.C
+source_note: Exported from anti_vegf_prose.json (YAML source migration)
+rules:
+- rule_id: 4.2.33.C.aflibersept_pm_knv
+  sut_section: 4.2.33.C
+  drug_names:
+  - aflibersept
+  icd10_codes:
+  - H44.2
+  indication_tr: Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  loading_dose_count: 3
+  gate_b_sources:
+  - C006568
+  message_tr: Aflibersept (PM-KNV) — 3 göz hastalıkları uzmanı sağlık kurulu raporu; ayakta tedavi kapsamında (§4.2.33.C).
+- rule_id: 4.2.33.C.anti_vegf_switch_after_bevacizumab_pm_knv
+  sut_section: 4.2.33.C
+  drug_names:
+  - ranibizumab
+  - aflibersept
+  icd10_codes:
+  - H44.2
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  message_tr: Ranibizumab/aflibersept (PM-KNV) — bevacizumab cevapsızlığında göz hastalıkları uzmanı raporu ile geçiş (§4.2.33.C/2).
+  gate_b_sources:
+  - C006568
+  report_duration_months: 3
+  loading_dose_count: 3
+- rule_id: 4.2.33.C.bevacizumab_pm_knv
+  sut_section: 4.2.33.C
+  drug_names:
+  - bevacizumab
+  icd10_codes:
+  - H44.2
+  indication_tr: Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  loading_dose_count: null
+  gate_b_sources:
+  - C006567
+  - C006527
+  message_tr: Bevacizumab (PM-KNV) — yükleme dozu şartı aranmaz (istisna, §4.2.33.C/C006527a); göz hastalıkları uzmanı raporu.
+- rule_id: 4.2.33.C.ranibizumab_pm_knv
+  sut_section: 4.2.33.C
+  drug_names:
+  - ranibizumab
+  icd10_codes:
+  - H44.2
+  indication_tr: Patolojik miyopiye bağlı koroidal neovaskülarizasyon (PM-KNV)
+  report_required: true
+  report_specialties:
+  - göz hastalıkları
+  prescriber_specialties:
+  - göz hastalıkları
+  loading_dose_count: 3
+  gate_b_sources:
+  - C006568
+  message_tr: Ranibizumab (PM-KNV) — 3 göz hastalıkları uzmanı sağlık kurulu raporu; ayakta tedavi kapsamında (§4.2.33.C).

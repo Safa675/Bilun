@@ -1,0 +1,141 @@
+section_id: 2.4.2.B-1
+source_note: Exported from treatment_pricing_2_4.json (YAML source migration)
+rules:
+- rule_id: 2.4.2.B-1.(1).hla_compatibility_tests_relatives_max30
+  sut_section: 2.4.2.B-1
+  condition:
+    procedure_category: bone_marrow_transplant
+    test_type: hla_compatibility_typing
+    candidate_count:
+      max: 30
+  action:
+    billable: true
+    payment_tr: kemik iliği nakli tedavilerinde hastanın anne/baba/kardeş/çocuğundan HLA uyumlu verici bulmak için yapılan
+      doku uyumluluk testleri ile uygun vericisi bulunamayan hastaların 30 adayı geçmemek üzere HLA doku grubu belirleme testleri
+      Kurum tarafından karşılanır
+    billing_method: fee_for_service
+  gate_b_sources:
+  - C000830
+- rule_id: 2.4.2.B-1.(3).marrow_bank_stage1_705090_110_verify_705100_120
+  sut_section: 2.4.2.B-1
+  condition:
+    procedure_category: bone_marrow_donor_typing
+    billing_outside_codes:
+    - '705.090'
+    - '705.110'
+    - '705.100'
+    - '705.120'
+  action:
+    billable: false
+    denial_tr: kemik iliği doku bilgi bankalarınca birinci aşama işlemler EK-2/B “705.090” ve “705.110” kodları üzerinden,
+      adres/serolojik doku tipi doğrulama ve onay alma işlemleri “705.100” ve “705.120” kodları üzerinden faturalandırılması
+      gerekmektedir
+    severity: error
+  gate_b_sources:
+  - C000832
+- rule_id: 2.4.2.B-1.(4).high_res_dna_hla_confirmation_max25
+  sut_section: 2.4.2.B-1
+  condition:
+    procedure_category: bone_marrow_donor_confirmation
+    lab_licensed_by_moh: true
+    candidate_count:
+      max: 25
+  action:
+    billable: true
+    payment_tr: yurt içi ön taramalarda belirlenen verici adaylarının Bakanlıkça ruhsatlandırılmış doku tipleme laboratuvarlarında
+      yapılan yüksek çözünürlük DNA testi ile HLA doku grubu doğrulama testleri giderleri toplam 25 adayı geçmemek üzere Kurum
+      tarafından karşılanır
+    billing_method: fee_for_service
+  gate_b_sources:
+  - C000833
+- rule_id: 2.4.2.B-1.(5).domestic_unrelated_marrow_cord_procurement_ek2c
+  sut_section: 2.4.2.B-1
+  condition:
+    procedure_category: unrelated_marrow_or_cord_procurement_domestic
+    donor_found_in_country: true
+  action:
+    billable: true
+    payment_tr: akraba dışı kemik iliği vericisinin ülkemizde bulunması halinde “yurt içi kemik iliği temini/kordon kanı temini”
+      bedeli EK-2/C Listesi üzerinden fatura bedelini aşmamak üzere karşılanır
+    billing_method: fee_for_service
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C000834
+- rule_id: 2.4.2.B-1.(6).foreign_hla_confirmation_7of8_max10x25
+  sut_section: 2.4.2.B-1
+  condition:
+    procedure_category: bone_marrow_donor_confirmation_foreign
+    hla_match_7_of_8_or_better: true
+    samples_per_batch:
+      max: 10
+    total_candidates:
+      max: 25
+  action:
+    billable: true
+    payment_tr: yurt içinde uygun vericisi bulunmayan hastalar için yurt dışı kemik iliği bankaları aracılığıyla en az 7/8
+      doku tipi uyumu gösteren kan örnekleri (bir defada en fazla 10, toplamda 25 kişiyi geçmemek üzere) yüksek çözünürlük
+      DNA yöntemi ile HLA doku grubu analizine tabi tutulur; test bedelleri Kurum tarafından karşılanır
+    billing_method: fee_for_service
+  gate_b_sources:
+  - C000835
+- rule_id: 2.4.2.B-1.(9).marrow_cord_transport_euro_caps
+  sut_section: 2.4.2.B-1
+  condition:
+    service_category: foreign_marrow_or_cord_transport
+    transport_amount_within_euro_caps: true
+  action:
+    billable: true
+    payment_tr: kemik iliğinin Türkiye’deki nakil merkezine getirilmesi Amerika/Avustralya için 4.500 Euro, diğer ülkeler
+      için 2.000 Euro; kordon kanının taşıma tankıyla getirilip geri iletilmesi 5.000 Euro’yu geçmemek şartıyla fatura karşılığı
+      Kurumca ödenir
+    billing_method: fee_for_service
+  gate_b_sources:
+  - C000838
+- rule_id: 2.4.2.B-1.(10).foreign_sourcing_activation_cancellation_fees
+  sut_section: 2.4.2.B-1
+  condition:
+    service_category_any:
+    - foreign_donor_screening
+    - donor_advanced_tests
+    - health_check_costs
+    - stem_cell_collection
+    - process_cancellation_fee
+    - postponement_fee
+    - cord_blood_storage_2y
+    - activation_fee
+    bank_is_wmda_member: true
+  action:
+    billable: true
+    payment_tr: yurt dışından kemik iliği/kordon kanı getirtilme sürecindeki verici taraması, ileri testler, sağlık kontrolü,
+      kök hücre toplama, işlem iptal bedeli, erteleme ücreti, kordon kanı saklama (2 yıla kadar) ve aktivasyon ücretleri Kurumca
+      avans/havale veya kişiye ödenir
+    billing_method: fee_for_service
+  gate_b_sources:
+  - C000839
+- rule_id: 2.4.2.B-1.(11).bone_marrow_transplant_ek2c_licensed_center
+  sut_section: 2.4.2.B-1
+  condition:
+    procedure_category: bone_marrow_transplant
+    facility_is_moh_licensed_transplant_center: true
+  action:
+    billable: true
+    payment_tr: kemik iliği nakli (hematopoietik kök hücre nakli) tedavisi Bakanlıkça ruhsatlandırılmış ve çalışma izni almış
+      nakil merkezlerince uygulanır; tedavi bedelleri EK-2/C “Kemik İliği Nakli” başlığı altındaki işlem puanları esas alınarak
+      Kurumca karşılanır
+    billing_method: procedure_package
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C000840
+- rule_id: 2.4.2.B-1.(12).pre_2013_foreign_marrow_screening_retroactive
+  sut_section: 2.4.2.B-1
+  condition:
+    procedure_category: foreign_marrow_screening_procurement
+    invoice_date_before_2013_05_01: true
+  action:
+    billable: true
+    payment_tr: 1/5/2013 tarihinden önceki SUT kuralları gereği karşılanamayan yurt dışındaki kemik iliği bankaları aracılığıyla
+      yapılan kemik iliği/kordon kanı tarama ve teminine ilişkin fatura bedelleri yukarıdaki hükümler doğrultusunda Kurumca
+      karşılanır
+    billing_method: fee_for_service
+  gate_b_sources:
+  - C000842

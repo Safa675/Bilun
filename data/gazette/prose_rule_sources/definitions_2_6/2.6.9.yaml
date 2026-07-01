@@ -1,0 +1,71 @@
+section_id: 2.6.9
+rules:
+- rule_id: 2.6.9.(3).non_contracted_referral_emergency_accepted
+  sut_section: 2.6.9
+  gate_b_sources:
+  - C001605
+  condition:
+    definition_scope: Sözleşmesiz sunucu sevklerinde ödeme için acil halinin Kurumca kabulü zorunluluğu
+    applies_to: Sözleşmesiz sunucu sevkleri
+  action:
+    enforcement: gate
+    message_tr: Sözleşmesiz sunucu sevklerinde yol/gündelik/refakatçi ödenebilmesi için sevkin acil hal nedeniyle yapıldığının
+      Kurumca kabulü gerekir.
+- rule_id: 2.6.9.(4).missing_specialist_documented_travel
+  sut_section: 2.6.9
+  gate_b_sources:
+  - C001606
+  condition:
+    definition_scope: İlgili branş uzmanı bulunmaması nedeniyle hizmet verilemediği başhekimlikçe onaylanırsa gider
+    applies_to: Ayakta müracaat — uzman yokluğu
+  action:
+    enforcement: gate
+    message_tr: Sevk edilen sunucuda ilgili branş uzmanının bulunmaması nedeniyle hizmet verilemediği başhekimlikçe belgelendirilirse,
+      gidiş-dönüş giderleri Kurumca karşılanır.
+- rule_id: 2.6.9.(6).scope_5510_md60_scope_travel
+  sut_section: 2.6.9
+  gate_b_sources:
+  - C001608
+  condition:
+    definition_scope: 5510 md.60(1)(c)(1)/(3) kapsamındaki kişilerin 1.5.1 usulüne uygun sevklerinin 2.6 kapsamında ödenmesi
+    applies_to: Genel sağlık sigortası kapsamına alınan kişiler
+  action:
+    enforcement: gate
+    message_tr: 5510 md.60(1)(c)(1)-(3) kapsamındaki kişilerin 1.5.1 usulüne uygun sevklerine ilişkin yol/gündelik/refakatçi
+      giderleri SUT 2.6 hükümleri doğrultusunda karşılanır.
+- rule_id: 2.6.9.(8).disability_pension_funding_source
+  sut_section: 2.6.9
+  gate_b_sources:
+  - C001610
+  condition:
+    definition_scope: Sürekli iş göremezlik/malullük/çalışma gücü kaybı tespit kontrolleri için giderlerin kısa/uzun vadeli
+      sigorta prim gelirlerinden karşılanması
+    applies_to: İş göremezlik/malullük tespit/kontrol sevkleri
+  action:
+    enforcement: reference
+    message_tr: Sürekli iş göremezlik, malullük ve çalışma gücü kaybı tespit/kontrolleri için yapılan sevklere ait gündelik/yol/refakatçi
+      giderleri kısa ve uzun vadeli sigorta kolları prim gelirlerinden karşılandığından Kurum ödeme birimlerince bu durum
+      dikkate alınmalıdır.
+- rule_id: 2.6.9.(1).intra_settlement_transport_no_travel_daily
+  sut_section: 2.6.9
+  gate_b_sources:
+  - C001603
+  condition:
+    expense_not_covered: yerlesim_yeri_icindeki_nakiller
+    applies_to: Genel sağlık sigortalısı, bakmakla yükümlü olunan kişiler ve refakatçiler
+  action:
+    enforcement: reject
+    message_tr: Genel sağlık sigortalısı ve bakmakla yükümlü olduğu kişiler ile refakatçilere mücavir alan yerleşim yeri içindeki
+      nakiller için yol ve gündelik gideri ödenmez.
+- rule_id: 2.6.9.(2).unreferred_cross_settlement_no_travel_daily
+  sut_section: 2.6.9
+  gate_b_sources:
+  - C001604
+  condition:
+    expense_not_covered: sevk_yapilmaksizin_dis_yerlesim_yerinden_hizmet_alinmasi
+    applies_to: Belediye/büyükşehir belediye mücavir alanı yerleşim yeri dışı sevk edilmeksizin hizmet
+  action:
+    enforcement: reject
+    message_tr: Sevk yapılmaksızın belediye/büyükşehir belediye mücavir alanı yerleşim yeri dışındaki bir sağlık hizmeti sunucusundan
+      sağlık hizmeti alınması hâlinde yol gideri ve gündelik ödenmez.
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

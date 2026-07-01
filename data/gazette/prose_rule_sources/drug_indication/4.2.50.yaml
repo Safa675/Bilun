@@ -1,0 +1,34 @@
+section_id: 4.2.50
+rules:
+- rule_id: 4.2.50.metabolic.ctx_chenodeoxycholic_acid_coverage
+  sut_section: 4.2.50
+  gate_b_sources:
+  - C007055
+  drug_names:
+  - kenodeoksikolik asit
+  - chenodeoxycholic acid
+  - chenodiol
+  icd10_codes:
+  - E75.5
+  - E78
+  report_required: true
+  report_duration_months: 12
+  report_specialties:
+  - çocuk metabolizma hastalıkları
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  prescriber_specialties:
+  - çocuk metabolizma hastalıkları
+  - çocuk endokrinolojisi ve metabolizma hastalıkları
+  - nöroloji
+  - çocuk nörolojisi
+  condition:
+    coverage_note: true
+  action:
+    enforcement: yalnızca Cerebrotendinous Xanthomatosis tedavisinde; CYP27A1 genindeki mutasyon belgelenmiş ve 3. basamakta
+      en az bir çocuk metabolizma veya çocuk endokrin+metabolizma uzmanının yer aldığı 1 yıllık sağlık kurulu raporuyla çocuk
+      metabolizma/çocuk endokrin+metabolizma veya çocuk/erişkin nöroloji uzmanlarınca reçete edilirse ödenir
+    message_tr: Yalnızca Cerebrotendinous Xanthomatosis hastalığının tedavisinde CYP27A1 genindeki mutasyonun belgelendirilmesi
+      ve üçüncü basamak resmi sağlık hizmeti sunucusunda en az bir çocuk metabolizma veya çocuk endokrinoloji ve metabolizma
+      hastalıkları uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna dayanılarak çocuk metabolizma, çocuk endokrinoloji
+      ve metabolizma veya çocuk/erişkin nöroloji uzman hekimleri tarafından reçete edilmesi halinde bedeli ödenir (§4.2.50).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

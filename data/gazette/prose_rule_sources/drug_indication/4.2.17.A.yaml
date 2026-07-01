@@ -1,0 +1,263 @@
+section_id: 4.2.17.A
+rules:
+- rule_id: 4.2.17.A.active_vitamin_d_osteoporosis_nopay
+  sut_section: 4.2.17.A
+  gate_b_sources:
+  - C006042
+  drug_names:
+  - kalsitriol
+  - alfakalsidol
+  icd10_codes:
+  - M80
+  - M81
+  pay: false
+  action:
+    enforcement: 'no-pay condition: aktif D vitaminleri (kalsitriol ve alfakalsidol) osteoporoz tedavisinde ödenmez (EK-4/D
+      düzenlemeleri hariç)'
+    message_tr: Aktif D vitaminleri (kalsitriol ve alfakalsidol) osteoporoz tedavisinde ödenmez (EK-4/D Listesindeki düzenlemeler
+      hariç) (§4.2.17.A).
+- rule_id: 4.2.17.A.hormone_ablation_cancer_high_fracture
+  sut_section: 4.2.17.A
+  gate_b_sources:
+  - C006033
+  - C006035
+  drug_names:
+  - bifosfonat
+  - denosumab
+  - raloksifen
+  icd10_codes:
+  - M80
+  - M81
+  - C50
+  - C61
+  report_required: true
+  report_specialties:
+  - tıbbi onkoloji
+  prescriber_specialties:
+  - tüm uzman hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: hormon ablasyonu uygulanmış nonmetastatik prostat kanserli veya meme kanseri nedeniyle adjuvan aromataz inhibitörü
+      alan yüksek kırk riskli hastalarda osteoporoz; en az bir tıbbi onkoloji uzmanı yer alan sağlık kurulu raporuyla tüm
+      uzman hekimlerce reçete
+    message_tr: Hormon ablasyonu uygulanmış olan nonmetastatik prostat kanserli veya meme kanseri nedeniyle adjuvan aromataz
+      inhibitörü tedavisi gören yüksek kırık riskine sahip hastalardaki osteoporoz tedavisinde; bu durumun belirtildiği en
+      az bir tıbbi onkoloji uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak tüm uzman hekimlerce reçete edilmesi
+      halinde bedelleri Kurumca karşılanır (§4.2.17.A).
+- rule_id: 4.2.17.A.osteoporosis_2yr_report_combo_one_paid
+  sut_section: 4.2.17.A
+  gate_b_sources:
+  - C006018
+  - C006028
+  drug_names:
+  - bifosfonat
+  - raloksifen
+  - calcitonin
+  - stronsiyum ranelat
+  - denosumab
+  icd10_codes:
+  - M80
+  - M81
+  report_required: true
+  report_duration_months: 24
+  condition:
+    coverage_note: true
+  action:
+    enforcement: bifosfonatlar ve diğer osteoporoz ilaçları tanımlı koşullarda ödenir; tedavi süresinin belirtildiği 2 yıllık
+      sağlık raporu gerekir; kombine kullanımda yalnızca birinin bedeli ödenir
+    message_tr: Osteoporoz tedavisinde bifosfonatlar (kombinasyonları dahil) ve diğer osteoporoz ilaçları (raloksifen, calcitonin,
+      stronsiyum ranelat, denosumab) belirtilen koşullarda ödenir. Bu ilaçlar tedavi süresinin belirtildiği sağlık raporuna
+      dayanılarak reçete edilir; rapor süresi 2 yıldır. Bu grup ilaçların kombine kullanımında sadece birinin bedeli ödenir
+      (§4.2.17.A).
+- rule_id: 4.2.17.bisphosphonate_ho_no_bmd
+  sut_section: 4.2.17.A
+  drug_names:
+  - bifosfonat
+  - etidronat
+  icd10_ranges:
+  - M84
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - fiziksel tıp
+  - ortopedi
+  - romatoloji
+  - endokrinoloji
+  - kadın hastalıkları
+  message_tr: Heterotopik ossifikasyon endikasyonlu bifosfonat — prospektüs doz/sürelerinde KMY ölçümü aranmaksızın kullanılabilir
+    (§4.2.17.A).
+  gate_b_sources:
+  - C006026
+- rule_id: 4.2.17.bisphosphonate_specialist_report
+  sut_section: 4.2.17.A
+  drug_names:
+  - bifosfonat
+  - alendronat
+  - risedronat
+  - zoledronat
+  - ibandronat
+  - etidronat
+  icd10_ranges:
+  - M80
+  - M81
+  - M82
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - fiziksel tıp
+  - ortopedi
+  - romatoloji
+  - endokrinoloji
+  - kadın hastalıkları
+  message_tr: Bifosfonat grubu — iç hastalıkları, fizik tedavi, ortopedi, romatoloji, endokrinoloji veya kadın doğum uzman
+    hekim raporu gerekir (§4.2.17.A).
+  gate_b_sources:
+  - C006019
+  - C006027
+  prescriber_specialties:
+  - iç hastalıkları
+  - fiziksel tıp
+  - ortopedi
+  - romatoloji
+  - endokrinoloji
+  - kadın hastalıkları
+- rule_id: 4.2.17.calcitonin_tertiary_bisph_fail
+  sut_section: 4.2.17.A
+  drug_names:
+  - kalsitonin
+  - miacalcic
+  - calcitonin
+  icd10_ranges:
+  - M80
+  - M81
+  - M82
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - fiziksel tıp
+  - ortopedi
+  - romatoloji
+  - endokrinoloji
+  - kadın hastalıkları
+  message_tr: Kalsitonin — ağrılı vertebral kırığı olmayan, bifosfonat yanıtsız/tolere edilemeyen osteoporozda üçüncü basamak
+    kurum ve uzman hekim raporu gerekir (§4.2.17.A).
+  gate_b_sources:
+  - C006041
+- rule_id: 4.2.17.calcitonin_vertebral_fracture_report
+  sut_section: 4.2.17.A
+  drug_names:
+  - kalsitonin
+  - miacalcic
+  - calcitonin
+  icd10_ranges:
+  - M80
+  - M81
+  - M48.5
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - fiziksel tıp
+  - ortopedi
+  - romatoloji
+  - endokrinoloji
+  - kadın hastalıkları
+  message_tr: Kalsitonin — ağrılı vertebral kırığı olan osteoporozda sağlık kurulu raporu ve en fazla 3 aylık tedavi dozu
+    (§4.2.17.A).
+  gate_b_sources:
+  - C006040
+  report_duration_months: 3
+- rule_id: 4.2.17.denosumab_board_report
+  sut_section: 4.2.17.A
+  drug_names:
+  - denosumab
+  - prolia
+  icd10_ranges:
+  - M80
+  - M81
+  - M82
+  - C61
+  - C50
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - fiziksel tıp
+  - ortopedi
+  - romatoloji
+  - endokrinoloji
+  - kadın hastalıkları
+  message_tr: Denosumab — bifosfonat yanıtsız/tolere edilemeyen veya renal yetmezlik nedeniyle bifosfonat kullanılamayan osteoporozda
+    sağlık kurulu raporu gerekir (§4.2.17.A).
+  gate_b_sources:
+  - C006039
+- rule_id: 4.2.17.osteoporosis_bmd_planning
+  sut_section: 4.2.17.A
+  drug_names:
+  - denosumab
+  - stronsiyum
+  - raloksifen
+  - kalsitonin
+  icd10_ranges:
+  - M80
+  - M81
+  - M82
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - fiziksel tıp
+  - ortopedi
+  - romatoloji
+  - endokrinoloji
+  - kadın hastalıkları
+  message_tr: Osteoporoz ilaç tedavisi — rapor tarihinden önce son iki yıl içinde KMY ölçümü planlanmalı; ölçüm yılda birden
+    sık yapılamaz (§4.2.17.A).
+  gate_b_sources:
+  - C006019
+- rule_id: 4.2.17.secondary_osteoporosis_steroid_board
+  sut_section: 4.2.17.A
+  drug_names:
+  - denosumab
+  icd10_ranges:
+  - M05
+  - M06
+  - K50
+  - K51
+  - M45
+  - E05
+  - J44
+  - E10
+  - Z94
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - fiziksel tıp
+  - ortopedi
+  - romatoloji
+  - endokrinoloji
+  - kadın hastalıkları
+  message_tr: Sekonder osteoporoz (steroid, organ nakli, romatolojik hastalık vb.) — uzman hekim raporu ve KMY kriterleri
+    gerekir (§4.2.17.A).
+  gate_b_sources:
+  - C006025
+- rule_id: 4.2.17.strontium_raloxifene_bisph_fail
+  sut_section: 4.2.17.A
+  drug_names:
+  - stronsiyum
+  - raloksifen
+  icd10_ranges:
+  - M80
+  - M81
+  - M82
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - fiziksel tıp
+  - ortopedi
+  - romatoloji
+  - endokrinoloji
+  - kadın hastalıkları
+  message_tr: Stronsiyum ranelat / raloksifen — bifosfonat tolere edilemeyen veya yanıtsız osteoporozlu hastalarda uzman hekim
+    raporu gerekir (§4.2.17.A).
+  gate_b_sources:
+  - C006031
+source_note: Exported from drug_indication_prose.json (YAML source migration)

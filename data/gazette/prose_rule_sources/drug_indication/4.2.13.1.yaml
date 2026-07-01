@@ -1,0 +1,299 @@
+section_id: 4.2.13.1
+rules:
+- rule_id: 4.2.13.1.lamivudine_telbivudine_wk24_switch
+  sut_section: 4.2.13.1
+  gate_b_sources:
+  - C004579
+  drug_names:
+  - lamivudin
+  - telbivudin
+  - tenofovir
+  - entekavir
+  icd10_codes:
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  action:
+    enforcement: lamivudin/telbivudin 24. hafta HBV DNA≥50 IU/ml ise diğer antivirale geçiş; <50 IU/ml ise geçiş/ekleme yok
+    message_tr: Lamivudin veya telbivudin alanlarda 24. haftada HBV DNA≥50 IU/ml ise diğer antiviraller kullanılabilir; ancak
+      24. haftada DNA<50 IU/ml ise başka oral antivirale geçilemez veya eklenemez (§4.2.13.1).
+- rule_id: 4.2.13.1.paediatric_lamivudine_wk24_switch
+  sut_section: 4.2.13.1
+  gate_b_sources:
+  - C004587
+  - C004589
+  drug_names:
+  - lamivudin
+  - tenofovir
+  - entekavir
+  icd10_codes:
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  action:
+    enforcement: çocuk lamivudin 24. hafta DNA≥50 IU/ml → yaşa göre TDF/TAF/entekavir; <50 IU/ml ise geçiş/ekleme yok
+    message_tr: Lamivudin alan çocuk hastalarda 24. haftada HBV DNA≥50 IU/ml ise yaş grubu gözetilerek TDF/TAF/entekavir kullanılabilir;
+      <50 IU/ml ise başka oral antivirale geçilemez/eklenemez (§4.2.13.1).
+- rule_id: 4.2.13.1.paediatric_tdf_taf_entecavir_year1_switch
+  sut_section: 4.2.13.1
+  gate_b_sources:
+  - C004591
+  drug_names:
+  - tenofovir
+  - entekavir
+  icd10_codes:
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  action:
+    enforcement: çocuk TDF/TAF/entekavir 1. yıl sonunda DNA pozitifse yaşa göre geçiş veya TDF+entekavir/TAF+entekavir
+    message_tr: Çocuklarda TDF/TAF/entekavir ile tedavide 1. yıl sonunda HBV DNA pozitifse yaş grubu gözetilerek bu antiviraller
+      arasında geçiş veya TDF+entekavir/TAF+entekavir birlikte kullanılabilir (§4.2.13.1).
+- rule_id: 4.2.13.1.pegifn_adult_hbv_criteria
+  sut_section: 4.2.13.1
+  gate_b_sources:
+  - C004551
+  drug_names:
+  - pegile interferon
+  - peginterferon
+  - pegasys
+  - peg intron
+  icd10_codes:
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  action:
+    enforcement: 'erişkin pegile interferon: ALT>2xÜS + (HBeAg neg ve DNA≤10^7) veya (HBeAg poz ve DNA≤10^9); kronik HBV''de
+      en fazla 48 hafta'
+    message_tr: Erişkinde pegile interferonlar; ALT değeri normalin üst sınırının 2 katını geçen, HBeAg negatif ve HBV DNA≤10^7
+      olan veya HBeAg pozitif ve HBV DNA≤10^9 olan hastalarda kullanılabilir; kronik hepatit B'de en fazla 48 hafta (§4.2.13.1).
+- rule_id: 4.2.13.1.pegifn_paediatric_24wk
+  sut_section: 4.2.13.1
+  gate_b_sources:
+  - C004552
+  drug_names:
+  - pegile interferon
+  - peginterferon
+  icd10_codes:
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  action:
+    enforcement: çocukta pegile interferon 24 hafta; ilk 24 haftanın bitiminden ≥1 yıl sonra koşulları taşıyanlara en fazla
+      24 haftalık ikinci kür
+    message_tr: Çocuklarda pegile interferon tedavi süresi 24 haftadır; 24 haftalık tedavinin bitiminden en az 1 yıl sonra
+      koşulları yeniden taşıyan hastalara en fazla 24 haftalık ikinci bir pegile interferon tedavisi verilebilir (§4.2.13.1).
+- rule_id: 4.2.13.1.tdf_taf_entecavir_year1_switch
+  sut_section: 4.2.13.1
+  gate_b_sources:
+  - C004581
+  drug_names:
+  - tenofovir
+  - entekavir
+  icd10_codes:
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  action:
+    enforcement: TDF/TAF/entekavir 1. yıl sonunda HBV DNA pozitifse bu antiviraller arasında geçiş veya TDF+entekavir / TAF+entekavir
+      kombinasyonu
+    message_tr: Tenofovir disoproksil fumarat/tenofovir alafenamid fumarat/entekavir ile tedavide 1. yıl sonunda HBV DNA pozitifse
+      bu antiviraller arasında geçiş veya TDF+entekavir/TAF+entekavir birlikte kullanılabilir (§4.2.13.1).
+- rule_id: 4.2.13.hbv_antiviral_report_renewal_initiation_f7
+  sut_section: 4.2.13.1
+  drug_names:
+  - entekavir
+  - tenofovir
+  - lamivudin
+  - telbivudin
+  - adefovir
+  icd10_ranges:
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu
+    yeni raporda belirtilmelidir (§4.2.13.1 (7)).
+  gate_b_sources:
+  - C004529
+  - C004533
+  - C004563
+  - C004570
+  - C004572
+  - C004601
+  - C004624
+- rule_id: 4.2.13.hbv_antiviral_report_renewal_initiation_f8
+  sut_section: 4.2.13.1
+  drug_names:
+  - entekavir
+  - tenofovir
+  - lamivudin
+  - telbivudin
+  - adefovir
+  icd10_ranges:
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu
+    yeni raporda belirtilmelidir (§4.2.13.1 (8)).
+  gate_b_sources:
+  - C004572
+- rule_id: 4.2.13.hbv_dna_initiation_board
+  sut_section: 4.2.13.1
+  drug_names:
+  - entekavir
+  - tenofovir
+  - lamivudin
+  - telbivudin
+  - adefovir
+  icd10_ranges:
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HBV oral antiviral başlangıcı — HBV DNA ≥10.000 kopya/ml ve biyopsi sonuçları rapor ekinde belirtilmelidir (§4.2.13.1).
+  gate_b_sources:
+  - C004540
+  prescriber_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - çocuk sağlığı
+  - iç hastalıkları
+- rule_id: 4.2.13.hbv_entekavir_board
+  sut_section: 4.2.13.1
+  drug_names:
+  - entekavir
+  icd10_ranges:
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: Entekavir — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).
+  gate_b_sources:
+  - C004572
+- rule_id: 4.2.13.hbv_lamivudin_board
+  sut_section: 4.2.13.1
+  drug_names:
+  - lamivudin
+  icd10_ranges:
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: Lamivudin — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).
+  gate_b_sources:
+  - C004572
+- rule_id: 4.2.13.hbv_oral_antiviral_switch_adult_report
+  sut_section: 4.2.13.1
+  drug_names:
+  - entekavir
+  - tenofovir
+  - lamivudin
+  - telbivudin
+  - adefovir
+  icd10_ranges:
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: Erişkin HBV oral antiviral değişimi veya yeni oral antiviral eklenmesi — gerekçe yeni veya mevcut sağlık kurulu
+    raporunda belirtilmelidir (§4.2.13.1 ç/e).
+  gate_b_sources:
+  - C004584
+- rule_id: 4.2.13.hbv_oral_antiviral_switch_pediatric_report
+  sut_section: 4.2.13.1
+  drug_names:
+  - entekavir
+  - tenofovir
+  - lamivudin
+  - telbivudin
+  - adefovir
+  icd10_ranges:
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  - çocuk sağlığı
+  - iç hastalıkları
+  message_tr: Çocuk HBV oral antiviral değişimi veya yeni oral antiviral eklenmesi — gerekçe yeni veya mevcut sağlık kurulu
+    raporunda belirtilmelidir (§4.2.13.1 d).
+  gate_b_sources:
+  - C004593
+- rule_id: 4.2.13.hbv_oral_report_duration_6mo
+  sut_section: 4.2.13.1
+  drug_names:
+  - entekavir
+  - tenofovir
+  - lamivudin
+  - telbivudin
+  icd10_ranges:
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: HBV oral antiviral — ilk rapor süresi en fazla 6 ay olmalıdır (§4.2.13.1).
+  gate_b_sources:
+  - C004604
+  report_duration_months: 6
+- rule_id: 4.2.13.hbv_tenofovir_board
+  sut_section: 4.2.13.1
+  drug_names:
+  - tenofovir
+  icd10_ranges:
+  - B16
+  - B18.0
+  - B18.1
+  report_required: true
+  report_specialties:
+  - gastroenteroloji
+  - enfeksiyon hastalıkları
+  message_tr: Tenofovir — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).
+  gate_b_sources:
+  - C004572
+source_note: Exported from drug_indication_prose.json (YAML source migration)

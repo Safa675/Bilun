@@ -1,0 +1,54 @@
+section_id: 4.2.9.F
+rules:
+- rule_id: 4.2.9.F.renal.hyperkalemia_k_binder_report_coverage
+  sut_section: 4.2.9.F
+  gate_b_sources:
+  - C004204
+  drug_names:
+  - sodyum polistiren sülfonat
+  - kalsiyum polistiren sülfonat
+  icd10_codes:
+  - N18
+  - E87.5
+  report_required: true
+  report_duration_months: 3
+  report_specialties:
+  - nefroloji
+  prescriber_specialties:
+  - nefroloji
+  - iç hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: RAAS inhibitörü veya MRA kullanan diyaliz almayan Evre 4/5 KBH + son 1 ay sodyum/kalsiyum polistiren sülfonat
+      kullanımına rağmen ≥1 şiddetli hiperkalemi atağı + sK+≥6,0 mmol/L; nefroloji uzmanı 3 ay raporu; nefroloji veya iç hastalıkları
+      reçetesi
+    message_tr: RAAS inhibitörünü veya MRA kullanmakta olan diyaliz almayan Evre 4 KBH veya Evre 5 KBH hastası olup ve son
+      1 ay içerisinde sodyum/kalsiyum polistiren sülfonat etkin maddeli ilaçları kullanmasına rağmen en az bir şiddetli hiperkalemi
+      atağı geçiren ve serum potasyum seviyesi 6,0 mmol/L ya da üzerinde olan hastalarda; bu durumların belirtildiği en az
+      bir nefroloji uzman hekimi tarafından düzenlenen 3 ay süreli sağlık kurulu raporuna istinaden nefroloji veya iç hastalıkları
+      uzman hekimleri tarafından reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.9.F).
+- rule_id: 4.2.9.F.renal.hyperkalemia_max_2_attacks_6_boxes_coverage
+  sut_section: 4.2.9.F
+  gate_b_sources:
+  - C004205
+  drug_names:
+  - sodyum polistiren sülfonat
+  - kalsiyum polistiren sülfonat
+  icd10_codes:
+  - N18
+  - E87.5
+  report_required: true
+  report_specialties:
+  - nefroloji
+  prescriber_specialties:
+  - nefroloji
+  - iç hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: bir yılda en fazla iki hiperkalemi atağı için toplam en fazla 6 kutu bedeli ödenir; ilaç kullanımı her atak
+      için yukarıdaki koşulların yeniden oluşması halinde mümkündür
+    message_tr: Bir yılda en fazla iki hiperkalemi atağı için toplam en fazla 6 kutu bedeli ödenir; ilacın kullanımı her atak
+      için yukarıda belirtilen koşulların yeniden oluşması halinde mümkündür (§4.2.9.F).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

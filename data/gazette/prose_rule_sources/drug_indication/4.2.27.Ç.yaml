@@ -1,0 +1,43 @@
+section_id: 4.2.27.Ç
+rules:
+- rule_id: 4.2.27.C.albumin_inpatient_3day_report
+  sut_section: 4.2.27.Ç
+  gate_b_sources:
+  - C006275
+  drug_names:
+  - human albumin
+  - albumin
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: yatarak tedavide temin edilemeyen; günlük doz/tedavi protokolü ve albümin ≤2.5 g/dl gösteren uzman raporuyla
+      en fazla 3 günlük dozda 'Yatan/Günübirlik Hasta' + başhekimlik onayıyla reçete; ödenen kurum alacağından §4.1.2 kapsamında
+      mahsup
+    message_tr: Yatarak tedavilerde Kurumla sözleşmeli resmi sağlık kurumunca temin edilememesi halinde, günlük doz ve tedavi
+      protokolü ile kan albümin düzeyinin 2.5 g/dl ve altında olduğunu gösteren uzman raporuna dayanılarak en fazla 3 günlük
+      dozda 'Yatan/Günübirlik Hasta' ibaresi ve başhekimlik onayıyla reçete düzenlenmesi kaydıyla karşılanır, ödenen tutar
+      ilgili kurumun alacağından §4.1.2 kapsamında mahsup edilir (§4.2.27.Ç).
+- rule_id: 4.2.27.human_albumin_inpatient_hypoalbuminemia
+  sut_section: 4.2.27.Ç
+  drug_names:
+  - human albumin
+  - human albümin
+  - albümin
+  - albumin
+  - albutein
+  icd10_ranges:
+  - E86
+  - R77
+  - K70
+  - N04
+  - R63
+  message_tr: Human albümin — yalnızca yatarak tedavi gören hastalarda albümin ≤2.5 g/dl için uzman hekim reçetesi; laboratuvar
+    sonuçları epikrizde belirtilir (§4.2.27.Ç).
+  gate_b_sources:
+  - C006274
+  inpatient_only: true
+source_note: Exported from drug_indication_prose.json (YAML source migration)

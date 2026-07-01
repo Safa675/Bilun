@@ -1,0 +1,107 @@
+section_id: 3.1.1
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.1.1.titubb_uts_registration_required
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002684
+  condition:
+    material_titubb_uts_registration_incomplete: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: TİTUBB/ÜTS kayıt/bildirimi tamamlanmamış tıbbi malzeme bedelleri Kurumca karşılanmaz (§3.1.1(2)).
+- rule_id: 3.1.1.ek3b_listed_material_excluded
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002689
+  condition:
+    material_listed_in_ek3b_excluded: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: EK-3/B Listesinde yer alan tıbbi malzemeler istisnalar hariç Kurumca karşılanmaz (§3.1.1(7)).
+- rule_id: 3.1.1.material_for_nonpayable_procedure
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002691
+  condition:
+    material_belonging_to_nonpayable_procedure: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Bedeli Kurumca karşılanmayan işleme ait tıbbi malzeme bedelleri Kurumca karşılanmaz (§3.1.1(9)).
+- rule_id: 3.1.1.ek3_price_kdv_handling
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002692
+  condition:
+    ek3_price_kdv_exception_misapplied: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: EK-3 listelerindeki tıbbi malzeme fiyatları KDV hariçtir; tanımlı istisna/muafiyetler dışında KDV ilave edilerek
+      ödenir (§3.1.1(10)).
+- rule_id: 3.1.1.abroad_sunucu_kesintiler_karsilanmaz
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002694
+  condition:
+    abroad_sunucu_isletme_hazine_kesinti_claimed: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Yurt dışındaki Kurumla sözleşmeli sunucularda kullanılan malzemelere ait işletme gideri, hazine ve SHÇEK kesintileri
+      Kurumca karşılanmaz (§3.1.1(12)).
+- rule_id: 3.1.1.material_sut_kodu_faturalama_kurali
+  sut_section: 3.1.1
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C002695
+  condition:
+    material_additional_billing_requires_sut_provision: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: EK-3 SUT kodlarının işlem bedeline ilave faturalanabilmesi için SUT/eklerinde ilave faturalanabileceğinin
+      belirtilmiş olması gerekir (§3.1.1(13)).
+- rule_id: 3.1.1.medula_tanimli_olmayan_malzeme_karsilanmaz
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002696
+  condition:
+    material_not_defined_in_medula_on_procedure_date: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: İşlem tarihinde MEDULA'da SUT kodu bazında tanımlı olmayan tıbbi malzeme bedelleri Kurumca karşılanmaz (§3.1.1(14)).
+- rule_id: 3.1.1.hatali_barkod_sut_eslesmesi_odeme
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002697
+  condition:
+    barcode_sut_mismatch_or_noncompliant_invoicing: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Barkod-SUT kodu eşleştirmesi hatalı veya malzeme kural/kriterlere uygunsuz fatura edildiyse bedel ödenmez,
+      ödendiyse yersiz ödeme olarak tahsil edilir (§3.1.1(15)).
+- rule_id: 3.1.1.sunucu_kisiti_isleme_yansir
+  sut_section: 3.1.1
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002698
+  condition:
+    material_sunucu_restriction_violated_on_procedure: true
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Malzemedeki sağlık hizmeti sunucusu kısıtı, malzemenin faturalandırıldığı işlem bedelinin ödemesinde de aranır;
+      uymayan işlemlerin bedelleri ödenmez (§3.1.1(16)).

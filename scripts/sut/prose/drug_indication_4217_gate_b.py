@@ -19,6 +19,11 @@ from scripts.sut.prose.drug_indication_gate_b import (  # noqa: E402
     _heuristic_inn,
     infer_defer_themes,
 )
+from scripts.sut.prose.gate_b_core import (  # noqa: E402
+    encoded_clause_ids_from_rules,
+    gate_b_summary_by_columns,
+    write_gate_b_outputs,
+)
 
 _SECTION_PREFIX = "4.2.17"
 _DEONTIC_MODALITIES = frozenset(
@@ -132,11 +137,7 @@ def export_4217_candidates(
 
 
 def _encoded_clause_ids_from_rules(rules: list[dict[str, Any]]) -> set[str]:
-    encoded: set[str] = set()
-    for rule in rules:
-        for clause_id in rule.get("gate_b_sources") or []:
-            encoded.add(str(clause_id))
-    return encoded
+    return encoded_clause_ids_from_rules(rules)
 
 
 def build_4217_manifest(
@@ -214,13 +215,7 @@ def build_4217_manifest(
 
 
 def gate_b_summary(enriched: pl.DataFrame) -> dict[str, int]:
-    if enriched.is_empty():
-        return {"total": 0}
-    summary: dict[str, int] = {"total": enriched.height}
-    for col in ("encode_tier", "encode_priority"):
-        for key, count in enriched.group_by(col).len().iter_rows():
-            summary[f"{col}:{key}"] = int(count)
-    return summary
+    return gate_b_summary_by_columns(enriched, ("encode_tier", "encode_priority"))
 
 
 def write_gate_b_artifacts(
@@ -248,12 +243,7 @@ def write_gate_b_artifacts(
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
     frame = export_4217_candidates(clauses_path, encoded_clause_ids=encoded)
-    frame.write_csv(corpus_csv)
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-    return frame, manifest
+    return write_gate_b_outputs(frame, manifest, corpus_csv=corpus_csv, manifest_path=manifest_path)
 
 
 if __name__ == "__main__":

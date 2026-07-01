@@ -1,0 +1,35 @@
+section_id: 4.2.28.E
+rules:
+- rule_id: 4.2.28.E.pcsk9_hofh_max_statin_ezetimibe
+  sut_section: 4.2.28.E
+  gate_b_sources:
+  - C006357
+  drug_names:
+  - evolocumab
+  - alirocumab
+  - pcs k9 inhibitörü
+  icd10_codes:
+  - E78.01
+  - E78.0
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  - endokrinoloji ve metabolizma hastalıkları
+  prescriber_specialties:
+  - kardiyoloji
+  - iç hastalıkları
+  - endokrinoloji ve metabolizma hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: yetişkin homozigot ailesel hiperkolesterolemi; ≥3 ay maks statin (80 mg atorvastatin/40 mg rosuvastatin)+ezetimib
+      10 mg rağmen LDL >190 mg/dL belgelenmişse; ≥1 uzman içeren 6 ay süreli sağlık kurulu raporuyla; 6 ay sonrası LDL ≥%30
+      düşerse 1 yıl süreli raporla devam; en fazla 1 hafta öncesi LDL rapor/reçete ekinde
+    message_tr: Diyete ek ≥3 ay maksimum statin (80 mg atorvastatin veya 40 mg rosuvastatin) ve maksimum ezetimib (10 mg)
+      kombinasyonuna rağmen LDL >190 mg/dl olan yetişkin homozigot ailesel hiperkolesterolemide, kardiyoloji/iç hastalıkları
+      ve/veya endokrinoloji ve metabolizma hastalıkları uzmanlarından en az birinin yer aldığı 6 ay süreli sağlık kurulu raporuyla
+      bu uzmanlarca reçete edilirse bedeli Kurumca karşılanır; 6 ay sonra LDL başlangıca göre en az %30 düşerse 1 yıl süreli
+      raporla devam edilir, en fazla 1 hafta öncesi LDL sonuçları ekte yer almalıdır (§4.2.28.E).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

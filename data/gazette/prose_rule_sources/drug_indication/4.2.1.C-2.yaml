@@ -1,0 +1,251 @@
+section_id: 4.2.1.C-2
+rules:
+- rule_id: 4.2.1.C.rituximab_maintenance_schedule
+  sut_section: 4.2.1.C-2
+  gate_b_sources:
+  - C003657
+  drug_names:
+  - rituximab
+  - mabthera
+  icd10_codes:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - romatoloji
+  action:
+    enforcement: yanıt alınan hastalarda 500 mg IV idame 12. ve 18. aylarda, sonra klinik değerlendirmeye göre 6 ayda bir
+    message_tr: Yanıt alınan hastalarda tedavinin devamında 500 mg IV idame infüzyonu 12. ve 18. aylarda ve daha sonra gerekirse
+      klinik değerlendirmeye göre 6 ayda bir uygulanabilir (§4.2.1.C-2).
+- rule_id: 4.2.1.C.rituximab_relapse_retreatment
+  sut_section: 4.2.1.C-2
+  gate_b_sources:
+  - C003658
+  drug_names:
+  - rituximab
+  - mabthera
+  icd10_codes:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - romatoloji
+  action:
+    enforcement: nüks gelişirse en erken 16 hafta olmak kaydıyla 1000 mg rituximab
+    message_tr: Nüks gelişmesi durumunda hastalara 16 haftadan daha erken olmamak kaydıyla 1000 mg rituximab daha verilebilir
+      (§4.2.1.C-2).
+- rule_id: 4.2.1.abatacept_ra_board
+  sut_section: 4.2.1.C-2
+  drug_names:
+  - abatasept
+  - abatacept
+  - orencia
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  message_tr: Abatasept — anti-TNF yetersiz/kontrendike aktif romatoid artritte sağlık kurulu raporu gerekir (§4.2.1.C-2).
+  gate_b_sources:
+  - C003645
+  prescriber_specialties:
+  - romatoloji
+  - klinik immunoloji
+  - fiziksel tıp
+- rule_id: 4.2.1.abatacept_ra_tnf_failure_board
+  sut_section: 4.2.1.C-2
+  drug_names:
+  - abatasept
+  - abatacept
+  - orencia
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  - çocuk sağlığı
+  - çocuk romatoloji
+  message_tr: Abatasept — anti-TNF yetersiz/kontrendike aktif romatoid artritte methotreksat ile kombine sağlık kurulu raporu
+    gerekir (§4.2.1.C-2).
+  gate_b_sources:
+  - C003645
+  prescriber_specialties:
+  - romatoloji
+  - klinik immunoloji
+  - fiziksel tıp
+- rule_id: 4.2.1.rituximab_gpa_mpa_nephrology
+  sut_section: 4.2.1.C-2
+  drug_names:
+  - rituksimab
+  - rituximab
+  - mabthera
+  icd10_ranges:
+  - M31
+  - M30
+  report_required: true
+  report_specialties:
+  - nefroloji
+  - romatoloji
+  - klinik immunoloji
+  message_tr: Rituksimab — siklofosfamid dirençli GPA/MPA tedavisinde nefroloji/immünoloji 1 ay süreli sağlık kurulu raporu
+    gerekir; 6 aydan önce tekrar kullanılamaz (§4.2.1.C-2).
+  gate_b_sources:
+  - C003651
+  prescriber_specialties:
+  - nefroloji
+  - romatoloji
+  - klinik immunoloji
+  report_duration_months: 1
+- rule_id: 4.2.1.rituximab_pemphigus_dermatology
+  sut_section: 4.2.1.C-2
+  drug_names:
+  - rituksimab
+  - rituximab
+  - mabthera
+  icd10_ranges:
+  - L10
+  report_required: true
+  report_specialties:
+  - dermatoloji
+  message_tr: Rituksimab — pemfigus vulgaris tedavisinde üçüncü basamak kurumda dermatoloji 6 ay süreli sağlık kurulu raporu;
+    PDAİ skoru ve yanıt değerlendirmesi belirtilir (§4.2.1.C-2).
+  gate_b_sources:
+  - C003659
+  prescriber_specialties:
+  - dermatoloji
+  report_duration_months: 6
+- rule_id: 4.2.1.rituximab_ra_6mo_renewal
+  sut_section: 4.2.1.C-2
+  drug_names:
+  - rituksimab
+  - rituximab
+  - mabthera
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Rituksimab — romatoid artritte her 6 aydan sonraki kullanım için tedaviye gerekliliğinin belirtildiği yeni sağlık
+    kurulu raporu gerekir (§4.2.1.C-2).
+  gate_b_sources:
+  - C003652
+  prescriber_specialties:
+  - romatoloji
+  - klinik immunoloji
+  - fiziksel tıp
+  report_duration_months: 6
+- rule_id: 4.2.1.rituximab_ra_das28_continuation
+  sut_section: 4.2.1.C-2
+  drug_names:
+  - rituksimab
+  - rituximab
+  - mabthera
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Rituksimab — romatoid artritte tedavi devamında DAS28 skorları 6 ay süreli sağlık kurulu raporunda belirtilmelidir
+    (§4.2.1.C-2).
+  gate_b_sources:
+  - C003646
+  prescriber_specialties:
+  - romatoloji
+  - klinik immunoloji
+  - fiziksel tıp
+  report_duration_months: 6
+- rule_id: 4.2.1.rituximab_ra_report_section_header
+  sut_section: 4.2.1.C-2
+  drug_names:
+  - rituksimab
+  - rituximab
+  - mabthera
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - romatoloji
+  message_tr: Rituksimab — romatoid artritte sağlık kurulu raporu romatoloji uzman hekiminin yer aldığı kurumda düzenlenmelidir
+    (§4.2.1.C-2).
+  gate_b_sources:
+  - C003647
+  prescriber_specialties:
+  - romatoloji
+- rule_id: 4.2.1.rituximab_ra_romatoloji_board
+  sut_section: 4.2.1.C-2
+  drug_names:
+  - rituksimab
+  - rituximab
+  - mabthera
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - romatoloji
+  message_tr: Rituksimab — romatoid artritte romatoloji kurumunda en az bir romatoloji uzmanının yer aldığı sağlık kurulu
+    raporu gerekir (§4.2.1.C-2).
+  gate_b_sources:
+  - C003647
+  - C003648
+  prescriber_specialties:
+  - romatoloji
+- rule_id: 4.2.1.rituximab_ra_romatoloji_institution_board
+  sut_section: 4.2.1.C-2
+  drug_names:
+  - rituksimab
+  - rituximab
+  - mabthera
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - romatoloji
+  message_tr: Rituksimab — romatoid artritte romatoloji uzman hekiminin bulunduğu kurumda en az bir romatoloji uzmanının yer
+    aldığı sağlık kurulu raporu gerekir (§4.2.1.C-2 a).
+  gate_b_sources:
+  - C003648
+  prescriber_specialties:
+  - romatoloji
+- rule_id: 4.2.1.rituximab_ra_university_tertiary_board
+  sut_section: 4.2.1.C-2
+  drug_names:
+  - rituksimab
+  - rituximab
+  - mabthera
+  icd10_ranges:
+  - M05
+  - M06
+  report_required: true
+  report_specialties:
+  - romatoloji
+  - klinik immunoloji
+  - fiziksel tıp
+  message_tr: Rituksimab — romatoid artritte üniversite/eğitim hastanesi üçüncü basamak kurumda romatoloji/klinik immunoloji/fiziksel
+    tıp uzmanının yer aldığı sağlık kurulu raporu gerekir (§4.2.1.C-2).
+  gate_b_sources:
+  - C003649
+  prescriber_specialties:
+  - romatoloji
+  - klinik immunoloji
+  - fiziksel tıp
+source_note: Exported from drug_indication_prose.json (YAML source migration)

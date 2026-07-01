@@ -1,0 +1,15 @@
+section_id: 3.3.33.A
+source_note: Exported from specialty_materials_prose.json (YAML source migration)
+rules:
+- rule_id: 3.3.33.A.(1).auditory_implant_third_step_facility
+  sut_section: 3.3.33.A
+  deontic: REGULATORY_ACTION
+  gate_b_sources:
+  - C003306
+  condition:
+    auditory_implant_non_third_step_facility: true
+  action:
+    material_outcome: review_required
+    severity: warning
+    message_tr: İşitsel implantlar yalnızca 3. basamak resmi sunucu veya vakıf protokollü özel hastanede uygulandığında Kurumca
+      karşılanır (§3.3.33.A(1)).

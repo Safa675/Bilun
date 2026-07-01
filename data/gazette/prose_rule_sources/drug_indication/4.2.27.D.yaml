@@ -1,0 +1,48 @@
+section_id: 4.2.27.D
+rules:
+- rule_id: 4.2.27.D.eltrombopag_discontinuation_criteria
+  sut_section: 4.2.27.D
+  gate_b_sources:
+  - C006286
+  - C006292
+  - C006293
+  - C006297
+  drug_names:
+  - eltrombopag
+  - revolade
+  icd10_codes:
+  - D69.3
+  - D69.6
+  report_required: true
+  report_specialties:
+  - hematoloji
+  action:
+    enforcement: 12. haftada etkin doza rağmen trombosit <20.000 ise ilaç kesilir; transfüzyonsuz ve >20.000 olanlara devam;
+      transfüzyon bağımlılığı veya hematolojik yanıt kaybında kesilir
+    message_tr: Tedaviye başlandıktan sonra etkin dozu almasına rağmen 12 haftada trombosit <20.000 ise ilaç kesilir; transfüzyon
+      ihtiyacı olmayan ve trombosit >20.000 olanlarda ilaca devam edilir; tedavi sırasında trombosit transfüzyonuna bağımlılık
+      veya hematolojik yanıt kaybı olursa ilaç kesilir (§4.2.27.D).
+- rule_id: 4.2.27.D.eltrombopag_dose_titration
+  sut_section: 4.2.27.D
+  gate_b_sources:
+  - C006287
+  - C006290
+  - C006294
+  - C006301
+  drug_names:
+  - eltrombopag
+  - revolade
+  icd10_codes:
+  - D69.3
+  - D69.6
+  report_required: true
+  report_specialties:
+  - hematoloji
+  action:
+    enforcement: 1-5 yaş başlangıç 25 mg/gün, 6-17/erişkin 50 mg/gün; 2 haftada trombosit <50.000 ise 75 mg; >150.000 ise
+      25 mg basamakla azaltım; 150-250 bin arası 12,5 mg/gün veya günaşırı 25 mg; her doz değişiminde trombosit sayısı raporda
+    message_tr: 1-5 yaş başlangıç günde 25 mg, 6-17 yaş ve erişkin günde 50 mg'dır; 2 haftalık tedaviye rağmen trombosit <50.000
+      ise 75 mg'a çıkarılabilir, >150.000 ise 25 mg basamaklarla azaltılır; trombosit >150.000-≤250.000 iken 25 mg kullananlarda
+      12,5 mg/gün veya günaşırı 25 mg kullanılabilir; her doz değişikliğinde trombosit sayısı raporun açıklama bölümünde belirtilir
+      (§4.2.27.D).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

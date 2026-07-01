@@ -1,0 +1,20 @@
+section_id: 4.2.66
+rules:
+- rule_id: 4.2.66.gyn.gonadotropin_fsh_lh_corifollitropin_dosecap_combo_nopay
+  sut_section: 4.2.66
+  gate_b_sources:
+  - C007150
+  drug_names:
+  - kombine fsh-lh preparatları
+  - koryogonadotropin alfa
+  prescriber_specialties:
+  - üroloji
+  pay: false
+  action:
+    enforcement: 'no-pay condition: kombine FSH-LH preparatları ile koryogonadotropin alfa etkin maddeli ilaçların birlikte
+      kullanımı halinde Kurumca bedeli ödenmez; kombine FSH-LH en fazla 750 IU/hafta, koryogonadotropin alfa en fazla 500
+      mcg/hafta dozda kullanılabilir; üroloji uzmanınca reçete edilmesi halinde bedeli ödenir'
+    message_tr: Kombine FSH-LH preparatları ile koryogonadotropin alfa etkin maddeli ilaçların birlikte kullanımı halinde
+      Kurumca bedeli ödenmez. Kombine FSH-LH preparatları en fazla 750 IU/hafta dozda, koryogonadotropin alfa etkin maddeli
+      ilaçlar en fazla 500 mcg/hafta dozda kullanılabilir (§4.2.66).
+source_note: Exported from drug_indication_prose.json (YAML source migration)

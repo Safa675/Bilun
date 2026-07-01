@@ -1,0 +1,192 @@
+section_id: 4.2.1.C-9
+rules:
+- rule_id: 4.2.1.C.psoriasis_tertiary_dermatology_6mo_pasi_c9
+  sut_section: 4.2.1.C-9
+  gate_b_sources:
+  - C003854
+  drug_names:
+  - biyolojik ajan
+  - ustekinumab
+  - sekukinumab
+  - ipekizumab
+  icd10_codes:
+  - L40
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - dermatoloji
+  prescriber_specialties:
+  - dermatoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basamakta dermatoloji uzmanının yer aldığı 6 ay süreli rapor + dermatoloji reçetesi; PASI her raporda;
+      cevap her raporda belirtilir
+    message_tr: Üçüncü basamakta dermatoloji uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporuna dayanılarak dermatoloji
+      uzmanlarınca reçete edilmesi halinde bedelleri Kurumca karşılanır; raporda PASI değeri ve tedaviye yanıt her raporda
+      belirtilir (§4.2.1.C-9).
+- rule_id: 4.2.1.C.rheum_pmr_6mo_coverage_c9
+  sut_section: 4.2.1.C-9
+  gate_b_sources:
+  - C003858
+  drug_names:
+  - anti-tnf
+  - biyolojik ajan
+  - ustekinumab
+  - sekukinumab
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - romatoloji
+  - fizik tedavi ve rehabilitasyon
+  prescriber_specialties:
+  - romatoloji
+  - fizik tedavi ve rehabilitasyon
+  condition:
+    coverage_note: true
+  action:
+    enforcement: romatoloji veya fizik tedavi/rehabilitasyon uzmanının yer aldığı 6 ay süreli raporla reçete edilirse ödenir
+    message_tr: Romatoloji veya fizik tedavi ve rehabilitasyon uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporuna
+      dayanılarak ilgili uzmanlarca reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.1.C-9).
+- rule_id: 4.2.1.C.start_therapy_finding_coverage_c9
+  sut_section: 4.2.1.C-9
+  gate_b_sources:
+  - C003848
+  drug_names:
+  - anti-tnf
+  - biyolojik ajan
+  - ustekinumab
+  - sekukinumab
+  report_required: true
+  condition:
+    coverage_note: true
+  action:
+    enforcement: belirli bulgulardan en az biri sağlık kurulu raporunda belirtilerek tedaviye başlanılırsa ödenir
+    message_tr: İlgili bulgulardan en az birinin olduğu hastalarda bu durumların sağlık kurulu raporunda belirtilerek tedaviye
+      başlanılması halinde bedelleri Kurumca karşılanır (§4.2.1.C-9).
+- rule_id: 4.2.1.C.tertiary_immunology_6mo_internal_coverage_c9
+  sut_section: 4.2.1.C-9
+  gate_b_sources:
+  - C003850
+  drug_names:
+  - anti-tnf
+  - biyolojik ajan
+  - ustekinumab
+  - sekukinumab
+  report_required: true
+  report_duration_months: 6
+  report_specialties:
+  - romatoloji
+  - klinik immunoloji
+  - fiziksel tıp ve rehabilitasyon
+  - iç hastalıkları
+  prescriber_specialties:
+  - romatoloji
+  - klinik immunoloji
+  - fiziksel tıp ve rehabilitasyon
+  - iç hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basamakta klinik immunoloji/PMR uzmanı raporuyla 6 ay süreli; bu uzmanlarca veya iç hastalıklarınca
+      reçete; cevap her raporda; ≥6 ay ara verilirse başlangıç kriterleri yeniden aranır
+    message_tr: Tüm romatoloji uzmanları veya üçüncü basamakta klinik immunoloji/fiziksel tıp ve rehabilitasyon uzmanı raporuyla
+      6 ay süreli olarak bu uzmanlarca veya iç hastalıkları uzmanlarınca reçete edilirse ödenir; cevap her raporda belirtilir,
+      6 ay ve üzeri ara verilirse başlangıç kriterleri yeniden aranır (§4.2.1.C-9).
+- rule_id: 4.2.1.C.three_dermatologists_tertiary_report_c9
+  sut_section: 4.2.1.C-9
+  gate_b_sources:
+  - C003863
+  drug_names:
+  - biyolojik ajan
+  - ustekinumab
+  - sekukinumab
+  - ipekizumab
+  icd10_codes:
+  - L40
+  report_required: true
+  report_specialties:
+  - dermatoloji
+  prescriber_specialties:
+  - dermatoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: üçüncü basamakta üç dermatoloji uzmanı tarafından düzenlenen sağlık kurulu raporuna istinaden dermatoloji
+      uzmanınca reçete edilirse ödenir
+    message_tr: Üçüncü basamak sağlık hizmeti sunucularında üç dermatoloji uzmanı tarafından düzenlenen sağlık kurulu raporuna
+      istinaden dermatoloji uzmanınca reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.1.C-9).
+- rule_id: 4.2.1.sekukinumab_hs_16wk_continuation_c9
+  sut_section: 4.2.1.C-9
+  drug_names:
+  - sekukinumab
+  - secukinumab
+  - cosentyx
+  icd10_ranges:
+  - L73.2
+  report_required: true
+  report_specialties:
+  - dermatoloji
+  message_tr: Sekukinumab — hidradenitis suppurativada 16 haftalık değerlendirme sonrası devam kriterlerinin belirtildiği
+    en fazla 6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-9 b).
+  gate_b_sources:
+  - C003862
+  prescriber_specialties:
+  - dermatoloji
+  report_duration_months: 6
+- rule_id: 4.2.1.sekukinumab_hs_adalimumab_failure
+  sut_section: 4.2.1.C-9
+  drug_names:
+  - sekukinumab
+  - secukinumab
+  - cosentyx
+  icd10_ranges:
+  - L73.2
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Sekukinumab — hidradenitis suppurativada adalimumab yetersizliğinde 4 ay süreli sağlık kurulu raporu gerekir
+    (§4.2.1.C-9).
+  gate_b_sources:
+  - C003861
+  report_duration_months: 4
+- rule_id: 4.2.1.sekukinumab_psa_second_line
+  sut_section: 4.2.1.C-9
+  drug_names:
+  - sekukinumab
+  - secukinumab
+  - cosentyx
+  icd10_ranges:
+  - L40.5
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Sekukinumab — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte sağlık kurulu raporunda önceki tedavi yetersizliği
+    belirtilmelidir (§4.2.1.C-9).
+  gate_b_sources:
+  - C003856
+- rule_id: 4.2.1.sekukinumab_psoriasis_pasi_systemic_failure
+  sut_section: 4.2.1.C-9
+  drug_names:
+  - sekukinumab
+  - secukinumab
+  - cosentyx
+  icd10_ranges:
+  - L40
+  report_required: true
+  report_specialties:
+  - iç hastalıkları
+  - romatoloji
+  - fiziksel tıp
+  - klinik immunoloji
+  message_tr: Sekukinumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi
+    gerekir (§4.2.1.C-9).
+  gate_b_sources:
+  - C003852
+source_note: Exported from drug_indication_prose.json (YAML source migration)

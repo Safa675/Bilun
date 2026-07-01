@@ -1,0 +1,398 @@
+section_id: 4.2.24.B
+rules:
+- rule_id: 4.2.24.B.resp.copd_iks_laba_lama_failure_maintenance
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006162
+  drug_names:
+  - flutikazon furoat+umeklidinyum+vilanterol
+  - laba
+  - lama
+  - iks
+  icd10_codes:
+  - J44.0
+  - J44.1
+  - J44.9
+  report_required: true
+  report_specialties:
+  - göğüs hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'erişkin orta-ağır KOAH idame: ≥3 ay İKS+LABA veya LABA+LAMA yetersiz + sık atak (yılda ≥2 atak veya ≥1 yatarak)
+      + dispne (mMRC≥2 veya CAT≥10); durum uzman raporunda belirtilmeli'
+    message_tr: En az 3 ay süreyle inhale kortikosteroid (İKS) ve uzun etkili solunum yolu beta-agonistleri (LABA) ile tedavi
+      edildiği halde yeterli yanıt alınamayan, sık atak geçiren (yılda 2 ve üzeri atak veya 1 ve üzeri yatarak tedavi) ve
+      dispnesi olan (mMrc 2 ve üzeri veya CAT skoru 10 ve üzeri) orta-ağır Kronik Obstrüktif Akciğer Hastalığı (KOAH) olan
+      erişkin hastaların idame tedavisinde kullanılmaları ve bu durumların uzman hekim raporunda belirtilmesi halinde bedelleri
+      Kurumca karşılanır (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.copd_triple_combo_maintenance
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006180
+  drug_names:
+  - mono laba
+  - mono lama
+  - mono iks
+  - laba/lama/iks kombinasyonu
+  icd10_codes:
+  - J44.0
+  - J44.1
+  - J44.9
+  report_required: true
+  report_specialties:
+  - göğüs hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'erişkin orta-ağır KOAH idame: ≥3 ay İKS+LABA veya LABA+LAMA yetersiz + sık atak (yılda ≥2 atak veya ≥1 yatarak)
+      + dispne (mMRC≥2 veya CAT≥10); durum raporda belirtilmeli'
+    message_tr: Mono LABA/LAMA/İKS veya sabit doz LABA/LAMA/İKS kombinasyonlarıyla yapılacak üçlü kombinasyon tedavilerinde;
+      en az 3 ay süreyle İKS ve LABA veya LABA ve LAMA ile tedavi edildiği halde yeterli yanıt alınamayan, sık atak geçiren
+      (yılda 2 ve üzeri atak veya 1 ve üzeri yatarak tedavi) ve dispnesi olan (mMRC 2 ve üzeri veya CAT skoru 10 ve üzeri)
+      orta-ağır KOAH'lı erişkin hastaların idame tedavisinde kullanılmaları ve bu durumların uzman hekim raporunda belirtilmesi
+      halinde bedelleri Kurumca karşılanır (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.iks_one_per_prescription_coverage
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006177
+  drug_names:
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J44
+  - J45
+  condition:
+    coverage_note: true
+  action:
+    enforcement: aynı reçetede İKS mono veya sabit doz kombinasyonu içeren müstahzarlardan yalnızca bir müstahzarın bedeli
+      ödenir
+    message_tr: Aynı reçetede bulunan inhale kortikosteroidi (İKS) mono veya sabit doz kombinasyonu şeklinde içeren müstahzarlardan
+      yalnızca bir müstahzarın bedeli Kurumca karşılanır (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.laba_iks_with_lama_coverage
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006172
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti+inhale kortikosteroid
+  - laba+iks
+  - uzun etkili antikolinerjik
+  - lama
+  icd10_codes:
+  - J44
+  - J45
+  condition:
+    coverage_note: true
+  action:
+    enforcement: (LABA+İKS) ürünleri tek başına veya LAMA içeren ürünlerle birlikte reçete edilirse ödenir
+    message_tr: Uzun etkili solunum yolu beta-agonistini (LABA) ve inhale kortikosteroidi (İKS) kombine olarak içeren ürünlerin
+      (LABA+İKS) tek başına veya obstrüktif solunum yolu hastalıklarında kullanılan uzun etkili antikolinerjik maddeyi içeren
+      ürünler (LAMA) ile birlikte reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.laba_lama_iks_combination_nopay
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006163
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti
+  - laba
+  - uzun etkili antikolinerjik
+  - lama
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J44
+  - J45
+  pay: false
+  action:
+    enforcement: 'no-pay condition: ilaçların birbirleriyle veya LABA/LAMA/İKS ile kombine kullanımı'
+    message_tr: Birbirleri ile veya uzun etkili solunum yolu beta-agonistleri (LABA), obstrüktif solunum yolu hastalıklarında
+      kullanılan uzun etkili antikolinerjikler (LAMA) ve inhale kortikosteroidler (İKS) ile kombine olarak kullanılmaları
+      halinde bedelleri Kurumca karşılanmaz (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.laba_lama_iks_combinations_coverage
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006160
+  - C006167
+  drug_names:
+  - formeterol
+  - salmeterol
+  - arformoterol
+  - indakaterol
+  - glikopironyum
+  - tiotropium
+  - vilanterol+flutikazon
+  - vilanterol+umeklidinyum
+  - tiotropium+olodaterol
+  - beklometazon+formoterol+glikopronyum
+  - flutikazon furoat+umeklidinyum+vilanterol
+  icd10_codes:
+  - J44
+  - J45
+  report_required: true
+  report_specialties:
+  - göğüs hastalıkları
+  - göğüs cerrahisi
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  - kardiyoloji
+  prescriber_specialties:
+  - göğüs hastalıkları
+  - göğüs cerrahisi
+  - iç hastalıkları
+  - çocuk sağlığı ve hastalıkları
+  - kardiyoloji
+  - tüm hekimler
+  condition:
+    coverage_note: true
+  action:
+    enforcement: belirtilen etken maddeli ilaçlar göğüs hastalıkları/göğüs cerrahisi/iç hastalıkları/çocuk sağlığı/kardiyoloji
+      uzmanlarınca veya bu uzmanlardan birinin raporuyla tüm hekimlerce reçete edilirse ödenir
+    message_tr: Formeterol, salmeterol, arformoterol ve bunların inhaler kortikosteroidlerle kombinasyonları, indakaterol,
+      glikopironyum, indakaterol+glikopironyum, tiotropium, vilanterol+flutikazon, vilanterol+umeklidinyum, tiotropium+olodaterol,
+      beklometazon+formoterol+glikopronyum veya flutikazon furoat+umeklidinyum+vilanterol etken maddeli ilaçlar; göğüs hastalıkları,
+      göğüs cerrahisi, iç hastalıkları, çocuk sağlığı ve hastalıkları veya kardiyoloji uzman hekimleri tarafından veya bu
+      uzman hekimlerden biri tarafından düzenlenen uzman hekim raporuna dayanılarak tüm hekimlerce reçete edilmesi halinde
+      bedelleri Kurumca karşılanır (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.laba_lama_iks_mono_and_triple_maintenance
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006171
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti
+  - laba
+  - uzun etkili antikolinerjik
+  - lama
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J44
+  - J45
+  report_required: true
+  report_specialties:
+  - göğüs hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: LABA/LAMA/İKS mono ürünler tek başına veya birlikte reçete edilirse ödenir; (LABA+LAMA+İKS) mono veya sabit
+      doz üçlü kombinasyonlar ≥3 ay İKS+LABA yetersiz + sık atak + dispneli orta-ağır KOAH erişkin idame tedavisinde kullanılır
+      ve durum raporda belirtilirse ödenir
+    message_tr: Uzun etkili solunum yolu beta-agonistleri (LABA), obstrüktif solunum yolu hastalıklarında kullanılan uzun
+      etkili antikolinerjikler (LAMA) ve inhale kortikosteroidler (İKS) gruplarında mono olarak yer alan ürünlerin tek başına
+      veya birlikte reçete edilmesi halinde bedelleri Kurumca karşılanır. (LABA+LAMA+İKS) şeklinde mono ürünlerle veya sabit
+      doz kombinasyonlarla yapılacak üçlü kombinasyon tedavilerin; en az 3 ay süreyle inhale kortikosteroid (İKS) ve uzun
+      etkili solunum yolu beta-agonistleri (LABA) ile tedavi edildiği halde yeterli yanıt alınamayan, sık atak geçiren (yılda
+      2 ve üzeri atak veya 1 ve üzeri yatarak tedavi) ve dispnesi olan (mMrc 2 ve üzeri veya CAT skoru 10 ve üzeri) orta-ağır
+      kronik obstrüktif akciğer hastalığı (KOAH) olan erişkin hastaların idame tedavisinde kullanılmaları ve bu durumların
+      uzman hekim raporunda belirtilmesi halinde bedelleri Kurumca karşılanır (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.laba_lama_iks_otherwise_nopay
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006174
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti
+  - laba
+  - uzun etkili antikolinerjik
+  - lama
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J44
+  - J45
+  pay: false
+  action:
+    enforcement: 'no-pay condition: LABA/LAMA/İKS mono veya sabit doz kombinasyonu grubundaki ürünlerin diğer şekillerde reçete
+      edilmesi'
+    message_tr: Uzun etkili solunum yolu beta-agonistleri (LABA), obstrüktif solunum yolu hastalıklarında kullanılan uzun
+      etkili antikolinerjikler (LAMA) ve inhale kortikosteroidlerin (İKS) mono veya sabit doz kombinasyonu gruplarında yer
+      alan ürünlerin diğer şekillerde reçete edilmesi halinde bedelleri Kurumca karşılanmaz (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.laba_lama_with_iks_coverage
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006173
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti+uzun etkili antikolinerjik
+  - laba+lama
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J44
+  - J45
+  condition:
+    coverage_note: true
+  action:
+    enforcement: (LABA+LAMA) ürünleri tek başına veya İKS içeren ürünlerle birlikte reçete edilirse ödenir
+    message_tr: Uzun etkili solunum yolu beta-agonistini (LABA) ve obstrüktif solunum yolu hastalıklarında kullanılan uzun
+      etkili antikolinerjik maddeyi (LAMA) kombine olarak içeren ürünlerin (LABA+LAMA) tek başına veya inhale kortikosteroid
+      içeren ürünler (İKS) ile birlikte reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.laba_one_per_prescription_coverage
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006175
+  drug_names:
+  - uzun etkili solunum yolu beta-agonisti
+  - laba
+  icd10_codes:
+  - J44
+  - J45
+  condition:
+    coverage_note: true
+  action:
+    enforcement: aynı reçetede LABA mono veya sabit doz kombinasyonu içeren müstahzarlardan yalnızca bir müstahzarın bedeli
+      ödenir
+    message_tr: Aynı reçetede bulunan uzun etkili solunum yolu beta-agonistini (LABA) mono veya sabit doz kombinasyonu şeklinde
+      içeren müstahzarlardan yalnızca bir müstahzarın bedeli Kurumca karşılanır (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.lama_one_per_prescription_coverage
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006176
+  drug_names:
+  - uzun etkili antikolinerjik
+  - lama
+  icd10_codes:
+  - J44
+  - J45
+  condition:
+    coverage_note: true
+  action:
+    enforcement: aynı reçetede LAMA mono veya sabit doz kombinasyonu içeren müstahzarlardan yalnızca bir müstahzarın bedeli
+      ödenir
+    message_tr: Aynı reçetede bulunan obstrüktif solunum yolu hastalıklarında kullanılan uzun etkili antikolinerjikleri (LAMA)
+      mono veya sabit doz kombinasyonu şeklinde içeren müstahzarlardan yalnızca bir müstahzarın bedeli Kurumca karşılanır
+      (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.nebul_respiratory_drugs_coverage
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006182
+  drug_names:
+  - nebül formu solunum sistemi ilaçları
+  icd10_codes:
+  - J44.0
+  - J44.1
+  - J44.9
+  - J45
+  report_required: true
+  report_specialties:
+  - göğüs hastalıkları
+  - immünoloji
+  - immünoloji ve alerji
+  - alerji
+  - çocuk sağlığı ve hastalıkları
+  condition:
+    coverage_note: true
+  action:
+    enforcement: nebül formları (arformoterol hariç) Bakanlık onaylı endikasyonda tüm hekimlerce raporsuz en fazla 1 kutu;
+      devamı göğüs/immünoloji(-alerji)/alerji/çocuk uzman raporuyla diğer hekimlerce; aynı gruptan iki nebül kombine kullanılamaz
+    message_tr: Nebül formundaki solunum sistemi ilaçları (arformoterol hariç) Sağlık Bakanlığınca onaylı endikasyonlarında
+      kullanılması koşulu ile tüm hekimlerce raporsuz olarak en fazla bir kutu reçete edilmesi halinde, göğüs hastalıkları,
+      immünoloji, immünoloji ve alerji, alerji veya çocuk sağlığı ve hastalıkları uzman hekimlerin biri tarafından düzenlenen
+      uzman hekim raporu mevcut ise tedavinin devamı için diğer hekimlerce de reçete edilmesi halinde bedelleri Kurumca karşılanır;
+      aynı grupta yer alan etkin maddeleri içeren iki ayrı nebül formundaki ilaçlar kombine olarak kullanılamaz (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.saba_sama_inhale_exemption
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006178
+  drug_names:
+  - kısa etkili solunum yolu beta-agonisti
+  - saba
+  - kısa etkili antikolinerjik
+  - sama
+  - saba+sama
+  icd10_codes:
+  - J44
+  - J45
+  action:
+    enforcement: 'exemption: SABA veya SABA+SAMA inhale formları ile nebülizatörle uygulanan İKS, 4.2.24.B hükümlerinden istisnadır'
+    message_tr: Kısa etkili solunum yolu beta-agonistini (SABA) veya kısa etkili solunum yolu beta-agonistini (SABA) ve obstrüktif
+      solunum yolu hastalıklarında kullanılan kısa etkili antikolinerjik maddeyi (SAMA) kombine olarak içeren ürünler (SABA+SAMA)
+      ile nebülizatörle uygulanan inhale kortikosteroidler (İKS), inhale formları 4.2.24.B numaralı maddesinde yer alan hükümlerden
+      istisnadır (§4.2.24.B).
+- rule_id: 4.2.24.B.resp.theophylline_combination_prohibited
+  sut_section: 4.2.24.B
+  gate_b_sources:
+  - C006169
+  drug_names:
+  - teofilin
+  - uzun etkili solunum yolu beta-agonisti
+  - laba
+  - uzun etkili antikolinerjik
+  - lama
+  - inhale kortikosteroid
+  - iks
+  icd10_codes:
+  - J44
+  - J45
+  pay: false
+  action:
+    enforcement: 'prohibited: teofilinle kombine olarak kullanılamaz'
+    message_tr: Teofilinle kombine olarak kullanılamaz (§4.2.24.B).
+- rule_id: 4.2.24.copd_inhaler_prescriber
+  sut_section: 4.2.24.B
+  drug_names:
+  - formeterol
+  - salmeterol
+  - indakaterol
+  - tiotropium
+  - glikopironyum
+  - vilanterol
+  - umeklidinyum
+  - olodaterol
+  - beclometazon
+  - flutikazon
+  - budesonid
+  icd10_ranges:
+  - J44
+  - J45
+  - J46
+  message_tr: KOAH/astım inhale kombinasyonları — göğüs hastalıkları, göğüs cerrahisi, iç hastalıkları veya çocuk sağlığı
+    uzman hekim reçetesi gerekir (§4.2.24.B-1).
+  gate_b_sources:
+  - C006160
+  report_required: true
+  prescriber_specialties:
+  - göğüs hastalıkları
+  - göğüs cerrahisi
+  - alerji
+  - iç hastalıkları
+  - çocuk sağlığı
+- rule_id: 4.2.24.laba_lama_ics_triple_prior
+  sut_section: 4.2.24.B
+  drug_names:
+  - indakaterol
+  - glikopironyum
+  - flutikazon
+  - vilanterol
+  - umeklidinyum
+  - trelegy
+  - trimbow
+  icd10_ranges:
+  - J44
+  message_tr: LABA+LAMA+İKS üçlü kombinasyon — en az 3 ay İKS+LABA veya İKS+LAMA sonrası göğüs hastalıkları uzman sağlık kurulu
+    raporu gerekir (§4.2.24.B-4).
+  gate_b_sources:
+  - C006171
+  report_required: true
+  report_specialties:
+  - göğüs hastalıkları
+  - göğüs cerrahisi
+  - alerji
+  - iç hastalıkları
+  - çocuk sağlığı
+  report_duration_months: 3
+- rule_id: 4.2.24.laba_mono_invalid_prescription
+  sut_section: 4.2.24.B
+  drug_names:
+  - formeterol
+  - salmeterol
+  - indakaterol
+  - vilanterol
+  - tiotropium
+  - glikopironyum
+  - olodaterol
+  icd10_ranges:
+  - J44
+  - J45
+  - J46
+  message_tr: LABA/LAMA/İKS mono veya sabit doz dışı kombinasyon reçetesi — bedel karşılanmaz (§4.2.24.B-7).
+  gate_b_sources:
+  - C006174
+source_note: Exported from drug_indication_prose.json (YAML source migration)

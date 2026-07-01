@@ -1,0 +1,55 @@
+section_id: 4.2.35.B
+rules:
+- rule_id: 4.2.35.B.chronic_msk_fibromyalgia_specialists
+  sut_section: 4.2.35.B
+  gate_b_sources:
+  - C006703
+  icd10_codes:
+  - M79.7
+  - M79.0
+  report_required: true
+  report_specialties:
+  - romatoloji
+  - ortopedi
+  - fizik tedavi ve rehabilitasyon
+  - algoloji
+  prescriber_specialties:
+  - romatoloji
+  - ortopedi
+  - fizik tedavi ve rehabilitasyon
+  - algoloji
+  condition:
+    coverage_note: true
+  action:
+    enforcement: prospektüsünde kronik kas iskelet ağrısı ve/veya fibromiyalji endikasyonu olan ilaçlar romatoloji/ortopedi/fizik
+      tedavi/rehabilitasyon ve algoloji uzmanlarınca veya bu hekimlerden birinin raporuyla yine bu hekimlerce reçete edilebilir
+    message_tr: Prospektüsünde kronik kas iskelet ağrısı ve/veya fibromiyalji endikasyonu olan ilaçlar; romatoloji, ortopedi,
+      fizik tedavi ve rehabilitasyon ve algoloji uzmanları tarafından veya bu hekimlerden birinin düzenlediği uzman hekim
+      raporuna dayanılarak yine bu hekimlerce reçete edilebilir (§4.2.35.B).
+- rule_id: 4.2.35.pregabalin_fibromyalgia_board_6mo
+  sut_section: 4.2.35.B
+  drug_names:
+  - pregabalin
+  - lyrica
+  icd10_ranges:
+  - M79.7
+  - M79.1
+  report_required: true
+  message_tr: Pregabalin fibromiyalji — ikinci/üçüncü basamak sağlık kurulu raporu (en fazla 6 ay) ve romatoloji/ortopedi/fizik
+    tedavi/nöroloji/algoloji uzman reçetesi gerekir (§4.2.35.B).
+  gate_b_sources:
+  - C006705
+  report_specialties:
+  - romatoloji
+  - ortopedi
+  - fizik tedavi
+  - nöroloji
+  - algoloji
+  report_duration_months: 6
+  prescriber_specialties:
+  - romatoloji
+  - ortopedi
+  - fizik tedavi
+  - nöroloji
+  - algoloji
+source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -1,0 +1,29 @@
+section_id: 4.2.55
+rules:
+- rule_id: 4.2.55.ent.otosclerosis_cochlear_kbb_coverage
+  sut_section: 4.2.55
+  gate_b_sources:
+  - C007077
+  drug_names:
+  - sodyum florür
+  - sodyum florür + kalsiyum + etidronat
+  icd10_codes:
+  - H80.0
+  - H80.1
+  - H80.2
+  - H80.8
+  - H80.9
+  report_required: true
+  report_specialties:
+  - kulak burun boğaz
+  prescriber_specialties:
+  - kulak burun boğaz
+  condition:
+    coverage_note: true
+  action:
+    enforcement: 'koklear otoskleroz veya erken tanı almış/cerrahi tedavi için uygun olmayan diğer otoskleroz: üçüncü basamakta
+      kulak burun boğaz uzmanının raporuyla kulak burun boğaz uzmanlarınca reçete edilirse ödenir'
+    message_tr: Koklear otoskleroz veya erken tanı almış ve cerrahi tedavi için uygun olmayan diğer otoskleroz hastalarında
+      üçüncü basamak resmi sağlık hizmet sunucularında kulak burun boğaz uzman hekimi tarafından düzenlenen uzman hekim raporuna
+      dayanılarak kulak burun boğaz uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.55).
+source_note: Exported from drug_indication_prose.json (YAML source migration)
