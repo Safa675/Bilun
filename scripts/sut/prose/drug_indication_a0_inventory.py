@@ -25,11 +25,10 @@ from scripts.sut.prose.drug_indication_gate_b import (  # noqa: E402
 
 _DEFAULT_CLAUSES = _REPO / "data/gazette/sut_clauses.parquet"
 _DEFAULT_COVERAGE = _REPO / "data/gazette/sut_clause_coverage.parquet"
-_DEFAULT_MANIFEST = (
-    _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"
-)
+_DEFAULT_MANIFEST_DIR = _REPO / "data/gazette/prose_manifests"
 _DEFAULT_RULES = _REPO / "data/gazette/prose_rules/drug_indication_prose.json"
 _DEFAULT_GATE_B_CSV = _REPO / "data/gazette/prose_corpus/L4.2_drug_indication_4.2.14.C.csv"
+_DEFAULT_MANIFEST = _DEFAULT_MANIFEST_DIR / "L4.2_drug_indication_4.2.14.C_manifest.json"
 _DEFAULT_GAP_CSV = _REPO / "data/gazette/prose_corpus/L4.2_drug_indication_gap_refresh.csv"
 _DEFAULT_SUMMARY = _REPO / "data/gazette/prose_corpus/L4.2_drug_indication_a0_summary.json"
 
@@ -50,33 +49,15 @@ def _infer_encode_tier(text: str) -> str:
     return _encode_tier(text, inn)
 
 
+from scripts.sut.prose.manifest_index import (  # noqa: E402
+    load_all_drug_clause_ids,
+    manifest_clause_ids_and_tiers,
+)
+
+
 def _load_manifest_index(manifest_path: Path) -> tuple[set[str], dict[str, str]]:
-    if not manifest_path.is_file():
-        return set(), {}
-    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest_ids: set[str] = set()
-    tier_by_clause: dict[str, str] = {}
-
-    for trace in payload.get("clause_traces") or []:
-        clause_id = str(trace.get("clause_id") or "")
-        if not clause_id:
-            continue
-        manifest_ids.add(clause_id)
-        tier = str(trace.get("encode_tier") or "")
-        if tier:
-            tier_by_clause[clause_id] = tier
-
-    if not manifest_ids:
-        for key in (
-            "encoded_clause_ids",
-            "tier_a_pending_clause_ids",
-            "tier_b_pending_clause_ids",
-            "tier_c_deferred_clause_ids",
-        ):
-            for clause_id in payload.get(key) or []:
-                manifest_ids.add(str(clause_id))
-
-    return manifest_ids, tier_by_clause
+    ids, tiers = manifest_clause_ids_and_tiers(manifest_path)
+    return set(ids), tiers
 
 
 def _gate_b_tier_lookup(clauses_path: Path, rules_path: Path) -> dict[str, str]:
@@ -96,6 +77,12 @@ def _section_bucket(section_id: str) -> str:
     return "rest"
 
 
+def _load_all_drug_manifest_indices(manifest_dir: Path) -> tuple[set[str], dict[str, str]]:
+    """Union clause IDs and encode tiers from all §4.2 drug Gate B manifests."""
+    ids, tiers = load_all_drug_clause_ids(manifest_dir)
+    return set(ids), tiers
+
+
 def build_gap_refresh_frame(
     coverage_path: Path,
     *,
@@ -108,7 +95,7 @@ def build_gap_refresh_frame(
     if motor.is_empty():
         return pl.DataFrame()
 
-    manifest_ids, manifest_tiers = _load_manifest_index(manifest_path)
+    manifest_ids, manifest_tiers = _load_all_drug_manifest_indices(_DEFAULT_MANIFEST_DIR)
     gate_b_tiers = _gate_b_tier_lookup(clauses_path, rules_path)
 
     rows: list[dict[str, Any]] = []

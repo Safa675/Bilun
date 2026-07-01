@@ -55,22 +55,12 @@ def gate_b_4214c_clause_ids(
     return frozenset(frame["clause_id"].to_list())
 
 
+from scripts.sut.prose.manifest_index import traced_clause_ids
+
+
 def manifest_traced_clause_ids(manifest: dict[str, Any]) -> frozenset[str]:
     """Union of encoded + tier_C_deferred + emr_blocked (+ non_actionable when present)."""
-    traced: set[str] = set()
-    for key in (
-        "encoded_clause_ids",
-        "tier_c_deferred_clause_ids",
-        "emr_blocked_clause_ids",
-        "non_actionable_clause_ids",
-        "tier_a_pending_clause_ids",
-        "tier_b_pending_clause_ids",
-    ):
-        traced.update(str(cid) for cid in (manifest.get(key) or []))
-    traces = manifest.get("clause_traces")
-    if isinstance(traces, list):
-        traced.update(str(row.get("clause_id")) for row in traces if row.get("clause_id"))
-    return frozenset(traced)
+    return traced_clause_ids(manifest)
 
 
 def manifest_coverage_gap(
@@ -219,58 +209,36 @@ def repair_4214c_manifest(
         effective_date=effective_date,
     )
 
-    encoded = set(base["encoded_clause_ids"])
-    tier_a = set(base["tier_a_pending_clause_ids"])
-    tier_b = set(base["tier_b_pending_clause_ids"])
-    tier_c = set(base["tier_c_deferred_clause_ids"])
-    emr = set(existing.get("emr_blocked_clause_ids") or [])
-    non_actionable = set(existing.get("non_actionable_clause_ids") or [])
+    encoded = {cid for cid in base["encoded_clause_ids"] if cid in in_force_4214c_clause_ids(clauses_path)}
+    tier_a: set[str] = set()
+    tier_b: set[str] = set()
+    tier_c: set[str] = set()
 
     section_frame = load_4214c_clause_frame(clauses_path)
     in_force_ids = in_force_4214c_clause_ids(clauses_path)
     gate_b_by_id = {str(r["clause_id"]): r for r in gate_b_frame.iter_rows(named=True)}
 
-    for pending in (set(tier_a) | set(tier_b)):
-        if pending not in in_force_ids:
-            non_actionable.add(pending)
-    tier_a -= non_actionable
-    tier_b -= non_actionable
+    preserved_status: dict[str, str] = {}
+    for trace in existing.get("clause_traces") or []:
+        if not isinstance(trace, dict):
+            continue
+        clause_id = str(trace.get("clause_id") or "")
+        status = str(trace.get("manifest_status") or "")
+        if clause_id and status:
+            preserved_status[clause_id] = status
 
-    for row in section_frame.iter_rows(named=True):
-        clause_id = str(row["clause_id"])
+    emr = {cid for cid, st in preserved_status.items() if st == "emr_blocked" and cid in in_force_ids}
+    non_actionable = {
+        cid for cid, st in preserved_status.items() if st == "non_actionable" and cid in in_force_ids
+    }
+
+    for clause_id in sorted(in_force_ids):
         if clause_id in encoded:
             continue
-        if _is_non_actionable_row(row):
-            non_actionable.add(clause_id)
-            tier_c.discard(clause_id)
-            emr.discard(clause_id)
-        elif _is_emr_blocked_row(row):
-            emr.add(clause_id)
-            tier_c.discard(clause_id)
-        elif not row.get("is_in_force"):
-            non_actionable.add(clause_id)
-            tier_c.discard(clause_id)
-
-    tier_c -= emr
-    tier_c -= non_actionable
-    encoded -= emr
-    encoded -= non_actionable
-    non_actionable -= emr
-
-    in_force_ids = in_force_4214c_clause_ids(clauses_path)
-    for clause_id in list(tier_a | tier_b):
-        if clause_id in encoded:
+        if clause_id in emr or clause_id in non_actionable:
             continue
-        row = section_frame.filter(pl.col("clause_id") == clause_id).row(0, named=True)
-        if _is_emr_blocked_row(row):
-            emr.add(clause_id)
-        else:
+        if preserved_status.get(clause_id) == "tier_c_deferred":
             tier_c.add(clause_id)
-    tier_a.clear()
-    tier_b.clear()
-
-    for clause_id in in_force_ids:
-        if clause_id in encoded | tier_a | tier_b | tier_c | emr | non_actionable:
             continue
         row = section_frame.filter(pl.col("clause_id") == clause_id).row(0, named=True)
         if _is_emr_blocked_row(row):
@@ -279,6 +247,11 @@ def repair_4214c_manifest(
             non_actionable.add(clause_id)
         else:
             tier_c.add(clause_id)
+
+    encoded -= emr
+    encoded -= non_actionable
+    tier_c -= emr
+    tier_c -= non_actionable
 
     rules_by_clause: dict[str, list[str]] = {}
     for rule in rules:
@@ -353,12 +326,17 @@ def repair_4214c_manifest(
         ),
         "tier_c_manifest_note": (
             f"A1 repair — {len(tier_c)} tier-C deferred, {len(emr)} EMR-blocked, "
-            f"{len(non_actionable)} non-actionable; {section_total} in-force traces."
+            f"{len(non_actionable)} non-actionable; {section_total} in-force traces "
+            f"(lists synced from traces)."
         ),
     }
 
     gap = manifest_coverage_gap(manifest, clauses_path=clauses_path, in_force_only=True)
     manifest["a1_coverage_gap"] = gap
+
+    from scripts.sut.prose.manifest_reconcile import reconcile_manifest_payload
+
+    reconcile_manifest_payload(manifest, backfill=True)
 
     if not dry_run:
         manifest_path.parent.mkdir(parents=True, exist_ok=True)

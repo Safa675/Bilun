@@ -10,6 +10,7 @@ from typing import Any
 import pandas as pd
 
 from .classify import classify_clauses
+from .manifest_index import encoded_like_clause_ids, load_drug_bucket_clause_ids
 from .rule_registry import RULE_BY_ID, RULE_REGISTRY, CoverageStatus
 
 _IN_FORCE_ONLY = True
@@ -35,6 +36,9 @@ _DRUG_4219_MANIFEST = (
     / "data/gazette/prose_manifests/L4.2_drug_indication_4219_manifest.json"
 )
 _MANIFEST_DIR = Path(__file__).resolve().parents[3] / "data/gazette/prose_manifests"
+_DRUG_INDICATION_RULES_JSON = (
+    Path(__file__).resolve().parents[3] / "data/gazette/prose_rules/drug_indication_prose.json"
+)
 _PAYMENT_METHOD_22_MANIFEST = "L2.2_payment_method_encoded_manifest.json"
 _SESSION_PRICING_22_MANIFEST = "L2.2_session_pricing_2_2_2_B_encoded_manifest.json"
 _DEFINITIONS_2_6_MANIFEST = "L2.6_definitions_manifest.json"
@@ -59,10 +63,9 @@ _WAVE2_MANIFESTS: dict[str, str] = {
 _PROSE_MANIFESTS: dict[str, str] = {
     "material_bundling_prose": "L1.4_material_bundling_encoded_manifest.json",
     "specialty_materials_prose": "L4.4_specialty_prose_encoded_manifest.json",
+    "dental_2_4_1": "dental_2_4_1_manifest.json",
+    "gap_closing_misc": "gap_closing_misc_manifest.json",
 }
-_MANIFEST_CLAUSE_ID_KEYS = frozenset({"gate_b_sources_encoded", "encoded_clause_ids"})
-_EXCLUDED_MANIFEST_CLAUSE_LIST_SUFFIXES = ("_deferred_clause_ids", "_pending_clause_ids")
-
 
 def _optional_str(value: object) -> str | None:
     if value is None:
@@ -99,36 +102,42 @@ def _load_encoded_clause_ids(manifest_name: str) -> frozenset[str]:
 
 
 def _manifest_clause_ids_from_payload(payload: dict[str, Any]) -> frozenset[str]:
-    ids: set[str] = set()
-    encoded = payload.get("encoded_clause_ids")
-    if isinstance(encoded, list):
-        ids.update(str(clause_id) for clause_id in encoded)
-    for key, value in payload.items():
-        if not isinstance(value, list):
-            continue
-        if key.endswith(_EXCLUDED_MANIFEST_CLAUSE_LIST_SUFFIXES):
-            continue
-        if key in _MANIFEST_CLAUSE_ID_KEYS or key.endswith("_clause_ids"):
-            ids.update(str(clause_id) for clause_id in value)
-    return frozenset(ids)
+    return encoded_like_clause_ids(payload)
 
 
 def _load_drug_indication_emr_blocked_clause_ids() -> frozenset[str]:
-    """Clause IDs that are genuinely EMR-blocked (ECOG, progression, lab values).
+    """Clause IDs genuinely EMR-blocked across all §4.2 drug manifests."""
+    return load_drug_bucket_clause_ids(status="emr_blocked", manifest_dir=_MANIFEST_DIR)
 
-    These cannot be encoded from claim fields alone — they require clinical
-    assessment data. Loaded from the §4.2.14.C manifest's emr_blocked_clause_ids.
-    """
-    if not _ANTI_VEGF_MANIFEST.parent.joinpath(
-        "L4.2_drug_indication_4.2.14.C_manifest.json"
-    ).is_file():
+
+def _load_drug_indication_tier_c_deferred_clause_ids() -> frozenset[str]:
+    """Tier-C deferred clause IDs — honest deferral removes algorithmic gap."""
+    return load_drug_bucket_clause_ids(status="tier_c_deferred", manifest_dir=_MANIFEST_DIR)
+
+
+def _is_structural_gap_excluded(row: pd.Series) -> bool:
+    """Structural/nav rows without normative signal are not encode debt."""
+    clause_type = str(row.get("clause_type") or "")
+    deontic_modality = _optional_str(row.get("deontic_modality"))
+    if clause_type in {"chapter", "section_heading", "amendment"} and not deontic_modality:
+        return True
+    is_heading = row.get("is_heading")
+    if is_heading is True and not deontic_modality:
+        return True
+    return False
+
+
+def _load_gate_b_sources_from_rules_json(path: Path) -> frozenset[str]:
+    if not path.is_file():
         return frozenset()
-    payload = json.loads(
-        _ANTI_VEGF_MANIFEST.parent.joinpath(
-            "L4.2_drug_indication_4.2.14.C_manifest.json"
-        ).read_text(encoding="utf-8")
-    )
-    return frozenset(str(c) for c in (payload.get("emr_blocked_clause_ids") or []))
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return frozenset()
+    ids: set[str] = set()
+    for rule in payload.get("rules") or []:
+        ids.update(str(c) for c in (rule.get("gate_b_sources") or []) if c)
+    return frozenset(ids)
 
 
 def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
@@ -163,6 +172,8 @@ def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
         "L4.2_drug_indication_4206_manifest.json",
         "L4.2_drug_indication_4209_4227_manifest.json",
         "L4.2_drug_indication_4201_manifest.json",
+        "L4.2_drug_indication_4215_manifest.json",
+        "L4.2_drug_indication_4224_manifest.json",
         # R6 deontic-wave manifests (encoded 2026-06-29): oncology §4.2.14,
         # rheumatology/biologics §4.2.1/13/33/34, small-mid §4.2 sub-sections,
         # and metabolic/mid §4.2 sub-sections.
@@ -181,6 +192,7 @@ def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
             encoded |= _manifest_clause_ids_from_payload(
                 json.loads(path.read_text(encoding="utf-8"))
             )
+    encoded |= _load_gate_b_sources_from_rules_json(_DRUG_INDICATION_RULES_JSON)
     return encoded
 
 
@@ -280,6 +292,7 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     encoded_clause_ids = _load_drug_indication_encoded_clause_ids()
     emr_blocked_ids = _load_drug_indication_emr_blocked_clause_ids()
+    tier_c_deferred_ids = _load_drug_indication_tier_c_deferred_clause_ids()
 
     for _, row in classified.iterrows():
         primary_rule_id = row.get("primary_rule_id")
@@ -335,6 +348,10 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
             and primary_status != "non_algorithmic"
         )
         clause_id = str(row.get("clause_id") or "")
+        if _is_structural_gap_excluded(row):
+            has_algorithmic_gap = False
+        elif clause_id in emr_blocked_ids or clause_id in tier_c_deferred_ids:
+            has_algorithmic_gap = False
         if primary_rule_id == "drug_indication_prose":
             has_rule_encoding = clause_id in encoded_clause_ids
         elif primary_rule_id in _WAVE2_MANIFESTS:

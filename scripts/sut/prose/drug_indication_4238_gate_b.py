@@ -251,10 +251,9 @@ def write_gate_b_artifacts(
 
     frame = export_4238_candidates(clauses_path, encoded_clause_ids=encoded)
     frame.write_csv(corpus_csv)
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    from scripts.sut.prose.manifest_reconcile import write_reconciled_manifest
+
+    write_reconciled_manifest(manifest_path, manifest)
     return frame, manifest
 
 
@@ -292,7 +291,11 @@ def _parse_args() -> argparse.Namespace:
 
 
 if __name__ == "__main__":
-    from scripts.sut.prose.drug_indication_4238_batch_rules import BATCH_A5_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A5_RULES = load_legacy_drug_batch(
+        "drug_indication_4238_batch_rules.py:BATCH_A5_RULES"
+    )
 
     args = _parse_args()
     repo = _PROJECT_ROOT
