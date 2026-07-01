@@ -393,6 +393,18 @@ function PartialEnginePanel({
           label={t("sections.ruleDatabase.coverage.partialEngineEncoded")}
           value={`${fmtNum(engine.encoded_clause_rows)} (${engine.encoded_clause_pct}%)`}
         />
+        {engine.deferred_gap_rows != null && engine.deferred_gap_rows > 0 && (
+          <Stat
+            label={t("sections.ruleDatabase.coverage.partialEngineDeferred")}
+            value={fmtNum(engine.deferred_gap_rows)}
+          />
+        )}
+        {engine.true_gap_rows != null && (
+          <Stat
+            label={t("sections.ruleDatabase.coverage.partialEngineTrueGaps")}
+            value={fmtNum(engine.true_gap_rows)}
+          />
+        )}
         <Stat
           label={t("sections.ruleDatabase.coverage.partialEngineRulesOnDisk")}
           value={fmtNum(engine.prose_rules_on_disk)}

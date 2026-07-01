@@ -582,6 +582,8 @@ export interface PartialEngineCoverage {
   prose_engine_status: string;
   classified_clause_rows: number;
   encoded_clause_rows: number;
+  deferred_gap_rows?: number;
+  true_gap_rows?: number;
   algorithmic_gap_rows: number;
   unencoded_gap_rows: number;
   encoded_clause_pct: number;

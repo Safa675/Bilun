@@ -5,8 +5,9 @@
  * /login. This is the UI-side layer of defense; the backend enforces the same
  * token on /api/* independently (see src/bilun/api/__init__.py).
  *
- * Auth is opt-in: if BILUN_SESSION_SECRET is unset, the gate is disabled so
- * local dev without .env keeps working. Production MUST set it.
+ * Auth fails closed when ``BILUN_SESSION_SECRET`` is unset unless
+ * ``BILUN_AUTH_OPTIONAL=1`` (local dev / pytest only). Production MUST set
+ * the secret and leave ``BILUN_AUTH_OPTIONAL`` unset.
  */
 
 import { NextResponse, type NextRequest } from "next/server";
@@ -30,9 +31,21 @@ export const config = {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // If auth is not configured, fail open (local dev).
+  // Fail closed unless explicitly opted out for local dev.
+  const authOptional = ["1", "true", "yes"].includes(
+    process.env.BILUN_AUTH_OPTIONAL?.trim().toLowerCase() ?? "",
+  );
   const secret = process.env.BILUN_SESSION_SECRET?.trim();
   if (!secret) {
+    if (authOptional) {
+      return NextResponse.next();
+    }
+    if (!PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = LOGIN_PATH;
+      loginUrl.search = "";
+      return NextResponse.redirect(loginUrl);
+    }
     return NextResponse.next();
   }
 

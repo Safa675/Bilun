@@ -71,6 +71,8 @@ const sections = {
       gapCompositionNonAlgorithmic: "Algoritmik olmayan hükümler (idari)",
       gapCompositionOptimizerExDrug: "İlaç hariç optimizasyon boşlukları",
       partialEngineEncoded: "Bildirimle kodlanmış hükümler",
+      partialEngineDeferred: "C kademesi / yapısal ertelenmiş",
+      partialEngineTrueGaps: "Gerçek algoritmik boşluklar",
       partialEngineGaps: "Kayıt kısmi boşlukları",
       partialEngineUnencodedGaps: "JSON kuralı olmayan boşluklar",
       partialEngineRulesOnDisk: "Diskteki JSON kuralları",

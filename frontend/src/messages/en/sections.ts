@@ -71,6 +71,8 @@ const sections = {
       gapCompositionNonAlgorithmic: "Non-algorithmic clauses (admin)",
       gapCompositionOptimizerExDrug: "Optimizer gaps excluding drug",
       partialEngineEncoded: "Manifest-encoded clauses",
+      partialEngineDeferred: "Tier C / structural deferred",
+      partialEngineTrueGaps: "True algorithmic gaps",
       partialEngineGaps: "Registry partial gaps",
       partialEngineUnencodedGaps: "Gaps without JSON rule",
       partialEngineRulesOnDisk: "JSON rules on disk",
