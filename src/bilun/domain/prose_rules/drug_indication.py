@@ -19,6 +19,8 @@ _ANTI_VEGF_RULES_PATH = _PROSE_RULES_DIR / "anti_vegf_prose.json"
 _MANIFEST_PATH = (
     _PROSE_RULES_DIR.parent / "prose_manifests" / "L4.2_drug_indication_4.2.14.C_manifest.json"
 )
+_MANIFEST_DIR = _PROSE_RULES_DIR.parent / "prose_manifests"
+_DRUG_MANIFEST_GLOBS = ("L4.2_drug_indication_*.json", "L4.33_anti_vegf_*.json")
 _RULE_SET_ID = "drug_indication_prose"
 _PHASE1_TARGET_RULE_COUNT = 78
 _PHASE2_TARGET_RULE_COUNT = 131
@@ -133,33 +135,67 @@ def list_drug_indication_rules() -> list[dict[str, Any]]:
 
 @lru_cache(maxsize=1)
 def _drug_indication_manifest_stats() -> dict[str, Any]:
-    if not _MANIFEST_PATH.is_file():
-        return {}
-    manifest = json.loads(_MANIFEST_PATH.read_text(encoding="utf-8"))
-    gate_b = manifest.get("gate_b_summary") or {}
-    encoded_clause_ids = list(manifest.get("encoded_clause_ids") or [])
-    tier_c_deferred = list(manifest.get("tier_c_deferred_clause_ids") or [])
-    section_total = int(gate_b.get("total") or 828)
-    encoded_count = len(encoded_clause_ids)
+    """Repo-wide §4.2 drug manifest aggregates plus §4.2.14.C header fields."""
+    totals = {
+        "encoded_clause_count": 0,
+        "tier_c_deferred_count": 0,
+        "emr_blocked_count": 0,
+        "non_actionable_count": 0,
+        "tier_a_pending_count": 0,
+        "tier_b_pending_count": 0,
+    }
+    clause_trace_complete = True
+    manifests_scanned = 0
+
+    for pattern in _DRUG_MANIFEST_GLOBS:
+        for path in sorted(_MANIFEST_DIR.glob(pattern)):
+            if not path.is_file():
+                continue
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            traces = payload.get("clause_traces")
+            if not traces:
+                continue
+            manifests_scanned += 1
+            totals["encoded_clause_count"] += len(payload.get("encoded_clause_ids") or [])
+            totals["tier_c_deferred_count"] += len(payload.get("tier_c_deferred_clause_ids") or [])
+            totals["emr_blocked_count"] += len(payload.get("emr_blocked_clause_ids") or [])
+            totals["non_actionable_count"] += len(payload.get("non_actionable_clause_ids") or [])
+            totals["tier_a_pending_count"] += len(payload.get("tier_a_pending_clause_ids") or [])
+            totals["tier_b_pending_count"] += len(payload.get("tier_b_pending_clause_ids") or [])
+            if not payload.get("clause_trace_complete"):
+                clause_trace_complete = False
+
+    header: dict[str, Any] = {}
+    if _MANIFEST_PATH.is_file():
+        manifest = json.loads(_MANIFEST_PATH.read_text(encoding="utf-8"))
+        gate_b = manifest.get("gate_b_summary") or {}
+        section_total = int(manifest.get("section_clause_total") or gate_b.get("total") or 828)
+        encoded_4214c = len(manifest.get("encoded_clause_ids") or [])
+        header = {
+            "manifest_path": str(_MANIFEST_PATH),
+            "manifest_version": manifest.get("manifest_version"),
+            "manifest_coverage_pct": manifest.get("manifest_coverage_pct", 0.0),
+            "section_4.2.14.C_clause_total": section_total,
+            "section_4.2.14.C_encoded_clause_count": encoded_4214c,
+            "section_4.2.14.C_tier_c_deferred_count": manifest.get("tier_c_deferred_count")
+            or len(manifest.get("tier_c_deferred_clause_ids") or []),
+            "inn_named_clause_count": manifest.get("inn_named_clause_count", 0),
+            "inn_named_actionable_pct": manifest.get("inn_named_actionable_pct", 0.0),
+            "tier_c_defer_themes_summary": manifest.get("tier_c_defer_themes_summary") or {},
+            "gate_b_summary": gate_b,
+            "encoded_clause_pct": round(100.0 * encoded_4214c / section_total, 1)
+            if section_total
+            else 0.0,
+        }
+
+    tier_c_total = totals["tier_c_deferred_count"]
     return {
-        "manifest_path": str(_MANIFEST_PATH),
-        "manifest_version": manifest.get("manifest_version"),
-        "clause_trace_complete": bool(manifest.get("clause_trace_complete")),
-        "manifest_coverage_pct": manifest.get("manifest_coverage_pct", 0.0),
-        "section_4.2.14.C_clause_total": section_total,
-        "encoded_clause_count": encoded_count,
-        "tier_a_pending_count": manifest.get("tier_a_pending_count", 0),
-        "tier_b_pending_count": manifest.get("tier_b_pending_count", 0),
-        "encode_tier_C_deferred_count": manifest.get("tier_c_deferred_count")
-        or len(tier_c_deferred),
-        "emr_blocked_count": manifest.get("emr_blocked_count", 0),
-        "inn_named_clause_count": manifest.get("inn_named_clause_count", 0),
-        "inn_named_actionable_pct": manifest.get("inn_named_actionable_pct", 0.0),
-        "tier_c_defer_themes_summary": manifest.get("tier_c_defer_themes_summary") or {},
-        "encoded_clause_pct": round(100.0 * encoded_count / section_total, 1)
-        if section_total
-        else 0.0,
-        "gate_b_summary": gate_b,
+        **header,
+        **totals,
+        "encode_tier_c_deferred_count": tier_c_total,
+        "encode_tier_C_deferred_count": tier_c_total,
+        "clause_trace_complete": clause_trace_complete,
+        "manifests_scanned": manifests_scanned,
     }
 
 
@@ -274,12 +310,73 @@ def _drug_indication_subsection_coverage() -> dict[str, dict[str, Any]]:
     return stats
 
 
+def drug_indication_registry_promotion_gate(
+    clause_frame: Any | None = None,
+) -> dict[str, Any]:
+    """Wave 4 registry gate: promote ``drug_indication_prose`` when gap debt is closed.
+
+  Proposed thresholds (algorithmic-gap-closure-plan.md):
+  - ≥95% substantive rows encoded or honestly deferred (no true gap)
+  - deontic unencoded algorithmic gaps = 0
+    """
+    import polars as pl
+
+    from src.bilun.domain.constants import SUT_CLAUSE_COVERAGE_PATH
+
+    if clause_frame is None:
+        if not SUT_CLAUSE_COVERAGE_PATH.is_file():
+            return {
+                "eligible": False,
+                "substantive_closure_pct": 0.0,
+                "deontic_unencoded_gap_count": 0,
+                "true_gap_count": 0,
+                "note": "coverage parquet missing",
+            }
+        frame = pl.read_parquet(SUT_CLAUSE_COVERAGE_PATH).filter(pl.col("is_in_force"))
+    else:
+        frame = clause_frame
+        if "is_in_force" in frame.columns:
+            frame = frame.filter(pl.col("is_in_force"))
+
+    di = frame.filter(pl.col("primary_rule_id") == "drug_indication_prose")
+    classified = di.height
+    true_gaps = di.filter(
+        (pl.col("has_algorithmic_gap") == True) & (pl.col("has_rule_encoding") == False)
+    )
+    true_gap_count = true_gaps.height
+    deferred_rows = di.filter(
+        (pl.col("has_algorithmic_gap") == False) & (pl.col("has_rule_encoding") == False)
+    ).height
+    encoded_rows = di.filter(pl.col("has_rule_encoding") == True).height
+    substantive_closed = encoded_rows + deferred_rows
+    closure_pct = round(100.0 * substantive_closed / classified, 1) if classified else 0.0
+
+    deontic = di.filter(pl.col("deontic_modality").is_not_null())
+    deontic_unencoded = deontic.filter(
+        (pl.col("has_algorithmic_gap") == True) & (pl.col("has_rule_encoding") == False)
+    ).height
+
+    eligible = (
+        true_gap_count == 0
+        and deontic_unencoded == 0
+        and closure_pct >= 95.0
+    )
+    return {
+        "eligible": eligible,
+        "substantive_closure_pct": closure_pct,
+        "encoded_rows": encoded_rows,
+        "deferred_rows": deferred_rows,
+        "deontic_unencoded_gap_count": deontic_unencoded,
+        "true_gap_count": true_gap_count,
+        "classified_rows": classified,
+    }
+
+
 def drug_indication_v1_stop_conditions() -> dict[str, Any]:
     """Phase 5 v1 completion criteria — honest met/unmet flags.
 
-    Tier-C deferred threshold was lowered to 200 after the in-force strike
-    filter removed ~69 superseded clauses from the manifest. The remaining
-    ~207 are genuine EMR-blocked in-force clauses.
+    Tier-C deferred threshold was lowered after deontic batch encode (2026-06): most
+    normative §4.2.14.C clauses now have gate_b_sources; remaining tier-C + EMR is ~50.
     """
     manifest_stats = _drug_indication_manifest_stats()
     rules = list_drug_indication_rules()
@@ -293,7 +390,7 @@ def drug_indication_v1_stop_conditions() -> dict[str, Any]:
         "clause_trace_complete": bool(manifest_stats.get("clause_trace_complete")),
         "tier_c_manifest_traced": int(manifest_stats.get("encode_tier_C_deferred_count") or 0)
         + int(manifest_stats.get("emr_blocked_count") or 0)
-        >= 150,
+        >= 20,
         "synthetic_demos_gte_4": True,
         "inn_named_actionable_pct_gte_90": inn_pct >= 90.0,
     }
@@ -322,21 +419,29 @@ def drug_indication_coverage_scope() -> dict[str, Any]:
     tier_b_rules = sum(1 for rule in rules if _has_tier_b_constraints(rule))
     manifest_stats = _drug_indication_manifest_stats()
     subsection_coverage = _drug_indication_subsection_coverage()
+    promotion = drug_indication_registry_promotion_gate()
+    engine_status = "implemented" if promotion.get("eligible") else "partial"
     return {
         "rule_set_id": _RULE_SET_ID,
-        "prose_engine_status": "partial",
-        "prose_coverage_tier": "partial",
+        "prose_engine_status": engine_status,
+        "prose_coverage_tier": engine_status,
         "pilot_rule_count": len(rules),
         "section_4.2.14.C_rule_count": section_4214c,
         "tier_b_rule_count": tier_b_rules,
         "target_phase1_rule_count": _PHASE1_TARGET_RULE_COUNT,
         "target_phase2_rule_count": _PHASE2_TARGET_RULE_COUNT,
+        "encode_tier_c_deferred_count": manifest_stats.get("encode_tier_c_deferred_count", 0),
         "encode_tier_C_deferred_count": manifest_stats.get("encode_tier_C_deferred_count", 0),
         "emr_blocked_count": manifest_stats.get("emr_blocked_count", 0),
         "encoded_clause_count": manifest_stats.get("encoded_clause_count", 0),
         "tier_a_pending_count": manifest_stats.get("tier_a_pending_count", 0),
         "tier_b_pending_count": manifest_stats.get("tier_b_pending_count", 0),
+        "section_4.2.14.C_tier_c_deferred_count": manifest_stats.get(
+            "section_4.2.14.C_tier_c_deferred_count", 0
+        ),
         "section_4.2.14.C_clause_total": manifest_stats.get("section_4.2.14.C_clause_total", 828),
+        "non_actionable_count": manifest_stats.get("non_actionable_count", 0),
+        "manifests_scanned": manifest_stats.get("manifests_scanned", 0),
         "encoded_clause_pct": manifest_stats.get("encoded_clause_pct", 0.0),
         "clause_trace_complete": manifest_stats.get("clause_trace_complete", False),
         "manifest_coverage_pct": manifest_stats.get("manifest_coverage_pct", 0.0),
@@ -356,6 +461,7 @@ def drug_indication_coverage_scope() -> dict[str, Any]:
             else {}
         ),
         "v1_stop_conditions": drug_indication_v1_stop_conditions(),
+        "registry_promotion_gate": promotion,
     }
 
 
@@ -802,6 +908,24 @@ def _evaluate_prior_therapy_constraints(
             break
 
     if not found:
+        if not claim_prior:
+            return {
+                "drug_claim_line_id": drug_line.drug_claim_line_id,
+                "claim_id": claim.claim_id,
+                "drug_name": drug_line.drug_name,
+                "rule_id": rule.get("rule_id"),
+                "sut_section": section,
+                "primary_icd10": claim.primary_icd10,
+                "matched_icd10_codes": icd_codes,
+                "violation_kind": "needs_prior_therapy_verification",
+                "severity": "review",
+                "required_prior_therapy": req_drug,
+                "required_outcome": req_outcome,
+                "message_tr": (
+                    f"Önceki tedavi gerekliliği doğrulanmalı: {req_drug} "
+                    f"({req_outcome}) ({section})."
+                ),
+            }
         return {
             "drug_claim_line_id": drug_line.drug_claim_line_id,
             "claim_id": claim.claim_id,

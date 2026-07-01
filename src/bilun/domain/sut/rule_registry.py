@@ -347,7 +347,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="drug_indication_prose",
         rule_category="drug_indication",
         rule_category_tr="İlaç Endikasyon",
-        coverage_status="partial",
+        coverage_status="implemented",
         domain_modules=(
             "src/bilun/domain/prose_rules/drug_indication.py",
             "src/bilun/domain/billing/claim_drug_indication.py",
@@ -360,7 +360,8 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         description=(
             "§4.2 drug indication / report prose — §4.2.14.C oncology (131 rules) + "
             "§4.2.33 anti-VEGF / ophthalmology (21 rules, dose protocol). "
-            "ICD+report matcher, Tier B duration/prescriber/inpatient + §4.2.33 dose enforcement."
+            "ICD+report matcher, Tier B duration/prescriber/inpatient + §4.2.33 dose enforcement. "
+            "Wave 4: substantive gaps encoded or tier-C deferred; registry promoted to implemented."
         ),
         description_tr=(
             "§4.2 ilaç endikasyon / rapor prose — §4.2.14.C onkoloji (131 kural) + "

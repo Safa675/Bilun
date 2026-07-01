@@ -216,12 +216,23 @@ def _prose_partial_engine_summary(
         if {"has_algorithmic_gap", "has_rule_encoding"}.issubset(set(scoped.columns))
         else gap_rows
     )
+    deferred_gap_rows = (
+        scoped.filter(
+            (pl.col("has_algorithmic_gap") == False)
+            & (pl.col("has_rule_encoding") == False)
+        ).height
+        if {"has_algorithmic_gap", "has_rule_encoding"}.issubset(set(scoped.columns))
+        else 0
+    )
+    true_gap_rows = unencoded_gap_rows
     return {
         "rule_id": rule_id,
         "registry_status": registry_status,
         "prose_engine_status": "partial" if registry_status == "partial" else "implemented",
         "classified_clause_rows": classified_rows,
         "encoded_clause_rows": encoded_rows,
+        "deferred_gap_rows": deferred_gap_rows,
+        "true_gap_rows": true_gap_rows,
         "algorithmic_gap_rows": gap_rows,
         "unencoded_gap_rows": unencoded_gap_rows,
         "encoded_clause_pct": round(100.0 * encoded_rows / classified_rows, 1)
@@ -462,11 +473,20 @@ def _specialty_materials_partial_engine_summary(clause_frame: pl.DataFrame) -> d
 
 
 def _gap_composition_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
-    """Wave 4 scope-closure footnote: optimizer gaps vs intentional partial/admin."""
+    """Wave 4 scope-closure footnote: true gaps vs registry-partial rows."""
+    has_cols = {"has_algorithmic_gap", "has_rule_encoding"}.issubset(set(clause_frame.columns))
     total_gaps = (
         clause_frame.filter(pl.col("has_algorithmic_gap") == True).height
         if "has_algorithmic_gap" in clause_frame.columns
         else 0
+    )
+    true_gaps = (
+        clause_frame.filter(
+            (pl.col("has_algorithmic_gap") == True)
+            & (pl.col("has_rule_encoding") == False)
+        ).height
+        if has_cols
+        else total_gaps
     )
     drug_gaps = (
         clause_frame.filter(
@@ -474,6 +494,15 @@ def _gap_composition_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
             & (pl.col("primary_rule_id") == "drug_indication_prose")
         ).height
         if total_gaps
+        else 0
+    )
+    drug_true_gaps = (
+        clause_frame.filter(
+            (pl.col("has_algorithmic_gap") == True)
+            & (pl.col("has_rule_encoding") == False)
+            & (pl.col("primary_rule_id") == "drug_indication_prose")
+        ).height
+        if has_cols
         else 0
     )
     non_algorithmic_rows = (
@@ -484,19 +513,23 @@ def _gap_composition_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
     drug_gap_pct = round(100.0 * drug_gaps / total_gaps, 1) if total_gaps else 0.0
     return {
         "total_algorithmic_gaps": total_gaps,
+        "total_true_gaps": true_gaps,
         "drug_indication_gap_rows": drug_gaps,
+        "drug_indication_true_gap_rows": drug_true_gaps,
         "drug_indication_gap_pct_of_gaps": drug_gap_pct,
         "optimizer_gaps_excluding_drug": max(total_gaps - drug_gaps, 0),
         "non_algorithmic_clause_rows": non_algorithmic_rows,
         "footnote_en": (
-            f"{drug_gap_pct:.1f}% of algorithmic gaps ({drug_gaps:,}/{total_gaps:,}) map to "
-            "drug_indication_prose — mostly Tier C deferred §4.2 endikasyon prose. "
+            f"True algorithmic gaps (unencoded): {true_gaps:,}. "
+            f"Registry-partial rows flagged: {total_gaps:,} "
+            f"({drug_gaps:,} drug_indication_prose). "
             f"{non_algorithmic_rows:,} clauses are intentionally non-algorithmic "
             "(§5 admin, provizyon, definitions, RG amendment headers)."
         ),
         "footnote_tr": (
-            f"Algoritmik boşlukların %{drug_gap_pct:.1f}'i ({drug_gaps:,}/{total_gaps:,}) "
-            "drug_indication_prose — çoğunlukla Tier C ertelenmiş §4.2 endikasyon prose. "
+            f"Gerçek algoritmik boşluklar (kodlanmamış): {true_gaps:,}. "
+            f"Kayıt-kısmi işaretli satırlar: {total_gaps:,} "
+            f"({drug_gaps:,} drug_indication_prose). "
             f"{non_algorithmic_rows:,} hüküm bilinçli non-algorithmic "
             "(§5 idari, provizyon, tanım, RG mülga/değişiklik satırları)."
         ),
@@ -504,10 +537,15 @@ def _gap_composition_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
 
 
 def _drug_indication_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
-    """Honest partial-engine rollup: registry partial vs manifest-encoded clauses."""
-    from src.bilun.domain.prose_rules.drug_indication import drug_indication_coverage_scope
+    """Honest drug-indication engine rollup: registry status vs manifest encoding."""
+    from src.bilun.domain.prose_rules.drug_indication import (
+        drug_indication_coverage_scope,
+        drug_indication_registry_promotion_gate,
+    )
+    from src.bilun.domain.sut.rule_registry import RULE_BY_ID
 
     scope = drug_indication_coverage_scope()
+    registry_status = RULE_BY_ID["drug_indication_prose"].coverage_status
     di = clause_frame.filter(pl.col("primary_rule_id") == "drug_indication_prose")
     classified_rows = di.height
     gap_rows = (
@@ -528,21 +566,33 @@ def _drug_indication_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[
         if {"has_algorithmic_gap", "has_rule_encoding"}.issubset(set(di.columns))
         else gap_rows
     )
+    deferred_gap_rows = (
+        di.filter(
+            (pl.col("has_algorithmic_gap") == False)
+            & (pl.col("has_rule_encoding") == False)
+        ).height
+        if {"has_algorithmic_gap", "has_rule_encoding"}.issubset(set(di.columns))
+        else 0
+    )
     emr_blocked_rows = (
         di.filter(pl.col("emr_blocked") == True).height
         if "emr_blocked" in di.columns
         else 0
     )
+    promotion = drug_indication_registry_promotion_gate(clause_frame)
 
     return {
         "rule_id": "drug_indication_prose",
-        "registry_status": "partial",
-        "prose_engine_status": scope.get("prose_engine_status", "partial"),
+        "registry_status": registry_status,
+        "prose_engine_status": scope.get("prose_engine_status", registry_status),
         "classified_clause_rows": classified_rows,
         "encoded_clause_rows": encoded_rows,
+        "deferred_gap_rows": deferred_gap_rows,
+        "true_gap_rows": unencoded_gap_rows,
         "algorithmic_gap_rows": gap_rows,
         "unencoded_gap_rows": unencoded_gap_rows,
         "emr_blocked_rows": emr_blocked_rows,
+        "registry_promotion_gate": promotion,
         "encoded_clause_pct": round(100.0 * encoded_rows / classified_rows, 1)
         if classified_rows
         else 0.0,
@@ -553,16 +603,15 @@ def _drug_indication_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[
         "tier_b_rule_count": scope.get("tier_b_rule_count", 0),
         "tier_a_pending_count": scope.get("tier_a_pending_count", 0),
         "tier_b_pending_count": scope.get("tier_b_pending_count", 0),
-        "encode_tier_c_deferred_count": scope.get("encode_tier_C_deferred_count", 0),
+        "encode_tier_c_deferred_count": scope.get("encode_tier_c_deferred_count", 0),
         "section_4.2.14.C_clause_total": scope.get("section_4.2.14.C_clause_total", 828),
         "clause_trace_complete": scope.get("clause_trace_complete", False),
         "subsection_coverage": scope.get("subsection_coverage") or {},
         "honesty_note": (
-            "Registry stays partial while §4.2 clauses classify here; "
-            f"{encoded_rows:,} rows have JSON/manifest encoding vs "
-            f"{unencoded_gap_rows:,} gap rows still unencoded. "
-            f"{emr_blocked_rows:,} of those gaps are EMR-blocked "
-            "(ECOG/progresyon/lab — klinik veri gerekir, claim ile encode edilemez)."
+            f"Registry is {registry_status}; "
+            f"{encoded_rows:,} rows encoded, {deferred_gap_rows:,} tier-C/structural deferred, "
+            f"{unencoded_gap_rows:,} true algorithmic gaps. "
+            f"{emr_blocked_rows:,} EMR-blocked (clinical data required)."
         ),
     }
 
