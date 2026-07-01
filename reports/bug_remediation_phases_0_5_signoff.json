@@ -1,0 +1,16 @@
+{
+  "completed_at": "2026-06-30",
+  "phases": ["0", "1", "2", "3", "4", "5"],
+  "pytest": "1692 passed, 29 skipped, 0 failed",
+  "compile_rules_check": "pass",
+  "manifest_parity": "ok",
+  "drug_indication_metrics": {
+    "encode_tier_c_deferred_count_repo_wide": 757,
+    "emr_blocked_count_repo_wide": 150,
+    "prose_engine_status": "implemented"
+  },
+  "phase_5": {
+    "absent_prior_therapies": "needs_prior_therapy_verification / review",
+    "wrong_prior_therapy": "prior_therapy_mismatch / error"
+  }
+}

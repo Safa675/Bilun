@@ -1,0 +1,10 @@
+{
+  "stats": {
+    "bucket_d_fragments": 60,
+    "generated_at": "2026-07-01"
+  },
+  "manifest": {
+    "manifests_touched": 14,
+    "clauses_updated": 60
+  }
+}

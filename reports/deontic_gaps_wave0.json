@@ -1,0 +1,620 @@
+[
+  {
+    "clause_id": "C004926",
+    "section_id": "4.2.14",
+    "deontic_modality": "PERMISSION",
+    "text": "(2) Kanser tedavisinde kullanılacak hormonlar ve hormon antagonistleri ile maligniteye bağlı metastatik olgularda kullanılan yardımcı ilaçlar, tedavi protokolünü gösterir uzman hekim raporuna dayanılarak 3 aylık dozlarda verilebilir. (SUT’ta bu ilaçlar için ayrıca bulunan düzenlemeler saklıdır.)"
+  },
+  {
+    "clause_id": "C004961",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "a. Nüks/metastatik meme kanseri tedavisi için birinci sıra aromataz inhibitörü tedavisini 6 aydan daha uzun süre kullandıktan sonra klinik ve/veya radyolojik hastalık progresyonu varlığında ribosiklib veya palbosiklib ile kombine olarak kullanılması halinde Kurumca bedelleri karşılanır. Daha önce fulvestrant tedavisi almış veya adjuvan aromataz inhibitörü tedavisinin ilk 12 ayı içinde relaps yapan veya metastatik hastalık için bir sıradan daha fazla aromataz inhibitörü almış hastalarda kullanılm"
+  },
+  {
+    "clause_id": "C004976",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "PERMISSION",
+    "text": "a. Performans durumu iyi olan (ECOG 0-1), 17 p delesyonu bulunmayan KLL hastalarının birinci basamak tedavisinde fludarabin ve siklofosfamid ile kombine olarak kullanılabilir."
+  },
+  {
+    "clause_id": "C004977",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "PERMISSION",
+    "text": "b. Relaps/Refrakter (Nükseden/Dirençli)tedavide; daha önce fludarabin ve alkilleyici ajanlarla tedavi sonrası progresyon gelişmiş, 65 yaş ve altı, ECOG performans statüsü 0-1 olan, 17p delesyonu bulunmayan KLL hastalarında fludarabin ve siklofosfamid ile kombine olarak 4 kür rituksimab kullanılması uygundur. İlk kürde en çok 375 mg/m² , diğer kürlerde 500 mg/m²  kullanılabilir; 4 kür sonunda en az kısmi yanıt alınması halinde, 2 kür daha verilerek tedavi en çok 6 küre tamamlanabilir."
+  },
+  {
+    "clause_id": "C005005",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "PROHIBITED",
+    "text": "c) Azasitidin ve decitabin birlikte kullanılamaz."
+  },
+  {
+    "clause_id": "C005015",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "PROHIBITED",
+    "text": "c) Azasitidin ve decitabin birlikte kullanılamaz."
+  },
+  {
+    "clause_id": "C005054",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "k) Temsirolimus; (Mülga:RG-11/08/2021-31565/5-b md. Yürürlük:19/08/2021)  metastatik renal hücreli karsinomların tedavisinde, aşağıdaki 6 kriterden en az üç tanesinin bulunduğu kötü prognoz grubu kabul edilen hastalarda; bu durumu belirtir en az iki tıbbi onkoloji uzmanının yer aldığı tedavi protokolünü gösterir en fazla 6 ay süreli sağlık kurulu raporuna dayanılarak tıbbi onkoloji uzman hekimlerince reçete edilir. Temsirolimus, sunitinib, sorafenib ve pazopanib metastatik renal hücreli karsinom"
+  },
+  {
+    "clause_id": "C005064",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "b. Temsirolimus, sunitinib, sorafenib ve pazopanib metastatik renal hücreli karsinomlu hastalarda ardışık ya da kombine olarak kullanılamaz. (Ek:RG-09/05/2024-32541/10-ç md. Yürürlük: 17/05/2024)Temsirolimus, sunitinib, sorafenib ve pazopanib etkin maddeli ilaçlar arasında sadece tolere edilemeyen majör yan etki (Grade 3-4 seviyesinde) olması ve bu durumun Sağlık Bakanlığı endikasyon dışı ilaç kullanım onayında belirtilmesi halinde ilaç değişimi ardışık kullanım olarak değerlendirilmez. (Ek: RG-"
+  },
+  {
+    "clause_id": "C005065",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "PERMISSION",
+    "text": "2) Karaciğer kanserinde; lokal tedavi yöntemlerinin uygun olmadığı ve fonksiyonel karaciğer rezervinin Child-Pugh-A evresinde olduğu klinik ve laboratuvar bulgularla raporda kanıtlanmış olan; lokal ileri veya metastatik hepatocellüler kanserli olgularda; daha önce en az bir kemoterapi tedavisi uygulanmış ve progresyon gelişmiş hastalarda, ikinci basamak tedavi seçeneği olarak kullanılabilir. Hastanın kemoterapiye engel olacak bir durumu var ise bu durum sağlık raporunda belirtilerek birinci basa"
+  },
+  {
+    "clause_id": "C005092",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "4) Önceden tedavi edilmiş foliküler lenfomalı (Derece 1- 3a) yetişkin hastaların tedavisinde, rituksimab (anti-CD20 antikoru) ile kombinasyon halinde, bu durumun belirtildiği hematoloji uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporuna dayanılarak yine bu hekimler tarafından reçete edilmesi halinde Kurumca bedeli karşılanır. Altıncı ayın sonunda yanıt değerlendirmesi yapılır, yanıt alınamayan hastalarda tedavi sonlandırılır. Yanıt alınan hastalarda bu durumun raporda belirtilmesi hal"
+  },
+  {
+    "clause_id": "C005098",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) (Değişik: RG- 26/09/2013- 28777/ 5-c md. Yürürlük: 04/10/2013)  Hastalığı VEGF (Vasküler Endotelyal Büyüme Faktörü) hedefli tedavi sırasında veya sonrasında progresyon gösteren metastatik renal hücreli karsinomalı hastalarda en az bir tıbbi onkoloji uzmanının bulunduğu tedavi protokolünü de gösterir 6 ay süreli sağlık kurulu raporuna dayanılarak tıbbi onkoloji uzman hekimlerince reçete edilmesi halinde bedeli ödenir."
+  },
+  {
+    "clause_id": "C005103",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "5) Daha önce relaps/metastatik meme kanseri için sadece bir seri kemoterapi ve bir seri non-steroidal aromataz inhibitörü kullanmış ve sonrasında progresyon göstermiş, HER 2/neu negatif, postmenopozal, semptomatik visseral hastalığı olmayan, hormon reseptörü kuvvetli pozitif (≥40%), hastalarda sadece exemestanla birlikte progresyona kadar kullanılması ve en az bir tıbbi onkoloji uzmanının bulunduğu tedavi protokolünü de gösterir en fazla 6 ay süreli sağlık kurulu raporuna dayanılarak tıbbi onkol"
+  },
+  {
+    "clause_id": "C005111",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "4) Temsirolimus, sunitinib, sorafenib ve pazopanib metastatik renal hücreli karsinomlu hastalarda ardışık ya da kombine olarak kullanılamaz. (Ek: RG-09/05/2024- 32541/10-g md. Yürürlük:17/05/2024) Temsirolimus, sunitinib, sorafenib ve pazopanib etkin maddeli ilaçlar arasında sadece tolere edilemeyen majör yan etki (Grade 3-4 seviyesinde) olması ve bu durumun Sağlık Bakanlığı endikasyon dışı ilaç kullanım onayında belirtilmesi halinde ilaç değişimi ardışık kullanım olarak değerlendirilmez. (Ek: R"
+  },
+  {
+    "clause_id": "C005134",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) Kabazitaksel; hormonal tedaviye ve sonrasında dosetaksel temelli kemoterapiye dirençli, ECOG performans skoru 0-1 olan, progresyonun Prostat Spesifik Antijen (PSA) ve görüntüleme yöntemleriyle gösterildiği metastatik prostat kanserli hastalarda prednizolon ile kombine olarak kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005136",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "a) Kastrasyona dirençli progresyonun PSA ve görüntüleme yöntemleriyle gösterildiği ve testosteron düzeyi kastrasyon seviyesinde olan (˂50 ng/dl), kemoterapinin kontrendike olduğu veya diabetes mellitus tanısı olan metastatik prostat kanserli hastalarda progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005137",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "b)  Hormonal tedaviye ve sonrasında dosetaksel temelli kemoterapiye dirençli, ECOG performans skoru 0-1 olan, progresyonun PSA ve görüntüleme yöntemleriyle gösterildiği metastatik prostat kanserli hastalarda kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005139",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "c) Bazal PSA değeri 2ng/ml üzerinde olan ve PSA ikiye katlanma zamanı 6 aydan daha kısa olan, testosteron düzeyi kastrasyon seviyesinde olan (˂50 ng/dl), daha önce sitotoksik kemoterapi almamış olan ve ECOG performans skoru 0-1 olan metastatik olmayan kastrasyon dirençli prostat kanserli hastalarda progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005140",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "ç) Visseral metastazı olmayan metastatik hormona duyarlı prostat kanserli (mHDPK) yetişkin erkeklerde androjen düşürme tedavisiyle birlikte progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005142",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "a) Kastrasyona dirençli progresyonun PSA ve görüntüleme yöntemleriyle gösterildiği ve testosteron düzeyi kastrasyon seviyesinde olan (˂50 ng/dl), kemoterapi için uygun olmayan metastatik prostat kanserli hastalarda progresyona kadar prednizolon ile kombine olarak kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005143",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "b) Hormonal tedaviye ve sonrasında dosetaksel temelli kemoterapiye dirençli, ECOG performans skoru 0-1 olan, progresyonun PSA ve görüntüleme yöntemleriyle gösterildiği metastatik prostat kanserli hastalarda prednizolon ile kombine olarak kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005145",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "c) Hormonal tedaviye duyarlı ancak kemoterapi için uygun olmayan ve aşağıdaki risk faktörlerinden en az ikisine sahip olan metastatik prostat kanserli hastalarda progresyona kadar prednizolon ile kombine olarak kullanılması halinde bedelleri Kurumca karşılanır;"
+  },
+  {
+    "clause_id": "C005150",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "ç) Sağlık Bakanlığınca onaylı endikasyonu olması halinde; hormonal tedaviye duyarlı Androjen Baskılama Tedavisi (ADT) ile birlikte yeni teşhis edilmiş aşağıdaki risk faktörlerinden en az ikisine sahip olan metastatik Hormona Duyarlı Prostat Kanserinin (mHDPK) tedavisinde progresyona kadar prednizolon ile kombine olarak kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005155",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "d) Sağlık Bakanlığınca onaylı endikasyonu olması halinde; yetişkin erkek hastalarda, Androjen Baskılama Tedavisi (ADT) ile birlikte yeni teşhis edilmiş Metastatik Hormona Duyarlı Prostat Kanserinin (mHDPK) tedavisinde progresyona ya da kabul edilemeyecek yan etki oluşana kadar prednizolon ile kombine olarak kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005156",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "e) Sağlık Bakanlığınca onaylı endikasyonu olması halinde; yetişkin erkek hastalarda, dosetaksel ve Androjen Baskılama Tedavisi (ADT) ile birlikte yüksek hacimli (viseral metastaz ya da en az 1 kemik metastazının vertebra ve pelvis dışı olan ≥4 kemik metastazı varlığı) hastalığı olan Metastatik Hormona Duyarlı Prostat Kanserinin (mHDPK) tedavisinde progresyona ya da kabul edilemeyecek yan etki oluşana kadar prednizolon ile kombine olarak kullanılması halinde bedelleri Kurumca karşılanır. Kombinas"
+  },
+  {
+    "clause_id": "C005158",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "f) Sağlık Bakanlığınca onaylı endikasyonu olması halinde; cerrahi uygun olmayan non metastatik yüksek riskli (Klinik nod pozitif hastalık (N1) veya nod negatif ise 3 risk faktöründen en az ikisinin olması (Tümör evresi klinik T3 ya da T4, Gleason skoru 8-10, Total PSA ≥ 40 ng/mL)) prostat kanserli hastalarda definitif radyoterapi ile birlikte androjen baskılama tedavisi (ADT) ile kombinasyon halinde en fazla 2 yıl süreyle kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005169",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "b) Visseral metastazı olmayan Metastatik Hormona Duyarlı Prostat Kanserli (mHDPK) yetişkin erkeklerin tedavisinde Androjen Deprivasyon Tedavisiyle (ADT) kombine kullanımı halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005183",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "c) Visseral metastazı olmayan hormon duyarlı metastatik prostat karsinomlu (mHDPK) yetişkin erkeklerin tedavisinde androjen deprivasyon tedavisiyle (ADT) kombine kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005224",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "5) Dabrafenib, trametinib, vemurafenib ve kobimetinib etken maddeli ilaçların ardışık olarak kullanılması halinde Kurumca bedelleri karşılanmaz. Dabrafenib, trametinib, vemurafenib ve kobimetinib etken maddeli ilaçların kombine kullanımı ise yukarıda tanımlandığı şekilde mümkün olup bunun dışında kombine kullanımları halinde Kurumca bedelleri karşılanmaz."
+  },
+  {
+    "clause_id": "C005234",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "a) Diğer terapilerden sonra refrakter veya kalıcı hastalığı olan veya diğer tedavileri tolere edemeyen Evre IA veya Evre IB (Ek: RG-25/03/2025-32852/9-c md. Yürürlük:04/04/2025) veya Evre IIA kutanöz T-hücreli lenfoma hastalarının kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır. (Mülga:RG-25/08/2022-31934/27-d md. Yürürlük:03/09/2022)"
+  },
+  {
+    "clause_id": "C005239",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) Anaplastik Lenfoma Kinaz (ALK)  veya Reseptör Tirozin Kinaz C-ROS 1 (ROS-1) pozitifliği FISH testi ile akredite laboratuvarda doğrulanmış ileri evre küçük hücreli dışı akciğer kanserli (KHDAK) hastaların birinci basamak tedavisinde monoterapi olarak progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005240",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) Anaplastik Lenfoma Kinaz (ALK) pozitifliği FISH testi ile akredite laboratuvarda doğrulanmış daha önce kemoterapi uygulanmış ve sonrasında progresyon gelişmiş metastatik küçük hücreli dışı akciğer kanserli (KHDAK) hastalarının ikinci basamak tedavisinde progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005242",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "4) En az bir tıbbi onkoloji uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Tedavinin devamı için düzenlenecek yeni sağlık kurulu raporunda hastalıkta progresyon olmadığının belirtilmesi gerekmektedir."
+  },
+  {
+    "clause_id": "C005245",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "MANDATORY",
+    "text": "1) Cerrahi, radyoterapi ve diğer lokal tedaviler sonrası progresyon göstermiş ve tekrar bu tedavilerin uygulanamadığının veya başlangıçta bu tedavilerin uygun olmadığının tespit edildiği progresif, semptomatik lokal ileri veya metastatik cildin bazal hücreli kanserinde; monoterapi olarak progresyona kadar kullanılır. (Ek:RG-25/03/2025-32852/9-ç md. Yürürlük: 04/04/2025) Daha öncesinde başka bir hedgehog yolu inhibitörü kullanılmamış olması gerekmektedir."
+  },
+  {
+    "clause_id": "C005249",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "PROHIBITED",
+    "text": "5) Progresyon sonrası monoterapi veya başka tedavilerle kombinasyon şeklinde kullanılamaz."
+  },
+  {
+    "clause_id": "C005270",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "3)  Kortikosteroidler veya diğer sistemik tedavilere yetersiz yanıt veren; derece 2-4 akut Graft versus Host hastalığı (aGvHD) olan veya orta-ağır kronik Graft versus Host hastalığı (kGvHD) olan 12 yaş ve üzerindeki hastaların tedavisine ruxolitinib başlanabilir. Tedaviye başlanan hastalarda; aGvHD olan hastaların tedavisinde 14. günde, kGvHD olan hastaların tedavisinde 6. ayda yapılan yanıt değerlendirilmesinde tam veya kısmi yanıt alınan hastalarda tedaviye devam edilmesi halinde bedelleri Kur"
+  },
+  {
+    "clause_id": "C005292",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "PROHIBITED",
+    "text": "ff) Trastuzumab emtansin; metastatik meme kanserinde daha önce trastuzumab ve bir taksan tedavisi almış ve hastalığı sonrasında progresyon göstermiş, HER-2/neu testi immunhistokimyasal olarak 3+ (+++) veya FISH/SISH/CISH pozitif olan hastalarda kurtarma tedavisinde tek ajan olarak progresyona kadar kullanılır. Progresyon sonrası tek ajan veya kombinasyon tedavisinin bir parçası olarak kullanılamaz. Daha önce herhangi bir sebeple pertuzumab kullanmış hastalarda endike değildir. Tıbbi onkoloji uzm"
+  },
+  {
+    "clause_id": "C005345",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "18 yaş üzerinde olup, bleomisin kullanımının kontrendike olduğu DLCO veya DLCO/SFT veya tomografi gibi tetkiklerle pulmoner toksisitenin belgelenmiş olduğu hastalarda doksorubisin, vinblastin ve dakarbazin ile kombine olarak tedaviye başlanması halinde bedelleri Kurumca karşılanır. İlacı 2 siklus alan hastalarda tedaviye yanıt değerlendirmesi yapılır. En az kısmi yanıt gelişen hastalarda bu durumu belirten en az bir hematoloji veya tıbbi onkoloji uzman hekiminin bulunduğu yeni bir sağlık kurulu "
+  },
+  {
+    "clause_id": "C005361",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "a) 5-florourasil/folinik asit veya 5-florourasil/folinik asit/irinotekan ile kombine olarak metastatik kolon veya metastatik rektum kanserinin birinci basamak tedavisinde kullanılması halinde bedeli Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005363",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "c) Daha önce adjuvant amaçlı kemoterapi almamış olan metastatik kolon veya metastatik rektum kanserli hastalarda, birinci basamak tedavi olarak okzaliplatin ile kapesitabin veya 5-florourasil/folinik asit ile kombine olarak kullanılması halinde bedeli Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005364",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "2) Malign glioma (DSÖ evre IV) – glioblastoma tedavisinde; histolojik olarak glioblastoma multiforme tanısı almış ve bir seri temozolomid sonrası nüks gelişmiş veya progresyon göstermiş hastalarda kemoterapi ile birlikte progresyona kadar kullanılması halinde bedeli Kurumca karşılanır. Bu tedavi ile progresyon gelişen hastalarda kullanılması halinde bedeli Kurumca karşılanmaz."
+  },
+  {
+    "clause_id": "C005373",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) Daha önce zoledronik asit kullanmamış, kırık veya bası riski yüksek kemiklere metastaz yapmış meme kanseri, hormon refrakter prostat kanseri veya küçük hücreli dışı akciğer kanseri hastalarında kemik progresyonuna kadar, en az bir tıbbi onkoloji uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporuna dayanılarak tıbbi onkoloji uzman hekimlerince reçetelenmesi halinde bedeli Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005396",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) Epidermal Büyüme Faktörü Reseptörü (EGFR) tirozin kinaz İnhibitörü tedavisi sırasında veya sonrasında progresyon gelişmiş, EGFR T790M mutasyon pozitifliği progresyon sonrası yapılan biyopsi ile tespit edilmiş olan, kemoradyoterapiye ve cerrahiye uygun olmayan lokal ileri evre veya Metastatik Küçük Hücreli Dışı Akciğer Kanseri (KHDAK) olan yetişkin hastaların tedavisinde progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005397",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "PROHIBITED",
+    "text": "3) Osimertinib kullanan hastalarda progresyon gelişmesi halinde diğer EGFR tirozin kinaz inhibitörleri kullanılamaz."
+  },
+  {
+    "clause_id": "C005398",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "4) En az bir tıbbi onkoloji uzmanının yer aldığı birinci basamak endikasyonunda en fazla 6 ay süreli, ikinci basamak endikasyonunda en fazla 3 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Rapor süresinin sonunda tedavinin devamı için hastalıkta progresyon olmadığı yeni düzenlenecek raporda belirtilmelidir."
+  },
+  {
+    "clause_id": "C005401",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) En az bir tıbbi onkoloji uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji veya göğüs hastalıkları uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Rapor süresinin sonunda tedavinin devamı için hastalıkta progresyon olmadığı yeni düzenlenecek raporda belirtilmelidir."
+  },
+  {
+    "clause_id": "C005404",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) Anaplastik Lenfoma Kinaz (ALK) pozitifliği FISH testi ile akredite laboratuvarda doğrulanmış ileri evre küçük hücreli dışı akciğer kanserli (KHDAK) hastaların birinci basamak tedavisinde monoterapi olarak progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005405",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) Daha önce krizotinib ile tedavi edilmiş ve sonrasında progresyon gelişmiş Anaplastik Lenfoma Kinaz (ALK) pozitifliği FISH testi ile akredite laboratuvarda doğrulanmış metastatik küçük hücreli dışı akciğer kanserli (KHDAK) hastalarının ikinci basamak tedavisinde progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005406",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "3) Seritinib tedavisi sonrasında progresyon gelişen hastaların tedavisinde ardışık ya da kombine olarak krizotinib               (Ek:RG-28/04/2021-31468/15-d md. Yürürlük:06/05/2021), brigatinib veya alektinib kullanılması halinde bedelleri Kurumca karşılanmaz. (Ek:RG- 09/05/2024-32541/10-l md. Yürürlük:17/05/2024) Alektinib, brigatinib ve seritinib etkin maddeli ilaçlar arasında sadece tolere edilemeyen majör yan etki (Grade 3-4 seviyesinde) olması ve bu durumun Sağlık Bakanlığı endikasyon dışı"
+  },
+  {
+    "clause_id": "C005407",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "4) En az bir tıbbi onkoloji uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Tedavinin devamı için düzenlenecek yeni sağlık kurulu raporunda hastalıkta progresyon olmadığının belirtilmesi gerekmektedir."
+  },
+  {
+    "clause_id": "C005409",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) Anaplastik Lenfoma Kinaz (ALK) pozitifliği (Değişik: RG-02/11/2024- 32710/15-a md. Yürürlük:09/11/2024)  standardize FISH veya RT-PCR veya yeni nesil dizileme yöntemleri ile tespit edilen rearanjman/füzyon varlığı veya immünhistokimyasal olarak saptanan ileri evre küçük hücreli dışı akciğer kanserli (KHDAK) hastaların birinci basamak tedavisinde monoterapi olarak progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005410",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) Daha önce krizotinib ile tedavi edilmiş ve sonrasında progresyon gelişmiş Anaplastik Lenfoma Kinaz (ALK) pozitifliği (Değişik: RG-02/11/2024-32710/15-a md. Yürürlük:09/11/2024)  standardize FISH veya RT-PCR veya yeni nesil dizileme yöntemleri ile tespit edilen rearanjman/füzyon varlığı veya immünhistokimyasal olarak saptanan metastatik küçük hücreli dışı akciğer kanserli (KHDAK) hastalarının ikinci basamak tedavisinde progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005411",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "3) Alektinib tedavisi sonrasında progresyon gelişen hastaların tedavisinde ardışık ya da kombine olarak krizotinib (Ek:RG-28/04/2021-31468/15-d md. Yürürlük:06/05/2021), brigatinib veya seritinib kullanılması halinde bedelleri Kurumca karşılanmaz. (Ek:RG-09/05/2024-32541/10-l md. Yürürlük:17/05/2024) Alektinib, brigatinib ve seritinib etkin maddeli ilaçlar arasında sadece tolere edilemeyen majör yan etki (Grade 3-4 seviyesinde) olması ve bu durumun Sağlık Bakanlığı endikasyon dışı ilaç kullanım "
+  },
+  {
+    "clause_id": "C005412",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "4) En az bir tıbbi onkoloji uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Tedavinin devamı için düzenlenecek yeni sağlık kurulu raporunda hastalıkta progresyon olmadığının belirtilmesi gerekmektedir."
+  },
+  {
+    "clause_id": "C005498",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) Kronik lenfositik lösemi hastalarında monoterapi veya rituksimab ile kombine olarak aşağıda tanımlanan durumlardan herhangi birinde progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005507",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "3) Bu durumların belirtildiği en az bir hematoloji uzmanının yer aldığı 3 ay süreli sağlık kurulu raporuna istinaden hematoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Rapor süresinin sonunda tedavinin devamı için yapılan değerlendirmede hastalığın stabil kaldığı veya en az kısmi yanıtın alınmış olduğu yeni düzenlenecek raporda belirtilmelidir."
+  },
+  {
+    "clause_id": "C005508",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "4) Akut miyeloid lösemi hastalarında komorbidite nedeni ile yoğun kemoterapi alamayan yeni tanılı olgularda hipometile ajan veya düşük doz sitarabin ile kombine olarak tedaviye başlanması halinde bedelleri Kurumca karşılanır. İlacı 2 siklus alan hastalarda tedaviye yanıt değerlendirmesi yapılır. En az kısmi yanıt gelişen hastalarda bu durumu belirten en az bir hematoloji uzman hekiminin bulunduğu yeni bir sağlık kurulu raporu düzenlenerek tedavi alabilir. Rapor süreleri 3 aylıktır."
+  },
+  {
+    "clause_id": "C005524",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005527",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "3) Waldenström Makrogloblunemisi (WM) tedavisinde: en az bir sıra tedavi sonrasında relaps ya da dirençli erişkin hastalarda ya da kemo-immunoterapi için uygun olmayan hastaların ilk sıra tedavisinde monoterapi veya rituksimabla birlikte kullanılması halinde bedeli Kurumca karşılanır. 4 kür sonunda tedavinin devamı için yapılan değerlendirmede en az bir kısmi yanıtın alınmış olduğu yeni düzenlenecek raporda belirtilmelidir."
+  },
+  {
+    "clause_id": "C005534",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) Hematoloji veya onkoloji uzman hekiminin yer aldığı, en fazla 6 ay süreli sağlık kurulu raporuna istinaden hematoloji veya onkoloji uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır. 6 ncı kür sonunda ve devam eden her 6 kür sonunda yapılan değerlendirmede hastalığın stabil kaldığı durumda progresyona kadar en fazla 6 ay süreli sağlık kurulu raporuna istinaden tedaviye devam edilebilir."
+  },
+  {
+    "clause_id": "C005550",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) 3 üncü kür sonunda en az minör yanıt, 6 ncı kür sonunda ve devam eden her 6 kür sonunda ise en az kısmi yanıt olduğunun belirtildiği, hematoloji veya onkoloji uzman hekiminin yer aldığı, en fazla 3 ay süreli sağlık kurulu raporuna istinaden hematoloji veya onkoloji uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005555",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "3) (Mülga:RG-16/06/2020-31157/9-f md. Yürürlük:24/06/2020)  en az bir hematoloji uzmanının yer aldığı en fazla 3 ay süreli sağlık kurulu raporuna istinaden hematoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Sağlık kurulu raporu ekinde tetkik belgelerinin yer alması gerekmektedir. Rapor süresinin sonunda tedavinin devamı için yapılan değerlendirmede hastalığın stabil kaldığı veya en az kısmi yanıtın alınmış olduğu yeni düzenlenecek raporda belirtilmelidir."
+  },
+  {
+    "clause_id": "C005560",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) Orta veya yüksek riskli metastatik berrak hücreli renal kanser hastalarının birinci basamak tedavisinde monoterapi olarak progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005563",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "4) En az bir tıbbi onkoloji uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Tedavinin devamı için düzenlenecek yeni sağlık kurulu raporunda hastalıkta progresyon olmadığı belirtilmelidir."
+  },
+  {
+    "clause_id": "C005567",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "a) Nüks/metastatik meme kanseri için daha önce hiçbir endokrin tedavi almamış veya adjuvan tedavinin tamamlanmasından 12 ay sonra nüks/metastaz gelişmiş hastalarda letrozol ile kombine olarak kullanılması halinde Kurumca bedelleri karşılanır."
+  },
+  {
+    "clause_id": "C005594",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "a) FLT-3 mutasyonu pozitif akut miyeloblastik lösemi tanısı konulmuş olan ve yoğun kemoterapiye (standart doz 3+7 remisyon indüksiyonu ve yüksek doz ARA-C ile konsolidasyon tedavisi) uygun hastalarda remisyon indüksiyon tedavisi ve konsolidasyon tedavisi ile kombine olarak kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005604",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) Yalnızca SC formu; daha önce bir proteazom inhibitörü ve lenalidomid içeren ve lenalidomide direnç gösteren veya daha önce lenalidomid ve bir proteazom inhibitörü içeren en az iki seri tedaviyi uygun dozda ve yeterli sürede kullanmış olmasına rağmen progresyon gelişen multipl miyelomlu yetişkin hastaların tedavisinde pomalidomid ve deksametazon ile kombine kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005605",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "3) Üçüncü kür sonunda en az minör yanıt, altıncı kür sonunda ve devam eden her 6 kür sonunda ise en az kısmi yanıt olduğunun belirtildiği, hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı, en fazla 3 ay süreli sağlık kurulu raporuna istinaden hematoloji veya tıbbi onkoloji uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005610",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "ggg) Vinflunin; Platin bazlı kemoterapi sonrası progresyon gösteren, ECOG performans skoru 0-1 olan ileri evre metastatik ürotelyal kanserli hastalarda en az bir tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005612",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) Anaplastik Lenfoma Kinaz (ALK) pozitifliği FISH testi ile (Değişik:RG-19/10/2023-32344/9-e md. Yürürlük:27/10/2023)  standardize FISH veya RT-PCR veya yeni nesil dizileme yöntemleri ile tespit edilen rearanjman/füzyon varlığı veya immünhistokimyasal olarak saptanan, (Ek:RG-25/08/2022-31934/27-e md. Yürürlük: 03/09/2022) monoterapi olarak daha önce bir ALK (anaplastiklenfomakinaz) inhibitörü ile tedavi edilmemiş veya daha önce krizotinib, alektinib (Ek:RG-28/04/2021-31468/15-e md. Yürürlük:06/"
+  },
+  {
+    "clause_id": "C005613",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) En az bir tıbbi onkoloji uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Tedavinin devamı için düzenlenecek yeni sağlık kurulu raporunda hastalıkta progresyon olmadığının belirtilmesi gerekmektedir."
+  },
+  {
+    "clause_id": "C005617",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) (Değişik:RG-16/03/2023-32134/24-d md. Yürürlük:24/03/2023)  Anaplastik Lenfoma Kinaz (ALK) pozitifliği, standardize FISH veya RT-PCR veya yeni nesil dizileme yöntemleri ile tespit edilen rearanjman/füzyon varlığı veya immünhistokimyasal olarak saptanan ileri evre küçük hücreli dışı akciğer kanserli (KHDAK) hastaların birinci basamak tedavisinde monoterapi olarak progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005618",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) Daha önce krizotinib ile tedavi edilmiş ve sonrasında progresyon gelişmiş (Değişik:RG-16/03/2023-32134/24-d md. Yürürlük:24/03/2023)  Anaplastik Lenfoma Kinaz (ALK) pozitifliği, standardize FISH veya RT-PCR veya yeni nesil dizileme yöntemleri ile tespit edilen rearanjman/füzyon varlığı veya immünhistokimyasal olarak saptanan metastatik küçük hücreli dışı akciğer kanserli (KHDAK) hastalarının ikinci basamak tedavisinde progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005620",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "4) En az bir tıbbi onkoloji uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Tedavinin devamı için düzenlenecek yeni sağlık kurulu raporunda hastalıkta progresyon olmadığının belirtilmesi gerekmektedir."
+  },
+  {
+    "clause_id": "C005640",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005663",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "lll) Nelarabin; hastalığı en az iki kemoterapi rejimiyle tedaviye yanıt vermeyen veya tekrarlayan T hücreli akut lenfoblastik lösemi (T-ALL) ve T hücreli lenfoblastik lenfoma (T-LBL) hastalarının tedavisinde, erişkin hematoloji veya çocuk hematoloji veya çocuk hematoloji ve onkoloji uzman hekimlerinden en az birinin yer aldığı 6 ay süreli sağlık kurulu raporuna dayanılarak bu uzman hekimler tarafından reçete edilmesi halinde Kurumca bedelleri karşılanır."
+  },
+  {
+    "clause_id": "C005672",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) Rekürren (tekrarlayan) over kanseri idame tedavisinde; platin içeren tedavinin tamamlanmasından sonra en az 6 ay geçmiş ve relaps gelişen platin duyarlı, BRCA1/2-mutasyonlu (germ hattı ve/veya somatik, akreditasyon almış bir laboratuvarda çalışılmış olmalıdır.) yüksek gradlı seröz epitelyal over, fallop tüpü veya primer peritoneal kanser hastası olan hastalarda; nüks nedeniyle uygulanan platin temelli kemoterapiye tam veya kısmi yanıt veren ikinci basamak tedavisi sonrası ECOG performans duru"
+  },
+  {
+    "clause_id": "C005673",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "3) Germline patojenik veya patojenik benzeri BRCA 1 veya 2 mutasyonu olan triple negatif yüksek riskli (Neoadjuvan tedavi sonrası patolojik rezidüel hastalığı olanlar veya primer cerrahisini olmuş ve patolojik olarak tümör çapı 2 cm üstünde ya da lenf nodu pozitif olan adjuvan tedavisini almış hastalar) erken evre meme kanserinde lokal tedaviler ve antrasiklin ve/veya taksan içeren adjuvan/neoadjuvan kemoterapi tamamlandıktan sonra monoterapi halinde en fazla 1 yıl süreyle kullanılması halinde b"
+  },
+  {
+    "clause_id": "C005674",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "4) Germline patojenik veya patojenik benzeri BRCA1 veya 2 mutasyonlarına sahip olan, HER2 negatif metastatik meme kanseri olan yetişkin hastalarının tedavisinde monoterapi olarak kullanılması halinde bedeli Kurumca karşılanır. Hastalar daha önce (neo)adjuvan veya metastatik ortamda bir antrasiklin ve bir taksan ile tedavi görmüş olmalı ve (neo) adjuvan platin temelli bir tedavi almışsa kısmi veya tam yanıt vermiş ve son tedaviden itibaren 12 ay geçmiş olmalıdır. Hormon reseptörü (HR) pozitif mem"
+  },
+  {
+    "clause_id": "C005677",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) Birinci basamak over kanseri idame tedavisinde; ilerlemiş (FIGO evre III ve IV) BRCA1/2-mutasyonlu (germ hattı ve/veya somatik) yüksek gradlı seröz epitelyal over, fallop tüpü veya primer peritoneal kanser görülen ve birinci basamak platin bazlı kemoterapinin tamamlanmasını takiben tam ya da kısmi yanıt alınan, ECOG performans durumu 0-1 olan yetişkin hastaların idame tedavisinde kullanılmak üzere son platin dozundan sonra en geç 12 hafta içinde tedaviye başlanması halinde Kurumca bedelleri k"
+  },
+  {
+    "clause_id": "C005679",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "Platin içeren tedavinin tamamlanmasından sonra en az 6 ay geçmiş ve relaps gelişen platin duyarlı, BRCA1/2-mutasyonlu (germ hattı ve/veya somatik, akreditasyon almış bir laboratuvarda çalışılmış olmalıdır.) yüksek gradlı seröz epitelyal over, fallop tüpü veya primer peritoneal kanser hastası olan ve nüks nedeniyle uygulanan platin temelli kemoterapiye tam veya kısmi yanıt veren ikinci basamak tedavisi sonrası ECOG performans durumu 0-1 olan yetişkin hastaların idame tedavisinde monoterapi olarak"
+  },
+  {
+    "clause_id": "C005688",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1) Rezeke edilemeyen lokal ileri veya metastatik evre 1. basamak platin bazlı en az 4 kür kemoterapi almış ve hastalığı progresyon göstermemiş PD-L1 pozitif Ürotelyal Karsinomu (ÜK) olan yetişkin hastaların idame tedavisinde son kemoterapi dozundan en geç 10 hafta içinde monoterapi olarak progresyona kadar kullanılır. Bu durumların belirtildiği en az bir tıbbi onkoloji uzman hekiminin bulunduğu 1 yıl süreli sağlık kurulu raporuna dayanılarak tıbbi onkoloji uzman hekimleri tarafından reçete edilm"
+  },
+  {
+    "clause_id": "C005689",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) Rezeke edilemeyen lokal ileri veya metastatik Merkel Hücreli Karsinomlu (MHK) erişkin hastalarda kemoterapiyi takiben progresyon göstermiş hastaların tedavisinde monoterapi olarak progresyona kadar kullanılır. Bu durumların belirtildiği en az bir tıbbi onkoloji uzman hekiminin bulunduğu 1 yıl süreli sağlık kurulu raporuna dayanılarak tıbbi onkoloji uzman hekimleri tarafından reçete edilmesi halinde bedeli Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005690",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "ppp) Akalabrutinib; Kronik Lenfositik Lösemi (KLL) hastalarında monoterapi olarak aşağıda tanımlanan durumlardan herhangi birinde progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005696",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "PERMISSION",
+    "text": "1) Epidermal Büyüme Faktörü Reseptörü (EGFR) ekzon 19 delesyonu veya ekzon 21 L858R alt mutasyonu bulunan, ECOG 0 veya 1 olan yeni tanı lokal ileri veya metastatik veya adjuvan/neoadjuvan tedavinin tamamlanmasından en az 12 ay sonra metastaz gelişen Küçük Hücreli Dışı Akciğer Kanseri (KHDAK) olan yetişkin hastaların birinci basamak tedavisinde progresyona kadar monoterapi olarak kullanılabilir."
+  },
+  {
+    "clause_id": "C005697",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) En az bir tıbbi onkoloji uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji hastalıkları uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Rapor süresinin sonunda tedavinin devamı için hastalıkta progresyon olmadığı yeni düzenlenecek raporda belirtilmelidir."
+  },
+  {
+    "clause_id": "C005700",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "şşş) Gilteritinib; FLT3 mutasyonu olan yetişkin relaps veya refrakter Akut Miyeloid Lösemi (AML) hastalarının tedavisinde monoterapi olarak progresyona kadar kullanılır. Bu durumların belirtildiği en az bir hematoloji uzman hekiminin bulunduğu 6 ay süreli sağlık kurulu raporuna dayanılarak hematoloji uzman hekimleri tarafından reçete edilmesi halinde bedeli Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005708",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2) Daha önce en az dört sıra multiple miyelom tedavisini uygun dozda ve yeterli sürede kullanmış ve hastalığı en az iki proteazom inhibitörüne, iki immünomodülatör ajana ve bir anti-CD38 monoklonal antikoruna refrakter olan ve aldığı son tedavi sırasında progresyon görülen multipl miyelom tanılı yetişkin hastaların tedavisinde deksametazon ile kombine olarak kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005709",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "3) Üçüncü kür sonunda en az minör yanıt, altıncı kür sonunda ve devam eden her 6 kür sonunda ise en az kısmi yanıt olduğunun belirtildiği, hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı, en fazla 3 ay süreli sağlık kurulu raporuna istinaden hematoloji veya tıbbi onkoloji uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005712",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "1)  Daha önce bir immünomodülatör ajan, bir proteazom inhibitörü ve bir anti-CD38 antikoru dahil olmak üzere en az dört sıra tedaviyi uygun dozda ve yeterli sürede kullanmış ve son tedavisi sırasında progresyon görülmüş olan, relaps veya refrakter multipl miyelomu bulunan erişkin hastaların tedavisinde monoterapi olarak progresyona kadar kullanılması halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005713",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "2)  3 üncü kür sonunda en az minör yanıt, 6 ncı kür sonunda ve devam eden her 6 kür sonunda ise en az kısmi yanıt olduğunun belirtildiği, hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı, en fazla 3 ay süreli sağlık kurulu raporuna istinaden hematoloji veya tıbbi onkoloji uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır."
+  },
+  {
+    "clause_id": "C005733",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "COVERAGE",
+    "text": "(5) Bu fıkrada belirtilen etkin maddeleri içeren ilaçlar yalnızca aşağıdaki endikasyonlarda belirlenen koşullarda yatarak tedavide hastanelerce temin edilerek kullanılması ve en fazla üçer ay süreli tıbbi onkoloji uzman hekiminin yer aldığı tedavi protokolünü de gösterir sağlık kurulu raporuna dayanılarak tıbbi onkoloji uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır (Raporda başka bir uzmanlık dalı gereken durumlar aşağıda ayrıca belirtilecektir.). Sağlık kurulu raporlarınd"
+  },
+  {
+    "clause_id": "C005751",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "1) Pembrolizumab; PD-L1 ekspresyonu <%50 (%0-%49) olan, ECOG performans skoru 0-1 olan, yeterli kardiyak, renal ve hepatik fonksiyonları bulunan, aktif beyin metastazı olmayan, EGFR, ALK, ROS mutasyonları bulunmayan ve eş zamanlı immünsüpresif veya kortikosteroid tedavisi almayan metastatik yassı hücreli olmayan (non-skuamöz) küçük hücreli dışı akciğer kanseri hastalarının birinci basamak tedavisinde kullanılması halinde bedeli Kurumca karşılanır. Tedaviye platin ve pemetrekset kemoterapi rejimi"
+  },
+  {
+    "clause_id": "C005752",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "2) Pembrolizumab; PD-L1 ekspresyonu <%50 (%0-%49) olan, ECOG performans skoru 0-1 olan, yeterli kardiyak, renal ve hepatik fonksiyonları bulunan, aktif beyin metastazı olmayan, eş zamanlı immünsüpresif ve kortikosteroid tedavisi almayan metastatik yassı hücreli (skuamöz) küçük hücreli dışı akciğer kanseri hastalarının birinci basamak tedavisinde kullanılması halinde bedeli Kurumca karşılanır. Tedaviye karboplatin ve paklitaksel kemoterapi rejimi ile kombine olarak 4 kür olarak başlanır. Tedavini"
+  },
+  {
+    "clause_id": "C005753",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "3) Pembrolizumab; ECOG performans skoru 0-1 olan, yeterli kardiyak, renal ve hepatik fonksiyonları bulunan, aktif beyin metastazı olmayan, eş zamanlı immunsupresif veya kortikosteroid tedavisi almayan metastatik küçük hücreli dışı akciğer kanserinde, PD-L1 ekspresyonu %50 ve üzerinde olan hastaların birinci basamak tedavisinde monoterapi olarak kullanılması halinde bedeli Kurumca karşılanır. Yassı hücreli olmayan (non squamöz) metastatik küçük hücreli dışı akciğer kanserinde EGFR, ALK, ROS mutas"
+  },
+  {
+    "clause_id": "C005754",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "4) Pembrolizumab; ECOG performans skoru 0-1, yüksek nüks riski olan (tümör boyutu ≥2 cm veya aksiller lenf bezi pozitif) lokal ileri/erken evre üçlü negatif meme kanserli yetişkinlerin tedavisinde neoadjuvan tedavi olarak antrasiklin ve karboplatinli kemoterapi ile kombine olarak kullanılması halinde bedeli Kurumca karşılanır. Pembrolizumab, neoadjuvan tedavide 3 haftada bir 200 mg 8 kür veya 6 haftada bir 400 mg 4 kür kullanılır. Ardından cerrahi sonrası patolojik tam yanıt alınamayan hastalard"
+  },
+  {
+    "clause_id": "C005755",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "5) Pembrolizumab; valide edilmiş bir test ile PD-L1(+) CPS ≥ 10 olan, metastatik veya rezeke edilemeyen lokal olarak tekrarlamış üçlü negatif meme kanserinin birinci basamak tedavisinde kemoterapi ile kombine olarak kullanılması halinde bedeli Kurumca karşılanır. Hastalar eğer erken evrede adjuvan kemoterapi almışlarsa en az 6 aylık hastalıksız süre geçmiş olmalıdır. Daha önce immünoterapi kullanan hastalarda metastatik dönemde immünoterapi kullanılması halinde bedeli Kurumca karşılanmaz. Metast"
+  },
+  {
+    "clause_id": "C005756",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "6) Pembrolizumab; monoterapi olarak veya platin ve 5-florourasil (5-FU) kemoterapisi ile kombinasyon halinde, ECOG performans skoru 0-1 olan, tümörleri kombine pozitif skor (CPS) ≥ %1 ile PD-L1 eksprese eden erişkinlerde metastatik veya rezeke edilemeyen tekrarlayan nazofarinks dışı squamöz hücreli baş boyun karsinomu olan hastaların birinci basamak tedavisinde kullanılması halinde bedeli Kurumca karşılanır. Hastalar eğer küratif kemoradyoterapi almışlarsa küratif tedaviden sonra en az 6 aylık h"
+  },
+  {
+    "clause_id": "C005758",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "1) Atezolizumab; PD-L1 ekspresyonu tümör hücrelerinde (TC) ≥ %50 olan, yetişkin Evre II-IIIA (TNM 7’ye göre) küçük hücreli dışı akciğer kanseri hastalarında, rezeksiyonu ve platin bazlı kemoterapiyi takiben, adjuvan tedavide monoterapi olarak kullanılması halinde bedeli Kurumca karşılanır. Yassı hücreli olmayan (non squamöz) metastatik küçük hücreli dışı akciğer kanserinde EGFR, ALK, ROS mutasyonu bulunmadığı raporda belirtilmelidir. Yassı hücreli (squamöz) küçük hücreli dışı akciğer kanserinde "
+  },
+  {
+    "clause_id": "C005759",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "2) Atezolizumab; ECOG performans skoru 0-1 olan, yeterli kardiyak, renal ve hepatik fonksiyonları bulunan, aktif beyin metastazı olmayan, eş zamanlı immünsupresif veya kortikosteroid tedavisi almayan metastatik küçük hücreli dışı akciğer kanserinde, PD-L1 ekspresyonu %50 ve üzerinde olan hastaların birinci basamak tedavisinde monoterapi olarak kullanılması halinde bedeli Kurumca karşılanır. Yassı hücreli olmayan (non squamöz) metastatik küçük hücreli dışı akciğer kanserinde EGFR, ALK, ROS mutasy"
+  },
+  {
+    "clause_id": "C005760",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "3) Atezolizumab; ECOG performans durumu 0-1 olan, semptomatik beyin metastazı olmayan, lokal ileri ve/veya metastatik küçük hücreli dışı akciğer kanseri nedeniyle daha önce 1-2 basamak kemoterapi almış ve progresyon gelişmiş hastaların tedavisinde tekrar progresyona kadar kullanılması halinde bedeli Kurumca karşılanır. Yassı hücreli olmayan (non squamöz) metastatik küçük hücreli dışı akciğer kanserinde EGFR, ALK, ROS mutasyonu bulunmadığı raporda belirtilmelidir. Yassı hücreli (squamöz) küçük hü"
+  },
+  {
+    "clause_id": "C005761",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "4) Atezolizumab; ECOG performans skoru 0-1 olan yaygın evre küçük hücreli akciğer kanseri olan yetişkin hastaların birinci basamak tedavisinde karboplatin ve etoposidle kombine olarak hastalık progresyonuna veya kabul edilemez toksisiteye kadar kullanılması halinde bedeli Kurumca karşılanır. Daha önce immünoterapi kullanan hastalarda yaygın evre hastalık döneminde immünoterapi kullanılması halinde bedeli Kurumca karşılanmaz. Yaygın evre hastalık döneminde immünoterapi ile tedavi sırasında veya s"
+  },
+  {
+    "clause_id": "C005764",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "1) Durvalumab; rezeke edilemeyen veya metastatik, PD-L1 ≥ %1 (tümörde ve/veya infiltre eden immün hücrelerde) pozitif safra yolu kanserli yetişkinlerin birinci basamak tedavisinde gemsitabin ve sisplatin ile kombinasyon halinde ve ardından idame monoterapi olarak progresyona kadar kullanılması halinde bedeli Kurumca karşılanır. Kemoterapi ile birlikte kullanıldığında 3 haftada bir en fazla 8 kür, idame dönemde monoterapi olarak 4 haftada bir en fazla 1500 mg olarak kullanılır. Durvalumab tedavis"
+  },
+  {
+    "clause_id": "C005765",
+    "section_id": "4.2.14.C",
+    "deontic_modality": "NO_PAY",
+    "text": "2) Durvalumab; PD-L1 düzeyi %1 ve üzeri olan, rezeke edilemeyen Evre 3 (TNM 7’ye göre) küçük hücreli dışı akciğer kanserinde, platin bazlı kemoradyoterapi sonrası progresyon görülmeyen yetişkin hastaların tedavisinde monoterapi olarak kullanılır. Hastalık progresyonuna, kabul edilemez toksisiteye veya hastalık progresyonu olmayan hastalarda en fazla 12 aya kadar kullanılması halinde bedeli Kurumca karşılanır. Durvalumab kullanan hastalarda daha sonraki basamaklarda tekrar immünoterapi kullanılma"
+  }
+]

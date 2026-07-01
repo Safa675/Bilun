@@ -1,0 +1,529 @@
+{
+  "target_count": 97,
+  "patched_clauses": 36,
+  "patch_rule_count": 18,
+  "new_rule_count": 61,
+  "assignments": [
+    {
+      "clause_id": "C004961",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_cdk46_fulvestrant_combo_exclusions_b",
+      "score": 14.0
+    },
+    {
+      "clause_id": "C004976",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(2).fludarabine_cladribine_board",
+      "score": 5.4
+    },
+    {
+      "clause_id": "C004977",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.cd20_dlblc_rituximab_chop",
+      "score": 6.2
+    },
+    {
+      "clause_id": "C005005",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.decitabine_mds_4mo_heme",
+      "score": 5.4
+    },
+    {
+      "clause_id": "C005015",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.decitabine_mds_4mo_heme",
+      "score": 5.4
+    },
+    {
+      "clause_id": "C005054",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_after_cabozantinib_rcc_seq",
+      "score": 24.0
+    },
+    {
+      "clause_id": "C005064",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_after_cabozantinib_rcc_seq",
+      "score": 24.0
+    },
+    {
+      "clause_id": "C005092",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.cd20_dlblc_rituximab_chop",
+      "score": 5.0
+    },
+    {
+      "clause_id": "C005098",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005098"
+    },
+    {
+      "clause_id": "C005103",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005103"
+    },
+    {
+      "clause_id": "C005111",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_after_cabozantinib_rcc_seq",
+      "score": 24.0
+    },
+    {
+      "clause_id": "C005134",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.tier_c.C005131.kabazitaksel",
+      "score": 6.6
+    },
+    {
+      "clause_id": "C005136",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005136"
+    },
+    {
+      "clause_id": "C005137",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005137"
+    },
+    {
+      "clause_id": "C005139",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005139"
+    },
+    {
+      "clause_id": "C005140",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005140"
+    },
+    {
+      "clause_id": "C005142",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005142"
+    },
+    {
+      "clause_id": "C005143",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005143"
+    },
+    {
+      "clause_id": "C005145",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005145"
+    },
+    {
+      "clause_id": "C005150",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005150"
+    },
+    {
+      "clause_id": "C005155",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005155"
+    },
+    {
+      "clause_id": "C005156",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005156"
+    },
+    {
+      "clause_id": "C005158",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005158"
+    },
+    {
+      "clause_id": "C005169",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005169"
+    },
+    {
+      "clause_id": "C005183",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005183"
+    },
+    {
+      "clause_id": "C005224",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.tier_c_b.C005221.dabrafenib",
+      "score": 6.2
+    },
+    {
+      "clause_id": "C005234",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005234"
+    },
+    {
+      "clause_id": "C005239",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005239"
+    },
+    {
+      "clause_id": "C005240",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005240"
+    },
+    {
+      "clause_id": "C005242",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005242"
+    },
+    {
+      "clause_id": "C005245",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005245"
+    },
+    {
+      "clause_id": "C005249",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005249"
+    },
+    {
+      "clause_id": "C005270",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005270"
+    },
+    {
+      "clause_id": "C005361",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005361"
+    },
+    {
+      "clause_id": "C005363",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005363"
+    },
+    {
+      "clause_id": "C005364",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(1).temozolomide_oncology_board",
+      "score": 5.4
+    },
+    {
+      "clause_id": "C005396",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005396"
+    },
+    {
+      "clause_id": "C005397",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).osimertinib_egfr_nsclc_board",
+      "score": 5.4
+    },
+    {
+      "clause_id": "C005398",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005398"
+    },
+    {
+      "clause_id": "C005401",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005401"
+    },
+    {
+      "clause_id": "C005404",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005404"
+    },
+    {
+      "clause_id": "C005405",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_crizotinib_after_alk_inhibitors",
+      "score": 7.4
+    },
+    {
+      "clause_id": "C005406",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_after_lorlatinib_alk_seq",
+      "score": 24.0
+    },
+    {
+      "clause_id": "C005407",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005407"
+    },
+    {
+      "clause_id": "C005409",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005409"
+    },
+    {
+      "clause_id": "C005410",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_crizotinib_after_alk_inhibitors",
+      "score": 7.4
+    },
+    {
+      "clause_id": "C005411",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_after_lorlatinib_alk_seq",
+      "score": 24.0
+    },
+    {
+      "clause_id": "C005412",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005412"
+    },
+    {
+      "clause_id": "C005498",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.cd20_dlblc_rituximab_chop",
+      "score": 5.4
+    },
+    {
+      "clause_id": "C005507",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005507"
+    },
+    {
+      "clause_id": "C005508",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005508"
+    },
+    {
+      "clause_id": "C005524",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005524"
+    },
+    {
+      "clause_id": "C005527",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.cd20_dlblc_rituximab_chop",
+      "score": 5.0
+    },
+    {
+      "clause_id": "C005534",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005534"
+    },
+    {
+      "clause_id": "C005550",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005550"
+    },
+    {
+      "clause_id": "C005555",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005555"
+    },
+    {
+      "clause_id": "C005560",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005560"
+    },
+    {
+      "clause_id": "C005563",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005563"
+    },
+    {
+      "clause_id": "C005567",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005567"
+    },
+    {
+      "clause_id": "C005594",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005594"
+    },
+    {
+      "clause_id": "C005604",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_myeloma_pi_imid_combination",
+      "score": 7.4
+    },
+    {
+      "clause_id": "C005605",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005605"
+    },
+    {
+      "clause_id": "C005610",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005610"
+    },
+    {
+      "clause_id": "C005612",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_after_lorlatinib_alk_seq",
+      "score": 23.6
+    },
+    {
+      "clause_id": "C005613",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005613"
+    },
+    {
+      "clause_id": "C005617",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005617"
+    },
+    {
+      "clause_id": "C005618",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.nopay_crizotinib_after_alk_inhibitors",
+      "score": 7.4
+    },
+    {
+      "clause_id": "C005620",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005620"
+    },
+    {
+      "clause_id": "C005640",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005640"
+    },
+    {
+      "clause_id": "C005672",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005672"
+    },
+    {
+      "clause_id": "C005673",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(3).olaparib_parpi_board",
+      "score": 5.4
+    },
+    {
+      "clause_id": "C005674",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005674"
+    },
+    {
+      "clause_id": "C005677",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005677"
+    },
+    {
+      "clause_id": "C005679",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005679"
+    },
+    {
+      "clause_id": "C005688",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005688"
+    },
+    {
+      "clause_id": "C005689",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005689"
+    },
+    {
+      "clause_id": "C005690",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005690"
+    },
+    {
+      "clause_id": "C005696",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005696"
+    },
+    {
+      "clause_id": "C005697",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005697"
+    },
+    {
+      "clause_id": "C005700",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(2).gilteritinib_aml_board",
+      "score": 6.6
+    },
+    {
+      "clause_id": "C005708",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005708"
+    },
+    {
+      "clause_id": "C005709",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005709"
+    },
+    {
+      "clause_id": "C005712",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005712"
+    },
+    {
+      "clause_id": "C005713",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005713"
+    },
+    {
+      "clause_id": "C005733",
+      "mode": "new_rule",
+      "rule_id": "4.2.14.C.deontic.C005733"
+    },
+    {
+      "clause_id": "C005751",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).pembrolizumab_nsclc_board",
+      "score": 6.2
+    },
+    {
+      "clause_id": "C005752",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).pembrolizumab_nsclc_board",
+      "score": 6.2
+    },
+    {
+      "clause_id": "C005753",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).pembrolizumab_nsclc_board",
+      "score": 5.8
+    },
+    {
+      "clause_id": "C005754",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.pembrolizumab_6mo_nsclc",
+      "score": 5.4
+    },
+    {
+      "clause_id": "C005755",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).pembrolizumab_nsclc_board",
+      "score": 5.8
+    },
+    {
+      "clause_id": "C005756",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).pembrolizumab_nsclc_board",
+      "score": 5.8
+    },
+    {
+      "clause_id": "C005758",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).atezolizumab_nsclc_board",
+      "score": 5.8
+    },
+    {
+      "clause_id": "C005759",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).atezolizumab_nsclc_board",
+      "score": 5.8
+    },
+    {
+      "clause_id": "C005760",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).atezolizumab_nsclc_board",
+      "score": 5.8
+    },
+    {
+      "clause_id": "C005761",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).atezolizumab_nsclc_board",
+      "score": 5.4
+    },
+    {
+      "clause_id": "C005764",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).durvalumab_nsclc_board",
+      "score": 5.4
+    },
+    {
+      "clause_id": "C005765",
+      "mode": "patch",
+      "rule_id": "4.2.14.C.(15).durvalumab_nsclc_board",
+      "score": 6.2
+    }
+  ]
+}

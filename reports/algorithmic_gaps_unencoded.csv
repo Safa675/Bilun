@@ -1,0 +1,7 @@
+clause_id,section_id,clause_type,deontic_modality,primary_rule_id,coverage_status,has_rule_encoding,text_tr
+C000347,1.8.3,bent,,gap_closing_misc,partial,False,"b) Kurumla sözleşmesiz; serbest dişhekimlikleri ile sağlık kurum veya kuruluşlarında yaptırılan ağız protezi katılım payları, Kurumca ödeme aşamasında kişilerden,"
+C000744,2.4.1,bent,,dental_2_4_1,partial,False,"b) Alt ve üst çenede tek taraflı serbest sonlu dişsizlik vakalarında,"
+C000745,2.4.1,bent,,dental_2_4_1,partial,False,"c) Konjenital diş eksikliği vakalarında,"
+C000746,2.4.1,bent,,dental_2_4_1,partial,False,"ç) Dudak damak yarığı vb. doğumsal anomalilere bağlı, diş ve ilgili kemik doku defektlerinin olduğu vakalarda,"
+C000751,2.4.1,fikra,,dental_2_4_1,partial,False,(4) Ortodontik diş tedavileri;
+C000763,2.4.1.A,fikra,,dental_2_4_1,partial,False,(3) Üniversitelerin diş hekimliği fakülteleri tarafından %40 ve üzeri engelli kişiler ile hafif düzeyde ve üstü özel gereksinimi var olan çocuk hastalarda genel anestezi veya sedo analjezi altında verilen diş tedavilerinde bu maddenin birinci fıkrasında belirtilen %50 ilave oran ayrıca uygulanmaz.

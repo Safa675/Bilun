@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-07-01T08:42:54.736736+00:00",
+  "phases": "0-10",
+  "pytest_passed": 1705,
+  "pytest_skipped": 30,
+  "pytest_failed": 0,
+  "compile_rules_check": "pass",
+  "manifest_parity_drug_only": "pass",
+  "drug_indication_rules": 919,
+  "true_unencoded_algorithmic_gaps": 0,
+  "drug_manifest_index_clauses": 2244,
+  "drug_manifests_loaded": 23,
+  "frontend_ci_local": "skipped_no_npm",
+  "frontend_ci_workflow": ".github/workflows/ci.yml frontend job",
+  "notes": [
+    "Phases 8-10 complete: manifest_index.py, CI parity step, close_algorithmic_gaps tests",
+    "Test session autouse reconciles drug manifests before/after gate_b tests"
+  ]
+}

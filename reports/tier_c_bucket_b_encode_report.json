@@ -1,0 +1,128 @@
+{
+  "stats": {
+    "bucket_b_total": 53,
+    "patch_rules": 23,
+    "patch_clauses": 35,
+    "new_rules": 16,
+    "skipped": 2,
+    "no_extract": 0,
+    "generated_at": "2026-07-01"
+  },
+  "skipped": [
+    {
+      "clause_id": "C004923",
+      "reason": "already_encoded"
+    },
+    {
+      "clause_id": "C005635",
+      "reason": "already_encoded"
+    }
+  ],
+  "no_extract": [],
+  "patches": {
+    "4.2.1.C.paediatric_acr30_acr50_continue_c6": [
+      "C003769"
+    ],
+    "4.2.1.anakinra_canakinumab_fmf_board_report": [
+      "C003791"
+    ],
+    "4.2.1.anakinra_kanakinumab_tertiary_romato_prescriber": [
+      "C003819",
+      "C003827"
+    ],
+    "4.2.1.tocilizumab_jia_c5_prior_therapy_failure": [
+      "C003714"
+    ],
+    "4.2.13.hcv_specialist_report_criteria": [
+      "C004908",
+      "C004918",
+      "C004921"
+    ],
+    "4.2.13.hepatitis_prior_therapy_documentation": [
+      "C004919"
+    ],
+    "4.2.14.C.(2).blinatumomab_all_board": [
+      "C005326"
+    ],
+    "4.2.14.C.deontic.C005398": [
+      "C005366",
+      "C005639"
+    ],
+    "4.2.14.C.deontic.C005688": [
+      "C005280"
+    ],
+    "4.2.14.C.tier_c_b.C005021.nilotinib": [
+      "C005029",
+      "C005644"
+    ],
+    "4.2.14.C.tier_c_b.C005067.sorafenib": [
+      "C005634",
+      "C005678"
+    ],
+    "4.2.14.C.tier_c_b.C005539.bortezomib": [
+      "C005368"
+    ],
+    "4.2.23.neutropenia_prophylaxis_nopay": [
+      "C006092",
+      "C006103",
+      "C006104"
+    ],
+    "4.2.23.systemic_fungal_infection_coverage": [
+      "C006100",
+      "C006101"
+    ],
+    "4.2.27.D.eltrombopag_discontinuation_criteria": [
+      "C006286",
+      "C006292",
+      "C006297"
+    ],
+    "4.2.27.D.eltrombopag_dose_titration": [
+      "C006294"
+    ],
+    "4.2.27.factor_seven_a_bleeding_board": [
+      "C006263"
+    ],
+    "4.2.37.pegvisomant_init_board_2mo": [
+      "C006717"
+    ],
+    "4.2.39.derm.sunscreen_xp_albinism_monthly_coverage": [
+      "C006752"
+    ],
+    "4.2.46.A.bucket_a.c006842": [
+      "C006826"
+    ],
+    "4.2.5.botox.axillary_hyperhidrosis_tertiary_coverage": [
+      "C003932"
+    ],
+    "4.2.5.botox.paediatric_cerebral_palsy_tertiary_coverage": [
+      "C003929",
+      "C003933"
+    ],
+    "4.2.72.meta.mitochondrial_cytopathy_supplementary_foods_880tl_coverage": [
+      "C007213"
+    ]
+  },
+  "new_rule_ids": [
+    "4.2.1.C-2.bucket_b.C003650",
+    "4.2.9.Ç.bucket_b.C004176",
+    "4.2.13.3.2.B.bucket_b.C004920",
+    "4.2.13.3.2.B.bucket_b.C004922",
+    "4.2.21.bucket_b.C006083",
+    "4.2.23.bucket_b.C006102",
+    "4.2.30.A.bucket_b.C006411",
+    "4.2.30.bucket_b.C006424",
+    "4.2.30.bucket_b.C006428",
+    "4.2.43.bucket_b.C006806",
+    "4.2.47.bucket_b.C006896",
+    "4.2.47.bucket_b.C006898",
+    "4.2.47.bucket_b.C006903",
+    "4.2.60.bucket_b.C007124",
+    "4.2.69.bucket_b.C007169",
+    "4.2.69.bucket_b.C007170"
+  ],
+  "yaml_patches_applied": 0,
+  "manifest_promotion": {
+    "manifests_touched": 7,
+    "clauses_updated": 51
+  }
+}
