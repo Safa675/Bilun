@@ -60,6 +60,17 @@ class BilunRuntimeState:
         return self.cache_con
 
     def get_cache_reader(self):
+        """Return a shared DuckDB cursor for read-mostly API queries.
+
+        Concurrency contract (B-18):
+        - One process-singleton read-write connection backs all requests.
+        - Callers must use ``bootstrap_pointer=False`` on build lookups so the
+          reader never issues INSERTs (see ``get_active_build_id_or_none``).
+        - Do not run DDL or cache writes on this cursor; use a dedicated
+          writable connection in offline cache builders instead.
+        - Parallel SELECTs from the same connection are exercised in
+          ``tests/unit/api/test_sut_cache_concurrency.py``.
+        """
         return self.get_cache_con().cursor()
 
     def get_request_cache_con(self):

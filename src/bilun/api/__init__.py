@@ -65,16 +65,19 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # ── Session gate ──────────────────────────────────────────────────────────────
 # Reject any unauthenticated request to a protected route. This is the second
 # layer of defense (the first being the Next.js middleware); it ensures the
-# backend cannot be bypassed by hitting :8001 directly. Auth is only enforced
-# when the env vars are configured — a missing config fails open with a logged
-# warning so local dev without .env keeps working, but a production deploy MUST
-# set the vars (the login route itself returns 503 when unconfigured).
+# backend cannot be bypassed by hitting :8001 directly. Auth fails **closed**
+# when env vars are missing unless ``BILUN_AUTH_OPTIONAL=1`` (local dev only).
 
 from starlette.middleware.base import BaseHTTPMiddleware  # noqa: E402
 from starlette.requests import Request as _StarletteRequest  # noqa: E402
 from starlette.responses import JSONResponse as _JSONResponse  # noqa: E402
 
-from src.bilun.api.auth import COOKIE_NAME as _SESSION_COOKIE, is_auth_configured, verify_session_token  # noqa: E402
+from src.bilun.api.auth import (  # noqa: E402
+    COOKIE_NAME as _SESSION_COOKIE,
+    is_auth_configured,
+    is_auth_optional,
+    verify_session_token,
+)
 
 # Paths exempt from the session check. /api/auth/* must be reachable without a
 # token (login to obtain one, logout to clear it, me to probe status); /health
@@ -89,13 +92,22 @@ class SessionGateMiddleware(BaseHTTPMiddleware):
         # Only gate the API surface and the doc roots.
         if not (path == "/health" or path.startswith("/api/")):
             return await call_next(request)
-        # Auth not configured → fail open (local dev) but log loudly.
         if not is_auth_configured():
-            _api_logger.warning(
-                "BILUN_AUTH_* env vars not set — session gate disabled. "
-                "Set them before exposing the server."
+            if is_auth_optional():
+                _api_logger.warning(
+                    "BILUN_AUTH_* env vars not set — session gate disabled "
+                    "(BILUN_AUTH_OPTIONAL=1). Do not use in production."
+                )
+                return await call_next(request)
+            if (
+                path in _SESSION_EXEMPT_PATHS
+                or any(path.startswith(p) for p in _SESSION_EXEMPT_PREFIXES)
+            ):
+                return await call_next(request)
+            return _JSONResponse(
+                status_code=401,
+                content={"detail": "Authentication not configured."},
             )
-            return await call_next(request)
         # Exempt auth routes (needed to obtain/clear a token and probe status)
         # and health.
         if (
@@ -138,8 +150,11 @@ def health_check() -> dict:
 
     Checks:
       - BILUN database connection is reachable
-      - BILUN cache has an active build (optional — 503 if not)
+      - BILUN cache has an active build and startup reported cache_ready
       - Active gazette version is surfaced for staleness visibility
+
+    Returns HTTP 503 when the database is unreachable, there is no active
+    build, or startup did not complete successfully.
     """
     import os
     from contextlib import closing
@@ -177,11 +192,17 @@ def health_check() -> dict:
     # comparison is a follow-up; this at least makes a stale gazette visible.
     active_gazette_version = _read_active_gazette_version_for_health()
 
-    status_code = 200 if db_ok else 503
+    from src.bilun.api.startup import is_cache_ready  # noqa: E402
+
+    cache_ready = is_cache_ready()
+    service_ready = db_ok and active_build is not None and cache_ready
+    status_code = 200 if service_ready else 503
+    status_label = "ok" if service_ready else "degraded"
     payload = {
-        "status": "ok" if db_ok else "degraded",
+        "status": status_label,
         "service": "bilun",
         "database_reachable": db_ok,
+        "cache_ready": cache_ready,
         "active_build": active_build,
         "active_gazette_version": active_gazette_version,
         "version": "1.0.0",

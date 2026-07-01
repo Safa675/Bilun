@@ -2,8 +2,8 @@
 
 Covers: password hashing/verification, session token issue/verify/expiry, the
 login/logout/me endpoints, and the global SessionGateMiddleware (protected
-routes reject without a cookie; login + health are exempt; auth-not-configured
-fails open with a warning).
+routes reject without a cookie; login + health are exempt; unconfigured auth
+fails closed unless ``BILUN_AUTH_OPTIONAL=1``).
 """
 
 from __future__ import annotations
@@ -208,11 +208,20 @@ class TestSessionGateMiddleware:
         # /health returns 200 or 503 depending on DB state, never 401.
         assert res.status_code != 401
 
-    def test_gate_disabled_when_unconfigured(self, api_client, monkeypatch) -> None:
-        # No auth env set → gate fails open, protected routes reachable.
+    def test_gate_rejects_when_unconfigured(self, api_client, monkeypatch) -> None:
         monkeypatch.delenv("BILUN_AUTH_USERNAME", raising=False)
         monkeypatch.delenv("BILUN_AUTH_PASSWORD", raising=False)
         monkeypatch.delenv("BILUN_SESSION_SECRET", raising=False)
+        monkeypatch.delenv("BILUN_AUTH_OPTIONAL", raising=False)
+        res = api_client.get("/api/patients")
+        assert res.status_code == 401
+        assert res.json()["detail"] == "Authentication not configured."
+
+    def test_gate_optional_when_unconfigured(self, api_client, monkeypatch) -> None:
+        monkeypatch.delenv("BILUN_AUTH_USERNAME", raising=False)
+        monkeypatch.delenv("BILUN_AUTH_PASSWORD", raising=False)
+        monkeypatch.delenv("BILUN_SESSION_SECRET", raising=False)
+        monkeypatch.setenv("BILUN_AUTH_OPTIONAL", "1")
         res = api_client.get("/api/patients")
         assert res.status_code != 401
 

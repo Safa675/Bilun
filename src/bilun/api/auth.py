@@ -85,6 +85,19 @@ def is_auth_configured() -> bool:
         return False
 
 
+def is_auth_optional() -> bool:
+    """True when unconfigured auth may pass through (local dev / pytest only).
+
+    Production deployments must leave this unset so the session gate fails
+    closed when ``BILUN_AUTH_*`` is missing.
+    """
+    return os.getenv("BILUN_AUTH_OPTIONAL", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+
+
 # ── Password hashing (PBKDF2-HMAC-SHA256) ────────────────────────────────────
 
 def hash_password(plaintext: str) -> str:
