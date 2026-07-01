@@ -54,7 +54,9 @@ def test_gate_b_csv_schema() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.drug_indication_4218_4236_batch_rules import BATCH_A5_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A5_RULES = load_legacy_drug_batch("drug_indication_4218_4236_batch_rules.py:BATCH_A5_RULES")
     from scripts.sut.prose.drug_indication_4218_4236_gate_b import (
         build_4218_4236_manifest,
         export_4218_4236_candidates,
@@ -70,7 +72,9 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
 
 def test_gate_b_artifacts_on_disk() -> None:
-    from scripts.sut.prose.drug_indication_4218_4236_batch_rules import BATCH_A5_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A5_RULES = load_legacy_drug_batch("drug_indication_4218_4236_batch_rules.py:BATCH_A5_RULES")
     from scripts.sut.prose.drug_indication_4218_4236_gate_b import write_gate_b_artifacts
 
     write_gate_b_artifacts(

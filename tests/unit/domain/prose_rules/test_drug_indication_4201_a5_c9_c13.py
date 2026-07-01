@@ -9,7 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4201_a5_c9_c13_batch_rules import BATCH_A5_C9_C13_RULES
+from scripts.sut.rule_sources import load_legacy_drug_batch
+BATCH_A5_C9_C13_RULES = load_legacy_drug_batch("drug_indication_4201_a5_c9_c13_batch_rules.py:BATCH_A5_C9_C13_RULES")
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
 

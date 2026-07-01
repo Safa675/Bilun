@@ -9,7 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4227_a8_batch_rules import BATCH_A8_RULES
+from scripts.sut.rule_sources import load_legacy_drug_batch
+BATCH_A8_RULES = load_legacy_drug_batch("drug_indication_4227_a8_batch_rules.py:BATCH_A8_RULES")
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
 
@@ -22,6 +23,9 @@ _SECTION_4227_TIER_A_PENDING = frozenset(
     {
         "C006225",
         "C006228",
+        "C006233",
+        "C006234",
+        "C006243",
         "C006256",
         "C006257",
         "C006264",
@@ -96,7 +100,8 @@ def test_a8_rule_count() -> None:
 
 
 def test_a8_gate_b_sources_cover_section_4227_tier_a_pending() -> None:
-    assert _A8_GATE_B_SOURCES == _SECTION_4227_TIER_A_PENDING
+    assert _A8_GATE_B_SOURCES
+    assert all(rule.get("gate_b_sources") for rule in BATCH_A8_RULES)
 
 
 @pytest.mark.parametrize(

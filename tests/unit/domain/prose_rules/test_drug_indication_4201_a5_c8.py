@@ -9,9 +9,11 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4201_a5_c8_batch_rules import BATCH_A5_C8_RULES
+from scripts.sut.rule_sources import load_drug_section_rules
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
+
+BATCH_A5_C8_RULES = load_drug_section_rules("4.2.1.C-8")
 
 pytestmark = pytest.mark.unit
 

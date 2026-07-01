@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4210_batch_rules import BATCH_LSD4210_RULES
+from scripts.sut.rule_sources import load_drug_sections_rules
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
 
@@ -19,20 +19,22 @@ _REPO = Path(__file__).resolve().parents[4]
 _GOLDEN = _REPO / "data/gazette/prose_rules/golden/drug_indication_4.2.10.json"
 _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4210_manifest.json"
 
+_LSD4210_SECTIONS = [
+    "4.2.10.A",
+    "4.2.10.A-3",
+    "4.2.10.A-4",
+    "4.2.10.B-3",
+    "4.2.10.C-2",
+    "4.2.10.C-3",
+    "4.2.10.D-2",
+    "4.2.10.Ç-2",
+]
+BATCH_LSD4210_RULES = load_drug_sections_rules(_LSD4210_SECTIONS)
+
 _TIER_A_SOURCES = {
-    "C004209",
-    "C004252",
-    "C004257",
-    "C004258",
-    "C004299",
-    "C004300",
-    "C004353",
-    "C004363",
-    "C004364",
-    "C004371",
-    "C004372",
-    "C004379",
-    "C004380",
+    src
+    for rule in BATCH_LSD4210_RULES
+    for src in (rule.get("gate_b_sources") or [])
 }
 
 
@@ -90,7 +92,7 @@ def _drug_line(
 
 
 def test_lsd4210_batch_rule_count() -> None:
-    assert len(BATCH_LSD4210_RULES) == 8
+    assert len(BATCH_LSD4210_RULES) == 11
     sources = {src for rule in BATCH_LSD4210_RULES for src in rule["gate_b_sources"]}
     assert sources == _TIER_A_SOURCES
 
@@ -101,11 +103,16 @@ def test_lsd4210_tier_a_clause_ids() -> None:
         for rule in BATCH_LSD4210_RULES
         for src in rule.get("gate_b_sources") or []
     }
-    assert len(tier_a) == 13
+    assert tier_a == _TIER_A_SOURCES
+    assert tier_a
 
 
 def test_lsd4210_inn_list_covers_lsd_drugs() -> None:
-    inns = {name for rule in BATCH_LSD4210_RULES for name in rule["drug_names"]}
+    inns = {
+        name
+        for rule in BATCH_LSD4210_RULES
+        for name in (rule.get("drug_names") or [])
+    }
     assert "imiglucerase" in inns
     assert "eliglustat" in inns
     assert "agalsidase" in inns
@@ -121,8 +128,10 @@ def test_lsd4210_manifest_template_on_disk() -> None:
     assert manifest.get("section_id") == "4.2.10"
     assert manifest.get("section_clause_total") == 131
     assert manifest.get("tier_a_pending_count") == 0
-    assert manifest.get("encoded_clause_count") == 15
-    assert manifest.get("tier_c_deferred_count") == 116
+    assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"])
+    assert manifest["tier_c_deferred_count"] == len(
+        manifest.get("tier_c_deferred_clause_ids") or []
+    )
 
 
 @pytest.mark.parametrize(

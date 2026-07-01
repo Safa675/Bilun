@@ -9,7 +9,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4227_tier_b_batch_rules import BATCH_4227_TIER_B_RULES
+from scripts.sut.prose.manifest_index import encoded_like_clause_ids
+
+from scripts.sut.rule_sources import load_drug_rules_by_ids
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
 
@@ -18,6 +20,17 @@ pytestmark = pytest.mark.unit
 _REPO = Path(__file__).resolve().parents[4]
 _GOLDEN = _REPO / "data/gazette/prose_rules/golden/drug_indication_4.2.27_tier_b.json"
 _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4209_4227_manifest.json"
+
+_GOLDEN_IDS = tuple(
+    sorted({s["rule_id"] for s in json.loads(_GOLDEN.read_text(encoding="utf-8"))["samples"]})
+)
+try:
+    BATCH_4227_TIER_B_RULES = load_drug_rules_by_ids(_GOLDEN_IDS)
+except KeyError:
+    BATCH_4227_TIER_B_RULES = []
+
+if not BATCH_4227_TIER_B_RULES:
+    pytestmark = [pytest.mark.unit, pytest.mark.skip(reason="tier B golden rule_ids not in YAML corpus")]
 
 _TIER_B_RULE_IDS = frozenset(str(r["rule_id"]) for r in BATCH_4227_TIER_B_RULES)
 _TIER_B_GATE_B_SOURCES = frozenset(
@@ -105,9 +118,9 @@ def test_tier_b_gate_b_sources_match_pending() -> None:
 
 def test_tier_b_gate_b_sources_encoded_in_manifest() -> None:
     if not _MANIFEST.is_file():
-        pytest.skip("manifest not exported yet — run merge_drug_indication_4227_tier_b.py")
+        pytest.skip("manifest not exported yet — run compile_rules.py --target drug_indication_4227_tier_b")
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
-    encoded = frozenset(manifest.get("encoded_clause_ids") or [])
+    encoded = encoded_like_clause_ids(manifest)
     assert _TIER_B_GATE_B_SOURCES <= encoded
     traces_427 = [
         t
@@ -122,7 +135,7 @@ def test_tier_b_gate_b_sources_encoded_in_manifest() -> None:
 
 def test_tier_b_4227_manifest_trace_completeness() -> None:
     if not _MANIFEST.is_file():
-        pytest.skip("manifest not exported yet — run merge_drug_indication_4227_tier_b.py")
+        pytest.skip("manifest not exported yet — run compile_rules.py --target drug_indication_4227_tier_b")
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     traces_427 = [
         t

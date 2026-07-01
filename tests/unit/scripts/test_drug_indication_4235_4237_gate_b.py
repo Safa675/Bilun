@@ -65,7 +65,9 @@ def test_gate_b_csv_schema() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.drug_indication_4235_4237_batch_rules import BATCH_A5_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A5_RULES = load_legacy_drug_batch("drug_indication_4235_4237_batch_rules.py:BATCH_A5_RULES")
     from scripts.sut.prose.drug_indication_4235_4237_gate_b import (
         build_4235_4237_manifest,
         export_4235_4237_candidates,
@@ -74,15 +76,11 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     frame = export_4235_4237_candidates(_CLAUSES)
     manifest = build_4235_4237_manifest(frame, BATCH_A5_RULES, effective_date="2026-06-27")
     encoded = set(manifest["gate_b_sources_encoded"])
-    assert encoded == {
-        "C006694",
-        "C006697",
-        "C006705",
-        "C006715",
-        "C006716",
-        "C006718",
-    }
-    assert manifest["tier_c_deferred_count"] == 20
+    on_disk = json.loads(_MANIFEST.read_text(encoding="utf-8"))
+    assert encoded == set(on_disk["gate_b_sources_encoded"])
+    assert "C006717" in encoded
+    assert len(encoded) == 7
+    assert manifest["tier_c_deferred_count"] == 19
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["rules_in_json"] == 5
@@ -91,7 +89,9 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
 
 def test_gate_b_artifacts_on_disk() -> None:
-    from scripts.sut.prose.drug_indication_4235_4237_batch_rules import BATCH_A5_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A5_RULES = load_legacy_drug_batch("drug_indication_4235_4237_batch_rules.py:BATCH_A5_RULES")
     from scripts.sut.prose.drug_indication_4235_4237_gate_b import write_gate_b_artifacts
 
     write_gate_b_artifacts(
@@ -104,5 +104,5 @@ def test_gate_b_artifacts_on_disk() -> None:
     assert _CORPUS.is_file()
     assert _MANIFEST.is_file()
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
-    assert manifest["encoded_clause_count"] == 6
+    assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"]) == 7
     assert manifest["section_clause_total"] == 26

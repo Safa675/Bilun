@@ -9,11 +9,15 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4201_w4_tier_b_batch_rules import (
-    BATCH_4201_W4_TIER_B_RULES,
-)
+from scripts.sut.prose.manifest_index import encoded_like_clause_ids
+
+from scripts.sut.rule_sources import load_legacy_drug_batch
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
+
+BATCH_4201_W4_TIER_B_RULES = load_legacy_drug_batch(
+    "drug_indication_4201_w4_tier_b_batch_rules.py:BATCH_4201_W4_TIER_B_RULES"
+)
 
 pytestmark = pytest.mark.unit
 
@@ -102,7 +106,9 @@ def test_w4_tier_b_gate_b_sources_count() -> None:
         "C003693",
         "C003706",
         "C003712",
+        "C003737",
         "C003774",
+        "C003783",
         "C003787",
         "C003790",
         "C003862",
@@ -111,23 +117,23 @@ def test_w4_tier_b_gate_b_sources_count() -> None:
 
 def test_w4_tier_b_gate_b_sources_encoded_in_manifest() -> None:
     if not _MANIFEST.is_file():
-        pytest.skip("manifest not exported yet — run merge_drug_indication_4201_w4.py")
+        pytest.skip("manifest not exported yet — run compile_rules.py --target drug_indication_4201_w4")
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
-    encoded = frozenset(manifest.get("encoded_clause_ids") or [])
+    encoded = encoded_like_clause_ids(manifest)
     assert _TIER_B_GATE_B_SOURCES <= encoded
     assert manifest.get("tier_b_pending_count") == 0
 
 
 def test_w4_in_force_manifest_clause_total() -> None:
     if not _MANIFEST.is_file():
-        pytest.skip("manifest not exported yet — run merge_drug_indication_4201_w4.py")
+        pytest.skip("manifest not exported yet — run compile_rules.py --target drug_indication_4201_w4")
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     assert manifest["section_clause_total"] == 282
 
 
 def test_w4_manifest_trace_completeness() -> None:
     if not _MANIFEST.is_file():
-        pytest.skip("manifest not exported yet — run merge_drug_indication_4201_w4.py")
+        pytest.skip("manifest not exported yet — run compile_rules.py --target drug_indication_4201_w4")
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     traces = manifest["clause_traces"]
     total = manifest["section_clause_total"]

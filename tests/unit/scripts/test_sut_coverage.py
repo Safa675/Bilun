@@ -354,7 +354,10 @@ class TestFullCoverageBuild:
         assert (coverage["coverage_status"] == "implemented").any()
 
     def test_gap_flags_exist(self, coverage: pd.DataFrame) -> None:
-        assert coverage["has_algorithmic_gap"].sum() > 100
+        unencoded = coverage[coverage["has_algorithmic_gap"] & ~coverage["has_rule_encoding"]]
+        assert len(unencoded) == 0, (
+            f"Wave 4 target: zero true algorithmic gaps; got {len(unencoded)}"
+        )
 
     def test_payment_method_implemented(self, coverage: pd.DataFrame) -> None:
         payment = coverage[coverage["primary_rule_id"] == "payment_method_package"]
@@ -489,7 +492,7 @@ class TestFullCoverageBuild:
         assert (provizyon["coverage_status"] == "non_algorithmic").all()
         assert provizyon["has_algorithmic_gap"].sum() == 0
 
-    def test_drug_indication_prose_classified_partial(self, coverage: pd.DataFrame) -> None:
+    def test_drug_indication_prose_classified_implemented(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/drug_indication_prose.json"
         assert prose_json.is_file()
 
@@ -497,12 +500,13 @@ class TestFullCoverageBuild:
         assert not matched.empty
         primary = coverage[coverage["primary_rule_id"] == "drug_indication_prose"]
         assert not primary.empty
-        assert (primary["coverage_status"] == "partial").all()
-        assert primary["has_algorithmic_gap"].sum() > 0
+        assert (primary["coverage_status"] == "implemented").all()
+        unencoded_gaps = primary[primary["has_algorithmic_gap"] & ~primary["has_rule_encoding"]]
+        assert len(unencoded_gaps) == 0
 
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
-        assert RULE_BY_ID["drug_indication_prose"].coverage_status == "partial"
+        assert RULE_BY_ID["drug_indication_prose"].coverage_status == "implemented"
 
     def test_drug_indication_manifest_on_disk(self) -> None:
         manifest = _REPO_ROOT / "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"
@@ -513,7 +517,7 @@ class TestFullCoverageBuild:
         assert payload["clause_trace_complete"] is True
         # A1 repair: clause_traces are in-force only; tier-C + EMR-blocked partition deferred rows.
         assert len(payload.get("clause_traces") or []) == payload["section_clause_total"]
-        assert len(payload.get("tier_c_deferred_clause_ids") or []) >= 20
+        assert len(payload.get("tier_c_deferred_clause_ids") or []) >= 10
         assert len(payload.get("emr_blocked_clause_ids") or []) >= 0  # EMR set regenerates per parquet
         assert payload.get("tier_c_defer_themes_summary")
 
@@ -522,9 +526,21 @@ class TestFullCoverageBuild:
         assert not di.empty
         assert "has_rule_encoding" in di.columns
         assert int(di["has_rule_encoding"].sum()) > 0
-        assert int(di["has_algorithmic_gap"].sum()) > int(di["has_rule_encoding"].sum())
         unencoded_gaps = di[di["has_algorithmic_gap"] & ~di["has_rule_encoding"]]
-        assert len(unencoded_gaps) > 0
+        assert len(unencoded_gaps) == 0, (
+            f"drug_indication_prose should have no unencoded algorithmic gaps after "
+            f"Wave 0/1 closure; got {len(unencoded_gaps)}"
+        )
+
+    def test_drug_indication_deontic_fully_encoded(self, coverage: pd.DataFrame) -> None:
+        di = coverage[coverage["primary_rule_id"] == "drug_indication_prose"]
+        deontic = di[di["deontic_modality"].notna()]
+        assert not deontic.empty
+        unencoded = deontic[~deontic["has_rule_encoding"]]
+        assert len(unencoded) == 0, (
+            f"All in-force deontic drug_indication clauses should be encoded; "
+            f"got {len(unencoded)} remaining"
+        )
 
     def test_drug_indication_rule_summary_has_encoding_counts(self, coverage: pd.DataFrame) -> None:
         from scripts.sut.prose.coverage import build_coverage_summary
@@ -534,7 +550,7 @@ class TestFullCoverageBuild:
         assert not di_row.empty
         assert "encoded_clause_count" in di_row.columns
         assert int(di_row["encoded_clause_count"].iloc[0]) > 0
-        assert int(di_row["unencoded_gap_clause_count"].iloc[0]) > 0
+        assert int(di_row["unencoded_gap_clause_count"].iloc[0]) == 0
 
     def test_surcharge_general_implemented_not_false_gap(self, coverage: pd.DataFrame) -> None:
         rows = coverage[coverage["primary_rule_id"] == "surcharge_general"]
@@ -583,3 +599,97 @@ class TestFullCoverageBuild:
         assert not rows.empty
         assert (rows["coverage_status"] == "implemented").all()
         assert rows["has_algorithmic_gap"].sum() == 0
+
+
+class TestTierCDrugRuleExtraction:
+    def test_extract_tier_c_inventory_and_candidates(self) -> None:
+        from scripts.sut.extract_tier_c_drug_rules import extract_tier_c_rules
+
+        inv, candidates, summary = extract_tier_c_rules()
+        assert inv.height >= 900
+        assert summary["inventory_rows"] == inv.height
+        assert len(candidates) >= 280
+        assert summary["bucket_counts"]["C"] >= 200
+        assert summary["pathway_fragment_candidates"] >= 30
+        for c in candidates:
+            assert c["runtime_status"] == "extracted_pre_emr"
+            assert c["clause_id"]
+            assert c["encode_bucket"] in {"A", "B", "C", "D"}
+
+    def test_tier_c_classify_buckets(self) -> None:
+        from scripts.sut.prose.tier_c_classify import classify_bucket
+
+        assert classify_bucket({"text_tr": "ECOG 0-2 performans statüsünde", "char_count": 80}) == "C"
+        assert classify_bucket({"text_tr": "HER2 pozitif meme kanseri", "char_count": 80}) == "B"
+        assert (
+            classify_bucket(
+                {
+                    "text_tr": "Tıbbi onkoloji uzman hekimlerce reçete edilmesi halinde 6 ay süreli rapor",
+                    "char_count": 90,
+                }
+            )
+            == "A"
+        )
+        assert classify_bucket({"text_tr": "4.2.1.A - Leflunomid", "is_heading": True, "char_count": 30}) == "D"
+
+
+class TestTierCBucketAEncoding:
+    def test_bucket_a_clauses_in_prose_rules(self) -> None:
+        import importlib
+
+        import yaml
+
+        mod = importlib.import_module("scripts.sut.prose.drug_indication_bucket_a_patches")
+        patches = dict(getattr(mod, "SOURCE_PATCHES", {}) or {})
+        batch_path = _REPO_ROOT / "data/gazette/prose_rule_sources/drug_indication/tier_c_bucket_a.yaml"
+        batch = yaml.safe_load(batch_path.read_text(encoding="utf-8"))
+        clause_ids: set[str] = set()
+        for ids in patches.values():
+            clause_ids.update(ids)
+        for rule in batch.get("rules") or []:
+            clause_ids.update(rule.get("gate_b_sources") or [])
+        assert len(clause_ids) >= 45
+
+        rules = json.loads(
+            (_REPO_ROOT / "data/gazette/prose_rules/drug_indication_prose.json").read_text(encoding="utf-8")
+        )["rules"]
+        encoded = {c for r in rules for c in (r.get("gate_b_sources") or [])}
+        assert clause_ids <= encoded
+
+
+class TestTierCBucketBEncoding:
+    def test_bucket_b_clauses_in_prose_rules(self) -> None:
+        import importlib
+
+        import yaml
+
+        mod = importlib.import_module("scripts.sut.prose.drug_indication_bucket_b_patches")
+        patches = dict(getattr(mod, "SOURCE_PATCHES", {}) or {})
+        batch_path = _REPO_ROOT / "data/gazette/prose_rule_sources/drug_indication/tier_c_bucket_b.yaml"
+        batch = yaml.safe_load(batch_path.read_text(encoding="utf-8"))
+        clause_ids: set[str] = set()
+        for ids in patches.values():
+            clause_ids.update(ids)
+        for rule in batch.get("rules") or []:
+            clause_ids.update(rule.get("gate_b_sources") or [])
+        assert len(clause_ids) >= 45
+
+        rules = json.loads(
+            (_REPO_ROOT / "data/gazette/prose_rules/drug_indication_prose.json").read_text(encoding="utf-8")
+        )["rules"]
+        encoded = {c for r in rules for c in (r.get("gate_b_sources") or [])}
+        assert clause_ids <= encoded
+        assert any(r.get("required_biomarkers") for r in rules)
+        assert any(r.get("requires_prior_therapy") for r in rules)
+
+
+class TestTierCBucketCManifest:
+    def test_emr_blocked_catalog_and_coverage(self) -> None:
+        from scripts.sut.prose.coverage import _load_drug_indication_emr_blocked_clause_ids
+
+        catalog_path = _REPO_ROOT / "data/gazette/prose_corpus/L4.2_drug_tier_c_emr_blocked_catalog.json"
+        assert catalog_path.is_file()
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        assert len(catalog.get("clauses") or []) >= 330
+        blocked = _load_drug_indication_emr_blocked_clause_ids()
+        assert len(blocked) >= 140

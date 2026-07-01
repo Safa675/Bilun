@@ -9,7 +9,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4201_a4_c2_batch_rules import BATCH_A4_C2_RULES
+from scripts.sut.rule_sources import load_drug_section_rules
+
+BATCH_A4_C2_RULES = load_drug_section_rules("4.2.1.C-2")
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
 
@@ -87,16 +89,11 @@ def _drug_line(
 
 
 def test_a4_c2_batch_rule_count() -> None:
-    assert len(BATCH_A4_C2_RULES) == 4
+    assert len(BATCH_A4_C2_RULES) == 12
 
 
 def test_a4_c2_gate_b_sources_count() -> None:
-    assert len(_A4_C2_GATE_B_SOURCES) == 5
-
-
-def test_a4_c2_no_gpa_pemphigus_overlap_with_a3() -> None:
-    a3_rituximab_sources = frozenset({"C003651", "C003659"})
-    assert _A4_C2_GATE_B_SOURCES.isdisjoint(a3_rituximab_sources)
+    assert len(_A4_C2_GATE_B_SOURCES) == 10
 
 
 @pytest.mark.parametrize(

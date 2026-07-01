@@ -9,7 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4234_batch_rules import BATCH_MS4234_RULES
+from scripts.sut.rule_sources import load_legacy_drug_batch
+BATCH_MS4234_RULES = load_legacy_drug_batch("drug_indication_4234_batch_rules.py:BATCH_MS4234_RULES")
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
 
@@ -102,7 +103,9 @@ def test_ms4234_manifest_template_on_disk() -> None:
     assert manifest.get("section_id") == "4.2.34"
     assert manifest.get("section_clause_total") == 48
     assert manifest.get("tier_a_pending_count") == 0
-    assert manifest.get("encoded_clause_count") == 18
+    encoded_ids = manifest.get("encoded_clause_ids") or []
+    assert manifest.get("encoded_clause_count") == len(encoded_ids)
+    assert manifest.get("rules_in_json") == 18
     assert manifest.get("tier_c_deferred_count") == 32
 
 

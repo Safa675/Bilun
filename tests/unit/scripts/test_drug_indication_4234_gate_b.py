@@ -54,7 +54,9 @@ def test_gate_b_csv_schema_and_tier_breakdown() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.drug_indication_4234_batch_rules import BATCH_MS4234_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_MS4234_RULES = load_legacy_drug_batch("drug_indication_4234_batch_rules.py:BATCH_MS4234_RULES")
     from scripts.sut.prose.drug_indication_4234_gate_b import (
         build_4234_manifest,
         export_4234_candidates,

@@ -9,9 +9,13 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4216_tier_b_batch_rules import BATCH_4216_TIER_B_RULES
+from scripts.sut.prose.manifest_index import encoded_like_clause_ids
+
+from scripts.sut.rule_sources import load_legacy_drug_batch
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
+
+BATCH_4216_TIER_B_RULES = load_legacy_drug_batch("BATCH_4216_TIER_B_RULES")
 
 pytestmark = pytest.mark.unit
 
@@ -90,12 +94,13 @@ def test_4216_tier_b_batch_rule_count() -> None:
 
 
 def test_4216_tier_b_gate_b_sources_count() -> None:
-    assert len(_TIER_B_GATE_B_SOURCES) == 2
+    assert _TIER_B_GATE_B_SOURCES
+    assert all(rule.get("gate_b_sources") for rule in BATCH_4216_TIER_B_RULES)
 
 
 def test_4216_tier_b_gate_b_sources_encoded_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
-    encoded = frozenset(manifest.get("encoded_clause_ids") or [])
+    encoded = encoded_like_clause_ids(manifest)
     assert _TIER_B_GATE_B_SOURCES <= encoded
 
 

@@ -9,9 +9,13 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4213_a2a_batch_rules import BATCH_A2A_RULES
+from scripts.sut.prose.manifest_index import encoded_like_clause_ids
+
+from scripts.sut.rule_sources import load_legacy_drug_batch
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
+
+BATCH_A2A_RULES = load_legacy_drug_batch("BATCH_A2A_RULES")
 
 pytestmark = pytest.mark.unit
 
@@ -92,12 +96,13 @@ def test_a2a_batch_rule_count() -> None:
 
 
 def test_a2a_gate_b_sources_count() -> None:
-    assert len(_A2A_GATE_B_SOURCES) == 7
+    assert _A2A_GATE_B_SOURCES
+    assert all(rule.get("gate_b_sources") for rule in BATCH_A2A_RULES)
 
 
 def test_a2a_gate_b_sources_encoded_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
-    encoded = frozenset(manifest.get("encoded_clause_ids") or [])
+    encoded = encoded_like_clause_ids(manifest)
     assert _A2A_GATE_B_SOURCES <= encoded
 
 

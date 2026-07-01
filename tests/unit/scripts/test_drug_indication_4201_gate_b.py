@@ -58,7 +58,9 @@ def test_gate_b_csv_schema_and_tier_a_signal() -> None:
 
 
 def test_manifest_pilot_encoded_and_pending_trace() -> None:
-    from scripts.sut.prose.drug_indication_4201_pilot_batch_rules import BATCH_A1_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A1_RULES = load_legacy_drug_batch("drug_indication_4201_pilot_batch_rules.py:BATCH_A1_RULES")
     from scripts.sut.prose.drug_indication_4201_gate_b import (
         build_4201_manifest,
         export_4201_candidates,
@@ -95,8 +97,12 @@ def test_gate_b_artifacts_on_disk() -> None:
 
 
 def test_a2_manifest_covers_pending_sources() -> None:
-    from scripts.sut.prose.drug_indication_4201_a2_batch_rules import BATCH_A2_RULES
-    from scripts.sut.prose.drug_indication_4201_pilot_batch_rules import BATCH_A1_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A2_RULES = load_legacy_drug_batch("drug_indication_4201_a2_batch_rules.py:BATCH_A2_RULES")
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A1_RULES = load_legacy_drug_batch("drug_indication_4201_pilot_batch_rules.py:BATCH_A1_RULES")
     from scripts.sut.prose.drug_indication_4201_gate_b import (
         build_4201_manifest,
         export_4201_candidates,
@@ -121,9 +127,15 @@ def test_a2_manifest_covers_pending_sources() -> None:
 
 
 def test_a3_manifest_covers_batch_sources() -> None:
-    from scripts.sut.prose.drug_indication_4201_a3_batch_rules import BATCH_A3_RULES
-    from scripts.sut.prose.drug_indication_4201_a2_batch_rules import BATCH_A2_RULES
-    from scripts.sut.prose.drug_indication_4201_pilot_batch_rules import BATCH_A1_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A3_RULES = load_legacy_drug_batch("drug_indication_4201_a3_batch_rules.py:BATCH_A3_RULES")
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A2_RULES = load_legacy_drug_batch("drug_indication_4201_a2_batch_rules.py:BATCH_A2_RULES")
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A1_RULES = load_legacy_drug_batch("drug_indication_4201_pilot_batch_rules.py:BATCH_A1_RULES")
     from scripts.sut.prose.drug_indication_4201_gate_b import (
         build_4201_manifest,
         export_4201_candidates,
@@ -165,14 +177,18 @@ def test_in_force_manifest_traces_all_clauses() -> None:
 
 
 def test_a4_manifest_covers_all_parallel_clusters() -> None:
-    from scripts.sut.prose.drug_indication_4201_a4_batch_rules import BATCH_A4_RULES
-    from scripts.sut.prose.drug_indication_4201_a3_batch_rules import BATCH_A3_RULES
-    from scripts.sut.prose.drug_indication_4201_a2_batch_rules import BATCH_A2_RULES
-    from scripts.sut.prose.drug_indication_4201_pilot_batch_rules import BATCH_A1_RULES
+    from scripts.sut.rule_sources import load_drug_sections_rules, load_legacy_drug_batch
     from scripts.sut.prose.drug_indication_4201_gate_b import (
         build_4201_manifest,
         export_4201_candidates,
     )
+
+    BATCH_A4_RULES = load_drug_sections_rules(
+        ["4.2.1.C-1", "4.2.1.C-2", "4.2.1.C-5", "4.2.1.C-7"]
+    )
+    BATCH_A3_RULES = load_legacy_drug_batch("drug_indication_4201_a3_batch_rules.py:BATCH_A3_RULES")
+    BATCH_A2_RULES = load_legacy_drug_batch("drug_indication_4201_a2_batch_rules.py:BATCH_A2_RULES")
+    BATCH_A1_RULES = load_legacy_drug_batch("drug_indication_4201_pilot_batch_rules.py:BATCH_A1_RULES")
 
     combined = [
         {k: v for k, v in rule.items() if k != "encode_batch"}
@@ -230,9 +246,9 @@ def test_audit_gap_parity_zero_untraced() -> None:
     manifest = build_4201_manifest(frame, rules, effective_date="2026-06-27")
 
     report = audit_4201_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
-    assert report["gap_count"] == 163
-    assert report["encoded_count"] == 120
-    assert report["tier_c_deferred_count"] == 163
+    assert report["gap_count"] == 154
+    assert report["encoded_count"] == 129
+    assert report["tier_c_deferred_count"] == 154
     assert report["untraced_clause_ids"] == []
     assert report["misclassified_ab_gap_ids"] == []
     assert report["missing_from_traces"] == []

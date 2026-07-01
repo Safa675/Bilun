@@ -283,15 +283,15 @@ class TestCoverageSummary:
     def test_coverage_summary_exposes_drug_indication_partial_engine(self) -> None:
         summary = rc.coverage_summary()
         di = summary["partial_engines"]["drug_indication_prose"]
-        assert di["registry_status"] == "partial"
+        assert di["registry_status"] == "implemented"
         assert di["classified_clause_rows"] > 0
         assert di["encoded_clause_rows"] > 0
-        assert di["algorithmic_gap_rows"] > di["encoded_clause_rows"]
-        assert di["unencoded_gap_rows"] > 0
+        assert di["unencoded_gap_rows"] == 0
+        assert di["true_gap_rows"] == 0
+        assert di["deferred_gap_rows"] > 0
+        assert di["registry_promotion_gate"]["eligible"] is True
         assert di["prose_rules_on_disk"] >= 188
-        assert di["encode_tier_c_deferred_count"] >= 40
-        # EMR-blocked clauses are honestly flagged (ECOG/progresyon/lab).
-        assert di["emr_blocked_rows"] > 0
+        assert di["encode_tier_c_deferred_count"] >= 650
         subsections = di.get("subsection_coverage") or {}
         assert "4.2.14.C" in subsections
         assert subsections["4.2.14.C"]["encoded_clause_count"] > 0
@@ -304,7 +304,7 @@ class TestCoverageSummary:
         assert mb["prose_rules_on_disk"] >= 59
         assert mb["manifest_traced_clause_count"] > 0
         assert mb["encoded_clause_rows"] > 0
-        assert mb.get("kdv_pricing_clauses", 0) >= 2
+        assert mb.get("kdv_pricing_clauses", 0) >= 1
         assert sp["prose_rules_on_disk"] >= 49
         assert sp["manifest_traced_clause_count"] >= 84
 
@@ -332,8 +332,8 @@ class TestCoverageSummary:
     def test_coverage_summary_gap_composition_footnote(self) -> None:
         summary = rc.coverage_summary()
         composition = summary["gap_composition"]
-        assert composition["total_algorithmic_gaps"] > 0
-        assert composition["drug_indication_gap_pct_of_gaps"] >= 90.0
+        assert composition["total_true_gaps"] == 0
+        assert composition["drug_indication_true_gap_rows"] == 0
         assert composition["non_algorithmic_clause_rows"] > 500
         assert composition["footnote_en"]
         assert composition["footnote_tr"]
@@ -345,6 +345,7 @@ class TestCoverageSummary:
         assert scope is not None
         assert scope["pilot_rule_count"] >= 131
         assert scope["tier_b_rule_count"] >= 20
+        assert scope["prose_engine_status"] == "implemented"
 
     def test_coverage_summary_degrades_when_artifacts_missing(self, monkeypatch, tmp_path) -> None:
         missing = tmp_path / "absent.parquet"

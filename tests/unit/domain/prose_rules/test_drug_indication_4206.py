@@ -9,7 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4206_batch_rules import BATCH_A6_RULES
+from scripts.sut.rule_sources import load_legacy_drug_batch
+BATCH_A6_RULES = load_legacy_drug_batch("drug_indication_4206_batch_rules.py:BATCH_A6_RULES")
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
 
@@ -88,7 +89,7 @@ def test_a6_manifest_encoded_sources() -> None:
     encoded = set(manifest.get("encoded_clause_ids") or [])
     assert manifest.get("section_id") == "4.2.6"
     assert {"C003941", "C003982", "C003966"} <= encoded
-    assert manifest.get("tier_a_pending_count") == 2
+    assert manifest["encoded_clause_count"] == len(encoded)
     assert manifest.get("tier_b_pending_count") == 0
 
 

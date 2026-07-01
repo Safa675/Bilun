@@ -17,14 +17,18 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4206_mani
 
 _A2_ENCODED = {
     "C003941",
+    "C003957",
+    "C003965",
     "C003966",
     "C003982",
     "C004016",
     "C004030",
     "C004033",
 }
+_A2_TIER_A_ENCODED = _A2_ENCODED - {"C003965"}
 _A6_ENCODED = {"C003998", "C004003", "C004039"}
 _ALL_ENCODED = _A6_ENCODED | _A2_ENCODED
+_ALL_TIER_A_ENCODED = _A6_ENCODED | _A2_TIER_A_ENCODED
 
 
 def test_gate_b_exports_4206_candidates() -> None:
@@ -50,7 +54,7 @@ def test_gate_b_csv_schema() -> None:
     ):
         assert col in frame.columns
     tier_a = set(frame.filter(pl.col("encode_tier") == "A")["clause_id"].to_list())
-    assert _ALL_ENCODED <= tier_a
+    assert _ALL_TIER_A_ENCODED <= tier_a
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
@@ -66,7 +70,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     encoded = set(manifest["gate_b_sources_encoded"])
     assert encoded == _ALL_ENCODED
     assert manifest["tier_c_deferred_count"] >= 28
-    assert manifest["tier_a_pending_count"] == 2
+    assert manifest["tier_a_pending_count"] == 1
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["rules_in_json"] == len(rules)
 

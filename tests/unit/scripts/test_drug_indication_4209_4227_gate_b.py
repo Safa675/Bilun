@@ -38,7 +38,7 @@ def test_gate_b_4227_in_force_export() -> None:
     )
     assert export_427 == set(in_force)
     gaps = _gap_clause_ids_4227(_CLAUSES)
-    assert len(gaps) == 39
+    assert len(gaps) == 31
     assert gaps - export_427 == set()
 
 
@@ -69,16 +69,18 @@ def test_gate_b_csv_schema() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.drug_indication_4209_4227_batch_rules import BATCH_A6_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A6_RULES = load_legacy_drug_batch("drug_indication_4209_4227_batch_rules.py:BATCH_A6_RULES")
     from scripts.sut.prose.drug_indication_4209_4227_gate_b import (
         audit_4227_gap_parity,
         build_4209_4227_manifest,
         export_4209_4227_candidates,
     )
-    from scripts.sut.prose.drug_indication_4227_a8_batch_rules import BATCH_A8_RULES
-    from scripts.sut.prose.drug_indication_4227_tier_b_batch_rules import BATCH_4227_TIER_B_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
 
-    combined = BATCH_A6_RULES + BATCH_A8_RULES + BATCH_4227_TIER_B_RULES
+    BATCH_A8_RULES = load_legacy_drug_batch("drug_indication_4227_a8_batch_rules.py:BATCH_A8_RULES")
+    combined = BATCH_A6_RULES + BATCH_A8_RULES
     frame = export_4209_4227_candidates(_CLAUSES)
     manifest = build_4209_4227_manifest(frame, combined, effective_date="2026-06-27")
     audit = audit_4227_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
@@ -91,14 +93,16 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
-    from scripts.sut.prose.drug_indication_4209_4227_batch_rules import BATCH_A6_RULES
-    from scripts.sut.prose.drug_indication_4209_4227_gate_b import write_gate_b_artifacts
-    from scripts.sut.prose.drug_indication_4227_a8_batch_rules import BATCH_A8_RULES
-    from scripts.sut.prose.drug_indication_4227_tier_b_batch_rules import BATCH_4227_TIER_B_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
 
+    BATCH_A6_RULES = load_legacy_drug_batch("drug_indication_4209_4227_batch_rules.py:BATCH_A6_RULES")
+    from scripts.sut.prose.drug_indication_4209_4227_gate_b import write_gate_b_artifacts
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A8_RULES = load_legacy_drug_batch("drug_indication_4227_a8_batch_rules.py:BATCH_A8_RULES")
     corpus = tmp_path / "corpus.csv"
     manifest = tmp_path / "manifest.json"
-    combined = BATCH_A6_RULES + BATCH_A8_RULES + BATCH_4227_TIER_B_RULES
+    combined = BATCH_A6_RULES + BATCH_A8_RULES
     write_gate_b_artifacts(
         clauses_path=_CLAUSES,
         rules_path=_REPO / "data/gazette/prose_rules/drug_indication_prose.json",

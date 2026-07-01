@@ -9,9 +9,11 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4224_pilot_batch_rules import BATCH_A24_RULES
+from scripts.sut.rule_sources import load_legacy_drug_batch
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
+
+BATCH_A24_RULES = load_legacy_drug_batch("BATCH_A24_RULES")
 
 pytestmark = pytest.mark.unit
 

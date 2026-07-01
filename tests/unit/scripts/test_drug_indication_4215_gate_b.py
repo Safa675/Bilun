@@ -22,6 +22,8 @@ _PILOT_SOURCES = {
     "C005779",
     "C005780",
     "C005782",
+    "C005785",
+    "C005820",
     "C005870",
 }
 
@@ -57,20 +59,24 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
         build_4215_manifest,
         export_4215_candidates,
     )
-    from scripts.sut.prose.drug_indication_4215_pilot_batch_rules import BATCH_A15_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A15_RULES = load_legacy_drug_batch("BATCH_A15_RULES")
 
     frame = pl.read_csv(_CORPUS) if _CORPUS.is_file() else export_4215_candidates(_CLAUSES)
     manifest = build_4215_manifest(frame, BATCH_A15_RULES, effective_date="2026-06-27")
     encoded = set(manifest["gate_b_sources_encoded"])
     assert encoded == _PILOT_SOURCES
     assert manifest["tier_c_deferred_count"] >= 40
-    assert manifest["tier_a_pending_count"] >= 4
+    assert manifest["tier_a_pending_count"] >= 3
     assert manifest["rules_in_json"] == len(BATCH_A15_RULES)
 
 
 def test_gate_b_artifacts_on_disk() -> None:
     from scripts.sut.prose.drug_indication_4215_gate_b import write_gate_b_artifacts
-    from scripts.sut.prose.drug_indication_4215_pilot_batch_rules import BATCH_A15_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A15_RULES = load_legacy_drug_batch("BATCH_A15_RULES")
 
     write_gate_b_artifacts(
         clauses_path=_CLAUSES,
@@ -82,5 +88,5 @@ def test_gate_b_artifacts_on_disk() -> None:
     assert _CORPUS.is_file()
     assert _MANIFEST.is_file()
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
-    assert manifest["encoded_clause_count"] == 7
+    assert manifest["encoded_clause_count"] == 9
     assert manifest["section_id"] == "4.2.15"

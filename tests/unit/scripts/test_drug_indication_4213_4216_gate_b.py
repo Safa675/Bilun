@@ -44,7 +44,9 @@ def test_gate_b_csv_schema() -> None:
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
     from scripts.sut.prose.drug_indication_4213_4216_gate_b import build_4213_4216_manifest
-    from scripts.sut.prose.drug_indication_4213_4216_batch_rules import BATCH_A2_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A2_RULES = load_legacy_drug_batch("BATCH_A2_RULES")
 
     frame = pl.read_csv(_CORPUS) if _CORPUS.is_file() else None
     if frame is None:

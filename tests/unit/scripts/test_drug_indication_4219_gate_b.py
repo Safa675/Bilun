@@ -42,7 +42,9 @@ def test_gate_b_csv_schema() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.drug_indication_4219_batch_rules import BATCH_A4_RULES
+    from scripts.sut.rule_sources import load_legacy_drug_batch
+
+    BATCH_A4_RULES = load_legacy_drug_batch("BATCH_A4_RULES")
     from scripts.sut.prose.drug_indication_4219_gate_b import (
         build_4219_manifest,
         export_4219_candidates,

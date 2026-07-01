@@ -11,10 +11,13 @@ pytestmark = pytest.mark.unit
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 ACTIVE_SURFACE_ROOTS = (
-    REPO_ROOT / "apps/sut_web/src/components/tabs/sut",
-    REPO_ROOT / "apps/sut_web/src/app/patient/[id]/billing/page.tsx",
-    REPO_ROOT / "src/api/routes/sut",
-    REPO_ROOT / "src/sut",
+    REPO_ROOT / "frontend/src/components/tabs/sut",
+    REPO_ROOT / "frontend/src/components/sut",
+    REPO_ROOT / "frontend/src/components/patient",
+    REPO_ROOT / "frontend/src/components/tabs",
+    REPO_ROOT / "frontend/src/lib",
+    REPO_ROOT / "frontend/src/app/patient/[id]/billing/page.tsx",
+    REPO_ROOT / "src/bilun/api/routes",
 )
 BANNED_PRODUCT_SURFACE_WORDING = (
     re.compile(r"\bsimulated\b", re.IGNORECASE),
@@ -38,6 +41,13 @@ def _iter_active_surface_files():
             if path.name.endswith((".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx")):
                 continue
             yield path
+
+
+def test_active_sut_product_surfaces_scan_enough_files() -> None:
+    scanned = list(_iter_active_surface_files())
+    assert len(scanned) >= 50, (
+        f"Expected >= 50 active SUT surface files, found {len(scanned)}"
+    )
 
 
 def test_active_sut_product_surfaces_do_not_reintroduce_banned_wording() -> None:

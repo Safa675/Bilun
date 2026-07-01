@@ -9,7 +9,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4201_a5_c7_batch_rules import BATCH_A5_C7_RULES
+from scripts.sut.rule_sources import load_drug_section_rules
+
+BATCH_A5_C7_RULES = load_drug_section_rules("4.2.1.C-7")
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
 
@@ -90,7 +92,7 @@ def _drug_line(
 
 
 def test_a5_c7_batch_rule_count() -> None:
-    assert len(BATCH_A5_C7_RULES) == 4
+    assert len(BATCH_A5_C7_RULES) == 16
 
 
 def test_a5_c7_gate_b_sources_encoded_in_manifest() -> None:

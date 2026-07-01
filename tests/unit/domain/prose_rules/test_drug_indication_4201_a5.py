@@ -9,10 +9,30 @@ from pathlib import Path
 
 import pytest
 
-from scripts.sut.prose.drug_indication_4201_a5_batch_rules import BATCH_A5_RULES
-from scripts.sut.prose.drug_indication_4201_a5_c10_14_batch_rules import BATCH_A5_C10_14_RULES
+from scripts.sut.rule_sources import load_drug_section_rules, load_drug_sections_rules
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
+
+BATCH_A5_C10_14_RULES = load_drug_sections_rules(
+    ["4.2.1.C-10", "4.2.1.C-11", "4.2.1.C-12", "4.2.1.C-14"]
+)
+BATCH_A5_RULES = load_drug_sections_rules(
+    [
+        "4.2.1.C-2",
+        "4.2.1.C-3",
+        "4.2.1.C-4",
+        "4.2.1.C-5",
+        "4.2.1.C-6",
+        "4.2.1.C-7",
+        "4.2.1.C-8",
+        "4.2.1.C-9",
+        "4.2.1.C-10",
+        "4.2.1.C-11",
+        "4.2.1.C-12",
+        "4.2.1.C-13",
+        "4.2.1.C-14",
+    ]
+)
 
 pytestmark = pytest.mark.unit
 
@@ -90,7 +110,7 @@ def test_a5_combined_batch_gate_b_sources_encoded_in_manifest() -> None:
 
 
 def test_a5_c10_14_batch_rule_count() -> None:
-    assert len(BATCH_A5_C10_14_RULES) == 5
+    assert len(BATCH_A5_C10_14_RULES) == 10
 
 
 @pytest.mark.parametrize(
