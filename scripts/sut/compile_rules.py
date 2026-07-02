@@ -1428,7 +1428,12 @@ def check(targets: list[CompileTarget] | None = None) -> int:
 
     before = {path: path.read_bytes() if path.exists() else None for path in sorted(paths)}
     try:
-        compile_all(targets)
+        import contextlib
+        import io as _io
+
+        # Suppress compile_all's stage-status output so --check prints only the verdict.
+        with contextlib.redirect_stdout(_io.StringIO()):
+            compile_all(targets)
         after_paths = set(before)
         after_paths.update(_RULES_DIR.rglob("*.json"))
         after_paths.update(_MANIFEST_DIR.glob("*.json"))
