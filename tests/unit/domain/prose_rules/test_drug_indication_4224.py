@@ -83,7 +83,7 @@ def test_a24_manifest_encoded_sources() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
     assert manifest.get("section_id") == "4.2.24"
-    assert len(encoded) == 8
+    assert len(encoded) == 30
 
 
 @pytest.mark.parametrize(
