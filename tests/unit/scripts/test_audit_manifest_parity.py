@@ -53,6 +53,11 @@ def test_audit_passes_when_lists_match_traces() -> None:
     assert audit_manifest_payload("fixture.json", manifest) == []
 
 
+def test_audit_skips_list_type_manifest() -> None:
+    """Header-clause-id manifests (bare JSON arrays) must not crash the audit."""
+    assert audit_manifest_payload("header_ids.json", ["C001", "C002"]) == []
+
+
 def test_reconcile_rebuilds_lists_from_traces() -> None:
     manifest = _minimal_manifest(stale_encoded=True)
     reconcile_manifest_payload(manifest, backfill=False)

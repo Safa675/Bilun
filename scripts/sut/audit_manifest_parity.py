@@ -44,7 +44,9 @@ class ManifestParityReport:
         return not self.issues
 
 
-def _trace_index(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
+def _trace_index(payload: dict[str, Any] | list[Any]) -> dict[str, dict[str, Any]]:
+    if not isinstance(payload, dict):
+        return {}  # list-type manifests (header clause-id arrays) have no traces
     traces = payload.get("clause_traces")
     if isinstance(traces, list):
         return {str(t.get("clause_id")): t for t in traces if isinstance(t, dict) and t.get("clause_id")}
@@ -53,8 +55,10 @@ def _trace_index(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {}
 
 
-def audit_manifest_payload(manifest_name: str, payload: dict[str, Any]) -> list[ManifestParityIssue]:
+def audit_manifest_payload(manifest_name: str, payload: Any) -> list[ManifestParityIssue]:
     """Return parity issues for a single manifest JSON payload."""
+    if not isinstance(payload, dict):
+        return []  # non-dict manifests (e.g. header clause-id arrays) have no traces to audit
     issues: list[ManifestParityIssue] = []
     trace_by_id = _trace_index(payload)
     if not trace_by_id:
