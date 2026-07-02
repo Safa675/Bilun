@@ -3,7 +3,7 @@
 Convert SUT XLSX files into parquet tables with metadata.
 
 Input (default):
-  2026.01.17-Degisiklik Tebligi Islenmis Guncel 2013 SUT/
+  raw data/<latest YYYY.MM.DD-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT>/
 
 Output (default):
   data/gazette/raw/...
@@ -27,13 +27,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
+from scripts.sut._common import find_latest_consolidated_sut_dir
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-DEFAULT_INPUT_DIR = (
-    PROJECT_ROOT / "2026.01.17-Degisiklik Tebligi Islenmis Guncel 2013 SUT"
-)
+DEFAULT_INPUT_DIR = None
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "gazette"
+RAW_DATA_ROOT = PROJECT_ROOT / "raw data"
 
 
 RE_ANNEX = re.compile(r"(EK-\d+[A-ZC]?(?:-\d+)*)", re.IGNORECASE)
@@ -63,8 +63,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Convert SUT XLSX files to parquet")
     parser.add_argument(
         "--input-dir",
-        default=str(DEFAULT_INPUT_DIR),
-        help="Root directory containing SUT XLSX files",
+        default=DEFAULT_INPUT_DIR,
+        help="Root directory containing SUT XLS/XLSX files (default: latest under raw data/)",
     )
     parser.add_argument(
         "--output-dir",
@@ -307,10 +307,11 @@ def build_manifest(results: list[SheetResult]) -> pd.DataFrame:
 
 def main() -> None:
     args = parse_args()
-    input_dir = Path(args.input_dir)
+    default_input = find_latest_consolidated_sut_dir(RAW_DATA_ROOT)
+    input_dir = Path(args.input_dir) if args.input_dir else default_input
     output_dir = Path(args.output_dir)
 
-    if not input_dir.exists():
+    if input_dir is None or not input_dir.exists():
         raise FileNotFoundError(f"Input directory does not exist: {input_dir}")
 
     # Include both .xlsx and .xls files

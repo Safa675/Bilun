@@ -1,3 +1,17 @@
+## Task: Remove hardcoded SUT date paths
+
+### Goal
+Resolve default SUT input paths dynamically from `raw data/` so scripts keep working when new tebliğ folders are added.
+
+### Subtasks
+- [x] Add shared helper to detect latest consolidated SUT folder and main docx.
+- [x] Update `extract_sut_prose.py` to auto-resolve latest docx when `--docx` is omitted.
+- [x] Update `convert_xlsx_to_parquet.py` to auto-resolve latest SUT folder when `--input-dir` is omitted.
+- [x] Verify both scripts resolve to current `2026.05.23` source locally.
+
+### Out of Scope
+Changing extraction logic, coverage logic, or re-running the full ETL pipeline.
+
 ## Task: Repo-wide bug remediation (phased)
 
 ### Goal

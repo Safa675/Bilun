@@ -10,6 +10,7 @@ Provides:
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -103,3 +104,55 @@ def _add_validity_ranges(df: pd.DataFrame, key_col: str) -> pd.DataFrame:
     )
     work.loc[next_eff.isna(), "valid_to"] = pd.NA
     return work.drop(columns=["effective_date_parsed"])
+
+
+_CONSOLIDATED_SUT_DIR_SUFFIX = "Değişiklik Tebliği İşlenmiş Güncel 2013 SUT"
+_DATE_PREFIX_RE = re.compile(r"^(\d{4})\.(\d{2})\.(\d{2})-")
+
+
+def find_latest_consolidated_sut_dir(raw_data_root: Path) -> Path | None:
+    """Return latest consolidated SUT directory under ``raw data/``.
+
+    Expected folder shape:
+      YYYY.MM.DD-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT
+    """
+    if not raw_data_root.exists():
+        return None
+
+    candidates: list[tuple[str, Path]] = []
+    for entry in raw_data_root.iterdir():
+        if not entry.is_dir():
+            continue
+        if not entry.name.endswith(_CONSOLIDATED_SUT_DIR_SUFFIX):
+            continue
+        m = _DATE_PREFIX_RE.match(entry.name)
+        if m is None:
+            continue
+        date_key = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+        candidates.append((date_key, entry))
+
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: item[0])
+    return candidates[-1][1]
+
+
+def find_latest_consolidated_sut_docx(raw_data_root: Path) -> Path | None:
+    """Return main consolidated SUT .docx inside latest SUT directory."""
+    sut_dir = find_latest_consolidated_sut_dir(raw_data_root)
+    if sut_dir is None:
+        return None
+
+    root_docx = sorted(p for p in sut_dir.glob("*.docx") if p.is_file())
+    if not root_docx:
+        return None
+
+    # Prefer a filename that explicitly contains "İşlenmiş Güncel 2013 SUT".
+    preferred = [
+        p
+        for p in root_docx
+        if "İşlenmiş Güncel 2013 SUT" in p.name or "Islenmis Guncel 2013 SUT" in p.name
+    ]
+    if preferred:
+        return preferred[0]
+    return root_docx[0]
