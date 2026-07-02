@@ -96,7 +96,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     frame = export_4210_candidates(_CLAUSES)
     rules = _combined_rules()
     manifest = build_4210_manifest(frame, rules, effective_date="2026-06-27")
-    encoded = set(manifest["gate_b_sources_encoded"])
+    encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _ALL_ENCODED_IDS
     assert manifest["tier_c_deferred_count"] == 111
     assert manifest["tier_a_pending_count"] == 0
@@ -198,4 +198,7 @@ def test_gate_b_artifacts_on_disk() -> None:
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"])
     assert manifest["tier_c_deferred_count"] == 109
-    assert set(manifest["encoded_clause_ids"]) == set(manifest["gate_b_sources_encoded"])
+    # canonical-v1: gate_b_sources_encoded removed; encoded_clause_ids is canonical.
+    legacy = manifest.get("gate_b_sources_encoded")
+    if legacy is not None:
+        assert set(manifest["encoded_clause_ids"]) == set(legacy)

@@ -98,7 +98,7 @@ def test_manifest_covers_all_in_force_4213_clauses() -> None:
             assert trace.get("defer_themes") is not None
 
 
-def test_shared_manifest_preserves_4216_traces() -> None:
+def test_shared_manifest_preserves_4216_traces(tmp_path: Path) -> None:
     from scripts.sut.prose.drug_indication_4213_gate_b import write_gate_b_artifacts
 
     before_4216: set[str] = set()
@@ -110,15 +110,22 @@ def test_shared_manifest_preserves_4216_traces() -> None:
             if str(t.get("section_id") or "").startswith("4.2.16")
         }
 
+    # Seed the tmp manifest from the committed shared manifest so the write step can
+    # preserve the existing §4.2.16 traces instead of mutating the committed artifact.
+    shared_manifest_path = tmp_path / _SHARED_MANIFEST.name
+    if _SHARED_MANIFEST.is_file():
+        shared_manifest_path.write_text(_SHARED_MANIFEST.read_text(encoding="utf-8"), encoding="utf-8")
+
+    corpus = tmp_path / _CORPUS.name
     write_gate_b_artifacts(
         clauses_path=_CLAUSES,
         rules_path=_RULES,
-        corpus_csv=_CORPUS,
-        shared_manifest_path=_SHARED_MANIFEST,
+        corpus_csv=corpus,
+        shared_manifest_path=shared_manifest_path,
         effective_date="2026-06-27",
     )
 
-    after = json.loads(_SHARED_MANIFEST.read_text(encoding="utf-8"))
+    after = json.loads(shared_manifest_path.read_text(encoding="utf-8"))
     after_4213 = {
         t["clause_id"]
         for t in after.get("clause_traces") or []

@@ -76,20 +76,22 @@ def test_manifest_pilot_encoded_and_pending_trace() -> None:
     assert manifest["section_id"] == "4.2.1"
 
 
-def test_gate_b_artifacts_on_disk() -> None:
+def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     from scripts.sut.prose.drug_indication_4201_gate_b import write_gate_b_artifacts
 
     rules_path = _REPO / "data/gazette/prose_rules/drug_indication_prose.json"
+    corpus = tmp_path / _CORPUS.name
+    manifest_path = tmp_path / _MANIFEST.name
     write_gate_b_artifacts(
         clauses_path=_CLAUSES,
         rules_path=rules_path,
-        corpus_csv=_CORPUS,
-        manifest_path=_MANIFEST,
+        corpus_csv=corpus,
+        manifest_path=manifest_path,
         effective_date="2026-06-27",
     )
-    assert _CORPUS.is_file()
-    assert _MANIFEST.is_file()
-    manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
+    assert corpus.is_file()
+    assert manifest_path.is_file()
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["section_clause_total"] == 282
     assert manifest["encoded_clause_count"] >= 90
     assert manifest["tier_a_pending_count"] == 0

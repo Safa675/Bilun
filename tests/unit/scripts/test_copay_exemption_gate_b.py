@@ -88,18 +88,20 @@ def test_manifest_has_gate_b_sources_encoded_union() -> None:
     assert manifest["rules_in_json"] == 17
 
 
-def test_gate_b_artifacts_on_disk() -> None:
+def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     from scripts.sut.prose.copay_exemption_gate_b import write_gate_b_artifacts
 
+    corpus = tmp_path / _CORPUS.name
+    manifest_path = tmp_path / _MANIFEST.name
     write_gate_b_artifacts(
         clauses_path=_CLAUSES,
         rules_path=_RULES,
-        corpus_csv=_CORPUS,
-        manifest_path=_MANIFEST,
+        corpus_csv=corpus,
+        manifest_path=manifest_path,
     )
-    assert _CORPUS.is_file()
-    assert _MANIFEST.is_file()
-    corpus = pl.read_csv(_CORPUS)
-    assert corpus.height >= 60
-    payload = json.loads(_MANIFEST.read_text(encoding="utf-8"))
+    assert corpus.is_file()
+    assert manifest_path.is_file()
+    corpus_df = pl.read_csv(corpus)
+    assert corpus_df.height >= 60
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert len(payload["gate_b_sources_encoded"]) >= 18

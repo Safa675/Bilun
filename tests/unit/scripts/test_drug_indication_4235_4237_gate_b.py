@@ -78,7 +78,8 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     encoded = set(manifest["gate_b_sources_encoded"])
     on_disk = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     # Fresh build is a subset of on-disk (reconciliation may expand encoded beyond the batch).
-    assert encoded <= set(on_disk["gate_b_sources_encoded"])
+    on_disk_encoded = set(on_disk.get("encoded_clause_ids") or on_disk.get("gate_b_sources_encoded") or [])
+    assert encoded <= on_disk_encoded
     assert "C006717" in encoded
     assert manifest["tier_c_deferred_count"] == 19
     assert manifest["tier_a_pending_count"] == 0
@@ -88,21 +89,23 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     assert manifest["section_4.2.37_clause_total"] == 9
 
 
-def test_gate_b_artifacts_on_disk() -> None:
+def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     from scripts.sut.rule_sources import load_legacy_drug_batch
 
     BATCH_A5_RULES = load_legacy_drug_batch("drug_indication_4235_4237_batch_rules.py:BATCH_A5_RULES")
     from scripts.sut.prose.drug_indication_4235_4237_gate_b import write_gate_b_artifacts
 
+    corpus = tmp_path / _CORPUS.name
+    manifest_path = tmp_path / _MANIFEST.name
     write_gate_b_artifacts(
         clauses_path=_CLAUSES,
-        corpus_csv=_CORPUS,
-        manifest_path=_MANIFEST,
+        corpus_csv=corpus,
+        manifest_path=manifest_path,
         effective_date="2026-06-27",
         batch_rules=BATCH_A5_RULES,
     )
-    assert _CORPUS.is_file()
-    assert _MANIFEST.is_file()
-    manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
+    assert corpus.is_file()
+    assert manifest_path.is_file()
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"]) == 7
     assert manifest["section_clause_total"] == 26

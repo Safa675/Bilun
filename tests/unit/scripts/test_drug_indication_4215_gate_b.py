@@ -72,21 +72,23 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     assert manifest["rules_in_json"] == len(BATCH_A15_RULES)
 
 
-def test_gate_b_artifacts_on_disk() -> None:
+def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     from scripts.sut.prose.drug_indication_4215_gate_b import write_gate_b_artifacts
     from scripts.sut.rule_sources import load_legacy_drug_batch
 
     BATCH_A15_RULES = load_legacy_drug_batch("BATCH_A15_RULES")
 
+    corpus = tmp_path / _CORPUS.name
+    manifest_path = tmp_path / _MANIFEST.name
     write_gate_b_artifacts(
         clauses_path=_CLAUSES,
         rules=BATCH_A15_RULES,
-        corpus_csv=_CORPUS,
-        manifest_path=_MANIFEST,
+        corpus_csv=corpus,
+        manifest_path=manifest_path,
         effective_date="2026-06-27",
     )
-    assert _CORPUS.is_file()
-    assert _MANIFEST.is_file()
-    manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
+    assert corpus.is_file()
+    assert manifest_path.is_file()
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["encoded_clause_count"] == 9
     assert manifest["section_id"] == "4.2.15"
