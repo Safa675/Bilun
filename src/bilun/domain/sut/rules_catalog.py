@@ -304,12 +304,26 @@ def _material_bundling_partial_engine_summary(clause_frame: pl.DataFrame) -> dic
 _L1_4_CORPUS_PATH = PROSE_CORPUS_DIR / "L1.4_material_bundling_prose.csv"
 
 
-def _l14_corpus_row_count() -> int:
-    """Read the live L1.4 corpus row count (was hardcoded 48, now 24 after in-force sync)."""
-    try:
-        return pl.read_csv(_L1_4_CORPUS_PATH, columns=["clause_id"]).height
-    except (FileNotFoundError, pl.exceptions.ColumnNotFoundError):
+def _corpus_row_count_from_parquet(section_prefix: str) -> int:
+    """Derive corpus row count from sut_clauses.parquet (Phase 4 — no CSV runtime reads).
+
+    Corpus CSVs are encode-wave scratch files; the parquet is the source of truth.
+    """
+    if not SUT_CLAUSES_PATH.exists():
         return 0
+    try:
+        return (
+            pl.read_parquet(SUT_CLAUSES_PATH)
+            .filter(pl.col("section_id").str.starts_with(section_prefix))
+            .height
+        )
+    except Exception:  # pragma: no cover - defensive
+        return 0
+
+
+def _l14_corpus_row_count() -> int:
+    """L1.4 material bundling corpus count (§3.1–3.2 clauses)."""
+    return _corpus_row_count_from_parquet("3.1") + _corpus_row_count_from_parquet("3.2")
 
 
 _PAYMENT_METHOD_MOTORS = (
@@ -329,10 +343,8 @@ _COPAY_MOTORS = (
 
 
 def _l18_corpus_row_count() -> int:
-    try:
-        return pl.read_csv(_L18_CORPUS_PATH, columns=["clause_id"]).height
-    except (FileNotFoundError, pl.exceptions.ColumnNotFoundError):
-        return 0
+    """L1.8 copay exemption corpus count (§1.8 clauses)."""
+    return _corpus_row_count_from_parquet("1.8")
 
 
 def _copay_exemption_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:

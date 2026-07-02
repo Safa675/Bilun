@@ -143,49 +143,49 @@ def _load_gate_b_sources_from_rules_json(path: Path) -> frozenset[str]:
 def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
     """Encoded clause IDs for the merged drug_indication corpus.
 
-    Combines §4.2.14.C (oncology) + §4.2.33 (anti-VEGF) + §4.2.13/4.2.16 (A2 pilot)
-    manifests so coverage rebuild marks traced clauses as encoded.
+    Phase 6 simplification: derive the encoded set directly from rule JSON
+    gate_b_sources (the single source of truth), supplemented by manifests
+    for sections whose rules haven't been fully encoded yet.
     """
-    encoded = _load_encoded_clause_ids("L4.2_drug_indication_4.2.14.C_manifest.json")
-    if _ANTI_VEGF_MANIFEST.is_file():
-        encoded |= _manifest_clause_ids_from_payload(
-            json.loads(_ANTI_VEGF_MANIFEST.read_text(encoding="utf-8"))
-        )
-    if _DRUG_4213_4216_MANIFEST.is_file():
-        encoded |= _manifest_clause_ids_from_payload(
-            json.loads(_DRUG_4213_4216_MANIFEST.read_text(encoding="utf-8"))
-        )
-    if _DRUG_4217_MANIFEST.is_file():
-        encoded |= _manifest_clause_ids_from_payload(
-            json.loads(_DRUG_4217_MANIFEST.read_text(encoding="utf-8"))
-        )
-    if _DRUG_4219_MANIFEST.is_file():
-        encoded |= _manifest_clause_ids_from_payload(
-            json.loads(_DRUG_4219_MANIFEST.read_text(encoding="utf-8"))
-        )
+    # Primary: derive from rules JSON gate_b_sources (canonical source of truth)
+    encoded: frozenset[str] = frozenset()
+    if _DRUG_INDICATION_RULES_JSON.is_file():
+        try:
+            payload = json.loads(_DRUG_INDICATION_RULES_JSON.read_text(encoding="utf-8"))
+            rule_encoded = frozenset(
+                str(cid)
+                for rule in (payload.get("rules") or [])
+                for cid in (rule.get("gate_b_sources") or [])
+            )
+            encoded |= rule_encoded
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Supplement: anti-VEGF corpus (separate JSON)
+    anti_vegf_rules = _DRUG_INDICATION_RULES_JSON.parent / "anti_vegf_prose.json"
+    if anti_vegf_rules.is_file():
+        try:
+            av_payload = json.loads(anti_vegf_rules.read_text(encoding="utf-8"))
+            encoded |= frozenset(
+                str(cid)
+                for rule in (av_payload.get("rules") or [])
+                for cid in (rule.get("gate_b_sources") or [])
+            )
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Supplement: R6 deontic-wave manifests (sections whose rules aren't in the
+    # main JSON yet — these are still manifest-tracked only)
     for name in (
-        "L4.2_drug_indication_4234_manifest.json",
-        "L4.2_drug_indication_4238_manifest.json",
-        "L4.2_drug_indication_4218_4236_manifest.json",
-        "L4.2_drug_indication_4235_4237_manifest.json",
-        "L4.2_drug_indication_4210_manifest.json",
-        "L4.2_drug_indication_4206_manifest.json",
-        "L4.2_drug_indication_4209_4227_manifest.json",
-        "L4.2_drug_indication_4201_manifest.json",
-        "L4.2_drug_indication_4215_manifest.json",
-        "L4.2_drug_indication_4224_manifest.json",
-        # R6 deontic-wave manifests (encoded 2026-06-29): oncology §4.2.14,
-        # rheumatology/biologics §4.2.1/13/33/34, small-mid §4.2 sub-sections,
-        # and metabolic/mid §4.2 sub-sections.
         "L4.2_drug_indication_4_2_14_wave2_manifest.json",
         "L4.2_drug_indication_rheum_biologics_manifest.json",
         "L4.2_drug_indication_small_mid_manifest.json",
         "L4.2_drug_indication_metabolic_mid_manifest.json",
-        "L4_drug_ek4a_r6_manifest.json",  # R6 §4.1/4.3-4.7 drug provisions
-        "L4.2_drug_indication_eye_mid_b_r6_manifest.json",  # R6 §4.2 eye/mid-B
-        "L4.2_drug_indication_eye_mid_a_r6_manifest.json",  # R6 §4.2 eye/mid-A
-        "L4.2_drug_indication_tail_a_r6_manifest.json",  # R6 §4.2 tail
-        "L4.2_drug_indication_tail_b_r6_manifest.json",  # R6 §4.2 tail
+        "L4_drug_ek4a_r6_manifest.json",
+        "L4.2_drug_indication_eye_mid_b_r6_manifest.json",
+        "L4.2_drug_indication_eye_mid_a_r6_manifest.json",
+        "L4.2_drug_indication_tail_a_r6_manifest.json",
+        "L4.2_drug_indication_tail_b_r6_manifest.json",
     ):
         path = _MANIFEST_DIR / name
         if path.is_file():
