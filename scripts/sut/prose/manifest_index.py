@@ -17,7 +17,7 @@ DRUG_MANIFEST_GLOBS: tuple[str, ...] = (
     "L4.2_drug_indication_*.json",
     "L4.33_anti_vegf_*.json",
 )
-_MANIFEST_CLAUSE_ID_KEYS = frozenset({"gate_b_sources_encoded", "encoded_clause_ids"})
+_MANIFEST_CLAUSE_ID_KEYS = frozenset({"encoded_clause_ids"})
 _EXCLUDED_MANIFEST_CLAUSE_LIST_SUFFIXES = ("_deferred_clause_ids", "_pending_clause_ids")
 _TRACE_BUCKET_KEYS: tuple[str, ...] = (
     "encoded_clause_ids",

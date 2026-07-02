@@ -18,19 +18,6 @@
     "C006747",
     "C006749"
   ],
-  "gate_b_sources_encoded": [
-    "C006723",
-    "C006727",
-    "C006730",
-    "C006735",
-    "C006739",
-    "C006740",
-    "C006741",
-    "C006743",
-    "C006745",
-    "C006747",
-    "C006749"
-  ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [

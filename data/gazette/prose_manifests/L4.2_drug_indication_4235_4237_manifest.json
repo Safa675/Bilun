@@ -23,22 +23,6 @@
     "C006718",
     "C006720"
   ],
-  "gate_b_sources_encoded": [
-    "C006692",
-    "C006693",
-    "C006694",
-    "C006696",
-    "C006697",
-    "C006699",
-    "C006703",
-    "C006705",
-    "C006714",
-    "C006715",
-    "C006716",
-    "C006717",
-    "C006718",
-    "C006720"
-  ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [

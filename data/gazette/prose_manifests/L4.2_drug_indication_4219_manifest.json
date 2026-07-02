@@ -11,11 +11,6 @@
     "C006063",
     "C006064"
   ],
-  "gate_b_sources_encoded": [
-    "C006062",
-    "C006063",
-    "C006064"
-  ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [

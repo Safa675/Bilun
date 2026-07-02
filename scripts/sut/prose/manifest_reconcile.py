@@ -77,6 +77,9 @@ def reconcile_manifest_payload(payload: dict[str, Any], *, backfill: bool = True
     for list_key, ids in buckets.items():
         payload[list_key] = ids
 
+    # Canonical-v1: drop the legacy gate_b_sources_encoded alias entirely.
+    payload.pop("gate_b_sources_encoded", None)
+
     payload["encoded_clause_count"] = len(buckets["encoded_clause_ids"])
     payload["tier_c_deferred_count"] = len(buckets["tier_c_deferred_clause_ids"])
     payload["emr_blocked_count"] = len(buckets["emr_blocked_clause_ids"])
@@ -86,7 +89,6 @@ def reconcile_manifest_payload(payload: dict[str, Any], *, backfill: bool = True
 
     # Legacy alias used in §4.2.14.C header
     payload["encode_tier_C_deferred_count"] = payload["tier_c_deferred_count"]
-    payload["encoded_clause_count"] = len(buckets["encoded_clause_ids"])
 
     trace_total = len(trace_by_id)
     payload["section_clause_total"] = trace_total
