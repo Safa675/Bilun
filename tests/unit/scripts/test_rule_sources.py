@@ -18,7 +18,6 @@ from scripts.sut.rule_sources import (
     drug_indication_yaml_wave2_paths,
     drug_indication_yaml_wave3_paths,
     drug_indication_yaml_wave4_paths,
-    export_drug_wave2_from_json,
     load_drug_section_rules,
     load_legacy_drug_batch,
     load_rule_family_yaml_rules,

@@ -378,19 +378,6 @@ def drug_indication_yaml_all_paths() -> list[Path]:
     return [section_yaml_path(section) for section in sorted(DRUG_INDICATION_YAML_MIGRATED_SECTIONS)]
 
 
-def excluding_yaml_migrated(rules: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return [
-        rule
-        for rule in rules
-        if str(rule.get("sut_section") or "") not in DRUG_INDICATION_YAML_MIGRATED_SECTIONS
-    ]
-
-
-def excluding_yaml_wave1(rules: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Deprecated alias — filters all YAML-migrated sections (waves 1–4)."""
-    return excluding_yaml_migrated(rules)
-
-
 def load_drug_section_rules(section_id: str) -> list[dict[str, Any]]:
     return load_yaml_rules(section_yaml_path(section_id))
 
@@ -461,74 +448,6 @@ def load_legacy_drug_batch(batch_name: str) -> list[dict[str, Any]]:
     return load_drug_rules_by_ids(rule_ids)
 
 
-def export_drug_wave1_from_json(
-    json_path: Path | None = None,
-    *,
-    source_note: str = "Exported from drug_indication_prose.json (YAML wave 1)",
-) -> list[Path]:
-    return _export_drug_sections_from_json(
-        DRUG_INDICATION_YAML_WAVE1_SECTIONS,
-        json_path=json_path,
-        source_note=source_note,
-    )
-
-
-def export_drug_wave2_from_json(
-    json_path: Path | None = None,
-    *,
-    source_note: str = "Exported from drug_indication_prose.json (YAML wave 2)",
-) -> list[Path]:
-    return _export_drug_sections_from_json(
-        DRUG_INDICATION_YAML_WAVE2_SECTIONS,
-        json_path=json_path,
-        source_note=source_note,
-    )
-
-
-def export_drug_wave3_from_json(
-    json_path: Path | None = None,
-    *,
-    source_note: str = "Exported from drug_indication_prose.json (YAML wave 3)",
-) -> list[Path]:
-    return _export_drug_sections_from_json(
-        DRUG_INDICATION_YAML_WAVE3_SECTIONS,
-        json_path=json_path,
-        source_note=source_note,
-    )
-
-
-def export_drug_wave4_from_json(
-    json_path: Path | None = None,
-    *,
-    source_note: str = "Exported from drug_indication_prose.json (YAML wave 4 — final)",
-) -> list[Path]:
-    return _export_drug_sections_from_json(
-        DRUG_INDICATION_YAML_WAVE4_SECTIONS,
-        json_path=json_path,
-        source_note=source_note,
-    )
-
-
-def _export_drug_sections_from_json(
-    sections: frozenset[str],
-    *,
-    json_path: Path | None,
-    source_note: str,
-) -> list[Path]:
-    path = json_path or (_RULES_DIR / "drug_indication_prose.json")
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    rules = [
-        dict(rule)
-        for rule in payload.get("rules") or []
-        if str(rule.get("sut_section") or "") in sections
-    ]
-    return export_rules_to_section_yaml(
-        rules,
-        out_dir=_SOURCES_DIR / "drug_indication",
-        source_note=source_note,
-    )
-
-
 def load_yaml_rules(path: Path) -> list[dict[str, Any]]:
     """Load rules from a section YAML file."""
     if not path.is_file():
@@ -597,19 +516,6 @@ def export_rules_to_section_yaml(
         path.write_text(_dump_yaml(payload), encoding="utf-8")
         written.append(path)
     return written
-
-
-def export_batch_modules_to_yaml(
-    batches: list[tuple[str, str]],
-    *,
-    out_dir: Path,
-    source_note: str,
-    loader,
-) -> list[Path]:
-    rules: list[dict[str, Any]] = []
-    for mod_path, attr in batches:
-        rules.extend(loader(mod_path, attr))
-    return export_rules_to_section_yaml(rules, out_dir=out_dir, source_note=source_note)
 
 
 def sources_dir() -> Path:
