@@ -22,13 +22,6 @@ export const EMPTY_COHORT_FILTER: CohortFilter = {
   doctor: "",
 };
 
-export const COHORT_FILTER_PARAM_KEYS = [
-  "cohortQ",
-  "cohortSex",
-  "cohortAgeMin",
-  "cohortAgeMax",
-  "cohortDoctor",
-] as const;
 
 function parseAgeParam(value: string | null): number | null {
   if (!value?.trim()) return null;
@@ -168,15 +161,4 @@ export function applyCohortFilterToSearchParams(
     filter.ageMax !== null ? String(filter.ageMax) : null,
   );
   setOrDelete("cohortDoctor", filter.doctor || null);
-}
-
-export function copyCohortFilterParams(
-  source: Pick<URLSearchParams, "get"> | ReadonlyURLSearchParams | null | undefined,
-  target: URLSearchParams,
-): void {
-  if (!source) return;
-  for (const key of COHORT_FILTER_PARAM_KEYS) {
-    const value = source.get(key);
-    if (value) target.set(key, value);
-  }
 }

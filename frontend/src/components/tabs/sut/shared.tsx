@@ -28,22 +28,6 @@ function localizedMessages() {
   return getModuleLocale() === "tr" ? trMessages : enMessages;
 }
 
-export function getFacilityTiers(): Array<{ value: string; label: string }> {
-  const messages = localizedMessages();
-  return FACILITY_TIER_OPTIONS.map(({ value, key }) => ({
-    value,
-    label: translate(messages, `sections.copaySimulator.facilityTiers.${key}`),
-  }));
-}
-
-export function getPatientCategories(): Array<{ value: string; label: string }> {
-  const messages = localizedMessages();
-  return PATIENT_CATEGORY_OPTIONS.map(({ value, key }) => ({
-    value,
-    label: translate(messages, `sections.copaySimulator.patientCategories.${key}`),
-  }));
-}
-
 export const ACCENT_LOCAL = theme.accent;
 
 function unavailableLabel(): string {
@@ -90,10 +74,6 @@ export function fmtPctRatio(value: number, decimals = 1): string {
 
 export function fmtLabel(value: string | null | undefined): string {
   return getSutDomainLabel(value);
-}
-
-export function fmtTierLabel(value: string | null | undefined): string {
-  return fmtLabel(value);
 }
 
 export function fmtPriorityLabel(value: string | null | undefined): string {

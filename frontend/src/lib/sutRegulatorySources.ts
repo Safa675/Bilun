@@ -6,7 +6,6 @@ export const SURCHARGE_SUT_SECTION = "§1.9.3";
 export const COPAY_RATE_EK2C1_ANNEX = "EK-2C-1";
 export const COPAY_RATE_SUT_SECTION = "§2.2";
 export const DRG_PACKAGE_EK2C_ANNEX = "EK-2C";
-export const COPAY_EXEMPTION_EK1A_ANNEX = "EK-1A";
 
 export type RegulatorySourceRef = {
   annex: string;

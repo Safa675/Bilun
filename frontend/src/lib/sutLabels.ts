@@ -50,10 +50,6 @@ export function getSutRecommendedActionLabel(action: string | null | undefined):
   return key ? getSutActionLabel(key) : trimmed;
 }
 
-export function getSutRiskBucketLabel(key: keyof typeof enMessages.labels.sut.riskBucket): string {
-  return t(`labels.sut.riskBucket.${key}`);
-}
-
 export function getSutSeverityLabel(value: string | null | undefined): string {
   const normalized = value?.trim().toLowerCase();
   if (!normalized) {

@@ -182,10 +182,6 @@ export function isComplianceViolationRow(row: BillingStrategyRow): boolean {
   return row.type === "compliance_violation";
 }
 
-export function isProcedureMandateRow(row: BillingStrategyRow): boolean {
-  return Boolean(row.procedure_code?.trim() && !row.recommendation_kind);
-}
-
 export function formatSutSectionLabel(sectionId?: string): string {
   const trimmed = sectionId?.trim();
   if (!trimmed) {
@@ -216,10 +212,6 @@ export function strategySavingsTryDisplay(row: BillingStrategyRow): {
     return { amount: null, muted: true };
   }
   return { amount: savings, muted: false };
-}
-
-export function strategyPaymentMethodKindLabel(row: BillingStrategyRow): string {
-  return row.payment_method_kind?.trim() || "—";
 }
 
 export function strategyPaymentMethodKindMessageKey(
