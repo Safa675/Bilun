@@ -17,7 +17,7 @@ from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indicatio
 
 pytestmark = pytest.mark.unit
 
-_REPO = Path(__file__).resolve().parents[4]
+_REPO = Path(__file__).resolve().parents[3]
 _GOLDEN = _REPO / "data/gazette/prose_rules/golden/drug_indication_4.2.10_tier_b.json"
 _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4210_manifest.json"
 

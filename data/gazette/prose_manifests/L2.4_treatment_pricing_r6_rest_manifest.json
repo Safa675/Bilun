@@ -2,7 +2,7 @@
   "manifest_version": "r6-v1",
   "rule_set_id": "treatment_pricing_2_4_r6_rest",
   "scope_note": "§2.4 remaining (r6-rest) clauses: §2.4.1 diş tedavileri/ortodonti/implant/protez + özel-sözleşmesiz sunucu diş üniteleri (2.4.1.A/B/B-1/B-2/B-3), §2.4.2.A organ-doku nakli/kadavra donör/ABO uyumsuz, §2.4.2.B-1 kemik iliği nakli HLA/temin/nakliye, §2.4.2.B-2 mezenkimal kök hücre nakli ve §2.4.3 aşı bedelleri. Modalities: NO_PAY, MUST_BILL, COVERAGE, MUST_NOT_BILL, REGULATORY_ACTION, MANDATORY.",
-  "source_csv": "tasks/encode_waves/REM_2_4.csv",
+  "source_csv": "tasks/archive/encode-waves-2026-06/REM_2_4.csv",
   "rules_added": 42,
   "rules_skipped_dup": [],
   "encoded_clause_ids": [

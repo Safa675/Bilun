@@ -22,7 +22,7 @@ Fix all 24 bugs from the 2026-06-30 repo-wide audit: CI green, manifest integrit
 ### Subtasks
 
 #### Phase 0 — Baseline ✅
-- [x] Capture baseline metrics → `reports/bug_remediation_baseline.json`
+- [x] Capture baseline metrics → `reports/archive/bug_remediation_baseline.json`
 - [x] Add `scripts/sut/audit_manifest_parity.py` + unit test
 
 #### Phase 1 — Manifest integrity ✅
@@ -90,7 +90,7 @@ Fix all 24 bugs from the 2026-06-30 repo-wide audit: CI green, manifest integrit
 | Manifest parity | 20+ issues | **0** |
 | `encode_tier_c_deferred_count` | 10 (4214C only) | **~757 repo-wide** |
 
-Signoff: `reports/bug_remediation_phases_0_5_signoff.json`
+Signoff: `reports/archive/bug_remediation_phases_0_5_signoff.json`
 
 **Phases 6–7 completed 2026-07-01**
 

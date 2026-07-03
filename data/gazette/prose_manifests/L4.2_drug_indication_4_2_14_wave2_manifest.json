@@ -1,7 +1,7 @@
 {
   "manifest_id": "L4.2_drug_indication_4_2_14_wave2",
   "rule_set_id": "drug_indication_prose",
-  "source_csv": "tasks/encode_waves/A1a_4_2_14_oncology.csv",
+  "source_csv": "tasks/archive/encode-waves-2026-06/A1a_4_2_14_oncology.csv",
   "batch_module": "scripts/sut/prose/drug_indication_4_2_14_wave2_batch_rules.py",
   "description": "Wave-2 §4.2.14 oncology encodes — chemotherapy/targeted/immunotherapy report, prescriber, line-of-therapy and NO_PAY combination exclusions.",
   "rule_count": 33,
