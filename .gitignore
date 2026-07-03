@@ -76,3 +76,9 @@ logs/
 # TypeScript incremental build cache (regenerated every build; no source value)
 *.tsbuildinfo
 
+# Encode/manifest reports — write-only artifacts (producers json.dump but
+# never read them back; regenerated fresh on each encode run).
+reports/tier_c_*_report.json
+reports/tier_c_drug_extraction_summary.json
+reports/deontic_4214c_encode_report.json
+
