@@ -45,9 +45,6 @@ export function getPatientCategories(): Array<{ value: string; label: string }> 
 }
 
 export const ACCENT_LOCAL = theme.accent;
-/** @deprecated Use getModuleLocale() via i18n formatters */
-export const SUT_PRIMARY_LOCALE = "en-US";
-export const SUT_CURRENCY_CODE = "TRY";
 
 function unavailableLabel(): string {
   const messages = getModuleLocale() === "tr" ? trMessages : enMessages;
