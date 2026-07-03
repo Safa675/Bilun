@@ -148,7 +148,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
             "src/bilun/domain/prose_rules/facility_tier.py",
             "src/bilun/domain/billing/claim_strategy.py",
             "src/bilun/domain/optimization/unbundling.py",
-            "src/bilun/domain/pricing/drg.py",
+            "src/bilun/domain/analytics/drg.py",
         ),
         sut_section_prefixes=("2.2",),
         annex_refs=("EK-2/C",),
@@ -216,7 +216,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_category_tr="Fiyatlandırma",
         coverage_status="implemented",
         domain_modules=(
-            "src/bilun/domain/pricing/drg.py",
+            "src/bilun/domain/analytics/drg.py",
             "src/bilun/domain/optimization/temporal.py",
         ),
         annex_refs=("EK-2/C",),
@@ -403,7 +403,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_category_tr="Laboratuvar Faturalandırma",
         coverage_status="implemented",
         domain_modules=(
-            "src/bilun/domain/billing/lab.py",
+            "src/bilun/domain/billing/lab_bill_merge.py",
             "src/bilun/domain/prose_rules/lab_capture_gap.py",
             "src/bilun/domain/billing/claim_procedure_capture_gap.py",
         ),
