@@ -343,15 +343,9 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
             worst_status = "missing"
             coverage_notes = "Actionable SUT rule text with no mapped domain implementation"
 
-        has_algorithmic_gap = (
-            primary_status in {"partial", "missing", "needs_claim_lines"}
-            and primary_status != "non_algorithmic"
-        )
         clause_id = str(row.get("clause_id") or "")
-        if _is_structural_gap_excluded(row):
-            has_algorithmic_gap = False
-        elif clause_id in emr_blocked_ids or clause_id in tier_c_deferred_ids:
-            has_algorithmic_gap = False
+
+        # Compute has_rule_encoding FIRST — has_algorithmic_gap depends on it.
         if primary_rule_id == "drug_indication_prose":
             has_rule_encoding = clause_id in encoded_clause_ids
         elif primary_rule_id in _WAVE2_MANIFESTS:
@@ -377,6 +371,21 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
                 if _override(clause_id, section_id):
                     has_rule_encoding = True
                     break
+
+        # A clause has an algorithmic gap when its motor is not fully
+        # implemented/encoded — either the motor itself is partial/missing,
+        # OR the motor is "implemented" but this specific clause has no JSON
+        # rule encoding it (has_rule_encoding=False). The latter catches the
+        # 2.100+ clauses auto-classified to an "implemented" motor via section
+        # prefix but never individually encoded in any rule JSON.
+        has_algorithmic_gap = (
+            primary_status in {"partial", "missing", "needs_claim_lines"}
+            or (primary_status == "implemented" and not has_rule_encoding)
+        ) and primary_status != "non_algorithmic"
+        if _is_structural_gap_excluded(row):
+            has_algorithmic_gap = False
+        elif clause_id in emr_blocked_ids or clause_id in tier_c_deferred_ids:
+            has_algorithmic_gap = False
 
         rows.append(
             {

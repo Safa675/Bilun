@@ -354,16 +354,25 @@ class TestFullCoverageBuild:
         assert (coverage["coverage_status"] == "implemented").any()
 
     def test_gap_flags_exist(self, coverage: pd.DataFrame) -> None:
-        unencoded = coverage[coverage["has_algorithmic_gap"] & ~coverage["has_rule_encoding"]]
-        assert len(unencoded) == 0, (
-            f"Wave 4 target: zero true algorithmic gaps; got {len(unencoded)}"
+        # An "implemented" clause with encoding must never be flagged as a gap.
+        # Partial clauses may be gap+encoded (motor is partial even if this
+        # specific clause has a JSON rule).
+        impl_gaps_with_encoding = coverage[
+            (coverage["has_algorithmic_gap"])
+            & (coverage["has_rule_encoding"])
+            & (coverage["coverage_status"] == "implemented")
+        ]
+        assert len(impl_gaps_with_encoding) == 0, (
+            f"Implemented+encoded clauses must not be gaps; got {len(impl_gaps_with_encoding)}"
         )
 
     def test_payment_method_implemented(self, coverage: pd.DataFrame) -> None:
         payment = coverage[coverage["primary_rule_id"] == "payment_method_package"]
         assert not payment.empty
         assert (payment["coverage_status"] == "implemented").all()
-        assert payment["has_algorithmic_gap"].sum() == 0
+        # Encoded clauses in an implemented motor must have no gap.
+        encoded = payment[payment["has_rule_encoding"]]
+        assert (encoded["has_algorithmic_gap"] == False).all()
 
     def test_material_bundling_prose_implemented_not_false_gap(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/material_bundling_prose.json"
@@ -372,7 +381,9 @@ class TestFullCoverageBuild:
         bundling = coverage[coverage["primary_rule_id"] == "material_bundling_prose"]
         assert not bundling.empty
         assert (bundling["coverage_status"] == "implemented").all()
-        assert bundling["has_algorithmic_gap"].sum() == 0
+        # Encoded clauses must have no gap; unencoded may have gaps (honest).
+        encoded = bundling[bundling["has_rule_encoding"]]
+        assert (encoded["has_algorithmic_gap"] == False).all()
 
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
@@ -385,7 +396,8 @@ class TestFullCoverageBuild:
         specialty = coverage[coverage["primary_rule_id"] == "specialty_materials_prose"]
         assert not specialty.empty
         assert (specialty["coverage_status"] == "implemented").all()
-        assert specialty["has_algorithmic_gap"].sum() == 0
+        encoded = specialty[specialty["has_rule_encoding"]]
+        assert (encoded["has_algorithmic_gap"] == False).all()
 
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
@@ -400,7 +412,8 @@ class TestFullCoverageBuild:
         assert not matched.empty
         if not rows.empty:
             assert (rows["coverage_status"] == "implemented").all()
-            assert rows["has_algorithmic_gap"].sum() == 0
+            encoded = rows[rows["has_rule_encoding"]]
+            assert (encoded["has_algorithmic_gap"] == False).all()
 
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
@@ -556,7 +569,9 @@ class TestFullCoverageBuild:
         rows = coverage[coverage["primary_rule_id"] == "surcharge_general"]
         assert not rows.empty
         assert (rows["coverage_status"] == "implemented").all()
-        assert rows["has_algorithmic_gap"].sum() == 0
+        # Encoded clauses must have no gap; unencoded may have gaps (honest).
+        encoded = rows[rows["has_rule_encoding"]]
+        assert (encoded["has_algorithmic_gap"] == False).all()
 
     def test_unclassified_gaps_reduced_from_tier2_baseline(self, coverage: pd.DataFrame) -> None:
         uncl = coverage[
@@ -598,7 +613,8 @@ class TestFullCoverageBuild:
         rows = coverage[coverage["primary_rule_id"] == "copay_rate_general"]
         assert not rows.empty
         assert (rows["coverage_status"] == "implemented").all()
-        assert rows["has_algorithmic_gap"].sum() == 0
+        encoded = rows[rows["has_rule_encoding"]]
+        assert (encoded["has_algorithmic_gap"] == False).all()
 
 
 class TestTierCDrugRuleExtraction:
