@@ -529,6 +529,16 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             stages=["wave23_patches"],
         ),
         CompileTarget(
+            name="drug_indication_orphan_reconciliation",
+            rule_json=_RULES_DIR / "drug_indication_prose.json",
+            mode="stage",
+            dedup="union_overwrite",
+            rule_set_id="drug_indication_prose",
+            title="",
+            sut_anchors=[],
+            stages=["orphan_reconciliation"],
+        ),
+        CompileTarget(
             name="drug_indication_phase5",
             rule_json=_RULES_DIR / "drug_indication_prose.json",
             mode="stage",
@@ -850,6 +860,25 @@ def _apply_source_patches(
     return merged, patched
 
 
+def _apply_source_drops(
+    rules: list[dict[str, Any]],
+    drop_modules: list[str],
+) -> tuple[list[dict[str, Any]], int]:
+    """Remove SOURCE_DROPS clause IDs from existing rules gate_b_sources."""
+    by_id = {str(rule["rule_id"]): dict(rule) for rule in rules}
+    dropped = 0
+    for module_path in drop_modules:
+        mod = importlib.import_module(module_path)
+        for rule_id, clause_ids in getattr(mod, "SOURCE_DROPS", {}).items():
+            before = set(by_id[rule_id].get("gate_b_sources") or [])
+            after = before - {str(c) for c in clause_ids}
+            by_id[rule_id]["gate_b_sources"] = sorted(after)
+            if after != before:
+                dropped += 1
+    merged = sorted(by_id.values(), key=lambda r: str(r.get("rule_id", "")))
+    return merged, dropped
+
+
 def _stage_wave23_patches(target: CompileTarget, ctx: dict[str, Any]) -> dict:
     """Wave 2/3 — append gate_b_sources for tier A/B promotions."""
     payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
@@ -865,6 +894,21 @@ def _stage_wave23_patches(target: CompileTarget, ctx: dict[str, Any]) -> dict:
     payload["rules"] = sorted([_strip_batch(r) for r in merged], key=lambda r: str(r.get("rule_id", "")))
     _write_rule_set_for_target(target, payload)
     return {"patched": patched, "rules": len(merged)}
+
+
+def _stage_orphan_reconciliation(target: CompileTarget, ctx: dict[str, Any]) -> dict:
+    """Phase 0.1 — drop struck-clause orphan refs + append in-force replacements."""
+    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
+    existing = list(payload.get("rules") or [])
+    merged, dropped = _apply_source_drops(
+        existing, ["scripts.sut.prose.drug_indication_orphan_drops"]
+    )
+    merged, patched = _apply_source_patches(
+        merged, ["scripts.sut.prose.drug_indication_orphan_reattach_patches"]
+    )
+    payload["rules"] = sorted([_strip_batch(r) for r in merged], key=lambda r: str(r.get("rule_id", "")))
+    _write_rule_set_for_target(target, payload)
+    return {"dropped": dropped, "reattached": patched, "rules": len(merged)}
 
 
 def _stage_phase5_manifest(target: CompileTarget, ctx: dict[str, Any]) -> dict:
@@ -1131,6 +1175,7 @@ _STAGES = {
     "payment_pipeline": _stage_payment_pipeline,
     "phase5_manifest": _stage_phase5_manifest,
     "wave23_patches": _stage_wave23_patches,
+    "orphan_reconciliation": _stage_orphan_reconciliation,
     "antivegf_manifest": _stage_antivegf_manifest,
     "tier_b_remap": _stage_tier_b_remap,
     "treatment_pricing_wave2_manifest": _stage_treatment_pricing_wave2_manifest,

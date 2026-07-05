@@ -5158,8 +5158,8 @@
       "rule_id": "4.2.13.1.3.transplant_oral_antiviral_coverage",
       "sut_section": "4.2.13.1.3",
       "gate_b_sources": [
-        "C004514",
-        "C004535",
+        "C004539",
+        "C004540",
         "C004620"
       ],
       "drug_names": [
@@ -5387,8 +5387,6 @@
       "rule_id": "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration",
       "sut_section": "4.2.13.3.2.B",
       "gate_b_sources": [
-        "C004724",
-        "C004795",
         "C004912"
       ],
       "drug_names": [
@@ -5513,12 +5511,8 @@
       ],
       "message_tr": "HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu yeni raporda belirtilmelidir (§4.2.13.1 (7)).",
       "gate_b_sources": [
-        "C004529",
-        "C004533",
-        "C004563",
-        "C004570",
         "C004572",
-        "C004601",
+        "C004584",
         "C004624"
       ]
     },
@@ -5847,7 +5841,6 @@
       ],
       "message_tr": "HCV DAA — üçüncü basamak kurumda gastroenteroloji/enfeksiyon uzman raporu ve tedavi şeması; bir defaya mahsus (§4.2.13.3.2).",
       "gate_b_sources": [
-        "C004679",
         "C004897"
       ],
       "prescriber_specialties": [
@@ -5964,8 +5957,6 @@
       ],
       "message_tr": "HCV yeniden tedavi — önceki peginterferon/ribavirin/PI deneyimi sağlık raporunda belirtilmelidir (§4.2.13.3.2.A).",
       "gate_b_sources": [
-        "C004760",
-        "C004851",
         "C004903"
       ]
     },
@@ -6160,8 +6151,8 @@
       "message_tr": "Hepatit tedavisi — önceki ilaçlar, tanı ve tedavi başlama/kesilme kriterleri raporda belirtilmelidir; oral antiviral ilk rapor en fazla 6 ay (§4.2.13).",
       "gate_b_sources": [
         "C004498",
-        "C004634",
-        "C004642",
+        "C004637",
+        "C004912",
         "C004919"
       ]
     },
@@ -6187,8 +6178,7 @@
       "message_tr": "Viral hepatit ilaçları — gastroenteroloji veya enfeksiyon hastalıkları uzman hekim ilaç kullanım raporu gerekir (§4.2.13).",
       "gate_b_sources": [
         "C004503",
-        "C004506",
-        "C004814"
+        "C004897"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -6768,7 +6758,7 @@
         "C005336",
         "C005339",
         "C005341",
-        "C005352",
+        "C005355",
         "C005682"
       ]
     },
@@ -7930,7 +7920,6 @@
       "rule_id": "4.2.14.C.ahus_eculizumab_ravulizumab_board",
       "sut_section": "4.2.14.C",
       "gate_b_sources": [
-        "C005416",
         "C005433"
       ],
       "icd10_codes": [
@@ -8119,8 +8108,6 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004950",
-        "C004952",
         "C004953"
       ]
     },
@@ -10042,7 +10029,6 @@
       "rule_id": "4.2.14.C.generalized_myasthenia_gravis_3neurology_3m",
       "sut_section": "4.2.14.C",
       "gate_b_sources": [
-        "C005446",
         "C005452"
       ],
       "icd10_codes": [
@@ -10395,7 +10381,6 @@
       "sut_section": "4.2.14.C",
       "gate_b_sources": [
         "C005464",
-        "C005474",
         "C005487"
       ],
       "icd10_codes": [
@@ -10780,7 +10765,6 @@
       "rule_id": "4.2.14.C.pnh_board_hematology_6m",
       "sut_section": "4.2.14.C",
       "gate_b_sources": [
-        "C004990",
         "C005437"
       ],
       "icd10_codes": [
@@ -11033,7 +11017,6 @@
       ],
       "report_required": true,
       "gate_b_sources": [
-        "C005020",
         "C005024"
       ],
       "message_tr": "1) Dasatinib; prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji uzmanının yer aldığı, en fazla 6 ay süre ile geçerli sağlık kurulu raporu ile tıbbi onkoloji veya",
@@ -11086,8 +11069,7 @@
       "gate_b_sources": [
         "C005133",
         "C005134",
-        "C005160",
-        "C005171"
+        "C005184"
       ],
       "message_tr": "5) (Değişik: RG- 18/02/2017- 29983/ 9-a md. Yürürlük: 01/03/2017) Kabazitaksel ve abirateron ardışık olarak kullanılamaz. Kabazitaksel, enzalutamid ve abirateron ardışık olarak kullanılamaz.",
       "report_specialties": [
@@ -11254,7 +11236,6 @@
         "C00-C97"
       ],
       "gate_b_sources": [
-        "C004940",
         "C004942"
       ],
       "message_tr": "a) Trastuzumab; 1) HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda,  metastatik meme kanseri endikasyonunda, bu durumun belirtildiği tıbbi onkoloji uzman hekiminin yer aldığı sağl",
@@ -11318,7 +11299,7 @@
       ],
       "gate_b_sources": [
         "C005016",
-        "C005021",
+        "C005025",
         "C005029",
         "C005644"
       ],
@@ -11357,7 +11338,7 @@
       "gate_b_sources": [
         "C005024",
         "C005025",
-        "C005042"
+        "C005043"
       ],
       "message_tr": "1) Dasatinib; imatinib dahil önceki tedavilere dirençli veya intolere (aşağıdaki 4. ve 5. maddede belirtilen koşullarda), Philadelphia kromozomu pozitif kronik, hızlanmış veya blastik evre kronik miye",
       "required_biomarkers": [
@@ -12598,10 +12579,10 @@
       "rule_id": "4.2.16.adult_metabolic_3yr_report_all_prescribe",
       "sut_section": "4.2.16",
       "gate_b_sources": [
-        "C005908",
-        "C005910",
-        "C005947",
-        "C005984"
+        "C005982",
+        "C005983",
+        "C005984",
+        "C005999"
       ],
       "report_required": true,
       "report_duration_months": 36,
@@ -12665,14 +12646,6 @@
       ],
       "message_tr": "Çölyak glutensiz ürün — gastroenteroloji uzman hekim 1 yıl süreli rapor gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C005883",
-        "C005894",
-        "C005950",
-        "C005955",
-        "C005961",
-        "C005967",
-        "C005972",
-        "C006002",
         "C006007"
       ],
       "prescriber_specialties": [
@@ -12873,8 +12846,8 @@
       ],
       "message_tr": "İnek sütü/çoklu gıda protein alerjisi hidrolize mama — çocuk gastroenteroloji/immünoloji-alerji (veya çocuk sağlığı) uzman hekim raporu gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C005948",
-        "C005979"
+        "C005979",
+        "C006000"
       ],
       "prescriber_specialties": [
         "çocuk gastroenteroloji",
@@ -13081,14 +13054,6 @@
       ],
       "message_tr": "Protein metabolizması bozukluğu özel formüllü un — kısıtlı diyet nedeniyle hayati öneme haiz ürünler uzman hekim raporuna dayanılarak karşılanır (§4.2.16 (3)).",
       "gate_b_sources": [
-        "C005877",
-        "C005888",
-        "C005914",
-        "C005921",
-        "C005928",
-        "C005935",
-        "C005941",
-        "C005987",
         "C005993"
       ],
       "prescriber_specialties": [
@@ -13221,7 +13186,6 @@
       ],
       "message_tr": "EK-4/B özel mama — metabolizma/endokrinoloji/gastroenteroloji uzman hekim raporu gerekir; yoksa çocuk sağlığı/iç hastalıkları (§4.2.16).",
       "gate_b_sources": [
-        "C005875",
         "C005981"
       ],
       "prescriber_specialties": [
@@ -13257,7 +13221,6 @@
       "rule_id": "4.2.17.A.hormone_ablation_cancer_high_fracture",
       "sut_section": "4.2.17.A",
       "gate_b_sources": [
-        "C006033",
         "C006035"
       ],
       "drug_names": [
@@ -13291,7 +13254,8 @@
       "sut_section": "4.2.17.A",
       "gate_b_sources": [
         "C006018",
-        "C006028"
+        "C006030",
+        "C006031"
       ],
       "drug_names": [
         "bifosfonat",
@@ -13380,7 +13344,6 @@
       "rule_id": "4.2.17.D.week24_response_teriparatide_romosozumab",
       "sut_section": "4.2.17.D",
       "gate_b_sources": [
-        "C006051",
         "C006054"
       ],
       "drug_names": [
@@ -20091,8 +20054,8 @@
       "rule_id": "4.2.6.A1.neurosecretory_bioinactive_gh_somatropin",
       "sut_section": "4.2.6.A-1",
       "gate_b_sources": [
-        "C003956",
-        "C003977"
+        "C003977",
+        "C003982"
       ],
       "drug_names": [
         "somatropin",
@@ -20365,8 +20328,8 @@
       "report_required": true,
       "message_tr": "Pediatrik büyüme hormonu devam tedavisi — endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu ve epifiz hatları takibi gerekir (§4.2.6.A-1).",
       "gate_b_sources": [
-        "C003957",
-        "C003965"
+        "C003965",
+        "C003982"
       ],
       "report_specialties": [
         "endokrinoloji"
@@ -21869,7 +21832,6 @@
       "rule_id": "4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage",
       "sut_section": "4.2.9.C",
       "gate_b_sources": [
-        "C004160",
         "C004167",
         "C004168"
       ],
@@ -22095,8 +22057,6 @@
       ],
       "message_tr": "KBY anemisi ESA — TSAT/ferritin ve Hb kriterleri; demir eksikliğinde önce demir tedavisi; hedef Hb 11-12 g/dl; tetkik sonuçları raporda belirtilir (§4.2.9.A-1).",
       "gate_b_sources": [
-        "C004117",
-        "C004121",
         "C004126",
         "C004130"
       ],
@@ -22135,7 +22095,6 @@
       ],
       "message_tr": "KBY anemisi ESA — nefroloji veya diyaliz sertifikalı uzman hekim raporuna dayanılarak nefroloji/diyaliz sertifikalı hekimlerce reçete edilir (§4.2.9.A-1).",
       "gate_b_sources": [
-        "C004122",
         "C004131"
       ],
       "report_required": true,
@@ -22215,8 +22174,6 @@
       ],
       "message_tr": "Eritropoietin alfa-beta-zeta, metoksipolietilen glikol epoetin beta ve darbepoetin endikasyon muadili olarak kullanılabilir; raporda doz/süre belirtilir ve bir defada en fazla 1 aylık reçete verilir (§4.2.9.A).",
       "gate_b_sources": [
-        "C004118",
-        "C004119",
         "C004127",
         "C004128"
       ],

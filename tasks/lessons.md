@@ -9,6 +9,18 @@ Format per entry:
 
 ---
 
+## 2026-07-05 — Diagnostic-report baseline goes stale when commits land between report and implementation
+
+**Pattern:** Produced a full rule-encoding diagnostic report (2,175 unencoded, 914 gaps, 19.4% gap_pct, 3,954 implemented). The user approved a multi-week roadmap using those numbers as every checkpoint target. Between the report and implementation, commit `ec33851` ("honest drug_indication partial status") landed, flipping `drug_indication_prose` from `implemented` → `partial` in `rule_registry.py:350`. This roughly doubled `has_algorithmic_gap` (914 → 1,896) and inverted the implemented/partial split (3,954/53 → 1,585/2,422), because `partial` clauses count as gaps unconditionally (`coverage.py:381-382`). I almost started coding against the stale 914 target. The catch was only because I ran a fresh baseline query on the parquet immediately before touching anything and the numbers didn't match the report.
+
+**Rule:** A diagnostic report's headline numbers have a shelf life. Before any implementation phase begins, RE-CAPTURE the baseline metrics with a fresh read-only query against the live artifacts — do not trust numbers in a report (even one produced the same session) once commits may have landed. Concretely:
+1. At phase-0 entry, run the baseline query (counts of `coverage_status`, `has_rule_encoding`, `has_algorithmic_gap`) and DIFF it against the report. If any number moved, investigate `git log -- <parquet> <relevant .py>` for intervening commits before proceeding.
+2. Every phase checkpoint target must be expressed as "current value ± N" or "monotonic increase/decrease", NOT as an absolute number copied from the report. Absolute targets silently become wrong.
+3. When a commit's message says "honest X status" or "reclassify", assume the headline gap metric moved — those are exactly the commits that invalidate report baselines.
+4. Pay special attention to `coverage.py:381-384`: the `has_algorithmic_gap` definition makes `partial` and `implemented ∧ ¬encoded` BOTH gaps, so any `coverage_status` flip between those two states moves the gap count even when no clause's encoding changed.
+
+---
+
 ## 2026-06-29 — Parallel subagents editing the SAME shared file (coverage.py / rule JSONs) clobber each other — orchestrator-only writes
 
 **Pattern:** Launched 7 parallel encoding subagents. Each was told to (a) append its rules to a shared rule JSON and (b) wire its manifest into `scripts/sut/prose/coverage.py`. Because they ran concurrently, each read coverage.py from its own snapshot and wrote it back — last-writer-won destroyed the others' edits. Result: coverage.py ended with only 2 of ~8 manifest wirings; `specialty_materials_prose.json` dropped 152→78 rules (a subagent read a stale/uncommitted 49-rule base and overwrote wave2a/2b additions); cumulative encoded count collapsed 817→231. The batch scripts + manifest JSONs on disk were fine — only the SHARED aggregation files were lost.
