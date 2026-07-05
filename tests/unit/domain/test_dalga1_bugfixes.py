@@ -115,12 +115,15 @@ def test_bc4_token_bound_match_handles_empty_and_edges() -> None:
 
 
 def test_bc4_bundling_rules_uses_token_bound_match() -> None:
-    """Static guard: bundling_rules must use token_bound_substring_match, not `in`."""
+    """Static guard: bundling match must use token_bound_substring_match, not `in`."""
     import inspect
 
-    from src.bilun.domain.rules import bundling_rules as mod
+    from src.bilun.domain.materials import exclusions as mod
 
-    src = inspect.getsource(mod._match_bundled_name)
+    # Phase 2.1: matcher consolidated into exclusions._match_bundled_index
+    # (canonical) + match_bundled_material (public). The token-bound guard
+    # follows the logic to its new home.
+    src = inspect.getsource(mod._match_bundled_index)
     assert "token_bound_substring_match" in src, "bundling match must be token-bound"
     assert "needle in bundled_name or bundled_name in needle" not in src, (
         "bidirectional plain-substring must not be re-introduced"
