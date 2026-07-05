@@ -5,22 +5,15 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 61,
   "section_clause_total": 354,
-  "encoded_clause_count": 84,
+  "encoded_clause_count": 47,
   "encoded_clause_ids": [
     "C004498",
     "C004503",
-    "C004506",
     "C004509",
-    "C004514",
-    "C004529",
-    "C004533",
-    "C004535",
     "C004540",
     "C004543",
     "C004551",
     "C004552",
-    "C004563",
-    "C004570",
     "C004572",
     "C004579",
     "C004581",
@@ -29,23 +22,14 @@
     "C004589",
     "C004591",
     "C004593",
-    "C004601",
     "C004604",
     "C004614",
     "C004616",
     "C004620",
     "C004624",
     "C004628",
-    "C004634",
     "C004636",
     "C004637",
-    "C004642",
-    "C004679",
-    "C004724",
-    "C004760",
-    "C004795",
-    "C004814",
-    "C004851",
     "C004892",
     "C004897",
     "C004898",
@@ -59,18 +43,35 @@
     "C004918",
     "C004919",
     "C004921",
+    "C005981",
+    "C005982",
+    "C005983",
+    "C005984",
+    "C005985",
+    "C005993",
+    "C005999",
+    "C006000",
+    "C006007",
+    "C006012",
+    "C006013"
+  ],
+  "tier_a_pending_clause_ids": [
+    "C004506",
+    "C004514",
+    "C004535",
+    "C004634",
+    "C004642",
+    "C004679",
+    "C004724",
+    "C004760",
+    "C004795",
+    "C004814",
+    "C004851",
     "C005875",
-    "C005877",
     "C005883",
-    "C005888",
     "C005894",
     "C005908",
     "C005910",
-    "C005914",
-    "C005921",
-    "C005928",
-    "C005935",
-    "C005941",
     "C005947",
     "C005948",
     "C005950",
@@ -78,22 +79,23 @@
     "C005961",
     "C005967",
     "C005972",
-    "C005981",
-    "C005982",
-    "C005983",
-    "C005984",
-    "C005985",
-    "C005987",
-    "C005993",
-    "C005999",
-    "C006000",
-    "C006002",
-    "C006007",
-    "C006012",
-    "C006013"
+    "C006002"
   ],
-  "tier_a_pending_clause_ids": [],
-  "tier_b_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [
+    "C004529",
+    "C004533",
+    "C004563",
+    "C004570",
+    "C004601",
+    "C005877",
+    "C005888",
+    "C005914",
+    "C005921",
+    "C005928",
+    "C005935",
+    "C005941",
+    "C005987"
+  ],
   "tier_c_deferred_clause_ids": [
     "C004501",
     "C004502",
@@ -368,8 +370,8 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 0,
-  "tier_b_pending_count": 0,
+  "tier_a_pending_count": 24,
+  "tier_b_pending_count": 13,
   "tier_c_deferred_count": 270,
   "clause_traces": [
     {
@@ -418,11 +420,8 @@
       "clause_id": "C004506",
       "section_id": "4.2.13",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Hepatit tedavisinde daha önce kullanılan ilaçlar",
-      "linked_rule_ids": [
-        "4.2.13.hepatitis_viral_gastro_inf_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Hepatit tedavisinde daha önce kullanılan ilaçlar"
     },
     {
       "clause_id": "C004508",
@@ -471,11 +470,8 @@
       "clause_id": "C004514",
       "section_id": "4.2.13.1",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İlk tedaviye başlamak için",
-      "linked_rule_ids": [
-        "4.2.13.1.3.transplant_oral_antiviral_coverage"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "İlk tedaviye başlamak için"
     },
     {
       "clause_id": "C004517",
@@ -613,11 +609,8 @@
       "clause_id": "C004529",
       "section_id": "4.2.13.1",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Oral antiviral değişimi ya da tedaviye yeni oral antiviral eklenmesi için",
-      "linked_rule_ids": [
-        "4.2.13.hbv_antiviral_report_renewal_initiation_f7"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Oral antiviral değişimi ya da tedaviye yeni oral antiviral eklenmesi için"
     },
     {
       "clause_id": "C004530",
@@ -656,21 +649,15 @@
       "clause_id": "C004533",
       "section_id": "4.2.13.1",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Antiviral tedavi almakta olan hastaların raporlarının yenilenmesinde",
-      "linked_rule_ids": [
-        "4.2.13.hbv_antiviral_report_renewal_initiation_f7"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Antiviral tedavi almakta olan hastaların raporlarının yenilenmesinde"
     },
     {
       "clause_id": "C004535",
       "section_id": "4.2.13.1",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "İlk tedaviye başlamak için",
-      "linked_rule_ids": [
-        "4.2.13.1.3.transplant_oral_antiviral_coverage"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "İlk tedaviye başlamak için"
     },
     {
       "clause_id": "C004538",
@@ -690,6 +677,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "4.2.13.1.3.transplant_oral_antiviral_coverage",
         "4.2.13.hbv_dna_initiation_board"
       ]
     },
@@ -892,11 +880,8 @@
       "clause_id": "C004563",
       "section_id": "4.2.13.1",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Oral antiviral değişimi ya da tedaviye yeni oral antiviral eklenmesi için",
-      "linked_rule_ids": [
-        "4.2.13.hbv_antiviral_report_renewal_initiation_f7"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Oral antiviral değişimi ya da tedaviye yeni oral antiviral eklenmesi için"
     },
     {
       "clause_id": "C004564",
@@ -968,11 +953,8 @@
       "clause_id": "C004570",
       "section_id": "4.2.13.1",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Oral antiviral değişimi ya da tedaviye yeni oral antiviral eklenmesi için",
-      "linked_rule_ids": [
-        "4.2.13.hbv_antiviral_report_renewal_initiation_f7"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Oral antiviral değişimi ya da tedaviye yeni oral antiviral eklenmesi için"
     },
     {
       "clause_id": "C004571",
@@ -1081,6 +1063,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "4.2.13.hbv_antiviral_report_renewal_initiation_f7",
         "4.2.13.hbv_oral_antiviral_switch_adult_report"
       ]
     },
@@ -1238,11 +1221,8 @@
       "clause_id": "C004601",
       "section_id": "4.2.13.1",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Antiviral tedavi almakta olan hastaların raporlarının yenilenmesinde",
-      "linked_rule_ids": [
-        "4.2.13.hbv_antiviral_report_renewal_initiation_f7"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Antiviral tedavi almakta olan hastaların raporlarının yenilenmesinde"
     },
     {
       "clause_id": "C004602",
@@ -1451,11 +1431,8 @@
       "clause_id": "C004634",
       "section_id": "4.2.13.E-1",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "hepatit_ilac",
-      "linked_rule_ids": [
-        "4.2.13.hepatitis_prior_therapy_documentation"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "hepatit_ilac"
     },
     {
       "clause_id": "C004635",
@@ -1485,7 +1462,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "hepatit_ilac",
       "linked_rule_ids": [
-        "4.2.13.hcv_acute_interferon_report"
+        "4.2.13.hcv_acute_interferon_report",
+        "4.2.13.hepatitis_prior_therapy_documentation"
       ]
     },
     {
@@ -1514,11 +1492,8 @@
       "clause_id": "C004642",
       "section_id": "4.2.13.E-2",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavi süresi",
-      "linked_rule_ids": [
-        "4.2.13.hepatitis_prior_therapy_documentation"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Tedavi süresi"
     },
     {
       "clause_id": "C004643",
@@ -1832,11 +1807,8 @@
       "clause_id": "C004679",
       "section_id": "4.2.13.3.2",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavide kullanılan ilaçlar",
-      "linked_rule_ids": [
-        "4.2.13.hcv_daa_tertiary_gastro_once"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Tedavide kullanılan ilaçlar"
     },
     {
       "clause_id": "C004680",
@@ -2183,11 +2155,8 @@
       "clause_id": "C004724",
       "section_id": "4.2.13.3.2.B",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavi süresi",
-      "linked_rule_ids": [
-        "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Tedavi süresi"
     },
     {
       "clause_id": "C004725",
@@ -2424,11 +2393,8 @@
       "clause_id": "C004760",
       "section_id": "4.2.13.3.2.A",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Yeniden tedavi",
-      "linked_rule_ids": [
-        "4.2.13.hcv_reteatment_prior_therapy_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Yeniden tedavi"
     },
     {
       "clause_id": "C004763",
@@ -2687,11 +2653,8 @@
       "clause_id": "C004795",
       "section_id": "4.2.13.3.2.B",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavi süresi",
-      "linked_rule_ids": [
-        "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Tedavi süresi"
     },
     {
       "clause_id": "C004796",
@@ -2840,11 +2803,8 @@
       "clause_id": "C004814",
       "section_id": "4.2.13.3.2",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tedavide kullanılan ilaçlar",
-      "linked_rule_ids": [
-        "4.2.13.hepatitis_viral_gastro_inf_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Tedavide kullanılan ilaçlar"
     },
     {
       "clause_id": "C004815",
@@ -3136,11 +3096,8 @@
       "clause_id": "C004851",
       "section_id": "4.2.13.3.2.A",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Yeniden tedavi",
-      "linked_rule_ids": [
-        "4.2.13.hcv_reteatment_prior_therapy_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Yeniden tedavi"
     },
     {
       "clause_id": "C004854",
@@ -3502,7 +3459,8 @@
       "linked_rule_ids": [
         "4.2.13.hcv_daa_child_pugh_report",
         "4.2.13.hcv_daa_tertiary_gastro_once",
-        "4.2.13.hcv_sofosbuvir_ledipasvir_board"
+        "4.2.13.hcv_sofosbuvir_ledipasvir_board",
+        "4.2.13.hepatitis_viral_gastro_inf_report"
       ]
     },
     {
@@ -3653,7 +3611,8 @@
       "linked_rule_ids": [
         "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration",
         "4.2.13.hcv_genotype_b_48w_monitoring",
-        "4.2.13.hcv_ribavirin_genotype_duration"
+        "4.2.13.hcv_ribavirin_genotype_duration",
+        "4.2.13.hepatitis_prior_therapy_documentation"
       ]
     },
     {
@@ -3754,51 +3713,36 @@
       "clause_id": "C005875",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çocuk mamaları",
-      "linked_rule_ids": [
-        "4.2.16.special_formula_ek4b_specialist_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Çocuk mamaları"
     },
     {
       "clause_id": "C005877",
       "section_id": "4.2.16",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları",
-      "linked_rule_ids": [
-        "4.2.16.protein_metabolism_formula_diet_report"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
       "clause_id": "C005883",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çölyak hastalığında",
-      "linked_rule_ids": [
-        "4.2.16.celiac_gluten_free_1yr_gastro_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Çölyak hastalığında"
     },
     {
       "clause_id": "C005888",
       "section_id": "4.2.16",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları",
-      "linked_rule_ids": [
-        "4.2.16.protein_metabolism_formula_diet_report"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
       "clause_id": "C005894",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çölyak hastalığında",
-      "linked_rule_ids": [
-        "4.2.16.celiac_gluten_free_1yr_gastro_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Çölyak hastalığında"
     },
     {
       "clause_id": "C005899",
@@ -3870,11 +3814,8 @@
       "clause_id": "C005908",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "tüm hekimler tarafından reçete edilebilir.",
-      "linked_rule_ids": [
-        "4.2.16.adult_metabolic_3yr_report_all_prescribe"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "tüm hekimler tarafından reçete edilebilir."
     },
     {
       "clause_id": "C005909",
@@ -3891,11 +3832,8 @@
       "clause_id": "C005910",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çocuk metabolizma hastalıkları",
-      "linked_rule_ids": [
-        "4.2.16.adult_metabolic_3yr_report_all_prescribe"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Çocuk metabolizma hastalıkları"
     },
     {
       "clause_id": "C005911",
@@ -3923,121 +3861,85 @@
       "clause_id": "C005914",
       "section_id": "4.2.16",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları",
-      "linked_rule_ids": [
-        "4.2.16.protein_metabolism_formula_diet_report"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
       "clause_id": "C005921",
       "section_id": "4.2.16",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları",
-      "linked_rule_ids": [
-        "4.2.16.protein_metabolism_formula_diet_report"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
       "clause_id": "C005928",
       "section_id": "4.2.16",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları",
-      "linked_rule_ids": [
-        "4.2.16.protein_metabolism_formula_diet_report"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
       "clause_id": "C005935",
       "section_id": "4.2.16",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları",
-      "linked_rule_ids": [
-        "4.2.16.protein_metabolism_formula_diet_report"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
       "clause_id": "C005941",
       "section_id": "4.2.16",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları",
-      "linked_rule_ids": [
-        "4.2.16.protein_metabolism_formula_diet_report"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
       "clause_id": "C005947",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Kistik fibrozisli hastalarda kullanılan özel mamalar",
-      "linked_rule_ids": [
-        "4.2.16.adult_metabolic_3yr_report_all_prescribe"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Kistik fibrozisli hastalarda kullanılan özel mamalar"
     },
     {
       "clause_id": "C005948",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "metabolik_mama",
-      "linked_rule_ids": [
-        "4.2.16.infant_cmpa_hydrolyzed_formula_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "metabolik_mama"
     },
     {
       "clause_id": "C005950",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çölyak hastalığında",
-      "linked_rule_ids": [
-        "4.2.16.celiac_gluten_free_1yr_gastro_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Çölyak hastalığında"
     },
     {
       "clause_id": "C005955",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çölyak hastalığında",
-      "linked_rule_ids": [
-        "4.2.16.celiac_gluten_free_1yr_gastro_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Çölyak hastalığında"
     },
     {
       "clause_id": "C005961",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çölyak hastalığında",
-      "linked_rule_ids": [
-        "4.2.16.celiac_gluten_free_1yr_gastro_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Çölyak hastalığında"
     },
     {
       "clause_id": "C005967",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çölyak hastalığında",
-      "linked_rule_ids": [
-        "4.2.16.celiac_gluten_free_1yr_gastro_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Çölyak hastalığında"
     },
     {
       "clause_id": "C005972",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çölyak hastalığında",
-      "linked_rule_ids": [
-        "4.2.16.celiac_gluten_free_1yr_gastro_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Çölyak hastalığında"
     },
     {
       "clause_id": "C005977",
@@ -4080,6 +3982,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Doğuştan metabolik hastalığı olanlarda",
       "linked_rule_ids": [
+        "4.2.16.adult_metabolic_3yr_report_all_prescribe",
         "4.2.16.protein_metabolism_formula_report",
         "4.2.16.protein_metabolism_specialist_prescriber"
       ]
@@ -4091,6 +3994,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Çocuk metabolizma hastalıkları",
       "linked_rule_ids": [
+        "4.2.16.adult_metabolic_3yr_report_all_prescribe",
         "4.2.16.metabolic_formula_pediatric_report",
         "4.2.16.metabolic_formula_prescriber_fallback",
         "4.2.16.pediatric_metabolic_formula_3yr_board"
@@ -4120,11 +4024,8 @@
       "clause_id": "C005987",
       "section_id": "4.2.16",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları",
-      "linked_rule_ids": [
-        "4.2.16.protein_metabolism_formula_diet_report"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Protein metabolizması bozukluklarında (aminoasit metabolizması bozuklukları"
     },
     {
       "clause_id": "C005993",
@@ -4144,6 +4045,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Kistik fibrozisli hastalarda kullanılan özel mamalar",
       "linked_rule_ids": [
+        "4.2.16.adult_metabolic_3yr_report_all_prescribe",
         "4.2.16.cystic_fibrosis_formula_report"
       ]
     },
@@ -4154,6 +4056,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "metabolik_mama",
       "linked_rule_ids": [
+        "4.2.16.infant_cmpa_hydrolyzed_formula_report",
         "4.2.16.infant_cmpa_medical_formula_2025"
       ]
     },
@@ -4161,11 +4064,8 @@
       "clause_id": "C006002",
       "section_id": "4.2.16",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Çölyak hastalığında",
-      "linked_rule_ids": [
-        "4.2.16.celiac_gluten_free_1yr_gastro_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Çölyak hastalığında"
     },
     {
       "clause_id": "C006007",
@@ -4211,5 +4111,5 @@
   "encode_tier_C_deferred_count": 270,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 23.7
+  "encoded_clause_pct": 13.3
 }

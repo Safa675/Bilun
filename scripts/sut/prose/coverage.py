@@ -127,6 +127,19 @@ def _is_structural_gap_excluded(row: pd.Series) -> bool:
     return False
 
 
+# Canonical actionable statuses: a clause whose motor is implemented/partial
+# but which has no JSON rule encoding it. ``has_algorithmic_gap`` (computed in
+# ``_enrich_with_coverage``) is the runtime projection of this predicate plus
+# the structural/EMR/Tier-C exclusions. Consumer sites that re-derive the raw
+# "unencoded in an actionable motor" mask should mirror these status values:
+#   - scripts/sut/build_sut_coverage.py:75  (gap AND unencoded, drug-motor subset)
+#   - scripts/sut/close_algorithmic_gaps.py:100  (drug motor, gap, unencoded)
+#   - scripts/sut/extract_tier_c_drug_rules.py:123  (drug motor, unencoded only)
+#   - src/bilun/domain/prose_rules/drug_indication.py:346  (gap AND unencoded)
+# Keep this set in sync with the ``has_algorithmic_gap`` definition at line ~381.
+_ACTIONABLE_COVERAGE_STATUSES: frozenset[str] = frozenset({"implemented", "partial"})
+
+
 def _load_gate_b_sources_from_rules_json(path: Path) -> frozenset[str]:
     if not path.is_file():
         return frozenset()

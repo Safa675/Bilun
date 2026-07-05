@@ -3,10 +3,10 @@ rules:
 - rule_id: 4.2.16.adult_metabolic_3yr_report_all_prescribe
   sut_section: 4.2.16
   gate_b_sources:
-  - C005908
-  - C005910
-  - C005947
+  - C005982
+  - C005983
   - C005984
+  - C005999
   report_required: true
   report_duration_months: 36
   report_specialties:
@@ -54,14 +54,6 @@ rules:
   - gastroenteroloji
   message_tr: Çölyak glutensiz ürün — gastroenteroloji uzman hekim 1 yıl süreli rapor gerekir (§4.2.16).
   gate_b_sources:
-  - C005883
-  - C005894
-  - C005950
-  - C005955
-  - C005961
-  - C005967
-  - C005972
-  - C006002
   - C006007
   prescriber_specialties:
   - gastroenteroloji
@@ -220,8 +212,8 @@ rules:
   message_tr: İnek sütü/çoklu gıda protein alerjisi hidrolize mama — çocuk gastroenteroloji/immünoloji-alerji (veya çocuk
     sağlığı) uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
-  - C005948
   - C005979
+  - C006000
   legacy_provision: true
   prescriber_specialties:
   - çocuk gastroenteroloji
@@ -390,14 +382,6 @@ rules:
   message_tr: Protein metabolizması bozukluğu özel formüllü un — kısıtlı diyet nedeniyle hayati öneme haiz ürünler uzman hekim
     raporuna dayanılarak karşılanır (§4.2.16 (3)).
   gate_b_sources:
-  - C005877
-  - C005888
-  - C005914
-  - C005921
-  - C005928
-  - C005935
-  - C005941
-  - C005987
   - C005993
   prescriber_specialties:
   - çocuk metabolizma
@@ -507,7 +491,6 @@ rules:
   message_tr: EK-4/B özel mama — metabolizma/endokrinoloji/gastroenteroloji uzman hekim raporu gerekir; yoksa çocuk sağlığı/iç
     hastalıkları (§4.2.16).
   gate_b_sources:
-  - C005875
   - C005981
   prescriber_specialties:
   - çocuk metabolizma

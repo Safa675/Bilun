@@ -5,16 +5,15 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 17,
   "section_clause_total": 34,
-  "encoded_clause_count": 20,
+  "encoded_clause_count": 18,
   "encoded_clause_ids": [
     "C006018",
     "C006019",
     "C006025",
     "C006026",
     "C006027",
-    "C006028",
+    "C006030",
     "C006031",
-    "C006033",
     "C006035",
     "C006039",
     "C006040",
@@ -23,12 +22,15 @@
     "C006044",
     "C006046",
     "C006048",
-    "C006051",
     "C006053",
     "C006054",
     "C006055"
   ],
-  "tier_a_pending_clause_ids": [],
+  "tier_a_pending_clause_ids": [
+    "C006028",
+    "C006033",
+    "C006051"
+  ],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C006015",
@@ -38,7 +40,6 @@
     "C006022",
     "C006023",
     "C006024",
-    "C006030",
     "C006034",
     "C006036",
     "C006037",
@@ -48,9 +49,9 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 0,
+  "tier_a_pending_count": 3,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 14,
+  "tier_c_deferred_count": 13,
   "clause_traces": [
     {
       "clause_id": "C006015",
@@ -184,22 +185,18 @@
       "clause_id": "C006028",
       "section_id": "4.2.17.A",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "osteoporoz_ilac",
-      "linked_rule_ids": [
-        "4.2.17.A.osteoporosis_2yr_report_combo_one_paid"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "osteoporoz_ilac"
     },
     {
       "clause_id": "C006030",
       "section_id": "4.2.17.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Stronsiyum ranelat (kombinasyonları dahil)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.17.A.osteoporosis_2yr_report_combo_one_paid"
+      ]
     },
     {
       "clause_id": "C006031",
@@ -208,6 +205,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Stronsiyum ranelat (kombinasyonları dahil)",
       "linked_rule_ids": [
+        "4.2.17.A.osteoporosis_2yr_report_combo_one_paid",
         "4.2.17.strontium_raloxifene_bisph_fail"
       ]
     },
@@ -215,11 +213,8 @@
       "clause_id": "C006033",
       "section_id": "4.2.17.A",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Denosumab",
-      "linked_rule_ids": [
-        "4.2.17.A.hormone_ablation_cancer_high_fracture"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Denosumab"
     },
     {
       "clause_id": "C006034",
@@ -360,11 +355,8 @@
       "clause_id": "C006051",
       "section_id": "4.2.17.D",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "osteoporoz_ilac",
-      "linked_rule_ids": [
-        "4.2.17.D.week24_response_teriparatide_romosozumab"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "osteoporoz_ilac"
     },
     {
       "clause_id": "C006052",
@@ -410,8 +402,8 @@
   ],
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 14,
+  "encode_tier_C_deferred_count": 13,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 58.8
+  "encoded_clause_pct": 52.9
 }

@@ -5,14 +5,9 @@
   "effective_date": "2026-06-29",
   "rules_in_json": 55,
   "section_clause_total": 128,
-  "encoded_clause_count": 69,
+  "encoded_clause_count": 63,
   "encoded_clause_ids": [
     "C004113",
-    "C004117",
-    "C004118",
-    "C004119",
-    "C004121",
-    "C004122",
     "C004125",
     "C004126",
     "C004127",
@@ -25,7 +20,6 @@
     "C004141",
     "C004147",
     "C004151",
-    "C004160",
     "C004166",
     "C004167",
     "C004168",
@@ -77,8 +71,16 @@
     "C006297",
     "C006301"
   ],
-  "tier_a_pending_clause_ids": [],
-  "tier_b_pending_clause_ids": [],
+  "tier_a_pending_clause_ids": [
+    "C004118",
+    "C004119",
+    "C004121",
+    "C004122",
+    "C004160"
+  ],
+  "tier_b_pending_clause_ids": [
+    "C004117"
+  ],
   "tier_c_deferred_clause_ids": [
     "C004115",
     "C004116",
@@ -142,8 +144,8 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 0,
-  "tier_b_pending_count": 0,
+  "tier_a_pending_count": 5,
+  "tier_b_pending_count": 1,
   "tier_c_deferred_count": 59,
   "clause_traces": [
     {
@@ -182,31 +184,22 @@
       "clause_id": "C004117",
       "section_id": "4.2.9.A",
       "encode_tier": "B",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Tetkik sonuç belgesinin tarihi ve sonucu reçete veya raporda belirtilir.",
-      "linked_rule_ids": [
-        "4.2.9.esa_ckd_iron_hb_nephrology_report"
-      ]
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Tetkik sonuç belgesinin tarihi ve sonucu reçete veya raporda belirtilir."
     },
     {
       "clause_id": "C004118",
       "section_id": "4.2.9.A",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Eritropoietin alfa-beta-zeta",
-      "linked_rule_ids": [
-        "4.2.9.esa_legacy_muadil_monthly_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Eritropoietin alfa-beta-zeta"
     },
     {
       "clause_id": "C004119",
       "section_id": "4.2.9.A",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "esa",
-      "linked_rule_ids": [
-        "4.2.9.esa_legacy_muadil_monthly_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "esa"
     },
     {
       "clause_id": "C004120",
@@ -223,21 +216,15 @@
       "clause_id": "C004121",
       "section_id": "4.2.9.A-1",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Eritropoietin alfa-beta-zeta",
-      "linked_rule_ids": [
-        "4.2.9.esa_ckd_iron_hb_nephrology_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Eritropoietin alfa-beta-zeta"
     },
     {
       "clause_id": "C004122",
       "section_id": "4.2.9.A-1",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Eritropoietin alfa-beta-zeta",
-      "linked_rule_ids": [
-        "4.2.9.esa_ckd_legacy_nephrology_prescriber"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Eritropoietin alfa-beta-zeta"
     },
     {
       "clause_id": "C004123",
@@ -467,11 +454,8 @@
       "clause_id": "C004160",
       "section_id": "4.2.9.C-2",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Parikalsitolün oral formları",
-      "linked_rule_ids": [
-        "4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Parikalsitolün oral formları"
     },
     {
       "clause_id": "C004162",
@@ -1517,5 +1501,5 @@
   "encode_tier_C_deferred_count": 59,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 53.9
+  "encoded_clause_pct": 49.2
 }

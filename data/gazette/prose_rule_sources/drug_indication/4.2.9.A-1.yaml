@@ -18,8 +18,6 @@ rules:
   message_tr: KBY anemisi ESA — TSAT/ferritin ve Hb kriterleri; demir eksikliğinde önce demir tedavisi; hedef Hb 11-12 g/dl;
     tetkik sonuçları raporda belirtilir (§4.2.9.A-1).
   gate_b_sources:
-  - C004117
-  - C004121
   - C004126
   - C004130
   report_required: true
@@ -52,7 +50,6 @@ rules:
   message_tr: KBY anemisi ESA — nefroloji veya diyaliz sertifikalı uzman hekim raporuna dayanılarak nefroloji/diyaliz sertifikalı
     hekimlerce reçete edilir (§4.2.9.A-1).
   gate_b_sources:
-  - C004122
   - C004131
   report_required: true
   report_specialties:

@@ -11,7 +11,7 @@ C004510,4.2.13,"",(Değişik: RG- 18/06/2016- 29746/ 13-b md. Yürürlük: 18/06
 C004512,4.2.13.1,"",4.2.13.1 - Kronik Hepatit B tedavisi,2.13.1 - Kronik Hepatit B tedavisi,C,defer_tier_c
 C004513,4.2.13.1,"",(Değişik: RG- 25/07/2014- 29071/ 26-a md. Yürürlük: 07/08/2014 ),(Değişik: RG- 25/07/2014- 29071/ 26-a md. Yürürlük: 07/08/2014 ),C,defer_tier_c
 C004534,4.2.13.1,"",(Değişik: RG-02/11/2024- 32710/13-b md. Yürürlük: 09/11/2024),(Değişik: RG-02/11/2024- 32710/13-b md. Yürürlük: 09/11/2024),C,defer_tier_c
-C004539,4.2.13.1,"",(1) İlk tedaviye başlamak için;,İlk tedaviye başlamak için,C,defer_tier_c
+C004539,4.2.13.1,"",(1) İlk tedaviye başlamak için;,İlk tedaviye başlamak için,C,skip_already_encoded
 C004540,4.2.13.1,"","a) HBV DNA seviyesi 10.000 (104) kopya/ml (2.000 IU/ml) veya üzerinde olan hastalarda, bu durumun belirtildiği rapor ve eki tetkik sonuçlarına göre;","",C,skip_already_encoded
 C004541,4.2.13.1,"","1- Erişkin hastalarda; karaciğer biyopsisinde Histolojik Aktivite İndeksi (HAI) ≥6 veya fibrozis ≥2 olanlar ile 2-18 yaş grubu hastalarda; “ALT normalin üst sınırının 2 katından daha yüksek ve karaciğer biyopsisinde HAI ≥4” veya “ALT düzeyine bakılmaksızın fibrozis ≥ 2” olan hastalarda veya,",1- Erişkin hastalarda,C,defer_tier_c
 C004542,4.2.13.1,"","2- Erişkin hastalarda; en az 3 ay ara ile tekrarlanan testlerde ALT normalin üst sınırının üzerinde ve FIB-4 skoru >1.45 veya APRI > 0.5 üzerinde olanlarda,",2- Erişkin hastalarda,C,defer_tier_c

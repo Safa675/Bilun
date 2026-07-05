@@ -19,7 +19,6 @@ rules:
 - rule_id: 4.2.17.A.hormone_ablation_cancer_high_fracture
   sut_section: 4.2.17.A
   gate_b_sources:
-  - C006033
   - C006035
   drug_names:
   - bifosfonat
@@ -49,7 +48,8 @@ rules:
   sut_section: 4.2.17.A
   gate_b_sources:
   - C006018
-  - C006028
+  - C006030
+  - C006031
   drug_names:
   - bifosfonat
   - raloksifen

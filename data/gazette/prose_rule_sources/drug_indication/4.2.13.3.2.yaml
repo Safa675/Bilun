@@ -50,7 +50,6 @@ rules:
   message_tr: HCV DAA — üçüncü basamak kurumda gastroenteroloji/enfeksiyon uzman raporu ve tedavi şeması; bir defaya mahsus
     (§4.2.13.3.2).
   gate_b_sources:
-  - C004679
   - C004897
   prescriber_specialties:
   - gastroenteroloji
