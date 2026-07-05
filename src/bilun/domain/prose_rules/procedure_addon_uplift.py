@@ -277,3 +277,69 @@ def detect_missing_procedure_addon_opportunities(
                     )
 
     return opportunities
+
+
+_VIOLATION_RULE = "procedure_pairing"
+_VIOLATION_SEVERITY = "warning"
+
+
+def check_procedure_pairing_for_context(ctx: Any) -> list[dict[str, Any]]:
+    """Run SUT §2.2.2 same-session procedure add-on pairing on a PatientClaimContext.
+
+    Phase 3.3 unified-core adapter. Runs ONLY when ``ctx.procedure_lines`` is
+    non-empty. The evaluator operates per-claim (it groups lines into sessions
+    internally via ``group_procedure_lines_by_session``), so we fan the context
+    out across ``ctx.claims`` exactly like
+    ``recommend_procedure_addon_uplift_from_claims`` and project each
+    opportunity dict into the flat ``analyze_claim`` violation shape.
+
+    Returns violation dicts carrying the keys the Phase 2.4 adapter reads:
+    ``rule`` ("procedure_pairing"), ``severity``, ``message``, ``savings_try``,
+    ``risk_amount``, ``sut_section``, ``rule_id`` and ``details``. The full
+    opportunity dict is preserved under ``details["opportunity"]``.
+    """
+    if not ctx.procedure_lines:
+        return []
+
+    claims_by_id = {claim.claim_id: claim for claim in ctx.claims}
+
+    violations: list[dict[str, Any]] = []
+    for claim_id, claim in claims_by_id.items():
+        claim_procs = [
+            line for line in ctx.procedure_lines if line.claim_id == claim_id
+        ]
+        if not claim_procs:
+            continue
+        opportunities = detect_missing_procedure_addon_opportunities(claim, claim_procs)
+        for opp in opportunities:
+            violations.append(
+                {
+                    "rule": _VIOLATION_RULE,
+                    "severity": _VIOLATION_SEVERITY,
+                    "message": str(opp.get("detail") or ""),
+                    "savings_try": float(opp.get("recoverable_uplift_try") or 0.0),
+                    "risk_amount": 0.0,
+                    "sut_section": str(opp.get("sut_section_id") or "2.2.2.A.(5)"),
+                    "rule_id": str(opp.get("rule_id") or "procedure_pairing_addon"),
+                    "claim_id": str(opp.get("claim_id") or claim_id),
+                    "trigger_procedure_code": str(
+                        opp.get("trigger_procedure_code") or ""
+                    ),
+                    "expected_addon_procedure_code": str(
+                        opp.get("expected_addon_procedure_code") or ""
+                    ),
+                    "session_date": str(opp.get("session_date") or ""),
+                    "details": {
+                        "type": opp.get("type"),
+                        "rule_set_id": opp.get("rule_set_id"),
+                        "addon_factor": opp.get("addon_factor"),
+                        "savings_category": opp.get("savings_category"),
+                        "savings_basis": opp.get("savings_basis"),
+                        "included_in_sgk_total": opp.get("included_in_sgk_total"),
+                        "price_methodology": opp.get("price_methodology"),
+                        "opportunity": opp,
+                    },
+                }
+            )
+
+    return violations

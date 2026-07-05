@@ -27,11 +27,26 @@ from __future__ import annotations
 from typing import Any
 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.prose_rules.dental_2_4_1 import (
+    check_dental_2_4_1_for_context,
+)
+from src.bilun.domain.prose_rules.drg_package_adequacy import (
+    check_drg_package_adequacy_for_context,
+)
 from src.bilun.domain.prose_rules.drug_indication import (
     check_drug_indication_for_context,
 )
 from src.bilun.domain.prose_rules.material_bundling import (
     check_material_bundling_for_context,
+)
+from src.bilun.domain.prose_rules.material_miat_ek3c2 import (
+    check_material_miat_for_context,
+)
+from src.bilun.domain.prose_rules.material_preauth_ek3c1 import (
+    check_material_preauth_for_context,
+)
+from src.bilun.domain.prose_rules.procedure_addon_uplift import (
+    check_procedure_pairing_for_context,
 )
 from src.bilun.domain.prose_rules.specialty_materials import (
     check_specialty_materials_for_context,
@@ -72,5 +87,22 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     # 5. §4.2 drug indication (only when the adapter built drug lines).
     if ctx.drug_lines:
         violations.extend(check_drug_indication_for_context(ctx))
+
+    # 6. §2.4.1 dental prose rules.
+    violations.extend(check_dental_2_4_1_for_context(ctx))
+
+    # 7. §3.1.2 EK-3C-1 pre-authorization materials.
+    violations.extend(check_material_preauth_for_context(ctx))
+
+    # 8. §3.1.4 EK-3C-2 MIAT (minimum inter-application-time) materials.
+    violations.extend(check_material_miat_for_context(ctx))
+
+    # 9. Procedure-driven motors — run only when procedure lines are present
+    # (the dict-adapter path has none; the orchestrator/billing path does).
+    if ctx.procedure_lines:
+        # §2.2.1.B DRG package adequacy (documentation-review opportunities).
+        violations.extend(check_drg_package_adequacy_for_context(ctx))
+        # §2.2 procedure pairing (missing add-on procedures).
+        violations.extend(check_procedure_pairing_for_context(ctx))
 
     return violations
