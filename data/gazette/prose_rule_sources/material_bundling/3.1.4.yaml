@@ -11,7 +11,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Tanıya dayalı paket dahil malzeme — §3.1–3.2 SUT kuralları geçerlidir (§3.1.4(1)).
+    message_tr: Tanıya dayalı paket dahil malzeme — §3.1–3.2 SUT kuralları geçerlidir
+      (§3.1.4(1)).
 - rule_id: 3.1.4.diagnosis_package_material_unbundled
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
@@ -23,4 +24,298 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Tanıya dayalı paket dışı malzeme — EK-2/C ve SUT paket kurallarına uygunluk doğrulanmalı (§3.1.4).
+    message_tr: Tanıya dayalı paket dışı malzeme — EK-2/C ve SUT paket kurallarına
+      uygunluk doğrulanmalı (§3.1.4).
+- rule_id: 3.1.4.(a).plate_screw_nail_anchor
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002802
+  condition:
+    material_name_any:
+    - plak
+    - çivi
+    - civi
+    - vida
+    - ankor
+    - anchor
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Plak, çivi, vida, ankor işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(a)).
+- rule_id: 3.1.4.(b).bone_cement
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002803
+  condition:
+    material_name_any:
+    - kemik çimentosu
+    - kemikimentosu
+    - bone cement
+    - çimento
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Kemik çimentosu işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(b)).
+- rule_id: 3.1.4.(c).external_fixator_sets
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002804
+  condition:
+    material_name_any:
+    - eksternal fiksatör
+    - eksternal fiksator
+    - external fixator
+    - eksternal fixator
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Eksternal fiksatör setleri işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(c)).
+- rule_id: 3.1.4.(ç).all_joint_implants
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002805
+  condition:
+    material_name_any:
+    - eklem implant
+    - eklem protez
+    - total eklem
+    - kalça protezi
+    - kalca protezi
+    - diz protezi
+    - omuz protezi
+    - her türlü eklem implantı
+    - her turlu eklem implantı
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Her türlü eklem implantı işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(ç)).
+- rule_id: 3.1.4.(d).spinal_implant
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002806
+  condition:
+    material_name_any:
+    - omurga implant
+    - spinal implant
+    - omurga protez
+    - pedikül vida
+    - pedikul vida
+    - omurga fiksasyon
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Omurga implantı işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(d)).
+- rule_id: 3.1.4.(e).pacemaker
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002807
+  condition:
+    material_name_any:
+    - kalp pili
+    - kalp pilleri
+    - pace maker
+    - pacemaker
+    - kardiyak pill
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Kalp pili işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(e)).
+- rule_id: 3.1.4.(f).pacemaker_electrode
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002808
+  condition:
+    material_name_any:
+    - pace elektrodu
+    - pace elektrot
+    - pace-maker elektrot
+    - pil elektrodu
+    - pil elektrot
+    - kardiyak elektrot
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Pace elektrodu işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(f)).
+- rule_id: 3.1.4.(g).coronary_stents
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002809
+  condition:
+    material_name_any:
+    - koroner stent
+    - koroner stentler
+    - coronary stent
+    - stent
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Koroner stentler işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(g)).
+- rule_id: 3.1.4.(ğ).heart_valves
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002810
+  condition:
+    material_name_any:
+    - kalp kapağı
+    - kalp kapak
+    - kalp kapagi
+    - heart valve
+    - kapak protezi
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Kalp kapakları işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(ğ)).
+- rule_id: 3.1.4.(h).intraaortic_balloon_vad
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002811
+  condition:
+    material_name_any:
+    - intraaortik balon
+    - intraaortic balloon
+    - iabp
+    - ventrikül destek
+    - ventrikul destek
+    - ventriküler assist
+    - ventrikuler assist
+    - lvad
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: İntraaortik balon / ventrikül destek cihazı işlem bedeline dahildir
+      — ayrıca faturalandırılamaz (§3.1.4(h)).
+- rule_id: 3.1.4.(ı).valved_valveless_conduit
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002812
+  condition:
+    material_name_any:
+    - kondüit
+    - kondit
+    - conduit
+    - kapaklı kondüit
+    - kapakli kondit
+    - kapaksız kondüit
+    - kapaksiz kondit
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Kapaklı/kapaksız kondüit işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(ı)).
+- rule_id: 3.1.4.(i).valve_ring
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002813
+  condition:
+    material_name_any:
+    - valf ringi
+    - valf halkası
+    - valf halkasi
+    - valf ring
+    - valve ring
+    - anülüs ring
+    - anulus ring
+    - annuloplasty ring
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Valf ringi işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(i)).
+- rule_id: 3.1.4.(j).grafts_shunts_vascular_prosthesis
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002814
+  condition:
+    material_name_any:
+    - greft
+    - graft
+    - şunt
+    - sunt
+    - shunt
+    - suni damar
+    - vasküler greft
+    - vaskuler greft
+    - vasküler protez
+    - vaskuler protez
+    - damar grefti
+    - damar protezi
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Her türlü greft, şunt ve suni damar işlem bedeline dahildir — ayrıca
+      faturalandırılamaz (§3.1.4(j)).
+- rule_id: 3.1.4.(l).atherectomy_device
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002816
+  condition:
+    material_name_any:
+    - aterektomi
+    - atherectomy
+    - aterektomi cihazı
+    - aterektomi cihazi
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Aterektomi cihazı işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(l)).
+- rule_id: 3.1.4.(m).double_sided_mesh_patches
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002817
+  condition:
+    material_name_any:
+    - çift yüzlü yama
+    - cif yuzlu yama
+    - çift yuzlu yama
+    - mesh
+    - yama
+    - çift taraflı mesh
+    - cif tarafli mesh
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: Çift yüzlü yamalar (meshler) işlem bedeline dahildir — ayrıca faturalandırılamaz
+      (§3.1.4(m)).
+- rule_id: 3.1.4.(o).arthroscopy_set_ek3f2
+  sut_section: 3.1.4
+  deontic: NO_PAY
+  gate_b_sources:
+  - C002819
+  condition:
+    material_name_any:
+    - artroskopi ve eklem cerrahisi malzeme seti
+    - artroskopi ve eklem cerrahisi malzeme
+    - artroskopi seti
+    - artroskopi malzeme seti
+    - artroscopy set
+    - eklem cerrahisi malzeme seti
+    - ek-3/f-2
+    - ek3/f-2
+  action:
+    material_outcome: no_pay
+    severity: error
+    message_tr: EK-3/F-2 "Artroskopi ve Eklem Cerrahisi Malzeme Seti" işlem bedeline
+      dahildir — ayrıca faturalandırılamaz (§3.1.4(o)).

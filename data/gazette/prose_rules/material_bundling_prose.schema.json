@@ -35,6 +35,7 @@
             "MUST_NOT_BILL",
             "MUST_HAVE_CODE",
             "MUST_PAIR_PROCEDURE",
+            "MANDATORY",
             "REGULATORY_ACTION"
           ]
         },
@@ -102,7 +103,15 @@
         "child_growth_miat_renewal_claim": { "type": "boolean" },
         "facility_contract_material_supply_scope": { "type": "boolean" },
         "ismarlama_device_component_titubb_incomplete": { "type": "boolean" },
-        "titubb_uts_barcode_documentation_missing": { "type": "boolean" }
+        "titubb_uts_barcode_documentation_missing": { "type": "boolean" },
+        "disabled_veteran_ortez_protez_billing_review": { "type": "boolean" },
+        "terror_victim_ortez_protez_documentation_incomplete": { "type": "boolean" },
+        "material_prescription_correction_invalid": { "type": "boolean" },
+        "device_return_application_deadline_missed": { "type": "boolean" },
+        "material_effective_date_transition_scope": { "type": "boolean" },
+        "ek3c_list_field_definition_scope": { "type": "boolean" },
+        "ismarlama_licensed_center_supply_required": { "type": "boolean" },
+        "ek3c_optional_appropriateness_consumable": { "type": "boolean" }
       }
     },
     "action": {
