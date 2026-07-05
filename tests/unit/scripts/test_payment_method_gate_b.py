@@ -63,7 +63,7 @@ def test_manifest_related_session_pricing_cross_ref() -> None:
 def test_manifest_exists_with_encoded_clauses() -> None:
     assert MANIFEST.is_file()
     payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    encoded = payload.get("gate_b_sources_encoded") or payload.get("encoded_clause_ids") or []
+    encoded = payload.get("encoded_clause_ids") or payload.get("encoded_clause_ids") or []
     assert payload.get("rules_in_json", 0) >= 39
     assert len(encoded) >= 38
 

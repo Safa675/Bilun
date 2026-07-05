@@ -252,7 +252,6 @@ def build_encoded_manifest(
         "scope_note": f"§2.2 package vs itemized vs tier-override ({len(rules)} JSON rules, C2 batch-1–4)",
         "rules_in_json": len(rules),
         "session_fraction_status": "PARTIAL",
-        "gate_b_sources_encoded": encoded,
         "encoded_clause_ids": encoded,
         "gate_b_sources_by_rule": per_rule_sources,
         "related_rule_sets": [
@@ -321,7 +320,7 @@ def main() -> None:
         manifest_path=_PROJECT_ROOT / "data/gazette/prose_manifests/L2.2_payment_method_encoded_manifest.json",
     )
     summary = result["summary"]
-    encoded = result["manifest"]["gate_b_sources_encoded"]
+    encoded = result["manifest"]["encoded_clause_ids"]
     print(f"Wrote {summary['total_rows']} corpus rows")
     print(f"Encoded clause IDs ({len(encoded)}): {', '.join(encoded)}")
     for rule_id, sources in sorted(result["per_rule_sources"].items()):

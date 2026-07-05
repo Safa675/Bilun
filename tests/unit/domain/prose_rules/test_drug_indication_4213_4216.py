@@ -168,7 +168,7 @@ def test_manifest_union_wires_encoded_clauses() -> None:
 
     assert _MANIFEST.is_file()
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
-    encoded = set(manifest.get("gate_b_sources_encoded") or [])
+    encoded = set(manifest.get("encoded_clause_ids") or [])
     assert "C004572" in encoded
     assert "C005999" in encoded
     assert encoded.issubset(_load_drug_indication_encoded_clause_ids())

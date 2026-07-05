@@ -104,7 +104,7 @@ def _drug_line(
     )
 
 
-def test_a5_combined_batch_gate_b_sources_encoded_in_manifest() -> None:
+def test_a5_combined_batch_encoded_clause_ids_in_manifest() -> None:
     assert _A5_ALL_GATE_B <= _ENCODED
     assert _MANIFEST_DATA.get("tier_a_pending_count") == 0
 

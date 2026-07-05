@@ -54,7 +54,7 @@ def test_manifest_encoded_clause_ids_match_json() -> None:
             for clause_id in (rule.get("gate_b_sources") or [])
         }
     )
-    encoded = sorted(manifest.get("encoded_clause_ids") or manifest.get("gate_b_sources_encoded") or [])
+    encoded = sorted(manifest.get("encoded_clause_ids") or manifest.get("encoded_clause_ids") or [])
     assert encoded == from_json
     assert len(encoded) >= _BATCH4_MIN_ENCODED
 

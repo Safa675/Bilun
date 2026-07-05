@@ -94,7 +94,7 @@ def test_a2_batch_rule_count() -> None:
     assert len(BATCH_A2_RULES) == 15
 
 
-def test_a2_gate_b_sources_encoded_in_manifest() -> None:
+def test_a2_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = encoded_like_clause_ids(manifest)
     assert _A2_GATE_B_SOURCES <= encoded

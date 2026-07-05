@@ -100,7 +100,7 @@ def test_a2a_gate_b_sources_count() -> None:
     assert all(rule.get("gate_b_sources") for rule in BATCH_A2A_RULES)
 
 
-def test_a2a_gate_b_sources_encoded_in_manifest() -> None:
+def test_a2a_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = encoded_like_clause_ids(manifest)
     assert _A2A_GATE_B_SOURCES <= encoded

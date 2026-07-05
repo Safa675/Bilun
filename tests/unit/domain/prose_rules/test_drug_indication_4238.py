@@ -91,7 +91,7 @@ def test_a5_manifest_encoded_sources() -> None:
     assert manifest["tier_c_deferred_count"] == len(
         manifest.get("tier_c_deferred_clause_ids") or []
     )
-    assert encoded == set(manifest.get("gate_b_sources_encoded") or [])
+    assert encoded == set(manifest.get("encoded_clause_ids") or [])
 
 
 @pytest.mark.parametrize(

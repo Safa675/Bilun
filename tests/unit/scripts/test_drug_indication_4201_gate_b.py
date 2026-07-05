@@ -68,7 +68,7 @@ def test_manifest_pilot_encoded_and_pending_trace() -> None:
 
     frame = export_4201_candidates(_CLAUSES)
     manifest = build_4201_manifest(frame, BATCH_A1_RULES, effective_date="2026-06-27")
-    encoded = manifest["gate_b_sources_encoded"]
+    encoded = manifest["encoded_clause_ids"]
     assert len(encoded) >= 14
     assert manifest["rules_in_json"] == 14
     assert manifest["tier_a_pending_count"] >= 25
@@ -121,7 +121,7 @@ def test_a2_manifest_covers_pending_sources() -> None:
         for rule in BATCH_A2_RULES
         for clause_id in (rule.get("gate_b_sources") or [])
     }
-    encoded = set(manifest["gate_b_sources_encoded"])
+    encoded = set(manifest["encoded_clause_ids"])
     assert a2_sources <= encoded
     assert manifest["rules_in_json"] == len(combined)
     assert manifest["encoded_clause_count"] >= 25
@@ -154,7 +154,7 @@ def test_a3_manifest_covers_batch_sources() -> None:
         for rule in BATCH_A3_RULES
         for clause_id in (rule.get("gate_b_sources") or [])
     }
-    encoded = set(manifest["gate_b_sources_encoded"])
+    encoded = set(manifest["encoded_clause_ids"])
     assert a3_sources <= encoded
     assert manifest["rules_in_json"] == len(combined)
     assert manifest["encoded_clause_count"] >= 40
@@ -203,7 +203,7 @@ def test_a4_manifest_covers_all_parallel_clusters() -> None:
         for rule in BATCH_A4_RULES
         for clause_id in (rule.get("gate_b_sources") or [])
     }
-    encoded = set(manifest["gate_b_sources_encoded"])
+    encoded = set(manifest["encoded_clause_ids"])
     assert a4_sources <= encoded
     assert manifest["rules_in_json"] == len(combined)
     assert manifest["encoded_clause_count"] >= 55

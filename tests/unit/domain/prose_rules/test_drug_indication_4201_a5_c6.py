@@ -95,7 +95,7 @@ def test_a5_c6_batch_rule_count() -> None:
     assert len(BATCH_A5_C6_RULES) == 23
 
 
-def test_a5_c6_gate_b_sources_encoded_in_manifest() -> None:
+def test_a5_c6_encoded_clause_ids_in_manifest() -> None:
     assert _A5_GATE_B_SOURCES <= _ENCODED
 
 

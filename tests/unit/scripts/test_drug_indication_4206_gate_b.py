@@ -67,7 +67,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     frame = pl.read_csv(_CORPUS) if _CORPUS.is_file() else export_4206_candidates(_CLAUSES)
     rules = _all_4206_batch_rules()
     manifest = build_4206_manifest(frame, rules, effective_date="2026-06-27")
-    encoded = set(manifest["gate_b_sources_encoded"])
+    encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _ALL_ENCODED
     assert manifest["tier_c_deferred_count"] >= 28
     assert manifest["tier_a_pending_count"] == 1

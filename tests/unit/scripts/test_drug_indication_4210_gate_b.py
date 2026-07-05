@@ -198,7 +198,7 @@ def test_gate_b_artifacts_on_disk() -> None:
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"])
     assert manifest["tier_c_deferred_count"] == 109
-    # canonical-v1: gate_b_sources_encoded removed; encoded_clause_ids is canonical.
-    legacy = manifest.get("gate_b_sources_encoded")
+    # canonical-v1: encoded_clause_ids removed; encoded_clause_ids is canonical.
+    legacy = manifest.get("encoded_clause_ids")
     if legacy is not None:
         assert set(manifest["encoded_clause_ids"]) == set(legacy)

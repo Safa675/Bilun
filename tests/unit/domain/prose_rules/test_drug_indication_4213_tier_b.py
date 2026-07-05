@@ -113,7 +113,7 @@ def test_tier_b_oral_switch_in_force_sources() -> None:
     assert sources == {"C004584", "C004593"}
 
 
-def test_tier_b_gate_b_sources_encoded_in_manifest() -> None:
+def test_tier_b_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     covered = encoded_like_clause_ids(manifest)
     assert _TIER_B_GATE_B_SOURCES <= covered

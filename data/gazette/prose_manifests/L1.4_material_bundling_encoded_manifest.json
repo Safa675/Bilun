@@ -2,7 +2,7 @@
   "rules_in_json": 67,
   "rules_added": 0,
   "rules_patched": 0,
-  "gate_b_sources_encoded": [
+  "encoded_clause_ids": [
     "C002682",
     "C002684",
     "C002685",

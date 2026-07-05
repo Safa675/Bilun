@@ -45,7 +45,7 @@ def test_encoded_like_clause_ids_excludes_deferred_lists() -> None:
     payload = {
         "encoded_clause_ids": ["C000001"],
         "tier_c_deferred_clause_ids": ["C000002"],
-        "gate_b_sources_encoded": ["C000003"],
+        "encoded_clause_ids": ["C000003"],
         "tier_a_pending_clause_ids": ["C000004"],
     }
     encoded = encoded_like_clause_ids(payload)

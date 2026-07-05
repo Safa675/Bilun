@@ -98,7 +98,7 @@ def test_4216_tier_b_gate_b_sources_count() -> None:
     assert all(rule.get("gate_b_sources") for rule in BATCH_4216_TIER_B_RULES)
 
 
-def test_4216_tier_b_gate_b_sources_encoded_in_manifest() -> None:
+def test_4216_tier_b_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = encoded_like_clause_ids(manifest)
     assert _TIER_B_GATE_B_SOURCES <= encoded

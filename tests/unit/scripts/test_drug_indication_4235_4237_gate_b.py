@@ -75,10 +75,10 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
     frame = export_4235_4237_candidates(_CLAUSES)
     manifest = build_4235_4237_manifest(frame, BATCH_A5_RULES, effective_date="2026-06-27")
-    encoded = set(manifest["gate_b_sources_encoded"])
+    encoded = set(manifest["encoded_clause_ids"])
     on_disk = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     # Fresh build is a subset of on-disk (reconciliation may expand encoded beyond the batch).
-    on_disk_encoded = set(on_disk.get("encoded_clause_ids") or on_disk.get("gate_b_sources_encoded") or [])
+    on_disk_encoded = set(on_disk.get("encoded_clause_ids") or on_disk.get("encoded_clause_ids") or [])
     assert encoded <= on_disk_encoded
     assert "C006717" in encoded
     assert manifest["tier_c_deferred_count"] == 19

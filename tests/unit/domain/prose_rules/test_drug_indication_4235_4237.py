@@ -85,7 +85,7 @@ def test_a5_manifest_traces_encoded_clauses() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
     assert manifest["encoded_clause_count"] == len(encoded)
-    assert encoded == set(manifest.get("gate_b_sources_encoded") or [])
+    assert encoded == set(manifest.get("encoded_clause_ids") or [])
     assert "C006717" in encoded
     assert manifest["section_id"] == "4.2.35,4.2.37"
 

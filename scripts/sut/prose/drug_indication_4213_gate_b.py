@@ -121,7 +121,6 @@ def write_gate_b_artifacts(
     merged_traces = prior_traces + list(manifest.get("clause_traces") or [])
     shared.update(manifest)
     shared["clause_traces"] = merged_traces
-    shared["gate_b_sources_encoded"] = list(manifest.get("encoded_clause_ids") or [])
 
     frame_4213 = shim_export_candidates(
         _SECTION, clauses_path, encoded_clause_ids=frozenset(manifest["encoded_clause_ids"])

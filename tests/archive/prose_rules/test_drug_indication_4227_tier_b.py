@@ -116,7 +116,7 @@ def test_tier_b_gate_b_sources_match_pending() -> None:
     assert _TIER_B_GATE_B_SOURCES == _TIER_B_PENDING_4227
 
 
-def test_tier_b_gate_b_sources_encoded_in_manifest() -> None:
+def test_tier_b_encoded_clause_ids_in_manifest() -> None:
     if not _MANIFEST.is_file():
         pytest.skip("manifest not exported yet — run compile_rules.py --target drug_indication_4227_tier_b")
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))

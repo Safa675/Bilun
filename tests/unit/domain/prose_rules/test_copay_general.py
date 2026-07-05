@@ -55,7 +55,7 @@ def test_manifest_encoded_clause_ids_include_json_and_compositor() -> None:
             for clause_id in (rule.get("gate_b_sources") or [])
         }
     )
-    encoded = sorted(manifest.get("gate_b_sources_encoded") or [])
+    encoded = sorted(manifest.get("encoded_clause_ids") or [])
     for clause_id in from_json:
         assert clause_id in encoded
     assert len(encoded) >= _BATCH1_MIN_ENCODED

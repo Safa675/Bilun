@@ -55,9 +55,9 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     frame = pl.read_csv(_CORPUS) if _CORPUS.is_file() else export_4238_candidates(_CLAUSES)
     manifest = build_4238_manifest(frame, BATCH_A5_RULES, effective_date="2026-06-27")
     on_disk = json.loads(_MANIFEST.read_text(encoding="utf-8")) if _MANIFEST.is_file() else {}
-    encoded = manifest["gate_b_sources_encoded"]
+    encoded = manifest["encoded_clause_ids"]
     # Fresh build is a subset of on-disk (reconciliation may expand encoded beyond the batch).
-    on_disk_encoded = on_disk.get("gate_b_sources_encoded") or encoded
+    on_disk_encoded = on_disk.get("encoded_clause_ids") or encoded
     assert set(encoded) <= set(on_disk_encoded)
     # tier_c may shrink on-disk vs fresh (reconciliation promotes clauses out of deferred).
     on_disk_tier_c = on_disk.get("tier_c_deferred_count", manifest["tier_c_deferred_count"])

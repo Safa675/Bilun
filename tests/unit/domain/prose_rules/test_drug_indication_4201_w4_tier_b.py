@@ -115,7 +115,7 @@ def test_w4_tier_b_gate_b_sources_count() -> None:
     }
 
 
-def test_w4_tier_b_gate_b_sources_encoded_in_manifest() -> None:
+def test_w4_tier_b_encoded_clause_ids_in_manifest() -> None:
     if not _MANIFEST.is_file():
         pytest.skip("manifest not exported yet — run compile_rules.py --target drug_indication_4201_w4")
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))

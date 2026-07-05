@@ -96,7 +96,7 @@ def traced_clause_ids(payload: dict[str, Any]) -> frozenset[str]:
 
 
 def encoded_like_clause_ids(payload: dict[str, Any]) -> frozenset[str]:
-    """Coverage semantics: encoded + gate_b_sources + non-deferred ``*_clause_ids``."""
+    """Coverage semantics: encoded_clause_ids + non-deferred ``*_clause_ids``."""
     ids: set[str] = set()
     encoded = payload.get("encoded_clause_ids")
     if isinstance(encoded, list):

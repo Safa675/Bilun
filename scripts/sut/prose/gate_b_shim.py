@@ -40,10 +40,8 @@ def shim_export_candidates(name: str, clauses_path: Path, *, encoded_clause_ids:
 
 
 def shim_build_manifest(name: str, gate_b_frame: pl.DataFrame, rules: list[dict[str, Any]], *, effective_date: str) -> dict[str, Any]:
-    """Generic build_manifest delegation — adds backward-compat gate_b_sources_encoded."""
+    """Generic build_manifest delegation."""
     manifest = _build_manifest(gate_b_frame, rules, _section_for(name), effective_date=effective_date)
-    # Backward compat: tests read gate_b_sources_encoded as alias of encoded_clause_ids
-    manifest["gate_b_sources_encoded"] = list(manifest.get("encoded_clause_ids") or [])
     return manifest
 
 
@@ -85,10 +83,9 @@ def shim_write_artifacts(
     if resolved_manifest_path is None:
         resolved_manifest_path = _PROJECT_ROOT / section.manifest_path
 
-    # Build manifest with backward-compat field
+    # Build manifest
     frame = _export_candidates(clauses_path, section)
     manifest = _build_manifest(frame, resolved_rules, section, effective_date=effective_date)
-    manifest["gate_b_sources_encoded"] = list(manifest.get("encoded_clause_ids") or [])
 
     # Write artifacts
     corpus_csv.parent.mkdir(parents=True, exist_ok=True)

@@ -52,7 +52,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
     frame = pl.read_csv(_CORPUS) if _CORPUS.is_file() else export_4217_candidates(_CLAUSES)
     manifest = build_4217_manifest(frame, BATCH_A3_RULES, effective_date="2026-06-27")
-    encoded = manifest["gate_b_sources_encoded"]
+    encoded = manifest["encoded_clause_ids"]
     assert len(encoded) >= 9
     assert manifest["tier_c_deferred_count"] >= 5
     assert manifest["rules_in_json"] == len(BATCH_A3_RULES)

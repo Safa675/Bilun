@@ -68,11 +68,11 @@ def test_json_rules_map_to_expected_clause_ids() -> None:
     assert mapping["1.8.5.(10).organ_nakli"] == ["C000364"]
 
 
-def test_manifest_has_gate_b_sources_encoded_union() -> None:
+def test_manifest_has_encoded_clause_ids_union() -> None:
     from scripts.sut.prose.copay_exemption_gate_b import build_encoded_manifest
 
     manifest = build_encoded_manifest(_RULES, _CLAUSES)
-    encoded = manifest["gate_b_sources_encoded"]
+    encoded = manifest["encoded_clause_ids"]
     assert len(encoded) >= 30
     assert len(encoded) <= 33
     assert "C000364" in encoded
@@ -104,4 +104,4 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     corpus_df = pl.read_csv(corpus)
     assert corpus_df.height >= 60
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert len(payload["gate_b_sources_encoded"]) >= 18
+    assert len(payload["encoded_clause_ids"]) >= 18

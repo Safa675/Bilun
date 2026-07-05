@@ -4,15 +4,6 @@
   "scope_note": "§2.2.2.B session-fraction PARTIAL — runtime in session_pricing.py; 4 JSON rules with Gate B clause traces (not merged into payment_method_2_2.json)",
   "rules_in_json": 4,
   "session_fraction_status": "PARTIAL",
-  "gate_b_sources_encoded": [
-    "C000654",
-    "C000655",
-    "C000657",
-    "C000658",
-    "C000659",
-    "C000660",
-    "C000661"
-  ],
   "encoded_clause_ids": [
     "C000654",
     "C000655",

@@ -259,7 +259,7 @@ def _manifest_traced_clause_count(manifest_name: str) -> int:
     for key, value in payload.items():
         if not isinstance(value, list):
             continue
-        if key in {"gate_b_sources_encoded", "encoded_clause_ids"} or key.endswith("_clause_ids"):
+        if key in {"encoded_clause_ids"} or key.endswith("_clause_ids"):
             ids.update(str(clause_id) for clause_id in value)
     return len(ids)
 

@@ -212,13 +212,8 @@ def _dedup_union_overwrite(existing: list[dict], new_rules: list[dict]) -> tuple
 # ─── manifest builders ────────────────────────────────────────────────────────
 
 def _build_gap_manifest(rules: list[dict], rule_set_id: str, *, manifest_version: str = "gap-v1",
-                        extra_keys: dict[str, Any] | None = None,
-                        gate_b_sources_encoded: list[str] | None = None) -> dict:
-    """gap-v1 / t1-v1 manifest: encoded_clause_ids + gate_b_sources_by_rule.
-
-    If gate_b_sources_encoded is provided, it's inserted between encoded_clause_ids
-    and gate_b_sources_by_rule (matching the original merge scripts' key order).
-    """
+                        extra_keys: dict[str, Any] | None = None) -> dict:
+    """gap-v1 / t1-v1 manifest: encoded_clause_ids + gate_b_sources_by_rule."""
     sources_by_rule: dict[str, list[str]] = {}
     encoded: set[str] = set()
     for r in rules:
@@ -232,8 +227,6 @@ def _build_gap_manifest(rules: list[dict], rule_set_id: str, *, manifest_version
         "rules_in_json": len(rules),
         "encoded_clause_ids": sorted(encoded),
     }
-    if gate_b_sources_encoded is not None:
-        payload["gate_b_sources_encoded"] = gate_b_sources_encoded
     payload["gate_b_sources_by_rule"] = sources_by_rule
     if extra_keys:
         payload.update(extra_keys)
@@ -396,7 +389,6 @@ def _yaml_fresh_targets() -> list[CompileTarget]:
             ],
             manifest_path=_MANIFEST_DIR / "treatment_pricing_2_4_manifest.json",
             manifest_version="t1-v1",
-            manifest_extra_keys={"_include_gate_b_sources_encoded": True},
             golden_path=_GOLDEN_DIR / "treatment_pricing_2_4.json",
             skip_manifest=True,
             skip_golden=True,
@@ -408,7 +400,6 @@ def _yaml_fresh_targets() -> list[CompileTarget]:
             sut_anchors=["2.4.1", "2.4.1.A", "2.4.1.B-1", "2.4.1.B-2", "2.4.1.B-3"],
             manifest_path=_MANIFEST_DIR / "dental_2_4_1_manifest.json",
             manifest_version="t1-v1",
-            manifest_extra_keys={"_include_gate_b_sources_encoded": True},
             golden_path=_GOLDEN_DIR / "dental_2_4_1.json",
         ),
         _yaml_fresh_target(
@@ -674,7 +665,6 @@ _PAYMENT_SESSION_MANIFEST_STUB: dict[str, object] = {
     ),
     "rules_in_json": 4,
     "session_fraction_status": "PARTIAL",
-    "gate_b_sources_encoded": ["C000654", "C000655", "C000657", "C000658", "C000659", "C000660", "C000661"],
     "encoded_clause_ids": ["C000654", "C000655", "C000657", "C000658", "C000659", "C000660", "C000661"],
     "gate_b_sources_by_rule": {
         "2.2.2.B.(1).ek2c_package_basis": ["C000654"],
@@ -837,7 +827,7 @@ def _stage_csv_wave_clause_ids(target: CompileTarget, ctx: dict[str, Any]) -> di
         "rules_in_json": len(merged),
         "rules_added": 0,
         "wave_clause_ids": wave_clause_ids,
-        "gate_b_sources_encoded": wave_clause_ids,
+        "encoded_clause_ids": wave_clause_ids,
     }
     if not target.manifest_path:
         raise ValueError(f"target {target.name} missing CSV-wave manifest path")
@@ -864,7 +854,7 @@ def _stage_payment_pipeline(target: CompileTarget, ctx: dict[str, Any]) -> dict:
     )
     manifest = _apply_payment_manifest_cross_refs(result["manifest"], len(rules), "4")
     _write_json(target.manifest_path, manifest)
-    return {"added": 0, "skipped": [], "encoded": len(manifest.get("gate_b_sources_encoded") or [])}
+    return {"added": 0, "skipped": [], "encoded": len(manifest.get("encoded_clause_ids") or [])}
 
 
 def _apply_source_patches(
@@ -1110,7 +1100,7 @@ def _write_material_bundling_manifest(target: CompileTarget) -> dict:
         "rules_in_json": len(rules),
         "rules_added": 0,
         "rules_patched": 0,
-        "gate_b_sources_encoded": sources,
+        "encoded_clause_ids": sources,
         "gate_b_deferred_clause_ids": sorted(GATE_B_STILL_DEFERRED_CLAUSE_IDS),
         "kdv_pricing_clause_ids": sorted(KDV_PRICING_CLAUSE_IDS),
         "separate_billing_allowlist_clause_ids": ["C001823"],
@@ -1156,7 +1146,7 @@ def _write_specialty_materials_manifest(target: CompileTarget) -> dict:
         "specialty_336_batch_clause_ids": sorted(SPECIALTY_336_BATCH_CLAUSE_IDS),
         "other_3_3_tail_clause_ids": sorted(OTHER_3_3_TAIL_CLAUSE_IDS),
         "r5_specialty_header_clause_ids": sorted(SPECIALTY_R5_HEADER_CLAUSE_IDS),
-        "gate_b_sources_encoded": sources,
+        "encoded_clause_ids": sources,
     }
     _write_json(_MANIFEST_DIR / "L4.4_specialty_prose_encoded_manifest.json", manifest)
     return {"added": 0, "patched": 0, "encoded": len(sources)}
@@ -1246,14 +1236,9 @@ def _compile_fresh(target: CompileTarget) -> dict:
     # manifest
     if target.manifest_path and not target.skip_manifest:
         extra = dict(target.manifest_extra_keys or {})
-        include_encoded_key = extra.pop("_include_gate_b_sources_encoded", False)
-        encoded_list = None
-        if include_encoded_key:
-            encoded_list = sorted({cid for r in rules for cid in (r.get("gate_b_sources") or [])})
         manifest = _build_gap_manifest(rules, target.rule_set_id,
                                        manifest_version=target.manifest_version,
-                                       extra_keys=extra or None,
-                                       gate_b_sources_encoded=encoded_list)
+                                       extra_keys=extra or None)
         _write_json(target.manifest_path, manifest)
 
     # golden
