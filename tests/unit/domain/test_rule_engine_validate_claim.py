@@ -8,7 +8,7 @@ pytestmark = pytest.mark.unit
 
 
 def test_validate_claim_bundling_violation(monkeypatch) -> None:
-    from src.bilun.domain.rule_engine import validate_claim
+    from src.bilun.domain.rule_engine import _validate_claim_legacy as validate_claim  # Phase 2.4: these tests patch the legacy dict-path internals
 
     monkeypatch.setattr(
         "src.bilun.domain.rule_engine.check_bundling_violations",
@@ -51,7 +51,7 @@ def test_validate_claim_bundling_violation(monkeypatch) -> None:
 
 
 def test_validate_claim_exclusion_makes_invalid(monkeypatch) -> None:
-    from src.bilun.domain.rule_engine import validate_claim
+    from src.bilun.domain.rule_engine import _validate_claim_legacy as validate_claim  # Phase 2.4: these tests patch the legacy dict-path internals
 
     monkeypatch.setattr(
         "src.bilun.domain.rule_engine.check_bundling_violations",
@@ -120,7 +120,7 @@ def _stub_no_other_violations(monkeypatch) -> None:
 def test_validate_claim_skips_drug_indication_without_context(monkeypatch) -> None:
     """No drug_context → drug_indication never runs (backwards-compatible)."""
     _stub_no_other_violations(monkeypatch)
-    from src.bilun.domain.rule_engine import validate_claim
+    from src.bilun.domain.rule_engine import _validate_claim_legacy as validate_claim  # Phase 2.4: these tests patch the legacy dict-path internals
 
     result = validate_claim(
         {
@@ -136,7 +136,7 @@ def test_validate_claim_skips_drug_indication_without_context(monkeypatch) -> No
 def test_validate_claim_drug_indication_biomarker_mismatch(monkeypatch) -> None:
     """drug_context + HER-2 negative → biomarker_mismatch error → invalid."""
     _stub_no_other_violations(monkeypatch)
-    from src.bilun.domain.rule_engine import validate_claim
+    from src.bilun.domain.rule_engine import _validate_claim_legacy as validate_claim  # Phase 2.4: these tests patch the legacy dict-path internals
 
     result = validate_claim(
         {
@@ -166,7 +166,7 @@ def test_validate_claim_drug_indication_biomarker_mismatch(monkeypatch) -> None:
 def test_validate_claim_drug_indication_valid_passes(monkeypatch) -> None:
     """drug_context + correct HER-2 + valid inputs → no drug_indication violation."""
     _stub_no_other_violations(monkeypatch)
-    from src.bilun.domain.rule_engine import validate_claim
+    from src.bilun.domain.rule_engine import _validate_claim_legacy as validate_claim  # Phase 2.4: these tests patch the legacy dict-path internals
 
     result = validate_claim(
         {
@@ -194,7 +194,7 @@ def test_validate_claim_drug_indication_valid_passes(monkeypatch) -> None:
 def test_validate_claim_drug_indication_dose_exceeded(monkeypatch) -> None:
     """drug_context + deksametazon annual_count=5 → annual_max_exceeded error."""
     _stub_no_other_violations(monkeypatch)
-    from src.bilun.domain.rule_engine import validate_claim
+    from src.bilun.domain.rule_engine import _validate_claim_legacy as validate_claim  # Phase 2.4: these tests patch the legacy dict-path internals
 
     result = validate_claim(
         {
@@ -222,7 +222,7 @@ def test_validate_claim_drug_indication_dose_exceeded(monkeypatch) -> None:
 def test_validate_claim_drug_indication_wrong_diagnosis(monkeypatch) -> None:
     """drug_context + trastuzumab with non-cancer ICD → indication_mismatch."""
     _stub_no_other_violations(monkeypatch)
-    from src.bilun.domain.rule_engine import validate_claim
+    from src.bilun.domain.rule_engine import _validate_claim_legacy as validate_claim  # Phase 2.4: these tests patch the legacy dict-path internals
 
     result = validate_claim(
         {
