@@ -356,6 +356,29 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
             worst_status = "missing"
             coverage_notes = "Actionable SUT rule text with no mapped domain implementation"
 
+        # Phase 1.1 — honest reclassification of structural clauses.
+        # A clause auto-classified to an implemented/partial motor via section
+        # prefix but with NO normative content (chapter/section_heading/
+        # amendment without deontic_modality, or is_heading=True without
+        # deontic_modality) is administrative text, not encode debt. Without
+        # this, 821 structural clauses (468 amendment markers like
+        # "(Değişik: RG-...)" + 353 section headings) masquerade as gaps in
+        # the dashboard because their motor is partial/implemented but they
+        # have no JSON rule encoding them — which is correct, because there is
+        # nothing to encode. Reclassify them out of the actionable population
+        # so the gap count reflects real encode debt. See
+        # plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 1.1.
+        if (
+            primary_status in {"implemented", "partial", "missing", "needs_claim_lines"}
+            and _is_structural_gap_excluded(row)
+        ):
+            primary_status = "non_algorithmic"
+            worst_status = "non_algorithmic"
+            coverage_notes = (
+                "Structural/navigational clause (heading/amendment marker) "
+                "without normative content — not encode debt"
+            )
+
         clause_id = str(row.get("clause_id") or "")
 
         # Compute has_rule_encoding FIRST — has_algorithmic_gap depends on it.

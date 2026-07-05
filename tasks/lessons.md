@@ -9,6 +9,18 @@ Format per entry:
 
 ---
 
+## 2026-07-05 — "Reclassify to reduce the gap count" is dishonest when the clauses contain real regulatory text
+
+**Pattern:** The Phase 1 plan (approved by user, sourced from Agent 3's diagnostic) proposed reclassifying ~250 "price-oracle decision-rule" clauses (in `pricing_ek2b`, `copay_rate_ek2c1`, `copay_exemption_ek1a`, `drug_discount_prose`, `surcharge_general`) to `non_algorithmic` to drop the headline `has_algorithmic_gap` count from ~1897 toward ~450. Agent 3 had labeled them "ANNEX_LOOKUP — text just references annex tables; the code motor resolves these." When I actually READ the gap clause text before reclassifying, ~248 of the ~250 contained substantive regulatory content — copay participation-fee rules ("katılım payı uygulanacak sağlık hizmetleri"), exemption criteria, surcharge logic. Only 12 of 1897 gaps were genuinely pure annex references (text like `a) Tıbbi Uygunluk Aranacak Tıbbi Malzemeler (EK-3/C-1)`). Reclassifying the other 248 would have hidden real encode-debt to make the dashboard number look better — exactly the metric-manipulation the codebase has been fighting (the recent `ec33851` "honest drug_indication partial status" commit moved in the opposite direction).
+
+**Rule:** Before reclassifying any clause to `non_algorithmic` to reduce a gap count, READ THE ACTUAL TEXT of a representative sample. A clause is honestly `non_algorithmic` only if its text is purely navigational/structural (a heading, an amendment marker like `(Değişik: RG-...)`, or a bare annex citation with no deontic content). Concretely:
+1. The diagnostic-report agent's text-classification ("ANNEX_LOOKUP", "DECISION_RULE", "REFERENCE_TEXT") is a HEURISTIC from sampling, not ground truth. Verify with a direct text read before acting on it at scale.
+2. A clause whose text contains regulatory verbs (`karşılanır`, `ödenir`, `uygulanır`, `yapılır`, `alınır`, `gereken`) is NOT non_algorithmic regardless of which code motor implements it — the regulatory content exists and is unencoded as a prose rule.
+3. Distinguish "status honesty" (Phase 1.1 — moving structural amendment/heading markers to `non_algorithmic`) from "gap-count reduction" (the temptation). Phase 1.1 made the status breakdown honest but did NOT move the gap count, because `_is_structural_gap_excluded` already correctly excluded those clauses from gaps. The gap count was already correct; only the status labels were misleading.
+4. If a phase's value proposition is "drop the gap count by N" and inspection shows the N clauses have real regulatory text, STOP and surface the conflict. Do not execute the reclassification. The honest path is to encode them (Phase 4/5) or build the evaluator (Phase 2/3), not to relabel them out of the gap population.
+
+---
+
 ## 2026-07-05 — Diagnostic-report baseline goes stale when commits land between report and implementation
 
 **Pattern:** Produced a full rule-encoding diagnostic report (2,175 unencoded, 914 gaps, 19.4% gap_pct, 3,954 implemented). The user approved a multi-week roadmap using those numbers as every checkpoint target. Between the report and implementation, commit `ec33851` ("honest drug_indication partial status") landed, flipping `drug_indication_prose` from `implemented` → `partial` in `rule_registry.py:350`. This roughly doubled `has_algorithmic_gap` (914 → 1,896) and inverted the implemented/partial split (3,954/53 → 1,585/2,422), because `partial` clauses count as gaps unconditionally (`coverage.py:381-382`). I almost started coding against the stale 914 target. The catch was only because I ran a fresh baseline query on the parquet immediately before touching anything and the numbers didn't match the report.

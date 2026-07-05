@@ -369,7 +369,9 @@ class TestFullCoverageBuild:
     def test_payment_method_implemented(self, coverage: pd.DataFrame) -> None:
         payment = coverage[coverage["primary_rule_id"] == "payment_method_package"]
         assert not payment.empty
-        assert (payment["coverage_status"] == "implemented").all()
+        # Phase 1.1: structural clauses (amendment/section_heading markers) are
+        # honestly reclassified to non_algorithmic; substantive clauses stay implemented.
+        assert (payment["coverage_status"].isin(["implemented", "non_algorithmic"])).all()
         # Encoded clauses in an implemented motor must have no gap.
         encoded = payment[payment["has_rule_encoding"]]
         assert (encoded["has_algorithmic_gap"] == False).all()
@@ -380,7 +382,8 @@ class TestFullCoverageBuild:
 
         bundling = coverage[coverage["primary_rule_id"] == "material_bundling_prose"]
         assert not bundling.empty
-        assert (bundling["coverage_status"] == "implemented").all()
+        # Phase 1.1: structural clauses reclassified to non_algorithmic.
+        assert (bundling["coverage_status"].isin(["implemented", "non_algorithmic"])).all()
         # Encoded clauses must have no gap; unencoded may have gaps (honest).
         encoded = bundling[bundling["has_rule_encoding"]]
         assert (encoded["has_algorithmic_gap"] == False).all()
@@ -411,7 +414,8 @@ class TestFullCoverageBuild:
         matched = coverage[coverage["matched_rule_ids"].str.contains("drg_package_adequacy", regex=False)]
         assert not matched.empty
         if not rows.empty:
-            assert (rows["coverage_status"] == "implemented").all()
+            # Phase 1.1: structural clauses reclassified to non_algorithmic.
+            assert (rows["coverage_status"].isin(["implemented", "non_algorithmic"])).all()
             encoded = rows[rows["has_rule_encoding"]]
             assert (encoded["has_algorithmic_gap"] == False).all()
 
@@ -514,7 +518,8 @@ class TestFullCoverageBuild:
         primary = coverage[coverage["primary_rule_id"] == "drug_indication_prose"]
         assert not primary.empty
         # drug_indication is partial: 1186/2369 clauses encoded, 179 unencoded gaps remain.
-        assert (primary["coverage_status"] == "partial").all()
+        # Phase 1.1: structural clauses reclassified to non_algorithmic.
+        assert (primary["coverage_status"].isin(["partial", "non_algorithmic"])).all()
         assert primary["has_rule_encoding"].sum() > 0
 
         from scripts.sut.prose.rule_registry import RULE_BY_ID
@@ -568,7 +573,8 @@ class TestFullCoverageBuild:
     def test_surcharge_general_implemented_not_false_gap(self, coverage: pd.DataFrame) -> None:
         rows = coverage[coverage["primary_rule_id"] == "surcharge_general"]
         assert not rows.empty
-        assert (rows["coverage_status"] == "implemented").all()
+        # Phase 1.1: structural clauses reclassified to non_algorithmic.
+        assert (rows["coverage_status"].isin(["implemented", "non_algorithmic"])).all()
         # Encoded clauses must have no gap; unencoded may have gaps (honest).
         encoded = rows[rows["has_rule_encoding"]]
         assert (encoded["has_algorithmic_gap"] == False).all()
@@ -612,7 +618,8 @@ class TestFullCoverageBuild:
     def test_copay_rate_general_implemented_not_false_gap(self, coverage: pd.DataFrame) -> None:
         rows = coverage[coverage["primary_rule_id"] == "copay_rate_general"]
         assert not rows.empty
-        assert (rows["coverage_status"] == "implemented").all()
+        # Phase 1.1: structural clauses reclassified to non_algorithmic.
+        assert (rows["coverage_status"].isin(["implemented", "non_algorithmic"])).all()
         encoded = rows[rows["has_rule_encoding"]]
         assert (encoded["has_algorithmic_gap"] == False).all()
 
