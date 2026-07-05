@@ -55,20 +55,11 @@ def _strip_batch(rule: dict) -> dict:
     return {k: v for k, v in rule.items() if k != "encode_batch"}
 
 
-def _load_batch(module_path: str, attr: str) -> list[dict]:
-    """Dynamically import a batch_rules module and return its rule list."""
-    mod = importlib.import_module(module_path)
-    return list(getattr(mod, attr))
-
-
 def _load_target_rules(target: "CompileTarget") -> list[dict]:
-    """Load rules from Python batch modules and/or YAML section sources."""
-    rules: list[dict] = []
-    for mod_path, attr in target.batches:
-        rules.extend(_load_batch(mod_path, attr))
+    """Load rules from YAML section sources."""
     if target.yaml_sources:
-        rules.extend(load_yaml_sources(target.yaml_sources))
-    return rules
+        return load_yaml_sources(target.yaml_sources)
+    return []
 
 
 def _envelope_from_json(path: Path) -> dict[str, Any]:
@@ -252,7 +243,6 @@ class CompileTarget:
     name: str
     rule_json: Path
     mode: str  # "fresh" (build from scratch) | "append" (load existing + append)
-    batches: list[tuple[str, str]]  # [(module_path, attr), ...]
     dedup: str  # "first_wins" | "union_overwrite" | "skip_dup"
     rule_set_id: str
     title: str
@@ -277,7 +267,6 @@ class CompileTarget:
     stages: list[str] = field(default_factory=list)
     gate_b_module: str | None = None
     gate_b_writer: str = "rules_path"
-    manifest_batches: list[tuple[str, str]] = field(default_factory=list)
     section_prefixes: list[str] = field(default_factory=list)
     merge_rules: bool = True
     corpus_csv: Path | None = None
@@ -320,7 +309,6 @@ def _yaml_fresh_target(
         name=name,
         rule_json=_RULES_DIR / f"{rule_set_id}.json",
         mode="fresh",
-        batches=[],
         yaml_sources=rule_family_yaml_paths(rule_set_id),
         dedup="first_wins",
         rule_set_id=rule_set_id,
@@ -444,7 +432,6 @@ def _drug_gate_b_target(
         name=name,
         rule_json=_RULES_DIR / "drug_indication_prose.json",
         mode="stage",
-        batches=[],
         dedup="union_overwrite",
         rule_set_id=name,
         title="",
@@ -490,7 +477,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             name=f"csv_wave_clause_ids_{suffix}",
             rule_json=_RULES_DIR / "drug_indication_prose.json",
             mode="stage",
-            batches=[],
             dedup="union_overwrite",
             rule_set_id=rule_set_id,
             title="",
@@ -509,7 +495,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             name="treatment_pricing_wave2_manifest",
             rule_json=_RULES_DIR / "treatment_pricing_2_4.json",
             mode="stage",
-            batches=[],
             dedup="first_wins",
             rule_set_id="treatment_pricing_2_4_wave2",
             title="",
@@ -525,7 +510,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             name="payment_method_gate_b",
             rule_json=payment_json,
             mode="stage",
-            batches=[],
             dedup="skip_dup",
             rule_set_id="payment_method_2_2",
             title="",
@@ -538,7 +522,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             name="drug_indication_wave23",
             rule_json=_RULES_DIR / "drug_indication_prose.json",
             mode="stage",
-            batches=[],
             dedup="union_overwrite",
             rule_set_id="drug_indication_wave23",
             title="",
@@ -549,7 +532,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             name="drug_indication_phase5",
             rule_json=_RULES_DIR / "drug_indication_prose.json",
             mode="stage",
-            batches=[],
             dedup="skip_dup",
             rule_set_id="drug_indication_4.2.14.C",
             title="",
@@ -563,7 +545,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             name="anti_vegf_manifest",
             rule_json=_RULES_DIR / "anti_vegf_prose.json",
             mode="stage",
-            batches=[],
             dedup="union_overwrite",
             rule_set_id="anti_vegf_prose",
             title="",
@@ -575,7 +556,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             name="material_bundling_manifest",
             rule_json=_RULES_DIR / "material_bundling_prose.json",
             mode="stage",
-            batches=[],
             dedup="skip_dup",
             rule_set_id="material_bundling_prose",
             title="",
@@ -586,7 +566,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             name="specialty_materials_manifest",
             rule_json=_RULES_DIR / "specialty_materials_prose.json",
             mode="stage",
-            batches=[],
             dedup="skip_dup",
             rule_set_id="specialty_materials_prose",
             title="",
@@ -624,16 +603,10 @@ def _existing_effective_date(path: Path | None) -> str | None:
     return str(effective) if effective else None
 
 
-def _load_stage_rules(
-    specs: list[tuple[str, str]],
-    yaml_sources: list[Path] | None = None,
-) -> list[dict]:
-    rules: list[dict] = []
-    for mod_path, attr in specs:
-        rules.extend(_load_batch(mod_path, attr))
+def _load_stage_rules(yaml_sources: list[Path] | None = None) -> list[dict]:
     if yaml_sources:
-        rules.extend(load_yaml_sources(yaml_sources))
-    return rules
+        return load_yaml_sources(yaml_sources)
+    return []
 
 
 def _rules_for_sections(rules: list[dict], prefixes: list[str]) -> list[dict]:
@@ -716,8 +689,8 @@ def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) ->
         raise ValueError(f"target {target.name} missing gate-B stage configuration")
     payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
     existing = list(payload.get("rules") or [])
-    stage_rules = _load_stage_rules(target.batches, target.yaml_sources)
-    manifest_rules = _load_stage_rules(target.manifest_batches)
+    stage_rules = _load_stage_rules(target.yaml_sources)
+    manifest_rules = _load_stage_rules()
 
     if target.name == "drug_indication_4213_tier_b_remap":
         oral_switch_rule_ids = {
