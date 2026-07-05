@@ -46,6 +46,8 @@ const sections = {
       buildHint: "Coverage data unavailable — run `python scripts/sut/build_sut_coverage.py`",
       generatedAt: "Generated {date}",
       totalClauses: "In-force clauses",
+      numberedClauses: "Numbered rule clauses",
+      totalClausesNote: "{count} total in-force paragraphs (incl. section headings, amendments, prose)",
       totalRuleEngines: "Registered rule engines",
       glossary: {
         title: "What do these numbers mean?",

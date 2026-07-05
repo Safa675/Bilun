@@ -510,9 +510,12 @@ function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) {
             {t("sections.ruleDatabase.coverage.clausesTitle")}
           </Eyebrow>
           <Stat
-            label={t("sections.ruleDatabase.coverage.totalClauses")}
-            value={fmtNum(clauses.total_extracted)}
+            label={t("sections.ruleDatabase.coverage.numberedClauses")}
+            value={fmtNum(clauses.numbered_clause_count ?? 0)}
           />
+          <p className="text-[11px] leading-tight text-[var(--text-muted)]">
+            {t("sections.ruleDatabase.coverage.totalClausesNote", { count: fmtNum(clauses.total_extracted) })}
+          </p>
           <Stat
             label={`${t("sections.ruleDatabase.coverage.algorithmicGaps")} (${clauses.algorithmic_gap_pct}%)`}
             value={fmtNum(clauses.algorithmic_gaps)}

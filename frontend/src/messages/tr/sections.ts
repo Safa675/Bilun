@@ -46,6 +46,8 @@ const sections = {
       buildHint: "Kapsam verisi kullanılamıyor — `python scripts/sut/build_sut_coverage.py` çalıştırın",
       generatedAt: "Oluşturulma {date}",
       totalClauses: "Canlı hüküm",
+      numberedClauses: "Numaralı kural hükmü",
+      totalClausesNote: "{count} toplam yürürlükteki paragraf (bölüm başlıkları, değişiklik işaretleri, düz metin dahil)",
       totalRuleEngines: "Kayıtlı kural motoru",
       glossary: {
         title: "Bu sayılar ne anlama geliyor?",
