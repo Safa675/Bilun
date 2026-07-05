@@ -474,7 +474,7 @@ def _drug_gate_b_targets() -> list[CompileTarget]:
         _drug_gate_b_target("drug_indication_4201", gate_b_module="scripts.sut.prose.drug_indication_4201_gate_b", manifest_name="L4.2_drug_indication_4201_manifest.json", corpus_name="L4.2_drug_indication_4201.csv"),
         _drug_gate_b_target("drug_indication_4206", gate_b_module="scripts.sut.prose.drug_indication_4206_gate_b", manifest_name="L4.2_drug_indication_4206_manifest.json", corpus_name="L4.2_drug_indication_4206.csv", gate_b_writer="section_rules", section_prefixes=["4.2.6"]),
         _drug_gate_b_target("drug_indication_4209_4227", gate_b_module="scripts.sut.prose.drug_indication_4209_4227_gate_b", manifest_name="L4.2_drug_indication_4209_4227_manifest.json", corpus_name="L4.2_drug_indication_4209_4227.csv"),
-        _drug_gate_b_target("drug_indication_4210", gate_b_module="scripts.sut.prose.drug_indication_4210_gate_b", manifest_name="L4.2_drug_indication_4210_manifest.json", corpus_name="L4.2_drug_indication_4210.csv", gate_b_writer="from_prose"),
+        _drug_gate_b_target("drug_indication_4210", gate_b_module="scripts.sut.prose.drug_indication_4210_gate_b", manifest_name="L4.2_drug_indication_4210_manifest.json", corpus_name="L4.2_drug_indication_4210.csv", gate_b_writer="section_rules", section_prefixes=["4.2.10"]),
         _drug_gate_b_target("drug_indication_4213_4216", gate_b_module="scripts.sut.prose.drug_indication_4213_4216_gate_b", manifest_name="L4.2_drug_indication_4213_4216_manifest.json", corpus_name="L4.2_drug_indication_4213_4216.csv"),
         _drug_gate_b_target("drug_indication_4215", gate_b_module="scripts.sut.prose.drug_indication_4215_gate_b", manifest_name="L4.2_drug_indication_4215_manifest.json", corpus_name="L4.2_drug_indication_4215.csv", gate_b_writer="section_rules", section_prefixes=["4.2.15"]),
         _drug_gate_b_target("drug_indication_4217", gate_b_module="scripts.sut.prose.drug_indication_4217_gate_b", manifest_name="L4.2_drug_indication_4217_manifest.json", corpus_name="L4.2_drug_indication_4217.csv"),
@@ -482,7 +482,7 @@ def _drug_gate_b_targets() -> list[CompileTarget]:
         _drug_gate_b_target("drug_indication_4219", gate_b_module="scripts.sut.prose.drug_indication_4219_gate_b", manifest_name="L4.2_drug_indication_4219_manifest.json", corpus_name="L4.2_drug_indication_4219.csv"),
         _drug_gate_b_target("drug_indication_4224", gate_b_module="scripts.sut.prose.drug_indication_4224_gate_b", manifest_name="L4.2_drug_indication_4224_manifest.json", corpus_name="L4.2_drug_indication_4224.csv", gate_b_writer="section_rules", section_prefixes=["4.2.24"]),
         _drug_gate_b_target("drug_indication_4234", gate_b_module="scripts.sut.prose.drug_indication_4234_gate_b", manifest_name="L4.2_drug_indication_4234_manifest.json", corpus_name="L4.2_drug_indication_4234.csv"),
-        _drug_gate_b_target("drug_indication_4235_4237", gate_b_module="scripts.sut.prose.drug_indication_4235_4237_gate_b", manifest_name="L4.2_drug_indication_4235_4237_manifest.json", corpus_name="L4.2_drug_indication_4235_4237.csv"),
+        _drug_gate_b_target("drug_indication_4235_4237", gate_b_module="scripts.sut.prose.drug_indication_4235_4237_gate_b", manifest_name="L4.2_drug_indication_4235_4237_manifest.json", corpus_name="L4.2_drug_indication_4235_4237.csv", gate_b_writer="batch_rules", section_prefixes=["4.2.35", "4.2.37"]),
         _drug_gate_b_target("drug_indication_4238", gate_b_module="scripts.sut.prose.drug_indication_4238_gate_b", manifest_name="L4.2_drug_indication_4238_manifest.json", corpus_name="L4.2_drug_indication_4238.csv", gate_b_writer="section_rules", section_prefixes=["4.2.38"]),
         _drug_gate_b_target("drug_indication_4201_w4", gate_b_module="scripts.sut.prose.drug_indication_4201_gate_b", manifest_name="L4.2_drug_indication_4201_manifest.json", corpus_name="L4.2_drug_indication_4201.csv", gate_b_writer="batch_rules", section_prefixes=["4.2.1"]),
         _drug_gate_b_target("drug_indication_4227_tier_b", gate_b_module="scripts.sut.prose.drug_indication_4209_4227_gate_b", manifest_name="L4.2_drug_indication_4209_4227_manifest.json", corpus_name="L4.2_drug_indication_4209_4227.csv", gate_b_writer="rules_path_with_batch_rules"),
@@ -805,7 +805,7 @@ def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) ->
         )
     elif target.gate_b_writer == "shared_manifest":
         writer = getattr(mod, "write_gate_b_artifacts")
-        frame, manifest, _shared = writer(
+        frame, manifest = writer(
             clauses_path=clauses_path,
             rules_path=target.rule_json,
             corpus_csv=target.corpus_csv,
