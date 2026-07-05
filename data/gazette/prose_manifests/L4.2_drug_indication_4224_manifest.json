@@ -1,9 +1,9 @@
 {
-  "manifest_version": "r5-a24-v1",
+  "manifest_version": "canonical-v1",
+  "rule_set_id": "drug_indication_prose",
   "section_id": "4.2.24",
   "effective_date": "2026-06-27",
   "rules_in_json": 34,
-  "section_4.2.24_clause_total": 59,
   "section_clause_total": 59,
   "encoded_clause_count": 30,
   "encoded_clause_ids": [
@@ -71,6 +71,8 @@
     "C006189",
     "C006191"
   ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 29,
@@ -81,7 +83,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.24.A - Astım tedavisinde",
-      "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -93,7 +94,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Formeterol",
-      "signal_score": 10,
       "linked_rule_ids": [
         "4.2.24.formeterol_salmeterol_prescriber"
       ]
@@ -104,7 +104,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Montelukast",
-      "signal_score": 9,
       "linked_rule_ids": [
         "4.2.24.montelukast_prescriber_report"
       ]
@@ -115,7 +114,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG- 04/02/2018- 30322/ 17 md. Yürürlük: 15/02/2018)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -127,7 +125,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "signal_score": 2,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -139,7 +136,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -151,7 +147,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Değişik: RG- 04/09/2019- 30878/ 26-a md. Yürürlük: 12/09/2019)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -163,7 +158,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Değişik: RG- 21/04/2022- 31816/5-b md. Yürürlük: 29/04/2022)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -175,7 +169,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Değişik: RG-19/10/2023- 32344/10-a md. Yürürlük: 27/10/2023)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -187,7 +180,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "Mepolizumab 6 yaş ve üzeri çocuklar ile adölesanlar ve yetişkinlerde",
-      "signal_score": 2,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -199,7 +191,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "signal_score": 2,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -211,7 +202,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "signal_score": 3,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -223,7 +213,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Değişik: RG- 25/11/2025-33088/7 md. Yürürlük:03/12/2025)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -235,7 +224,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Üçüncü basamak resmi sağlık hizmeti sunucularında",
-      "signal_score": 7,
       "linked_rule_ids": [
         "4.2.24.A.resp.tertiary_allergy_board_coverage",
         "4.2.24.biologic_tertiary_board"
@@ -247,7 +235,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 5,
       "linked_rule_ids": [
         "4.2.24.A.resp.week16_response_allergy_board_coverage"
       ]
@@ -258,7 +245,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek:RG- 04/09/2019- 30878/ 26-c md. Yürürlük: 12/09/2019)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -270,7 +256,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 5,
       "linked_rule_ids": [
         "4.2.24.A.resp.laba_iks_mono_or_combined_coverage"
       ]
@@ -281,7 +266,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 4,
       "linked_rule_ids": [
         "4.2.24.A.resp.laba_one_per_prescription_coverage"
       ]
@@ -292,7 +276,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 4,
       "linked_rule_ids": [
         "4.2.24.A.resp.iks_one_per_prescription_coverage"
       ]
@@ -303,7 +286,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 8,
       "linked_rule_ids": [
         "4.2.24.A.resp.laba_iks_otherwise_nopay"
       ]
@@ -314,7 +296,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 1,
       "linked_rule_ids": [
         "4.2.24.A.resp.saba_sama_inhale_exemption"
       ]
@@ -325,7 +306,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek:RG- 26/10/2021- 31640/ 8-a md. Yürürlük: 04/11/2021)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -337,7 +317,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "solunum_ilac",
-      "signal_score": 11,
       "linked_rule_ids": [
         "4.2.24.A.resp.triple_combo_asthma_maintenance_a"
       ]
@@ -348,7 +327,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG- 19/10/2023- 32344/10-c md. Yürürlük: 27/10/2023)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -360,7 +338,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "solunum_ilac",
-      "signal_score": 11,
       "linked_rule_ids": [
         "4.2.24.A.resp.triple_combo_asthma_maintenance_b"
       ]
@@ -371,7 +348,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG- 09/05/2024-32541/11-b md. Yürürlük: 17/05/2024)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -383,7 +359,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 7,
       "linked_rule_ids": [
         "4.2.24.A.resp.nebul_respiratory_first_box_report"
       ]
@@ -394,7 +369,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.24.B - Kronik obstrüktif akciğer hastalığı (KOAH) tedavisinde",
-      "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -406,7 +380,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Değişik:RG- 04/09/2019- 30878/ 27-a md. Yürürlük: 12/09/2019)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -418,7 +391,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Formeterol",
-      "signal_score": 14,
       "linked_rule_ids": [
         "4.2.24.B.resp.laba_lama_iks_combinations_coverage",
         "4.2.24.copd_inhaler_prescriber"
@@ -430,7 +402,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "signal_score": 2,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -442,7 +413,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "solunum_ilac",
-      "signal_score": 11,
       "linked_rule_ids": [
         "4.2.24.B.resp.copd_iks_laba_lama_failure_maintenance"
       ]
@@ -453,7 +423,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG- 25/07/2014- 29071/ 31 md. Yürürlük: 07/08/2014)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -465,7 +434,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "Roflumilast",
-      "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -477,7 +445,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "Solunum fonksiyon testi (SFT) kriteri olarak",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -489,7 +456,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 4,
       "linked_rule_ids": [
         "4.2.24.B.resp.laba_lama_iks_combinations_coverage"
       ]
@@ -500,7 +466,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "signal_score": 4,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -512,7 +477,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Teofilinle kombine olarak kullanılamaz.",
-      "signal_score": 4,
       "linked_rule_ids": [
         "4.2.24.B.resp.theophylline_combination_prohibited"
       ]
@@ -523,7 +487,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG- 04/09/2019- 30878/ 27-b md. Yürürlük: 12/09/2019)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -535,7 +498,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Uzun etkili solunum yolu beta-agonistleri (LABA)",
-      "signal_score": 10,
       "linked_rule_ids": [
         "4.2.24.B.resp.laba_lama_iks_mono_and_triple_maintenance",
         "4.2.24.laba_lama_ics_triple_prior"
@@ -547,7 +509,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 6,
       "linked_rule_ids": [
         "4.2.24.B.resp.laba_iks_with_lama_coverage"
       ]
@@ -558,7 +519,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 6,
       "linked_rule_ids": [
         "4.2.24.B.resp.laba_lama_with_iks_coverage"
       ]
@@ -569,7 +529,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Uzun etkili solunum yolu beta-agonistleri (LABA)",
-      "signal_score": 11,
       "linked_rule_ids": [
         "4.2.24.B.resp.laba_lama_iks_otherwise_nopay",
         "4.2.24.laba_mono_invalid_prescription"
@@ -581,7 +540,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 4,
       "linked_rule_ids": [
         "4.2.24.B.resp.laba_one_per_prescription_coverage"
       ]
@@ -592,7 +550,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 4,
       "linked_rule_ids": [
         "4.2.24.B.resp.lama_one_per_prescription_coverage"
       ]
@@ -603,7 +560,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 4,
       "linked_rule_ids": [
         "4.2.24.B.resp.iks_one_per_prescription_coverage"
       ]
@@ -614,7 +570,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 1,
       "linked_rule_ids": [
         "4.2.24.B.resp.saba_sama_inhale_exemption"
       ]
@@ -625,7 +580,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG-16/06/2020-31157/13-b md. Yürürlük: 24/06/2020)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -637,7 +591,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "(4)",
-      "signal_score": 9,
       "linked_rule_ids": [
         "4.2.24.B.resp.copd_triple_combo_maintenance"
       ]
@@ -648,7 +601,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek: RG- 09/05/2024-32541/12-b md. Yürürlük: 17/05/2024)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -660,7 +612,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 7,
       "linked_rule_ids": [
         "4.2.24.B.resp.nebul_respiratory_drugs_coverage"
       ]
@@ -671,7 +622,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.24.C - Alerjik rinit (mevsimsel",
-      "signal_score": 2,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -683,7 +633,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Montelukast ve antihistaminik kombinasyonları",
-      "signal_score": 9,
       "linked_rule_ids": [
         "4.2.24.montelukast_antihistamine_combo"
       ]
@@ -694,7 +643,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Değişik:RG-28/04/2021-31468/17-a md. Yürürlük: 06/05/2021)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -706,7 +654,6 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "solunum_ilac",
-      "signal_score": 9,
       "linked_rule_ids": [
         "4.2.24.C.resp.rhinitis_azelastine_fluticasone_combo"
       ]
@@ -717,7 +664,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Ek:RG-28/04/2021-31468/17-b md. Yürürlük: 06/05/2021)",
-      "signal_score": 0,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -729,7 +675,6 @@
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
-      "signal_score": 6,
       "linked_rule_ids": [
         "4.2.24.C.resp.rhinitis_intranazal_steroid_antihistamine_couse"
       ]
@@ -740,7 +685,6 @@
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.24.Ç - Mevsimsel veya yıl boyu devam eden alerjik rinit tedavisinde",
-      "signal_score": 1,
       "defer_themes": [
         "clinical_pathway"
       ],
@@ -752,14 +696,11 @@
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Nasal kortikosteroid preparatları",
-      "signal_score": 7,
       "linked_rule_ids": [
         "4.2.24.nasal_cs_pediatric_prescriber"
       ]
     }
   ],
-  "emr_blocked_clause_ids": [],
-  "non_actionable_clause_ids": [],
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "encode_tier_C_deferred_count": 29,

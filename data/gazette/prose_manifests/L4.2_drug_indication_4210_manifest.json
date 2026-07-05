@@ -1,9 +1,9 @@
 {
-  "manifest_version": "r5-lsd4210-v1",
+  "manifest_version": "canonical-v1",
+  "rule_set_id": "drug_indication_prose",
   "section_id": "4.2.10",
   "effective_date": "2026-06-29",
   "rules_in_json": 15,
-  "section_4.2.10_clause_total": 131,
   "section_clause_total": 131,
   "encoded_clause_count": 22,
   "encoded_clause_ids": [
@@ -143,6 +143,8 @@
     "C004383",
     "C004389"
   ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 109,
@@ -1572,8 +1574,6 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     }
   ],
-  "emr_blocked_clause_ids": [],
-  "non_actionable_clause_ids": [],
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "encode_tier_C_deferred_count": 109,

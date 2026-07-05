@@ -1,10 +1,9 @@
 {
-  "manifest_version": "r5-a2-v1",
+  "manifest_version": "canonical-v1",
+  "rule_set_id": "drug_indication_prose",
   "section_id": "4.2.13,4.2.16",
   "effective_date": "2026-06-27",
   "rules_in_json": 61,
-  "section_4.2.13_clause_total": 310,
-  "section_4.2.16_clause_total": 44,
   "section_clause_total": 354,
   "encoded_clause_count": 84,
   "encoded_clause_ids": [
@@ -367,6 +366,8 @@
     "C005977",
     "C005980"
   ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 270,
@@ -3983,7 +3984,7 @@
       "section_id": "4.2.16",
       "encode_tier": "A",
       "manifest_status": "encoded",
-      "heuristic_inn": "",
+      "heuristic_inn": "metabolik_mama",
       "linked_rule_ids": [
         "4.2.16.infant_cmpa_hydrolyzed_formula_report"
       ]
@@ -4151,7 +4152,7 @@
       "section_id": "4.2.16",
       "encode_tier": "A",
       "manifest_status": "encoded",
-      "heuristic_inn": "",
+      "heuristic_inn": "metabolik_mama",
       "linked_rule_ids": [
         "4.2.16.infant_cmpa_medical_formula_2025"
       ]
@@ -4199,8 +4200,12 @@
       ]
     }
   ],
-  "emr_blocked_clause_ids": [],
-  "non_actionable_clause_ids": [],
+  "section_4.2.13_clause_total": 310,
+  "section_4.2.13_tier_a_count": 18,
+  "section_4.2.13_tier_c_count": 287,
+  "section_4.2.16_clause_total": 44,
+  "section_4.2.16_tier_a_count": 17,
+  "section_4.2.16_tier_c_count": 18,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "encode_tier_C_deferred_count": 270,

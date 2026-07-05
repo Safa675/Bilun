@@ -45,7 +45,11 @@
       "C000379"
     ]
   },
-  "gate_b_sources_encoded": [
+  "ek4d_overlap_clause_ids": [
+    "C000326",
+    "C000362"
+  ],
+  "encoded_clause_ids": [
     "C000312",
     "C000314",
     "C000321",
@@ -77,9 +81,5 @@
     "C000375",
     "C000378",
     "C000379"
-  ],
-  "ek4d_overlap_clause_ids": [
-    "C000326",
-    "C000362"
   ]
 }
