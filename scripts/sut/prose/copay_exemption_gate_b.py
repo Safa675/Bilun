@@ -200,7 +200,7 @@ def build_encoded_manifest(
             for rule_id, clause_ids in sorted(json_traces.items())
         },
         "compositor_clause_traces": _COMPOSITOR_CLAUSE_TRACES,
-        "gate_b_sources_encoded": sorted(encoded),
+        "encoded_clause_ids": sorted(encoded),
         "ek4d_overlap_clause_ids": ek4d_overlap,
     }
 
@@ -213,7 +213,7 @@ def write_gate_b_artifacts(
     manifest_path: Path,
 ) -> tuple[pl.DataFrame, dict[str, Any]]:
     manifest = build_encoded_manifest(rules_path, clauses_path)
-    encoded = frozenset(manifest["gate_b_sources_encoded"])
+    encoded = frozenset(manifest["encoded_clause_ids"])
 
     corpus_csv.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.parent.mkdir(parents=True, exist_ok=True)

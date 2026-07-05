@@ -43,9 +43,8 @@ def test_encoded_like_clause_ids_excludes_deferred_lists() -> None:
     from scripts.sut.prose.manifest_index import encoded_like_clause_ids
 
     payload = {
-        "encoded_clause_ids": ["C000001"],
+        "encoded_clause_ids": ["C000001", "C000003"],
         "tier_c_deferred_clause_ids": ["C000002"],
-        "encoded_clause_ids": ["C000003"],
         "tier_a_pending_clause_ids": ["C000004"],
     }
     encoded = encoded_like_clause_ids(payload)

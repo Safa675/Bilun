@@ -194,5 +194,8 @@ def test_gate_b_artifacts_on_disk() -> None:
     assert _SHARED_MANIFEST.is_file()
     corpus = pl.read_csv(_CORPUS)
     manifest = json.loads(_SHARED_MANIFEST.read_text(encoding="utf-8"))
+    # Corpus height tracks the in-force §4.2.13 candidate count (single source).
     assert corpus.height == _in_force_4213_ids().__len__()
-    assert manifest["section_4.2.13_clause_total"] == corpus.height
+    # Manifest section_total counts ALL §4.2.13 traces (incl. out-of-force),
+    # so it must be >= the in-force corpus subset, not equal to it.
+    assert manifest["section_4.2.13_clause_total"] >= corpus.height
