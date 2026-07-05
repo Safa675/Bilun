@@ -113,7 +113,7 @@ def test_load_drug_indication_rules_phase2_corpus() -> None:
 
 def test_drug_indication_coverage_scope_phase2() -> None:
     scope = drug_indication_coverage_scope()
-    assert scope["prose_engine_status"] == "implemented"
+    assert scope["prose_engine_status"] == "partial"
     # Derive expected counts dynamically (see test above) instead of stale
     # constants — the corpus is regenerated as new §4.2 batches are encoded.
     import json

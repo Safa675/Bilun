@@ -347,7 +347,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="drug_indication_prose",
         rule_category="drug_indication",
         rule_category_tr="İlaç Endikasyon",
-        coverage_status="implemented",
+        coverage_status="partial",
         domain_modules=(
             "src/bilun/domain/prose_rules/drug_indication.py",
             "src/bilun/domain/billing/claim_drug_indication.py",
