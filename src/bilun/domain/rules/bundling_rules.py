@@ -123,3 +123,42 @@ def _add_bundling_violation(
             ),
         }
     )
+
+
+def check_bundling_violations_for_context(ctx: "PatientClaimContext") -> list[dict[str, Any]]:
+    """EK-3B-1 bundling check over a PatientClaimContext (Phase 2.1e wrapper).
+
+    Reads each MaterialClaimLine's build-time-derived ``is_ek3b1_bundled`` flag
+    (populated by ``dataset_builder._enrich_material_regulatory_flags`` from
+    the same ``match_bundled_material`` the dict-based
+    ``check_bundling_violations`` uses). Parity is structural: both paths
+    resolve to the same canonical matcher, so a clause flagged bundled here is
+    exactly the set the dict-based check would flag for the same name+code.
+
+    The violation shape mirrors ``check_bundling_violations`` so the
+    ``validate_claim`` adapter (Phase 2.4) can use either path interchangeably.
+    """
+    violations: list[dict[str, Any]] = []
+    for line in ctx.material_lines:
+        if not line.is_ek3b1_bundled:
+            continue
+        billed = float(line.billed_amount_try)
+        violations.append(
+            {
+                "rule": "bundling",
+                "severity": "error",
+                "material_name": line.material_name,
+                "matched_bundled_item": line.material_name,
+                "bundled_category": "EK-3B-1",
+                "billed_amount": billed,
+                "savings_try": billed if billed > 0 else None,
+                "match_kind": "build_time_derived",
+                "procedure_code": "",
+                "message": (
+                    f"'{line.material_name}' is bundled into the procedure price "
+                    f"(EK-3B-1, build-time derived). Cannot be billed separately."
+                    + (f" Potential savings: {billed:.2f} TRY." if billed > 0 else "")
+                ),
+            }
+        )
+    return violations

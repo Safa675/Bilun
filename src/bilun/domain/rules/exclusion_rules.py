@@ -75,3 +75,39 @@ def check_exclusion_violations(
         )
 
     return violations
+
+
+def check_exclusion_violations_for_context(ctx: "PatientClaimContext") -> list[dict[str, Any]]:
+    """EK-3B-2 exclusion check over a PatientClaimContext (Phase 2.1e wrapper).
+
+    Reads each MaterialClaimLine's build-time-derived ``is_excluded`` flag
+    (populated by ``dataset_builder._enrich_material_regulatory_flags`` from
+    the same ``is_material_reimbursable`` / ``match_exclusion_entry`` the
+    dict-based ``check_exclusion_violations`` uses). Parity is structural: both
+    paths resolve to the same canonical matcher.
+
+    The violation shape mirrors ``check_exclusion_violations`` so the
+    ``validate_claim`` adapter (Phase 2.4) can use either path interchangeably.
+    """
+    violations: list[dict[str, Any]] = []
+    for line in ctx.material_lines:
+        if not line.is_excluded:
+            continue
+        risk = float(line.billed_amount_try)
+        violations.append(
+            {
+                "rule": "exclusion",
+                "severity": "error",
+                "material_name": line.material_name,
+                "material_code": line.material_code,
+                "matched_exclusion_entry": line.material_name,
+                "match_kind": "build_time_derived",
+                "billed_amount": risk,
+                "risk_amount": risk,
+                "message": (
+                    f"'{line.material_name}' is non-reimbursable (EK-3B-2, "
+                    f"build-time derived). Should not be billed."
+                ),
+            }
+        )
+    return violations
