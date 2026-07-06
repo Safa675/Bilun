@@ -242,18 +242,44 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     if not ctx.claims:
         return {}
     header = ctx.claims[0]
+    # Scope line aggregations to the first claim only. A PatientClaimContext
+    # can carry multiple bills for one patient; aggregating every line while
+    # reading header fields from claims[0] would let a second bill's
+    # procedures/drugs/materials contaminate this claim's derived flags
+    # (procedure_category_any, payment_method, drug_category, ...). This
+    # mirrors the claim-scoping the gazette_repricing / material_uplift
+    # wrappers apply.
+    claim_id = getattr(header, "claim_id", None)
+
+    def _lines_for_claim(attr: str) -> list[Any]:
+        return [
+            line for line in (getattr(ctx, attr, ()) or ())
+            if getattr(line, "claim_id", None) == claim_id
+        ]
+
     context: dict[str, Any] = {
         "facility_tier": header.facility_tier or "",
         "provider_type": header.provider_type or "",
         "claim_type": header.claim_type or "",
     }
-    # Care setting: inpatient (yatis) vs outpatient (ayakta) vs day-case (gunubirlik).
+    # Care setting: inpatient (yatis) vs outpatient (ayakta/poliklinik) vs
+    # day-case (gunubirlik, billed as outpatient per SUT §2.2). The
+    # gap-closing JSON expects "inpatient" / "outpatient"; fall back to
+    # "outpatient" for unrecognized outpatient-style visit types rather than
+    # leaking the raw Turkish token, which _resolve_claim_kind would then
+    # mis-classify as inpatient.
     claim_type_lower = (header.claim_type or "").lower()
-    context["care_setting"] = (
-        "inpatient" if "yatis" in claim_type_lower or "inpatient" in claim_type_lower
-        else "outpatient" if "ayakta" in claim_type_lower or "outpatient" in claim_type_lower
-        else claim_type_lower
-    )
+    if "yatis" in claim_type_lower or "inpatient" in claim_type_lower:
+        context["care_setting"] = "inpatient"
+    elif (
+        "ayakta" in claim_type_lower
+        or "outpatient" in claim_type_lower
+        or "poliklinik" in claim_type_lower
+        or "gunubirlik" in claim_type_lower
+    ):
+        context["care_setting"] = "outpatient"
+    else:
+        context["care_setting"] = claim_type_lower or "outpatient"
     # Emergency: department or scenario_tag carries emergency signal.
     dept = (header.department or "").lower()
     tag = (header.scenario_tag or "").lower()
@@ -267,11 +293,12 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     context["facility_uncontracted"] = header.provider_type in ("uncontracted", "sozlesmesiz")
     context["facility_contracted"] = header.provider_type not in ("uncontracted", "sozlesmesiz", "")
     # Health report: drug lines carry board-report presence.
-    if ctx.drug_lines:
-        reports = [d for d in ctx.drug_lines if d.drug_specialty_board_report_present]
+    drug_lines = _lines_for_claim("drug_lines")
+    if drug_lines:
+        reports = [d for d in drug_lines if d.drug_specialty_board_report_present]
         context["health_report_present"] = bool(reports)
     # Procedure-derived fields.
-    procedure_lines = list(getattr(ctx, "procedure_lines", ()) or ())
+    procedure_lines = _lines_for_claim("procedure_lines")
     if procedure_lines:
         categories = {p.procedure_category for p in procedure_lines if p.procedure_category}
         codes = {p.procedure_code for p in procedure_lines if p.procedure_code}
@@ -302,17 +329,18 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     if payment_method is not None:
         context["payment_method"] = payment_method
     # Drug-derived fields.
-    if ctx.drug_lines:
+    if drug_lines:
         drug_categories = set()
-        for d in ctx.drug_lines:
+        for d in drug_lines:
             cat = getattr(d, "drug_category", None) or ""
             if cat:
                 drug_categories.add(cat)
         if drug_categories:
             context["drug_category"] = sorted(drug_categories)[:1][0]
     # Material-derived fields.
-    if ctx.material_lines:
-        material_categories = {m.specialty_category for m in ctx.material_lines if m.specialty_category}
+    material_lines = _lines_for_claim("material_lines")
+    if material_lines:
+        material_categories = {m.specialty_category for m in material_lines if m.specialty_category}
         if material_categories:
             context["material_category"] = sorted(material_categories)[:1][0]
     return context

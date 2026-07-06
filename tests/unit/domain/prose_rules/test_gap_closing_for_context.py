@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import replace
 from decimal import Decimal
 from typing import Any
@@ -231,4 +232,45 @@ def test_facility_uncontracted_recognizes_correct_spelling() -> None:
     context = _build_gap_closing_context(ctx)
     assert context["facility_uncontracted"] is True
     assert context["facility_contracted"] is False
+
+
+def test_multi_claim_context_lines_scoped_to_first_claim() -> None:
+    """W2.5d (HIGH, Bugbot round 2): _build_gap_closing_context reads header
+    fields from claims[0] but must NOT aggregate procedure/drug/material lines
+    from a second claim in the same bundle. A foreign procedure line must not
+    leak into the first claim's procedure_category_any. Before the fix every
+    line was aggregated regardless of claim_id.
+    """
+    first_header = _make_header()  # claim_id C1
+    second_header = _make_header()
+    second_header = dataclasses.replace(second_header, claim_id="C2")
+    # A procedure line that belongs to the SECOND claim only.
+    foreign_proc = _make_procedure(code="999999", category="onkoloji")
+    foreign_proc = dataclasses.replace(foreign_proc, claim_id="C2")
+    ctx = PatientClaimContext(
+        patient_id="P1",
+        claims=(first_header, second_header),
+        procedure_lines=(foreign_proc,),
+        material_lines=(),
+        drug_lines=(),
+        diagnoses=(),
+    )
+    context = _build_gap_closing_context(ctx)
+    # The first claim has no procedure lines of its own → its category set
+    # must be empty, not contaminated by the second claim's "onkoloji" line.
+    assert context.get("procedure_category_any") is None
+    assert "onkoloji" not in (context.get("procedure_category_any") or [])
+
+
+def test_care_setting_maps_poliklinik_and_gunubirlik_to_outpatient() -> None:
+    """Bugbot round 2: poliklinik (outpatient clinic) and gunubirlik (day-case)
+    previously fell through to the raw Turkish token, which
+    _resolve_claim_kind would then mis-classify as inpatient. Both must map
+    to "outpatient" so §2.2 payment-method classification is correct.
+    """
+    for claim_type in ("poliklinik", "gunubirlik"):
+        ctx = _make_ctx(header=_make_header(claim_type=claim_type))
+        context = _build_gap_closing_context(ctx)
+        assert context["care_setting"] == "outpatient", f"{claim_type} should map to outpatient"
+
 
