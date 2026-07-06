@@ -591,6 +591,10 @@
       "rule_id": "4.2.1.C.anakinra_biologic_jak_combo_nopay",
       "sut_section": "4.2.1.C-7",
       "gate_b_sources": [
+        "C003705",
+        "C003711",
+        "C003787",
+        "C003790",
         "C003831"
       ],
       "drug_names": [
@@ -657,7 +661,16 @@
       "rule_id": "4.2.1.C.anti_tnf_biologic_combo_nopay",
       "sut_section": "4.2.1.C",
       "gate_b_sources": [
-        "C003581"
+        "C003581",
+        "C003591",
+        "C003602",
+        "C003609",
+        "C003614",
+        "C003621",
+        "C003629",
+        "C003630",
+        "C003636",
+        "C003672"
       ],
       "drug_names": [
         "anti-tnf",
@@ -2888,6 +2901,8 @@
       ],
       "message_tr": "JAK inhibitörleri — tedavi devamında etkinlik yanıtının romatoloji veya immünoloji uzman hekim raporunda belirtilmesi gerekir (§4.2.1.C-6).",
       "gate_b_sources": [
+        "C003745",
+        "C003746",
         "C003781"
       ],
       "prescriber_specialties": [
@@ -4819,6 +4834,7 @@
       "rule_id": "4.2.12.A.immunglob.hbig_anhepatic_phase_dose_by_risk",
       "sut_section": "4.2.12.A",
       "gate_b_sources": [
+        "C004417",
         "C004427"
       ],
       "drug_names": [
@@ -5130,6 +5146,7 @@
       "rule_id": "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis",
       "sut_section": "4.2.13.1.2",
       "gate_b_sources": [
+        "C004604",
         "C004616"
       ],
       "drug_names": [
@@ -5265,7 +5282,9 @@
       "rule_id": "4.2.13.1.pegifn_adult_hbv_criteria",
       "sut_section": "4.2.13.1",
       "gate_b_sources": [
-        "C004551"
+        "C004551",
+        "C004636",
+        "C004897"
       ],
       "drug_names": [
         "pegile interferon",
@@ -13282,6 +13301,7 @@
       "rule_id": "4.2.17.B.calcitonin_first_6mo_only",
       "sut_section": "4.2.17.B",
       "gate_b_sources": [
+        "C006040",
         "C006044"
       ],
       "drug_names": [
@@ -14067,7 +14087,8 @@
         "amfoterisin"
       ],
       "gate_b_sources": [
-        "C006102"
+        "C006102",
+        "C006118"
       ],
       "report_required": true,
       "message_tr": "3) Amfoterisin B ile tedaviye refrakter ya da amfoterisin B’yi tolere edemeyen fusariozis hastalığı olan hastalarda.",
@@ -14102,7 +14123,8 @@
         "C006092",
         "C006103",
         "C006104",
-        "C006116"
+        "C006116",
+        "C006120"
       ],
       "drug_names": [
         "posakonazol",
@@ -14562,6 +14584,7 @@
       "rule_id": "4.2.24.B.resp.laba_lama_iks_combinations_coverage",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
+        "C006124",
         "C006160",
         "C006167"
       ],
@@ -14918,6 +14941,7 @@
       ],
       "message_tr": "KOAH/astım inhale kombinasyonları — göğüs hastalıkları, göğüs cerrahisi, iç hastalıkları veya çocuk sağlığı uzman hekim reçetesi gerekir (§4.2.24.B-1).",
       "gate_b_sources": [
+        "C006151",
         "C006160"
       ],
       "report_required": true,
@@ -15024,6 +15048,7 @@
       ],
       "message_tr": "Montelukast+antihistaminik kombinasyonları — KBB, iç hastalıkları, çocuk sağlığı, göğüs hastalıkları veya alerji uzman reçetesi/raporu gerekir (§4.2.24.C-1).",
       "gate_b_sources": [
+        "C006125",
         "C006184"
       ],
       "report_required": true,
@@ -17058,6 +17083,7 @@
       "rule_id": "4.2.33.rvo_glaucoma_ranibizumab_aflibercept",
       "sut_section": "4.2.33",
       "gate_b_sources": [
+        "C006553",
         "C006557"
       ],
       "drug_names": [
@@ -20038,7 +20064,12 @@
       "rule_id": "4.2.6.A.max_3_month_supply_daily_dose",
       "sut_section": "4.2.6.A",
       "gate_b_sources": [
-        "C003942"
+        "C003941",
+        "C003942",
+        "C003998",
+        "C004016",
+        "C004030",
+        "C004033"
       ],
       "drug_names": [
         "büyüme hormonu",
@@ -21710,7 +21741,11 @@
       "rule_id": "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
       "sut_section": "4.2.9.A",
       "gate_b_sources": [
-        "C004125"
+        "C004125",
+        "C004128",
+        "C004131",
+        "C004132",
+        "C004133"
       ],
       "drug_names": [
         "eritropoietin",

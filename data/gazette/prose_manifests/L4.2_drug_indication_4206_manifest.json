@@ -79,6 +79,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.general_gh_age_group_board"
       ]
     },
@@ -285,6 +286,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Büyüme hormonu",
       "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.adult_somatropin_board_report"
       ]
     },
@@ -359,6 +361,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.pws_somatropin_tertiary_board"
       ]
     },
@@ -423,6 +426,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.ckd_gh_nephro_endo_board"
       ]
     },
@@ -455,6 +459,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.laron_mecasermin_initiation_board"
       ]
     },

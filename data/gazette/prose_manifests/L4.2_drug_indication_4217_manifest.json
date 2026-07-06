@@ -276,6 +276,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Kalsitonin",
       "linked_rule_ids": [
+        "4.2.17.B.calcitonin_first_6mo_only",
         "4.2.17.calcitonin_vertebral_fracture_report"
       ]
     },

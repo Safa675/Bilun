@@ -64,6 +64,8 @@ rules:
   sut_section: 4.2.13.1
   gate_b_sources:
   - C004551
+  - C004636
+  - C004897
   drug_names:
   - pegile interferon
   - peginterferon

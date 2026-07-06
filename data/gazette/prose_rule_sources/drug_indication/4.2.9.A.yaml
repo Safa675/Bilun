@@ -4,6 +4,10 @@ rules:
   sut_section: 4.2.9.A
   gate_b_sources:
   - C004125
+  - C004128
+  - C004131
+  - C004132
+  - C004133
   drug_names:
   - eritropoietin
   - darbepoietin

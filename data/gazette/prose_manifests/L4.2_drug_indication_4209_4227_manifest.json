@@ -5,7 +5,7 @@
   "effective_date": "2026-06-29",
   "rules_in_json": 55,
   "section_clause_total": 128,
-  "encoded_clause_count": 63,
+  "encoded_clause_count": 65,
   "encoded_clause_ids": [
     "C004113",
     "C004125",
@@ -14,6 +14,8 @@
     "C004128",
     "C004130",
     "C004131",
+    "C004132",
+    "C004133",
     "C004134",
     "C004136",
     "C004137",
@@ -88,8 +90,6 @@
     "C004123",
     "C004124",
     "C004129",
-    "C004132",
-    "C004133",
     "C004148",
     "C004155",
     "C004157",
@@ -146,7 +146,7 @@
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 5,
   "tier_b_pending_count": 1,
-  "tier_c_deferred_count": 59,
+  "tier_c_deferred_count": 57,
   "clause_traces": [
     {
       "clause_id": "C004113",
@@ -286,6 +286,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Eritropoietin",
       "linked_rule_ids": [
+        "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
         "4.2.9.esa_ckd_monthly_nephrology_report",
         "4.2.9.esa_legacy_muadil_monthly_report"
       ]
@@ -319,6 +320,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Eritropoietin alfa-beta-zeta",
       "linked_rule_ids": [
+        "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
         "4.2.9.esa_ckd_legacy_nephrology_prescriber",
         "4.2.9.esa_ckd_monthly_nephrology_report"
       ]
@@ -327,23 +329,21 @@
       "clause_id": "C004132",
       "section_id": "4.2.9.A-1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Tedaviye başlama ve idame dozu",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.A.renal.esa_roxadustat_offlabel_nopay"
+      ]
     },
     {
       "clause_id": "C004133",
       "section_id": "4.2.9.A-1",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.9.A.renal.esa_roxadustat_offlabel_nopay"
+      ]
     },
     {
       "clause_id": "C004134",
@@ -1498,8 +1498,8 @@
   },
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 59,
+  "encode_tier_C_deferred_count": 57,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 49.2
+  "encoded_clause_pct": 50.8
 }

@@ -20,6 +20,7 @@ rules:
   - C006103
   - C006104
   - C006116
+  - C006120
   drug_names:
   - posakonazol
   - itrakonazol

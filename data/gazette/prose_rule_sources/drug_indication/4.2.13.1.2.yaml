@@ -3,6 +3,7 @@ rules:
 - rule_id: 4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis
   sut_section: 4.2.13.1.2
   gate_b_sources:
+  - C004604
   - C004616
   drug_names:
   - lamivudin

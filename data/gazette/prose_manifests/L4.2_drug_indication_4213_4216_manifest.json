@@ -1242,6 +1242,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Oral antiviral tedavilerde ilk rapor süresi en fazla 6 ay",
       "linked_rule_ids": [
+        "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis",
         "4.2.13.hbv_oral_report_duration_6mo"
       ]
     },
@@ -1452,6 +1453,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "4.2.13.1.pegifn_adult_hbv_criteria",
         "4.2.13.hcv_acute_interferon_report"
       ]
     },
@@ -3457,6 +3459,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Tedavide kullanılan ilaçlar",
       "linked_rule_ids": [
+        "4.2.13.1.pegifn_adult_hbv_criteria",
         "4.2.13.hcv_daa_child_pugh_report",
         "4.2.13.hcv_daa_tertiary_gastro_once",
         "4.2.13.hcv_sofosbuvir_ledipasvir_board",

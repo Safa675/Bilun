@@ -162,6 +162,8 @@ rules:
   message_tr: JAK inhibitörleri — tedavi devamında etkinlik yanıtının romatoloji veya immünoloji uzman hekim raporunda belirtilmesi
     gerekir (§4.2.1.C-6).
   gate_b_sources:
+  - C003745
+  - C003746
   - C003781
   prescriber_specialties:
   - romatoloji
