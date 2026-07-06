@@ -9,6 +9,22 @@ Format per entry:
 
 ---
 
+## 2026-07-06 — Multi-week epic: the gap-count drop came from STATUS HONESTY not ENCODING
+
+**Pattern:** The rule-encoding gap-closure roadmap (Phases 0-5) was framed as "encode ~2,183 unencoded clauses to drop the gap count." After 5 phases of work, the gap count dropped 1,897 → 601 (−68.3%), but the breakdown of WHERE the drop came from was surprising:
+- **Phase 1.1 (structural reclassification, 908 clauses → non_algorithmic):** 0 gap-count change. The `_is_structural_gap_excluded` function was ALREADY excluding these from gaps; Phase 1.1 only fixed the status LABEL. The gap count was already correct.
+- **Phase 4.2/4.3 (copay + specialty reclassification, 279 clauses → non_algorithmic):** −279 gap-count change. These WERE gaps because they weren't structural (no `_is_structural_gap_excluded`), but they were supporting text (indication lists, report specs) whose decisional parents were already encoded. Reclassification was honest — but it was reclassification, not encoding.
+- **Phase 5 (drug motor flip partial→implemented, 984 encoded clauses):** −989 gap-count change. THE LARGEST single drop. 984 of 1,162 drug_indication gaps were ALREADY ENCODED but counted as gaps because the motor was `partial` (commit `ec33851`), and partial status counts as gap unconditionally. Flipping back to `implemented` dropped them. Zero encoding work.
+- **Actual encoding (Phase 4.1 + 5.3, 16+35=51 new clause linkages):** −51 gap-count change. Only ~4% of the total drop came from actual encoding.
+
+**Rule:** When a gap-count reduction goal is set, distinguish three mechanisms and track them separately:
+1. **STATUS HONESTY** (fixing coverage_status labels so the gap predicate fires correctly) — accounts for ~80% of this epic's drop. The biggest wins came from discovering that clauses were mislabeled (partial vs implemented, structural vs actionable).
+2. **RECLASSIFICATION** (moving non-decisional text to non_algorithmic) — accounts for ~20%. Honest but requires per-clause text auditing to avoid hiding real regulatory content.
+3. **ENCODING** (adding new rules + gate_b_sources linkages) — accounts for ~4%. The hardest, most labor-intensive work, but the smallest numerical impact because most clauses were either already encoded, honestly non-decisional, or correctly deferred.
+A roadmap that promises "encode N clauses to drop the gap count by N" will misallocate effort unless it first audits which mechanism applies to each clause. Concretely: before encoding, check `has_rule_encoding` — if the clause is already encoded but still a gap, the issue is status honesty (the motor's coverage_status), not missing encoding.
+
+---
+
 ## 2026-07-05 — "Reclassify to reduce the gap count" is dishonest when the clauses contain real regulatory text
 
 **Pattern:** The Phase 1 plan (approved by user, sourced from Agent 3's diagnostic) proposed reclassifying ~250 "price-oracle decision-rule" clauses (in `pricing_ek2b`, `copay_rate_ek2c1`, `copay_exemption_ek1a`, `drug_discount_prose`, `surcharge_general`) to `non_algorithmic` to drop the headline `has_algorithmic_gap` count from ~1897 toward ~450. Agent 3 had labeled them "ANNEX_LOOKUP — text just references annex tables; the code motor resolves these." When I actually READ the gap clause text before reclassifying, ~248 of the ~250 contained substantive regulatory content — copay participation-fee rules ("katılım payı uygulanacak sağlık hizmetleri"), exemption criteria, surcharge logic. Only 12 of 1897 gaps were genuinely pure annex references (text like `a) Tıbbi Uygunluk Aranacak Tıbbi Malzemeler (EK-3/C-1)`). Reclassifying the other 248 would have hidden real encode-debt to make the dashboard number look better — exactly the metric-manipulation the codebase has been fighting (the recent `ec33851` "honest drug_indication partial status" commit moved in the opposite direction).
