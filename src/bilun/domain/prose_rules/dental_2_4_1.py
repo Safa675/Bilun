@@ -140,16 +140,28 @@ def _condition_matches(condition: dict[str, Any], mat: dict[str, Any]) -> bool:
     return True
 
 
-def _violation_from_rule(rule: dict[str, Any]) -> dict[str, Any]:
+def _violation_from_rule(rule: dict[str, Any], mat: dict[str, Any] | None = None) -> dict[str, Any]:
     action = rule.get("action") or {}
     billable = bool(action.get("billable", True))
+    # risk_amount follows the convention used by material_bundling /
+    # specialty_materials: for a no_pay outcome the provider risks the billed
+    # amount, so surface it as risk. Other outcomes stay 0 (no savings/risk
+    # signal is meaningful without a pricing decision).
+    risk_amount = 0.0
+    if not billable and mat is not None:
+        risk_amount = float(
+            mat.get("unit_price")
+            or mat.get("billed_amount_try")
+            or mat.get("billed_amount")
+            or 0
+        )
     return {
         "rule": "dental_2_4_1",
         "severity": action.get("severity", "warning"),
-        "material_name": rule.get("rule_id", ""),
+        "material_name": mat.get("name") or mat.get("material_name") or rule.get("rule_id", "") if mat else rule.get("rule_id", ""),
         "message": action.get("denial_tr") or action.get("payment_tr") or rule.get("rule_id", ""),
         "savings_try": 0.0,
-        "risk_amount": 0.0,
+        "risk_amount": risk_amount,
         "sut_section": rule.get("sut_section", "2.4.1"),
         "rule_id": rule.get("rule_id", ""),
         "billable": billable,
@@ -169,7 +181,7 @@ def check_dental_2_4_1_prose(materials: list[dict[str, Any]]) -> list[dict[str, 
             condition = rule.get("condition") or {}
             if not _condition_matches(condition, mat):
                 continue
-            violations.append(_violation_from_rule(rule))
+            violations.append(_violation_from_rule(rule, mat))
             break
     return violations
 

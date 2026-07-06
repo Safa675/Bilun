@@ -50,18 +50,36 @@ class TestCoerceBool:
 
 
 class TestDeriveSpecialtyCategory:
-    def test_implant_name_maps_to_dental_implant(self) -> None:
-        """W2.5g: an implant material name must derive dental_implant so the
-        bone-implant no-pay rule can fire on the dict path (it gates on
-        procedure_category == dental_implant, which falls back to
-        specialty_category when no procedure line is linked).
+    def test_unambiguous_dental_phrases_classify(self) -> None:
+        """W2.5g/W2.5j: only unambiguous multi-word dental phrases classify.
+        "kanal tedavisi" (root canal) is unambiguously dental.
         """
-        assert _derive_specialty_category("kemik içi implant") == "dental_implant"
-        assert _derive_specialty_category("Dental Implant System") == "dental_implant"
-
-    def test_prosthesis_name_maps_to_dental_restoration(self) -> None:
-        assert _derive_specialty_category("protez kron") == "dental_restoration"
         assert _derive_specialty_category("kanal tedavisi") == "dental_restoration"
+        assert _derive_specialty_category("Diş implantı") == "dental_implant"
+
+    def test_generic_implant_not_misclassified(self) -> None:
+        """W2.5j (HIGH, Bugbot): bare "implant" must NOT classify as
+        dental_implant — cardiac pacemakers and orthopedic joint implants share
+        the token. Only an explicit "diş implant" phrase qualifies.
+        """
+        assert _derive_specialty_category("implant") == "general"
+        assert _derive_specialty_category("implantable device") == "general"
+        assert _derive_specialty_category("kalp pili implant") == "general"
+        assert _derive_specialty_category("kalça implantı") == "general"
+
+    def test_ortez_not_misclassified_as_dental(self) -> None:
+        """W2.5j (HIGH, Bugbot): "ortez" (orthosis) is ORTHOPEDIC, not dental.
+        The previous broad keyword misclassified it as dental_restoration.
+        """
+        assert _derive_specialty_category("ortez protezi") == "general"
+        assert _derive_specialty_category("ortez") == "general"
+
+    def test_generic_protez_not_misclassified(self) -> None:
+        """W2.5j: bare "protez" can be orthopedic prosthetics — too ambiguous
+        to classify as dental without a procedure-category signal.
+        """
+        assert _derive_specialty_category("protez") == "general"
+        assert _derive_specialty_category("protez kron") == "general"
 
     def test_non_dental_defaults_to_general(self) -> None:
         """W2.5g: non-dental consumables keep the legacy 'general' default —
@@ -75,13 +93,18 @@ class TestDeriveSpecialtyCategory:
 def test_build_context_passes_coerced_dental_flags() -> None:
     """W2.5f end-to-end: a dict claim with dental flags as strings must build a
     MaterialClaimLine carrying real bools, not truthy strings.
+
+    Note (W2.5j): the material name here is an unambiguous dental phrase so
+    specialty_category derives to dental_implant; generic implant names would
+    keep "general" and the rule would honest-skip (correct — better to miss a
+    rule on the dict path than to mis-fire on non-dental implants).
     """
     ctx = build_context_from_material_dict(
         {
             "claim_id": "CLM-DENTAL-1",
             "materials": [
                 {
-                    "name": "kemik içi implant",
+                    "name": "diş implantı",
                     "code": "5010500",
                     "unit_price": 1000,
                     "quantity": 1,

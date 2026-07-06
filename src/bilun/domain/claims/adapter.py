@@ -43,14 +43,19 @@ from src.bilun.domain.claims.patient_context import PatientClaimContext
 # _for_context shim falls back to specialty_category when a material has no
 # linked procedure line, so deriving this on the dict path lets the
 # dental_implant / dental_restoration gated rules fire from /validate-claim.
+#
+# Keywords are deliberately NARROW and dental-specific. Generic tokens like
+# "implant" (also cardiac pacemakers, orthopedic joint implants), "protez"
+# (also orthopedic prosthetics), and "ortez" (orthopedic orthosis — NOT
+# dental) are excluded because they misclassify non-dental materials and would
+# spuriously fire §2.4.1 dental no-pay rules. Only multi-word phrases that are
+# unambiguously dental procedures are mapped; everything else keeps the safe
+# "general" default so the dental rules simply honest-skip on the dict path
+# (they still fire correctly when procedure lines ARE linked, which carries
+# the authoritative procedure_category).
 _DENTAL_SPECIALTY_KEYWORDS: tuple[tuple[str, str], ...] = (
-    ("implant", "dental_implant"),
-    ("implant", "dental_implant"),  # also matches "implant" in compound names
-    ("protez", "dental_restoration"),
-    ("ortez", "dental_restoration"),
-    ("kanal tedavisi", "dental_restoration"),
-    ("kuron", "dental_restoration"),
-    ("dolgu", "dental_restoration"),
+    ("dis implant", "dental_implant"),          # "diş implant" (folded) — unambiguous dental
+    ("kanal tedavisi", "dental_restoration"),   # root canal — unambiguously dental
 )
 
 
@@ -75,16 +80,30 @@ def _coerce_bool(value: Any) -> bool | None:
     return True
 
 
+def _fold_tr(text: str) -> str:
+    """ASCII-fold Turkish chars so keyword matching is accent-insensitive.
+
+    Handles the Turkish-specific letters NFKD decomposition leaves behind
+    (dotless ``ı`` and dotted ``İ``) in addition to stripping combining marks.
+    """
+    import unicodedata
+    folded = unicodedata.normalize("NFKD", (text or "").casefold())
+    folded = folded.replace("ı", "i").replace("İ", "i")
+    return "".join(ch for ch in folded if not unicodedata.combining(ch))
+
+
 def _derive_specialty_category(material_name: str) -> str:
     """Infer a §2.4.1 specialty_category from the material name.
 
     Returns ``"general"`` for non-dental materials (the legacy default) so
-    nothing changes for existing consumable claims. Dental implant/prosthesis
-    names map to the categories the dental rules gate on.
+    nothing changes for existing consumable claims. Only unambiguous
+    multi-word dental procedure phrases are mapped (see
+    ``_DENTAL_SPECIALTY_KEYWORDS`` for why single tokens like "implant" are
+    excluded). Matching is Turkish-accent-insensitive.
     """
-    lowered = (material_name or "").lower()
+    folded = _fold_tr(material_name)
     for keyword, category in _DENTAL_SPECIALTY_KEYWORDS:
-        if keyword in lowered:
+        if _fold_tr(keyword) in folded:
             return category
     return "general"
 

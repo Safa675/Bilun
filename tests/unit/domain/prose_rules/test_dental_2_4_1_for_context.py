@@ -349,6 +349,28 @@ def test_bone_implant_no_pay_fires_when_board_report_absent() -> None:
     assert v["severity"] == "error"
 
 
+def test_dental_no_pay_surfaces_billed_amount_as_risk() -> None:
+    """W2.5l (MEDIUM, Bugbot): no_pay dental violations must surface the billed
+    amount as ``risk_amount`` (matching material_bundling / specialty_materials
+    convention) so the W2.5e projection catch-all aggregates it into
+    ``total_risk_try``. Before the fix dental risk_amount was always 0, so a
+    no_pay dental error marked the claim invalid but contributed nothing to
+    the risk headline.
+    """
+    material = _make_material_line(name="kemik içi implant")  # billed 500 (fixture)
+    procedure = _make_procedure_line(procedure_category="dental_implant")
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+
+    violations = check_dental_2_4_1_for_context(ctx)
+
+    v = violations[0]
+    assert v["material_outcome"] == "no_pay"
+    # The fixture's MaterialClaimLine carries billed_amount_try = 500; the
+    # _for_context shim surfaces unit_price = float(billed_amount_try).
+    assert v["risk_amount"] == 500.0
+
+
+
 def test_bone_implant_with_explicit_board_report_no_default_no_pay() -> None:
     """W2.5h complement: when ``medical_necessity_board_report`` is explicitly
     ``True`` (board report present), the default no-pay rule must NOT fire.

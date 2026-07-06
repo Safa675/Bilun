@@ -351,6 +351,15 @@ def check_gap_closing_misc_for_context(ctx: Any) -> list[dict[str, Any]]:
 
     Wiredness epic W1.3 — bridges the gap_closing evaluator (which takes a flat
     dict) to the typed PatientClaimContext via ``_build_gap_closing_context``.
+
+    Contract — single-claim context: the builder evaluates ``ctx.claims[0]``
+    only. ``analyze_claim`` is invoked from two places: the ``/validate-claim``
+    dict adapter (inherently single-claim) and the billing orchestrator, which
+    calls it once per claim via ``slice_for_claim`` (see ``lab_bill_merge.py``
+    and ``build_bill_claim_context``). A whole-patient ``PatientClaimContext``
+    carrying multiple claims is never passed here in production; callers that
+    need every claim evaluated must iterate ``ctx.claims`` and slice. The
+    gazette_repricing / material_uplift wrappers share this contract.
     """
     context = _build_gap_closing_context(ctx)
     if not context:
