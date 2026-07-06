@@ -64,7 +64,9 @@ def test_json_rules_map_to_expected_clause_ids() -> None:
         "1.8.5.(19).harp_okulu",
         "1.8.5.(20).deprem_protez",
     }
-    assert mapping["1.8.2.(1)"] == ["C000314"]
+    # Phase 4.2: 1.8.2.(1) now carries 5 sub-bullet clause_ids (collection-channel
+    # prose) in addition to the original C000314.
+    assert mapping["1.8.2.(1)"] == ["C000314", "C000327", "C000328", "C000329", "C000330", "C000331"]
     assert mapping["1.8.5.(10).organ_nakli"] == ["C000364"]
 
 
@@ -74,7 +76,9 @@ def test_manifest_has_encoded_clause_ids_union() -> None:
     manifest = build_encoded_manifest(_RULES, _CLAUSES)
     encoded = manifest["encoded_clause_ids"]
     assert len(encoded) >= 30
-    assert len(encoded) <= 33
+    # Phase 4.2: raised from 33 to 47 — 16 sub-bullet clause_ids linked to
+    # existing rules (1.8.2.(1), 1.8.2.(2), 1.8.3.(2), 1.8.4.(1)).
+    assert len(encoded) <= 47
     assert "C000364" in encoded
     assert "C000361" in encoded
     assert "C000326" in encoded

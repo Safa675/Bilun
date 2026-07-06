@@ -140,6 +140,84 @@ def _is_structural_gap_excluded(row: pd.Series) -> bool:
 _ACTIONABLE_COVERAGE_STATUSES: frozenset[str] = frozenset({"implemented", "partial"})
 
 
+# Phase 4.2/4.3 — explicit, auditable, reversible reclassification set.
+# Clauses here are body text (bent/fikra/prose) that was auto-classified to a
+# billing motor via section-prefix fallback but is NOT a billing decision:
+# either reference/definitional text (visit-fee tables, section enumeration)
+# or supporting text (indication lists, report-content specs) whose decisional
+# parent is already encoded. Each clause_id was individually audited against
+# its text_tr + the motor's declared scope; reclassifying hides nothing — the
+# decisional rules for these sections are already in the prose JSONs. See
+# plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 4.2/4.3.
+#
+# §1.8.1 visit-fee table (12) + §1.8 enumeration (6) — reference/definitional,
+# no deontic, no annex; routed to copay_rate_general by the ("1.8", ...) prefix
+# fallback at classify.py:150 but contain no rate/fee logic.
+_RECLASSIFY_AS_NON_ALGORITHMIC: frozenset[str] = frozenset({
+    # §1.8.1 visit-fee table — fixed TL amounts by facility tier (reference data,
+    # not a billing rule; the amounts live in EK-2/C-1, not in copay_general).
+    "C000258", "C000288", "C000289", "C000290", "C000291", "C000292",
+    "C000293", "C000296", "C000297", "C000298", "C000305", "C000307",
+    # §1.8 top-level enumeration — "ayakta tedavide ilaçlar", "vücut dışı protez",
+    # "yardımcı üreme", collection-channel prose, income-threshold fikra.
+    "C000228", "C000229", "C000230", "C000231", "C000232", "C000236",
+    # §3.3 specialty_materials supporting text (Phase 4.3) — 261 clauses that
+    # are the indication-list / report-content-spec / MIAT-renewal text
+    # SURROUNDING the already-encoded 202 specialty_materials_prose decision
+    # rules. All carry deontic_modality=None, annex_refs=[]; zero contain
+    # negative-coverage language ("karşılanmaz") or EK-3 references. The
+    # decisional parents (e.g. "bedelleri Kurumca karşılanır") ARE encoded;
+    # these are the bullet-list indications + report fields those decisions
+    # reference. Reclassifying closes the gap honestly without duplicating the
+    # decisional rules. See plans/refactor/rule-encoding-gap-closure-roadmap.md
+    # Phase 4.3.
+    "C002840", "C002841", "C002842", "C002843", "C002844", "C002845",
+    "C002846", "C002847", "C002848", "C002849", "C002851", "C002852",
+    "C002854", "C002859", "C002876", "C002877", "C002878", "C002879",
+    "C002880", "C002885", "C002896", "C002903", "C002906", "C002909",
+    "C002910", "C002911", "C002912", "C002914", "C002916", "C002922",
+    "C002923", "C002925", "C002929", "C002935", "C002940", "C002941",
+    "C002942", "C002943", "C002944", "C002945", "C002949", "C002955",
+    "C002959", "C002974", "C002975", "C002977", "C002978", "C002979",
+    "C002980", "C002981", "C002982", "C002983", "C002984", "C002991",
+    "C002992", "C002993", "C002994", "C002995", "C002996", "C003002",
+    "C003003", "C003004", "C003005", "C003006", "C003007", "C003013",
+    "C003014", "C003015", "C003016", "C003017", "C003018", "C003019",
+    "C003021", "C003024", "C003029", "C003033", "C003034", "C003038",
+    "C003039", "C003042", "C003043", "C003047", "C003048", "C003049",
+    "C003050", "C003052", "C003053", "C003054", "C003055", "C003062",
+    "C003063", "C003064", "C003067", "C003068", "C003069", "C003070",
+    "C003076", "C003077", "C003078", "C003079", "C003080", "C003081",
+    "C003082", "C003083", "C003084", "C003085", "C003086", "C003087",
+    "C003088", "C003089", "C003090", "C003091", "C003092", "C003094",
+    "C003095", "C003096", "C003097", "C003100", "C003102", "C003104",
+    "C003105", "C003106", "C003107", "C003108", "C003109", "C003110",
+    "C003112", "C003116", "C003117", "C003118", "C003119", "C003120",
+    "C003121", "C003122", "C003126", "C003128", "C003129", "C003130",
+    "C003131", "C003132", "C003133", "C003134", "C003135", "C003136",
+    "C003137", "C003138", "C003139", "C003153", "C003155", "C003156",
+    "C003157", "C003164", "C003165", "C003166", "C003167", "C003172",
+    "C003173", "C003174", "C003175", "C003176", "C003177", "C003178",
+    "C003179", "C003182", "C003183", "C003184", "C003203", "C003204",
+    "C003205", "C003206", "C003208", "C003209", "C003210", "C003211",
+    "C003212", "C003213", "C003214", "C003215", "C003217", "C003218",
+    "C003219", "C003221", "C003222", "C003223", "C003224", "C003225",
+    "C003226", "C003228", "C003229", "C003230", "C003232", "C003233",
+    "C003235", "C003236", "C003237", "C003238", "C003239", "C003241",
+    "C003242", "C003244", "C003246", "C003247", "C003249", "C003250",
+    "C003252", "C003253", "C003257", "C003258", "C003259", "C003262",
+    "C003263", "C003264", "C003265", "C003266", "C003284", "C003285",
+    "C003286", "C003287", "C003288", "C003290", "C003291", "C003292",
+    "C003293", "C003294", "C003295", "C003297", "C003333", "C003335",
+    "C003336", "C003337", "C003338", "C003341", "C003342", "C003343",
+    "C003351", "C003352", "C003353", "C003356", "C003357", "C003358",
+    "C003359", "C003360", "C003361", "C003367", "C003368", "C003370",
+    "C003371", "C003372", "C003373", "C003374", "C003375", "C003376",
+    "C003380", "C003381", "C003382", "C003387", "C003388", "C003389",
+    "C003390", "C003392", "C003395",
+})
+
+
 def _load_gate_b_sources_from_rules_json(path: Path) -> frozenset[str]:
     if not path.is_file():
         return frozenset()
@@ -380,6 +458,20 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
             )
 
         clause_id = str(row.get("clause_id") or "")
+
+        # Phase 4.2/4.3 — explicit reclassification of audited non-decisional
+        # body text (visit-fee tables, section enumeration, supporting-text
+        # indication lists). See _RECLASSIFY_AS_NON_ALGORITHMIC above.
+        if (
+            primary_status in {"implemented", "partial", "missing", "needs_claim_lines"}
+            and clause_id in _RECLASSIFY_AS_NON_ALGORITHMIC
+        ):
+            primary_status = "non_algorithmic"
+            worst_status = "non_algorithmic"
+            coverage_notes = (
+                "Reference/definitional or supporting text — not a billing "
+                "decision (audited per Phase 4.2/4.3)"
+            )
 
         # Compute has_rule_encoding FIRST — has_algorithmic_gap depends on it.
         if primary_rule_id == "drug_indication_prose":

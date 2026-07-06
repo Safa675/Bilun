@@ -16,3 +16,4 @@ rules:
       other: 0.2
   gate_b_sources:
   - C000352
+  - C000353
