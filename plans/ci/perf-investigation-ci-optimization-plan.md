@@ -90,5 +90,24 @@ Cut backend CI from ~8 min → ~3 min and frontend CI from ~1.3 min → ~45s by 
 | **Backend total** | **~8 min** | **~4 min** | **~3 min** |
 | Frontend total | ~67s | ~67s (no Tier 1 change) | ~67s |
 
-### Review
-_To be updated at each checkpoint._
+### Review (post-implementation)
+
+**Implemented:** B1 (pip cache), B2 (orchestrator dedup). B3 (xdist) attempted then reverted. F1 (npm build) kept.
+
+**Measured on the CI runner (ubuntu-latest), same branch:**
+
+| Step | Baseline (6a72843, serial) | After B1+B2 (cache hit run) |
+|---|---|---|
+| Install dependencies | 31s (uncached ~100s) | ~10s (cache hit, est.) |
+| Run Python tests | 405s | ~385s (B2 saves ~20s) |
+| **Backend total** | **~455s (~7.5 min)** | **~400s (~6.7 min)** |
+
+**B3 (xdist) — REVERTED, net-negative on this runner.** CI measurement:
+- Serial test step: **405s**
+- xdist `-n auto --dist loadgroup` test step: **572s** (+167s, **41% slower**)
+
+Diagnosis: `auto` spawned workers matching the runner's 2-4 cores, but the workers contended for shared resources (the heavy billing orchestrator is CPU+memory bound). The parallel gains on the 1873 light tests were more than wiped out by contention on the 70s orchestrator test + per-worker overhead. xdist stays in dev extras for opt-in **local** use (`pytest -n auto`); not worth the CI regression. The conftest `_is_xdist_main_worker` race-fix is kept (defensive — makes reconcile fixtures xdist-safe for local parallel runs).
+
+**Net CI improvement: ~0.8 min saved per run (7.5 → ~6.7 min backend), plus the pip cache makes dep-install deterministic.** Smaller than the ~5 min initially projected because (a) the serial test baseline on the runner was already 405s, not the 218s seen on the dev machine, and (b) xdist didn't help. The bigger remaining lever is **B5** (profile the orchestrator — ~1s/patient is high) and **B6** (smaller cohort for CI), both out of scope here.
+
+**Honest lesson:** the investigation's local measurements (218s serial, 132s xdist) did not predict CI behavior (405s serial, 572s xdist) — the dev machine has more effective cores/memory than the shared runner. Always measure on the target environment before committing to a parallelization change.

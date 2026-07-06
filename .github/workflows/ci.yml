@@ -25,7 +25,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run Python tests
-        run: python -m pytest -n auto --dist loadgroup -q
+        run: python -m pytest -q
 
       - name: Check generated SUT rule artifacts
         run: python scripts/sut/compile_rules.py --check
