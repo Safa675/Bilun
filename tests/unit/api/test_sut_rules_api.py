@@ -63,7 +63,8 @@ class TestCatalogEndpoint:
         assert summary["meta"]["generated_at"] is not None
         di = summary["partial_engines"]["drug_indication_prose"]
         assert di["encoded_clause_rows"] > 0
-        assert di["registry_status"] == "partial"
+        # Phase 5: flipped back to implemented (was partial per ec33851).
+        assert di["registry_status"] == "implemented"
         assert summary["partial_engines"]["material_bundling_prose"]["encoded_clause_rows"] > 0
         RuleCatalogResponse.model_validate(payload)
 
