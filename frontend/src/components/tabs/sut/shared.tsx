@@ -128,11 +128,11 @@ export function KpiCard({
   // `valueColor` is still honored for status colors; default is navy.
   return (
     <div className="flex flex-col gap-1.5">
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
+      <p className="text-xs font-medium text-[var(--text-muted)]">
         {label}
       </p>
       <p
-        className="text-lg font-semibold tabular-nums lining-nums leading-tight"
+        className="text-2xl font-semibold tabular-nums lining-nums leading-tight"
         style={{ color: valueColor ?? "var(--text-primary)" }}
       >
         {value}

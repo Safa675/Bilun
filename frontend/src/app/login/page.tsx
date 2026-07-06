@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import BilunWordmark from "@/components/brand/BilunWordmark";
 import { useT } from "@/lib/i18n/useTranslations";
 
 /**
@@ -51,18 +52,19 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-dvh items-center justify-center bg-[var(--surface-soft)] px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="font-serif text-2xl font-semibold text-[var(--text-primary)]">
-            {t("auth.login.title")}
-          </h1>
-          <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            {t("auth.login.subtitle")}
-          </p>
+        <div className="mb-8 flex flex-col items-center gap-4 text-center">
+          <BilunWordmark size={28} />
+          <div>
+            <h1 className="sr-only">{t("auth.login.title")}</h1>
+            <p className="text-sm text-[var(--text-secondary)]">
+              {t("auth.login.subtitle")}
+            </p>
+          </div>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-base)] p-6 shadow-sm"
+          className="space-y-4 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-base)] p-6 shadow-[var(--shadow-2)]"
         >
           <div className="space-y-1.5">
             <label

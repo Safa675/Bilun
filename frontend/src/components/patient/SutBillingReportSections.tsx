@@ -41,6 +41,7 @@ import {
 } from "@/lib/billingReportFields";
 import {
   getRecommendedActions,
+  recommendedActionSectionId,
   recommendedActionAmountParts,
   recommendedActionSurfaceLabel,
   recommendedActionTitle,
@@ -102,19 +103,8 @@ function BillingRegulatorySourceCell({
 
 type ExactnessBlock = Parameters<typeof getUnavailableMessage>[0];
 
-export function ExactnessNotice({
-  block,
-  fallback,
-}: {
-  block: ExactnessBlock;
-  fallback: string;
-}) {
-  return (
-    <div className="sut-exactness-notice">
-      {getUnavailableMessage(block, fallback)}
-    </div>
-  );
-}
+export { ExactnessBlock as ExactnessNotice } from "@/components/primitives";
+export type { ExactnessBlockProps } from "@/components/primitives";
 
 export function BillingSectionShell({
   id,
@@ -192,8 +182,31 @@ export function RecommendedActionsPanel({
         <tbody>
           {actions.map((action) => {
             const amount = recommendedActionAmountParts(t, action);
+            const sectionId = recommendedActionSectionId(action.surface);
+            const scrollToSection = () => {
+              if (!sectionId) return;
+              document.getElementById(sectionId)?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            };
             return (
-              <tr key={action.action_id}>
+              <tr
+                key={action.action_id}
+                className={sectionId ? "cursor-pointer" : undefined}
+                onClick={sectionId ? scrollToSection : undefined}
+                onKeyDown={
+                  sectionId
+                    ? (event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          scrollToSection();
+                        }
+                      }
+                    : undefined
+                }
+                tabIndex={sectionId ? 0 : undefined}
+              >
                 <td>
                   <Chip variant="neutral">
                     {recommendedActionSurfaceLabel(t, action.surface)}
@@ -414,7 +427,7 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
   const t = useT();
   if (!isExactOutput(labData)) {
     return (
-      <BillingSectionShell title={t("billing.lab.title")}>
+      <BillingSectionShell id="billing-lab" title={t("billing.lab.title")}>
         <ExactnessNotice block={labData} fallback={t("billing.lab.unavailable")} />
       </BillingSectionShell>
     );
@@ -428,7 +441,7 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
     labData.hemogram_bundling_savings + (labData.session_fraction_savings ?? 0);
 
   return (
-    <BillingSectionShell title={t("billing.lab.title")} total={fmtTRY2(combinedSavings)}>
+    <BillingSectionShell id="billing-lab" title={t("billing.lab.title")} total={fmtTRY2(combinedSavings)}>
       <TableWrap minWidth={820}>
         <thead>
           <tr>
@@ -525,6 +538,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
 
   return (
     <BillingSectionShell
+      id="billing-copay"
       title={t("billing.copay.title")}
       total={copayExact ? fmtTRY2(exemptionGapTotal) : undefined}
     >
@@ -717,7 +731,7 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
 
   if (!strategyExact && !hasRecommendations) {
     return (
-      <BillingSectionShell title={t("billing.strategy.title")}>
+      <BillingSectionShell id="billing-strategy" title={t("billing.strategy.title")}>
         <div className="sut-exactness-notice">
           {getUnavailableMessage(strategyData, t("billing.strategy.unavailable"))}
         </div>
@@ -749,7 +763,7 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
   };
 
   return (
-    <BillingSectionShell title={t("billing.strategy.title")}>
+    <BillingSectionShell id="billing-strategy" title={t("billing.strategy.title")}>
       {!strategyExact && (
         <div className="sut-exactness-notice mb-4">
           {getUnavailableMessage(strategyData, t("billing.strategy.unavailable"))}
@@ -2146,7 +2160,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
   }
 
   return (
-    <BillingSectionShell title={t("billing.materials.title")}>
+    <BillingSectionShell id="materials-pre-check" title={t("billing.materials.title")}>
       <div className="space-y-4">
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
           {t("billing.materials.advisoryFootnote")}

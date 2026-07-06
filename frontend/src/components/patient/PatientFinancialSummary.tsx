@@ -6,18 +6,19 @@ import { fmtNum, fmtTRY2, fmtPriorityLabel } from "@/components/tabs/sut/shared"
 import { StatusChip } from "@/components/patient/SutBillingReportSections";
 import { Eyebrow, Stat, Surface } from "@/components/primitives";
 import { hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
-import { theme } from "@/lib/theme";
 import { useT } from "@/lib/i18n/useTranslations";
 
 const PRIORITY_COLORS: Record<BillingActionReport["priority"], string> = {
   high: "#B91C1C",
   medium: "#D97706",
-  low: theme.accent,
+  low: "#2F6E4E",
 };
 
 export interface PatientFinancialSummaryProps {
   outcome: SutPatientOutcomeData | null;
   billingReport: BillingActionReport | null;
+  /** When set, KPI recoverable/priority reflect the selected bill only. */
+  selectedClaimId?: string | null;
   /** Fallback when `sut_claim_totals.claim_count` is absent. */
   claimCount?: number;
 }
@@ -25,9 +26,11 @@ export interface PatientFinancialSummaryProps {
 export function PatientFinancialSummary({
   outcome,
   billingReport,
+  selectedClaimId = null,
   claimCount,
 }: PatientFinancialSummaryProps) {
   const t = useT();
+  const isBillScoped = Boolean(selectedClaimId?.trim());
   const claimTotals = outcome?.sut_claim_totals;
   const claimTotalsExact = isExactOutput(claimTotals);
   const reportHasTotals = hasRecoverableBillingTotals(billingReport);
@@ -55,10 +58,14 @@ export function PatientFinancialSummary({
         <div className="min-w-0">
           <Eyebrow>{t("patient.financialSummary.eyebrow")}</Eyebrow>
           <h2 className="mt-1 font-[var(--font-display)] text-xl font-medium tracking-tight text-[var(--text-primary)]">
-            {t("patient.financialSummary.title")}
+            {isBillScoped
+              ? t("patient.financialSummary.titleBill", { claimId: selectedClaimId ?? "" })
+              : t("patient.financialSummary.title")}
           </h2>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
-            {t("patient.financialSummary.description")}
+            {isBillScoped
+              ? t("patient.financialSummary.descriptionBill")
+              : t("patient.financialSummary.description")}
           </p>
         </div>
         {billingReport && (

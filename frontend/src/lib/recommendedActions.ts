@@ -10,10 +10,20 @@ export type { RecommendedActionItem };
 export function getRecommendedActions(
   report: BillingActionReport,
 ): RecommendedActionItem[] {
-  if (report.recommended_actions?.length) {
-    return report.recommended_actions;
-  }
-  return buildRecommendedActionsFallback(report);
+  const actions =
+    report.recommended_actions?.length
+      ? report.recommended_actions
+      : buildRecommendedActionsFallback(report);
+  return [...actions].sort((a, b) => actionSortValue(b) - actionSortValue(a));
+}
+
+function actionSortValue(action: RecommendedActionItem): number {
+  const candidates = [
+    action.sgk_uplift_try,
+    action.compliance_savings_try,
+    action.billed_try,
+  ].filter((value): value is number => value != null && Number.isFinite(value));
+  return candidates.length > 0 ? Math.max(...candidates) : 0;
 }
 
 function buildRecommendedActionsFallback(
@@ -95,6 +105,21 @@ function buildRecommendedActionsFallback(
   }
 
   return actions;
+}
+
+const RECOMMENDED_ACTION_SECTION_IDS: Record<string, string> = {
+  lab: "billing-lab",
+  copay: "billing-copay",
+  billing_strategy: "billing-strategy",
+  materials: "materials-pre-check",
+  medula_playbook: "medula-playbook",
+  claim_checklist: "claim-submission-checklist",
+  drug_indication: "drug-indication",
+};
+
+export function recommendedActionSectionId(surface: string | null | undefined): string | null {
+  if (!surface) return null;
+  return RECOMMENDED_ACTION_SECTION_IDS[surface] ?? null;
 }
 
 const SURFACE_LABEL_KEYS: Record<string, string> = {

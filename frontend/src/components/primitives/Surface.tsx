@@ -22,6 +22,8 @@ export interface SurfaceProps extends HTMLAttributes<HTMLElement> {
   as?: ElementType;
   /** Internal padding. Defaults to `md` (1rem). */
   padding?: "none" | "sm" | "md" | "lg";
+  /** Subtle border emphasis on hover (interactive cards). */
+  interactive?: boolean;
   children?: ReactNode;
 }
 
@@ -45,6 +47,7 @@ export default function Surface({
   variant = "base",
   as,
   padding = "md",
+  interactive = false,
   className,
   children,
   ...rest
@@ -56,6 +59,9 @@ export default function Surface({
         "rounded-[var(--r-lg)]",
         VARIANT_CLASS[variant],
         PADDING_CLASS[padding],
+        interactive &&
+          (variant === "base" || variant === "raised") &&
+          "transition-[border-color,box-shadow] duration-[var(--dur)] ease-[var(--ease)] hover:border-[var(--border-strong)]",
         className,
       )}
       {...rest}

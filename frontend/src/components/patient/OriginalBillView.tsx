@@ -35,12 +35,7 @@ type InvoiceLine = {
   expectedPayableTry: number;
 };
 
-function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("tr-TR");
-}
+import { fmtDate } from "@/lib/i18n/formatters";
 
 function isLabProcedure(line: ClaimProcedureLine): boolean {
   return line.procedure_category.trim().toLowerCase() === "laboratuvar";

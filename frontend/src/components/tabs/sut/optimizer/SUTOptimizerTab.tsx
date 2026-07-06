@@ -440,7 +440,7 @@ function CopayExemptionAlerts({
           <Eyebrow as="div" className="text-[var(--gold)]">
             {t("optimizer.sections.billLevelSummary")}
           </Eyebrow>
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             <KpiCard
               label={t("optimizer.kpis.totalBills")}
               value={fmtNum(cohortCopay.n_total_bills)}
@@ -486,7 +486,7 @@ function CopayExemptionAlerts({
         <Eyebrow as="div" className="text-[var(--text-muted)]">
           {t("optimizer.sections.patientLevelSummary")}
         </Eyebrow>
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           <KpiCard label={t("optimizer.kpis.totalPatients")} value={fmtNum(summary.n_total_patients)} />
           <KpiCard
             label={t("optimizer.kpis.exemptAnyGround")}

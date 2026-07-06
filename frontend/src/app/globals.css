@@ -76,7 +76,16 @@
 * {
   box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-subtle) transparent;
+  scrollbar-color: var(--text-disabled) transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border-subtle);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-disabled);
 }
 
 *::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -171,15 +180,15 @@ textarea:focus-visible {
   top: 0;
   z-index: 2;
   background: var(--surface-soft);
-  color: var(--text-primary);
+  color: var(--text-muted);
   padding: 0.65rem 0.875rem;
   border-bottom: 1px solid var(--border-subtle);
   text-align: left;
-  font-weight: 600;
-  font-size: 0.72rem;
+  font-weight: 500;
+  font-size: 0.75rem;
   line-height: 1.25;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
   vertical-align: bottom;
   white-space: nowrap;
 }

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { Eyebrow } from "@/components/primitives";
 import { fmtTRY2 } from "@/components/tabs/sut/shared";
+import { fmtDate } from "@/lib/i18n/formatters";
 import { useT } from "@/lib/i18n/useTranslations";
 import type { PatientClaimSummary } from "@/lib/domains/sut";
 
@@ -13,36 +14,29 @@ export interface BillPickerProps {
   disabled?: boolean;
 }
 
-function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("tr-TR");
-}
-
-function priorityColor(priority: string | null | undefined): string {
-  switch (priority) {
-    case "high":
-      return "bg-red-100 text-red-700 border-red-200";
-    case "medium":
-      return "bg-amber-100 text-amber-700 border-amber-200";
-    case "low":
-      return "bg-emerald-100 text-emerald-700 border-emerald-200";
-    default:
-      return "bg-[var(--surface-soft)] text-[var(--text-muted)] border-[var(--border-subtle)]";
-  }
-}
-
 function priorityDot(priority: string | null | undefined): string {
   switch (priority) {
     case "high":
-      return "bg-red-500";
+      return "bg-[var(--danger)]";
     case "medium":
-      return "bg-amber-500";
+      return "bg-[var(--warning)]";
     case "low":
-      return "bg-emerald-500";
+      return "bg-[var(--success)]";
     default:
       return "bg-[var(--text-muted)]";
+  }
+}
+
+function priorityChipClass(priority: string | null | undefined): string {
+  switch (priority) {
+    case "high":
+      return "border-[color-mix(in_srgb,var(--danger)_28%,transparent)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] text-[var(--danger)]";
+    case "medium":
+      return "border-[color-mix(in_srgb,var(--warning)_28%,transparent)] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] text-[var(--warning)]";
+    case "low":
+      return "border-[color-mix(in_srgb,var(--success)_28%,transparent)] bg-[color-mix(in_srgb,var(--success)_8%,transparent)] text-[var(--success)]";
+    default:
+      return "border-[var(--border-subtle)] bg-[var(--surface-soft)] text-[var(--text-muted)]";
   }
 }
 
@@ -130,14 +124,14 @@ export default function BillPicker({
                 </span>
               </div>
               <span className="block text-xs text-[var(--text-muted)]">
-                {t("patient.billPicker.billMeta", {
+                {claim.claim_id} · {t("patient.billPicker.billMeta", {
                   claimType: claim.claim_type,
                   amount: fmtTRY2(claim.expected_total_billed_try),
                 })}
               </span>
               {hasRecoverable && (
                 <span
-                  className={`mt-1.5 inline-block rounded-full border px-2 py-0.5 text-xs font-medium ${priorityColor(
+                  className={`mt-1.5 inline-block rounded-full border px-2 py-0.5 text-xs font-medium ${priorityChipClass(
                     claim.priority,
                   )}`}
                 >
