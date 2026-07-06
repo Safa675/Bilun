@@ -39,7 +39,9 @@ def test_a0_summary_json_exists_and_tier_counts_sane() -> None:
 
 
 def test_gap_refresh_csv_columns_and_row_count() -> None:
-    assert _DEFAULT_GAP_CSV.is_file()
+    # Phase 7.4: the committed CSV was deleted (stale pre-Phase-5 artifact).
+    # The frame builder still works from live data; only the file-existence
+    # check is skipped.
     frame = build_gap_refresh_frame(
         _COVERAGE,
         manifest_path=_MANIFEST,

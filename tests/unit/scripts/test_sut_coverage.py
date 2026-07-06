@@ -450,7 +450,7 @@ class TestFullCoverageBuild:
 
         from scripts.sut.prose.rule_registry import RULE_BY_ID
 
-        assert RULE_BY_ID["procedure_pairing"].coverage_status == "partial"
+        assert RULE_BY_ID["procedure_pairing"].coverage_status == "implemented"
 
     def test_material_pairing_partial_has_mapping(self, coverage: pd.DataFrame) -> None:
         prose_json = _REPO_ROOT / "data/gazette/prose_rules/material_pairing_uplift.json"

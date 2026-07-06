@@ -459,7 +459,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="procedure_pairing",
         rule_category="procedure_pairing",
         rule_category_tr="İşlem Eşleştirme (Add-on)",
-        coverage_status="partial",
+        coverage_status="implemented",
         domain_modules=(
             "src/bilun/domain/prose_rules/procedure_addon_uplift.py",
             "src/bilun/domain/billing/claim_procedure_addon_uplift.py",
@@ -615,7 +615,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="gap_closing_misc",
         rule_category="gap_closing",
         rule_category_tr="Boşluk Kapatma (§1/§3-§6)",
-        coverage_status="partial",
+        coverage_status="implemented",
         domain_modules=(
             "src/bilun/domain/prose_rules/gap_closing.py",
             "data/gazette/prose_rules/gap_closing_misc.json",
@@ -631,7 +631,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="gap_closing_treatment_2",
         rule_category="gap_closing",
         rule_category_tr="Boşluk Kapatma (§2)",
-        coverage_status="partial",
+        coverage_status="implemented",
         domain_modules=(
             "src/bilun/domain/prose_rules/gap_closing.py",
             "data/gazette/prose_rules/gap_closing_treatment_2.json",
@@ -647,7 +647,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="dental_2_4_1",
         rule_category="dental",
         rule_category_tr="Diş (§2.4.1)",
-        coverage_status="partial",
+        coverage_status="implemented",
         domain_modules=(
             "src/bilun/domain/prose_rules/dental_2_4_1.py",
             "data/gazette/prose_rules/dental_2_4_1.json",
