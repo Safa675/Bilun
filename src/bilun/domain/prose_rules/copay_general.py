@@ -31,9 +31,38 @@ def _rules_by_service_type() -> dict[str, dict]:
     service_type-keyed dispatch. Each resolver knows its target service_type
     (``drug``, ``material``, ``ivf_treatment``, ``drug_prescription_flat``),
     so the lookup is O(1) and unblocks the 13 dormant rules structurally.
+
+    Two rules share ``service_type: "material"`` — ``1.8.3.(1).protez_ortez``
+    (external prosthesis/orthosis) and ``1.8.3.(2)`` (general materials). They
+    carry identical rate tables, so the dispatch result is the same whichever
+    is selected; we keep the FIRST (more specific, condition-gated) one and
+    surface a one-time warning if a future rule change makes the duplicates
+    diverge in rates. First-wins (not last-wins) so the condition-gated rule
+    is the authoritative entry rather than silently overwritten.
     """
     rules = _load_copay_rules().get("rules", [])
-    return {r.get("service_type", ""): r for r in rules if r.get("service_type")}
+    index: dict[str, dict] = {}
+    seen_rates: dict[str, tuple] = {}
+    for r in rules:
+        st = r.get("service_type")
+        if not st:
+            continue
+        rates = tuple(sorted((r.get("rates") or {}).items()))
+        if st in index and seen_rates.get(st) and seen_rates[st] != rates:
+            # Future divergence guard: if a rule edit makes two same-service_type
+            # rules produce different rates, flag it so dispatch stays honest.
+            import logging
+            logging.getLogger(__name__).warning(
+                "copay_general: duplicate service_type %r with divergent rates "
+                "(kept %s, dropped %s) — resolve_*_copay_rate ignores the "
+                "condition and returns a single rate; add condition-aware "
+                "dispatch if the divergence is intentional.",
+                st, index[st].get("rule_id"), r.get("rule_id"),
+            )
+        if st not in index:
+            index[st] = r
+            seen_rates[st] = rates
+    return index
 
 
 def _find_rule_by_service_type(service_type: str) -> dict | None:

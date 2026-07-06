@@ -55,6 +55,18 @@ _DENTAL_CLAIM_FLAGS: tuple[str, ...] = (
     "patient_in_first_degree_relative_of_physician",
 )
 
+# §2.4.1 board-report / signatory / kinship flags that the SUT treats as
+# "absent ⇒ False" (their negative default). When a rule gates on one of
+# these being false, an absent flag must match rather than honest-skip —
+# otherwise the default no-pay rule (e.g. 2.4.1.(2).bone_implant_no_pay_default)
+# never fires on typical lines that don't set the flag.
+_OPTIONAL_DEFAULT_FALSE_FLAGS: frozenset[str] = frozenset({
+    "medical_necessity_board_report",
+    "treating_physician_different_from_board_signatory",
+    "patient_in_first_degree_relative_of_physician",
+    "material_contains_precious_metal",
+})
+
 
 def _normalize_tr(text: str) -> str:
     folded = unicodedata.normalize("NFKD", str(text).casefold())
@@ -110,7 +122,19 @@ def _condition_matches(condition: dict[str, Any], mat: dict[str, Any]) -> bool:
         # Boolean flag resolved against the material line.
         actual = mat.get(key)
         if actual is None:
-            return False
+            # The §2.4.1 board-report / signatory flags are OPTIONAL on the
+            # claim — their regulatory default is "absent ⇒ False" (e.g. an
+            # implant with no medical-necessity board report defaults to
+            # no-pay per 2.4.1.(2).bone_implant_no_pay_default, which gates on
+            # ``medical_necessity_board_report: false``). Treating absent as
+            # False (rather than honest-skipping) lets the default no-pay rule
+            # fire on typical implant lines that never set the flag. Scoped to
+            # the known optional flags so unrelated boolean conditions keep
+            # their honesty guard.
+            if key in _OPTIONAL_DEFAULT_FALSE_FLAGS:
+                actual = False
+            else:
+                return False
         if bool(actual) != bool(expected):
             return False
     return True

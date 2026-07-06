@@ -517,6 +517,32 @@ def _validate_claim_via_context(claim: dict[str, Any]) -> ClaimValidationResult:
             )
             if severity == "error":
                 n_drug_errors += 1
+        else:
+            # Catch-all: never silently drop a violation from a motor the
+            # unified core runs. Before this branch, any rule tag outside the
+            # explicit set above (gap_closing_*, gazette_repricing,
+            # material_pairing_uplift, dental_2_4_1, material_preauth_ek3c1,
+            # material_miat_ek3c2, drg_package_adequacy, procedure_pairing)
+            # was computed by analyze_claim then discarded here, so /validate-claim
+            # under-reported. The risk_amount/savings_try split follows the
+            # material_outcome convention (no_pay → risk, must_bill → savings).
+            result.violations.append(
+                RuleViolation(
+                    rule=rule,
+                    severity=severity,
+                    material_name=v.get("material_name", ""),
+                    message=v.get("message", ""),
+                    risk_amount=risk,
+                    savings_try=savings,
+                    details=v,
+                )
+            )
+            if outcome == "no_pay":
+                result.total_risk_try = round(result.total_risk_try + risk, 2)
+            elif savings or risk:
+                result.total_savings_try = round(
+                    result.total_savings_try + (savings or risk), 2
+                )
 
     result.n_bundling_violations = n_bundling
     result.n_exclusion_violations = n_exclusion

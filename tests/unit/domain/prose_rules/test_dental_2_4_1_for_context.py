@@ -324,3 +324,46 @@ def test_procedure_category_falls_back_to_material_specialty_category() -> None:
 
     assert len(violations) == 1
     assert "precious_metal" in violations[0]["rule_id"]
+
+
+def test_bone_implant_no_pay_fires_when_board_report_absent() -> None:
+    """W2.5h (MEDIUM, Bugbot): ``2.4.1.(2).bone_implant_no_pay_default`` gates
+    on ``medical_necessity_board_report: false``. A typical implant line never
+    sets the flag, so the surfaced material dict lacks the key. Before the fix
+    ``_condition_matches`` honest-skipped on the absent key and the default
+    no-pay rule NEVER fired — defeating the rule's purpose (implants default to
+    no-pay absent a board report). Now absent optional dental flags are treated
+    as ``False``, matching the regulatory default.
+    """
+    material = _make_material_line(name="kemik içi implant")
+    procedure = _make_procedure_line(procedure_category="dental_implant")
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+
+    violations = check_dental_2_4_1_for_context(ctx)
+
+    assert len(violations) == 1, "absent board-report flag must fire default no-pay"
+    v = violations[0]
+    assert v["rule_id"] == "2.4.1.(2).bone_implant_no_pay_default"
+    assert v["billable"] is False
+    assert v["material_outcome"] == "no_pay"
+    assert v["severity"] == "error"
+
+
+def test_bone_implant_with_explicit_board_report_no_default_no_pay() -> None:
+    """W2.5h complement: when ``medical_necessity_board_report`` is explicitly
+    ``True`` (board report present), the default no-pay rule must NOT fire.
+    Confirms the absent→False mapping doesn't over-fire on present flags.
+    """
+    material = _make_material_line(name="kemik içi implant")
+    object.__setattr__(material, "medical_necessity_board_report", True)
+    procedure = _make_procedure_line(procedure_category="dental_implant")
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+
+    violations = check_dental_2_4_1_for_context(ctx)
+
+    default_no_pay = [
+        v for v in violations
+        if v.get("rule_id") == "2.4.1.(2).bone_implant_no_pay_default"
+    ]
+    assert default_no_pay == []
+

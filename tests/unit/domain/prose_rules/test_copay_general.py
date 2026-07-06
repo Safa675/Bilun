@@ -88,3 +88,27 @@ def test_batch2_academy_exemption_rules_waive_visit_drug_material() -> None:
     assert harp["gate_b_sources"] == ["C000373"]
     assert polis["action"]["waives_sections"] == ["1.8.1", "1.8.2", "1.8.3"]
     assert harp["action"]["waives_sections"] == ["1.8.1", "1.8.2", "1.8.3"]
+
+
+def test_material_service_type_duplicate_does_not_break_dispatch() -> None:
+    """W2.5i (LOW, Bugbot): two rules share service_type='material'
+    (1.8.3.(1).protez_ortez and 1.8.3.(2)). The dict-comprehension index used
+    last-wins, silently dropping 1.8.3.(1).protez_ortez. Both carry identical
+    rate tables so dispatch output is unaffected, but the index must be
+    deterministic (first-wins, keeping the more-specific condition-gated rule)
+    and must not crash on the duplicate. This test pins the rate output and
+    guards against a future rule edit that diverges the duplicate rates.
+    """
+    from src.bilun.domain.prose_rules.copay_general import (
+        _rules_by_service_type,
+        resolve_material_copay_rate,
+    )
+
+    index = _rules_by_service_type()
+    # The material key is present (not lost to dedup) and deterministic.
+    assert "material" in index
+    # Both duplicate rules produce the same rates, so resolve_* returns the
+    # canonical rate regardless of which entry the index kept.
+    assert resolve_material_copay_rate("sgk_income_recipient") == 0.1
+    assert resolve_material_copay_rate("other") == 0.2
+

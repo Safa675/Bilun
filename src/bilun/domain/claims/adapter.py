@@ -39,6 +39,55 @@ from src.bilun.domain.claims.models import (
 )
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 
+# Material-name keyword → §2.4.1 specialty_category. The dental evaluator's
+# _for_context shim falls back to specialty_category when a material has no
+# linked procedure line, so deriving this on the dict path lets the
+# dental_implant / dental_restoration gated rules fire from /validate-claim.
+_DENTAL_SPECIALTY_KEYWORDS: tuple[tuple[str, str], ...] = (
+    ("implant", "dental_implant"),
+    ("implant", "dental_implant"),  # also matches "implant" in compound names
+    ("protez", "dental_restoration"),
+    ("ortez", "dental_restoration"),
+    ("kanal tedavisi", "dental_restoration"),
+    ("kuron", "dental_restoration"),
+    ("dolgu", "dental_restoration"),
+)
+
+
+def _coerce_bool(value: Any) -> bool | None:
+    """Coerce a dict-supplied boolean flag to a real bool.
+
+    JSON inputs frequently carry booleans as strings ("false"/"true"), which
+    are truthy in Python and would make condition evaluators mis-fire. ``None``
+    (flag absent) is preserved so downstream honesty guards can distinguish
+    "explicitly false" from "not supplied". Recognized false-y strings:
+    "false", "0", "no", "hayir", "" (and any casings).
+    """
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    text = str(value).strip().lower()
+    if text in {"false", "0", "no", "hayir", "off", ""}:
+        return False
+    return True
+
+
+def _derive_specialty_category(material_name: str) -> str:
+    """Infer a §2.4.1 specialty_category from the material name.
+
+    Returns ``"general"`` for non-dental materials (the legacy default) so
+    nothing changes for existing consumable claims. Dental implant/prosthesis
+    names map to the categories the dental rules gate on.
+    """
+    lowered = (material_name or "").lower()
+    for keyword, category in _DENTAL_SPECIALTY_KEYWORDS:
+        if keyword in lowered:
+            return category
+    return "general"
+
 
 def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimContext:
     """Build a PatientClaimContext from a validate_claim-style dict.
@@ -100,7 +149,12 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
             material_code=code,
             material_name=name,
             material_type="consumable",
-            specialty_category="general",
+            # Derive specialty_category from the material name so §2.4.1 dental
+            # rules (gated on procedure_category, which falls back to
+            # specialty_category — see dental_2_4_1.check_dental_2_4_1_for_context)
+            # can fire on the dict path. "general" stays the default for
+            # non-dental consumables.
+            specialty_category=_derive_specialty_category(name),
             quantity=quantity,
             unit_price_try=unit_price,
             billed_amount_try=billed,
@@ -109,13 +163,17 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
             requires_pre_auth=bool(mat.get("requires_pre_auth", False)),
             denial_reason_expected="",
             rule_trace_expected="",
-            # W2.2: dental evaluator flags (passed through when present in dict).
-            medical_necessity_board_report=mat.get("medical_necessity_board_report"),
-            treating_physician_different_from_board_signatory=mat.get(
-                "treating_physician_different_from_board_signatory"
+            # W2.2: dental evaluator flags. Coerce to real bool — JSON inputs
+            # often carry "false"/"true" as strings, which are truthy in Python
+            # and would make _condition_matches mis-evaluate §2.4.1 gates.
+            medical_necessity_board_report=_coerce_bool(
+                mat.get("medical_necessity_board_report")
             ),
-            patient_in_first_degree_relative_of_physician=mat.get(
-                "patient_in_first_degree_relative_of_physician"
+            treating_physician_different_from_board_signatory=_coerce_bool(
+                mat.get("treating_physician_different_from_board_signatory")
+            ),
+            patient_in_first_degree_relative_of_physician=_coerce_bool(
+                mat.get("patient_in_first_degree_relative_of_physician")
             ),
         )
     materials = _enrich_material_regulatory_flags(materials)
