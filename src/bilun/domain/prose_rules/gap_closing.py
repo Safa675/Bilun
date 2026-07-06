@@ -84,7 +84,16 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
     for key, expected in condition.items():
         if key.endswith(_SET_PREDICATE_SUFFIXES):
             base = key[: -_suffix_len(key)]
-            available = context.get(base)
+            # Prefer the explicit <base>_any / <base>_in collection when the
+            # context builder supplied one; fall back to the base field so a
+            # single-valued claim still matches. A bare scalar base field is
+            # a valid (single-element) collection, but a multi-valued claim
+            # MUST surface its full set under the *_any key — otherwise rules
+            # like procedure_category_any silently honest-skip on claims that
+            # genuinely carry the listed category.
+            available = context.get(key)
+            if available is None:
+                available = context.get(base)
             if available is None:
                 return False
             # Normalize to a set for membership testing regardless of shape.
@@ -174,3 +183,196 @@ def _evaluate(ruleset: dict[str, Any], context: dict[str, Any]) -> list[dict[str
             continue
         violations.append(_violation_from_rule(rule, ruleset_id))
     return violations
+
+
+def _derive_payment_method_path(
+    header: Any,
+    procedures: list[Any],
+    *,
+    care_setting: str,
+) -> str | None:
+    """Derive the §2.2.2.B claim-level payment *path* the gap-closing rules gate on.
+
+    The rules use a different vocabulary from the procedure-level
+    ``package``/``itemized`` decision: ``diagnosis_based`` = tanıya dayalı
+    (EK-2/C DRG package path), ``fee_for_service`` = hizmet başına (EK-2/B
+    itemized path). These map cleanly onto the claim-aggregated
+    ``PaymentMethodKind`` already computed by ``care_setting_review`` /
+    ``claim_strategy``:
+
+    - ``DRG_MANDATORY`` / ``DRG_OVERRIDABLE`` → ``diagnosis_based``
+      (both are EK-2/C package paths; overridable still bills as package
+      unless the third-tier override is exercised)
+    - ``ITEMIZED`` → ``fee_for_service``
+
+    Returns ``None`` when there are no classifiable procedure lines or the
+    kind cannot be resolved — the caller MUST leave ``payment_method`` unset
+    in that case so ``_condition_matches`` honesty-skips rather than guessing.
+    """
+    if procedures:
+        # Local import to avoid an import cycle: care_setting_review imports
+        # from this package's neighbors and would otherwise pull in heavy
+        # catalog machinery at module load time.
+        from .care_setting_review import _resolve_claim_kind
+
+        kind = _resolve_claim_kind(header, procedures, care_setting=care_setting)
+        if kind in {"DRG_MANDATORY", "DRG_OVERRIDABLE"}:
+            return "diagnosis_based"
+        if kind == "ITEMIZED":
+            return "fee_for_service"
+        # MISSING_INPUTS / NOT_IN_SUT / None → fall through to the header signal.
+    # Header-only fallback: package_candidate=True is a weaker but real signal
+    # that a DRG package line is present on the claim (set by the synthetic
+    # generators when an EK-2/C package line exists).
+    if getattr(header, "package_candidate", None) is True:
+        return "diagnosis_based"
+    return None
+
+
+def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
+    """Build the flat claim-context dict from a PatientClaimContext.
+
+    Maps ``ClaimHeader`` fields + derives the most common gap-closing flags
+    from existing claim data. Many of the ~118 condition keys will be absent
+    (honest skip via ``_condition_matches``). The keys surfaced here cover the
+    most frequent conditions: ``procedure_category``, ``is_emergency``,
+    ``care_setting``, ``payment_method``, ``facility_*``, ``procedure_code_any``,
+    ``drug_category``, ``health_report_present``.
+    """
+    if not ctx.claims:
+        return {}
+    header = ctx.claims[0]
+    # Scope line aggregations to the first claim only. A PatientClaimContext
+    # can carry multiple bills for one patient; aggregating every line while
+    # reading header fields from claims[0] would let a second bill's
+    # procedures/drugs/materials contaminate this claim's derived flags
+    # (procedure_category_any, payment_method, drug_category, ...). This
+    # mirrors the claim-scoping the gazette_repricing / material_uplift
+    # wrappers apply.
+    claim_id = getattr(header, "claim_id", None)
+
+    def _lines_for_claim(attr: str) -> list[Any]:
+        return [
+            line for line in (getattr(ctx, attr, ()) or ())
+            if getattr(line, "claim_id", None) == claim_id
+        ]
+
+    context: dict[str, Any] = {
+        "facility_tier": header.facility_tier or "",
+        "provider_type": header.provider_type or "",
+        "claim_type": header.claim_type or "",
+    }
+    # Care setting: inpatient (yatis) vs outpatient (ayakta/poliklinik) vs
+    # day-case (gunubirlik, billed as outpatient per SUT §2.2). The
+    # gap-closing JSON expects "inpatient" / "outpatient"; fall back to
+    # "outpatient" for unrecognized outpatient-style visit types rather than
+    # leaking the raw Turkish token, which _resolve_claim_kind would then
+    # mis-classify as inpatient.
+    claim_type_lower = (header.claim_type or "").lower()
+    if "yatis" in claim_type_lower or "inpatient" in claim_type_lower:
+        context["care_setting"] = "inpatient"
+    elif (
+        "ayakta" in claim_type_lower
+        or "outpatient" in claim_type_lower
+        or "poliklinik" in claim_type_lower
+        or "gunubirlik" in claim_type_lower
+    ):
+        context["care_setting"] = "outpatient"
+    else:
+        context["care_setting"] = claim_type_lower or "outpatient"
+    # Emergency: department or scenario_tag carries emergency signal.
+    dept = (header.department or "").lower()
+    tag = (header.scenario_tag or "").lower()
+    context["is_emergency"] = (
+        "acil" in dept or "emergency" in dept or "acil" in tag or "emergency" in tag
+    )
+    # Facility contracting: uncontracted if provider_type indicates it.
+    # The Turkish contracted/uncontracted marker is "sozlesmesiz" (single s);
+    # the synthetic generators use exactly this spelling — see
+    # scripts/synthetic/gen/materials_flags.py ("acil_sozlesmesiz_kurum").
+    context["facility_uncontracted"] = header.provider_type in ("uncontracted", "sozlesmesiz")
+    context["facility_contracted"] = header.provider_type not in ("uncontracted", "sozlesmesiz", "")
+    # Health report: drug lines carry board-report presence.
+    drug_lines = _lines_for_claim("drug_lines")
+    if drug_lines:
+        reports = [d for d in drug_lines if d.drug_specialty_board_report_present]
+        context["health_report_present"] = bool(reports)
+    # Procedure-derived fields.
+    procedure_lines = _lines_for_claim("procedure_lines")
+    if procedure_lines:
+        categories = {p.procedure_category for p in procedure_lines if p.procedure_category}
+        codes = {p.procedure_code for p in procedure_lines if p.procedure_code}
+        # Surface BOTH shapes so every predicate form can match:
+        # - the bare scalar field (procedure_category / procedure_code) is read
+        #   by exact-equality rules (11 gap-closing rules use bare
+        #   procedure_category); when the claim has multiple distinct values we
+        #   cannot pick one truthfully, so we leave it unset and let those rules
+        #   honest-skip rather than mis-attribute.
+        # - the *_any collection key is read by membership predicates
+        #   (procedure_category_any / procedure_code_any); it carries the full
+        #   set so any listed value matches.
+        if categories:
+            context["procedure_category_any"] = sorted(categories)
+            if len(categories) == 1:
+                context["procedure_category"] = next(iter(categories))
+        if codes:
+            context["procedure_code_any"] = sorted(codes)
+            if len(codes) == 1:
+                context["procedure_code"] = next(iter(codes))
+    # Payment method (§2.2.2.B path): derived from the claim-aggregated
+    # PaymentMethodKind, NOT from package_candidate directly. The kind-based
+    # derivation is the canonical SUT §2.2 evaluator's output; package_candidate
+    # is only a header-level fallback. See _derive_payment_method_path.
+    payment_method = _derive_payment_method_path(
+        header, procedure_lines, care_setting=context["care_setting"]
+    )
+    if payment_method is not None:
+        context["payment_method"] = payment_method
+    # Drug-derived fields.
+    if drug_lines:
+        drug_categories = set()
+        for d in drug_lines:
+            cat = getattr(d, "drug_category", None) or ""
+            if cat:
+                drug_categories.add(cat)
+        if drug_categories:
+            context["drug_category"] = sorted(drug_categories)[:1][0]
+    # Material-derived fields.
+    material_lines = _lines_for_claim("material_lines")
+    if material_lines:
+        material_categories = {m.specialty_category for m in material_lines if m.specialty_category}
+        if material_categories:
+            context["material_category"] = sorted(material_categories)[:1][0]
+    return context
+
+
+def check_gap_closing_misc_for_context(ctx: Any) -> list[dict[str, Any]]:
+    """Evaluate §1.5/§1.6/§3-§6 gap-closing rules against a PatientClaimContext.
+
+    Wiredness epic W1.3 — bridges the gap_closing evaluator (which takes a flat
+    dict) to the typed PatientClaimContext via ``_build_gap_closing_context``.
+
+    Contract — single-claim context: the builder evaluates ``ctx.claims[0]``
+    only. ``analyze_claim`` is invoked from two places: the ``/validate-claim``
+    dict adapter (inherently single-claim) and the billing orchestrator, which
+    calls it once per claim via ``slice_for_claim`` (see ``lab_bill_merge.py``
+    and ``build_bill_claim_context``). A whole-patient ``PatientClaimContext``
+    carrying multiple claims is never passed here in production; callers that
+    need every claim evaluated must iterate ``ctx.claims`` and slice. The
+    gazette_repricing / material_uplift wrappers share this contract.
+    """
+    context = _build_gap_closing_context(ctx)
+    if not context:
+        return []
+    return check_gap_closing_misc(context)
+
+
+def check_gap_closing_treatment_for_context(ctx: Any) -> list[dict[str, Any]]:
+    """Evaluate §2.2/§2.3/§2.5 treatment gap-closing rules against a PatientClaimContext.
+
+    Wiredness epic W1.3 — bridges the gap_closing evaluator to the typed context.
+    """
+    context = _build_gap_closing_context(ctx)
+    if not context:
+        return []
+    return check_gap_closing_treatment(context)

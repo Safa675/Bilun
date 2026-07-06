@@ -39,12 +39,33 @@ _MAPPABLE = {"material_name_any", "procedure_category", "procedure_category_any"
 # so rules whose flag is absent are honestly skipped by ``_condition_matches``
 # rather than guessed — the same guard the module already applies to the 7
 # non-wireable §2.4.1 rules.
+#
+# ``material_contains_precious_metal`` is the exception: the
+# ``precious_metal_no_pay`` rule already gates on its own ``material_name_any``
+# keyword list (altın/platin/…), so the boolean flag is a redundant mirror of
+# that keyword match. Because ``MaterialClaimLine`` does not carry the flag,
+# ``hasattr`` always returns False in production and the rule would never fire.
+# The ``_for_context`` shim therefore computes it locally from the rule's
+# authoritative keyword list (see ``_precious_metal_keywords``) — no model
+# change required. The other three flags stay ``hasattr``-gated.
 _DENTAL_CLAIM_FLAGS: tuple[str, ...] = (
     "material_contains_precious_metal",
     "medical_necessity_board_report",
     "treating_physician_different_from_board_signatory",
     "patient_in_first_degree_relative_of_physician",
 )
+
+# §2.4.1 board-report / signatory / kinship flags that the SUT treats as
+# "absent ⇒ False" (their negative default). When a rule gates on one of
+# these being false, an absent flag must match rather than honest-skip —
+# otherwise the default no-pay rule (e.g. 2.4.1.(2).bone_implant_no_pay_default)
+# never fires on typical lines that don't set the flag.
+_OPTIONAL_DEFAULT_FALSE_FLAGS: frozenset[str] = frozenset({
+    "medical_necessity_board_report",
+    "treating_physician_different_from_board_signatory",
+    "patient_in_first_degree_relative_of_physician",
+    "material_contains_precious_metal",
+})
 
 
 def _normalize_tr(text: str) -> str:
@@ -56,6 +77,24 @@ def _normalize_tr(text: str) -> str:
 def load_dental_2_4_1_rules() -> dict[str, Any]:
     with _RULES_PATH.open(encoding="utf-8") as handle:
         return json.load(handle)
+
+
+@lru_cache(maxsize=1)
+def _precious_metal_keywords() -> tuple[str, ...]:
+    """Keyword list driving ``2.4.1.(1).precious_metal_no_pay``.
+
+    Pulled from the rule's own ``material_name_any`` condition so the local
+    ``material_contains_precious_metal`` computation stays in lockstep with the
+    authoritative rule text (a single source of truth — no second hand-maintained
+    keyword list).
+    """
+    keywords: list[str] = []
+    for rule in load_dental_2_4_1_rules().get("rules") or []:
+        if rule.get("rule_id") == "2.4.1.(1).precious_metal_no_pay":
+            condition = rule.get("condition") or {}
+            keywords = list(condition.get("material_name_any") or [])
+            break
+    return tuple(keywords)
 
 
 def _material_name_matches(material_name: str, keywords: list[str]) -> bool:
@@ -83,22 +122,46 @@ def _condition_matches(condition: dict[str, Any], mat: dict[str, Any]) -> bool:
         # Boolean flag resolved against the material line.
         actual = mat.get(key)
         if actual is None:
-            return False
+            # The §2.4.1 board-report / signatory flags are OPTIONAL on the
+            # claim — their regulatory default is "absent ⇒ False" (e.g. an
+            # implant with no medical-necessity board report defaults to
+            # no-pay per 2.4.1.(2).bone_implant_no_pay_default, which gates on
+            # ``medical_necessity_board_report: false``). Treating absent as
+            # False (rather than honest-skipping) lets the default no-pay rule
+            # fire on typical implant lines that never set the flag. Scoped to
+            # the known optional flags so unrelated boolean conditions keep
+            # their honesty guard.
+            if key in _OPTIONAL_DEFAULT_FALSE_FLAGS:
+                actual = False
+            else:
+                return False
         if bool(actual) != bool(expected):
             return False
     return True
 
 
-def _violation_from_rule(rule: dict[str, Any]) -> dict[str, Any]:
+def _violation_from_rule(rule: dict[str, Any], mat: dict[str, Any] | None = None) -> dict[str, Any]:
     action = rule.get("action") or {}
     billable = bool(action.get("billable", True))
+    # risk_amount follows the convention used by material_bundling /
+    # specialty_materials: for a no_pay outcome the provider risks the billed
+    # amount, so surface it as risk. Other outcomes stay 0 (no savings/risk
+    # signal is meaningful without a pricing decision).
+    risk_amount = 0.0
+    if not billable and mat is not None:
+        risk_amount = float(
+            mat.get("unit_price")
+            or mat.get("billed_amount_try")
+            or mat.get("billed_amount")
+            or 0
+        )
     return {
         "rule": "dental_2_4_1",
         "severity": action.get("severity", "warning"),
-        "material_name": rule.get("rule_id", ""),
+        "material_name": mat.get("name") or mat.get("material_name") or rule.get("rule_id", "") if mat else rule.get("rule_id", ""),
         "message": action.get("denial_tr") or action.get("payment_tr") or rule.get("rule_id", ""),
         "savings_try": 0.0,
-        "risk_amount": 0.0,
+        "risk_amount": risk_amount,
         "sut_section": rule.get("sut_section", "2.4.1"),
         "rule_id": rule.get("rule_id", ""),
         "billable": billable,
@@ -118,7 +181,7 @@ def check_dental_2_4_1_prose(materials: list[dict[str, Any]]) -> list[dict[str, 
             condition = rule.get("condition") or {}
             if not _condition_matches(condition, mat):
                 continue
-            violations.append(_violation_from_rule(rule))
+            violations.append(_violation_from_rule(rule, mat))
             break
     return violations
 
@@ -156,6 +219,7 @@ def check_dental_2_4_1_for_context(ctx: Any) -> list[dict[str, Any]]:
     }
 
     materials: list[dict[str, Any]] = []
+    precious_keywords = _precious_metal_keywords()
     for line in ctx.material_lines:
         row: dict[str, Any] = {
             "name": line.material_name,
@@ -172,6 +236,17 @@ def check_dental_2_4_1_for_context(ctx: Any) -> list[dict[str, Any]]:
         for flag in _DENTAL_CLAIM_FLAGS:
             if hasattr(line, flag):
                 row[flag] = getattr(line, flag)
+        # ``material_contains_precious_metal`` is not a first-class
+        # ``MaterialClaimLine`` field (the ``hasattr`` loop above never sees it),
+        # so compute it locally from the ``precious_metal_no_pay`` rule's own
+        # ``material_name_any`` keyword list. The keyword match is already done
+        # by ``_material_name_matches``; this flag is a redundant mirror of it,
+        # surfaced here so ``_condition_matches`` does not skip the rule on a
+        # missing boolean condition.
+        if precious_keywords and _material_name_matches(
+            str(line.material_name or ""), list(precious_keywords)
+        ):
+            row["material_contains_precious_metal"] = True
         materials.append(row)
 
     return check_dental_2_4_1_prose(materials)

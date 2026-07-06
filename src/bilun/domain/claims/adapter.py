@@ -39,6 +39,74 @@ from src.bilun.domain.claims.models import (
 )
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 
+# Material-name keyword → §2.4.1 specialty_category. The dental evaluator's
+# _for_context shim falls back to specialty_category when a material has no
+# linked procedure line, so deriving this on the dict path lets the
+# dental_implant / dental_restoration gated rules fire from /validate-claim.
+#
+# Keywords are deliberately NARROW and dental-specific. Generic tokens like
+# "implant" (also cardiac pacemakers, orthopedic joint implants), "protez"
+# (also orthopedic prosthetics), and "ortez" (orthopedic orthosis — NOT
+# dental) are excluded because they misclassify non-dental materials and would
+# spuriously fire §2.4.1 dental no-pay rules. Only multi-word phrases that are
+# unambiguously dental procedures are mapped; everything else keeps the safe
+# "general" default so the dental rules simply honest-skip on the dict path
+# (they still fire correctly when procedure lines ARE linked, which carries
+# the authoritative procedure_category).
+_DENTAL_SPECIALTY_KEYWORDS: tuple[tuple[str, str], ...] = (
+    ("dis implant", "dental_implant"),          # "diş implant" (folded) — unambiguous dental
+    ("kanal tedavisi", "dental_restoration"),   # root canal — unambiguously dental
+)
+
+
+def _coerce_bool(value: Any) -> bool | None:
+    """Coerce a dict-supplied boolean flag to a real bool.
+
+    JSON inputs frequently carry booleans as strings ("false"/"true"), which
+    are truthy in Python and would make condition evaluators mis-fire. ``None``
+    (flag absent) is preserved so downstream honesty guards can distinguish
+    "explicitly false" from "not supplied". Recognized false-y strings:
+    "false", "0", "no", "hayir", "" (and any casings).
+    """
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    text = str(value).strip().lower()
+    if text in {"false", "0", "no", "hayir", "off", ""}:
+        return False
+    return True
+
+
+def _fold_tr(text: str) -> str:
+    """ASCII-fold Turkish chars so keyword matching is accent-insensitive.
+
+    Handles the Turkish-specific letters NFKD decomposition leaves behind
+    (dotless ``ı`` and dotted ``İ``) in addition to stripping combining marks.
+    """
+    import unicodedata
+    folded = unicodedata.normalize("NFKD", (text or "").casefold())
+    folded = folded.replace("ı", "i").replace("İ", "i")
+    return "".join(ch for ch in folded if not unicodedata.combining(ch))
+
+
+def _derive_specialty_category(material_name: str) -> str:
+    """Infer a §2.4.1 specialty_category from the material name.
+
+    Returns ``"general"`` for non-dental materials (the legacy default) so
+    nothing changes for existing consumable claims. Only unambiguous
+    multi-word dental procedure phrases are mapped (see
+    ``_DENTAL_SPECIALTY_KEYWORDS`` for why single tokens like "implant" are
+    excluded). Matching is Turkish-accent-insensitive.
+    """
+    folded = _fold_tr(material_name)
+    for keyword, category in _DENTAL_SPECIALTY_KEYWORDS:
+        if _fold_tr(keyword) in folded:
+            return category
+    return "general"
+
 
 def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimContext:
     """Build a PatientClaimContext from a validate_claim-style dict.
@@ -100,7 +168,12 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
             material_code=code,
             material_name=name,
             material_type="consumable",
-            specialty_category="general",
+            # Derive specialty_category from the material name so §2.4.1 dental
+            # rules (gated on procedure_category, which falls back to
+            # specialty_category — see dental_2_4_1.check_dental_2_4_1_for_context)
+            # can fire on the dict path. "general" stays the default for
+            # non-dental consumables.
+            specialty_category=_derive_specialty_category(name),
             quantity=quantity,
             unit_price_try=unit_price,
             billed_amount_try=billed,
@@ -109,6 +182,18 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
             requires_pre_auth=bool(mat.get("requires_pre_auth", False)),
             denial_reason_expected="",
             rule_trace_expected="",
+            # W2.2: dental evaluator flags. Coerce to real bool — JSON inputs
+            # often carry "false"/"true" as strings, which are truthy in Python
+            # and would make _condition_matches mis-evaluate §2.4.1 gates.
+            medical_necessity_board_report=_coerce_bool(
+                mat.get("medical_necessity_board_report")
+            ),
+            treating_physician_different_from_board_signatory=_coerce_bool(
+                mat.get("treating_physician_different_from_board_signatory")
+            ),
+            patient_in_first_degree_relative_of_physician=_coerce_bool(
+                mat.get("patient_in_first_degree_relative_of_physician")
+            ),
         )
     materials = _enrich_material_regulatory_flags(materials)
 

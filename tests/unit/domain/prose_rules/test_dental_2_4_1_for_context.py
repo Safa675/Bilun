@@ -172,6 +172,84 @@ def test_dental_precious_metal_violation_surfaced_from_context() -> None:
     assert v["sut_section"] == "2.4.1"
 
 
+def test_precious_metal_fires_without_model_flag() -> None:
+    """W1.1 dead-wire fix: the rule must fire even when
+    ``material_contains_precious_metal`` is NOT set on ``MaterialClaimLine``.
+
+    ``MaterialClaimLine`` does not carry the flag (it is not a first-class
+    field — see ``claims/models.py``), so the ``hasattr`` copy-through in the
+    shim never sees it. Before the fix the ``precious_metal_no_pay`` rule's
+    boolean condition was therefore absent and ``_condition_matches`` skipped
+    it: 0 of 11 rules fired. The shim now computes the flag locally from the
+    rule's own ``material_name_any`` keyword list, so a material named
+    "altın köprü" (gold bridge) — with NO model-level flag — must still surface
+    the violation.
+    """
+    # Build the line WITHOUT the artificial object.__setattr__ flag to prove the
+    # shim's local computation is what drives the match, not a model attribute.
+    material = MaterialClaimLine(
+        material_line_id="ML-DENTAL-NOFLAG",
+        claim_id="C1",
+        procedure_line_id="PL-DENTAL-1",
+        patient_id="P1",
+        material_date=date(2026, 1, 1),
+        material_code="",
+        material_name="altın köprü",
+        material_type="consumable",
+        specialty_category="general",
+        quantity=1,
+        unit_price_try=Decimal("500"),
+        billed_amount_try=Decimal("500"),
+        expected_payable_try=Decimal("500"),
+        is_bundled=False,
+        requires_pre_auth=False,
+        denial_reason_expected="",
+        rule_trace_expected="",
+    )
+    assert not hasattr(material, "material_contains_precious_metal")
+    procedure = _make_procedure_line(procedure_category="dental_restoration")
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+
+    violations = check_dental_2_4_1_for_context(ctx)
+
+    assert len(violations) == 1, (
+        "precious-metal rule must fire from the local keyword computation, "
+        "not from a model-level flag"
+    )
+    assert violations[0]["rule_id"] == "2.4.1.(1).precious_metal_no_pay"
+
+
+def test_composite_filling_emits_no_violation() -> None:
+    """A non-precious dental material ("kompozit dolgu" / composite filling)
+    must NOT trip the precious-metal rule — its name matches none of the
+    ``material_name_any`` keywords, so the local computation leaves the flag
+    unset and ``_condition_matches`` honestly skips the rule.
+    """
+    material = MaterialClaimLine(
+        material_line_id="ML-DENTAL-CLEAN",
+        claim_id="C1",
+        procedure_line_id="PL-DENTAL-1",
+        patient_id="P1",
+        material_date=date(2026, 1, 1),
+        material_code="",
+        material_name="kompozit dolgu",
+        material_type="consumable",
+        specialty_category="general",
+        quantity=1,
+        unit_price_try=Decimal("500"),
+        billed_amount_try=Decimal("500"),
+        expected_payable_try=Decimal("500"),
+        is_bundled=False,
+        requires_pre_auth=False,
+        denial_reason_expected="",
+        rule_trace_expected="",
+    )
+    procedure = _make_procedure_line(procedure_category="dental_restoration")
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+
+    assert check_dental_2_4_1_for_context(ctx) == []
+
+
 def test_dental_turkish_normalization_in_name_match() -> None:
     """``altın`` (Turkish dotless i / diacritics) must normalize-match the
     precious-metal keyword list — the same assertion as
@@ -246,3 +324,68 @@ def test_procedure_category_falls_back_to_material_specialty_category() -> None:
 
     assert len(violations) == 1
     assert "precious_metal" in violations[0]["rule_id"]
+
+
+def test_bone_implant_no_pay_fires_when_board_report_absent() -> None:
+    """W2.5h (MEDIUM, Bugbot): ``2.4.1.(2).bone_implant_no_pay_default`` gates
+    on ``medical_necessity_board_report: false``. A typical implant line never
+    sets the flag, so the surfaced material dict lacks the key. Before the fix
+    ``_condition_matches`` honest-skipped on the absent key and the default
+    no-pay rule NEVER fired — defeating the rule's purpose (implants default to
+    no-pay absent a board report). Now absent optional dental flags are treated
+    as ``False``, matching the regulatory default.
+    """
+    material = _make_material_line(name="kemik içi implant")
+    procedure = _make_procedure_line(procedure_category="dental_implant")
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+
+    violations = check_dental_2_4_1_for_context(ctx)
+
+    assert len(violations) == 1, "absent board-report flag must fire default no-pay"
+    v = violations[0]
+    assert v["rule_id"] == "2.4.1.(2).bone_implant_no_pay_default"
+    assert v["billable"] is False
+    assert v["material_outcome"] == "no_pay"
+    assert v["severity"] == "error"
+
+
+def test_dental_no_pay_surfaces_billed_amount_as_risk() -> None:
+    """W2.5l (MEDIUM, Bugbot): no_pay dental violations must surface the billed
+    amount as ``risk_amount`` (matching material_bundling / specialty_materials
+    convention) so the W2.5e projection catch-all aggregates it into
+    ``total_risk_try``. Before the fix dental risk_amount was always 0, so a
+    no_pay dental error marked the claim invalid but contributed nothing to
+    the risk headline.
+    """
+    material = _make_material_line(name="kemik içi implant")  # billed 500 (fixture)
+    procedure = _make_procedure_line(procedure_category="dental_implant")
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+
+    violations = check_dental_2_4_1_for_context(ctx)
+
+    v = violations[0]
+    assert v["material_outcome"] == "no_pay"
+    # The fixture's MaterialClaimLine carries billed_amount_try = 500; the
+    # _for_context shim surfaces unit_price = float(billed_amount_try).
+    assert v["risk_amount"] == 500.0
+
+
+
+def test_bone_implant_with_explicit_board_report_no_default_no_pay() -> None:
+    """W2.5h complement: when ``medical_necessity_board_report`` is explicitly
+    ``True`` (board report present), the default no-pay rule must NOT fire.
+    Confirms the absent→False mapping doesn't over-fire on present flags.
+    """
+    material = _make_material_line(name="kemik içi implant")
+    object.__setattr__(material, "medical_necessity_board_report", True)
+    procedure = _make_procedure_line(procedure_category="dental_implant")
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+
+    violations = check_dental_2_4_1_for_context(ctx)
+
+    default_no_pay = [
+        v for v in violations
+        if v.get("rule_id") == "2.4.1.(2).bone_implant_no_pay_default"
+    ]
+    assert default_no_pay == []
+
