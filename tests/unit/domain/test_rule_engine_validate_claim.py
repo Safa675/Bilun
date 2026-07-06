@@ -291,6 +291,54 @@ def test_validate_claim_via_context_does_not_drop_unknown_rule_tags(monkeypatch)
     surfaced_tags = {v.rule for v in result.violations}
     assert "gap_closing_misc" in surfaced_tags, "gap_closing violation must not be dropped"
     assert "dental_2_4_1" in surfaced_tags, "dental violation must not be dropped"
-    # no_pay outcome risk must aggregate.
+    # no_pay outcome risk must aggregate into total_risk_try, not savings.
     assert result.total_risk_try == 50.0
+    assert result.total_savings_try == 0.0, "no_pay risk must not inflate savings"
+
+
+def test_validate_claim_catch_all_does_not_inflate_savings_with_risk(monkeypatch) -> None:
+    """W2.5m (MEDIUM, Bugbot): the catch-all must not fold risk_amount into
+    total_savings_try for non-no_pay outcomes. A review-only finding (e.g.
+    gazette_repricing with risk_amount set but material_outcome != no_pay)
+    previously added (savings or risk) to savings, inflating the headline.
+    Now savings and risk are distinct: only genuine savings_try feeds
+    total_savings_try.
+    """
+    from src.bilun.domain.rule_engine import _validate_claim_via_context
+
+    def fake_analyze_claim(ctx):
+        return [
+            {
+                "rule": "gazette_repricing",
+                "severity": "warning",
+                "message": "review required",
+                "savings_try": 0.0,
+                "risk_amount": 75.0,
+                # review outcome — neither no_pay nor a clean savings signal
+                "material_outcome": "review_required",
+                "details": {"synthetic": True},
+            }
+        ]
+
+    monkeypatch.setattr(
+        "src.bilun.domain.billing.engine.analyze_claim", fake_analyze_claim
+    )
+    monkeypatch.setattr(
+        "src.bilun.domain.rule_engine.price_material_lines", lambda materials: []
+    )
+
+    result = _validate_claim_via_context(
+        {
+            "claim_id": "CLM-NOINFLATE",
+            "materials": [{"name": "item", "unit_price": 100, "quantity": 1}],
+        }
+    )
+
+    # The violation surfaces (not dropped)...
+    assert any(v.rule == "gazette_repricing" for v in result.violations)
+    # ...but its risk does NOT inflate savings, and does NOT aggregate to
+    # total_risk_try either (outcome is not no_pay).
+    assert result.total_savings_try == 0.0
+    assert result.total_risk_try == 0.0
+
 

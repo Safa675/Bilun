@@ -538,11 +538,16 @@ def _validate_claim_via_context(claim: dict[str, Any]) -> ClaimValidationResult:
                 )
             )
             if outcome == "no_pay":
+                # no_pay → provider risk; add the billed amount to the risk
+                # headline (savings stays 0 for no_pay).
                 result.total_risk_try = round(result.total_risk_try + risk, 2)
-            elif savings or risk:
-                result.total_savings_try = round(
-                    result.total_savings_try + (savings or risk), 2
-                )
+            elif savings:
+                # A genuine recoverable savings (e.g. gazette_repricing
+                # recoverable_repricing_try on a must_bill/review outcome).
+                # NOTE: do NOT fold risk into savings — risk_amount on a
+                # non-no_pay outcome is not a savings signal, and folding it
+                # would inflate total_savings_try for review-only findings.
+                result.total_savings_try = round(result.total_savings_try + savings, 2)
 
     result.n_bundling_violations = n_bundling
     result.n_exclusion_violations = n_exclusion
