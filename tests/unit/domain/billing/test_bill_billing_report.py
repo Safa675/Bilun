@@ -80,8 +80,24 @@ class TestBillClaimContext:
 
 
 @_needs_dataset
+@pytest.mark.xdist_group("billing_heavy")
 class TestPerBillAdditivity:
-    def test_recoverable_sums_to_patient_total(self) -> None:
+    """Cohort-level orchestrator tests.
+
+    Both tests consume the same expensive orchestrator output (patient-level
+    + bill-level billing reports across all 50 synthetic patients, ~68s). The
+    ``_orchestrator_outputs`` class-scoped fixture computes it ONCE for the
+    class — without it, the second test re-ran ``compute_all_bill_billing_reports``
+    (~20s) for identical work.
+
+    ``xdist_group("billing_heavy")`` keeps these tests on a single xdist
+    worker: they share the module-scope ``_DATASET`` and the orchestrator is
+    CPU-bound, so running them concurrently across workers would contend
+    rather than speed up.
+    """
+
+    @pytest.fixture(scope="class")
+    def _orchestrator_outputs(self):
         from src.bilun.domain.billing import (
             compute_all_bill_billing_reports,
             compute_all_billing_reports,
@@ -90,6 +106,10 @@ class TestPerBillAdditivity:
         cache = _cache_for(_DATASET)
         patient_reports, _ = compute_all_billing_reports(cache)
         bill_reports = compute_all_bill_billing_reports(cache)
+        return patient_reports, bill_reports
+
+    def test_recoverable_sums_to_patient_total(self, _orchestrator_outputs) -> None:
+        patient_reports, bill_reports = _orchestrator_outputs
 
         assert bill_reports, "expected at least one per-bill report"
         # every bill key is "{pid}::{claim_id}"
@@ -104,11 +124,8 @@ class TestPerBillAdditivity:
                 per_patient.get(pid, 0.0) - float(patient_report.total_recoverable_try)
             ) < 0.01, f"per-bill recoverable != patient total for {pid}"
 
-    def test_multi_bill_patient_splits_recoverable(self) -> None:
-        from src.bilun.domain.billing import compute_all_bill_billing_reports
-
-        cache = _cache_for(_DATASET)
-        bill_reports = compute_all_bill_billing_reports(cache)
+    def test_multi_bill_patient_splits_recoverable(self, _orchestrator_outputs) -> None:
+        _, bill_reports = _orchestrator_outputs
         # At least one patient should have multiple bills.
         multi = [p for p, c in _DATASET.claims_by_patient.items() if len(c) > 1]
         assert multi

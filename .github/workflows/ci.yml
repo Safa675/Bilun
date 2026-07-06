@@ -16,6 +16,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
 
       - name: Install dependencies
         run: |
@@ -23,7 +25,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run Python tests
-        run: python -m pytest -q
+        run: python -m pytest -n auto --dist loadgroup -q
 
       - name: Check generated SUT rule artifacts
         run: python scripts/sut/compile_rules.py --check
