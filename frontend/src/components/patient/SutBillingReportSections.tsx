@@ -52,7 +52,7 @@ import { EkAnnexChips, RuleSourceAttribution } from "@/components/sut/Regulatory
 import { resolveBillingEkAnnexLabels } from "@/lib/sutRegulatorySources";
 import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 import { SpecialtyProseScopeNotice } from "@/components/sut/SpecialtyProseScopeNotice";
-import { Chip, DataTable, Eyebrow, Section, Stat, Surface } from "@/components/primitives";
+import { Chip, DataTable, ExactnessBlock as ExactnessNotice, Eyebrow, Section, Stat, Surface } from "@/components/primitives";
 import { getExemptionCategories } from "@/lib/copayExemption";
 import {
   fmtLabel,
@@ -100,11 +100,6 @@ function BillingRegulatorySourceCell({
   }
   return <EkAnnexChips labels={labels} />;
 }
-
-type ExactnessBlock = Parameters<typeof getUnavailableMessage>[0];
-
-export { ExactnessBlock as ExactnessNotice } from "@/components/primitives";
-export type { ExactnessBlockProps } from "@/components/primitives";
 
 export function BillingSectionShell({
   id,
