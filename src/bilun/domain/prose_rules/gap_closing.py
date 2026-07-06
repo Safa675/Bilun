@@ -84,7 +84,16 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
     for key, expected in condition.items():
         if key.endswith(_SET_PREDICATE_SUFFIXES):
             base = key[: -_suffix_len(key)]
-            available = context.get(base)
+            # Prefer the explicit <base>_any / <base>_in collection when the
+            # context builder supplied one; fall back to the base field so a
+            # single-valued claim still matches. A bare scalar base field is
+            # a valid (single-element) collection, but a multi-valued claim
+            # MUST surface its full set under the *_any key — otherwise rules
+            # like procedure_category_any silently honest-skip on claims that
+            # genuinely carry the listed category.
+            available = context.get(key)
+            if available is None:
+                available = context.get(base)
             if available is None:
                 return False
             # Normalize to a set for membership testing regardless of shape.
@@ -176,6 +185,50 @@ def _evaluate(ruleset: dict[str, Any], context: dict[str, Any]) -> list[dict[str
     return violations
 
 
+def _derive_payment_method_path(
+    header: Any,
+    procedures: list[Any],
+    *,
+    care_setting: str,
+) -> str | None:
+    """Derive the §2.2.2.B claim-level payment *path* the gap-closing rules gate on.
+
+    The rules use a different vocabulary from the procedure-level
+    ``package``/``itemized`` decision: ``diagnosis_based`` = tanıya dayalı
+    (EK-2/C DRG package path), ``fee_for_service`` = hizmet başına (EK-2/B
+    itemized path). These map cleanly onto the claim-aggregated
+    ``PaymentMethodKind`` already computed by ``care_setting_review`` /
+    ``claim_strategy``:
+
+    - ``DRG_MANDATORY`` / ``DRG_OVERRIDABLE`` → ``diagnosis_based``
+      (both are EK-2/C package paths; overridable still bills as package
+      unless the third-tier override is exercised)
+    - ``ITEMIZED`` → ``fee_for_service``
+
+    Returns ``None`` when there are no classifiable procedure lines or the
+    kind cannot be resolved — the caller MUST leave ``payment_method`` unset
+    in that case so ``_condition_matches`` honesty-skips rather than guessing.
+    """
+    if procedures:
+        # Local import to avoid an import cycle: care_setting_review imports
+        # from this package's neighbors and would otherwise pull in heavy
+        # catalog machinery at module load time.
+        from .care_setting_review import _resolve_claim_kind
+
+        kind = _resolve_claim_kind(header, procedures, care_setting=care_setting)
+        if kind in {"DRG_MANDATORY", "DRG_OVERRIDABLE"}:
+            return "diagnosis_based"
+        if kind == "ITEMIZED":
+            return "fee_for_service"
+        # MISSING_INPUTS / NOT_IN_SUT / None → fall through to the header signal.
+    # Header-only fallback: package_candidate=True is a weaker but real signal
+    # that a DRG package line is present on the claim (set by the synthetic
+    # generators when an EK-2/C package line exists).
+    if getattr(header, "package_candidate", None) is True:
+        return "diagnosis_based"
+    return None
+
+
 def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     """Build the flat claim-context dict from a PatientClaimContext.
 
@@ -208,24 +261,46 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
         "acil" in dept or "emergency" in dept or "acil" in tag or "emergency" in tag
     )
     # Facility contracting: uncontracted if provider_type indicates it.
-    context["facility_uncontracted"] = header.provider_type in ("uncontracted", "sozlessmesiz")
-    context["facility_contracted"] = header.provider_type not in ("uncontracted", "sozlessmesiz", "")
+    # The Turkish contracted/uncontracted marker is "sozlesmesiz" (single s);
+    # the synthetic generators use exactly this spelling — see
+    # scripts/synthetic/gen/materials_flags.py ("acil_sozlesmesiz_kurum").
+    context["facility_uncontracted"] = header.provider_type in ("uncontracted", "sozlesmesiz")
+    context["facility_contracted"] = header.provider_type not in ("uncontracted", "sozlesmesiz", "")
     # Health report: drug lines carry board-report presence.
     if ctx.drug_lines:
         reports = [d for d in ctx.drug_lines if d.drug_specialty_board_report_present]
         context["health_report_present"] = bool(reports)
     # Procedure-derived fields.
-    if ctx.procedure_lines:
-        procs = list(ctx.procedure_lines)
-        categories = {p.procedure_category for p in procs if p.procedure_category}
-        codes = {p.procedure_code for p in procs if p.procedure_code}
-        context["procedure_category"] = sorted(categories)[:1][0] if len(categories) == 1 else None
-        context["procedure_category_any"] = sorted(categories) if categories else None
-        context["procedure_code_any"] = sorted(codes) if codes else None
-        context["procedure_code"] = sorted(codes)[:1][0] if len(codes) == 1 else None
-        # Payment method: package_candidate on the header.
-        if header.package_candidate is not None:
-            context["payment_method"] = "package" if header.package_candidate else "itemized"
+    procedure_lines = list(getattr(ctx, "procedure_lines", ()) or ())
+    if procedure_lines:
+        categories = {p.procedure_category for p in procedure_lines if p.procedure_category}
+        codes = {p.procedure_code for p in procedure_lines if p.procedure_code}
+        # Surface BOTH shapes so every predicate form can match:
+        # - the bare scalar field (procedure_category / procedure_code) is read
+        #   by exact-equality rules (11 gap-closing rules use bare
+        #   procedure_category); when the claim has multiple distinct values we
+        #   cannot pick one truthfully, so we leave it unset and let those rules
+        #   honest-skip rather than mis-attribute.
+        # - the *_any collection key is read by membership predicates
+        #   (procedure_category_any / procedure_code_any); it carries the full
+        #   set so any listed value matches.
+        if categories:
+            context["procedure_category_any"] = sorted(categories)
+            if len(categories) == 1:
+                context["procedure_category"] = next(iter(categories))
+        if codes:
+            context["procedure_code_any"] = sorted(codes)
+            if len(codes) == 1:
+                context["procedure_code"] = next(iter(codes))
+    # Payment method (§2.2.2.B path): derived from the claim-aggregated
+    # PaymentMethodKind, NOT from package_candidate directly. The kind-based
+    # derivation is the canonical SUT §2.2 evaluator's output; package_candidate
+    # is only a header-level fallback. See _derive_payment_method_path.
+    payment_method = _derive_payment_method_path(
+        header, procedure_lines, care_setting=context["care_setting"]
+    )
+    if payment_method is not None:
+        context["payment_method"] = payment_method
     # Drug-derived fields.
     if ctx.drug_lines:
         drug_categories = set()

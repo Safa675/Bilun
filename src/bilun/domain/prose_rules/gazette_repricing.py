@@ -284,9 +284,13 @@ def check_gazette_repricing_for_context(ctx: Any) -> list[dict[str, Any]]:
     under the orchestrator/billing path.
 
     Delegates to ``detect_gazette_repricing_opportunities`` against the
-    context's first claim (``ctx.claims[0]``) fanned out across all
-    procedure lines, then projects each opportunity dict into the flat
-    ``analyze_claim`` violation shape.
+    context's first claim (``ctx.claims[0]``) over the procedure lines that
+    belong to THAT claim only, then projects each opportunity dict into the
+    flat ``analyze_claim`` violation shape.
+
+    Procedure lines are scoped to ``claim.claim_id`` so a multi-claim context
+    does not let a second bill's lines inflate or contaminate the first
+    claim's repricing opportunities.
 
     The underlying detector is ``review_only`` (per the JSON
     ``review_only: True`` flag) — gazette repricing is a *manual list-price
@@ -301,8 +305,15 @@ def check_gazette_repricing_for_context(ctx: Any) -> list[dict[str, Any]]:
         return []
 
     claim = claims[0]
+    claim_id = getattr(claim, "claim_id", None)
+    procedure_lines = [
+        line for line in ctx.procedure_lines
+        if getattr(line, "claim_id", None) == claim_id
+    ]
+    if not procedure_lines:
+        return []
     opportunities = detect_gazette_repricing_opportunities(
-        claim, list(ctx.procedure_lines)
+        claim, procedure_lines
     )
 
     violations: list[dict[str, Any]] = []

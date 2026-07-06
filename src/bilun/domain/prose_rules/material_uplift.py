@@ -243,9 +243,14 @@ def check_material_pairing_for_context(ctx: Any) -> list[dict[str, Any]]:
     common one).
 
     Delegates to ``detect_missing_billable_material_opportunities`` against
-    the context's first claim (``ctx.claims[0]``) fanned out across all
-    procedure and material lines, then projects each opportunity dict into
-    the flat ``analyze_claim`` violation shape.
+    the context's first claim (``ctx.claims[0]``) over the procedure AND
+    material lines that belong to THAT claim only, then projects each
+    opportunity dict into the flat ``analyze_claim`` violation shape.
+
+    Lines are scoped to ``claim.claim_id`` so a multi-claim context does not
+    let a second bill's procedures/materials contaminate the first claim's
+    pairing detection (a missing-material finding belongs to the bill that is
+    actually missing the line, not to an unrelated claim in the same bundle).
 
     Severity is ``"warning"`` (inverse-EK-3B-1 uplift is an SGK-recovery
     review flag); the full opportunity is preserved under
@@ -258,10 +263,20 @@ def check_material_pairing_for_context(ctx: Any) -> list[dict[str, Any]]:
         return []
 
     claim = claims[0]
-    material_lines = list(getattr(ctx, "material_lines", ()) or ())
+    claim_id = getattr(claim, "claim_id", None)
+    procedure_lines = [
+        line for line in ctx.procedure_lines
+        if getattr(line, "claim_id", None) == claim_id
+    ]
+    if not procedure_lines:
+        return []
+    material_lines = [
+        line for line in (getattr(ctx, "material_lines", ()) or ())
+        if getattr(line, "claim_id", None) == claim_id
+    ]
     opportunities = detect_missing_billable_material_opportunities(
         claim,
-        list(ctx.procedure_lines),
+        procedure_lines,
         material_lines,
     )
 

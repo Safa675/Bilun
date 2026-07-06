@@ -152,3 +152,83 @@ def test_gap_closing_empty_context_returns_empty() -> None:
     )
     assert check_gap_closing_misc_for_context(ctx) == []
     assert check_gap_closing_treatment_for_context(ctx) == []
+
+
+# ---------------------------------------------------------------------------
+# Regression tests — Bugbot findings on PR #7 W1.3 (fixed in W2.5).
+# These guard against the bugs silently returning. The pre-fix tests above
+# all bypass _build_gap_closing_context by hand-feeding the literal dict, so
+# the derivation bugs went undetected. These exercise the real builder.
+# ---------------------------------------------------------------------------
+
+
+def test_payment_method_path_diagnosis_from_package_candidate() -> None:
+    """W2.5a (HIGH): payment_method must derive the §2.2.2.B path
+    (diagnosis_based / fee_for_service), NOT the procedure-level
+    package/itemized decision. A package_candidate=True claim must surface
+    ``payment_method="diagnosis_based"`` so the 6 §2.2.2.B treatment rules
+    that gate on that value can fire. Before the fix this emitted
+    ``"package"`` and the rules silently never matched.
+    """
+    ctx = _make_ctx(header=_make_header(package_candidate=True))
+    context = _build_gap_closing_context(ctx)
+    assert context.get("payment_method") == "diagnosis_based"
+
+
+def test_payment_method_path_unset_when_no_signal() -> None:
+    """W2.5a (HIGH): when no payment-path signal exists (no procedure lines,
+    package_candidate=None/False), the key must be ABSENT so
+    _condition_matches honest-skips rather than emitting a wrong value.
+    """
+    ctx = _make_ctx(header=_make_header(package_candidate=False))
+    context = _build_gap_closing_context(ctx)
+    assert "payment_method" not in context
+
+
+def test_multi_procedure_any_predicate_matches() -> None:
+    """W2.5b (MEDIUM): when a claim has >1 distinct procedure category, the
+    ``procedure_category_any`` collection must carry the full set AND a
+    ``procedure_category_any`` rule condition must match. Before the fix the
+    builder set the base field to None and _condition_matches read the base
+    field, so multi-category claims silently honest-skipped.
+    """
+    procs = (
+        _make_procedure(code="520030", category="kardiyoloji"),
+        _make_procedure(code="510020", category="norolji"),
+    )
+    ctx = _make_ctx(procedure_lines=procs)
+    context = _build_gap_closing_context(ctx)
+    # Full set surfaced for membership predicates.
+    assert set(context.get("procedure_category_any") or []) == {"kardiyoloji", "norolji"}
+    # The _any predicate itself evaluates true when the claim carries a listed
+    # category — direct exercise of the fixed _condition_matches path.
+    from src.bilun.domain.prose_rules.gap_closing import _condition_matches
+    assert _condition_matches({"procedure_category_any": ["kardiyoloji"]}, context) is True
+    assert _condition_matches({"procedure_category_any": ["onkoloji"]}, context) is False
+
+
+def test_multi_procedure_bare_scalar_unset_when_ambiguous() -> None:
+    """W2.5b complement: the bare ``procedure_category`` scalar (read by the
+    11 exact-equality rules) must be ABSENT when the claim has multiple
+    distinct categories — we cannot truthfully pick one, so those rules
+    honest-skip rather than mis-attribute.
+    """
+    procs = (
+        _make_procedure(code="520030", category="kardiyoloji"),
+        _make_procedure(code="510020", category="norolji"),
+    )
+    ctx = _make_ctx(procedure_lines=procs)
+    context = _build_gap_closing_context(ctx)
+    assert "procedure_category" not in context
+
+
+def test_facility_uncontracted_recognizes_correct_spelling() -> None:
+    """Copilot nit fix: the uncontracted sentinel is ``sozlesmesiz`` (single
+    s), matching the synthetic generators. The double-s typo ``sozlessmesiz``
+    would never match a real provider_type, silently dropping the flag.
+    """
+    ctx = _make_ctx(header=_make_header(provider_type="sozlesmesiz"))
+    context = _build_gap_closing_context(ctx)
+    assert context["facility_uncontracted"] is True
+    assert context["facility_contracted"] is False
+

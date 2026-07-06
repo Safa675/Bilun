@@ -157,3 +157,25 @@ class TestCheckGazetteRepricingForContext:
         )
 
         assert check_gazette_repricing_for_context(ctx) == []
+
+    def test_multi_claim_context_lines_scoped_to_first_claim(self) -> None:
+        """W2.5c (MEDIUM, Bugbot): a multi-claim context must NOT fan a second
+        bill's procedure lines across the first claim's repricing detection.
+        The wrapper scopes lines to the first claim's claim_id; a stale-price
+        line belonging to a DIFFERENT claim in the same bundle must not produce
+        a violation attributed to the first claim. Before the fix all
+        procedure lines were passed regardless of claim_id.
+        """
+        first_claim = _claim()  # F-DEMO-001, in repricing window
+        second_claim = _claim(
+            claim_id="F-DEMO-002",
+            scenario_tag="other",
+        )
+        # The stale-price line belongs to the SECOND claim, not the first.
+        foreign_line = _proc_line(claim_id="F-DEMO-002", procedure_line_id="ISL-2")
+        ctx = _ctx([first_claim, second_claim], [foreign_line])
+
+        # First claim has no procedure lines of its own → no violation should
+        # be fabricated by borrowing the second claim's line.
+        assert check_gazette_repricing_for_context(ctx) == []
+
