@@ -4,6 +4,10 @@ rules:
   sut_section: 4.2.9.A
   gate_b_sources:
   - C004125
+  - C004128
+  - C004131
+  - C004132
+  - C004133
   drug_names:
   - eritropoietin
   - darbepoietin
@@ -38,8 +42,6 @@ rules:
   message_tr: Eritropoietin alfa-beta-zeta, metoksipolietilen glikol epoetin beta ve darbepoetin endikasyon muadili olarak
     kullanılabilir; raporda doz/süre belirtilir ve bir defada en fazla 1 aylık reçete verilir (§4.2.9.A).
   gate_b_sources:
-  - C004118
-  - C004119
   - C004127
   - C004128
   report_required: true

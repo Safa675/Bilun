@@ -8,18 +8,27 @@ pytestmark = pytest.mark.unit
 
 
 def test_bundling_code_resolved_match_is_error(monkeypatch) -> None:
+    from src.bilun.domain.materials import exclusions as excl
+    from src.bilun.domain.materials import catalog_lookup
     from src.bilun.domain.rules import bundling_rules as mod
 
+    bundled_entry = [
+        {
+            "item_name": "Bistüri ucu veya disposable bistüri",
+            "description": "Cerrahi malzemeler",
+        }
+    ]
+    # Phase 2.1: matcher consolidated into exclusions.match_bundled_material;
+    # the data lives in exclusions, the resolver in catalog_lookup (imported
+    # lazily inside match_bundled_material, so patch at source).
+    monkeypatch.setattr(excl, "get_bundled_consumables", lambda: bundled_entry)
     monkeypatch.setattr(
-        mod,
-        "get_bundled_consumables",
-        lambda: [
-            {
-                "item_name": "Bistüri ucu veya disposable bistüri",
-                "description": "Cerrahi malzemeler",
-            }
-        ],
+        catalog_lookup,
+        "resolve_material_name_by_code",
+        lambda code: "Bistüri ucu veya disposable bistüri" if code == "OP1000" else None,
     )
+    # bundling_rules still imports resolve_material_name_by_code for the
+    # display-name fallback in the code_resolved branch.
     monkeypatch.setattr(
         mod,
         "resolve_material_name_by_code",
@@ -37,13 +46,14 @@ def test_bundling_code_resolved_match_is_error(monkeypatch) -> None:
 
 
 def test_bundling_fuzzy_name_only_is_warning(monkeypatch) -> None:
+    from src.bilun.domain.materials import exclusions as excl
     from src.bilun.domain.rules import bundling_rules as mod
 
-    monkeypatch.setattr(
-        mod,
-        "get_bundled_consumables",
-        lambda: [{"item_name": "Eldiven", "description": "Cerrahi malzemeler"}],
-    )
+    bundled = [{"item_name": "Eldiven", "description": "Cerrahi malzemeler"}]
+    # Phase 2.1: matcher lives in exclusions — patch there so the canonical
+    # matcher sees the same fixture as the guard in check_bundling_violations.
+    monkeypatch.setattr(mod, "get_bundled_consumables", lambda: bundled)
+    monkeypatch.setattr(excl, "get_bundled_consumables", lambda: bundled)
     monkeypatch.setattr(mod, "resolve_material_name_by_code", lambda code: None)
 
     violations = mod.check_bundling_violations(

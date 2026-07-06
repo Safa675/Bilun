@@ -36,6 +36,7 @@ rules:
 - rule_id: 4.2.12.A.immunglob.hbig_anhepatic_phase_dose_by_risk
   sut_section: 4.2.12.A
   gate_b_sources:
+  - C004417
   - C004427
   drug_names:
   - hepatit b immünglobulini

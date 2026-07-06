@@ -18,6 +18,7 @@ from .types import SAVINGS_BASIS_SOURCED, SAVINGS_CATEGORY_PACKAGE_ADEQUACY
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
+    from src.bilun.domain.claims.patient_context import PatientClaimContext
 
 _RULES_PATH = _PROSE_RULES_DIR / "drg_package_adequacy_prose.json"
 _RULE_SET_ID = "drg_package_adequacy"
@@ -224,3 +225,58 @@ def detect_drg_package_adequacy_opportunities(
         )
 
     return opportunities
+
+
+def check_drg_package_adequacy_for_context(
+    ctx: PatientClaimContext,
+) -> list[dict[str, Any]]:
+    """Run §2.2 EK-2/C package adequacy on a PatientClaimContext.
+
+    Procedure-driven check: returns immediately when ``ctx.procedure_lines`` is
+    empty (no clinical footprint to evaluate). Mirrors the per-claim loop in
+    ``recommend_drg_package_adequacy_from_claims`` (the orchestrator entrypoint)
+    but projects the optimization-shaped opportunity dicts the detector returns
+    into the violation-dict shape the unified ``analyze_claim`` core /
+    Phase 2.4 adapter consume: ``rule``, ``severity``, ``material_name``,
+    ``message``, ``savings_try``, ``risk_amount``, ``material_outcome``, plus
+    the full opportunity preserved in ``details``.
+
+    Severity is ``review`` (documentation review — no auto-switch) and
+    ``material_outcome`` is ``documentation_review`` so the adapter classifies
+    the finding as savings-bearing rather than a no-pay risk.
+    """
+    if not ctx.procedure_lines:
+        return []
+
+    violations: list[dict[str, Any]] = []
+    for claim in ctx.claims:
+        if not claim.package_candidate:
+            continue
+        claim_procs = [
+            line for line in ctx.procedure_lines if line.claim_id == claim.claim_id
+        ]
+        if not claim_procs:
+            continue
+        for opportunity in detect_drg_package_adequacy_opportunities(claim, claim_procs):
+            candidate = str(opportunity.get("candidate_package_code") or "")
+            material_name = f"Package {candidate} (under-coded review)"
+            violations.append(
+                {
+                    "rule": _RULE_SET_ID,
+                    "severity": "review",
+                    "material_name": material_name,
+                    "material_code": candidate,
+                    "message": str(opportunity.get("detail") or ""),
+                    "savings_try": float(opportunity.get("recoverable_uplift_try") or 0.0),
+                    "risk_amount": 0.0,
+                    "material_outcome": "documentation_review",
+                    "claim_id": opportunity.get("claim_id"),
+                    "primary_icd10": opportunity.get("primary_icd10"),
+                    "sut_section": opportunity.get("sut_section_id", "2.2.1.B"),
+                    "rule_id": opportunity.get("rule_id"),
+                    "rule_set_id": opportunity.get("rule_set_id", _RULE_SET_ID),
+                    "details": opportunity,
+                }
+            )
+
+    return violations

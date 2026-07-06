@@ -568,6 +568,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "İnfliksimab",
       "linked_rule_ids": [
+        "4.2.1.C.anti_tnf_biologic_combo_nopay",
         "4.2.1.inflix_cert_gol_ra_second_line",
         "4.2.1.infliximab_ra_das28_second_line"
       ]
@@ -622,6 +623,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "biyolojik_ajan",
       "linked_rule_ids": [
+        "4.2.1.C.anti_tnf_biologic_combo_nopay",
         "4.2.1.adalimumab_jia_uveitis_first_line",
         "4.2.1.anti_tnf_jia_dmard_failure_board"
       ]
@@ -677,6 +679,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "İnfliksimab",
       "linked_rule_ids": [
+        "4.2.1.C.anti_tnf_biologic_combo_nopay",
         "4.2.1.anti_tnf_axial_as_board",
         "4.2.1.inflix_peripheral_as_basdai_continuation",
         "4.2.1.inflix_peripheral_as_second_line_romato_board",
@@ -712,6 +715,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "İnfliksimab",
       "linked_rule_ids": [
+        "4.2.1.C.anti_tnf_biologic_combo_nopay",
         "4.2.1.inflix_cert_gol_as_second_line"
       ]
     },
@@ -754,6 +758,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "İnfliksimab",
       "linked_rule_ids": [
+        "4.2.1.C.anti_tnf_biologic_combo_nopay",
         "4.2.1.inflix_cert_gol_psa_psarc_second_line",
         "4.2.1.inflix_psa_second_line_psarc"
       ]
@@ -837,6 +842,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Yetişkinlerde",
       "linked_rule_ids": [
+        "4.2.1.C.anti_tnf_biologic_combo_nopay",
         "4.2.1.adalimumab_crohn_adult_board"
       ]
     },
@@ -847,6 +853,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Çocuklarda",
       "linked_rule_ids": [
+        "4.2.1.C.anti_tnf_biologic_combo_nopay",
         "4.2.1.adalimumab_pediatric_crohn_board"
       ]
     },
@@ -909,6 +916,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "biyolojik_ajan",
       "linked_rule_ids": [
+        "4.2.1.C.anti_tnf_biologic_combo_nopay",
         "4.2.1.adalimumab_hs_dermatology_board"
       ]
     },
@@ -1225,6 +1233,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "biyolojik_ajan",
       "linked_rule_ids": [
+        "4.2.1.C.anti_tnf_biologic_combo_nopay",
         "4.2.1.abatacept_jia_acr50_continuation"
       ]
     },
@@ -1573,6 +1582,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "biyolojik_ajan",
       "linked_rule_ids": [
+        "4.2.1.C.anakinra_biologic_jak_combo_nopay",
         "4.2.1.tocilizumab_sjia_anakinra_response"
       ]
     },
@@ -1637,6 +1647,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "biyolojik_ajan",
       "linked_rule_ids": [
+        "4.2.1.C.anakinra_biologic_jak_combo_nopay",
         "4.2.1.tocilizumab_sjia_anakinra_response"
       ]
     },
@@ -1850,6 +1861,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Aksiyel tutulumlu ankilozan spondilitli hastalarda",
       "linked_rule_ids": [
+        "4.2.1.jak_efficacy_continuation_romato_immuno",
         "4.2.1.tofacitinib_axial_as_board",
         "4.2.1.tofacitinib_axial_as_initiation"
       ]
@@ -1861,6 +1873,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Periferik eklem tutulumlu ankilozan spondilitli hastalarda",
       "linked_rule_ids": [
+        "4.2.1.jak_efficacy_continuation_romato_immuno",
         "4.2.1.tofacitinib_axial_as_board",
         "4.2.1.tofacitinib_peripheral_as_initiation"
       ]
@@ -2288,6 +2301,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
       "linked_rule_ids": [
+        "4.2.1.C.anakinra_biologic_jak_combo_nopay",
         "4.2.1.fmf_jia_acr_pediatric_stop_c7"
       ]
     },
@@ -2320,6 +2334,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
       "linked_rule_ids": [
+        "4.2.1.C.anakinra_biologic_jak_combo_nopay",
         "4.2.1.fmf_jia_acr_pediatric_stop_c7"
       ]
     },

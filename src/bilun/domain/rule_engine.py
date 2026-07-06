@@ -192,8 +192,26 @@ def _run_drug_indication_checks(
 
 
 def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
+    """Validate a healthcare claim against SUT rules (Phase 2.4 unified path).
+
+    Thin adapter over the unified ``analyze_claim`` core: builds a
+    PatientClaimContext from the claim dict (Phase 2.2 adapter), runs the
+    regulatory motors via ``analyze_claim`` (Phase 2.3 core), and projects
+    the flat violation list onto a ClaimValidationResult.
+
+    The legacy dict-path body is preserved as ``_validate_claim_legacy`` for
+    the parity test (tests/unit/domain/test_validate_claim_adapter_parity.py)
+    to compare against. Once that parity test has been green across the full
+    fixture cohort for a release cycle, the legacy body can be retired.
+
+    See plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 2.4.
     """
-    Validate a healthcare claim against SUT bundling and exclusion rules.
+    return _validate_claim_via_context(claim)
+
+
+def _validate_claim_legacy(claim: dict[str, Any]) -> ClaimValidationResult:
+    """
+    Legacy dict-path validation (preserved for parity comparison).
 
     Runs annex list checks plus partial §3.1 / §3.3 prose (see coverage_scope):
       1. Bundling rules (EK-3B-1, 54 rows): consumables bundled into procedure fee.
@@ -380,6 +398,167 @@ def validate_claim(claim: dict[str, Any]) -> ClaimValidationResult:
     if n_drug_violations > 0:
         parts.append(f"{n_drug_violations} drug indication violation(s)")
 
+    parts.append(f"validated in {elapsed:.1f}ms")
+    result.summary = " | ".join(parts)
+
+    logger.info(result.summary)
+    return result
+
+
+def _validate_claim_via_context(claim: dict[str, Any]) -> ClaimValidationResult:
+    """Adapter-path validation (Phase 2.4) — build ctx, analyze_claim, project.
+
+    Mirrors ``validate_claim``'s contract (same ClaimValidationResult shape,
+    same violation aggregation, same summary text) but routes through the
+    unified ``analyze_claim`` core via the dict→PatientClaimContext adapter.
+    Intended to be byte-equivalent to the legacy ``validate_claim`` for any
+    claim dict; the Phase 2.4 parity test pins that. Once verified, this
+    becomes the body of ``validate_claim`` and the legacy dict-path body is
+    retired.
+
+    See plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 2.4.
+    """
+    t0 = time.perf_counter()
+
+    claim_id = str(claim.get("claim_id", ""))
+    materials = claim.get("materials", [])
+
+    result = ClaimValidationResult(claim_id=claim_id)
+
+    if not materials:
+        result.summary = "No materials to validate."
+        result.validation_time_ms = round((time.perf_counter() - t0) * 1000, 2)
+        return result
+
+    # Build the typed context (enricher populates is_ek3b1_bundled / is_excluded).
+    from src.bilun.domain.billing.engine import analyze_claim
+    from src.bilun.domain.claims.adapter import build_context_from_material_dict
+
+    ctx = build_context_from_material_dict(claim)
+    raw_violations = analyze_claim(ctx)
+
+    # Project the flat violation list onto ClaimValidationResult, mirroring the
+    # legacy aggregation (bundling → savings, exclusion → risk, prose motors
+    # split by material_outcome, drug_indication severity-tracked).
+    n_bundling = 0
+    n_exclusion = 0
+    n_drug_errors = 0
+    for v in raw_violations:
+        rule = str(v.get("rule", ""))
+        severity = str(v.get("severity", "warning"))
+        outcome = str(v.get("material_outcome") or "")
+        savings = float(v.get("savings_try") or 0.0)
+        risk = float(v.get("risk_amount") or 0.0)
+
+        if rule == "bundling":
+            n_bundling += 1
+            result.violations.append(
+                RuleViolation(
+                    rule="bundling",
+                    severity=severity,
+                    material_name=v.get("material_name", ""),
+                    message=v.get("message", ""),
+                    savings_try=savings,
+                    details=v,
+                )
+            )
+            result.total_savings_try = round(result.total_savings_try + savings, 2)
+        elif rule == "exclusion":
+            n_exclusion += 1
+            result.violations.append(
+                RuleViolation(
+                    rule="exclusion",
+                    severity=severity,
+                    material_name=v.get("material_name", ""),
+                    message=v.get("message", ""),
+                    risk_amount=risk,
+                    details=v,
+                )
+            )
+            result.total_risk_try = round(result.total_risk_try + risk, 2)
+        elif rule in {"material_bundling_prose", "specialty_materials_prose"}:
+            if outcome == "no_pay":
+                result.violations.append(
+                    RuleViolation(
+                        rule=rule,
+                        severity=severity,
+                        material_name=v.get("material_name", ""),
+                        message=v.get("message", ""),
+                        risk_amount=risk,
+                        details=v,
+                    )
+                )
+                result.total_risk_try = round(result.total_risk_try + risk, 2)
+            else:
+                result.violations.append(
+                    RuleViolation(
+                        rule=rule,
+                        severity=severity,
+                        material_name=v.get("material_name", ""),
+                        message=v.get("message", ""),
+                        savings_try=savings or risk,
+                        details=v,
+                    )
+                )
+                result.total_savings_try = round(
+                    result.total_savings_try + (savings or risk), 2
+                )
+        elif rule == "drug_indication":
+            result.violations.append(
+                RuleViolation(
+                    rule="drug_indication",
+                    severity=severity,
+                    material_name=v.get("material_name", ""),
+                    message=v.get("message", ""),
+                    risk_amount=risk,
+                    savings_try=savings,
+                    details=v,
+                )
+            )
+            if severity == "error":
+                n_drug_errors += 1
+
+    result.n_bundling_violations = n_bundling
+    result.n_exclusion_violations = n_exclusion
+
+    # Price material lines (same helper the legacy path uses — pricing is
+    # orthogonal to validation and reads the raw dict, not the context).
+    result.material_lines = price_material_lines(materials)
+    result.total_claim_amount = round(
+        sum(
+            line.total_price
+            for line in result.material_lines
+            if line.exactness_status == EXACTNESS_STATUS_EXACT
+        ),
+        2,
+    )
+
+    has_errors = any(v.severity == "error" for v in result.violations)
+    result.is_valid = not has_errors
+
+    elapsed = round((time.perf_counter() - t0) * 1000, 2)
+    result.validation_time_ms = elapsed
+
+    parts: list[str] = []
+    if result.is_valid:
+        parts.append(f"Claim {claim_id}: VALID")
+    else:
+        parts.append(f"Claim {claim_id}: INVALID")
+    parts.append(
+        f"{len(materials)} materials, {result.total_claim_amount:.2f} TRY total"
+    )
+    if result.n_bundling_violations > 0:
+        parts.append(
+            f"{result.n_bundling_violations} bundling violation(s), "
+            f"savings: {result.total_savings_try:.2f} TRY"
+        )
+    if result.n_exclusion_violations > 0:
+        parts.append(
+            f"{result.n_exclusion_violations} exclusion violation(s), "
+            f"risk: {result.total_risk_try:.2f} TRY"
+        )
+    if n_drug_errors > 0:
+        parts.append(f"{n_drug_errors} drug indication violation(s)")
     parts.append(f"validated in {elapsed:.1f}ms")
     result.summary = " | ".join(parts)
 

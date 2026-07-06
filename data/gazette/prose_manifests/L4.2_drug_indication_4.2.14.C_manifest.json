@@ -1699,6 +1699,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Bosutinib",
       "linked_rule_ids": [
+        "4.2.14.C.tier_c_b.C005024.dasatinib",
         "4.2.14.C.tier_c_b.C005043.bosutinib"
       ]
     },
@@ -2659,7 +2660,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Kabazitaksel",
       "linked_rule_ids": [
-        "4.2.14.C.cetuximab_hnscc_board"
+        "4.2.14.C.cetuximab_hnscc_board",
+        "4.2.14.C.tier_c.C005131.kabazitaksel"
       ]
     },
     {
@@ -3745,6 +3747,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Aşağıdaki endikasyonlarda monoterapi şeklinde kullanılır.",
       "linked_rule_ids": [
+        "4.2.14.C.(15).afatinib_egfr_nsclc_board",
         "4.2.14.C.aferez_1mo_heme_board"
       ]
     },

@@ -372,7 +372,7 @@ rules:
   - C005336
   - C005339
   - C005341
-  - C005352
+  - C005355
   - C005682
 - rule_id: 4.2.14.C.(15).atezolizumab_nsclc_board
   sut_section: 4.2.14.C
@@ -1224,7 +1224,6 @@ rules:
 - rule_id: 4.2.14.C.ahus_eculizumab_ravulizumab_board
   sut_section: 4.2.14.C
   gate_b_sources:
-  - C005416
   - C005433
   icd10_codes:
   - D59.5
@@ -1365,8 +1364,6 @@ rules:
   - üroloji
   - tıbbi onkoloji
   gate_b_sources:
-  - C004950
-  - C004952
   - C004953
 - rule_id: 4.2.14.C.bendamustine_fikra2_heme
   sut_section: 4.2.14.C
@@ -1895,7 +1892,6 @@ rules:
 - rule_id: 4.2.14.C.generalized_myasthenia_gravis_3neurology_3m
   sut_section: 4.2.14.C
   gate_b_sources:
-  - C005446
   - C005452
   icd10_codes:
   - G70.0
@@ -2163,7 +2159,6 @@ rules:
   sut_section: 4.2.14.C
   gate_b_sources:
   - C005464
-  - C005474
   - C005487
   icd10_codes:
   - G36.0
@@ -2464,7 +2459,6 @@ rules:
 - rule_id: 4.2.14.C.pnh_board_hematology_6m
   sut_section: 4.2.14.C
   gate_b_sources:
-  - C004990
   - C005437
   icd10_codes:
   - D59.5
@@ -2648,7 +2642,6 @@ rules:
   - dasatinib
   report_required: true
   gate_b_sources:
-  - C005020
   - C005024
   message_tr: 1) Dasatinib; prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji uzmanının
     yer aldığı, en fazla 6 ay süre ile geçerli sağlık kurulu raporu ile tıbbi onkoloji veya
@@ -2689,8 +2682,7 @@ rules:
   gate_b_sources:
   - C005133
   - C005134
-  - C005160
-  - C005171
+  - C005184
   message_tr: '5) (Değişik: RG- 18/02/2017- 29983/ 9-a md. Yürürlük: 01/03/2017) Kabazitaksel ve abirateron ardışık olarak
     kullanılamaz. Kabazitaksel, enzalutamid ve abirateron ardışık olarak kullanılamaz.'
   report_specialties:
@@ -2811,7 +2803,6 @@ rules:
   icd10_ranges:
   - C00-C97
   gate_b_sources:
-  - C004940
   - C004942
   message_tr: a) Trastuzumab; 1) HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda,  metastatik meme kanseri
     endikasyonunda, bu durumun belirtildiği tıbbi onkoloji uzman hekiminin yer aldığı sağl
@@ -2855,7 +2846,7 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005016
-  - C005021
+  - C005025
   - C005029
   - C005644
   message_tr: 2) Nilotinib yalnızca; İmatinib dahil önceki tedavilere dirençli veya intolere, Philadelphia kromozomu pozitif
@@ -2883,7 +2874,7 @@ rules:
   gate_b_sources:
   - C005024
   - C005025
-  - C005042
+  - C005043
   message_tr: 1) Dasatinib; imatinib dahil önceki tedavilere dirençli veya intolere (aşağıdaki 4. ve 5. maddede belirtilen
     koşullarda), Philadelphia kromozomu pozitif kronik, hızlanmış veya blastik evre kronik miye
   required_biomarkers:

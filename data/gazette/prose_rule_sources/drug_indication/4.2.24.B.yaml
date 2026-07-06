@@ -111,6 +111,7 @@ rules:
 - rule_id: 4.2.24.B.resp.laba_lama_iks_combinations_coverage
   sut_section: 4.2.24.B
   gate_b_sources:
+  - C006124
   - C006160
   - C006167
   drug_names:
@@ -346,6 +347,7 @@ rules:
   message_tr: KOAH/astım inhale kombinasyonları — göğüs hastalıkları, göğüs cerrahisi, iç hastalıkları veya çocuk sağlığı
     uzman hekim reçetesi gerekir (§4.2.24.B-1).
   gate_b_sources:
+  - C006151
   - C006160
   report_required: true
   prescriber_specialties:

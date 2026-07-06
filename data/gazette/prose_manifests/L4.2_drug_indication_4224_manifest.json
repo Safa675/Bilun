@@ -95,6 +95,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Formeterol",
       "linked_rule_ids": [
+        "4.2.24.B.resp.laba_lama_iks_combinations_coverage",
         "4.2.24.formeterol_salmeterol_prescriber"
       ]
     },
@@ -105,6 +106,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Montelukast",
       "linked_rule_ids": [
+        "4.2.24.montelukast_antihistamine_combo",
         "4.2.24.montelukast_prescriber_report"
       ]
     },
@@ -318,7 +320,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "solunum_ilac",
       "linked_rule_ids": [
-        "4.2.24.A.resp.triple_combo_asthma_maintenance_a"
+        "4.2.24.A.resp.triple_combo_asthma_maintenance_a",
+        "4.2.24.copd_inhaler_prescriber"
       ]
     },
     {

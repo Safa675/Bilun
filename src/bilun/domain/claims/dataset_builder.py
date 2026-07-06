@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Sequence
 
 from src.bilun.domain.claims.dataset import SUTClaimDataset
 from src.bilun.domain.claims.errors import ClaimValidationError
 from src.bilun.domain.claims.indexing import index_non_blank, index_rows, index_sequence
+from src.bilun.domain.claims.models import MaterialClaimLine
 from src.bilun.domain.claims.parsing.row_parsers import (
     parse_claim_header,
     parse_copay_profile,
@@ -34,6 +36,44 @@ from src.bilun.domain.claims.validation import (
     validate_performed_links,
     validate_prescription_ids,
 )
+
+
+def _enrich_material_regulatory_flags(materials: dict[str, MaterialClaimLine]) -> dict[str, MaterialClaimLine]:
+    """Derive is_ek3b1_bundled (EK-3B-1) and is_excluded (EK-3B-2) at build time.
+
+    Phase 2.1c/d of the unified-claim-engine roadmap. Populates the regulatory
+    annex flags from the canonical matchers (the same ones
+    ``check_bundling_violations`` and ``check_exclusion_violations`` use).
+
+    IMPORTANT: this does NOT override ``is_bundled``. That CSV-sourced flag is a
+    broader pricing/package-bundle concept the orchestrator's
+    ``bundled_separate_billing`` review list legitimately consumes
+    (``billing/claim_materials.py:220``); EK-3B-1 is a narrower regulatory
+    consumable list. They are different facts sharing a name. The new
+    ``is_ek3b1_bundled`` field captures the regulatory annex match so a thin
+    ``check_bundling_violations_for_context(ctx)`` wrapper (Phase 2.2) can read
+    it without disturbing the pricing-bundle semantics.
+    """
+    from src.bilun.domain.materials import is_material_reimbursable
+    from src.bilun.domain.materials.exclusions import match_bundled_material
+
+    enriched: dict[str, MaterialClaimLine] = {}
+    for line_id, line in materials.items():
+        derived_ek3b1 = match_bundled_material(
+            line.material_name, material_code=line.material_code or None
+        ) is not None
+        derived_excluded = not is_material_reimbursable(
+            line.material_name, material_code=line.material_code or None
+        )
+        if derived_ek3b1 or derived_excluded:
+            enriched[line_id] = replace(
+                line,
+                is_ek3b1_bundled=derived_ek3b1,
+                is_excluded=derived_excluded,
+            )
+        else:
+            enriched[line_id] = line
+    return enriched
 
 
 def build_sut_claim_dataset_from_rows(
@@ -82,6 +122,10 @@ def build_sut_claim_dataset_from_rows(
         errors,
         "drug_claim_lines",
     )
+    # Phase 2.1c/d: derive is_bundled (EK-3B-1) + is_excluded (EK-3B-2) from the
+    # canonical annex matchers, overriding the advisory CSV column. Must run
+    # BEFORE validation so validators see the derived flags.
+    materials = _enrich_material_regulatory_flags(materials)
     outputs = index_rows(
         (parse_expected_output(row, errors) for row in expected_outputs),
         "expected_output_id",

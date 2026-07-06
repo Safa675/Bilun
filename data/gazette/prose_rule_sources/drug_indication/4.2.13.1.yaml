@@ -64,6 +64,8 @@ rules:
   sut_section: 4.2.13.1
   gate_b_sources:
   - C004551
+  - C004636
+  - C004897
   drug_names:
   - pegile interferon
   - peginterferon
@@ -139,12 +141,8 @@ rules:
   message_tr: HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu
     yeni raporda belirtilmelidir (§4.2.13.1 (7)).
   gate_b_sources:
-  - C004529
-  - C004533
-  - C004563
-  - C004570
   - C004572
-  - C004601
+  - C004584
   - C004624
 - rule_id: 4.2.13.hbv_antiviral_report_renewal_initiation_f8
   sut_section: 4.2.13.1

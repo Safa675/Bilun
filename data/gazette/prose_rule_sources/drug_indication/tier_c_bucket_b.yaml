@@ -82,6 +82,7 @@ rules:
   - amfoterisin
   gate_b_sources:
   - C006102
+  - C006118
   report_required: true
   message_tr: 3) Amfoterisin B ile tedaviye refrakter ya da amfoterisin B’yi tolere edemeyen fusariozis hastalığı olan hastalarda.
   encode_bucket: B

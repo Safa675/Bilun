@@ -5,12 +5,10 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 35,
   "section_clause_total": 42,
-  "encoded_clause_count": 18,
+  "encoded_clause_count": 16,
   "encoded_clause_ids": [
     "C003941",
     "C003942",
-    "C003956",
-    "C003957",
     "C003965",
     "C003966",
     "C003977",
@@ -26,7 +24,10 @@
     "C004033",
     "C004039"
   ],
-  "tier_a_pending_clause_ids": [],
+  "tier_a_pending_clause_ids": [
+    "C003956",
+    "C003957"
+  ],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C003940",
@@ -56,7 +57,7 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 0,
+  "tier_a_pending_count": 2,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 24,
   "clause_traces": [
@@ -78,6 +79,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.general_gh_age_group_board"
       ]
     },
@@ -128,21 +130,15 @@
       "clause_id": "C003956",
       "section_id": "4.2.6.A-1",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "buyume_hormonu",
-      "linked_rule_ids": [
-        "4.2.6.A1.neurosecretory_bioinactive_gh_somatropin"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "buyume_hormonu"
     },
     {
       "clause_id": "C003957",
       "section_id": "4.2.6.A-1",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "buyume_hormonu",
-      "linked_rule_ids": [
-        "4.2.6.pediatric_gh_monitoring_board"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "buyume_hormonu"
     },
     {
       "clause_id": "C003965",
@@ -213,6 +209,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
+        "4.2.6.A1.neurosecretory_bioinactive_gh_somatropin",
+        "4.2.6.pediatric_gh_monitoring_board",
         "4.2.6.pediatric_gh_renewal_board"
       ]
     },
@@ -288,6 +286,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Büyüme hormonu",
       "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.adult_somatropin_board_report"
       ]
     },
@@ -362,6 +361,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.pws_somatropin_tertiary_board"
       ]
     },
@@ -426,6 +426,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.ckd_gh_nephro_endo_board"
       ]
     },
@@ -458,6 +459,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "buyume_hormonu",
       "linked_rule_ids": [
+        "4.2.6.A.max_3_month_supply_daily_dose",
         "4.2.6.laron_mecasermin_initiation_board"
       ]
     },
@@ -510,5 +512,5 @@
   "encode_tier_C_deferred_count": 24,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 42.9
+  "encoded_clause_pct": 38.1
 }

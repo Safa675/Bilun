@@ -3,8 +3,8 @@ rules:
 - rule_id: 4.2.6.A1.neurosecretory_bioinactive_gh_somatropin
   sut_section: 4.2.6.A-1
   gate_b_sources:
-  - C003956
   - C003977
+  - C003982
   drug_names:
   - somatropin
   - büyüme hormonu
@@ -53,8 +53,8 @@ rules:
   message_tr: Pediatrik büyüme hormonu devam tedavisi — endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu
     ve epifiz hatları takibi gerekir (§4.2.6.A-1).
   gate_b_sources:
-  - C003957
   - C003965
+  - C003982
   report_specialties:
   - endokrinoloji
   report_duration_months: 12

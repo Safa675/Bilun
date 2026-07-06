@@ -1,4 +1,11 @@
-"""Feature 2 gating: surcharge compliance now requires exact claim inputs."""
+"""Feature 2 gating: surcharge compliance now requires exact claim inputs.
+
+CODE-ONLY BY DESIGN — surcharge exposure is computed via
+``exactness.build_exact_surcharge_exposure`` + EK-2G list membership. The ~21
+unencoded §1.9 clauses are surcharge-eligibility text the code resolves;
+encoding as prose would duplicate the EK-2G catalog lookup. See
+plans/refactor/rule-encoding-gap-closure-roadmap.md.
+"""
 
 from __future__ import annotations
 

@@ -76,8 +76,12 @@ def test_migrated_sections_union_is_complete() -> None:
     corpus_sections = {r["sut_section"] for r in committed}
     yaml_rules = load_rule_family_yaml_rules("drug_indication_prose")
     yaml_sections = {r["sut_section"] for r in yaml_rules}
-    assert len(corpus_sections) == 179
-    assert len(committed) == 919
+    # Soft floors (not exact equality): the drug corpus grows as new sections are
+    # encoded. These guards catch regressions (count dropping below the baseline
+    # established 2026-07) without blocking legitimate growth. See
+    # plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 0.3.
+    assert len(corpus_sections) >= 179
+    assert len(committed) >= 919
     assert yaml_sections == corpus_sections
 
 

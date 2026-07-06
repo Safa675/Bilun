@@ -139,6 +139,17 @@ class MaterialClaimLine:
     requires_pre_auth: bool
     denial_reason_expected: str
     rule_trace_expected: str
+    # Phase 2.1c/d: EK-3B-1 / EK-3B-2 regulatory flags, derived at build time
+    # from the canonical annex matchers (the same ones check_bundling_violations
+    # and check_exclusion_violations use). Distinct from is_bundled, which is a
+    # broader pricing/package-bundle concept sourced from the CSV column.
+    # is_ek3b1_bundled = on the EK-3B-1 bundled-consumables annex (regulatory).
+    # is_excluded      = on the EK-3B-2 non-reimbursable annex (regulatory).
+    # Defaults False so existing construction sites don't break; the build-time
+    # enricher (dataset_builder._enrich_material_regulatory_flags) populates
+    # them. See plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 2.1.
+    is_ek3b1_bundled: bool = False
+    is_excluded: bool = False
     titubb_registered: bool | None = None
     uts_registered: bool | None = None
     procurement_record_incomplete: bool = False

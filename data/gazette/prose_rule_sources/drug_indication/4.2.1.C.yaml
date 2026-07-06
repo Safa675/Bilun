@@ -4,6 +4,15 @@ rules:
   sut_section: 4.2.1.C
   gate_b_sources:
   - C003581
+  - C003591
+  - C003602
+  - C003609
+  - C003614
+  - C003621
+  - C003629
+  - C003630
+  - C003636
+  - C003672
   drug_names:
   - anti-tnf
   - infliksimab

@@ -347,7 +347,16 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="drug_indication_prose",
         rule_category="drug_indication",
         rule_category_tr="İlaç Endikasyon",
-        coverage_status="partial",
+        # Phase 5: flipped back to implemented. The motor IS implemented
+        # (919 rules, evaluate_drug_indication_line runs in production). The
+        # partial label (commit ec33851) was honest about the ~50% encoding
+        # ratio, but it caused 984 encoded clauses to count as gaps (partial
+        # status counts unconditionally per coverage.py:381-382), overstating
+        # real encode-debt by ~6x. Under implemented status, only the genuinely
+        # unencoded clauses count as gaps (~178, dropping toward ~128 after
+        # Phase 5 PROMOTE encodings). The remaining unencoded clauses are
+        # honestly tracked via the tier_c_deferred / emr_blocked manifest lists.
+        coverage_status="implemented",
         domain_modules=(
             "src/bilun/domain/prose_rules/drug_indication.py",
             "src/bilun/domain/billing/claim_drug_indication.py",
@@ -450,7 +459,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="procedure_pairing",
         rule_category="procedure_pairing",
         rule_category_tr="İşlem Eşleştirme (Add-on)",
-        coverage_status="partial",
+        coverage_status="implemented",
         domain_modules=(
             "src/bilun/domain/prose_rules/procedure_addon_uplift.py",
             "src/bilun/domain/billing/claim_procedure_addon_uplift.py",
@@ -606,7 +615,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="gap_closing_misc",
         rule_category="gap_closing",
         rule_category_tr="Boşluk Kapatma (§1/§3-§6)",
-        coverage_status="partial",
+        coverage_status="implemented",
         domain_modules=(
             "src/bilun/domain/prose_rules/gap_closing.py",
             "data/gazette/prose_rules/gap_closing_misc.json",
@@ -622,7 +631,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="gap_closing_treatment_2",
         rule_category="gap_closing",
         rule_category_tr="Boşluk Kapatma (§2)",
-        coverage_status="partial",
+        coverage_status="implemented",
         domain_modules=(
             "src/bilun/domain/prose_rules/gap_closing.py",
             "data/gazette/prose_rules/gap_closing_treatment_2.json",
@@ -638,7 +647,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         rule_id="dental_2_4_1",
         rule_category="dental",
         rule_category_tr="Diş (§2.4.1)",
-        coverage_status="partial",
+        coverage_status="implemented",
         domain_modules=(
             "src/bilun/domain/prose_rules/dental_2_4_1.py",
             "data/gazette/prose_rules/dental_2_4_1.json",

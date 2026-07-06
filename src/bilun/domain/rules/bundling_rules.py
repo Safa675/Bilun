@@ -12,6 +12,7 @@ from typing import Any
 
 from src.bilun.domain.materials import get_bundled_consumables
 from src.bilun.domain.materials.catalog_lookup import resolve_material_name_by_code
+from src.bilun.domain.materials.exclusions import match_bundled_material
 from src.bilun.domain.utils import fuzzy_match_name, token_bound_substring_match, turkish_lower
 
 logger = logging.getLogger("ilay.sut_optimization.bundling")
@@ -28,16 +29,14 @@ def check_bundling_violations(
       1. SUT material code → catalog name → bundled list (error)
       2. Exact / substring name match (error)
       3. Fuzzy name-only match (warning)
+
+    Delegates to the canonical ``match_bundled_material`` so the runtime check
+    and the build-time ``MaterialClaimLine.is_bundled`` enricher share one
+    matcher (Phase 2.1 of the unified-claim-engine roadmap).
     """
     bundled_items = get_bundled_consumables()
     if not bundled_items:
         return []
-
-    bundled_index: list[tuple[str, dict[str, Any]]] = []
-    for item in bundled_items:
-        item_name = turkish_lower((item.get("item_name") or "").strip())
-        if item_name:
-            bundled_index.append((item_name, item))
 
     violations: list[dict[str, Any]] = []
 
@@ -51,39 +50,35 @@ def check_bundling_violations(
         quantity = int(mat.get("quantity", 1))
         billed = round(unit_price * quantity, 2)
 
-        matched: tuple[dict[str, Any], str, str] | None = None
+        matched = match_bundled_material(mat_name, material_code=mat_code or None)
+        if matched is None:
+            continue
+        entry, match_kind = matched
 
-        if mat_code:
-            resolved_name = resolve_material_name_by_code(mat_code)
-            if resolved_name:
-                matched = _match_bundled_name(resolved_name, bundled_index)
-                if matched is not None:
-                    entry, match_kind = matched
-                    _add_bundling_violation(
-                        violations,
-                        entry,
-                        mat_name or resolved_name,
-                        billed,
-                        procedure_code,
-                        match_kind="code_resolved",
-                        severity="error",
-                    )
-                    continue
-
-        if mat_name:
-            matched = _match_bundled_name(mat_name, bundled_index)
-            if matched is not None:
-                entry, match_kind = matched
-                severity = "warning" if match_kind == "name_fuzzy" else "error"
-                _add_bundling_violation(
-                    violations,
-                    entry,
-                    mat_name,
-                    billed,
-                    procedure_code,
-                    match_kind=match_kind,
-                    severity=severity,
-                )
+        # The canonical matcher distinguishes three match kinds; map to the
+        # severity/match_kind this function historically emitted.
+        if match_kind == "code_resolved":
+            resolved_name = resolve_material_name_by_code(mat_code) if mat_code else mat_name
+            _add_bundling_violation(
+                violations,
+                entry,
+                mat_name or (resolved_name or ""),
+                billed,
+                procedure_code,
+                match_kind="code_resolved",
+                severity="error",
+            )
+        else:
+            severity = "warning" if match_kind == "name_fuzzy" else "error"
+            _add_bundling_violation(
+                violations,
+                entry,
+                mat_name,
+                billed,
+                procedure_code,
+                match_kind=match_kind,
+                severity=severity,
+            )
 
     if violations:
         logger.info(
@@ -95,31 +90,6 @@ def check_bundling_violations(
         )
 
     return violations
-
-
-def _match_bundled_name(
-    material_name: str,
-    bundled_index: list[tuple[str, dict[str, Any]]],
-) -> tuple[dict[str, Any], str] | None:
-    needle = turkish_lower(material_name.strip())
-    if not needle:
-        return None
-
-    for bundled_name, bundled_entry in bundled_index:
-        # Token-bound match in BOTH directions so a short catalog entry like
-        # "lam" no longer matches "melamin", while a long entry like
-        # "süt sağma seti" still matches "süt sağma seti (disposable)".
-        # Plain `in` substring was bidirectional and produced false positives
-        # (e.g. "tel" -> "metal stent", "cam" -> "camaflaj").
-        if token_bound_substring_match(needle, bundled_name) or token_bound_substring_match(
-            bundled_name, needle
-        ):
-            return bundled_entry, "name_substring"
-
-    fuzzy = fuzzy_match_name(needle, bundled_index, threshold=0.80)
-    if fuzzy:
-        return fuzzy[1], "name_fuzzy"
-    return None
 
 
 def _add_bundling_violation(
@@ -153,3 +123,42 @@ def _add_bundling_violation(
             ),
         }
     )
+
+
+def check_bundling_violations_for_context(ctx: "PatientClaimContext") -> list[dict[str, Any]]:
+    """EK-3B-1 bundling check over a PatientClaimContext (Phase 2.1e wrapper).
+
+    Reads each MaterialClaimLine's build-time-derived ``is_ek3b1_bundled`` flag
+    (populated by ``dataset_builder._enrich_material_regulatory_flags`` from
+    the same ``match_bundled_material`` the dict-based
+    ``check_bundling_violations`` uses). Parity is structural: both paths
+    resolve to the same canonical matcher, so a clause flagged bundled here is
+    exactly the set the dict-based check would flag for the same name+code.
+
+    The violation shape mirrors ``check_bundling_violations`` so the
+    ``validate_claim`` adapter (Phase 2.4) can use either path interchangeably.
+    """
+    violations: list[dict[str, Any]] = []
+    for line in ctx.material_lines:
+        if not line.is_ek3b1_bundled:
+            continue
+        billed = float(line.billed_amount_try)
+        violations.append(
+            {
+                "rule": "bundling",
+                "severity": "error",
+                "material_name": line.material_name,
+                "matched_bundled_item": line.material_name,
+                "bundled_category": "EK-3B-1",
+                "billed_amount": billed,
+                "savings_try": billed if billed > 0 else None,
+                "match_kind": "build_time_derived",
+                "procedure_code": "",
+                "message": (
+                    f"'{line.material_name}' is bundled into the procedure price "
+                    f"(EK-3B-1, build-time derived). Cannot be billed separately."
+                    + (f" Potential savings: {billed:.2f} TRY." if billed > 0 else "")
+                ),
+            }
+        )
+    return violations

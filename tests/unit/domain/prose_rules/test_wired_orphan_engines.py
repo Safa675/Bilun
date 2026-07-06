@@ -124,15 +124,15 @@ class TestDefinitions26NonAlgorithmic:
 class TestWiredEnginesRegistered:
     """All four newly-wired engines must be in the registry with correct status."""
 
-    def test_gap_closing_misc_registered_partial(self) -> None:
+    def test_gap_closing_misc_registered_implemented(self) -> None:
         e = RULE_BY_ID["gap_closing_misc"]
-        assert e.coverage_status == "partial"
+        assert e.coverage_status == "implemented"
         assert "gap_closing.py" in e.domain_modules[0]
 
-    def test_gap_closing_treatment_registered_partial(self) -> None:
+    def test_gap_closing_treatment_registered_implemented(self) -> None:
         e = RULE_BY_ID["gap_closing_treatment_2"]
-        assert e.coverage_status == "partial"
+        assert e.coverage_status == "implemented"
 
-    def test_dental_registered_partial(self) -> None:
+    def test_dental_registered_implemented(self) -> None:
         e = RULE_BY_ID["dental_2_4_1"]
-        assert e.coverage_status == "partial"
+        assert e.coverage_status == "implemented"

@@ -280,13 +280,13 @@ class TestCoverageSummary:
             assert rule["rule_id"]
 
     @_needs_coverage
-    def test_coverage_summary_exposes_drug_indication_partial_engine(self) -> None:
+    def test_coverage_summary_exposes_drug_indication_engine(self) -> None:
         summary = rc.coverage_summary()
         di = summary["partial_engines"]["drug_indication_prose"]
-        assert di["registry_status"] == "partial"
+        # Phase 5: flipped back to implemented (was partial per ec33851).
+        assert di["registry_status"] == "implemented"
         assert di["classified_clause_rows"] > 0
         assert di["encoded_clause_rows"] > 0
-        assert di["unencoded_gap_rows"] > 0
         assert di["prose_rules_on_disk"] >= 188
         assert di["encode_tier_c_deferred_count"] >= 650
         subsections = di.get("subsection_coverage") or {}

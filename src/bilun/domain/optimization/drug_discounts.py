@@ -1,4 +1,11 @@
-"""Exact EK-4A drug discount validation from claim-line data."""
+"""Exact EK-4A drug discount validation from claim-line data.
+
+CODE-ONLY BY DESIGN — this motor computes discount tiers from pre-baked
+``discount_tier_expected`` on each DrugClaimLine. The ~38 unencoded §4.4
+clauses are discount-tier arithmetic (52,44 TL / 100,39 TL thresholds) that
+the code resolves; encoding them as prose rules would duplicate the arithmetic
+and risk drift. See plans/refactor/rule-encoding-gap-closure-roadmap.md.
+"""
 
 from __future__ import annotations
 

@@ -9,6 +9,46 @@ Format per entry:
 
 ---
 
+## 2026-07-06 — Multi-week epic: the gap-count drop came from STATUS HONESTY not ENCODING
+
+**Pattern:** The rule-encoding gap-closure roadmap (Phases 0-5) was framed as "encode ~2,183 unencoded clauses to drop the gap count." After 5 phases of work, the gap count dropped 1,897 → 601 (−68.3%), but the breakdown of WHERE the drop came from was surprising:
+- **Phase 1.1 (structural reclassification, 908 clauses → non_algorithmic):** 0 gap-count change. The `_is_structural_gap_excluded` function was ALREADY excluding these from gaps; Phase 1.1 only fixed the status LABEL. The gap count was already correct.
+- **Phase 4.2/4.3 (copay + specialty reclassification, 279 clauses → non_algorithmic):** −279 gap-count change. These WERE gaps because they weren't structural (no `_is_structural_gap_excluded`), but they were supporting text (indication lists, report specs) whose decisional parents were already encoded. Reclassification was honest — but it was reclassification, not encoding.
+- **Phase 5 (drug motor flip partial→implemented, 984 encoded clauses):** −989 gap-count change. THE LARGEST single drop. 984 of 1,162 drug_indication gaps were ALREADY ENCODED but counted as gaps because the motor was `partial` (commit `ec33851`), and partial status counts as gap unconditionally. Flipping back to `implemented` dropped them. Zero encoding work.
+- **Actual encoding (Phase 4.1 + 5.3, 16+35=51 new clause linkages):** −51 gap-count change. Only ~4% of the total drop came from actual encoding.
+
+**Rule:** When a gap-count reduction goal is set, distinguish three mechanisms and track them separately:
+1. **STATUS HONESTY** (fixing coverage_status labels so the gap predicate fires correctly) — accounts for ~80% of this epic's drop. The biggest wins came from discovering that clauses were mislabeled (partial vs implemented, structural vs actionable).
+2. **RECLASSIFICATION** (moving non-decisional text to non_algorithmic) — accounts for ~20%. Honest but requires per-clause text auditing to avoid hiding real regulatory content.
+3. **ENCODING** (adding new rules + gate_b_sources linkages) — accounts for ~4%. The hardest, most labor-intensive work, but the smallest numerical impact because most clauses were either already encoded, honestly non-decisional, or correctly deferred.
+A roadmap that promises "encode N clauses to drop the gap count by N" will misallocate effort unless it first audits which mechanism applies to each clause. Concretely: before encoding, check `has_rule_encoding` — if the clause is already encoded but still a gap, the issue is status honesty (the motor's coverage_status), not missing encoding.
+
+---
+
+## 2026-07-05 — "Reclassify to reduce the gap count" is dishonest when the clauses contain real regulatory text
+
+**Pattern:** The Phase 1 plan (approved by user, sourced from Agent 3's diagnostic) proposed reclassifying ~250 "price-oracle decision-rule" clauses (in `pricing_ek2b`, `copay_rate_ek2c1`, `copay_exemption_ek1a`, `drug_discount_prose`, `surcharge_general`) to `non_algorithmic` to drop the headline `has_algorithmic_gap` count from ~1897 toward ~450. Agent 3 had labeled them "ANNEX_LOOKUP — text just references annex tables; the code motor resolves these." When I actually READ the gap clause text before reclassifying, ~248 of the ~250 contained substantive regulatory content — copay participation-fee rules ("katılım payı uygulanacak sağlık hizmetleri"), exemption criteria, surcharge logic. Only 12 of 1897 gaps were genuinely pure annex references (text like `a) Tıbbi Uygunluk Aranacak Tıbbi Malzemeler (EK-3/C-1)`). Reclassifying the other 248 would have hidden real encode-debt to make the dashboard number look better — exactly the metric-manipulation the codebase has been fighting (the recent `ec33851` "honest drug_indication partial status" commit moved in the opposite direction).
+
+**Rule:** Before reclassifying any clause to `non_algorithmic` to reduce a gap count, READ THE ACTUAL TEXT of a representative sample. A clause is honestly `non_algorithmic` only if its text is purely navigational/structural (a heading, an amendment marker like `(Değişik: RG-...)`, or a bare annex citation with no deontic content). Concretely:
+1. The diagnostic-report agent's text-classification ("ANNEX_LOOKUP", "DECISION_RULE", "REFERENCE_TEXT") is a HEURISTIC from sampling, not ground truth. Verify with a direct text read before acting on it at scale.
+2. A clause whose text contains regulatory verbs (`karşılanır`, `ödenir`, `uygulanır`, `yapılır`, `alınır`, `gereken`) is NOT non_algorithmic regardless of which code motor implements it — the regulatory content exists and is unencoded as a prose rule.
+3. Distinguish "status honesty" (Phase 1.1 — moving structural amendment/heading markers to `non_algorithmic`) from "gap-count reduction" (the temptation). Phase 1.1 made the status breakdown honest but did NOT move the gap count, because `_is_structural_gap_excluded` already correctly excluded those clauses from gaps. The gap count was already correct; only the status labels were misleading.
+4. If a phase's value proposition is "drop the gap count by N" and inspection shows the N clauses have real regulatory text, STOP and surface the conflict. Do not execute the reclassification. The honest path is to encode them (Phase 4/5) or build the evaluator (Phase 2/3), not to relabel them out of the gap population.
+
+---
+
+## 2026-07-05 — Diagnostic-report baseline goes stale when commits land between report and implementation
+
+**Pattern:** Produced a full rule-encoding diagnostic report (2,175 unencoded, 914 gaps, 19.4% gap_pct, 3,954 implemented). The user approved a multi-week roadmap using those numbers as every checkpoint target. Between the report and implementation, commit `ec33851` ("honest drug_indication partial status") landed, flipping `drug_indication_prose` from `implemented` → `partial` in `rule_registry.py:350`. This roughly doubled `has_algorithmic_gap` (914 → 1,896) and inverted the implemented/partial split (3,954/53 → 1,585/2,422), because `partial` clauses count as gaps unconditionally (`coverage.py:381-382`). I almost started coding against the stale 914 target. The catch was only because I ran a fresh baseline query on the parquet immediately before touching anything and the numbers didn't match the report.
+
+**Rule:** A diagnostic report's headline numbers have a shelf life. Before any implementation phase begins, RE-CAPTURE the baseline metrics with a fresh read-only query against the live artifacts — do not trust numbers in a report (even one produced the same session) once commits may have landed. Concretely:
+1. At phase-0 entry, run the baseline query (counts of `coverage_status`, `has_rule_encoding`, `has_algorithmic_gap`) and DIFF it against the report. If any number moved, investigate `git log -- <parquet> <relevant .py>` for intervening commits before proceeding.
+2. Every phase checkpoint target must be expressed as "current value ± N" or "monotonic increase/decrease", NOT as an absolute number copied from the report. Absolute targets silently become wrong.
+3. When a commit's message says "honest X status" or "reclassify", assume the headline gap metric moved — those are exactly the commits that invalidate report baselines.
+4. Pay special attention to `coverage.py:381-384`: the `has_algorithmic_gap` definition makes `partial` and `implemented ∧ ¬encoded` BOTH gaps, so any `coverage_status` flip between those two states moves the gap count even when no clause's encoding changed.
+
+---
+
 ## 2026-06-29 — Parallel subagents editing the SAME shared file (coverage.py / rule JSONs) clobber each other — orchestrator-only writes
 
 **Pattern:** Launched 7 parallel encoding subagents. Each was told to (a) append its rules to a shared rule JSON and (b) wire its manifest into `scripts/sut/prose/coverage.py`. Because they ran concurrently, each read coverage.py from its own snapshot and wrote it back — last-writer-won destroyed the others' edits. Result: coverage.py ended with only 2 of ~8 manifest wirings; `specialty_materials_prose.json` dropped 152→78 rules (a subagent read a stale/uncommitted 49-rule base and overwrote wave2a/2b additions); cumulative encoded count collapsed 817→231. The batch scripts + manifest JSONs on disk were fine — only the SHARED aggregation files were lost.

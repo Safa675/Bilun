@@ -48,10 +48,17 @@ def _get_json(resp):
 
 @pytest.mark.smoke
 class TestSutClaimValidation:
-    def test_clean_cardiac_stent(self, api_client):
+    def test_cardiac_stent_bundled_per_3_1_4g(self, api_client):
+        """Coronary stents are bundled into procedure prices per SUT §3.1.4(g).
+
+        Previously (before the §3.1.4 implant-list rules were encoded) this
+        claim was treated as clean. With the 3.1.4.(g).coronary_stents rule in
+        place, the stent is correctly flagged as a bundling violation — its
+        cost is bundled into the cardiac procedure, not separately reimbursable.
+        """
         with _skip_if_unavailable():
             body = {
-                "claim_id": "TEST-CLEAN-001",
+                "claim_id": "TEST-STENT-001",
                 "procedure_code": "520.021",
                 "materials": [
                     {
@@ -63,9 +70,9 @@ class TestSutClaimValidation:
                 ],
             }
             res = _get_json(api_client.post("/api/validate-claim", json=body))
-            assert res["claim_id"] == "TEST-CLEAN-001"
-            assert res["is_valid"] is True
-            assert isinstance(res["violations"], list)
+            assert res["claim_id"] == "TEST-STENT-001"
+            assert len(res["violations"]) >= 1
+            assert any(v["severity"] in ("warning", "error") for v in res["violations"])
             assert isinstance(res["material_lines"], list)
 
     def test_bundled_consumables_detected(self, api_client):
