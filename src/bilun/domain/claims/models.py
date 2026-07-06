@@ -150,6 +150,11 @@ class MaterialClaimLine:
     # them. See plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 2.1.
     is_ek3b1_bundled: bool = False
     is_excluded: bool = False
+    # W2.2: dental evaluator flags (optional, surfaced from dict input by the
+    # adapter when present). Enables rules 2-3 of dental_2_4_1.json.
+    medical_necessity_board_report: bool | None = None
+    treating_physician_different_from_board_signatory: bool | None = None
+    patient_in_first_degree_relative_of_physician: bool | None = None
     titubb_registered: bool | None = None
     uts_registered: bool | None = None
     procurement_record_incomplete: bool = False

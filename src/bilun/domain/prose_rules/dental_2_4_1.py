@@ -39,6 +39,15 @@ _MAPPABLE = {"material_name_any", "procedure_category", "procedure_category_any"
 # so rules whose flag is absent are honestly skipped by ``_condition_matches``
 # rather than guessed — the same guard the module already applies to the 7
 # non-wireable §2.4.1 rules.
+#
+# ``material_contains_precious_metal`` is the exception: the
+# ``precious_metal_no_pay`` rule already gates on its own ``material_name_any``
+# keyword list (altın/platin/…), so the boolean flag is a redundant mirror of
+# that keyword match. Because ``MaterialClaimLine`` does not carry the flag,
+# ``hasattr`` always returns False in production and the rule would never fire.
+# The ``_for_context`` shim therefore computes it locally from the rule's
+# authoritative keyword list (see ``_precious_metal_keywords``) — no model
+# change required. The other three flags stay ``hasattr``-gated.
 _DENTAL_CLAIM_FLAGS: tuple[str, ...] = (
     "material_contains_precious_metal",
     "medical_necessity_board_report",
@@ -56,6 +65,24 @@ def _normalize_tr(text: str) -> str:
 def load_dental_2_4_1_rules() -> dict[str, Any]:
     with _RULES_PATH.open(encoding="utf-8") as handle:
         return json.load(handle)
+
+
+@lru_cache(maxsize=1)
+def _precious_metal_keywords() -> tuple[str, ...]:
+    """Keyword list driving ``2.4.1.(1).precious_metal_no_pay``.
+
+    Pulled from the rule's own ``material_name_any`` condition so the local
+    ``material_contains_precious_metal`` computation stays in lockstep with the
+    authoritative rule text (a single source of truth — no second hand-maintained
+    keyword list).
+    """
+    keywords: list[str] = []
+    for rule in load_dental_2_4_1_rules().get("rules") or []:
+        if rule.get("rule_id") == "2.4.1.(1).precious_metal_no_pay":
+            condition = rule.get("condition") or {}
+            keywords = list(condition.get("material_name_any") or [])
+            break
+    return tuple(keywords)
 
 
 def _material_name_matches(material_name: str, keywords: list[str]) -> bool:
@@ -156,6 +183,7 @@ def check_dental_2_4_1_for_context(ctx: Any) -> list[dict[str, Any]]:
     }
 
     materials: list[dict[str, Any]] = []
+    precious_keywords = _precious_metal_keywords()
     for line in ctx.material_lines:
         row: dict[str, Any] = {
             "name": line.material_name,
@@ -172,6 +200,17 @@ def check_dental_2_4_1_for_context(ctx: Any) -> list[dict[str, Any]]:
         for flag in _DENTAL_CLAIM_FLAGS:
             if hasattr(line, flag):
                 row[flag] = getattr(line, flag)
+        # ``material_contains_precious_metal`` is not a first-class
+        # ``MaterialClaimLine`` field (the ``hasattr`` loop above never sees it),
+        # so compute it locally from the ``precious_metal_no_pay`` rule's own
+        # ``material_name_any`` keyword list. The keyword match is already done
+        # by ``_material_name_matches``; this flag is a redundant mirror of it,
+        # surfaced here so ``_condition_matches`` does not skip the rule on a
+        # missing boolean condition.
+        if precious_keywords and _material_name_matches(
+            str(line.material_name or ""), list(precious_keywords)
+        ):
+            row["material_contains_precious_metal"] = True
         materials.append(row)
 
     return check_dental_2_4_1_prose(materials)

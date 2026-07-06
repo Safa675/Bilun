@@ -109,6 +109,14 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
             requires_pre_auth=bool(mat.get("requires_pre_auth", False)),
             denial_reason_expected="",
             rule_trace_expected="",
+            # W2.2: dental evaluator flags (passed through when present in dict).
+            medical_necessity_board_report=mat.get("medical_necessity_board_report"),
+            treating_physician_different_from_board_signatory=mat.get(
+                "treating_physician_different_from_board_signatory"
+            ),
+            patient_in_first_degree_relative_of_physician=mat.get(
+                "patient_in_first_degree_relative_of_physician"
+            ),
         )
     materials = _enrich_material_regulatory_flags(materials)
 

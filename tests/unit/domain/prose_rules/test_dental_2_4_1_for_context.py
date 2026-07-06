@@ -172,6 +172,84 @@ def test_dental_precious_metal_violation_surfaced_from_context() -> None:
     assert v["sut_section"] == "2.4.1"
 
 
+def test_precious_metal_fires_without_model_flag() -> None:
+    """W1.1 dead-wire fix: the rule must fire even when
+    ``material_contains_precious_metal`` is NOT set on ``MaterialClaimLine``.
+
+    ``MaterialClaimLine`` does not carry the flag (it is not a first-class
+    field — see ``claims/models.py``), so the ``hasattr`` copy-through in the
+    shim never sees it. Before the fix the ``precious_metal_no_pay`` rule's
+    boolean condition was therefore absent and ``_condition_matches`` skipped
+    it: 0 of 11 rules fired. The shim now computes the flag locally from the
+    rule's own ``material_name_any`` keyword list, so a material named
+    "altın köprü" (gold bridge) — with NO model-level flag — must still surface
+    the violation.
+    """
+    # Build the line WITHOUT the artificial object.__setattr__ flag to prove the
+    # shim's local computation is what drives the match, not a model attribute.
+    material = MaterialClaimLine(
+        material_line_id="ML-DENTAL-NOFLAG",
+        claim_id="C1",
+        procedure_line_id="PL-DENTAL-1",
+        patient_id="P1",
+        material_date=date(2026, 1, 1),
+        material_code="",
+        material_name="altın köprü",
+        material_type="consumable",
+        specialty_category="general",
+        quantity=1,
+        unit_price_try=Decimal("500"),
+        billed_amount_try=Decimal("500"),
+        expected_payable_try=Decimal("500"),
+        is_bundled=False,
+        requires_pre_auth=False,
+        denial_reason_expected="",
+        rule_trace_expected="",
+    )
+    assert not hasattr(material, "material_contains_precious_metal")
+    procedure = _make_procedure_line(procedure_category="dental_restoration")
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+
+    violations = check_dental_2_4_1_for_context(ctx)
+
+    assert len(violations) == 1, (
+        "precious-metal rule must fire from the local keyword computation, "
+        "not from a model-level flag"
+    )
+    assert violations[0]["rule_id"] == "2.4.1.(1).precious_metal_no_pay"
+
+
+def test_composite_filling_emits_no_violation() -> None:
+    """A non-precious dental material ("kompozit dolgu" / composite filling)
+    must NOT trip the precious-metal rule — its name matches none of the
+    ``material_name_any`` keywords, so the local computation leaves the flag
+    unset and ``_condition_matches`` honestly skips the rule.
+    """
+    material = MaterialClaimLine(
+        material_line_id="ML-DENTAL-CLEAN",
+        claim_id="C1",
+        procedure_line_id="PL-DENTAL-1",
+        patient_id="P1",
+        material_date=date(2026, 1, 1),
+        material_code="",
+        material_name="kompozit dolgu",
+        material_type="consumable",
+        specialty_category="general",
+        quantity=1,
+        unit_price_try=Decimal("500"),
+        billed_amount_try=Decimal("500"),
+        expected_payable_try=Decimal("500"),
+        is_bundled=False,
+        requires_pre_auth=False,
+        denial_reason_expected="",
+        rule_trace_expected="",
+    )
+    procedure = _make_procedure_line(procedure_category="dental_restoration")
+    ctx = _make_ctx(materials=(material,), procedures=(procedure,))
+
+    assert check_dental_2_4_1_for_context(ctx) == []
+
+
 def test_dental_turkish_normalization_in_name_match() -> None:
     """``altın`` (Turkish dotless i / diacritics) must normalize-match the
     precious-metal keyword list — the same assertion as

@@ -269,3 +269,72 @@ def detect_gazette_repricing_opportunities(
         )
 
     return opportunities
+
+
+_VIOLATION_RULE = "gazette_repricing"
+_VIOLATION_SEVERITY = "warning"
+
+
+def check_gazette_repricing_for_context(ctx: Any) -> list[dict[str, Any]]:
+    """Run the gazette repricing detector on a ``PatientClaimContext``.
+
+    Phase 3 unified-core adapter. Runs ONLY when ``ctx.procedure_lines`` is
+    non-empty AND at least one claim is present — the dict-adapter path
+    (``validate_claim``) supplies neither, so this motor fires exclusively
+    under the orchestrator/billing path.
+
+    Delegates to ``detect_gazette_repricing_opportunities`` against the
+    context's first claim (``ctx.claims[0]``) fanned out across all
+    procedure lines, then projects each opportunity dict into the flat
+    ``analyze_claim`` violation shape.
+
+    The underlying detector is ``review_only`` (per the JSON
+    ``review_only: True`` flag) — gazette repricing is a *manual list-price
+    review flag*, never an automatic rebill. ``severity`` is therefore
+    ``"warning"`` and the full opportunity is preserved under
+    ``details["opportunity"]`` for downstream consumers.
+    """
+    if not getattr(ctx, "procedure_lines", ()):
+        return []
+    claims = getattr(ctx, "claims", ())
+    if not claims:
+        return []
+
+    claim = claims[0]
+    opportunities = detect_gazette_repricing_opportunities(
+        claim, list(ctx.procedure_lines)
+    )
+
+    violations: list[dict[str, Any]] = []
+    for opp in opportunities:
+        violations.append(
+            {
+                "rule": _VIOLATION_RULE,
+                "severity": _VIOLATION_SEVERITY,
+                "message": str(opp.get("detail") or ""),
+                "savings_try": float(opp.get("recoverable_repricing_try") or 0.0),
+                "risk_amount": 0.0,
+                "sut_section": str(opp.get("sut_section_id") or "2.2"),
+                "rule_id": str(opp.get("rule_id") or "gazette_repricing"),
+                "claim_id": str(opp.get("claim_id") or claim.claim_id),
+                "procedure_code": str(opp.get("procedure_code") or ""),
+                "review_only": bool(opp.get("review_only", True)),
+                "details": {
+                    "type": opp.get("type"),
+                    "rule_set_id": opp.get("rule_set_id"),
+                    "recommendation_kind": opp.get("recommendation_kind"),
+                    "review_kind": opp.get("review_kind"),
+                    "rebill_permitted": opp.get("rebill_permitted"),
+                    "included_in_sgk_total": opp.get("included_in_sgk_total"),
+                    "savings_category": opp.get("savings_category"),
+                    "savings_basis": opp.get("savings_basis"),
+                    "price_methodology": opp.get("price_methodology"),
+                    "amendment_effective_date": opp.get("amendment_effective_date"),
+                    "price_at_service_try": opp.get("price_at_service_try"),
+                    "amended_list_price_try": opp.get("amended_list_price_try"),
+                    "opportunity": opp,
+                },
+            }
+        )
+
+    return violations

@@ -1,5 +1,11 @@
 """SUT §2.2 payment method decision evaluator.
 
+TRACEABILITY-ONLY JSON: ``payment_method_2_2.json`` (42 rules) is loaded for
+the rule-database inventory and manifest accounting, but the decision logic
+is hardcoded in ``_classify_payment_method_kind`` (annex membership + tier +
+star + prose-locked codes). The JSON documents WHEN each payment method
+applies; the code implements HOW. See wiredness-epic plan W4.1.
+
 Ocak/Temmuz MEDULA ``tercih`` (preference) windows are administrative facility
 billing choices in MEDULA — not modeled here. BILUN resolves package vs itemized
 per §2.2.2 using annex membership, tier, star, and prose-locked EK-2/C codes

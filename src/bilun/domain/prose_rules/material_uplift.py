@@ -226,3 +226,73 @@ def detect_missing_billable_material_opportunities(
                 )
 
     return opportunities
+
+
+_VIOLATION_RULE = "material_pairing_uplift"
+_VIOLATION_SEVERITY = "warning"
+
+
+def check_material_pairing_for_context(ctx: Any) -> list[dict[str, Any]]:
+    """Run the missing-billable-material detector on a ``PatientClaimContext``.
+
+    Phase 3 unified-core adapter. Runs ONLY when ``ctx.procedure_lines`` is
+    non-empty AND at least one claim is present — the dict-adapter path
+    (``validate_claim``) supplies neither, so this motor fires exclusively
+    under the orchestrator/billing path. ``ctx.material_lines`` defaults to
+    empty when absent (the detector's "missing material" use case is the
+    common one).
+
+    Delegates to ``detect_missing_billable_material_opportunities`` against
+    the context's first claim (``ctx.claims[0]``) fanned out across all
+    procedure and material lines, then projects each opportunity dict into
+    the flat ``analyze_claim`` violation shape.
+
+    Severity is ``"warning"`` (inverse-EK-3B-1 uplift is an SGK-recovery
+    review flag); the full opportunity is preserved under
+    ``details["opportunity"]`` for downstream consumers.
+    """
+    if not getattr(ctx, "procedure_lines", ()):
+        return []
+    claims = getattr(ctx, "claims", ())
+    if not claims:
+        return []
+
+    claim = claims[0]
+    material_lines = list(getattr(ctx, "material_lines", ()) or ())
+    opportunities = detect_missing_billable_material_opportunities(
+        claim,
+        list(ctx.procedure_lines),
+        material_lines,
+    )
+
+    violations: list[dict[str, Any]] = []
+    for opp in opportunities:
+        violations.append(
+            {
+                "rule": _VIOLATION_RULE,
+                "severity": _VIOLATION_SEVERITY,
+                "message": str(opp.get("detail") or ""),
+                "savings_try": float(opp.get("recoverable_uplift_try") or 0.0),
+                "risk_amount": 0.0,
+                "sut_section": str(opp.get("sut_section_id") or "3.1.1"),
+                "rule_id": str(opp.get("rule_id") or "material_pairing_uplift"),
+                "claim_id": str(opp.get("claim_id") or claim.claim_id),
+                "procedure_code": str(opp.get("procedure_code") or ""),
+                "material_code": str(opp.get("material_code") or ""),
+                "details": {
+                    "type": opp.get("type"),
+                    "rule_set_id": opp.get("rule_set_id"),
+                    "pairing_mode": opp.get("pairing_mode"),
+                    "specialty_annex": opp.get("specialty_annex"),
+                    "included_in_sgk_total": opp.get("included_in_sgk_total"),
+                    "savings_category": opp.get("savings_category"),
+                    "savings_basis": opp.get("savings_basis"),
+                    "price_methodology": opp.get("price_methodology"),
+                    "ceiling_try": opp.get("ceiling_try"),
+                    "actual_billed_try": opp.get("actual_billed_try"),
+                    "opportunity": opp,
+                },
+            }
+        )
+
+    return violations

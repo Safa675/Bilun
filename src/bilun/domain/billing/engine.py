@@ -36,6 +36,13 @@ from src.bilun.domain.prose_rules.drg_package_adequacy import (
 from src.bilun.domain.prose_rules.drug_indication import (
     check_drug_indication_for_context,
 )
+from src.bilun.domain.prose_rules.gap_closing import (
+    check_gap_closing_misc_for_context,
+    check_gap_closing_treatment_for_context,
+)
+from src.bilun.domain.prose_rules.gazette_repricing import (
+    check_gazette_repricing_for_context,
+)
 from src.bilun.domain.prose_rules.material_bundling import (
     check_material_bundling_for_context,
 )
@@ -44,6 +51,9 @@ from src.bilun.domain.prose_rules.material_miat_ek3c2 import (
 )
 from src.bilun.domain.prose_rules.material_preauth_ek3c1 import (
     check_material_preauth_for_context,
+)
+from src.bilun.domain.prose_rules.material_uplift import (
+    check_material_pairing_for_context,
 )
 from src.bilun.domain.prose_rules.procedure_addon_uplift import (
     check_procedure_pairing_for_context,
@@ -97,12 +107,20 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     # 8. §3.1.4 EK-3C-2 MIAT (minimum inter-application-time) materials.
     violations.extend(check_material_miat_for_context(ctx))
 
-    # 9. Procedure-driven motors — run only when procedure lines are present
+    # 9. Cross-section gap-closing claim-level gates (§1.5/§1.6/§2.2/§2.3/§2.5).
+    violations.extend(check_gap_closing_misc_for_context(ctx))
+    violations.extend(check_gap_closing_treatment_for_context(ctx))
+
+    # 10. Procedure-driven motors — run only when procedure lines are present
     # (the dict-adapter path has none; the orchestrator/billing path does).
     if ctx.procedure_lines:
         # §2.2.1.B DRG package adequacy (documentation-review opportunities).
         violations.extend(check_drg_package_adequacy_for_context(ctx))
         # §2.2 procedure pairing (missing add-on procedures).
         violations.extend(check_procedure_pairing_for_context(ctx))
+        # §2.2 gazette repricing (stale EK-2B/EK-2C rate after tebliğ).
+        violations.extend(check_gazette_repricing_for_context(ctx))
+        # §3.1/§3.3 procedure-to-material pairing uplift (inverse EK-3B-1).
+        violations.extend(check_material_pairing_for_context(ctx))
 
     return violations

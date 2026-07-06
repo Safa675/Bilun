@@ -174,3 +174,93 @@ def _evaluate(ruleset: dict[str, Any], context: dict[str, Any]) -> list[dict[str
             continue
         violations.append(_violation_from_rule(rule, ruleset_id))
     return violations
+
+
+def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
+    """Build the flat claim-context dict from a PatientClaimContext.
+
+    Maps ``ClaimHeader`` fields + derives the most common gap-closing flags
+    from existing claim data. Many of the ~118 condition keys will be absent
+    (honest skip via ``_condition_matches``). The keys surfaced here cover the
+    most frequent conditions: ``procedure_category``, ``is_emergency``,
+    ``care_setting``, ``payment_method``, ``facility_*``, ``procedure_code_any``,
+    ``drug_category``, ``health_report_present``.
+    """
+    if not ctx.claims:
+        return {}
+    header = ctx.claims[0]
+    context: dict[str, Any] = {
+        "facility_tier": header.facility_tier or "",
+        "provider_type": header.provider_type or "",
+        "claim_type": header.claim_type or "",
+    }
+    # Care setting: inpatient (yatis) vs outpatient (ayakta) vs day-case (gunubirlik).
+    claim_type_lower = (header.claim_type or "").lower()
+    context["care_setting"] = (
+        "inpatient" if "yatis" in claim_type_lower or "inpatient" in claim_type_lower
+        else "outpatient" if "ayakta" in claim_type_lower or "outpatient" in claim_type_lower
+        else claim_type_lower
+    )
+    # Emergency: department or scenario_tag carries emergency signal.
+    dept = (header.department or "").lower()
+    tag = (header.scenario_tag or "").lower()
+    context["is_emergency"] = (
+        "acil" in dept or "emergency" in dept or "acil" in tag or "emergency" in tag
+    )
+    # Facility contracting: uncontracted if provider_type indicates it.
+    context["facility_uncontracted"] = header.provider_type in ("uncontracted", "sozlessmesiz")
+    context["facility_contracted"] = header.provider_type not in ("uncontracted", "sozlessmesiz", "")
+    # Health report: drug lines carry board-report presence.
+    if ctx.drug_lines:
+        reports = [d for d in ctx.drug_lines if d.drug_specialty_board_report_present]
+        context["health_report_present"] = bool(reports)
+    # Procedure-derived fields.
+    if ctx.procedure_lines:
+        procs = list(ctx.procedure_lines)
+        categories = {p.procedure_category for p in procs if p.procedure_category}
+        codes = {p.procedure_code for p in procs if p.procedure_code}
+        context["procedure_category"] = sorted(categories)[:1][0] if len(categories) == 1 else None
+        context["procedure_category_any"] = sorted(categories) if categories else None
+        context["procedure_code_any"] = sorted(codes) if codes else None
+        context["procedure_code"] = sorted(codes)[:1][0] if len(codes) == 1 else None
+        # Payment method: package_candidate on the header.
+        if header.package_candidate is not None:
+            context["payment_method"] = "package" if header.package_candidate else "itemized"
+    # Drug-derived fields.
+    if ctx.drug_lines:
+        drug_categories = set()
+        for d in ctx.drug_lines:
+            cat = getattr(d, "drug_category", None) or ""
+            if cat:
+                drug_categories.add(cat)
+        if drug_categories:
+            context["drug_category"] = sorted(drug_categories)[:1][0]
+    # Material-derived fields.
+    if ctx.material_lines:
+        material_categories = {m.specialty_category for m in ctx.material_lines if m.specialty_category}
+        if material_categories:
+            context["material_category"] = sorted(material_categories)[:1][0]
+    return context
+
+
+def check_gap_closing_misc_for_context(ctx: Any) -> list[dict[str, Any]]:
+    """Evaluate §1.5/§1.6/§3-§6 gap-closing rules against a PatientClaimContext.
+
+    Wiredness epic W1.3 — bridges the gap_closing evaluator (which takes a flat
+    dict) to the typed PatientClaimContext via ``_build_gap_closing_context``.
+    """
+    context = _build_gap_closing_context(ctx)
+    if not context:
+        return []
+    return check_gap_closing_misc(context)
+
+
+def check_gap_closing_treatment_for_context(ctx: Any) -> list[dict[str, Any]]:
+    """Evaluate §2.2/§2.3/§2.5 treatment gap-closing rules against a PatientClaimContext.
+
+    Wiredness epic W1.3 — bridges the gap_closing evaluator to the typed context.
+    """
+    context = _build_gap_closing_context(ctx)
+    if not context:
+        return []
+    return check_gap_closing_treatment(context)

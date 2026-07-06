@@ -23,13 +23,26 @@ def _rate_for_profile(rule: dict, profile: PatientCopayProfile) -> float:
     return float(rates.get(profile, rates.get("other", 0.2)))
 
 
+@lru_cache(maxsize=1)
+def _rules_by_service_type() -> dict[str, dict]:
+    """Index copay rules by ``service_type`` (W2.1 refactor).
+
+    Replaces the 4 hardcoded ``rule_id`` lookups with a single
+    service_type-keyed dispatch. Each resolver knows its target service_type
+    (``drug``, ``material``, ``ivf_treatment``, ``drug_prescription_flat``),
+    so the lookup is O(1) and unblocks the 13 dormant rules structurally.
+    """
+    rules = _load_copay_rules().get("rules", [])
+    return {r.get("service_type", ""): r for r in rules if r.get("service_type")}
+
+
+def _find_rule_by_service_type(service_type: str) -> dict | None:
+    return _rules_by_service_type().get(service_type)
+
+
 def resolve_drug_copay_rate(profile: PatientCopayProfile) -> float:
     """§1.8.2.(1) — drug copay percentage by patient income status."""
-    rules = _load_copay_rules()
-    drug_rule = next(
-        (r for r in rules.get("rules", []) if r.get("rule_id") == "1.8.2.(1)"),
-        None,
-    )
+    drug_rule = _find_rule_by_service_type("drug")
     if drug_rule is None:
         return 0.2 if profile == "other" else 0.1
     return _rate_for_profile(drug_rule, profile)
@@ -37,11 +50,7 @@ def resolve_drug_copay_rate(profile: PatientCopayProfile) -> float:
 
 def resolve_material_copay_rate(profile: PatientCopayProfile) -> float:
     """§1.8.3.(2) — prosthesis/orthosis material copay percentage."""
-    rules = _load_copay_rules()
-    material_rule = next(
-        (r for r in rules.get("rules", []) if r.get("rule_id") == "1.8.3.(2)"),
-        None,
-    )
+    material_rule = _find_rule_by_service_type("material")
     if material_rule is None:
         return 0.2 if profile == "other" else 0.1
     return _rate_for_profile(material_rule, profile)
@@ -53,11 +62,7 @@ def resolve_ivf_treatment_copay_rate(
     attempt: int = 1,
 ) -> float:
     """§1.8.4.(1) — assisted reproduction treatment copay by attempt (1st/2nd/3rd)."""
-    rules = _load_copay_rules()
-    ivf_rule = next(
-        (r for r in rules.get("rules", []) if r.get("rule_id") == "1.8.4.(1)"),
-        None,
-    )
+    ivf_rule = _find_rule_by_service_type("ivf_treatment")
     if ivf_rule is None:
         defaults = {1: 0.3, 2: 0.25, 3: 0.2}
         return defaults.get(min(max(int(attempt), 1), 3), 0.2)
@@ -81,11 +86,7 @@ def resolve_prescription_flat_fee_try(
     as_of: date | str | None = None,
 ) -> float:
     """§1.8.2.(2) — per-prescription flat copay fee by box count."""
-    rules = _load_copay_rules()
-    flat_rule = next(
-        (r for r in rules.get("rules", []) if r.get("rule_id") == "1.8.2.(2)"),
-        None,
-    )
+    flat_rule = _find_rule_by_service_type("drug_prescription_flat")
     if flat_rule is None:
         return 0.0
 
