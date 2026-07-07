@@ -180,28 +180,6 @@
       ]
     },
     {
-      "rule_id": "2.4.1.B-2.(4).private_disabled_2x_pricing",
-      "sut_section": "2.4.1.B-2",
-      "condition": {
-        "procedure_category": "dental_treatment",
-        "facility_type": "private",
-        "patient_category_any": [
-          "disabled_40_pct_or_more",
-          "special_needs_child"
-        ],
-        "procedure_under_ga_or_sedoanalgesia": true
-      },
-      "action": {
-        "billable": true,
-        "payment_tr": "özel sunucularda ≥%40 engelli veya özel gereksinimli çocuklara GA/sedoanaljezi altında diş tedavisi EK-2/Ç puanının 2 katı",
-        "annex_basis": "EK-2/Ç",
-        "multiplier": 2.0
-      },
-      "gate_b_sources": [
-        "C000807"
-      ]
-    },
-    {
       "rule_id": "2.4.1.B-3.(1).treating_physician_continuity",
       "sut_section": "2.4.1.B-3",
       "condition": {
@@ -237,6 +215,189 @@
       "gate_b_sources": [
         "C000763"
       ]
+    },
+    {
+      "rule_id": "2.4.1.B-1.(2).disabled_special_needs_doc_and_10_day_start",
+      "sut_section": "2.4.1.B-1",
+      "condition": {
+        "patient_category_any": [
+          "disabled_40_pct_or_more",
+          "special_needs_child"
+        ],
+        "facility_type_any": [
+          "adsm_or_dental_hospital",
+          "training_research_hospital",
+          "university_dental_faculty"
+        ],
+        "disability_or_special_needs_documented": true,
+        "treatment_started_within_10_business_days_of_report": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "engelli (%40 ve üzeri) veya özel gereksinimli çocuğun özel/sözleşmesiz sunucuda diş tedavisinin ödenebilmesi için engellilik/özel gereksinim belgelendirilmeli; ADSM/ağız-diş sağlığı hastanesi/eğitim-araştırma/üniversite diş hekimliği fakültesi raporuyla ve rapor tarihinden itibaren 10 iş günü içinde tedaviye başlanmalı"
+      },
+      "gate_b_sources": [
+        "C000794"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "2.4.1.B-1.(3).disabled_ga_sedo_facility_gate",
+      "sut_section": "2.4.1.B-1",
+      "condition": {
+        "patient_category_any": [
+          "disabled_40_pct_or_more",
+          "special_needs_child"
+        ],
+        "procedure_under_ga_or_sedoanalgesia": true,
+        "ga_facility_with_anesthesiology_reanimation_specialist": true,
+        "ga_performed_by_specialist_documented": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "engelli diş tedavisinde GA/sedo-analjezi bedelinin ödenebilmesi için anesteziyoloji ve reanimasyon uzmanı sorumluluğunda, GA üniteli ADSM/tıp merkezi/hastanede yapıldığı belgelendirilmeli",
+        "annex_basis": "EK-2/Ç"
+      },
+      "gate_b_sources": [
+        "C000795"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "2.4.1.B-1.(5).orthodontics_3_dentist_board_6_month_start",
+      "sut_section": "2.4.1.B-1",
+      "condition": {
+        "procedure_category": "orthodontic_treatment",
+        "facility_type_any": [
+          "private",
+          "public_uncontracted"
+        ],
+        "three_dentist_board_report": true,
+        "board_report_states_non_aesthetic_and_malocclusion_type": true,
+        "treatment_started_within_6_months_of_board_report": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "özel/sözleşmesiz sunucuda ortodontik tedavi için 3 diş hekimi sağlık kurulu raporu (ADSM/hastane/üniversite); estetik olmadığı ve maloklüzyon tipi belirtilmiş; rapor tarihinden 6 ay içinde tedaviye başlanmış olmalı",
+        "annex_basis": "EK-2/Ç"
+      },
+      "gate_b_sources": [
+        "C000799"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "2.4.1.B-2.(1).private_disabled_payment_ek2c_list_basis",
+      "sut_section": "2.4.1.B-2",
+      "condition": {
+        "facility_type_any": [
+          "private",
+          "public_uncontracted"
+        ],
+        "patient_category_any": [
+          "disabled_40_pct_or_more",
+          "special_needs_child"
+        ],
+        "procedure_in_ek2c_list": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "özel/sözleşmesiz sunucuda %40+ engelli veya özel gereksinimli çocuklara verilen ağız-diş sağlığı hizmeti, EK-2/Ç listesinde yer alması şartıyla EK-2/Ç işlem bedeli üzerinden ödenir",
+        "annex_basis": "EK-2/Ç"
+      },
+      "gate_b_sources": [
+        "C000804"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "2.4.1.B-2.(3).ek2c_duration_quantity_compliance",
+      "sut_section": "2.4.1.B-2",
+      "condition": {
+        "facility_type_any": [
+          "private",
+          "public_uncontracted"
+        ],
+        "patient_category_any": [
+          "disabled_40_pct_or_more",
+          "special_needs_child"
+        ],
+        "within_ek2c_duration_and_quantity_limits": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "ödemelerde SUT ve EK-2/Ç listesindeki süre ve adet hükümlerine uyulmak zorundadır",
+        "annex_basis": "EK-2/Ç"
+      },
+      "gate_b_sources": [
+        "C000806"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "2.4.1.B-2.(4).private_disabled_prosthesis_no_pay",
+      "sut_section": "2.4.1.B-2",
+      "condition": {
+        "procedure_category": "dental_prosthesis",
+        "facility_type_any": [
+          "private",
+          "public_uncontracted"
+        ],
+        "patient_category_any": [
+          "disabled_40_pct_or_more",
+          "special_needs_child"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "özel/sözleşmesiz sunucularda %40 ve üzeri engelli veya özel gereksinimli çocuk hastalara uygulanan protez tedavileri için malzeme dahil döküm ve işçilik ücreti ödenmez",
+        "severity": "error",
+        "annex_basis": "EK-2/Ç"
+      },
+      "gate_b_sources": [
+        "C000807"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "content_note": "CORRECTS a fabricated rule. The prior encoding claimed billable:true + multiplier:2.0 (2× private pricing) citing C000807, but C000807 actually says the OPPOSITE — prosthesis casting+labor (material included) is NO_PAY at private/uncontracted. The 2× pricing exists only for PUBLIC facilities (C000762, encoded as 2.4.1.A.(2))."
+    },
+    {
+      "rule_id": "2.4.1.B-2.(5).orthodontics_stage_payment",
+      "sut_section": "2.4.1.B-2",
+      "condition": {
+        "procedure_category": "orthodontic_treatment",
+        "facility_type_any": [
+          "private",
+          "public_uncontracted"
+        ],
+        "stage_completed_per_ek2c3_form": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "özel/sözleşmesiz sunucuda ortodontik tedavi faturaları EK-2/Ç-3 formları üzerinden her aşama tamamlandığında ödenir",
+        "annex_basis": "EK-2/Ç-3",
+        "billing_method": "stage_completion"
+      },
+      "gate_b_sources": [
+        "C000810"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "2.4.1.B-3.(2).specialist_or_doctor_required_for_star_and_7_1",
+      "sut_section": "2.4.1.B-3",
+      "condition": {
+        "procedure_in_ek2c_star_marked_or_section_7_1": true,
+        "performed_by_specialist_or_doctor_dentist": true
+      },
+      "action": {
+        "billable": true,
+        "payment_tr": "EK-2/Ç (*) işaretli tedaviler ile 7.1 tanıya dayalı ortodontik tedavilerin karşılanabilmesi için konularında uzman/doktora diş hekimi tarafından yapıldığı belgelendirilmeli",
+        "annex_basis": "EK-2/Ç"
+      },
+      "gate_b_sources": [
+        "C000813"
+      ],
+      "verification_status": "ai_generated_pending_review"
     }
   ]
 }
