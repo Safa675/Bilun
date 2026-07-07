@@ -1,0 +1,24 @@
+name: PR Agent
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+jobs:
+  pr_agent:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - uses: the-pr-agent/pr-agent@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_KEY: ${{ secrets.ZAI_KEY }}
+          OPENAI.API_BASE: "https://api.z.ai/api/paas/v4"
+          config.model: "openai/glm-5.2"
+          config.fallback_models: '["openai/glm-5.2"]'
+          config.custom_model_max_tokens: "128000"
+          github_action_config.auto_review: "true"
+          github_action_config.auto_describe: "true"
+          github_action_config.auto_improve: "true"
