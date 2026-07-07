@@ -1,20 +1,77 @@
 section_id: 2.4.1.B-2
 source_note: Exported from dental_2_4_1.json (YAML source migration)
 rules:
-- rule_id: 2.4.1.B-2.(4).private_disabled_2x_pricing
+- rule_id: 2.4.1.B-2.(1).private_disabled_payment_ek2c_list_basis
   sut_section: 2.4.1.B-2
   condition:
-    procedure_category: dental_treatment
-    facility_type: private
+    facility_type_any:
+    - private
+    - public_uncontracted
     patient_category_any:
     - disabled_40_pct_or_more
     - special_needs_child
-    procedure_under_ga_or_sedoanalgesia: true
+    procedure_in_ek2c_list: true
   action:
     billable: true
-    payment_tr: özel sunucularda ≥%40 engelli veya özel gereksinimli çocuklara GA/sedoanaljezi altında diş tedavisi EK-2/Ç
-      puanının 2 katı
+    payment_tr: özel/sözleşmesiz sunucuda %40+ engelli veya özel gereksinimli çocuklara verilen ağız-diş sağlığı hizmeti,
+      EK-2/Ç listesinde yer alması şartıyla EK-2/Ç işlem bedeli üzerinden ödenir
     annex_basis: EK-2/Ç
-    multiplier: 2.0
+  gate_b_sources:
+  - C000804
+  verification_status: ai_generated_pending_review
+- rule_id: 2.4.1.B-2.(3).ek2c_duration_quantity_compliance
+  sut_section: 2.4.1.B-2
+  condition:
+    facility_type_any:
+    - private
+    - public_uncontracted
+    patient_category_any:
+    - disabled_40_pct_or_more
+    - special_needs_child
+    within_ek2c_duration_and_quantity_limits: true
+  action:
+    billable: true
+    payment_tr: ödemelerde SUT ve EK-2/Ç listesindeki süre ve adet hükümlerine uyulmak zorundadır
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000806
+  verification_status: ai_generated_pending_review
+- rule_id: 2.4.1.B-2.(4).private_disabled_prosthesis_no_pay
+  sut_section: 2.4.1.B-2
+  condition:
+    procedure_category: dental_prosthesis
+    facility_type_any:
+    - private
+    - public_uncontracted
+    patient_category_any:
+    - disabled_40_pct_or_more
+    - special_needs_child
+  action:
+    billable: false
+    denial_tr: özel/sözleşmesiz sunucularda %40 ve üzeri engelli veya özel gereksinimli çocuk hastalara uygulanan protez
+      tedavileri için malzeme dahil döküm ve işçilik ücreti ödenmez
+    severity: error
+    annex_basis: EK-2/Ç
   gate_b_sources:
   - C000807
+  verification_status: ai_generated_pending_review
+  content_note: 'CORRECTS a fabricated rule. The prior encoding claimed billable:true + multiplier:2.0 (2× private pricing)
+    citing C000807, but C000807 actually says the OPPOSITE — prosthesis casting+labor (material included) is NO_PAY at private/uncontracted.
+    The 2× pricing exists only for PUBLIC facilities (C000762, encoded as 2.4.1.A.(2)).'
+- rule_id: 2.4.1.B-2.(5).orthodontics_stage_payment
+  sut_section: 2.4.1.B-2
+  condition:
+    procedure_category: orthodontic_treatment
+    facility_type_any:
+    - private
+    - public_uncontracted
+    stage_completed_per_ek2c3_form: true
+  action:
+    billable: true
+    payment_tr: özel/sözleşmesiz sunucuda ortodontik tedavi faturaları EK-2/Ç-3 formları üzerinden her aşama tamamlandığında
+      ödenir
+    annex_basis: EK-2/Ç-3
+    billing_method: stage_completion
+  gate_b_sources:
+  - C000810
+  verification_status: ai_generated_pending_review

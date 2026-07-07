@@ -13,3 +13,16 @@ rules:
     severity: error
   gate_b_sources:
   - C000812
+- rule_id: 2.4.1.B-3.(2).specialist_or_doctor_required_for_star_and_7_1
+  sut_section: 2.4.1.B-3
+  condition:
+    procedure_in_ek2c_star_marked_or_section_7_1: true
+    performed_by_specialist_or_doctor_dentist: true
+  action:
+    billable: true
+    payment_tr: EK-2/Ç (*) işaretli tedaviler ile 7.1 tanıya dayalı ortodontik tedavilerin karşılanabilmesi için konularında
+      uzman/doktora diş hekimi tarafından yapıldığı belgelendirilmeli
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000813
+  verification_status: ai_generated_pending_review
