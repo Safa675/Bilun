@@ -17,7 +17,7 @@ import { translateConsistencyWarning } from "@/lib/apiMessages";
 import { theme } from "@/lib/theme";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { PatientExemptionRuleSourceAttribution } from "@/components/sut/RegulatorySourceChips";
-import { Chip, Eyebrow, ExactnessBlock, Stat, Surface } from "@/components/primitives";
+import { Chip, Eyebrow, ExactnessBlock, Stat, Surface, Button } from "@/components/primitives";
 import {
   formatExemptionBasisSummary,
   getExemptionCategories,
@@ -242,10 +242,12 @@ export default function SutPatientWorkspace({
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Link href={buildSutHomeHref("patients")} className="sut-section-btn">
-              <ArrowLeft className="h-4 w-4" />
-              {t("patient.workspace.backToPatients")}
-            </Link>
+            <Button asChild variant="secondary">
+              <Link href={buildSutHomeHref("patients")}>
+                <ArrowLeft className="h-4 w-4" />
+                {t("patient.workspace.backToPatients")}
+              </Link>
+            </Button>
           </div>
         </div>
       </Surface>

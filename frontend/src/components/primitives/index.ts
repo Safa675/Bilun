@@ -49,3 +49,6 @@ export type { ExactnessBlockProps } from "./ExactnessBlock";
 
 export { default as EmptyState } from "./EmptyState";
 export type { EmptyStateProps } from "./EmptyState";
+
+export { default as Button, buttonActiveClass } from "./Button";
+export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";

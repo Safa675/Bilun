@@ -22,7 +22,7 @@ import {
   EMPTY_MATERIAL,
 } from "../shared";
 import { getSutSeverityLabel } from "@/lib/sutLabels";
-import { Chip, DataTable, Surface } from "@/components/primitives";
+import { Chip, DataTable, Surface, Button } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
 import { translateValidationMessage, translateValidationSummary } from "@/lib/apiMessages";
@@ -247,7 +247,7 @@ export function ClaimValidatorSection() {
               </div>
               <div>
                 {idx === 0 && <span className="block text-xs mb-1">&nbsp;</span>}
-                <button type="button" onClick={() => removeMaterial(idx)} className="sut-btn-icon" title={t("sections.claimValidator.remove")} disabled={materials.length <= 1}>✕</button>
+                <Button variant="icon" onClick={() => removeMaterial(idx)} title={t("sections.claimValidator.remove")} disabled={materials.length <= 1}>✕</Button>
               </div>
             </div>
           ))}
@@ -289,10 +289,10 @@ export function ClaimValidatorSection() {
         </div>
 
         <div className="flex items-center gap-3 mt-4">
-          <button type="button" onClick={addMaterial} className="sut-btn-secondary">{t("sections.claimValidator.addMaterial")}</button>
-          <button type="button" onClick={handleValidate} disabled={loading} className="sut-btn-primary">
+          <Button variant="secondary" onClick={addMaterial}>{t("sections.claimValidator.addMaterial")}</Button>
+          <Button variant="primary" onClick={handleValidate} disabled={loading}>
             {loading ? t("sections.claimValidator.validating") : t("sections.claimValidator.validateClaim")}
-          </button>
+          </Button>
         </div>
       </Surface>
 

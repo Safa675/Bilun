@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Search } from "lucide-react";
+import { Button, buttonActiveClass } from "@/components/primitives";
+import { cn } from "@/lib/cn";
 import { theme } from "@/lib/theme";
 import type { PatientSearchResponse, PatientSearchResult } from "@/lib/domains/patient";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -232,15 +234,15 @@ export default function PatientSearch({
               {error ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <span style={{ color: "#B91C1C" }}>{error}</span>
-                  <button
-                    type="button"
-                    className="sut-section-btn sut-section-btn-active"
-                    style={{ alignSelf: "flex-start", padding: "4px 10px" }}
+                  <Button
+                    variant="secondary"
+                    size="compact"
+                    className={cn("self-start", buttonActiveClass)}
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={retrySearch}
                   >
                     <span className="text-xs font-semibold">{t("cohort.patientSearch.retry")}</span>
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 t("cohort.patientSearch.noResults")

@@ -16,7 +16,10 @@ import {
   TabsTrigger,
   TabsContent,
   Toolbar,
+  Button,
+  buttonActiveClass,
 } from "@/components/primitives";
+import { cn } from "@/lib/cn";
 import { useSutApi } from "../useSutApi";
 import { fmtNum } from "../shared";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -177,18 +180,19 @@ export function RuleDatabaseSection() {
               >
                 <div className="flex items-center gap-1.5 overflow-x-auto max-w-full no-scrollbar py-0.5">
                   {STATUS_FILTERS.map((status) => (
-                    <button
+                    <Button
                       key={status}
-                      type="button"
+                      variant="secondary"
+                      size="compact"
                       onClick={() => setStatusFilter(status)}
-                      className={`sut-section-btn sut-section-btn-compact ${statusFilter === status ? "sut-section-btn-active" : ""}`}
+                      className={cn(statusFilter === status && buttonActiveClass)}
                     >
                       <span className="text-xs font-semibold">
                         {status === "all"
                           ? t("sections.ruleDatabase.filters.all")
                           : t(`sections.ruleDatabase.status.${COVERAGE_KEY[status]}`)}
                       </span>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </Toolbar>

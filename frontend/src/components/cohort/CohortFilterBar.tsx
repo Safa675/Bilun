@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Filter } from "lucide-react";
-import { Chip, Eyebrow, Surface } from "@/components/primitives";
+import { Chip, Eyebrow, Surface, Button } from "@/components/primitives";
 import { useCohortFilter } from "@/hooks/useCohortFilter";
 import { fmtNum } from "@/components/tabs/sut/shared";
 import {
@@ -155,13 +155,14 @@ export default function CohortFilterBar({
         </label>
 
         {isActive && (
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="compact"
             onClick={clearFilter}
-            className="sut-section-btn sut-section-btn-compact mb-0.5"
+            className="mb-0.5"
           >
             {t("cohort.filterBar.clearFilters")}
-          </button>
+          </Button>
         )}
       </div>
     </Surface>

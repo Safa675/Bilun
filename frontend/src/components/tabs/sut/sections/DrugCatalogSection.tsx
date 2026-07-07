@@ -5,7 +5,7 @@ import { getDrugCatalog } from "@/lib/api/sut";
 import type { DrugEntry } from "@/lib/api/sut";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import { fmtNum, fmtPct } from "../shared";
-import { DataTable, Surface } from "@/components/primitives";
+import { DataTable, Surface, Button } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 
 export function DrugCatalogSection() {
@@ -85,9 +85,9 @@ export function DrugCatalogSection() {
           </div>
           {data.total_pages > 1 && (
             <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 8, fontSize: 11, color: "#71717A" }}>
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="sut-section-btn" style={{ padding: "3px 10px" }}>{t("sections.drugCatalog.pagination.prev")}</button>
+              <Button variant="secondary" size="compact" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>{t("sections.drugCatalog.pagination.prev")}</Button>
               <span>{t("sections.drugCatalog.pagination.page", { page: fmtNum(data.page), totalPages: fmtNum(data.total_pages) })}</span>
-              <button disabled={page >= data.total_pages} onClick={() => setPage(p => p + 1)} className="sut-section-btn" style={{ padding: "3px 10px" }}>{t("sections.drugCatalog.pagination.next")}</button>
+              <Button variant="secondary" size="compact" disabled={page >= data.total_pages} onClick={() => setPage(p => p + 1)}>{t("sections.drugCatalog.pagination.next")}</Button>
             </div>
           )}
         </>

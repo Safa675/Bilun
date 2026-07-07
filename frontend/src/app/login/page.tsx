@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import BilunWordmark from "@/components/brand/BilunWordmark";
+import { Button } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 
 /**
@@ -111,13 +112,14 @@ export default function LoginPage() {
             </p>
           )}
 
-          <button
+          <Button
             type="submit"
+            variant="primary"
             disabled={submitting}
-            className="sut-btn-primary w-full disabled:opacity-60"
+            className="w-full disabled:opacity-60"
           >
             {submitting ? t("auth.login.submitting") : t("auth.login.submit")}
-          </button>
+          </Button>
         </form>
       </div>
     </main>

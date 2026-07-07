@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { Surface } from "@/components/primitives";
+import { Surface, Button, buttonActiveClass } from "@/components/primitives";
 import { buildSutHomeHref, SUT_BRAND } from "@/lib/constants";
 import { useT } from "@/lib/i18n/useTranslations";
 
@@ -36,16 +36,18 @@ export default function SutError({
             {error.message || t("app.error.fallbackMessage")}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              className={buttonActiveClass}
               onClick={reset}
-              className="sut-section-btn sut-section-btn-active"
             >
               {t("app.error.tryAgain")}
-            </button>
-            <Link href={buildSutHomeHref("patients")} className="sut-section-btn">
-              {t("app.error.backToWorkspace")}
-            </Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href={buildSutHomeHref("patients")}>
+                {t("app.error.backToWorkspace")}
+              </Link>
+            </Button>
           </div>
         </Surface>
       </section>

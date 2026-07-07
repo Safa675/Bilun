@@ -14,7 +14,8 @@ import { DrugCatalogSection } from "./sections/DrugCatalogSection";
 import { SpecialtyMaterialSection } from "./sections/SpecialtyMaterialSection";
 import { LabPricesSection } from "./sections/LabPricesSection";
 import { CheckupPricingSection } from "./sections/CheckupPricingSection";
-import { Chip, Surface } from "@/components/primitives";
+import { Chip, Surface, Button, buttonActiveClass } from "@/components/primitives";
+import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
 
 export function ReferenceToolsContent() {
@@ -91,14 +92,15 @@ function BillingToolsSection() {
     <div className="space-y-4">
       <div className="flex gap-2 flex-wrap">
         {billingSubs.map((sub) => (
-          <button
+          <Button
             key={sub.id}
-            type="button"
+            variant="secondary"
+            size="compact"
             onClick={() => setActiveSub(sub.id)}
-            className={`sut-section-btn sut-section-btn-compact ${activeSub === sub.id ? "sut-section-btn-active" : ""}`}
+            className={cn(activeSub === sub.id && buttonActiveClass)}
           >
             <span className="text-xs font-semibold">{sub.label}</span>
-          </button>
+          </Button>
         ))}
       </div>
 

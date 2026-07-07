@@ -8,7 +8,7 @@ import {
 } from "@/lib/api/sut";
 import { isAbortError } from "@/lib/api/request";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
-import { Chip, Surface } from "@/components/primitives";
+import { Chip, Surface, Button } from "@/components/primitives";
 import { EkAnnexChips } from "@/components/sut/RegulatorySourceChips";
 import { useT } from "@/lib/i18n/useTranslations";
 import { ruleMotorLabel } from "@/lib/clauseUtilization";
@@ -250,28 +250,28 @@ export function RuleDetailPanel({
           </ul>
           {total_pages > 1 && (
             <div className="flex items-center justify-center gap-3 pt-2 text-sm text-[var(--text-muted)]">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="compact"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("sections.ruleDatabase.pagination.prev")}
-              </button>
+              </Button>
               <span>
                 {t("sections.ruleDatabase.pagination.page", {
                   page: fmtNum(page),
                   totalPages: fmtNum(total_pages),
                 })}
               </span>
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="compact"
                 disabled={page >= total_pages}
                 onClick={() => setPage((p) => p + 1)}
-                className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("sections.ruleDatabase.pagination.next")}
-              </button>
+              </Button>
             </div>
           )}
         </>
