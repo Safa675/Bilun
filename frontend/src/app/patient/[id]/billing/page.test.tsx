@@ -155,7 +155,7 @@ describe("BillingSummary", () => {
     expect(html).not.toContain("Synthetic demo claims");
   });
 
-  it("applies the italic-gold serif treatment to the primary KPI money amount", () => {
+  it("renders the primary money amount in navy tabular (gold reserved for the page-level recoverable KPI)", () => {
     const exactReport: BillingActionReport = {
       ...baseReport,
       exactness_status: "exact",
@@ -165,9 +165,12 @@ describe("BillingSummary", () => {
     };
     const html = renderToStaticMarkupWithLocale(<BillingSummary billingReport={exactReport} />);
 
-    // Italic-gold serif on the primary money amount (Stat display="gold")
-    expect(html).toMatch(/italic[^>]*var\(--gold\)[\s\S]*?18450\.50 TRY/);
+    expect(html).toContain("18450.50 TRY");
     expect(html).toContain("SGK uplift (Kurum ödemesi)");
+    // Gold discipline (Phase 6): BillingSummary no longer applies italic-gold to
+    // the rule-calculated opportunity — the single italic-gold money KPI on the
+    // patient page lives on PatientFinancialSummary (total recoverable).
+    expect(html).not.toMatch(/italic[^>]*var\(--gold\)[\s\S]*?18450\.50 TRY/);
     // legacy chrome must be absent
     expect(html).not.toContain("frost-panel");
     expect(html).not.toContain("sut-premium-panel");

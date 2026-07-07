@@ -21,8 +21,21 @@ import type {
   PatientClaimDetail,
 } from "@/lib/domains/sut";
 
+import { fmtDate } from "@/lib/i18n/formatters";
+import { cn } from "@/lib/cn";
+
+export type HighlightCodeSet = {
+  procedures: Set<string>;
+  labs: Set<string>;
+  materials: Set<string>;
+  drugs: Set<string>;
+};
+
 export interface OriginalBillViewProps {
   claim: PatientClaimDetail;
+  /** When set, invoice lines whose code appears in the matching section set are
+   *  highlighted — driven by the selected recommended action. */
+  highlightCodes?: HighlightCodeSet | null;
 }
 
 type InvoiceLine = {
@@ -34,8 +47,6 @@ type InvoiceLine = {
   billedAmountTry: number;
   expectedPayableTry: number;
 };
-
-import { fmtDate } from "@/lib/i18n/formatters";
 
 function isLabProcedure(line: ClaimProcedureLine): boolean {
   return line.procedure_category.trim().toLowerCase() === "laboratuvar";
@@ -128,9 +139,11 @@ function SectionSubtotal({
 function InvoiceLineTable({
   lines,
   emptyMessage,
+  highlightedCodes,
 }: {
   lines: InvoiceLine[];
   emptyMessage: string;
+  highlightedCodes?: Set<string>;
 }) {
   const t = useT();
 
@@ -151,16 +164,24 @@ function InvoiceLineTable({
         </DataTableRow>
       </DataTableHeader>
       <DataTableBody>
-        {lines.map((line) => (
-          <DataTableRow key={line.id}>
-            <DataTableCell>{fmtDate(line.date)}</DataTableCell>
-            <DataTableCell className="font-mono text-xs">{line.code}</DataTableCell>
-            <DataTableCell>{line.name}</DataTableCell>
-            <DataTableCell numeric>{fmtNum(line.quantity)}</DataTableCell>
-            <DataTableCell numeric>{fmtTRY2(line.billedAmountTry)}</DataTableCell>
-            <DataTableCell numeric>{fmtTRY2(line.expectedPayableTry)}</DataTableCell>
-          </DataTableRow>
-        ))}
+        {lines.map((line) => {
+          const isHighlighted = highlightedCodes?.has(line.code) ?? false;
+          return (
+            <DataTableRow
+              key={line.id}
+              className={cn(
+                isHighlighted && "bg-[var(--gold-subtle)] ring-1 ring-inset ring-[var(--gold-light)]",
+              )}
+            >
+              <DataTableCell>{fmtDate(line.date)}</DataTableCell>
+              <DataTableCell className="font-mono text-xs">{line.code}</DataTableCell>
+              <DataTableCell>{line.name}</DataTableCell>
+              <DataTableCell numeric>{fmtNum(line.quantity)}</DataTableCell>
+              <DataTableCell numeric>{fmtTRY2(line.billedAmountTry)}</DataTableCell>
+              <DataTableCell numeric>{fmtTRY2(line.expectedPayableTry)}</DataTableCell>
+            </DataTableRow>
+          );
+        })}
       </DataTableBody>
     </DataTable>
   );
@@ -171,11 +192,13 @@ function InvoiceSection({
   lines,
   emptyMessage,
   subtotalLabel,
+  highlightedCodes,
 }: {
   title: string;
   lines: InvoiceLine[];
   emptyMessage: string;
   subtotalLabel: string;
+  highlightedCodes?: Set<string>;
 }) {
   if (lines.length === 0) {
     return (
@@ -188,7 +211,11 @@ function InvoiceSection({
   return (
     <Section title={title}>
       <div className="overflow-hidden rounded-[var(--r-md)] border border-[var(--border-subtle)]">
-        <InvoiceLineTable lines={lines} emptyMessage={emptyMessage} />
+        <InvoiceLineTable
+          lines={lines}
+          emptyMessage={emptyMessage}
+          highlightedCodes={highlightedCodes}
+        />
         <SectionSubtotal
           label={subtotalLabel}
           billed={sumPresentedField(lines, "billedAmountTry")}
@@ -199,7 +226,7 @@ function InvoiceSection({
   );
 }
 
-export default function OriginalBillView({ claim }: OriginalBillViewProps) {
+export default function OriginalBillView({ claim, highlightCodes }: OriginalBillViewProps) {
   const t = useT();
 
   const sections = useMemo(() => {
@@ -279,6 +306,7 @@ export default function OriginalBillView({ claim }: OriginalBillViewProps) {
         subtotalLabel={t("patient.originalBill.sectionSubtotal", {
           section: t("patient.originalBill.proceduresTitle"),
         })}
+        highlightedCodes={highlightCodes?.procedures}
       />
 
       <InvoiceSection
@@ -288,6 +316,7 @@ export default function OriginalBillView({ claim }: OriginalBillViewProps) {
         subtotalLabel={t("patient.originalBill.sectionSubtotal", {
           section: t("patient.originalBill.labsTitle"),
         })}
+        highlightedCodes={highlightCodes?.labs}
       />
 
       <InvoiceSection
@@ -297,6 +326,7 @@ export default function OriginalBillView({ claim }: OriginalBillViewProps) {
         subtotalLabel={t("patient.originalBill.sectionSubtotal", {
           section: t("patient.originalBill.materialsTitle"),
         })}
+        highlightedCodes={highlightCodes?.materials}
       />
 
       <InvoiceSection
@@ -306,6 +336,7 @@ export default function OriginalBillView({ claim }: OriginalBillViewProps) {
         subtotalLabel={t("patient.originalBill.sectionSubtotal", {
           section: t("patient.originalBill.drugsTitle"),
         })}
+        highlightedCodes={highlightCodes?.drugs}
       />
 
       <div className="rounded-[var(--r-md)] border border-[var(--border-strong)] bg-[var(--surface-soft)] p-4">

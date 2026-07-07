@@ -29,7 +29,7 @@ import {
 } from "@/components/patient/SutBillingReportSections";
 import BillPicker from "@/components/patient/BillPicker";
 import { BillingReportGroup } from "@/components/patient/BillingReportGroup";
-import OriginalBillView from "@/components/patient/OriginalBillView";
+import OriginalBillView, { type HighlightCodeSet } from "@/components/patient/OriginalBillView";
 import { Eyebrow, Surface } from "@/components/primitives";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
 import PatientSearch from "@/components/ui/PatientSearch";
@@ -44,6 +44,12 @@ import {
   searchSutPatients,
 } from "@/lib/api/sut";
 import { buildSutHomeHref, buildSutPatientHref } from "@/lib/constants";
+import {
+  getRecommendedActions,
+  recommendedActionLineCodes,
+  recommendedActionSectionId,
+  type RecommendedActionItem,
+} from "@/lib/recommendedActions";
 import { cn } from "@/lib/cn";
 import { buildPatientWorkspacePageContext } from "@/lib/sutChatPageContext";
 import { SUT_WORKSPACE_CHAT_SESSION_KEY } from "@/lib/sutChatSession";
@@ -88,6 +94,7 @@ export default function SutPatientPage() {
   const [billingReport, setBillingReport] = useState<BillingActionReport | null>(null);
   const [claims, setClaims] = useState<PatientClaimSummary[]>([]);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
+  const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [claimDetail, setClaimDetail] = useState<PatientClaimDetail | null>(null);
   const [claimsLoading, setClaimsLoading] = useState(false);
   const [claimsError, setClaimsError] = useState<string | null>(null);
@@ -367,6 +374,25 @@ export default function SutPatientPage() {
   const isBillScoped = selectedClaimId !== null;
   const activeBillingReport = isBillScoped ? billBillingReport : billingReport;
 
+  const recommendedActions = useMemo(
+    () => (activeBillingReport ? getRecommendedActions(activeBillingReport) : []),
+    [activeBillingReport],
+  );
+  const selectedAction = useMemo(
+    () => recommendedActions.find((action) => action.action_id === selectedActionId) ?? null,
+    [recommendedActions, selectedActionId],
+  );
+  const highlightCodes = useMemo<HighlightCodeSet | null>(() => {
+    if (!selectedAction) return null;
+    const codes = recommendedActionLineCodes(selectedAction);
+    return {
+      procedures: new Set(codes.procedures),
+      labs: new Set(codes.labs),
+      materials: new Set(codes.materials),
+      drugs: new Set(codes.drugs),
+    };
+  }, [selectedAction]);
+
   useEffect(() => {
     if (!sectionQuery || !activeBillingReport) {
       return;
@@ -385,6 +411,7 @@ export default function SutPatientPage() {
   const handleSelectClaim = useCallback(
     (claimId: string | null) => {
       setSelectedClaimId(claimId);
+      setSelectedActionId(null);
       router.replace(
         buildSutPatientHref(patientId, {
           claimId: claimId ?? undefined,
@@ -394,6 +421,25 @@ export default function SutPatientPage() {
       );
     },
     [patientId, router, sectionQuery],
+  );
+
+  // Selecting a recommended action highlights matching invoice lines (S1) and
+  // persists `?section=` so the URL is shareable and survives reload (S2).
+  const handleSelectAction = useCallback(
+    (action: RecommendedActionItem) => {
+      setSelectedActionId(action.action_id);
+      const sectionId = recommendedActionSectionId(action.surface);
+      if (sectionId) {
+        router.replace(
+          buildSutPatientHref(patientId, {
+            claimId: selectedClaimId ?? undefined,
+            section: sectionId,
+          }),
+          { scroll: false },
+        );
+      }
+    },
+    [patientId, router, selectedClaimId],
   );
 
   const handlePatientSelect = useCallback((selectedPatientId: string) => {
@@ -537,7 +583,9 @@ export default function SutPatientPage() {
                     <p className="text-sm text-[var(--text-secondary)]">{claimDetailError}</p>
                   </Surface>
                 )}
-                {claimDetail && selectedClaimId && <OriginalBillView claim={claimDetail} />}
+                {claimDetail && selectedClaimId && (
+                  <OriginalBillView claim={claimDetail} highlightCodes={highlightCodes} />
+                )}
                 {(scopedBillingError || scopedOptimizationError) && (
                   <Surface variant="soft" padding="md" className="space-y-1 text-sm text-[var(--text-secondary)]">
                     {scopedBillingError && <p>{scopedBillingError}</p>}
@@ -571,7 +619,11 @@ export default function SutPatientPage() {
                       title={t("patient.billingGroups.overview")}
                       description={t("patient.billingGroups.overviewDescription")}
                     >
-                      <BillingSummary billingReport={activeBillingReport} />
+                      <BillingSummary
+                        billingReport={activeBillingReport}
+                        selectedActionId={selectedActionId}
+                        onSelectAction={handleSelectAction}
+                      />
                     </BillingReportGroup>
 
                     <BillingReportGroup

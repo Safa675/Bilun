@@ -3,8 +3,8 @@
 import type { CSSProperties } from "react";
 import type { BillingActionReport, SutPatientOutcomeData } from "@/lib/domains/sut";
 import { fmtNum, fmtTRY2, fmtPriorityLabel } from "@/components/tabs/sut/shared";
-import { StatusChip } from "@/components/patient/SutBillingReportSections";
-import { Eyebrow, Stat, Surface } from "@/components/primitives";
+import { chipVariantFromColor } from "@/components/patient/SutBillingReportSections";
+import { Chip, Eyebrow, Stat, Surface } from "@/components/primitives";
 import { hasRecoverableBillingTotals, isExactOutput } from "@/lib/sutExactness";
 import { useT } from "@/lib/i18n/useTranslations";
 
@@ -69,7 +69,7 @@ export function PatientFinancialSummary({
           </p>
         </div>
         {billingReport && (
-          <StatusChip label={statusLabel} color={priorityColor} />
+          <Chip variant={chipVariantFromColor(priorityColor)}>{statusLabel}</Chip>
         )}
       </div>
 
@@ -81,7 +81,6 @@ export function PatientFinancialSummary({
               ? fmtTRY2(claimTotals.total_billed_try)
               : t("common.unavailable")
           }
-          display={claimTotalsExact ? "gold" : "default"}
         />
         <Stat
           label={t("patient.financialSummary.expectedPayable")}

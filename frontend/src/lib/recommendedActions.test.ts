@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getRecommendedActions,
   recommendedActionAmountParts,
+  recommendedActionLineCodes,
   recommendedActionTitle,
 } from "@/lib/recommendedActions";
 import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
@@ -121,5 +122,53 @@ describe("recommendedActions", () => {
     expect(title).toContain("KR1152");
     expect(title).toContain("STENT, KORONER");
     expect(title).not.toContain("P700930");
+  });
+
+  it("maps recommended actions to per-section invoice-line codes for highlighting", () => {
+    const lab = recommendedActionLineCodes({
+      action_id: "lab:1",
+      surface: "lab",
+      kind: "lab_flag",
+      procedure_code: "907450",
+    });
+    expect(lab.labs).toEqual(["907450"]);
+    expect(lab.procedures).toEqual([]);
+
+    // Material-anchored: material_code → materials, procedure_code (package) → procedures.
+    const material = recommendedActionLineCodes({
+      action_id: "material_uplift:1",
+      surface: "material_uplift",
+      kind: "missing_billable_material",
+      procedure_code: "P700930",
+      material_code: "KR1152",
+    });
+    expect(material.materials).toEqual(["KR1152"]);
+    expect(material.procedures).toEqual(["P700930"]);
+
+    // Drug indication → drugs.
+    const drug = recommendedActionLineCodes({
+      action_id: "drug:1",
+      surface: "drug_indication",
+      kind: "drug_indication",
+      drug_code: "A10AB05",
+    });
+    expect(drug.drugs).toEqual(["A10AB05"]);
+
+    // Generic procedure-anchored surface → procedures.
+    const proc = recommendedActionLineCodes({
+      action_id: "session_uplift:1",
+      surface: "session_uplift",
+      kind: "session_uplift",
+      procedure_code: "908110",
+    });
+    expect(proc.procedures).toEqual(["908110"]);
+
+    // No code (e.g. copay exemption) → graceful no-op, all sections empty.
+    const copay = recommendedActionLineCodes({
+      action_id: "copay:ek1a",
+      surface: "copay",
+      kind: "exemption_review",
+    });
+    expect(copay).toEqual({ procedures: [], labs: [], materials: [], drugs: [] });
   });
 });

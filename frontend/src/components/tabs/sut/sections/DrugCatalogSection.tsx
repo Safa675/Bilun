@@ -5,7 +5,7 @@ import { getDrugCatalog } from "@/lib/api/sut";
 import type { DrugEntry } from "@/lib/api/sut";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import { fmtNum, fmtPct } from "../shared";
-import { DataTable, Surface, Button, inputClass } from "@/components/primitives";
+import { DataTable, Surface, Button, EmptyState, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 
 export function DrugCatalogSection() {
@@ -56,7 +56,19 @@ export function DrugCatalogSection() {
       {loading ? (
         <SutReferenceSectionSkeleton title={t("sections.drugCatalog.loadingTitle")} />
       ) : error ? (
-        <p className="text-sm" style={{ color: "#B91C1C" }}>{error}</p>
+        <EmptyState
+          title={<span style={{ color: "#B91C1C" }}>{error}</span>}
+          className="min-h-0 border-transparent bg-transparent"
+          action={
+            <Button
+              variant="secondary"
+              size="compact"
+              onClick={() => { setQuery(""); setPage(1); }}
+            >
+              {t("sections.drugCatalog.clearSearch")}
+            </Button>
+          }
+        />
       ) : data && data.drugs.length > 0 ? (
         <>
           <div style={{ maxHeight: 400, overflowY: "auto" }}>
@@ -92,7 +104,19 @@ export function DrugCatalogSection() {
           )}
         </>
       ) : (
-        <p className="text-sm text-[var(--text-secondary)]">{t("sections.drugCatalog.emptyState")}</p>
+        <EmptyState
+          title={t("sections.drugCatalog.emptyState")}
+          className="min-h-0 border-transparent bg-transparent"
+          action={
+            <Button
+              variant="secondary"
+              size="compact"
+              onClick={() => { setQuery(""); setPage(1); }}
+            >
+              {t("sections.drugCatalog.clearSearch")}
+            </Button>
+          }
+        />
       )}
     </Surface>
   );

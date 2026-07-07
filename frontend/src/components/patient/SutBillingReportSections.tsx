@@ -1,12 +1,11 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { BillingActionReport, ClaimSubmissionChecklist, PatientOptimization } from "@/lib/domains/sut";
 import { getSutAlertBadgeLabel } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
 import {
-  getUnavailableMessage,
   hasRecoverableBillingTotals,
   isExactOutput,
   isOptionalIngestPending,
@@ -45,8 +44,10 @@ import {
   recommendedActionAmountParts,
   recommendedActionSurfaceLabel,
   recommendedActionTitle,
+  type RecommendedActionItem,
 } from "@/lib/recommendedActions";
 import { theme } from "@/lib/theme";
+import { cn } from "@/lib/cn";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { EkAnnexChips, RuleSourceAttribution } from "@/components/sut/RegulatorySourceChips";
 import { resolveBillingEkAnnexLabels } from "@/lib/sutRegulatorySources";
@@ -76,22 +77,18 @@ export const WRAPPED_HEADER_STYLE = {
   minWidth: 120,
 } as const;
 
-export function StatusChip({ label, color }: { label: string; color: string }) {
-  return (
-    <span
-      className="inline-flex items-center rounded-full border px-2 py-0.5 text-[0.72rem] font-bold uppercase tracking-[0.06em]"
-      style={
-        {
-          "--sut-chip-color": color,
-          borderColor: "color-mix(in srgb, var(--sut-chip-color) 22%, transparent)",
-          background: "color-mix(in srgb, var(--sut-chip-color) 10%, transparent)",
-          color: "var(--sut-chip-color)",
-        } as CSSProperties
-      }
-    >
-      {label}
-    </span>
-  );
+/**
+ * Map legacy StatusChip hex colors to `Chip` variants. The design system
+ * reserves the `gold` Chip for actionable emphasis (not status), so legacy
+ * gold-status chips (priority "low", copay "exempt", strategy "package")
+ * collapse to `success`. Informational blue maps to `outline`.
+ */
+export function chipVariantFromColor(color: string) {
+  if (color === "#B91C1C") return "danger" as const;
+  if (color === "#B45309" || color === "#D97706") return "warning" as const;
+  if (color === "#2F6E4E" || color === ACCENT) return "success" as const;
+  if (color === "#2563EB") return "outline" as const;
+  return "neutral" as const;
 }
 
 function BillingRegulatorySourceCell({
@@ -152,11 +149,14 @@ export function TableWrap({
 
 export function RecommendedActionsPanel({
   billingReport,
+  selectedActionId,
+  onSelectAction,
 }: {
   billingReport: BillingActionReport;
+  selectedActionId?: string | null;
+  onSelectAction?: (action: RecommendedActionItem) => void;
 }) {
   const t = useT();
-  const reportHasTotals = hasRecoverableBillingTotals(billingReport);
   const actions = getRecommendedActions(billingReport);
 
   if (actions.length === 0) {
@@ -185,29 +185,35 @@ export function RecommendedActionsPanel({
           {actions.map((action) => {
             const amount = recommendedActionAmountParts(t, action);
             const sectionId = recommendedActionSectionId(action.surface);
-            const scrollToSection = () => {
-              if (!sectionId) return;
-              document.getElementById(sectionId)?.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-              });
+            const isActive = action.action_id === selectedActionId;
+            // Selection drives invoice-line highlighting (independent of scroll),
+            // so every row is clickable; scroll is a bonus when an anchor exists.
+            const handleSelect = () => {
+              onSelectAction?.(action);
+              if (sectionId) {
+                document.getElementById(sectionId)?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }
             };
             return (
               <tr
                 key={action.action_id}
-                className={sectionId ? "cursor-pointer" : undefined}
-                onClick={sectionId ? scrollToSection : undefined}
+                className={cn(
+                  "cursor-pointer",
+                  isActive && "bg-[var(--gold-subtle)]",
+                )}
+                onClick={handleSelect}
                 onKeyDown={
-                  sectionId
-                    ? (event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          scrollToSection();
-                        }
-                      }
-                    : undefined
+                  (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      handleSelect();
+                    }
+                  }
                 }
-                tabIndex={sectionId ? 0 : undefined}
+                tabIndex={0}
               >
                 <td>
                   <Chip variant="neutral">
@@ -249,7 +255,15 @@ export function RecommendedActionsPanel({
   );
 }
 
-export function BillingSummary({ billingReport }: { billingReport: BillingActionReport }) {
+export function BillingSummary({
+  billingReport,
+  selectedActionId,
+  onSelectAction,
+}: {
+  billingReport: BillingActionReport;
+  selectedActionId?: string | null;
+  onSelectAction?: (action: RecommendedActionItem) => void;
+}) {
   const t = useT();
   const isBillScope = billingReport.scope === "bill" && Boolean(billingReport.claim_id);
   const reportExact = isExactOutput(billingReport);
@@ -308,7 +322,7 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
             {isBillScope ? t("billing.summary.billDescription") : t("billing.summary.description")}
           </p>
         </div>
-        <StatusChip label={statusLabel} color={priorityColor} />
+        <Chip variant={chipVariantFromColor(priorityColor)}>{statusLabel}</Chip>
       </div>
 
       <div
@@ -319,7 +333,6 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
         <Stat
           label={t("billing.summary.ruleCalculatedOpportunity")}
           value={reportHasTotals ? fmtTRY2(sgkUplift) : t("common.unavailable")}
-          display={reportHasTotals ? "gold" : "default"}
         />
         {showCompliance && (
           <Stat
@@ -372,7 +385,6 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
                 ? fmtTRY2(0)
                 : t("common.unavailable")
           }
-          display={showExemptionGap ? "default" : "default"}
         />
         {showIlaveInfo && (
           <Stat
@@ -420,7 +432,11 @@ export function BillingSummary({ billingReport }: { billingReport: BillingAction
           fallback={t("billing.summary.totalsUnavailableNotice")}
         />
       )}
-      <RecommendedActionsPanel billingReport={billingReport} />
+      <RecommendedActionsPanel
+        billingReport={billingReport}
+        selectedActionId={selectedActionId}
+        onSelectAction={onSelectAction}
+      />
     </Surface>
   );
 }
@@ -461,16 +477,17 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
               <td className="font-mono text-xs">{test.sut_code}</td>
               <td className="num-col tabular-nums text-right">{fmtTRY2(test.gazette_price)}</td>
               <td>
-                <StatusChip
-                  label={fmtLabel(test.flag_type)}
-                  color={
+                <Chip
+                  variant={chipVariantFromColor(
                     test.flag_type === "hemogram_unbundling"
                       ? "#D97706"
                       : test.flag_type === "session_fraction_overbilling"
                         ? "#B45309"
-                        : "#B91C1C"
-                  }
-                />
+                        : "#B91C1C",
+                  )}
+                >
+                  {fmtLabel(test.flag_type)}
+                </Chip>
               </td>
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2OrUnavailable(test.savings_try ?? null)}
@@ -550,12 +567,11 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
         )}
 
         <div className="flex flex-wrap items-center gap-3">
-          <StatusChip
-            label={copayData.is_exempt ? getSutAlertBadgeLabel("exempt") : getSutAlertBadgeLabel("notExempt")}
-            color={copayData.is_exempt ? ACCENT : "#A1A1AA"}
-          />
+          <Chip variant={chipVariantFromColor(copayData.is_exempt ? ACCENT : "#A1A1AA")}>
+            {copayData.is_exempt ? getSutAlertBadgeLabel("exempt") : getSutAlertBadgeLabel("notExempt")}
+          </Chip>
           {copayData.is_exempt && (
-            <StatusChip label={t("billing.copay.medulaActionChip")} color="#2563EB" />
+            <Chip variant="outline">{t("billing.copay.medulaActionChip")}</Chip>
           )}
           {copayData.exemption_disease && (
             <span className="text-sm" style={{ color: "#71717A" }}>
@@ -759,7 +775,7 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
       item.recommendation_kind === "optional_override"
         ? t("billing.strategy.badgeOverride", { section })
         : t("billing.strategy.badgeMandatory", { section });
-    return <StatusChip label={label} color={strategyBadgeColor(item)} />;
+    return <Chip variant={chipVariantFromColor(strategyBadgeColor(item))}>{label}</Chip>;
   };
 
   return (
@@ -807,10 +823,7 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
               <tr key={`${strategyPrimaryLabel(item)}-${index}`}>
                 <td className="font-semibold text-slate-950">{item.chapter ?? "—"}</td>
                 <td>
-                  <StatusChip
-                    label={t("patient.workspace.reviewPackage")}
-                    color="#2563EB"
-                  />
+                  <Chip variant="outline">{t("patient.workspace.reviewPackage")}</Chip>
                 </td>
                 <td>{item.detail ?? strategySecondaryLabel(item)}</td>
                 <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
@@ -833,14 +846,13 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
                     )}
                   </td>
                   <td>
-                    <StatusChip
-                      label={fmtLabel(strategyModeLabel(item))}
-                      color={strategyModeLabel(item) === "package" ? ACCENT : "#2563EB"}
-                    />
+                    <Chip variant={chipVariantFromColor(strategyModeLabel(item) === "package" ? ACCENT : "#2563EB")}>
+                      {fmtLabel(strategyModeLabel(item))}
+                    </Chip>
                   </td>
                   <td>
                     {kindKey ? (
-                      <StatusChip label={t(kindKey)} color={strategyBadgeColor(item)} />
+                      <Chip variant={chipVariantFromColor(strategyBadgeColor(item))}>{t(kindKey)}</Chip>
                     ) : (
                       "—"
                     )}
@@ -974,10 +986,9 @@ export function OptionalOverrideSection({
             <tr key={`${item.claim_id}-${index}`}>
               <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
               <td>
-                <StatusChip
-                  label={fmtLabel(strategyModeLabel(item))}
-                  color={strategyBadgeColor(item)}
-                />
+                <Chip variant={chipVariantFromColor(strategyBadgeColor(item))}>
+                  {fmtLabel(strategyModeLabel(item))}
+                </Chip>
               </td>
               <td className="font-mono text-sm text-[var(--text-primary)]">
                 {item.recommended_package_code ?? "—"}
@@ -1028,6 +1039,7 @@ export function MaterialUpliftSection({
 
   return (
     <BillingSectionShell
+      id="billing-material-uplift"
       title={t("billing.materialUplift.title")}
       total={fmtTRY2(confirmedUplift)}
     >
@@ -1121,7 +1133,7 @@ export function ProcedureCaptureGapSection({
 
   if (isOptionalIngestPending(captureData)) {
     return (
-      <BillingSectionShell title={t("billing.procedureCaptureGap.title")}>
+      <BillingSectionShell id="billing-procedure-capture-gap" title={t("billing.procedureCaptureGap.title")}>
         <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
           {t("billing.procedureCaptureGap.scopeFootnote")}
         </p>
@@ -1140,7 +1152,7 @@ export function ProcedureCaptureGapSection({
   const gapTotal = captureData.confirmed_gap_try ?? captureData.total_gap_try ?? 0;
 
   return (
-    <BillingSectionShell title={t("billing.procedureCaptureGap.title")} total={fmtTRY2(gapTotal)}>
+    <BillingSectionShell id="billing-procedure-capture-gap" title={t("billing.procedureCaptureGap.title")} total={fmtTRY2(gapTotal)}>
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.procedureCaptureGap.scopeFootnote")}
       </p>
@@ -1220,6 +1232,7 @@ export function ProcedureAddonUpliftSection({
 
   return (
     <BillingSectionShell
+      id="billing-procedure-addon-uplift"
       title={t("billing.procedureAddonUplift.title")}
       total={fmtTRY2(confirmedUplift)}
     >
@@ -1322,6 +1335,7 @@ export function GazetteRepricingSection({
 
   return (
     <BillingSectionShell
+      id="billing-gazette-repricing"
       title={t("billing.gazetteRepricing.title")}
       total={fmtTRY2(reviewTotal)}
     >
@@ -1641,7 +1655,7 @@ export function DrgPackageAdequacyReviewSection({
   const reviewUplift = reviewData.review_uplift_try ?? reviewData.total_uplift_try ?? 0;
 
   return (
-    <BillingSectionShell title={t("billing.packageAdequacyReview.title")}>
+    <BillingSectionShell id="billing-drg-package-adequacy" title={t("billing.packageAdequacyReview.title")}>
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.packageAdequacyReview.scopeFootnote")}
       </p>
@@ -1738,7 +1752,7 @@ export function CareSettingReviewSection({
   const reviewUplift = reviewData.review_uplift_try ?? reviewData.total_uplift_try ?? 0;
 
   return (
-    <BillingSectionShell title={t("billing.careSettingReview.title")}>
+    <BillingSectionShell id="billing-care-setting-review" title={t("billing.careSettingReview.title")}>
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.careSettingReview.scopeFootnote")}
       </p>
@@ -1793,10 +1807,7 @@ export function CareSettingReviewSection({
                 )}
                 {item.review_kind === "needs_clinical_review" && (
                   <div className="mt-2">
-                    <StatusChip
-                      label={t("billing.careSettingReview.reviewBadge")}
-                      color="#D97706"
-                    />
+                    <Chip variant="warning">{t("billing.careSettingReview.reviewBadge")}</Chip>
                   </div>
                 )}
               </td>
@@ -1842,6 +1853,7 @@ export function BloodComponentUpliftSection({
 
   return (
     <BillingSectionShell
+      id="billing-blood-uplift"
       title={t("billing.bloodUplift.title")}
       total={fmtTRY2(confirmedUplift)}
     >
@@ -1925,7 +1937,7 @@ export function DrgUpliftSection({
 
   if (!drgExact && opportunities.length === 0) {
     return (
-      <BillingSectionShell title={t("billing.drgUplift.title")}>
+      <BillingSectionShell id="billing-drg-uplift" title={t("billing.drgUplift.title")}>
         <ExactnessNotice block={drgData} fallback={t("billing.drgUplift.unavailable")} />
       </BillingSectionShell>
     );
@@ -1938,7 +1950,7 @@ export function DrgUpliftSection({
   const confirmedUplift = drgData.confirmed_uplift_try ?? 0;
 
   return (
-    <BillingSectionShell title={t("billing.drgUplift.title")} total={fmtTRY2(confirmedUplift)}>
+    <BillingSectionShell id="billing-drg-uplift" title={t("billing.drgUplift.title")} total={fmtTRY2(confirmedUplift)}>
       <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
         {t("billing.drgUplift.scopeFootnote")}
       </p>
@@ -2002,7 +2014,7 @@ export function SessionUpliftSection({
 
   if (!sessionExact && opportunities.length === 0) {
     return (
-      <BillingSectionShell title={t("billing.sessionUplift.title")}>
+      <BillingSectionShell id="billing-session-uplift" title={t("billing.sessionUplift.title")}>
         <ExactnessNotice block={sessionData} fallback={t("billing.sessionUplift.unavailable")} />
       </BillingSectionShell>
     );
@@ -2021,6 +2033,7 @@ export function SessionUpliftSection({
 
   return (
     <BillingSectionShell
+      id="billing-session-uplift"
       title={t("billing.sessionUplift.title")}
       total={fmtTRY2(confirmedUplift)}
     >
@@ -2070,10 +2083,7 @@ export function SessionUpliftSection({
                 )}
                 {item.review_kind === "needs_clinical_review" && (
                   <div className="mt-2">
-                    <StatusChip
-                      label={t("billing.sessionUplift.reviewBadge")}
-                      color="#D97706"
-                    />
+                    <Chip variant="warning">{t("billing.sessionUplift.reviewBadge")}</Chip>
                   </div>
                 )}
               </td>
@@ -2427,12 +2437,10 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
               : getSutAlertBadgeLabel("unavailable")}
           </Chip>
           {!surchargeExact && (
-            <p className="text-xs text-[var(--text-secondary)]">
-              {getUnavailableMessage(
-                optimization.surcharge_exposure,
-                t("billing.sutOptimization.surchargeUnavailable"),
-              )}
-            </p>
+            <ExactnessNotice
+              block={optimization.surcharge_exposure}
+              fallback={t("billing.sutOptimization.surchargeUnavailable")}
+            />
           )}
         </Surface>
 
@@ -2446,12 +2454,10 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
               : t("common.unavailable")}
           </p>
           {!rateExact && (
-            <p className="text-xs text-[var(--text-secondary)]">
-              {getUnavailableMessage(
-                optimization.copay_rate_exposure,
-                t("billing.sutOptimization.copayRateUnavailable"),
-              )}
-            </p>
+            <ExactnessNotice
+              block={optimization.copay_rate_exposure}
+              fallback={t("billing.sutOptimization.copayRateUnavailable")}
+            />
           )}
         </Surface>
 
@@ -2485,12 +2491,10 @@ export function SutOptimizationSection({ optimization }: { optimization: Patient
                 )}
               </>
             ) : (
-              <p className="text-xs text-[var(--text-secondary)]">
-                {getUnavailableMessage(
-                  optimization.drg_unbundling,
-                  t("billing.sutOptimization.drgUnavailable"),
-                )}
-              </p>
+              <ExactnessNotice
+                block={optimization.drg_unbundling}
+                fallback={t("billing.sutOptimization.drgUnavailable")}
+              />
             )}
           </Surface>
         )}

@@ -15,6 +15,7 @@ import {
   Surface,
   Toolbar,
   Button,
+  EmptyState,
   buttonActiveClass,
   inputClass,
 } from "@/components/primitives";
@@ -144,6 +145,14 @@ export function ClauseBrowserPanel({
   const totalPages = result?.total_pages ?? 0;
   const total = result?.clause_total ?? 0;
 
+  const resetFilters = () => {
+    setQuery("");
+    setStatusFilter("");
+    setGapFilter(false);
+    setEncodingFilter(false);
+    setRuleFilter("");
+  };
+
   return (
     <div className="space-y-4">
       <Toolbar
@@ -231,11 +240,15 @@ export function ClauseBrowserPanel({
               <p className="text-sm text-[var(--danger)]">{error}</p>
             </Surface>
           ) : clauses.length === 0 && !loading ? (
-            <Surface variant="soft" padding="md" className="text-center">
-              <p className="text-sm text-[var(--text-secondary)]">
-                {t("sections.ruleDatabase.detail.noClauses")}
-              </p>
-            </Surface>
+            <EmptyState
+              title={t("sections.ruleDatabase.detail.noClauses")}
+              className="min-h-0 border-transparent bg-transparent"
+              action={
+                <Button variant="secondary" size="compact" onClick={resetFilters}>
+                  {t("sections.ruleDatabase.resetFilters")}
+                </Button>
+              }
+            />
           ) : (
             <>
               <div className="text-[11px] text-[var(--text-muted)]">

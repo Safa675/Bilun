@@ -204,6 +204,7 @@ export function RuleDatabaseSection() {
                   selectedRuleId={activeRuleId}
                   onSelect={setSelectedRuleId}
                   zeroClauseRuleIds={zeroClauseRuleIds}
+                  onClearFilters={() => { setQuery(""); setStatusFilter("all"); }}
                 />
                 {activeRuleId ? (
                   <RuleDetailPanel
