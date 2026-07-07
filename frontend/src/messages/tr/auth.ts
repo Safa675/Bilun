@@ -1,6 +1,6 @@
 const auth = {
   login: {
-    title: "BILUN'a giriş yapın",
+    title: "Bilun'a giriş yapın",
     subtitle: "Devam etmek için ortak kimlik bilgilerini girin.",
     username: "Kullanıcı adı",
     password: "Parola",

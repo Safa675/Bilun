@@ -145,7 +145,7 @@ const billing = {
   },
   "medulaPlaybook": {
     "title": "MEDULA red → düzeltici yeniden fatura rehberi",
-    "scopeFootnote": "MEDULA red kodlarını SUT dayanaklı düzeltici işlem şablonlarına eşler. Yalnızca operasyonel rehber — BILUN MEDULA'ya otomatik yeniden fatura göndermez.",
+    "scopeFootnote": "MEDULA red kodlarını SUT dayanaklı düzeltici işlem şablonlarına eşler. Yalnızca operasyonel rehber — Bilun MEDULA'ya otomatik yeniden fatura göndermez.",
     "unavailable": "MEDULA rehberi için isteğe bağlı MEDULA red olayı içe aktarım satırları gerekir.",
     "claim": "Fatura",
     "stage": "MEDULA aşaması",

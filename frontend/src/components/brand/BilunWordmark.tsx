@@ -10,7 +10,7 @@ import { type CSSProperties, type HTMLAttributes } from "react";
 import BilunMark from "./BilunMark";
 
 export interface BilunWordmarkProps extends HTMLAttributes<HTMLAnchorElement> {
-  /** Wordmark text. Defaults to "BILUN". */
+  /** Wordmark text. Defaults to "Bilun". */
   label?: string;
   /** When false, render the wordmark without the crescent mark. */
   withMark?: boolean;
@@ -33,7 +33,7 @@ const baseStyle: CSSProperties = {
 };
 
 export default function BilunWordmark({
-  label = "BILUN",
+  label = "Bilun",
   withMark = true,
   href,
   size = 24,
@@ -49,7 +49,7 @@ export default function BilunWordmark({
 
   const content = (
     <>
-      {withMark ? <BilunMark size={size} title="BILUN" /> : null}
+      {withMark ? <BilunMark size={size} title="Bilun" /> : null}
       <span style={{ fontSize: `${size * 0.92}px` }}>{label}</span>
     </>
   );

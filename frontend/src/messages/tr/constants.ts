@@ -1,14 +1,14 @@
 const constants = {
   brand: {
-    productName: "BILUN",
-    metaTitle: "BILUN",
-    metaDescription: "BILUN fatura kuralı zekası modülü",
+    productName: "Bilun",
+    metaTitle: "Bilun",
+    metaDescription: "Bilun fatura kuralı zekası modülü",
     heroDescription:
       "SGK/SUT analitiği, talep doğrulama, mali maruziyet ve optimizasyon iş akışları için bağımsız SUT çalışma alanı.",
     billingTitle: "Hasta fatura raporu",
     billingDescription:
       "Laboratuvar, ilaç, katılım payı politikası, fatura stratejisi ve malzeme kontrolleri için hasta bazlı SUT kural incelemesi.",
-    moduleLabel: "BILUN",
+    moduleLabel: "Bilun",
   },
   homeTabs: {
     patients: {

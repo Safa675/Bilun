@@ -20,7 +20,7 @@ const patient = {
     "eyebrow": "Finansal özet",
     "title": "Tüm faturalar özeti",
     "titleBill": "Fatura {claimId}",
-    "description": "Her talep için hasta düzeyinde toplamlar: faturalanan, SUT'un ödemesini beklediği tutar ve BILUN'un hâlâ kurtarabileceği miktar.",
+    "description": "Her talep için hasta düzeyinde toplamlar: faturalanan, SUT'un ödemesini beklediği tutar ve Bilun'un hâlâ kurtarabileceği miktar.",
     "descriptionBill": "Yalnızca seçili fatura için toplamlar — aşağıdaki bölümler aynı kapsamı kullanır.",
     "totalBilled": "Toplam faturalanan",
     "expectedPayable": "Beklenen ödenecek",

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CircleHelp, LogOut } from "lucide-react";
-import Image from "next/image";
+import BilunWordmark from "@/components/brand/BilunWordmark";
 import { SyntheticDemoChip } from "@/components/sut/SyntheticDemoProvenance";
 import LocaleSwitcher from "@/components/shell/LocaleSwitcher";
 import RoleSwitcher from "@/components/shell/RoleSwitcher";
@@ -110,14 +110,9 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
     >
       {/* Zone 1: Brand + Navigation */}
       <div className="flex items-center gap-8">
-        <Image
-          src="/bilun-logo.png"
-          alt={t("shell.appTopBar.logoAlt")}
-          width={2836}
-          height={1504}
-          className="h-7 w-auto object-contain"
-          priority
-        />
+        <Link href="/" className="inline-flex items-center">
+          <BilunWordmark size={20} />
+        </Link>
 
         <SyntheticDemoChip dataSource={sutDataSource} />
 

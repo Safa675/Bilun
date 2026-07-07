@@ -1,9 +1,9 @@
 const designSystem = {
   eyebrow: "Design system · Phase 1",
-  title: "BILUN",
+  title: "Bilun",
   titleAccent: "primitives",
   intro:
-    "Locked palette and typography from BILUN_EN.pptx — verify renderer fidelity before reskinning real pages.",
+    "Locked palette and typography from Bilun investor deck — verify renderer fidelity before reskinning real pages.",
   palette: {
     title: "Palette",
     titleAccent: "tokens",
@@ -85,7 +85,7 @@ const designSystem = {
   brand: {
     title: "Brand",
     titleAccent: "mark",
-    markTitle: "BILUN mark",
+    markTitle: "Bilun mark",
   },
   focus: {
     title: "Focus state",

@@ -13,3 +13,5 @@ First PR: quiet premium polish (spacing, typography, gold discipline) plus billi
 
 ### Out of Scope (follow-up PRs)
 - Button primitive; chat panel polish; stagger re-enable; full legacy.css burn-down
+
+→ **Full roadmap:** `plans/frontend/premium-ui-enhancement-plan.md` (Phases 2–6)

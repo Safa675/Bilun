@@ -6,8 +6,8 @@ const shell = {
     tr: "Turkish",
   },
   appTopBar: {
-    ariaApplicationBar: "BILUN application bar",
-    logoAlt: "BILUN",
+    ariaApplicationBar: "Bilun application bar",
+    logoAlt: "Bilun",
     ariaHomeTabs: "SUT home tabs",
     howItWorks: "How it works",
   },

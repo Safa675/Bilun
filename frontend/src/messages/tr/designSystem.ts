@@ -1,9 +1,9 @@
 const designSystem = {
   eyebrow: "Tasarım sistemi · Faz 1",
-  title: "BILUN",
+  title: "Bilun",
   titleAccent: "bileşenler",
   intro:
-    "BILUN_EN.pptx dosyasındaki kilitli palet ve tipografi — gerçek sayfalar yeniden kaplanmadan önce oluşturucu doğruluğunu doğrulayın.",
+    "Bilun sunum dosyasındaki kilitli palet ve tipografi — gerçek sayfalar yeniden kaplanmadan önce oluşturucu doğruluğunu doğrulayın.",
   palette: {
     title: "Palet",
     titleAccent: "belirteçler",
@@ -85,7 +85,7 @@ const designSystem = {
   brand: {
     title: "Marka",
     titleAccent: "işaret",
-    markTitle: "BILUN işareti",
+    markTitle: "Bilun işareti",
   },
   focus: {
     title: "Odak durumu",

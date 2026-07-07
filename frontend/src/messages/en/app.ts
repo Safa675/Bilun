@@ -7,9 +7,9 @@ const app = {
     "backToWorkspace": "Back to SUT workspace"
   },
   "howItWorks": {
-    "ariaLabel": "How BILUN works",
+    "ariaLabel": "How Bilun works",
     "closeAria": "Close how it works modal",
-    "kicker": "BILUN",
+    "kicker": "Bilun",
     "title": "How the SUT workspace works",
     "intro": "The split SUT app focuses on billing rule analytics, exactness-aware optimization, and patient financial review without reaching back into mixed legacy IHP surfaces.",
     "phaseNavAria": "SUT methodology phases",
@@ -21,7 +21,7 @@ const app = {
     "phases": {
       "01": {
         "title": "Gazette catalog assembly",
-        "description": "BILUN reads the curated gazette schedules that back current procedure pricing, DRG package pricing, and normative SUT controls.",
+        "description": "Bilun reads the curated gazette schedules that back current procedure pricing, DRG package pricing, and normative SUT controls.",
         "detail1": "Canonical SUT pricing uses dated gazette catalog lookups.",
         "detail2": "Procedure, DRG, material, and checkup references stay within SUT-owned routes.",
         "detail3": "Historical package availability is preserved instead of silently falling forward.",

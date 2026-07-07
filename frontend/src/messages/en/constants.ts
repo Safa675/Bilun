@@ -1,14 +1,14 @@
 const constants = {
   brand: {
-    productName: "BILUN",
-    metaTitle: "BILUN",
-    metaDescription: "BILUN billing rule intelligence module",
+    productName: "Bilun",
+    metaTitle: "Bilun",
+    metaDescription: "Bilun billing rule intelligence module",
     heroDescription:
       "A standalone SUT workspace for SGK/SUT analytics, claim validation, financial exposure, and optimization workflows.",
     billingTitle: "Patient billing report",
     billingDescription:
       "Per-patient SUT rule review for labs, drugs, copay policy, billing strategy, and materials controls.",
-    moduleLabel: "BILUN",
+    moduleLabel: "Bilun",
   },
   homeTabs: {
     patients: {
