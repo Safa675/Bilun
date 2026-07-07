@@ -111,3 +111,31 @@ Diagnosis: `auto` spawned workers matching the runner's 2-4 cores, but the worke
 **Net CI improvement: ~0.8 min saved per run (7.5 → ~6.7 min backend), plus the pip cache makes dep-install deterministic.** Smaller than the ~5 min initially projected because (a) the serial test baseline on the runner was already 405s, not the 218s seen on the dev machine, and (b) xdist didn't help. The bigger remaining lever is **B5** (profile the orchestrator — ~1s/patient is high) and **B6** (smaller cohort for CI), both out of scope here.
 
 **Honest lesson:** the investigation's local measurements (218s serial, 132s xdist) did not predict CI behavior (405s serial, 572s xdist) — the dev machine has more effective cores/memory than the shared runner. Always measure on the target environment before committing to a parallelization change.
+
+---
+
+### B5 — orchestrator profiling + fix (implemented, commit 5a3a918)
+
+cProfile of `compute_all_billing_reports` (50 patients) found the ~1s/patient cost was **two classic anti-patterns**, not inherent orchestrator complexity:
+
+| Hotspot | Before | Root cause |
+|---|---|---|
+| `_load_curated_ek2b_by_asof` | 62s | re-read parquet + `pandas.iterrows` (0.887s/call) × 87 distinct procedure dates; no result cache |
+| `_load_curated_ek2c_by_asof` | 21s | same iterrows pattern |
+| `pandas.iterrows` (aggregate) | 42s | 837,734 per-row Series allocations |
+| `_drug_name_matches` + `re._compile` | 36s + 26s | regex recompiled 241,740× |
+
+**Fix A (gazette.py):** three layered caches — read parquet once per process, parse effective_date once, cache the filtered-by-date result dict per asof_date; replaced `iterrows` with `to_dict(orient="records")` (6.5× faster, measured).
+**Fix B (drug_indication.py):** `@lru_cache` the compiled word-boundary regex per INN token.
+
+**Measured impact (cProfile, same 50-patient cohort):**
+- Total: **152.2s → 54.1s (-64%)**
+- Per-patient: ~3.04s → ~1.08s
+- `_load_curated_ek2b_by_asof`: 62s → 9.65s
+- `_drug_name_matches` / iterrows: dropped out of top-20 entirely
+
+**CI test step (same runner):** 380s → **322s** (-58s, -15%). Backend total: 7m08s → **6m11s**.
+
+**New (previously masked) hotspot, out of scope:** `difflib.ratio` in `ek4d_exempt.fuzzy_match_name` (~19s) — fuzzy drug-name matching. Separate optimization.
+
+**Correctness:** 1844 tests pass; outputs byte-identical (only iteration strategy changed).
