@@ -53,7 +53,7 @@
       "primary_icd10": "E11.3",
       "report_present": true,
       "prescriber_specialty": "göz hastalıkları",
-      "annual_application_count": 3,
+      "annual_application_count": 5,
       "expect_violation": "annual_max_exceeded",
       "rule_id": "4.2.33.Ç.deksametazon_timing_after_anti_vegf"
     }
