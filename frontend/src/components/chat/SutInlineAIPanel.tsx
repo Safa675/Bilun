@@ -23,6 +23,7 @@ import type { SutChatDockPosition, SutInlineChatState } from "@/stores/storeInte
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useT } from "@/lib/i18n/useTranslations";
 import { useUserRole } from "@/components/shell/RoleProvider";
+import { Button, buttonActiveClass, EmptyState } from "@/components/primitives";
 
 interface SutInlineAIPanelProps {
   patientId?: string | null;
@@ -45,9 +46,6 @@ const CHAT_INPUT_CLASS =
 
 const CHAT_CURSOR_CLASS =
   "inline-block h-3.5 w-1.5 ml-0.5 align-text-bottom bg-[var(--gold)] [animation:sutChatCursorBlink_1s_step-end_infinite]";
-
-const CHAT_ICON_BTN_CLASS =
-  "inline-flex items-center justify-center rounded-[var(--r-md)] border-none bg-transparent p-[0.3rem] text-[var(--text-muted)] transition-[background,color] duration-150 hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]";
 
 function resolvePromptKey(activeTab: string): string {
   const map: Record<string, string> = {
@@ -464,56 +462,56 @@ export default function SutInlineAIPanel({
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button
-            type="button"
+          <Button
+            variant="icon"
             onClick={() => {
               setAutoError(null);
               fireAutoAnalysis({ force: true });
             }}
             aria-label={t("chat.actions.regenerateAnalysis")}
             title={t("chat.actions.regenerateAnalysis")}
-            className={CHAT_ICON_BTN_CLASS}
+            className="h-7 w-7 border-transparent text-[var(--text-muted)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-          </button>
+          </Button>
           {onDockChange && (
             <div className="flex items-center gap-1">
-              <button
-                type="button"
+              <Button
+                variant="icon"
                 onClick={() => onDockChange("left")}
                 aria-label={t("chat.actions.dockLeft")}
                 title={t("chat.actions.dockLeft")}
                 className={cn(
-                  CHAT_ICON_BTN_CLASS,
-                  dock === "left" && "bg-[var(--gold-subtle)] text-[var(--gold)]",
+                  "h-7 w-7 border-transparent text-[var(--text-muted)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]",
+                  dock === "left" && buttonActiveClass,
                 )}
               >
                 <PanelLeft className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="icon"
                 onClick={() => onDockChange("center")}
                 aria-label={t("chat.actions.centerInline")}
                 title={t("chat.actions.centerInline")}
                 className={cn(
-                  CHAT_ICON_BTN_CLASS,
-                  dock === "center" && "bg-[var(--gold-subtle)] text-[var(--gold)]",
+                  "h-7 w-7 border-transparent text-[var(--text-muted)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]",
+                  dock === "center" && buttonActiveClass,
                 )}
               >
                 <Minimize2 className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="icon"
                 onClick={() => onDockChange("right")}
                 aria-label={t("chat.actions.dockRight")}
                 title={t("chat.actions.dockRight")}
                 className={cn(
-                  CHAT_ICON_BTN_CLASS,
-                  dock === "right" && "bg-[var(--gold-subtle)] text-[var(--gold)]",
+                  "h-7 w-7 border-transparent text-[var(--text-muted)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]",
+                  dock === "right" && buttonActiveClass,
                 )}
               >
                 <PanelRight className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -521,7 +519,11 @@ export default function SutInlineAIPanel({
 
       <div className={cn("min-h-6 overflow-y-auto whitespace-pre-wrap text-[13px] leading-[1.65] text-[var(--text-primary)]", dock === "center" ? "max-h-52" : "max-h-none")}>
         {displayedMessages.length === 0 && !isAutoLoading && !autoError && (
-          <span className="italic text-[var(--text-muted)]">{t("chat.emptyState")}</span>
+          <EmptyState
+            icon={<Sparkles className="h-5 w-5" />}
+            title={t("chat.emptyState")}
+            className="min-h-0 border-transparent bg-transparent px-0 py-6"
+          />
         )}
 
         {displayedMessages.map((message, index) => {
@@ -575,22 +577,24 @@ export default function SutInlineAIPanel({
         )}
 
         {autoError && !isAutoLoading && (
-          <div className="flex items-start gap-2 text-[var(--danger)]">
-            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <span>
-              {autoError}{" "}
-              <button
-                type="button"
+          <EmptyState
+            icon={<AlertCircle className="h-5 w-5 text-[var(--danger)]" />}
+            title={autoError}
+            className="min-h-0 border-[var(--danger)]/30 bg-transparent px-0 py-6"
+            action={
+              <Button
+                variant="ghost"
+                size="compact"
                 onClick={() => {
                   setAutoError(null);
                   fireAutoAnalysis({ force: true });
                 }}
-                className="cursor-pointer border-none bg-transparent p-0 font-[inherit] text-[var(--gold)] underline"
+                className="text-[var(--gold)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold-hover)]"
               >
                 {t("common.retry")}
-              </button>
-            </span>
-          </div>
+              </Button>
+            }
+          />
         )}
       </div>
 
@@ -644,15 +648,15 @@ export default function SutInlineAIPanel({
           className={CHAT_INPUT_CLASS}
           style={{ minHeight: CHAT_INPUT_MIN_HEIGHT_PX, maxHeight: CHAT_INPUT_MAX_HEIGHT_PX }}
         />
-        <button
-          type="button"
+        <Button
+          variant="icon"
           onClick={handleSend}
           disabled={!input.trim() || isResponding || isAutoLoading}
           aria-label={t("chat.actions.sendMessage")}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--r-md)] border-none bg-[var(--gold)] text-[var(--text-inverse)] transition-colors duration-150 hover:bg-[var(--gold-hover)] disabled:cursor-default disabled:bg-[var(--surface-soft)] disabled:text-[var(--text-muted)]"
+          className="border-none bg-[var(--gold)] text-[var(--text-inverse)] hover:bg-[var(--gold-hover)] hover:border-transparent hover:text-[var(--text-inverse)] disabled:cursor-default disabled:bg-[var(--surface-soft)] disabled:text-[var(--text-muted)] disabled:border-transparent disabled:opacity-100"
         >
           <Send className="h-3.5 w-3.5" />
-        </button>
+        </Button>
       </div>
     </div>
   );

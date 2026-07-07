@@ -16,6 +16,7 @@ import {
   Toolbar,
   Button,
   buttonActiveClass,
+  inputClass,
 } from "@/components/primitives";
 import { EkAnnexChips } from "@/components/sut/RegulatorySourceChips";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -152,7 +153,7 @@ export function ClauseBrowserPanel({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("sections.ruleDatabase.clauses.searchPlaceholder")}
-            className="sut-input min-w-[220px] max-w-[360px]"
+            className={cn(inputClass, "min-w-[220px] max-w-[360px]")}
           />
         }
         trailing={
@@ -208,7 +209,7 @@ export function ClauseBrowserPanel({
               <select
                 value={ruleFilter}
                 onChange={(e) => setRuleFilter(e.target.value)}
-                className="sut-input max-w-[220px] truncate text-[11px]"
+                className={cn(inputClass, "max-w-[220px] truncate text-[11px]")}
                 aria-label={t("sections.ruleDatabase.clauses.filterMotor")}
               >
                 <option value="">{t("sections.ruleDatabase.clauses.filterMotor")}</option>

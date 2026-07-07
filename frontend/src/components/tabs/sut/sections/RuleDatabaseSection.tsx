@@ -18,6 +18,7 @@ import {
   Toolbar,
   Button,
   buttonActiveClass,
+  inputClass,
 } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import { useSutApi } from "../useSutApi";
@@ -174,7 +175,7 @@ export function RuleDatabaseSection() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder={t("sections.ruleDatabase.searchPlaceholder")}
-                    className="sut-input min-w-[220px] max-w-[360px]"
+                    className={cn(inputClass, "min-w-[220px] max-w-[360px]")}
                   />
                 }
               >

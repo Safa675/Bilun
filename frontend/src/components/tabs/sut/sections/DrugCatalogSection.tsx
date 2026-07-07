@@ -5,7 +5,7 @@ import { getDrugCatalog } from "@/lib/api/sut";
 import type { DrugEntry } from "@/lib/api/sut";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import { fmtNum, fmtPct } from "../shared";
-import { DataTable, Surface, Button } from "@/components/primitives";
+import { DataTable, Surface, Button, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 
 export function DrugCatalogSection() {
@@ -50,7 +50,7 @@ export function DrugCatalogSection() {
         placeholder={t("sections.drugCatalog.searchPlaceholder")}
         value={query}
         onChange={e => { setQuery(e.target.value); setPage(1); }}
-        className="sut-input"
+        className={inputClass}
         style={{ marginBottom: 10, width: "100%", maxWidth: 400 }}
       />
       {loading ? (

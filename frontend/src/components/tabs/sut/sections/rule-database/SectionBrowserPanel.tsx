@@ -25,6 +25,7 @@ import {
   DataTableCell,
   Button,
   buttonActiveClass,
+  inputClass,
 } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 import { fmtNum } from "../../shared";
@@ -130,7 +131,7 @@ export function SectionBrowserPanel({
             value={query}
             onChange={(e) => { setQuery(e.target.value); setPage(1); }}
             placeholder={t("sections.ruleDatabase.sections.searchPlaceholder")}
-            className="sut-input min-w-[220px] max-w-[360px]"
+            className={cn(inputClass, "min-w-[220px] max-w-[360px]")}
           />
         }
         trailing={
@@ -141,7 +142,7 @@ export function SectionBrowserPanel({
               value={minGapCount}
               onChange={(e) => { setMinGapCount(e.target.value); setPage(1); }}
               placeholder={t("sections.ruleDatabase.sections.minGapFilter")}
-              className="sut-input w-[140px]"
+              className={cn(inputClass, "w-[140px]")}
             />
             <Button
               variant="secondary"

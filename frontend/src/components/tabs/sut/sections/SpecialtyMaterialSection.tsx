@@ -5,7 +5,7 @@ import { getMaterialsBySpecialty } from "@/lib/api/sut";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import type { MaterialEntry } from "@/lib/domains/sut";
 import { fmtNum, fmtTRY } from "../shared";
-import { DataTable, Surface, Button, buttonActiveClass } from "@/components/primitives";
+import { DataTable, Surface, Button, buttonActiveClass, inputClass } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
 
@@ -54,7 +54,7 @@ export function SpecialtyMaterialSection() {
       <select
         value={selected}
         onChange={e => setSelected(e.target.value)}
-        className="sut-input"
+        className={inputClass}
         style={{ marginBottom: 10, minWidth: 250 }}
       >
         <option value="">{t("sections.specialtyMaterial.allSpecialties")}</option>

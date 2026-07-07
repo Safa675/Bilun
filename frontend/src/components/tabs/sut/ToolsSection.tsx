@@ -23,8 +23,12 @@ export function ReferenceToolsContent() {
 
   return (
     <div>
-      <div className="sut-section-divider mb-4">
-        <span className="sut-section-divider-label">{t("sections.tools.dividerLabel")}</span>
+      <div className="mb-4 flex items-center gap-3">
+        <span className="h-px flex-1 bg-[var(--border-subtle)]" />
+        <span className="whitespace-nowrap text-[0.72rem] font-extrabold uppercase tracking-[0.16em] text-[var(--gold)]">
+          {t("sections.tools.dividerLabel")}
+        </span>
+        <span className="h-px flex-1 bg-[var(--border-subtle)]" />
       </div>
       <BillingToolsSection />
     </div>

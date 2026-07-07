@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import BilunWordmark from "@/components/brand/BilunWordmark";
-import { Button } from "@/components/primitives";
+import { Button, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 
 /**
@@ -83,7 +83,7 @@ export default function LoginPage() {
               autoFocus
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="sut-input"
+              className={inputClass}
             />
           </div>
 
@@ -102,7 +102,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="sut-input"
+              className={inputClass}
             />
           </div>
 

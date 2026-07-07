@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Search } from "lucide-react";
-import { Button, buttonActiveClass } from "@/components/primitives";
+import { Button, buttonActiveClass, inputClass } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import { theme } from "@/lib/theme";
 import type { PatientSearchResponse, PatientSearchResult } from "@/lib/domains/patient";
@@ -173,7 +173,7 @@ export default function PatientSearch({
           ref={inputRef}
           id={id}
           type="text"
-          className="glass app-select patient-search-input"
+          className={cn(inputClass, "patient-search-input")}
           style={{
             width: "100%",
             cursor: disabled ? "not-allowed" : "text",

@@ -88,6 +88,7 @@ import {
   TabsList,
   TabsRoot,
   TabsTrigger,
+  inputClass,
 } from "@/components/primitives";
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -266,7 +267,7 @@ function AlertQueryBar({
                 onChange={handlePageInputChange}
                 placeholder={String(currentPage)}
                 disabled={loading || totalPages <= 1}
-                className="glass app-select sut-page-jump-control"
+                className={`${inputClass} w-24 px-2.5 py-1.5 text-xs`}
               />
               <button
                 type="submit"
@@ -1453,7 +1454,7 @@ function RevenueRecoveryDashboard({
               {displayData.top_patients.map((p, i) => (
                 <tr key={i}>
                   <td className="font-mono text-xs">
-                    <Link href={buildSutBillingHref(p.patient_id)} className="patient-id-link" style={{ color: ACCENT }}>
+                    <Link href={buildSutBillingHref(p.patient_id)} className="font-semibold no-underline transition-colors hover:underline" style={{ color: ACCENT }}>
                       {p.patient_id}
                     </Link>
                   </td>

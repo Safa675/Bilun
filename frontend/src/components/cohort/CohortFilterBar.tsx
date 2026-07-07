@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Filter } from "lucide-react";
-import { Chip, Eyebrow, Surface, Button } from "@/components/primitives";
+import { Chip, Eyebrow, Surface, Button, inputClass, selectClass } from "@/components/primitives";
 import { useCohortFilter } from "@/hooks/useCohortFilter";
 import { fmtNum } from "@/components/tabs/sut/shared";
 import {
@@ -84,7 +84,7 @@ export default function CohortFilterBar({
             value={filter.q && (selectedPatientInList || filter.q) ? filter.q : ""}
             onChange={(event) => setFilter({ q: event.target.value })}
             disabled={sortedPatients.length === 0}
-            className="sut-input app-select"
+            className={cn(selectClass)}
           >
             <option value="">
               {sortedPatients.length === 0
@@ -111,7 +111,7 @@ export default function CohortFilterBar({
             onChange={(event) =>
               setFilter({ sex: event.target.value as "" | "E" | "K" })
             }
-            className="sut-input app-select"
+            className={cn(selectClass)}
           >
             <option value="">{t("cohort.filterBar.sexAll")}</option>
             <option value="E">{t("cohort.filterBar.sexE")}</option>
@@ -133,7 +133,7 @@ export default function CohortFilterBar({
               if (event.key === "Enter") commitAgeRange();
             }}
             placeholder={t("cohort.filterBar.agePlaceholder")}
-            className="sut-input tabular-nums"
+            className={cn(inputClass, "tabular-nums")}
           />
         </label>
 
@@ -150,7 +150,7 @@ export default function CohortFilterBar({
               if (event.key === "Enter") setFilter({ doctor: doctorDraft.trim() });
             }}
             placeholder={t("cohort.filterBar.doctorPlaceholder")}
-            className="sut-input"
+            className={inputClass}
           />
         </label>
 

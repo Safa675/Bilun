@@ -52,3 +52,5 @@ export type { EmptyStateProps } from "./EmptyState";
 
 export { default as Button, buttonActiveClass } from "./Button";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
+
+export { inputClass, selectClass } from "./form";

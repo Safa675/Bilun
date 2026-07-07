@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "./styles/legacy.css";
 
 /* ─────────────────────────────────────────────────────────────────────
    BILUN design tokens — sourced from BILUN_EN.pptx investor deck.
@@ -284,4 +283,25 @@ textarea:focus-visible {
     animation: none;
     transform: none;
   }
+}
+
+/* ── App layout shells ─────────────────────────────────────────────────
+   Relocated from styles/legacy.css during Phase 5 cleanup. These are
+   structural layout rules that respond to the chat-dock CSS variables
+   (min-height + responsive padding offsets) and are not expressible as
+   single Tailwind utilities, so they live here as real classes.
+   ──────────────────────────────────────────────────────────────────── */
+
+.sut-app-main {
+  min-height: 100vh;
+  padding: 2.5rem calc(1.5rem + var(--chat-dock-inset-right, 0px)) 2rem
+    calc(1.5rem + var(--chat-dock-inset-left, 0px));
+  background: var(--surface-base);
+  transition: padding 0.25s ease;
+}
+
+.sut-app-top-bar {
+  padding-left: calc(1.5rem + var(--chat-dock-inset-left, 0px)) !important;
+  padding-right: calc(1.5rem + var(--chat-dock-inset-right, 0px)) !important;
+  transition: padding 0.25s ease;
 }
