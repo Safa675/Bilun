@@ -1,0 +1,48 @@
+section_id: 1.8.1
+source_note: AI-drafted from §1.8.1.(1) base muayene copay schedule (audit follow-up)
+rules:
+- rule_id: 1.8.1.(1).muayene_copay_schedule
+  sut_section: 1.8.1
+  service_type: copay_muayene
+  copay_schedule:
+    first_tier_facility:
+      copay_try: 0
+      note: birinci basamak muayene — katılım payı alınmaz
+    second_third_tier_public:
+      copay_try: 26
+    sb_education_research_and_3rd_tier_sb_hospital:
+      copay_try: 26
+    university_dental_faculty:
+      copay_try: 26
+    state_university_medical_faculty:
+      copay_try: 26
+    foundation_university_medical_faculty:
+      copay_try: 26
+    private_second_third_tier:
+      copay_try: 60
+  condition:
+    service: physician_or_dental_muayene
+  gate_b_sources:
+  - C000287
+  - C000288
+  - C000289
+  - C000290
+  - C000291
+  - C000292
+  - C000293
+  verification_status: ai_generated_pending_review
+  content_note: 'Flat TRY amounts (26 TL public/university, 60 TL private, first-tier free). Version-sensitive — last repriced
+    by C000276 (effective 2026-01-01); confirm against the current gazette before live use.'
+- rule_id: 1.8.1.family_physician_referral_50pct_reduction
+  sut_section: 1.8.1
+  service_type: copay_muayene_modifier
+  condition:
+    referred_from_family_physician: true
+    service: physician_or_dental_muayene
+  action:
+    copay_rate_multiplier: 0.5
+  gate_b_sources:
+  - C000294
+  verification_status: ai_generated_pending_review
+  content_note: Family-physician-referred muayene copay reduced by 50% (aile hekiminden sevk edilerek yapılan muayenelerde
+    katılım payı %50 azaltılır).

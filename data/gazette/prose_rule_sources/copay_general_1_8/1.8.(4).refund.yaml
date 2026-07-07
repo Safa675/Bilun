@@ -1,0 +1,17 @@
+section_id: 1.8.(4)
+source_note: AI-drafted from §1.8.(4) copay refund clause (audit follow-up)
+rules:
+- rule_id: 1.8.(4).copay_refund_sydv
+  sut_section: 1.8.(4)
+  service_type: copay_refund
+  condition:
+    beneficiary_category: gss_under_5510_60_1c_sub_1_2_3_or_dependent
+    refund_requested: true
+  action:
+    refund_by: social_solidarity_foundation_sydv
+    refund_scope: previously_collected_copay
+  gate_b_sources:
+  - C000237
+  verification_status: ai_generated_pending_review
+  content_note: GSS beneficiaries under 5510/60/1(c)(1-3) (and dependents) may have paid copays refunded by the social solidarity
+    foundation (SYDV) on request.

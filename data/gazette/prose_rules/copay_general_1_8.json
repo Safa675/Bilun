@@ -94,8 +94,11 @@
         "line_kind": "external_prosthesis_orthosis"
       },
       "gate_b_sources": [
-        "C000333"
-      ]
+        "C000333",
+        "C000338"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "content_note": "Misattribution fixed: the 10%/20% rates were cited only to C000333 (a bare lead-in with no rate). The rates actually live in C000338 (§1.8.3.(2)); added it as a source. Largely redundant with 1.8.3.(2) — consider consolidating."
     },
     {
       "rule_id": "1.8.3.(2)",
@@ -115,7 +118,10 @@
         "C000342",
         "C000346",
         "C000348"
-      ]
+      ],
+      "max_copay_pct_of_minimum_wage": 75,
+      "verification_status": "ai_generated_pending_review",
+      "content_note": "Added the hard cap from C000338: material copay may not exceed 75% of the gross minimum wage (katılım payı tutarı brüt asgari ücretin %75 ini geçemez). Previously only the 10%/20% rates were modeled."
     },
     {
       "rule_id": "1.8.4.(1)",
@@ -336,6 +342,302 @@
       "gate_b_sources": [
         "C000363"
       ]
+    },
+    {
+      "rule_id": "1.8.(4).copay_refund_sydv",
+      "sut_section": "1.8.(4)",
+      "service_type": "copay_refund",
+      "condition": {
+        "beneficiary_category": "gss_under_5510_60_1c_sub_1_2_3_or_dependent",
+        "refund_requested": true
+      },
+      "action": {
+        "refund_by": "social_solidarity_foundation_sydv",
+        "refund_scope": "previously_collected_copay"
+      },
+      "gate_b_sources": [
+        "C000237"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "content_note": "GSS beneficiaries under 5510/60/1(c)(1-3) (and dependents) may have paid copays refunded by the social solidarity foundation (SYDV) on request."
+    },
+    {
+      "rule_id": "1.8.1.(1).muayene_copay_schedule",
+      "sut_section": "1.8.1",
+      "service_type": "copay_muayene",
+      "copay_schedule": {
+        "first_tier_facility": {
+          "copay_try": 0,
+          "note": "birinci basamak muayene — katılım payı alınmaz"
+        },
+        "second_third_tier_public": {
+          "copay_try": 26
+        },
+        "sb_education_research_and_3rd_tier_sb_hospital": {
+          "copay_try": 26
+        },
+        "university_dental_faculty": {
+          "copay_try": 26
+        },
+        "state_university_medical_faculty": {
+          "copay_try": 26
+        },
+        "foundation_university_medical_faculty": {
+          "copay_try": 26
+        },
+        "private_second_third_tier": {
+          "copay_try": 60
+        }
+      },
+      "condition": {
+        "service": "physician_or_dental_muayene"
+      },
+      "gate_b_sources": [
+        "C000287",
+        "C000288",
+        "C000289",
+        "C000290",
+        "C000291",
+        "C000292",
+        "C000293"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "content_note": "Flat TRY amounts (26 TL public/university, 60 TL private, first-tier free). Version-sensitive — last repriced by C000276 (effective 2026-01-01); confirm against the current gazette before live use."
+    },
+    {
+      "rule_id": "1.8.1.family_physician_referral_50pct_reduction",
+      "sut_section": "1.8.1",
+      "service_type": "copay_muayene_modifier",
+      "condition": {
+        "referred_from_family_physician": true,
+        "service": "physician_or_dental_muayene"
+      },
+      "action": {
+        "copay_rate_multiplier": 0.5
+      },
+      "gate_b_sources": [
+        "C000294"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "content_note": "Family-physician-referred muayene copay reduced by 50% (aile hekiminden sevk edilerek yapılan muayenelerde katılım payı %50 azaltılır)."
+    },
+    {
+      "rule_id": "1.8.5.(1).work_accident_occupational_disease",
+      "sut_section": "1.8.5",
+      "service_type": "copay_exemption",
+      "exemption_category": "work_accident_occupational_disease",
+      "condition": {
+        "care_context": "work_accident_or_occupational_disease"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": [
+          "1.8.1",
+          "1.8.2",
+          "1.8.3"
+        ]
+      },
+      "gate_b_sources": [
+        "C000355"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "1.8.5.(11).istiklal_madalyasi_pensioner",
+      "sut_section": "1.8.5",
+      "service_type": "copay_exemption",
+      "exemption_category": "istiklal_madalyasi_pensioner_and_spouse",
+      "condition": {
+        "beneficiary_category": "1005_sayili_istiklal_madalyasi_honor_pensioner_or_spouse"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": [
+          "1.8.1",
+          "1.8.2",
+          "1.8.3",
+          "1.8.4"
+        ]
+      },
+      "gate_b_sources": [
+        "C000365"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "1.8.5.(12).vatani_hizmet_pensioner",
+      "sut_section": "1.8.5",
+      "service_type": "copay_exemption",
+      "exemption_category": "vatani_hizmet_pensioner",
+      "condition": {
+        "beneficiary_category": "3292_sayili_vatani_hizmet_pensioner"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": [
+          "1.8.1",
+          "1.8.2",
+          "1.8.3"
+        ]
+      },
+      "gate_b_sources": [
+        "C000366"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "1.8.5.(13).nakdi_tazminat_pensioner",
+      "sut_section": "1.8.5",
+      "service_type": "copay_exemption",
+      "exemption_category": "nakdi_tazminat_pensioner_and_dependents",
+      "condition": {
+        "beneficiary_category": "2330_sayili_nakdi_tazminat_pensioner_or_dependent"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": [
+          "1.8.1",
+          "1.8.2",
+          "1.8.3",
+          "1.8.4"
+        ]
+      },
+      "gate_b_sources": [
+        "C000367"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "1.8.5.(15).harp_mallulu_terorle_mucadele",
+      "sut_section": "1.8.5",
+      "service_type": "copay_exemption",
+      "exemption_category": "harp_mallulu_or_3713_terorle_mucadele_pensioner_and_dependents",
+      "condition": {
+        "beneficiary_category": "harp_mallulu_or_3713_terorle_mucadele_pensioner_or_dependent"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": [
+          "1.8.1",
+          "1.8.2",
+          "1.8.3",
+          "1.8.4"
+        ]
+      },
+      "gate_b_sources": [
+        "C000369"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "1.8.5.(16).vazife_mallulu",
+      "sut_section": "1.8.5",
+      "service_type": "copay_exemption",
+      "exemption_category": "vazife_mallulu",
+      "condition": {
+        "beneficiary_category": "vazife_mallulu"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": [
+          "1.8.1",
+          "1.8.2",
+          "1.8.3",
+          "1.8.4"
+        ]
+      },
+      "gate_b_sources": [
+        "C000370"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "1.8.5.(21).wounded_3713_21",
+      "sut_section": "1.8.5",
+      "service_type": "copay_exemption",
+      "exemption_category": "wounded_under_3713_article_21",
+      "condition": {
+        "beneficiary_category": "3713_sayili_kanun_21inci_madde_yaralanan",
+        "time_bound": "until_treatment_ends_or_disability_finalized"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": [
+          "1.8.1",
+          "1.8.2",
+          "1.8.3",
+          "1.8.4"
+        ]
+      },
+      "gate_b_sources": [
+        "C000375"
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "content_note": "Time-bounded exemption — applies until treatment concludes or disability is finalized."
+    },
+    {
+      "rule_id": "1.8.5.(22)a.gss_5510_60_12",
+      "sut_section": "1.8.5",
+      "service_type": "copay_exemption",
+      "exemption_category": "gss_under_5510_60_12",
+      "condition": {
+        "beneficiary_category": "5510_sayili_kanun_60_madde_1c_12_alt_bend"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": [
+          "1.8.1",
+          "1.8.2",
+          "1.8.3"
+        ]
+      },
+      "gate_b_sources": [
+        "C000378"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "1.8.5.(22)b.gss_5510_60_13_14",
+      "sut_section": "1.8.5",
+      "service_type": "copay_exemption",
+      "exemption_category": "gss_under_5510_60_13_14_and_dependents",
+      "condition": {
+        "beneficiary_category": "5510_sayili_kanun_60_madde_13_veya_14_fikra_or_dependent"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": [
+          "1.8.1",
+          "1.8.2",
+          "1.8.3",
+          "1.8.4"
+        ]
+      },
+      "gate_b_sources": [
+        "C000379"
+      ],
+      "verification_status": "ai_generated_pending_review"
+    },
+    {
+      "rule_id": "1.8.5.(6).preventive_health_institution_funded",
+      "sut_section": "1.8.5",
+      "service_type": "copay_exemption",
+      "exemption_category": "preventive_health_institution_funded",
+      "condition": {
+        "service": "preventive_health_funded_by_institution"
+      },
+      "action": {
+        "copay_treatment": "no_copay",
+        "waives_sections": [
+          "1.8.1",
+          "1.8.2",
+          "1.8.3"
+        ]
+      },
+      "gate_b_sources": [
+        "C000360"
+      ],
+      "verification_status": "ai_generated_pending_review"
     }
   ],
   "exemptions_ref": {

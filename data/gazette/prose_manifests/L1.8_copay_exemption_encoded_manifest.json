@@ -1,7 +1,18 @@
 {
-  "rules_in_json": 17,
+  "rules_in_json": 30,
   "json_rule_clause_traces": {
+    "1.8.(4).copay_refund_sydv": "C000237",
+    "1.8.1.(1).muayene_copay_schedule": [
+      "C000287",
+      "C000288",
+      "C000289",
+      "C000290",
+      "C000291",
+      "C000292",
+      "C000293"
+    ],
     "1.8.1.(6).farkli_kurum_artis": "C000312",
+    "1.8.1.family_physician_referral_50pct_reduction": "C000294",
     "1.8.2.(1)": [
       "C000314",
       "C000327",
@@ -16,7 +27,10 @@
       "C000323"
     ],
     "1.8.2.(3).enjektabl_kutu": "C000325",
-    "1.8.3.(1).protez_ortez": "C000333",
+    "1.8.3.(1).protez_ortez": [
+      "C000333",
+      "C000338"
+    ],
     "1.8.3.(2)": [
       "C000334",
       "C000335",
@@ -32,15 +46,25 @@
       "C000352",
       "C000353"
     ],
+    "1.8.5.(1).work_accident_occupational_disease": "C000355",
     "1.8.5.(10).organ_nakli": "C000364",
+    "1.8.5.(11).istiklal_madalyasi_pensioner": "C000365",
+    "1.8.5.(12).vatani_hizmet_pensioner": "C000366",
+    "1.8.5.(13).nakdi_tazminat_pensioner": "C000367",
     "1.8.5.(14).kanun_2828": "C000368",
+    "1.8.5.(15).harp_mallulu_terorle_mucadele": "C000369",
+    "1.8.5.(16).vazife_mallulu": "C000370",
     "1.8.5.(17).iade_malzeme": "C000371",
     "1.8.5.(18).polis_akademisi": "C000372",
     "1.8.5.(19).harp_okulu": "C000373",
     "1.8.5.(2).askeri_tatbikat": "C000356",
     "1.8.5.(20).deprem_protez": "C000374",
+    "1.8.5.(21).wounded_3713_21": "C000375",
+    "1.8.5.(22)a.gss_5510_60_12": "C000378",
+    "1.8.5.(22)b.gss_5510_60_13_14": "C000379",
     "1.8.5.(3).afet_savas_hali": "C000357",
     "1.8.5.(4).kontrol_muayenesi": "C000358",
+    "1.8.5.(6).preventive_health_institution_funded": "C000360",
     "1.8.5.(9).tibbi_sarf_malzeme": "C000363"
   },
   "compositor_clause_traces": {
@@ -70,6 +94,15 @@
     ]
   },
   "encoded_clause_ids": [
+    "C000237",
+    "C000287",
+    "C000288",
+    "C000289",
+    "C000290",
+    "C000291",
+    "C000292",
+    "C000293",
+    "C000294",
     "C000312",
     "C000314",
     "C000321",
