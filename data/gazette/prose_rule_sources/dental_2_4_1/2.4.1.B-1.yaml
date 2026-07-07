@@ -18,3 +18,58 @@ rules:
     severity: error
   gate_b_sources:
   - C000791
+- rule_id: 2.4.1.B-1.(2).disabled_special_needs_doc_and_10_day_start
+  sut_section: 2.4.1.B-1
+  condition:
+    patient_category_any:
+    - disabled_40_pct_or_more
+    - special_needs_child
+    facility_type_any:
+    - adsm_or_dental_hospital
+    - training_research_hospital
+    - university_dental_faculty
+    disability_or_special_needs_documented: true
+    treatment_started_within_10_business_days_of_report: true
+  action:
+    billable: true
+    payment_tr: engelli (%40 ve üzeri) veya özel gereksinimli çocuğun özel/sözleşmesiz sunucuda diş tedavisinin ödenebilmesi
+      için engellilik/özel gereksinim belgelendirilmeli; ADSM/ağız-diş sağlığı hastanesi/eğitim-araştırma/üniversite diş hekimliği
+      fakültesi raporuyla ve rapor tarihinden itibaren 10 iş günü içinde tedaviye başlanmalı
+  gate_b_sources:
+  - C000794
+  verification_status: ai_generated_pending_review
+- rule_id: 2.4.1.B-1.(3).disabled_ga_sedo_facility_gate
+  sut_section: 2.4.1.B-1
+  condition:
+    patient_category_any:
+    - disabled_40_pct_or_more
+    - special_needs_child
+    procedure_under_ga_or_sedoanalgesia: true
+    ga_facility_with_anesthesiology_reanimation_specialist: true
+    ga_performed_by_specialist_documented: true
+  action:
+    billable: true
+    payment_tr: engelli diş tedavisinde GA/sedo-analjezi bedelinin ödenebilmesi için anesteziyoloji ve reanimasyon uzmanı sorumluluğunda,
+      GA üniteli ADSM/tıp merkezi/hastanede yapıldığı belgelendirilmeli
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000795
+  verification_status: ai_generated_pending_review
+- rule_id: 2.4.1.B-1.(5).orthodontics_3_dentist_board_6_month_start
+  sut_section: 2.4.1.B-1
+  condition:
+    procedure_category: orthodontic_treatment
+    facility_type_any:
+    - private
+    - public_uncontracted
+    three_dentist_board_report: true
+    board_report_states_non_aesthetic_and_malocclusion_type: true
+    treatment_started_within_6_months_of_board_report: true
+  action:
+    billable: true
+    payment_tr: özel/sözleşmesiz sunucuda ortodontik tedavi için 3 diş hekimi sağlık kurulu raporu (ADSM/hastane/üniversite);
+      estetik olmadığı ve maloklüzyon tipi belirtilmiş; rapor tarihinden 6 ay içinde tedaviye başlanmış olmalı
+    annex_basis: EK-2/Ç
+  gate_b_sources:
+  - C000799
+  verification_status: ai_generated_pending_review
