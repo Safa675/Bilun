@@ -60,6 +60,30 @@ function prefersReducedMotion(): boolean {
 }
 
 /**
+ * Pure per-index delay computation, extracted so it can be unit-tested
+ * without invoking the hook (which requires a React renderer context for
+ * `useId`). Delay = baseDelayMs + index * stepMs.
+ */
+export function computeStaggerDelay(
+  index: number,
+  baseDelayMs: number = DEFAULTS.baseDelayMs,
+  stepMs: number = DEFAULTS.stepMs,
+): number {
+  return baseDelayMs + index * stepMs;
+}
+
+/** Whether the stagger should be active given options + the reduced-motion flag. */
+export function isStaggerActive(
+  options: RevealOptions,
+  reducedMotion: boolean = prefersReducedMotion(),
+): boolean {
+  const resolved = resolveOptions(options);
+  return resolved.enabled && !reducedMotion;
+}
+
+export { resolveOptions as _resolveStaggerOptions, DEFAULTS as STAGGER_DEFAULTS };
+
+/**
  * Staggered enter-animation hook for list/card reveals.
  *
  * Each element receives a `.stagger-reveal` class plus a per-index
