@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import polars as pl
 import pytest
@@ -15,6 +16,10 @@ _CLAUSES = _REPO / "data/gazette/sut_clauses.parquet"
 _COVERAGE = _REPO / "data/gazette/sut_clause_coverage.parquet"
 _CORPUS = _REPO / "data/gazette/prose_corpus/L4.2_drug_indication_4210.csv"
 _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4210_manifest.json"
+
+_SECTION = "4210"
+_SECTION_PREFIX = "4.2.10"
+_EXCLUDE_PREFIX = "4.2.100"
 
 _TIER_A_IDS = {
     "C004209",
@@ -41,10 +46,15 @@ _ALL_ENCODED_IDS = _TIER_A_IDS | _TIER_B_ENCODED_IDS | {
 }
 
 
-def _combined_rules():
-    from scripts.sut.prose.drug_indication_4210_gate_b import _combined_4210_batch_rules
+def _combined_rules() -> list[dict[str, Any]]:
+    from scripts.sut.rule_sources import load_drug_sections_rules
 
-    return _combined_4210_batch_rules()
+    return load_drug_sections_rules(
+        [
+            "4.2.10.A", "4.2.10.A-3", "4.2.10.A-4", "4.2.10.B-2", "4.2.10.B-3",
+            "4.2.10.C-1", "4.2.10.C-2", "4.2.10.C-3", "4.2.10.D-2", "4.2.10.Ç-2",
+        ]
+    )
 
 
 def _gap_clause_ids() -> frozenset[str]:
@@ -58,19 +68,60 @@ def _gap_clause_ids() -> frozenset[str]:
     return frozenset(str(row) for row in motor["clause_id"].to_list())
 
 
-def test_gate_b_exports_4210_candidates() -> None:
-    from scripts.sut.prose.drug_indication_4210_gate_b import export_4210_candidates
+def _audit_gap_parity(
+    clauses_path: Path,
+    manifest: dict[str, Any],
+    *,
+    gate_b_frame: pl.DataFrame | None = None,
+) -> dict[str, Any]:
+    from scripts.sut.prose.gate_b_audit import audit_gap_parity, default_scan_promotions
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
-    frame = export_4210_candidates(_CLAUSES)
+    return audit_gap_parity(
+        clauses_path,
+        manifest,
+        section_prefix=_SECTION_PREFIX,
+        exclude_prefix=_EXCLUDE_PREFIX,
+        frame=gate_b_frame,
+        fallback_frame=lambda: shim_export_candidates(_SECTION, clauses_path),
+        scan=lambda f, e: default_scan_promotions(f, e),
+    )
+
+
+def _run_audit(clauses_path: Path, rules: list[dict[str, Any]], *, effective_date: str) -> dict[str, Any]:
+    from scripts.sut.prose.gate_b_audit import gap_clause_ids, repair_untraced
+    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+
+    frame = shim_export_candidates(_SECTION, clauses_path)
+    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date=effective_date)
+    before = _audit_gap_parity(clauses_path, manifest, gate_b_frame=frame)
+    manifest, repaired = repair_untraced(
+        manifest,
+        frame,
+        gap_ids=gap_clause_ids(clauses_path, _SECTION_PREFIX, exclude_prefix=_EXCLUDE_PREFIX),
+    )
+    after = _audit_gap_parity(clauses_path, manifest, gate_b_frame=frame)
+    return {
+        **after,
+        "repaired_untraced": repaired,
+        "untraced_before": before["untraced_before"],
+        "untraced_after": len(after["untraced_clause_ids"]) + len(after["misclassified_ab_gap_ids"]),
+    }
+
+
+def test_gate_b_exports_4210_candidates() -> None:
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     assert frame.height == 131
     assert frame["section_id"].str.starts_with("4.2.10").all()
     assert not frame["section_id"].str.starts_with("4.2.100").any()
 
 
 def test_gate_b_csv_schema_and_tier_breakdown() -> None:
-    from scripts.sut.prose.drug_indication_4210_gate_b import export_4210_candidates
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
-    frame = export_4210_candidates(_CLAUSES)
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     for col in (
         "clause_id",
         "section_id",
@@ -88,14 +139,11 @@ def test_gate_b_csv_schema_and_tier_breakdown() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.drug_indication_4210_gate_b import (
-        build_4210_manifest,
-        export_4210_candidates,
-    )
+    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
 
-    frame = export_4210_candidates(_CLAUSES)
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     rules = _combined_rules()
-    manifest = build_4210_manifest(frame, rules, effective_date="2026-06-27")
+    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _ALL_ENCODED_IDS
     assert manifest["tier_c_deferred_count"] == 111
@@ -106,18 +154,13 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
 
 def test_audit_gap_parity_zero_untraced() -> None:
-    from scripts.sut.prose.drug_indication_4210_gate_b import (
-        audit_4210_gap_parity,
-        build_4210_manifest,
-        export_4210_candidates,
-        run_4210_audit,
-    )
+    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
 
-    frame = export_4210_candidates(_CLAUSES)
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     rules = _combined_rules()
-    manifest = build_4210_manifest(frame, rules, effective_date="2026-06-27")
+    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date="2026-06-27")
 
-    report = audit_4210_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
+    report = _audit_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
     assert report["gap_count"] == 109
     assert report["encoded_count"] == 20
     assert report["tier_c_deferred_count"] == 111
@@ -126,20 +169,17 @@ def test_audit_gap_parity_zero_untraced() -> None:
     assert report["missing_from_traces"] == []
     assert report["gaps_missing_export"] == []
 
-    full = run_4210_audit(_CLAUSES, rules, effective_date="2026-06-27")
+    full = _run_audit(_CLAUSES, rules, effective_date="2026-06-27")
     assert full["untraced_before"] == 0
     assert full["untraced_after"] == 0
     assert full["repaired_untraced"] == 0
 
 
 def test_audit_tier_c_deferred_have_defer_reason() -> None:
-    from scripts.sut.prose.drug_indication_4210_gate_b import (
-        build_4210_manifest,
-        export_4210_candidates,
-    )
+    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
 
-    frame = export_4210_candidates(_CLAUSES)
-    manifest = build_4210_manifest(frame, _combined_rules(), effective_date="2026-06-27")
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    manifest = shim_build_manifest(_SECTION, frame, _combined_rules(), effective_date="2026-06-27")
     gap_ids = _gap_clause_ids()
 
     for trace in manifest["clause_traces"]:
@@ -173,13 +213,11 @@ def test_tier_c_deferred_all_have_defer_reason() -> None:
 
 
 def test_audit_no_actionable_tier_ab_promotions() -> None:
-    from scripts.sut.prose.drug_indication_4210_gate_b import (
-        export_4210_candidates,
-        scan_4210_tier_ab_promotions,
-    )
+    from scripts.sut.prose.gate_b_audit import default_scan_promotions
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
-    frame = export_4210_candidates(_CLAUSES)
-    promotions = scan_4210_tier_ab_promotions(frame, encoded_clause_ids=_ALL_ENCODED_IDS)
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    promotions = default_scan_promotions(frame, encoded_clause_ids=_ALL_ENCODED_IDS)
     assert len(promotions) <= 1
     for candidate in promotions:
         assert candidate["clause_id"] not in _ALL_ENCODED_IDS
@@ -198,7 +236,6 @@ def test_gate_b_artifacts_on_disk() -> None:
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"])
     assert manifest["tier_c_deferred_count"] == 109
-    # canonical-v1: encoded_clause_ids removed; encoded_clause_ids is canonical.
     legacy = manifest.get("encoded_clause_ids")
     if legacy is not None:
         assert set(manifest["encoded_clause_ids"]) == set(legacy)

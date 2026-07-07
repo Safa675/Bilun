@@ -403,10 +403,7 @@ def _copay_exemption_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[
 
 
 def _l22_corpus_row_count() -> int:
-    try:
-        return pl.read_csv(_L22_CORPUS_PATH, columns=["clause_id"]).height
-    except (FileNotFoundError, pl.exceptions.ColumnNotFoundError):
-        return 0
+    return _corpus_row_count_from_parquet("2.2")
 
 
 def _payment_method_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:

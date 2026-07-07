@@ -534,7 +534,7 @@ class TestFullCoverageBuild:
         assert manifest.is_file()
         payload = json.loads(manifest.read_text(encoding="utf-8"))
         assert payload["rules_in_json"] >= 131
-        assert payload["manifest_version"] == "phase5-v1"
+        assert payload["manifest_version"] == "canonical-v1"
         assert payload["clause_trace_complete"] is True
         # A1 repair: clause_traces are in-force only; tier-C + EMR-blocked partition deferred rows.
         assert len(payload.get("clause_traces") or []) == payload["section_clause_total"]

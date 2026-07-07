@@ -41,12 +41,6 @@ def _all_drug_manifests() -> list[Path]:
 
 
 @pytest.mark.parametrize("manifest_path", _all_drug_manifests())
-@pytest.mark.xfail(
-    reason="Committed manifests have accumulated drift across multiple encode waves. "
-    "Full parity requires regeneration under canonical-v1 (Phase 7). The structural "
-    "invariants (count==len, traces-have-ids, bucket-subset) are the stable checks.",
-    strict=False,
-)
 def test_manifest_encoded_set_matches_rule_sources(manifest_path: Path) -> None:
     """Invariant 1: encoded_clause_ids should trace to rule gate_b_sources."""
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -76,10 +70,7 @@ def test_manifest_encoded_set_matches_rule_sources(manifest_path: Path) -> None:
             for cid in rule.get("gate_b_sources") or []:
                 all_rule_sources.add(str(cid))
 
-    orphaned_encoded = actual_encoded - all_rule_sources - {
-        # Some manifests carry legacy encoded IDs from older rule sets that
-        # were since restructured. Allow up to 5% drift for committed manifests.
-    }
+    orphaned_encoded = actual_encoded - all_rule_sources
     drift_pct = len(orphaned_encoded) / max(len(actual_encoded), 1) * 100
     assert drift_pct <= 10.0, (
         f"{manifest_path.name}: {len(orphaned_encoded)} encoded IDs ({drift_pct:.1f}%) "

@@ -42,7 +42,7 @@ def test_infer_defer_themes_detects_mutation_and_prior_therapy() -> None:
 def test_phase5_manifest_traces_all_4214c_clauses() -> None:
     assert _MANIFEST.is_file()
     payload = json.loads(_MANIFEST.read_text(encoding="utf-8"))
-    assert payload["manifest_version"] == "phase5-v1"
+    assert payload["manifest_version"] == "canonical-v1"
     # section_clause_total reflects in-force (struck-filtered) trace count.
     trace_total = payload["section_clause_total"]
     assert payload["clause_trace_complete"] is True

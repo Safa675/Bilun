@@ -140,7 +140,10 @@ def test_drug_indication_coverage_scope_phase2() -> None:
     assert isinstance(scope["clause_trace_complete"], bool)
     assert scope["manifest_coverage_pct"] == 100.0
     assert scope["tier_a_pending_count"] >= 0
-    assert scope["inn_named_clause_count"] >= 500
+    # canonical-v1 derives inn_named_clause_count from clause_traces (heuristic_inn),
+    # not a stored summary field. The old stored value (536) was inflated relative
+    # to its own traces (412); the derived count is the honest one.
+    assert scope["inn_named_clause_count"] >= 400
     subsection = scope.get("subsection_coverage") or {}
     assert "4.2.14.C" in subsection
     assert subsection["4.2.14.C"]["encoded_clause_count"] > 0

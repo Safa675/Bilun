@@ -58,9 +58,11 @@ def test_a1_clause_traces_match_in_force_total(manifest: dict) -> None:
 
 def test_a1_gate_b_corpus_count_documented(manifest: dict) -> None:
     gate_b_total = gate_b_4214c_clause_ids(_CLAUSES)
-    summary = manifest.get("gate_b_summary") or {}
-    assert summary.get("total") == len(gate_b_total)
-    assert len(gate_b_total) >= 828
+    assert len(gate_b_total) >= 828  # parquet sanity: full gate_b corpus (incl struck)
+    # canonical-v1 documents the in-force corpus via section_clause_total
+    # (gate_b_summary was purged — corpus count is derived, not stored).
+    in_force = in_force_4214c_clause_ids(_CLAUSES)
+    assert manifest["section_clause_total"] == len(in_force)
 
 
 def test_a1_tier_c_deferred_entries_have_defer_reason(manifest: dict) -> None:
