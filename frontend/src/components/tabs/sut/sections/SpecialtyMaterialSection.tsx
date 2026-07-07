@@ -5,7 +5,8 @@ import { getMaterialsBySpecialty } from "@/lib/api/sut";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import type { MaterialEntry } from "@/lib/domains/sut";
 import { fmtNum, fmtTRY } from "../shared";
-import { DataTable, Surface } from "@/components/primitives";
+import { DataTable, Surface, Button, buttonActiveClass, inputClass } from "@/components/primitives";
+import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
 
 export function SpecialtyMaterialSection() {
@@ -53,7 +54,7 @@ export function SpecialtyMaterialSection() {
       <select
         value={selected}
         onChange={e => setSelected(e.target.value)}
-        className="sut-input"
+        className={inputClass}
         style={{ marginBottom: 10, minWidth: 250 }}
       >
         <option value="">{t("sections.specialtyMaterial.allSpecialties")}</option>
@@ -64,14 +65,14 @@ export function SpecialtyMaterialSection() {
       ) : error ? (
         <div className="space-y-3">
           <p className="text-sm" style={{ color: "#B91C1C" }}>{error}</p>
-          <button
-            type="button"
-            className="sut-section-btn sut-section-btn-active"
-            style={{ padding: "6px 14px" }}
+          <Button
+            variant="secondary"
+            size="compact"
+            className={cn(buttonActiveClass)}
             onClick={() => setReloadKey((v) => v + 1)}
           >
             <span className="text-xs font-semibold">{t("sections.specialtyMaterial.retry")}</span>
-          </button>
+          </Button>
         </div>
       ) : materials.length > 0 ? (
         <div style={{ maxHeight: 400, overflowY: "auto" }}>

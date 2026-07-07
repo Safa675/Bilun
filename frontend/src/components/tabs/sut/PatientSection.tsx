@@ -8,7 +8,7 @@ import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
 import { translateConsistencyWarning } from "@/lib/apiMessages";
 import useStaggeredReveal from "@/hooks/useStaggeredReveal";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
-import { Chip, DataTable, Eyebrow, Surface } from "@/components/primitives";
+import { Chip, DataTable, EmptyState, Eyebrow, Surface, Button, buttonActiveClass } from "@/components/primitives";
 import {
   DrgEk2cGroupCell,
   ProcedureCopayRateSourceCell,
@@ -106,30 +106,26 @@ export function PatientSUTContent({
             </p>
           </div>
           <div>
-            <button
-              type="button"
-              className="sut-section-btn sut-section-btn-active sut-section-btn-compact"
+            <Button
+              variant="secondary"
+              size="compact"
+              className={buttonActiveClass}
               onClick={onRetry}
             >
               <span className="text-xs font-semibold">{t("patient.section.errors.retryButton")}</span>
-            </button>
+            </Button>
           </div>
         </Surface>
       ) : outcomeState === "empty" ? (
-        <div className="empty-state space-y-3">
-          <p className="empty-state-text">
-            {t("patient.section.emptyState.message", { patientId: selectedPatientId ?? "" })}
-          </p>
-          <div>
-            <button
-              type="button"
-              className="sut-section-btn sut-section-btn-compact"
-              onClick={onRetry}
-            >
+        <EmptyState
+          className="space-y-3"
+          title={t("patient.section.emptyState.message", { patientId: selectedPatientId ?? "" })}
+          action={
+            <Button variant="secondary" size="compact" onClick={onRetry}>
               <span className="text-xs font-semibold">{t("patient.section.errors.retryButton")}</span>
-            </button>
-          </div>
-        </div>
+            </Button>
+          }
+        />
       ) : data ? (
         <div className="space-y-6">
           <Surface

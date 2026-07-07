@@ -420,7 +420,7 @@ const sections = {
     notAvailable: "--",
   },
   labPrices: {
-    title: "BILUN laboratuvar testi → SUT kodu eşlemesi ({total} test)",
+    title: "Bilun laboratuvar testi → SUT kodu eşlemesi ({total} test)",
     loadingTitle: "Laboratuvar fiyatları yükleniyor",
     errors: {
       loadFailed: "Laboratuvar fiyatları yüklenemedi",

@@ -12,6 +12,7 @@ import {
 } from "@/lib/api/sut";
 import { isAbortError } from "@/lib/api/request";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
+import { cn } from "@/lib/cn";
 import {
   Chip,
   Surface,
@@ -22,6 +23,9 @@ import {
   DataTableBody,
   DataTableRow,
   DataTableCell,
+  Button,
+  buttonActiveClass,
+  inputClass,
 } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 import { fmtNum } from "../../shared";
@@ -127,7 +131,7 @@ export function SectionBrowserPanel({
             value={query}
             onChange={(e) => { setQuery(e.target.value); setPage(1); }}
             placeholder={t("sections.ruleDatabase.sections.searchPlaceholder")}
-            className="sut-input min-w-[220px] max-w-[360px]"
+            className={cn(inputClass, "min-w-[220px] max-w-[360px]")}
           />
         }
         trailing={
@@ -138,17 +142,16 @@ export function SectionBrowserPanel({
               value={minGapCount}
               onChange={(e) => { setMinGapCount(e.target.value); setPage(1); }}
               placeholder={t("sections.ruleDatabase.sections.minGapFilter")}
-              className="sut-input w-[140px]"
+              className={cn(inputClass, "w-[140px]")}
             />
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="compact"
               onClick={() => { setConsolidate((v) => !v); setPage(1); }}
-              className={`sut-section-btn sut-section-btn-compact text-[11px] whitespace-nowrap ${
-                consolidate ? "sut-section-btn-active" : ""
-              }`}
+              className={cn("text-[11px] whitespace-nowrap", consolidate && buttonActiveClass)}
             >
               {t("sections.ruleDatabase.sections.consolidate")}
-            </button>
+            </Button>
           </div>
         }
       />
@@ -240,28 +243,28 @@ export function SectionBrowserPanel({
 
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="compact"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t("sections.ruleDatabase.pagination.prev")}
-                  </button>
+                  </Button>
                   <span>
                     {t("sections.ruleDatabase.pagination.page", {
                       page: fmtNum(page),
                       totalPages: fmtNum(totalPages),
                     })}
                   </span>
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="compact"
                     disabled={page >= totalPages}
                     onClick={() => setPage((p) => p + 1)}
-                    className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t("sections.ruleDatabase.pagination.next")}
-                  </button>
+                  </Button>
                 </div>
               )}
             </>
@@ -388,28 +391,28 @@ function SectionDetailPane({
           </ul>
           {totalPages > 1 && (
             <div className="mt-3 flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="compact"
                 disabled={clausePage <= 1}
                 onClick={() => setClausePage((p) => Math.max(1, p - 1))}
-                className="sut-section-btn sut-section-btn-compact disabled:opacity-50"
               >
                 {t("sections.ruleDatabase.pagination.prev")}
-              </button>
+              </Button>
               <span>
                 {t("sections.ruleDatabase.sections.clausePage", {
                   page: fmtNum(clausePage),
                   total: fmtNum(totalPages),
                 })}
               </span>
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="compact"
                 disabled={clausePage >= totalPages}
                 onClick={() => setClausePage((p) => p + 1)}
-                className="sut-section-btn sut-section-btn-compact disabled:opacity-50"
               >
                 {t("sections.ruleDatabase.pagination.next")}
-              </button>
+              </Button>
             </div>
           )}
         </>

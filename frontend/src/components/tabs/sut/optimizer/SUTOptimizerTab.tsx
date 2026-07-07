@@ -88,6 +88,7 @@ import {
   TabsList,
   TabsRoot,
   TabsTrigger,
+  inputClass,
 } from "@/components/primitives";
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -266,7 +267,7 @@ function AlertQueryBar({
                 onChange={handlePageInputChange}
                 placeholder={String(currentPage)}
                 disabled={loading || totalPages <= 1}
-                className="glass app-select sut-page-jump-control"
+                className={`${inputClass} w-24 px-2.5 py-1.5 text-xs`}
               />
               <button
                 type="submit"
@@ -440,7 +441,7 @@ function CopayExemptionAlerts({
           <Eyebrow as="div" className="text-[var(--gold)]">
             {t("optimizer.sections.billLevelSummary")}
           </Eyebrow>
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             <KpiCard
               label={t("optimizer.kpis.totalBills")}
               value={fmtNum(cohortCopay.n_total_bills)}
@@ -486,7 +487,7 @@ function CopayExemptionAlerts({
         <Eyebrow as="div" className="text-[var(--text-muted)]">
           {t("optimizer.sections.patientLevelSummary")}
         </Eyebrow>
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           <KpiCard label={t("optimizer.kpis.totalPatients")} value={fmtNum(summary.n_total_patients)} />
           <KpiCard
             label={t("optimizer.kpis.exemptAnyGround")}
@@ -1453,7 +1454,7 @@ function RevenueRecoveryDashboard({
               {displayData.top_patients.map((p, i) => (
                 <tr key={i}>
                   <td className="font-mono text-xs">
-                    <Link href={buildSutBillingHref(p.patient_id)} className="patient-id-link" style={{ color: ACCENT }}>
+                    <Link href={buildSutBillingHref(p.patient_id)} className="font-semibold no-underline transition-colors hover:underline" style={{ color: ACCENT }}>
                       {p.patient_id}
                     </Link>
                   </td>

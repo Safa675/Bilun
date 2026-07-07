@@ -17,30 +17,13 @@ import { translateConsistencyWarning } from "@/lib/apiMessages";
 import { theme } from "@/lib/theme";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { PatientExemptionRuleSourceAttribution } from "@/components/sut/RegulatorySourceChips";
-import { Chip, Eyebrow, Stat, Surface } from "@/components/primitives";
+import { Chip, Eyebrow, ExactnessBlock, Stat, Surface, Button } from "@/components/primitives";
 import {
   formatExemptionBasisSummary,
   getExemptionCategories,
   hasEk1aExemption,
 } from "@/lib/copayExemption";
 import { useT } from "@/lib/i18n/useTranslations";
-
-function ExactnessNotice({
-  block,
-  fallback,
-}: {
-  block: {
-    unavailable_reason?: string | null;
-    required_inputs_missing?: string[] | null;
-  } | null | undefined;
-  fallback: string;
-}) {
-  return (
-    <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-      {getUnavailableMessage(block, fallback)}
-    </p>
-  );
-}
 
 function OptimizationCard({
   title,
@@ -159,7 +142,7 @@ export function PatientOptimizationSnapshot({
               />
             </div>
           ) : (
-            <ExactnessNotice
+            <ExactnessBlock
               block={optimization.surcharge_exposure}
               fallback={t("patient.workspace.surchargeFallback")}
             />
@@ -179,7 +162,7 @@ export function PatientOptimizationSnapshot({
               />
             </div>
           ) : (
-            <ExactnessNotice
+            <ExactnessBlock
               block={optimization.copay_rate_exposure}
               fallback={t("patient.workspace.copayRateFallback")}
             />
@@ -206,7 +189,7 @@ export function PatientOptimizationSnapshot({
               ) : null}
             </div>
           ) : (
-            <ExactnessNotice
+            <ExactnessBlock
               block={optimization.drg_unbundling}
               fallback={t("patient.workspace.drgFallback")}
             />
@@ -222,12 +205,14 @@ export default function SutPatientWorkspace({
   outcome,
   optimization,
   billingReport,
+  selectedClaimId = null,
   claimCount,
 }: {
   patientId: string;
   outcome: SutPatientOutcomeData | null;
   optimization: PatientOptimization | null;
   billingReport?: BillingActionReport | null;
+  selectedClaimId?: string | null;
   claimCount?: number;
 }) {
   const t = useT();
@@ -257,10 +242,12 @@ export default function SutPatientWorkspace({
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Link href={buildSutHomeHref("patients")} className="sut-section-btn">
-              <ArrowLeft className="h-4 w-4" />
-              {t("patient.workspace.backToPatients")}
-            </Link>
+            <Button asChild variant="secondary">
+              <Link href={buildSutHomeHref("patients")}>
+                <ArrowLeft className="h-4 w-4" />
+                {t("patient.workspace.backToPatients")}
+              </Link>
+            </Button>
           </div>
         </div>
       </Surface>
@@ -268,6 +255,7 @@ export default function SutPatientWorkspace({
       <PatientFinancialSummary
         outcome={outcome}
         billingReport={billingReport ?? null}
+        selectedClaimId={selectedClaimId}
         claimCount={claimCount}
       />
 

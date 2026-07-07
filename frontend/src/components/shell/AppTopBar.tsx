@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CircleHelp, LogOut } from "lucide-react";
-import Image from "next/image";
+import BilunWordmark from "@/components/brand/BilunWordmark";
 import { SyntheticDemoChip } from "@/components/sut/SyntheticDemoProvenance";
 import LocaleSwitcher from "@/components/shell/LocaleSwitcher";
 import RoleSwitcher from "@/components/shell/RoleSwitcher";
@@ -102,22 +102,18 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
   return (
     <header
       className={cn(
-        "sut-app-top-bar flex w-full items-center justify-between gap-4 px-6 py-3",
+        "sut-app-top-bar flex h-14 w-full items-center justify-between gap-8 px-8",
         "border-b border-[var(--border-subtle)] bg-[var(--surface-base)]",
         className,
       )}
       aria-label={t("shell.appTopBar.ariaApplicationBar")}
     >
-      <Image
-        src="/bilun-logo.png"
-        alt={t("shell.appTopBar.logoAlt")}
-        width={2836}
-        height={1504}
-        className="h-12 w-auto object-contain"
-        priority
-      />
+      {/* Zone 1: Brand + Navigation */}
+      <div className="flex items-center gap-8">
+        <Link href="/" className="inline-flex items-center">
+          <BilunWordmark size={20} />
+        </Link>
 
-      <div className="flex items-center gap-4">
         <SyntheticDemoChip dataSource={sutDataSource} />
 
         <nav className="flex items-center gap-1" aria-label={t("shell.appTopBar.ariaHomeTabs")}>
@@ -136,10 +132,10 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
                 scroll={false}
                 title={t(`constants.homeTabs.${tabKey}.subtitle`)}
                 className={cn(
-                  "inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  "relative inline-flex items-center px-3 py-1.5 text-[13px] font-medium transition-colors",
                   isActive
-                    ? "bg-[var(--surface-tint)] text-[var(--text-primary)]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-tint)]/50",
+                    ? "text-[var(--text-primary)] after:absolute after:bottom-[-13px] after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-[var(--gold)] after:content-[''] "
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]",
                 )}
                 aria-current={isActive ? "page" : undefined}
               >
@@ -148,36 +144,41 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
             );
           })}
         </nav>
+      </div>
 
+      {/* Zone 2: Utility actions */}
+      <div className="flex items-center gap-3">
         <LocaleSwitcher />
 
         <RoleSwitcher />
+
+        <div className="mx-1 h-4 w-px bg-[var(--border-subtle)]" aria-hidden="true" />
+
+        <button
+          type="button"
+          onClick={handleOpenHowItWorks}
+          className={cn(
+            "inline-flex items-center gap-1.5 text-[11px] font-medium",
+            "text-[var(--text-muted)] hover:text-[var(--text-secondary)]",
+            "transition-colors duration-150",
+          )}
+        >
+          <CircleHelp className="h-3.5 w-3.5" aria-hidden="true" />
+          {t("shell.appTopBar.howItWorks")}
+        </button>
 
         <button
           type="button"
           onClick={handleLogout}
           className={cn(
-            "inline-flex items-center gap-1.5 text-xs font-medium",
-            "text-[var(--text-secondary)] hover:text-[var(--gold-hover)]",
+            "inline-flex items-center gap-1.5 text-[11px] font-medium",
+            "text-[var(--text-muted)] hover:text-[var(--text-secondary)]",
             "transition-colors duration-150",
           )}
           aria-label={t("auth.logout.button")}
         >
           <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
           {t("auth.logout.button")}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleOpenHowItWorks}
-          className={cn(
-            "inline-flex items-center gap-1.5 text-xs font-medium",
-            "text-[var(--text-secondary)] hover:text-[var(--gold-hover)]",
-            "transition-colors duration-150",
-          )}
-        >
-          <CircleHelp className="h-3.5 w-3.5" aria-hidden="true" />
-          {t("shell.appTopBar.howItWorks")}
         </button>
       </div>
     </header>

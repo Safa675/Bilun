@@ -1,8 +1,8 @@
 /**
  * Tabs — single tab primitive wrapping `@radix-ui/react-tabs`.
  *
- * Replaces `.app-tab-button`, `.sut-home-nav-tab`, `.sut-section-btn`
- * (three different tab visuals doing the same job).
+ * Replaces the legacy app-tab, home-nav-tab, and section tab visuals
+ * (three different tab looks doing the same job).
  *
  * Two densities:
  * - `comfortable` (default) — page-level navigation

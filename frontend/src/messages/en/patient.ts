@@ -19,7 +19,9 @@ const patient = {
   "financialSummary": {
     "eyebrow": "Financial profile",
     "title": "All bills at a glance",
+    "titleBill": "Bill {claimId}",
     "description": "Patient-level totals across every claim: what was billed, what SUT expects to pay, and how much BILUN can still recover.",
+    "descriptionBill": "Totals and recoverable amounts for the selected bill only — sections below use the same scope.",
     "totalBilled": "Total billed",
     "expectedPayable": "Expected payable",
     "totalRecoverable": "Total recoverable (claim-backed)",
@@ -32,6 +34,16 @@ const patient = {
     "claimCount": "{count}",
     "claimSingular": " claim",
     "claimPlural": " claims"
+  },
+  "billingGroups": {
+    "overview": "Financial overview",
+    "overviewDescription": "Summary KPIs and recommended actions for the active scope.",
+    "compliance": "Compliance review",
+    "complianceDescription": "Copay, surcharge decomposition, and billing strategy.",
+    "opportunities": "Revenue opportunities",
+    "opportunitiesDescription": "Session, DRG, material, and procedure uplift detectors.",
+    "reference": "Reference & submission",
+    "referenceDescription": "Checklists, MEDULA playbook, and drug indication review."
   },
   "billPicker": {
     "label": "Bills",

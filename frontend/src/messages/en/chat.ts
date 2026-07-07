@@ -1,5 +1,5 @@
 const chat = {
-  title: "BILUN Analysis",
+  title: "Bilun Analysis",
   subtitle: {
     patient: "Patient: {patientId}",
     cohortOverview: "Cohort overview",
@@ -11,18 +11,18 @@ const chat = {
     dockRight: "Dock right",
     sendMessage: "Send message",
   },
-  emptyState: "BILUN will brief each view and keep the full thread here.",
+  emptyState: "Bilun will brief each view and keep the full thread here.",
   devModeBadge: "Dev copilot",
   roles: {
     you: "You",
-    bilun: "BILUN",
+    bilun: "Bilun",
   },
   approve: {
     approved: "Approved",
     approve: "Approve",
   },
   loading: {
-    analyzing: "BILUN is analyzing...",
+    analyzing: "Bilun is analyzing...",
     thinking: "Thinking",
   },
   errors: {
@@ -35,8 +35,8 @@ const chat = {
       "Select a patient from the cohort table to get detailed billing analysis, including copay savings, lab optimization, drug substitution, and billing strategy comparisons.",
   },
   input: {
-    placeholderPatient: "Ask BILUN about this patient or billing review...",
-    placeholderWorkspace: "Ask BILUN about this workspace...",
+    placeholderPatient: "Ask Bilun about this patient or billing review...",
+    placeholderWorkspace: "Ask Bilun about this workspace...",
   },
   defaultPrompts: {
     sutWorkspace:

@@ -31,6 +31,78 @@ def _load_session_rules() -> dict:
         return json.load(handle)
 
 
+@lru_cache(maxsize=1)
+def load_session_pricing_rules() -> list[dict[str, Any]]:
+    """Load the 4 §2.2.2.B rules from ``session_pricing_2_2_2_B.json`` (cached).
+
+    The JSON is the SINGLE SOURCE OF TRUTH for the factor values applied by
+    ``compute_session_point_factors``. Returns the list of rule dicts under the
+    top-level ``rules`` key. Returns an empty list if the file is absent or
+    malformed so callers can fall back to the original hardcoded literals.
+    """
+    try:
+        payload = _load_session_rules()
+    except (OSError, ValueError):
+        return []
+    rules = payload.get("rules") if isinstance(payload, dict) else None
+    return list(rules) if isinstance(rules, list) else []
+
+
+# Original hardcoded factor values — used ONLY as a backward-compat fallback
+# when the JSON is missing, fails to load, or no rule matches. Mirrors the
+# pre-refactor literals so behaviour is identical when the JSON is absent.
+_FALLBACK_OTHER_FACTOR_SAME_INCISION = 0.25
+_FALLBACK_OTHER_FACTOR_DIFFERENT_INCISION = 0.5
+_FALLBACK_EK2B_FACTOR_SAME_INCISION = 0.3
+_FALLBACK_EK2B_FACTOR_DIFFERENT_INCISION = 0.5
+
+
+def _match_session_pricing_rule(
+    *,
+    same_incision: bool,
+    all_in_ek2c: bool,
+    mixed_ek2c_ek2b: bool,
+) -> dict[str, Any] | None:
+    """Find the JSON rule whose condition matches the computed flags.
+
+    Match precedence mirrors the existing if/elif order in
+    ``compute_session_point_factors``: the ``mixed_ek2c_ek2b`` rules
+    (``.c``/``.ç``) are checked before the ``all_in_ek2c`` rules
+    (``.a``/``.b``) — even though the JSON lists them in ``.a/.b/.c/.ç``
+    order. Returns the matched rule dict, or ``None`` if no rule matches
+    (caller then falls back to the hardcoded literals).
+    """
+    rules = load_session_pricing_rules()
+    # First pass: mixed rules (.c/.ç) take precedence. Second pass:
+    # all_in_ek2c rules (.a/.b). Order-independent of the on-disk listing.
+    if mixed_ek2c_ek2b:
+        for rule in rules:
+            condition = rule.get("condition") or {}
+            if condition.get("mixed_ek2c_ek2b") and bool(
+                condition.get("same_incision")
+            ) == same_incision:
+                return rule
+    if all_in_ek2c:
+        for rule in rules:
+            condition = rule.get("condition") or {}
+            if condition.get("all_in_ek2c") and bool(
+                condition.get("same_incision")
+            ) == same_incision:
+                return rule
+    return None
+
+
+def _factor_with_uplift(base: float, cross_specialty: bool) -> float:
+    """Apply the +0.25 cross-specialty uplift (capped at 1.0).
+
+    ``base`` is sourced from the matched JSON rule's ``action``. Replaces the
+    inline ``min(1.0, base + 0.25)`` pattern.
+    """
+    if cross_specialty:
+        return min(1.0, base + 0.25)
+    return base
+
+
 def _procedure_point_score(code: str) -> float:
     """EK-2/C puan from catalog; EK-2/B-only via lookup; fallback for unknown codes."""
     normalized = normalize_procedure_code(code)
@@ -167,10 +239,19 @@ def compute_session_point_factors(
         )
 
     if mixed:
-        rule_id = "2.2.2.B.c" if same_incision else "2.2.2.B.ç"
-        ek2b_factor = 0.3 if same_incision else 0.5
-        if cross_specialty:
-            ek2b_factor = min(1.0, ek2b_factor + 0.25)
+        matched_rule = _match_session_pricing_rule(
+            same_incision=same_incision,
+            all_in_ek2c=all_in_ek2c,
+            mixed_ek2c_ek2b=True,
+        )
+        if matched_rule is not None:
+            rule_id = matched_rule.get("rule_id", "2.2.2.B.c" if same_incision else "2.2.2.B.ç")
+            action = matched_rule.get("action") or {}
+            ek2b_factor = float(action.get("ek2b_procedure_factor", _FALLBACK_EK2B_FACTOR_SAME_INCISION if same_incision else _FALLBACK_EK2B_FACTOR_DIFFERENT_INCISION))
+        else:
+            rule_id = "2.2.2.B.c" if same_incision else "2.2.2.B.ç"
+            ek2b_factor = _FALLBACK_EK2B_FACTOR_SAME_INCISION if same_incision else _FALLBACK_EK2B_FACTOR_DIFFERENT_INCISION
+        ek2b_factor = _factor_with_uplift(ek2b_factor, cross_specialty)
         factors: list[SessionProcedureFactor] = []
         for idx, code in enumerate(normalized):
             _, in_ek2c = memberships[idx]
@@ -202,10 +283,19 @@ def compute_session_point_factors(
         )
 
     if all_in_ek2c:
-        rule_id = "2.2.2.B.a" if same_incision else "2.2.2.B.b"
-        other_factor = 0.25 if same_incision else 0.5
-        if cross_specialty:
-            other_factor = min(1.0, other_factor + 0.25)
+        matched_rule = _match_session_pricing_rule(
+            same_incision=same_incision,
+            all_in_ek2c=all_in_ek2c,
+            mixed_ek2c_ek2b=False,
+        )
+        if matched_rule is not None:
+            rule_id = matched_rule.get("rule_id", "2.2.2.B.a" if same_incision else "2.2.2.B.b")
+            action = matched_rule.get("action") or {}
+            other_factor = float(action.get("other_procedure_factor", _FALLBACK_OTHER_FACTOR_SAME_INCISION if same_incision else _FALLBACK_OTHER_FACTOR_DIFFERENT_INCISION))
+        else:
+            rule_id = "2.2.2.B.a" if same_incision else "2.2.2.B.b"
+            other_factor = _FALLBACK_OTHER_FACTOR_SAME_INCISION if same_incision else _FALLBACK_OTHER_FACTOR_DIFFERENT_INCISION
+        other_factor = _factor_with_uplift(other_factor, cross_specialty)
         factors = []
         for idx, code in enumerate(normalized):
             is_primary = idx == primary_idx

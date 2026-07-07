@@ -420,7 +420,7 @@ const sections = {
     notAvailable: "--",
   },
   labPrices: {
-    title: "BILUN Lab Test → SUT Code Mapping ({total} tests)",
+    title: "Bilun Lab Test → SUT Code Mapping ({total} tests)",
     loadingTitle: "Loading lab prices",
     errors: {
       loadFailed: "Failed to load lab prices",

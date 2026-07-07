@@ -6,7 +6,7 @@ import type { SutBundledConsumablesResult } from "@/lib/api/sut";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import { ACCENT_LOCAL, fmtNum, KpiCard } from "../shared";
 import { useSutApi } from "../useSutApi";
-import { Chip, DataTable, Surface } from "@/components/primitives";
+import { Chip, DataTable, Surface, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 import { SpecialtyProseScopeNotice } from "@/components/sut/SpecialtyProseScopeNotice";
@@ -55,7 +55,7 @@ export function BundledConsumablesSection() {
       <Surface variant="base" padding="lg">
         <div className="flex items-center justify-between gap-3 mb-3">
           <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: ACCENT_LOCAL }}>{t("sections.bundledConsumables.title")}</h3>
-          <input type="text" value={filterText} onChange={(e) => setFilterText(e.target.value)} className="sut-input max-w-[240px]" placeholder={t("sections.bundledConsumables.filterPlaceholder")} />
+          <input type="text" value={filterText} onChange={(e) => setFilterText(e.target.value)} className={`${inputClass} max-w-[240px]`} placeholder={t("sections.bundledConsumables.filterPlaceholder")} />
         </div>
         <div className="text-xs mb-2" style={{ color: "#A1A1AA" }}>
           {t("sections.bundledConsumables.filteredCount", {

@@ -262,12 +262,11 @@ class TestProseInventoryEndpoint:
     # NOTE: definitions_2_6, dental_2_4_1, gap_closing_misc, and
     # gap_closing_treatment_2 were wired (loaders + registry entries) and
     # removed from this set. drug_combination_4_2 and treatment_pricing_2_4
-    # remain orphans — their conditions need clinical data (pdl1, ecog,
-    # sessions_within_6mo) absent from the claim model.
-    _ORPHAN_RULE_SETS = {
-        "drug_combination_4_2",
-        "treatment_pricing_2_4",
-    }
+    # were the last orphans; the W3–W6 wiredness epic (PR feat/wiredness-w3-w6)
+    # added loaders + registry entries for both, so the orphan set is now empty.
+    # If a future encode-wave produces a new rule JSON without a loader, add it
+    # here until its evaluator + loader are wired.
+    _ORPHAN_RULE_SETS = set()
 
     def test_excludes_orphan_engines_without_loaders(self) -> None:
         payload = rules_route.get_prose_inventory()
@@ -287,5 +286,9 @@ class TestProseInventoryEndpoint:
             "payment_method_2_2",
             "session_pricing_2_2_2_B",
             "drug_indication_prose",
+            # W3/W6 wiredness epic: treatment_pricing + drug_combination now
+            # have loaders + registry entries (were previously orphans).
+            "treatment_pricing_2_4",
+            "drug_combination_4_2",
         }:
             assert required in listed, f"wired engine {required} missing from inventory"

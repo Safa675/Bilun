@@ -35,7 +35,7 @@ vi.mock("@/lib/constants", () => ({
   buildSutBillingHref: (patientId: string) => `/patient/${patientId}/billing`,
   buildSutHomeHref: () => "/?tab=compliance",
   SUT_BRAND: {
-    moduleLabel: "BILUN",
+    moduleLabel: "Bilun",
     billingTitle: "Patient billing report",
     billingDescription: "Per-patient SUT rule review.",
   },

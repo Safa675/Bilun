@@ -9,10 +9,14 @@ import {
   type SectionClausesResponse,
 } from "@/lib/api/sut";
 import { isAbortError } from "@/lib/api/request";
+import { cn } from "@/lib/cn";
 import {
   Chip,
   Surface,
   Toolbar,
+  Button,
+  buttonActiveClass,
+  inputClass,
 } from "@/components/primitives";
 import { EkAnnexChips } from "@/components/sut/RegulatorySourceChips";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -149,68 +153,63 @@ export function ClauseBrowserPanel({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("sections.ruleDatabase.clauses.searchPlaceholder")}
-            className="sut-input min-w-[220px] max-w-[360px]"
+            className={cn(inputClass, "min-w-[220px] max-w-[360px]")}
           />
         }
         trailing={
           <div className="flex items-center gap-2">
             {STATUS_FILTERS.map((status) => (
-              <button
+              <Button
                 key={status}
-                type="button"
+                variant="secondary"
+                size="compact"
                 onClick={() =>
                   setStatusFilter((prev) => (prev === status ? "" : status))
                 }
-                className={`sut-section-btn sut-section-btn-compact text-[11px] ${
-                  statusFilter === status ? "sut-section-btn-active" : ""
-                }`}
+                className={cn("text-[11px]", statusFilter === status && buttonActiveClass)}
               >
                 {status === "all"
                   ? t("sections.ruleDatabase.filters.all")
                   : t(`sections.ruleDatabase.status.${COVERAGE_KEY[status]}`)}
-              </button>
+              </Button>
             ))}
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="compact"
               onClick={() => setHideReferans((v) => !v)}
-              className={`sut-section-btn sut-section-btn-compact text-[11px] ${
-                hideReferans ? "sut-section-btn-active" : ""
-              }`}
+              className={cn("text-[11px]", hideReferans && buttonActiveClass)}
             >
               {t("sections.ruleDatabase.clauses.filterHideReferans")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="secondary"
+              size="compact"
               onClick={() => setHideHeadings((v) => !v)}
-              className={`sut-section-btn sut-section-btn-compact text-[11px] ${
-                hideHeadings ? "sut-section-btn-active" : ""
-              }`}
+              className={cn("text-[11px]", hideHeadings && buttonActiveClass)}
             >
               {t("sections.ruleDatabase.clauses.filterHideHeadings")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="secondary"
+              size="compact"
               onClick={() => setGapFilter((v) => !v)}
-              className={`sut-section-btn sut-section-btn-compact text-[11px] ${
-                gapFilter ? "sut-section-btn-active" : ""
-              }`}
+              className={cn("text-[11px]", gapFilter && buttonActiveClass)}
             >
               {t("sections.ruleDatabase.clauses.filterGap")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="secondary"
+              size="compact"
               onClick={() => setEncodingFilter((v) => !v)}
-              className={`sut-section-btn sut-section-btn-compact text-[11px] ${
-                encodingFilter ? "sut-section-btn-active" : ""
-              }`}
+              className={cn("text-[11px]", encodingFilter && buttonActiveClass)}
             >
               {t("sections.ruleDatabase.clauses.filterEncoded")}
-            </button>
+            </Button>
             {rules && rules.length > 0 && (
               <select
                 value={ruleFilter}
                 onChange={(e) => setRuleFilter(e.target.value)}
-                className="sut-input max-w-[220px] truncate text-[11px]"
+                className={cn(inputClass, "max-w-[220px] truncate text-[11px]")}
                 aria-label={t("sections.ruleDatabase.clauses.filterMotor")}
               >
                 <option value="">{t("sections.ruleDatabase.clauses.filterMotor")}</option>
@@ -282,28 +281,28 @@ export function ClauseBrowserPanel({
 
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-3 text-sm text-[var(--text-muted)]">
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="compact"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t("sections.ruleDatabase.pagination.prev")}
-                  </button>
+                  </Button>
                   <span>
                     {t("sections.ruleDatabase.pagination.page", {
                       page: fmtNum(page),
                       totalPages: fmtNum(totalPages),
                     })}
                   </span>
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="compact"
                     disabled={page >= totalPages}
                     onClick={() => setPage((p) => p + 1)}
-                    className="sut-section-btn sut-section-btn-compact disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t("sections.ruleDatabase.pagination.next")}
-                  </button>
+                  </Button>
                 </div>
               )}
             </>

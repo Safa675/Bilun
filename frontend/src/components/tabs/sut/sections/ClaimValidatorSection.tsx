@@ -22,7 +22,7 @@ import {
   EMPTY_MATERIAL,
 } from "../shared";
 import { getSutSeverityLabel } from "@/lib/sutLabels";
-import { Chip, DataTable, Surface } from "@/components/primitives";
+import { Chip, DataTable, Surface, Button, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
 import { translateValidationMessage, translateValidationSummary } from "@/lib/apiMessages";
@@ -171,11 +171,11 @@ export function ClaimValidatorSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.claimId")}</label>
-            <input type="text" value={claimId} onChange={(e) => setClaimId(e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.claimIdPlaceholder")} />
+            <input type="text" value={claimId} onChange={(e) => setClaimId(e.target.value)} className={inputClass} placeholder={t("sections.claimValidator.claimIdPlaceholder")} />
           </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.procedureCode")}</label>
-            <input type="text" value={procedureCode} onChange={(e) => setProcedureCode(e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.procedureCodePlaceholder")} />
+            <input type="text" value={procedureCode} onChange={(e) => setProcedureCode(e.target.value)} className={inputClass} placeholder={t("sections.claimValidator.procedureCodePlaceholder")} />
             {shouldShowProcedureLookup && procLookupLoading && (
               <p className="mt-1 text-xs" style={{ color: "#94A3B8" }}>{t("sections.claimValidator.lookingUp")}</p>
             )}
@@ -231,23 +231,23 @@ export function ClaimValidatorSection() {
             <div key={idx} className="grid gap-2 items-end" style={{ gridTemplateColumns: "1fr 1fr 120px 80px 36px" }}>
               <div>
                 {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.name")}</label>}
-                <input type="text" value={mat.name} onChange={(e) => updateMaterial(idx, "name", e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.namePlaceholder")} />
+                <input type="text" value={mat.name} onChange={(e) => updateMaterial(idx, "name", e.target.value)} className={inputClass} placeholder={t("sections.claimValidator.namePlaceholder")} />
               </div>
               <div>
                 {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.code")}</label>}
-                <input type="text" value={mat.code ?? ""} onChange={(e) => updateMaterial(idx, "code", e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.codePlaceholder")} />
+                <input type="text" value={mat.code ?? ""} onChange={(e) => updateMaterial(idx, "code", e.target.value)} className={inputClass} placeholder={t("sections.claimValidator.codePlaceholder")} />
               </div>
               <div>
                 {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.priceTry")}</label>}
-                <input type="number" value={mat.unit_price || ""} onChange={(e) => updateMaterial(idx, "unit_price", Number(e.target.value))} className="sut-input" placeholder={t("sections.claimValidator.pricePlaceholder")} min="0" step="0.01" />
+                <input type="number" value={mat.unit_price || ""} onChange={(e) => updateMaterial(idx, "unit_price", Number(e.target.value))} className={inputClass} placeholder={t("sections.claimValidator.pricePlaceholder")} min="0" step="0.01" />
               </div>
               <div>
                 {idx === 0 && <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.qty")}</label>}
-                <input type="number" value={mat.quantity || ""} onChange={(e) => updateMaterial(idx, "quantity", Number(e.target.value))} className="sut-input" placeholder={t("sections.claimValidator.qtyPlaceholder")} min="1" />
+                <input type="number" value={mat.quantity || ""} onChange={(e) => updateMaterial(idx, "quantity", Number(e.target.value))} className={inputClass} placeholder={t("sections.claimValidator.qtyPlaceholder")} min="1" />
               </div>
               <div>
                 {idx === 0 && <span className="block text-xs mb-1">&nbsp;</span>}
-                <button type="button" onClick={() => removeMaterial(idx)} className="sut-btn-icon" title={t("sections.claimValidator.remove")} disabled={materials.length <= 1}>✕</button>
+                <Button variant="icon" onClick={() => removeMaterial(idx)} title={t("sections.claimValidator.remove")} disabled={materials.length <= 1}>✕</Button>
               </div>
             </div>
           ))}
@@ -270,15 +270,15 @@ export function ClaimValidatorSection() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 px-3 pb-3 pt-1 border-t border-[var(--border-subtle)]">
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.drugContext.icd10")}</label>
-                <input type="text" value={drugIcd10} onChange={(e) => setDrugIcd10(e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.drugContext.icd10Placeholder")} />
+                <input type="text" value={drugIcd10} onChange={(e) => setDrugIcd10(e.target.value)} className={inputClass} placeholder={t("sections.claimValidator.drugContext.icd10Placeholder")} />
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.drugContext.prescriber")}</label>
-                <input type="text" value={drugPrescriber} onChange={(e) => setDrugPrescriber(e.target.value)} className="sut-input" placeholder={t("sections.claimValidator.drugContext.prescriberPlaceholder")} />
+                <input type="text" value={drugPrescriber} onChange={(e) => setDrugPrescriber(e.target.value)} className={inputClass} placeholder={t("sections.claimValidator.drugContext.prescriberPlaceholder")} />
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: "#71717A" }}>{t("sections.claimValidator.drugContext.boardReport")}</label>
-                <select value={drugReportPresent} onChange={(e) => setDrugReportPresent(e.target.value)} className="sut-input">
+                <select value={drugReportPresent} onChange={(e) => setDrugReportPresent(e.target.value)} className={inputClass}>
                   <option value="">{t("sections.claimValidator.drugContext.unknown")}</option>
                   <option value="yes">{t("sections.claimValidator.drugContext.present")}</option>
                   <option value="no">{t("sections.claimValidator.drugContext.absent")}</option>
@@ -289,10 +289,10 @@ export function ClaimValidatorSection() {
         </div>
 
         <div className="flex items-center gap-3 mt-4">
-          <button type="button" onClick={addMaterial} className="sut-btn-secondary">{t("sections.claimValidator.addMaterial")}</button>
-          <button type="button" onClick={handleValidate} disabled={loading} className="sut-btn-primary">
+          <Button variant="secondary" onClick={addMaterial}>{t("sections.claimValidator.addMaterial")}</Button>
+          <Button variant="primary" onClick={handleValidate} disabled={loading}>
             {loading ? t("sections.claimValidator.validating") : t("sections.claimValidator.validateClaim")}
-          </button>
+          </Button>
         </div>
       </Surface>
 

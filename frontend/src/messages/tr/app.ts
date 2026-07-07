@@ -7,9 +7,9 @@ const app = {
     "backToWorkspace": "SUT çalışma alanına dön"
   },
   "howItWorks": {
-    "ariaLabel": "BILUN nasıl çalışır",
+    "ariaLabel": "Bilun nasıl çalışır",
     "closeAria": "Nasıl çalışır penceresini kapat",
-    "kicker": "BILUN",
+    "kicker": "Bilun",
     "title": "SUT çalışma alanı nasıl çalışır",
     "intro": "Ayrılmış SUT uygulaması; faturalama kural analitiği, kesinlik odaklı optimizasyon ve hasta finansal incelemesine odaklanır; karışık eski IHP yüzeylerine geri dönmez.",
     "phaseNavAria": "SUT metodoloji aşamaları",
@@ -21,7 +21,7 @@ const app = {
     "phases": {
       "01": {
         "title": "Tebliğ kataloğu derlemesi",
-        "description": "BILUN, güncel işlem fiyatlandırması, DRG paket fiyatlandırması ve normatif SUT kontrollerini destekleyen seçilmiş tebliğ cetvellerini okur.",
+        "description": "Bilun, güncel işlem fiyatlandırması, DRG paket fiyatlandırması ve normatif SUT kontrollerini destekleyen seçilmiş tebliğ cetvellerini okur.",
         "detail1": "Standart SUT fiyatlandırması tarihli tebliğ kataloğu sorgularını kullanır.",
         "detail2": "İşlem, DRG, malzeme ve check-up referansları SUT'a ait rotalarda kalır.",
         "detail3": "Tarihsel paket kullanılabilirliği sessizce ileri taşınmak yerine korunur.",

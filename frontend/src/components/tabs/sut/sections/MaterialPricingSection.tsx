@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getSutMaterialPricing } from "@/lib/api/sut";
 import type { SutMaterialPricingResult } from "@/lib/api/sut";
 import { ACCENT_LOCAL, fmtTRY2 } from "../shared";
-import { Chip, DataTable, Surface } from "@/components/primitives";
+import { Chip, DataTable, Surface, Button, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
 
@@ -57,10 +57,10 @@ export function MaterialPricingSection() {
           {t("sections.materialPricing.searchTitle")}
         </h3>
         <div className="flex gap-2">
-          <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown} className="sut-input flex-1" placeholder={t("sections.materialPricing.searchPlaceholder")} />
-          <button type="button" onClick={handleSearch} disabled={loading} className="sut-btn-primary">
+          <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown} className={`${inputClass} flex-1`} placeholder={t("sections.materialPricing.searchPlaceholder")} />
+          <Button variant="primary" onClick={handleSearch} disabled={loading}>
             {loading ? t("sections.materialPricing.searching") : t("sections.materialPricing.search")}
-          </button>
+          </Button>
         </div>
       </Surface>
 

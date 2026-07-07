@@ -52,18 +52,18 @@ const api = {
       "EK-2C-1 katılım payı oranı uyumu; faturalandırılmış işlem kodları ve talep tarihleri gibi kesin girdiler gerektirir. Bunlar aktif SUT çalışma zamanı girdilerinde mevcut değil.",
     drgUnbundlingUnavailable:
       "DRG paket ayrıştırma riski; kesin faturalandırılmış işlem satırları, paket uygunluk bağlamı ve tarihli paket fiyatlandırması gerektirir. Bunlar aktif SUT çalışma zamanı girdilerinde mevcut değil.",
-    missingExactnessMetadata: "BILUN yükünde kesinlik meta verisi sağlanmadı.",
-    missingPricingMetadata: "BILUN yükünde fiyatlandırma kesinlik meta verisi sağlanmadı.",
-    missingDrgPricingMetadata: "BILUN yükünde DRG fiyatlandırma kesinlik meta verisi sağlanmadı.",
+    missingExactnessMetadata: "Bilun yükünde kesinlik meta verisi sağlanmadı.",
+    missingPricingMetadata: "Bilun yükünde fiyatlandırma kesinlik meta verisi sağlanmadı.",
+    missingDrgPricingMetadata: "Bilun yükünde DRG fiyatlandırma kesinlik meta verisi sağlanmadı.",
     exactClaimDatasetUnavailable: "Bu dağıtım için kesin talep veri seti mevcut değil.",
     exactClaimLinesMissingForPatient: "Bu hasta için kesin talep satırları eksik.",
     exactClaimPatientTotalsMissing: "Kesin hasta talep toplamları eksik.",
-    bilunDataSourceMetadataMissing: "BILUN veri kaynağı meta verisi eksik.",
-    bilunDataSourceConfigInvalid: "BILUN veri kaynağı yapılandırması geçersiz.",
-    bilunDataSourceMetadataInvalid: "BILUN veri kaynağı meta verisi geçersiz.",
+    bilunDataSourceMetadataMissing: "Bilun veri kaynağı meta verisi eksik.",
+    bilunDataSourceConfigInvalid: "Bilun veri kaynağı yapılandırması geçersiz.",
+    bilunDataSourceMetadataInvalid: "Bilun veri kaynağı meta verisi geçersiz.",
     syntheticDemoRequiresIsSyntheticTrue: "Sentetik demo modu is_synthetic=true gerektirir.",
     realClaimsRequiresIsSyntheticFalse: "Gerçek talep modu is_synthetic=false gerektirir.",
-    bilunDataSourceModeMissingOrInvalid: "BILUN veri kaynağı modu eksik veya geçersiz.",
+    bilunDataSourceModeMissingOrInvalid: "Bilun veri kaynağı modu eksik veya geçersiz.",
   },
   methodology: {
     billingStrategyReviewDetail:
@@ -103,10 +103,10 @@ const api = {
     summarySeparator: " | ",
   },
   provenance: {
-    dataSourceUnavailableLabel: "BILUN veri kaynağı kullanılamıyor",
+    dataSourceUnavailableLabel: "Bilun veri kaynağı kullanılamıyor",
     dataSourceMissingNotice:
-      "BILUN veri kaynağı kökeni sağlanmadı; bir derleme köken sağlayana kadar talep türevli değerleri kullanılamaz sayın.",
-    syntheticDemoLabel: "Sentetik BILUN demo talep verisi",
+      "Bilun veri kaynağı kökeni sağlanmadı; bir derleme köken sağlayana kadar talep türevli değerleri kullanılamaz sayın.",
+    syntheticDemoLabel: "Sentetik Bilun demo talep verisi",
     hospitalClaimDataLabel: "Hastane talep verisi",
     syntheticDemoNotice:
       "Yalnızca demo verisi. Kural hesaplamaları bu sentetik talep satırları için kesindir.",

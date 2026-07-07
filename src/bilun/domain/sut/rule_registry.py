@@ -659,6 +659,36 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         description="§2.4.1 dental rules — partial: 3 of 10 rules wire (precious-metal no-pay, implant board-report gate, treating-physician continuity). Remaining 7 need patient_age/years_since_last_prosthesis/facility_type not on the claim model.",
         description_tr="§2.4.1 diş kuralları — kısmi: 10 kuralın 3'ü çalışır (kıymetli maden ödenmez, implant kurul raporu kapısı, tedavi hekimi sürekliliği). Kalan 7'si claim modelinde olmayan patient_age/years_since_last_prosthesis/facility_type gerektirir.",
     ),
+    RuleRegistryEntry(
+        rule_id="treatment_pricing_2_4",
+        rule_category="treatment_pricing",
+        rule_category_tr="Tedavi Fiyatlandırması (§2.4)",
+        coverage_status="partial",
+        domain_modules=(
+            "src/bilun/domain/prose_rules/treatment_pricing.py",
+            "data/gazette/prose_rules/treatment_pricing_2_4.json",
+        ),
+        sut_section_prefixes=("2.4",),
+        annex_refs=("EK-2/C",),
+        keywords=("seans", "ödenmez", "paket kapsamında", "ayrıca faturalandırılamaz"),
+        description="§2.4 treatment-pricing prose — partial: 17 of 182 rules fire on condition keys derivable from PatientClaimContext (procedure_category, procedure_code_any, provider_type, facility_tier, diagnosis_any/in with ICD-10 prefix match, health_board_report_present). The remaining 165 need session counters / IVF cycle history / temporal windows / clinical scores (BMI, testosterone, risk scores) absent from the claim model and honest-skip via the predicate guard.",
+        description_tr="§2.4 tedavi fiyatlandırması prose — kısmi: 182 kuralın 17'si PatientClaimContext'ten türetilebilen anahtarlarla çalışır. Kalan 165, claim modelinde olmayan seans sayacı / IVF döngü geçmişi / zamansal pencere / klinik skor (BMI, testosteron, risk skorları) gerektirir ve predicate guard ile dürüstçe atlanır.",
+    ),
+    RuleRegistryEntry(
+        rule_id="drug_combination_4_2",
+        rule_category="drug_combination",
+        rule_category_tr="İlaç Kombinasyonu (§4.2)",
+        coverage_status="partial",
+        domain_modules=(
+            "src/bilun/domain/prose_rules/drug_combination.py",
+            "data/gazette/prose_rules/drug_combination_4_2.json",
+        ),
+        sut_section_prefixes=("4.2",),
+        annex_refs=("EK-4/A", "EK-4/B"),
+        keywords=("birlikte kullanım", "kombinasyon", "ödenmez", "aynı anda"),
+        description="§4.2 drug-combination prose — partial: 6 of 53 rules fire (DOAC combo, cinacalcet/etelcalsetid, myeloma PI combo, active-vitamin-D/osteoporosis, MS-DMT combo) via drug_name_any / drug_name_set_any_two / drug_name_set_all + ICD-10 prefix diagnosis_any. The remaining 47 need a drug→class map (~18 rules), PD-L1/ECOG/Child-Pugh clinical fields (~14 oncology), or EMR prior-therapy/progression timelines (~15) and honest-skip via skipped_no_data.",
+        description_tr="§4.2 ilaç kombinasyonu prose — kısmi: 53 kuralın 6'sı çalışır (DOAC kombinasyonu, sinakalsiet/etelkalsietid, miyelom PI kombinasyonu, aktif-D vitamini/osteoporoz, MS-DMT kombinasyonu). Kalan 47, ilaç→sınıf haritası, PD-L1/ECOG/Child-Pugh klinik alanları veya EMR önceki-tedavi/ilerişim zaman çizelgesi gerektirir ve skipped_no_data ile dürüstçe atlanır.",
+    ),
 )
 
 RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = tuple(

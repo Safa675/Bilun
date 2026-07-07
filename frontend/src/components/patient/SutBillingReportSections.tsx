@@ -41,6 +41,7 @@ import {
 } from "@/lib/billingReportFields";
 import {
   getRecommendedActions,
+  recommendedActionSectionId,
   recommendedActionAmountParts,
   recommendedActionSurfaceLabel,
   recommendedActionTitle,
@@ -51,7 +52,7 @@ import { EkAnnexChips, RuleSourceAttribution } from "@/components/sut/Regulatory
 import { resolveBillingEkAnnexLabels } from "@/lib/sutRegulatorySources";
 import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 import { SpecialtyProseScopeNotice } from "@/components/sut/SpecialtyProseScopeNotice";
-import { Chip, DataTable, Eyebrow, Section, Stat, Surface } from "@/components/primitives";
+import { Chip, DataTable, ExactnessBlock as ExactnessNotice, Eyebrow, Section, Stat, Surface } from "@/components/primitives";
 import { getExemptionCategories } from "@/lib/copayExemption";
 import {
   fmtLabel,
@@ -78,8 +79,15 @@ export const WRAPPED_HEADER_STYLE = {
 export function StatusChip({ label, color }: { label: string; color: string }) {
   return (
     <span
-      className="sut-status-chip"
-      style={{ "--sut-chip-color": color } as CSSProperties}
+      className="inline-flex items-center rounded-full border px-2 py-0.5 text-[0.72rem] font-bold uppercase tracking-[0.06em]"
+      style={
+        {
+          "--sut-chip-color": color,
+          borderColor: "color-mix(in srgb, var(--sut-chip-color) 22%, transparent)",
+          background: "color-mix(in srgb, var(--sut-chip-color) 10%, transparent)",
+          color: "var(--sut-chip-color)",
+        } as CSSProperties
+      }
     >
       {label}
     </span>
@@ -98,22 +106,6 @@ function BillingRegulatorySourceCell({
     return <span className="text-[var(--text-muted)]">—</span>;
   }
   return <EkAnnexChips labels={labels} />;
-}
-
-type ExactnessBlock = Parameters<typeof getUnavailableMessage>[0];
-
-export function ExactnessNotice({
-  block,
-  fallback,
-}: {
-  block: ExactnessBlock;
-  fallback: string;
-}) {
-  return (
-    <div className="sut-exactness-notice">
-      {getUnavailableMessage(block, fallback)}
-    </div>
-  );
 }
 
 export function BillingSectionShell({
@@ -192,8 +184,31 @@ export function RecommendedActionsPanel({
         <tbody>
           {actions.map((action) => {
             const amount = recommendedActionAmountParts(t, action);
+            const sectionId = recommendedActionSectionId(action.surface);
+            const scrollToSection = () => {
+              if (!sectionId) return;
+              document.getElementById(sectionId)?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            };
             return (
-              <tr key={action.action_id}>
+              <tr
+                key={action.action_id}
+                className={sectionId ? "cursor-pointer" : undefined}
+                onClick={sectionId ? scrollToSection : undefined}
+                onKeyDown={
+                  sectionId
+                    ? (event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          scrollToSection();
+                        }
+                      }
+                    : undefined
+                }
+                tabIndex={sectionId ? 0 : undefined}
+              >
                 <td>
                   <Chip variant="neutral">
                     {recommendedActionSurfaceLabel(t, action.surface)}
@@ -414,7 +429,7 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
   const t = useT();
   if (!isExactOutput(labData)) {
     return (
-      <BillingSectionShell title={t("billing.lab.title")}>
+      <BillingSectionShell id="billing-lab" title={t("billing.lab.title")}>
         <ExactnessNotice block={labData} fallback={t("billing.lab.unavailable")} />
       </BillingSectionShell>
     );
@@ -428,7 +443,7 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
     labData.hemogram_bundling_savings + (labData.session_fraction_savings ?? 0);
 
   return (
-    <BillingSectionShell title={t("billing.lab.title")} total={fmtTRY2(combinedSavings)}>
+    <BillingSectionShell id="billing-lab" title={t("billing.lab.title")} total={fmtTRY2(combinedSavings)}>
       <TableWrap minWidth={820}>
         <thead>
           <tr>
@@ -525,6 +540,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
 
   return (
     <BillingSectionShell
+      id="billing-copay"
       title={t("billing.copay.title")}
       total={copayExact ? fmtTRY2(exemptionGapTotal) : undefined}
     >
@@ -717,10 +733,8 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
 
   if (!strategyExact && !hasRecommendations) {
     return (
-      <BillingSectionShell title={t("billing.strategy.title")}>
-        <div className="sut-exactness-notice">
-          {getUnavailableMessage(strategyData, t("billing.strategy.unavailable"))}
-        </div>
+      <BillingSectionShell id="billing-strategy" title={t("billing.strategy.title")}>
+        <ExactnessNotice block={strategyData} fallback={t("billing.strategy.unavailable")} />
       </BillingSectionShell>
     );
   }
@@ -749,11 +763,9 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
   };
 
   return (
-    <BillingSectionShell title={t("billing.strategy.title")}>
+    <BillingSectionShell id="billing-strategy" title={t("billing.strategy.title")}>
       {!strategyExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(strategyData, t("billing.strategy.unavailable"))}
-        </div>
+        <ExactnessNotice block={strategyData} fallback={t("billing.strategy.unavailable")} className="mb-4" />
       )}
       {usesClaimTable && catalogAsOfFootnote && (
         <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
@@ -935,9 +947,7 @@ export function OptionalOverrideSection({
         {t("billing.optionalOverride.scopeFootnote")}
       </p>
       {!strategyExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(strategyData, t("billing.optionalOverride.unavailable"))}
-        </div>
+        <ExactnessNotice block={strategyData} fallback={t("billing.optionalOverride.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1080}>
         <thead>
@@ -1025,9 +1035,7 @@ export function MaterialUpliftSection({
         {t("billing.materialUplift.scopeFootnote")}
       </p>
       {!materialExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(materialData, t("billing.materialUplift.unavailable"))}
-        </div>
+        <ExactnessNotice block={materialData} fallback={t("billing.materialUplift.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1040}>
         <thead>
@@ -1117,9 +1125,7 @@ export function ProcedureCaptureGapSection({
         <p className="mb-3 text-sm leading-relaxed text-[var(--text-secondary)]">
           {t("billing.procedureCaptureGap.scopeFootnote")}
         </p>
-        <div className="sut-exactness-notice">
-          {getUnavailableMessage(captureData, t("billing.procedureCaptureGap.unavailable"))}
-        </div>
+        <ExactnessNotice block={captureData} fallback={t("billing.procedureCaptureGap.unavailable")} />
       </BillingSectionShell>
     );
   }
@@ -1139,9 +1145,7 @@ export function ProcedureCaptureGapSection({
         {t("billing.procedureCaptureGap.scopeFootnote")}
       </p>
       {!captureExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(captureData, t("billing.procedureCaptureGap.unavailable"))}
-        </div>
+        <ExactnessNotice block={captureData} fallback={t("billing.procedureCaptureGap.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1040}>
         <thead>
@@ -1223,9 +1227,7 @@ export function ProcedureAddonUpliftSection({
         {t("billing.procedureAddonUplift.scopeFootnote")}
       </p>
       {!addonExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(addonData, t("billing.procedureAddonUplift.unavailable"))}
-        </div>
+        <ExactnessNotice block={addonData} fallback={t("billing.procedureAddonUplift.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1120}>
         <thead>
@@ -1327,9 +1329,7 @@ export function GazetteRepricingSection({
         {t("billing.gazetteRepricing.scopeFootnote")}
       </p>
       {!repricingExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(repricingData, t("billing.gazetteRepricing.unavailable"))}
-        </div>
+        <ExactnessNotice block={repricingData} fallback={t("billing.gazetteRepricing.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1180}>
         <thead>
@@ -1446,9 +1446,7 @@ export function ClaimSubmissionChecklistSection({
         {t("billing.claimChecklist.scopeFootnote")}
       </p>
       {!checklistExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(checklistData, t("billing.claimChecklist.unavailable"))}
-        </div>
+        <ExactnessNotice block={checklistData} fallback={t("billing.claimChecklist.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1120}>
         <thead>
@@ -1514,9 +1512,7 @@ export function MedulaRejectionPlaybookSection({
         {t("billing.medulaPlaybook.scopeFootnote")}
       </p>
       {!playbookExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(playbookData, t("billing.medulaPlaybook.unavailable"))}
-        </div>
+        <ExactnessNotice block={playbookData} fallback={t("billing.medulaPlaybook.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1180}>
         <thead>
@@ -1592,9 +1588,7 @@ export function DrugIndicationReviewSection({
         {t("billing.drugIndication.scopeFootnote")}
       </p>
       {!reviewExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(reviewData, t("billing.drugIndication.unavailable"))}
-        </div>
+        <ExactnessNotice block={reviewData} fallback={t("billing.drugIndication.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1080}>
         <thead>
@@ -1657,9 +1651,7 @@ export function DrgPackageAdequacyReviewSection({
         </p>
       )}
       {!reviewExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(reviewData, t("billing.packageAdequacyReview.unavailable"))}
-        </div>
+        <ExactnessNotice block={reviewData} fallback={t("billing.packageAdequacyReview.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1200}>
         <thead>
@@ -1756,9 +1748,7 @@ export function CareSettingReviewSection({
         </p>
       )}
       {!reviewExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(reviewData, t("billing.careSettingReview.unavailable"))}
-        </div>
+        <ExactnessNotice block={reviewData} fallback={t("billing.careSettingReview.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1120}>
         <thead>
@@ -1859,9 +1849,7 @@ export function BloodComponentUpliftSection({
         {t("billing.bloodUplift.scopeFootnote")}
       </p>
       {!bloodExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(bloodData, t("billing.bloodUplift.unavailable"))}
-        </div>
+        <ExactnessNotice block={bloodData} fallback={t("billing.bloodUplift.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1040}>
         <thead>
@@ -1938,9 +1926,7 @@ export function DrgUpliftSection({
   if (!drgExact && opportunities.length === 0) {
     return (
       <BillingSectionShell title={t("billing.drgUplift.title")}>
-        <div className="sut-exactness-notice">
-          {getUnavailableMessage(drgData, t("billing.drgUplift.unavailable"))}
-        </div>
+        <ExactnessNotice block={drgData} fallback={t("billing.drgUplift.unavailable")} />
       </BillingSectionShell>
     );
   }
@@ -1957,9 +1943,7 @@ export function DrgUpliftSection({
         {t("billing.drgUplift.scopeFootnote")}
       </p>
       {!drgExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(drgData, t("billing.drgUplift.unavailable"))}
-        </div>
+        <ExactnessNotice block={drgData} fallback={t("billing.drgUplift.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={960}>
         <thead>
@@ -2019,9 +2003,7 @@ export function SessionUpliftSection({
   if (!sessionExact && opportunities.length === 0) {
     return (
       <BillingSectionShell title={t("billing.sessionUplift.title")}>
-        <div className="sut-exactness-notice">
-          {getUnavailableMessage(sessionData, t("billing.sessionUplift.unavailable"))}
-        </div>
+        <ExactnessNotice block={sessionData} fallback={t("billing.sessionUplift.unavailable")} />
       </BillingSectionShell>
     );
   }
@@ -2051,9 +2033,7 @@ export function SessionUpliftSection({
         </p>
       )}
       {!sessionExact && (
-        <div className="sut-exactness-notice mb-4">
-          {getUnavailableMessage(sessionData, t("billing.sessionUplift.unavailable"))}
-        </div>
+        <ExactnessNotice block={sessionData} fallback={t("billing.sessionUplift.unavailable")} className="mb-4" />
       )}
       <TableWrap minWidth={1080}>
         <thead>
@@ -2146,7 +2126,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
   }
 
   return (
-    <BillingSectionShell title={t("billing.materials.title")}>
+    <BillingSectionShell id="materials-pre-check" title={t("billing.materials.title")}>
       <div className="space-y-4">
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
           {t("billing.materials.advisoryFootnote")}

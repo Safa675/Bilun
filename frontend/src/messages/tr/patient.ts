@@ -19,7 +19,9 @@ const patient = {
   "financialSummary": {
     "eyebrow": "Finansal özet",
     "title": "Tüm faturalar özeti",
-    "description": "Her talep için hasta düzeyinde toplamlar: faturalanan, SUT'un ödemesini beklediği tutar ve BILUN'un hâlâ kurtarabileceği miktar.",
+    "titleBill": "Fatura {claimId}",
+    "description": "Her talep için hasta düzeyinde toplamlar: faturalanan, SUT'un ödemesini beklediği tutar ve Bilun'un hâlâ kurtarabileceği miktar.",
+    "descriptionBill": "Yalnızca seçili fatura için toplamlar — aşağıdaki bölümler aynı kapsamı kullanır.",
     "totalBilled": "Toplam faturalanan",
     "expectedPayable": "Beklenen ödenecek",
     "totalRecoverable": "Toplam kurtarılabilir (talep destekli)",
@@ -32,6 +34,16 @@ const patient = {
     "claimCount": "{count}",
     "claimSingular": " talep",
     "claimPlural": " talep"
+  },
+  "billingGroups": {
+    "overview": "Finansal özet",
+    "overviewDescription": "Aktif kapsam için özet KPI'lar ve önerilen işlemler.",
+    "compliance": "Uyumluluk incelemesi",
+    "complianceDescription": "Katılım payı, ilave ücret ayrımı ve faturalama stratejisi.",
+    "opportunities": "Gelir fırsatları",
+    "opportunitiesDescription": "Seans, DRG, malzeme ve işlem uplift tespitleri.",
+    "reference": "Referans ve gönderim",
+    "referenceDescription": "Kontrol listeleri, MEDULA playbook ve ilaç endikasyon incelemesi."
   },
   "billPicker": {
     "label": "Faturalar",

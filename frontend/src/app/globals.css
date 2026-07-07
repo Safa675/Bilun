@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "./styles/legacy.css";
 
 /* ─────────────────────────────────────────────────────────────────────
    BILUN design tokens — sourced from BILUN_EN.pptx investor deck.
@@ -76,7 +75,16 @@
 * {
   box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-subtle) transparent;
+  scrollbar-color: var(--text-disabled) transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border-subtle);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-disabled);
 }
 
 *::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -171,15 +179,15 @@ textarea:focus-visible {
   top: 0;
   z-index: 2;
   background: var(--surface-soft);
-  color: var(--text-primary);
+  color: var(--text-muted);
   padding: 0.65rem 0.875rem;
   border-bottom: 1px solid var(--border-subtle);
   text-align: left;
-  font-weight: 600;
-  font-size: 0.72rem;
+  font-weight: 500;
+  font-size: 0.75rem;
   line-height: 1.25;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
   vertical-align: bottom;
   white-space: nowrap;
 }
@@ -237,8 +245,8 @@ textarea:focus-visible {
     color: var(--text-primary) !important;
   }
 
-  header[aria-label="BILUN application bar"] button,
-  header[aria-label="BILUN application bar"] [aria-live="polite"] {
+  header[aria-label="Bilun application bar"] button,
+  header[aria-label="Bilun application bar"] [aria-live="polite"] {
     display: none !important;
   }
 
@@ -254,4 +262,46 @@ textarea:focus-visible {
   table {
     break-inside: avoid;
   }
+}
+
+/* ── Staggered reveal (subtle list/card enter animation) ───────────────── */
+
+@keyframes staggerRevealFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-reveal {
+  opacity: 0;
+  animation: staggerRevealFade 0.4s ease-out forwards;
+  animation-delay: var(--stagger-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-reveal {
+    opacity: 1;
+    animation: none;
+    transform: none;
+  }
+}
+
+/* ── App layout shells ─────────────────────────────────────────────────
+   Relocated from styles/legacy.css during Phase 5 cleanup. These are
+   structural layout rules that respond to the chat-dock CSS variables
+   (min-height + responsive padding offsets) and are not expressible as
+   single Tailwind utilities, so they live here as real classes.
+   ──────────────────────────────────────────────────────────────────── */
+
+.sut-app-main {
+  min-height: 100vh;
+  padding: 2.5rem calc(1.5rem + var(--chat-dock-inset-right, 0px)) 2rem
+    calc(1.5rem + var(--chat-dock-inset-left, 0px));
+  background: var(--surface-base);
+  transition: padding 0.25s ease;
+}
+
+.sut-app-top-bar {
+  padding-left: calc(1.5rem + var(--chat-dock-inset-left, 0px)) !important;
+  padding-right: calc(1.5rem + var(--chat-dock-inset-right, 0px)) !important;
+  transition: padding 0.25s ease;
 }

@@ -1,5 +1,5 @@
 const chat = {
-  title: "BILUN Analizi",
+  title: "Bilun Analizi",
   subtitle: {
     patient: "Hasta: {patientId}",
     cohortOverview: "Kohort özeti",
@@ -11,18 +11,18 @@ const chat = {
     dockRight: "Sağa sabitle",
     sendMessage: "Mesaj gönder",
   },
-  emptyState: "BILUN her görünümü özetler ve tüm konuşmayı burada tutar.",
+  emptyState: "Bilun her görünümü özetler ve tüm konuşmayı burada tutar.",
   devModeBadge: "Geliştirici",
   roles: {
     you: "Siz",
-    bilun: "BILUN",
+    bilun: "Bilun",
   },
   approve: {
     approved: "Onaylandı",
     approve: "Onayla",
   },
   loading: {
-    analyzing: "BILUN analiz ediyor...",
+    analyzing: "Bilun analiz ediyor...",
     thinking: "Düşünüyor",
   },
   errors: {
@@ -35,8 +35,8 @@ const chat = {
       "Katılım payı tasarrufu, laboratuvar optimizasyonu, ilaç ikamesi ve fatura stratejisi karşılaştırmaları dahil ayrıntılı fatura analizi için kohort tablosundan bir hasta seçin.",
   },
   input: {
-    placeholderPatient: "Bu hasta veya fatura incelemesi hakkında BILUN'a sorun...",
-    placeholderWorkspace: "Bu çalışma alanı hakkında BILUN'a sorun...",
+    placeholderPatient: "Bu hasta veya fatura incelemesi hakkında Bilun'a sorun...",
+    placeholderWorkspace: "Bu çalışma alanı hakkında Bilun'a sorun...",
   },
   defaultPrompts: {
     sutWorkspace:

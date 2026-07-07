@@ -27,23 +27,43 @@ _ek2a_cache: dict[str, Any] | None = None
 _ek3h_cache: list[dict[str, Any]] | None = None
 _ek3i_cache: list[dict[str, Any]] | None = None
 
+# The curated history parquets never change within a process. Read each once,
+# keep the parsed+filtered-by-date result in a per-asof_date cache so the 80+
+# distinct procedure dates in a cohort don't re-read + re-filter the same 62k
+# rows every call. Profiled: iterrows over ek2b was 0.887s/call × 87 dates.
+_ek2b_raw_cache: pd.DataFrame | None = None
+_ek2b_by_asof_cache: dict[str, dict[str, dict[str, Any]]] = {}
+_ek2c_raw_cache: pd.DataFrame | None = None
+_ek2c_by_asof_cache: dict[str, dict[str, Any]] = {}
+
 
 def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
     """Load EK-2B entries from curated history table filtered as-of date."""
+    cached = _ek2b_by_asof_cache.get(asof_date)
+    if cached is not None:
+        return cached
     if not EK2B_CURATED_HISTORY_PATH.exists():
         return {}
 
-    df = pd.read_parquet(EK2B_CURATED_HISTORY_PATH)
+    global _ek2b_raw_cache
+    if _ek2b_raw_cache is None:
+        _ek2b_raw_cache = pd.read_parquet(EK2B_CURATED_HISTORY_PATH)
+    df = _ek2b_raw_cache
     if df.empty:
         return {}
 
-    df = df.copy()
-    df["effective_date_parsed"] = pd.to_datetime(df["effective_date"], errors="coerce")
+    # Parse effective_date once on first load and stash on the cached frame so
+    # every date-variant reuses the parsed column instead of re-parsing.
+    if "effective_date_parsed" not in df.columns:
+        df = df.copy()
+        df["effective_date_parsed"] = pd.to_datetime(df["effective_date"], errors="coerce")
+        _ek2b_raw_cache = df
+
     cutoff = pd.to_datetime(asof_date)
-    df = df[df["effective_date_parsed"].notna()]
-    eligible = df[df["effective_date_parsed"] <= cutoff]
+    parsed = df[df["effective_date_parsed"].notna()]
+    eligible = parsed[parsed["effective_date_parsed"] <= cutoff]
     if eligible.empty:
-        eligible = df.sort_values(["code", "effective_date_parsed"]).drop_duplicates(
+        eligible = parsed.sort_values(["code", "effective_date_parsed"]).drop_duplicates(
             subset=["code"], keep="first"
         )
     else:
@@ -51,8 +71,11 @@ def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
             ["code", "effective_date_parsed"]
         ).drop_duplicates(subset=["code"], keep="last")
 
+    # Vectorized dict construction (to_dict) — ~6.5× faster than iterrows for
+    # 62k rows, and avoids per-row Series allocation.
+    records = eligible.to_dict(orient="records")
     by_code: dict[str, dict[str, Any]] = {}
-    for _, row in eligible.iterrows():
+    for row in records:
         code = str(row.get("code", "")).strip()
         if not code:
             continue
@@ -72,11 +95,15 @@ def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
         if new_code in by_code and old_code not in by_code:
             by_code[old_code] = by_code[new_code]
 
+    _ek2b_by_asof_cache[asof_date] = by_code
     return by_code
 
 
 def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
     """Load EK-2C packages from curated history table filtered as-of date."""
+    cached = _ek2c_by_asof_cache.get(asof_date)
+    if cached is not None:
+        return cached
     if not EK2C_CURATED_HISTORY_PATH.exists():
         return {
             "packages": [],
@@ -85,7 +112,10 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
             "stats": {"total_packages": 0},
         }
 
-    df = pd.read_parquet(EK2C_CURATED_HISTORY_PATH)
+    global _ek2c_raw_cache
+    if _ek2c_raw_cache is None:
+        _ek2c_raw_cache = pd.read_parquet(EK2C_CURATED_HISTORY_PATH)
+    df = _ek2c_raw_cache
     if df.empty:
         return {
             "packages": [],
@@ -94,13 +124,16 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
             "stats": {"total_packages": 0},
         }
 
-    df = df.copy()
-    df["effective_date_parsed"] = pd.to_datetime(df["effective_date"], errors="coerce")
+    if "effective_date_parsed" not in df.columns:
+        df = df.copy()
+        df["effective_date_parsed"] = pd.to_datetime(df["effective_date"], errors="coerce")
+        _ek2c_raw_cache = df
+
     cutoff = pd.to_datetime(asof_date)
-    df = df[df["effective_date_parsed"].notna()]
-    eligible = df[df["effective_date_parsed"] <= cutoff]
+    parsed = df[df["effective_date_parsed"].notna()]
+    eligible = parsed[parsed["effective_date_parsed"] <= cutoff]
     if eligible.empty:
-        eligible = df.sort_values(
+        eligible = parsed.sort_values(
             ["package_code", "effective_date_parsed"]
         ).drop_duplicates(subset=["package_code"], keep="first")
     else:
@@ -108,9 +141,10 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
             ["package_code", "effective_date_parsed"]
         ).drop_duplicates(subset=["package_code"], keep="last")
 
+    records = eligible.to_dict(orient="records")
     packages: list[dict[str, Any]] = []
     by_code: dict[str, dict[str, Any]] = {}
-    for _, row in eligible.iterrows():
+    for row in records:
         code = str(row.get("package_code", "")).strip()
         name = _safe_str(row.get("name"))
         price = _safe_float(row.get("price_try"))
@@ -150,12 +184,14 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
         "price_mean": round(sum(all_prices) / len(all_prices), 2) if all_prices else 0,
     }
 
-    return {
+    result = {
         "packages": packages,
         "by_code": by_code,
         "group_stats": group_stats,
         "stats": stats,
     }
+    _ek2c_by_asof_cache[asof_date] = result
+    return result
 
 
 def _load_ek2a() -> dict[str, Any]:
