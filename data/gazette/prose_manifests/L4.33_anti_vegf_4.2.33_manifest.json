@@ -3,17 +3,24 @@
   "section_id": "4.2.33",
   "effective_date": "2026-06-29",
   "rule_set_id": "anti_vegf_prose",
-  "rules_in_json": 29,
+  "rules_in_json": 37,
   "section_clause_total": 55,
-  "encoded_clause_count": 19,
+  "encoded_clause_count": 27,
   "encoded_clause_ids": [
     "C006455",
     "C006526",
     "C006527",
+    "C006528",
+    "C006529",
+    "C006530",
     "C006548",
     "C006549",
+    "C006550",
     "C006553",
+    "C006556",
+    "C006557",
     "C006558",
+    "C006559",
     "C006560",
     "C006561",
     "C006562",
@@ -24,14 +31,12 @@
     "C006570",
     "C006571",
     "C006575",
+    "C006578",
     "C006583",
     "C006586"
   ],
   "tier_c_deferred_clause_ids": [
     "C006524",
-    "C006528",
-    "C006529",
-    "C006530",
     "C006531",
     "C006532",
     "C006537",
@@ -45,20 +50,15 @@
     "C006545",
     "C006546",
     "C006547",
-    "C006550",
     "C006551",
     "C006554",
-    "C006556",
-    "C006557",
-    "C006559",
     "C006573",
     "C006576",
-    "C006578",
     "C006579",
     "C006581",
     "C006584"
   ],
-  "tier_c_deferred_count": 29,
+  "tier_c_deferred_count": 21,
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [
     "C006525",
@@ -122,30 +122,26 @@
     {
       "clause_id": "C006528",
       "section_id": "4.2.33",
-      "manifest_status": "tier_c_deferred",
-      "defer_themes": [
-        "prior_therapy",
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (prior_therapy, response_assessment)."
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.bevacizumab_maintenance_idame"
+      ]
     },
     {
       "clause_id": "C006529",
       "section_id": "4.2.33",
-      "manifest_status": "tier_c_deferred",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.loading_dose_completion_mandatory"
+      ]
     },
     {
       "clause_id": "C006530",
       "section_id": "4.2.33",
-      "manifest_status": "tier_c_deferred",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.same_eye_combination_no_pay"
+      ]
     },
     {
       "clause_id": "C006531",
@@ -283,11 +279,10 @@
     {
       "clause_id": "C006550",
       "section_id": "4.2.33",
-      "manifest_status": "tier_c_deferred",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.incomplete_loading_switch_no_pay"
+      ]
     },
     {
       "clause_id": "C006551",
@@ -318,20 +313,22 @@
     {
       "clause_id": "C006556",
       "section_id": "4.2.33",
-      "manifest_status": "tier_c_deferred",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (response_assessment)."
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.B.deksametazon_itv_implant_rvdt_srvt",
+        "4.2.33.D.deksametazon_itv_dmo",
+        "4.2.33.deksametazon_itv_max_4_per_year",
+        "4.2.33.Ç.deksametazon_itv_dmo",
+        "4.2.33.Ç.deksametazon_timing_after_anti_vegf"
+      ]
     },
     {
       "clause_id": "C006557",
       "section_id": "4.2.33",
-      "manifest_status": "tier_c_deferred",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.rvt_with_glaucoma_avoid_deksametazon"
+      ]
     },
     {
       "clause_id": "C006558",
@@ -344,11 +341,10 @@
     {
       "clause_id": "C006559",
       "section_id": "4.2.33",
-      "manifest_status": "tier_c_deferred",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.antivegf_contraindication_documentation"
+      ]
     },
     {
       "clause_id": "C006560",
@@ -485,11 +481,10 @@
     {
       "clause_id": "C006578",
       "section_id": "4.2.33.D",
-      "manifest_status": "tier_c_deferred",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
+      "manifest_status": "encoded",
+      "linked_rule_ids": [
+        "4.2.33.D.sunu_gozyasi_dry_eye"
+      ]
     },
     {
       "clause_id": "C006579",
@@ -547,8 +542,8 @@
       ]
     }
   ],
-  "encode_tier_C_deferred_count": 29,
+  "encode_tier_C_deferred_count": 21,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 34.5
+  "encoded_clause_pct": 49.1
 }

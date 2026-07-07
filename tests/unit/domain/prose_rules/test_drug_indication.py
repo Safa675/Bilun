@@ -264,7 +264,7 @@ def test_anti_vegf_prescriber_specialty_mismatch() -> None:
 
 
 def test_deksametazon_annual_max_exceeded() -> None:
-    """Deksametazon ITV implant with 5 applications (max 2/yr) → annual_max_exceeded."""
+    """Deksametazon ITV implant with 5 applications (max 4/yr) → annual_max_exceeded."""
     hit = evaluate_drug_indication_line(
         drug_line=_drug_line(
             drug_name="OZURDEX (DEKSAMETAZON)",
@@ -278,12 +278,12 @@ def test_deksametazon_annual_max_exceeded() -> None:
     assert hit is not None
     assert hit["violation_kind"] == "annual_max_exceeded"
     assert hit["severity"] == "error"
-    assert hit["max_applications_per_year"] == 2
+    assert hit["max_applications_per_year"] == 4
     assert hit["actual_application_count"] == 5
 
 
 def test_deksametazon_annual_within_limit_passes() -> None:
-    """Deksametazon ITV with 1 application (max 2/yr) → no violation."""
+    """Deksametazon ITV with 1 application (max 4/yr) → no violation."""
     hit = evaluate_drug_indication_line(
         drug_line=_drug_line(
             drug_name="OZURDEX (DEKSAMETAZON)",
