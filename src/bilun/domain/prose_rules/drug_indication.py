@@ -465,6 +465,17 @@ def drug_indication_coverage_scope() -> dict[str, Any]:
     }
 
 
+@lru_cache(maxsize=4096)
+def _compiled_inn_pattern(token: str):
+    """Compile + cache the word-boundary regex for an INN token.
+
+    ``_drug_name_matches`` is called ~240k times per cohort run with a small,
+    stable set of INN tokens; compiling the pattern once per token (vs every
+    call) cuts the re._compile cost the profile surfaced.
+    """
+    return re.compile(r"(?<![\w)])" + re.escape(token) + r"(?![\w(])")
+
+
 def _drug_name_matches(drug_name: str, rule_names: list[str]) -> bool:
     """Match a billed drug name against a rule's INN tokens.
 
@@ -484,8 +495,8 @@ def _drug_name_matches(drug_name: str, rule_names: list[str]) -> bool:
         # Build a regex that matches `token` only at a word boundary. Word
         # boundaries here include start/end of string, whitespace, parentheses,
         # and the + separator used in combo tokens like "saba+sama".
-        pattern = r"(?<![\w)])" + re.escape(token) + r"(?![\w(])"
-        if re.search(pattern, normalized):
+        # Pattern is compiled once per token via _compiled_inn_pattern cache.
+        if _compiled_inn_pattern(token).search(normalized):
             return True
     return False
 
