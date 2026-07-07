@@ -110,3 +110,35 @@ rules:
   verification_status: ai_generated_pending_review
   content_note: Authoritative deksametazon frequency clause. Corrects the earlier unsourced "max 2/year" figure used in the
     Ç/D/B deksametazon rules.
+- rule_id: 4.2.33.antivegf_contraindication_documentation
+  sut_section: 4.2.33
+  deontic: MANDATORY
+  icd10_codes: []
+  message_tr: Anti-VEGF ilaçlar son 3 ay içinde geçirilmiş miyokard enfarktüsü, serebrovasküler olay veya benzeri vasküler
+    patoloji durumlarında kontrendikedir; kontrendikasyon oluşturan gerekçe hekim tarafından sağlık kurulu raporunda mutlaka
+    belirtilir (§4.2.33/(13)).
+  gate_b_sources:
+  - C006559
+  verification_status: ai_generated_pending_review
+  content_note: Safety / contraindication documentation rule. Applies across all anti-VEGF agents in §4.2.33.
+- rule_id: 4.2.33.rvt_with_glaucoma_avoid_deksametazon
+  sut_section: 4.2.33
+  deontic: PERMISSION
+  drug_names:
+  - ranibizumab
+  - aflibersept
+  icd10_codes:
+  - H34.8
+  indication_tr: Retina ven tıkanıklığı + eşlik eden glokom — bevacizumab yükleme sonrası yetersiz cevap
+  report_required: true
+  prescriber_specialties:
+  - göz hastalıkları
+  message_tr: Glokomun eşlik ettiği retinal ven tıkanıklığı hastalarında bevacizumab yükleme dozu sonrası yetersiz cevap alınması
+    durumunda, bu durum sağlık raporunda belirtildiği takdirde deksametazon intravitreal implant KULLANILMAKSIZIN ranibizumab
+    veya aflibersept ile tedaviye devam edilebilir (§4.2.33/(11)).
+  gate_b_sources:
+  - C006557
+  verification_status: ai_generated_pending_review
+  content_note: 'Partially-struck clause — only the leading "(Mülga...) Retinal ven tıkanıklığı" title phrase was repealed;
+    the operative permission text is in-force. MODIFIES the §4.2.33.B deksametazon-RVT path: when glaucoma coexists, deksametazon
+    ITV must NOT be used — switch to ranibizumab/aflibersept. Needs human confirmation of the strike scope.'
