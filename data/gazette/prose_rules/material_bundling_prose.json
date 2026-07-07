@@ -1174,7 +1174,7 @@
     {
       "rule_id": "3.1.4.(a).plate_screw_nail_anchor",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002802"
       ],
@@ -1189,15 +1189,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Plak, çivi, vida, ankor işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(a))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Plak, çivi, vida, ankor tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(a))."
       }
     },
     {
       "rule_id": "3.1.4.(b).bone_cement",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002803"
       ],
@@ -1210,15 +1210,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Kemik çimentosu işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(b))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Kemik çimentosu tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(b))."
       }
     },
     {
       "rule_id": "3.1.4.(c).external_fixator_sets",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002804"
       ],
@@ -1231,15 +1231,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Eksternal fiksatör setleri işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(c))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Eksternal fiksatör setleri tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(c))."
       }
     },
     {
       "rule_id": "3.1.4.(d).spinal_implant",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002806"
       ],
@@ -1254,15 +1254,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Omurga implantı işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(d))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Omurga implantı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(d))."
       }
     },
     {
       "rule_id": "3.1.4.(e).pacemaker",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002807"
       ],
@@ -1276,15 +1276,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Kalp pili işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(e))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Kalp pili tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(e))."
       }
     },
     {
       "rule_id": "3.1.4.(f).pacemaker_electrode",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002808"
       ],
@@ -1299,15 +1299,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Pace elektrodu işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(f))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Pace elektrodu tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(f))."
       }
     },
     {
       "rule_id": "3.1.4.(g).coronary_stents",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002809"
       ],
@@ -1320,15 +1320,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Koroner stentler işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(g))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Koroner stentler tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(g))."
       }
     },
     {
       "rule_id": "3.1.4.(h).intraaortic_balloon_vad",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002811"
       ],
@@ -1345,15 +1345,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "İntraaortik balon / ventrikül destek cihazı işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(h))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "İntraaortik balon / ventrikül destek cihazı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(h))."
       }
     },
     {
       "rule_id": "3.1.4.(i).valve_ring",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002813"
       ],
@@ -1370,15 +1370,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Valf ringi işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(i))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Valf ringi tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(i))."
       }
     },
     {
       "rule_id": "3.1.4.(j).grafts_shunts_vascular_prosthesis",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002814"
       ],
@@ -1399,15 +1399,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Her türlü greft, şunt ve suni damar işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(j))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Her türlü greft, şunt ve suni damar tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(j))."
       }
     },
     {
       "rule_id": "3.1.4.(l).atherectomy_device",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002816"
       ],
@@ -1420,15 +1420,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Aterektomi cihazı işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(l))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Aterektomi cihazı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(l))."
       }
     },
     {
       "rule_id": "3.1.4.(m).double_sided_mesh_patches",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002817"
       ],
@@ -1444,15 +1444,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Çift yüzlü yamalar (meshler) işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(m))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Çift yüzlü yamalar (meshler) tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(m))."
       }
     },
     {
       "rule_id": "3.1.4.(o).arthroscopy_set_ek3f2",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002819"
       ],
@@ -1469,15 +1469,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
+        "material_outcome": "review_required",
+        "severity": "info",
         "message_tr": "EK-3/F-2 \"Artroskopi ve Eklem Cerrahisi Malzeme Seti\" işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(o))."
       }
     },
     {
       "rule_id": "3.1.4.(ç).all_joint_implants",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002805"
       ],
@@ -1495,15 +1495,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Her türlü eklem implantı işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(ç))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Her türlü eklem implantı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(ç))."
       }
     },
     {
       "rule_id": "3.1.4.(ğ).heart_valves",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002810"
       ],
@@ -1517,15 +1517,15 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Kalp kapakları işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(ğ))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Kalp kapakları tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(ğ))."
       }
     },
     {
       "rule_id": "3.1.4.(ı).valved_valveless_conduit",
       "sut_section": "3.1.4",
-      "deontic": "NO_PAY",
+      "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "C002812"
       ],
@@ -1541,9 +1541,9 @@
         ]
       },
       "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Kapaklı/kapaksız kondüit işlem bedeline dahildir — ayrıca faturalandırılamaz (§3.1.4(ı))."
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Kapaklı/kapaksız kondüit tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(ı))."
       }
     }
   ]
