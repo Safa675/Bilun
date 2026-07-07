@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import {
-  ChartColumnBig,
   ShieldAlert,
   ShieldCheck,
 } from "lucide-react";
@@ -24,7 +23,6 @@ import {
   RuleSourceAttribution,
 } from "@/components/sut/RegulatorySourceChips";
 import type {
-  CopayRateProcedure,
   PatientAlertsCategory,
   PatientAlertsStatus,
   PatientAlertsResponse,
@@ -33,10 +31,7 @@ import type {
   OptimizationSummary,
   SurchargeRule,
 } from "@/lib/domains/sut";
-import {
-  COPAY_RATE_REGULATORY_SOURCE,
-  SURCHARGE_REGULATORY_SOURCE,
-} from "@/lib/sutRegulatorySources";
+import { SURCHARGE_REGULATORY_SOURCE } from "@/lib/sutRegulatorySources";
 import {
   ALERT_PAGE_SIZE,
   buildPatientAlertsQuery,
@@ -97,13 +92,6 @@ import {
 
 const ACCENT = theme.accent;
 
-function fmtPctPoints(value: number | null | undefined, emDash: string): string {
-  if (value == null || Number.isNaN(value)) {
-    return emDash;
-  }
-  return `${fmtNum(value)}%`;
-}
-
 type SurchargeProcedureRow = {
   patient: PatientAlertRow;
   rule: SurchargeRule | null;
@@ -123,24 +111,6 @@ function flattenSurchargeProcedureRows(patients: PatientAlertRow[]): SurchargePr
     }
     for (const rule of rules) {
       rows.push({ patient, rule });
-    }
-  }
-  return rows;
-}
-
-type CopayRateProcedureRow = {
-  patient: PatientAlertRow;
-  procedure: CopayRateProcedure;
-};
-
-function flattenCopayRateProcedureRows(patients: PatientAlertRow[]): CopayRateProcedureRow[] {
-  const rows: CopayRateProcedureRow[] = [];
-  for (const patient of patients) {
-    if (!isExactOutput(patient.copay_rate_exposure)) {
-      continue;
-    }
-    for (const procedure of patient.copay_rate_exposure.top_procedures ?? []) {
-      rows.push({ patient, procedure });
     }
   }
   return rows;
@@ -355,21 +325,11 @@ function UnavailableBadge({ text }: { text: string }) {
   return <MethodologyBadge warn label={optimizerT("optimizer.unavailable.badge")} text={text} />;
 }
 
-function getAlertSummaryExactness(
-  summary: PatientAlertsResponse["summary"],
-  category: "surcharge" | "copay_rates",
-) {
-  if (category === "surcharge") {
-    return {
-      exactness_status: summary.surcharge_exactness_status,
-      unavailable_reason: summary.surcharge_unavailable_reason,
-      required_inputs_missing: summary.surcharge_required_inputs_missing,
-    };
-  }
+function getSurchargeSummaryExactness(summary: PatientAlertsResponse["summary"]) {
   return {
-    exactness_status: summary.copay_rate_exactness_status,
-    unavailable_reason: summary.copay_rate_unavailable_reason,
-    required_inputs_missing: summary.copay_rate_required_inputs_missing,
+    exactness_status: summary.surcharge_exactness_status,
+    unavailable_reason: summary.surcharge_unavailable_reason,
+    required_inputs_missing: summary.surcharge_required_inputs_missing,
   };
 }
 
@@ -629,7 +589,7 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
   }
 
   const { patients, summary } = data;
-  const summaryExactness = getAlertSummaryExactness(summary, "surcharge");
+  const summaryExactness = getSurchargeSummaryExactness(summary);
   const isUnavailable = !isExactOutput(summaryExactness);
   const unavailableMessage = getUnavailableMessage(
     summaryExactness,
@@ -747,165 +707,6 @@ function SurchargeComplianceAlerts({ data, loading }: { data: PatientAlertsRespo
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SECTION C: EK-2C-1 ADD-ON RATE COMPLIANCE ALERTS
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-function CopayRateAlerts({ data, loading }: { data: PatientAlertsResponse | null; loading: boolean }) {
-  const t = useT();
-  if (loading) {
-    return <SutAlertTableSkeleton />;
-  }
-  if (!data) {
-    return null;
-  }
-
-  const { patients, summary } = data;
-  const summaryExactness = getAlertSummaryExactness(summary, "copay_rates");
-  const isUnavailable = !isExactOutput(summaryExactness);
-  const unavailableMessage = getUnavailableMessage(
-    summaryExactness,
-    t("optimizer.unavailable.copayRateCompliance"),
-  );
-  const totalMatching = data.pagination?.total_matching ?? patients.length;
-  const limit = data.pagination?.limit ?? ALERT_PAGE_SIZE;
-  const offset = data.pagination?.offset ?? 0;
-  const rangeStart = totalMatching > 0 ? offset + 1 : 0;
-  const rangeEnd = patients.length > 0 ? Math.min(offset + patients.length, totalMatching) : 0;
-  const currentPage = Math.floor(offset / Math.max(limit, 1)) + 1;
-  const totalPages = Math.max(1, Math.ceil(totalMatching / Math.max(limit, 1)));
-
-  return (
-    <div className="space-y-5">
-      {isUnavailable ? (
-        <UnavailableBadge text={unavailableMessage} />
-      ) : (
-        <MethodologyBadge text={t("optimizer.methodology.copayRateExact")} />
-      )}
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label={t("optimizer.kpis.totalPatients")} value={fmtNum(summary.n_total_patients)} />
-        <KpiCard
-          label={isUnavailable ? t("optimizer.kpis.unavailablePatients") : t("optimizer.kpis.clearPatients")}
-          value={
-            isUnavailable
-              ? fmtNum(summary.n_patients_with_copay_rate_unavailable ?? summary.n_total_patients)
-              : fmtNum(summary.n_total_patients - (summary.n_patients_with_copay_rate_flags ?? 0))
-          }
-          valueColor="#B45309"
-          sub={isUnavailable ? t("optimizer.kpis.needExactClaimLines") : t("optimizer.kpis.noCopayRateFlags")}
-        />
-        <KpiCard
-          label={t("optimizer.kpis.patientsFlagged")}
-          value={isUnavailable ? t("optimizer.unavailable.badge") : fmtNum(summary.n_patients_with_copay_rate_flags ?? 0)}
-          valueColor="#B45309"
-          sub={isUnavailable ? t("optimizer.kpis.noExactRateFindings") : t("optimizer.kpis.exactClaimLineFindings")}
-        />
-        <KpiCard
-          label={t("optimizer.kpis.totalFlags")}
-          value={isUnavailable ? t("optimizer.unavailable.badge") : fmtNum(summary.total_copay_rate_flags ?? 0)}
-          valueColor="#B91C1C"
-          sub={isUnavailable ? t("optimizer.kpis.countsResumeAfterInputs") : t("optimizer.kpis.exactProcedureFlags")}
-        />
-      </div>
-
-      <Section
-        title={t("optimizer.sections.patientAlerts")}
-        trailing={<Chip variant="outline">{getAlertStatusLabel(data.query.status)}</Chip>}
-        padding="lg"
-        className="[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wider [&_h2]:text-[var(--gold)]"
-      >
-        <p className="mb-2 text-xs text-[var(--text-muted)]">
-          {t("optimizer.tables.showingRange", {
-            start: fmtNum(rangeStart),
-            end: fmtNum(rangeEnd),
-            total: fmtNum(totalMatching),
-            page: fmtNum(currentPage),
-            totalPages: fmtNum(totalPages),
-          })}
-        </p>
-
-        <DataTable minWidth={720} className="max-h-[420px] overflow-y-auto text-xs">
-          <thead>
-            <tr>
-              <th>{t("optimizer.tables.patientId")}</th>
-              <th className="text-center">{t("optimizer.tables.status")}</th>
-              <th className="num-col">{t("optimizer.tables.rateCappedProcs")}</th>
-              <th className="num-col">{t("optimizer.tables.meanRate")}</th>
-              <th>{t("optimizer.tables.recommendedAction")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {patients.map((p) => (
-              <tr key={p.patient_id}>
-                <td className="font-mono" style={{ color: ACCENT }}>{p.patient_id}</td>
-                <td className="text-center">
-                  {!isExactOutput(p.copay_rate_exposure)
-                    ? <AlertBadge label={getSutAlertBadgeLabel("unavailable")} color={theme.textMuted} />
-                    : (p.copay_rate_exposure.n_violations ?? 0) > 0 || p.copay_rate_exposure.action
-                    ? <AlertBadge label={getSutAlertBadgeLabel("flagged")} color="#B45309" />
-                    : <AlertBadge label={getSutAlertBadgeLabel("clear")} color={theme.accent} />
-                  }
-                </td>
-                <td className="num-col font-bold" style={{ color: isExactOutput(p.copay_rate_exposure) && ((p.copay_rate_exposure.n_violations ?? 0) > 0 || p.copay_rate_exposure.action) ? "#B45309" : "#A1A1AA" }}>
-                  {p.copay_rate_exposure.n_applicable !== null ? fmtNum(p.copay_rate_exposure.n_applicable) : t("optimizer.emDash")}
-                </td>
-                <td className="num-col">
-                  {p.copay_rate_exposure.mean_rate !== null ? fmtPct(p.copay_rate_exposure.mean_rate / 100, 0) : t("optimizer.emDash")}
-                </td>
-                <td>
-                  {isExactOutput(p.copay_rate_exposure)
-                    ? <ActionBadge action={p.copay_rate_exposure.action} />
-                    : <span className="text-xs text-[var(--text-muted)]">{t("optimizer.unavailable.badge")}</span>
-                  }
-                </td>
-              </tr>
-            ))}
-            {patients.length === 0 && (
-              <tr><td colSpan={5} className="text-center py-6 text-[var(--text-muted)]">{t("optimizer.emptyStates.noPatientsMatchFilter")}</td></tr>
-            )}
-          </tbody>
-        </DataTable>
-      </Section>
-
-      {!isUnavailable && flattenCopayRateProcedureRows(patients).length > 0 && (
-        <Section
-          title={t("optimizer.tables.copayRateProcedureDetails")}
-          padding="lg"
-          className="[&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wider [&_h2]:text-[var(--gold)]"
-        >
-          <DataTable minWidth={880} className="max-h-[420px] overflow-y-auto text-xs">
-            <thead>
-              <tr>
-                <th>{t("optimizer.tables.patientId")}</th>
-                <th>{t("optimizer.tables.procedureCode")}</th>
-                <th>{t("optimizer.tables.procedureName")}</th>
-                <th className="num-col">{t("optimizer.tables.billedRate")}</th>
-                <th className="num-col">{t("optimizer.tables.mandatedRate")}</th>
-                <th>{t("optimizer.tables.regulatorySource")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {flattenCopayRateProcedureRows(patients).map(({ patient, procedure }, index) => (
-                <tr key={`${patient.patient_id}-${procedure.code}-${index}`}>
-                  <td className="font-mono" style={{ color: ACCENT }}>{patient.patient_id}</td>
-                  <td className="font-mono">{procedure.code}</td>
-                  <td className="truncate max-w-[220px]" title={procedure.name}>{procedure.name}</td>
-                  <td className="num-col">{fmtPctPoints(procedure.rate_pct, t("optimizer.emDash"))}</td>
-                  <td className="num-col">{fmtPctPoints(procedure.mandated_rate_pct ?? null, t("optimizer.emDash"))}</td>
-                  <td>
-                    <RegulatorySourceChips source={COPAY_RATE_REGULATORY_SOURCE} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </DataTable>
-        </Section>
-      )}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
    METHODOLOGY BADGE
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -950,7 +751,7 @@ function MethodologyBadge({
    COMPLIANCE ALERTS (Consolidated Sub-Tab Wrapper)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-type AlertSubId = "exemptions" | "surcharge" | "copay_rates";
+type AlertSubId = "exemptions" | "surcharge";
 
 function filterAlertsByCohort(
   data: PatientAlertsResponse | null,
@@ -1074,7 +875,6 @@ function ComplianceAlerts({
   const alertSubs = [
     { id: "exemptions" as const, label: t("optimizer.tabs.exemptions"), Icon: ShieldCheck },
     { id: "surcharge" as const, label: t("optimizer.tabs.surcharge"), Icon: ShieldAlert },
-    { id: "copay_rates" as const, label: t("optimizer.tabs.copayRates"), Icon: ChartColumnBig },
   ];
 
   return (
@@ -1140,7 +940,6 @@ function ComplianceAlerts({
         />
       )}
       {activeSub === "surcharge" && <SurchargeComplianceAlerts data={currentData} loading={currentLoading} />}
-      {activeSub === "copay_rates" && <CopayRateAlerts data={currentData} loading={currentLoading} />}
     </div>
   );
 }

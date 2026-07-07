@@ -114,6 +114,7 @@ describe("SUTOptimizer shell", () => {
 
     expect(html).toContain("Copay Exemptions");
     expect(html).toContain("Surcharge Compliance");
+    expect(html).not.toContain("EK-2C-1 Copay Rate Compliance");
     expect(html).not.toContain("Synthetic demo claims");
     expect(html).not.toContain("Actual reimbursement recovery");
     expect(html).not.toContain("Hospital-wide loss");
