@@ -139,3 +139,28 @@ cProfile of `compute_all_billing_reports` (50 patients) found the ~1s/patient co
 **New (previously masked) hotspot, out of scope:** `difflib.ratio` in `ek4d_exempt.fuzzy_match_name` (~19s) — fuzzy drug-name matching. Separate optimization.
 
 **Correctness:** 1844 tests pass; outputs byte-identical (only iteration strategy changed).
+
+---
+
+### B6 — fuzzy_match_name length-bound pre-filter (implemented, commit 62fd4a6)
+
+The difflib hotspot B5 unmasked: `fuzzy_match_name` (ek4d copay-exempt drug matching) called `SequenceMatcher.ratio()` ~260k times/cohort (~19s).
+
+**Investigation detour (abandoned):** first tried a call-level cache keyed by `(needle, candidate-names, threshold)` after instrumentation showed 71% needle-repetition. But the candidate *lists* differ per section (each drug hits different sections by diagnosis), so `(needle, candidates)` pairs were 99.5% unique — 0.5% cache hit rate. Cache removed.
+
+**The actual fix — length-bound pre-filter:** `SequenceMatcher.ratio()` is bounded above by `2*min(len_a,len_b)/(len_a+len_b)` (matching blocks can't exceed the shorter string). When that bound is already below threshold, `ratio()` cannot reach threshold, so skip it. Measured: **94.8% of ratio() calls are skippable** this way on the real cohort. The check is a 3-op arithmetic comparison vs the full LCS-based ratio computation.
+
+**Correctness is mathematical** (the pre-filter can only skip pairs that would have returned below-threshold) and **verified empirically**: compared optimized vs reference (no pre-filter) on all 851 real `fuzzy_match_name` calls captured during an orchestrator run — **0 mismatches**.
+
+**Measured impact:**
+
+| Metric | After B5 | After B6 | Δ from B5 |
+|---|---|---|---|
+| cProfile total (50 patients) | 54.6s | **37.6s** | -31% |
+| `difflib.ratio` cumtime | ~16s | dropped out of top-15 | gone |
+| CI test step (same runner) | 322s | **261s** | -61s (-19%) |
+| CI backend total | 6m11s | **5m9s** | -62s |
+
+**Cumulative CI improvement (B1+B2+B5+B6):** backend **7m37s → 5m9s** (-2m28s, -32%). Test step **405s → 261s** (-36%).
+
+**Next remaining hotspots (out of scope):** `catalog.load_sut_catalog` (16s, inherent 86-date filter cost) and `session_specialty.resolve_procedure_specialty_key` (14s, catalog-lookup path). Both are catalog-lookup duplication across the 86 procedure dates — a date-bucketing fix (collapsing 86 dates to ~2-3 tebliğ effective dates) would address both.
