@@ -45,24 +45,39 @@ def test_json_rules_map_to_expected_clause_ids() -> None:
     from scripts.sut.prose.copay_exemption_gate_b import map_json_rules_to_clause_ids
 
     mapping = map_json_rules_to_clause_ids(_RULES, _CLAUSES)
+    # Audit follow-up: added §1.8.1 base muayene schedule + family-physician 50%,
+    # the §1.8.(4) refund, and 10 missed §1.8.5 exemption paragraphs.
     assert set(mapping) == {
+        "1.8.(4).copay_refund_sydv",
+        "1.8.1.(1).muayene_copay_schedule",
         "1.8.1.(6).farkli_kurum_artis",
+        "1.8.1.family_physician_referral_50pct_reduction",
         "1.8.2.(1)",
         "1.8.2.(2)",
         "1.8.2.(3).enjektabl_kutu",
         "1.8.3.(1).protez_ortez",
         "1.8.3.(2)",
         "1.8.4.(1)",
+        "1.8.5.(1).work_accident_occupational_disease",
         "1.8.5.(2).askeri_tatbikat",
         "1.8.5.(3).afet_savas_hali",
         "1.8.5.(4).kontrol_muayenesi",
+        "1.8.5.(6).preventive_health_institution_funded",
         "1.8.5.(9).tibbi_sarf_malzeme",
         "1.8.5.(10).organ_nakli",
+        "1.8.5.(11).istiklal_madalyasi_pensioner",
+        "1.8.5.(12).vatani_hizmet_pensioner",
+        "1.8.5.(13).nakdi_tazminat_pensioner",
         "1.8.5.(14).kanun_2828",
+        "1.8.5.(15).harp_mallulu_terorle_mucadele",
+        "1.8.5.(16).vazife_mallulu",
         "1.8.5.(17).iade_malzeme",
         "1.8.5.(18).polis_akademisi",
         "1.8.5.(19).harp_okulu",
         "1.8.5.(20).deprem_protez",
+        "1.8.5.(21).wounded_3713_21",
+        "1.8.5.(22)a.gss_5510_60_12",
+        "1.8.5.(22)b.gss_5510_60_13_14",
     }
     # Phase 4.2: 1.8.2.(1) now carries 5 sub-bullet clause_ids (collection-channel
     # prose) in addition to the original C000314.
@@ -76,9 +91,9 @@ def test_manifest_has_encoded_clause_ids_union() -> None:
     manifest = build_encoded_manifest(_RULES, _CLAUSES)
     encoded = manifest["encoded_clause_ids"]
     assert len(encoded) >= 30
-    # Phase 4.2: raised from 33 to 47 — 16 sub-bullet clause_ids linked to
-    # existing rules (1.8.2.(1), 1.8.2.(2), 1.8.3.(2), 1.8.4.(1)).
-    assert len(encoded) <= 47
+    # Audit follow-up: 10 missed §1.8.5 exemption clauses + muayene/refund sources
+    # raised the encoded union from 47 to 56.
+    assert len(encoded) <= 56
     assert "C000364" in encoded
     assert "C000361" in encoded
     assert "C000326" in encoded
@@ -89,7 +104,7 @@ def test_manifest_has_encoded_clause_ids_union() -> None:
     assert "C000365" in patient_status
     assert "C000379" in patient_status
     assert "C000355" not in manifest["compositor_clause_traces"]["copay_exemption_visit_type"]
-    assert manifest["rules_in_json"] == 17
+    assert manifest["rules_in_json"] == 30
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:

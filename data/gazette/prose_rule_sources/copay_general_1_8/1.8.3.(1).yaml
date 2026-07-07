@@ -11,3 +11,7 @@ rules:
     line_kind: external_prosthesis_orthosis
   gate_b_sources:
   - C000333
+  - C000338
+  verification_status: ai_generated_pending_review
+  content_note: 'Misattribution fixed: the 10%/20% rates were cited only to C000333 (a bare lead-in with no rate). The rates
+    actually live in C000338 (§1.8.3.(2)); added it as a source. Largely redundant with 1.8.3.(2) — consider consolidating.'
