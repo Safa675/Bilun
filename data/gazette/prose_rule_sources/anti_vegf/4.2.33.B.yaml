@@ -47,14 +47,16 @@ rules:
   - göz hastalıkları
   prescriber_specialties:
   - göz hastalıkları
-  max_applications_per_year: 2
+  max_applications_per_year: 4
   gate_b_sources:
   - C006564
-  message_tr: Deksametazon intravitreal implant (RVDT/SRVT) — her göz için yılda maksimum 2 uygulama; 3 göz hastalıkları uzmanı
-    sağlık kurulu raporu (§4.2.33.B).
-  verification_status: content_needs_verification
-  content_note: The 'max 2/year' and '3-specialist board' claims are not supported by the cited clause C006564 (which says
-    '1 defaya mahsus'). The 2/year figure appears to come from C006558 (§4.2.33(12)) which is not cited. Needs re-sourcing.
+  - C006556
+  message_tr: Deksametazon intravitreal implant (RVDT/SRVT) — bevacizumab kontrendike olduğunda 1 defaya mahsus; genel yıl
+    içi üst sınırı yılda en fazla 4 (§4.2.33/(10), C006556; §4.2.33.B.(1), C006564).
+  verification_status: ai_generated_pending_review
+  content_note: 'Was "max 2/year" + "3-specialist board" citing only C006564, which actually says "1 defaya mahsus" (once-only
+    in the bevacizumab-contraindicated switch). Frequency cap corrected to 4/year per §4.2.33/(10) (C006556). The 3-specialist-board
+    claim remains unverified — needs human check (possibly conflated with the pegaptanib/verteporfin 3-uzman rule).'
 - rule_id: 4.2.33.B.ranibizumab_rvdt_loading_protocol
   sut_section: 4.2.33.B
   drug_names:

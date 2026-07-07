@@ -42,3 +42,71 @@ rules:
   gate_b_sources:
   - C006549
   loading_dose_count: 3
+- rule_id: 4.2.33.same_eye_combination_no_pay
+  sut_section: 4.2.33
+  deontic: NO_PAY
+  icd10_codes: []
+  message_tr: Bu etkin maddeleri içeren ilaçların aynı anda aynı gözde kombine olarak kullanılması halinde bedelleri Kurumca
+    karşılanmaz; farklı göze kullanımlar kombine kullanım olarak değerlendirilmez (§4.2.33/ç).
+  gate_b_sources:
+  - C006530
+  verification_status: ai_generated_pending_review
+  content_note: 'Same-eye combination of §4.2.33 anti-VEGF/ITV agents is a hard no-pay; different-eye use is explicitly allowed.
+    Previously only mentioned in prose inside the YAŞ-AMD ranibizumab message, not encoded as its own rule.'
+- rule_id: 4.2.33.incomplete_loading_switch_no_pay
+  sut_section: 4.2.33
+  deontic: NO_PAY
+  icd10_codes: []
+  message_tr: Yükleme dozu aranan durumlarda yükleme dozu tamamlanmaksızın diğer etkin maddeli ilacın kullanımı halinde bu
+    ilaç bedelleri Kurumca karşılanmaz (§4.2.33/(8)).
+  gate_b_sources:
+  - C006550
+  verification_status: ai_generated_pending_review
+  content_note: Sanction for switching anti-VEGF agent before completing the loading course. Pairs with loading_dose_completion_mandatory.
+- rule_id: 4.2.33.bevacizumab_maintenance_idame
+  sut_section: 4.2.33
+  deontic: COVERAGE
+  drug_names:
+  - bevacizumab
+  icd10_codes: []
+  indication_tr: İdame tedavisi (yükleme dozu sonrası) — deksametazon ITV implant ve verteporfin hariç
+  report_required: true
+  report_duration_months: 1
+  prescriber_specialties:
+  - göz hastalıkları
+  message_tr: İdame tedavilerde yükleme dozu (3 doz) sonrası bevacizumab için göz hastalıkları uzman hekimi tarafından 1
+    ay süreli tek hekim raporu ile günübirlik tedavi (§4.2.33/b). Deksametazon ITV implant ve verteporfin bu idame kapsamı dışındadır.
+  gate_b_sources:
+  - C006528
+  verification_status: ai_generated_pending_review
+  content_note: Maintenance (idame) phase for bevacizumab — distinct from the 3-dose loading phase already encoded. Existing
+    rules only carried loading_dose_count.
+- rule_id: 4.2.33.loading_dose_completion_mandatory
+  sut_section: 4.2.33
+  deontic: MANDATORY
+  icd10_codes: []
+  message_tr: İlk defa tedaviye başlanan hastaların tedavilerinde kullanılacak etkin maddeler açısından yükleme dozlarının
+    tamamlanması esastır (§4.2.33/c). Yükleme tamamlanmaksızın diğer etkin maddeye geçilirse §4.2.33/(8) uyarınca ödenmez.
+  gate_b_sources:
+  - C006529
+  verification_status: ai_generated_pending_review
+  content_note: Deontic "esastır" (mandatory) on loading completion for newly-started patients. The sanction arm is C006550/(8).
+- rule_id: 4.2.33.deksametazon_itv_max_4_per_year
+  sut_section: 4.2.33
+  deontic: COVERAGE
+  drug_names:
+  - deksametazon
+  icd10_codes: []
+  indication_tr: Anti-VEGF uygulamasını takiben en erken 1 ay sonra (idame veya kontrendikasyon)
+  report_required: true
+  prescriber_specialties:
+  - göz hastalıkları
+  max_applications_per_year: 4
+  min_gap_months_after_antivegf: 1
+  message_tr: Deksametazon intravitreal implant, anti-VEGF ilaçların uygulamasını takiben en erken 1 ay sonra kullanılmak
+    kaydıyla yılda en fazla 4 defa kullanılması halinde Kurumca karşılanır (§4.2.33/(10)). Aynı göze ardışık uygulama kuralları saklıdır.
+  gate_b_sources:
+  - C006556
+  verification_status: ai_generated_pending_review
+  content_note: Authoritative deksametazon frequency clause. Corrects the earlier unsourced "max 2/year" figure used in the
+    Ç/D/B deksametazon rules.
