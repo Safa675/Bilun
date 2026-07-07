@@ -13,6 +13,36 @@ rules:
     annex_basis: EK-2/Ç
   gate_b_sources:
   - C000760
+- rule_id: 2.4.1.A.(1).university_dental_faculty_50pct_surcharge
+  sut_section: 2.4.1.A
+  condition:
+    procedure_category: dental_treatment
+    facility_type: university_dental_faculty
+    procedure_code_not_in:
+    - "401051"
+    - "401060"
+    - "401070"
+    - "401080"
+    - "401090"
+    - "401100"
+    - "401110"
+    - "401120"
+    - "401130"
+    - "401135"
+    - "401150"
+    - "401170"
+  action:
+    billable: true
+    payment_tr: üniversite diş hekimliği fakültelerince EK-2/Ç puanlarına %50 ilave edilerek faturalandırılır; 401051-401170
+      arası hariç tutulmuş kodlar bu ilaveden muaftır
+    annex_basis: EK-2/Ç
+    multiplier: 1.5
+  gate_b_sources:
+  - C000760
+  verification_status: ai_generated_pending_review
+  content_note: 'Encodes the university dental-faculty +50% EK-2/Ç surcharge from C000760 (was previously only loose prose in
+    2.4.1.A.(1)). Excluded codes (401051/060/070/080/090/100/110/120/130/135/150/170) do NOT get the +50%. Interaction: for
+    disabled/special-needs GA/sedo at university faculty the +50% is NOT additionally applied — see 2.4.1.A.(3) (C000763).'
 - rule_id: 2.4.1.A.(2).disabled_special_needs_2x_pricing
   sut_section: 2.4.1.A
   condition:
