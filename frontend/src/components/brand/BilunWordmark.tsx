@@ -1,36 +1,35 @@
 /**
- * BILUN wordmark — crescent mark + "BILUN" set in Fraunces, navy.
+ * BILUN wordmark — official horizontal logo (crest + "Bilun" type).
  *
- * Companion to `BilunMark`. The `Bilun` wordmark on the deck cover is set
- * in Georgia; the web equivalent uses our display serif (`--font-display`,
- * Fraunces) at regular weight, navy on white.
+ * Source: `Bilun Extras/Artwork/Logo/Full.png` → `public/brand/full.png`.
+ * Use `withMark={false}` for text-only fallback (e.g. constrained layouts).
  */
 
 import { type CSSProperties, type HTMLAttributes } from "react";
-import BilunMark from "./BilunMark";
 
 export interface BilunWordmarkProps extends HTMLAttributes<HTMLAnchorElement> {
-  /** Wordmark text. Defaults to "Bilun". */
+  /** Accessible label / alt text. Defaults to "Bilun". */
   label?: string;
-  /** When false, render the wordmark without the crescent mark. */
+  /** When false, render the wordmark text without the logo image. */
   withMark?: boolean;
   /** Optional `href`. When set, renders an `<a>`; otherwise renders a `<span>`. */
   href?: string;
-  /** Mark size in pixels. */
+  /** Logo height in pixels. */
   size?: number;
 }
 
-const baseStyle: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "0.55em",
+const LOGO_SRC = "/brand/full.png";
+/** Intrinsic aspect ratio of `Full.png` (2836×1504). */
+const LOGO_ASPECT = 2836 / 1504;
+
+const textStyle = (size: number): CSSProperties => ({
   color: "var(--text-primary)",
   fontFamily: "var(--font-display)",
   fontWeight: 500,
+  fontSize: `${size * 0.92}px`,
   letterSpacing: "0.01em",
-  textDecoration: "none",
   lineHeight: 1,
-};
+});
 
 export default function BilunWordmark({
   label = "Bilun",
@@ -42,16 +41,24 @@ export default function BilunWordmark({
   ...rest
 }: BilunWordmarkProps) {
   const mergedStyle: CSSProperties = {
-    ...baseStyle,
-    fontSize: `${size}px`,
+    display: "inline-flex",
+    alignItems: "center",
+    textDecoration: "none",
+    lineHeight: 0,
     ...style,
   };
 
-  const content = (
-    <>
-      {withMark ? <BilunMark size={size} title="Bilun" /> : null}
-      <span style={{ fontSize: `${size * 0.92}px` }}>{label}</span>
-    </>
+  const content = withMark ? (
+    // eslint-disable-next-line @next/next/no-img-element -- static brand asset; no next/image in app yet
+    <img
+      src={LOGO_SRC}
+      alt={label}
+      width={Math.round(size * LOGO_ASPECT)}
+      height={size}
+      style={{ display: "block", height: size, width: "auto" }}
+    />
+  ) : (
+    <span style={textStyle(size)}>{label}</span>
   );
 
   if (href) {
