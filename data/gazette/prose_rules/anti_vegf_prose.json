@@ -734,7 +734,13 @@
       "drug_names": [
         "bevacizumab"
       ],
-      "icd10_codes": [],
+      "icd10_codes": [
+        "H35.3",
+        "E10.3",
+        "E11.3",
+        "E13.3",
+        "E14.3"
+      ],
       "indication_tr": "İdame tedavisi (yükleme dozu sonrası) — deksametazon ITV implant ve verteporfin hariç",
       "report_required": true,
       "report_duration_months": 1,
