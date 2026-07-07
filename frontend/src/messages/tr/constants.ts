@@ -17,7 +17,7 @@ const constants = {
     },
     compliance: {
       label: "Uyumluluk",
-      subtitle: "Ne yanlış? EK-1A muafiyetleri, fark ücreti bayrakları (EK-2G) ve EK-2C-1 katılım payı oranı uyarıları.",
+      subtitle: "Ne yanlış? EK-1A muafiyetleri ve fark ücreti bayrakları (EK-2G).",
     },
     revenue: {
       label: "Gelir",

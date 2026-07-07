@@ -271,7 +271,6 @@ export default function SutPatientWorkspace({
             <Stat
               label={t("patient.workspace.diagnoses")}
               value={fmtNum(optimization.n_diagnoses)}
-              display="gold"
             />
             <Stat
               label={t("patient.workspace.icdChapters")}

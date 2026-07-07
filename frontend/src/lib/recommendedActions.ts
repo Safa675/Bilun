@@ -115,6 +115,15 @@ const RECOMMENDED_ACTION_SECTION_IDS: Record<string, string> = {
   medula_playbook: "medula-playbook",
   claim_checklist: "claim-submission-checklist",
   drug_indication: "drug-indication",
+  session_uplift: "billing-session-uplift",
+  blood_uplift: "billing-blood-uplift",
+  material_uplift: "billing-material-uplift",
+  procedure_addon_uplift: "billing-procedure-addon-uplift",
+  procedure_capture_gap: "billing-procedure-capture-gap",
+  drg_package_adequacy: "billing-drg-package-adequacy",
+  gazette_repricing: "billing-gazette-repricing",
+  drg_uplift: "billing-drg-uplift",
+  care_setting_review: "billing-care-setting-review",
 };
 
 export function recommendedActionSectionId(surface: string | null | undefined): string | null {
@@ -181,6 +190,44 @@ function recommendedActionPrimaryCode(action: RecommendedActionItem): string | n
     return action.material_code ?? action.procedure_code ?? action.drug_code ?? null;
   }
   return action.procedure_code ?? action.material_code ?? action.drug_code ?? null;
+}
+
+/**
+ * Map a recommended action to the invoice-line codes it references, partitioned
+ * by OriginalBillView section so the caller can highlight matching lines.
+ *
+ * - `lab` → labs (procedure_code)
+ * - `materials` / `material_uplift` → materials (material_code; procedure_code is
+ *   the package parent and is also surfaced against the procedures section)
+ * - `drug_indication` → drugs (drug_code)
+ * - everything else (copay, billing_strategy, *_uplift, care_setting_review,
+ *   procedure_addon_uplift, procedure_capture_gap, drg_package_adequacy,
+ *   gazette_repricing, medula_playbook, claim_checklist) → procedures
+ *
+ * Surfaces whose action row carries no code (e.g. medula_playbook, copay) yield
+ * empty arrays — a graceful no-op, not a highlight.
+ */
+export function recommendedActionLineCodes(
+  action: RecommendedActionItem,
+): { procedures: string[]; labs: string[]; materials: string[]; drugs: string[] } {
+  const result = { procedures: [] as string[], labs: [] as string[], materials: [] as string[], drugs: [] as string[] };
+  const surface = action.surface;
+  const procCode = action.procedure_code ?? null;
+  const matCode = action.material_code ?? null;
+  const drugCode = action.drug_code ?? null;
+
+  if (surface === "lab") {
+    if (procCode) result.labs.push(procCode);
+  } else if (surface === "materials" || surface === "material_uplift") {
+    if (matCode) result.materials.push(matCode);
+    if (procCode) result.procedures.push(procCode);
+  } else if (surface === "drug_indication") {
+    if (drugCode) result.drugs.push(drugCode);
+    else if (procCode) result.procedures.push(procCode);
+  } else {
+    if (procCode) result.procedures.push(procCode);
+  }
+  return result;
 }
 
 export function recommendedActionTitle(

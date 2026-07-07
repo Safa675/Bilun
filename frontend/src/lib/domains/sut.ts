@@ -426,7 +426,7 @@ export interface PatientAlertRow {
   copay_rate_exposure: PatientAlertCopayRate;
 }
 
-export type PatientAlertsCategory = "exemptions" | "surcharge" | "copay_rates";
+export type PatientAlertsCategory = "exemptions" | "surcharge";
 export type PatientAlertsStatus = "all" | "exempt" | "not_exempt" | "flagged" | "clear";
 
 export interface PatientAlertsSummary {

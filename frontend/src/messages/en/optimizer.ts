@@ -1,12 +1,11 @@
 const optimizer = {
   tabs: {
     complianceDescription:
-      "Per-patient compliance alerts: copay exemptions (EK-1A and other grounds), surcharge prohibitions (EK-2G, §1.9.3), and the EK-2C-1 copay rate list. Checks that need exact procedure lines show an explicit Unavailable state.",
+      "Per-patient compliance alerts: copay exemptions (EK-1A and other grounds) and surcharge prohibitions (EK-2G, §1.9.3). Checks that need exact procedure lines show an explicit Unavailable state.",
     revenueDescription:
       "Cohort-level recovery review dashboard for active billing algorithms, plus availability notices for optimization checks that remain blocked on exact claim-line data.",
     exemptions: "Copay Exemptions",
     surcharge: "Surcharge Compliance",
-    copayRates: "EK-2C-1 Copay Rate Compliance",
     categoriesAria: "Compliance alert categories",
   },
   filters: {
@@ -33,7 +32,6 @@ const optimizer = {
   categories: {
     exemptions: "Copay Exemptions",
     surcharge: "Surcharge Compliance",
-    copay_rates: "EK-2C-1 Copay Rate Compliance",
   },
   errors: {
     loadAlerts: "Failed to load patient alerts",

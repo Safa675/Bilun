@@ -15,20 +15,22 @@ _CLAUSES = _REPO / "data/gazette/sut_clauses.parquet"
 _CORPUS = _REPO / "data/gazette/prose_corpus/L4.2_drug_indication_4235_4237.csv"
 _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4235_4237_manifest.json"
 
+_SECTION = "4235_4237"
+
 
 def test_gate_b_exports_4235_4237_candidates() -> None:
-    from scripts.sut.prose.drug_indication_4235_4237_gate_b import export_4235_4237_candidates
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
-    frame = export_4235_4237_candidates(_CLAUSES)
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     assert frame.height == 26
     assert frame.filter(pl.col("section_id").str.starts_with("4.2.35")).height == 17
     assert frame.filter(pl.col("section_id").str.starts_with("4.2.37")).height == 9
 
 
 def test_gate_b_tier_counts() -> None:
-    from scripts.sut.prose.drug_indication_4235_4237_gate_b import export_4235_4237_candidates
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
-    frame = export_4235_4237_candidates(_CLAUSES)
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     tier = frame.group_by("encode_tier").len().sort("encode_tier")
     counts = {row["encode_tier"]: row["len"] for row in tier.iter_rows(named=True)}
     assert counts == {"A": 5, "B": 1, "C": 20}
@@ -49,9 +51,9 @@ def test_gate_b_tier_counts() -> None:
 
 
 def test_gate_b_csv_schema() -> None:
-    from scripts.sut.prose.drug_indication_4235_4237_gate_b import export_4235_4237_candidates
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
-    frame = export_4235_4237_candidates(_CLAUSES)
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     for col in (
         "clause_id",
         "section_id",
@@ -65,16 +67,13 @@ def test_gate_b_csv_schema() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
+    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
     from scripts.sut.rule_sources import load_legacy_drug_batch
 
     BATCH_A5_RULES = load_legacy_drug_batch("drug_indication_4235_4237_batch_rules.py:BATCH_A5_RULES")
-    from scripts.sut.prose.drug_indication_4235_4237_gate_b import (
-        build_4235_4237_manifest,
-        export_4235_4237_candidates,
-    )
 
-    frame = export_4235_4237_candidates(_CLAUSES)
-    manifest = build_4235_4237_manifest(frame, BATCH_A5_RULES, effective_date="2026-06-27")
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    manifest = shim_build_manifest(_SECTION, frame, BATCH_A5_RULES, effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     on_disk = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     # Fresh build is a subset of on-disk (reconciliation may expand encoded beyond the batch).
@@ -90,14 +89,15 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
+    from scripts.sut.prose.gate_b_shim import shim_write_artifacts
     from scripts.sut.rule_sources import load_legacy_drug_batch
 
     BATCH_A5_RULES = load_legacy_drug_batch("drug_indication_4235_4237_batch_rules.py:BATCH_A5_RULES")
-    from scripts.sut.prose.drug_indication_4235_4237_gate_b import write_gate_b_artifacts
 
     corpus = tmp_path / _CORPUS.name
     manifest_path = tmp_path / _MANIFEST.name
-    write_gate_b_artifacts(
+    shim_write_artifacts(
+        _SECTION,
         clauses_path=_CLAUSES,
         corpus_csv=corpus,
         manifest_path=manifest_path,

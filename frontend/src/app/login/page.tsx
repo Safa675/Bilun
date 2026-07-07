@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import BilunWordmark from "@/components/brand/BilunWordmark";
+import BilunFullLogo from "@/components/brand/BilunFullLogo";
 import { Button, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
 
@@ -54,7 +54,7 @@ export default function LoginPage() {
     <main className="flex min-h-dvh items-center justify-center bg-[var(--surface-soft)] px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-4 text-center">
-          <BilunWordmark size={28} />
+          <BilunFullLogo size={28} />
           <div>
             <h1 className="sr-only">{t("auth.login.title")}</h1>
             <p className="text-sm text-[var(--text-secondary)]">

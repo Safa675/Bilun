@@ -95,6 +95,45 @@ def traced_clause_ids(payload: dict[str, Any]) -> frozenset[str]:
     return frozenset(traced)
 
 
+def build_canonical_encoded_shell(
+    *,
+    rule_set_id: str,
+    encoded_clause_ids: list[str] | set[str],
+    section_id: str = "",
+    rules_in_json: int | None = None,
+    effective_date: str | None = None,
+    extra_keys: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Minimal canonical-v1 manifest for encoded-only rule families (gap/wave2/r6 stubs)."""
+    encoded = sorted({str(cid) for cid in encoded_clause_ids})
+    traces = [{"clause_id": cid, "manifest_status": "encoded"} for cid in encoded]
+    payload: dict[str, Any] = {
+        "manifest_version": "canonical-v1",
+        "rule_set_id": rule_set_id,
+        "section_id": section_id,
+        "encoded_clause_ids": encoded,
+        "encoded_clause_count": len(encoded),
+        "tier_c_deferred_clause_ids": [],
+        "emr_blocked_clause_ids": [],
+        "non_actionable_clause_ids": [],
+        "tier_a_pending_clause_ids": [],
+        "tier_b_pending_clause_ids": [],
+        "tier_c_deferred_count": 0,
+        "emr_blocked_count": 0,
+        "non_actionable_count": 0,
+        "tier_a_pending_count": 0,
+        "tier_b_pending_count": 0,
+        "clause_traces": traces,
+    }
+    if rules_in_json is not None:
+        payload["rules_in_json"] = rules_in_json
+    if effective_date:
+        payload["effective_date"] = effective_date
+    if extra_keys:
+        payload.update(extra_keys)
+    return payload
+
+
 def encoded_like_clause_ids(payload: dict[str, Any]) -> frozenset[str]:
     """Coverage semantics: encoded_clause_ids + non-deferred ``*_clause_ids``."""
     ids: set[str] = set()
@@ -251,6 +290,7 @@ __all__ = [
     "ClauseManifestRef",
     "DrugManifestIndex",
     "bucket_clause_ids",
+    "build_canonical_encoded_shell",
     "build_drug_manifest_index",
     "encoded_like_clause_ids",
     "iter_drug_manifest_paths",

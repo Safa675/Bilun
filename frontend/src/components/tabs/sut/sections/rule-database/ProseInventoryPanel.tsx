@@ -56,7 +56,7 @@ export function ProseInventoryPanel({
   }
 
   return (
-    <div className="rounded-[var(--r-md)] border border-[var(--border-subtle)] overflow-hidden">
+    <div className="rounded-[var(--r-md)] border border-[var(--border-subtle)] overflow-x-auto">
       <table className="w-full text-[11px]">
         <thead className="bg-[var(--surface-soft)] text-[var(--text-muted)] uppercase tracking-wide">
           <tr>

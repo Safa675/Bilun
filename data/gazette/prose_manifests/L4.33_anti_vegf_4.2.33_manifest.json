@@ -1,12 +1,10 @@
 {
-  "manifest_version": "r5-a2c-v1",
+  "manifest_version": "canonical-v1",
   "section_id": "4.2.33",
   "effective_date": "2026-06-29",
   "rule_set_id": "anti_vegf_prose",
   "rules_in_json": 29,
   "section_clause_total": 55,
-  "clause_trace_complete": true,
-  "manifest_coverage_pct": 34.5,
   "encoded_clause_count": 19,
   "encoded_clause_ids": [
     "C006455",
@@ -61,100 +59,23 @@
     "C006584"
   ],
   "tier_c_deferred_count": 29,
-  "clause_traces": {
-    "4.2.33.A.aflibersept_wet_amd": [
-      "C006562"
-    ],
-    "4.2.33.A.anti_vegf_switch_after_bevacizumab_failure": [
-      "C006562"
-    ],
-    "4.2.33.A.bevacizumab_first_line_wet_amd": [
-      "C006561"
-    ],
-    "4.2.33.A.bevacizumab_wet_amd": [
-      "C006526",
-      "C006527"
-    ],
-    "4.2.33.A.pegaptanib_wet_amd": [
-      "C006560"
-    ],
-    "4.2.33.A.ranibizumab_wet_amd": [
-      "C006562"
-    ],
-    "4.2.33.A.verteporfin_wet_amd": [
-      "C006561"
-    ],
-    "4.2.33.B.aflibersept_rvdt_srvt": [
-      "C006565"
-    ],
-    "4.2.33.B.bevacizumab_rvdt_srvt": [
-      "C006564",
-      "C006565"
-    ],
-    "4.2.33.B.deksametazon_itv_implant_rvdt_srvt": [
-      "C006564"
-    ],
-    "4.2.33.B.ranibizumab_rvdt_loading_protocol": [
-      "C006455"
-    ],
-    "4.2.33.B.ranibizumab_rvdt_srvt": [
-      "C006565"
-    ],
-    "4.2.33.C.aflibersept_pm_knv": [
-      "C006568"
-    ],
-    "4.2.33.C.anti_vegf_switch_after_bevacizumab_pm_knv": [
-      "C006568"
-    ],
-    "4.2.33.C.bevacizumab_pm_knv": [
-      "C006527",
-      "C006567"
-    ],
-    "4.2.33.C.ranibizumab_pm_knv": [
-      "C006568"
-    ],
-    "4.2.33.D.aflibersept_dmo": [
-      "C006526"
-    ],
-    "4.2.33.D.bevacizumab_dmo": [
-      "C006548"
-    ],
-    "4.2.33.D.deksametazon_itv_dmo": [
-      "C006526"
-    ],
-    "4.2.33.D.ranibizumab_dmo": [
-      "C006526"
-    ],
-    "4.2.33.E.siklosporin_dry_eye_annual_report": [
-      "C006575"
-    ],
-    "4.2.33.E.siklosporin_kuru_goz": [
-      "C006575"
-    ],
-    "4.2.33.E.sisteamin_sistinozis": [
-      "C006583"
-    ],
-    "4.2.33.F.ranibizumab_rop": [
-      "C006586"
-    ],
-    "4.2.33.general_ranibizumab_aflibersept_loading_protocol": [
-      "C006553"
-    ],
-    "4.2.33.general_switch_to_bevacizumab": [
-      "C006549"
-    ],
-    "4.2.33.Ç.bevacizumab_dmo": [
-      "C006570",
-      "C006571"
-    ],
-    "4.2.33.Ç.deksametazon_itv_dmo": [
-      "C006570"
-    ],
-    "4.2.33.Ç.deksametazon_timing_after_anti_vegf": [
-      "C006558"
-    ]
-  },
-  "clause_trace_rows": [
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [
+    "C006525",
+    "C006563",
+    "C006566",
+    "C006569",
+    "C006572",
+    "C006580",
+    "C006585"
+  ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "emr_blocked_count": 0,
+  "non_actionable_count": 7,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "clause_traces": [
     {
       "clause_id": "C006455",
       "section_id": "4.2.33",
@@ -175,7 +96,8 @@
     {
       "clause_id": "C006525",
       "section_id": "4.2.33",
-      "manifest_status": "non_actionable"
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
       "clause_id": "C006526",
@@ -458,7 +380,8 @@
     {
       "clause_id": "C006563",
       "section_id": "4.2.33.B",
-      "manifest_status": "non_actionable"
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
       "clause_id": "C006564",
@@ -482,7 +405,8 @@
     {
       "clause_id": "C006566",
       "section_id": "4.2.33.C",
-      "manifest_status": "non_actionable"
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
       "clause_id": "C006567",
@@ -505,7 +429,8 @@
     {
       "clause_id": "C006569",
       "section_id": "4.2.33.Ç",
-      "manifest_status": "non_actionable"
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
       "clause_id": "C006570",
@@ -527,7 +452,8 @@
     {
       "clause_id": "C006572",
       "section_id": "4.2.33.D",
-      "manifest_status": "non_actionable"
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
       "clause_id": "C006573",
@@ -577,7 +503,8 @@
     {
       "clause_id": "C006580",
       "section_id": "4.2.33.E",
-      "manifest_status": "non_actionable"
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
       "clause_id": "C006581",
@@ -608,7 +535,8 @@
     {
       "clause_id": "C006585",
       "section_id": "4.2.33.F",
-      "manifest_status": "non_actionable"
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
     },
     {
       "clause_id": "C006586",
@@ -619,5 +547,8 @@
       ]
     }
   ],
-  "note": "§4.2.33 anti-VEGF A2c — 29 rules, 19 encoded clause sources, 29 tier-C deferred in-force rows."
+  "encode_tier_C_deferred_count": 29,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 34.5
 }

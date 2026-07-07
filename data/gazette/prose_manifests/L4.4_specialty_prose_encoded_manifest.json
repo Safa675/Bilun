@@ -1,57 +1,7 @@
 {
+  "manifest_version": "canonical-v1",
+  "rule_set_id": "specialty_materials_prose",
   "rules_in_json": 202,
-  "rules_added": 0,
-  "rules_patched": 0,
-  "pilot_331_clause_ids": [
-    "C002856"
-  ],
-  "vision_optik_batch_clause_ids": [
-    "C002888",
-    "C002890",
-    "C002893",
-    "C002907",
-    "C002917",
-    "C002918",
-    "C003289",
-    "C003302",
-    "C003346",
-    "C003363",
-    "C003384",
-    "C003394"
-  ],
-  "specialty_334_batch_clause_ids": [
-    "C002934",
-    "C002936",
-    "C002937",
-    "C002939",
-    "C002953",
-    "C002962",
-    "C002964",
-    "C002966",
-    "C002967",
-    "C002970"
-  ],
-  "glucose_meter_batch_clause_ids": [
-    "C002875"
-  ],
-  "specialty_337_batch_clause_ids": [
-    "C003072",
-    "C003073"
-  ],
-  "specialty_338_batch_clause_ids": [],
-  "specialty_336_batch_clause_ids": [
-    "C002997",
-    "C003030"
-  ],
-  "other_3_3_tail_clause_ids": [
-    "C003146",
-    "C003159"
-  ],
-  "r5_specialty_header_clause_ids": [
-    "C002857",
-    "C002858",
-    "C003124"
-  ],
   "encoded_clause_ids": [
     "C002684",
     "C002689",
@@ -240,5 +190,58 @@
     "C003391",
     "C003393",
     "C003394"
+  ],
+  "encoded_clause_count": 187,
+  "rules_added": 0,
+  "rules_patched": 0,
+  "pilot_331_clause_ids": [
+    "C002856"
+  ],
+  "vision_optik_batch_clause_ids": [
+    "C002888",
+    "C002890",
+    "C002893",
+    "C002907",
+    "C002917",
+    "C002918",
+    "C003289",
+    "C003302",
+    "C003346",
+    "C003363",
+    "C003384",
+    "C003394"
+  ],
+  "specialty_334_batch_clause_ids": [
+    "C002934",
+    "C002936",
+    "C002937",
+    "C002939",
+    "C002953",
+    "C002962",
+    "C002964",
+    "C002966",
+    "C002967",
+    "C002970"
+  ],
+  "glucose_meter_batch_clause_ids": [
+    "C002875"
+  ],
+  "specialty_337_batch_clause_ids": [
+    "C003072",
+    "C003073"
+  ],
+  "specialty_338_batch_clause_ids": [],
+  "specialty_336_batch_clause_ids": [
+    "C002997",
+    "C003030"
+  ],
+  "other_3_3_tail_clause_ids": [
+    "C003146",
+    "C003159"
+  ],
+  "r5_specialty_header_clause_ids": [
+    "C002857",
+    "C002858",
+    "C003124"
   ]
 }

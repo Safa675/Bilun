@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import polars as pl
 import pytest
@@ -17,6 +18,9 @@ _RULES = _REPO / "data/gazette/prose_rules/drug_indication_prose.json"
 _CORPUS = _REPO / "data/gazette/prose_corpus/L4.2_drug_indication_4213.csv"
 _SHARED_MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4213_4216_manifest.json"
 
+_SECTION = "4213"
+_SECTION_PREFIX = "4.2.13"
+
 
 def _in_force_4213_ids() -> frozenset[str]:
     coverage = pl.read_parquet(_COVERAGE)
@@ -27,10 +31,97 @@ def _in_force_4213_ids() -> frozenset[str]:
     return frozenset(str(row) for row in motor["clause_id"].to_list())
 
 
-def test_gate_b_exports_4213_in_force_candidates() -> None:
-    from scripts.sut.prose.drug_indication_4213_gate_b import export_4213_candidates
+def _audit_gap_parity(
+    clauses_path: Path,
+    manifest: dict[str, Any],
+    *,
+    gate_b_frame: pl.DataFrame | None = None,
+) -> dict[str, Any]:
+    from scripts.sut.prose.gate_b_audit import audit_gap_parity, default_scan_promotions
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
-    frame = export_4213_candidates(_CLAUSES)
+    return audit_gap_parity(
+        clauses_path,
+        manifest,
+        section_prefix=_SECTION_PREFIX,
+        frame=gate_b_frame,
+        fallback_frame=lambda: shim_export_candidates(_SECTION, clauses_path),
+        scan=lambda f, e: default_scan_promotions(f, e),
+        scope_statuses=True,
+        misclassified_against_encoded=True,
+    )
+
+
+def _run_audit(clauses_path: Path, rules_path: Path, *, effective_date: str) -> dict[str, Any]:
+    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+
+    payload = json.loads(rules_path.read_text(encoding="utf-8"))
+    rules_4213 = [
+        r for r in (payload.get("rules") or [])
+        if str(r.get("sut_section") or "").startswith(_SECTION_PREFIX)
+    ]
+    frame = shim_export_candidates(_SECTION, clauses_path)
+    manifest = shim_build_manifest(_SECTION, frame, rules_4213, effective_date=effective_date)
+    before = _audit_gap_parity(clauses_path, manifest, gate_b_frame=frame)
+    return {
+        **before,
+        "untraced_before": before["untraced_before"],
+        "untraced_after": len(before["untraced_clause_ids"]) + len(before["misclassified_ab_gap_ids"]),
+        "repaired_untraced": 0,
+        "promoted_clause_ids": sorted({p["clause_id"] for p in before["promotion_candidates"]}),
+    }
+
+
+def _write_shared_artifacts(
+    *,
+    clauses_path: Path,
+    rules_path: Path,
+    corpus_csv: Path,
+    shared_manifest_path: Path,
+    effective_date: str,
+) -> tuple[pl.DataFrame, dict[str, Any]]:
+    """Write corpus CSV; merge §4.2.13 traces into the shared 4213+4216 manifest."""
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
+    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+
+    section = ALL_SECTIONS[_SECTION]
+    payload = json.loads(rules_path.read_text(encoding="utf-8"))
+    rules = [
+        r for r in (payload.get("rules") or [])
+        if any(str(r.get("sut_section") or "").startswith(p) for p in section.match.prefixes)
+    ]
+
+    frame = shim_export_candidates(_SECTION, clauses_path)
+    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date=effective_date)
+
+    corpus_csv.parent.mkdir(parents=True, exist_ok=True)
+    shared_manifest_path.parent.mkdir(parents=True, exist_ok=True)
+
+    shared: dict[str, Any] = {}
+    if shared_manifest_path.is_file():
+        shared = json.loads(shared_manifest_path.read_text(encoding="utf-8"))
+    prior_traces = [
+        t for t in (shared.get("clause_traces") or [])
+        if not str(t.get("section_id") or "").startswith(_SECTION_PREFIX)
+    ]
+    merged_traces = prior_traces + list(manifest.get("clause_traces") or [])
+    shared.update(manifest)
+    shared["clause_traces"] = merged_traces
+
+    frame_4213 = shim_export_candidates(
+        _SECTION, clauses_path, encoded_clause_ids=frozenset(manifest["encoded_clause_ids"])
+    )
+    frame_4213.write_csv(corpus_csv)
+    shared_manifest_path.write_text(
+        json.dumps(shared, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    return frame_4213, shared
+
+
+def test_gate_b_exports_4213_in_force_candidates() -> None:
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     in_force = _in_force_4213_ids()
     assert frame.height == len(in_force)
     assert frame["section_id"].str.starts_with("4.2.13").all()
@@ -38,9 +129,9 @@ def test_gate_b_exports_4213_in_force_candidates() -> None:
 
 
 def test_gate_b_csv_schema_and_tier_breakdown() -> None:
-    from scripts.sut.prose.drug_indication_4213_gate_b import export_4213_candidates
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
-    frame = export_4213_candidates(_CLAUSES)
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     for col in (
         "clause_id",
         "section_id",
@@ -55,10 +146,7 @@ def test_gate_b_csv_schema_and_tier_breakdown() -> None:
 
 
 def test_manifest_covers_all_in_force_4213_clauses() -> None:
-    from scripts.sut.prose.drug_indication_4213_gate_b import (
-        build_4213_manifest,
-        export_4213_candidates,
-    )
+    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
 
     payload = json.loads(_RULES.read_text(encoding="utf-8"))
     rules_4213 = [
@@ -66,8 +154,8 @@ def test_manifest_covers_all_in_force_4213_clauses() -> None:
         for rule in (payload.get("rules") or [])
         if str(rule.get("sut_section") or "").startswith("4.2.13")
     ]
-    frame = export_4213_candidates(_CLAUSES)
-    manifest = build_4213_manifest(frame, rules_4213, effective_date="2026-06-27")
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    manifest = shim_build_manifest(_SECTION, frame, rules_4213, effective_date="2026-06-27")
 
     in_force = _in_force_4213_ids()
     trace_ids = {t["clause_id"] for t in manifest["clause_traces"]}
@@ -99,8 +187,6 @@ def test_manifest_covers_all_in_force_4213_clauses() -> None:
 
 
 def test_shared_manifest_preserves_4216_traces(tmp_path: Path) -> None:
-    from scripts.sut.prose.drug_indication_4213_gate_b import write_gate_b_artifacts
-
     before_4216: set[str] = set()
     if _SHARED_MANIFEST.is_file():
         before = json.loads(_SHARED_MANIFEST.read_text(encoding="utf-8"))
@@ -117,7 +203,7 @@ def test_shared_manifest_preserves_4216_traces(tmp_path: Path) -> None:
         shared_manifest_path.write_text(_SHARED_MANIFEST.read_text(encoding="utf-8"), encoding="utf-8")
 
     corpus = tmp_path / _CORPUS.name
-    write_gate_b_artifacts(
+    _write_shared_artifacts(
         clauses_path=_CLAUSES,
         rules_path=_RULES,
         corpus_csv=corpus,
@@ -145,12 +231,7 @@ def test_shared_manifest_preserves_4216_traces(tmp_path: Path) -> None:
 
 
 def test_audit_gap_parity_zero_untraced() -> None:
-    from scripts.sut.prose.drug_indication_4213_gate_b import (
-        audit_4213_gap_parity,
-        build_4213_manifest,
-        export_4213_candidates,
-        run_4213_audit,
-    )
+    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
 
     payload = json.loads(_RULES.read_text(encoding="utf-8"))
     rules_4213 = [
@@ -158,10 +239,10 @@ def test_audit_gap_parity_zero_untraced() -> None:
         for rule in (payload.get("rules") or [])
         if str(rule.get("sut_section") or "").startswith("4.2.13")
     ]
-    frame = export_4213_candidates(_CLAUSES)
-    manifest = build_4213_manifest(frame, rules_4213, effective_date="2026-06-27")
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    manifest = shim_build_manifest(_SECTION, frame, rules_4213, effective_date="2026-06-27")
 
-    report = audit_4213_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
+    report = _audit_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
     assert report["gap_count"] == 70
     assert report["encoded_count"] == 39
     assert report["tier_b_pending_count"] == 0
@@ -172,7 +253,7 @@ def test_audit_gap_parity_zero_untraced() -> None:
     assert report["gaps_missing_export"] == []
     assert report["promotion_count"] == 0
 
-    full = run_4213_audit(_CLAUSES, _RULES, effective_date="2026-06-27")
+    full = _run_audit(_CLAUSES, _RULES, effective_date="2026-06-27")
     assert full["untraced_before"] == 0
     assert full["untraced_after"] == 0
     assert full["repaired_untraced"] == 0
@@ -180,9 +261,9 @@ def test_audit_gap_parity_zero_untraced() -> None:
 
 
 def test_audit_oral_switch_tier_b_not_tier_c() -> None:
-    from scripts.sut.prose.drug_indication_4213_gate_b import export_4213_candidates
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
-    frame = export_4213_candidates(_CLAUSES)
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     oral_switch = frame.filter(pl.col("clause_id").is_in(["C004584", "C004593"]))
     assert oral_switch.height == 2
     assert (oral_switch["encode_tier"] == "B").all()

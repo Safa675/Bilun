@@ -24,6 +24,7 @@ import {
   DataTableRow,
   DataTableCell,
   Button,
+  EmptyState,
   buttonActiveClass,
   inputClass,
 } from "@/components/primitives";
@@ -122,6 +123,13 @@ export function SectionBrowserPanel({
   const sections = result.sections;
   const totalPages = result.total_pages;
 
+  const resetFilters = () => {
+    setQuery("");
+    setMinGapCount("");
+    setConsolidate(false);
+    setPage(1);
+  };
+
   return (
     <div className="space-y-4">
       <Toolbar
@@ -159,11 +167,15 @@ export function SectionBrowserPanel({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-3">
           {sections.length === 0 ? (
-            <Surface variant="soft" padding="md" className="text-center">
-              <p className="text-sm text-[var(--text-secondary)]">
-                {t("sections.ruleDatabase.sections.noMatches")}
-              </p>
-            </Surface>
+            <EmptyState
+              title={t("sections.ruleDatabase.sections.noMatches")}
+              className="min-h-0 border-transparent bg-transparent"
+              action={
+                <Button variant="secondary" size="compact" onClick={resetFilters}>
+                  {t("sections.ruleDatabase.clearFilters")}
+                </Button>
+              }
+            />
           ) : (
             <>
               <DataTable minWidth={600}>

@@ -349,36 +349,30 @@ def _load_wave2_encoded_clause_ids(rule_id: str) -> frozenset[str]:
     return _load_encoded_clause_ids(manifest_name)
 
 
-def _section_22_manifest_encoding(clause_id: str, section_id: str) -> bool:
-    """§2.2 Gate B encode is honest even when classification picks another motor."""
-    if not section_id.startswith("2.2"):
-        return False
-    if clause_id in _load_encoded_clause_ids(_PAYMENT_METHOD_22_MANIFEST):
-        return True
-    return clause_id in _load_encoded_clause_ids(_SESSION_PRICING_22_MANIFEST)
+# --- Section-scoped encode overrides ---------------------------------------
+# These clauses are encoded in dedicated manifests, but the classifier
+# sometimes routes them to a different primary motor than the one the manifest
+# is keyed to. The overrides ensure has_rule_encoding reflects the encode
+# regardless of the classification motor.
+
+# Single-manifest-per-section overrides, table-driven. §2.2 also hits the
+# r6_misc override below; §4.2/§4.1/§4.3-4.7 and the r6 wave keep bespoke logic.
+_SECTION_MANIFEST_OVERRIDES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("2.2", (_PAYMENT_METHOD_22_MANIFEST, _SESSION_PRICING_22_MANIFEST)),
+    ("2.4", (_TREATMENT_PRICING_2_4_MANIFEST, "L2.4_treatment_pricing_r6_rest_manifest.json")),
+    ("2.6", (_DEFINITIONS_2_6_MANIFEST,)),
+    ("3.3", ("L4.4_specialty_prose_encoded_manifest.json",)),
+)
 
 
-# --- R6 deontic-wave section overrides (2026-06-29) -------------------------
-# These clauses are encoded in their own dedicated manifests, but the
-# classifier sometimes routes them to a different primary motor than the one
-# the manifest is keyed to (e.g. NO_PAY drug clauses → exclusion_ek3b2,
-# §3.3 → specialty_materials fallback). The overrides ensure has_rule_encoding
-# reflects the encode regardless of the classification motor.
-
-
-def _section_2_4_4_manifest_encoding(clause_id: str, section_id: str) -> bool:
-    """§2.4 treatment-pricing wave encodes (incl. §2.4.4)."""
-    if not section_id.startswith("2.4"):
-        return False
-    return (clause_id in _load_encoded_clause_ids(_TREATMENT_PRICING_2_4_MANIFEST)
-            or clause_id in _load_encoded_clause_ids("L2.4_treatment_pricing_r6_rest_manifest.json"))
-
-
-def _section_3_3_specialty_encoding(clause_id: str, section_id: str) -> bool:
-    """§3.3 specialty-materials wave encodes."""
-    if not section_id.startswith("3.3"):
-        return False
-    return clause_id in _load_encoded_clause_ids("L4.4_specialty_prose_encoded_manifest.json")
+def _section_manifest_encode_override(clause_id: str, section_id: str) -> bool:
+    """Clause is encoded if it's in any manifest listed for its section prefix."""
+    for prefix, manifests in _SECTION_MANIFEST_OVERRIDES:
+        if section_id.startswith(prefix):
+            for manifest_name in manifests:
+                if clause_id in _load_encoded_clause_ids(manifest_name):
+                    return True
+    return False
 
 
 def _section_drug_indication_wave_encoding(clause_id: str, section_id: str) -> bool:
@@ -393,13 +387,6 @@ def _section_drug_indication_wave_encoding(clause_id: str, section_id: str) -> b
     if section_id.startswith(("4.1", "4.3", "4.4", "4.5", "4.6", "4.7")):
         return clause_id in _load_encoded_clause_ids("L4_drug_ek4a_r6_manifest.json")
     return False
-
-
-def _section_definitions_2_6_encoding(clause_id: str, section_id: str) -> bool:
-    """§2.6 definitions encodes (non_algorithmic but runtime-relevant)."""
-    if not section_id.startswith("2.6"):
-        return False
-    return clause_id in _load_encoded_clause_ids(_DEFINITIONS_2_6_MANIFEST)
 
 
 def _section_r6_misc_encoding(clause_id: str, section_id: str) -> bool:
@@ -544,11 +531,8 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
             # Section-specific overrides: reflect encodes whose manifest motor
             # differs from the classifier's primary_rule_id.
             for _override in (
-                _section_22_manifest_encoding,
-                _section_2_4_4_manifest_encoding,
-                _section_3_3_specialty_encoding,
+                _section_manifest_encode_override,
                 _section_drug_indication_wave_encoding,
-                _section_definitions_2_6_encoding,
                 _section_r6_misc_encoding,
             ):
                 if _override(clause_id, section_id):

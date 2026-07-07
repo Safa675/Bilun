@@ -1,76 +1,7 @@
 {
-  "manifest_version": "drug-indication-wave-v1",
+  "manifest_version": "canonical-v1",
   "rule_set_id": "drug_indication_metabolic_mid",
-  "rules_in_json": 919,
-  "rules_added": 0,
-  "wave_clause_ids": [
-    "C003898",
-    "C003901",
-    "C003902",
-    "C003903",
-    "C003904",
-    "C003905",
-    "C003906",
-    "C003909",
-    "C004096",
-    "C004097",
-    "C004098",
-    "C004104",
-    "C004105",
-    "C004108",
-    "C004109",
-    "C004110",
-    "C004112",
-    "C005776",
-    "C005777",
-    "C005779",
-    "C005780",
-    "C005792",
-    "C005793",
-    "C005835",
-    "C005838",
-    "C005859",
-    "C005860",
-    "C005870",
-    "C006243",
-    "C006244",
-    "C006253",
-    "C006261",
-    "C006262",
-    "C006265",
-    "C006269",
-    "C006271",
-    "C006272",
-    "C006275",
-    "C006287",
-    "C006293",
-    "C006316",
-    "C006317",
-    "C006322",
-    "C006331",
-    "C006340",
-    "C006341",
-    "C006343",
-    "C006348",
-    "C006357",
-    "C006405",
-    "C006406",
-    "C006414",
-    "C006415",
-    "C006416",
-    "C006418",
-    "C006420",
-    "C006422",
-    "C006774",
-    "C006777",
-    "C006779",
-    "C006780",
-    "C006783",
-    "C006785",
-    "C006788",
-    "C006792",
-    "C006793"
-  ],
+  "section_id": "",
   "encoded_clause_ids": [
     "C003898",
     "C003901",
@@ -138,5 +69,288 @@
     "C006788",
     "C006792",
     "C006793"
-  ]
+  ],
+  "encoded_clause_count": 66,
+  "tier_c_deferred_clause_ids": [],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_count": 0,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "clause_traces": [
+    {
+      "clause_id": "C003898",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003901",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003902",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003903",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003904",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003905",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003906",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003909",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004096",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004097",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004098",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004104",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004105",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004108",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004109",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004110",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004112",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005776",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005777",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005779",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005780",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005792",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005793",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005835",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005838",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005859",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005860",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005870",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006243",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006244",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006253",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006261",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006262",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006265",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006269",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006271",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006272",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006275",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006287",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006293",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006316",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006317",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006322",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006331",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006340",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006341",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006343",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006348",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006357",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006405",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006406",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006414",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006415",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006416",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006418",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006420",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006422",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006774",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006777",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006779",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006780",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006783",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006785",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006788",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006792",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006793",
+      "manifest_status": "encoded"
+    }
+  ],
+  "rules_in_json": 919,
+  "encode_tier_C_deferred_count": 0,
+  "section_clause_total": 66,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 100.0
 }

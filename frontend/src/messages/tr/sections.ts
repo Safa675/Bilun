@@ -5,6 +5,8 @@ const sections = {
     loading: "Kural kataloğu yükleniyor",
     empty: "Kullanılabilir SUT kuralı yok.",
     noMatches: "Mevcut filtreyle eşleşen kural yok.",
+    clearFilters: "Filtreleri temizle",
+    resetFilters: "Filtreleri sıfırla",
     searchPlaceholder: "Kural, kategori, ek liste, anahtar kelime ara…",
     artifactsUnavailable:
       "Kaynak hüküm metni kullanılamıyor — SUT hüküm derlemi oluşturulmamış. Kurallar ve kapsam yine de gösteriliyor.",
@@ -117,6 +119,7 @@ const sections = {
       columnStatus: "En kötü durum",
       columnCategories: "Kategoriler",
       noMatches: "Eşleşen bölüm yok.",
+      clearFilters: "Filtreleri temizle",
       artifactsUnavailable: "Bölüm özeti kullanılamıyor — kapsam parquetleri oluşturulmamış.",
       detailTitle: "Hükümler",
       detailStats: "{clauses} hüküm · {gaps} boşluk",
@@ -397,6 +400,7 @@ const sections = {
       page: "Sayfa {page} / {totalPages}",
     },
     emptyState: "İlaç bulunamadı.",
+    clearSearch: "Aramayı temizle",
     notAvailable: "--",
   },
   checkupPricing: {

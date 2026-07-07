@@ -247,7 +247,7 @@ def build_encoded_manifest(
         }
     )
     return {
-        "manifest_version": "wave2-v1",
+        "manifest_version": "canonical-v1",
         "rule_set_id": "payment_method_2_2",
         "scope_note": f"§2.2 package vs itemized vs tier-override ({len(rules)} JSON rules, C2 batch-1–4)",
         "rules_in_json": len(rules),

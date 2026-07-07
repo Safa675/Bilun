@@ -133,60 +133,30 @@ def build_phase5_manifest(
 ) -> dict[str, Any]:
     traces = build_clause_trace(gate_b_frame, rules)
     section_total = gate_b_frame.height
-    trace_complete = len(traces) == section_total and section_total > 0
 
     encoded_ids = _clause_ids_for_status(traces, "encoded")
     tier_a_pending = _clause_ids_for_status(traces, "tier_a_pending")
     tier_b_pending = _clause_ids_for_status(traces, "tier_b_pending")
     tier_c_deferred = _clause_ids_for_status(traces, "tier_c_deferred")
 
-    tier_c_manifest = [
-        {
-            "clause_id": row["clause_id"],
-            "encode_tier": row["encode_tier"],
-            "defer_themes": row.get("defer_themes") or [],
-            "defer_reason": row.get("defer_reason") or build_defer_reason([]),
-            "heuristic_inn": row.get("heuristic_inn") or "",
-        }
-        for row in traces
-        if row.get("manifest_status") == "tier_c_deferred"
-    ]
-
     return {
-        "manifest_version": "phase5-v1",
+        "manifest_version": "canonical-v1",
         "section_id": "4.2.14.C",
         "effective_date": effective_date,
+        "rule_set_id": "drug_indication_4.2.14.C",
         "rules_in_json": len(rules),
-        "rules_added_phase1": phase1_added,
-        "rules_added_phase2": phase2_added,
         "section_clause_total": section_total,
-        "clause_trace_complete": trace_complete,
-        "manifest_coverage_pct": round(100.0 * len(traces) / section_total, 1)
-        if section_total
-        else 0.0,
         "encoded_clause_count": len(encoded_ids),
         "tier_a_pending_count": len(tier_a_pending),
         "tier_b_pending_count": len(tier_b_pending),
         "tier_c_deferred_count": len(tier_c_deferred),
-        "encode_tier_C_deferred_count": len(tier_c_deferred),
-        "inn_named_clause_count": sum(
-            1 for row in traces if str(row.get("heuristic_inn") or "").strip()
-        ),
-        "inn_named_actionable_pct": _inn_named_coverage_pct(traces),
-        "tier_b_rule_ids": sorted(
-            str(rule["rule_id"])
-            for rule in rules
-            if rule.get("report_duration_months") is not None
-            or rule.get("prescriber_specialties")
-            or rule.get("inpatient_only")
-        ),
         "encoded_clause_ids": encoded_ids,
         "tier_a_pending_clause_ids": tier_a_pending,
         "tier_b_pending_clause_ids": tier_b_pending,
         "tier_c_deferred_clause_ids": tier_c_deferred,
-        "tier_c_defer_themes_summary": _theme_summary(traces),
-        "tier_c_manifest": tier_c_manifest,
+        "emr_blocked_clause_ids": [],
+        "non_actionable_clause_ids": [],
+        "emr_blocked_count": 0,
+        "non_actionable_count": 0,
         "clause_traces": traces,
-        "batch_clause_ids": batch_clause_ids,
-        "gate_b_summary": gate_b_summary_payload,
     }

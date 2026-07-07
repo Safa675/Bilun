@@ -8,7 +8,7 @@ import {
 } from "@/lib/api/sut";
 import { isAbortError } from "@/lib/api/request";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
-import { Chip, Surface, Button } from "@/components/primitives";
+import { Chip, Surface, Button, EmptyState } from "@/components/primitives";
 import { EkAnnexChips } from "@/components/sut/RegulatorySourceChips";
 import { useT } from "@/lib/i18n/useTranslations";
 import { ruleMotorLabel } from "@/lib/clauseUtilization";
@@ -45,19 +45,29 @@ export function RuleList({
   selectedRuleId,
   onSelect,
   zeroClauseRuleIds,
+  onClearFilters,
 }: {
   rules: RuleCatalogEntry[];
   selectedRuleId: string | null;
   onSelect: (ruleId: string) => void;
   zeroClauseRuleIds: Set<string>;
+  onClearFilters?: () => void;
 }) {
   const t = useT();
 
   if (rules.length === 0) {
     return (
-      <Surface variant="soft" padding="md" className="text-center">
-        <p className="text-xs text-[var(--text-secondary)]">{t("sections.ruleDatabase.noMatches")}</p>
-      </Surface>
+      <EmptyState
+        title={t("sections.ruleDatabase.noMatches")}
+        className="min-h-0 border-transparent bg-transparent"
+        action={
+          onClearFilters ? (
+            <Button variant="secondary" size="compact" onClick={onClearFilters}>
+              {t("sections.ruleDatabase.clearFilters")}
+            </Button>
+          ) : undefined
+        }
+      />
     );
   }
 

@@ -1,56 +1,40 @@
-/**
- * BILUN crescent mark.
- *
- * Traced from the investor deck cover (`BILUN_EN.pptx` slide 1 cover image).
- * Implemented as an SVG mask: a larger filled disc with a smaller offset
- * disc subtracted, producing the thick waxing-crescent shape used on the
- * cover slide.
- *
- * Uses `currentColor` so it inherits text color — navy on white surfaces,
- * cream on navy surfaces (when those exist later).
- */
+"use client";
 
-import type { SVGProps } from "react";
-import { useId } from "react";
+import Image from "next/image";
+import { type CSSProperties } from "react";
+import namelessMark from "./assets/nameless.png";
 
-export interface BilunMarkProps extends Omit<SVGProps<SVGSVGElement>, "ref"> {
-  /** Pixel size for both width and height. Defaults to `1em`. */
-  size?: number | string;
-  /** Optional accessible title. When omitted, the SVG is treated as decorative. */
+export interface BilunMarkProps {
+  /** Mark height in pixels. Defaults to 24. */
+  size?: number;
+  /** Accessible label. When omitted, the mark is decorative. */
   title?: string;
+  className?: string;
+  style?: CSSProperties;
 }
 
+/**
+ * BILUN mark — the official crest from `Bilun Extras/Artwork/Logo/Nameless.png`
+ * (optimized to a palette PNG with alpha). Used standalone and as the glyph
+ * inside `BilunWordmark`. Renders at the given height, preserving aspect ratio.
+ */
 export default function BilunMark({
-  size,
+  size = 24,
   title,
   className,
-  ...rest
+  style,
 }: BilunMarkProps) {
-  const maskId = useId();
-  const dimension = size ?? "1em";
-  const ariaProps = title
-    ? { role: "img" as const, "aria-label": title }
-    : { "aria-hidden": true as const };
-
+  const ratio = namelessMark.width / namelessMark.height;
   return (
-    <svg
-      width={dimension}
-      height={dimension}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+    <Image
+      src={namelessMark}
+      alt={title ?? ""}
+      width={Math.round(size * ratio)}
+      height={size}
+      {...(title ? { role: "img" as const } : { "aria-hidden": true })}
       className={className}
-      {...ariaProps}
-      {...rest}
-    >
-      {title ? <title>{title}</title> : null}
-      <defs>
-        <mask id={maskId} maskUnits="userSpaceOnUse">
-          <rect width="64" height="64" fill="white" />
-          <circle cx="44" cy="22" r="22" fill="black" />
-        </mask>
-      </defs>
-      <circle cx="32" cy="32" r="28" fill="currentColor" mask={`url(#${maskId})`} />
-    </svg>
+      style={style}
+      priority
+    />
   );
 }

@@ -1491,11 +1491,6 @@
   "section_4.2.27_clause_total": 69,
   "section_4.2.27_tier_a_count": 16,
   "section_4.2.27_tier_c_count": 49,
-  "section_4.2.27_gap_audit": {
-    "untraced_before": 0,
-    "untraced_after": 0,
-    "gap_count": 31
-  },
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
   "encode_tier_C_deferred_count": 57,

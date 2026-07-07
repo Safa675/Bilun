@@ -5,6 +5,8 @@ const sections = {
     loading: "Loading rule catalog",
     empty: "No SUT rules available.",
     noMatches: "No rules match the current filter.",
+    clearFilters: "Clear filters",
+    resetFilters: "Reset filters",
     searchPlaceholder: "Search rules, categories, annexes, keywords…",
     artifactsUnavailable:
       "Source clause text is unavailable — the SUT clause corpus has not been built. Rules and coverage are still shown.",
@@ -117,6 +119,7 @@ const sections = {
       columnStatus: "Worst status",
       columnCategories: "Categories",
       noMatches: "No sections match.",
+      clearFilters: "Clear filters",
       artifactsUnavailable: "Section rollup unavailable — coverage parquets not built.",
       detailTitle: "Clauses",
       detailStats: "{clauses} clauses · {gaps} gaps",
@@ -397,6 +400,7 @@ const sections = {
       page: "Page {page} / {totalPages}",
     },
     emptyState: "No drugs found.",
+    clearSearch: "Clear search",
     notAvailable: "--",
   },
   checkupPricing: {

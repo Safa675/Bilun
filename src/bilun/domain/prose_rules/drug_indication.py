@@ -168,21 +168,28 @@ def _drug_indication_manifest_stats() -> dict[str, Any]:
     header: dict[str, Any] = {}
     if _MANIFEST_PATH.is_file():
         manifest = json.loads(_MANIFEST_PATH.read_text(encoding="utf-8"))
-        gate_b = manifest.get("gate_b_summary") or {}
-        section_total = int(manifest.get("section_clause_total") or gate_b.get("total") or 828)
+        section_total = int(manifest.get("section_clause_total") or 828)
         encoded_4214c = len(manifest.get("encoded_clause_ids") or [])
+        traces = manifest.get("clause_traces") or []
+        inn_named = sum(1 for row in traces if str(row.get("heuristic_inn") or "").strip())
         header = {
             "manifest_path": str(_MANIFEST_PATH),
             "manifest_version": manifest.get("manifest_version"),
-            "manifest_coverage_pct": manifest.get("manifest_coverage_pct", 0.0),
+            "manifest_coverage_pct": manifest.get(
+                "manifest_coverage_pct",
+                round(100.0 * len(traces) / section_total, 1) if section_total else 0.0,
+            ),
             "section_4.2.14.C_clause_total": section_total,
             "section_4.2.14.C_encoded_clause_count": encoded_4214c,
             "section_4.2.14.C_tier_c_deferred_count": manifest.get("tier_c_deferred_count")
             or len(manifest.get("tier_c_deferred_clause_ids") or []),
-            "inn_named_clause_count": manifest.get("inn_named_clause_count", 0),
-            "inn_named_actionable_pct": manifest.get("inn_named_actionable_pct", 0.0),
+            "inn_named_clause_count": manifest.get("inn_named_clause_count", inn_named),
+            "inn_named_actionable_pct": manifest.get(
+                "inn_named_actionable_pct",
+                round(100.0 * inn_named / max(len(traces), 1), 1),
+            ),
             "tier_c_defer_themes_summary": manifest.get("tier_c_defer_themes_summary") or {},
-            "gate_b_summary": gate_b,
+            "gate_b_summary": manifest.get("gate_b_summary") or {},
             "encoded_clause_pct": round(100.0 * encoded_4214c / section_total, 1)
             if section_total
             else 0.0,

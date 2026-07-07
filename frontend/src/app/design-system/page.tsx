@@ -5,8 +5,8 @@
  * Visit directly at `/design-system`.
  */
 
+import BilunFullLogo from "@/components/brand/BilunFullLogo";
 import BilunMark from "@/components/brand/BilunMark";
-import BilunWordmark from "@/components/brand/BilunWordmark";
 import {
   Chip,
   DataTable,
@@ -61,7 +61,7 @@ export default function DesignSandbox() {
               {t("designSystem.intro")}
             </p>
           </div>
-          <BilunWordmark size={28} />
+          <BilunFullLogo size={28} />
         </header>
 
         <Section
@@ -254,11 +254,8 @@ export default function DesignSandbox() {
         <Section title={t("designSystem.brand.title")} titleAccent={t("designSystem.brand.titleAccent")}>
           <div className="flex flex-wrap items-center gap-8 text-[var(--text-primary)]">
             <BilunMark size={48} title={t("designSystem.brand.markTitle")} />
-            <BilunWordmark size={32} />
-            <BilunWordmark size={20} />
-            <div className="rounded-[var(--r-lg)] bg-[var(--text-primary)] p-4 text-white">
-              <BilunWordmark size={28} style={{ color: "white" }} />
-            </div>
+            <BilunFullLogo size={40} />
+            <BilunFullLogo size={28} />
           </div>
         </Section>
 

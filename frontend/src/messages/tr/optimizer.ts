@@ -1,12 +1,11 @@
 const optimizer = {
   tabs: {
     complianceDescription:
-      "Hasta bazında uyumluluk uyarıları: katılım payı muafiyeti (EK-1A ve diğer gerekçeler), fark ücreti yasağı (EK-2G, §1.9.3) ve EK-2C-1 katılım payı oranı listesi. Kesin işlem satırı olmayan kontroller açıkça Kullanılamıyor olarak işaretlenir.",
+      "Hasta bazında uyumluluk uyarıları: katılım payı muafiyeti (EK-1A ve diğer gerekçeler) ve fark ücreti yasağı (EK-2G, §1.9.3). Kesin işlem satırı olmayan kontroller açıkça Kullanılamıyor olarak işaretlenir.",
     revenueDescription:
       "Aktif fatura algoritmaları için kohort düzeyinde geri kazanım inceleme panosu; kesin talep satırı verisine bağlı kalan optimizasyon kontrolleri için kullanılabilirlik bildirimleri.",
     exemptions: "Katılım payı muafiyetleri",
     surcharge: "Fark ücreti uyumu",
-    copayRates: "EK-2C-1 katılım payı oranı uyumu",
     categoriesAria: "Uyum uyarı kategorileri",
   },
   filters: {
@@ -34,7 +33,6 @@ const optimizer = {
   categories: {
     exemptions: "Katılım payı muafiyetleri",
     surcharge: "Fark ücreti uyumu",
-    copay_rates: "EK-2C-1 katılım payı oranı uyumu",
   },
   errors: {
     loadAlerts: "Hasta uyarıları yüklenemedi",
