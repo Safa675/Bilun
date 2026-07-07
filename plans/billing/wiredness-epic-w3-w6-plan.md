@@ -110,5 +110,34 @@ These require data-model extensions or EMR integration — future epic territory
 ### Execution order
 W2.5 (prerequisite fixes) → W3 (treatment_pricing, highest value) → W4 (drug_combination) in parallel with W5 (payment_method) → W6 (session_pricing, smallest) → W7 (verification). W3 and W4 can be built by parallel subagents (different modules, no shared-file conflicts); W5 reuses gap_closing's predicate engine (import, not edit) and depends on W2.5a; W6 is a contained refactor in `session_pricing.py`.
 
-### Review (filled in after implementation)
-_TBD._
+### Review (filled in after implementation — 2026-07-07)
+
+**Branch:** `feat/wiredness-w3-w6` (forked from `feat/frontend-premium-ui` @ `2735b5f`, which already contained the merged PR #7 W1–W2 + W2.5a–m baseline). W2.5 prerequisite was **already satisfied** — no W2.5 work needed.
+
+**Implemented via 4 parallel subagents** (one focused vertical slice each, no shared-file conflicts) + serial orchestrator wiring of `billing/engine.py` + `rule_registry.py`.
+
+#### Honest wired-rule counts (the plan's estimates were optimistic; runtime analysis is authoritative)
+
+| Batch | Plan estimate | Actual wireable (runtime) | Honest-skip | Notes |
+|---|---|---|---|---|
+| W3 treatment_pricing | ~40 | **17** of 182 | 165 | Blocked by session counters / IVF cycles / temporal windows / clinical scores (BMI, testosterone, risk scores). |
+| W4 drug_combination | ~9–12 | **6** of 53 | 47 | Blocked by drug→class map (~18), PD-L1/ECOG/Child-Pugh (~14 oncology), EMR prior-therapy timelines (~15). |
+| W5 payment_method traceability | 12 | **2** of 42 | 40 | Primary `_classify_payment_method_kind` unchanged; traceability emits `info`-severity nuances. 40 honest-skip via gap_closing's predicate guard. |
+| W6 session_pricing | 4 | **4** of 4 | 0 | JSON now drives factor values (was hardcoded literals); behavior identical, fallback preserved. |
+| **Total** | **~68** | **29 newly wired** | 252 honest-skip | Split: 25 enforcement (W3+W4) + 2 traceability (W5, info-severity) + 4 JSON-driven refactor (W6). |
+
+The headline "~68" was inflated by static-key analysis; runtime evaluation against the real `PatientClaimContext` fields yields **29**. The honesty guard (rules with unavailable condition keys simply don't fire) is working as designed — no false positives.
+
+#### Verification (W7)
+- `compile_rules.py --check`: **PASS** — 147 rule/manifest/corpus artifacts byte-identical.
+- `pytest tests/unit/ tests/smoke/`: **1910 passed, 0 failed**, 9 skipped, 22 xfailed (up from 1844 baseline; +66 new tests across the 4 batches).
+- Inventory integrity: `treatment_pricing_2_4` + `drug_combination_4_2` **graduated from "orphan" to "wired"** — `_ORPHAN_RULE_SETS` is now empty; `test_wired_engines_present` updated to assert both are listed.
+- End-to-end smoke: `analyze_claim` fires the new motors on matching fixtures (W3 `robotic_rehab` rule, W4 `cinacalcet+etelcalsetid` combo, W5 `private_daily_visit_cap` traceability).
+
+#### Key findings (worth flagging to gazette curators)
+1. **Gazette drug-name spelling inconsistency (W4):** the `4.2.15.D-1` DOAC rule lists INN names in Turkish phonetic transliteration (`apiksaban`, `rivaroksaban`, `edoksaban`) while real claim data uses international INN (`apixaban`, `rivaroxaban`, `edoxaban`). The W4 evaluator faithfully matches what the JSON says, so the DOAC rule won't fire on real claims until the gazette is normalized. **Not patched here** — gazette curation is a separate task. Other W4 rules (cinacalcet, MS-DMT) use consistent INN and fire correctly.
+2. **`procedure_category_any` predicate (W3, W2.5b lesson):** the W3 evaluator correctly reads the `_any` key for multi-category claims, avoiding the W2.5b bug where the base scalar was `None`.
+3. **Honest deferral (W4.4):** `_check_combo_condition` returns a reason (`skipped_no_data` / `skipped_unknown_key` / `not_matched`) so deferred rules are auditable, not silently no-op'd.
+
+#### Scope discipline
+Only 11 backend files touched (5 modified + 6 new). No frontend, no `data/gazette/` artifacts, no manifests. The `feat/frontend-premium-ui` rebrand work and an unrelated `pipeline-simplification` workstream were explicitly excluded from the commit.

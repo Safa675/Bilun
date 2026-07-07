@@ -6,6 +6,12 @@ is hardcoded in ``_classify_payment_method_kind`` (annex membership + tier +
 star + prose-locked codes). The JSON documents WHEN each payment method
 applies; the code implements HOW. See wiredness-epic plan W4.1.
 
+The 42 JSON rules additionally carry no-pay / mandatory-billing / day-bed /
+caps nuances. ``check_payment_method_traceability_for_context`` runs them as a
+SECONDARY traceability pass (Wiredness epic W5) that emits ``info``-severity
+violations — it does NOT override the primary decision. Predicate evaluation
+and context building are reused from the sibling ``gap_closing`` module.
+
 Ocak/Temmuz MEDULA ``tercih`` (preference) windows are administrative facility
 billing choices in MEDULA — not modeled here. BILUN resolves package vs itemized
 per §2.2.2 using annex membership, tier, star, and prose-locked EK-2/C codes
@@ -17,6 +23,7 @@ from __future__ import annotations
 import json
 from datetime import date
 from functools import lru_cache
+from typing import Any
 
 from ..constants import _PROSE_RULES_DIR
 from .catalog_membership import (
@@ -373,3 +380,139 @@ def check_payment_method_compliance(
 def load_decision_table() -> dict:
     """Return the JSON decision table backing this evaluator."""
     return _load_payment_method_rules()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Secondary traceability pass (Wiredness epic W5)
+# ─────────────────────────────────────────────────────────────────────────────
+# The 42 rules in ``payment_method_2_2.json`` add no-pay / mandatory-billing /
+# day-bed / caps nuances across §2.2. The PRIMARY payment-method decision is
+# made by the hardcoded ``_classify_payment_method_kind`` above and is already
+# correct; this pass runs the JSON rules as a SECONDARY traceability scan that
+# emits ``severity='info'`` violations (informational, NOT enforcement). It
+# never overrides the primary decision.
+#
+# Predicate evaluation and context building are REUSED (not duplicated) from
+# the sibling ``gap_closing`` module: its ``_condition_matches`` engine and
+# ``_build_gap_closing_context`` builder already derive the wireable §2.2 facts
+# (provider_type, care_setting, payment_method path, facility fields) per the
+# post-W2.5a taxonomy. Rules whose condition keys are unavailable on a claim
+# are honest-skipped automatically (``_condition_matches`` returns False on an
+# absent key), so the wireable subset fires and the rest stay in the rule
+# inventory for coverage accounting without mis-firing.
+#
+# The gap_closing helpers carry a ``_`` prefix because they are module-internal
+# to that package; they are nonetheless stable within this package, so we
+# import them directly and document the reuse here. A future refactor could
+# promote them to a shared predicate-engine module.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Reuse gap_closing's predicate engine + context builder rather than duplicating
+# the §2.2 fact-derivation logic. No import cycle: gap_closing only top-level
+# imports stdlib + ``_PROSE_RULES_DIR``; its ``care_setting_review`` import is
+# lazy (inside ``_derive_payment_method_path``).
+from .gap_closing import (  # noqa: E402 — intentional sibling import after the primary API
+    _build_gap_closing_context as _gap_closing_build_context,
+    _condition_matches as _gap_closing_condition_matches,
+)
+
+_TRACEABILITY_RULE = "payment_method_traceability"
+
+
+@lru_cache(maxsize=1)
+def load_payment_method_rules() -> dict[str, Any]:
+    """Load ``payment_method_2_2.json`` (cached).
+
+    Mirrors ``_load_payment_method_rules`` but exposes a public, typed alias
+    for the traceability pass. Returns the full payload (``rule_set_id``,
+    ``title``, ``rules``, ...).
+    """
+    with _RULES_PATH.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _build_payment_method_traceability_context(ctx: Any) -> dict[str, Any]:
+    """Build the flat claim-context dict for the payment-method traceability pass.
+
+    Reuses ``gap_closing._build_gap_closing_context`` — it already derives the
+    wireable §2.2 facts (``provider_type``, ``care_setting``, ``payment_method``
+    path, ``facility_tier``, ``procedure_*``) using the post-W2.5a taxonomy.
+    Its scoping to ``ctx.claims[0]`` (lines filtered by ``claim_id``) is the
+    correct single-claim contract for this evaluator, matching
+    ``check_gap_closing_*_for_context``.
+
+    Returns an empty dict when ``ctx`` has no claims (the caller treats an empty
+    context as "no traceability violations").
+    """
+    return _gap_closing_build_context(ctx)
+
+
+def _traceability_violation_from_rule(
+    rule: dict[str, Any],
+    ruleset_id: str,
+) -> dict[str, Any]:
+    """Build an info-severity traceability violation from a JSON rule.
+
+    Mirrors ``gap_closing._violation_from_rule`` but forces
+    ``rule='payment_method_traceability'`` and ``severity='info'`` — this is a
+    traceability scan, not enforcement, so the primary payment-method decision
+    stays intact. The action's regulatory message (``payment_tr`` /
+    ``denial_tr`` / ``message_tr``) is surfaced for the human reviewer.
+    """
+    action = rule.get("action") or {}
+    message = (
+        action.get("payment_tr")
+        or action.get("denial_tr")
+        or action.get("message_tr")
+        or rule.get("rule_id", "")
+    )
+    billable = bool(action.get("billable", True))
+    return {
+        "rule": _TRACEABILITY_RULE,
+        "severity": "info",
+        "message": message,
+        "savings_try": 0.0,
+        "risk_amount": 0.0,
+        "sut_section": rule.get("sut_section", ""),
+        "rule_id": rule.get("rule_id", ""),
+        "billable": billable,
+        "material_outcome": "must_bill" if billable else "no_pay",
+        "annex_basis": action.get("annex_basis"),
+        "details": {
+            "prose_rule_set": ruleset_id,
+            "traceability_only": True,
+        },
+    }
+
+
+def check_payment_method_traceability_for_context(
+    ctx: Any,
+) -> list[dict[str, Any]]:
+    """Secondary traceability pass over ``payment_method_2_2.json`` (42 rules).
+
+    Builds the §2.2 claim context (via ``gap_closing._build_gap_closing_context``,
+    which derives the wireable facts and honest-skips unavailable keys), then
+    iterates the 42 JSON rules using ``gap_closing._condition_matches`` for
+    predicate evaluation. Each matched rule emits an ``info``-severity
+    traceability violation (``rule='payment_method_traceability'``).
+
+    This does NOT change the primary payment-method decision made by
+    ``_classify_payment_method_kind`` / ``resolve_payment_method`` — the JSON
+    rules document WHEN each payment method applies plus no-pay / mandatory /
+    day-bed nuances; the code implements HOW. The emitted violations are
+    informational, surfaced for the human reviewer and downstream accounting.
+
+    Returns ``[]`` when ``ctx`` has no claims or no conditions match.
+    """
+    context = _build_payment_method_traceability_context(ctx)
+    if not context:
+        return []
+    ruleset = load_payment_method_rules()
+    ruleset_id = ruleset.get("rule_set_id", "")
+    violations: list[dict[str, Any]] = []
+    for rule in ruleset.get("rules") or []:
+        condition = rule.get("condition") or {}
+        if not _gap_closing_condition_matches(condition, context):
+            continue
+        violations.append(_traceability_violation_from_rule(rule, ruleset_id))
+    return violations

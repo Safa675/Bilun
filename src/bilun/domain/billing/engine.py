@@ -33,6 +33,9 @@ from src.bilun.domain.prose_rules.dental_2_4_1 import (
 from src.bilun.domain.prose_rules.drg_package_adequacy import (
     check_drg_package_adequacy_for_context,
 )
+from src.bilun.domain.prose_rules.drug_combination import (
+    check_drug_combination_for_context,
+)
 from src.bilun.domain.prose_rules.drug_indication import (
     check_drug_indication_for_context,
 )
@@ -55,11 +58,17 @@ from src.bilun.domain.prose_rules.material_preauth_ek3c1 import (
 from src.bilun.domain.prose_rules.material_uplift import (
     check_material_pairing_for_context,
 )
+from src.bilun.domain.prose_rules.payment_method import (
+    check_payment_method_traceability_for_context,
+)
 from src.bilun.domain.prose_rules.procedure_addon_uplift import (
     check_procedure_pairing_for_context,
 )
 from src.bilun.domain.prose_rules.specialty_materials import (
     check_specialty_materials_for_context,
+)
+from src.bilun.domain.prose_rules.treatment_pricing import (
+    check_treatment_pricing_for_context,
 )
 from src.bilun.domain.rules.bundling_rules import check_bundling_violations_for_context
 from src.bilun.domain.rules.exclusion_rules import (
@@ -111,7 +120,16 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     violations.extend(check_gap_closing_misc_for_context(ctx))
     violations.extend(check_gap_closing_treatment_for_context(ctx))
 
-    # 10. Procedure-driven motors — run only when procedure lines are present
+    # 10. §2.2 payment-method traceability (secondary, info-severity — the
+    # primary _classify_payment_method_kind decision is unchanged; this emits
+    # no-pay/mandatory-billing nuances from the JSON as traceability flags).
+    violations.extend(check_payment_method_traceability_for_context(ctx))
+
+    # 11. §4.2 drug-combination (concurrent drug pairs/triplets on one claim).
+    if ctx.drug_lines:
+        violations.extend(check_drug_combination_for_context(ctx))
+
+    # 12. Procedure-driven motors — run only when procedure lines are present
     # (the dict-adapter path has none; the orchestrator/billing path does).
     if ctx.procedure_lines:
         # §2.2.1.B DRG package adequacy (documentation-review opportunities).
@@ -122,5 +140,9 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         violations.extend(check_gazette_repricing_for_context(ctx))
         # §3.1/§3.3 procedure-to-material pairing uplift (inverse EK-3B-1).
         violations.extend(check_material_pairing_for_context(ctx))
+        # §2.4 treatment-pricing prose (partial: 17 of 182 rules fire on
+        # derivable keys; the rest need session counters / IVF cycles / clinical
+        # scores absent from the claim model and honest-skip).
+        violations.extend(check_treatment_pricing_for_context(ctx))
 
     return violations
