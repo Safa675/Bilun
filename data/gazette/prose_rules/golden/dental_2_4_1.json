@@ -110,6 +110,11 @@
       "clause_id": "C000813",
       "expected_rule_id": "2.4.1.B-3.(2).specialist_or_doctor_required_for_star_and_7_1",
       "encode_batch": null
+    },
+    {
+      "clause_id": "C000760",
+      "expected_rule_id": "2.4.1.A.(1).university_dental_faculty_50pct_surcharge",
+      "encode_batch": null
     }
   ]
 }
