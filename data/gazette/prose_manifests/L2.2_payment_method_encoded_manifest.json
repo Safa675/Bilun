@@ -1,5 +1,5 @@
 {
-  "manifest_version": "wave2-v1",
+  "manifest_version": "canonical-v1",
   "rule_set_id": "payment_method_2_2",
   "scope_note": "§2.2 package vs itemized vs tier-override (42 JSON rules, C2 batch-1–4)",
   "rules_in_json": 42,

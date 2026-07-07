@@ -1,7 +1,7 @@
 {
+  "manifest_version": "canonical-v1",
+  "rule_set_id": "material_bundling_prose",
   "rules_in_json": 83,
-  "rules_added": 0,
-  "rules_patched": 0,
   "encoded_clause_ids": [
     "C002682",
     "C002684",
@@ -110,6 +110,7 @@
     "C002836",
     "C008292"
   ],
+  "encoded_clause_count": 106,
   "gate_b_deferred_clause_ids": [],
   "kdv_pricing_clause_ids": [
     "C002692"

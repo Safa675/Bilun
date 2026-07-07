@@ -1,114 +1,7 @@
 {
-  "manifest_version": "wave2-v1",
+  "manifest_version": "canonical-v1",
   "rule_set_id": "treatment_pricing_2_4_wave2",
-  "scope_note": "§2.4.4 treatment package pricing & coverage rules — batch 1 (T1) + wave-2a (W2A) + wave-2b (W2B) + wave-2c (W2C). Covers ESWL, HBO, radyocerrahi, hemodiyaliz/periton diyalizi, anjiyo/PKG, fizik tedavi rapor & seans kuralları, özel sunucu FTR, ESWT, robotik rehab, spor hekimliği/tıbbi ekoloji, sitogenetik/moleküler genetik, yoğun bakım, göz ayaktan, kaplıca, palyatif bakım, lomber diskoplasti, nöromonitörizasyon, epidermolizis bülloza, obezite cerrahisi, Lu-177 PSMA, ekstrakorporeal fotoferez, nöronavigasyon, risk puanlaması, IVF kayıtları, IVF ve PGT.",
-  "rules_in_json": 182,
-  "rules_added_wave2a": 0,
-  "rules_added_wave2b": 0,
-  "rules_added_wave2c": 0,
-  "rules_skipped_dup": [
-    "2.4.4.B.(1).hbo_facility_coverage",
-    "2.4.4.B.(10).hbo_anoxic_encephalopathy_start_5d",
-    "2.4.4.B.(12).hbo_ek2d3_indications_only",
-    "2.4.4.B.(13).hbo_traffic_accident_no_session_limit",
-    "2.4.4.B.(2).hbo_health_board_report",
-    "2.4.4.B.(6).hbo_start_10d_gap_7_biz_days",
-    "2.4.4.B.(7).hbo_one_session_per_day",
-    "2.4.4.B.(9).hbo_crao_start_within_5d",
-    "2.4.4.C-c.(1).photopheresis_3rd_step_board_report",
-    "2.4.4.C-c.(2).photopheresis_covered_for_indication",
-    "2.4.4.C-c.(3).photopheresis_6mo_report_max26_cycles",
-    "2.4.4.C-c.(4).photopheresis_other_indications_commission_approval",
-    "2.4.4.C.(1).radiosurgery_board_report_required",
-    "2.4.4.D-1.(10).hemodialysis_min_4_hours",
-    "2.4.4.D-1.(3).dialysis_prescription_by_center_physician",
-    "2.4.4.D-1.(3ev).home_dialysis_prescription_by_followup_center",
-    "2.4.4.D-2.(1).apd_board_report_nephrology",
-    "2.4.4.D-2.(1).peritoneal_hemofiltration_plasmapheresis_fee_for_service",
-    "2.4.4.D-2.(1).sapd_monitoring_and_fluid_limits",
-    "2.4.4.E.(4).angio_pcı_per_physician_daily_cap_15",
-    "2.4.4.F-1.(a).physio_up_to_30_sessions_specialist_or_3rd_step",
-    "2.4.4.F-1.health_report_required",
-    "2.4.4.F-2.(1).physio_billing_requires_f1_report",
-    "2.4.4.F-2.(10).traffic_accident_physio_controls_isolated",
-    "2.4.4.F-2.(12).disaster_provision_amputation_fracture_additional_30",
-    "2.4.4.F-2.(3).duty_war_veterans_physio_all_diagnoses",
-    "2.4.4.F-2.(5).physio_annual_region_session_caps",
-    "2.4.4.F-2.(6).physio_star_diagnosis_annual_window",
-    "2.4.4.F-2.(9).inpatient_physio_concomitant_services_fee_for_service",
-    "2.4.4.F-2.(a).physio_star_diagnosis_90_sessions_annual",
-    "2.4.4.F-2.(b).g80_post_surgery_additional_30_sessions",
-    "2.4.4.F-3.(1).private_provider_physio_compliance_with_F1_F2",
-    "2.4.4.F-3.(a).private_inpatient_60_sessions_d_group_excluded",
-    "2.4.4.F-3.(c).physio_session_min_60min_50pct_on_early_end",
-    "2.4.4.F-3.(c2).private_pmr_outpatient_daily_exam_cap_48",
-    "2.4.4.F-3.(d).private_outpatient_physio_group_caps_8h",
-    "2.4.4.F-4.(2).eswt_indication_limited",
-    "2.4.4.F-4.(3).eswt_ek2c_2_regions_5_sessions",
-    "2.4.4.F-4.(4).eswt_not_with_other_physio",
-    "2.4.4.F-5.(2).robotic_rehab_double_star_indications_only",
-    "2.4.4.F-5.(3).robotic_rehab_billed_ek2c_points",
-    "2.4.4.F-5.(4).robotic_rehab_not_with_other_physio",
-    "2.4.4.F-5.(5).robotic_rehab_30_sessions_annual_8_daily_per_system",
-    "2.4.4.F-6.(1).sports_med_ecology_health_report_required",
-    "2.4.4.F-6.(2).sports_ecology_annual_region_session_caps",
-    "2.4.4.F-6.(3).sports_ecology_physio_billed_p915030",
-    "2.4.4.G-1.(1).cytogenetic_tests_scope_header",
-    "2.4.4.G-1.(a).cytogenetic_molecular_3rd_step_public_service_procurement",
-    "2.4.4.G-1.(a_b).cytogenetic_3rd_step_public_or_licensed_ghdm",
-    "2.4.4.G-1.(b).cytogenetic_molecular_licensed_ghdm_facilities",
-    "2.4.4.G-2.(1).molecular_genetic_tests_scope_header",
-    "2.4.4.G-2.(3).molecular_genetic_self_requested_not_covered",
-    "2.4.4.G-2.(a).molecular_genetic_3rd_step_public_ghdm_procurement",
-    "2.4.4.G-2.(a_onc).molecular_genetic_oncologic_3rd_step_public_procurement",
-    "2.4.4.G-2.(b).molecular_genetic_licensed_ghdm_facilities_exceptions",
-    "2.4.4.G-2.(b_onc).molecular_genetic_oncologic_licensed_ghdm",
-    "2.4.4.G-u.(1).risk_scored_coverage_via_annex",
-    "2.4.4.G-u.(2).risk_score_records_kept_in_patient_file",
-    "2.4.4.H.(1).icu_unleveled_level1_unregistered_not_billable",
-    "2.4.4.H.(2).icu_group_de_bundled_abc_addon_same_day",
-    "2.4.4.H.(3).icu_pacu_no_icu_fee",
-    "2.4.4.H.(5).icu_platelet_apheresis_and_material_billable",
-    "2.4.4.H.(7).icu_single_fee_multiple_levels_same_day",
-    "2.4.4.H.(8).icu_admission_discharge_day_fee_for_service",
-    "2.4.4.I-1.(1).ivf_married_no_child_max_3_cycles",
-    "2.4.4.I-1.(1d).ivf_3yr_other_methods_unsuccessful_documented",
-    "2.4.4.I-1.(3).ivf_prior_cycles_counted",
-    "2.4.4.I-1.(3c).ivf_not_performed_10pct_discount_ek2b",
-    "2.4.4.I-1.(4).ivf_report_conditions_specified",
-    "2.4.4.I-1.(5).ivf_apply_within_6mo_or_new_report",
-    "2.4.4.I-1.(6).ivf_separate_board_report_per_treatment",
-    "2.4.4.I-2.(1).pgt_savior_sibling_conditions_otherwise_no_pay",
-    "2.4.4.I-3.(1).pgt_hereditary_ek2k_max_3_cycles",
-    "2.4.4.I-3.(10).pgt_healthy_embryo_freezing_if_cycles_remaining",
-    "2.4.4.I-3.(11).pgt_frozen_embryo_transfer_ek2c",
-    "2.4.4.I-3.(4).pgt_hereditary_ek2k_genetic_report_required",
-    "2.4.4.I-3.(6).pgt_embryo_max8_numbered_report_to_institution",
-    "2.4.4.I-d.(1).ivf_records_kept_and_presented_on_audit",
-    "2.4.4.I.(2).ophthalmology_outpatient_daily_exam_cap_45",
-    "2.4.4.I.(3).ophthalmology_15day_revisit_ek2a2_only",
-    "2.4.4.J.(1).thermal_spa_board_report_required",
-    "2.4.4.J.(2).thermal_spa_start_within_6_months_else_new_report",
-    "2.4.4.J.(3).thermal_spa_unlicensed_facility_not_covered",
-    "2.4.4.J.(4).thermal_spa_uncontracted_only_702020_per_day",
-    "2.4.4.J.(5).thermal_spa_travel_per diem_per_2_6",
-    "2.4.4.K.(1).palliative_care_certified_facilities_only",
-    "2.4.4.K.(3).palliative_care_unregistered_bed_not_covered",
-    "2.4.4.K.(5).palliative_care_p560000_once_per_day",
-    "2.4.4.K.(6).palliative_care_ek2c_procedure_no_palliative_fee",
-    "2.4.4.L.(1).diskoplasty_ek2c_3rd_step_only",
-    "2.4.4.L.(2).diskoplasty_3_specialty_board_report_required",
-    "2.4.4.L.(3).diskoplasty_covered_when_conditions_met",
-    "2.4.4.M.(1).neuromonitoring_ek2d4_p703365_bypass_2_2_2b3",
-    "2.4.4.O-u.(1).neuronavigation_ek2c_d5_bypass_2_2_2b3",
-    "2.4.4.O.(a).bariatric_bmi40_4_specialty_board_report",
-    "2.4.4.O.(b).bariatric_bmi35_40_comorbidity_board_report",
-    "2.4.4.O.(c).bariatric_bmi35_40_6mo_unsuccessful_weight_loss",
-    "2.4.4.P.(2).psma_castration_resistant_metastatic_diagnosis",
-    "2.4.4.P.(3).psma_testosterone_under_50_psa_not_criteria",
-    "2.4.4.P.(5).psma_ga68_pet_min3_foci_above_liver",
-    "2.4.4.P.(6).psma_min6week_gap_8_or_12_doses_with_report"
-  ],
+  "section_id": "2.4.4",
   "encoded_clause_ids": [
     "C000864",
     "C000869",
@@ -235,431 +128,514 @@
     "C001392",
     "C001393"
   ],
-  "gate_b_sources_by_rule": {
-    "2.4.4.A.(3).eswl_session_cap_6mo": [
-      "C000864"
-    ],
-    "2.4.4.B.(8).sudden_hearing_loss_20session_cap": [
-      "C000876"
-    ],
-    "2.4.4.C.(2).radiosurgery_ek2c_conditional": [
-      "C000884"
-    ],
-    "2.4.4.D-1.(7).hemodialysis_ek2c_pricing": [
-      "C000938"
-    ],
-    "2.4.4.D-1.(8).hemodialysis_consumables_reuse_prohibited": [
-      "C000939"
-    ],
-    "2.4.4.D-1.(9).private_dialysis_session_cap_excess": [
-      "C000940"
-    ],
-    "2.4.4.D-1.(11).hemodialysis_bundled_tests_no_separate_bill": [
-      "C000944"
-    ],
-    "2.4.4.D-1.(6).home_hemodialysis_ek2c_pricing": [
-      "C000953"
-    ],
-    "2.4.4.D-1.(7ev).home_hemodialysis_device_no_pay": [
-      "C000954"
-    ],
-    "2.4.4.D-1.(8ev).home_hemodialysis_session_cap_excess": [
-      "C000955"
-    ],
-    "2.4.4.D-2.(2).apd_device_no_pay": [
-      "C000964"
-    ],
-    "2.4.4.E.(2).angio_ptca_same_session_25pct": [
-      "C000968"
-    ],
-    "2.4.4.F-2.(4).physio_session_cap_per_day": [
-      "C001014"
-    ],
-    "2.4.4.F-2.(7).physio_start_within_15d": [
-      "C001017"
-    ],
-    "2.4.4.F-2.(8).physio_report_modification_5d": [
-      "C001018"
-    ],
-    "2.4.4.F-4.(4).eswt_no_combo_with_physio": [
-      "C001065"
-    ],
-    "2.4.4.F-5.(3).robotic_rehab_ek2c_pricing": [
-      "C001071"
-    ],
-    "2.4.4.F-5.(4).robotic_rehab_no_combo": [
-      "C001072"
-    ],
-    "2.4.4.F-6.(3).sport_hydro_physio_p915030": [
-      "C001087"
-    ],
-    "2.4.4.G-1.tier3_public_facility_only": [
-      "C001102",
-      "C001109",
-      "C001110"
-    ],
-    "2.4.4.G-2.tier3_public_facility_only": [
-      "C001119",
-      "C001120",
-      "C001127",
-      "C001128"
-    ],
-    "2.4.4.G-2.(3).elective_genetic_test_no_pay": [
-      "C001129"
-    ],
-    "2.4.4.H.(3).pacu_no_icu_bill": [
-      "C001208"
-    ],
-    "2.4.4.H.(7).same_day_multi_level_one_icu_fee": [
-      "C001215"
-    ],
-    "2.4.4.H.(8).icu_admission_discharge_fee_for_service": [
-      "C001216"
-    ],
-    "2.4.4.I.(3).ophthalmology_15d_same_specialty_bundle": [
-      "C001242"
-    ],
-    "2.4.4.I-1.(1).ivf_ek2c_package_price": [
-      "C001296"
-    ],
-    "2.4.4.I-1.(2).ivf_age40_no_pay": [
-      "C001261"
-    ],
-    "2.4.4.I-1.(2).ivf_freezing_ek2b": [
-      "C001297"
-    ],
-    "2.4.4.I-1.(3).ivf_cancellation_10pct_discount": [
-      "C001298"
-    ],
-    "2.4.4.I-1.(5).ivf_multi_embryo_multi_birth_no_pay": [
-      "C001300"
-    ],
-    "2.4.4.J.(3).thermal_unlicensed_no_pay": [
-      "C001331"
-    ],
-    "2.4.4.K.(1).palliative_accreditation_required": [
-      "C001338"
-    ],
-    "2.4.4.K.(3).palliative_non_accredited_bed_no_pay": [
-      "C001340"
-    ],
-    "2.4.4.K.(5).palliative_p560000_once_per_day": [
-      "C001345"
-    ],
-    "2.4.4.K.(6).palliative_ek2c_procedure_same_day_no_double": [
-      "C001346"
-    ],
-    "2.4.4.K.(7).palliative_bundled_no_separate_bill": [
-      "C001349"
-    ],
-    "2.4.4.N.(1).eb_wound_care_3rd_step_public": [
-      "C001366"
-    ],
-    "2.4.4.C-c.(5).photopheresis_ek2b_pricing": [
-      "C000927"
-    ],
-    "2.4.4.B.(1).hbo_facility_coverage": [
-      "C000869"
-    ],
-    "2.4.4.B.(2).hbo_health_board_report": [
-      "C000870"
-    ],
-    "2.4.4.B.(6).hbo_start_10d_gap_7_biz_days": [
-      "C000874"
-    ],
-    "2.4.4.B.(7).hbo_one_session_per_day": [
-      "C000875"
-    ],
-    "2.4.4.B.(9).hbo_crao_start_within_5d": [
-      "C000877"
-    ],
-    "2.4.4.B.(10).hbo_anoxic_encephalopathy_start_5d": [
-      "C000878"
-    ],
-    "2.4.4.B.(12).hbo_ek2d3_indications_only": [
-      "C000880"
-    ],
-    "2.4.4.B.(13).hbo_traffic_accident_no_session_limit": [
-      "C000881"
-    ],
-    "2.4.4.C.(1).radiosurgery_board_report_required": [
-      "C000883"
-    ],
-    "2.4.4.D-1.(3).dialysis_prescription_by_center_physician": [
-      "C000934"
-    ],
-    "2.4.4.D-1.(10).hemodialysis_min_4_hours": [
-      "C000941"
-    ],
-    "2.4.4.D-1.(3ev).home_dialysis_prescription_by_followup_center": [
-      "C000950"
-    ],
-    "2.4.4.D-2.(1).peritoneal_hemofiltration_plasmapheresis_fee_for_service": [
-      "C000957"
-    ],
-    "2.4.4.D-2.(1).sapd_monitoring_and_fluid_limits": [
-      "C000959"
-    ],
-    "2.4.4.D-2.(1).apd_board_report_nephrology": [
-      "C000963"
-    ],
-    "2.4.4.E.(4).angio_pcı_per_physician_daily_cap_15": [
-      "C000970"
-    ],
-    "2.4.4.F-1.(a).physio_up_to_30_sessions_specialist_or_3rd_step": [
-      "C000984"
-    ],
-    "2.4.4.F-1.health_report_required": [
-      "C000991"
-    ],
-    "2.4.4.F-2.(1).physio_billing_requires_f1_report": [
-      "C001007"
-    ],
-    "2.4.4.F-2.(3).duty_war_veterans_physio_all_diagnoses": [
-      "C001011"
-    ],
-    "2.4.4.F-2.(5).physio_annual_region_session_caps": [
-      "C001015"
-    ],
-    "2.4.4.F-2.(6).physio_star_diagnosis_annual_window": [
-      "C001016"
-    ],
-    "2.4.4.F-2.(9).inpatient_physio_concomitant_services_fee_for_service": [
-      "C001019"
-    ],
-    "2.4.4.F-2.(10).traffic_accident_physio_controls_isolated": [
-      "C001020"
-    ],
-    "2.4.4.F-2.(a).physio_star_diagnosis_90_sessions_annual": [
-      "C001025"
-    ],
-    "2.4.4.F-2.(b).g80_post_surgery_additional_30_sessions": [
-      "C001028"
-    ],
-    "2.4.4.F-2.(12).disaster_provision_amputation_fracture_additional_30": [
-      "C001032"
-    ],
-    "2.4.4.F-3.(1).private_provider_physio_compliance_with_F1_F2": [
-      "C001055"
-    ],
-    "2.4.4.F-3.(a).private_inpatient_60_sessions_d_group_excluded": [
-      "C001056"
-    ],
-    "2.4.4.F-3.(c).physio_session_min_60min_50pct_on_early_end": [
-      "C001058"
-    ],
-    "2.4.4.F-3.(c2).private_pmr_outpatient_daily_exam_cap_48": [
-      "C001059"
-    ],
-    "2.4.4.F-3.(d).private_outpatient_physio_group_caps_8h": [
-      "C001060"
-    ],
-    "2.4.4.F-4.(2).eswt_indication_limited": [
-      "C001063"
-    ],
-    "2.4.4.F-4.(3).eswt_ek2c_2_regions_5_sessions": [
-      "C001064"
-    ],
-    "2.4.4.F-4.(4).eswt_not_with_other_physio": [
-      "C001065"
-    ],
-    "2.4.4.F-5.(2).robotic_rehab_double_star_indications_only": [
-      "C001070"
-    ],
-    "2.4.4.F-5.(3).robotic_rehab_billed_ek2c_points": [
-      "C001071"
-    ],
-    "2.4.4.F-5.(4).robotic_rehab_not_with_other_physio": [
-      "C001072"
-    ],
-    "2.4.4.F-5.(5).robotic_rehab_30_sessions_annual_8_daily_per_system": [
-      "C001077"
-    ],
-    "2.4.4.F-6.(1).sports_med_ecology_health_report_required": [
-      "C001085"
-    ],
-    "2.4.4.F-6.(2).sports_ecology_annual_region_session_caps": [
-      "C001086"
-    ],
-    "2.4.4.F-6.(3).sports_ecology_physio_billed_p915030": [
-      "C001087"
-    ],
-    "2.4.4.G-1.(1).cytogenetic_tests_scope_header": [
-      "C001096"
-    ],
-    "2.4.4.G-1.(a_b).cytogenetic_3rd_step_public_or_licensed_ghdm": [
-      "C001102"
-    ],
-    "2.4.4.G-1.(a).cytogenetic_molecular_3rd_step_public_service_procurement": [
-      "C001109"
-    ],
-    "2.4.4.G-1.(b).cytogenetic_molecular_licensed_ghdm_facilities": [
-      "C001110"
-    ],
-    "2.4.4.G-2.(1).molecular_genetic_tests_scope_header": [
-      "C001113"
-    ],
-    "2.4.4.G-2.(a).molecular_genetic_3rd_step_public_ghdm_procurement": [
-      "C001119"
-    ],
-    "2.4.4.G-2.(b).molecular_genetic_licensed_ghdm_facilities_exceptions": [
-      "C001120"
-    ],
-    "2.4.4.G-2.(a_onc).molecular_genetic_oncologic_3rd_step_public_procurement": [
-      "C001127"
-    ],
-    "2.4.4.G-2.(b_onc).molecular_genetic_oncologic_licensed_ghdm": [
-      "C001128"
-    ],
-    "2.4.4.G-2.(3).molecular_genetic_self_requested_not_covered": [
-      "C001129"
-    ],
-    "2.4.4.H.(1).icu_unleveled_level1_unregistered_not_billable": [
-      "C001206"
-    ],
-    "2.4.4.H.(2).icu_group_de_bundled_abc_addon_same_day": [
-      "C001207"
-    ],
-    "2.4.4.H.(3).icu_pacu_no_icu_fee": [
-      "C001208"
-    ],
-    "2.4.4.H.(5).icu_platelet_apheresis_and_material_billable": [
-      "C001210"
-    ],
-    "2.4.4.H.(7).icu_single_fee_multiple_levels_same_day": [
-      "C001215"
-    ],
-    "2.4.4.H.(8).icu_admission_discharge_day_fee_for_service": [
-      "C001216"
-    ],
-    "2.4.4.I.(2).ophthalmology_outpatient_daily_exam_cap_45": [
-      "C001241"
-    ],
-    "2.4.4.I.(3).ophthalmology_15day_revisit_ek2a2_only": [
-      "C001242"
-    ],
-    "2.4.4.J.(1).thermal_spa_board_report_required": [
-      "C001329"
-    ],
-    "2.4.4.J.(2).thermal_spa_start_within_6_months_else_new_report": [
-      "C001330"
-    ],
-    "2.4.4.J.(3).thermal_spa_unlicensed_facility_not_covered": [
-      "C001331"
-    ],
-    "2.4.4.J.(4).thermal_spa_uncontracted_only_702020_per_day": [
-      "C001332"
-    ],
-    "2.4.4.J.(5).thermal_spa_travel_per diem_per_2_6": [
-      "C001333"
-    ],
-    "2.4.4.K.(1).palliative_care_certified_facilities_only": [
-      "C001338"
-    ],
-    "2.4.4.K.(3).palliative_care_unregistered_bed_not_covered": [
-      "C001340"
-    ],
-    "2.4.4.K.(5).palliative_care_p560000_once_per_day": [
-      "C001345"
-    ],
-    "2.4.4.K.(6).palliative_care_ek2c_procedure_no_palliative_fee": [
-      "C001346"
-    ],
-    "2.4.4.L.(1).diskoplasty_ek2c_3rd_step_only": [
-      "C001352"
-    ],
-    "2.4.4.L.(2).diskoplasty_3_specialty_board_report_required": [
-      "C001353"
-    ],
-    "2.4.4.L.(3).diskoplasty_covered_when_conditions_met": [
-      "C001360"
-    ],
-    "2.4.4.M.(1).neuromonitoring_ek2d4_p703365_bypass_2_2_2b3": [
-      "C001362"
-    ],
-    "2.4.4.O.(a).bariatric_bmi40_4_specialty_board_report": [
-      "C001370"
-    ],
-    "2.4.4.O.(b).bariatric_bmi35_40_comorbidity_board_report": [
-      "C001371"
-    ],
-    "2.4.4.O.(c).bariatric_bmi35_40_6mo_unsuccessful_weight_loss": [
-      "C001372"
-    ],
-    "2.4.4.P.(2).psma_castration_resistant_metastatic_diagnosis": [
-      "C001389"
-    ],
-    "2.4.4.P.(3).psma_testosterone_under_50_psa_not_criteria": [
-      "C001390"
-    ],
-    "2.4.4.P.(5).psma_ga68_pet_min3_foci_above_liver": [
-      "C001392"
-    ],
-    "2.4.4.P.(6).psma_min6week_gap_8_or_12_doses_with_report": [
-      "C001393"
-    ],
-    "2.4.4.C-c.(1).photopheresis_3rd_step_board_report": [
-      "C000917"
-    ],
-    "2.4.4.C-c.(2).photopheresis_covered_for_indication": [
-      "C000924"
-    ],
-    "2.4.4.C-c.(3).photopheresis_6mo_report_max26_cycles": [
-      "C000925"
-    ],
-    "2.4.4.C-c.(4).photopheresis_other_indications_commission_approval": [
-      "C000926"
-    ],
-    "2.4.4.O-u.(1).neuronavigation_ek2c_d5_bypass_2_2_2b3": [
-      "C001377"
-    ],
-    "2.4.4.G-u.(1).risk_scored_coverage_via_annex": [
-      "C001135"
-    ],
-    "2.4.4.G-u.(2).risk_score_records_kept_in_patient_file": [
-      "C001136"
-    ],
-    "2.4.4.I-d.(1).ivf_records_kept_and_presented_on_audit": [
-      "C001302"
-    ],
-    "2.4.4.I-1.(1).ivf_married_no_child_max_3_cycles": [
-      "C001255"
-    ],
-    "2.4.4.I-1.(1d).ivf_3yr_other_methods_unsuccessful_documented": [
-      "C001260"
-    ],
-    "2.4.4.I-1.(3).ivf_prior_cycles_counted": [
-      "C001262"
-    ],
-    "2.4.4.I-1.(4).ivf_report_conditions_specified": [
-      "C001284"
-    ],
-    "2.4.4.I-1.(5).ivf_apply_within_6mo_or_new_report": [
-      "C001293"
-    ],
-    "2.4.4.I-1.(6).ivf_separate_board_report_per_treatment": [
-      "C001294"
-    ],
-    "2.4.4.I-1.(3c).ivf_not_performed_10pct_discount_ek2b": [
-      "C001299"
-    ],
-    "2.4.4.I-2.(1).pgt_savior_sibling_conditions_otherwise_no_pay": [
-      "C001310"
-    ],
-    "2.4.4.I-3.(1).pgt_hereditary_ek2k_max_3_cycles": [
-      "C001317"
-    ],
-    "2.4.4.I-3.(4).pgt_hereditary_ek2k_genetic_report_required": [
-      "C001320"
-    ],
-    "2.4.4.I-3.(6).pgt_embryo_max8_numbered_report_to_institution": [
-      "C001322"
-    ],
-    "2.4.4.I-3.(10).pgt_healthy_embryo_freezing_if_cycles_remaining": [
-      "C001326"
-    ],
-    "2.4.4.I-3.(11).pgt_frozen_embryo_transfer_ek2c": [
-      "C001327"
-    ]
-  }
+  "encoded_clause_count": 124,
+  "tier_c_deferred_clause_ids": [],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_count": 0,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "clause_traces": [
+    {
+      "clause_id": "C000864",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000869",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000870",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000874",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000875",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000876",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000877",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000878",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000880",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000881",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000883",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000884",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000917",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000924",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000925",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000926",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000927",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000934",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000938",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000939",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000940",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000941",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000944",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000950",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000953",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000954",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000955",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000957",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000959",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000963",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000964",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000968",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000970",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000984",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000991",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001007",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001011",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001014",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001015",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001016",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001017",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001018",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001019",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001020",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001025",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001028",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001032",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001055",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001056",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001058",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001059",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001060",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001063",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001064",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001065",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001070",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001071",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001072",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001077",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001085",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001086",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001087",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001096",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001102",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001109",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001110",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001113",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001119",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001120",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001127",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001128",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001129",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001135",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001136",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001206",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001207",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001208",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001210",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001215",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001216",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001241",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001242",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001255",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001260",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001261",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001262",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001284",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001293",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001294",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001296",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001297",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001298",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001299",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001300",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001302",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001310",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001317",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001320",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001322",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001326",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001327",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001329",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001330",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001331",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001332",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001333",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001338",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001340",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001345",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001346",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001349",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001352",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001353",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001360",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001362",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001366",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001370",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001371",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001372",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001377",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001389",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001390",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001392",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C001393",
+      "manifest_status": "encoded"
+    }
+  ],
+  "rules_in_json": 182
 }

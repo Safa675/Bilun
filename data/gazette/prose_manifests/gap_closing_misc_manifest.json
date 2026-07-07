@@ -1,7 +1,7 @@
 {
-  "manifest_version": "gap-v1",
+  "manifest_version": "canonical-v1",
   "rule_set_id": "gap_closing_misc",
-  "rules_in_json": 41,
+  "section_id": "",
   "encoded_clause_ids": [
     "C000097",
     "C000099",
@@ -45,129 +45,182 @@
     "C008152",
     "C008243"
   ],
-  "gate_b_sources_by_rule": {
-    "1.5.1.(1).ssk_60c_exception_no_pay": [
-      "C000097"
-    ],
-    "1.5.1.(3).uncontracted_private_non_emergency_no_pay": [
-      "C000099"
-    ],
-    "1.5.2.(2).uncontracted_provider_non_emergency_no_pay": [
-      "C000178"
-    ],
-    "1.5.2.(3).contracted_provider_must_accept": [
-      "C000179"
-    ],
-    "1.6.(3).third_party_service_fraud_prohibited": [
-      "C000183"
-    ],
-    "1.8.2.copay_required_outpatient": [
-      "C000324"
-    ],
-    "1.8.2.(3).ek4d_exempt_no_copay": [
-      "C000326"
-    ],
-    "1.8.3.copay_required_inpatient_medication": [
-      "C000337"
-    ],
-    "1.8.5.(5).emergency_except_green_area_no_copay": [
-      "C000359"
-    ],
-    "1.8.5.(7).ek1a_chronic_no_copay_outpatient": [
-      "C000361"
-    ],
-    "1.8.5.(8).inpatient_drugs_ek4d_no_copay": [
-      "C000362"
-    ],
-    "1.9.1.(7).foundation_university_2_3_step_private_inpatient_bundled": [
-      "C000410"
-    ],
-    "1.10.(1).medula_health_report_format_required": [
-      "C000460"
-    ],
-    "3.1.1.(7).ek3b_listed_materials_no_pay": [
-      "C002689"
-    ],
-    "3.1.1.(10).ek3_prices_kdv_excluded": [
-      "C002692"
-    ],
-    "3.1.3.(7).medula_free_code_entry_no_pay": [
-      "C002794"
-    ],
-    "3.1.3.(8).fixed_asset_repair_spare_part_no_pay": [
-      "C002795"
-    ],
-    "3.1.3.(9).reusable_material_no_pay": [
-      "C002796"
-    ],
-    "3.3.10.(d).sphincter_contraindication_no_pay": [
-      "C003124"
-    ],
-    "3.3.11.(1).local_anesthesia_graft_membrane_billable": [
-      "C003143"
-    ],
-    "4.1.(2).medula_prior_drug_use_record_required": [
-      "C003401"
-    ],
-    "4.1.3.(1).health_report_medula_compliance": [
-      "C003435"
-    ],
-    "4.1.4.(d).off_label_use_ministry_approval_required": [
-      "C003468"
-    ],
-    "4.1.4.(f).drug_not_reimbursed_indication_no_pay": [
-      "C003473"
-    ],
-    "4.1.5.(10).work_injury_traffic_must_be_eprescription": [
-      "C003524"
-    ],
-    "4.1.7.(2).ek4g_inpatient_only": [
-      "C003533"
-    ],
-    "4.1.8.(3).ek4d_no_copay_ek4f_copay": [
-      "C003537"
-    ],
-    "4.1.9.(1).ek4a_listed_only": [
-      "C003540"
-    ],
-    "4.3.(3).ek4c_overseas_listed_only": [
-      "C007290"
-    ],
-    "4.3.(5).ek4d_overseas_no_copay": [
-      "C007292"
-    ],
-    "4.3.(8).overseas_drug_domestic_license_continues": [
-      "C007297"
-    ],
-    "4.4.2.(a).cheapest_unit_basis_ek2b": [
-      "C007790"
-    ],
-    "4.5.1.(2).uncontracted_pharmacy_non_emergency_no_pay": [
-      "C007795"
-    ],
-    "4.6.(4).blood_components_bundled_in_drg": [
-      "C007809"
-    ],
-    "5.2.(2).medula_outage_provision_documented": [
-      "C008050"
-    ],
-    "5.2.2.(a).monthly_prescription_period_close": [
-      "C008067"
-    ],
-    "5.2.2.(b).blood_hemophilia_prescription_2x_monthly": [
-      "C008068"
-    ],
-    "5.2.2.(separate).prescriptions_billed_separately": [
-      "C008078"
-    ],
-    "5.3.1.C.(1).medula_service_detail_required": [
-      "C008152"
-    ],
-    "6.3.2.(b).same_function_prior_material_warranty_no_pay": [
-      "C008243"
-    ],
-    "1.8.3.(1b).uncontracted_dental_prosthesis_copay": [
-      "C000347"
-    ]
-  }
+  "encoded_clause_count": 41,
+  "tier_c_deferred_clause_ids": [],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_count": 0,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "clause_traces": [
+    {
+      "clause_id": "C000097",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000099",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000178",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000179",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000183",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000324",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000326",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000337",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000347",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000359",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000361",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000362",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000410",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000460",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002689",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002692",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002794",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002795",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002796",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003124",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003143",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003401",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003435",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003468",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003473",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003524",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003533",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003537",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003540",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007290",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007292",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007297",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007790",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007795",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007809",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008050",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008067",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008068",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008078",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008152",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008243",
+      "manifest_status": "encoded"
+    }
+  ],
+  "rules_in_json": 41
 }

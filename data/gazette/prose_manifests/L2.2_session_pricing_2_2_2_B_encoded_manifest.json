@@ -1,9 +1,7 @@
 {
-  "manifest_version": "wave2-v1",
+  "manifest_version": "canonical-v1",
   "rule_set_id": "session_pricing_2_2_2_B",
-  "scope_note": "§2.2.2.B session-fraction PARTIAL — runtime in session_pricing.py; 4 JSON rules with Gate B clause traces (not merged into payment_method_2_2.json)",
-  "rules_in_json": 4,
-  "session_fraction_status": "PARTIAL",
+  "section_id": "2.2.2.B",
   "encoded_clause_ids": [
     "C000654",
     "C000655",
@@ -13,27 +11,47 @@
     "C000660",
     "C000661"
   ],
-  "gate_b_sources_by_rule": {
-    "2.2.2.B.(1).ek2c_package_basis": [
-      "C000654"
-    ],
-    "2.2.2.B.(2).non_package_itemized": [
-      "C000655"
-    ],
-    "2.2.2.B.a": [
-      "C000657"
-    ],
-    "2.2.2.B.b": [
-      "C000658"
-    ],
-    "2.2.2.B.c": [
-      "C000659"
-    ],
-    "2.2.2.B.ç": [
-      "C000660"
-    ],
-    "2.2.2.B.(3).cross_specialty_uplift": [
-      "C000661"
-    ]
-  }
+  "encoded_clause_count": 7,
+  "tier_c_deferred_clause_ids": [],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_count": 0,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "clause_traces": [
+    {
+      "clause_id": "C000654",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000655",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000657",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000658",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000659",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000660",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000661",
+      "manifest_status": "encoded"
+    }
+  ],
+  "rules_in_json": 4,
+  "session_fraction_status": "PARTIAL"
 }
