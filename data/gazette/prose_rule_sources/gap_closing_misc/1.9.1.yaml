@@ -14,3 +14,49 @@ rules:
     payment_tr: aynı başvuru altında yatarak tedavide Kurumca karşılanan sağlık hizmetleri pakete dahil
   gate_b_sources:
   - C000410
+- rule_id: 1.9.1.(1).extra_fee_permissible_scope
+  sut_section: 1.9.1
+  condition:
+    facility_type_any:
+    - private
+    - foundation_university
+    service_not_in_ek2a_bundled: true
+  action:
+    billable: true
+    extra_fee_allowed: true
+    payment_tr: özel/vakıf üniversitesi kurumları SUT eki EK-2/B, EK-2/C, EK-2/Ç listelerinde yer alan işlemlerde kullanılan
+      tıbbi malzeme ve ilaçlar ile EK-2/A'ya dahil işlemler için ayrıca ilave ücret alınamaz; bunlar dışındaki hizmetler için
+      Kurum fiyatını aşmamak üzere ilave ücret alınabilir
+  gate_b_sources:
+  - C000383
+  verification_status: ai_generated_pending_review
+  content_note: 'Scope rule: extra fee permissible at private/foundation-univ, EXCLUDED for EK-2/A/B/C/Ç bundled items. Extra
+    fees never billable to Kurum (C003399).'
+- rule_id: 1.9.1.(5).extra_fee_written_consent_mandatory
+  sut_section: 1.9.1
+  condition:
+    extra_fee_charged: true
+    written_patient_consent_obtained: false
+  action:
+    billable: false
+    denial_tr: ilave ücret talebinde bulunulmadan önce hasta veya hasta yakınının yazılı onayı alınması zorunludur
+    severity: error
+  gate_b_sources:
+  - C000402
+  verification_status: ai_generated_pending_review
+  content_note: Patient-protection rule — mandatory written pre-consent before any extra fee.
+- rule_id: 1.9.1.(6).er_stabilization_24h_before_extra_fee
+  sut_section: 1.9.1
+  condition:
+    care_setting: emergency
+    patient_stabilized_within_24h: false
+    ek1d_notification_form_delivered: false
+  action:
+    billable: false
+    denial_tr: acil serviste 24 saat içinde stabilizasyon esastır; acil hal sona ermeden ilave ücret alınamaz; EK-1/D bilgilendirme
+      formu imza karşılığı verilmesi zorunludur
+    severity: error
+  gate_b_sources:
+  - C000405
+  verification_status: ai_generated_pending_review
+  content_note: ER patient-protection — 24h stabilization + EK-1/D notification form mandatory before any extra fee.
