@@ -147,13 +147,24 @@
       },
       "action": {
         "payment_method": "itemized",
-        "payment_method_tr": "özel kuruluş günlük muayene sınırı — hekim×6 saat",
+        "payment_method_tr": "özel kuruluş günlük muayene sınırı — hekim×6 saat temel; hekim başı günlük 60, acil 90, triyaj kırmızı toplam 120 (112 Komuta Kontrol ile 120 aşılabilir); 700610/700611 her işlem için 1 muayene düşülür; sınır aşımı Kuruma faturalandırılamaz",
         "daily_visit_cap_basis": "physician_hours_x6",
-        "bill_visit_fee": false
+        "daily_visit_cap_per_physician": 60,
+        "emergency_daily_visit_cap": 90,
+        "triage_red_total_daily_cap": 120,
+        "komuta_kontrol_112_may_exceed_120": true,
+        "transesophageal_echo_codes": [
+          "700610",
+          "700611"
+        ],
+        "transesophageal_echo_deduct_per_procedure": 1,
+        "over_limit_not_billable": true
       },
       "gate_b_sources": [
         "C000576"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "content_note": "Added the concrete caps dropped from C000576: per-physician 60, emergency 90, triyaj-red total 120, 112 Komuta Kontrol may exceed 120, transesophageal echo (700610/700611) deducts 1 muayene each, over-limit not billable."
     },
     {
       "rule_id": "2.2.1.B-1.(2).ten_day_same_specialty_no_visit",
@@ -271,13 +282,15 @@
       },
       "action": {
         "payment_method": "itemized",
-        "payment_method_tr": "sağlık raporlu hiperbarik/fizik tedavi/ESWL-ESWT — rapor sonrası günlerde EK-2/B + EK-2/A-2",
-        "bill_visit_fee": true,
-        "visit_fee_annex": "EK-2/A-2"
+        "payment_method_tr": "sağlık raporlu hiperbarik/fizik tedavi/ESWL-ESWT — rapor sonrası günlerde EK-2/A tutarları girilmeksizin EK-2/C Listesi üzerinden faturalandırılır",
+        "bill_visit_fee": false,
+        "visit_fee_annex": "EK-2/C"
       },
       "gate_b_sources": [
         "C000568"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review",
+      "content_note": "Was bill_visit_fee:true + visit_fee_annex:EK-2/A-2. C000568 says the opposite — bill over EK-2/C with EK-2/A amounts NOT entered (girilmeksizin)."
     },
     {
       "rule_id": "2.2.1.B-1.a",
