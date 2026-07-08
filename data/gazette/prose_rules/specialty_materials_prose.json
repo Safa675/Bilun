@@ -281,42 +281,6 @@
       }
     },
     {
-      "rule_id": "3.3.3.C.(5).contact_lens_and_spectacles",
-      "sut_section": "3.3.3.C",
-      "deontic": "NO_PAY",
-      "gate_b_sources": [
-        "C002917"
-      ],
-      "condition": {
-        "contact_lens_with_spectacle_billing": true
-      },
-      "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Kontakt lens kullanan hastada ayrıca gözlük cam/çerçeve (konjenital afak hariç) — karşılanmaz (§3.3.3.C(5))."
-      }
-    },
-    {
-      "rule_id": "3.3.3.C.(6).contact_lens_solution",
-      "sut_section": "3.3.3.C",
-      "deontic": "NO_PAY",
-      "gate_b_sources": [
-        "C002918"
-      ],
-      "condition": {
-        "material_name_any": [
-          "kontakt lens sol",
-          "lens solusyon",
-          "lens solüsyon"
-        ]
-      },
-      "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Kontakt lens solüsyonu — Kurumca karşılanmaz (§3.3.3.C(6))."
-      }
-    },
-    {
       "rule_id": "3.3.34.(4).tv5680_combo_billing",
       "sut_section": "3.3.34",
       "deontic": "NO_PAY",
@@ -946,38 +910,6 @@
       }
     },
     {
-      "rule_id": "3.3.26.c.total_femur_resection_prosthesis_coverage",
-      "sut_section": "3.3.26",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003216"
-      ],
-      "condition": {
-        "total_femur_resection_prosthesis_criteria_met": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Total femur rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(c))."
-      }
-    },
-    {
-      "rule_id": "3.3.26.c.distal_femur_resection_prosthesis_coverage",
-      "sut_section": "3.3.26",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003220"
-      ],
-      "condition": {
-        "distal_femur_resection_prosthesis_criteria_met": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Distal femur rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(ç))."
-      }
-    },
-    {
       "rule_id": "3.3.26.d.proximal_tibia_resection_prosthesis_coverage",
       "sut_section": "3.3.26",
       "deontic": "REGULATORY_ACTION",
@@ -1026,38 +958,6 @@
       }
     },
     {
-      "rule_id": "3.3.26.g.proximal_humerus_resection_prosthesis_coverage",
-      "sut_section": "3.3.26",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003240"
-      ],
-      "condition": {
-        "proximal_humerus_resection_prosthesis_criteria_met": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Proksimal humerus rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(g))."
-      }
-    },
-    {
-      "rule_id": "3.3.26.g.intercalar_segment_prosthesis_coverage",
-      "sut_section": "3.3.26",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003243"
-      ],
-      "condition": {
-        "intercalar_segment_prosthesis_criteria_met": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "İnterkalar rezeksiyon/segment protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(ğ))."
-      }
-    },
-    {
       "rule_id": "3.3.26.h.total_humerus_prosthesis_coverage",
       "sut_section": "3.3.26",
       "deontic": "REGULATORY_ACTION",
@@ -1071,38 +971,6 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Total humerus protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(h))."
-      }
-    },
-    {
-      "rule_id": "3.3.26.i.elbow_resection_prosthesis_coverage",
-      "sut_section": "3.3.26",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003248"
-      ],
-      "condition": {
-        "elbow_resection_prosthesis_criteria_met": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Dirsek rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(ı))."
-      }
-    },
-    {
-      "rule_id": "3.3.26.i.expandable_prosthesis_coverage",
-      "sut_section": "3.3.26",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003251"
-      ],
-      "condition": {
-        "expandable_prosthesis_criteria_met": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Uzayabilen protez — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(i))."
       }
     },
     {
@@ -1282,54 +1150,6 @@
       }
     },
     {
-      "rule_id": "3.3.33.C.(1).bone_anchored_hearing_aid_coverage",
-      "sut_section": "3.3.33.C",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003355"
-      ],
-      "condition": {
-        "bone_anchored_hearing_aid_over_5y_criteria": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "5 yaş üzeri bilateral işitme kaybı + konvansiyonel cihazdan yarar görmeme (3 KBB uzmanı + odyolog sağlık kurulu) veya Komisyon onayıyla kemiğe monte işitme cihazı Kurumca karşılanır (§3.3.33.C(1))."
-      }
-    },
-    {
-      "rule_id": "3.3.33.C.e.single_side_deaf_conductive_mixed",
-      "sut_section": "3.3.33.C",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003362"
-      ],
-      "condition": {
-        "bone_anchored_hearing_aid_single_sided_deafness": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Tek kulak total işitme kaybı + karşı kulak iletim/mikst tip kaybında kemiğe monte cihaz Kurumca karşılanır (§3.3.33.C(e))."
-      }
-    },
-    {
-      "rule_id": "3.3.33.C.(4).headband_internal_part_coverage",
-      "sut_section": "3.3.33.C",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003364"
-      ],
-      "condition": {
-        "bone_anchored_hearing_aid_headband_internal_part": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Kafa bandı uygulanan hastada cerrahi planlanan tarihte aktarıcı sistem + iç parça bedeli Kurumca karşılanır (§3.3.33.C(4))."
-      }
-    },
-    {
       "rule_id": "3.3.33.D.(1).brainstem_implant_health_board",
       "sut_section": "3.3.33.D",
       "deontic": "REGULATORY_ACTION",
@@ -1391,22 +1211,6 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Kriterleri taşımayan hastalarda İşitsel İmplantlar Komisyonu onayıyla beyin sapı implantı Kurumca karşılanır (§3.3.33.D(5))."
-      }
-    },
-    {
-      "rule_id": "3.3.33.C.(1).middle_ear_implant_coverage",
-      "sut_section": "3.3.33.Ç",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003366"
-      ],
-      "condition": {
-        "middle_ear_implant_bilateral_stable_threshold": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Orta kulak implantı — bilateral kayıp + cihazdan yarar görmeme (3 KBB + odyolog) ve son 2 yıl stabil eşik; Komisyon onayıyla Kurumca karşılanır (§3.3.33.Ç(1))."
       }
     },
     {
@@ -1634,102 +1438,6 @@
       }
     },
     {
-      "rule_id": "3.3.4.C.(2).dbm_cervical_fusion_1cc_cap",
-      "sut_section": "3.3.4.C",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C002965"
-      ],
-      "condition": {
-        "dbm_cervical_fusion_1cc_per_disc_cap": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Tek başına DBM için servikal füzyonda disk mesafesinde kafes içine 1 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.C(2))."
-      }
-    },
-    {
-      "rule_id": "3.3.4.C.(5).open_physis_tumor_defect_health_board",
-      "sut_section": "3.3.4.C",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C002968"
-      ],
-      "condition": {
-        "open_physis_tumor_defect_health_board_volume_cap": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Epifiz hattı açık hastanın tümoral defektinde — 3 ortopedi uzmanı sağlık kurulu raporuyla humerus/pelvis/femur/tibia 5 cc, fibula/radius/ulna 2 cc, diğer kemikler 1 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.C(5))."
-      }
-    },
-    {
-      "rule_id": "3.3.4.C.(6).spinal_fusion_revision_nonunion_5cc_cap",
-      "sut_section": "3.3.4.C",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C002969"
-      ],
-      "condition": {
-        "spinal_fusion_revision_nonunion_5cc_cap": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Enstrümante spinal füzyon üzerinden ≥1 yıl geçtiği halde füzyon elde edilemeyen revizyon vakalarında vaka başı 5 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.C(6))."
-      }
-    },
-    {
-      "rule_id": "3.3.4.C.(1).dura_defect_uncovered_by_autograft",
-      "sut_section": "3.3.4.Ç",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C002972"
-      ],
-      "condition": {
-        "dura_defect_uncovered_by_autograft": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Otojen greftlerle kapatılamayan dura defekti olan vakalarda bedeli Kurumca karşılanır (§3.3.4.Ç(1))."
-      }
-    },
-    {
-      "rule_id": "3.3.4.C.(2).dura_graft_coverage_general",
-      "sut_section": "3.3.4.Ç",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C002973"
-      ],
-      "condition": {
-        "dura_graft_indication_coverage": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Dura greftleri tanımlı endikasyonlarda kullanılması halinde Kurumca karşılanır (§3.3.4.Ç(2))."
-      }
-    },
-    {
-      "rule_id": "3.3.4.C.c.intramedullary_intradural_spinal_coverage",
-      "sut_section": "3.3.4.Ç",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C002976"
-      ],
-      "condition": {
-        "dura_graft_intramedullary_intradural_spinal": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Dekompresyon/disk/kırık cerrahisi hariç intramedüller/intradural spinal cerrahide dura grefti Kurumca karşılanır (§3.3.4.Ç(c))."
-      }
-    },
-    {
       "rule_id": "3.3.1.(1).wound_care_saglik_kurulu_must_bill",
       "sut_section": "3.3.1",
       "deontic": "MUST_BILL",
@@ -1825,25 +1533,6 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Eğitim kliniği olan 3. basamak resmi sunucularda genel cerrahi, gastroenteroloji, nöroloji ve psikiyatri kliniklerince 4 branşlı sağlık kurulu raporuna istinaden bedeli Kurumca karşılanır (§3.3.10 a)."
-      }
-    },
-    {
-      "rule_id": "3.3.10.c.anal_tetkik_rapor_eki_regulatory",
-      "sut_section": "3.3.10",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003123"
-      ],
-      "condition": {
-        "material_name_any": [
-          "sakropelvik",
-          "sakro-pelvik"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "warning",
-        "message_tr": "Anal manometre, anal EMG, endoanal ultrason vb. tetkik sonuçlarının sağlık kurulu rapor ekinde yer alması gerekmektedir (§3.3.10 ç)."
       }
     },
     {
@@ -2037,25 +1726,6 @@
       }
     },
     {
-      "rule_id": "3.3.2.c.fatura_ekleri_regulatory",
-      "sut_section": "3.3.2",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C002882"
-      ],
-      "condition": {
-        "material_name_any": [
-          "kan sekeri olcum cubugu",
-          "kan şekeri ölçüm çubuğu"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "warning",
-        "message_tr": "Kan şekeri ölçüm çubuğu faturalarına sağlık raporu fotokopisi (e-rapor hariç) ile reçete asılları (e-reçete hariç) eklenecektir (§3.3.2 ç)."
-      }
-    },
-    {
       "rule_id": "3.3.27.(1).kanama_durdurma_ek3a_must_bill",
       "sut_section": "3.3.27",
       "deontic": "MUST_BILL",
@@ -2089,24 +1759,6 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Emilemeyen kanama durdurma malzemeleri — acil servis/yatarak tedavide epikrizde endikasyon belirtilmesi şartıyla en fazla 2 adet Kurumca karşılanır (§3.3.27(2))."
-      }
-    },
-    {
-      "rule_id": "3.3.27.c.travma_acik_kanamali_damar_regulatory",
-      "sut_section": "3.3.27",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003260"
-      ],
-      "condition": {
-        "material_name_any": [
-          "kanama durdurma"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Girişimsel/iatrojenik işlemler hariç; boyun, aksiller ve inguinal bölgenin direkt bası ile durdurulamayan travmaya bağlı açık kanamalı damar yaralanmaları — endikasyon kriterlerindendir (§3.3.27 ç)."
       }
     },
     {
@@ -2228,44 +1880,6 @@
       }
     },
     {
-      "rule_id": "3.3.3.C.contact_lens_ek3d_must_bill",
-      "sut_section": "3.3.3.C",
-      "deontic": "MUST_BILL",
-      "gate_b_sources": [
-        "C002913"
-      ],
-      "condition": {
-        "material_name_any": [
-          "kontakt lens",
-          "contact lens"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Kontakt lens — 3. basamak göz sağlığı uzmanı içeren sağlık kurulu raporunda çap/derinlik/diyoptri/nitelik belirtilmesi ve sözleşmeli optisyenlikten temin şartıyla EK-3/D bedeli üzerinden Kurumca karşılanır (§3.3.3.C)."
-      }
-    },
-    {
-      "rule_id": "3.3.3.C.(3).konjenital_katarakt_cocuk_must_bill",
-      "sut_section": "3.3.3.C",
-      "deontic": "MUST_BILL",
-      "gate_b_sources": [
-        "C002915"
-      ],
-      "condition": {
-        "material_name_any": [
-          "kontakt lens",
-          "contact lens"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Konjenital katarakt nedeniyle opere olmuş 6 yaşından küçük çocuklarda kontakt lens — 6 ayda bir yenilenmesi halinde sağlık kurulu raporuna istinaden Kurumca karşılanır (§3.3.3.C(3))."
-      }
-    },
-    {
       "rule_id": "3.3.3.D.(1).kalici_cift_gorme_prizma_must_bill",
       "sut_section": "3.3.3.D",
       "deontic": "MUST_BILL",
@@ -2283,65 +1897,6 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Kalıcı çift görme (6 ay ve üzeri) paralitik/restriktrif şaşılıkta — 3 göz sağlığı uzmanı içeren sağlık kurulu raporuyla bedeli Kurumca karşılanır (§3.3.3.D(1))."
-      }
-    },
-    {
-      "rule_id": "3.3.3.C.(1).e_recete_imza_regulatory",
-      "sut_section": "3.3.3.Ç",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C002920"
-      ],
-      "condition": {
-        "material_name_any": [
-          "e-recete",
-          "e-reçete",
-          "elektronik imza"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "warning",
-        "message_tr": "E-reçeteler Kurumca belirlenen yöntem ve standartlarla (elektronik imza, şifre) imzalanma şarttır (§3.3.3.Ç(1))."
-      }
-    },
-    {
-      "rule_id": "3.3.3.C.(2).medula_sgk_sifresi_regulatory",
-      "sut_section": "3.3.3.Ç",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C002921"
-      ],
-      "condition": {
-        "material_name_any": [
-          "e-recete",
-          "e-reçete",
-          "manuel reçete"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "warning",
-        "message_tr": "Reçeteler MEDULA sisteminde SGK Hekim Şifresi ile düzenlenecektir; istisnalar hariç manuel reçete bedelleri karşılanmayacaktır (§3.3.3.Ç(2))."
-      }
-    },
-    {
-      "rule_id": "3.3.3.C.b.resmi_sunucu_e_recete_regulatory",
-      "sut_section": "3.3.3.Ç",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C002924"
-      ],
-      "condition": {
-        "material_name_any": [
-          "e-recete",
-          "e-reçete"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "warning",
-        "message_tr": "Resmi sunuculardan (kamu tabiplik, belediye poliklinik, 1. basamak, mediko-sosyal) düzenlenen reçeteler; MEDULA-Hastane altyapısı kurulduğunda e-reçeteye geçiş zorunludur (§3.3.3.Ç b)."
       }
     },
     {
@@ -2418,44 +1973,6 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "18 yaş üzeri hastalarda işitme cihazı için en az 1 KBB uzmanı yer alan resmi sunucu sağlık kurulu raporu düzenlenmesi gerekmektedir (§3.3.32 b)."
-      }
-    },
-    {
-      "rule_id": "3.3.32.c.kalici_isitme_kaybi_kriter_regulatory",
-      "sut_section": "3.3.32",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003300"
-      ],
-      "condition": {
-        "material_name_any": [
-          "işitme cihazı",
-          "isitme cihazi"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "warning",
-        "message_tr": "Sağlık kurulu raporlarında kalıcı işitme kaybı olduğu ve odyolojik kriterlerin sağlandığının belirtilmesi gerekmektedir (§3.3.32 c)."
-      }
-    },
-    {
-      "rule_id": "3.3.32.c.odyolojik_esik_kriter_regulatory",
-      "sut_section": "3.3.32",
-      "deontic": "REGULATORY_ACTION",
-      "gate_b_sources": [
-        "C003301"
-      ],
-      "condition": {
-        "material_name_any": [
-          "işitme cihazı",
-          "isitme cihazi"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "warning",
-        "message_tr": "500-1000-2000-4000 Hz hava yolu saf ses ortalaması 26 dB ve üzeri (ABR'de 30 dB ve üzeri) olmalıdır (§3.3.32 ç)."
       }
     },
     {
@@ -2774,25 +2291,6 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Çocuk standing table — herhangi bir nedene bağlı tetrapleji/parapleji veya ayakta durmanın tedaviye katkı sağlayacağının belirtildiği 2-18 yaş hastalara bu hekimlerce reçete edilmesi halinde Kurumca bedeli karşılanır (§3.3.7.A c)."
-      }
-    },
-    {
-      "rule_id": "3.3.7.B.c.erin_stand_up_wheelchair_must_bill",
-      "sut_section": "3.3.7.B",
-      "deontic": "MUST_BILL",
-      "gate_b_sources": [
-        "C003071"
-      ],
-      "condition": {
-        "material_name_any": [
-          "stand up wheelchair",
-          "stand-up wheelchair"
-        ]
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "Erişkin stand up wheelchair — yerleşmiş parapleji klinik tablosunun belirtildiği ve bu hekimlerce reçete edildiği, aktif çalışan ve/veya öğrenci hastalarda Kurumca bedeli karşılanır (§3.3.7.B ç)."
       }
     },
     {
@@ -3471,22 +2969,6 @@
       }
     },
     {
-      "rule_id": "3.1.2.c_protez_ortez_ara_urun_renewal_coverage",
-      "sut_section": "3.1.2",
-      "deontic": "MUST_BILL",
-      "gate_b_sources": [
-        "C002729"
-      ],
-      "condition": {
-        "protez_ortez_intermediate_part_renewal_documented": true
-      },
-      "action": {
-        "material_outcome": "review_required",
-        "severity": "info",
-        "message_tr": "EK-3/C-2 protez/ortezin miat süresi içinde ara ürünlerinden biri yenilenip protez/ortez kullanılabiliyorsa, bakım-onarım gereken parçaların bedelleri Kurumca karşılanır (§3.1.2(ç))."
-      }
-    },
-    {
       "rule_id": "3.1.2.e.garanti_sonu_kullanilamaz_yenileme_coverage",
       "sut_section": "3.1.2",
       "deontic": "MUST_BILL",
@@ -3612,6 +3094,524 @@
         "material_outcome": "no_pay",
         "severity": "error",
         "message_tr": "SUT ve eki listelerde yer almayan tıbbi malzemenin fatura edilmesi halinde bedelleri Kurumca karşılanmaz (§3.2.1.C(2))."
+      }
+    },
+    {
+      "rule_id": "3.1.2.ç.protez_ortez_ara_urun_renewal_coverage",
+      "sut_section": "3.1.2",
+      "deontic": "MUST_BILL",
+      "gate_b_sources": [
+        "C002729"
+      ],
+      "condition": {
+        "protez_ortez_intermediate_part_renewal_documented": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "EK-3/C-2 protez/ortezin miat süresi içinde ara ürünlerinden biri yenilenip protez/ortez kullanılabiliyorsa, bakım-onarım gereken parçaların bedelleri Kurumca karşılanır (§3.1.2(ç))."
+      }
+    },
+    {
+      "rule_id": "3.3.10.ç.anal_tetkik_rapor_eki_regulatory",
+      "sut_section": "3.3.10",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003123"
+      ],
+      "condition": {
+        "material_name_any": [
+          "sakropelvik",
+          "sakro-pelvik"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Anal manometre, anal EMG, endoanal ultrason vb. tetkik sonuçlarının sağlık kurulu rapor ekinde yer alması gerekmektedir (§3.3.10 ç)."
+      }
+    },
+    {
+      "rule_id": "3.3.2.ç.fatura_ekleri_regulatory",
+      "sut_section": "3.3.2",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002882"
+      ],
+      "condition": {
+        "material_name_any": [
+          "kan sekeri olcum cubugu",
+          "kan şekeri ölçüm çubuğu"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Kan şekeri ölçüm çubuğu faturalarına sağlık raporu fotokopisi (e-rapor hariç) ile reçete asılları (e-reçete hariç) eklenecektir (§3.3.2 ç)."
+      }
+    },
+    {
+      "rule_id": "3.3.26.ç.distal_femur_resection_prosthesis_coverage",
+      "sut_section": "3.3.26",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003220"
+      ],
+      "condition": {
+        "distal_femur_resection_prosthesis_criteria_met": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Distal femur rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(ç))."
+      }
+    },
+    {
+      "rule_id": "3.3.26.ç.total_femur_resection_prosthesis_coverage",
+      "sut_section": "3.3.26",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003216"
+      ],
+      "condition": {
+        "total_femur_resection_prosthesis_criteria_met": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Total femur rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(c))."
+      }
+    },
+    {
+      "rule_id": "3.3.26.ğ.intercalar_segment_prosthesis_coverage",
+      "sut_section": "3.3.26",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003243"
+      ],
+      "condition": {
+        "intercalar_segment_prosthesis_criteria_met": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "İnterkalar rezeksiyon/segment protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(ğ))."
+      }
+    },
+    {
+      "rule_id": "3.3.26.ğ.proximal_humerus_resection_prosthesis_coverage",
+      "sut_section": "3.3.26",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003240"
+      ],
+      "condition": {
+        "proximal_humerus_resection_prosthesis_criteria_met": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Proksimal humerus rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(g))."
+      }
+    },
+    {
+      "rule_id": "3.3.26.ı.elbow_resection_prosthesis_coverage",
+      "sut_section": "3.3.26",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003248"
+      ],
+      "condition": {
+        "elbow_resection_prosthesis_criteria_met": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Dirsek rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(ı))."
+      }
+    },
+    {
+      "rule_id": "3.3.26.ı.expandable_prosthesis_coverage",
+      "sut_section": "3.3.26",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003251"
+      ],
+      "condition": {
+        "expandable_prosthesis_criteria_met": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Uzayabilen protez — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(i))."
+      }
+    },
+    {
+      "rule_id": "3.3.27.ç.travma_acik_kanamali_damar_regulatory",
+      "sut_section": "3.3.27",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003260"
+      ],
+      "condition": {
+        "material_name_any": [
+          "kanama durdurma"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Girişimsel/iatrojenik işlemler hariç; boyun, aksiller ve inguinal bölgenin direkt bası ile durdurulamayan travmaya bağlı açık kanamalı damar yaralanmaları — endikasyon kriterlerindendir (§3.3.27 ç)."
+      }
+    },
+    {
+      "rule_id": "3.3.3.Ç.(1).e_recete_imza_regulatory",
+      "sut_section": "3.3.3.Ç",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002920"
+      ],
+      "condition": {
+        "material_name_any": [
+          "e-recete",
+          "e-reçete",
+          "elektronik imza"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "E-reçeteler Kurumca belirlenen yöntem ve standartlarla (elektronik imza, şifre) imzalanma şarttır (§3.3.3.Ç(1))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.Ç.(2).medula_sgk_sifresi_regulatory",
+      "sut_section": "3.3.3.Ç",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002921"
+      ],
+      "condition": {
+        "material_name_any": [
+          "e-recete",
+          "e-reçete",
+          "manuel reçete"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Reçeteler MEDULA sisteminde SGK Hekim Şifresi ile düzenlenecektir; istisnalar hariç manuel reçete bedelleri karşılanmayacaktır (§3.3.3.Ç(2))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.Ç.(3).konjenital_katarakt_cocuk_must_bill",
+      "sut_section": "3.3.3.C",
+      "deontic": "MUST_BILL",
+      "gate_b_sources": [
+        "C002915"
+      ],
+      "condition": {
+        "material_name_any": [
+          "kontakt lens",
+          "contact lens"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Konjenital katarakt nedeniyle opere olmuş 6 yaşından küçük çocuklarda kontakt lens — 6 ayda bir yenilenmesi halinde sağlık kurulu raporuna istinaden Kurumca karşılanır (§3.3.3.C(3))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.Ç.(5).contact_lens_and_spectacles",
+      "sut_section": "3.3.3.C",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002917"
+      ],
+      "condition": {
+        "contact_lens_with_spectacle_billing": true
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Kontakt lens kullanan hastada ayrıca gözlük cam/çerçeve (konjenital afak hariç) — karşılanmaz (§3.3.3.C(5))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.Ç.(6).contact_lens_solution",
+      "sut_section": "3.3.3.C",
+      "deontic": "NO_PAY",
+      "gate_b_sources": [
+        "C002918"
+      ],
+      "condition": {
+        "material_name_any": [
+          "kontakt lens sol",
+          "lens solusyon",
+          "lens solüsyon"
+        ]
+      },
+      "action": {
+        "material_outcome": "no_pay",
+        "severity": "error",
+        "message_tr": "Kontakt lens solüsyonu — Kurumca karşılanmaz (§3.3.3.C(6))."
+      }
+    },
+    {
+      "rule_id": "3.3.3.Ç.b.resmi_sunucu_e_recete_regulatory",
+      "sut_section": "3.3.3.Ç",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002924"
+      ],
+      "condition": {
+        "material_name_any": [
+          "e-recete",
+          "e-reçete"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Resmi sunuculardan (kamu tabiplik, belediye poliklinik, 1. basamak, mediko-sosyal) düzenlenen reçeteler; MEDULA-Hastane altyapısı kurulduğunda e-reçeteye geçiş zorunludur (§3.3.3.Ç b)."
+      }
+    },
+    {
+      "rule_id": "3.3.3.Ç.contact_lens_ek3d_must_bill",
+      "sut_section": "3.3.3.C",
+      "deontic": "MUST_BILL",
+      "gate_b_sources": [
+        "C002913"
+      ],
+      "condition": {
+        "material_name_any": [
+          "kontakt lens",
+          "contact lens"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Kontakt lens — 3. basamak göz sağlığı uzmanı içeren sağlık kurulu raporunda çap/derinlik/diyoptri/nitelik belirtilmesi ve sözleşmeli optisyenlikten temin şartıyla EK-3/D bedeli üzerinden Kurumca karşılanır (§3.3.3.C)."
+      }
+    },
+    {
+      "rule_id": "3.3.32.ç.kalici_isitme_kaybi_kriter_regulatory",
+      "sut_section": "3.3.32",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003300"
+      ],
+      "condition": {
+        "material_name_any": [
+          "işitme cihazı",
+          "isitme cihazi"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "Sağlık kurulu raporlarında kalıcı işitme kaybı olduğu ve odyolojik kriterlerin sağlandığının belirtilmesi gerekmektedir (§3.3.32 c)."
+      }
+    },
+    {
+      "rule_id": "3.3.32.ç.odyolojik_esik_kriter_regulatory",
+      "sut_section": "3.3.32",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003301"
+      ],
+      "condition": {
+        "material_name_any": [
+          "işitme cihazı",
+          "isitme cihazi"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "warning",
+        "message_tr": "500-1000-2000-4000 Hz hava yolu saf ses ortalaması 26 dB ve üzeri (ABR'de 30 dB ve üzeri) olmalıdır (§3.3.32 ç)."
+      }
+    },
+    {
+      "rule_id": "3.3.33.Ç.(1).bone_anchored_hearing_aid_coverage",
+      "sut_section": "3.3.33.C",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003355"
+      ],
+      "condition": {
+        "bone_anchored_hearing_aid_over_5y_criteria": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "5 yaş üzeri bilateral işitme kaybı + konvansiyonel cihazdan yarar görmeme (3 KBB uzmanı + odyolog sağlık kurulu) veya Komisyon onayıyla kemiğe monte işitme cihazı Kurumca karşılanır (§3.3.33.C(1))."
+      }
+    },
+    {
+      "rule_id": "3.3.33.Ç.(1).middle_ear_implant_coverage",
+      "sut_section": "3.3.33.Ç",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003366"
+      ],
+      "condition": {
+        "middle_ear_implant_bilateral_stable_threshold": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Orta kulak implantı — bilateral kayıp + cihazdan yarar görmeme (3 KBB + odyolog) ve son 2 yıl stabil eşik; Komisyon onayıyla Kurumca karşılanır (§3.3.33.Ç(1))."
+      }
+    },
+    {
+      "rule_id": "3.3.33.Ç.(4).headband_internal_part_coverage",
+      "sut_section": "3.3.33.C",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003364"
+      ],
+      "condition": {
+        "bone_anchored_hearing_aid_headband_internal_part": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Kafa bandı uygulanan hastada cerrahi planlanan tarihte aktarıcı sistem + iç parça bedeli Kurumca karşılanır (§3.3.33.C(4))."
+      }
+    },
+    {
+      "rule_id": "3.3.33.Ç.e.single_side_deaf_conductive_mixed",
+      "sut_section": "3.3.33.C",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C003362"
+      ],
+      "condition": {
+        "bone_anchored_hearing_aid_single_sided_deafness": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Tek kulak total işitme kaybı + karşı kulak iletim/mikst tip kaybında kemiğe monte cihaz Kurumca karşılanır (§3.3.33.C(e))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.Ç.(1).dura_defect_uncovered_by_autograft",
+      "sut_section": "3.3.4.Ç",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002972"
+      ],
+      "condition": {
+        "dura_defect_uncovered_by_autograft": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Otojen greftlerle kapatılamayan dura defekti olan vakalarda bedeli Kurumca karşılanır (§3.3.4.Ç(1))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.Ç.(2).dbm_cervical_fusion_1cc_cap",
+      "sut_section": "3.3.4.C",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002965"
+      ],
+      "condition": {
+        "dbm_cervical_fusion_1cc_per_disc_cap": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Tek başına DBM için servikal füzyonda disk mesafesinde kafes içine 1 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.C(2))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.Ç.(2).dura_graft_coverage_general",
+      "sut_section": "3.3.4.Ç",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002973"
+      ],
+      "condition": {
+        "dura_graft_indication_coverage": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Dura greftleri tanımlı endikasyonlarda kullanılması halinde Kurumca karşılanır (§3.3.4.Ç(2))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.Ç.(5).open_physis_tumor_defect_health_board",
+      "sut_section": "3.3.4.C",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002968"
+      ],
+      "condition": {
+        "open_physis_tumor_defect_health_board_volume_cap": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Epifiz hattı açık hastanın tümoral defektinde — 3 ortopedi uzmanı sağlık kurulu raporuyla humerus/pelvis/femur/tibia 5 cc, fibula/radius/ulna 2 cc, diğer kemikler 1 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.C(5))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.Ç.(6).spinal_fusion_revision_nonunion_5cc_cap",
+      "sut_section": "3.3.4.C",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002969"
+      ],
+      "condition": {
+        "spinal_fusion_revision_nonunion_5cc_cap": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Enstrümante spinal füzyon üzerinden ≥1 yıl geçtiği halde füzyon elde edilemeyen revizyon vakalarında vaka başı 5 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.C(6))."
+      }
+    },
+    {
+      "rule_id": "3.3.4.Ç.c.intramedullary_intradural_spinal_coverage",
+      "sut_section": "3.3.4.Ç",
+      "deontic": "REGULATORY_ACTION",
+      "gate_b_sources": [
+        "C002976"
+      ],
+      "condition": {
+        "dura_graft_intramedullary_intradural_spinal": true
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Dekompresyon/disk/kırık cerrahisi hariç intramedüller/intradural spinal cerrahide dura grefti Kurumca karşılanır (§3.3.4.Ç(c))."
+      }
+    },
+    {
+      "rule_id": "3.3.7.B.ç.erin_stand_up_wheelchair_must_bill",
+      "sut_section": "3.3.7.B",
+      "deontic": "MUST_BILL",
+      "gate_b_sources": [
+        "C003071"
+      ],
+      "condition": {
+        "material_name_any": [
+          "stand up wheelchair",
+          "stand-up wheelchair"
+        ]
+      },
+      "action": {
+        "material_outcome": "review_required",
+        "severity": "info",
+        "message_tr": "Erişkin stand up wheelchair — yerleşmiş parapleji klinik tablosunun belirtildiği ve bu hekimlerce reçete edildiği, aktif çalışan ve/veya öğrenci hastalarda Kurumca bedeli karşılanır (§3.3.7.B ç)."
       }
     }
   ],
