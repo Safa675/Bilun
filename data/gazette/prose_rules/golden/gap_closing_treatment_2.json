@@ -27,11 +27,6 @@
       "encode_batch": "G2"
     },
     {
-      "clause_id": "C000665",
-      "expected_rule_id": "2.2.2.B.(5).training_research_hospital_specialist_consult",
-      "encode_batch": "G2"
-    },
-    {
       "clause_id": "C000677",
       "expected_rule_id": "2.2.2.B-1.(d).inpatient_medications_bundled",
       "encode_batch": "G2"
@@ -220,6 +215,11 @@
       "clause_id": "C001604",
       "expected_rule_id": "2.6.9.(2).unreferral_outside_settlement_no_travel",
       "encode_batch": "G2"
+    },
+    {
+      "clause_id": "C000665",
+      "expected_rule_id": "2.2.2.B.(5).training_research_hospital_ek2c_star_30pct_uplift",
+      "encode_batch": null
     }
   ]
 }
