@@ -20,7 +20,10 @@
       "action": {
         "highest_procedure_factor": 1.0,
         "other_procedure_factor": 0.25
-      }
+      },
+      "gate_b_sources": [
+        "C000657"
+      ]
     },
     {
       "rule_id": "2.2.2.B.b",
@@ -33,7 +36,10 @@
       "action": {
         "highest_procedure_factor": 1.0,
         "other_procedure_factor": 0.5
-      }
+      },
+      "gate_b_sources": [
+        "C000658"
+      ]
     },
     {
       "rule_id": "2.2.2.B.c",
@@ -47,7 +53,10 @@
         "ek2c_procedure_factor": 1.0,
         "ek2b_procedure_factor": 0.3,
         "ek2b_higher_than_ek2c_fallback": "2.2.2.A.(5)"
-      }
+      },
+      "gate_b_sources": [
+        "C000659"
+      ]
     },
     {
       "rule_id": "2.2.2.B.ç",
@@ -61,13 +70,20 @@
         "ek2c_procedure_factor": 1.0,
         "ek2b_procedure_factor": 0.5,
         "ek2b_higher_than_ek2c_fallback": "2.2.2.A.(5)"
-      }
+      },
+      "gate_b_sources": [
+        "C000660"
+      ]
     }
   ],
   "special_codes": {
     "blood_component_partial_bill": {
       "sut_section": "2.2.2.B-1.e",
-      "codes": ["705371", "705430", "705440"],
+      "codes": [
+        "705371",
+        "705430",
+        "705440"
+      ],
       "billable_point_fraction": 0.36,
       "note": "2026 SUT: 705371/705430/705440 billed at 36% of points when used in package context"
     }
