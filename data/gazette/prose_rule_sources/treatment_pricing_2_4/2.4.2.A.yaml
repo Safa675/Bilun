@@ -55,3 +55,17 @@ rules:
     severity: error
   gate_b_sources:
   - C000827
+
+- rule_id: 2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay
+  sut_section: 2.4.2.A
+  verification_status: ai_generated_pending_review
+  condition:
+    patient_in_general_scope_not_in_5510_excluded_groups: false
+    is_organ_or_tissue_donor: true
+  action:
+    billable: false
+    enforcement: exclusion
+    message_tr: Kurumca saglik yardimlari karsilanmayan alici durumundaki kisilerin organ/doku vericisi olmasi halinde bu islemlere ait bedeller karsilanmaz
+    severity: error
+  gate_b_sources:
+  - C000817

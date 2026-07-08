@@ -33,6 +33,8 @@ rules:
   condition:
     procedure_category: lu177_psma_therapy
     prior_ga68_psma_pet: false
+    ga68_psma_pet_foci_above_liver:
+      min: 3
   action:
     billable: false
     enforcement: pre_treatment_imaging_gate
@@ -56,3 +58,20 @@ rules:
     severity: error
   gate_b_sources:
   - C001393
+
+- rule_id: 2.4.4.P.(1).psma_3sign_board_nuc_plus_onc
+  sut_section: 2.4.4.P
+  verification_status: ai_generated_pending_review
+  condition:
+    procedure_category: lu177_psma_therapy
+    board_signatures_count:
+      min: 3
+    board_includes_nuclear_medicine: false
+    board_includes_medical_oncology: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: En az bir nukleer tip ve bir tibbi onkoloji uzmani olmak sartiyla uc imzali tibbi gerekceli saglik kurulu raporu bulunmalidir
+    severity: error
+  gate_b_sources:
+  - C001388

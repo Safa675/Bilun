@@ -6,11 +6,16 @@ rules:
   condition:
     procedure_category: risk_scored_payment
     risk_score_documented: true
+    risk_group_adjustment_fraction:
+      low: -0.10
+      high: 0.15
   action:
     billable: true
     enforcement: coverage
-    message_tr: risk puanına göre ilgili işlem üzerinden karşılanır
+    message_tr: risk puanına göre düşük risk grubunda %10 azaltma, yüksek risk grubunda %15 artırım uygulanarak ilgili işlem üzerinden karşılanır
   gate_b_sources:
+  - C001132
+  - C001134
   - C001135
 - rule_id: 2.4.4.G-u.(2).risk_score_records_kept_in_patient_file
   sut_section: 2.4.4.Ğ

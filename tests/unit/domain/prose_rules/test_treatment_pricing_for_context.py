@@ -160,11 +160,11 @@ def _make_ctx(
 # ---------------------------------------------------------------------------
 
 
-def test_smoke_loads_all_187_rules() -> None:
+def test_smoke_loads_all_193_rules() -> None:
     """The loader returns the full rule set; the evaluator only fires wireable ones."""
     rules = load_treatment_pricing_rules()
     assert rules["rule_set_id"] == "treatment_pricing_2_4"
-    assert len(rules["rules"]) == 187
+    assert len(rules["rules"]) == 193
 
 
 def test_build_context_maps_header_fields() -> None:
