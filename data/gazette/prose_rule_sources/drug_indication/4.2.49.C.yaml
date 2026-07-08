@@ -105,4 +105,25 @@ rules:
       bedeli Kurumca karşılanmaz; ancak fonksiyonel değerlendirmelerde bozulma olması veya belirgin hayatı tehdit eden yan
       etki ortaya çıkması durumunda yeni düzenlenecek sağlık kurulu raporunda belirtilmesi halinde ilaç değişimi yapılabilir
       (§4.2.49.C).
+- rule_id: 4.2.49.C.(4).gene_therapy_smn2_combo_no_pay
+  sut_section: 4.2.49.C
+  verification_status: ai_generated_pending_review
+  drug_names:
+  - onasemnogene abeparvovek
+  - nusinersen
+  - risdiplam
+  pay: false
+  action:
+    enforcement: 'no-pay: gen temelli tedaviler (gen replasman + SMN2 modifiye eden) birlikte kullanilmaz'
+    message_tr: Gen temelli tedavilerin tumu (gen replasman ve SMN2 modifiye eden nusinersen/risdiplam) birlikte kullanilmamalidir;
+      birlikte kullanilmasi halinde bedelleri Kurumca karsilanmaz
+  gate_b_sources:
+  - C007050
+  icd10_ranges:
+  - G12.0
+  - G12.1
+  report_required: true
+  report_specialties:
+  - çocuk nörolojisi
+  - nöroloji
 source_note: Exported from drug_indication_prose.json (YAML source migration)
