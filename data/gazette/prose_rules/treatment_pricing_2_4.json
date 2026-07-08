@@ -1874,32 +1874,6 @@
       ]
     },
     {
-      "rule_id": "2.4.4.H.(5).icu_platelet_apheresis_and_material_billable",
-      "sut_section": "2.4.4.H",
-      "condition": {
-        "procedure_category": "intensive_care",
-        "procedure_code_any": [
-          "705440",
-          "705441",
-          "705442",
-          "705443",
-          "705371",
-          "705430",
-          "705372",
-          "705373"
-        ]
-      },
-      "action": {
-        "billable": true,
-        "enforcement": "add_on_billing",
-        "message_tr": "trombosit süspansiyonu (705440-705443) ve 'aferez trombosit' bedelleri ile ilgili tıbbi malzeme bedelleri ayrıca faturalandırılır; 705371/705430 için puanın %36'sı, 705372/705373 için %24'ü sunucunca ayrıca faturalandırılır",
-        "annex_basis": "EK-2/C"
-      },
-      "gate_b_sources": [
-        "C001210"
-      ]
-    },
-    {
       "rule_id": "2.4.4.H.(7).icu_single_fee_multiple_levels_same_day",
       "sut_section": "2.4.4.H",
       "condition": {
@@ -3543,6 +3517,128 @@
       },
       "gate_b_sources": [
         "C000857"
+      ]
+    },
+    {
+      "rule_id": "2.4.4.H.(10a).icu_enabiz_uplift_plus_60tl",
+      "sut_section": "2.4.4.H",
+      "verification_status": "ai_generated_pending_review",
+      "condition": {
+        "procedure_category": "intensive_care",
+        "enabiz_278_data_package_sent": true
+      },
+      "action": {
+        "billable": true,
+        "payment_uplift_tl_per_day": 60,
+        "message_tr": "e-nabız'a 278 veri paketini gönderen sunuculara EK-2/C yoğun bakım puanlarına günlük 60 TL ilave edilerek ödeme yapılır",
+        "annex_basis": "EK-2/C"
+      },
+      "gate_b_sources": [
+        "C001220"
+      ]
+    },
+    {
+      "rule_id": "2.4.4.H.(10b).icu_enabiz_not_sent_downgrade_one_level",
+      "sut_section": "2.4.4.H",
+      "verification_status": "ai_generated_pending_review",
+      "condition": {
+        "procedure_category": "intensive_care",
+        "enabiz_278_data_package_sent": false
+      },
+      "action": {
+        "billable": true,
+        "enforcement": "payment_downgrade_one_icu_level",
+        "message_tr": "278 veri paketini e-nabız'a göndermeyen sunucularda faturalandırılan basamak yerine bir alt basamağın puanı üzerinden ödenir",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C001220"
+      ]
+    },
+    {
+      "rule_id": "2.4.4.H.(5a).icu_platelet_apheresis_full_billable",
+      "sut_section": "2.4.4.H",
+      "verification_status": "ai_generated_pending_review",
+      "condition": {
+        "procedure_category": "intensive_care",
+        "procedure_code_any": [
+          "705440",
+          "705441",
+          "705442",
+          "705443"
+        ]
+      },
+      "action": {
+        "billable": true,
+        "payment_fraction": 1.0,
+        "enforcement": "add_on_billing",
+        "message_tr": "trombosit süspansiyonu (705440-705443) bedelleri tam olarak ayrıca faturalandırılır",
+        "annex_basis": "EK-2/C"
+      },
+      "gate_b_sources": [
+        "C001210"
+      ]
+    },
+    {
+      "rule_id": "2.4.4.H.(5b).icu_platelet_pheresis_36pct_billable",
+      "sut_section": "2.4.4.H",
+      "verification_status": "ai_generated_pending_review",
+      "condition": {
+        "procedure_category": "intensive_care",
+        "procedure_code_any": [
+          "705371",
+          "705430"
+        ]
+      },
+      "action": {
+        "billable": true,
+        "payment_fraction": 0.36,
+        "enforcement": "add_on_billing",
+        "message_tr": "705371/705430 için puanın %36'sı sunucunca ayrıca faturalandırılır",
+        "annex_basis": "EK-2/C"
+      },
+      "gate_b_sources": [
+        "C001210"
+      ]
+    },
+    {
+      "rule_id": "2.4.4.H.(5c).icu_platelet_pheresis_24pct_billable",
+      "sut_section": "2.4.4.H",
+      "verification_status": "ai_generated_pending_review",
+      "condition": {
+        "procedure_category": "intensive_care",
+        "procedure_code_any": [
+          "705372",
+          "705373"
+        ]
+      },
+      "action": {
+        "billable": true,
+        "payment_fraction": 0.24,
+        "enforcement": "add_on_billing",
+        "message_tr": "705372/705373 için puanın %24'ü sunucunca ayrıca faturalandırılır",
+        "annex_basis": "EK-2/C"
+      },
+      "gate_b_sources": [
+        "C001210"
+      ]
+    },
+    {
+      "rule_id": "2.4.4.H.(9).icu_blood_products_bundled_in_points",
+      "sut_section": "2.4.4.H",
+      "verification_status": "ai_generated_pending_review",
+      "condition": {
+        "procedure_category": "intensive_care",
+        "blood_product_separately_billed": true
+      },
+      "action": {
+        "billable": false,
+        "enforcement": "bundling_prohibition",
+        "message_tr": "yoğun bakım tedavileri EK-2/C'den faturalandırıldığında kan ürünleri işlem puanına dahildir, ayrıca faturalandırılamaz",
+        "severity": "error"
+      },
+      "gate_b_sources": [
+        "C001218"
       ]
     }
   ]
