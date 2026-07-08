@@ -2,6 +2,9 @@ section_id: 4.2.27.A
 rules:
 - rule_id: 4.2.27.A.acquired_coagulopathy_bleed_report_free
   sut_section: 4.2.27.A
+  icd10_ranges:
+  - D65
+  - D68
   gate_b_sources:
   - C006235
   - C006244
@@ -29,6 +32,9 @@ rules:
       sağlığı dahil) raporuyla ödenir, tedavinin devamı durumunda hematoloji uzmanı bulunan hastaneye sevk edilir (§4.2.27.A).
 - rule_id: 4.2.27.A.coumarin_noac_bleed_report_free
   sut_section: 4.2.27.A
+  icd10_ranges:
+  - D65
+  - D68
   gate_b_sources:
   - C006243
   - C006246
