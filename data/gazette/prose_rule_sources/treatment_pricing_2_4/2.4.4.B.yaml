@@ -123,3 +123,18 @@ rules:
     annex_basis: EK-2/C
   gate_b_sources:
   - C000881
+
+- rule_id: 2.4.4.B.(4).hbo_emergency_no_board_report_but_session_cap
+  sut_section: 2.4.4.B
+  verification_status: ai_generated_pending_review
+  condition:
+    procedure_category: hyperbaric_oxygen
+    indication_is_emergency_listed: true
+    emergency_signed_document_present: false
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: Acil endikasyonlarda sevk/uygulayici hekim imzali belge sartiyla saglik kurulu raporu aranmaz; ilk sevkte belirtilen seans sayisi asilirsa rapor duzenlenir
+    severity: error
+  gate_b_sources:
+  - C000872
