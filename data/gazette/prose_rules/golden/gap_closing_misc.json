@@ -39,7 +39,7 @@
     {
       "clause_id": "C000337",
       "expected_rule_id": "1.8.3.copay_required_inpatient_medication",
-      "encode_batch": "Gmisc"
+      "encode_batch": null
     },
     {
       "clause_id": "C000359",
