@@ -10,3 +10,5 @@ rules:
   action:
     highest_procedure_factor: 1.0
     other_procedure_factor: 0.25
+  gate_b_sources:
+  - C000657
