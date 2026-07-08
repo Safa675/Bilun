@@ -6,7 +6,7 @@
     "4.2",
     "4.2.14.C"
   ],
-  "coverage_note": "Phase 0–5 — 919 rules for §4.2.14.C; full clause trace manifest (encoded + pending + Tier C deferred with theme tags).",
+  "coverage_note": "Phase 0–5 — 922 rules for §4.2.14.C; full clause trace manifest (encoded + pending + Tier C deferred with theme tags).",
   "rules": [
     {
       "rule_id": "4.1.1.family_medicine_contracted_prescribe_coverage",
@@ -7901,6 +7901,58 @@
         "C005197",
         "C005274",
         "C005721"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(bcc).vismodegib_sonidegib_sequential_no_pay",
+      "sut_section": "4.2.14.C",
+      "verification_status": "ai_generated_pending_review",
+      "drug_names": [
+        "vismodegib",
+        "sonidegib"
+      ],
+      "pay": false,
+      "action": {
+        "enforcement": "no-pay: vismodegib ve sonidegib ardisik olarak kullanilmaz",
+        "message_tr": "Vismodegib ve sonidegib ardisik olarak kullanilmaz; birlikte kullanilmasi halinde bedelleri Kurumca karsilanmaz"
+      },
+      "gate_b_sources": [
+        "C005251"
+      ],
+      "icd10_ranges": [
+        "C44"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "dermatoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(cml).tki_combo_no_pay",
+      "sut_section": "4.2.14.C",
+      "verification_status": "ai_generated_pending_review",
+      "drug_names": [
+        "dasatinib",
+        "bosutinib",
+        "nilotinib"
+      ],
+      "pay": false,
+      "action": {
+        "enforcement": "no-pay: dasatinib, bosutinib ve nilotinib kombine olarak kullanilamaz",
+        "message_tr": "Dasatinib, bosutinib ve nilotinib etkin maddeli ilaclarin birlikte kullanilmasi halinde bedelleri Kurumca karsilanmaz"
+      },
+      "gate_b_sources": [
+        "C005039",
+        "C005046"
+      ],
+      "icd10_ranges": [
+        "C92.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
       ]
     },
     {
@@ -19173,6 +19225,33 @@
         "enforcement": "mandatory: lomber ponksiyon uygulanmasına engel bir durum olmadığı sağlık kurulu raporunda belirtilmiş olmalıdır",
         "message_tr": "Lomber ponksiyon uygulanmasına engel bir durum olmadığının sağlık kurulu raporunda belirtilmiş olması gerekmektedir (§4.2.49.B)."
       }
+    },
+    {
+      "rule_id": "4.2.49.C.(4).gene_therapy_smn2_combo_no_pay",
+      "sut_section": "4.2.49.C",
+      "verification_status": "ai_generated_pending_review",
+      "drug_names": [
+        "onasemnogene abeparvovek",
+        "nusinersen",
+        "risdiplam"
+      ],
+      "pay": false,
+      "action": {
+        "enforcement": "no-pay: gen temelli tedaviler (gen replasman + SMN2 modifiye eden) birlikte kullanilmaz",
+        "message_tr": "Gen temelli tedavilerin tumu (gen replasman ve SMN2 modifiye eden nusinersen/risdiplam) birlikte kullanilmamalidir; birlikte kullanilmasi halinde bedelleri Kurumca karsilanmaz"
+      },
+      "gate_b_sources": [
+        "C007050"
+      ],
+      "icd10_ranges": [
+        "G12.0",
+        "G12.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk nörolojisi",
+        "nöroloji"
+      ]
     },
     {
       "rule_id": "4.2.49.C.neuro.nusinersen_tertiary_setting_report_durations",
