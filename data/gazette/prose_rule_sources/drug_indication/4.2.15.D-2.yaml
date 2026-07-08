@@ -2,6 +2,10 @@ section_id: 4.2.15.D-2
 rules:
 - rule_id: 4.2.15.D_2.report_renewal_to_continue
   sut_section: 4.2.15.D-2
+  icd10_ranges:
+  - I20
+  - I21
+  - I25
   gate_b_sources:
   - C005860
   drug_names:
@@ -16,6 +20,10 @@ rules:
       rapor düzenlenerek tedaviye devam edilebilir (§4.2.15.D-2).
 - rule_id: 4.2.15.D_2.three_specialty_1yr_report
   sut_section: 4.2.15.D-2
+  icd10_ranges:
+  - I20
+  - I21
+  - I25
   gate_b_sources:
   - C005859
   drug_names:

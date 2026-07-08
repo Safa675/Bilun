@@ -29,6 +29,11 @@ rules:
       reçete edilebilir (§4.2.15.A).
 - rule_id: 4.2.15.A.coronary_stent_report_free_window
   sut_section: 4.2.15.A
+  icd10_ranges:
+  - I20
+  - I21
+  - I25
+  - Z95.5
   gate_b_sources:
   - C005776
   drug_names:

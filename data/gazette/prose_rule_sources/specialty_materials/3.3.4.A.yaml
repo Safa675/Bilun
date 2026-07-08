@@ -90,7 +90,7 @@ rules:
   condition:
     graft_small_dimension_combined_for_large_qty: true
   action:
-    material_outcome: review_required
+    material_outcome: must_not_bill_separately
     severity: warning
     message_tr: Küçük boyut/ölçüler bir arada kullanılarak listedeki büyük miktarlar elde edilemez (§3.3.4.A(7)).
 - rule_id: 3.3.4.A.e.corpectomy_cage_fill_coverage

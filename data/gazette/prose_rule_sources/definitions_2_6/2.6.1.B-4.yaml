@@ -69,4 +69,41 @@ rules:
     enforcement: gate
     message_tr: Cenaze nakil aracı ücreti, ilgili belediyece onaylanan ücret tarifesi üzerinden fatura tutarını aşmamak kaydıyla
       Kurumca karşılanır.
+- rule_id: 2.6.1.B-4.(3).commercial_taxi_capped_5x_routine
+  sut_section: 2.6.1.B-4
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C001546
+  condition:
+    definition_scope: Ticari taksi için ödenecek ücretin mutat taşıt ücretinin 5 katını geçememesi
+    applies_to: Ticari taksi ile nakil
+    fee_cap_multiplier: 5.0
+  action:
+    enforcement: gate
+    message_tr: Ticari taksi için ödenecek ücret, ilgili yerleşim yerleri arası mutat taşıt ücreti bedelinin 5 katını geçemez.
+- rule_id: 2.6.1.B-4.(6b).air_ambulance_tariff_table
+  sut_section: 2.6.1.B-4
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C001550
+  - C001551
+  - C001552
+  - C001553
+  - C001554
+  - C001555
+  - C001556
+  - C001557
+  condition:
+    definition_scope: Hava/deniz ambulansı uçuş/seyir saati başına TL+KDV tarife
+    applies_to: Hava/deniz ambulansı ücretleri
+    tariff_tl_per_hour_plus_kdv:
+      turbo_prop_aircraft: 2000
+      jet_aircraft: 3500
+      single_engine_helicopter: 1500
+      twin_engine_helicopter: 2750
+      sea_ambulance: 1500
+  action:
+    enforcement: gate
+    message_tr: Ambulans ücretleri (gidiş-dönüş, saat başına, KDV hariç) — turbo-prop uçak 2.000 TL, jet 3.500 TL, tek motorlu
+      helikopter 1.500 TL, çift motorlu helikopter 2.750 TL, deniz ambulansı 1.500 TL üzerinden ödenir.
 source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

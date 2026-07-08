@@ -80,3 +80,17 @@ rules:
     severity: error
   gate_b_sources:
   - C001060
+
+- rule_id: 2.4.4.F-3.(1b).physio_pmr_specialist_supervision_required
+  sut_section: 2.4.4.F-3
+  verification_status: ai_generated_pending_review
+  condition:
+    procedure_category: physiotherapy_rehab
+    supervised_by_pmr_specialist: false
+  action:
+    billable: false
+    enforcement: provider_qualification_gate
+    message_tr: Fizik tedavi ve rehabilitasyon uygulamalari fiziksel tip ve rehabilitasyon uzman hekimi tarafindan veya bu uzman hekimlerin sorumlulugunda yapilir
+    severity: error
+  gate_b_sources:
+  - C001057

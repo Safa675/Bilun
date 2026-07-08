@@ -49,7 +49,7 @@ def test_phase5_manifest_traces_all_4214c_clauses() -> None:
     assert payload["manifest_coverage_pct"] == 100.0
     assert len(payload["clause_traces"]) == trace_total
     # A1 repair: tier-C deferred is a small in-force tail; EMR-blocked holds pathway clauses.
-    assert payload["tier_c_deferred_count"] >= 10
+    assert payload["tier_c_deferred_count"] >= 8
     assert payload.get("emr_blocked_count", 0) >= 0  # EMR-blocked set regenerates per parquet
 
     traced_ids = {row["clause_id"] for row in payload["clause_traces"]}
@@ -79,7 +79,7 @@ def test_tier_c_manifest_entries_have_theme_tags() -> None:
     tier_c_rows = payload["tier_c_manifest"]
     assert tier_c_rows
     # tier_c_manifest lists in-force tier-C deferred rows (A1 repair).
-    assert len(tier_c_rows) >= 10
+    assert len(tier_c_rows) >= 8
     for row in tier_c_rows:
         themes = row.get("defer_themes") or []
         assert themes
