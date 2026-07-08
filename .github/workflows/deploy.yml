@@ -21,7 +21,7 @@ jobs:
     # both success and failure; this guard turns failures into a no-op.)
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Abort unless invoked from main
@@ -72,6 +72,9 @@ jobs:
           BACKEND_CHANGED=$(echo "$CHANGED" | grep -E '^(src/|scripts/|pyproject\.toml|requirements\.txt)' || true)
           DEPS_CHANGED=$(echo "$CHANGED" | grep -E '^(frontend/package(-lock)?\.json|pyproject\.toml|requirements\.txt)' || true)
 
+          # Cache rebuild is needed when rule data or evaluator code changes.
+          CACHE_REBUILD=$(echo "$CHANGED" | grep -E '^data/gazette/prose_rules/|^data/gazette/prose_rule_sources/|^data/gazette/prose_manifests/|^src/bilun/domain/|^scripts/sut/' || true)
+
           # If dependency files changed, resync deps before restarting.
           if [ -n "$DEPS_CHANGED" ]; then
             echo "=== dependency files changed — resyncing deps ==="
@@ -89,11 +92,35 @@ jobs:
             (cd frontend && npm run build)
           fi
 
-          # Restart whatever changed. Backend restart is cheap and safe even if
-          # unchanged, but we scope it to avoid bouncing a healthy service.
+          # Restart backend. If rule/evaluator data changed, force a cache
+          # rebuild by temporarily setting BILUN_STARTUP_POLICY=rebuild.
           if [ -n "$BACKEND_CHANGED" ] || [ -n "$DEPS_CHANGED" ]; then
+            if [ -n "$CACHE_REBUILD" ]; then
+              echo "=== rule/evaluator data changed — triggering cache rebuild ==="
+              sed -i 's/^#*\s*BILUN_STARTUP_POLICY=.*/BILUN_STARTUP_POLICY=rebuild/' .env
+              grep -q 'BILUN_STARTUP_POLICY' .env || echo 'BILUN_STARTUP_POLICY=rebuild' >> .env
+            fi
             echo "=== restarting backend ==="
             systemctl restart bilun-backend
+
+            # If we triggered a rebuild, wait for it to finish (blocking, can
+            # take several minutes). Then reset to load-only for future restarts.
+            if [ -n "$CACHE_REBUILD" ]; then
+              echo "=== waiting for cache rebuild to complete ==="
+              for i in $(seq 1 90); do
+                HEALTH=$(curl -sf --max-time 5 localhost:8001/health 2>/dev/null || echo "")
+                READY=$(echo "$HEALTH" | grep -o '"cache_ready":[a-z]*' | cut -d: -f2 || echo "")
+                if [ "$READY" = "true" ]; then
+                  echo "=== cache rebuild complete ==="
+                  break
+                fi
+                echo "  rebuild in progress... ($((i*10))s elapsed)"
+                sleep 10
+              done
+              # Reset to load-only so future restarts don't rebuild unnecessarily.
+              sed -i 's/^#*\s*BILUN_STARTUP_POLICY=.*/# BILUN_STARTUP_POLICY=load-only/' .env
+              echo "=== reset to load-only for future restarts ==="
+            fi
           fi
           if [ -n "$FRONTEND_CHANGED" ] || [ -n "$DEPS_CHANGED" ]; then
             echo "=== restarting frontend ==="
