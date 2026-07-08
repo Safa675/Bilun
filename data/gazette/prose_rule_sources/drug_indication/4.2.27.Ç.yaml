@@ -2,6 +2,9 @@ section_id: 4.2.27.Ç
 rules:
 - rule_id: 4.2.27.C.albumin_inpatient_3day_report
   sut_section: 4.2.27.Ç
+  icd10_ranges:
+  - E87.0
+  - K74
   gate_b_sources:
   - C006275
   drug_names:
