@@ -37,11 +37,6 @@
       "encode_batch": "Gmisc"
     },
     {
-      "clause_id": "C000337",
-      "expected_rule_id": "1.8.3.copay_required_inpatient_medication",
-      "encode_batch": null
-    },
-    {
       "clause_id": "C000359",
       "expected_rule_id": "1.8.5.(5).emergency_except_green_area_no_copay",
       "encode_batch": "Gmisc"
@@ -204,6 +199,36 @@
     {
       "clause_id": "C000347",
       "expected_rule_id": "1.8.3.(1b).uncontracted_dental_prosthesis_copay",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C000383",
+      "expected_rule_id": "1.9.1.(1).extra_fee_permissible_scope",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C000402",
+      "expected_rule_id": "1.9.1.(5).extra_fee_written_consent_mandatory",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C000405",
+      "expected_rule_id": "1.9.1.(6).er_stabilization_24h_before_extra_fee",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C003465",
+      "expected_rule_id": "4.1.4.(b).ek4d_non_star_drugs_exempt_offlabel_approval",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C003466",
+      "expected_rule_id": "4.1.4.(c).offlabel_approval_max_1_year_validity",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C003467",
+      "expected_rule_id": "4.1.4.(c).offlabel_prescriber_must_be_relevant_specialist",
       "encode_batch": null
     }
   ]
