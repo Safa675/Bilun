@@ -1,20 +1,9 @@
 section_id: 3.3.2
 source_note: Exported from specialty_materials_prose.json (YAML source migration)
 rules:
-- rule_id: 3.3.2.b.glucose_meter_early_renewal
-  sut_section: 3.3.2
-  deontic: NO_PAY
-  gate_b_sources:
-  - C002875
-  condition:
-    glucose_meter_early_renewal: true
-  action:
-    material_outcome: no_pay
-    severity: error
-    message_tr: Kan şekeri ölçüm cihazı yenilenme süresi 2 yıl — erken temin bedeli ödenmez (§3.3.2(b)).
 - rule_id: 3.3.2.b.glucose_meter_early_renewal_keyword
   sut_section: 3.3.2
-  deontic: NO_PAY
+  deontic: REGULATORY_ACTION
   gate_b_sources:
   - C002875
   condition:

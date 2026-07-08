@@ -14,7 +14,7 @@ rules:
     message_tr: Primer inguinal/femoral/umbilikal/epigastrik fıtık onarımında çift yüzlü mesh — karşılanmaz (§3.3.14/16(4)).
 - rule_id: 3.3.16.(4).dual_mesh_primary_hernia_keyword
   sut_section: 3.3.16
-  deontic: NO_PAY
+  deontic: REGULATORY_ACTION
   gate_b_sources:
   - C003159
   condition:
