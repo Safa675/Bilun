@@ -23,3 +23,41 @@ rules:
     severity: error
   gate_b_sources:
   - C003473
+- rule_id: 4.1.4.(b).ek4d_non_star_drugs_exempt_offlabel_approval
+  sut_section: 4.1.4
+  condition:
+    drug_in_ek4d: true
+    drug_has_star_marker: false
+  action:
+    billable: true
+    payment_tr: EK-4/D listesinde (*) yıldız işareti bulunmayan ilaçlar için Bakanlık endikasyon dışı ilaç kullanım onayı aranmaz
+  gate_b_sources:
+  - C003465
+  verification_status: ai_generated_pending_review
+  content_note: EK-4/D drugs WITHOUT the (*) marker are exempt from off-label approval.
+- rule_id: 4.1.4.(c).offlabel_approval_max_1_year_validity
+  sut_section: 4.1.4
+  condition:
+    offlabel_approval_present: true
+    offlabel_approval_age_months:
+      max: 12
+  action:
+    billable: true
+    payment_tr: endikasyon dışı ilaç kullanım onayı en fazla 1 yıl süreyle geçerlidir
+  gate_b_sources:
+  - C003466
+  verification_status: ai_generated_pending_review
+  content_note: Off-label approval valid max 1 year.
+- rule_id: 4.1.4.(c).offlabel_prescriber_must_be_relevant_specialist
+  sut_section: 4.1.4
+  condition:
+    offlabel_prescription: true
+    prescriber_is_relevant_specialist: false
+  action:
+    billable: false
+    denial_tr: endikasyon dışı ilaç kullanımı ilgili uzmanlık dalı hekimi tarafından reçete edilmelidir
+    severity: error
+  gate_b_sources:
+  - C003467
+  verification_status: ai_generated_pending_review
+  content_note: Off-label Rx must be by the relevant specialty physician.
