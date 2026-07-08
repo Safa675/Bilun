@@ -1,0 +1,39 @@
+section_id: 2.6.7
+source_note: New file — §2.6.7 was entirely missing from the rule family (audit finding)
+rules:
+- rule_id: 2.6.7.(1).programmed_treatment_no_referral_per_visit
+  sut_section: 2.6.7
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C001595
+  condition:
+    definition_scope: Programlı tedavilerde (kemoterapi, radyoterapi, diyaliz, PUVA vb.) ilk sevk belgesine istinaden her gidiş için sevk aranmaz
+    applies_to: Programlı tedavi gören GSS'li ve bakmakla yükümlü olunan kişiler
+  action:
+    enforcement: gate
+    message_tr: Kemoterapi, radyoterapi, diyaliz vb. program çerçevesinde tedavilerde, ilk sevk belgesine istinaden tedavinin
+      devamı niteliğindeki müracaatlar için her gidişte yeni sevk belgesi aranmaz.
+- rule_id: 2.6.7.(2).programmed_treatment_payment_first_referral
+  sut_section: 2.6.7
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C001596
+  condition:
+    definition_scope: Ödeme işlemleri ilk sevk belgesine istinaden, müracaat edilen sunucunun düzenlediği tedavi tarihi belgesi doğrultusunda yürütülür
+    applies_to: Programlı tedavi ödemeleri
+  action:
+    enforcement: gate
+    message_tr: Programlı tedavilerde ödeme, ilk sevk belgesine istinaden müracaat edilen sunucu tarafından düzenlenen tedavi-görülen-tarihler
+      belgesi esas alınarak yürütülür.
+- rule_id: 2.6.7.(3).no_higher_step_provider_local_report_valid
+  sut_section: 2.6.7
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C001597
+  condition:
+    definition_scope: Yerleşim yerinde 2/3 basamak sunucu yoksa 1 basamak sevki kabul edilir; sözleşmeli sunucu hiç yoksa geçerli sağlık raporu sevk yerine geçer
+    applies_to: Yerleşim yerinde 2/3 basamak veya sözleşmeli sunucu bulunmaması
+  action:
+    enforcement: gate
+    message_tr: İlgili yerleşim yerinde ikinci/üçüncü basamak sunucu bulunmaması halinde birinci basamak sevk belgesi kabul
+      edilir; sözleşmeli sunucu hiç yoksa tedavi için düzenlenen geçerli sağlık raporu sevk belgesi yerine geçer.

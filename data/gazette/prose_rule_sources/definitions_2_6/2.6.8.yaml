@@ -22,4 +22,16 @@ rules:
     enforcement: reject
     message_tr: Sevk edilmeksizin müracaat edilen sağlık hizmeti sunucusunda vefat eden kişilerin cenaze nakline ilişkin giderler
       Kurumca karşılanmaz.
+- rule_id: 2.6.8.(3).5510_4_1c_funeral_no_kurum_pay
+  sut_section: 2.6.8
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C001601
+  condition:
+    expense_not_covered: 5510_sayili_kanun_4_1_c_sigortalilari_cenaze_nakli
+    applies_to: 5510 s. K. md.4(1)(c) kapsamı sigortalıların cenaze nakli
+  action:
+    enforcement: reject
+    message_tr: 5510 sayılı Kanun md.4(1)(c) kapsamındaki sigortalıların cenaze nakil giderleri ilgili kamu idaresince karşılandığından
+      Kurumca ayrıca ödeme yapılmaz.
 source_note: Migrated from definitions_2_6_wave1*_batch_rules.py
