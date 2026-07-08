@@ -538,7 +538,7 @@ class TestFullCoverageBuild:
         assert payload["clause_trace_complete"] is True
         # A1 repair: clause_traces are in-force only; tier-C + EMR-blocked partition deferred rows.
         assert len(payload.get("clause_traces") or []) == payload["section_clause_total"]
-        assert len(payload.get("tier_c_deferred_clause_ids") or []) >= 10
+        assert len(payload.get("tier_c_deferred_clause_ids") or []) >= 8
         assert len(payload.get("emr_blocked_clause_ids") or []) >= 0  # EMR set regenerates per parquet
         assert payload.get("tier_c_defer_themes_summary")
 

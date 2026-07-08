@@ -16,6 +16,12 @@ rules:
       bedelleri Kurumca karşılanmaz (§4.2.15.D-1).
 - rule_id: 4.2.15.D_1.three_physician_1yr_report
   sut_section: 4.2.15.D-1
+  icd10_ranges:
+  - I20
+  - I21
+  - I25
+  - I48
+  - I82
   gate_b_sources:
   - C005831
   - C005835

@@ -1,7 +1,7 @@
 {
   "manifest_version": "canonical-v1",
   "rule_set_id": "specialty_materials_prose",
-  "rules_in_json": 202,
+  "rules_in_json": 203,
   "encoded_clause_ids": [
     "C002684",
     "C002689",
@@ -30,6 +30,8 @@
     "C002853",
     "C002855",
     "C002856",
+    "C002857",
+    "C002858",
     "C002873",
     "C002874",
     "C002875",
@@ -191,7 +193,7 @@
     "C003393",
     "C003394"
   ],
-  "encoded_clause_count": 187,
+  "encoded_clause_count": 189,
   "rules_added": 0,
   "rules_patched": 0,
   "pilot_331_clause_ids": [
