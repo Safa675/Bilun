@@ -280,6 +280,76 @@
       "clause_id": "C001604",
       "expected_rule_id": "2.6.9.(2).unreferred_cross_settlement_no_travel_daily",
       "encode_batch": null
+    },
+    {
+      "clause_id": "C001546",
+      "expected_rule_id": "2.6.1.B-4.(3).commercial_taxi_capped_5x_routine",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001550",
+      "expected_rule_id": "2.6.1.B-4.(6b).air_ambulance_tariff_table",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001551",
+      "expected_rule_id": "2.6.1.B-4.(6b).air_ambulance_tariff_table",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001552",
+      "expected_rule_id": "2.6.1.B-4.(6b).air_ambulance_tariff_table",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001553",
+      "expected_rule_id": "2.6.1.B-4.(6b).air_ambulance_tariff_table",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001554",
+      "expected_rule_id": "2.6.1.B-4.(6b).air_ambulance_tariff_table",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001555",
+      "expected_rule_id": "2.6.1.B-4.(6b).air_ambulance_tariff_table",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001556",
+      "expected_rule_id": "2.6.1.B-4.(6b).air_ambulance_tariff_table",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001557",
+      "expected_rule_id": "2.6.1.B-4.(6b).air_ambulance_tariff_table",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001584",
+      "expected_rule_id": "2.6.5.(3).organ_transplant_failure_does_not_block_payment",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001595",
+      "expected_rule_id": "2.6.7.(1).programmed_treatment_no_referral_per_visit",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001596",
+      "expected_rule_id": "2.6.7.(2).programmed_treatment_payment_first_referral",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001597",
+      "expected_rule_id": "2.6.7.(3).no_higher_step_provider_local_report_valid",
+      "encode_batch": null
+    },
+    {
+      "clause_id": "C001601",
+      "expected_rule_id": "2.6.8.(3).5510_4_1c_funeral_no_kurum_pay",
+      "encode_batch": null
     }
   ]
 }
