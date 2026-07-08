@@ -54,4 +54,16 @@ rules:
     enforcement: gate
     message_tr: Donörün sağlık giderleri finansmanı Kurumca karşılanıyorsa, mevzuata uygun sevk edilmesi halinde yol, gündelik
       ve refakatçi giderleri Kurumca karşılanır.
+- rule_id: 2.6.5.(3).organ_transplant_failure_does_not_block_payment
+  sut_section: 2.6.5
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C001584
+  condition:
+    definition_scope: Organ naklinin gerçekleştirilememiş olması yol gideri ödenmesine engel teşkil etmez
+    applies_to: Organ nakli — gerçekleşmeyen nakil
+  action:
+    enforcement: gate
+    message_tr: Organ naklinin gerçekleştirilememiş olması, sevk edilen sunucuya gidiş-dönüş yol giderinin ödenmesine engel
+      teşkil etmez.
 source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

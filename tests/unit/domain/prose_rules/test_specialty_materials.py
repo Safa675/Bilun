@@ -186,7 +186,7 @@ def test_glucose_meter_early_renewal() -> None:
             }
         ]
     )
-    assert hits[0]["rule_id"] == "3.3.2.b.glucose_meter_early_renewal"
+    assert hits[0]["rule_id"] == "3.3.2.b.kan_sekeri_cihaz_yenileme_no_pay"
 
 
 def test_stand_up_wheelchair_early_renewal() -> None:

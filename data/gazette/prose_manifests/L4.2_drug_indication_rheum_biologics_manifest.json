@@ -332,7 +332,7 @@
       "manifest_status": "encoded"
     }
   ],
-  "rules_in_json": 919,
+  "rules_in_json": 922,
   "encode_tier_C_deferred_count": 0,
   "section_clause_total": 63,
   "clause_trace_complete": true,

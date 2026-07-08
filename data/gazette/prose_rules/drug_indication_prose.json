@@ -6,7 +6,7 @@
     "4.2",
     "4.2.14.C"
   ],
-  "coverage_note": "Phase 0–5 — 919 rules for §4.2.14.C; full clause trace manifest (encoded + pending + Tier C deferred with theme tags).",
+  "coverage_note": "Phase 0–5 — 922 rules for §4.2.14.C; full clause trace manifest (encoded + pending + Tier C deferred with theme tags).",
   "rules": [
     {
       "rule_id": "4.1.1.family_medicine_contracted_prescribe_coverage",
@@ -7904,6 +7904,58 @@
       ]
     },
     {
+      "rule_id": "4.2.14.C.(bcc).vismodegib_sonidegib_sequential_no_pay",
+      "sut_section": "4.2.14.C",
+      "verification_status": "ai_generated_pending_review",
+      "drug_names": [
+        "vismodegib",
+        "sonidegib"
+      ],
+      "pay": false,
+      "action": {
+        "enforcement": "no-pay: vismodegib ve sonidegib ardisik olarak kullanilmaz",
+        "message_tr": "Vismodegib ve sonidegib ardisik olarak kullanilmaz; birlikte kullanilmasi halinde bedelleri Kurumca karsilanmaz"
+      },
+      "gate_b_sources": [
+        "C005251"
+      ],
+      "icd10_ranges": [
+        "C44"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "dermatoloji"
+      ]
+    },
+    {
+      "rule_id": "4.2.14.C.(cml).tki_combo_no_pay",
+      "sut_section": "4.2.14.C",
+      "verification_status": "ai_generated_pending_review",
+      "drug_names": [
+        "dasatinib",
+        "bosutinib",
+        "nilotinib"
+      ],
+      "pay": false,
+      "action": {
+        "enforcement": "no-pay: dasatinib, bosutinib ve nilotinib kombine olarak kullanilamaz",
+        "message_tr": "Dasatinib, bosutinib ve nilotinib etkin maddeli ilaclarin birlikte kullanilmasi halinde bedelleri Kurumca karsilanmaz"
+      },
+      "gate_b_sources": [
+        "C005039",
+        "C005046"
+      ],
+      "icd10_ranges": [
+        "C92.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "tıbbi onkoloji",
+        "hematoloji"
+      ]
+    },
+    {
       "rule_id": "4.2.14.C.aferez_1mo_heme_board",
       "sut_section": "4.2.14.C",
       "drug_names": [
@@ -12085,7 +12137,13 @@
       "action": {
         "enforcement": "koroner stent öncesi kardiyoloji/KDC uzmanınca raporsuz 24 saat önceden başlanabilir; stent sonrası taburcu olunca raporsuz 4 haftalık doz",
         "message_tr": "Koroner artere stent uygulanacak hastalarda kardiyoloji veya kalp damar cerrahisi uzman hekimleri tarafından rapor aranmaksızın 24 saat öncesinden başlanabilir; stent takılan hastada taburcu olmasından itibaren rapor aranmaksızın 4 haftalık doz bu hekimler tarafından reçete edilebilir (§4.2.15.A)."
-      }
+      },
+      "icd10_ranges": [
+        "I20",
+        "I21",
+        "I25",
+        "Z95.5"
+      ]
     },
     {
       "rule_id": "4.2.15.A.high_risk_vascular_12mo_report",
@@ -12265,7 +12323,14 @@
       "action": {
         "enforcement": "tanımlı durumların olduğu; en az biri kardiyoloji veya nöroloji olmak üzere bu uzmanlıklardan ≥3 hekimin bulunduğu 1 yıl süreli sağlık kurulu raporuyla reçete edilirse ödenir; ilk iki rapor (24 ay) sonrası bu uzmanlarca veya aile hekimlerince de rapor düzenlenebilir",
         "message_tr": "Tanımlanan durumların belirtildiği; en az biri kardiyoloji veya nöroloji uzman hekimi olmak koşuluyla kardiyoloji, iç hastalıkları, göğüs hastalıkları, kalp damar cerrahisi ve nöroloji uzman hekimlerinden en az üçünün bulunduğu 1 yıl süreli sağlık kurulu raporuyla bu uzmanlarca reçete edilmesi halinde bedeli ödenir; ilk iki rapor süresi (toplam 24 ay) sonunda sonraki raporlar bu uzmanlarca ve aile hekimlerince düzenlenen rapora istinaden reçete edilebilir (§4.2.15.D-1)."
-      }
+      },
+      "icd10_ranges": [
+        "I20",
+        "I21",
+        "I25",
+        "I48",
+        "I82"
+      ]
     },
     {
       "rule_id": "4.2.15.D_2.report_renewal_to_continue",
@@ -12282,7 +12347,12 @@
       "action": {
         "enforcement": "rapor süresi bitiminde tedaviye devam kararı verilirse bu durumun belirtildiği yeni rapor düzenlenerek tedaviye devam",
         "message_tr": "Rapor süresinin bitiminde ilaç tedavisinin devamına karar verilmesi halinde, bu durumun belirtildiği yeni rapor düzenlenerek tedaviye devam edilebilir (§4.2.15.D-2)."
-      }
+      },
+      "icd10_ranges": [
+        "I20",
+        "I21",
+        "I25"
+      ]
     },
     {
       "rule_id": "4.2.15.D_2.three_specialty_1yr_report",
@@ -12317,7 +12387,12 @@
       "action": {
         "enforcement": "tanımlı durumların; aynı uzmanlıktan üçünün veya bu uzmanlıklardan herhangi üçünün bulunduğu 1 yıl süreli sağlık kurulu raporuyla reçete edilirse ödenir; ilk iki rapor (24 ay) sonrası aile hekimleri de rapor düzenleyebilir",
         "message_tr": "Tanımlanan durumların belirtildiği kardiyoloji, iç hastalıkları, göğüs hastalıkları, kalp damar cerrahisi uzman hekimlerinden aynı uzmanlık dalından üçünün veya bu uzmanlık dallarından herhangi üçünün bulunduğu 1 yıl süreli sağlık kurulu raporuyla bu uzmanlarca reçete edilmesi halinde bedeli ödenir; ilk iki rapor süresi (toplam 24 ay) sonunda sonraki raporlar bu uzmanlarca ve aile hekimlerince düzenlenen rapora istinaden reçete edilebilir (§4.2.15.D-2)."
-      }
+      },
+      "icd10_ranges": [
+        "I20",
+        "I21",
+        "I25"
+      ]
     },
     {
       "rule_id": "4.2.15.E.bucket_a.c005869",
@@ -13326,7 +13401,12 @@
       "action": {
         "enforcement": "kalsitonin tanı sonrası ilk 6 ay ilgili uzman raporuyla ödenir; bu sürenin üstündeki kullanım ödenmez",
         "message_tr": "Kalsitonin bu endikasyonda tanı konulduktan sonraki ilk altı ay süresince fiziksel tıp ve rehabilitasyon veya ortopedi ve travmatoloji veya romatoloji uzman hekim raporuna dayanılarak bu uzman hekimlerce reçete edilir. Bu sürenin üstündeki kullanımı ödenmez (§4.2.17.B)."
-      }
+      },
+      "icd10_ranges": [
+        "M80",
+        "M81",
+        "M48.5"
+      ]
     },
     {
       "rule_id": "4.2.17.C.bucket_a.c006046",
@@ -13705,7 +13785,10 @@
       "action": {
         "enforcement": "migren: uzman hekim raporu 1 yıl geçerli; nöroloji uzmanınca düzenlenen uzman hekim raporuna dayanılarak diğer hekimlerce en fazla birer aylık dozda reçete edilirse ödenir",
         "message_tr": "Uzman hekim raporu 1 yıl süreyle geçerlidir ve nöroloji uzman hekimince düzenlenen uzman hekim raporuna dayanılarak diğer hekimler tarafından en fazla birer aylık dozda reçete edilmesi halinde bedeli ödenir (§4.2.19)."
-      }
+      },
+      "icd10_ranges": [
+        "G43"
+      ]
     },
     {
       "rule_id": "4.2.19.topiramate_migraine_prophylaxis",
@@ -15282,7 +15365,11 @@
       "action": {
         "enforcement": "kazanılmış koagülasyon bozukluğu (K vitamini yetersizliği, karaciğer yetmezliği) kanaması: kanama yeri belirtilerek acilde tüm uzmanlarca raporsuz en fazla 1 günlük doz; >1 gün ≤3 gün hematoloji (yoksa dahiliye/çocuk sağlık dahil) raporu; devamında hematoloji olan hastaneye sevk",
         "message_tr": "Kazanılmış (edinsel) koagülasyon bozukluklarında (K vitamini yetersizliği, karaciğer yetmezliği gibi) oluşan kanamalarda kanama yeri belirtilmek koşuluyla uzmanlarca yatan/acil müracaatta rapor aranmaksızın en fazla bir günlük dozda reçete edilirse bedeli Kurumca karşılanır; bir günden uzun tedavide ≤3 gün süreli hematoloji (yoksa dahiliye/çocuk sağlığı dahil) raporuyla ödenir, tedavinin devamı durumunda hematoloji uzmanı bulunan hastaneye sevk edilir (§4.2.27.A)."
-      }
+      },
+      "icd10_ranges": [
+        "D65",
+        "D68"
+      ]
     },
     {
       "rule_id": "4.2.27.A.coumarin_noac_bleed_report_free",
@@ -15311,7 +15398,11 @@
       "action": {
         "enforcement": "kumarin/NOAK kaynaklı hayatı tehdit eden aktif kanama: INR/PT aranmadan kanama yeri belirtilerek yatan/ayaktan acilde tüm uzmanlarca raporsuz en fazla 1 günlük doz; >1 gün ise kanamanın devam ettiğini gösteren günlük dozlu ≤3 gün süreli hematoloji (yoksa dahiliye/çocuk sağlık dahil sağlık kurulu) raporu",
         "message_tr": "Kumarin türevleri ve NOAK kaynaklı hayatı tehdit eden aktif kanaması olanlarda INR/PT aranmadan kanama yeri belirtilerek yatan hastalarda acil durumlarda veya ayaktan acil müracaatta tüm uzmanlarca rapor şartı aranmaksızın en fazla bir günlük dozda reçete edilirse bedeli Kurumca karşılanır; bir günden uzun tedavide kanamanın devam ettiğini bildiren günlük dozlu en fazla üç gün süreli hematoloji uzmanı (yoksa dahiliye/çocuk sağlığı uzmanı içeren sağlık kurulu) raporuyla ödenir (§4.2.27.A)."
-      }
+      },
+      "icd10_ranges": [
+        "D65",
+        "D68"
+      ]
     },
     {
       "rule_id": "4.2.27.A.emicizumab_dosing_schedule",
@@ -15462,7 +15553,11 @@
       "action": {
         "enforcement": "yatarak tedavide temin edilemeyen; günlük doz/tedavi protokolü ve albümin ≤2.5 g/dl gösteren uzman raporuyla en fazla 3 günlük dozda 'Yatan/Günübirlik Hasta' + başhekimlik onayıyla reçete; ödenen kurum alacağından §4.1.2 kapsamında mahsup",
         "message_tr": "Yatarak tedavilerde Kurumla sözleşmeli resmi sağlık kurumunca temin edilememesi halinde, günlük doz ve tedavi protokolü ile kan albümin düzeyinin 2.5 g/dl ve altında olduğunu gösteren uzman raporuna dayanılarak en fazla 3 günlük dozda 'Yatan/Günübirlik Hasta' ibaresi ve başhekimlik onayıyla reçete düzenlenmesi kaydıyla karşılanır, ödenen tutar ilgili kurumun alacağından §4.1.2 kapsamında mahsup edilir (§4.2.27.Ç)."
-      }
+      },
+      "icd10_ranges": [
+        "E87.0",
+        "K74"
+      ]
     },
     {
       "rule_id": "4.2.27.C.factor_viia_3day_haematology_report",
@@ -19175,6 +19270,33 @@
       }
     },
     {
+      "rule_id": "4.2.49.C.(4).gene_therapy_smn2_combo_no_pay",
+      "sut_section": "4.2.49.C",
+      "verification_status": "ai_generated_pending_review",
+      "drug_names": [
+        "onasemnogene abeparvovek",
+        "nusinersen",
+        "risdiplam"
+      ],
+      "pay": false,
+      "action": {
+        "enforcement": "no-pay: gen temelli tedaviler (gen replasman + SMN2 modifiye eden) birlikte kullanilmaz",
+        "message_tr": "Gen temelli tedavilerin tumu (gen replasman ve SMN2 modifiye eden nusinersen/risdiplam) birlikte kullanilmamalidir; birlikte kullanilmasi halinde bedelleri Kurumca karsilanmaz"
+      },
+      "gate_b_sources": [
+        "C007050"
+      ],
+      "icd10_ranges": [
+        "G12.0",
+        "G12.1"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "çocuk nörolojisi",
+        "nöroloji"
+      ]
+    },
+    {
       "rule_id": "4.2.49.C.neuro.nusinersen_tertiary_setting_report_durations",
       "sut_section": "4.2.49.C",
       "gate_b_sources": [
@@ -20096,7 +20218,13 @@
       "action": {
         "enforcement": "boy sapması <-2 SD + yıllık uzama hızı yetersiz + kemik yaşı takvim yaşından >2 yıl geri (4 yaş altı/puberte hariç); 2 GH uyarı testine yanıt alınanlarda uyku GH profili; nörosekretuar disfonksiyon veya IGF-1 <-2 SD ise IGF-1 jenerasyon testi ile biyoinaktif GH; yalnızca somatropin",
         "message_tr": "Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan, kemik yaşı takvim yaşına göre 2 yıldan daha fazla geri olan (4 yaş altı veya puberte dönemi hariç), yapılan 2 büyüme hormonu uyarı testine yeterli yanıt alınan hastalara uyku esnasında büyüme hormonu profili çıkartılmalı; nörosekretuar disfonksiyon veya serum IGF-1 <-2 SD olması koşuluyla yapılacak IGF-1 jenerasyon testi ile biyoinaktif büyüme hormonu saptanması halinde (yalnızca somatropin) kullanılabilir (§4.2.6.A-1)."
-      }
+      },
+      "icd10_ranges": [
+        "E23.0",
+        "E23.1",
+        "E23.7",
+        "E34.3"
+      ]
     },
     {
       "rule_id": "4.2.6.A1.somatropin_listed_cases_no_condition",
@@ -20115,7 +20243,13 @@
       "action": {
         "enforcement": "bu bendin uygulanmasında başkaca şart aranmaksızın belirtilen hallerde yalnızca somatropin kullanılabilir",
         "message_tr": "Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde yalnızca somatropin etkin maddeli ilaçlar kullanılabilir (§4.2.6.A-1)."
-      }
+      },
+      "icd10_ranges": [
+        "E23.0",
+        "E23.1",
+        "E23.7",
+        "E34.3"
+      ]
     },
     {
       "rule_id": "4.2.6.A2.insulin_tolerance_test_peak_gh_report",
@@ -20131,7 +20265,13 @@
       "action": {
         "enforcement": "insülin tolerans testine göre GH eksikliği tanısı için pik GH cevabının <3 mcg/L olduğunun raporda belirtilmesi gereklidir",
         "message_tr": "İnsülin tolerans testine göre büyüme hormonu eksikliği tanısı için pik büyüme hormonu cevabının 3 mcg/L'den küçük olduğunun raporda belirtilmesi gereklidir (§4.2.6.A-2)."
-      }
+      },
+      "icd10_ranges": [
+        "E23.0",
+        "E23.1",
+        "E23.7",
+        "E34.3"
+      ]
     },
     {
       "rule_id": "4.2.6.A4.prader_willi_gh_no_stimulation_test",

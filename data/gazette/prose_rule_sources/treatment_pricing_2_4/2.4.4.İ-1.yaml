@@ -18,6 +18,7 @@ rules:
     patient_age_at_embryo_transfer:
       min: 40
     valid_report_before_age40: false
+    embryo_transfer_within_30_days_of_report: false
   action:
     billable: false
     denial_tr: embriyo transferi tarihinde kadının 40 yaşından büyük olması ve 40'tan küçükken geçerli rapor yoksa IVF bedelleri

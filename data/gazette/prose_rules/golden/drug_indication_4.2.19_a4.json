@@ -45,8 +45,8 @@
       "primary_icd10": "J45.9",
       "report_present": true,
       "prescriber_specialty": "nöroloji",
-      "expect_violation": "needs_report_verification",
-      "rule_id": "4.2.19.migraine.neurology_1yr_report_monthly_dose_coverage"
+      "expect_violation": "indication_mismatch",
+      "rule_id": "4.2.19.topiramate_migraine_prophylaxis"
     }
   ]
 }

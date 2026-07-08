@@ -2,6 +2,11 @@ section_id: 4.2.6.A-2
 rules:
 - rule_id: 4.2.6.A2.insulin_tolerance_test_peak_gh_report
   sut_section: 4.2.6.A-2
+  icd10_ranges:
+  - E23.0
+  - E23.1
+  - E23.7
+  - E34.3
   gate_b_sources:
   - C003997
   drug_names:
