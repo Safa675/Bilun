@@ -44,15 +44,21 @@ rules:
     severity: error
   gate_b_sources:
   - C000662
-- rule_id: 2.2.2.B.(5).training_research_hospital_specialist_consult
+- rule_id: 2.2.2.B.(5).training_research_hospital_ek2c_star_30pct_uplift
   sut_section: 2.2.2.B
   condition:
     facility_tier_in:
     - training_research
     - university_medical_center
-    procedure_category: specialist_consultation
+    procedure_category: ek2c_star_marked
   action:
     billable: true
-    payment_tr: eğitim araştırma/üniversite hastanelerinde uzman konsültasyonu faturalandırılabilir
+    point_uplift_pct: 30
+    payment_tr: eğitim/araştırma hastaneleri ile üniversite tıp fakültelerinde EK-2/C listesinde (*) işareti bulunan işlemler
+      listedeki puanlara %30 ilave edilerek faturalandırılır
   gate_b_sources:
   - C000665
+  verification_status: ai_generated_pending_review
+  content_note: 'CORRECTS fabricated rule: was procedure_category=specialist_consultation with no uplift. C000665 is about
+    +30% on (*)-marked EK-2/C procedures at training/uni hospitals — not about specialist consultations. Invented subject
+    removed, +30% uplift restored, (*) filter added.'
