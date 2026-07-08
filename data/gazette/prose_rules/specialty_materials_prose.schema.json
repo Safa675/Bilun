@@ -42,7 +42,7 @@
     },
     "condition": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "material_name_any": {
           "type": "array",

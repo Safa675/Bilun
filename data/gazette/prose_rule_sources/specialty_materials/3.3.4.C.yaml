@@ -1,7 +1,7 @@
 section_id: 3.3.4.C
 source_note: Exported from specialty_materials_prose.json (YAML source migration)
 rules:
-- rule_id: 3.3.4.C.(2).dbm_cervical_fusion_1cc_cap
+- rule_id: 3.3.4.Ç.(2).dbm_cervical_fusion_1cc_cap
   sut_section: 3.3.4.C
   deontic: REGULATORY_ACTION
   gate_b_sources:
@@ -13,7 +13,7 @@ rules:
     severity: info
     message_tr: Tek başına DBM için servikal füzyonda disk mesafesinde kafes içine 1 cc’yi geçmemek üzere Kurumca karşılanır
       (§3.3.4.C(2)).
-- rule_id: 3.3.4.C.(5).open_physis_tumor_defect_health_board
+- rule_id: 3.3.4.Ç.(5).open_physis_tumor_defect_health_board
   sut_section: 3.3.4.C
   deontic: REGULATORY_ACTION
   gate_b_sources:
@@ -25,7 +25,7 @@ rules:
     severity: info
     message_tr: Epifiz hattı açık hastanın tümoral defektinde — 3 ortopedi uzmanı sağlık kurulu raporuyla humerus/pelvis/femur/tibia
       5 cc, fibula/radius/ulna 2 cc, diğer kemikler 1 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.C(5)).
-- rule_id: 3.3.4.C.(6).spinal_fusion_revision_nonunion_5cc_cap
+- rule_id: 3.3.4.Ç.(6).spinal_fusion_revision_nonunion_5cc_cap
   sut_section: 3.3.4.C
   deontic: REGULATORY_ACTION
   gate_b_sources:

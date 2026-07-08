@@ -95,7 +95,7 @@ def test_contact_lens_solution_keyword() -> None:
     hits = check_specialty_materials_prose(
         [{"name": "Kontakt lens solüsyonu", "code": "CL1", "unit_price": 15.0}]
     )
-    assert hits[0]["rule_id"] == "3.3.3.C.(6).contact_lens_solution"
+    assert hits[0]["rule_id"] == "3.3.3.Ç.(6).contact_lens_solution"
 
 
 def test_ek3d_lens_upgrade_difference() -> None:

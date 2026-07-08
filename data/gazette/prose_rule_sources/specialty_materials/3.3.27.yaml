@@ -27,7 +27,7 @@ rules:
     severity: info
     message_tr: Emilemeyen kanama durdurma malzemeleri — acil servis/yatarak tedavide epikrizde endikasyon belirtilmesi şartıyla
       en fazla 2 adet Kurumca karşılanır (§3.3.27(2)).
-- rule_id: 3.3.27.c.travma_acik_kanamali_damar_regulatory
+- rule_id: 3.3.27.ç.travma_acik_kanamali_damar_regulatory
   sut_section: 3.3.27
   deontic: REGULATORY_ACTION
   gate_b_sources:

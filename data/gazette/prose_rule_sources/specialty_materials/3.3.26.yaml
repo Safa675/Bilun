@@ -35,7 +35,7 @@ rules:
     material_outcome: review_required
     severity: info
     message_tr: Proksimal femur rezeksiyon protezi — kriterlerden en az biri mevcutsa Kurumca karşılanır (§3.3.26(b)).
-- rule_id: 3.3.26.c.total_femur_resection_prosthesis_coverage
+- rule_id: 3.3.26.ç.total_femur_resection_prosthesis_coverage
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
@@ -46,7 +46,7 @@ rules:
     material_outcome: review_required
     severity: info
     message_tr: Total femur rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(c)).
-- rule_id: 3.3.26.c.distal_femur_resection_prosthesis_coverage
+- rule_id: 3.3.26.ç.distal_femur_resection_prosthesis_coverage
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
@@ -90,7 +90,7 @@ rules:
     material_outcome: review_required
     severity: info
     message_tr: Skapula protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(f)).
-- rule_id: 3.3.26.g.proximal_humerus_resection_prosthesis_coverage
+- rule_id: 3.3.26.ğ.proximal_humerus_resection_prosthesis_coverage
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
@@ -101,7 +101,7 @@ rules:
     material_outcome: review_required
     severity: info
     message_tr: Proksimal humerus rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(g)).
-- rule_id: 3.3.26.g.intercalar_segment_prosthesis_coverage
+- rule_id: 3.3.26.ğ.intercalar_segment_prosthesis_coverage
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
@@ -123,7 +123,7 @@ rules:
     material_outcome: review_required
     severity: info
     message_tr: Total humerus protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(h)).
-- rule_id: 3.3.26.i.elbow_resection_prosthesis_coverage
+- rule_id: 3.3.26.ı.elbow_resection_prosthesis_coverage
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
@@ -134,7 +134,7 @@ rules:
     material_outcome: review_required
     severity: info
     message_tr: Dirsek rezeksiyon protezi — kriterlerden en az biri varsa Kurumca karşılanır (§3.3.26(ı)).
-- rule_id: 3.3.26.i.expandable_prosthesis_coverage
+- rule_id: 3.3.26.ı.expandable_prosthesis_coverage
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:

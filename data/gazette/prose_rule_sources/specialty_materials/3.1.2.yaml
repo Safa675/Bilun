@@ -37,7 +37,7 @@ rules:
     severity: info
     message_tr: EK-3/C-2 protez/ortezde bakım-onarım mümkün değilse ve ilgili parçaların onarım bedeli protez/ortez bedelinin
       %75'ini aşıyorsa, resmi sunucu sağlık raporuyla süresinden önce yenileme Kurumca karşılanır (§3.1.2(c)).
-- rule_id: 3.1.2.c_protez_ortez_ara_urun_renewal_coverage
+- rule_id: 3.1.2.ç.protez_ortez_ara_urun_renewal_coverage
   sut_section: 3.1.2
   deontic: MUST_BILL
   gate_b_sources:

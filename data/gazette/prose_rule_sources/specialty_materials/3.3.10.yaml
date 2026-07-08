@@ -15,7 +15,7 @@ rules:
     severity: info
     message_tr: Eğitim kliniği olan 3. basamak resmi sunucularda genel cerrahi, gastroenteroloji, nöroloji ve psikiyatri kliniklerince
       4 branşlı sağlık kurulu raporuna istinaden bedeli Kurumca karşılanır (§3.3.10 a).
-- rule_id: 3.3.10.c.anal_tetkik_rapor_eki_regulatory
+- rule_id: 3.3.10.ç.anal_tetkik_rapor_eki_regulatory
   sut_section: 3.3.10
   deontic: REGULATORY_ACTION
   gate_b_sources:

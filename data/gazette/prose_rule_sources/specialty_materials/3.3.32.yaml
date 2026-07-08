@@ -57,7 +57,7 @@ rules:
     severity: warning
     message_tr: 18 yaş üzeri hastalarda işitme cihazı için en az 1 KBB uzmanı yer alan resmi sunucu sağlık kurulu raporu düzenlenmesi
       gerekmektedir (§3.3.32 b).
-- rule_id: 3.3.32.c.kalici_isitme_kaybi_kriter_regulatory
+- rule_id: 3.3.32.ç.kalici_isitme_kaybi_kriter_regulatory
   sut_section: 3.3.32
   deontic: REGULATORY_ACTION
   gate_b_sources:
@@ -71,7 +71,7 @@ rules:
     severity: warning
     message_tr: Sağlık kurulu raporlarında kalıcı işitme kaybı olduğu ve odyolojik kriterlerin sağlandığının belirtilmesi
       gerekmektedir (§3.3.32 c).
-- rule_id: 3.3.32.c.odyolojik_esik_kriter_regulatory
+- rule_id: 3.3.32.ç.odyolojik_esik_kriter_regulatory
   sut_section: 3.3.32
   deontic: REGULATORY_ACTION
   gate_b_sources:

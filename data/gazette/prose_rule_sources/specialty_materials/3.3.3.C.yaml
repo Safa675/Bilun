@@ -1,7 +1,7 @@
 section_id: 3.3.3.C
 source_note: Exported from specialty_materials_prose.json (YAML source migration)
 rules:
-- rule_id: 3.3.3.C.(5).contact_lens_and_spectacles
+- rule_id: 3.3.3.Ç.(5).contact_lens_and_spectacles
   sut_section: 3.3.3.C
   deontic: NO_PAY
   gate_b_sources:
@@ -12,7 +12,7 @@ rules:
     material_outcome: no_pay
     severity: error
     message_tr: Kontakt lens kullanan hastada ayrıca gözlük cam/çerçeve (konjenital afak hariç) — karşılanmaz (§3.3.3.C(5)).
-- rule_id: 3.3.3.C.(6).contact_lens_solution
+- rule_id: 3.3.3.Ç.(6).contact_lens_solution
   sut_section: 3.3.3.C
   deontic: NO_PAY
   gate_b_sources:
@@ -26,7 +26,7 @@ rules:
     material_outcome: no_pay
     severity: error
     message_tr: Kontakt lens solüsyonu — Kurumca karşılanmaz (§3.3.3.C(6)).
-- rule_id: 3.3.3.C.contact_lens_ek3d_must_bill
+- rule_id: 3.3.3.Ç.contact_lens_ek3d_must_bill
   sut_section: 3.3.3.C
   deontic: MUST_BILL
   gate_b_sources:
@@ -40,7 +40,7 @@ rules:
     severity: info
     message_tr: Kontakt lens — 3. basamak göz sağlığı uzmanı içeren sağlık kurulu raporunda çap/derinlik/diyoptri/nitelik
       belirtilmesi ve sözleşmeli optisyenlikten temin şartıyla EK-3/D bedeli üzerinden Kurumca karşılanır (§3.3.3.C).
-- rule_id: 3.3.3.C.(3).konjenital_katarakt_cocuk_must_bill
+- rule_id: 3.3.3.Ç.(3).konjenital_katarakt_cocuk_must_bill
   sut_section: 3.3.3.C
   deontic: MUST_BILL
   gate_b_sources:

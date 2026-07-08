@@ -1,7 +1,7 @@
 section_id: 3.3.33.C
 source_note: Exported from specialty_materials_prose.json (YAML source migration)
 rules:
-- rule_id: 3.3.33.C.(1).bone_anchored_hearing_aid_coverage
+- rule_id: 3.3.33.Ç.(1).bone_anchored_hearing_aid_coverage
   sut_section: 3.3.33.C
   deontic: REGULATORY_ACTION
   gate_b_sources:
@@ -13,7 +13,7 @@ rules:
     severity: info
     message_tr: 5 yaş üzeri bilateral işitme kaybı + konvansiyonel cihazdan yarar görmeme (3 KBB uzmanı + odyolog sağlık kurulu)
       veya Komisyon onayıyla kemiğe monte işitme cihazı Kurumca karşılanır (§3.3.33.C(1)).
-- rule_id: 3.3.33.C.e.single_side_deaf_conductive_mixed
+- rule_id: 3.3.33.Ç.e.single_side_deaf_conductive_mixed
   sut_section: 3.3.33.C
   deontic: REGULATORY_ACTION
   gate_b_sources:
@@ -25,7 +25,7 @@ rules:
     severity: info
     message_tr: Tek kulak total işitme kaybı + karşı kulak iletim/mikst tip kaybında kemiğe monte cihaz Kurumca karşılanır
       (§3.3.33.C(e)).
-- rule_id: 3.3.33.C.(4).headband_internal_part_coverage
+- rule_id: 3.3.33.Ç.(4).headband_internal_part_coverage
   sut_section: 3.3.33.C
   deontic: REGULATORY_ACTION
   gate_b_sources:

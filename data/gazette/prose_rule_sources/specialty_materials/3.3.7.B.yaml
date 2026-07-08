@@ -25,7 +25,7 @@ rules:
     severity: error
     message_tr: Stand up wheelchair MIAT 5 yıl — erken yenileme bedeli karşılanmaz (§3.3.7.B(3)).
   verification_status: struck_clause_no_replacement
-- rule_id: 3.3.7.B.c.erin_stand_up_wheelchair_must_bill
+- rule_id: 3.3.7.B.ç.erin_stand_up_wheelchair_must_bill
   sut_section: 3.3.7.B
   deontic: MUST_BILL
   gate_b_sources:

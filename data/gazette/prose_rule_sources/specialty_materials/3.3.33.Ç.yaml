@@ -1,7 +1,7 @@
 section_id: 3.3.33.Ç
 source_note: Exported from specialty_materials_prose.json (YAML source migration)
 rules:
-- rule_id: 3.3.33.C.(1).middle_ear_implant_coverage
+- rule_id: 3.3.33.Ç.(1).middle_ear_implant_coverage
   sut_section: 3.3.33.Ç
   deontic: REGULATORY_ACTION
   gate_b_sources:
