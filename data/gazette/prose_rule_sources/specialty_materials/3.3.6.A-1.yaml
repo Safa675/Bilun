@@ -14,7 +14,7 @@ rules:
     message_tr: Isıtıcılı nemlendirici NİMV ünitesine dahil — ayrıca karşılanmaz (§3.3.6.A-1).
 - rule_id: 3.3.6.A-1.heated_humidifier_keyword
   sut_section: 3.3.6.A-1
-  deontic: NO_PAY
+  deontic: REGULATORY_ACTION
   gate_b_sources:
   - C003030
   condition:
