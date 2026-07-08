@@ -3,12 +3,12 @@
   "section_id": "4.2.14.C",
   "effective_date": "2026-06-29",
   "rule_set_id": "drug_indication_4.2.14.C",
-  "rules_in_json": 919,
+  "rules_in_json": 922,
   "section_clause_total": 615,
-  "encoded_clause_count": 413,
+  "encoded_clause_count": 415,
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 10,
+  "tier_c_deferred_count": 8,
   "encoded_clause_ids": [
     "C004934",
     "C004935",
@@ -74,6 +74,7 @@
     "C005040",
     "C005043",
     "C005045",
+    "C005046",
     "C005049",
     "C005050",
     "C005051",
@@ -179,6 +180,7 @@
     "C005247",
     "C005248",
     "C005249",
+    "C005251",
     "C005265",
     "C005267",
     "C005270",
@@ -427,12 +429,10 @@
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
-    "C005046",
     "C005056",
     "C005151",
     "C005185",
     "C005244",
-    "C005251",
     "C005275",
     "C005331",
     "C005344",
@@ -1402,12 +1402,11 @@
     {
       "clause_id": "C005046",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Dasatinib ve nilotinib kombine olarak kullanılamayacaktır.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.(cml).tki_combo_no_pay"
+      ]
     },
     {
       "clause_id": "C005047",
@@ -2783,12 +2782,11 @@
     {
       "clause_id": "C005251",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "Vismodegib ve sonidegib ardışık olarak kullanılmaz.",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.(bcc).vismodegib_sonidegib_sequential_no_pay"
+      ]
     },
     {
       "clause_id": "C005252",
@@ -6068,17 +6066,8 @@
   ],
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encode_tier_C_deferred_count": 10,
+  "encode_tier_C_deferred_count": 8,
   "tier_c_manifest": [
-    {
-      "clause_id": "C005046",
-      "encode_tier": "C",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": "Dasatinib ve nilotinib kombine olarak kullanılamayacaktır."
-    },
     {
       "clause_id": "C005056",
       "encode_tier": "C",
@@ -6114,15 +6103,6 @@
       ],
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
       "heuristic_inn": "cc) Vismodegib (Ek:RG-25/03/2025-32852/9-ç md. Yürürlük:04/04/2025)"
-    },
-    {
-      "clause_id": "C005251",
-      "encode_tier": "C",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": "Vismodegib ve sonidegib ardışık olarak kullanılmaz."
     },
     {
       "clause_id": "C005275",
@@ -6162,19 +6142,19 @@
     }
   ],
   "tier_c_defer_themes_summary": {
-    "clinical_pathway": 10
+    "clinical_pathway": 8
   },
   "emr_blocked_note": "EMR-blocked clauses require clinical assessment (ECOG, mutation panel, response/progression) not available on DrugClaimLine alone.",
-  "tier_c_manifest_note": "A1 repair — 10 tier-C deferred, 27 EMR-blocked, 165 non-actionable; 615 in-force traces (lists synced from traces).",
+  "tier_c_manifest_note": "A1 repair — 8 tier-C deferred, 27 EMR-blocked, 165 non-actionable; 615 in-force traces (lists synced from traces).",
   "a1_coverage_gap": {
     "canonical_count": 615,
     "traced_count": 615,
     "missing_clause_ids": [],
     "extra_clause_ids": [],
-    "encoded_count": 413,
-    "tier_c_deferred_count": 10,
+    "encoded_count": 415,
+    "tier_c_deferred_count": 8,
     "emr_blocked_count": 27,
     "gate_b_total": 832
   },
-  "encoded_clause_pct": 67.2
+  "encoded_clause_pct": 67.5
 }
