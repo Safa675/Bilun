@@ -9,6 +9,19 @@ Format per entry:
 
 ---
 
+## 2026-07-10 — Single-shot benchmarking of a stochastic system (LLM) is noise, not data
+
+**Pattern:** Asked to test whether `opencode run --variant {low,high,max}` affects GLM-5.2 reasoning. I ran ONE shot per variant, got a counterintuitive result ("max was fastest/shortest"), and reported it as a finding while *simultaneously* writing "1 run per variant can't separate variant effect from noise." The user correctly called this out. When I re-ran with 5 shots/variant (20 total), the trend FLIPPED: `low` was actually the fastest (20.6±2.5s) and `high`/`max` slowest (~27s) — the opposite of my 1-shot claim. My single-shot conclusion was pure sampling noise dressed up as a result.
+
+**Rule:** LLM output latency/length/quality is a stochastic distribution, not a deterministic value. When asked whether a parameter (variant, model, temperature, provider) affects output:
+1. Run **N≥5 shots per condition**, never 1. Report mean ± std, not single observations.
+2. Never publish a conclusion AND a caveat that invalidates it ("here's the result, but n=1 so it's noise"). If n is too small to separate signal from noise, the honest answer is "I need more runs," not a guess.
+3. A single observation that contradicts the group trend is noise by default — do not headline it.
+4. Use a task that DISCRIMINATES on the dimension you're measuring (a too-easy puzzle that every variant solves correctly tells you nothing about quality differences). Pick a task where low reasoning plausibly fails and high reasoning succeeds.
+5. State statistical limitations explicitly: with n=5 and high variance, call effects "suggestive," not "proven."
+
+---
+
 ## 2026-07-06 — Multi-week epic: the gap-count drop came from STATUS HONESTY not ENCODING
 
 **Pattern:** The rule-encoding gap-closure roadmap (Phases 0-5) was framed as "encode ~2,183 unencoded clauses to drop the gap count." After 5 phases of work, the gap count dropped 1,897 → 601 (−68.3%), but the breakdown of WHERE the drop came from was surprising:
