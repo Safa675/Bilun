@@ -410,6 +410,79 @@ class YatakPuaniReview:
 
 
 @dataclass
+class IcuPuaniReview:
+    """Expected ICU (yoğun bakım) charges — dual day-rate + package model."""
+
+    opportunities: list[dict[str, Any]] = field(default_factory=list)
+    exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
+    unavailable_reason: str | None = None
+    required_inputs_missing: list[str] = field(default_factory=list)
+    rule_source: str = (
+        "SUT §2.4.4.H ICU dual-charging — 510090 (first/last day) + "
+        "P55200x (intermediate days)"
+    )
+
+    @property
+    def confirmed_icu_try(self) -> float:
+        return round(
+            sum(
+                float(row.get("total_try") or row.get("recoverable_uplift_try") or 0.0)
+                for row in self.opportunities
+                if row.get("included_in_sgk_total", True)
+            ),
+            2,
+        )
+
+
+@dataclass
+class YenidoganYatakReview:
+    """Expected newborn bed charges (Kuvöz/Kot) for newborn inpatient claims."""
+
+    opportunities: list[dict[str, Any]] = field(default_factory=list)
+    exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
+    unavailable_reason: str | None = None
+    required_inputs_missing: list[str] = field(default_factory=list)
+    rule_source: str = (
+        "EK-2B 510070 (Kuvöz) / 510081 (Kot) — newborn inpatient bed charges"
+    )
+
+    @property
+    def confirmed_yenidogan_yatak_try(self) -> float:
+        return round(
+            sum(
+                float(row.get("expected_try") or 0.0)
+                for row in self.opportunities
+                if row.get("included_in_sgk_total", True)
+            ),
+            2,
+        )
+
+
+@dataclass
+class RefakatciReview:
+    """Expected companion (refakatçi) bed charges for inpatient claims."""
+
+    opportunities: list[dict[str, Any]] = field(default_factory=list)
+    exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
+    unavailable_reason: str | None = None
+    required_inputs_missing: list[str] = field(default_factory=list)
+    rule_source: str = (
+        "SUT §2.6.3 + EK-2B 510121 (Refakat) — companion bed charges"
+    )
+
+    @property
+    def confirmed_refakat_try(self) -> float:
+        return round(
+            sum(
+                float(row.get("expected_try") or 0.0)
+                for row in self.opportunities
+                if row.get("included_in_sgk_total", True)
+            ),
+            2,
+        )
+
+
+@dataclass
 class MaterialUplift:
     """Recoverable SGK uplift from missing separately billable materials."""
 
@@ -730,6 +803,9 @@ class BillingActionReport:
     drg_uplift: DrgUpliftRecommendation = field(default_factory=DrgUpliftRecommendation)
     blood_uplift: BloodComponentUplift = field(default_factory=BloodComponentUplift)
     yatak_puani: YatakPuaniReview = field(default_factory=YatakPuaniReview)
+    icu_puani: IcuPuaniReview = field(default_factory=IcuPuaniReview)
+    yenidogan_yatak: YenidoganYatakReview = field(default_factory=YenidoganYatakReview)
+    refakatci: RefakatciReview = field(default_factory=RefakatciReview)
     material_uplift: MaterialUplift = field(default_factory=MaterialUplift)
     care_setting_review: CareSettingReview = field(default_factory=CareSettingReview)
     procedure_addon_uplift: ProcedureAddonUplift = field(
@@ -782,11 +858,17 @@ class CohortRecoverySummary:
     total_drg_uplift: float = 0.0
     total_blood_uplift: float = 0.0
     total_yatak_puani: float = 0.0
+    total_icu_puani: float = 0.0
+    total_yenidogan_yatak: float = 0.0
+    total_refakatci: float = 0.0
     total_optional_override_uplift: float = 0.0
     n_optional_override_patients: int = 0
     n_drg_uplift_patients: int = 0
     n_blood_uplift_patients: int = 0
     n_yatak_puani_patients: int = 0
+    n_icu_puani_patients: int = 0
+    n_yenidogan_yatak_patients: int = 0
+    n_refakatci_patients: int = 0
     total_material_uplift: float = 0.0
     n_material_uplift_patients: int = 0
     total_procedure_addon_uplift: float = 0.0

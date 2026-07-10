@@ -63,6 +63,24 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
                 required_inputs_missing=[],
                 confirmed_yatak_try=0.0,
             ),
+            icu_puani=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                confirmed_icu_try=0.0,
+            ),
+            yenidogan_yatak=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                confirmed_yenidogan_yatak_try=0.0,
+            ),
+            refakatci=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                confirmed_refakat_try=0.0,
+            ),
             material_uplift=SimpleNamespace(
                 opportunities=[],
                 exactness_status="exact",
