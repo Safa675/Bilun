@@ -53,6 +53,7 @@ def test_exempt_patient_rx_copay_in_total() -> None:
         + report.session_uplift.confirmed_uplift_try
         + report.drg_uplift.confirmed_uplift_try
         + report.blood_uplift.confirmed_uplift_try
+        + report.yatak_puani.confirmed_yatak_try
         + report.material_uplift.confirmed_uplift_try
         + report.procedure_addon_uplift.confirmed_uplift_try,
         2,

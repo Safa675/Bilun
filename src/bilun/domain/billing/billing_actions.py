@@ -140,6 +140,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
         ("session_uplift", report.session_uplift, "recoverable_uplift_try"),
         ("drg_uplift", report.drg_uplift, "recoverable_uplift_try"),
         ("blood_uplift", report.blood_uplift, "recoverable_uplift_try"),
+        ("yatak_puani", report.yatak_puani, "expected_yatak_try"),
         ("material_uplift", report.material_uplift, "recoverable_uplift_try"),
         ("care_setting_review", report.care_setting_review, "recoverable_uplift_try"),
         ("procedure_addon_uplift", report.procedure_addon_uplift, "recoverable_uplift_try"),

@@ -54,8 +54,14 @@ def test_grand_total_sums_patient_recoverable_not_heuristic_blocks(monkeypatch) 
                 opportunities=[],
                 exactness_status="exact",
                 required_inputs_missing=[],
-                total_uplift_try=0.0,
                 confirmed_uplift_try=0.0,
+                total_uplift_try=0.0,
+            ),
+            yatak_puani=SimpleNamespace(
+                opportunities=[],
+                exactness_status="exact",
+                required_inputs_missing=[],
+                confirmed_yatak_try=0.0,
             ),
             material_uplift=SimpleNamespace(
                 opportunities=[],

@@ -78,6 +78,14 @@ BLOOD_UPLIFT_UNAVAILABLE_REASON = (
     "Blood component uplift requires exact billed procedure claim lines with "
     "amounts, which are not available in the active SUT runtime inputs."
 )
+YATAK_PUANI_REQUIRED_INPUTS = (
+    "inpatient_claims_with_dates",
+    "procedure_claim_lines",
+)
+YATAK_PUANI_UNAVAILABLE_REASON = (
+    "Yatak puanı requires inpatient claims with admission/discharge dates and "
+    "procedure claim lines, which are not available in the active SUT runtime inputs."
+)
 MATERIAL_UPLIFT_REQUIRED_INPUTS = (
     "procedure_claim_lines",
     "material_claim_lines",
@@ -371,6 +379,32 @@ class BloodComponentUplift:
     def total_uplift_try(self) -> float:
         return round(
             sum(float(row.get("recoverable_uplift_try") or 0.0) for row in self.opportunities),
+            2,
+        )
+
+
+@dataclass
+class YatakPuaniReview:
+    """Expected bed-day (yatak puanı) charges for inpatient claims."""
+
+    opportunities: list[dict[str, Any]] = field(default_factory=list)
+    exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
+    unavailable_reason: str | None = YATAK_PUANI_UNAVAILABLE_REASON
+    required_inputs_missing: list[str] = field(
+        default_factory=lambda: list(YATAK_PUANI_REQUIRED_INPUTS)
+    )
+    rule_source: str = (
+        "SUT §2.2.2 standard bed tariff (510010) — inclusive LOS × price_try"
+    )
+
+    @property
+    def confirmed_yatak_try(self) -> float:
+        return round(
+            sum(
+                float(row.get("expected_yatak_try") or 0.0)
+                for row in self.opportunities
+                if row.get("included_in_sgk_total", True)
+            ),
             2,
         )
 
@@ -695,6 +729,7 @@ class BillingActionReport:
     session_uplift: SessionPricingUplift = field(default_factory=SessionPricingUplift)
     drg_uplift: DrgUpliftRecommendation = field(default_factory=DrgUpliftRecommendation)
     blood_uplift: BloodComponentUplift = field(default_factory=BloodComponentUplift)
+    yatak_puani: YatakPuaniReview = field(default_factory=YatakPuaniReview)
     material_uplift: MaterialUplift = field(default_factory=MaterialUplift)
     care_setting_review: CareSettingReview = field(default_factory=CareSettingReview)
     procedure_addon_uplift: ProcedureAddonUplift = field(
@@ -746,10 +781,12 @@ class CohortRecoverySummary:
     total_session_uplift: float = 0.0
     total_drg_uplift: float = 0.0
     total_blood_uplift: float = 0.0
+    total_yatak_puani: float = 0.0
     total_optional_override_uplift: float = 0.0
     n_optional_override_patients: int = 0
     n_drg_uplift_patients: int = 0
     n_blood_uplift_patients: int = 0
+    n_yatak_puani_patients: int = 0
     total_material_uplift: float = 0.0
     n_material_uplift_patients: int = 0
     total_procedure_addon_uplift: float = 0.0

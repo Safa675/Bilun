@@ -9,6 +9,8 @@ from .types import (
     BILLING_STRATEGY_UNAVAILABLE_REASON,
     BLOOD_UPLIFT_REQUIRED_INPUTS,
     BLOOD_UPLIFT_UNAVAILABLE_REASON,
+    YATAK_PUANI_REQUIRED_INPUTS,
+    YATAK_PUANI_UNAVAILABLE_REASON,
     CARE_SETTING_REVIEW_REQUIRED_INPUTS,
     CARE_SETTING_REVIEW_UNAVAILABLE_REASON,
     COPAY_REQUIRED_INPUTS,
@@ -99,6 +101,14 @@ BILLING_BLOCK_SPECS: tuple[BillingBlockSpec, ...] = (
         uplift_field="confirmed_uplift_try",
         cohort_total_field="total_blood_uplift",
         cohort_patient_counter_field="n_blood_uplift_patients",
+    ),
+    BillingBlockSpec(
+        attr="yatak_puani",
+        required_inputs=YATAK_PUANI_REQUIRED_INPUTS,
+        unavailable_reason=YATAK_PUANI_UNAVAILABLE_REASON,
+        uplift_field="confirmed_yatak_try",
+        cohort_total_field="total_yatak_puani",
+        cohort_patient_counter_field="n_yatak_puani_patients",
     ),
     BillingBlockSpec(
         attr="material_uplift",
