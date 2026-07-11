@@ -286,8 +286,26 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
         if isinstance(expected, bool) or key in _SCALAR_FIELDS:
             actual = context.get(key)
             if actual is None:
-                # Flag/scalar not surfaced on this claim → skip, do not guess.
-                return False
+                # Scalar not surfaced on this claim. Fall back to the matching
+                # ``<key>_any`` collection when one exists: a multi-category
+                # claim (e.g. FTR + muayene) leaves the bare
+                # ``procedure_category`` scalar unset but surfaces the full set
+                # under ``procedure_category_any``. Without this fallback ~130
+                # single-value scalar rules (``procedure_category: "ftr"``)
+                # honest-skip on any mixed-category claim. Membership against
+                # the ``*_any`` list is the right reading: the rule's value is
+                # one of the categories present on the claim.
+                any_collection = context.get(key + "_any")
+                if any_collection is None:
+                    return False
+                any_set = (
+                    set(any_collection)
+                    if isinstance(any_collection, (list, tuple, set))
+                    else {any_collection}
+                )
+                if expected not in any_set:
+                    return False
+                continue
             if isinstance(expected, bool):
                 if bool(actual) != bool(expected):
                     return False
