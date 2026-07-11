@@ -36,7 +36,12 @@ DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "gazette"
 RAW_DATA_ROOT = PROJECT_ROOT / "raw data"
 
 
-RE_ANNEX = re.compile(r"(EK-\d+[A-ZC]?(?:-\d+)*)", re.IGNORECASE)
+# NOTE: ``[A-ZC]`` did not match Turkish uppercase letters (Ç, Ş, Ğ, Ü, Ö, İ)
+# so the EK-2Ç dental annex was silently bucketed under "EK-2". The explicit
+# Turkish set covers every annex suffix used in the SUT (A, B, C, Ç, D, E, F,
+# G, K, L, Y, and -N sub-numbered variants). re.IGNORECASE keeps the lower
+# form working for mixed-case directory names.
+RE_ANNEX = re.compile(r"(EK-\d+[A-ZÇŞĞÜÖİ]?(?:-\d+)*)", re.IGNORECASE)
 RE_DATE_PATTERNS = [
     re.compile(
         r"Y[UU]R(?:[UU]RL[UU]K)?\.?\s*[:\-]?\s*(\d{1,2}[./]\d{1,2}[./]\d{4})",

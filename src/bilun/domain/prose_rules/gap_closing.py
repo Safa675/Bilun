@@ -76,12 +76,36 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
     - boolean flag → ``context.get(key)`` must equal the condition value;
     - ``*_any`` predicate → at least one claim value in the set must be present
       in the context's collection for that base field;
+    - ``procedure_in_annex`` → at least one billed procedure code is a member
+      of the named annex (e.g. ``EK-2/A-2``, ``EK-2/C-1``, ``EK-2/C``,
+      ``EK-2/B``); resolved against the loaded catalog code sets.
     - scalar field → ``context.get(field)`` must equal the condition value.
 
     Keys absent from ``context`` cause the rule to be skipped (returns False)
     rather than firing on missing data — this is the honesty guard.
     """
     for key, expected in condition.items():
+        # procedure_in_annex — annex membership over the billed procedure codes.
+        # The predicate value is the annex identifier (e.g. "EK-2/A-2"); the
+        # billed codes are surfaced under context["procedure_code_any"]. We
+        # import the resolver lazily to avoid a module-load cycle (catalog
+        # membership pulls in heavy catalog machinery).
+        if key == "procedure_in_annex":
+            annex = str(expected or "").strip()
+            billed_codes = context.get("procedure_code_any") or context.get("procedure_code")
+            if not billed_codes or not annex:
+                return False
+            code_list = (
+                list(billed_codes)
+                if isinstance(billed_codes, (list, tuple, set))
+                else [billed_codes]
+            )
+            from .catalog_membership import any_procedure_in_annex
+
+            if not any_procedure_in_annex(code_list, annex):
+                return False
+            continue
+
         if key.endswith(_SET_PREDICATE_SUFFIXES):
             base = key[: -_suffix_len(key)]
             # Prefer the explicit <base>_any / <base>_in collection when the

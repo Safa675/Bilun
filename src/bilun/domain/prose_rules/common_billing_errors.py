@@ -1,17 +1,30 @@
-"""Top 5 highest-value Turkish hospital billing error detectors.
+"""High-value Turkish hospital billing error detectors (El Kitabı Tablo 15).
 
 Each detector encodes one row of "El Kitabı Tablo 15 — 24 Most Common
-Outpatient Billing Errors". These are the 5 errors selected by the
-feasibility study (`/tmp/feasibility/common_errors.md`) as buildable now
-(data already on the claim context), high-frequency in real Medula denials,
-and low effort to implement.
+Outpatient Billing Errors". Phase 1 covered the 5 highest-frequency errors
+selected by the feasibility study (`/tmp/feasibility/common_errors.md`) as
+buildable now (data already on the claim context), high-frequency in real
+Medula denials, and low effort to implement. Phase 2 adds 11 more.
 
-Errors covered:
+Phase 1 errors covered:
 - **#2** Same-specialty exam within 10 days  → ``detect_duplicate_exam_10day``
 - **#8** Services with no diagnosis on takip → ``detect_missing_diagnosis``
 - **#12** Duplicate tests across claims       → ``detect_duplicate_tests``
 - **#22** Exam date ≠ admission date          → ``detect_exam_admission_date_mismatch``
 - **#20** Drug QR/barcode missing             → ``detect_missing_drug_barcode``
+
+Phase 2 errors covered:
+- **#3** Vakabaşı billed where Normal Poliklinik required → ``detect_vakabasi_wrong_method``
+- **#4** Normal Poliklinik billed where vakabaşı required → ``detect_normal_poliklinik_wrong_method``
+- **#5** Material identity errors (SUT/barcode) → ``detect_material_identity_errors``
+- **#7** Green-area exam + bundled extras → ``detect_green_area_bundled_extras``
+- **#9** Admissions past 60-day billing window → ``detect_admission_billing_window``
+- **#10** Incomplete/unreported procedures → ``detect_unreported_lab_result``
+- **#11** Drug quantity (adet) error → ``detect_drug_quantity_error``
+- **#15** Material pre-auth missing → ``detect_material_preauth_missing``
+- **#16** Wrong material-type code → ``detect_material_type_missing``
+- **#21** Inpatient data on outpatient takip → ``detect_inpatient_on_outpatient``
+- **#24** Donor-prep workup billed as exam → ``detect_donor_prep_as_exam``
 
 Every detector takes plain ``ClaimHeader`` / ``ProcedureClaimLine`` /
 ``DrugClaimLine`` lists plus an optional ``claim_ids_with_procs`` filter set
@@ -36,6 +49,7 @@ if TYPE_CHECKING:
     from src.bilun.domain.claims.models import (
         ClaimHeader,
         DrugClaimLine,
+        MaterialClaimLine,
         ProcedureClaimLine,
     )
 
@@ -62,6 +76,68 @@ _DUPLICATE_TEST_WINDOW_DAYS = 7
 # test rule; surgery/exam/drug lines are governed by other rules.
 _TEST_CATEGORIES: frozenset[str] = frozenset(
     {"laboratuvar", "radioloji", "radyoloji", "patoloji", "test"}
+)
+
+# Error #3/#4 — Procedure categories signalling package (vakabaşı / case-fee)
+# billing vs per-visit (Normal Poliklinik) itemized billing. A line is
+# "billed as package" when its category is ``paket`` or ``is_package_included``
+# is set; this mirrors procedure_capture_gap._submitted_amount_by_code_date.
+_PACKAGE_CATEGORIES: frozenset[str] = frozenset({"paket", "vakabasi", "vakabaşı"})
+
+# Error #7 — Green-area (yeşil alan) poliklinik exam code. Sourced from
+# copay_line_waivers._GREEN_ZONE_EXAM_CODE (verified canonical constant).
+_GREEN_ZONE_EXAM_CODE = "520021"
+
+# Error #9 — Medula admission→claim billing window. SGK requires a yatış
+# takibi to be submitted within ~60 days of admission; beyond that the claim
+# is statute-barred (zamanaşımı) and rejected at the gateway.
+_ADMISSION_BILLING_WINDOW_DAYS = 60
+
+# Error #10 — lab_billing_status values that mean the result was never
+# reported back, so the test is unbundlable / non-reimbursable. The field
+# is populated by the dataset builder / adapter and may carry "pending",
+# "missing", "not_reported", or the empty sentinel.
+_UNREPORTED_LAB_STATUSES: frozenset[str] = frozenset(
+    {"pending", "missing", "not_reported", "unreported", "incomplete"}
+)
+
+# Error #11 — Drug quantity sanity bounds. Zero/negative is never a valid
+# dispense; >999 adet on a single drug line is almost certainly a unit
+# (kutu/şase) vs adet confusion.
+_DRUG_QUANTITY_MIN = 1
+_DRUG_QUANTITY_MAX = 999
+
+# Error #16 — Valid generic material_type codes (lower-cased sentinel values
+# observed in the curated dataset). Long Turkish EK-list category names are
+# also legitimate, so this set is only used to recognise the generic codes;
+# the detector flags lines whose material_type is empty/whitespace.
+_VALID_MATERIAL_TYPE_CODES: frozenset[str] = frozenset(
+    {
+        "consumable",
+        "implant",
+        "ortez",
+        "protez",
+        "cihaz",
+        "goz",
+        "ortopedi",
+        "uzmanlik",
+    }
+)
+
+# Error #21 — Procedure categories that are inpatient-only (yatan hasta
+# services). Appearing any of these on an outpatient (poliklinik) takip is a
+# care-setting mismatch.
+_INPATIENT_ONLY_CATEGORIES: frozenset[str] = frozenset(
+    {"yatis", "yatarak", "gunubirlik", "ameliyat", "cerrahi", "anestezi"}
+)
+
+# Error #24 — occupational_context / procedure_category values signalling a
+# donor-prep workup episode (living-donor transplant preparation).
+_DONOR_PREP_CONTEXTS: frozenset[str] = frozenset(
+    {"donor", "donor_hazirligi", "donor_prep", "verici", "verici_hazirligi"}
+)
+_DONOR_PREP_CATEGORIES: frozenset[str] = frozenset(
+    {"donor_hazirligi", "donor_prep", "verici_hazirligi"}
 )
 
 
@@ -358,6 +434,627 @@ def detect_missing_drug_barcode(
                 "drug_claim_line_id": line.drug_claim_line_id,
                 "drug_code": line.drug_code,
                 "drug_name": line.drug_name,
+            }
+        )
+    return violations
+
+
+# ===========================================================================
+# Phase 2 detectors (errors #3, #4, #5, #7, #9, #10, #11, #15, #16, #21, #24)
+# ===========================================================================
+
+
+def _is_outpatient_claim(claim: ClaimHeader) -> bool:
+    return infer_care_setting(claim) == "outpatient"
+
+
+def _line_billed_as_package(line: ProcedureClaimLine) -> bool:
+    """True when a procedure line carries package/case-fee (vakabaşı) billing."""
+    if line.is_package_included:
+        return True
+    return (line.procedure_category or "").casefold() in _PACKAGE_CATEGORIES
+
+
+def _line_billed_as_itemized(line: ProcedureClaimLine) -> bool:
+    """True when a procedure line carries per-visit (Normal Poliklinik) billing.
+
+    The itemized signal is an exam/muayene category billed *not* as a package
+    (i.e. EK-2/A visit-fee billing per §2.2.1.B-1.b).
+    """
+    if _line_billed_as_package(line):
+        return False
+    return (line.procedure_category or "").casefold() in _EXAM_CATEGORIES
+
+
+def detect_vakabasi_wrong_method(
+    claims: list[ClaimHeader],
+    procedure_lines: list[ProcedureClaimLine],
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #3: Vakabaşı (case-fee/package) billed where Normal Poliklinik required.
+
+    On an outpatient (poliklinik) visit the visit fee must be billed per-visit
+    (Normal Poliklinik / itemized, §2.2.1.B-1.b). A poliklinik exam line that
+    is instead marked as package-included (vakabaşı) is a payment-method
+    mismatch — the case-fee path is reserved for inpatient DRG episodes.
+
+    Detection uses ``procedure_category`` (exam) + ``is_package_included``
+    / package category on the line, gated to outpatient claims. This mirrors
+    the package-vs-itemized discriminator in
+    ``payment_method._classify_payment_method_kind`` without depending on the
+    catalog (owned by another module).
+    """
+    claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
+
+    violations: list[dict[str, Any]] = []
+    for line in procedure_lines:
+        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
+            continue
+        claim = claims_by_id.get(line.claim_id)
+        if claim is None or not _is_outpatient_claim(claim):
+            continue
+        # Only exam/muayene lines are in scope for the per-visit rule.
+        if (line.procedure_category or "").casefold() not in _EXAM_CATEGORIES:
+            continue
+        if not _line_billed_as_package(line):
+            continue
+        detail = (
+            f"Poliklinik muayenesi ({line.procedure_code}) vakabaşı/paket olarak "
+            f"faturalandırılmış — ayakta tedavide Normal Poliklinik (hizmet başına) "
+            f"ödeme yöntemi zorunludur (Tablo 15 #3)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": line.claim_id,
+                "rule_id": "tablo15_3_vakabasi_wrong_method",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "error",
+                "procedure_code": line.procedure_code,
+                "procedure_category": line.procedure_category,
+                "is_package_included": line.is_package_included,
+            }
+        )
+    return violations
+
+
+def detect_normal_poliklinik_wrong_method(
+    claims: list[ClaimHeader],
+    procedure_lines: list[ProcedureClaimLine],
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #4: Normal Poliklinik (per-visit) billed where vakabaşı required.
+
+    Inverse of #3: on an inpatient (yatış) episode, services that are mandated
+    as package (DRG/vakabaşı) billing under §2.2.2 must NOT be split out as a
+    per-visit Normal Poliklinik exam. A package-category line on an inpatient
+    claim that is billed itemized (not package-included) is the mismatch.
+
+    Detection: inpatient claim + a package category line that is NOT marked
+    ``is_package_included``.
+    """
+    claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
+
+    violations: list[dict[str, Any]] = []
+    for line in procedure_lines:
+        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
+            continue
+        claim = claims_by_id.get(line.claim_id)
+        if claim is None or infer_care_setting(claim) != "inpatient":
+            continue
+        if (line.procedure_category or "").casefold() not in _PACKAGE_CATEGORIES:
+            continue
+        if line.is_package_included:
+            continue  # correctly billed as package
+        detail = (
+            f"Yatan hasta paket işlemi ({line.procedure_code}) Normal Poliklinik "
+            f"(hizmet başına) olarak faturalandırılmış — yatış takiplerinde "
+            f"vakabaşı/paket ödeme yöntemi zorunludur (Tablo 15 #4)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": line.claim_id,
+                "rule_id": "tablo15_4_normal_poliklinik_wrong_method",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "error",
+                "procedure_code": line.procedure_code,
+                "procedure_category": line.procedure_category,
+                "is_package_included": line.is_package_included,
+            }
+        )
+    return violations
+
+
+def detect_material_identity_errors(
+    claims: list[ClaimHeader],
+    material_lines: tuple,
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #5: Material identity errors (wrong SUT/barcode documentation).
+
+    Flags each material line where the build-time identity check found a
+    mismatch: ``barcode_sut_mismatch`` (the UTS barcode does not resolve to the
+    billed SUT code) or ``titubb_uts_barcode_documentation_missing`` (TİUBB/UTS
+    traceability documentation is absent). Both are deterministic Medula
+    rejections (material identity / traceability family).
+
+    Args:
+        claims: ClaimHeaders (used only to honour the ``claim_ids_with_procs``
+            gate when provided).
+        material_lines: Material claim lines. Typed as ``tuple`` to match the
+            ``PatientClaimContext.material_lines`` shape without an import cycle.
+        claim_ids_with_procs: Optional filter.
+    """
+    del claims
+
+    violations: list[dict[str, Any]] = []
+    for line in material_lines:
+        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
+            continue
+        barcode_mismatch = bool(getattr(line, "barcode_sut_mismatch", False))
+        doc_missing = bool(getattr(line, "titubb_uts_barcode_documentation_missing", False))
+        if not (barcode_mismatch or doc_missing):
+            continue
+        flags = []
+        if barcode_mismatch:
+            flags.append("barkod/SUT uyuşmazlığı")
+        if doc_missing:
+            flags.append("TİUBB/UTS dokümantasyon eksik")
+        detail = (
+            f"Malzeme {getattr(line, 'material_name', '')} "
+            f"({getattr(line, 'material_code', '')}) için kimlik/doğrulama hatası: "
+            f"{', '.join(flags)} (Tablo 15 #5)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": line.claim_id,
+                "rule_id": "tablo15_5_material_identity_error",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "error",
+                "material_line_id": line.material_line_id,
+                "material_code": line.material_code,
+                "material_name": line.material_name,
+                "barcode_sut_mismatch": barcode_mismatch,
+                "titubb_uts_barcode_documentation_missing": doc_missing,
+            }
+        )
+    return violations
+
+
+def detect_green_area_bundled_extras(
+    claims: list[ClaimHeader],
+    procedure_lines: list[ProcedureClaimLine],
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #7: Green-area (yeşil alan) exam billed alongside bundled extras.
+
+    The green-area poliklinik exam (SUT ``520021``) is a flat-fee visit: no
+    additional examination/procedure components may be separately billed on the
+    same claim (green-area patients have a different copay profile per §1.8.5).
+    When a ``520021`` line shares a claim with any *other* procedure line, the
+    co-ordered procedures are flagged as unbundlable extras.
+
+    The green-area code is sourced from ``copay_line_waivers._GREEN_ZONE_EXAM_CODE``.
+    """
+    del claims
+
+    # Group non-green-area procedure lines by claim that also has a green-area exam.
+    green_area_claims: set[str] = set()
+    for line in procedure_lines:
+        if line.procedure_code == _GREEN_ZONE_EXAM_CODE:
+            if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
+                continue
+            green_area_claims.add(line.claim_id)
+
+    violations: list[dict[str, Any]] = []
+    if not green_area_claims:
+        return violations
+    for line in procedure_lines:
+        if line.claim_id not in green_area_claims:
+            continue
+        if line.procedure_code == _GREEN_ZONE_EXAM_CODE:
+            continue  # the green-area exam itself is not an "extra"
+        detail = (
+            f"Yeşil alan muayenesi (520021) ile aynı takipte ek işlem "
+            f"faturalandırılmış: {line.procedure_code} ({line.procedure_name}) — "
+            f"yeşil alan vizitinde ayrı faturalama yapılamaz (Tablo 15 #7)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": line.claim_id,
+                "rule_id": "tablo15_7_green_area_bundled_extra",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "warning",
+                "procedure_code": line.procedure_code,
+                "procedure_name": line.procedure_name,
+                "green_area_exam_code": _GREEN_ZONE_EXAM_CODE,
+            }
+        )
+    return violations
+
+
+def detect_admission_billing_window(
+    claims: list[ClaimHeader],
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #9: Admissions billed past the 60-day SGK billing window.
+
+    SGK requires a yatış takibi to be submitted within ~60 days of the
+    admission date; beyond that the claim is statute-barred (zamanaşımı) and
+    rejected. Flags any claim whose ``admission_date`` is more than
+    :data:`_ADMISSION_BILLING_WINDOW_DAYS` days before ``claim_end_date``.
+
+    Pure date arithmetic on existing header fields. Honest skip when either
+    date is missing.
+    """
+    violations: list[dict[str, Any]] = []
+    for claim in claims:
+        if claim_ids_with_procs is not None and claim.claim_id not in claim_ids_with_procs:
+            continue
+        if claim.admission_date is None or claim.claim_end_date is None:
+            continue
+        gap = (claim.claim_end_date - claim.admission_date).days
+        if gap <= _ADMISSION_BILLING_WINDOW_DAYS:
+            continue
+        detail = (
+            f"Takip {claim.claim_id}: yatış tarihi {claim.admission_date} ile takip "
+            f"bitiş {claim.claim_end_date} arası {gap} gün — SGK 60 günlük faturalama "
+            f"süresi aşılmış (zamanaşımı, Tablo 15 #9)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": claim.claim_id,
+                "rule_id": "tablo15_9_admission_billing_window",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "error",
+                "admission_date": claim.admission_date,
+                "claim_end_date": claim.claim_end_date,
+                "gap_days": gap,
+            }
+        )
+    return violations
+
+
+def detect_unreported_lab_result(
+    claims: list[ClaimHeader],
+    procedure_lines: list[ProcedureClaimLine],
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #10: Incomplete/unreported procedures (lab result never reported).
+
+    Flags each procedure line whose ``lab_billing_status`` indicates the test
+    result was never reported back (e.g. ``"pending"``/``"missing"``). A test
+    without a reported result is non-reimbursable — the performed-but-not-
+    submitted capture gap is handled separately by ``procedure_capture_gap``;
+    this detector covers the *submitted-but-never-resulted* case via the line's
+    ``lab_billing_status`` field.
+
+    Honest skip when ``lab_billing_status`` is empty (field not populated for
+    this line type).
+    """
+    del claims
+
+    violations: list[dict[str, Any]] = []
+    for line in procedure_lines:
+        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
+            continue
+        status = (getattr(line, "lab_billing_status", "") or "").strip().casefold()
+        if not status or status not in _UNREPORTED_LAB_STATUSES:
+            continue
+        detail = (
+            f"İşlem {line.procedure_code} ({line.procedure_name}) için sonuç raporu "
+            f"bildirilmemiş (lab_billing_status='{status}') — sonuçlanmamış tetkik "
+            f"faturalandırılamaz (Tablo 15 #10)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": line.claim_id,
+                "rule_id": "tablo15_10_unreported_lab_result",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "warning",
+                "procedure_line_id": line.procedure_line_id,
+                "procedure_code": line.procedure_code,
+                "procedure_name": line.procedure_name,
+                "lab_billing_status": line.lab_billing_status,
+            }
+        )
+    return violations
+
+
+def detect_drug_quantity_error(
+    claims: list[ClaimHeader],
+    drug_lines: tuple,
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #11: Drug quantity (adet) error.
+
+    Flags each drug line whose ``quantity`` is zero/negative (no real dispense)
+    or exceeds a sane maximum (``>999`` adet), which almost always signals a
+    unit confusion (kutu/şase vs adet). Both are data-integrity Medula
+    rejections.
+
+    Args:
+        claims: ClaimHeaders (used only to honour the ``claim_ids_with_procs``
+            gate when provided).
+        drug_lines: Drug claim lines.
+        claim_ids_with_procs: Optional filter.
+    """
+    del claims
+
+    violations: list[dict[str, Any]] = []
+    for line in drug_lines:
+        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
+            continue
+        quantity = getattr(line, "quantity", None)
+        if quantity is None:
+            continue
+        if _DRUG_QUANTITY_MIN <= quantity <= _DRUG_QUANTITY_MAX:
+            continue
+        if quantity <= 0:
+            reason = "sıfır/negatif adet"
+        else:
+            reason = f"adet sınırı aşımı ({quantity} > {_DRUG_QUANTITY_MAX})"
+        detail = (
+            f"İlaç {getattr(line, 'drug_name', '')} ({getattr(line, 'drug_code', '')}) "
+            f"için adet miktarı geçersiz: {quantity} — {reason} (Tablo 15 #11)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": line.claim_id,
+                "rule_id": "tablo15_11_drug_quantity_error",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "error",
+                "drug_claim_line_id": line.drug_claim_line_id,
+                "drug_code": line.drug_code,
+                "drug_name": line.drug_name,
+                "quantity": quantity,
+            }
+        )
+    return violations
+
+
+def detect_material_preauth_missing(
+    claims: list[ClaimHeader],
+    material_lines: tuple,
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #15: Material requires pre-auth but no approval evidence on the claim.
+
+    Flags each material line whose ``requires_pre_auth`` is ``True`` and for
+    which there is no evidence of an approval on the claim. There is no
+    ``approval_date`` field on the model, so "no evidence" is established by
+    absence: the line still carries ``requires_pre_auth=True`` (the upstream
+    enricher clears/approves pre-auth once a board decision is on file via the
+    EK-3C-1 path, mirroring ``material_preauth_ek3c1``).
+
+    Severity is ``"warning"`` — pre-auth is a review flag, not a hard denial
+    (consistent with ``material_preauth_ek3c1.check_material_preauth_for_context``).
+
+    Args:
+        material_lines: Material claim lines.
+        claim_ids_with_procs: Optional filter.
+    """
+    del claims
+
+    violations: list[dict[str, Any]] = []
+    for line in material_lines:
+        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
+            continue
+        if not bool(getattr(line, "requires_pre_auth", False)):
+            continue
+        detail = (
+            f"Malzeme {getattr(line, 'material_name', '')} "
+            f"({getattr(line, 'material_code', '')}) ön onay (pre-auth) gerektiriyor "
+            f"ancak takipte onay kanıtı yok — kurul kararı olmadan geri ödenmez "
+            f"(Tablo 15 #15)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": line.claim_id,
+                "rule_id": "tablo15_15_material_preauth_missing",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "warning",
+                "material_line_id": line.material_line_id,
+                "material_code": line.material_code,
+                "material_name": line.material_name,
+                "requires_pre_auth": True,
+            }
+        )
+    return violations
+
+
+def detect_material_type_missing(
+    claims: list[ClaimHeader],
+    material_lines: tuple,
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #16: Wrong/missing material-type code.
+
+    Flags each material line whose ``material_type`` is empty or
+    whitespace-only. The material type (implant / ortez / protez / cihaz / etc.)
+    drives reimbursement-path routing and annex membership; an empty type is a
+    data-integrity Medula rejection. The curated dataset carries long Turkish
+    EK-list category names plus the generic codes in
+    :data:`_VALID_MATERIAL_TYPE_CODES`; only a truly empty/blank type is
+    flagged (the descriptive strings are legitimate category names).
+
+    Args:
+        material_lines: Material claim lines.
+        claim_ids_with_procs: Optional filter.
+    """
+    del claims
+
+    violations: list[dict[str, Any]] = []
+    for line in material_lines:
+        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
+            continue
+        material_type = (getattr(line, "material_type", "") or "").strip()
+        if material_type:
+            continue
+        detail = (
+            f"Malzeme {getattr(line, 'material_name', '')} "
+            f"({getattr(line, 'material_code', '')}) için malzeme türü (material_type) "
+            f"boş — tür kodu olmadan ödeme yönlendirmesi yapılamaz (Tablo 15 #16)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": line.claim_id,
+                "rule_id": "tablo15_16_material_type_missing",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "error",
+                "material_line_id": line.material_line_id,
+                "material_code": line.material_code,
+                "material_name": line.material_name,
+            }
+        )
+    return violations
+
+
+def detect_inpatient_on_outpatient(
+    claims: list[ClaimHeader],
+    procedure_lines: list[ProcedureClaimLine],
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #21: Inpatient-only services billed on an outpatient takip.
+
+    Flags each procedure line on an outpatient (poliklinik) claim whose
+    ``procedure_category`` is inpatient-only (yatis / yatarak / gunubirlik /
+    ameliyat / cerrahi / anestezi). Such services cannot be legitimately
+    performed/billed in an outpatient setting — a care-setting mismatch and a
+    Medula data-integrity finding.
+
+    The outpatient setting is inferred via :func:`infer_care_setting` (the same
+    helper used by ``care_setting_review``).
+    """
+    claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
+
+    violations: list[dict[str, Any]] = []
+    for line in procedure_lines:
+        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
+            continue
+        claim = claims_by_id.get(line.claim_id)
+        if claim is None or not _is_outpatient_claim(claim):
+            continue
+        if (line.procedure_category or "").casefold() not in _INPATIENT_ONLY_CATEGORIES:
+            continue
+        detail = (
+            f"Ayakta tedavi (poliklinik) takibine yatan hasta işlemi kaydedilmiş: "
+            f"{line.procedure_code} ({line.procedure_category}) — bakım ortamı "
+            f"uyuşmazlığı (Tablo 15 #21)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": line.claim_id,
+                "rule_id": "tablo15_21_inpatient_on_outpatient",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "error",
+                "procedure_code": line.procedure_code,
+                "procedure_category": line.procedure_category,
+                "care_setting": "outpatient",
+            }
+        )
+    return violations
+
+
+def detect_donor_prep_as_exam(
+    claims: list[ClaimHeader],
+    procedure_lines: list[ProcedureClaimLine],
+    *,
+    claim_ids_with_procs: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Error #24: Donor-prep workup billed as a routine exam (muayene).
+
+    Living-donor transplant preparation visits are a distinct service class
+    (donor hazırlık) and must NOT be billed as a routine poliklinik muayenesi.
+    Flags a procedure line billed as an exam (``procedure_category`` in
+    :data:`_EXAM_CATEGORIES`) when the claim's ``occupational_context`` or the
+    line's ``procedure_category`` signals donor-prep.
+
+    Honest skip when neither the claim nor the line carries a donor-prep signal.
+    """
+    claims_by_id: dict[str, ClaimHeader] = {c.claim_id: c for c in claims}
+
+    violations: list[dict[str, Any]] = []
+    for line in procedure_lines:
+        if claim_ids_with_procs is not None and line.claim_id not in claim_ids_with_procs:
+            continue
+        if (line.procedure_category or "").casefold() not in _EXAM_CATEGORIES:
+            continue
+        claim = claims_by_id.get(line.claim_id)
+        ctx = (getattr(claim, "occupational_context", "") or "").casefold() if claim else ""
+        line_cat = (line.procedure_category or "").casefold()
+        is_donor_prep = (
+            ctx in _DONOR_PREP_CONTEXTS or line_cat in _DONOR_PREP_CATEGORIES
+        )
+        if not is_donor_prep:
+            continue
+        detail = (
+            f"Donör/verici hazırlık viziti ({line.procedure_code}) rutin poliklinik "
+            f"muayenesi olarak faturalandırılmış — donör hazırlık ayrı hizmet "
+            f"sınıfıdır (Tablo 15 #24)."
+        )
+        violations.append(
+            {
+                "type": _OPPORTUNITY_TYPE,
+                "claim_id": line.claim_id,
+                "rule_id": "tablo15_24_donor_prep_as_exam",
+                "detail": detail,
+                "sut_section_id": _SUT_SECTION_ID,
+                "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
+                "savings_basis": SAVINGS_BASIS_SOURCED,
+                "severity": "warning",
+                "procedure_code": line.procedure_code,
+                "procedure_category": line.procedure_category,
+                "occupational_context": ctx,
             }
         )
     return violations

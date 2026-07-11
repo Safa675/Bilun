@@ -15,8 +15,10 @@ from ..constants import (
     EK2A_PARQUET_PATH,
     EK2B_CURATED_HISTORY_PATH,
     EK2C_CURATED_HISTORY_PATH,
+    EK2C_DENTAL_CURATED_HISTORY_PATH,
     EK3H_PARQUET_PATH,
     EK3I_PARQUET_PATH,
+    _EK2C_DENTAL_XLS_FALLBACK,
     _OLD_TO_NEW_CODE,
 )
 from ..utils import _safe_float, _safe_str
@@ -35,6 +37,9 @@ _ek2b_raw_cache: pd.DataFrame | None = None
 _ek2b_by_asof_cache: dict[str, dict[str, dict[str, Any]]] = {}
 _ek2c_raw_cache: pd.DataFrame | None = None
 _ek2c_by_asof_cache: dict[str, dict[str, Any]] = {}
+# EK-2Ç dental procedures. Temporal filtering mirrors EK-2B (effective_date).
+_ek2c_dental_raw_cache: pd.DataFrame | None = None
+_ek2c_dental_by_asof_cache: dict[str, dict[str, dict[str, Any]]] = {}
 
 
 def _load_curated_ek2b_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
@@ -192,6 +197,127 @@ def _load_curated_ek2c_by_asof(asof_date: str) -> dict[str, Any]:
     }
     _ek2c_by_asof_cache[asof_date] = result
     return result
+
+
+def _read_ek2c_dental_frame() -> pd.DataFrame | None:
+    """Read the EK-2Ç dental catalog, preferring the curated parquet.
+
+    Falls back to the raw ``.xls`` workbook when the curated parquet has not
+    been built yet (keeps ``lookup_procedure_code`` working on a fresh
+    checkout that has the raw data but hasn't run the full ETL). The fallback
+    path returns a single-version snapshot stamped with the workbook's
+    effective date (parsed from the filename) or today's date.
+    """
+    if EK2C_DENTAL_CURATED_HISTORY_PATH.exists():
+        return pd.read_parquet(EK2C_DENTAL_CURATED_HISTORY_PATH)
+
+    if not _EK2C_DENTAL_XLS_FALLBACK.exists():
+        return None
+
+    try:
+        import re as _re
+
+        import pandas as _pd
+
+        raw = _pd.read_excel(_EK2C_DENTAL_XLS_FALLBACK, engine="xlrd")
+        # Header row is the first row (İŞLEM KODU / İŞLEM ADI / ...).
+        header = raw.iloc[0].fillna("").astype(str).str.strip().tolist()
+        # Build position map for the known columns.
+        pos: dict[str, int] = {}
+        for i, label in enumerate(header):
+            key = label.upper()
+            pos.setdefault(key, i)
+        code_col = pos.get("İŞLEM KODU".upper()) or pos.get("ISLEM KODU")
+        # The .xls header is in Turkish casing; fall back to positional columns
+        # (the dental sheet is a fixed 4-column layout: code/name/notes/puan).
+        if code_col is None:
+            code_col, name_col, puan_col = 0, 1, 3
+        else:
+            name_col = pos.get("İŞLEM ADI".upper()) or pos.get("ISLEM ADI") or 1
+            puan_col = pos.get("İŞLEM PUANI".upper()) or pos.get("ISLEM PUANI") or 3
+
+        body = raw.iloc[1:].reset_index(drop=True)
+        out = _pd.DataFrame()
+        out["code"] = body.iloc[:, code_col].apply(
+            lambda x: _re.sub(r"\s*\(.*$", "", str(x)).strip() if _pd.notna(x) else ""
+        )
+        out["name"] = body.iloc[:, name_col].apply(
+            lambda x: str(x).strip() if _pd.notna(x) else ""
+        )
+        out["puan"] = _pd.to_numeric(body.iloc[:, puan_col], errors="coerce")
+        out = out.dropna(subset=["puan"])
+        out = out[out["code"].str.match(r"^P?40\d{4}$", na=False)]
+        # SUT puan→TRY coefficient (kept in sync with price_history.py).
+        out["price_try"] = (out["puan"] * 0.593).round(2)
+        out["effective_date"] = "2026-01-01"  # filename: Yür.01.01.2026
+        return out.reset_index(drop=True)[
+            ["code", "name", "puan", "price_try", "effective_date"]
+        ]
+    except Exception as exc:  # pragma: no cover - defensive fallback
+        logger.warning("EK-2Ç .xls fallback parse failed: %s", exc)
+        return None
+
+
+def _load_curated_ek2c_dental_by_asof(asof_date: str) -> dict[str, dict[str, Any]]:
+    """Load EK-2Ç dental entries from curated history (or .xls fallback), as-of date."""
+    cached = _ek2c_dental_by_asof_cache.get(asof_date)
+    if cached is not None:
+        return cached
+
+    global _ek2c_dental_raw_cache
+    if _ek2c_dental_raw_cache is None:
+        _ek2c_dental_raw_cache = _read_ek2c_dental_frame()
+    df = _ek2c_dental_raw_cache
+    if df is None or df.empty:
+        return {}
+
+    work = df
+    if "effective_date" in work.columns:
+        if "effective_date_parsed" not in work.columns:
+            work = work.copy()
+            work["effective_date_parsed"] = pd.to_datetime(
+                work["effective_date"], errors="coerce"
+            )
+            _ek2c_dental_raw_cache = work
+        cutoff = pd.to_datetime(asof_date)
+        parsed = work[work["effective_date_parsed"].notna()]
+        eligible = parsed[parsed["effective_date_parsed"] <= cutoff]
+        if eligible.empty:
+            eligible = parsed.sort_values(
+                ["code", "effective_date_parsed"]
+            ).drop_duplicates(subset=["code"], keep="first")
+        else:
+            eligible = eligible.sort_values(
+                ["code", "effective_date_parsed"]
+            ).drop_duplicates(subset=["code"], keep="last")
+    else:
+        eligible = work.drop_duplicates(subset=["code"], keep="last")
+
+    records = eligible.to_dict(orient="records")
+    by_code: dict[str, dict[str, Any]] = {}
+    for row in records:
+        code = str(row.get("code", "")).strip()
+        if not code:
+            continue
+        puan = _safe_float(row.get("puan"))
+        price = _safe_float(row.get("price_try"))
+        if price is None and puan is not None:
+            price = round(float(puan) * 0.593, 2)
+        name = _safe_str(row.get("name"))
+        if not name or price is None:
+            continue
+        by_code[code] = {
+            "code": code,
+            "name": name,
+            "description": _safe_str(row.get("description")),
+            "puan": puan,
+            "price_try": round(float(price), 2),
+            "effective_date": _safe_str(row.get("effective_date")),
+            "annex": "EK-2Ç",
+        }
+
+    _ek2c_dental_by_asof_cache[asof_date] = by_code
+    return by_code
 
 
 def _load_ek2a() -> dict[str, Any]:

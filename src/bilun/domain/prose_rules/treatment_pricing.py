@@ -36,6 +36,7 @@ Two correctness points ported from the plan's W2.5 lessons:
 from __future__ import annotations
 
 import json
+from datetime import date
 from functools import lru_cache
 from typing import Any
 
@@ -59,9 +60,57 @@ _SCALAR_FIELDS = {
 }
 
 # Fields where membership is resolved via ICD-10 PREFIX matching (not exact
-# intersection). diagnosis_any/diagnosis_in both funnel through
-# ``_diagnosis_matches``.
-_DIAGNOSIS_KEYS = {"diagnosis_any", "diagnosis_in"}
+# intersection). diagnosis_any/diagnosis_in are positive; diagnosis_not_in is
+# negated (rule fires only when NONE of the listed codes match).
+_DIAGNOSIS_KEYS = {"diagnosis_any", "diagnosis_in", "diagnosis_not_in"}
+
+# Clinical category → ICD-10 code prefixes (upper-cased). Backs the
+# ``diagnosis_category_any`` / ``diagnosis_category_not_in`` predicates, which
+# gate on clinical concepts (amputation, fracture, …) rather than raw ICD-10
+# chapters. A billed code is assigned a category when it shares the listed
+# prefix (e.g. ``S82`` → ``fracture``). Approximate — sufficient for the §2.4
+# FTR disaster-provision / ESWT-indication rules.
+_ICD10_CATEGORY_PREFIXES: dict[str, tuple[str, ...]] = {
+    "amputation": ("Z89", "Z90", "T13", "T14", "T87", "T88"),
+    "fracture": ("S42", "S52", "S62", "S72", "S82", "S92", "S12", "S22", "S32"),
+    "peripheral_nerve_injury": ("S54", "S64", "S74", "S94", "G56", "G57", "G58"),
+    "lumbosacral_plexus_injury": ("G57", "S34"),
+    "tendon_injury": ("S46", "S56", "S66", "S76", "S86", "S96", "M66", "M67", "M76", "M77"),
+    "epin_calcanei": ("M77"),
+    "plantar_fasciitis": ("M72"),
+    "epicondylitis": ("M77"),
+    "calcific_tendinitis": ("M75"),
+}
+
+# PMR (fizik tedavi ve rehabilitasyon) specialty codes that signal supervision
+# by a physical-medicine-and-rehabilitation specialist. The synthetic
+# generators and the rule vocabulary use these identifiers.
+_PMR_SPECIALTY_CODES = frozenset({
+    "physical_medicine_rehabilitation",
+    "fizik_tedavi_ve_rehabilitasyon",
+    "pmr",
+    "fizik_tedavi_rehabilitasyon",
+})
+
+
+def _icd10_categories(codes: list[str]) -> set[str]:
+    """Map billed ICD-10 codes to the clinical categories they fall under.
+
+    A code is assigned every category whose listed prefix it shares (prefix
+    with a trailing ``.`` segment boundary, mirroring ``_diagnosis_matches``).
+    Returns an empty set when ``codes`` is empty or no category matches.
+    """
+    out: set[str] = set()
+    for raw in codes or []:
+        code = str(raw or "").strip().upper()
+        if not code:
+            continue
+        for cat, prefixes in _ICD10_CATEGORY_PREFIXES.items():
+            for prefix in prefixes:
+                if code == prefix or code.startswith(prefix + "."):
+                    out.add(cat)
+                    break
+    return out
 
 
 @lru_cache(maxsize=1)
@@ -116,11 +165,17 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
 
     - ``diagnosis_any`` / ``diagnosis_in`` → ICD-10 PREFIX match of the rule's
       listed codes against ``context["diagnosis_codes"]`` (the billed set).
+    - ``procedure_in_annex`` → at least one billed procedure code is a member
+      of the named annex (e.g. ``EK-2/A-2``, ``EK-2/C-1``, ``EK-2/C``);
+      resolved against the loaded catalog code sets.
     - ``*_any`` / ``*_in`` (other bases) → set INTERSECTION: at least one rule
       value must be in the context collection surfaced under ``<key>`` (or the
       base scalar when only that is present).
     - ``*_not_in`` / ``*_not_any`` → negated membership: NONE of the rule values
       may be in the context collection.
+    - numeric range (``{"min": x}`` / ``{"max": y}``) → ``context.get(key)``
+      must satisfy the bound(s); surfaced derivable keys (sessions, days, …)
+      evaluate against the range, unsurfaced keys honest-skip.
     - scalar field → ``context.get(field)`` must equal the condition value.
     - boolean flag → ``context.get(key)`` must equal the flag.
 
@@ -131,7 +186,51 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
     unresolvable key and never fires.
     """
     for key, expected in condition.items():
+        # procedure_in_annex — annex membership over the billed procedure codes.
+        # The predicate value is the annex identifier (e.g. "EK-2/A-2"); the
+        # billed codes are surfaced under context["procedure_code_any"]. Lazy
+        # import avoids a module-load cycle with the catalog machinery.
+        if key == "procedure_in_annex":
+            annex = str(expected or "").strip()
+            billed_codes = context.get("procedure_code_any")
+            if not billed_codes or not annex:
+                return False
+            code_list = (
+                list(billed_codes)
+                if isinstance(billed_codes, (list, tuple, set))
+                else [billed_codes]
+            )
+            from .catalog_membership import any_procedure_in_annex
+
+            if not any_procedure_in_annex(code_list, annex):
+                return False
+            continue
+
+        # Numeric range predicate: {"min": x} / {"max": y} / {"min", "max"}.
+        # Surfaced derivable keys (sessions_per_day, days_from_report_to_treatment,
+        # sessions_within_year, sessions_same_region_within_1y, …) evaluate their
+        # numeric value against the range. Uns surfaced keys fall through to the
+        # honest-skip branch below (range on a missing key → skip).
+        if isinstance(expected, dict) and ("min" in expected or "max" in expected):
+            actual = context.get(key)
+            if actual is None:
+                return False
+            try:
+                actual_num = float(actual)
+            except (TypeError, ValueError):
+                return False
+            lo = expected.get("min")
+            hi = expected.get("max")
+            if lo is not None and actual_num < float(lo):
+                return False
+            if hi is not None and actual_num > float(hi):
+                return False
+            continue
+
         # Diagnosis predicates — prefix matching, not exact intersection.
+        # diagnosis_any/diagnosis_in → at least one billed code matches a rule
+        # code via prefix; diagnosis_not_in → NONE of the billed codes may match
+        # (the rule fires only when the diagnosis is outside the listed set).
         if key in _DIAGNOSIS_KEYS:
             billed = context.get("diagnosis_codes")
             if billed is None:
@@ -139,8 +238,14 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
             rule_codes = (
                 list(expected) if isinstance(expected, (list, tuple, set)) else [expected]
             )
-            if not _diagnosis_matches(billed, rule_codes):
-                return False
+            matched = _diagnosis_matches(billed, rule_codes)
+            if key == "diagnosis_not_in":
+                # Negated: rule fires only when NO billed code matches.
+                if matched:
+                    return False
+            else:
+                if not matched:
+                    return False
             continue
 
         if key.endswith(_SET_PREDICATE_SUFFIXES):
@@ -154,6 +259,13 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
             available = context.get(key)
             if available is None:
                 available = context.get(base)
+            if available is None:
+                # Final fallback: the <base>_any collection. This lets a
+                # ``diagnosis_category_not_in`` predicate (base =
+                # ``diagnosis_category``) resolve against the
+                # ``diagnosis_category_any`` collection the builder surfaced,
+                # and keeps *_not_in working when only *_any was populated.
+                available = context.get(base + "_any")
             if available is None:
                 return False
             available_set = (
@@ -234,7 +346,19 @@ def _build_treatment_pricing_context(ctx: Any) -> dict[str, Any]:
     Surfaces keys: ``procedure_category``, ``procedure_category_any``,
     ``procedure_code_any``, ``provider_type``, ``facility_tier``,
     ``facility_type_any``, ``diagnosis_codes`` (list, for prefix matching),
-    ``health_board_report_present``.
+    ``diagnosis_category_any`` (ICD-10 → clinical categories),
+    ``health_board_report_present``, ``prescriber_specialty_any``,
+    ``supervised_by_pmr_specialty``, ``sessions_per_day``, ``sessions``,
+    ``same_day_physio_rehab``, ``concomitant_service``,
+    ``billed_with_other_physiotherapy``, ``sessions_within_year``,
+    ``sessions_same_region_within_1y``, ``sessions_per_patient_per_year``,
+    ``daily_exams_per_physician``, ``daily_billing_hours_per_physician``,
+    ``visit_type``, ``treatment_setting``, ``days_from_report_to_treatment``.
+
+    Numeric keys (sessions, days, exam counts) are surfaced as scalars so the
+    range predicates (``{"min": x}`` / ``{"max": y}``) in ``_condition_matches``
+    can evaluate them. Approximations are documented inline and are the best
+    available proxy from a single-claim context.
 
     Multi-claim handling: when ``ctx.claims`` carries more than one bill, the
     caller (billing orchestrator) is expected to iterate ``ctx.claims`` and
@@ -279,6 +403,98 @@ def _build_treatment_pricing_context(ctx: Any) -> dict[str, Any]:
         if codes:
             context["procedure_code_any"] = sorted(codes)
 
+        # Specialty-derived fields. ``procedure_specialty_code`` on each line is
+        # surfaced as prescriber_specialty_any (membership predicate) and feeds
+        # the PMR-supervision flag.
+        specialties = {
+            getattr(p, "procedure_specialty_code", "") or ""
+            for p in procedure_lines
+        }
+        specialties.discard("")
+        if specialties:
+            context["prescriber_specialty_any"] = sorted(specialties)
+            context["supervised_by_pmr_specialty"] = bool(
+                {s.lower() for s in specialties} & _PMR_SPECIALTY_CODES
+            )
+
+        # Session-derived fields. Group by procedure_date via the shared
+        # claim_utils helper (it keys undated lines off their line id so they
+        # do not merge). ``sessions_per_day`` = max FTR-line count on any one
+        # date; ``sessions`` = total session count (distinct dates).
+        from .claim_utils import group_procedure_lines_by_session
+
+        sessions_by_date = group_procedure_lines_by_session(procedure_lines)
+        ftr_category_markers = {
+            "physiotherapy_rehab",
+            "physiotherapy_rehab_inpatient",
+            "robotic_rehab",
+        }
+        ftr_lines_by_date: dict[Any, list[Any]] = {}
+        for svc_date, lines in sessions_by_date.items():
+            ftr = [ln for ln in lines if getattr(ln, "procedure_category", "") in ftr_category_markers]
+            if ftr:
+                ftr_lines_by_date[svc_date] = ftr
+        if sessions_by_date:
+            # sessions_per_day: the maximum line count on a single date (the
+            # §2.4 F-2(4) / B(7) "one session per day" gates use min: 2 to flag
+            # >1 same-day session). Count ALL lines grouped by date, not just
+            # FTR lines, because some cap rules are category-agnostic.
+            counts = [len(lines) for lines in sessions_by_date.values()]
+            context["sessions_per_day"] = max(counts) if counts else 0
+            context["sessions"] = len(sessions_by_date)
+        if ftr_lines_by_date:
+            # same_day_physio_rehab: are there multiple FTR lines on one date?
+            context["same_day_physio_rehab"] = any(
+                len(lines) > 1 for lines in ftr_lines_by_date.values()
+            )
+            # concomitant_service / billed_with_other_physiotherapy: non-FTR
+            # procedures billed on the same date as FTR lines.
+            ftr_dates = set(ftr_lines_by_date.keys())
+            non_ftr_same_day = any(
+                getattr(ln, "procedure_category", "") not in ftr_category_markers
+                and getattr(ln, "procedure_category", "") != ""
+                for lines in (sessions_by_date.get(d, []) for d in ftr_dates)
+                for ln in lines
+            )
+            context["concomitant_service"] = non_ftr_same_day
+            context["billed_with_other_physiotherapy"] = non_ftr_same_day
+
+        # Annual session-count approximations. A single PatientClaimContext
+        # carries one claim's lines; the §2.4 F-2(5)/F-2(a) annual caps gate on
+        # "sessions within a year". We approximate from the count of distinct
+        # procedure dates on THIS claim (the best available proxy — a full
+        # annual count would require cross-claim history). ``sessions_per_year``
+        # surfaces the same value for all three annual predicates since the
+        # claim is the unit of evaluation and regional/patient-per-year history
+        # is not available on a single claim context.
+        if sessions_by_date:
+            annual_count = len(sessions_by_date)
+            context["sessions_within_year"] = annual_count
+            context["sessions_same_region_within_1y"] = annual_count
+            context["sessions_per_patient_per_year"] = annual_count
+
+        # daily_exams_per_physician / daily_billing_hours_per_physician — count
+        # of procedure lines per specialty per day. The §2.4 rules use these to
+        # gate "max N exams per physician per day". We surface the MAX across
+        # (specialty, date) buckets as a single scalar; billing-hours is a
+        # coarse proxy (procedure count × ~30 min default — the rules gate on
+        # presence of a count, not a precise hourly value).
+        if sessions_by_date and specialties:
+            from collections import defaultdict
+
+            per_specialty_day: dict[tuple[str, Any], int] = defaultdict(int)
+            for svc_date, lines in sessions_by_date.items():
+                for ln in lines:
+                    sp = (getattr(ln, "procedure_specialty_code", "") or "").lower()
+                    per_specialty_day_key = (sp, svc_date) if sp else ("", svc_date)
+                    per_specialty_day[per_specialty_day_key] += 1
+            if per_specialty_day:
+                context["daily_exams_per_physician"] = max(per_specialty_day.values())
+                # billing-hours proxy: same-day count × 0.5h (rounded). The
+                # rules gate on a derived hours figure; this is a conservative
+                # approximation from procedure count.
+                context["daily_billing_hours_per_physician"] = max(per_specialty_day.values()) * 0.5
+
     # Diagnosis-derived fields (for prefix matching). Pull from both the
     # header primary icd10 and the diagnosis rows, scoped to this claim.
     diagnosis_codes: list[str] = []
@@ -291,6 +507,82 @@ def _build_treatment_pricing_context(ctx: Any) -> dict[str, Any]:
             diagnosis_codes.append(code)
     if diagnosis_codes:
         context["diagnosis_codes"] = diagnosis_codes
+        # diagnosis_category_any — ICD-10 → clinical category mapping. Used by
+        # the disaster-provision and ESWT-indication rules. The *_not_in form
+        # is handled by the predicate engine's set-negation against this same
+        # collection (negation of "any of these categories present").
+        cats = _icd10_categories(diagnosis_codes)
+        if cats:
+            context["diagnosis_category_any"] = sorted(cats)
+
+        # HBO (hiperbarik oksijen) indication keys from EK-2/D-3. The HBO
+        # §2.4.4.B rules gate on whether the billed diagnosis is on the EK-2/D-3
+        # indication list, and whether it is an emergency-listed indication
+        # (which waives the board-report requirement). Match via ICD-10 PREFIX
+        # so a billed ``T58.0`` matches the listed ``T58``.
+        from .catalog_membership import get_ek2d3_icd10_codes, get_ek2d3_emergency_icd10_codes
+
+        ek2d3_codes = get_ek2d3_icd10_codes()
+        ek2d3_emergency = get_ek2d3_emergency_icd10_codes()
+        if ek2d3_codes:
+            context["indication_in_ek2d3"] = _diagnosis_matches(
+                diagnosis_codes, sorted(ek2d3_codes)
+            )
+        if ek2d3_emergency:
+            context["indication_is_emergency_listed"] = _diagnosis_matches(
+                diagnosis_codes, sorted(ek2d3_emergency)
+            )
+
+    # origin_is_traffic_accident — traffic-accident origin waives HBO/FTR session
+    # limits (§2.4.4.B(13), §2.4.4.F-2(10)). Derived from scenario_tag /
+    # occupational_context / department carrying a traffic-accident marker.
+    traffic_markers = ("traffic_accident", "trafik", "traffic", "ykm", "kaza")
+    origin_text = " ".join(
+        str(getattr(header, attr, "") or "").lower()
+        for attr in ("scenario_tag", "occupational_context", "department", "claim_type")
+    )
+    context["origin_is_traffic_accident"] = any(m in origin_text for m in traffic_markers)
+
+    # Visit-type / care-setting derived fields. visit_type mirrors the raw
+    # claim_type vocabulary the rules use (outpatient/inpatient/gunubirlik);
+    # treatment_setting comes from the shared ``infer_care_setting`` helper.
+    if getattr(header, "claim_type", ""):
+        claim_type_raw = header.claim_type or ""
+        ct_lower = claim_type_raw.lower()
+        if "yatis" in ct_lower or "yatarak" in ct_lower or "inpatient" in ct_lower:
+            context["visit_type"] = "inpatient"
+        elif "gunubirlik" in ct_lower or "day_case" in ct_lower:
+            context["visit_type"] = "gunubirlik"
+        elif (
+            "ayakta" in ct_lower
+            or "outpatient" in ct_lower
+            or "poliklinik" in ct_lower
+        ):
+            context["visit_type"] = "outpatient"
+        else:
+            context["visit_type"] = ct_lower or "outpatient"
+        from .claim_utils import infer_care_setting
+
+        context["treatment_setting"] = infer_care_setting(header)
+
+    # days_from_report_to_treatment — approximate as the gap between the claim
+    # start date and the earliest procedure date. The rules use this to gate
+    # "treatment must start within N days of the board report" (§2.4.4.F-2(7),
+    # §2.4.4.B(6)); claim_start_date is the closest available proxy for the
+    # report/authorization date on a PatientClaimContext.
+    claim_start = getattr(header, "claim_start_date", None)
+    if claim_start is not None and procedure_lines:
+        earliest_proc = min(
+            (getattr(p, "procedure_date", None) for p in procedure_lines),
+            key=lambda d: d if d is not None else date.max,
+        )
+        if earliest_proc is not None:
+            try:
+                context["days_from_report_to_treatment"] = abs(
+                    (earliest_proc - claim_start).days
+                )
+            except TypeError:
+                pass
 
     # Health board report (specialty board report) presence — surfaced from
     # drug lines. DrugClaimLine carries drug_specialty_board_report_present.

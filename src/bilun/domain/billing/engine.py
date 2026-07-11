@@ -71,11 +71,22 @@ from src.bilun.domain.prose_rules.treatment_pricing import (
     check_treatment_pricing_for_context,
 )
 from src.bilun.domain.prose_rules.common_billing_errors import (
+    detect_admission_billing_window,
+    detect_donor_prep_as_exam,
+    detect_drug_quantity_error,
     detect_duplicate_exam_10day,
     detect_duplicate_tests,
     detect_exam_admission_date_mismatch,
+    detect_green_area_bundled_extras,
+    detect_inpatient_on_outpatient,
+    detect_material_identity_errors,
+    detect_material_preauth_missing,
+    detect_material_type_missing,
     detect_missing_diagnosis,
     detect_missing_drug_barcode,
+    detect_normal_poliklinik_wrong_method,
+    detect_unreported_lab_result,
+    detect_vakabasi_wrong_method,
 )
 from src.bilun.domain.prose_rules.conditional_addon_ek2d import (
     detect_conditional_addon_ek2d_opportunities,
@@ -206,7 +217,9 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         if ctx.procedure_lines:
             violations.extend(detect_sct_temporal_window_violations_for_context(ctx))
 
-        # 17. Common billing errors (El Kitabı Tablo 15 top 5).
+        # 17. Common billing errors (El Kitabı Tablo 15).
+        # Phase 1 (top 5): missing diagnosis, duplicate exam, duplicate tests,
+        # exam/admission date mismatch, missing drug barcode.
         violations.extend(detect_missing_diagnosis(list(ctx.claims)))
         if ctx.procedure_lines:
             violations.extend(
@@ -227,6 +240,71 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         if ctx.drug_lines:
             violations.extend(
                 detect_missing_drug_barcode(list(ctx.claims), ctx.drug_lines)
+            )
+
+        # Phase 2 (11 more detectors, errors #3/#4/#5/#7/#9/#10/#11/#15/#16/
+        # #21/#24). Each is gated on the data it needs.
+        # #9 — admission→billing window (claim-header date arithmetic).
+        violations.extend(detect_admission_billing_window(list(ctx.claims)))
+        if ctx.procedure_lines:
+            # #3 / #4 — payment-method (vakabaşı vs Normal Poliklinik) mismatch.
+            violations.extend(
+                detect_vakabasi_wrong_method(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+            violations.extend(
+                detect_normal_poliklinik_wrong_method(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+            # #7 — green-area exam + bundled extras.
+            violations.extend(
+                detect_green_area_bundled_extras(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+            # #10 — unreported lab result.
+            violations.extend(
+                detect_unreported_lab_result(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+            # #21 — inpatient-only service on an outpatient takip.
+            violations.extend(
+                detect_inpatient_on_outpatient(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+            # #24 — donor-prep workup billed as routine exam.
+            violations.extend(
+                detect_donor_prep_as_exam(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+        if ctx.material_lines:
+            # #5 — material identity (SUT/barcode) errors.
+            violations.extend(
+                detect_material_identity_errors(
+                    list(ctx.claims), ctx.material_lines
+                )
+            )
+            # #15 — material pre-auth missing.
+            violations.extend(
+                detect_material_preauth_missing(
+                    list(ctx.claims), ctx.material_lines
+                )
+            )
+            # #16 — wrong/missing material-type code.
+            violations.extend(
+                detect_material_type_missing(
+                    list(ctx.claims), ctx.material_lines
+                )
+            )
+        if ctx.drug_lines:
+            # #11 — drug quantity (adet) error.
+            violations.extend(
+                detect_drug_quantity_error(list(ctx.claims), ctx.drug_lines)
             )
 
     return violations
