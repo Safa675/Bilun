@@ -3,7 +3,7 @@
   "section_id": "4.2.14.C",
   "effective_date": "2026-06-29",
   "rule_set_id": "drug_indication_4.2.14.C",
-  "rules_in_json": 922,
+  "rules_in_json": 924,
   "section_clause_total": 615,
   "encoded_clause_count": 415,
   "tier_a_pending_count": 0,
@@ -5706,7 +5706,9 @@
       "manifest_status": "encoded",
       "heuristic_inn": "DIPPS plus skorlama sistemine göre orta veya yüksek risk grubu olan.",
       "linked_rule_ids": [
-        "4.2.14.C.nivolumab_classical_hodgkin_board"
+        "4.2.14.C.nivolumab_classical_hodgkin_board",
+        "nivolumab_melanoma_board",
+        "nivolumab_renal_cell_carcinoma_board"
       ]
     },
     {

@@ -2155,6 +2155,32 @@ rules:
   message_tr: Nivolumab — nüks/refrakter klasik Hodgkin lenfoma endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
   - C005725
+- rule_id: nivolumab_melanoma_board
+  sut_section: 4.2.14.C
+  drug_names:
+  - nivolumab
+  icd10_ranges:
+  - C43
+  report_required: true
+  report_specialties:
+  - hematoloji
+  - tıbbi onkoloji
+  message_tr: Nivolumab — melanom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
+  gate_b_sources:
+  - C005725
+- rule_id: nivolumab_renal_cell_carcinoma_board
+  sut_section: 4.2.14.C
+  drug_names:
+  - nivolumab
+  icd10_ranges:
+  - C64
+  report_required: true
+  report_specialties:
+  - hematoloji
+  - tıbbi onkoloji
+  message_tr: Nivolumab — renal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
+  gate_b_sources:
+  - C005725
 - rule_id: 4.2.14.C.nmosd_3neurology_6m
   sut_section: 4.2.14.C
   gate_b_sources:
