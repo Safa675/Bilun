@@ -6,7 +6,7 @@
     "4.2",
     "4.2.14.C"
   ],
-  "coverage_note": "Phase 0–5 — 922 rules for §4.2.14.C; full clause trace manifest (encoded + pending + Tier C deferred with theme tags).",
+  "coverage_note": "Phase 0–5 — 924 rules for §4.2.14.C; full clause trace manifest (encoded + pending + Tier C deferred with theme tags).",
   "rules": [
     {
       "rule_id": "4.1.1.family_medicine_contracted_prescribe_coverage",
@@ -22917,6 +22917,44 @@
         "enforcement": "coverage: hemophilia prescriptions are covered when issued by a hematology, internal-medicine or pediatrics specialist physician in accordance with the relevant legislation",
         "message_tr": "Hemofili reçetelerinin hematoloji, iç hastalıkları veya çocuk sağlığı ve hastalıkları uzman hekimlerinden biri tarafından ilgili mevzuata uygun olarak düzenlenmesi halinde bedelleri Kurumca karşılanır (§4.7)."
       }
+    },
+    {
+      "rule_id": "nivolumab_melanoma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "nivolumab"
+      ],
+      "icd10_ranges": [
+        "C43"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Nivolumab — melanom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005725"
+      ]
+    },
+    {
+      "rule_id": "nivolumab_renal_cell_carcinoma_board",
+      "sut_section": "4.2.14.C",
+      "drug_names": [
+        "nivolumab"
+      ],
+      "icd10_ranges": [
+        "C64"
+      ],
+      "report_required": true,
+      "report_specialties": [
+        "hematoloji",
+        "tıbbi onkoloji"
+      ],
+      "message_tr": "Nivolumab — renal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
+      "gate_b_sources": [
+        "C005725"
+      ]
     }
   ]
 }

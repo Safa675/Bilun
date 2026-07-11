@@ -108,6 +108,11 @@ def _finalize_summary_rounding(
     summary.total_session_uplift = round(summary.total_session_uplift, 2)
     summary.total_drg_uplift = round(summary.total_drg_uplift, 2)
     summary.total_blood_uplift = round(summary.total_blood_uplift, 2)
+    summary.total_yatak_puani = round(summary.total_yatak_puani, 2)
+    summary.total_icu_puani = round(summary.total_icu_puani, 2)
+    summary.total_yenidogan_yatak = round(summary.total_yenidogan_yatak, 2)
+    summary.total_refakatci = round(summary.total_refakatci, 2)
+    summary.total_anestezi_puani = round(summary.total_anestezi_puani, 2)
     summary.total_material_uplift = round(summary.total_material_uplift, 2)
     summary.total_procedure_addon_uplift = round(summary.total_procedure_addon_uplift, 2)
     summary.total_optional_override_uplift = round(summary.total_optional_override_uplift, 2)
@@ -131,6 +136,11 @@ def _savings_by_category(summary: CohortRecoverySummary) -> dict[str, float]:
         "session_uplift": summary.total_session_uplift,
         "drg_uplift": summary.total_drg_uplift,
         "blood_uplift": summary.total_blood_uplift,
+        "yatak_puani": summary.total_yatak_puani,
+        "icu_puani": summary.total_icu_puani,
+        "yenidogan_yatak": summary.total_yenidogan_yatak,
+        "refakatci": summary.total_refakatci,
+        "anestezi_puani": summary.total_anestezi_puani,
         "material_uplift": summary.total_material_uplift,
         "procedure_addon_uplift": summary.total_procedure_addon_uplift,
         "optional_override": summary.total_optional_override_uplift,

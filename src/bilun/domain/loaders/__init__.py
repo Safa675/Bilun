@@ -13,6 +13,7 @@ from .checkup import (
 from .gazette import (
     _load_curated_ek2b_by_asof,
     _load_curated_ek2c_by_asof,
+    _load_curated_ek2c_dental_by_asof,
     _load_ek2a,
     _load_ek3_materials_parquet,
     _load_gazette_lab_prices,
@@ -33,6 +34,7 @@ __all__ = [
     "_load_checkup_json",
     "_load_curated_ek2b_by_asof",
     "_load_curated_ek2c_by_asof",
+    "_load_curated_ek2c_dental_by_asof",
     "_load_ek1a_exemptions",
     "_load_ek2a",
     "_load_ek2c1_copay_rates",

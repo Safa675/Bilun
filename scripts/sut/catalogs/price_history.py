@@ -15,6 +15,10 @@ import pandas as pd
 
 RE_EK2B_CODE = re.compile(r"^(L\d{6}|R\d{6}|G\d{6}|[5-9]\d{5})$")
 RE_EK2C_CODE = re.compile(r"^P\d{6}$")
+# EK-2Ç (dental) codes: 6-digit numeric (40xxxx) or P40xxxx package codes
+# (orthodontic treatment packages). Trailing gazette-change annotations are
+# stripped before matching so "403020  (Değişik: RG-17/01/2026...)" validates.
+RE_EK2C_DENTAL_CODE = re.compile(r"^(P?40\d{4})$")
 
 # SUT point-to-TRY conversion coefficient (puan x coefficient = price in TRY).
 # Updated annually per Official Gazette; current value is for 2024 gazette year.
@@ -167,6 +171,52 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
     ]
 
 
+def extract_ek2c_dental(df: pd.DataFrame) -> pd.DataFrame:
+    """Extract EK-2Ç (dental) procedure rows.
+
+    The dental sheet (EK-2Ç) shares the EK-2B header layout
+    (İŞLEM KODU / İŞLEM ADI / İŞLEM PUANI) but adds an AÇIKLAMALAR column and
+    uses the 40xxxx code range (plus P40xxxx orthodontic-treatment packages).
+    """
+    required = {"ISLEM KODU", "ISLEM ADI", "ISLEM PUANI"}
+
+    h_idx = _find_header_row(df, required)
+    if h_idx is None:
+        raise ValueError("EK-2Ç header row not found")
+
+    header = df.iloc[h_idx]
+    pos = _build_pos_map(header)
+    body = df.iloc[h_idx + 1 :]
+
+    raw_codes = body.iloc[:, pos["ISLEM KODU"]].apply(
+        lambda x: str(x).strip() if pd.notna(x) else ""
+    )
+    # Some dental cells carry trailing gazette-change annotations, e.g.
+    # "403020  (Değişik: RG-17/01/2026-33140/...)". Keep the leading token
+    # (the actual code) before the parenthesised changelog.
+    codes = raw_codes.str.replace(r"\s*\(.*$", "", regex=True).str.strip()
+
+    out = pd.DataFrame()
+    out["code"] = codes
+    out["name"] = body.iloc[:, pos["ISLEM ADI"]].apply(
+        lambda x: str(x).strip() if pd.notna(x) else ""
+    )
+    out["puan"] = pd.to_numeric(
+        body.iloc[:, pos["ISLEM PUANI"]], errors="coerce"
+    )
+    if "ACIKLAMA" in pos:
+        out["description"] = _cell_text(body.iloc[:, pos["ACIKLAMA"]])
+    else:
+        out["description"] = ""
+
+    # Drop section-header rows (no numeric puan) and validate the code shape.
+    out = out.dropna(subset=["puan"])
+    out = out[out["code"].str.match(RE_EK2C_DENTAL_CODE, na=False)]
+    out["price_try"] = (out["puan"] * SUT_PUAN_COEFFICIENT).round(2)
+    out = out.reset_index(drop=True)
+    return out[["code", "name", "description", "puan", "price_try"]]
+
+
 SPECS: list[dict] = [
     {
         "annex": "EK-2B",
@@ -183,5 +233,13 @@ SPECS: list[dict] = [
         "extractor": extract_ek2c,
         "history_key": "package_code",
         "label": "EK-2C Package Prices (history)",
+    },
+    {
+        "annex": "EK-2Ç",
+        "output": "ek2c_dental_catalog_history.parquet",
+        "source": "raw_all_versions",
+        "extractor": extract_ek2c_dental,
+        "history_key": "code",
+        "label": "EK-2Ç Dental Procedure Prices (history)",
     },
 ]

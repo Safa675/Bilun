@@ -37,6 +37,22 @@ CHECKUP_JSON_PATH = _GAZETTE_DIR / "sut_checkup_pricing.json"
 EK2B_CURATED_HISTORY_PATH = _GAZETTE_CURATED_DIR / "ek2b_catalog_history.parquet"
 EK2C_CURATED_HISTORY_PATH = _GAZETTE_CURATED_DIR / "ek2c_catalog_history.parquet"
 
+# EK-2Ç dental procedures (same puan/price structure as EK-2B, 40xxxx codes).
+# Built by scripts/sut/build_curated_catalogs.py from the EK-2Ç annex family
+# once the Turkish-character regex in convert_xlsx_to_parquet.py routes the
+# dental workbook into annex=EK-2Ç (previously mis-bucketed as "EK-2").
+EK2C_DENTAL_CURATED_HISTORY_PATH = (
+    _GAZETTE_CURATED_DIR / "ek2c_dental_catalog_history.parquet"
+)
+# Fallback: the original .xls when the curated parquet has not been built yet.
+_EK2C_DENTAL_XLS_FALLBACK = (
+    _PROJECT_ROOT
+    / "raw data"
+    / "2026.05.23-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT"
+    / "EK-2 LİSTELERİ"
+    / "EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.01.01.2026).xls"
+)
+
 # Curated EK-3B catalogs (material exclusions & bundled consumables)
 EK3B2_NON_REIMBURSABLE_PATH = _GAZETTE_CURATED_DIR / "ek3b2_non_reimbursable.parquet"
 EK3B1_BUNDLED_PATH = _GAZETTE_CURATED_DIR / "ek3b1_bundled_consumables.parquet"

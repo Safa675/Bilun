@@ -28,6 +28,7 @@ from functools import lru_cache
 from typing import Any
 
 from ..constants import _PROSE_RULES_DIR
+from .facility_tier import normalize_facility_tier
 
 _MISC_RULES_PATH = _PROSE_RULES_DIR / "gap_closing_misc.json"
 _TREATMENT_RULES_PATH = _PROSE_RULES_DIR / "gap_closing_treatment_2.json"
@@ -40,7 +41,9 @@ _SCALAR_FIELDS = {
     "procedure_category",
     "procedure_code",
     "payment_method",
+    "payment_method_path",
     "provider_type",
+    "provider_contract_status",
     "specialty",
     "visit_type",
     "care_setting",
@@ -52,6 +55,8 @@ _SCALAR_FIELDS = {
     "drug_category",
     "material_category",
     "facility_tier",
+    "facility_tier_basamak",
+    "facility_type",
     "expense_type",
     "test_type",
 }
@@ -76,12 +81,36 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
     - boolean flag → ``context.get(key)`` must equal the condition value;
     - ``*_any`` predicate → at least one claim value in the set must be present
       in the context's collection for that base field;
+    - ``procedure_in_annex`` → at least one billed procedure code is a member
+      of the named annex (e.g. ``EK-2/A-2``, ``EK-2/C-1``, ``EK-2/C``,
+      ``EK-2/B``); resolved against the loaded catalog code sets.
     - scalar field → ``context.get(field)`` must equal the condition value.
 
     Keys absent from ``context`` cause the rule to be skipped (returns False)
     rather than firing on missing data — this is the honesty guard.
     """
     for key, expected in condition.items():
+        # procedure_in_annex — annex membership over the billed procedure codes.
+        # The predicate value is the annex identifier (e.g. "EK-2/A-2"); the
+        # billed codes are surfaced under context["procedure_code_any"]. We
+        # import the resolver lazily to avoid a module-load cycle (catalog
+        # membership pulls in heavy catalog machinery).
+        if key == "procedure_in_annex":
+            annex = str(expected or "").strip()
+            billed_codes = context.get("procedure_code_any") or context.get("procedure_code")
+            if not billed_codes or not annex:
+                return False
+            code_list = (
+                list(billed_codes)
+                if isinstance(billed_codes, (list, tuple, set))
+                else [billed_codes]
+            )
+            from .catalog_membership import any_procedure_in_annex
+
+            if not any_procedure_in_annex(code_list, annex):
+                return False
+            continue
+
         if key.endswith(_SET_PREDICATE_SUFFIXES):
             base = key[: -_suffix_len(key)]
             # Prefer the explicit <base>_any / <base>_in collection when the
@@ -117,8 +146,27 @@ def _condition_matches(condition: dict[str, Any], context: dict[str, Any]) -> bo
         if isinstance(expected, bool) or key in _SCALAR_FIELDS:
             actual = context.get(key)
             if actual is None:
-                # Flag/scalar not surfaced on this claim → skip, do not guess.
-                return False
+                # Scalar field not surfaced on this claim. For a scalar predicate
+                # like ``procedure_category`` that has an ``*_any`` collection
+                # counterpart (e.g. ``procedure_category_any``), fall back to
+                # membership testing against that collection. This is the
+                # multi-category scalar fallback: when a claim carries mixed
+                # categories the builder leaves the scalar unset (it cannot pick
+                # one truthfully) but surfaces the full set under ``*_any``, so a
+                # rule asking ``procedure_category == 'ftr'`` should still match
+                # if 'ftr' is in the claim's category set. Without this fallback
+                # ~80 rules honest-skip on any multi-category claim.
+                any_collection = context.get(f"{key}_any")
+                if any_collection is None:
+                    return False
+                any_set = (
+                    set(any_collection)
+                    if isinstance(any_collection, (list, tuple, set))
+                    else {any_collection}
+                )
+                if expected not in any_set:
+                    return False
+                continue
             if bool(actual) != bool(expected) if isinstance(expected, bool) else actual != expected:
                 return False
             continue
@@ -328,7 +376,64 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     )
     if payment_method is not None:
         context["payment_method"] = payment_method
-    # Drug-derived fields.
+        # ``payment_method_path`` is the payment_method_2_2.json vocabulary for
+        # the same §2.2.2.B path decision: ``itemized`` == EK-2/B fee-for-service
+        # (itemized billing). The DRG/diagnosis_based path has no single
+        # ``payment_method_path`` token the rules use, so it is left unset and
+        # those rules honest-skip. Surfacing ``itemized`` here unblocks the
+        # §2.2.2.A / §2.2.1.B-2.(2) itemized-basis traceability rules.
+        if payment_method == "fee_for_service":
+            context["payment_method_path"] = "itemized"
+    # ───────────────────────────────────────────────────────────────────────
+    # §2.2 context keys reused by the payment_method traceability pass
+    # (payment_method_2_2.json). All derived from EXISTING header/line fields
+    # — no new data is invented. Keys that genuinely need cross-claim or
+    # clinical data the claim model does not carry (visit_sequence,
+    # same_specialty_repeat_days_lt, line_type, contract_status cross-claim
+    # lookups, etc.) are intentionally left unset so ``_condition_matches``
+    # honest-skips the rules that reference them rather than guessing.
+    # ───────────────────────────────────────────────────────────────────────
+    # provider_contract_status: provider_type is a SUT-contracting signal.
+    #   sozlesmeli/contracted → "contracted"; sozlesmesiz/uncontracted →
+    #   "uncontracted". The 2.2.(8)/2.2.(12) rules gate on "contracted".
+    if header.provider_type in ("sozlesmeli", "contracted", "private"):
+        context["provider_contract_status"] = "contracted"
+    elif header.provider_type in ("uncontracted", "sozlesmesiz"):
+        context["provider_contract_status"] = "uncontracted"
+    # visit_type: the day-case marker "gunubirlik" surfaces directly from
+    # claim_type (SUT §2.2.2.(4)/(5) gunubirlik no day-bed / companion-fee
+    # rules). Other visit types (telehealth, followup) require line-level data
+    # the model does not carry → left unset (honest skip).
+    if "gunubirlik" in claim_type_lower:
+        context["visit_type"] = "gunubirlik"
+    # facility_type: training/research hospitals (universite / egitim_arastirma
+    # provider types) are the §2.2.1.B-1.c / §2.2.2.A(6) / §2.2.1.B-2.(4) gate.
+    provider_type_lower = (header.provider_type or "").lower()
+    if any(
+        token in provider_type_lower
+        for token in ("universite", "egitim_arastirma", "training_research")
+    ):
+        context["facility_type"] = "training_research_hospital"
+    # facility_tier_basamak: resolved via the facility_tier normalizer (2 or 3).
+    #   The 2.2.2.(2) override rule gates on basamak == 3. Only surfaced when the
+    #   tier resolves (basamak is not None); unresolved tiers honest-skip.
+    tier_context = normalize_facility_tier(
+        header.facility_tier, provider_type=header.provider_type
+    )
+    if tier_context.basamak is not None:
+        context["facility_tier_basamak"] = tier_context.basamak
+    # emergency_excluded: the §2.2.1.B-4 same-specialty repeat rules EXCLUDE
+    # emergency claims from the no-visit-fee gate. When the claim IS an
+    # emergency, ``emergency_excluded`` must be True for those rules; we cannot
+    # truthfully assert the negative ("this claim is definitely non-emergency")
+    # from header data alone, so we only surface True and otherwise leave the key
+    # absent (honest skip) rather than emitting a wrong False.
+    if context["is_emergency"]:
+        context["emergency_excluded"] = True
+    # Drug-derived fields. Surface the full set under ``drug_category_any``
+    # (membership predicates) and the bare scalar only when the claim has a
+    # single category (exact-equality rules); see the procedure_category note
+    # above for the multi-value honesty contract.
     if drug_lines:
         drug_categories = set()
         for d in drug_lines:
@@ -336,13 +441,17 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
             if cat:
                 drug_categories.add(cat)
         if drug_categories:
-            context["drug_category"] = sorted(drug_categories)[:1][0]
-    # Material-derived fields.
+            context["drug_category_any"] = sorted(drug_categories)
+            if len(drug_categories) == 1:
+                context["drug_category"] = next(iter(drug_categories))
+    # Material-derived fields. Same scalar/``*_any`` contract as drugs/procedures.
     material_lines = _lines_for_claim("material_lines")
     if material_lines:
         material_categories = {m.specialty_category for m in material_lines if m.specialty_category}
         if material_categories:
-            context["material_category"] = sorted(material_categories)[:1][0]
+            context["material_category_any"] = sorted(material_categories)
+            if len(material_categories) == 1:
+                context["material_category"] = next(iter(material_categories))
     return context
 
 

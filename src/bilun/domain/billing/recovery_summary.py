@@ -38,6 +38,7 @@ def _get_top_action_type(report: BillingActionReport) -> str:
             "session_uplift": report.session_uplift.total_uplift_try,
             "drg_uplift": report.drg_uplift.confirmed_uplift_try,
             "blood_uplift": report.blood_uplift.confirmed_uplift_try,
+            "yatak_puani": report.yatak_puani.confirmed_yatak_try,
             "material_uplift": report.material_uplift.confirmed_uplift_try,
             "procedure_addon_uplift": report.procedure_addon_uplift.confirmed_uplift_try,
             "strategy": report.billing_strategy.uplift_savings_try,
@@ -100,6 +101,9 @@ def patient_recovery_summary_from_payload(report: dict[str, Any]) -> dict[str, A
         ),
         "blood_uplift": float(
             (report.get("blood_uplift") or {}).get("confirmed_uplift_try") or 0
+        ),
+        "yatak_puani": float(
+            (report.get("yatak_puani") or {}).get("confirmed_yatak_try") or 0
         ),
         "material_uplift": float(
             (report.get("material_uplift") or {}).get("confirmed_uplift_try") or 0

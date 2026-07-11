@@ -29,6 +29,7 @@ from .loaders import (
     _load_checkup_json,
     _load_curated_ek2b_by_asof,
     _load_curated_ek2c_by_asof,
+    _load_curated_ek2c_dental_by_asof,
     _load_ek1a_exemptions,
     _load_ek2g_no_surcharge,
     _load_ek2c1_copay_rates,
@@ -129,6 +130,21 @@ def load_sut_catalog(
         return _catalog_cache_by_asof[asof_date]
 
     parquet_data = _load_curated_ek2b_by_asof(asof_date)
+
+    # EK-2Ç dental procedures live in a separate annex (40xxxx codes) but use
+    # the same puan→TRY pricing structure as EK-2B. Merge them into the unified
+    # ``by_code`` index so ``lookup_procedure_code`` resolves dental codes
+    # (e.g. 402010 amalgam filling) alongside EK-2B entries. Dental codes never
+    # overlap EK-2B's code space (L1/R1/G1 prefixes, 5xxxxx-9xxxxx ranges), so
+    # the merge is collision-free; we only add codes absent from EK-2B.
+    dental_data = _load_curated_ek2c_dental_by_asof(asof_date)
+    if dental_data:
+        merged: dict[str, dict[str, Any]] = dict(parquet_data) if parquet_data else {}
+        for dcode, dentry in dental_data.items():
+            if dcode not in merged:
+                merged[dcode] = dentry
+        parquet_data = merged
+
     if parquet_data:
         procedures_by_code: dict[str, dict[str, Any]] = {}
         for entry in parquet_data.values():
@@ -151,6 +167,7 @@ def load_sut_catalog(
             "price_mean": round(sum(prices) / len(prices), 2) if prices else 0,
             "source": "temporal_parquet",
             "asof_date": asof_date,
+            "dental_codes": len(dental_data),
         }
 
         ek2c_data = _load_curated_ek2c_by_asof(asof_date)
@@ -162,6 +179,9 @@ def load_sut_catalog(
                 "stats": stats,
             },
             "ek2c": ek2c_data,
+            "ek2c_dental": {
+                "by_code": dental_data,
+            },
         }
         _catalog_cache_by_asof[asof_date] = catalog
         return catalog
