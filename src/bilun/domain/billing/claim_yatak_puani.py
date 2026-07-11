@@ -35,6 +35,7 @@ def recommend_yatak_puani_from_claims(
     claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
     opportunities = detect_yatak_puani_opportunities(
         list(ctx.claims),
+        procedure_lines=list(ctx.procedure_lines),
         claim_ids_with_procs=claim_ids_with_procs,
     )
 

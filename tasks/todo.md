@@ -1,3 +1,67 @@
+## Task: Yatak package-bundling fix + El Kitabı scenario mining
+
+### Goal
+Fix the package-bundling gap discovered in Tablo 23 (yatak motor was billing bed-days on top of EK-2C packages). Then mine the entire El Kitabı for additional test scenarios using parallel subagents.
+
+### Subtasks
+- [x] S1 — Modify `yatak_puani.py`: added `procedure_lines` param, `_find_package_surgery_day()` helper, subtracts 1 surgery day when paket-category line found. Added `gross_bed_days`, `surgery_day_bundled`, `bundled_days` fields to opportunity dict.
+- [x] S2 — Update `claim_yatak_puani.py` wrapper to pass `procedure_lines` to detector.
+- [x] S3 — Update Tablo 23 test: removed xfail, split into `test_tablo23_yatak_days_count_with_package_bundling` (3 billable days = ₺667.08) + `test_tablo23_yatak_days_count_no_procedures` (4 days = ₺889.44, backwards-compatible).
+- [x] S4 — Verify: 1980 passed / 0 failed, compile_rules byte-identical.
+- [x] S5 — Launch 4 parallel subagents to mine El Kitabı Tablo 12-36:
+  - Agent 1: ICU tables 20-22 → `/tmp/elkitabi_scenarios/icu_scenarios.md`
+  - Agent 2: Surgery tables 24-29 → `/tmp/elkitabi_scenarios/surgery_scenarios.md`
+  - Agent 3: Oncology/transplant tables 30-36 → `/tmp/elkitabi_scenarios/onco_transplant_scenarios.md`
+  - Agent 4: Outpatient/FTR/dental tables 12-16 → `/tmp/elkitabi_scenarios/outpatient_ftr_dental_scenarios.md`
+- [x] S6 — Write consolidated inventory: `plans/billing/elkitabi-test-scenarios-inventory.md`
+
+### Review
+- **Package-bundling fix verified:** Tablo 23 scenario now bills 3 days (₺667.08) instead of 4 days (₺889.44) when P610130 paket line present. Surgery day correctly excluded.
+- **Backwards-compatible:** Without procedure_lines, motor still bills all days (existing tests pass unchanged).
+- **El Kitabı mining complete:** All worked examples (Tablo 12-36) extracted. Key findings:
+  - **ICU (Tablo 20-22):** BILUN's totals match handbook exactly (260,428.26 puan for 12-day Sınıf-3). Test gap: no long-stay or 2nd-basamak P552002 test case.
+  - **Surgery (Tablo 24-29):** Same package-bundling pattern as Tablo 23. Additional gaps: kesi oranı (Tablo 29), mother/newborn split (Tablo 28), %20 kapalı servis (Tablo 26).
+  - **Tablo 15 (Common Errors):** 24 billing errors cataloged — HIGHEST VALUE for BILUN's claim-scrubbing value proposition.
+  - **Gaps:** Radiation oncology, transplant, CABG have NO motors (Tier 3).
+
+### Out of Scope
+- Implementing the 24 common billing errors from Tablo 15 (separate task).
+- Building motors for radiation/transplant/CABG (Tier 3, needs real data).
+- Testing Tablo 24-29 (quick wins identified in inventory).
+
+---
+
+## Task: El Kitabı Tablo 23 — Appendektomi component validation
+
+### Goal
+Validate BILUN's bed-day motors against the Sağlık Bakanlığı "Faturalandırma Usul ve Esasları El Kitabı" (2022), Tablo 23 (P610130 Appendektomi worked example). Component-level check without needing a full invoice builder.
+
+### Subtasks
+- [x] T1 — Extract Tablo 23 from the PDF (page 86, embedded image). Tables are images, not extractable text — used `pdfimages` + `pdftoppm` + `analyze_image` to transcribe.
+- [x] T2 — Transcribe scenario: ER presentation → Gen Cerrahi yatış → P610130 Appendektomi → 4-day stay → discharge.
+- [x] T3 — Transcribe billing instructions: P610130 via EK-2/C package; 705371 Eritrosit = %36 of EK-2/B puan; Anestezi separate; **İlaç + Malzeme + Yatak INCLUDED in P610130 package**.
+- [x] T4 — Build catalog-verified constants: 610130 puan=3397.78/₺2014.88; P610130 EK-2C puan=8567.091/₺5080.28; 510010 yatak ₺222.36/day; 550130 anestezi A1 ₺5302.69.
+- [x] T5 — Write validation test `tests/unit/domain/billing/test_elkitabi_tablo23.py` (6 tests):
+  - `test_tablo23_yatak_days_count` — 4 inclusive days (PASSED)
+  - `test_tablo23_yatak_amount_matches_catalog` — ₺889.44 = 4×222.36 (PASSED)
+  - `test_tablo23_yatak_should_exclude_surgery_day` — **XFAIL (strict)** documents the package-bundling gap
+  - `test_tablo23_anestezi_group_is_a1` — 550130 A1 group, ₺5302.69 (PASSED)
+  - `test_tablo23_refakatci_emitted_for_inpatient` — refakatçi fires though handbook has no companion (PASSED)
+  - `test_tablo23_full_billing_summary` — BILUN overcounts by yatak+refakatçi vs handbook (PASSED)
+
+### Review
+- `pytest test_elkitabi_tablo23.py -v` → **5 passed, 1 xfailed** (the xfail is the documented gap).
+- **Critical finding (package-bundling gap):** BILUN's yatak motor bills 4 bed-days (₺889.44) ON TOP of the EK-2/C package, but El Kitabı Tablo 23 states "İlaç + Malzeme + Yatak pakete dahildir" (drugs, materials, bed-days are included in the P610130 package). The motor should exclude the surgery-day bed fee (at minimum) for EK-2C package claims. Subagent investigation confirmed: zero code anywhere checks `paket`/`package_candidate`/`is_package_included` before emitting yatak opportunities, and no SUT rule encodes "işlem günü yatak ücreti dâhildir".
+- **Anestezi validation PASSES**: P610130 (puan 3397.78) correctly maps to A1 group (550130, ₺5302.69). The puan-range→group logic is sound.
+- **Refakatçi conservatism documented**: BILUN emits companion-bed opportunities for any non-ICU, non-day-case inpatient claim, even when the handbook scenario has no companion. This is informational (the hospital may not have had one), not a hard bug.
+
+### Out of Scope
+- Fixing the yatak package-bundling gap (separate task — needs an SUT rule encoding "işlem günü yatak pakete dahil" + a predicate in yatak_puani.py).
+- Invoice builder feature (deferred — BILUN is a validator, not an invoice constructor).
+- Validating other Tablo examples (24-36) — Tablo 23 was the proof-of-concept.
+
+---
+
 ## Task: Pipeline simplification (remaining phases)
 
 ### Goal
