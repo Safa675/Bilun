@@ -70,6 +70,25 @@ from src.bilun.domain.prose_rules.specialty_materials import (
 from src.bilun.domain.prose_rules.treatment_pricing import (
     check_treatment_pricing_for_context,
 )
+from src.bilun.domain.prose_rules.common_billing_errors import (
+    detect_duplicate_exam_10day,
+    detect_duplicate_tests,
+    detect_exam_admission_date_mismatch,
+    detect_missing_diagnosis,
+    detect_missing_drug_barcode,
+)
+from src.bilun.domain.prose_rules.conditional_addon_ek2d import (
+    detect_conditional_addon_ek2d_opportunities,
+)
+from src.bilun.domain.prose_rules.radiation_oncology import (
+    detect_radiation_oncology_violations,
+)
+from src.bilun.domain.prose_rules.sct_temporal_window import (
+    detect_sct_temporal_window_violations_for_context,
+)
+from src.bilun.domain.prose_rules.transplant_package_scope import (
+    detect_transplant_package_scope_violations,
+)
 from src.bilun.domain.rules.bundling_rules import check_bundling_violations_for_context
 from src.bilun.domain.rules.exclusion_rules import (
     check_exclusion_violations_for_context,
@@ -144,5 +163,70 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         # derivable keys; the rest need session counters / IVF cycles / clinical
         # scores absent from the claim model and honest-skip).
         violations.extend(check_treatment_pricing_for_context(ctx))
+
+    # ── El Kitabı-derived validation motors ───────────────────────────────
+    # These detectors run on the typed context and emit violations for the
+    # billing scenarios cataloged in the Sağlık Bakanlığı El Kitabı (2022).
+    # They are gated on a real patient context (non-empty patient_id) so they
+    # do not fire on the minimal contexts built by the dict-adapter path
+    # (validate_claim), which sets patient_id="".
+
+    if ctx.patient_id:
+        # 13. EK-2/D-4/D-5 conditional add-on (neuromonitoring /
+        # neuronavigation billed without a qualifying primary procedure on
+        # the D-4/D-5 list).
+        if ctx.procedure_lines:
+            violations.extend(
+                detect_conditional_addon_ek2d_opportunities(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+
+        # 14. Transplant package-scope (liver transplant P609080 bundles all
+        # surgical procedures; separately billed items are violations).
+        if ctx.procedure_lines:
+            for claim in ctx.claims:
+                claim_lines = [
+                    ln for ln in ctx.procedure_lines if ln.claim_id == claim.claim_id
+                ]
+                violations.extend(
+                    detect_transplant_package_scope_violations(claim, claim_lines)
+                )
+
+        # 15. Radiation oncology mutual-exclusion (800xxx family caps +
+        # same-day collapse).
+        if ctx.procedure_lines:
+            violations.extend(
+                detect_radiation_oncology_violations(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+
+        # 16. SCT temporal-window (704981 mesenchymal SCT add-on gating).
+        if ctx.procedure_lines:
+            violations.extend(detect_sct_temporal_window_violations_for_context(ctx))
+
+        # 17. Common billing errors (El Kitabı Tablo 15 top 5).
+        violations.extend(detect_missing_diagnosis(list(ctx.claims)))
+        if ctx.procedure_lines:
+            violations.extend(
+                detect_duplicate_exam_10day(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+            violations.extend(
+                detect_duplicate_tests(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+            violations.extend(
+                detect_exam_admission_date_mismatch(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+        if ctx.drug_lines:
+            violations.extend(
+                detect_missing_drug_barcode(list(ctx.claims), ctx.drug_lines)
+            )
 
     return violations
