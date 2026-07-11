@@ -483,6 +483,30 @@ class RefakatciReview:
 
 
 @dataclass
+class AnesteziPuaniReview:
+    """Expected anesthesia (anestezi puanı) charges for inpatient surgical procedures."""
+
+    opportunities: list[dict[str, Any]] = field(default_factory=list)
+    exactness_status: str = EXACTNESS_STATUS_MISSING_INPUTS
+    unavailable_reason: str | None = None
+    required_inputs_missing: list[str] = field(default_factory=list)
+    rule_source: str = (
+        "SUT §2.4.4.A anestezi — surgical puan range → group puan (EK-2B 550130-550190)"
+    )
+
+    @property
+    def confirmed_anestezi_try(self) -> float:
+        return round(
+            sum(
+                float(row.get("expected_try") or 0.0)
+                for row in self.opportunities
+                if row.get("included_in_sgk_total", True)
+            ),
+            2,
+        )
+
+
+@dataclass
 class MaterialUplift:
     """Recoverable SGK uplift from missing separately billable materials."""
 
@@ -806,6 +830,7 @@ class BillingActionReport:
     icu_puani: IcuPuaniReview = field(default_factory=IcuPuaniReview)
     yenidogan_yatak: YenidoganYatakReview = field(default_factory=YenidoganYatakReview)
     refakatci: RefakatciReview = field(default_factory=RefakatciReview)
+    anestezi_puani: AnesteziPuaniReview = field(default_factory=AnesteziPuaniReview)
     material_uplift: MaterialUplift = field(default_factory=MaterialUplift)
     care_setting_review: CareSettingReview = field(default_factory=CareSettingReview)
     procedure_addon_uplift: ProcedureAddonUplift = field(
@@ -861,6 +886,7 @@ class CohortRecoverySummary:
     total_icu_puani: float = 0.0
     total_yenidogan_yatak: float = 0.0
     total_refakatci: float = 0.0
+    total_anestezi_puani: float = 0.0
     total_optional_override_uplift: float = 0.0
     n_optional_override_patients: int = 0
     n_drg_uplift_patients: int = 0
@@ -869,6 +895,7 @@ class CohortRecoverySummary:
     n_icu_puani_patients: int = 0
     n_yenidogan_yatak_patients: int = 0
     n_refakatci_patients: int = 0
+    n_anestezi_puani_patients: int = 0
     total_material_uplift: float = 0.0
     n_material_uplift_patients: int = 0
     total_procedure_addon_uplift: float = 0.0

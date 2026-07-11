@@ -13,6 +13,9 @@ from src.bilun.domain.billing.claim_yenidogan_yatak import (
     recommend_yenidogan_yatak_from_claims,
 )
 from src.bilun.domain.billing.claim_refakatci import recommend_refakatci_from_claims
+from src.bilun.domain.billing.claim_anestezi_puani import (
+    recommend_anestezi_puani_from_claims,
+)
 from src.bilun.domain.billing.claim_care_setting_review import (
     recommend_care_setting_review_from_claims,
 )
@@ -111,6 +114,7 @@ def compute_patient_billing_report(
         report.icu_puani = recommend_icu_puani_from_claims(claim_context)
         report.yenidogan_yatak = recommend_yenidogan_yatak_from_claims(claim_context)
         report.refakatci = recommend_refakatci_from_claims(claim_context)
+        report.anestezi_puani = recommend_anestezi_puani_from_claims(claim_context)
         report.material_uplift = recommend_material_uplift_from_claims(claim_context)
         report.care_setting_review = recommend_care_setting_review_from_claims(
             claim_context

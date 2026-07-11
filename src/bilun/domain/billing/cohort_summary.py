@@ -112,6 +112,7 @@ def _finalize_summary_rounding(
     summary.total_icu_puani = round(summary.total_icu_puani, 2)
     summary.total_yenidogan_yatak = round(summary.total_yenidogan_yatak, 2)
     summary.total_refakatci = round(summary.total_refakatci, 2)
+    summary.total_anestezi_puani = round(summary.total_anestezi_puani, 2)
     summary.total_material_uplift = round(summary.total_material_uplift, 2)
     summary.total_procedure_addon_uplift = round(summary.total_procedure_addon_uplift, 2)
     summary.total_optional_override_uplift = round(summary.total_optional_override_uplift, 2)
@@ -139,6 +140,7 @@ def _savings_by_category(summary: CohortRecoverySummary) -> dict[str, float]:
         "icu_puani": summary.total_icu_puani,
         "yenidogan_yatak": summary.total_yenidogan_yatak,
         "refakatci": summary.total_refakatci,
+        "anestezi_puani": summary.total_anestezi_puani,
         "material_uplift": summary.total_material_uplift,
         "procedure_addon_uplift": summary.total_procedure_addon_uplift,
         "optional_override": summary.total_optional_override_uplift,

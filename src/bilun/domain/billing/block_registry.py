@@ -135,6 +135,14 @@ BILLING_BLOCK_SPECS: tuple[BillingBlockSpec, ...] = (
         cohort_patient_counter_field="n_refakatci_patients",
     ),
     BillingBlockSpec(
+        attr="anestezi_puani",
+        required_inputs=YATAK_PUANI_REQUIRED_INPUTS,
+        unavailable_reason=YATAK_PUANI_UNAVAILABLE_REASON,
+        uplift_field="confirmed_anestezi_try",
+        cohort_total_field="total_anestezi_puani",
+        cohort_patient_counter_field="n_anestezi_puani_patients",
+    ),
+    BillingBlockSpec(
         attr="material_uplift",
         required_inputs=MATERIAL_UPLIFT_REQUIRED_INPUTS,
         unavailable_reason=MATERIAL_UPLIFT_UNAVAILABLE_REASON,

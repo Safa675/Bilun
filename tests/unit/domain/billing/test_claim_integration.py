@@ -57,6 +57,7 @@ def test_exempt_patient_rx_copay_in_total() -> None:
         + report.icu_puani.confirmed_icu_try
         + report.yenidogan_yatak.confirmed_yenidogan_yatak_try
         + report.refakatci.confirmed_refakat_try
+        + report.anestezi_puani.confirmed_anestezi_try
         + report.material_uplift.confirmed_uplift_try
         + report.procedure_addon_uplift.confirmed_uplift_try,
         2,
