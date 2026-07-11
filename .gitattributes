@@ -1,0 +1,9 @@
+# Parquet files — mark as binary for git diff/merge
+*.parquet binary
+
+# Generated parquets — linguist should ignore
+data/gazette/curated/*.parquet linguist-generated=true
+data/gazette/raw/**/*.parquet linguist-generated=true
+
+# Raw data directory (gitignored but hygiene)
+"raw data/" linguist-vendored=true
