@@ -26,6 +26,7 @@ def _make_claim_header(
     claim_type: str = "yatis",
     admission: date | None = date(2026, 7, 10),
     discharge: date | None = date(2026, 7, 13),
+    facility_tier: str = "3_basamak",
 ):
     from src.bilun.domain.claims.models import ClaimHeader
 
@@ -34,7 +35,7 @@ def _make_claim_header(
         patient_id="P1",
         episode_id="E1",
         claim_type=claim_type,
-        facility_tier="devlet",
+        facility_tier=facility_tier,
         provider_type="sozlesmeli",
         department="Yogun Bakim",
         admission_date=admission,
@@ -112,8 +113,9 @@ def test_3day_icu_stay_dual_charge() -> None:
     assert opp["sut_section_id"] == "2.4.4.H"
     assert opp["included_in_sgk_total"] is True
 
-    # Puan: 2 × 1252.27 (first+last) + 1 × 12896.186 (intermediate) = 15400.726
-    assert opp["total_puan"] == pytest.approx(15400.73, abs=0.01)
+    # Puan: 2 × 1252.27 (first+last) + 1 × 12896.186 (intermediate) × 2.0
+    # (EK-2/C-1 ilave oran +100% for Sınıf-3 facility) = 28296.902
+    assert opp["total_puan"] == pytest.approx(28296.90, abs=0.01)
     # recoverable uplift should equal the total TRY.
     assert opp["recoverable_uplift_try"] == pytest.approx(opp["total_try"], abs=0.01)
     assert opp["total_try"] > 0.0
@@ -250,8 +252,107 @@ def test_basamak_inferred_from_submitted_package() -> None:
     assert opp["icu_days"] == 4
     assert opp["intermediate_days"] == 2
     assert opp["intermediate_package"] == "P552001"
-    # 2 × 1252.27 + 2 × 3221.799 = 8948.138
-    assert opp["total_puan"] == pytest.approx(8948.14, abs=0.01)
+    # 2 × 1252.27 + 2 × 3221.799 × 2.0 (ilave oran +100% Sınıf-3) = 15391.738
+    assert opp["total_puan"] == pytest.approx(15391.74, abs=0.01)
+
+
+# ── EK-2/C-1 ilave oran tests ──────────────────────────────────────────────
+
+
+def test_ilave_oran_applied_sinif_3() -> None:
+    """Sınıf-3 facility → +100% ilave oran on intermediate days (×2.0)."""
+    from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 13),
+        facility_tier="3_basamak",
+    )
+    procs = [
+        _make_proc_line(procedure_code="510090"),
+        _make_proc_line(
+            procedure_line_id="ISL-2", procedure_code="P552003",
+            procedure_name="Ucuncu basamak yogun bakim",
+        ),
+    ]
+    opps = detect_icu_puani_opportunities(
+        [header], procs, claim_ids_with_procs={"C1"}
+    )
+    opp = opps[0]
+
+    # The uplift is applied + correctly recorded.
+    assert opp["ilave_oran_pct"] == pytest.approx(100.0)
+    assert opp["ilave_oran_eligible"] is True
+    assert opp["ilave_oran_reason"] == "sinif_3_uplift_applied"
+    assert opp["intermediate_puan_uplifted"] == pytest.approx(
+        opp["intermediate_puan_base"] * 2.0
+    )
+    # Base puan is the raw EK-2C value; uplifted is doubled.
+    assert opp["intermediate_puan_base"] == pytest.approx(12896.186, abs=0.01)
+    assert opp["intermediate_puan_uplifted"] == pytest.approx(25792.372, abs=0.01)
+
+
+def test_no_uplift_2nd_basamak() -> None:
+    """2nd-basamak facility → no uplift (oran=0), totals stay at base."""
+    from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 13),
+        facility_tier="2_basamak_kamu",
+    )
+    procs = [
+        _make_proc_line(procedure_code="510090"),
+        _make_proc_line(
+            procedure_line_id="ISL-2", procedure_code="P552003",
+            procedure_name="Ucuncu basamak yogun bakim",
+        ),
+    ]
+    opps = detect_icu_puani_opportunities(
+        [header], procs, claim_ids_with_procs={"C1"}
+    )
+    opp = opps[0]
+
+    assert opp["ilave_oran_pct"] == pytest.approx(0.0)
+    assert opp["ilave_oran_eligible"] is False
+    assert opp["ilave_oran_reason"] == "not_sinif_3"
+    # No uplift → base == uplifted.
+    assert opp["intermediate_puan_uplifted"] == pytest.approx(
+        opp["intermediate_puan_base"]
+    )
+    # Puan at base (no ×2.0): 2 × 1252.27 + 1 × 12896.186 = 15400.726
+    assert opp["total_puan"] == pytest.approx(15400.73, abs=0.01)
+
+
+def test_no_uplift_unresolved_tier() -> None:
+    """Unresolved facility tier → honest skip (oran=0), reason recorded."""
+    from src.bilun.domain.prose_rules.icu_puani import detect_icu_puani_opportunities
+
+    header = _make_claim_header(
+        admission=date(2026, 7, 10),
+        discharge=date(2026, 7, 13),
+        facility_tier="devlet",  # not in _EXPLICIT_TIER_MAP → unresolved
+    )
+    procs = [
+        _make_proc_line(procedure_code="510090"),
+        _make_proc_line(
+            procedure_line_id="ISL-2", procedure_code="P552003",
+            procedure_name="Ucuncu basamak yogun bakim",
+        ),
+    ]
+    opps = detect_icu_puani_opportunities(
+        [header], procs, claim_ids_with_procs={"C1"}
+    )
+    opp = opps[0]
+
+    assert opp["ilave_oran_pct"] == pytest.approx(0.0)
+    assert opp["ilave_oran_eligible"] is False
+    assert opp["ilave_oran_reason"] == "tier_unresolved"
+    assert opp["intermediate_puan_uplifted"] == pytest.approx(
+        opp["intermediate_puan_base"]
+    )
+    # Puan at base (no uplift).
+    assert opp["total_puan"] == pytest.approx(15400.73, abs=0.01)
 
 
 # ── Wrapper test ───────────────────────────────────────────────────────────

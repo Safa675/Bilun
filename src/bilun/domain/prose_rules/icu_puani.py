@@ -1,8 +1,5 @@
 """SUT §2.4.4.H intensive care (yoğun bakım) billing for inpatient claims.
 
-Phase 1: base puan only (no EK-2C-1 ilave oran — that depends on facility
-class and is tracked as a TODO below).
-
 ICU uses a **dual-charging** model (verified from SUT §2.4.4.H + El Kitabı):
 
 **A. Day-rate: 510090 "Yoğun bakım" (EK-2B, 1252.27 puan)**
@@ -25,23 +22,27 @@ ICU uses a **dual-charging** model (verified from SUT §2.4.4.H + El Kitabı):
 - 2-day stay → 510090 (first) + 510090 (last), no intermediate.
 - 3+ day stay → 510090 (first) + P55200x × (days-2) intermediate + 510090 (last).
 
-TODO(Phase 2): EK-2C-1 ilave oran — ICU packages P552001-008 attract a +60%
-or +100% uplift depending on facility ICU class (1./2./3. basamak). The
-uplift is applied to the intermediate package puan only (not 510090). This
-requires the facility's ICU class, which is not modelled on ClaimHeader yet.
+**EK-2/C-1 ilave oran (Phase 2):** ICU packages P552001-008 attract a +100%
+uplift (in-force as of 2026-01-31) when the procedure is performed by a
+3rd-basamak (Sınıf-3) facility (SUT §2.2.(20): "3. basamak sağlık hizmeti
+sunucularınca yapılması halinde"). The uplift is applied to the intermediate
+package puan/price only — the 510090 day-rate (EK-2B hizmet başı) is not in
+EK-2/C-1 and is never uplifted. The tier gate is resolved from the claim
+header via ``normalize_facility_tier``; unresolved or non-3rd-basamak tiers
+get no uplift (honest skip, not a default-apply).
 
-See plans/refactor/rule-encoding-gap-closure-roadmap.md + the approved
-yatak-puani plan.
+See plans/billing/icu-ilave-oran-plan.md for the regulatory basis.
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from src.bilun.domain.catalog import get_katsayi, lookup_procedure_code
+from src.bilun.domain.catalog import get_ek2c1_copay_rates, get_katsayi, lookup_procedure_code
 from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
+from src.bilun.domain.prose_rules.facility_tier import normalize_facility_tier
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
@@ -116,6 +117,36 @@ def _intermediate_package_price_try(package_code: str) -> float:
     return float(entry.get("price_try") or 0.0)
 
 
+def _resolve_ilave_oran(claim: ClaimHeader, intermediate_code: str) -> tuple[float, str]:
+    """EK-2/C-1 ilave oran (%) for ICU intermediate days, gated on facility tier.
+
+    Returns ``(oran_pct, reason)``. ``oran_pct`` is ``0.0`` when no uplift
+    applies.
+
+    Gate (SUT §2.2.(20) + EK-2/C-1): the +100% uplift applies only when the
+    procedure is performed by a 3rd-basamak (Sınıf-3) facility. The facility
+    tier is resolved from the claim header; if unresolved or not 3rd-basamak,
+    no uplift is applied (honest skip, not a default-apply).
+
+    Note: ``get_ek2c1_copay_rates()`` returns a dict-of-dicts keyed by the
+    P-prefixed code (e.g. ``"P552003"``), and each value is
+    ``{"procedure_name": str, "copay_rate_pct": float}`` — we extract the float
+    rather than treating the value itself as the rate.
+    """
+    tier = normalize_facility_tier(
+        claim.facility_tier, provider_type=claim.provider_type
+    )
+    if not tier.resolved:
+        return 0.0, "tier_unresolved"
+    if not tier.is_third_tier:
+        return 0.0, "not_sinif_3"
+    row = get_ek2c1_copay_rates().get(f"P{intermediate_code}")
+    if not row:
+        return 0.0, "no_ek2c1_entry"
+    oran = float(row.get("copay_rate_pct", 0.0))
+    return oran, "sinif_3_uplift_applied"
+
+
 def _claim_icu_package_code(
     procedure_lines: list[ProcedureClaimLine],
 ) -> str | None:
@@ -175,7 +206,9 @@ def detect_icu_puani_opportunities(
     Returns:
         Opportunity dicts with: type, claim_id, icu_days, first_day_code,
         last_day_code, intermediate_package, intermediate_days, total_puan,
-        total_try, recoverable_uplift_try, sut_section_id, rule_id, detail.
+        total_try, recoverable_uplift_try, sut_section_id, rule_id, detail,
+        plus EK-2/C-1 ilave-oran fields: ilave_oran_pct, ilave_oran_eligible,
+        ilave_oran_reason, intermediate_puan_base, intermediate_puan_uplifted.
     """
     day_rate_puan = _day_rate_puan()
     if day_rate_puan <= 0:
@@ -224,9 +257,17 @@ def detect_icu_puani_opportunities(
         intermediate_code = (
             _claim_icu_package_code(claim_procs) or _DEFAULT_INTERMEDIATE_CODE
         )
-        intermediate_puan = _intermediate_package_puan(intermediate_code)
-        intermediate_price_try = _intermediate_package_price_try(intermediate_code)
+        intermediate_puan_base = _intermediate_package_puan(intermediate_code)
+        intermediate_price_try_base = _intermediate_package_price_try(intermediate_code)
         day_rate_price_try = _day_rate_price_try()
+
+        # EK-2/C-1 ilave oran: +100% for Sınıf-3 facilities, applied
+        # to intermediate days ONLY (the 510090 day-rate is EK-2B hizmet başı, never uplifted).
+        ilave_oran_pct, ilave_oran_reason = _resolve_ilave_oran(claim, intermediate_code)
+        ilave_oran_eligible = ilave_oran_pct > 0
+        uplift_mult = 1 + ilave_oran_pct / 100
+        intermediate_puan = intermediate_puan_base * uplift_mult
+        intermediate_price_try = intermediate_price_try_base * uplift_mult
 
         # Puan totals: first 510090 + intermediate packages + last 510090.
         # For a 1-day stay first==last so only one 510090 is counted.
@@ -245,20 +286,27 @@ def detect_icu_puani_opportunities(
             f"510090 (yoğun bakım, hizmet başı): {first_last_count} day(s) × "
             f"{day_rate_puan:.2f} puan",
         ]
-        if intermediate_days > 0 and intermediate_puan > 0:
+        if intermediate_days > 0 and intermediate_puan_base > 0:
             charge_lines.append(
                 f"P{intermediate_code} (EK-2C ara günü): {intermediate_days} day(s) × "
-                f"{intermediate_puan:.2f} puan"
+                f"{intermediate_puan_base:.2f} puan"
+                + (f" × {uplift_mult:.2f}" if ilave_oran_eligible else "")
             )
         charge_lines.append(
             f"= {total_puan:.2f} puan ({total_try:.2f} TRY), {icu_days} ICU day(s)."
         )
+        if ilave_oran_eligible:
+            uplift_note = (
+                f"EK-2/C-1 ilave oran +{ilave_oran_pct:.0f}% applied to "
+                f"intermediate days (Sınıf-3 facility)."
+            )
+        else:
+            uplift_note = f"No EK-2/C-1 ilave oran ({ilave_oran_reason})."
         detail = " ".join(
             [
                 f"ICU dual-charge (§2.4.4.H):",
                 *charge_lines,
-                "Base puan only — EK-2C-1 ilave oran (+60%/+100%) pending "
-                "facility ICU class (Phase 2 TODO).",
+                uplift_note,
             ]
         )
 
@@ -273,7 +321,12 @@ def detect_icu_puani_opportunities(
                 "intermediate_package": f"P{intermediate_code}",
                 "intermediate_days": intermediate_days,
                 "day_rate_puan": day_rate_puan,
-                "intermediate_puan": intermediate_puan,
+                "intermediate_puan": intermediate_puan_base,
+                "intermediate_puan_base": intermediate_puan_base,
+                "intermediate_puan_uplifted": intermediate_puan,
+                "ilave_oran_pct": ilave_oran_pct,
+                "ilave_oran_eligible": ilave_oran_eligible,
+                "ilave_oran_reason": ilave_oran_reason,
                 "total_puan": total_puan,
                 "total_try": total_try,
                 "recoverable_uplift_try": total_try,
