@@ -30,6 +30,9 @@ from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.dental_2_4_1 import (
     check_dental_2_4_1_for_context,
 )
+from src.bilun.domain.prose_rules.dental_ga_uplift import (
+    detect_dental_ga_uplift_violations,
+)
 from src.bilun.domain.prose_rules.drg_package_adequacy import (
     check_drg_package_adequacy_for_context,
 )
@@ -69,6 +72,9 @@ from src.bilun.domain.prose_rules.specialty_materials import (
 )
 from src.bilun.domain.prose_rules.treatment_pricing import (
     check_treatment_pricing_for_context,
+)
+from src.bilun.domain.prose_rules.traffic_accident_billing import (
+    detect_traffic_accident_billing,
 )
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_admission_billing_window,
@@ -306,5 +312,19 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
             violations.extend(
                 detect_drug_quantity_error(list(ctx.claims), ctx.drug_lines)
             )
+
+        # ── Algoritma Rehberi-derived motors ─────────────────────────────
+        # §2-04.1 Madde 4: dental GA +%30 uplift — separate anesthesia
+        # line is double-billing; missing uplift is under-billing.
+        if ctx.procedure_lines:
+            violations.extend(
+                detect_dental_ga_uplift_violations(
+                    list(ctx.claims), list(ctx.procedure_lines)
+                )
+            )
+
+        # §2-09 / 2918 SK Madde 98: traffic accident billing pathway —
+        # always SGK provision type "trafik kazasi", copay-exempt.
+        violations.extend(detect_traffic_accident_billing(list(ctx.claims)))
 
     return violations
