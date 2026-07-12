@@ -48,6 +48,48 @@
     "is_error": true,
     "playbook_key": "0901_duplicate_procedure"
   },
+  "0963": {
+    "meaning_tr": "Takip içinde malzeme için kesinleştirme yapılmamıştır.",
+    "meaning_en": "Material finalization has not been performed for a material within the tracking (takip).",
+    "action": "Medula'da malzeme kaydını açın ve kesinleştirme (finalization) adımını tamamlayın.",
+    "is_error": true,
+    "playbook_key": "0963_material_finalization"
+  },
+  "0964": {
+    "meaning_tr": "Malzeme kesinleştirme işlemi eksik.",
+    "meaning_en": "Material finalization step is missing.",
+    "action": "Medula'da malzeme kaydını açın ve kesinleştirme işlemini tamamlayın.",
+    "is_error": true,
+    "playbook_key": "0963_material_finalization"
+  },
+  "0965": {
+    "meaning_tr": "Malzeme hizmet sunucu referans no eksik.",
+    "meaning_en": "Material service provider reference number is missing.",
+    "action": "Malzeme hizmet sunucu referans numarasını girin ve kesinleştirmeyi tamamlayın.",
+    "is_error": true,
+    "playbook_key": "0963_material_finalization"
+  },
+  "0966": {
+    "meaning_tr": "Malzeme kesinleştirme tarihi hatalı.",
+    "meaning_en": "Material finalization date is invalid.",
+    "action": "Malzeme kesinleştirme tarihini düzeltin ve yeniden gönderin.",
+    "is_error": true,
+    "playbook_key": "0963_material_finalization"
+  },
+  "0967": {
+    "meaning_tr": "Malzeme ödeme onayı yapılmamış.",
+    "meaning_en": "Material payment approval has not been completed.",
+    "action": "Medula'da malzeme ödeme onayını tamamlayın ve faturayı yeniden gönderin.",
+    "is_error": true,
+    "playbook_key": "0963_material_finalization"
+  },
+  "0968": {
+    "meaning_tr": "Malzeme faturalandırma adımı tamamlanmamış.",
+    "meaning_en": "Material invoicing step has not been completed.",
+    "action": "Malzeme faturalandırma adımını tamamlayın ve faturayı yeniden gönderin.",
+    "is_error": true,
+    "playbook_key": "0963_material_finalization"
+  },
   "1102": {
     "meaning_tr": "Kurumun geçerli SGK sözleşmesi veya provizyon kaydı bulunamadı.",
     "meaning_en": "No valid SGK contract or provision record found for the facility.",

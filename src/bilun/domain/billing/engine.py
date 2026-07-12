@@ -94,6 +94,19 @@ from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_unreported_lab_result,
     detect_vakabasi_wrong_method,
 )
+from src.bilun.domain.prose_rules.diagnosis_coding_quality import (
+    detect_diagnosis_procedure_mismatch_for_context,
+    detect_never_principal_diagnosis_for_context,
+    detect_unnecessary_additional_diagnosis_for_context,
+)
+from src.bilun.domain.prose_rules.laterality_validation import (
+    detect_missing_laterality_imaging_for_context,
+    detect_missing_laterality_surgery_for_context,
+)
+from src.bilun.domain.prose_rules.temporal_anomaly import (
+    detect_los_procedure_density_anomaly_for_context,
+    detect_procedure_time_overlap_for_context,
+)
 from src.bilun.domain.prose_rules.conditional_addon_ek2d import (
     detect_conditional_addon_ek2d_opportunities,
 )
@@ -326,5 +339,33 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
         # §2-09 / 2918 SK Madde 98: traffic accident billing pathway —
         # always SGK provision type "trafik kazasi", copay-exempt.
         violations.extend(detect_traffic_accident_billing(list(ctx.claims)))
+
+        # ── Diagnosis-coding + laterality + temporal detectors ────────────
+        # ICD-10 coding quality (El Kitabı SB 12 Kategorisi): never-principal
+        # blocklist, dx↔procedure mismatch, redundant symptom diagnoses.
+        # Diagnosis-only detectors run without a procedure-line gate.
+        violations.extend(detect_never_principal_diagnosis_for_context(ctx))
+        violations.extend(
+            detect_unnecessary_additional_diagnosis_for_context(ctx)
+        )
+        if ctx.procedure_lines:
+            violations.extend(
+                detect_diagnosis_procedure_mismatch_for_context(ctx)
+            )
+            # sagSol laterality (#6 bilateral imaging, #17 paired-organ
+            # surgery) — both honest-skip when sag_sol is unpopulated.
+            violations.extend(
+                detect_missing_laterality_imaging_for_context(ctx)
+            )
+            violations.extend(
+                detect_missing_laterality_surgery_for_context(ctx)
+            )
+            # Temporal: procedure time-overlap (#8) + LOS/density anomaly (#9).
+            violations.extend(
+                detect_procedure_time_overlap_for_context(ctx)
+            )
+            violations.extend(
+                detect_los_procedure_density_anomaly_for_context(ctx)
+            )
 
     return violations
