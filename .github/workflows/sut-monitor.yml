@@ -46,6 +46,7 @@ jobs:
         run: |
           python scripts/sut/convert_xlsx_to_parquet.py
           python scripts/sut/build_curated_catalogs.py --overwrite
+          python scripts/sut/extract_sut_prose.py
 
       - name: Compute delta
         if: steps.monitor.outputs.new_teblig != ''
