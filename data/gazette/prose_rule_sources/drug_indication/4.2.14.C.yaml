@@ -4395,4 +4395,141 @@ rules:
   report_specialties:
   - tıbbi onkoloji
   - dermatoloji
+- rule_id: 4.2.14.C.ravulizumab_pnh_board_hematology_6m
+  sut_section: 4.2.14.C
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C008281
+  drug_names:
+  - ravulizumab
+  icd10_ranges:
+  - D59.5
+  report_required: true
+  report_specialties:
+  - hematoloji
+  report_duration_months: 6
+  prescriber_specialties:
+  - hematoloji
+  condition:
+    coverage_note: true
+  action:
+    billable: true
+    enforcement: 'PNH: ≥10 kg çocuk/yetişkin, 7 kriterden en az biri (FLAER granülosit klonu >%1 + LDH >1,5xNÜS kronik
+      hemoliz vb.); transplantasyon öncesi/kök hücre nakli sonrası/komplikasyon/gebe bentleri için Bakanlık endikasyon dışı
+      onay; üçüncü basamakta en az bir hematoloji uzmanının yer aldığı ≤6 ay süreli sağlık kurulu raporu; hematoloji uzmanlarınca
+      reçete'
+    message_tr: Ravulizumab — Paroksismal Noktürnal Hemoglobinüri (PNH) tedavisinde vücut ağırlığı 10 kg ve üzerindeki çocuk
+      ve yetişkin hastalarda kriterlerden en az birinin karşılanması halinde, üçüncü basamak sağlık hizmeti sunucusunda en
+      az bir hematoloji uzman hekiminin yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden hematoloji uzman
+      hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır; transplantasyon öncesi, kök hücre nakli yapılamayan/yanıtsız,
+      nakil sonrası yanıtsız, PNH komplikasyonlu ve gebe olgular için Sağlık Bakanlığınca endikasyon dışı ilaç kullanım onayı
+      alınması gerekir (§4.2.14.C yyy/1).
+- rule_id: 4.2.14.C.ravulizumab_pnh_eculizumab_switch
+  sut_section: 4.2.14.C
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C008282
+  drug_names:
+  - ravulizumab
+  icd10_ranges:
+  - D59.5
+  report_required: true
+  report_specialties:
+  - hematoloji
+  report_duration_months: 6
+  prescriber_specialties:
+  - hematoloji
+  condition:
+    coverage_note: true
+  action:
+    billable: true
+    enforcement: PNH tanısıyla en az son 6 ay ekulizumab tedavisi almış ve stabil (LDH ≤1,5 x NÜS) hastalarda ravulizumaba
+      geçilebilir
+    message_tr: PNH tanısı nedeniyle en az son 6 aydır ekulizumab ile tedavi edilmiş ve tedavi süresince stabil (LDH ≤1,5
+      x NÜS) olan hastalarda ravulizumaba geçilebilir (§4.2.14.C yyy/1-b).
+- rule_id: 4.2.14.C.ravulizumab_pnh_6mo_continuation
+  sut_section: 4.2.14.C
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C008283
+  drug_names:
+  - ravulizumab
+  icd10_ranges:
+  - D59.5
+  report_required: true
+  report_specialties:
+  - hematoloji
+  report_duration_months: 6
+  condition:
+    coverage_note: true
+  action:
+    billable: true
+    enforcement: 'PNH 6 aylık tedavi sonunda: klinik fayda gören + granülosit klonu pozitifliği akım sitometrik olarak devam
+      eden + transfüzyon bağımsız olgularda tedaviye devam; tetkik sonuçları rapor ekinde'
+    message_tr: PNH hastalarında 6 aylık ilaç kullanım süresi sonunda; klinik fayda gören, granülosit klonu pozitifliğinin
+      devam ettiği akım sitometrik olarak gösterilmiş ve transfüzyon bağımsız olgularda tedaviye devam edilir; tetkik sonuçları
+      rapor ekinde yer almalıdır (§4.2.14.C yyy/1-c).
+- rule_id: 4.2.14.C.ravulizumab_nmosb_3neurology_6m
+  sut_section: 4.2.14.C
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C008284
+  drug_names:
+  - ravulizumab
+  icd10_ranges:
+  - G36.0
+  report_required: true
+  report_specialties:
+  - nöroloji
+  report_duration_months: 6
+  prescriber_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    billable: true
+    enforcement: 'NMOSB (yetişkin): AQP4 antikoru pozitif + EDSS ≤7 + ≥2 immünosupresan monoterapiye rağmen ≥1 atak; üçüncü
+      basamakta 3 nöroloji uzmanının yer aldığı ≤6 ay süreli sağlık kurulu raporu; her reçetede güncel vücut ağırlığı; nöroloji
+      uzmanlarınca reçete'
+    message_tr: Ravulizumab — yüksek hastalık aktiviteli, relapslarla seyreden yetişkin hastaların Nöromiyelitis Optika Spektrum
+      Bozukluğu (NMOSB) tedavisinde Aquaporin 4 (AQP4) antikoru pozitif, EDSS 7 ve altında olan ve en az iki immünosupresan
+      tedaviye rağmen en az bir atak geçiren hastalarda, üçüncü basamak sağlık hizmeti sunucusunda üç nöroloji uzman hekiminin
+      yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden nöroloji uzman hekimlerince reçete edilmesi halinde
+      bedeli Kurumca karşılanır; her reçetede hastanın güncel vücut ağırlığı belirtilmelidir (§4.2.14.C yyy/2).
+- rule_id: 4.2.14.C.ravulizumab_nmosb_edss8_stop
+  sut_section: 4.2.14.C
+  verification_status: ai_generated_pending_review
+  gate_b_sources:
+  - C008285
+  drug_names:
+  - ravulizumab
+  icd10_ranges:
+  - G36.0
+  report_required: true
+  report_specialties:
+  - nöroloji
+  condition:
+    coverage_note: true
+  action:
+    billable: false
+    enforcement: NMOSB 6 aylık tedavi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS her sağlık kurulu raporunda
+      belirtilmelidir
+    message_tr: NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS her
+      sağlık kurulu raporunda belirtilmelidir (§4.2.14.C yyy/2-b).
+- rule_id: 4.2.14.C.ravulizumab_meningococcal_vaccination
+  sut_section: 4.2.14.C
+  verification_status: ai_generated_pending_review
+  drug_names:
+  - ravulizumab
+  gate_b_sources:
+  - C008286
+  action:
+    billable: true
+    enforcement: 'tedaviden 2 hafta önce meningokok bağışıklaması tamamlanmış + Ravulizumab Kullanımı İçin Bilgilendirilmiş
+      Hasta Olur Formu reçete ekinde; 2 yaş altı veya bağışıklamayı takiben 2 hafta geçmeden başlanması gerekenlerde antibiyotik
+      profilaksisi reçetede belirtilmeli'
+    message_tr: Ravulizumab tedavisine başlamadan iki hafta önce meningokok bağışıklaması tamamlanmış ve Ravulizumab Kullanımı
+      İçin Bilgilendirilmiş Hasta Olur Formu tedaviyi yürüten hekim tarafından düzenlenerek reçete ekine konmuş olmalıdır;
+      iki yaşından küçük çocuklarda veya bağışıklamayı takiben iki hafta geçmeden ravulizumab başlanması gereken olgularda
+      antibiyotik profilaksisi uygulanmış olduğu reçetede belirtilmelidir (§4.2.14.C yyy/3).
 source_note: Exported from drug_indication_prose.json (YAML source migration)
