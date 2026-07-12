@@ -112,7 +112,9 @@ def extract_ek2c(df: pd.DataFrame) -> pd.DataFrame:
     body = df.iloc[h_idx + 1 :]
 
     out = pd.DataFrame()
-    out["package_code"] = _cell_text(body.iloc[:, pos["ISLEM KODU"]])
+    out["package_code"] = _cell_text(body.iloc[:, pos["ISLEM KODU"]]).str.replace(
+        r"\s*\(.*$", "", regex=True
+    ).str.strip()
     out["name"] = _cell_text(body.iloc[:, pos["ISLEM ADI"]])
     if "GRUP" in pos:
         out["group"] = _cell_text(body.iloc[:, pos["GRUP"]])
