@@ -7,31 +7,36 @@ from pathlib import Path
 import polars as pl
 import pytest
 
-from scripts.sut.sut_delta import compute_catalog_delta, format_summary
+from scripts.sut.sut_delta import (
+    compute_all_deltas,
+    compute_snapshot_delta,
+    compute_temporal_delta,
+    format_summary,
+)
 
 pytestmark = pytest.mark.unit
 
 
-def _build_test_history(tmp_path: Path) -> Path:
-    """Build a small curated history parquet with 3 versions for testing.
+# ── Temporal delta tests ────────────────────────────────────────────────────
 
-    Schema mirrors the real ek2b_catalog_history.parquet structure.
-    """
+
+def _build_test_history(tmp_path: Path) -> Path:
+    """Build a small curated history parquet with 3 versions for testing."""
     df = pl.DataFrame(
         {
             "code": [
-                "100010", "100010", "100010",  # unchanged across versions
-                "100020", "100020", "100020",  # price changes
-                "100030", "100030", None,       # removed in v3
-                None, "100040", "100040",       # new in v2
-                None, None, "100050",           # new in v3
+                "100010", "100010", "100010",
+                "100020", "100020", "100020",
+                "100030", "100030", None,
+                None, "100040", "100040",
+                None, None, "100050",
             ],
             "puan": [
-                100.0, 100.0, 100.0,  # unchanged
-                200.0, 250.0, 250.0,  # price change v1→v2
-                300.0, 300.0, None,   # removed
-                None, 400.0, 400.0,   # new in v2
-                None, None, 500.0,    # new in v3
+                100.0, 100.0, 100.0,
+                200.0, 250.0, 250.0,
+                300.0, 300.0, None,
+                None, 400.0, 400.0,
+                None, None, 500.0,
             ],
             "price_try": [
                 59.3, 59.3, 59.3,
@@ -42,7 +47,7 @@ def _build_test_history(tmp_path: Path) -> Path:
             ],
             "name": [
                 "Test A", "Test A", "Test A",
-                "Test B", "Test B", "Test B Renamed",  # name change v2→v3
+                "Test B", "Test B", "Test B Renamed",
                 "Test C", "Test C", "",
                 "", "Test D", "Test D",
                 "", "", "Test E",
@@ -70,104 +75,165 @@ def _build_test_history(tmp_path: Path) -> Path:
             ],
         }
     )
-    # Filter out None code rows (they're just padding for alignment)
     df = df.filter(pl.col("code").is_not_null())
-
     parquet_path = tmp_path / "test_catalog_history.parquet"
     df.write_parquet(parquet_path)
     return parquet_path
 
 
-def test_delta_detects_new_codes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+_TEMPORAL_SPEC = {
+    "annex": "test",
+    "file": "test_catalog_history.parquet",
+    "key": "code",
+    "value_cols": ["puan", "price_try", "name"],
+}
+
+
+def test_temporal_delta_detects_new_codes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Codes present in new but not old are detected."""
-    parquet_path = _build_test_history(tmp_path)
-    monkeypatch.setattr(
-        "scripts.sut.sut_delta.CURATED_DIR", tmp_path
-    )
-
-    delta = compute_catalog_delta(
-        "test", "code", ["puan", "price_try", "name"],
-        "2026-01-01", "2026-06-29",
-    )
-
+    _build_test_history(tmp_path)
+    monkeypatch.setattr("scripts.sut.sut_delta.CURATED_DIR", tmp_path)
+    delta = compute_temporal_delta(_TEMPORAL_SPEC, "2026-01-01", "2026-06-29")
     assert "100040" not in delta["new_codes"]  # existed in old slice
     assert "100050" in delta["new_codes"]       # new in v3
 
 
-def test_delta_detects_removed_codes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Codes present in old but not new are detected."""
-    parquet_path = _build_test_history(tmp_path)
+def test_temporal_delta_detects_removed_codes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _build_test_history(tmp_path)
     monkeypatch.setattr("scripts.sut.sut_delta.CURATED_DIR", tmp_path)
-
-    delta = compute_catalog_delta(
-        "test", "code", ["puan", "price_try", "name"],
-        "2026-01-01", "2026-06-29",
-    )
-
+    delta = compute_temporal_delta(_TEMPORAL_SPEC, "2026-01-01", "2026-06-29")
     assert "100030" in delta["removed_codes"]
 
 
-def test_delta_detects_price_changes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Price changes for common codes are detected."""
-    parquet_path = _build_test_history(tmp_path)
+def test_temporal_delta_detects_price_changes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _build_test_history(tmp_path)
     monkeypatch.setattr("scripts.sut.sut_delta.CURATED_DIR", tmp_path)
-
-    delta = compute_catalog_delta(
-        "test", "code", ["puan", "price_try", "name"],
-        "2025-01-01", "2026-06-29",
-    )
-
+    delta = compute_temporal_delta(_TEMPORAL_SPEC, "2025-01-01", "2026-06-29")
     price_codes = [pc["code"] for pc in delta["price_changes"]]
-    # 100020 had puan 200 → 250
     assert "100020" in price_codes
 
 
-def test_delta_detects_name_changes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Name changes for common codes are detected separately from price."""
-    parquet_path = _build_test_history(tmp_path)
+def test_temporal_delta_detects_name_changes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _build_test_history(tmp_path)
     monkeypatch.setattr("scripts.sut.sut_delta.CURATED_DIR", tmp_path)
-
-    delta = compute_catalog_delta(
-        "test", "code", ["puan", "price_try", "name"],
-        "2026-01-01", "2026-06-29",
-    )
-
+    delta = compute_temporal_delta(_TEMPORAL_SPEC, "2026-01-01", "2026-06-29")
     name_codes = [nc["code"] for nc in delta["name_changes"]]
-    # 100020 had "Test B" → "Test B Renamed"
     assert "100020" in name_codes
 
 
-def test_delta_no_changes_same_date(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """When old_date == new_date, no changes are detected."""
-    parquet_path = _build_test_history(tmp_path)
+def test_temporal_delta_no_changes_same_date(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _build_test_history(tmp_path)
     monkeypatch.setattr("scripts.sut.sut_delta.CURATED_DIR", tmp_path)
-
-    delta = compute_catalog_delta(
-        "test", "code", ["puan", "price_try", "name"],
-        "2026-06-29", "2026-06-29",
-    )
-
+    delta = compute_temporal_delta(_TEMPORAL_SPEC, "2026-06-29", "2026-06-29")
     assert len(delta["new_codes"]) == 0
     assert len(delta["removed_codes"]) == 0
     assert len(delta["price_changes"]) == 0
     assert len(delta["name_changes"]) == 0
 
 
-def test_delta_missing_parquet(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Missing parquet returns error dict, not crash."""
+def test_temporal_delta_missing_parquet(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr("scripts.sut.sut_delta.CURATED_DIR", tmp_path)
-    delta = compute_catalog_delta(
-        "nonexistent", "code", ["puan"], "2026-01-01", "2026-06-29"
+    delta = compute_temporal_delta(
+        {"annex": "nonexistent", "file": "nope.parquet", "key": "code", "value_cols": ["puan"]},
+        "2026-01-01", "2026-06-29",
     )
     assert "error" in delta
+
+
+# ── Snapshot delta tests ────────────────────────────────────────────────────
+
+
+def test_snapshot_delta_reports_row_count_and_hash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Snapshot delta returns row_count and content_hash for non-temporal parquets."""
+    monkeypatch.setattr("scripts.sut.sut_delta.CURATED_DIR", tmp_path)
+
+    df = pl.DataFrame({"sut_code": ["A1", "A2", "A3"], "price": [100, 200, 300]})
+    df.write_parquet(tmp_path / "test_snapshot.parquet")
+
+    delta = compute_snapshot_delta("test_snap", "test_snapshot.parquet", "2026-01-01", "2026-06-29")
+    assert delta["type"] == "snapshot"
+    assert delta["row_count"] == 3
+    assert "content_hash" in delta
+    assert len(delta["content_hash"]) > 0
+
+
+def test_snapshot_delta_missing_parquet(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("scripts.sut.sut_delta.CURATED_DIR", tmp_path)
+    delta = compute_snapshot_delta("missing", "nonexistent.parquet", "2026-01-01", "2026-06-29")
+    assert "error" in delta
+
+
+def test_snapshot_delta_different_content_different_hash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Two parquets with same row count but different content produce different hashes."""
+    monkeypatch.setattr("scripts.sut.sut_delta.CURATED_DIR", tmp_path)
+
+    pl.DataFrame({"sut_code": ["A1", "A2"], "price": [100, 200]}).write_parquet(
+        tmp_path / "snap_a.parquet"
+    )
+    pl.DataFrame({"sut_code": ["A1", "A2"], "price": [100, 999]}).write_parquet(
+        tmp_path / "snap_b.parquet"
+    )
+
+    delta_a = compute_snapshot_delta("a", "snap_a.parquet", "2026-01-01", "2026-06-29")
+    delta_b = compute_snapshot_delta("b", "snap_b.parquet", "2026-01-01", "2026-06-29")
+    assert delta_a["content_hash"] != delta_b["content_hash"]
+
+
+# ── Compute-all-deltas integration test ─────────────────────────────────────
+
+
+def test_compute_all_deltas_returns_both_types(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """compute_all_deltas returns both temporal and snapshot deltas."""
+    # Build a temporal parquet
+    _build_test_history(tmp_path)
+
+    # Build a snapshot parquet
+    pl.DataFrame({"code": ["X1", "X2"], "name": ["A", "B"]}).write_parquet(
+        tmp_path / "ek3a_materials.parquet"
+    )
+
+    monkeypatch.setattr("scripts.sut.sut_delta.CURATED_DIR", tmp_path)
+    monkeypatch.setattr(
+        "scripts.sut.sut_delta._TEMPORAL_SPECS",
+        [{"annex": "test", "file": "test_catalog_history.parquet", "key": "code", "value_cols": ["puan"]}],
+    )
+
+    deltas = compute_all_deltas("2026-01-01", "2026-06-29")
+    types = [d["type"] for d in deltas]
+    assert "temporal" in types
+    assert "snapshot" in types
+
+
+# ── Format summary tests ────────────────────────────────────────────────────
 
 
 def test_format_summary_handles_errors() -> None:
     """format_summary gracefully handles error entries."""
     deltas = [
-        {"annex": "test", "error": "parquet not found"},
+        {"annex": "test", "error": "parquet not found", "type": "temporal"},
         {
             "annex": "ek2b",
+            "type": "temporal",
             "old_count": 100,
             "new_count": 105,
             "new_codes": ["X1", "X2"],
@@ -176,8 +242,18 @@ def test_format_summary_handles_errors() -> None:
             "price_changes": [{"code": "A1", "field": "puan", "old": "100", "new": "200"}],
             "name_changes": [],
         },
+        {
+            "annex": "ek3a materials",
+            "type": "snapshot",
+            "row_count": 401,
+            "col_count": 6,
+            "content_hash": "abc123",
+            "note": "snapshot",
+        },
     ]
     summary = format_summary(deltas)
     assert "⚠️" in summary
-    assert "EK2B" in summary  # format_summary uppercases annex names
-    assert "+5" in summary  # +5 codes
+    assert "EK2B" in summary  # format_summary uppercases temporal annex names
+    assert "+5" in summary
+    assert "ek3a materials" in summary
+    assert "abc123" in summary

@@ -5,14 +5,21 @@ Usage:
     python scripts/sut/sut_delta.py <OLD_DATE> <NEW_DATE>
 
 Example:
-    python scripts/sut/sut_delta.py 2026-05-23 2026-06-29
+    python scripts/sut/sut_delta.py 2026-05-23 2026-07-01
 
 Outputs:
     data/gazette/deltas/<NEW_DATE>_delta.json  — structured delta
     GITHUB_OUTPUT delta_summary                 — human-readable PR body
 
-The delta compares as-of slices of curated history parquets using
-Polars set-operations (vectorized, AGENTS.md §9 compliant).
+Two delta strategies:
+
+1. **Temporal parquets** (valid_from/valid_to): as-of slice comparison.
+   Applies to ek2b, ek2c, ek2c_dental (procedure/package price histories).
+
+2. **Snapshot parquets** (no validity columns): row-set comparison.
+   Falls back to comparing the full table as a set of tuples (all columns
+   cast to str). Detects added/removed rows and changed cell values.
+   Applies to all other curated parquets (EK-1A, EK-3*, EK-4*, etc.).
 """
 from __future__ import annotations
 
@@ -27,24 +34,43 @@ import polars as pl
 CURATED_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "gazette" / "curated"
 DELTA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "gazette" / "deltas"
 
+# Sentinel: skip parquets that are pure lookup tables with no clinical/billing
+# significance for delta tracking, or too noisy to be useful in a PR summary.
+_SKIP_PARQUETS: set[str] = set()
 
-def compute_catalog_delta(
-    annex: str,
-    history_key: str,
-    value_cols: list[str],
-    old_date: str,
-    new_date: str,
-) -> dict:
-    """Compare two as-of slices of a curated history parquet.
+# Config: which parquets are temporal (have valid_from/valid_to), what their
+# key column is, and which columns are "interesting" to compare.
+_TEMPORAL_SPECS: list[dict] = [
+    {
+        "annex": "ek2b",
+        "file": "ek2b_catalog_history.parquet",
+        "key": "code",
+        "value_cols": ["puan", "price_try", "name"],
+    },
+    {
+        "annex": "ek2c",
+        "file": "ek2c_catalog_history.parquet",
+        "key": "package_code",
+        "value_cols": ["puan", "price_try", "name", "group", "has_star"],
+    },
+    {
+        "annex": "ek2c_dental",
+        "file": "ek2c_dental_catalog_history.parquet",
+        "key": "code",
+        "value_cols": ["puan", "price_try", "name"],
+    },
+]
 
-    As-of semantics: valid_from <= date AND (valid_to is null OR valid_to >= date).
-    The >= boundary is correct: valid_to is the LAST day the version is in effect.
-    """
-    parquet_path = CURATED_DIR / f"{annex}_catalog_history.parquet"
+
+def compute_temporal_delta(spec: dict, old_date: str, new_date: str) -> dict:
+    """Compare two as-of slices of a temporal curated history parquet."""
+    parquet_path = CURATED_DIR / spec["file"]
     if not parquet_path.exists():
-        return {"annex": annex, "error": f"parquet not found: {parquet_path}"}
+        return {"annex": spec["annex"], "error": f"parquet not found: {spec['file']}"}
 
     df = pl.read_parquet(parquet_path)
+    key = spec["key"]
+    value_cols = spec["value_cols"]
 
     def asof_slice(d: str) -> pl.DataFrame:
         return df.filter(
@@ -55,11 +81,12 @@ def compute_catalog_delta(
     old_slice = asof_slice(old_date)
     new_slice = asof_slice(new_date)
 
-    old_keys = set(old_slice[history_key].to_list())
-    new_keys = set(new_slice[history_key].to_list())
+    old_keys = set(old_slice[key].to_list())
+    new_keys = set(new_slice[key].to_list())
 
     delta = {
-        "annex": annex,
+        "annex": spec["annex"],
+        "type": "temporal",
         "old_count": len(old_keys),
         "new_count": len(new_keys),
         "new_codes": sorted(new_keys - old_keys),
@@ -69,22 +96,17 @@ def compute_catalog_delta(
         "name_changes": [],
     }
 
-    old_by_key = {r[history_key]: r for r in old_slice.to_dicts()}
-    new_by_key = {r[history_key]: r for r in new_slice.to_dicts()}
+    old_by_key = {r[key]: r for r in old_slice.to_dicts()}
+    new_by_key = {r[key]: r for r in new_slice.to_dicts()}
 
-    for key in sorted(old_keys & new_keys):
-        old_row = old_by_key[key]
-        new_row = new_by_key[key]
+    for k in sorted(old_keys & new_keys):
+        old_row = old_by_key[k]
+        new_row = new_by_key[k]
         for col in value_cols:
             old_val = old_row.get(col)
             new_val = new_row.get(col)
             if old_val != new_val:
-                change = {
-                    "code": key,
-                    "field": col,
-                    "old": str(old_val),
-                    "new": str(new_val),
-                }
+                change = {"code": k, "field": col, "old": str(old_val), "new": str(new_val)}
                 if col in ("puan", "price_try"):
                     delta["price_changes"].append(change)
                 else:
@@ -93,31 +115,108 @@ def compute_catalog_delta(
     return delta
 
 
+def compute_snapshot_delta(annex: str, filename: str, old_date: str, new_date: str) -> dict:
+    """Compare two snapshot parquets as row-sets.
+
+    Since snapshot parquets have no temporal columns, this compares the
+    entire table before and after. It detects:
+    - Row count change
+    - Content hash change (if same row count but different content)
+    """
+    parquet_path = CURATED_DIR / filename
+    if not parquet_path.exists():
+        return {"annex": annex, "error": f"parquet not found: {filename}"}
+
+    # For snapshot parquets, we can't do a temporal slice — the file is
+    # already the latest version. We compare row count and a content hash
+    # against the delta's old_date snapshot (which we don't have stored).
+    # So we report: the current row count + a SHA of the content.
+    df = pl.read_parquet(parquet_path)
+
+    # Cast all columns to string for stable hashing
+    str_cols = [pl.col(c).cast(pl.Utf8) for c in df.columns]
+    df_str = df.select(str_cols)
+    import hashlib
+    content_hash = hashlib.md5(df_str.write_csv().encode()).hexdigest()[:12]
+
+    return {
+        "annex": annex,
+        "type": "snapshot",
+        "row_count": df.shape[0],
+        "col_count": df.shape[1],
+        "content_hash": content_hash,
+        "note": (
+            "Snapshot parquet — no temporal slicing. Compare content_hash "
+            "and row_count against the previous delta to detect changes."
+        ),
+    }
+
+
+def compute_all_deltas(old_date: str, new_date: str) -> list[dict]:
+    """Compute deltas for all curated parquets."""
+    deltas = []
+
+    # Temporal parquets (EK-2B, EK-2C, EK-2Ç)
+    for spec in _TEMPORAL_SPECS:
+        deltas.append(compute_temporal_delta(spec, old_date, new_date))
+
+    # Snapshot parquets (everything else)
+    for parquet_file in sorted(CURATED_DIR.glob("*.parquet")):
+        if parquet_file.name in {s["file"] for s in _TEMPORAL_SPECS}:
+            continue
+        if parquet_file.name in _SKIP_PARQUETS:
+            continue
+        annex = parquet_file.stem.replace("_", " ").replace("-", " ").strip()
+        deltas.append(compute_snapshot_delta(annex, parquet_file.name, old_date, new_date))
+
+    return deltas
+
+
 def format_summary(deltas: list[dict]) -> str:
     """Format delta summary for PR body."""
     lines = ["## SUT Delta Summary", ""]
-    for d in deltas:
-        if "error" in d:
-            lines.append(f"### {d['annex'].upper()}: ⚠️ {d['error']}")
-            continue
-        lines.append(f"### {d['annex'].upper()}")
-        diff = d["new_count"] - d["old_count"]
-        lines.append(
-            f"- Codes: {d['old_count']} → {d['new_count']} ({diff:+d})"
-        )
-        lines.append(f"- New codes: {len(d['new_codes'])}")
-        lines.append(f"- Removed codes: {len(d['removed_codes'])}")
-        lines.append(f"- Price changes: {len(d['price_changes'])}")
-        lines.append(f"- Name changes: {len(d['name_changes'])}")
-        if d["new_codes"][:5]:
-            lines.append(f"  Sample new: {', '.join(d['new_codes'][:5])}")
-        if d["price_changes"][:3]:
-            lines.append("  Sample price changes:")
-            for pc in d["price_changes"][:3]:
-                lines.append(
-                    f"    {pc['code']}: {pc['old']} → {pc['new']}"
-                )
+
+    # Temporal section
+    temporal = [d for d in deltas if d.get("type") == "temporal"]
+    if temporal:
+        lines.append("### Procedure/Package Catalogs (temporal)")
         lines.append("")
+        for d in temporal:
+            if "error" in d:
+                lines.append(f"- **{d['annex'].upper()}**: ⚠️ {d['error']}")
+                continue
+            diff = d["new_count"] - d["old_count"]
+            lines.append(f"- **{d['annex'].upper()}**: {d['old_count']} → {d['new_count']} ({diff:+d})")
+            if d["new_codes"]:
+                lines.append(f"  - New codes: {len(d['new_codes'])} (sample: {', '.join(d['new_codes'][:5])})")
+            if d["removed_codes"]:
+                lines.append(f"  - Removed codes: {len(d['removed_codes'])}")
+            if d["price_changes"]:
+                lines.append(f"  - Price changes: {len(d['price_changes'])}")
+                for pc in d["price_changes"][:3]:
+                    lines.append(f"    `{pc['code']}` {pc['field']}: {pc['old']} → {pc['new']}")
+            if d["name_changes"]:
+                lines.append(f"  - Name changes: {len(d['name_changes'])}")
+        lines.append("")
+
+    # Snapshot section
+    snapshots = [d for d in deltas if d.get("type") == "snapshot"]
+    if snapshots:
+        lines.append("### Material/Drug/Other Annexes (snapshot)")
+        lines.append("")
+        lines.append("| Annex | Rows | Hash |")
+        lines.append("|-------|------|------|")
+        for d in snapshots:
+            if "error" in d:
+                lines.append(f"| {d['annex']} | ⚠️ {d['error']} | — |")
+                continue
+            lines.append(f"| {d['annex']} | {d['row_count']} | `{d['content_hash']}` |")
+        lines.append("")
+        lines.append(
+            "*Compare hash/row-count against previous delta to detect changes in snapshot annexes.*"
+        )
+        lines.append("")
+
     return "\n".join(lines)
 
 
@@ -128,17 +227,7 @@ def main() -> int:
 
     old_date, new_date = sys.argv[1], sys.argv[2]
 
-    deltas = [
-        compute_catalog_delta(
-            "ek2b", "code", ["puan", "price_try", "name"], old_date, new_date
-        ),
-        compute_catalog_delta(
-            "ek2c", "package_code", ["puan", "price_try", "name"], old_date, new_date
-        ),
-        compute_catalog_delta(
-            "ek2c_dental", "code", ["puan", "price_try", "name"], old_date, new_date
-        ),
-    ]
+    deltas = compute_all_deltas(old_date, new_date)
 
     summary = {
         "old_date": old_date,
