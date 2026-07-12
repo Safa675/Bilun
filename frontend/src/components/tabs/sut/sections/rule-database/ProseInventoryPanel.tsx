@@ -4,6 +4,7 @@ import { getProseInventory } from "@/lib/api/sut";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import { Chip, Surface } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
+import { fmtDate } from "@/lib/i18n/formatters";
 import { useSutApi } from "../../useSutApi";
 
 export function ProseInventoryPanel({
@@ -90,7 +91,7 @@ export function ProseInventoryPanel({
                 {engine.file_name}
               </td>
               <td className="px-2 py-1.5 text-[var(--text-secondary)]">
-                {engine.effective_date ?? "—"}
+                {engine.effective_date ? fmtDate(engine.effective_date) : "—"}
               </td>
               <td className="px-2 py-1.5 text-right tabular-nums text-[var(--text-secondary)]">
                 {engine.rule_count ?? "—"}

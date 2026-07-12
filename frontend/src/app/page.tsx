@@ -31,6 +31,7 @@ import {
   useShowHowItWorks,
   useSutChatSession,
 } from "@/stores/index";
+import { useT } from "@/lib/i18n";
 
 const SUTPatients = dynamic(() => import("@/components/tabs/SUTPatients"), {
   loading: () => <SutAnalyticsShellSkeleton />,
@@ -54,6 +55,7 @@ const SUTRuleDatabase = dynamic(() => import("@/components/tabs/SUTRuleDatabase"
 function SutHomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useT();
   const activeTab = parseSutHomeTab(searchParams.get("tab"));
   const isWorkspaceMode = true;
   const showHowItWorks = useShowHowItWorks();
@@ -74,6 +76,13 @@ function SutHomeContent() {
   }, [searchParams, setShowAdmin]);
 
   const activeMeta = SUT_HOME_TABS.find((tab) => tab.id === activeTab) ?? SUT_HOME_TABS[0];
+  const activeTabCatalogKey =
+    activeMeta.id === "reference-tools"
+      ? "referenceTools"
+      : activeMeta.id === "rule-database"
+        ? "ruleDatabase"
+        : activeMeta.id;
+  const activeTabLabel = t(`constants.homeTabs.${activeTabCatalogKey}.label`);
   const chatSessionKey = SUT_WORKSPACE_CHAT_SESSION_KEY;
   const chatState = useSutChatSession(chatSessionKey);
   const setChatSession = useSetSutChatSession();
@@ -130,7 +139,7 @@ function SutHomeContent() {
 
               {chatDock === "center" && (
                 <SutInlineAIPanel
-                  activeTab={activeMeta.label}
+                  activeTab={activeTabLabel}
                   pageContext={chatPageContext}
                   dock={chatDock}
                   onDockChange={setChatDock}
@@ -165,7 +174,7 @@ function SutHomeContent() {
       <SutHowItWorksModal open={showHowItWorks} onClose={() => setShowHowItWorks(false)} />
       {shouldRenderChat && chatDock !== "center" && (
         <SutInlineAIPanel
-          activeTab={activeMeta.label}
+          activeTab={activeTabLabel}
           pageContext={chatPageContext}
           dock={chatDock}
           onDockChange={setChatDock}

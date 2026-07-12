@@ -13,6 +13,7 @@ import {
 } from "../shared";
 import { DataTable, Surface } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
+import { fmtDate } from "@/lib/i18n/formatters";
 import { translateMethodology } from "@/lib/apiMessages";
 
 export function TemporalPriceSection({ data }: { data: OptimizationSummary }) {
@@ -105,7 +106,7 @@ function PriceChangeTable({
   t: ReturnType<typeof useT>;
 }) {
   const color = direction === "up" ? "#B91C1C" : theme.accent;
-  const fmtDate = (d?: string) => d ? d.slice(0, 10) : t("sections.temporalPrice.missingDate");
+  const formatDate = (d?: string) => (d ? fmtDate(d) : t("sections.temporalPrice.missingDate"));
   return (
     <Surface variant="base" padding="md">
       <div className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color }}>
@@ -117,8 +118,8 @@ function PriceChangeTable({
             <tr>
               <th>{t("sections.temporalPrice.table.code")}</th>
               <th>{t("sections.temporalPrice.table.name")}</th>
-              <th className="num-col">{t("sections.temporalPrice.table.priceAtDate", { date: fmtDate(items[0]?.old_date) })}</th>
-              <th className="num-col">{t("sections.temporalPrice.table.priceAtDate", { date: fmtDate(items[0]?.new_date) })}</th>
+              <th className="num-col">{t("sections.temporalPrice.table.priceAtDate", { date: formatDate(items[0]?.old_date) })}</th>
+              <th className="num-col">{t("sections.temporalPrice.table.priceAtDate", { date: formatDate(items[0]?.new_date) })}</th>
               <th className="num-col">{t("sections.temporalPrice.table.change")}</th>
             </tr>
           </thead>

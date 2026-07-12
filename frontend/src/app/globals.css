@@ -245,8 +245,8 @@ textarea:focus-visible {
     color: var(--text-primary) !important;
   }
 
-  header[aria-label="Bilun application bar"] button,
-  header[aria-label="Bilun application bar"] [aria-live="polite"] {
+  header[data-sut-topbar] button,
+  header[data-sut-topbar] [aria-live="polite"] {
     display: none !important;
   }
 

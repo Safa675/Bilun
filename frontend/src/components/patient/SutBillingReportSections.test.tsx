@@ -14,6 +14,8 @@ import {
 
 vi.mock("@/lib/sutLabels", () => ({
   getSutAlertBadgeLabel: (key: string) => key,
+  getSutSeverityLabel: (value: string | null | undefined) => value ?? "",
+  getPaymentMethodKindLabel: (value: string | null | undefined) => value ?? "",
 }));
 
 vi.mock("@/lib/theme", () => ({

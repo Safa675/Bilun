@@ -53,3 +53,20 @@ export function fmtDate(
     options ?? { year: "numeric", month: "short", day: "numeric" },
   );
 }
+
+/** Locale-aware date + time (rejection timestamps, audit events). */
+export function fmtDateTime(
+  iso: string | null | undefined,
+  options?: Intl.DateTimeFormatOptions,
+): string {
+  if (!iso) return "—";
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) {
+    return String(iso).slice(0, 19) || "—";
+  }
+  const locale = getIntlLocale(getModuleLocale());
+  return parsed.toLocaleString(
+    locale,
+    options ?? { dateStyle: "short", timeStyle: "short" },
+  );
+}

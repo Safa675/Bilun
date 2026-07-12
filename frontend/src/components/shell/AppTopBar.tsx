@@ -106,6 +106,7 @@ export default function AppTopBar({ onOpenHowItWorks, className }: AppTopBarProp
         "border-b border-[var(--border-subtle)] bg-[var(--surface-base)]",
         className,
       )}
+      data-sut-topbar
       aria-label={t("shell.appTopBar.ariaApplicationBar")}
     >
       {/* Zone 1: Brand + Navigation */}

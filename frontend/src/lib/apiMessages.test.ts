@@ -46,4 +46,19 @@ describe("apiMessages", () => {
       "GEÇERLİ",
     );
   });
+
+  it("passes through unrecognized strings unchanged (preserves backend content)", () => {
+    // Unrecognized content passes through so legitimate domain text (often
+    // already localized by the backend) is not lost behind a placeholder.
+    expect(translateUnavailableReason("some_unknown_reason_code")).toBe("some_unknown_reason_code");
+    expect(translateValidationMessage("Unrecognized violation text.")).toBe(
+      "Unrecognized violation text.",
+    );
+
+    setModuleLocale("tr");
+    // Turkish backend content passes through verbatim.
+    expect(translateValidationMessage("Uzmanlık sağlık kurulu raporu eksik")).toBe(
+      "Uzmanlık sağlık kurulu raporu eksik",
+    );
+  });
 });

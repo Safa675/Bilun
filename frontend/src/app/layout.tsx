@@ -8,10 +8,17 @@ import SkipToContent from "@/components/shell/SkipToContent";
 import { ConfigProvider } from "@/lib/configContext";
 import { SUT_BRAND } from "@/lib/constants";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/types";
+import enMessages from "@/messages/en";
+import trMessages from "@/messages/tr";
 
 type UserRole = "billing_officer" | "dev";
 
 const ROLE_COOKIE_KEY = "bilun:role";
+
+function resolveMetaDescription(locale: Locale): string {
+  const messages = locale === "tr" ? trMessages : enMessages;
+  return messages.constants.brand.metaDescription;
+}
 
 function parseRole(value: string | undefined): UserRole {
   return value === "billing_officer" ? "billing_officer" : "dev";
@@ -35,17 +42,21 @@ const fontSans = Inter({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: SUT_BRAND.metaTitle,
-  description: SUT_BRAND.metaDescription,
-};
-
 export const viewport: Viewport = {
   themeColor: "#FFFFFF",
 };
 
 function parseLocale(value: string | undefined): Locale {
   return value === "tr" ? "tr" : DEFAULT_LOCALE;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const locale = parseLocale(cookieStore.get("bilun:locale")?.value);
+  return {
+    title: SUT_BRAND.metaTitle,
+    description: resolveMetaDescription(locale),
+  };
 }
 
 export default async function RootLayout({

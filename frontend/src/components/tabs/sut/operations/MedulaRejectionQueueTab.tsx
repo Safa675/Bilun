@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useT } from "@/lib/i18n/useTranslations";
+import { fmtDateTime } from "@/lib/i18n/formatters";
+import { translateApiText } from "@/lib/apiMessages";
 import { getMedulaRejectionQueue } from "@/lib/api/sut";
 import { buildSutPatientHref } from "@/lib/constants";
 import type {
@@ -278,10 +280,10 @@ export default function MedulaRejectionQueueTab() {
                       {row.claim_id}
                     </Link>
                   </td>
-                  <td>{row.rejection_timestamp ?? "—"}</td>
-                  <td>{row.medula_stage}</td>
+                  <td>{row.rejection_timestamp ? fmtDateTime(row.rejection_timestamp) : "—"}</td>
+                  <td>{row.medula_stage ? translateApiText(row.medula_stage) : "—"}</td>
                   <td className="font-mono text-xs">{row.sonuc_kodu}</td>
-                  <td>{row.hata_mesaji}</td>
+                  <td>{row.hata_mesaji ? translateApiText(row.hata_mesaji) : "—"}</td>
                   <td>
                     <RelatedLineCell
                       lineType={row.related_line_type}

@@ -102,7 +102,7 @@ const sections = {
     },
     utilization: {
       referans: "Referans",
-      encoded: "Encode edilmiş",
+      encoded: "Kodlanmış",
       motorBound: "Motora bağlı",
     },
     rules: {
@@ -207,7 +207,7 @@ const sections = {
     namePlaceholder: "örn. Stent, Enjektör",
     code: "SUT Kodu (EK-3)",
     codePlaceholder: "örn. 3.3.1.001",
-    priceTry: "Fiyat (TRY)",
+    priceTry: "Fiyat (₺)",
     pricePlaceholder: "0.00",
     qty: "Adet",
     qtyPlaceholder: "1",
@@ -312,7 +312,7 @@ const sections = {
     facilityTier: "Kurum Basamağı",
     patientCategory: "Hasta Kategorisi",
     numberOfVisits: "Ziyaret Sayısı",
-    totalDrugCostTry: "Toplam İlaç Maliyeti (TRY)",
+    totalDrugCostTry: "Toplam İlaç Maliyeti (₺)",
     prescriptions: "Reçeteler",
     simulating: "Simüle ediliyor...",
     simulate: "Simüle Et",

@@ -88,17 +88,17 @@ const api = {
   validation: {
     bundlingViolationMessage:
       "'{materialName}' işlem fiyatına paketlenmiştir (EK-3B-1: {category}, eşleşme={matchKind}). Ayrı faturalandırılamaz.",
-    bundlingViolationSavingsSuffix: " Potansiyel tasarruf: {billedAmount} TRY.",
+    bundlingViolationSavingsSuffix: " Potansiyel tasarruf: {billedAmount} ₺.",
     exclusionViolationMessage:
-      "'{materialName}' EK-3B-2'ye göre geri ödenemez ({label}, eşleşme={matchKind}). SGK {billedAmount} TRY karşılamaz.",
+      "'{materialName}' EK-3B-2'ye göre geri ödenemez ({label}, eşleşme={matchKind}). SGK {billedAmount} ₺ karşılamaz.",
     noMaterialsToValidate: "Doğrulanacak malzeme yok.",
     claimValidSummary: "Talep {claimId}: GEÇERLİ",
     claimInvalidSummary: "Talep {claimId}: GEÇERSİZ",
-    materialsTotalSummary: "{materialCount} malzeme, toplam {totalAmount} TRY",
+    materialsTotalSummary: "{materialCount} malzeme, toplam {totalAmount} ₺",
     bundlingViolationsSummary:
-      "{violationCount} paketleme ihlali, tasarruf: {savingsAmount} TRY",
+      "{violationCount} paketleme ihlali, tasarruf: {savingsAmount} ₺",
     exclusionViolationsSummary:
-      "{violationCount} dışlama ihlali, risk: {riskAmount} TRY",
+      "{violationCount} dışlama ihlali, risk: {riskAmount} ₺",
     validatedInSummary: "{elapsedMs} ms'de doğrulandı",
     summarySeparator: " | ",
   },
@@ -118,6 +118,21 @@ const api = {
   },
   health: {
     healthy: "Sağlıklı",
+  },
+  unknownViolation: "Bilinmeyen ihlal",
+  unknownReason: "Bilinmeyen neden",
+  unknownMethodology: "Yöntem detayları kullanılamıyor",
+  unknownProvenance: "Köken detayları kullanılamıyor",
+  unknownWarning: "Bilinmeyen tutarlılık uyarısı",
+  unknownHealth: "Sağlık detayları kullanılamıyor",
+  unknownApiText: "Detaylar kullanılamıyor",
+  noMessage: "—",
+  paymentMethodKind: {
+    drg_mandatory: "DRG — zorunlu paket",
+    drg_overridable: "DRG — geçersiz kılınabilir",
+    itemized: "Kalemli",
+    missing_inputs: "Eksik girdiler",
+    not_in_sut: "SUT'da yok",
   },
 } as const;
 

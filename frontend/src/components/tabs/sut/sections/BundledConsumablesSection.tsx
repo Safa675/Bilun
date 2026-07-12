@@ -8,6 +8,7 @@ import { ACCENT_LOCAL, fmtNum, KpiCard } from "../shared";
 import { useSutApi } from "../useSutApi";
 import { Chip, DataTable, Surface, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
+import { fmtDate } from "@/lib/i18n/formatters";
 import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 import { SpecialtyProseScopeNotice } from "@/components/sut/SpecialtyProseScopeNotice";
 
@@ -79,7 +80,7 @@ export function BundledConsumablesSection() {
                   <td className="text-left text-xs tabular-nums" style={{ color: "#A1A1AA" }}>{fmtNum(i + 1)}</td>
                   <td className="text-left text-sm" style={{ color: "#1A1A1A" }}>{item.item_name}</td>
                   <td className="text-left text-xs" style={{ color: "#71717A" }}>{item.bundled_in}</td>
-                  <td className="text-left text-xs font-mono" style={{ color: "#A1A1AA" }}>{item.effective_date}</td>
+                  <td className="text-left text-xs font-mono" style={{ color: "#A1A1AA" }}>{item.effective_date ? fmtDate(item.effective_date) : "—"}</td>
                 </tr>
               ))}
               {filteredBundled.length === 0 && (

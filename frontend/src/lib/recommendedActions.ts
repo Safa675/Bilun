@@ -164,12 +164,12 @@ export function recommendedActionSurfaceLabel(
   surface: string,
 ): string {
   const key = SURFACE_LABEL_KEYS[surface];
-  return key ? t(key) : surface;
+  return key ? t(key) : t("common.unknownSurface");
 }
 
 export function recommendedActionKindLabel(t: TranslateFn, kind: string): string {
   const key = KIND_LABEL_KEYS[kind];
-  return key ? t(key) : kind.replaceAll("_", " ");
+  return key ? t(key) : t("common.unknownKind");
 }
 
 const MATERIAL_BILLED_KINDS = new Set([

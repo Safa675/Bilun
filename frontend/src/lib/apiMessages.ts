@@ -80,6 +80,10 @@ export function formatRequiredInputsLocalized(inputs: string[] | null | undefine
 }
 
 export function translateUnavailableReason(value: string | null | undefined): string {
+  return tryTranslateUnavailableReason(value) ?? value?.trim() ?? "";
+}
+
+function tryTranslateUnavailableReason(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
   if (!trimmed) {
     return "";
@@ -111,10 +115,14 @@ export function translateUnavailableReason(value: string | null | undefined): st
     return t(mappedText);
   }
 
-  return trimmed;
+  return null;
 }
 
 export function translateMethodology(value: string | null | undefined): string {
+  return tryTranslateMethodology(value) ?? value?.trim() ?? "";
+}
+
+function tryTranslateMethodology(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
   if (!trimmed) {
     return "";
@@ -132,10 +140,14 @@ export function translateMethodology(value: string | null | undefined): string {
     return t(mapped);
   }
 
-  return translateUnavailableReason(trimmed) || trimmed;
+  return tryTranslateUnavailableReason(trimmed);
 }
 
 export function translateProvenanceText(value: string | null | undefined): string {
+  return tryTranslateProvenanceText(value) ?? value?.trim() ?? "";
+}
+
+function tryTranslateProvenanceText(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
   if (!trimmed) {
     return "";
@@ -144,10 +156,14 @@ export function translateProvenanceText(value: string | null | undefined): strin
   if (mapped) {
     return t(mapped);
   }
-  return translateUnavailableReason(trimmed) || trimmed;
+  return tryTranslateUnavailableReason(trimmed);
 }
 
 export function translateConsistencyWarning(value: string | null | undefined): string {
+  return tryTranslateConsistencyWarning(value) ?? value?.trim() ?? "";
+}
+
+function tryTranslateConsistencyWarning(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
   if (!trimmed) {
     return "";
@@ -156,10 +172,14 @@ export function translateConsistencyWarning(value: string | null | undefined): s
   if (mapped) {
     return t(mapped);
   }
-  return translateUnavailableReason(trimmed) || trimmed;
+  return tryTranslateUnavailableReason(trimmed);
 }
 
 export function translateHealthMessage(value: string | null | undefined): string {
+  return tryTranslateHealthMessage(value) ?? value?.trim() ?? "";
+}
+
+function tryTranslateHealthMessage(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
   if (!trimmed) {
     return "";
@@ -168,10 +188,14 @@ export function translateHealthMessage(value: string | null | undefined): string
   if (mapped) {
     return t(mapped);
   }
-  return trimmed;
+  return null;
 }
 
 export function translateValidationMessage(message: string): string {
+  return tryTranslateValidationMessage(message) ?? message.trim();
+}
+
+function tryTranslateValidationMessage(message: string): string | null {
   const trimmed = message.trim();
   if (!trimmed) {
     return "";
@@ -210,10 +234,14 @@ export function translateValidationMessage(message: string): string {
     });
   }
 
-  return trimmed;
+  return null;
 }
 
 export function translateValidationSummary(summary: string): string {
+  return tryTranslateValidationSummary(summary) ?? summary.trim();
+}
+
+function tryTranslateValidationSummary(summary: string): string | null {
   const trimmed = summary.trim();
   if (!trimmed) {
     return "";
@@ -225,19 +253,23 @@ export function translateValidationSummary(summary: string): string {
 
   const separator = enMessages.api.validation.summarySeparator;
   const parts = trimmed.split(separator);
+  let allUnknown = true;
   const translatedParts = parts.map((part) => {
     const claimValid = part.match(/^Claim (.+): VALID$/);
     if (claimValid) {
+      allUnknown = false;
       return t("api.validation.claimValidSummary", { claimId: claimValid[1] });
     }
 
     const claimInvalid = part.match(/^Claim (.+): INVALID$/);
     if (claimInvalid) {
+      allUnknown = false;
       return t("api.validation.claimInvalidSummary", { claimId: claimInvalid[1] });
     }
 
     const materialsTotal = part.match(/^(\d+) materials, ([\d.]+) TRY total$/);
     if (materialsTotal) {
+      allUnknown = false;
       return t("api.validation.materialsTotalSummary", {
         materialCount: materialsTotal[1],
         totalAmount: materialsTotal[2],
@@ -248,6 +280,7 @@ export function translateValidationSummary(summary: string): string {
       /^(\d+) bundling violation\(s\), savings: ([\d.]+) TRY$/,
     );
     if (bundling) {
+      allUnknown = false;
       return t("api.validation.bundlingViolationsSummary", {
         violationCount: bundling[1],
         savingsAmount: bundling[2],
@@ -256,6 +289,7 @@ export function translateValidationSummary(summary: string): string {
 
     const exclusion = part.match(/^(\d+) exclusion violation\(s\), risk: ([\d.]+) TRY$/);
     if (exclusion) {
+      allUnknown = false;
       return t("api.validation.exclusionViolationsSummary", {
         violationCount: exclusion[1],
         riskAmount: exclusion[2],
@@ -264,38 +298,38 @@ export function translateValidationSummary(summary: string): string {
 
     const validatedIn = part.match(/^validated in ([\d.]+)ms$/);
     if (validatedIn) {
+      allUnknown = false;
       return t("api.validation.validatedInSummary", { elapsedMs: validatedIn[1] });
     }
 
     return part;
   });
 
-  return translatedParts.join(t("api.validation.summarySeparator"));
+  // If none of the parts matched a known pattern, signal no-match so the
+  // dispatcher and the public wrapper apply the generic placeholder.
+  return allUnknown ? null : translatedParts.join(t("api.validation.summarySeparator"));
 }
 
-/** Translate any known API prose string (reason, methodology, provenance, warnings). */
+/**
+ * Translate any known API prose string (reason, methodology, provenance,
+ * warnings, validation messages). Unrecognized strings pass through unchanged
+ * so legitimate domain content (often already localized by the backend) is not
+ * lost behind a generic placeholder.
+ */
 export function translateApiText(value: string | null | undefined): string {
   const trimmed = value?.trim();
   if (!trimmed) {
     return "";
   }
 
-  const validators = [
-    translateConsistencyWarning,
-    translateHealthMessage,
-    translateMethodology,
-    translateUnavailableReason,
-    translateProvenanceText,
-    translateValidationSummary,
-    translateValidationMessage,
-  ];
+  const match =
+    tryTranslateConsistencyWarning(trimmed) ??
+    tryTranslateHealthMessage(trimmed) ??
+    tryTranslateMethodology(trimmed) ??
+    tryTranslateUnavailableReason(trimmed) ??
+    tryTranslateProvenanceText(trimmed) ??
+    tryTranslateValidationSummary(trimmed) ??
+    tryTranslateValidationMessage(trimmed);
 
-  for (const validator of validators) {
-    const translated = validator(trimmed);
-    if (translated && translated !== trimmed) {
-      return translated;
-    }
-  }
-
-  return trimmed;
+  return match ?? trimmed;
 }

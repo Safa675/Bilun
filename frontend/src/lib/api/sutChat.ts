@@ -3,7 +3,23 @@ import { getCookie } from "../cookies";
 import type { ChatMessage } from "../domains/common";
 import type { SutChatPageContext } from "../sutChatPageContext";
 import { LOCALE_COOKIE_KEY, type Locale } from "../i18n/types";
+import { getModuleLocale } from "../i18n/localeModule";
+import { translate } from "../i18n/translate";
 import { parseRole, ROLE_COOKIE_KEY, type UserRole } from "../userRole";
+import { translateApiText } from "../apiMessages";
+import enMessages from "@/messages/en/index";
+import trMessages from "@/messages/tr/index";
+
+function activeMessages() {
+  return getModuleLocale() === "tr" ? trMessages : enMessages;
+}
+
+function t(
+  key: string,
+  params?: Record<string, string | number | undefined | null>,
+): string {
+  return translate(activeMessages(), key, params);
+}
 
 function parseUiLocale(value: string | null): Locale {
   return value === "tr" ? "tr" : "en";
@@ -55,7 +71,7 @@ export async function sendSutChatMessage(
 
   const toAbortError = (err: DOMException) => {
     if (abortSource === "timeout") {
-      return new Error("SUT chat request timed out. Please try again.");
+      return new Error(t("chat.api.requestTimedOut"));
     }
     return err;
   };
@@ -81,7 +97,7 @@ export async function sendSutChatMessage(
     if (err instanceof DOMException && err.name === "AbortError") {
       throw toAbortError(err);
     }
-    throw new Error(`Could not reach API at ${url}`);
+    throw new Error(t("chat.api.couldNotReachApi", { url }));
   }
 
   if (!response.ok) {
@@ -89,15 +105,22 @@ export async function sendSutChatMessage(
     const body = await response.text().catch(() => "");
     throw new Error(
       body.trim()
-        ? `SUT chat failed: ${response.status} ${response.statusText} - ${body.trim()}`
-        : `SUT chat failed: ${response.status} ${response.statusText}`,
+        ? t("chat.api.failedWithBody", {
+            status: response.status,
+            statusText: response.statusText,
+            body: body.trim(),
+          })
+        : t("chat.api.failedWithoutBody", {
+            status: response.status,
+            statusText: response.statusText,
+          }),
     );
   }
 
   const reader = response.body?.getReader();
   if (!reader) {
     clearTimeout(timeoutId);
-    throw new Error("SUT chat returned no response body.");
+    throw new Error(t("chat.api.noResponseBody"));
   }
 
   const decoder = new TextDecoder();
@@ -130,7 +153,7 @@ export async function sendSutChatMessage(
           continue;
         }
         if (frame.event === "error") {
-          throw new Error(payload);
+          throw new Error(translateApiText(payload));
         }
         onToken(payload, frame.event || undefined);
         tokenCount += 1;
@@ -142,7 +165,7 @@ export async function sendSutChatMessage(
       }
 
       if (Date.now() - lastActivityTime > idleTimeoutMs) {
-        throw new Error("No response received from SUT chat. Please try again.");
+        throw new Error(t("chat.api.noResponseReceived"));
       }
     }
   } catch (err) {
@@ -156,6 +179,6 @@ export async function sendSutChatMessage(
   }
 
   if (tokenCount === 0) {
-    throw new Error("SUT chat returned an empty response.");
+    throw new Error(t("chat.api.emptyResponse"));
   }
 }

@@ -2,9 +2,11 @@
 
 import type { ReactNode } from "react";
 import type { BillingActionReport, ClaimSubmissionChecklist, PatientOptimization } from "@/lib/domains/sut";
-import { getSutAlertBadgeLabel } from "@/lib/sutLabels";
+import { getSutAlertBadgeLabel, getSutSeverityLabel, getPaymentMethodKindLabel } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
+import { fmtDate } from "@/lib/i18n/formatters";
+import { translateApiText } from "@/lib/apiMessages";
 import {
   hasRecoverableBillingTotals,
   isExactOutput,
@@ -245,7 +247,7 @@ export function RecommendedActionsPanel({
                     "—"
                   )}
                 </td>
-                <td className="text-sm text-[var(--text-secondary)]">{action.detail ?? "—"}</td>
+                <td className="text-sm text-[var(--text-secondary)]">{action.detail ? translateApiText(action.detail) : "—"}</td>
               </tr>
             );
           })}
@@ -1192,8 +1194,8 @@ export function ProcedureCaptureGapSection({
                   </div>
                 )}
               </td>
-              <td>{item.service_date ?? "—"}</td>
-              <td>{item.source ?? "—"}</td>
+              <td>{item.service_date ? fmtDate(item.service_date) : "—"}</td>
+              <td>{item.source ? translateApiText(item.source) : "—"}</td>
               <td className="num-col tabular-nums text-right">
                 {fmtTRY2OrUnavailable(item.list_price_try ?? null)}
               </td>
@@ -1203,7 +1205,7 @@ export function ProcedureCaptureGapSection({
               <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                 {fmtTRY2OrUnavailable(item.recoverable_gap_try ?? null)}
               </td>
-              <td>{item.detail ?? "—"}</td>
+              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1382,8 +1384,8 @@ export function GazetteRepricingSection({
                   </div>
                 )}
               </td>
-              <td>{item.service_date ?? "—"}</td>
-              <td>{item.amendment_effective_date ?? "—"}</td>
+              <td>{item.service_date ? fmtDate(item.service_date) : "—"}</td>
+              <td>{item.amendment_effective_date ? fmtDate(item.amendment_effective_date) : "—"}</td>
               <td className="num-col tabular-nums text-right">
                 {fmtTRY2OrUnavailable(item.price_at_service_try ?? null)}
               </td>
@@ -1483,7 +1485,7 @@ export function ClaimSubmissionChecklistSection({
                 <div className="font-mono text-xs">{item.line_code ?? "—"}</div>
               </td>
               <td className="font-mono text-xs">{item.sonuc_kodu_risk ?? "—"}</td>
-              <td>{item.severity ?? "—"}</td>
+              <td>{item.severity ? getSutSeverityLabel(item.severity) : "—"}</td>
               <td>{localizedReadinessReminder(item)}</td>
               <td>{item.sut_anchor ?? "—"}</td>
               <td>
@@ -1545,9 +1547,9 @@ export function MedulaRejectionPlaybookSection({
           {entries.map((item, index) => (
             <tr key={`${item.claim_id}-${item.rejection_event_id}-${index}`}>
               <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
-              <td>{item.medula_stage ?? "—"}</td>
+              <td>{item.medula_stage ? translateApiText(item.medula_stage) : "—"}</td>
               <td className="font-mono text-xs">{item.sonuc_kodu ?? "—"}</td>
-              <td>{item.hata_mesaji ?? "—"}</td>
+              <td>{item.hata_mesaji ? translateApiText(item.hata_mesaji) : "—"}</td>
               <td>
                 <div className="font-mono text-xs">
                   {item.related_line_type === "procedure" && item.related_procedure_code
@@ -1623,11 +1625,11 @@ export function DrugIndicationReviewSection({
               <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
               <td>{item.drug_name ?? "—"}</td>
               <td className="font-mono text-xs">{item.violation_kind ?? "—"}</td>
-              <td>{item.severity ?? "—"}</td>
+              <td>{item.severity ? getSutSeverityLabel(item.severity) : "—"}</td>
               <td className="font-mono text-xs">{item.primary_icd10 ?? "—"}</td>
               <td className="font-mono text-xs">{item.rule_id ?? "—"}</td>
               <td>{item.sut_section ?? "—"}</td>
-              <td>{item.message_tr ?? "—"}</td>
+              <td>{item.message_tr ? translateApiText(item.message_tr) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1789,20 +1791,20 @@ export function CareSettingReviewSection({
           {opportunities.map((item, index) => (
             <tr key={`${item.claim_id}-${index}`}>
               <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
-              <td>{item.claim_type ?? "—"}</td>
+              <td>{item.claim_type ? translateApiText(item.claim_type) : "—"}</td>
               <td>
-                <div>{item.actual_care_setting ?? "—"}</div>
+                <div>{item.actual_care_setting ? translateApiText(item.actual_care_setting) : "—"}</div>
                 {item.actual_payment_method_kind && (
                   <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
-                    {item.actual_payment_method_kind}
+                    {getPaymentMethodKindLabel(item.actual_payment_method_kind)}
                   </div>
                 )}
               </td>
               <td>
-                <div>{item.alternate_care_setting ?? "—"}</div>
+                <div>{item.alternate_care_setting ? translateApiText(item.alternate_care_setting) : "—"}</div>
                 {item.alternate_payment_method_kind && (
                   <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
-                    {item.alternate_payment_method_kind}
+                    {getPaymentMethodKindLabel(item.alternate_payment_method_kind)}
                   </div>
                 )}
                 {item.review_kind === "needs_clinical_review" && (
@@ -2194,7 +2196,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
                   <tr key={`miat-int-${material.sut_code}-${index}`}>
                     <td className="font-mono text-xs">{material.sut_code}</td>
                     <td>{material.material_name}</td>
-                    <td>{material.last_use_date ?? "—"}</td>
+                    <td>{material.last_use_date ? fmtDate(material.last_use_date) : "—"}</td>
                     <td>{material.miat_period}</td>
                     <td>{material.note}</td>
                   </tr>
@@ -2284,7 +2286,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
                     <td className="num-col tabular-nums text-right">
                       {hit.risk_amount != null ? fmtTRY2(hit.risk_amount) : "—"}
                     </td>
-                    <td>{hit.message || hit.rule_id || "—"}</td>
+                    <td>{hit.message ? translateApiText(hit.message) : (hit.rule_id || "—")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2316,7 +2318,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
                     <td className="num-col tabular-nums text-right">
                       {hit.risk_amount != null ? fmtTRY2(hit.risk_amount) : "—"}
                     </td>
-                    <td>{hit.message || hit.rule_id || "—"}</td>
+                    <td>{hit.message ? translateApiText(hit.message) : (hit.rule_id || "—")}</td>
                   </tr>
                 ))}
               </tbody>

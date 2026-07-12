@@ -47,7 +47,7 @@ export function getSutRecommendedActionLabel(action: string | null | undefined):
     return getSutActionLabel("noActionNeeded");
   }
   const key = RECOMMENDED_ACTION_LABEL_KEYS[trimmed];
-  return key ? getSutActionLabel(key) : trimmed;
+  return key ? getSutActionLabel(key) : t("labels.sut.unknown");
 }
 
 export function getSutSeverityLabel(value: string | null | undefined): string {
@@ -58,6 +58,22 @@ export function getSutSeverityLabel(value: string | null | undefined): string {
 
   const known = enMessages.labels.sut.severity[normalized as keyof typeof enMessages.labels.sut.severity];
   return known ? t(`labels.sut.severity.${normalized}`) : toTitleCase(value);
+}
+
+/**
+ * Map a backend `payment_method_kind` (uppercase enum: DRG_MANDATORY,
+ * DRG_OVERRIDABLE, ITEMIZED, MISSING_INPUTS, NOT_IN_SUT) to a localized label.
+ */
+export function getPaymentMethodKindLabel(value: string | null | undefined): string {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) {
+    return t("labels.sut.unknown");
+  }
+
+  const known = enMessages.api.paymentMethodKind[
+    normalized as keyof typeof enMessages.api.paymentMethodKind
+  ];
+  return known ? t(`api.paymentMethodKind.${normalized}`) : toTitleCase(value);
 }
 
 export function getSutRiskTierLabel(value: string | null | undefined): string {

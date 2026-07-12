@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isAbortError } from "../../../lib/api/request";
+import { getModuleLocale } from "../../../lib/i18n/localeModule";
+import { translate } from "../../../lib/i18n/translate";
+import enMessages from "@/messages/en/index";
+import trMessages from "@/messages/tr/index";
 
 type Fetcher<T> = (opts: { signal: AbortSignal }) => Promise<T>;
 
@@ -19,8 +23,21 @@ interface UseSutApiResult<T> {
   refetch: () => void;
 }
 
-const DEFAULT_ABORT_MSG = "Request was interrupted. Reopen the tab to retry.";
-const DEFAULT_ERROR_MSG = "Failed to load data.";
+/** Resolve a localized message from the active module-locale catalog. */
+function lt(key: string): string {
+  const messages = getModuleLocale() === "tr" ? trMessages : enMessages;
+  return translate(messages, key);
+}
+
+/** Default abort message, resolved against the active locale at call time. */
+function defaultAbortMessage(): string {
+  return lt("common.requestAborted");
+}
+
+/** Default error fallback, resolved against the active locale at call time. */
+function defaultErrorMessage(): string {
+  return lt("common.loadFailed");
+}
 
 export function useSutApi<T>(
   fetcher: Fetcher<T>,
@@ -29,8 +46,8 @@ export function useSutApi<T>(
   const {
     enabled,
     onceOnEnable = true,
-    abortMessage = DEFAULT_ABORT_MSG,
-    errorFallback = DEFAULT_ERROR_MSG,
+    abortMessage,
+    errorFallback,
   } = options;
 
   const [data, setData] = useState<T | null>(null);
@@ -63,10 +80,10 @@ export function useSutApi<T>(
       } catch (err) {
         if (!active) return;
         if (controller.signal.aborted || isAbortError(err)) {
-          setError(abortMessage);
+          setError(abortMessage ?? defaultAbortMessage());
           return;
         }
-        setError(err instanceof Error ? err.message : errorFallback);
+        setError(err instanceof Error ? err.message : (errorFallback ?? defaultErrorMessage()));
       } finally {
         if (active) setLoading(false);
       }

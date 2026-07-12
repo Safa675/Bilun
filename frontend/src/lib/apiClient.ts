@@ -1,4 +1,19 @@
 // Shared API client helpers used by endpoint wrappers in lib/api/
+import enMessages from "@/messages/en/index";
+import trMessages from "@/messages/tr/index";
+import { getModuleLocale } from "@/lib/i18n/localeModule";
+import { translate } from "@/lib/i18n/translate";
+
+function activeMessages() {
+  return getModuleLocale() === "tr" ? trMessages : enMessages;
+}
+
+function t(
+  key: string,
+  params?: Record<string, string | number | undefined | null>,
+): string {
+  return translate(activeMessages(), key, params);
+}
 
 export function resolveApiBase(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
@@ -40,16 +55,24 @@ export class ApiRequestError extends Error {
   status?: number;
   detail?: string;
   isNetworkError: boolean;
+  /** Stable code identifying the failure class, so callers can re-translate if needed. */
+  code?: "network_error" | "http_error" | "invalid_json";
 
   constructor(
     message: string,
-    options?: { status?: number; detail?: string; isNetworkError?: boolean },
+    options?: {
+      status?: number;
+      detail?: string;
+      isNetworkError?: boolean;
+      code?: "network_error" | "http_error" | "invalid_json";
+    },
   ) {
     super(message);
     this.name = "ApiRequestError";
     this.status = options?.status;
     this.detail = options?.detail;
     this.isNetworkError = options?.isNetworkError ?? false;
+    this.code = options?.code;
   }
 }
 
@@ -69,8 +92,9 @@ export async function fetchJSON<T>(path: string, options?: RequestInit): Promise
     if (err instanceof DOMException && err.name === "AbortError") {
       throw err;
     }
-    throw new ApiRequestError(`Could not reach API at ${url}`, {
+    throw new ApiRequestError(t("common.apiError.couldNotReachApi", { url }), {
       isNetworkError: true,
+      code: "network_error",
     });
   }
   if (!res.ok) {
@@ -89,18 +113,28 @@ export async function fetchJSON<T>(path: string, options?: RequestInit): Promise
     }
     throw new ApiRequestError(
       detail
-        ? `API error: ${res.status} ${res.statusText} - ${detail}`
-        : `API error: ${res.status} ${res.statusText}`,
+        ? t("common.apiError.failedWithBody", {
+            status: res.status,
+            statusText: res.statusText,
+            detail,
+          })
+        : t("common.apiError.failedWithoutBody", {
+            status: res.status,
+            statusText: res.statusText,
+          }),
       {
         status: res.status,
         detail: detail ?? undefined,
+        code: "http_error",
       },
     );
   }
   try {
     return await res.json() as T;
   } catch {
-    throw new ApiRequestError(`API returned invalid JSON from ${path}`);
+    throw new ApiRequestError(t("common.apiError.invalidJson", { path }), {
+      code: "invalid_json",
+    });
   }
 }
 
