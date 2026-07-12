@@ -255,6 +255,36 @@
       ],
       "rebill_permitted": false,
       "rebill_stage": "provizyon"
+    },
+    {
+      "playbook_key": "0963_material_finalization",
+      "sonuc_kodu": "0963",
+      "sonuc_kodu_pattern": "096[3-8]",
+      "category": "material_finalization",
+      "medula_stages": ["fatura_kayit"],
+      "hata_mesaji_keywords": [
+        "malzeme",
+        "kesinleştirme",
+        "kesinlestirme",
+        "finalization",
+        "ödeme onayı",
+        "faturalandırma"
+      ],
+      "sut_anchor": "MEDULA malzeme kesinleştirme (finalization) / ödeme onayı adımı",
+      "problem_summary_tr": "Takip içindeki malzeme için kesinleştirme (finalization) adımı tamamlanmamış — ödeme onayı veya faturalandırma eksik.",
+      "problem_summary_en": "Material finalization step within the tracking (takip) is incomplete — payment approval or invoicing is missing.",
+      "corrective_steps_tr": [
+        "Malzeme kesinleştirme (finalization) yapılmamış",
+        "Medula'da malzeme kaydını açın → kesinleştir butonuna basın",
+        "Faturayı silin → yeniden gönderin"
+      ],
+      "corrective_steps_en": [
+        "Material finalization has not been performed",
+        "Open the material record in MEDULA → press the finalize button",
+        "Delete the invoice → resubmit"
+      ],
+      "rebill_permitted": true,
+      "rebill_stage": "fatura_kayit"
     }
   ]
 }

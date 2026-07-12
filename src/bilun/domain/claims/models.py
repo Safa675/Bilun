@@ -80,6 +80,7 @@ class ProcedureClaimLine:
     lab_result_id: str = ""
     lab_billing_status: str = ""
     procedure_specialty_code: str = ""
+    sag_sol: str = ""  # Medula sagSol: "1"=Sağ(right), "2"=Sol(left), "3"=Ayrım yok, ""=missing
 
 
 @dataclass(frozen=True)
