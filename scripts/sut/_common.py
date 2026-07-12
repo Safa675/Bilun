@@ -143,7 +143,10 @@ def find_latest_consolidated_sut_docx(raw_data_root: Path) -> Path | None:
     if sut_dir is None:
         return None
 
-    root_docx = sorted(p for p in sut_dir.glob("*.docx") if p.is_file())
+    # Use rglob to handle SGK zip nesting variations (some zips add an
+    # extra inner folder layer). Prefer depth-1 matches but fall back
+    # to deeper matches.
+    root_docx = sorted(p for p in sut_dir.rglob("*.docx") if p.is_file())
     if not root_docx:
         return None
 
@@ -154,5 +157,9 @@ def find_latest_consolidated_sut_docx(raw_data_root: Path) -> Path | None:
         if "İşlenmiş Güncel 2013 SUT" in p.name or "Islenmis Guncel 2013 SUT" in p.name
     ]
     if preferred:
+        # Among preferred, pick the shallowest (closest to root)
+        preferred.sort(key=lambda p: len(p.relative_to(sut_dir).parts))
         return preferred[0]
+    # Among all, pick the shallowest
+    root_docx.sort(key=lambda p: len(p.relative_to(sut_dir).parts))
     return root_docx[0]

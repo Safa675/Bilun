@@ -51,14 +51,21 @@ _RULE_ID_D5 = "conditional_addon_ek2d_neuronavigation"
 _SUT_SECTION_ID = "EK-2/D"
 
 # D-4 snapshot path (EK-2/D-4 procedures permitting separate neuromonitoring).
-_D4_PARQUET_PATH = (
-    _PROJECT_ROOT
-    / "data"
-    / "gazette"
-    / "snapshots"
-    / "asof_2026-01-31"
-    / "EK-2D-4.parquet"
-)
+# Resolves dynamically to the latest asof snapshot directory.
+
+
+def _resolve_latest_snapshot_dir() -> Path:
+    """Find the latest asof snapshot directory under data/gazette/snapshots/."""
+    snapshots_root = _PROJECT_ROOT / "data" / "gazette" / "snapshots"
+    if not snapshots_root.exists():
+        return snapshots_root / "asof_2026-01-31"
+    asof_dirs = sorted(
+        d for d in snapshots_root.iterdir() if d.is_dir() and d.name.startswith("asof_")
+    )
+    return asof_dirs[-1] if asof_dirs else snapshots_root / "asof_2026-01-31"
+
+
+_D4_PARQUET_PATH = _resolve_latest_snapshot_dir() / "EK-2D-4.parquet"
 # D-5 seed path (EK-2/D-5 procedures permitting separate neuronavigation).
 _D5_SEED_PATH = _PROSE_RULES_DIR / "ek2d5_neuronavigation_codes.json"
 

@@ -1,0 +1,114 @@
+section_id: 2.4.4.R
+source_note: "New section added by RG-29/06/2026-33295/5 md. (Yürürlük: 30/07/2026) — Pulmoner rehabilitasyon tedavisi"
+rules:
+- rule_id: 2.4.4.R.(4).pulmoner_rehab_pricing_p701074
+  sut_section: 2.4.4.R
+  condition:
+    procedure_category: pulmoner_rehabilitation
+    procedure_code_any:
+    - P701074
+  action:
+    billable: true
+    payment_tr: pulmoner rehabilitasyon tedavisi, sağlık kurulu raporu tarihinden itibaren 15 gün içinde tedaviye başlanması
+      kaydıyla SUT eki EK-2/C listesinde yer alan P701074 kodlu "Pulmoner Rehabilitasyon Tedavisi, her bir seans" işleminin
+      puanı (1893.23 puan) esas alınarak ayakta ve yatarak tedavi bedelleri Kurumca karşılanır
+    annex_basis: EK-2/C
+  gate_b_sources:
+  - C001395
+- rule_id: 2.4.4.R.(3).pulmoner_rehab_30_sessions_3_reports_annual
+  sut_section: 2.4.4.R
+  condition:
+    procedure_category: pulmoner_rehabilitation
+    sessions_within_1y:
+      min: 31
+  action:
+    billable: false
+    denial_tr: pulmoner rehabilitasyon tedavisi bir hasta için son bir yıl içinde en fazla 30 seans olarak Kurumca karşılanır;
+      bir yıl içinde en fazla üç sağlık kurulu raporu düzenlenebilir; klinik tablonun sürdürülmesini gerektirmesi halinde tıbbi
+      gerekçelerin raporda belirtilmesi kaydıyla Sağlık Bakanlığı ve devlet üniversitesi sunucularınca devam edilebilir
+    annex_basis: EK-2/D-2
+    severity: error
+  gate_b_sources:
+  - C001396
+- rule_id: 2.4.4.R.(2).pulmoner_rehab_board_report_requires_chest_specialist
+  sut_section: 2.4.4.R
+  condition:
+    procedure_category: pulmoner_rehabilitation
+    health_board_report_present: false
+    board_specialties_not_any:
+    - chest_diseases
+  action:
+    billable: false
+    enforcement: documentation_required
+    message_tr: pulmoner rehabilitasyon tedavisinin Kuruma faturalandırılabilmesi için en az bir göğüs hastalıkları uzman
+      hekiminin bulunduğu sağlık kurulu raporu düzenlenmelidir; raporun sonuç bölümünde değerlendirme ve muayene bulgularına
+      uygun uygulanacak tedavi ve tedavi süresi belirtilmelidir
+    severity: error
+  gate_b_sources:
+  - C001397
+- rule_id: 2.4.4.R.(4).pulmoner_rehab_start_within_15d
+  sut_section: 2.4.4.R
+  condition:
+    procedure_category: pulmoner_rehabilitation
+    days_from_report_to_treatment:
+      min: 16
+  action:
+    billable: false
+    denial_tr: sağlık kurulu raporunun düzenlenme tarihinden itibaren 15 gün içerisinde tedaviye başlanmamışsa hasta için
+      yeni sağlık raporu düzenlenmesi gerekir
+    severity: error
+  gate_b_sources:
+  - C001398
+- rule_id: 2.4.4.R.pulmoner_rehab_5_biz_day_gap_excluding_chronic_failure
+  sut_section: 2.4.4.R
+  condition:
+    procedure_category: pulmoner_rehabilitation
+    diagnosis_not_in:
+    - chronic_pulmoner_yetmezlik
+    gap_after_5_biz_days_without_new_report: true
+  action:
+    billable: false
+    denial_tr: kronik pulmoner yetmezlik dışında, tedaviye başlandıktan sonra 5 iş gününden fazla ara verilmesi halinde yeni
+      bir sağlık kurulu raporu düzenlenmedikçe uygulanan pulmoner rehabilitasyon işlemleri Kurumca karşılanmaz; ara verilmeden
+      önce uygulanan tedavi seans kontrolünde dikkate alınır
+    severity: error
+  gate_b_sources:
+  - C001399
+- rule_id: 2.4.4.R.(5).inpatient_pulmoner_rehab_fee_for_service
+  sut_section: 2.4.4.R
+  condition:
+    procedure_category: pulmoner_rehabilitation_inpatient
+    concomitant_service: true
+  action:
+    billable: true
+    payment_tr: yatarak pulmoner rehabilitasyon uygulamalarında; pulmoner rehabilitasyon dışındaki sağlık hizmetleri (yatak
+      bedeli, tetkik, ilaç, tıbbi malzeme gibi) SUT hükümlerine uyulmak koşuluyla "hizmet başına ödeme yöntemi" ile faturalandırıldığında
+      bedeli Kurumca karşılanır
+    annex_basis: fee_for_service
+  gate_b_sources:
+  - C001400
+- rule_id: 2.4.4.R.(6).pulmoner_rehab_16_patients_per_day_cap
+  sut_section: 2.4.4.R
+  condition:
+    procedure_category: pulmoner_rehabilitation
+    patients_per_physician_per_day:
+      min: 17
+  action:
+    billable: false
+    denial_tr: hekim başına günlük en fazla 16 hastanın pulmoner rehabilitasyon işlemi Kuruma fatura edilir; bu sınır aşıldıktan
+      sonra kabul edilen hastaların işlemleri Kurumca karşılanmaz
+    severity: error
+  gate_b_sources:
+  - C001401
+- rule_id: 2.4.4.R.(6).private_provider_pulmoner_rehab_reduces_daily_visit_count
+  sut_section: 2.4.4.R
+  condition:
+    procedure_category: pulmoner_rehabilitation
+    provider_type: private
+  action:
+    billable: true
+    payment_tr: özel sağlık hizmeti sunucularından Kuruma fatura edilen her bir pulmoner rehabilitasyon işlemi için muayene
+      sayısından bir muayene sayısı düşülerek yeni günlük muayene sayısı hesaplanır; her hekim ayrı ayrı olmak üzere bu sınırlarda
+      fatura edebilir
+  gate_b_sources:
+  - C001402

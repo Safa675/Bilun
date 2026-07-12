@@ -533,7 +533,11 @@ class SutClauseExtractor:
                     "deontic_modality": deontic_modality,
                     "sut_section_refs": _json_list(sut_section_refs),
                     "amendment_refs": _json_list(amendment_refs),
-                    "source_docx": str(self.docx_path.resolve()),
+                    "source_docx": str(
+                        self.docx_path.resolve().relative_to(
+                            Path(__file__).resolve().parents[3]
+                        )
+                    ),
                     "source_effective_date": effective_date,
                     "char_count": len(text),
                     "word_count": len(text.split()),

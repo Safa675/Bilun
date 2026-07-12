@@ -1,0 +1,68 @@
+name: SUT Monitor
+
+on:
+  schedule:
+    # 2×/day at 06:00 and 18:00 UTC (09:00/21:00 TRT)
+    - cron: "0 6,18 * * *"
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install polars requests pyarrow openpyxl xlrd
+
+      - name: Check for new SUT tebliğ
+        id: monitor
+        run: python scripts/sut/sut_monitor.py
+
+      - name: Skip — no new tebliğ
+        if: steps.monitor.outputs.new_teblig == ''
+        run: echo "No new SUT tebliğ detected. Exiting."
+
+      - name: Fetch new SUT package
+        if: steps.monitor.outputs.new_teblig != ''
+        run: |
+          python scripts/sut/sut_fetch.py \
+            "${{ steps.monitor.outputs.new_teblig_url }}" \
+            "${{ steps.monitor.outputs.new_teblig_date }}"
+
+      - name: Run ingest pipeline
+        if: steps.monitor.outputs.new_teblig != ''
+        run: |
+          python scripts/sut/convert_xlsx_to_parquet.py
+          python scripts/sut/build_curated_catalogs.py --overwrite
+          python scripts/sut/extract_sut_prose.py
+
+      - name: Compute delta
+        if: steps.monitor.outputs.new_teblig != ''
+        id: delta
+        run: |
+          OLD_DATE=$(python3 -c "import json; print(json.load(open('data/gazette/ingest_state.json'))['last_ingested_date'])")
+          python scripts/sut/sut_delta.py "$OLD_DATE" "${{ steps.monitor.outputs.new_teblig_date }}"
+
+      - name: Create PR
+        if: steps.monitor.outputs.new_teblig != ''
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "chore(sut): ingest ${{ steps.monitor.outputs.new_teblig_date }} amendment"
+          body: ${{ steps.delta.outputs.delta_summary }}
+          branch: chore/sut-auto-update
+          labels: sut-update, automated
+          commit-message: "chore(sut): auto-ingest ${{ steps.monitor.outputs.new_teblig_date }} SUT amendment"
+          # NOTE: This PR must NOT auto-merge. Human review required.
+          # Set branch protection on chore/sut-auto-update to enforce.

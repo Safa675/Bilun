@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import json
 import os
 import re
 import unicodedata
@@ -263,7 +264,9 @@ def convert_one_workbook(xlsx_path: Path, output_root: Path) -> list[SheetResult
 
             results.append(
                 SheetResult(
-                    source_file=str(xlsx_path),
+                    source_file=str(
+                        xlsx_path.resolve().relative_to(PROJECT_ROOT)
+                    ),
                     annex_code=annex_code,
                     annex_family=annex_family,
                     sheet_name=sheet_name,
@@ -271,7 +274,9 @@ def convert_one_workbook(xlsx_path: Path, output_root: Path) -> list[SheetResult
                     is_mulga=mulga,
                     row_count=len(parquet_df),
                     column_count=len(parquet_df.columns),
-                    parquet_path=str(out_path),
+                    parquet_path=str(
+                        out_path.resolve().relative_to(PROJECT_ROOT)
+                    ),
                 )
             )
     finally:
@@ -367,6 +372,39 @@ def main() -> None:
         manifest.to_parquet(tmp_path, index=False)
         os.replace(tmp_path, manifest_path)
         manifest_rows = len(manifest)
+
+    # ── Atomic ingest-state write ────────────────────────────────────
+    # Only update ingest_state.json after the full manifest is durably
+    # committed. Uses the same temp-then-rename pattern as the manifest.
+    # On a mid-run crash, state still points at the OLD version → the
+    # next run retries cleanly.
+    try:
+        manifest_bytes = manifest_path.read_bytes()
+        manifest_sha = hashlib.sha256(manifest_bytes).hexdigest()[:16]
+        latest_sut_dir = find_latest_consolidated_sut_dir(RAW_DATA_ROOT)
+        latest_folder = latest_sut_dir.name if latest_sut_dir else ""
+        latest_date = (
+            latest_folder.split("-")[0].replace(".", "-")
+            if latest_folder
+            else ""
+        )
+        state = {
+            "last_ingested_folder": latest_folder,
+            "last_ingested_date": latest_date,
+            "last_ingested_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "manifest_row_count": manifest_rows,
+            "manifest_sha256": manifest_sha,
+            "pipeline_version": 2,
+        }
+        state_path = output_dir / "ingest_state.json"
+        with open(state_path.with_suffix(".json.tmp"), "w") as sf:
+            json.dump(state, sf, indent=2, ensure_ascii=False)
+            sf.flush()
+            os.fsync(sf.fileno())
+        os.replace(state_path.with_suffix(".json.tmp"), state_path)
+        print(f"Ingest state written: {state_path}")
+    except Exception as exc:
+        print(f"WARNING: Failed to write ingest_state.json: {exc}")
 
     print("\n" + "=" * 72)
     print("CONVERSION COMPLETE")

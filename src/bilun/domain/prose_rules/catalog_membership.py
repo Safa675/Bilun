@@ -18,9 +18,24 @@ logger = logging.getLogger("bilun.domain.prose_rules.catalog_membership")
 # add-on procedures separately billable per SUT §2.2.1.B-1). The parquet stores
 # the procedure code in its first column (a long Turkish header string) with a
 # sentinel ``İŞLEM KODU`` header row.
-_EK2A2_SNAPSHOT_PATH = (
-    _GAZETTE_DIR / "snapshots" / "asof_2026-01-31" / "EK-2A-2.parquet"
-)
+
+
+def _resolve_latest_snapshot_dir() -> Path:
+    """Dynamically find the latest asof snapshot directory.
+
+    Avoids hardcoding ``asof_2026-01-31`` — picks the newest by name sort.
+    """
+    snapshots_root = _GAZETTE_DIR / "snapshots"
+    if not snapshots_root.exists():
+        return snapshots_root / "asof_2026-01-31"  # fallback (doesn't exist)
+    asof_dirs = sorted(
+        d for d in snapshots_root.iterdir() if d.is_dir() and d.name.startswith("asof_")
+    )
+    return asof_dirs[-1] if asof_dirs else snapshots_root / "asof_2026-01-31"
+
+
+_LATEST_SNAPSHOT_DIR = _resolve_latest_snapshot_dir()
+_EK2A2_SNAPSHOT_PATH = _LATEST_SNAPSHOT_DIR / "EK-2A-2.parquet"
 _EK2A2_HEADER_SENTINEL = "İŞLEM KODU"
 
 # Raw EK-2/D-3 HBO (hiperbarik oksijen) indication list. The parquet carries

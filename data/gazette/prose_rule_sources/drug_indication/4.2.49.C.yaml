@@ -114,9 +114,11 @@ rules:
   - risdiplam
   pay: false
   action:
-    enforcement: 'no-pay: gen temelli tedaviler (gen replasman + SMN2 modifiye eden) birlikte kullanilmaz'
-    message_tr: Gen temelli tedavilerin tumu (gen replasman ve SMN2 modifiye eden nusinersen/risdiplam) birlikte kullanilmamalidir;
-      birlikte kullanilmasi halinde bedelleri Kurumca karsilanmaz
+    enforcement: 'no-pay: gen temelli tedaviler (gen replasman + SMN2 modifiye eden) birlikte kullanilmaz;
+      gen replasman tek seferlik olduğundan bu tedavi sonrası nusinersen/risdiplam kullanilmasi halinde ödenmez'
+    message_tr: Gen temelli tedavilerin tümü [gen replasman tedavisi ve SMN2 modifiye eden tedaviler (nusinersen, risdiplam)]
+      birlikte kullanılmamalıdır; gen replasman tedavisinin tek seferlik uygulama olması nedeniyle bu tedavi sonrasında nusinersen
+      veya risdiplam kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.49.C(4), RG-29/06/2026-33295/7 md.)
   gate_b_sources:
   - C007050
   icd10_ranges:

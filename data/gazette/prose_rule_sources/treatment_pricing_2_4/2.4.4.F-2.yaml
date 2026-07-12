@@ -80,11 +80,36 @@ rules:
   action:
     billable: false
     denial_tr: son bir yılda aynı bölgeden en fazla 30 seans, iki farklı bölgeden en fazla 60 seans ödenir; aynı bölge için
-      yılda en fazla 2 sağlık raporu; EK-2/D-2 (*) ve G80 tanılarında bölge kontrolü yapılmaz
+      yılda en fazla 3 sağlık raporu düzenlenebilir; bölge, seans ve sağlık raporu sayısı kontrollerinde 2.4.4.F-6 (2) ve
+      2.4.4.R maddelerindeki sayılar da hesaba katılır; EK-2/D-2 (*) ve G80 tanılarında bölge kontrolü yapılmaz
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
   - C001015
+- rule_id: 2.4.4.F-2.(5).physio_respiratory_diagnosis_additional_30_sessions
+  sut_section: 2.4.4.F-2
+  condition:
+    procedure_category: physiotherapy_rehab
+    diagnosis_in:
+    - ek2d2_respiratory
+    diagnosis_not_in:
+    - post_surgical_respiratory
+    facility_tier_in:
+    - moh_provider
+    - state_university_provider
+    health_board_report_with_specialist_any:
+    - physical_medicine_rehabilitation
+    clinical_justification_documented: true
+    additional_sessions_beyond_30: true
+  action:
+    billable: true
+    payment_tr: EK-2/D-2 solunum sistemi tanılarında (cerrahi sonrası tanısı hariç; kronik pulmoner yetmezlik), hastanın
+      klinik tablosunun tedavinin sürdürülmesini gerektirmesi halinde, en az bir fiziksel tıp ve rehabilitasyon uzman hekiminin
+      yer aldığı sağlık kurulu raporu ve tedavinin Sağlık Bakanlığı/devlet üniversitesi sunucularında verilmesi kaydıyla her
+      yıl için 30 seansa ek olarak 30 seans daha faturalandırılabilir; raporda uygulanacak tedavi ve tedavi süresi belirtilmelidir
+    annex_basis: EK-2/D-2
+  gate_b_sources:
+  - C001394
 - rule_id: 2.4.4.F-2.(6).physio_star_diagnosis_annual_window
   sut_section: 2.4.4.F-2
   condition:

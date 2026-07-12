@@ -8,18 +8,27 @@ rules:
     first_tier_facility:
       copay_try: 0
       note: birinci basamak muayene — katılım payı alınmaz
-    second_third_tier_public:
-      copay_try: 26
+    second_tier_public:
+      copay_try: 50
+      note: İkinci basamak resmi sağlık hizmeti sunucuları
     sb_education_research_and_3rd_tier_sb_hospital:
-      copay_try: 26
+      copay_try: 90
+      note: SB EAH + 3. basamak SB hastaneleri
     university_dental_faculty:
-      copay_try: 26
+      copay_try: 90
+      note: Devlet üniversitesi diş hekimliği fakültesi
     state_university_medical_faculty:
-      copay_try: 26
+      copay_try: 90
+      note: Devlet üniversitesi tıp fakültesi
+    foundation_university_dental_faculty:
+      copay_try: 100
+      note: Vakıf üniversitesi diş hekimliği fakültesi
     foundation_university_medical_faculty:
-      copay_try: 26
+      copay_try: 100
+      note: Vakıf üniversitesi tıp fakültesi
     private_second_third_tier:
-      copay_try: 60
+      copay_try: 100
+      note: İkinci ve üçüncü basamak özel sağlık hizmeti sunucuları
   condition:
     service: physician_or_dental_muayene
   gate_b_sources:
@@ -31,8 +40,9 @@ rules:
   - C000292
   - C000293
   verification_status: ai_generated_pending_review
-  content_note: 'Flat TRY amounts (26 TL public/university, 60 TL private, first-tier free). Version-sensitive — last repriced
-    by C000276 (effective 2026-01-01); confirm against the current gazette before live use.'
+  content_note: 'Updated per RG-01/07/2026-33297 (effective 01/07/2026). Previous: 26 TL public/university,
+    60 TL private. Now: 50 TL 2nd-basamak public, 90 TL SB-EAH/3rd-basamak/state-uni, 100 TL foundation-uni/private.
+    First-tier free.'
 - rule_id: 1.8.1.family_physician_referral_50pct_reduction
   sut_section: 1.8.1
   service_type: copay_muayene_modifier

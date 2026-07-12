@@ -44,14 +44,44 @@ EK2C_CURATED_HISTORY_PATH = _GAZETTE_CURATED_DIR / "ek2c_catalog_history.parquet
 EK2C_DENTAL_CURATED_HISTORY_PATH = (
     _GAZETTE_CURATED_DIR / "ek2c_dental_catalog_history.parquet"
 )
+
+
+def _resolve_latest_dental_xls() -> Path | None:
+    """Dynamically resolve the EK-2Ç dental .xls from the latest SUT folder.
+
+    Searches ``raw data/<latest>-Değişiklik Tebliği.../EK-2 LİSTELERİ/`` for
+    a file matching ``EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ*.xls``. Uses rglob to
+    handle SGK zip nesting variations.
+    """
+    import re as _re
+
+    _SUT_SUFFIX = "Değişiklik Tebliği İşlenmiş Güncel 2013 SUT"
+    _DATE_RE = _re.compile(r"^(\d{4})\.(\d{2})\.(\d{2})-")
+    raw_root = _PROJECT_ROOT / "raw data"
+    if not raw_root.exists():
+        return None
+    candidates: list[tuple[str, Path]] = []
+    for entry in raw_root.iterdir():
+        if not entry.is_dir() or not entry.name.endswith(_SUT_SUFFIX):
+            continue
+        m = _DATE_RE.match(entry.name)
+        if m:
+            candidates.append((f"{m.group(1)}-{m.group(2)}-{m.group(3)}", entry))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda x: x[0])
+    latest_dir = candidates[-1][1]
+    # rglob handles nested-folder zips from SGK
+    for p in latest_dir.rglob("EK-2Ç*.xls"):
+        return p
+    for p in latest_dir.rglob("*DİŞ*TEDAVİLERİ*.xls"):
+        return p
+    return None
+
+
 # Fallback: the original .xls when the curated parquet has not been built yet.
-_EK2C_DENTAL_XLS_FALLBACK = (
-    _PROJECT_ROOT
-    / "raw data"
-    / "2026.05.23-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT"
-    / "EK-2 LİSTELERİ"
-    / "EK-2Ç DİŞ TEDAVİLERİ PUAN LİSTESİ (Yür.01.01.2026).xls"
-)
+# Resolved dynamically from the latest SUT folder (no hardcoded date).
+_EK2C_DENTAL_XLS_FALLBACK: Path | None = _resolve_latest_dental_xls()
 
 # Curated EK-3B catalogs (material exclusions & bundled consumables)
 EK3B2_NON_REIMBURSABLE_PATH = _GAZETTE_CURATED_DIR / "ek3b2_non_reimbursable.parquet"
