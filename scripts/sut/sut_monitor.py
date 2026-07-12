@@ -110,12 +110,12 @@ def main() -> int:
     if new:
         print(f"NEW SUT tebliğ detected: {new['date']}")
         print(f"  URL: {new['url']}")
-        _output("new_tebliğ", json.dumps(new))
-        _output("new_tebliğ_date", new["date"])
-        _output("new_tebliğ_url", new["url"])
+        _output("new_teblig", json.dumps(new))
+        _output("new_teblig_date", new["date"])
+        _output("new_teblig_url", new["url"])
     else:
         print("No new SUT tebliğ. Up to date.")
-        _output("new_tebliğ", "")
+        _output("new_teblig", "")
 
     return 0
 
