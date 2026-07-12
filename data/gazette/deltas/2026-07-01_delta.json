@@ -1,0 +1,37 @@
+{
+  "old_date": "2026-07-01",
+  "new_date": "2026-07-01",
+  "generated_at": "2026-07-12",
+  "catalogs": [
+    {
+      "annex": "ek2b",
+      "old_count": 7301,
+      "new_count": 7301,
+      "new_codes": [],
+      "removed_codes": [],
+      "common_codes": 7301,
+      "price_changes": [],
+      "name_changes": []
+    },
+    {
+      "annex": "ek2c",
+      "old_count": 2413,
+      "new_count": 2413,
+      "new_codes": [],
+      "removed_codes": [],
+      "common_codes": 2413,
+      "price_changes": [],
+      "name_changes": []
+    },
+    {
+      "annex": "ek2c_dental",
+      "old_count": 214,
+      "new_count": 214,
+      "new_codes": [],
+      "removed_codes": [],
+      "common_codes": 214,
+      "price_changes": [],
+      "name_changes": []
+    }
+  ]
+}
