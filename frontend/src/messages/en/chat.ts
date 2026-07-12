@@ -6,7 +6,6 @@ const chat = {
   },
   actions: {
     regenerateAnalysis: "Regenerate analysis",
-    dockLeft: "Dock left",
     centerInline: "Center (inline)",
     dockRight: "Dock right",
     sendMessage: "Send message",

@@ -58,13 +58,6 @@ describe("SutInlineAIPanel", () => {
     expect(html).toContain("right-0");
   });
 
-  it("renders docked-left class when dock is left", () => {
-    const html = renderToStaticMarkupWithLocale(
-      <SutInlineAIPanel activeTab="SUT Workspace" dock="left" />,
-    );
-    expect(html).toContain("left-0");
-  });
-
   it("renders center (inline) layout when dock is center", () => {
     const html = renderToStaticMarkupWithLocale(
       <SutInlineAIPanel activeTab="SUT Workspace" dock="center" />,

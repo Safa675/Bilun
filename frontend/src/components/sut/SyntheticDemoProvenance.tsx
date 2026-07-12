@@ -76,7 +76,7 @@ export function SyntheticDemoChip({
 }
 
 /**
- * @deprecated Phase 6 — use `SyntheticDemoChip` in `AppTopBar` instead of inline banners.
+ * @deprecated Phase 6 — use `SyntheticDemoChip` in `AppSidebar` instead of inline banners.
  * Kept for tests and gradual removal.
  */
 export function SyntheticDemoProvenance({

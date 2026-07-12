@@ -10,14 +10,17 @@ const LOCALES: { id: Locale; flag: string; labelKey: string }[] = [
   { id: "tr", flag: "🇹🇷", labelKey: "shell.locale.tr" },
 ];
 
-export default function LocaleSwitcher() {
+export default function LocaleSwitcher({ compact = false }: { compact?: boolean }) {
   const locale = useLocale();
   const { setLocale } = useLocaleContext();
   const t = useT();
 
   return (
     <div
-      className="inline-flex items-center gap-0.5 rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)] p-0.5"
+      className={cn(
+        "inline-flex gap-0.5 rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)] p-0.5",
+        compact ? "flex-col items-center" : "items-center",
+      )}
       role="group"
       aria-label={t("shell.locale.groupLabel")}
     >
@@ -32,7 +35,8 @@ export default function LocaleSwitcher() {
             aria-label={t(item.labelKey)}
             title={t(item.labelKey)}
             className={cn(
-              "inline-flex h-7 min-w-[2rem] items-center justify-center rounded-[var(--r-sm)] px-1.5 text-sm transition-colors",
+              "inline-flex items-center justify-center rounded-[var(--r-sm)] text-sm transition-colors",
+              compact ? "h-7 w-7" : "h-7 min-w-[2rem] px-1.5",
               active
                 ? "bg-[var(--gold-subtle)] ring-1 ring-[var(--gold)]"
                 : "hover:bg-[var(--surface-tint)]",

@@ -5,11 +5,13 @@ const shell = {
     en: "English",
     tr: "Turkish",
   },
-  appTopBar: {
-    ariaApplicationBar: "Bilun application bar",
+  appSidebar: {
+    ariaNavigation: "Bilun navigation",
     logoAlt: "Bilun",
     ariaHomeTabs: "SUT home tabs",
     howItWorks: "How it works",
+    collapse: "Collapse sidebar",
+    expand: "Expand sidebar",
   },
   role: {
     groupLabel: "Role",

@@ -16,7 +16,10 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/sessionToken";
 const LOGIN_PATH = "/login";
 // Login/logout API must be reachable without a session — otherwise the login
 // form's POST /api/auth/login is redirected to /login and credentials look "wrong".
-const PUBLIC_PATHS = [LOGIN_PATH, "/api/auth/login", "/api/auth/logout"];
+// /api/health is an exact path, not a prefix, so /api/healthz-style routes stay gated.
+const PUBLIC_PATHS = [LOGIN_PATH, "/api/health"];
+/** Auth endpoints must stay reachable before a session exists. */
+const PUBLIC_PREFIXES = ["/api/auth/"];
 
 // Match all routes except Next.js internals and static assets.
 export const config = {
@@ -30,6 +33,15 @@ export const config = {
   ],
 };
 
+function isPublicPath(pathname: string): boolean {
+  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    return true;
+  }
+  return PUBLIC_PREFIXES.some(
+    (prefix) => pathname === prefix.slice(0, -1) || pathname.startsWith(prefix),
+  );
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -42,7 +54,7 @@ export async function middleware(request: NextRequest) {
     if (authOptional) {
       return NextResponse.next();
     }
-    if (!PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    if (!isPublicPath(pathname)) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = LOGIN_PATH;
       loginUrl.search = "";
@@ -51,8 +63,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Public paths (the login page itself) pass through.
-  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+  // Public paths (login page + auth/health APIs) pass through.
+  if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
 

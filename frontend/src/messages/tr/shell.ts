@@ -5,11 +5,13 @@ const shell = {
     en: "İngilizce",
     tr: "Türkçe",
   },
-  appTopBar: {
-    ariaApplicationBar: "Bilun uygulama çubuğu",
+  appSidebar: {
+    ariaNavigation: "Bilun gezinme",
     logoAlt: "Bilun",
     ariaHomeTabs: "SUT ana sekmeler",
     howItWorks: "Nasıl çalışır",
+    collapse: "Kenar çubuğunu daralt",
+    expand: "Kenar çubuğunu genişlet",
   },
   role: {
     groupLabel: "Rol",

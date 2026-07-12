@@ -17,11 +17,7 @@ describe("chatDockLayout", () => {
     expect(getChatDockInsets("right", false)).toEqual({ left: "0px", right: "0px" });
   });
 
-  it("offsets content away from the docked panel edge", () => {
-    expect(getChatDockInsets("left", true)).toEqual({
-      left: `${CHAT_DOCK_INSET_PX}px`,
-      right: "0px",
-    });
+  it("offsets content away from a right-docked panel", () => {
     expect(getChatDockInsets("right", true)).toEqual({
       left: "0px",
       right: `${CHAT_DOCK_INSET_PX}px`,

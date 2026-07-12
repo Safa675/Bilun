@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { Fraunces, Inter } from "next/font/google";
-import AppTopBar from "@/components/shell/AppTopBar";
+import AppSidebar from "@/components/shell/AppSidebar";
 import ChatDockInsetSync from "@/components/shell/ChatDockInsetSync";
 import SkipToContent from "@/components/shell/SkipToContent";
 import { ConfigProvider } from "@/lib/configContext";
@@ -74,7 +74,7 @@ export default async function RootLayout({
             <SkipToContent />
             <ChatDockInsetSync />
             <Suspense>
-              <AppTopBar />
+              <AppSidebar />
             </Suspense>
             {children}
           </ShellStateProviders>
