@@ -375,6 +375,19 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
             context["procedure_code_any"] = sorted(codes)
             if len(codes) == 1:
                 context["procedure_code"] = next(iter(codes))
+            # §1.9.1.(1) extra-fee-scope gate: EK-2/A is the outpatient
+            # VISIT-FEE annex (not a procedure list — the catalog resolver
+            # for "EK-2/A" deliberately returns an empty set, see
+            # catalog_membership.codes_in_annex). A billed procedure is
+            # therefore NOT bundled into the EK-2/A visit fee, so the
+            # ``service_not_in_ek2a_bundled: true`` condition is satisfied
+            # whenever the claim carries any procedure code. Lazy import to
+            # avoid pulling heavy catalog machinery at module load.
+            from .catalog_membership import any_procedure_in_annex
+
+            context["service_not_in_ek2a_bundled"] = not any_procedure_in_annex(
+                sorted(codes), "EK-2/A"
+            )
     # Payment method (§2.2.2.B path): derived from the claim-aggregated
     # PaymentMethodKind, NOT from package_candidate directly. The kind-based
     # derivation is the canonical SUT §2.2 evaluator's output; package_candidate
@@ -416,12 +429,24 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
         context["visit_type"] = "gunubirlik"
     # facility_type: training/research hospitals (universite / egitim_arastirma
     # provider types) are the §2.2.1.B-1.c / §2.2.2.A(6) / §2.2.1.B-2.(4) gate.
+    # Private (ozel/private provider types, 2_3_basamak_ozel tier) and
+    # foundation-university (vakif / universite_vakif) facility types gate the
+    # §1.9.1.(1) extra-fee-scope rule.
     provider_type_lower = (header.provider_type or "").lower()
+    facility_tier_lower = (header.facility_tier or "").lower()
     if any(
         token in provider_type_lower
         for token in ("universite", "egitim_arastirma", "training_research")
-    ):
+    ) and "vakif" not in provider_type_lower and "vakif" not in facility_tier_lower:
         context["facility_type"] = "training_research_hospital"
+    elif "vakif" in provider_type_lower or "vakif" in facility_tier_lower:
+        context["facility_type"] = "foundation_university"
+    elif (
+        provider_type_lower in ("private", "ozel")
+        or facility_tier_lower in ("ozel", "2_3_basamak_ozel", "private")
+        or "ozel" in facility_tier_lower
+    ):
+        context["facility_type"] = "private"
     # facility_tier_basamak: resolved via the facility_tier normalizer (2 or 3).
     #   The 2.2.2.(2) override rule gates on basamak == 3. Only surfaced when the
     #   tier resolves (basamak is not None); unresolved tiers honest-skip.
