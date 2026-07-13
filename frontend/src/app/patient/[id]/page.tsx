@@ -556,6 +556,7 @@ export default function SutPatientPage() {
                   billingReport={activeBillingReport ?? billingReport}
                   selectedClaimId={selectedClaimId}
                   claimCount={claims.length > 0 ? claims.length : undefined}
+                  selectedClaimSummary={selectedClaimSummary}
                 />
                 {(claims.length > 0 || claimsLoading || claimsError) && (
                   <Surface variant="base" padding="md">
