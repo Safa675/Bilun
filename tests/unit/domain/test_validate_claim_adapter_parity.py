@@ -66,6 +66,28 @@ def _claim_no_drug_context() -> dict:
     }
 
 
+def _claim_bundling_explicit_billed_amount() -> dict:
+    """EK-3B-1 material where billed_amount != unit_price × quantity.
+
+    Regression guard for the billed_amount_try parity divergence (adapter vs
+    legacy dict-path rule motors). unit_price × quantity = 12.5, but the
+    submitted billed_amount is 30.0; savings must be 30.0 on BOTH paths.
+    """
+    return {
+        "claim_id": "CLM-BILLED",
+        "procedure_code": "520030",
+        "materials": [
+            {
+                "name": "Bistüri ucu",
+                "code": "",
+                "unit_price": 12.5,
+                "quantity": 1,
+                "billed_amount": 30.0,
+            }
+        ],
+    }
+
+
 @pytest.mark.parametrize(
     "claim_factory",
     [
@@ -74,6 +96,7 @@ def _claim_no_drug_context() -> dict:
         _claim_multiple_materials,
         _claim_empty_materials,
         _claim_no_drug_context,
+        _claim_bundling_explicit_billed_amount,
     ],
 )
 def test_validate_claim_adapter_parity(claim_factory) -> None:

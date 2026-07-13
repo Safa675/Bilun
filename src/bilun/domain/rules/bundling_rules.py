@@ -48,7 +48,12 @@ def check_bundling_violations(
 
         unit_price = float(mat.get("unit_price", 0.0))
         quantity = int(mat.get("quantity", 1))
-        billed = round(unit_price * quantity, 2)
+        # Parity with the adapter path (claims/adapter.py:161) and the legacy
+        # pricer (analytics/materials.py:50-53): prefer an explicit billed_amount
+        # (the amount actually submitted to MEDULA) over unit_price × quantity.
+        billed = round(float(mat.get("billed_amount", 0.0) or 0.0), 2)
+        if billed <= 0.0:
+            billed = round(unit_price * quantity, 2)
 
         matched = match_bundled_material(mat_name, material_code=mat_code or None)
         if matched is None:
