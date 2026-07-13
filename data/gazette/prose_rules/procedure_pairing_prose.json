@@ -147,5 +147,5 @@
       "provenance_note": "Normative rule — SUT §2.2.2.A(5). Farklı uzmanlık dalında +25 puan uplift."
     }
   ],
-  "provenance_note": "WARNING: Rules in this file are operational heuristics / pilot estimates, NOT extracted from specific SUT clauses. They encode billing-practice knowledge rather than normative SUT text. verification_status=pilot_heuristic on every rule."
+  "provenance_note": "WARNING: This file mixes two provenance tiers — see per-rule verification_status. 6 rules are pilot_heuristic (operational billing-practice heuristics, NOT extracted from specific SUT clauses); 2 rules (pairing.2_2_2_A_5_different_incision_50pct, pairing.2_2_2_A_5_different_specialty_plus25) are ai_generated_pending_review (normative SUT §2.2.2.A(5) rules pending review)."
 }

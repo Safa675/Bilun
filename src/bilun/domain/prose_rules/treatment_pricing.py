@@ -22,6 +22,19 @@ frequency windows, BMI, clinical scores, board-report tier, etc. They are kept i
 the loaded rule set for inventory/coverage but ``_condition_matches`` returns
 ``False`` for them (honest skip — never a silent no-op guessing the value).
 
+TODO (data-model extension, out of current scope): three §2.4.4.H ICU rules are
+dormant for root-cause-1 (the concept is absent from the claim data model, not
+merely unmapped) and require new model fields + fixtures, NOT a context-builder
+fix:
+- 2.4.4.H.(9)  ``blood_product_separately_billed`` — needs either a curated
+  blood-product material/drug code catalog (none exists) or a new boolean flag
+  on MaterialClaimLine/DrugClaimLine. ``material_type`` (consumable/implant/…)
+  has no blood discriminator; SUT blood products live under §4.2.27 as drugs.
+- 2.4.4.H.(10a)/(10b) ``enabiz_278_data_package_sent`` — operational metadata
+  (did the facility submit the e-nabız 278 feed). No proxy on ClaimHeader or
+  anywhere in the data model; absent key honest-skips, which is correct (a
+  False default would spuriously fire the 10b downgrade on every ICU claim).
+
 Two correctness points ported from the plan's W2.5 lessons:
 
 1. ICD-10 PREFIX match: ``diagnosis_in: ["E11"]`` MUST match a billed
