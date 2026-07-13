@@ -86,7 +86,7 @@ rules:
   verification_status: ai_generated_pending_review
   condition:
     procedure_category: physiotherapy_rehab
-    supervised_by_pmr_specialist: false
+    supervised_by_pmr_specialty: false
   action:
     billable: false
     enforcement: provider_qualification_gate
