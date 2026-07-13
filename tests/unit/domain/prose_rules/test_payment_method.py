@@ -83,3 +83,23 @@ def test_batch3_home_health_daily_cap_rule_shape() -> None:
     rule = _rules_by_id()["2.2.1.B-3.(1).home_health_daily_cap"]
     assert rule["action"]["max_bill_count"] == 1
     assert rule["gate_b_sources"] == ["C000618"]
+
+
+def test_resolve_payment_method_is_memoized() -> None:
+    """Phase 1: identical input tuples are served from the lru_cache.
+
+    The inner cached function should record a hit on the second call with the
+    same args, confirming the 5N–9N re-derivation is collapsed to N.
+    """
+    from src.bilun.domain.prose_rules.payment_method import (
+        _resolve_payment_method_cached,
+        resolve_payment_method,
+    )
+
+    _resolve_payment_method_cached.cache_clear()
+    first = resolve_payment_method("520030", care_setting="inpatient")
+    second = resolve_payment_method("520030", care_setting="inpatient")
+    assert first is second  # cached → identical object
+    info = _resolve_payment_method_cached.cache_info()
+    assert info.hits >= 1, f"expected cache hit, got {info}"
+    _resolve_payment_method_cached.cache_clear()

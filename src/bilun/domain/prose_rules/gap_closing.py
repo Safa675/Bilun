@@ -277,6 +277,7 @@ def _derive_payment_method_path(
     return None
 
 
+@lru_cache(maxsize=None)
 def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     """Build the flat claim-context dict from a PatientClaimContext.
 
@@ -285,6 +286,13 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     (honest skip via ``_condition_matches``). The keys surfaced here cover the
     most frequent conditions: ``procedure_category``, ``is_emergency``,
     ``care_setting``, ``payment_method``, ``facility_*``, ``procedure_code_any``,
+
+    Memoized: ``PatientClaimContext`` is frozen/hashable, and ``analyze_claim``
+    invokes this builder up to 3× per claim (misc + treatment + payment-method
+    traceability) with the same ``ctx``. The cached dict is treated read-only by
+    all consumers (``_condition_matches`` / ``check_*`` only call ``.get()``).
+    Clear via ``_build_gap_closing_context.cache_clear()`` in tests that mutate
+    claim data.
     ``drug_category``, ``health_report_present``.
     """
     if not ctx.claims:

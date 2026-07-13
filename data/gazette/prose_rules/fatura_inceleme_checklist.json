@@ -1,0 +1,639 @@
+{
+  "rule_set_id": "fatura_inceleme_checklist",
+  "title": "Fatura İnceleme Usul ve Esasları — Documentation Requirements",
+  "effective_date": "2024-06-26",
+  "source_document": "raw data/FATURA İNCELEME USUL VE ESASLARI.pdf",
+  "coverage_note": "63 DOCUMENTATION rules from the Fatura İnceleme guideline. These do NOT produce violations — they surface required documents (epikriz/report presence) as informational warnings. clause_ids are F-prefixed (SGK internal corpus, dayanak 5510 md. 63/73). Hierarchy: SUT > this document.",
+  "rules": [
+    {
+      "rule_id": "ORTAK-5.muayene_tani_uyum",
+      "sut_section": "ORTAK",
+      "gate_b_sources": ["F000010"],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-5",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "Ayaktan poliklinik başvurularında hizmet detayında veya fatura ekinde belirtilen muayene bilgisinin ön tanı ve kesin tanı ile uyumlu olması gerekir; uyumsuzluk halinde muayene/işlem bedeli ödenmez."
+    },
+    {
+      "rule_id": "ORTAK-17.ek2c_yeterli_bilgi",
+      "sut_section": "ORTAK",
+      "gate_b_sources": ["F000022"],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-17",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "SUT eki EK-2/C Listesindeki bir işlem faturalandırıldığında hizmet detayında veya fatura ekinde işlem hakkında yeterli bilgi aranır."
+    },
+    {
+      "rule_id": "ORTAK-21.cerrahi_biyopsi_patoloji",
+      "sut_section": "ORTAK",
+      "gate_b_sources": ["F000026"],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-21",
+      "procedure_code_any": [],
+      "required_documents": ["patoloji_raporu"],
+      "message_tr": "Cerrahi müdahalelerde biyopsi alınmış veya parça çıkarılmış ise inceleyici tarafından gerek görülmesi halinde patoloji raporu istenir."
+    },
+    {
+      "rule_id": "ORTAK-24.tpn_gun_epikriz",
+      "sut_section": "ORTAK",
+      "gate_b_sources": ["F000029"],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-24",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay", "klinik_seyir"],
+      "message_tr": "TPN tedavisi verilen günlerin epikrizde belirtilmesi gerekir; rejim orderında tam oral gıda alabilen hastalarda ödenmez."
+    },
+    {
+      "rule_id": "ORTAK-27.detayli_epikriz_ameliyat_notu",
+      "sut_section": "ORTAK",
+      "gate_b_sources": ["F000032"],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-27",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay", "ameliyat_notu", "ameliyat_raporu", "klinik_seyir", "barkod_etiket"],
+      "message_tr": "Günübirlik/yatan/yoğun bakım tedavilerinde ayrıntılı epikriz, klinik seyir, günlük takipler, ameliyat notu/raporu ve malzeme sayı/boyut bilgilerinin fatura edilen işlemlerle tutarlı olması zorunludur."
+    },
+    {
+      "rule_id": "ORTAK-29.taburcu_gunu_epikriz",
+      "sut_section": "ORTAK",
+      "gate_b_sources": ["F000034"],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-29",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay", "klinik_seyir"],
+      "message_tr": "Hastanın taburcu olduğu gün yapılan SUT eki EK-2/B Listesindeki işlem ve ilaçlar epikriz bilgilerine (klinik seyir, tanı, taburculuk kararını etkileyecek tetkik) göre ödenir."
+    },
+    {
+      "rule_id": "DERMATOLOJİ-2.kriyoterapi_malign_patoloji",
+      "sut_section": "DERMATOLOJİ",
+      "gate_b_sources": ["F000041"],
+      "branch": "DERMATOLOJİ",
+      "fatura_inceleme_ref": "DERMATOLOJİ-2",
+      "procedure_code_any": ["700280", "P700280"],
+      "required_documents": ["patoloji_raporu"],
+      "message_tr": "700280 “Kriyoterapi malign lezyonlar, her bir seans” için ödeme yapılabilmesinde patoloji raporu gerekir."
+    },
+    {
+      "rule_id": "DERMATOLOJİ-3.pigmente_lezyon_lazer",
+      "sut_section": "DERMATOLOJİ",
+      "gate_b_sources": ["F000042"],
+      "branch": "DERMATOLOJİ",
+      "fatura_inceleme_ref": "DERMATOLOJİ-3",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay", "fotografi"],
+      "message_tr": "Pigmente lezyonlarda/yüzdeki vasküler lezyonlarda lazer uygulamalarında medikal tedaviye yanıtsızlık sağlık raporu ve fatura ekinde lezyona ilişkin fotoğraf bulunmalıdır."
+    },
+    {
+      "rule_id": "ÇOCUK SAĞLIĞI VE HASTALIKLARI-1.yenidogan_ybu_evreleme",
+      "sut_section": "ÇOCUK SAĞLIĞI VE HASTALIKLARI",
+      "gate_b_sources": ["F000043"],
+      "branch": "ÇOCUK SAĞLIĞI VE HASTALIKLARI",
+      "fatura_inceleme_ref": "ÇOCUK SAĞLIĞI VE HASTALIKLARI-1",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay", "klinik_seyir"],
+      "message_tr": "Yenidoğan yoğun bakım izlenen hastalar epikrizde belirtilen klinik durum, tanılar, tedavi niteliği yanında doğum ağırlığı ve gestasyon haftası temel alınarak evrelendirilmelidir."
+    },
+    {
+      "rule_id": "ÇOCUK CERRAHİSİ-4.hipospadias_epikriz",
+      "sut_section": "ÇOCUK CERRAHİSİ",
+      "gate_b_sources": ["F000047"],
+      "branch": "ÇOCUK CERRAHİSİ",
+      "fatura_inceleme_ref": "ÇOCUK CERRAHİSİ-4",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "“Hipospadias onarımı” işlemleri ayrıntılı epikrize göre değerlendirilir; external mea'nın yeri açıkça epikrizde yazılmalıdır."
+    },
+    {
+      "rule_id": "ENFEKSİYON-1.esbl_e_test_mic_raporu",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": ["F000051"],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-1",
+      "procedure_code_any": ["905960"],
+      "required_documents": ["patoloji_raporu", "epikriz_detay"],
+      "message_tr": "905960 “Genişletilmiş spektrumlu beta laktamaz (ESBL) ve sinerji (E test)”, çok özellikli multi rezistans Gram negatif suşlarda MIC değeriyle rapor eşliğinde ödenir."
+    },
+    {
+      "rule_id": "ENFEKSİYON-10.kultur_epikriz",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": ["F000060"],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-10",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "Kültürler için materyalin alındığı yer, tarih, üreme ve antibiyogram sonucu epikrizde açıkça belirtilmelidir."
+    },
+    {
+      "rule_id": "GÖĞÜS CERRAHİSİ-1.wedge_rezeksiyon_amac",
+      "sut_section": "GÖĞÜS CERRAHİSİ",
+      "gate_b_sources": ["F000068"],
+      "branch": "GÖĞÜS CERRAHİSİ",
+      "fatura_inceleme_ref": "GÖĞÜS CERRAHİSİ-1",
+      "procedure_code_any": ["608860", "P608860", "608960", "P608960"],
+      "required_documents": ["epikriz_detay", "ameliyat_raporu"],
+      "message_tr": "608960/P608960 “Wedge rezeksiyon” tedavi amaçlı yapıldığında epikriz ve ameliyat raporunda belirtilmelidir; biyopsi amaçlı ise 608860/P608860 üzerinden ödenir."
+    },
+    {
+      "rule_id": "GÖĞÜS CERRAHİSİ-3.videotorakoskopik_stapler_op_notu",
+      "sut_section": "GÖĞÜS CERRAHİSİ",
+      "gate_b_sources": ["F000070"],
+      "branch": "GÖĞÜS CERRAHİSİ",
+      "fatura_inceleme_ref": "GÖĞÜS CERRAHİSİ-3",
+      "procedure_code_any": ["608900", "P608900", "608910", "P608910", "608920", "P608920", "608930", "P608930", "608940", "P608940", "608950", "P608950"],
+      "required_documents": ["ameliyat_notu", "epikriz_detay", "barkod_etiket"],
+      "message_tr": "Videotorakoskopik/açık cerrahide fatura edilen stapler gibi malzemelerin boyut ve numarası ameliyat notunda yer almalı; malzemeler epikrizde ayrıntılı değilse kesinti nedenidir."
+    },
+    {
+      "rule_id": "GÖĞÜS HASTALIKLARI-2.bronkoskopi_biyopsi_patoloji",
+      "sut_section": "GÖĞÜS HASTALIKLARI",
+      "gate_b_sources": ["F000072"],
+      "branch": "GÖĞÜS HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖĞÜS HASTALIKLARI-2",
+      "procedure_code_any": ["608320", "P608320"],
+      "required_documents": ["patoloji_raporu"],
+      "message_tr": "608320/P608320 “Bronkoskopi, biyopsi veya yabancı cisim çıkarılması” biyopsi amacıyla yapılmışsa patoloji raporu fatura ekinde olmalıdır."
+    },
+    {
+      "rule_id": "GÖZ-1.pseudopitoz_kapak_pupil",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": ["F000077"],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ-1",
+      "procedure_code_any": ["616550", "P616550"],
+      "required_documents": ["epikriz_detay", "fotografi"],
+      "message_tr": "616550/P616550 “Görüş alanına engel yaratan psödopitoz tedavisi” için kapağın pupil alanını örtme oranının epikrizde belirtilmesi, fotoğraf, görme alanı sonucu ve levator fonksiyonu değerlendirilmelidir."
+    },
+    {
+      "rule_id": "GÖZ-2.kapak_tumoru_patoloji",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": ["F000078"],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ-2",
+      "procedure_code_any": ["616640", "P616640"],
+      "required_documents": ["epikriz_detay", "patoloji_raporu"],
+      "message_tr": "616640/P616640 “Kapak tümörü ameliyatı” için epikrizde kitlenin boyutları, lokalizasyonu, hasta şikayetleri, öykü ve patoloji raporu gerekir."
+    },
+    {
+      "rule_id": "GÖZ-3.gozyasi_entubasyon_malzeme",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": ["F000079"],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ-3",
+      "procedure_code_any": ["616800", "P616800", "616810", "P616810"],
+      "required_documents": ["barkod_etiket", "alis_faturasi"],
+      "message_tr": "616800/P616800 ve 616810/P616810 “Göz yaşı yolları entübasyonu” işlemlerinde kullanılan malzemelerin seri nosu, barkodu, etiketi ve alış faturası istenmelidir."
+    },
+    {
+      "rule_id": "GÖZ-4.punktum_acilmasi_op_notu",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": ["F000080"],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ-4",
+      "procedure_code_any": ["616890", "616800", "P616800", "616810", "P616810"],
+      "required_documents": ["ameliyat_notu"],
+      "message_tr": "616890 “Punktum açılması, dilatasyonu, lavajı” kapsamının ameliyat notunda dikkatle değerlendirilmesi ve 616800/616810 ile mükerrer faturalandırılmaması gerekir."
+    },
+    {
+      "rule_id": "GÖZ-5.konjonktiva_kist_patoloji",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": ["F000081"],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ-5",
+      "procedure_code_any": ["617090", "P617090"],
+      "required_documents": ["patoloji_raporu", "epikriz_detay"],
+      "message_tr": "617090/P617090 “Konjonktivadan kist ve tümör çıkarılması” için patoloji raporu istenmeli; kist eksizyonunda lezyonun lokalizasyonu ve büyüklüğü epikrizde belirtilmelidir."
+    },
+    {
+      "rule_id": "GÖZ-6.konkresyon_yabanci_cisim_adli",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": ["F000082"],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ-6",
+      "procedure_code_any": ["617110", "617100", "617140"],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "617110 “Konkresyon küretajı”, 617100 ve 617140 yabancı cisim çıkarılması işlemlerinde olayın nedeni açıklamada yer almalı, iş kazası/adli vaka yönünden değerlendirilmelidir."
+    },
+    {
+      "rule_id": "GÖZ-7.katarakt_patoloji_gerekli",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": ["F000083"],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ-7",
+      "procedure_code_any": ["617430", "P617430", "617440", "P617440"],
+      "required_documents": ["epikriz_detay", "ameliyat_notu", "barkod_etiket", "alis_faturasi"],
+      "message_tr": "Katarakt cerrahisi için epikrizde görme dereceleri, muayene bulguları ve detaylı ameliyat notu istenmelidir; intraoküler lens için ÜTS kaydı, barkod/etiket ve alış faturası gerekir."
+    },
+    {
+      "rule_id": "GÖZ-8.rektus_geriletme_op_notu",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": ["F000084"],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ-8",
+      "procedure_code_any": ["616910", "P616910", "616920", "P616920", "616930", "P616930", "616960", "P616960", "616980", "P616980", "616990", "P616990"],
+      "required_documents": ["ameliyat_notu"],
+      "message_tr": "Rektus kaslarına geriletme-rezeksiyon işlemleri için detaylı ameliyat notu istenmeli; hangi kaslara ve ne oranda müdahale edildiği incelenmelidir."
+    },
+    {
+      "rule_id": "GÖZ-9.fotokoagulasyon_parametreler",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": ["F000085"],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ-9",
+      "procedure_code_any": ["617630"],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "617630 “Fotokoagülasyon, her bir seans” için teşhisin yer aldığı fatura ekinde tedavinin şut sayısı, spot çapı ve süresi belirtilmelidir."
+    },
+    {
+      "rule_id": "KARDİYOLOJİ-1.stres_eko_ajan_epikriz",
+      "sut_section": "KARDİYOLOJİ",
+      "gate_b_sources": ["F000088"],
+      "branch": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-1",
+      "procedure_code_any": ["700620"],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "700620 “Egzersiz (eforlu) veya farmakolojik stres ekokardiyografi” için kullanılan farmakolojik stres ajanı ve tıbbi gerekçesi epikrizde belirtilmelidir."
+    },
+    {
+      "rule_id": "KARDİYOLOJİ-6.bt_mrg_anjiyo_endikasyon",
+      "sut_section": "KARDİYOLOJİ",
+      "gate_b_sources": ["F000093"],
+      "branch": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-6",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "BT anjiyo veya MRG anjiyo yapılan hastalarda işlem bedelleri için epikrizde endikasyonun açıkça belirtilmesi gerekir."
+    },
+    {
+      "rule_id": "KALP VE DAMAR CERRAHİSİ-3.kardiyak_risk_skorlama_veri",
+      "sut_section": "KALP VE DAMAR CERRAHİSİ",
+      "gate_b_sources": ["F000099"],
+      "branch": "KALP VE DAMAR CERRAHİSİ",
+      "fatura_inceleme_ref": "KALP VE DAMAR CERRAHİSİ-3",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "SUT 2.4.4.Ğ “Kardiyak risk skorlaması” nda puan verilen her madde için veri epikriz veya ek belgelerde yer almalıdır; verilerle desteklenmeyen puanlar dikkate alınmaz."
+    },
+    {
+      "rule_id": "KALP VE DAMAR CERRAHİSİ-5.cabg_anjiyo_raporu",
+      "sut_section": "KALP VE DAMAR CERRAHİSİ",
+      "gate_b_sources": ["F000101"],
+      "branch": "KALP VE DAMAR CERRAHİSİ",
+      "fatura_inceleme_ref": "KALP VE DAMAR CERRAHİSİ-5",
+      "procedure_code_any": ["604910", "P604910"],
+      "required_documents": ["ameliyat_notu", "epikriz_detay", "konsultasyon_notu"],
+      "message_tr": "604910/P604910 ile başlayan “Koroner arter by-pass” işlemleri koroner anjiyografi raporuna göre değerlendirilir; greft gerekçesi epikriz ve ameliyat notlarında belirtilmelidir."
+    },
+    {
+      "rule_id": "KBB-1.rinoplasti_preop_fotograf",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000102"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-1",
+      "procedure_code_any": ["601290", "P601290", "601310", "P601310", "601320", "P601320", "601360", "P601360", "601370", "P601370", "601430", "P601430", "601600", "P601600", "601610", "P601610", "601630", "P601630"],
+      "required_documents": ["fotografi"],
+      "message_tr": "Rinoplasti, septorinoplasti ve burun rekonstrüksiyonu işlemlerinde ek belgelerde pre-op iki yönlü hasta fotoğrafları bulunmalıdır."
+    },
+    {
+      "rule_id": "KBB-2.burun_kirigi_ameliyat_notu",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000103"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-2",
+      "procedure_code_any": ["601480", "P601480", "601500", "P601500"],
+      "required_documents": ["ameliyat_notu"],
+      "message_tr": "Burun kırıklarında ameliyat notu bilgileri dikkate alınır; cerrahi işlem varsa 601480, nazal repozisyon varsa 601500 üzerinden ödeme yapılır."
+    },
+    {
+      "rule_id": "KBB-3.nazal_polipektomi_tomografi_patoloji",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000104"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-3",
+      "procedure_code_any": ["601510", "P601510"],
+      "required_documents": ["tomografi_raporu", "patoloji_raporu"],
+      "message_tr": "601510/P601510 “Nazal polipektomi” işleminde tomografi raporu veya patoloji raporu olmalıdır."
+    },
+    {
+      "rule_id": "KBB-4.boyun_eksplorasyon_goruntuleme",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000105"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-4",
+      "procedure_code_any": ["601700", "P601700"],
+      "required_documents": ["usg_raporu", "tomografi_raporu", "mri_raporu", "patoloji_raporu", "ameliyat_notu"],
+      "message_tr": "601700/P601700 “Boyun eksplorasyonu” için görüntüleme (USG, BT veya MRG) sonucu, çıkarılan materyal varsa patoloji raporu ve ameliyat notu explorasyonla uyumlu olmalıdır."
+    },
+    {
+      "rule_id": "KBB-5.kordektomi_patoloji",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000106"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-5",
+      "procedure_code_any": ["601800", "P601800"],
+      "required_documents": ["patoloji_raporu"],
+      "message_tr": "601800/P601800 “Kordektomi veya stripping” yapıldığında pre-op ve/veya post-op patoloji raporu aranmalıdır."
+    },
+    {
+      "rule_id": "KBB-6.larinks_papillomu_patoloji",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000107"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-6",
+      "procedure_code_any": ["601960", "P601960"],
+      "required_documents": ["patoloji_raporu"],
+      "message_tr": "601960/P601960 “Larinks papillomu” için patoloji raporu gereklidir."
+    },
+    {
+      "rule_id": "KBB-7.adenoidektomi_tup_timpanometri",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000108"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-7",
+      "procedure_code_any": ["602390", "P602390", "603100", "P603100", "618411", "P618411"],
+      "required_documents": ["timpanometri_raporu", "odioloji_raporu"],
+      "message_tr": "Adenoidektomi+tüp, tonsillektomi+adenoidektomi+tüp ve ventilasyon tüpü uygulamalarında timpanometri veya odioloji raporu eklenmelidir."
+    },
+    {
+      "rule_id": "KBB-8.agiz_icin_tumor_patoloji",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000109"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-8",
+      "procedure_code_any": ["602400", "P602400", "600150", "P600150"],
+      "required_documents": ["patoloji_raporu", "epikriz_detay"],
+      "message_tr": "602400/P602400 “Ağız içi ve etrafı benign tümörlerinin rezeksiyonu” için patoloji raporu olmalıdır; P602400 genel anestezi altında 2 cm'den büyük tümörlerde patoloji eşliğinde fatura edilirse ödenir."
+    },
+    {
+      "rule_id": "KBB-9.lingual_frenulum_z_plasti_op_notu",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000110"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-9",
+      "procedure_code_any": ["602830", "P602830"],
+      "required_documents": ["ameliyat_notu"],
+      "message_tr": "602830/P602830 “Hipertrofik lingual frenulum düzeltilmesi” için genel anestezi altında ve Z-plasti tekniği ile yapıldığına dair ameliyat notu olmalıdır."
+    },
+    {
+      "rule_id": "KBB-10.lezyon_boyut_sekil_epikriz",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000111"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-10",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "KBB vakalarında lezyonlardan bahsedilirken boyut ve şekil bilgisi epikrizde olmalıdır (örn. fibrom, hemanjiom, 0,5 cm/3 cm)."
+    },
+    {
+      "rule_id": "KBB-11.endoskopik_sinus_tomografi_op_notu",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000112"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-11",
+      "procedure_code_any": [],
+      "required_documents": ["tomografi_raporu", "ameliyat_notu"],
+      "message_tr": "Tüm endoskopik sinüs cerrahilerinde tomografi raporu ve ayrıntılı ameliyat notu bulunmalıdır."
+    },
+    {
+      "rule_id": "KBB-12.konka_bulloza_tomografi_patoloji",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000113"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-12",
+      "procedure_code_any": ["602230", "P602230"],
+      "required_documents": ["tomografi_raporu", "patoloji_raporu"],
+      "message_tr": "602230/P602230 “Endoskopik konka bülloza rezeksiyonu” işleminde tomografi ve/veya patoloji raporu olmalıdır."
+    },
+    {
+      "rule_id": "KBB-13.yabanci_cisim_cerrahi_epikriz",
+      "sut_section": "KULAK BURUN BOĞAZ",
+      "gate_b_sources": ["F000114"],
+      "branch": "KULAK BURUN BOĞAZ",
+      "fatura_inceleme_ref": "KBB-13",
+      "procedure_code_any": ["601420", "P601420", "618080", "P618080"],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "Burundan/dış kulak yolundan yabancı cisim çıkarılması işlemlerinin cerrahi olup olmadığı epikrize göre değerlendirilmeli; anamnez, anestezi, işlem detayı ve yabancı cismin ne olduğu belirtilmelidir."
+    },
+    {
+      "rule_id": "KADIN-2.biye_3si_kuretaj_patoloji",
+      "sut_section": "KADIN HASTALIKLARI VE DOĞUM",
+      "gate_b_sources": ["F000116"],
+      "branch": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-2",
+      "procedure_code_any": ["620020", "P620020", "620050", "P620050", "620101", "P620101", "620110", "P620110", "620140", "P620140", "620150", "P620150", "620160", "P620160", "620250", "P620250"],
+      "required_documents": ["patoloji_raporu"],
+      "message_tr": "Bartholin kisti, endometrial/servikal biyopsi, küretaj, polip çıkarılması ve kondilom koterizasyonu işlemlerinde patoloji raporu aranır."
+    },
+    {
+      "rule_id": "NÖROLOJİ-1.poligrafik_uytuk_endikasyon",
+      "sut_section": "NÖROLOJİ",
+      "gate_b_sources": ["F000125"],
+      "branch": "NÖROLOJİ",
+      "fatura_inceleme_ref": "NÖROLOJİ-1",
+      "procedure_code_any": ["702840", "702880"],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "702840 ve 702880 poligrafik uyku tetkiki işlemlerinin endikasyonları fatura eki belgelerde veya epikrizde açıkça belirtilmelidir."
+    },
+    {
+      "rule_id": "NÖROLOJİ-2.aktivasyonlu_eeg_sonuc_raporu",
+      "sut_section": "NÖROLOJİ",
+      "gate_b_sources": ["F000126"],
+      "branch": "NÖROLOJİ",
+      "fatura_inceleme_ref": "NÖROLOJİ-2",
+      "procedure_code_any": ["703000", "703020"],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "703000 “Aktivasyonlu EEG (Farmakolojik aktivasyon)” için sonuç raporu ve kullanılan farmakolojik aktive edici ajanın adı fatura eki belgelerde olmalıdır."
+    },
+    {
+      "rule_id": "NÖROLOJİ-3.emg_sonuc_belgesi",
+      "sut_section": "NÖROLOJİ",
+      "gate_b_sources": ["F000127"],
+      "branch": "NÖROLOJİ",
+      "fatura_inceleme_ref": "NÖROLOJİ-3",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "Elektromiyografik (EMG) tetkiklerinde fatura ekinde sonuç belgesi olması halinde ödeme yapılır."
+    },
+    {
+      "rule_id": "ORTOPEDİ-3.buyuk_kemik_kirigi_op_notu",
+      "sut_section": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "gate_b_sources": ["F000130"],
+      "branch": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "fatura_inceleme_ref": "ORTOPEDİ-3",
+      "procedure_code_any": ["611010", "P611010"],
+      "required_documents": ["ameliyat_notu"],
+      "message_tr": "611010/P611010 “Büyük kemik kırıkları cerrahisi + damar sinir eksplorasyonu” ameliyat notuna göre değerlendirilir."
+    },
+    {
+      "rule_id": "ORTOPEDİ-6.preop_postop_grafi",
+      "sut_section": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "gate_b_sources": ["F000133"],
+      "branch": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "fatura_inceleme_ref": "ORTOPEDİ-6",
+      "procedure_code_any": [],
+      "required_documents": ["tomografi_raporu"],
+      "message_tr": "Ortopedik cerrahi işlemlerde pre-op ve post-op grafiler fatura ekinde veya tele tıpta yer almalıdır."
+    },
+    {
+      "rule_id": "PATOLOJİ-2.histokimyasal_boyama_endikasyon",
+      "sut_section": "PATOLOJİ",
+      "gate_b_sources": ["F000135"],
+      "branch": "PATOLOJİ",
+      "fatura_inceleme_ref": "PATOLOJİ-2",
+      "procedure_code_any": ["911160"],
+      "required_documents": ["patoloji_raporu", "epikriz_detay"],
+      "message_tr": "911160 “Histokimyasal Boyamalar” şüphelenilen organik/inorganik materyalin kesinleştirilmesi amacıyla yapıldığında ödenir; rapordan rutin yapıldığı anlaşılırsa ödenmez."
+    },
+    {
+      "rule_id": "PLASTİK-1.yanak_tumor_patoloji",
+      "sut_section": "PLASTİK VE REKONSTRÜKTİF CERRAHİ",
+      "gate_b_sources": ["F000136"],
+      "branch": "PLASTİK VE REKONSTRÜKTİF CERRAHİ",
+      "fatura_inceleme_ref": "PLASTİK-1",
+      "procedure_code_any": ["600150", "P600150"],
+      "required_documents": ["patoloji_raporu"],
+      "message_tr": "600150/P600150 “Yanaktan tümör eksizyonu, primer onarım” işleminde patoloji raporu yoksa ödenmez."
+    },
+    {
+      "rule_id": "PLASTİK-2.hemanjiom_patoloji",
+      "sut_section": "PLASTİK VE REKONSTRÜKTİF CERRAHİ",
+      "gate_b_sources": ["F000137"],
+      "branch": "PLASTİK VE REKONSTRÜKTİF CERRAHİ",
+      "fatura_inceleme_ref": "PLASTİK-2",
+      "procedure_code_any": ["600200", "P600200", "600230", "P600230"],
+      "required_documents": ["patoloji_raporu"],
+      "message_tr": "600200/P600200 ve 600230/P600230 hemanjiom, lenfanjiyom veya vasküler malformasyon eksizyonu işlemlerinde ayrıntılı patoloji raporu istenir."
+    },
+    {
+      "rule_id": "PLASTİK-4.kapak_tumoru_patoloji",
+      "sut_section": "PLASTİK VE REKONSTRÜKTİF CERRAHİ",
+      "gate_b_sources": ["F000139"],
+      "branch": "PLASTİK VE REKONSTRÜKTİF CERRAHİ",
+      "fatura_inceleme_ref": "PLASTİK-4",
+      "procedure_code_any": ["616640", "P616640"],
+      "required_documents": ["epikriz_detay", "patoloji_raporu"],
+      "message_tr": "616640/P616640 “Kapak tümörü ameliyatı” için epikrizde kitlenin boyutları, lokalizasyonu, hasta şikayetleri, öyküsü ve patoloji raporu gerekir."
+    },
+    {
+      "rule_id": "PLASTİK-5.replantasyon_preop_postop_foto",
+      "sut_section": "PLASTİK VE REKONSTRÜKTİF CERRAHİ",
+      "gate_b_sources": ["F000140"],
+      "branch": "PLASTİK VE REKONSTRÜKTİF CERRAHİ",
+      "fatura_inceleme_ref": "PLASTİK-5",
+      "procedure_code_any": [],
+      "required_documents": ["fotografi"],
+      "message_tr": "Replantasyon işlemlerinde pre-op ve post-op fotoğraf eklenmelidir."
+    },
+    {
+      "rule_id": "PSİKİYATRİ-2.test_adi_tarih",
+      "sut_section": "PSİKİYATRİ",
+      "gate_b_sources": ["F000142"],
+      "branch": "PSİKİYATRİ",
+      "fatura_inceleme_ref": "PSİKİYATRİ-2",
+      "procedure_code_any": ["702720", "702740", "702750", "702760", "702770", "702780", "702810"],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "Gelişim, kişilik, klinik değerlendirme ölçekleri, nöropsikolojik, projektif ve zekâ testleri faturalandığında fatura ekinde uygulanan testin adı ve yapıldığı tarih aranır."
+    },
+    {
+      "rule_id": "PSİKİYATRİ-3.klinik_degerlendirme_olcegi_gerekce",
+      "sut_section": "PSİKİYATRİ",
+      "gate_b_sources": ["F000143"],
+      "branch": "PSİKİYATRİ",
+      "fatura_inceleme_ref": "PSİKİYATRİ-3",
+      "procedure_code_any": ["702750"],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "702750 “Klinik değerlendirme ölçekleri, her biri” işleminin yinelenmesi durumunda epikrizde gerekçe belirtilmesi halinde ödenir."
+    },
+    {
+      "rule_id": "PSİKİYATRİ-5.yatan_gunluk_tedavi_tabela",
+      "sut_section": "PSİKİYATRİ",
+      "gate_b_sources": ["F000145"],
+      "branch": "PSİKİYATRİ",
+      "fatura_inceleme_ref": "PSİKİYATRİ-5",
+      "procedure_code_any": ["P702674", "P702675", "P702676", "P702677", "P702678"],
+      "required_documents": ["epikriz_detay", "klinik_seyir"],
+      "message_tr": "Yatan psikiyatri günlük tedavi bedelleri için epikriz ekinde hasta tabelası istenir; hastanın izinli olduğu günler için günlük tedavi bedeli ödenmez."
+    },
+    {
+      "rule_id": "RADYASYON ONKOLOJİSİ-2.tedavi_karti_imza",
+      "sut_section": "RADYASYON ONKOLOJİSİ",
+      "gate_b_sources": ["F000147"],
+      "branch": "RADYASYON ONKOLOJİSİ",
+      "fatura_inceleme_ref": "RADYASYON ONKOLOJİSİ-2",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay", "klinik_seyir"],
+      "message_tr": "Radyasyon onkolojisinde fatura ekinde tedavi kartının fotokopisi ve hastanın tedavi aldığı günlere ilişkin hasta/yakın imzasını gösteren belge olmalıdır."
+    },
+    {
+      "rule_id": "RADYOLOJİ-2.endovaskuler_girisim_detay",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": ["F000154"],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-2",
+      "procedure_code_any": ["802740", "802760", "802780", "802830", "606490", "P606490"],
+      "required_documents": ["epikriz_detay", "ameliyat_raporu", "barkod_etiket"],
+      "message_tr": "Beyin AVM embolizasyonu, serebral anevrizma, PTA, stent ve AV fistül greft işlemlerine ait epikrizlerde lezyon anatomisi, boyutu, rüptür durumu, işlem şekli, öncesi/sonrası görüntü ve kullanılan malzeme detaylı belirtilmelidir."
+    },
+    {
+      "rule_id": "RADYOLOJİ-6.mrg_bt_anjiyo_gerekce_sonuc",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": ["F000158"],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-6",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay", "mri_raporu", "tomografi_raporu"],
+      "message_tr": "MRG, BT, anjiyografi tetkiklerinin ödenmesi için epikrizde veya fatura eki belgelerde gerekçe ve tetkik sonucu bilgileri bulunmalıdır."
+    },
+    {
+      "rule_id": "RADYOLOJİ-7.kontrast_eko_gerekce",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": ["F000159"],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-7",
+      "procedure_code_any": ["700590"],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "700590 “Kontrast ekokardiyografi” faturalandırıldığında fatura eki belgelerde istem gerekçesi belirtilmemişse ödeme yapılmaz."
+    },
+    {
+      "rule_id": "RADYOLOJİ-11.kontrast_madde_miktari",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": ["F000163"],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-11",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay", "tomografi_raporu"],
+      "message_tr": "Radyolojik tetkiklerde raporda kontrast madde miktarına dair bilgi yoksa kontrast madde bedelleri ödenmez."
+    },
+    {
+      "rule_id": "NÜKLEER TIP-1.radyofarmasotik_doz_bilgi",
+      "sut_section": "NÜKLEER TIP",
+      "gate_b_sources": ["F000164"],
+      "branch": "NÜKLEER TIP",
+      "fatura_inceleme_ref": "NÜKLEER TIP-1",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "Tedavi amaçlı radyofarmasötik kullanımında yatan hastaların epikrizinde, ayaktan hastaların raporunda doz, endikasyon, radyofarmasötik ismi ve tarih içeren bilgi bulunmalıdır."
+    },
+    {
+      "rule_id": "NÜKLEER TIP-2.mps_gated_lv_ef",
+      "sut_section": "NÜKLEER TIP",
+      "gate_b_sources": ["F000165"],
+      "branch": "NÜKLEER TIP",
+      "fatura_inceleme_ref": "NÜKLEER TIP-2",
+      "procedure_code_any": [],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "Miyokard perfüzyon sintigrafisi (MPS) sonrası GATED raporunda LV duvar hareketleri ve EF hakkında bilgi bulunmalı; işlem gerekçesi belirtilmelidir."
+    },
+    {
+      "rule_id": "ACİL-1.yanik_lezyon_yuzdesi",
+      "sut_section": "ACİL TIP HEKİMLİĞİ",
+      "gate_b_sources": ["F000169"],
+      "branch": "ACİL TIP HEKİMLİĞİ",
+      "fatura_inceleme_ref": "ACİL-1",
+      "procedure_code_any": ["530500", "530510", "530520", "530530", "530532"],
+      "required_documents": ["epikriz_detay"],
+      "message_tr": "Yanık debridmanı/pansumanı işlemlerinde lezyon yüzdesi fatura eki belgelerde belirtilmemişse küçük kodlar (530510/530530) üzerinden ödeme yapılır."
+    }
+  ]
+}

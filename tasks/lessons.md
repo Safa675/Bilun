@@ -9,6 +9,18 @@ Format per entry:
 
 ---
 
+## 2026-07-13 — Graphify installed but NEVER used by any agent (126 subagents, 0 graphify calls)
+
+**Pattern:** graphify was installed specifically to cut subagent token usage on codebase exploration — `graphify-out/graph.json` (11MB) was present and fresh, the `graphify` binary (v0.8.49) was on PATH, the `/graphify` skill was registered, and AGENTS.md had a soft "for codebase questions, first run graphify query" rule. A full audit of all 126 subagent artifact directories under `~/.zcode/cli/artifacts/` showed **zero** executed `graphify query`/`path`/`explain` commands — the word "graphify" only appeared incidentally in file-path listings. The orchestrator (me) never once ran a graphify query either, nor wrote graphify-first instructions into any subagent prompt. Every codebase question was answered via raw Grep + Read — exactly the 5–10× token burn that graphify was supposed to eliminate. The tool was fully wired but produced zero value because the rule was phrased as guidance, not as a Hard Rule, and was never enforced.
+
+**Rule:** Codebase exploration (where does X live, how do A and B relate, scope a change) MUST go through graphify first. Concretely:
+1. **Orchestrator duty:** Every subagent spawned for explore/research/relationship questions MUST receive "Step 1: run `graphify query '<question>'` before any Grep/Read" as the FIRST instruction in its prompt. Subagents will not do this on their own — the orchestrator writes it in.
+2. **Graphify-first is a Hard Rule (critical failure tier), not guidance.** Going straight to fishing Grep for orientation when `graphify-out/graph.json` exists wastes 5–10× tokens and is treated the same as the §5 zombie-process / §7 plan-first violations.
+3. **Exceptions where Grep/Read is correct and graphify is wrong:** known file paths (`edit X.tsx line 40`), exact-string hunts, secrets/env, generated data, build artifacts, reading a file graphify already named, or user said skip.
+4. **Self-check at session start:** when reviewing AGENTS.md per §1, confirm graphify is in the Hard Rule tier, not soft guidance. Soft guidance gets ignored — this entry is proof.
+
+---
+
 ## 2026-07-10 — Single-shot benchmarking of a stochastic system (LLM) is noise, not data
 
 **Pattern:** Asked to test whether `opencode run --variant {low,high,max}` affects GLM-5.2 reasoning. I ran ONE shot per variant, got a counterintuitive result ("max was fastest/shortest"), and reported it as a finding while *simultaneously* writing "1 run per variant can't separate variant effect from noise." The user correctly called this out. When I re-ran with 5 shots/variant (20 total), the trend FLIPPED: `low` was actually the fastest (20.6±2.5s) and `high`/`max` slowest (~27s) — the opposite of my 1-shot claim. My single-shot conclusion was pure sampling noise dressed up as a result.

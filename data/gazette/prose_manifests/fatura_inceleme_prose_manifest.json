@@ -1,0 +1,739 @@
+{
+  "manifest_version": "2024.6.1",
+  "rule_set_id": "fatura_inceleme_prose",
+  "source_document": "raw data/FATURA İNCELEME USUL VE ESASLARI.pdf",
+  "encoded_clause_ids": [
+    "F000007",
+    "F000009",
+    "F000012",
+    "F000013",
+    "F000014",
+    "F000015",
+    "F000017",
+    "F000018",
+    "F000019",
+    "F000021",
+    "F000023",
+    "F000024",
+    "F000025",
+    "F000027",
+    "F000028",
+    "F000030",
+    "F000031",
+    "F000033",
+    "F000037",
+    "F000038",
+    "F000039",
+    "F000040",
+    "F000044",
+    "F000045",
+    "F000046",
+    "F000048",
+    "F000049",
+    "F000050",
+    "F000052",
+    "F000053",
+    "F000054",
+    "F000055",
+    "F000056",
+    "F000057",
+    "F000058",
+    "F000059",
+    "F000061",
+    "F000062",
+    "F000063",
+    "F000064",
+    "F000065",
+    "F000066",
+    "F000067",
+    "F000069",
+    "F000071",
+    "F000073",
+    "F000074",
+    "F000076",
+    "F000086",
+    "F000087",
+    "F000089",
+    "F000090",
+    "F000091",
+    "F000092",
+    "F000094",
+    "F000095",
+    "F000096",
+    "F000097",
+    "F000098",
+    "F000100",
+    "F000115",
+    "F000117",
+    "F000118",
+    "F000119",
+    "F000120",
+    "F000121",
+    "F000122",
+    "F000128",
+    "F000129",
+    "F000131",
+    "F000132",
+    "F000134",
+    "F000144",
+    "F000146",
+    "F000148",
+    "F000150",
+    "F000151",
+    "F000152",
+    "F000153",
+    "F000155",
+    "F000156",
+    "F000157",
+    "F000160",
+    "F000161",
+    "F000162",
+    "F000166",
+    "F000167",
+    "F000168",
+    "F000170",
+    "F000173",
+    "F000175"
+  ],
+  "encoded_clause_count": 91,
+  "clause_traces": [
+    {
+      "clause_id": "F000007",
+      "rule_id": "ORTAK-2.ek2a2_olmayan_islem",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000009",
+      "rule_id": "ORTAK-4.ek2a2_gerekce_yok",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-4",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000012",
+      "rule_id": "ORTAK-7.acil_kontrol_muayene",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-7",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000013",
+      "rule_id": "ORTAK-8.paket_islem_ilac_malzeme",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-8",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000014",
+      "rule_id": "ORTAK-9.hastalik_disi_muayene",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-9",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000015",
+      "rule_id": "ORTAK-10.sunnet_z412",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-10",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000017",
+      "rule_id": "ORTAK-12.ameliyat_alt_operasyon",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-12",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000018",
+      "rule_id": "ORTAK-13.gecmis_muayene_sorgu",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-13",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000019",
+      "rule_id": "ORTAK-14.onkolojik_ek2b",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-14",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000021",
+      "rule_id": "ORTAK-16.iv_infuzyon_530160",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-16",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000023",
+      "rule_id": "ORTAK-18.toplu_fatura_gunluk_limit",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-18",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000024",
+      "rule_id": "ORTAK-19.eksik_faturalama_yuzde10",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-19",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000025",
+      "rule_id": "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-20",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000027",
+      "rule_id": "ORTAK-22.seans_kesi_kurali",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-22",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000028",
+      "rule_id": "ORTAK-23.konsultasyon_gerekce",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-23",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000030",
+      "rule_id": "ORTAK-25.yatis_oncesi_hazirlik_paket",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-25",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000031",
+      "rule_id": "ORTAK-26.ilac_dozi_endikasyon",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-26",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000033",
+      "rule_id": "ORTAK-28.ek2b_tetkik_gereksiz",
+      "section": "ORTAK",
+      "fatura_inceleme_ref": "ORTAK-28",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000049",
+      "rule_id": "IC-1.tumor_markers_general_screening",
+      "section": "İÇ HASTALIKLARI",
+      "fatura_inceleme_ref": "İÇ HASTALIKLARI-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000050",
+      "rule_id": "IC-2.intraspinal_block_catheter_repeat",
+      "section": "İÇ HASTALIKLARI",
+      "fatura_inceleme_ref": "İÇ HASTALIKLARI-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000052",
+      "rule_id": "ENF-2.tuberculosis_sputum_limits",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000053",
+      "rule_id": "ENF-3.anti_ena_without_ana",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-3",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000054",
+      "rule_id": "ENF-4.sputum_culture_905675_no_growth_bundling",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-4",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000055",
+      "rule_id": "ENF-5.throat_culture_905670_multiplex_test",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-5",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000056",
+      "rule_id": "ENF-6.parasite_and_unstained_microscopy_mutually_exclusive",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-6",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000057",
+      "rule_id": "ENF-7.stool_culture_905672_bundling",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-7",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000058",
+      "rule_id": "ENF-8.urine_culture_905671_bundling",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-8",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000059",
+      "rule_id": "ENF-9.blood_culture_906010_906020_mutually_exclusive",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-9",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000061",
+      "rule_id": "ENF-11.respiratory_906250_h_influenza_mantar",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-11",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000062",
+      "rule_id": "ENF-12.no_growth_typing_identification_antibiogram",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-12",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000063",
+      "rule_id": "ENF-13.wound_ear_csf_conjunctiva_culture_bundling",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-13",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000064",
+      "rule_id": "ENF-14.vaginal_semen_culture_bundling",
+      "section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-14",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000166",
+      "rule_id": "DYALIZ-1.peritoneal_simultaneous_hemodialysis",
+      "section": "DİYALİZ",
+      "fatura_inceleme_ref": "DİYALİZ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000167",
+      "rule_id": "DYALIZ-2.part_time_physician_outside_hours",
+      "section": "DİYALİZ",
+      "fatura_inceleme_ref": "DİYALİZ-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000168",
+      "rule_id": "DYALIZ-3.session_date_medula_match",
+      "section": "DİYALİZ",
+      "fatura_inceleme_ref": "DİYALİZ-3",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000069",
+      "rule_id": "GÖĞÜS_CERRAHİSİ-2.intraplevral_lavaj_ilk_ve_sonraki",
+      "section": "GÖĞÜS CERRAHİSİ",
+      "fatura_inceleme_ref": "GÖĞÜS CERRAHİSİ-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000071",
+      "rule_id": "GÖĞÜS_HASTALIKLARI-1.firca_biyopsisi_bronkoskopi_608310",
+      "section": "GÖĞÜS HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖĞÜS HASTALIKLARI-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000073",
+      "rule_id": "GÖĞÜS_HASTALIKLARI-3.tbc_pcr_908290_endikasyon",
+      "section": "GÖĞÜS HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖĞÜS HASTALIKLARI-3",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000074",
+      "rule_id": "GÖĞÜS_HASTALIKLARI-4.tbc_kultur_ureme_yok_906180_908301",
+      "section": "GÖĞÜS HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖĞÜS HASTALIKLARI-4",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000076",
+      "rule_id": "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon",
+      "section": "GÖĞÜS HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖĞÜS HASTALIKLARI-6",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000089",
+      "rule_id": "KARDİYOLOJİ-2.spect_gated_ayri_ayri_odeme",
+      "section": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000090",
+      "rule_id": "KARDİYOLOJİ-3.nt_probnip_L106220_tek_sefer",
+      "section": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-3",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000091",
+      "rule_id": "KARDİYOLOJİ-4.ayni_seans_periferik_anjiografi",
+      "section": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-4",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000092",
+      "rule_id": "KARDİYOLOJİ-5.basarisiz_ptca_stent_yok",
+      "section": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-5",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000094",
+      "rule_id": "KARDİYOLOJİ-7.darlik_40_70_disi_basinc_teli",
+      "section": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-7",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000095",
+      "rule_id": "KARDİYOLOJİ-8.efc_ablasyon_701010_ayrica_odenmez",
+      "section": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-8",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000096",
+      "rule_id": "KARDİYOLOJİ-9.kalp_kat_sirasi_cerrahi_sadece_cerrahi",
+      "section": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-9",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000097",
+      "rule_id": "KALP_VE_DAMAR_CERRAHİSİ-1.kag_sonrasi_cabg_islem_yok_kesinti",
+      "section": "KALP VE DAMAR CERRAHİSİ",
+      "fatura_inceleme_ref": "KALP VE DAMAR CERRAHİSİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000098",
+      "rule_id": "KALP_VE_DAMAR_CERRAHİSİ-2.anjiyo_kdc_kardiyolog_kesinti_degil",
+      "section": "KALP VE DAMAR CERRAHİSİ",
+      "fatura_inceleme_ref": "KALP VE DAMAR CERRAHİSİ-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000100",
+      "rule_id": "KALP_VE_DAMAR_CERRAHİSİ-4.ek2b_lazer_tedavi_kdc_odenmez",
+      "section": "KALP VE DAMAR CERRAHİSİ",
+      "fatura_inceleme_ref": "KALP VE DAMAR CERRAHİSİ-4",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000086",
+      "rule_id": "GÖZ HASTALIKLARI-10.vitreoretinal_no_fotokoagulasyon",
+      "section": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ HASTALIKLARI-10",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000087",
+      "rule_id": "GÖZ HASTALIKLARI-11.trikiasis_fotokoagulasyon_elektroliz",
+      "section": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ HASTALIKLARI-11",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000153",
+      "rule_id": "RADYOLOJİ-1.arkus_aortografi_supraaortik_bundling",
+      "section": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000155",
+      "rule_id": "RADYOLOJİ-3.stent_pta_bundling",
+      "section": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-3",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000156",
+      "rule_id": "RADYOLOJİ-4.nefrostomi_dilatasyon_stent_bundling",
+      "section": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-4",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000157",
+      "rule_id": "RADYOLOJİ-5.ptk_koledok_bilier_stent_bundling",
+      "section": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-5",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000160",
+      "rule_id": "RADYOLOJİ-8.abdominal_aortografi_anjiografi_bundling",
+      "section": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-8",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000161",
+      "rule_id": "RADYOLOJİ-9.diyaliz_santi_trombolitik_607700",
+      "section": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-9",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000162",
+      "rule_id": "RADYOLOJİ-10.tunelli_kateter_floro_vena_kavagrafi",
+      "section": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-10",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000037",
+      "rule_id": "ANESTEZİ-1.hasta_kontrollu_analjezi_ab_grubu",
+      "section": "ANESTEZİ VE REANİMASYON",
+      "fatura_inceleme_ref": "ANESTEZİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000038",
+      "rule_id": "BEYİN-1.spinal_laminektomi_osteotomi",
+      "section": "BEYİN VE SİNİR CERRAHİSİ",
+      "fatura_inceleme_ref": "BEYİN VE SİNİR CERRAHİSİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000039",
+      "rule_id": "BEYİN-2.posterior_segmental_enstruman_artrodez",
+      "section": "BEYİN VE SİNİR CERRAHİSİ",
+      "fatura_inceleme_ref": "BEYİN VE SİNİR CERRAHİSİ-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000040",
+      "rule_id": "DERMATOLOJİ-1.intralezyonel_androjenik_alopesi",
+      "section": "DERMATOLOJİ",
+      "fatura_inceleme_ref": "DERMATOLOJİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000044",
+      "rule_id": "ÇOCUK CERRAHİSİ-1.testikuler_fiksasyon_hydrocele_herni",
+      "section": "ÇOCUK CERRAHİSİ",
+      "fatura_inceleme_ref": "ÇOCUK CERRAHİSİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000045",
+      "rule_id": "ÇOCUK CERRAHİSİ-2.hydrocelektomi_bilateral_ayni_kesi",
+      "section": "ÇOCUK CERRAHİSİ",
+      "fatura_inceleme_ref": "ÇOCUK CERRAHİSİ-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000046",
+      "rule_id": "ÇOCUK CERRAHİSİ-3.cocuk_sagligi_paket_ameliyat_sonrasi",
+      "section": "ÇOCUK CERRAHİSİ",
+      "fatura_inceleme_ref": "ÇOCUK CERRAHİSİ-3",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000048",
+      "rule_id": "ÇOCUK CERRAHİSİ-5.uretra_dilatasyon_sunnet",
+      "section": "ÇOCUK CERRAHİSİ",
+      "fatura_inceleme_ref": "ÇOCUK CERRAHİSİ-5",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000065",
+      "rule_id": "FTR-1.g80_tani_degisimi_faturalama",
+      "section": "FİZİK TEDAVİ VE REHABİLİTASYON",
+      "fatura_inceleme_ref": "FİZİK TEDAVİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000066",
+      "rule_id": "GENEL CERRAHİ-1.endoskopik_bilier_islemler_bundling",
+      "section": "GENEL CERRAHİ",
+      "fatura_inceleme_ref": "GENEL CERRAHİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000067",
+      "rule_id": "GENEL CERRAHİ-2.kolonoskopi_ozefagogastroskopi_bundling",
+      "section": "GENEL CERRAHİ",
+      "fatura_inceleme_ref": "GENEL CERRAHİ-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000115",
+      "rule_id": "KADIN-1.dogum_paketi_bebek_islemleri",
+      "section": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000117",
+      "rule_id": "KADIN-3.tibbi_tahliye_bumm_kuretaj",
+      "section": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-3",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000118",
+      "rule_id": "KADIN-4.endometrioma_yapisklik_over",
+      "section": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-4",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000119",
+      "rule_id": "KADIN-5.fotal_biyometri_32_hafta",
+      "section": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-5",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000120",
+      "rule_id": "KADIN-6.surekli_fetal_monitorizasyon_dogum_travay",
+      "section": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-6",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000121",
+      "rule_id": "KADIN-7.vaginal_rekonstruksiyon_greft",
+      "section": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-7",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000122",
+      "rule_id": "KADIN-8.postpartum_tup_ligasyon_sezaryen",
+      "section": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-8",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000128",
+      "rule_id": "ORTOPEDİ-1.kapali_reduksiyon_alci_atel",
+      "section": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "fatura_inceleme_ref": "ORTOPEDİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000129",
+      "rule_id": "ORTOPEDİ-2.acik_kirik_parmak_ana_islem",
+      "section": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "fatura_inceleme_ref": "ORTOPEDİ-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000131",
+      "rule_id": "ORTOPEDİ-4.pin_cikarma_subkutan_vida",
+      "section": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "fatura_inceleme_ref": "ORTOPEDİ-4",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000132",
+      "rule_id": "ORTOPEDİ-5.implant_pin_cikarma_ayni_bolge",
+      "section": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "fatura_inceleme_ref": "ORTOPEDİ-5",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000134",
+      "rule_id": "PATOLOJİ-1.rutin_boyama_histokimyasal_911160",
+      "section": "PATOLOJİ",
+      "fatura_inceleme_ref": "PATOLOJİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000144",
+      "rule_id": "PSİKİYATRİ-4.projektif_testler_yillik_birkez",
+      "section": "PSİKİYATRİ",
+      "fatura_inceleme_ref": "PSİKİYATRİ-4",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000146",
+      "rule_id": "RADYASYON ONKOLOJİSİ-1.film_digital_haftalik_limit",
+      "section": "RADYASYON ONKOLOJİSİ",
+      "fatura_inceleme_ref": "RADYASYON ONKOLOJİSİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000148",
+      "rule_id": "RADYASYON ONKOLOJİSİ-3.multileaf_collimator_800290",
+      "section": "RADYASYON ONKOLOJİSİ",
+      "fatura_inceleme_ref": "RADYASYON ONKOLOJİSİ-3",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000150",
+      "rule_id": "ÜROLOJİ-1.sunnet_parafimozis_fimozis",
+      "section": "ÜROLOJİ",
+      "fatura_inceleme_ref": "ÜROLOJİ-1",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000151",
+      "rule_id": "ÜROLOJİ-2.sistoskopi_dilatasyon_uretra_darligi",
+      "section": "ÜROLOJİ",
+      "fatura_inceleme_ref": "ÜROLOJİ-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000152",
+      "rule_id": "ÜROLOJİ-3.mesane_bcg_intrakaviter_704370",
+      "section": "ÜROLOJİ",
+      "fatura_inceleme_ref": "ÜROLOJİ-3",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000170",
+      "rule_id": "ACİL-2.acil_konsultasyon_ilk_muayene",
+      "section": "ACİL TIP HEKİMLİĞİ",
+      "fatura_inceleme_ref": "ACİL-2",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000173",
+      "rule_id": "ACİL-5.acil_poliklinik_mukerrer_tetkik",
+      "section": "ACİL TIP HEKİMLİĞİ",
+      "fatura_inceleme_ref": "ACİL-5",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "F000175",
+      "rule_id": "ACİL-7.acil_rutin_muayene_cocuk_genel_gebelik",
+      "section": "ACİL TIP HEKİMLİĞİ",
+      "fatura_inceleme_ref": "ACİL-7",
+      "manifest_status": "encoded"
+    }
+  ],
+  "clause_trace_complete": true
+}

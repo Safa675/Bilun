@@ -103,6 +103,10 @@ def compute_patient_billing_report(
         report.billing_strategy = recommend_billing_strategy_from_claims(claim_context)
 
     if claim_context.procedure_lines:
+        # Cross-detector dependency ordering: session_uplift and billing_strategy
+        # MUST run before drg_uplift and procedure_addon_uplift — the latter two
+        # de-dupe their opportunities against session/strategy outputs to avoid
+        # double-counting recoverable ₺ uplift across detectors.
         report.session_uplift = recommend_session_uplift_from_claims(claim_context)
         report.drg_uplift = recommend_drg_uplift_from_claims(
             claim_context,
@@ -128,7 +132,7 @@ def compute_patient_billing_report(
         report.procedure_addon_uplift = dedupe_addon_against_capture(
             recommend_procedure_addon_uplift_from_claims(
                 claim_context,
-                session_uplift_opportunities=report.session_uplift.opportunities,
+                session_opportunities=report.session_uplift.opportunities,
             ),
             report.procedure_capture_gap,
         )

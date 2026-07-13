@@ -1,0 +1,1887 @@
+{
+  "rule_set_id": "fatura_inceleme_prose",
+  "title": "Fatura İnceleme Usul ve Esasları — Algorithmic Rules",
+  "effective_date": "2024-06-26",
+  "source_document": "raw data/FATURA İNCELEME USUL VE ESASLARI.pdf",
+  "coverage_note": "SGK internal billing audit guideline. NOT SUT. 91 algorithmic rules from 28 branches. 63 documentation rules and 16 interpretive rules are encoded separately or marked non_algorithmic.",
+  "rules": [
+    {
+      "rule_id": "ORTAK-2.ek2a2_olmayan_islem",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000007"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-2",
+      "condition": {
+        "care_setting": "outpatient",
+        "procedure_in_annex": "EK-2/A-2"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Ayaktan muayenelerde SUT eki EK-2/A-2 Listesinde olmadığı halde, farklı bir işlemin bu liste üzerinden fatura edilmesi kesinti nedenidir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ORTAK-4.ek2a2_gerekce_yok",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000009"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-4",
+      "condition": {
+        "care_setting": "outpatient",
+        "procedure_in_annex": "EK-2/A-2",
+        "health_report_present": false
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Ayaktan vakalarda EK-2/A-2 Listesinden işlem yapılmasında gerekçe yazılmadıysa veya tanı/klinik bilgi ile uyumsuz işlem varsa EK-2/A-2 işlemleri ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ORTAK-7.acil_kontrol_muayene",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000012"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-7",
+      "condition": {
+        "is_emergency": true,
+        "procedure_category_any": [
+          "kontrol_muayene"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Kontrol muayeneleri ve raporlu ilaç yazımı acil değildir, acilde yapılması halinde ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ORTAK-8.paket_islem_ilac_malzeme",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000013"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-8",
+      "condition": {
+        "payment_method": "diagnosis_based"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Paket işlem varsa, SUT eki EK-2/C Listesinde veya SUT metin bölümünde belirtilen istisnalar hariç ayrıca ilaç ve/veya malzeme bedeli ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ORTAK-9.hastalik_disi_muayene",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000014"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-9",
+      "condition": {
+        "procedure_category_any": [
+          "hastalik_disi_muayene"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Sağlıklı çocuk veya gebe muayenesi/takibi dışında kalan hastalık dışı muayeneler ve işlemleri ödenmez; sağlıklı çocuk/gebe muayenesi EK-2/A üzerinden ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ORTAK-10.sunnet_z412",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000015"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-10",
+      "condition": {
+        "procedure_category_any": [
+          "sunnet"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Sünnet işlemi yalnızca ICD-10 Z41.2 (Rutin ve dini sünnet) tanısı ile yapılırsa ödenir; bu tanı dışında ödenmez.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "ORTAK-12.ameliyat_alt_operasyon",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000017"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-12",
+      "condition": {
+        "procedure_category_any": [
+          "ameliyat",
+          "cerrahi"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Bir ameliyatın birkaç alt operasyona bölünerek fatura edilmesi durumunda ana işlem ödenir, diğerlerine ödeme yapılmaz.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "ORTAK-13.gecmis_muayene_sorgu",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000018"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-13",
+      "condition": {
+        "procedure_category_any": [
+          "muayene"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Tüm faturalarda geçmiş muayenelerin sorgulaması yapılmalıdır; aynı gün/hasta tekrarı tespit edilirse kesinti nedenidir.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "ORTAK-14.onkolojik_ek2b",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000019"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-14",
+      "condition": {
+        "procedure_in_annex": "EK-2/B"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Onkolojik vaka tanısıyla ilgili işlemler EK-2/B Listesinden ödenir; onkolojik tanıya ilişkin olmayan işlemler SUT'un ilgili hükümlerine göre ödenir.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "ORTAK-16.iv_infuzyon_530160",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000021"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-16",
+      "condition": {
+        "procedure_code_any": [
+          "530160"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "530160 İntravenöz ilaç infüzyonu işlemi için prospektüse göre İV infüzyonla verilen ilaçlar kullanılmalıdır; bu ilaçlar kullanılmadıysa işlem bedeli ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ORTAK-18.toplu_fatura_gunluk_limit",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000023"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-18",
+      "condition": {
+        "procedure_category_any": [
+          "FTR",
+          "psikiyatri",
+          "radyasyon_onkolojisi",
+          "yatak_bedeli"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Aynı kodlu işlemlerin toplu faturalanmasında günlük limit aşılırsa veya işlemlerin farklı günlerde yapıldığı teyit edilmezse kesinti nedenidir.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "ORTAK-19.eksik_faturalama_yuzde10",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000024"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-19",
+      "condition": {
+        "payment_method_path": "itemized"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "SUT 2.2.2.C maddesindeki %10 eksik faturalamaya uyulmaması halinde o faturaya ait toplam tutarın %10'u kesilerek ödeme yapılır.",
+        "severity": "error"
+      },
+      "sut_cross_ref": [
+        "C000702",
+        "C000703",
+        "C000704"
+      ]
+    },
+    {
+      "rule_id": "ORTAK-20.ayaktan_ek2a_yatis_ek2b",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000025"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-20",
+      "condition": {
+        "care_setting": "outpatient",
+        "procedure_in_annex": "EK-2/B"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Ayaktan EK-2/A üzerinden fatura edilen hastanın yatırılıp aynı gün tekrarı gerekmeyen işlemlerinin EK-2/B'den fatura edilmesi halinde fatura edilen işlemlere kesinti uygulanır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "ORTAK-22.seans_kesi_kurali",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000027"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-22",
+      "condition": {
+        "payment_method_path": "itemized"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "SUT 2.2.2.A ve 2.2.2.B maddelerindeki seans ve kesi kurallarına uyulmaması nedeniyle talep edilen fazla miktar tenzil edilerek ödenir.",
+        "severity": "warning"
+      },
+      "sut_cross_ref": [
+        "C000638",
+        "C000639",
+        "C000640",
+        "C000653",
+        "C000654",
+        "C000655"
+      ]
+    },
+    {
+      "rule_id": "ORTAK-23.konsultasyon_gerekce",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000028"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-23",
+      "condition": {
+        "procedure_category_any": [
+          "konsultasyon"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Konsültasyon bedeli için epikrizde bilgi ve gerekçe yazılmalıdır; yatış döneminde her branş için aynı gerekçeyle en fazla bir adet konsültasyon ödenir.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "ORTAK-25.yatis_oncesi_hazirlik_paket",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000030"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-25",
+      "condition": {
+        "care_setting": "inpatient",
+        "payment_method": "fee_for_service"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Tanı sonrası yatış tarihi öncesindeki ameliyata hazırlık işlemleri ödenmez; yatış dönemindeki işlemler SUT istisnaları hariç pakete dahildir.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "ORTAK-26.ilac_dozi_endikasyon",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000031"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-26",
+      "condition": {
+        "drug_category_any": [
+          "ilac"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "İlaç dozları prospektüsündeki maksimum dozları aşarsa aşan miktar ödenmez; işlem endikasyonu uygun değilse işlem ve ilaç bedeli ödenmez.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "ORTAK-28.ek2b_tetkik_gereksiz",
+      "sut_section": "ORTAK",
+      "gate_b_sources": [
+        "F000033"
+      ],
+      "branch": null,
+      "fatura_inceleme_ref": "ORTAK-28",
+      "condition": {
+        "procedure_in_annex": "EK-2/B"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "EK-2/B Listesinden istenilen tetkiklerin fazla veya gereksiz istenmesi, klinik bilgi ve tanıyla uyumsuz olması halinde endikasyonu olmayan tetkikler ödenmez.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "IC-1.tumor_markers_general_screening",
+      "sut_section": "İÇ HASTALIKLARI",
+      "gate_b_sources": [
+        "F000049"
+      ],
+      "branch": "İÇ HASTALIKLARI",
+      "fatura_inceleme_ref": "İÇ HASTALIKLARI-1",
+      "condition": {
+        "procedure_category_any": [
+          "tumor_marker"
+        ],
+        "is_screening": true
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Birden farklı ve birden çok sistemi ilgilendiren tümör markerları genel tarama amaçlı yapıldıysa ödenmez. Organa özgü marker tanıyı desteklemek amacıyla yapıldıysa ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "IC-2.intraspinal_block_catheter_repeat",
+      "sut_section": "İÇ HASTALIKLARI",
+      "gate_b_sources": [
+        "F000050"
+      ],
+      "branch": "İÇ HASTALIKLARI",
+      "fatura_inceleme_ref": "İÇ HASTALIKLARI-2",
+      "condition": {
+        "procedure_in_annex": "EK-2/B",
+        "procedure_category": "intraspinal_nerve_block"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "EK-2/B 'İntraspinal Sinir Blokları' başlığındaki işlemler kateter takılması halinde sadece bir kere ödenir. Kateterin takılı kalması halinde diğer günler için sadece enjekte edilen ilaç bedeli ödenir, ayrıca kateter bedeli ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-2.tuberculosis_sputum_limits",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000052"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-2",
+      "condition": {
+        "care_setting": "inpatient",
+        "procedure_category_any": [
+          "tb_sputum_stained_microscopy",
+          "sputum_culture"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Akciğer tüberküloz şüphesiyle yatan hastalarda; balgamda boyalı mikroskobik inceleme toplam 9 defaya kadar, kültür ise 3 otomatik + 3 manuel olmak üzere toplam 6 kez ödenir. Bu sınırlar aşılamaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-3.anti_ena_without_ana",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000053"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-3",
+      "condition": {
+        "procedure_code_any": [
+          "anti_ena"
+        ],
+        "procedure_code_not_any": [
+          "ana"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "ANA sonucu pozitif olmadan anti-ENA ödenmez. Anti-ENA istenmiş ancak ANA testi yapılmamış/faturalandırılmamış ise anti-ENA bedeli ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-4.sputum_culture_905675_no_growth_bundling",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000054"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-4",
+      "condition": {
+        "procedure_code_any": [
+          "905675"
+        ],
+        "procedure_code_any_h_influenza_mantar": [
+          "h_influenza_culture",
+          "fungal_culture"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "905675 Balgam kültüründe üreme olmamış ise H. influenza ve mantar kültürleri ayrıca ödenmez. Üreme olmuş ise epikrizde belirtilmesi halinde H. influenza ve mantar kültürü de ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-5.throat_culture_905670_multiplex_test",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000055"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-5",
+      "condition": {
+        "procedure_code_any": [
+          "905670"
+        ],
+        "procedure_code_any_antibiogram_id_strep": [
+          "antibiogram",
+          "bacterial_identification",
+          "streptococcal_group_typing"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "905670 Boğaz kültüründe üreme yoksa sadece kültür ödenir. Üreme var ise antibiyogram, bakteri tanımlanması veya streptokok grup tayininden yalnızca biri ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-6.parasite_and_unstained_microscopy_mutually_exclusive",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000056"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-6",
+      "condition": {
+        "procedure_code_any": [
+          "905860",
+          "905870"
+        ],
+        "procedure_code_any_905770": [
+          "905770"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "905860/905870 Direkt parazit incelemesi (cihazlı/manuel) ile gaita için bakılan 905770 Boyasız direkt mikroskobik inceleme birlikte fatura edilemez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-7.stool_culture_905672_bundling",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000057"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-7",
+      "condition": {
+        "procedure_code_any": [
+          "905672"
+        ],
+        "procedure_code_any_cdiffile_multi": [
+          "905810",
+          "907180",
+          "907190"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "905672 Gaita kültüründe üreme olmamışsa bakteri tanımlaması ve antibiyogram ödenmez. Üreme olmuşsa bunlara ek olarak ödenir. 905810 Clostridium difficile kültürü, 907180 toxin-A ve 907190 toxin-A veya B'den yalnızca biri ödenebilir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-8.urine_culture_905671_bundling",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000058"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-8",
+      "condition": {
+        "procedure_code_any": [
+          "905671"
+        ],
+        "procedure_code_any_id_antibiogram": [
+          "bacterial_identification",
+          "antibiogram"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "905671 İdrar kültüründe üreme olmamışsa boyalı/boyasız mikroskobik inceleme ve kültür ödenir. Bakteri tanımlaması ve antibiyogram yalnızca üreme olması halinde ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-9.blood_culture_906010_906020_mutually_exclusive",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000059"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-9",
+      "condition": {
+        "procedure_code_any": [
+          "906010",
+          "906020"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "906010 Kan kültürü (aerob-anaerob) ve 906020 Kan kültürü (aerob-anaerob) otomatik sistem birlikte faturalandırılamaz. Kan kültürü yapılan hastalarda 905770 Boyasız direkt mikroskobik inceleme teknik olarak mümkün olmadığından birlikte fatura edilse bile sadece kan kültürü bedeli ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-11.respiratory_906250_h_influenza_mantar",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000061"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-11",
+      "condition": {
+        "procedure_code_any": [
+          "906250"
+        ],
+        "procedure_code_any_h_influenza_mantar": [
+          "h_influenza_culture",
+          "fungal_culture"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "906250 Solunum sekresyonlarının kantitatif kültürü ile birlikte H. influenza ve mantar kültürleri ayrıca ödenmez. Epikrizde üreme olduğunun belirtilmesi halinde H. influenza ve mantar kültürü de ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-12.no_growth_typing_identification_antibiogram",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000062"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-12",
+      "condition": {
+        "procedure_category_any": [
+          "bacterial_typing",
+          "bacterial_identification",
+          "antibiogram",
+          "catalase_test",
+          "esbl_test"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Üreme olmayan kültürlerde tiplendirme, bakteri tanımlanması, antibiyogram, katalaz ve ESBL ödenmez; bu işlemler yalnızca kültürde üreme olması halinde ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-13.wound_ear_csf_conjunctiva_culture_bundling",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000063"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-13",
+      "condition": {
+        "procedure_category_any": [
+          "wound_culture",
+          "ear_culture",
+          "csf_culture",
+          "conjunctival_culture"
+        ],
+        "procedure_code_any_id_antibiogram": [
+          "bacterial_identification",
+          "antibiogram"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Yara, kulak, BOS ve konjonktiva kültürlerinde üreme olmamışsa boyalı/boyasız mikroskobik inceleme ve kültür ödenir. Bakteri tanımlaması ve antibiyogram yalnızca üreme olması halinde ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ENF-14.vaginal_semen_culture_bundling",
+      "sut_section": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "gate_b_sources": [
+        "F000064"
+      ],
+      "branch": "ENFEKSİYON HASTALIKLARI VE KLİNİK MİKROBİYOLOJİ",
+      "fatura_inceleme_ref": "ENFEKSİYON-14",
+      "condition": {
+        "procedure_code_any": [
+          "vaginal_cervical_culture",
+          "semen_culture",
+          "905676"
+        ],
+        "procedure_code_not_any": [
+          "905676"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Vagen cerviks/meni kültüründe üreme olmamışsa mantar kültürü, 905940 Gardnerella vaginalis ve 905970 Gonokok kültürü ödenmez. 905676 Vagen cerviks kültürü ayrıca ödenmez. Üreme olsa da olmasa da 906270 Trichomonas kültürü ayrıca ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "DYALIZ-1.peritoneal_simultaneous_hemodialysis",
+      "sut_section": "DİYALİZ",
+      "gate_b_sources": [
+        "F000166"
+      ],
+      "branch": "DİYALİZ",
+      "fatura_inceleme_ref": "DİYALİZ-1",
+      "condition": {
+        "procedure_category_any": [
+          "hemodialysis"
+        ],
+        "dialysis_modality": "peritoneal"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Periton diyaliz programındaki hastalara aynı anda uygulanan hemodiyaliz bedelleri ödenmez. Sıvı yükü nedeniyle ultrafiltrasyon uygulanması halinde 704250 İzole ultrafiltrasyon üzerinden ödeme yapılır. Gerekçesi raporda belirtilen çocuk hastalarda bu madde uygulanmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "DYALIZ-2.part_time_physician_outside_hours",
+      "sut_section": "DİYALİZ",
+      "gate_b_sources": [
+        "F000167"
+      ],
+      "branch": "DİYALİZ",
+      "fatura_inceleme_ref": "DİYALİZ-2",
+      "condition": {
+        "procedure_category": "dialysis_treatment",
+        "provider_type": "part_time_physician"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Kısmi zamanlı çalışan hekimlerin kuruma bildirdikleri çalışma saatleri dışında yaptıkları diyaliz tedavi bedelleri ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "DYALIZ-3.session_date_medula_match",
+      "sut_section": "DİYALİZ",
+      "gate_b_sources": [
+        "F000168"
+      ],
+      "branch": "DİYALİZ",
+      "fatura_inceleme_ref": "DİYALİZ-3",
+      "condition": {
+        "procedure_category": "dialysis_treatment"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Diyaliz takip kartındaki seans tarihleriyle MEDULA'ya girilen seans tarihleri aynı olmalıdır. Tarihler uyuşmuyorsa diyaliz bedeli ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "GÖĞÜS_CERRAHİSİ-2.intraplevral_lavaj_ilk_ve_sonraki",
+      "sut_section": "GÖĞÜS CERRAHİSİ",
+      "gate_b_sources": [
+        "F000069"
+      ],
+      "branch": "GÖĞÜS CERRAHİSİ",
+      "fatura_inceleme_ref": "GÖĞÜS CERRAHİSİ-2",
+      "condition": {
+        "procedure_code_any": [
+          "608630",
+          "P608630",
+          "701180"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "İntraplevral lavaj ilk kez yapıldığında 608630/P608630 'İntraplöral lavaj, her tür teknikle' (kateter takılması + lavaj) kullanılır; daha sonraki lavajlarda 701180 'Plevra boşluğunun lavajı' kodu kullanılmalıdır. İşlemin ilk kez mi yoksa tekrarlayan mı olduğu epikrizden doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "GÖĞÜS_HASTALIKLARI-1.firca_biyopsisi_bronkoskopi_608310",
+      "sut_section": "GÖĞÜS HASTALIKLARI",
+      "gate_b_sources": [
+        "F000071"
+      ],
+      "branch": "GÖĞÜS HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖĞÜS HASTALIKLARI-1",
+      "condition": {
+        "procedure_code_any": [
+          "608320",
+          "P608320"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Fırça biyopsisi invaziv işlem olmadığından, 608320/P608320 'Bronkoskopi, biyopsi veya yabancı cisim çıkarılması amacıyla' fatura edilse bile ödeme 608310/P608310 'Bronkoskopi, tanısal (fleksibl/rijit), bronşial lavaj ile birlikte veya değil' işlemi üzerinden yapılır.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "GÖĞÜS_HASTALIKLARI-3.tbc_pcr_908290_endikasyon",
+      "sut_section": "GÖĞÜS HASTALIKLARI",
+      "gate_b_sources": [
+        "F000073"
+      ],
+      "branch": "GÖĞÜS HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖĞÜS HASTALIKLARI-3",
+      "condition": {
+        "procedure_code_any": [
+          "908290"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "908290 'Mikobakteri PCR' tetkiki; akciğer tüberkülozu düşünülen ve ARB pozitif olup tedaviye dirençli tüberküloz düşünülen hastalarda ödenir. Plevral sıvı etiyolojisi/doku tanısı gereken istisnai durumlar epikrizde açıklanmalıdır. Endikasyon epikrizden doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "GÖĞÜS_HASTALIKLARI-4.tbc_kultur_ureme_yok_906180_908301",
+      "sut_section": "GÖĞÜS HASTALIKLARI",
+      "gate_b_sources": [
+        "F000074"
+      ],
+      "branch": "GÖĞÜS HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖĞÜS HASTALIKLARI-4",
+      "condition": {
+        "procedure_code_any": [
+          "906180",
+          "908301"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Akciğer tüberkülozu kültüründe üreme yoksa 906180 'Mikobakteri tiplendirmesi' ve 908301 'Mikobakteri İlaç Direnci, moleküler tanısı' tetkikleri ödenmez. Kültür üreme sonucu doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "GÖĞÜS_HASTALIKLARI-6.yatan_hasta_derin_trakeal_aspirasyon",
+      "sut_section": "GÖĞÜS HASTALIKLARI",
+      "gate_b_sources": [
+        "F000076"
+      ],
+      "branch": "GÖĞÜS HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖĞÜS HASTALIKLARI-6",
+      "condition": {
+        "care_setting": "inpatient"
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Serviste yatan hastalarda derin trakeal aspirasyon ödenmez (trakeostomi vb. durumlar hariç). İşlem kodu için SUT 'derin trakeal aspirasyon' kodu tespit edilip trakeostomi varlığı epikrizden doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "KARDİYOLOJİ-2.spect_gated_ayri_ayri_odeme",
+      "sut_section": "KARDİYOLOJİ",
+      "gate_b_sources": [
+        "F000089"
+      ],
+      "branch": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-2",
+      "condition": {
+        "procedure_code_any": [
+          "800800",
+          "800830",
+          "800750",
+          "800810"
+        ]
+      },
+      "action": {
+        "billable": true,
+        "denial_tr": "800800 'Miyokard Perfüzyon SPECT, GATED (Tc-99m)' ile 800830 'Miyokard Perfüzyon SPECT (Tc-99m)', veya 800750 'Miyokard Perfüzyon SPECT (Tl-201)' ile 800810 'Miyokard Perfüzyon SPECT, GATED (Tl-201)' aynı seansta birlikte fatura edildiğinde işlem bedelleri ayrı ayrı ödenir (özel kural).",
+        "severity": "info"
+      }
+    },
+    {
+      "rule_id": "KARDİYOLOJİ-3.nt_probnip_L106220_tek_sefer",
+      "sut_section": "KARDİYOLOJİ",
+      "gate_b_sources": [
+        "F000090"
+      ],
+      "branch": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-3",
+      "condition": {
+        "procedure_code_any": [
+          "L106220"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "L106220 'NT-ProBNP' dispnenin kardiyak/pulmoner ayırıcı tanısında acil serviste ve/veya bir yatış döneminde sadece bir kez ödenir. Pulmoner hipertansiyon tedavisinde sağlık kurulu raporuyla ayaktan takipte ödenebilir. Aynı yatış döneminde tekrar sayısı doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "KARDİYOLOJİ-4.ayni_seans_periferik_anjiografi",
+      "sut_section": "KARDİYOLOJİ",
+      "gate_b_sources": [
+        "F000091"
+      ],
+      "branch": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-4",
+      "condition": {},
+      "action": {
+        "billable": false,
+        "denial_tr": "Anjiografi/aortografiyi takip eden ve aynı seansta yapılan periferik anjiografiler aynı seansta birden fazla yapılan işlem esasına göre ödenir (SUT 2.2.2.A-5 / 2.2.2.B-3). Periferik anjiografi kodları aynı seansta değerlendirilmelidir.",
+        "severity": "warning"
+      },
+      "sut_cross_ref": [
+        "C000638",
+        "C000639",
+        "C000640",
+        "C000653",
+        "C000654",
+        "C000655"
+      ]
+    },
+    {
+      "rule_id": "KARDİYOLOJİ-5.basarisiz_ptca_stent_yok",
+      "sut_section": "KARDİYOLOJİ",
+      "gate_b_sources": [
+        "F000092"
+      ],
+      "branch": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-5",
+      "condition": {
+        "procedure_code_any": [
+          "700620",
+          "P700620"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Başarısız PTCA işleminde PTCA fatura edildiğinde, koroner damara yerleşilmemişse (stent yerleşmemişse) hiç ödeme yapılmaz. Stent yerleşimi ve işlem sonucu epikrizden doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "KARDİYOLOJİ-7.darlik_40_70_disi_basinc_teli",
+      "sut_section": "KARDİYOLOJİ",
+      "gate_b_sources": [
+        "F000094"
+      ],
+      "branch": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-7",
+      "condition": {
+        "procedure_code_any": [
+          "700811",
+          "P700811"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "700811/P700811 'Basınç veya Doppler teli ile intrakoroner hemodinamik çalışma' işlemi epikrizde koroner darlığın %40-70 arasında olduğunun belirtilmesi halinde ödenir; bu değerlerin dışındaki darlıklarda ödenmez. Darlık yüzdesi epikrizden doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "KARDİYOLOJİ-8.efc_ablasyon_701010_ayrica_odenmez",
+      "sut_section": "KARDİYOLOJİ",
+      "gate_b_sources": [
+        "F000095"
+      ],
+      "branch": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-8",
+      "condition": {
+        "procedure_code_any": [
+          "701010",
+          "P701010",
+          "701011",
+          "P701011"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "701030-701067 'EFÇ VE ABLASYON' işlemlerinde 701010/P701010-701011/P701011 'EFÇ' bedeli ayrıca ödenmez; endikasyon fatura eklerinde aranır ve yapılan ablasyon işlemine uygun kateter bedeli ödenir (EK-2/B; EK-2/C). Aynı seansta ablasyon (701030-701067) varlığı doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "KARDİYOLOJİ-9.kalp_kat_sirasi_cerrahi_sadece_cerrahi",
+      "sut_section": "KARDİYOLOJİ",
+      "gate_b_sources": [
+        "F000096"
+      ],
+      "branch": "KARDİYOLOJİ",
+      "fatura_inceleme_ref": "KARDİYOLOJİ-9",
+      "condition": {},
+      "action": {
+        "billable": false,
+        "denial_tr": "EK-2/B ve EK-2/C 'Tanısal Kalp Kateterizasyonu', 'Tedavi Amaçlı Kalp Kateterizasyonu' ve 'EFÇ ve Ablasyon' işlemleri sırasında hastaya cerrahi bir işlem gerekmesi halinde sadece cerrahi işlem bedeli ödenir. Aynı seansta cerrahi işlem varlığı doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "KALP_VE_DAMAR_CERRAHİSİ-1.kag_sonrasi_cabg_islem_yok_kesinti",
+      "sut_section": "KALP VE DAMAR CERRAHİSİ",
+      "gate_b_sources": [
+        "F000097"
+      ],
+      "branch": "KALP VE DAMAR CERRAHİSİ",
+      "fatura_inceleme_ref": "KALP VE DAMAR CERRAHİSİ-1",
+      "condition": {},
+      "action": {
+        "billable": false,
+        "denial_tr": "Selektif KAG sonrası hastanın aynı merkezde Kardiyolojiden Kalp ve Damar Cerrahisine CABG için yatırılıp işlem yapılmadan taburcu edilmesi halinde anjiyo sonrası işlemler anjiyo paketine dahildir; Kalp ve Damar Cerrahisinde yapılan işlemler kesilmelidir. Departmanlar arası transfer ve işlem yapılmadan taburcu durumu doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "KALP_VE_DAMAR_CERRAHİSİ-2.anjiyo_kdc_kardiyolog_kesinti_degil",
+      "sut_section": "KALP VE DAMAR CERRAHİSİ",
+      "gate_b_sources": [
+        "F000098"
+      ],
+      "branch": "KALP VE DAMAR CERRAHİSİ",
+      "fatura_inceleme_ref": "KALP VE DAMAR CERRAHİSİ-2",
+      "condition": {
+        "provider_type": "KARDİYOLOJİ"
+      },
+      "action": {
+        "billable": true,
+        "denial_tr": "Koroner anjiyografinin Kalp ve Damar Cerrahisi branşına ait bir işlemle birlikte fatura edilmesi, Kardiyoloji Uzmanı tarafından yapılması koşuluyla kesinti nedeni değildir.",
+        "severity": "info"
+      }
+    },
+    {
+      "rule_id": "KALP_VE_DAMAR_CERRAHİSİ-4.ek2b_lazer_tedavi_kdc_odenmez",
+      "sut_section": "KALP VE DAMAR CERRAHİSİ",
+      "gate_b_sources": [
+        "F000100"
+      ],
+      "branch": "KALP VE DAMAR CERRAHİSİ",
+      "fatura_inceleme_ref": "KALP VE DAMAR CERRAHİSİ-4",
+      "condition": {},
+      "action": {
+        "billable": false,
+        "denial_tr": "EK-2/B 'LAZER TEDAVİ UYGULAMALARI' başlıklı işlemlerin Kalp ve Damar Cerrahisi branşında tedavide yeri olmadığından, Kalp ve Damar Cerrahisi vakalarında ödenmez. İlgili lazer tedavi kodları (EK-2/B) tespit edilip branç doğrulanmalıdır.",
+        "severity": "warning"
+      }
+    },
+    {
+      "rule_id": "GÖZ HASTALIKLARI-10.vitreoretinal_no_fotokoagulasyon",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": [
+        "F000086"
+      ],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ HASTALIKLARI-10",
+      "condition": {
+        "procedure_code_any": [
+          "617660",
+          "P617660",
+          "617630",
+          "P617630"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "617660/P617660 'Vitroretinal cerrahi, tüm işlemler' işleminde ayrıca fotokoagülasyon (617630) ödenmemelidir. Ayrıca kullanılan malzemelerin barkod, seri no, son kullanım tarihini içeren etiketleri ile alış faturalarının sisteme kayıt edilmiş olduğu ve fatura tarihlerinin sistemde kayıtlı bilgilerle uyumlu olduğu kontrol edilmelidir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "GÖZ HASTALIKLARI-11.trikiasis_fotokoagulasyon_elektroliz",
+      "sut_section": "GÖZ HASTALIKLARI",
+      "gate_b_sources": [
+        "F000087"
+      ],
+      "branch": "GÖZ HASTALIKLARI",
+      "fatura_inceleme_ref": "GÖZ HASTALIKLARI-11",
+      "condition": {
+        "procedure_code_any": [
+          "617630",
+          "P617630"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Trikiyaziste, 617630 'Fotokoagülasyon, her bir seans' işlemi ödenmez. 616500 'Distikiyaziste uygulanan elektroliz ameliyatı' işlemi üzerinden ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "RADYOLOJİ-1.arkus_aortografi_supraaortik_bundling",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": [
+        "F000153"
+      ],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-1",
+      "condition": {
+        "procedure_code_any": [
+          "802520",
+          "P802520"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "802520/P802520 'Arkus aortografi' işlemini takiben yapılan supraaortik anjiografi tetkiklerinin birlikte faturalandırılması halinde bedeli en yüksek olan işlemin tamamı, diğer işlemlerin %25-%30'u alınarak ödeme yapılır. Tam bedelleri ayrı ayrı faturalamak hatalıdır (SUT 2.2.2.A-5(a)/2.2.2.B-3(a)).",
+        "severity": "error"
+      },
+      "sut_cross_ref": [
+        "C000638",
+        "C000639",
+        "C000640",
+        "C000653",
+        "C000654",
+        "C000655"
+      ]
+    },
+    {
+      "rule_id": "RADYOLOJİ-3.stent_pta_bundling",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": [
+        "F000155"
+      ],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-3",
+      "condition": {
+        "procedure_code_any": [
+          "802830",
+          "802780"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "802830 'Supraaortik/Visseral İntravasküler Stent Yerleştirilmesi' işlemi ile 802780 'Perkütan Translüminal Anjiyoplasti (PTA)' işlemi birlikte fatura edildiğinde 802830 kodlu işlemin tamamı, diğer işlemin %30'u alınarak ödeme yapılır. İki işlemin de tam bedeli ayrı ayrı talep edilemez (SUT 2.2.2.A-5(a)).",
+        "severity": "error"
+      },
+      "sut_cross_ref": [
+        "C000638",
+        "C000639",
+        "C000640"
+      ]
+    },
+    {
+      "rule_id": "RADYOLOJİ-4.nefrostomi_dilatasyon_stent_bundling",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": [
+        "F000156"
+      ],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-4",
+      "condition": {
+        "procedure_code_any": [
+          "803150",
+          "803240",
+          "803270"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "803150 'Perkütan nefrostomi', 803240 'Perkütan stenoz dilatasyonu' ve 803270 'Stent yerleştirilmesi' işlemleri birlikte fatura edilirse fiyatı yüksek olan işlemin tamamı, diğerlerinin %30'u alınarak ödeme yapılır. Tüm işlemlerin tam bedelleri ayrı ayrı faturalanamaz (SUT 2.2.2.A-5(a)).",
+        "severity": "error"
+      },
+      "sut_cross_ref": [
+        "C000638",
+        "C000639",
+        "C000640"
+      ]
+    },
+    {
+      "rule_id": "RADYOLOJİ-5.ptk_koledok_bilier_stent_bundling",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": [
+        "F000157"
+      ],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-5",
+      "condition": {
+        "procedure_code_any": [
+          "803250",
+          "803120",
+          "803050"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "803250 'Perkütan transhepatik kolanjiografi (PTK)', 803120 'Perkütan koledok dilatasyonu' ve 803050 'Perkütan bilier stent konması' işlemleri birlikte uygulandığı zaman fiyatı en yüksek olanın tamamı, diğerlerinin %30'u alınarak ödeme yapılır. Tam bedelleri ayrı ayrı faturalamak hatalıdır (SUT 2.2.2.A(5)(a)).",
+        "severity": "error"
+      },
+      "sut_cross_ref": [
+        "C000638",
+        "C000639",
+        "C000640"
+      ]
+    },
+    {
+      "rule_id": "RADYOLOJİ-8.abdominal_aortografi_anjiografi_bundling",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": [
+        "F000160"
+      ],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-8",
+      "condition": {
+        "procedure_category_any": [
+          "anjiografi"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Abdominal aortografi işlemini takip eden aynı anatomik bölgede yapılan diğer anjiyografi işlemlerinin (renal anjiyografi gibi) birlikte fatura edilmesi halinde abdominal aortografinin tümü, endikasyonu olması halinde takip eden anjiyografi işlemlerinin %25-%30'u alınarak ödeme yapılır. İkinci anjiyografi işleminin tam bedeli ayrı faturalanamaz (SUT 2.2.2.A-5(a)/2.2.2.B-3(a)).",
+        "severity": "error"
+      },
+      "sut_cross_ref": [
+        "C000638",
+        "C000639",
+        "C000640",
+        "C000653",
+        "C000654",
+        "C000655"
+      ]
+    },
+    {
+      "rule_id": "RADYOLOJİ-9.diyaliz_santi_trombolitik_607700",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": [
+        "F000161"
+      ],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-9",
+      "condition": {
+        "procedure_code_any": [
+          "802800"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Diyaliz şantları tıkandığında; 802800 'Selektif Trombolitik Tedavi İşlemleri' işleminin fatura edilmesi halinde, 607700 'Transkateter tedavi, koroner dışında tromboliz için infüzyon' işlemi bedelinden ödeme yapılır. 802800 kodu üzerinden ayrı ödeme talep edilemez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "RADYOLOJİ-10.tunelli_kateter_floro_vena_kavagrafi",
+      "sut_section": "RADYOLOJİ",
+      "gate_b_sources": [
+        "F000162"
+      ],
+      "branch": "RADYOLOJİ",
+      "fatura_inceleme_ref": "RADYOLOJİ-10",
+      "condition": {
+        "procedure_code_any": [
+          "802640",
+          "P802640"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Kalıcı tünelli kateter yerleştirilmesi işleminin kontrolü için 801570 'Floroskopi' işlemi bedeli ödenmelidir. Bu nedenle 802640/P802640 'İnferior veya süperior vena kavagrafi' işlemi fatura edilse bile ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ANESTEZİ-1.hasta_kontrollu_analjezi_ab_grubu",
+      "sut_section": "ANESTEZİ VE REANİMASYON",
+      "gate_b_sources": [
+        "F000037"
+      ],
+      "branch": "ANESTEZİ VE REANİMASYON",
+      "fatura_inceleme_ref": "ANESTEZİ-1",
+      "condition": {
+        "procedure_code_any": [
+          "550050",
+          "P550050"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "550050/P550050 'Hasta kontrollü analjezi (Epidural veya intravenöz vb.)' işlemi sadece A ve B grubu ameliyatlarda veya onkolojik vakalarda ödenebilir. Bu koşullar dışında fatura edilmesi halinde ödeme yapılmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "BEYİN-1.spinal_laminektomi_osteotomi",
+      "sut_section": "BEYİN VE SİNİR CERRAHİSİ",
+      "gate_b_sources": [
+        "F000038"
+      ],
+      "branch": "BEYİN VE SİNİR CERRAHİSİ",
+      "fatura_inceleme_ref": "BEYİN VE SİNİR CERRAHİSİ-1",
+      "condition": {
+        "procedure_category_any": [
+          "spinal_laminektomi",
+          "spinal_laminatomi"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Spinal cerrahide laminektomi veya laminatomi yapılmış ise osteotomi işlemi ödenmez. Osteotomi bedeli bu işlemlere dahildir, ayrıca faturalandırılamaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "BEYİN-2.posterior_segmental_enstruman_artrodez",
+      "sut_section": "BEYİN VE SİNİR CERRAHİSİ",
+      "gate_b_sources": [
+        "F000039"
+      ],
+      "branch": "BEYİN VE SİNİR CERRAHİSİ",
+      "fatura_inceleme_ref": "BEYİN VE SİNİR CERRAHİSİ-2",
+      "condition": {
+        "procedure_code_any": [
+          "614040",
+          "P614040",
+          "614050",
+          "P614050"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "614040/P614040 'Posteriyor segmental enstrümentasyon; 6 veya daha az vertebra segmenti' ve 614050/P614050 'Posteriyor segmental enstrümentasyon; 7 veya daha fazla vertebra segmenti' işlemleriyle birlikte artrodez işlemleri ödenmez. Artrodez bu işlemlere dahildir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "DERMATOLOJİ-1.intralezyonel_androjenik_alopesi",
+      "sut_section": "DERMATOLOJİ",
+      "gate_b_sources": [
+        "F000040"
+      ],
+      "branch": "DERMATOLOJİ",
+      "fatura_inceleme_ref": "DERMATOLOJİ-1",
+      "condition": {
+        "procedure_code_any": [
+          "700210",
+          "P700210"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "700210 'İntralezyonel enjeksiyon, bir seans günlük' işlemi androjenik alopesi tanısı ile fatura edilmesi halinde ödeme yapılmaz. Androjenik alopesi endikasyonunda bu işlem karşılanmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ÇOCUK CERRAHİSİ-1.testikuler_fiksasyon_hydrocele_herni",
+      "sut_section": "ÇOCUK CERRAHİSİ",
+      "gate_b_sources": [
+        "F000044"
+      ],
+      "branch": "ÇOCUK CERRAHİSİ",
+      "fatura_inceleme_ref": "ÇOCUK CERRAHİSİ-1",
+      "condition": {
+        "procedure_code_any": [
+          "621680",
+          "P621680"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Aynı taraftaki 621510/P621510 'Hidroselektomi, tek taraf', 621520/P621520 'Hidroselektomi ve herniyoplasti', 603780/P603780 'Greftsiz inguinal herni onarımı, tek taraf' işlemlerinden biri ile birlikte aynı taraftaki 621680/P621680 'Testiküler fiksasyon, tek taraf' işlemi ödenmez. Aynı tarafta yapıldığında testiküler fiksasyon bedeli alınmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ÇOCUK CERRAHİSİ-2.hydrocelektomi_bilateral_ayni_kesi",
+      "sut_section": "ÇOCUK CERRAHİSİ",
+      "gate_b_sources": [
+        "F000045"
+      ],
+      "branch": "ÇOCUK CERRAHİSİ",
+      "fatura_inceleme_ref": "ÇOCUK CERRAHİSİ-2",
+      "condition": {
+        "procedure_code_any": [
+          "621510",
+          "P621510"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "621510/P621510 'Hidroselektomi, tek taraf' işlemi bilateral yapılması durumunda ancak aynı seans ve aynı kesiden yapılması halinde ödenir. Ayrı seans veya ayrı kesi ile faturalandırılması halinde kurallara uygun değerlendirilmelidir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ÇOCUK CERRAHİSİ-3.cocuk_sagligi_paket_ameliyat_sonrasi",
+      "sut_section": "ÇOCUK CERRAHİSİ",
+      "gate_b_sources": [
+        "F000046"
+      ],
+      "branch": "ÇOCUK CERRAHİSİ",
+      "fatura_inceleme_ref": "ÇOCUK CERRAHİSİ-3",
+      "condition": {
+        "care_setting": "inpatient",
+        "procedure_category_any": [
+          "cocuk_sagligi_paket_ameliyat"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Çocuk Sağlığı ve Hastalıkları servisinde yatarken SUT eki EK-2/C Listesinde paket işlemine ait bir ameliyatın fatura edilmesi halinde ameliyat sonrası işlemler SUT 2.2.2.B-1 'Tanıya Dayalı İşlemlerin Kapsamı' ilkelerine göre değerlendirilir. Paket işleme dahil olan ameliyat sonrası işlemler ayrıca ödenmez.",
+        "severity": "error"
+      },
+      "sut_cross_ref": [
+        "C000653",
+        "C000654",
+        "C000655"
+      ]
+    },
+    {
+      "rule_id": "ÇOCUK CERRAHİSİ-5.uretra_dilatasyon_sunnet",
+      "sut_section": "ÇOCUK CERRAHİSİ",
+      "gate_b_sources": [
+        "F000048"
+      ],
+      "branch": "ÇOCUK CERRAHİSİ",
+      "fatura_inceleme_ref": "ÇOCUK CERRAHİSİ-5",
+      "condition": {
+        "procedure_code_any": [
+          "619750",
+          "P619750"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Üretra darlığı nedeniyle 'dilatasyon programında olan kronik hastalar' hariç, 619750/P619750 'Üretra dilatasyonu' işlemi sünnetle birlikte fatura edildiğinde ödenmez. Kronik dilatasyon programındaki hastalar dışında sünnet ile birlikte üretra dilatasyonu ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "FTR-1.g80_tani_degisimi_faturalama",
+      "sut_section": "FİZİK TEDAVİ VE REHABİLİTASYON",
+      "gate_b_sources": [
+        "F000065"
+      ],
+      "branch": "FİZİK TEDAVİ VE REHABİLİTASYON",
+      "fatura_inceleme_ref": "FİZİK TEDAVİ-1",
+      "condition": {
+        "procedure_category_any": [
+          "fizik_tedavi_rehabilitasyon"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "SUT eki EK-2/D-2 Listesinde yer alan G80 ve (*) işaretli tanıların yeni tanı konulmadan farklı bir (*) tanı ile fizik tedavi ve rehabilitasyon raporu düzenlenerek faturalandırılması halinde tedavi bedelleri ödenmez. Örneğin G80 Serebral palsi tanısının G81 Hemipleji veya G82 Parapleji/tetrapleji olarak faturalandırılması kabul edilmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "GENEL CERRAHİ-1.endoskopik_bilier_islemler_bundling",
+      "sut_section": "GENEL CERRAHİ",
+      "gate_b_sources": [
+        "F000066"
+      ],
+      "branch": "GENEL CERRAHİ",
+      "fatura_inceleme_ref": "GENEL CERRAHİ-1",
+      "condition": {
+        "procedure_code_any": [
+          "701300",
+          "701320",
+          "701360",
+          "701370",
+          "701440"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "701300 'Endoskopik biliyer dilatasyon', 701320 'Endoskopik biliyer stent yerleştirilmesi', 701360 'Endoskopik retrograd kolanjio-pankreotografi', 701370 'Endoskopik sfinkterotomi', 701440 'Koledoktan balon veya basketle taş çıkarılması' işlemleri birlikte fatura edilmesi halinde işlem puanı yüksek olanın tamamı, diğer işlem bedellerinin %30'u alınarak ödeme yapılır. Tam bedelleri ayrı ayrı faturalamak hatalıdır (SUT 2.2.2.A(5)(a)).",
+        "severity": "error"
+      },
+      "sut_cross_ref": [
+        "C000638",
+        "C000639",
+        "C000640"
+      ]
+    },
+    {
+      "rule_id": "GENEL CERRAHİ-2.kolonoskopi_ozefagogastroskopi_bundling",
+      "sut_section": "GENEL CERRAHİ",
+      "gate_b_sources": [
+        "F000067"
+      ],
+      "branch": "GENEL CERRAHİ",
+      "fatura_inceleme_ref": "GENEL CERRAHİ-2",
+      "condition": {
+        "procedure_code_any": [
+          "701450",
+          "701540"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "701450 'Kolonoskopi, total' ve 701540 'Özefagoskopi, gastroskopi, duodenoskopi (biri veya hepsi)' gibi endoskopik işlemlerin birlikte faturalandırılması halinde SUT 2.2.2.A(5) maddesine göre ödeme yapılır. Tam bedelleri ayrı ayrı faturalamak hatalıdır.",
+        "severity": "error"
+      },
+      "sut_cross_ref": [
+        "C000638",
+        "C000639",
+        "C000640"
+      ]
+    },
+    {
+      "rule_id": "KADIN-1.dogum_paketi_bebek_islemleri",
+      "sut_section": "KADIN HASTALIKLARI VE DOĞUM",
+      "gate_b_sources": [
+        "F000115"
+      ],
+      "branch": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-1",
+      "condition": {
+        "procedure_category_any": [
+          "yenis_dogum_islemleri",
+          "yenis_muayene"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Bebeğin doğum sonrası yapılması gereken işlemleri ve muayeneleri doğum paketine dahildir. Bu işlemler ayrıca faturalandırılamaz. Bebeğin yatarak tedavisi ise ayrıca faturalandırılır.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "KADIN-3.tibbi_tahliye_bumm_kuretaj",
+      "sut_section": "KADIN HASTALIKLARI VE DOĞUM",
+      "gate_b_sources": [
+        "F000117"
+      ],
+      "branch": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-3",
+      "condition": {
+        "procedure_code_any": [
+          "620370",
+          "P620370"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "620370/P620370 'Tıbbi nedenle tahliye (10 hafta ve daha üstü)' işlemine 620101/P620101 'Bumm küretaj' işlemi dahildir. Bumm küretaj bu işleme dahil olup ayrıca faturalandırılamaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "KADIN-4.endometrioma_yapisklik_over",
+      "sut_section": "KADIN HASTALIKLARI VE DOĞUM",
+      "gate_b_sources": [
+        "F000118"
+      ],
+      "branch": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-4",
+      "condition": {
+        "procedure_code_any": [
+          "620520",
+          "P620520"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "620520/P620520 'Endometrioma ve endometriozis operasyonu' ameliyatlarında yapılan tüm batın içi yapışıklıkların ayrılması ve overe ait işlemler bu işlemin içerisindedir ve ayrıca faturalandırılamaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "KADIN-5.fotal_biyometri_32_hafta",
+      "sut_section": "KADIN HASTALIKLARI VE DOĞUM",
+      "gate_b_sources": [
+        "F000119"
+      ],
+      "branch": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-5",
+      "condition": {
+        "procedure_code_any": [
+          "803650",
+          "P803650"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "803650 'Fötal biyometri ve biyofizik skorlama' işlemi 32. haftadan küçük gebeliklerde ödenmez. 32. haftadan büyük gebeliklerde ise tıbbi endikasyon varsa ve işlem sonucu epikrizde belirtilmişse ödenir. Bu koşullar sağlanmadan fatura edilmesi halinde ödeme yapılmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "KADIN-6.surekli_fetal_monitorizasyon_dogum_travay",
+      "sut_section": "KADIN HASTALIKLARI VE DOĞUM",
+      "gate_b_sources": [
+        "F000120"
+      ],
+      "branch": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-6",
+      "condition": {
+        "procedure_code_any": [
+          "704541",
+          "P704541"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "704541 'Sürekli fetal monitorizasyon' işlemi yalnızca doğum travayı takibinde uygulandığında fatura edilir. Doğum travayı dışında rutin uygulamalar için ayrıca faturalandırılması uygun değildir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "KADIN-7.vaginal_rekonstruksiyon_greft",
+      "sut_section": "KADIN HASTALIKLARI VE DOĞUM",
+      "gate_b_sources": [
+        "F000121"
+      ],
+      "branch": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-7",
+      "condition": {
+        "procedure_code_any": [
+          "620470",
+          "P620470"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "620470/P620470 'Vaginal Rekonstüriksiyonu, deri greft ile' işleminde greft alınması pakete dahildir ve ayrıca faturalandırılamaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "KADIN-8.postpartum_tup_ligasyon_sezaryen",
+      "sut_section": "KADIN HASTALIKLARI VE DOĞUM",
+      "gate_b_sources": [
+        "F000122"
+      ],
+      "branch": "KADIN HASTALIKLARI VE DOĞUM",
+      "fatura_inceleme_ref": "KADIN-8",
+      "condition": {
+        "procedure_code_any": [
+          "620620",
+          "P620620"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "620620/P620620 'Postpartum tüp ligasyon' işlemi belirtilen sezaryen ile yapılan tüp ligasyonudur ve sağlık kurulu raporu aranır. Normal ve müdahaleli doğum sonrası tüp ligasyonu yapıldıysa 620560/P620560 'Tüp ligasyonu' işlem bedeli ödenir ve rapor aranmaz. Doğum tipine uygun kod kullanılmalıdır.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ORTOPEDİ-1.kapali_reduksiyon_alci_atel",
+      "sut_section": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "gate_b_sources": [
+        "F000128"
+      ],
+      "branch": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "fatura_inceleme_ref": "ORTOPEDİ-1",
+      "condition": {
+        "procedure_category_any": [
+          "kapali_reduksiyon",
+          "ortopedi_ameliyat"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Kırıkların kapalı redüksiyonu ve ortopedi ameliyatlarında alçı ve atel bedeli ayrıca ödenmez. Alçı ve atel bu işlemlere dahildir, ayrıca faturalandırılamaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ORTOPEDİ-2.acik_kirik_parmak_ana_islem",
+      "sut_section": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "gate_b_sources": [
+        "F000129"
+      ],
+      "branch": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "fatura_inceleme_ref": "ORTOPEDİ-2",
+      "condition": {
+        "procedure_code_any": [
+          "610950",
+          "P610950",
+          "610960",
+          "P610960",
+          "610970",
+          "P610970"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "610950/P610950 'Açık kırıklarda kapalı kırık haline getirme, küçük', 610960/P610960 'Açık kırıklarda, debritman dahil kapatılması, büyük' ve 610970/P610970 'Açık kırıklarda, debritman dahil kapatılması, orta' işlemleri parmak kırıklarında ve ana cerrahi işlemle birlikte ödenmez. Parmak kırıklarında veya ana işlemle birlikte faturalandırılması halinde ödeme yapılmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ORTOPEDİ-4.pin_cikarma_subkutan_vida",
+      "sut_section": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "gate_b_sources": [
+        "F000131"
+      ],
+      "branch": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "fatura_inceleme_ref": "ORTOPEDİ-4",
+      "condition": {
+        "procedure_code_any": [
+          "611320",
+          "P611320"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "611320/P611320 'Pin çıkarma' işlemine subkutan yerleşimli vida çıkarma işlemi de dahildir. Aynı bölge ve/veya aynı insizyondan yapılan birden fazla pin ve/veya subkutan yerleşimli vida çıkarılması halinde tek pin/subkutan yerleşimli vida çıkarma işlem bedeli ödenir.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ORTOPEDİ-5.implant_pin_cikarma_ayni_bolge",
+      "sut_section": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "gate_b_sources": [
+        "F000132"
+      ],
+      "branch": "ORTOPEDİ VE TRAVMATOLOJİ",
+      "fatura_inceleme_ref": "ORTOPEDİ-5",
+      "condition": {
+        "procedure_category_any": [
+          "ortopedik_cerrahi"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Aynı anatomik bölgede yapılan ortopedik cerrahi işlemlerinde implant/pin çıkarma işlemi ana işleme dahildir ve ayrıca ödenmez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "PATOLOJİ-1.rutin_boyama_histokimyasal_911160",
+      "sut_section": "PATOLOJİ",
+      "gate_b_sources": [
+        "F000134"
+      ],
+      "branch": "PATOLOJİ",
+      "fatura_inceleme_ref": "PATOLOJİ-1",
+      "condition": {
+        "procedure_code_any": [
+          "911160",
+          "P911160"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Patoloji preparatlarında uygulanan rutin boyamalar (Hematoksilen-Eosin (H&E), yayma preparatlarda May-Gruenwald-Giemsa (MGG), Giemsa, Papanicolaou (PAP), Wright, Toluidin Blue, Diff-Quick vb.) 911160 'Histokimyasal Boyamalar' işleminden fatura edilse bile ödenmez. Rutin boyamalar bu koddan ayrıca karşılanmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "PSİKİYATRİ-4.projektif_testler_yillik_birkez",
+      "sut_section": "PSİKİYATRİ",
+      "gate_b_sources": [
+        "F000144"
+      ],
+      "branch": "PSİKİYATRİ",
+      "fatura_inceleme_ref": "PSİKİYATRİ-4",
+      "condition": {
+        "procedure_code_any": [
+          "702780",
+          "P702780"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "702780 'Projektif testler, her biri' işlemi henüz tanı almamış olgularda veya maluliyet tespiti (tanı almış bile olsa) için endikedir ve yılda en fazla bir kez ödenir. Yıllık bir kez sınırı aşılırsa veya endikasyonu olmayan durumlarda fatura edilirse ödeme yapılmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "RADYASYON ONKOLOJİSİ-1.film_digital_haftalik_limit",
+      "sut_section": "RADYASYON ONKOLOJİSİ",
+      "gate_b_sources": [
+        "F000146"
+      ],
+      "branch": "RADYASYON ONKOLOJİSİ",
+      "fatura_inceleme_ref": "RADYASYON ONKOLOJİSİ-1",
+      "condition": {
+        "procedure_code_any": [
+          "800310",
+          "800320"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Epikrizde tedavinin küratif olduğunun belirtilmesi halinde 800310 'Film' ve 800320 'Digital' işlemleri alan başına haftada bir kez, IMRT veya volumetrik ark tedavisi/helikal ark terapi uygulamalarında fraksiyon sayısı kadar, tedavinin palyatif olduğunun belirtilmesi halinde tedavi dönemi içinde bir kez ödenir. Belirtilen sınırlar aşılırsa ödeme yapılmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "RADYASYON ONKOLOJİSİ-3.multileaf_collimator_800290",
+      "sut_section": "RADYASYON ONKOLOJİSİ",
+      "gate_b_sources": [
+        "F000148"
+      ],
+      "branch": "RADYASYON ONKOLOJİSİ",
+      "fatura_inceleme_ref": "RADYASYON ONKOLOJİSİ-3",
+      "condition": {
+        "procedure_code_any": [
+          "800290",
+          "P800290"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Multi-leaf collimator ile yapılan uygulamalarda 800290 'Orta tedavi aletleri tasarım ve yapımı' bedeli ayrıca ödenmez. Multi-leaf collimator kullanımı halinde bu işlem bedeli tahsil edilemez.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ÜROLOJİ-1.sunnet_parafimozis_fimozis",
+      "sut_section": "ÜROLOJİ",
+      "gate_b_sources": [
+        "F000150"
+      ],
+      "branch": "ÜROLOJİ",
+      "fatura_inceleme_ref": "ÜROLOJİ-1",
+      "condition": {
+        "procedure_code_any": [
+          "621110",
+          "P621110"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "621071/P621071 'Sünnet' işlemi yerine 621110/P621110 'Parafimozis redüksiyonu' işlemi sıklıkla yanlış fatura edilmektedir. Epikriz incelenerek ödeme buna göre yapılmalıdır. Sünnet ile 'Parafimozis ve/veya Fimozis' aynı anda faturalandırıldığında sünnet ödenir; parafimozis/fimozis için ayrı ödeme yapılmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ÜROLOJİ-2.sistoskopi_dilatasyon_uretra_darligi",
+      "sut_section": "ÜROLOJİ",
+      "gate_b_sources": [
+        "F000151"
+      ],
+      "branch": "ÜROLOJİ",
+      "fatura_inceleme_ref": "ÜROLOJİ-2",
+      "condition": {
+        "procedure_category_any": [
+          "sistoskopi_sistoüreteroskopi"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Sistoskopi/Sistoüreteroskopi ile beraber dilatasyon/internal üretrotomi işlemleri rutin yapılan işlemler değildir. Beraber faturalandırıldığında üretra darlığı tanısı yoksa dilatasyon/internal üretrotomi işlemi ödenmez. Üretra darlığı tanısı doğrulanmalıdır.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ÜROLOJİ-3.mesane_bcg_intrakaviter_704370",
+      "sut_section": "ÜROLOJİ",
+      "gate_b_sources": [
+        "F000152"
+      ],
+      "branch": "ÜROLOJİ",
+      "fatura_inceleme_ref": "ÜROLOJİ-3",
+      "condition": {
+        "procedure_code_any": [
+          "P619800",
+          "619800"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Mesaneye BCG ve diğer kemoterapotiklerin uygulamaları SUT eki EK-2/C Listesindeki P619800 'Üretral instilasyon' işleminden ödenmeyip, SUT eki EK-2/B Listesinde yer alan 704370 'İntrakaviter kemo veya immünoterapi' işlemi üzerinden ödenir. P619800 koduyla fatura edilmesi halinde ödeme yapılmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ACİL-2.acil_konsultasyon_ilk_muayene",
+      "sut_section": "ACİL TIP HEKİMLİĞİ",
+      "gate_b_sources": [
+        "F000170"
+      ],
+      "branch": "ACİL TIP HEKİMLİĞİ",
+      "fatura_inceleme_ref": "ACİL-2",
+      "condition": {
+        "is_emergency": true,
+        "procedure_category_any": [
+          "konsultasyon"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Acilde ilk muayeneyi yapan hekimin branşında konsültasyon bedeli ödenmez. Acilde konsültasyon istenen her branş için yalnızca bir kez konsültasyon bedeli ödenir. İlk muayene yapılan branşta konsültasyon tekrarlanamaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ACİL-5.acil_poliklinik_mukerrer_tetkik",
+      "sut_section": "ACİL TIP HEKİMLİĞİ",
+      "gate_b_sources": [
+        "F000173"
+      ],
+      "branch": "ACİL TIP HEKİMLİĞİ",
+      "fatura_inceleme_ref": "ACİL-5",
+      "condition": {
+        "is_emergency": true,
+        "procedure_category_any": [
+          "laboratuvar_tetkik",
+          "goruntuleme"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Aynı gün acilde ve poliklinikte vaka başına dahil tetkiklerin mükerrer yapılması durumunda, acilde yapılan aciliyeti olmayan tetkikler için ödeme yapılmaz. Mükerrer tetkiklerde aciliyeti olmayanlar karşılanmaz.",
+        "severity": "error"
+      }
+    },
+    {
+      "rule_id": "ACİL-7.acil_rutin_muayene_cocuk_genel_gebelik",
+      "sut_section": "ACİL TIP HEKİMLİĞİ",
+      "gate_b_sources": [
+        "F000175"
+      ],
+      "branch": "ACİL TIP HEKİMLİĞİ",
+      "fatura_inceleme_ref": "ACİL-7",
+      "condition": {
+        "is_emergency": true,
+        "procedure_category_any": [
+          "cocuk_sagligi_muayene",
+          "genel_muayene",
+          "gebelik_gozlem"
+        ]
+      },
+      "action": {
+        "billable": false,
+        "denial_tr": "Acil serviste rutin çocuk sağlığı muayenesi, genel tıbbi muayene, normal gebelik gözlemi gibi genel tanılara ilişkin işlem bedelleri ödenmez. Acil serviste rutin muayene/ameliye işlemler faturalandırılamaz.",
+        "severity": "error"
+      }
+    }
+  ]
+}

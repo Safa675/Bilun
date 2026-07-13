@@ -32,7 +32,7 @@
         "sut_section": { "type": "string", "minLength": 1 },
         "gate_b_sources": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^C[0-9]{6}$" },
+          "items": { "type": "string", "pattern": "^[CF][0-9]{6}$" },
           "minItems": 1
         },
         "encode_batch": { "type": "string" },

@@ -65,6 +65,28 @@ def _reconcile_drug_manifests_after_gate_b_test(request):
     reconcile_drug_manifests(write=True)
 
 
+@pytest.fixture(autouse=True)
+def _clear_payment_method_cache():
+    """Clear memoization caches before each test.
+
+    Tests may mock catalog-membership functions or build varying
+    PatientClaimContexts; stale cache entries from a prior test would leak
+    and cause cross-test failures. Covers:
+    - resolve_payment_method inner cache
+    - _build_gap_closing_context (rebuilt 3× per claim in analyze_claim)
+    """
+    from src.bilun.domain.prose_rules.gap_closing import _build_gap_closing_context
+    from src.bilun.domain.prose_rules.payment_method import (
+        _resolve_payment_method_cached,
+    )
+
+    _resolve_payment_method_cached.cache_clear()
+    _build_gap_closing_context.cache_clear()
+    yield
+    _resolve_payment_method_cached.cache_clear()
+    _build_gap_closing_context.cache_clear()
+
+
 def pytest_addoption(parser):
     parser.addoption(
         "--live",

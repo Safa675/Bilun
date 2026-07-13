@@ -65,6 +65,7 @@ _PROSE_MANIFESTS: dict[str, str] = {
     "specialty_materials_prose": "L4.4_specialty_prose_encoded_manifest.json",
     "dental_2_4_1": "dental_2_4_1_manifest.json",
     "gap_closing_misc": "gap_closing_misc_manifest.json",
+    "fatura_inceleme_prose": "fatura_inceleme_prose_manifest.json",
 }
 
 def _optional_str(value: object) -> str | None:

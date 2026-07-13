@@ -29,6 +29,11 @@ SUT_REGISTRY_COVERAGE_PATH = _GAZETTE_DIR / "sut_registry_coverage.parquet"
 SUT_COVERAGE_BY_RULE_PATH = _GAZETTE_DIR / "sut_coverage_by_rule.parquet"
 SUT_COVERAGE_BY_SECTION_PATH = _GAZETTE_DIR / "sut_coverage_by_section.parquet"
 
+# Fatura İnceleme Usul ve Esasları — SGK's internal billing audit guideline.
+# NOT SUT. Separate regulatory corpus (dayanak: 5510 md. 63/73).
+# clause_ids are F-prefixed (F000001+) to distinguish from SUT's C-prefix.
+FATURA_INCELEME_CLAUSES_PATH = _GAZETTE_DIR / "fatura_inceleme_clauses.parquet"
+
 # SUT clause embeddings — sidecar vectors for semantic clause retrieval (chatbot)
 SUT_CLAUSE_EMBEDDINGS_PATH = _GAZETTE_DIR / "sut_clause_embeddings.parquet"
 

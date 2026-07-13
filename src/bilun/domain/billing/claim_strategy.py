@@ -12,6 +12,7 @@ from src.bilun.domain.prose_rules import (
     resolve_payment_method,
 )
 from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
+from src.bilun.domain.prose_rules.care_setting_review import _pick_claim_kind
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
 from src.bilun.domain.prose_rules.session_pricing import (
     _line_itemized_payable,
@@ -159,10 +160,20 @@ def lines_for_legal_itemized_alternative(
 def _itemized_exclusion_metadata(
     lines: list[ProcedureClaimLine],
     claim: ClaimHeader,
+    *,
+    eligible_lines: list[ProcedureClaimLine] | None = None,
 ) -> tuple[int, list[str]]:
+    # Reuse the caller's eligible-lines computation when available to avoid a
+    # second call to lines_for_legal_itemized_alternative (which iterates the
+    # full claim + does session/cross-specialty gating each time).
+    resolved_eligible = (
+        eligible_lines
+        if eligible_lines is not None
+        else lines_for_legal_itemized_alternative(lines, claim)
+    )
     eligible_ids = {
         line.procedure_line_id
-        for line in lines_for_legal_itemized_alternative(lines, claim)
+        for line in resolved_eligible
     }
     excluded_codes = sorted(
         {
@@ -188,16 +199,7 @@ def _infer_current_billing(claim_procs: list[ProcedureClaimLine]) -> str:
 def _aggregate_claim_kind(line_results: list[PaymentMethodResult]) -> PaymentMethodKind | None:
     if any(result.kind == "MISSING_INPUTS" for result in line_results):
         return None
-    kinds = {result.kind for result in line_results if result.kind != "NOT_IN_SUT"}
-    if not kinds:
-        return None
-    if kinds == {"ITEMIZED"}:
-        return "ITEMIZED"
-    if "DRG_MANDATORY" in kinds:
-        return "DRG_MANDATORY"
-    if "DRG_OVERRIDABLE" in kinds:
-        return "DRG_OVERRIDABLE"
-    return next(iter(sorted(kinds)))
+    return _pick_claim_kind({result.kind for result in line_results})
 
 
 def _primary_line_result(
@@ -367,7 +369,9 @@ def recommend_billing_strategy_from_claims(
             continue
 
         eligible_lines = lines_for_legal_itemized_alternative(claim_procs, claim)
-        excluded_count, excluded_codes = _itemized_exclusion_metadata(claim_procs, claim)
+        excluded_count, excluded_codes = _itemized_exclusion_metadata(
+            claim_procs, claim, eligible_lines=eligible_lines
+        )
         itemized_raw = sum(float(line.expected_payable_try) for line in eligible_lines)
         itemized_total, itemized_meta = compute_session_adjusted_itemized_total(
             eligible_lines,

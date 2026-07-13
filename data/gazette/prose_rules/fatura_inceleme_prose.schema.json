@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bilun.local/schemas/fatura_inceleme_prose.schema.json",
+  "title": "Fatura İnceleme Usul ve Esasları prose rule set",
+  "description": "SGK's internal billing audit guideline. NOT SUT — separate regulatory corpus (dayanak: 5510 md. 63/73). clause_ids are F-prefixed.",
+  "type": "object",
+  "required": ["rule_set_id", "title", "effective_date", "rules"],
+  "additionalProperties": true,
+  "properties": {
+    "rule_set_id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "effective_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "source_document": {
+      "type": "string",
+      "description": "Path to the source PDF in raw data/"
+    },
+    "coverage_note": { "type": "string" },
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fatura_rule" }
+    }
+  },
+  "$defs": {
+    "fatura_rule": {
+      "type": "object",
+      "required": ["rule_id", "sut_section", "gate_b_sources"],
+      "additionalProperties": true,
+      "properties": {
+        "rule_id": { "type": "string", "minLength": 1 },
+        "sut_section": {
+          "type": "string",
+          "description": "Branch name or 'ORTAK' for common criteria"
+        },
+        "gate_b_sources": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[CF][0-9]{6}$" },
+          "minItems": 1,
+          "description": "F-prefixed clause_ids from fatura_inceleme_clauses.parquet"
+        },
+        "branch": {
+          "type": ["string", "null"],
+          "description": "Branch this rule applies to. null = all branches (ORTAK KRİTERLER)"
+        },
+        "fatura_inceleme_ref": {
+          "type": "string",
+          "description": "Human-readable reference, e.g. 'ORTAK-7' or 'KARDİYOLOJİ-3'"
+        },
+        "sut_cross_ref": {
+          "type": ["string", "null"],
+          "description": "SUT clause_id (C-prefixed) if this rule references a SUT section"
+        },
+        "condition": { "type": "object" },
+        "action": { "type": "object" },
+        "message_tr": { "type": "string" }
+      }
+    }
+  }
+}

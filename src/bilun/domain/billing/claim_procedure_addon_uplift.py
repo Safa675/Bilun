@@ -25,9 +25,14 @@ _PROSE_RULE_SOURCE = (
 def recommend_procedure_addon_uplift_from_claims(
     ctx: PatientClaimContext,
     *,
-    session_uplift_opportunities: list[dict[str, Any]] | None = None,
+    session_opportunities: list[dict[str, Any]] | None = None,
 ) -> ProcedureAddonUplift:
-    """Detect recoverable SGK uplift when expected add-on procedures were not billed."""
+    """Detect recoverable SGK uplift when expected add-on procedures were not billed.
+
+    ``session_opportunities`` is the output of ``recommend_session_uplift_from_claims``
+    — used to suppress add-on opportunities already captured by session-pricing
+    uplift (cross-detector de-duplication wired in patient_report.py).
+    """
     if not ctx.procedure_lines:
         return ProcedureAddonUplift(
             exactness_status=EXACTNESS_STATUS_MISSING_INPUTS,
@@ -47,7 +52,7 @@ def recommend_procedure_addon_uplift_from_claims(
             detect_missing_procedure_addon_opportunities(
                 claim,
                 claim_procs,
-                session_uplift_opportunities=session_uplift_opportunities,
+                session_uplift_opportunities=session_opportunities,
             )
         )
 

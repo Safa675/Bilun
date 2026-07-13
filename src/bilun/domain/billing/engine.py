@@ -76,6 +76,9 @@ from src.bilun.domain.prose_rules.treatment_pricing import (
 from src.bilun.domain.prose_rules.traffic_accident_billing import (
     detect_traffic_accident_billing,
 )
+from src.bilun.domain.prose_rules.fatura_inceleme import (
+    check_fatura_inceleme_for_context,
+)
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_admission_billing_window,
     detect_donor_prep_as_exam,
@@ -168,6 +171,12 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     # 9. Cross-section gap-closing claim-level gates (§1.5/§1.6/§2.2/§2.3/§2.5).
     violations.extend(check_gap_closing_misc_for_context(ctx))
     violations.extend(check_gap_closing_treatment_for_context(ctx))
+
+    # 9.5. Fatura İnceleme Usul ve Esasları — SGK billing audit guideline.
+    # NOT SUT. Separate regulatory corpus. 91 algorithmic denial rules from
+    # 28 branches + Ortak Kriterler. Fires when claim data matches denial
+    # conditions (e.g. acilde kontrol muayenesi, paket işlemde ilaç faturalama).
+    violations.extend(check_fatura_inceleme_for_context(ctx))
 
     # 10. §2.2 payment-method traceability (secondary, info-severity — the
     # primary _classify_payment_method_kind decision is unchanged; this emits

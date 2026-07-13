@@ -179,7 +179,32 @@ def resolve_payment_method(
 
     Uses EK-2B/EK-2C catalog membership as of ``as_of_date`` (defaults to today)
     plus facility tier and EK-2C star markers for §2.2.2(2) third-tier override.
+
+    Memoized via the inner cached function — the same ``(procedure_code,
+    care_setting, facility_tier, provider_type, as_of_date)`` tuple returns the
+    same ``PaymentMethodResult`` across a report run (5N–9N redundant calls per
+    claim collapse to N). ``as_of_date=None`` is resolved to ``date.today()``
+    here so the cache key is always a concrete date.
     """
+    if as_of_date is None:
+        as_of_date = date.today()
+    return _resolve_payment_method_cached(
+        procedure_code,
+        care_setting,
+        facility_tier,
+        provider_type,
+        as_of_date,
+    )
+
+
+@lru_cache(maxsize=None)
+def _resolve_payment_method_cached(
+    procedure_code: str,
+    care_setting: CareSetting,
+    facility_tier: str | None,
+    provider_type: str | None,
+    as_of_date: date,
+) -> PaymentMethodResult:
     normalized = normalize_procedure_code(procedure_code)
     in_ek2b, in_ek2c = procedure_annex_membership(normalized, as_of_date=as_of_date)
     has_star = (

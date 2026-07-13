@@ -42,19 +42,29 @@ def _line_as_of_date(
     return claim.admission_date or claim.claim_start_date
 
 
+def _pick_claim_kind(kinds: set[PaymentMethodKind]) -> PaymentMethodKind | None:
+    """Reduce a set of per-line PaymentMethodKinds to one claim-level kind.
+
+    Shared selection logic used by both ``_aggregate_claim_kind`` (kinds input)
+    in care_setting_review and ``_aggregate_claim_kind`` (results input) in
+    claim_strategy. Precedence: DRG_MANDATORY > DRG_OVERRIDABLE > ITEMIZED > rest.
+    """
+    filtered = {kind for kind in kinds if kind != "NOT_IN_SUT"}
+    if not filtered:
+        return None
+    if filtered == {"ITEMIZED"}:
+        return "ITEMIZED"
+    if "DRG_MANDATORY" in filtered:
+        return "DRG_MANDATORY"
+    if "DRG_OVERRIDABLE" in filtered:
+        return "DRG_OVERRIDABLE"
+    return next(iter(sorted(filtered)))
+
+
 def _aggregate_claim_kind(
     line_kinds: list[PaymentMethodKind],
 ) -> PaymentMethodKind | None:
-    kinds = {kind for kind in line_kinds if kind != "NOT_IN_SUT"}
-    if not kinds:
-        return None
-    if kinds == {"ITEMIZED"}:
-        return "ITEMIZED"
-    if "DRG_MANDATORY" in kinds:
-        return "DRG_MANDATORY"
-    if "DRG_OVERRIDABLE" in kinds:
-        return "DRG_OVERRIDABLE"
-    return next(iter(sorted(kinds)))
+    return _pick_claim_kind(set(line_kinds))
 
 
 def _resolve_claim_kind(
