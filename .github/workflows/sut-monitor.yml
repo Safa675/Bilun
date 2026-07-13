@@ -41,6 +41,21 @@ jobs:
             "${{ steps.monitor.outputs.new_teblig_url }}" \
             "${{ steps.monitor.outputs.new_teblig_date }}"
 
+      - name: Capture OLD_DATE (pre-ingest)
+        if: steps.monitor.outputs.new_teblig != ''
+        id: capture
+        run: |
+          # MUST run BEFORE ingest — convert_xlsx_to_parquet.py overwrites
+          # ingest_state.json's last_ingested_date with the new date, which
+          # would otherwise make OLD_DATE == NEW_DATE and produce empty deltas.
+          if [ -f data/gazette/ingest_state.json ]; then
+            OLD_DATE=$(python3 -c "import json,sys; print(json.load(open('data/gazette/ingest_state.json')).get('last_ingested_date') or '')")
+          else
+            OLD_DATE=""
+          fi
+          echo "old_date=$OLD_DATE" >> "$GITHUB_OUTPUT"
+          echo "Captured OLD_DATE=$OLD_DATE"
+
       - name: Run ingest pipeline
         if: steps.monitor.outputs.new_teblig != ''
         run: |
@@ -49,11 +64,10 @@ jobs:
           python scripts/sut/extract_sut_prose.py
 
       - name: Compute delta
-        if: steps.monitor.outputs.new_teblig != ''
+        if: steps.monitor.outputs.new_teblig != '' && steps.capture.outputs.old_date != ''
         id: delta
         run: |
-          OLD_DATE=$(python3 -c "import json; print(json.load(open('data/gazette/ingest_state.json'))['last_ingested_date'])")
-          python scripts/sut/sut_delta.py "$OLD_DATE" "${{ steps.monitor.outputs.new_teblig_date }}"
+          python scripts/sut/sut_delta.py "${{ steps.capture.outputs.old_date }}" "${{ steps.monitor.outputs.new_teblig_date }}"
 
       - name: Create PR
         if: steps.monitor.outputs.new_teblig != ''
