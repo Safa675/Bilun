@@ -9,6 +9,9 @@ that cookie on every protected request.
 
 from __future__ import annotations
 
+import threading
+import time
+
 from fastapi import APIRouter, Request, Response
 from pydantic import BaseModel
 
@@ -27,6 +30,40 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 _COOKIE_SAMESITE = "lax"
 _COOKIE_MAX_AGE = 7 * 24 * 60 * 60  # 7 days, mirrors the token TTL.
 
+# ── Login brute-force protection ────────────────────────────────────────────
+# Per-IP failure tracking with exponential lockout. Prevents online brute-force
+# attacks against the shared password (PBKDF2 slows each attempt but does not
+# prevent unbounded attempts without this gate).
+_LOGIN_MAX_FAILURES = 10  # failures before lockout
+_LOGIN_LOCKOUT_SEC = 300  # 5-minute lockout after threshold
+_login_failures: dict[str, list[float]] = {}
+_login_lock = threading.Lock()
+
+
+def _client_ip(request: Request) -> str:
+    return request.client.host if request.client else "unknown"
+
+
+def _check_login_lockout(ip: str) -> bool:
+    """Return True if the IP is currently locked out."""
+    now = time.time()
+    with _login_lock:
+        failures = _login_failures.get(ip, [])
+        # Prune old entries outside the lockout window.
+        recent = [t for t in failures if now - t < _LOGIN_LOCKOUT_SEC]
+        _login_failures[ip] = recent
+        return len(recent) >= _LOGIN_MAX_FAILURES
+
+
+def _record_login_failure(ip: str) -> None:
+    with _login_lock:
+        _login_failures.setdefault(ip, []).append(time.time())
+
+
+def _clear_login_failures(ip: str) -> None:
+    with _login_lock:
+        _login_failures.pop(ip, None)
+
 
 class LoginRequest(BaseModel):
     username: str
@@ -39,16 +76,23 @@ class AuthStatus(BaseModel):
 
 
 @router.post("/login")
-def login(body: LoginRequest, response: Response) -> dict:
+def login(body: LoginRequest, request: Request, response: Response) -> dict:
     """Validate shared credentials and set the session cookie on success."""
+    ip = _client_ip(request)
+    if _check_login_lockout(ip):
+        response.status_code = 429
+        return {"ok": False, "error": "Too many failed login attempts. Please try again later."}
+
     if not is_auth_configured():
         # Auth not configured: refuse rather than let the app run open. The
         # operator must set the env vars (see scripts/generate_auth_env.py).
         response.status_code = 503
         return {"ok": False, "error": "Auth is not configured on the server."}
     if not check_credentials(body.username, body.password):
+        _record_login_failure(ip)
         response.status_code = 401
         return {"ok": False, "error": "Invalid username or password."}
+    _clear_login_failures(ip)
     token = issue_session_token(body.username)
     response.set_cookie(
         key=COOKIE_NAME,

@@ -98,6 +98,24 @@ def is_auth_optional() -> bool:
     )
 
 
+def resolve_user_role(username: str | None) -> str:
+    """Resolve the server-side role for a username.
+
+    The role is NEVER trusted from the client request body — it is derived
+    from the verified session token's username against the
+    ``BILUN_DEV_USERNAMES`` env var (comma-separated list of usernames that
+    are granted the ``dev`` role). This prevents privilege escalation via a
+    forged ``user_role: "dev"`` in the request body.
+    """
+    if not username:
+        return "billing_officer"
+    dev_usernames_raw = os.getenv("BILUN_DEV_USERNAMES", "").strip()
+    if not dev_usernames_raw:
+        return "billing_officer"
+    dev_set = {u.strip().lower() for u in dev_usernames_raw.split(",") if u.strip()}
+    return "dev" if username.strip().lower() in dev_set else "billing_officer"
+
+
 # ── Password hashing (PBKDF2-HMAC-SHA256) ────────────────────────────────────
 
 def hash_password(plaintext: str) -> str:
@@ -181,7 +199,7 @@ def issue_session_token(username: str, *, ttl_seconds: int = _SESSION_TTL_SECOND
     except AuthConfigError as exc:
         raise AuthConfigError("Cannot issue session token: auth not configured") from exc
     expires_at = int(time.time()) + ttl_seconds
-    payload = f"{username}.{expires_at}".encode("utf-8")
+    payload = f"{username}.{expires_at}".encode()
     signature = hmac.new(creds.session_secret, payload, _PBKDF2_HASH_NAME).digest()
     return f"{_b64url(payload)}.{_b64url(signature)}"
 

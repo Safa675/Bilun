@@ -83,6 +83,7 @@ from src.bilun.shared.state import (
 )
 
 from src.bilun.chatbot.tools import UserRole
+from src.bilun.api.auth import COOKIE_NAME, resolve_user_role, verify_session_token
 
 router = APIRouter()
 
@@ -498,7 +499,7 @@ async def _sse_event_stream(
         while True:
             try:
                 item = await asyncio.wait_for(queue.get(), timeout=5.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 yield ": keepalive\n\n"
                 continue
             if item is None:
@@ -532,6 +533,13 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
     if not _check_rate_limit(client_ip):
         raise RateLimitError("Too many requests. Please wait a moment.")
 
+    # Resolve user_role SERVER-SIDE from the verified session token — never
+    # trust req.user_role from the request body (privilege escalation vector).
+    session_token = request.cookies.get(COOKIE_NAME, "")
+    claims = verify_session_token(session_token)
+    username = claims.username if claims else None
+    user_role: UserRole = resolve_user_role(username)  # type: ignore[assignment]
+
     user_message: str | None = None
     for msg in reversed(req.messages):
         if msg.role == "user":
@@ -547,10 +555,9 @@ async def bilun_chat(req: BilunChatRequest, request: Request):
             user_message,
             intent=req.intent,
             page_context=req.page_context,
-            user_role=_parse_user_role(req.user_role),
+            user_role=user_role,
         )
         t_fetch = time.perf_counter()
-        user_role = _parse_user_role(req.user_role)
         ui_locale = _parse_ui_locale(req.ui_locale)
         billing_detail = "full" if user_role == "dev" and req.patient_id else "summary"
         runtime_context = build_bilun_runtime_context(
