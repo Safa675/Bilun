@@ -241,6 +241,16 @@ def test_sut_chat_dev_role_uses_tools_on_patient(monkeypatch):
     monkeypatch.setattr(sut_chat_mod, "_check_rate_limit", lambda _ip: True)
     monkeypatch.setattr(
         sut_chat_mod,
+        "resolve_user_role",
+        lambda _username: "dev",
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "verify_session_token",
+        lambda _token: type("Claims", (), {"username": "dev_user"})(),
+    )
+    monkeypatch.setattr(
+        sut_chat_mod,
         "_fetch_runtime_data",
         lambda *_args, **_kwargs: {"optimization_summary": {"status": "ready", "summary": {}}},
     )
@@ -271,7 +281,6 @@ def test_sut_chat_dev_role_uses_tools_on_patient(monkeypatch):
                 "patient_id": "P-001",
                 "active_tab": "SUT Patient Workspace",
                 "intent": "user_question",
-                "user_role": "dev",
             },
         )
 
