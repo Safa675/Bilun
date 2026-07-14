@@ -360,6 +360,7 @@ def _generate_claims_and_lines(
             claim_end=claim_end,
             package_candidate=package_candidate,
             package_code_for_claim=package_code_for_claim,
+            servis_adi=str(episode.get("servis_adi", "genel")),
             all_codes=all_codes,
             template=template,
             ek2g_no_surcharge=ek2g_no_surcharge,

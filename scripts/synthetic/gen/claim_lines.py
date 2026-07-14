@@ -72,6 +72,7 @@ class ClaimEpisodeContext:
     lab_billing_budget: dict = field(default_factory=dict)
 
     proc_specs: list[dict] = field(default_factory=list)
+    servis_adi: str = "genel"
 
 def _procedure_row_as_claim_line(row: dict) -> ProcedureClaimLine:
     from datetime import date
@@ -291,6 +292,7 @@ def _append_procedure_lines_for_claim(
             "beklenen_red_nedeni": denial_reason,
             "beklenen_kural_izi": f"EK-2B:{ps['code']}" if not is_package_proc else f"EK-2C:{ps['code']}",
             "sag_sol": _maybe_sag_sol(ps["code"]),
+            "procedure_specialty_code": ctx.servis_adi,
         })
 
         if ps["category"] == "laboratuvar":
