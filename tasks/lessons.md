@@ -306,3 +306,16 @@ For simple messages with no metacharacters, `-m` is fine.
 **Pattern:** Under direction to "commit and push every single uncommitted change", I created one `chore(sut): encode-waves...` commit of **93 files / +39,463 / −30,406 lines**. ~36,000 of those lines were 3 machine-generated blobs (`drug_indication_prose.json`, a trace manifest, `baseline_metrics.json`) that are impossible to code-review. The commit mixed 7 distinct concerns: domain code, 36 batch generators, 24 test files, 28 generated data artifacts, 2 new scripts, an auto-generated report, and a TypeScript build cache (`tsconfig.tsbuildinfo`) that should never have been tracked at all. A surgical revert of any one concern was impossible — if one piece was wrong, the whole 39k-line commit had to come back. The user correctly questioned this on software-engineering principles.
 
 **Rule:** A commit must be atomic — one concern, independently reviewable and independently revertable. Before staging, categorize the working-tree changes by concern (source vs generated-data vs tests vs tooling) and make one commit per category. Machine-generated artifacts (manifests, corpus exports, baseline snapshots, build caches) go in their OWN commit, clearly labeled `chore(data): regenerate ...`, separate from the human-authored code that produces them — and question whether each belongs in version control at all. Build-cache files (`*.tsbuildinfo`, `*.pyc`, dist/) must be `.gitignore`d and `git rm --cached`, NEVER committed. A 30k-line JSON diff in a commit is a smell, not a feature. When a user says "commit everything", push back on scope the same way as on a vague implementation request — the AGENTS.md "no assumptions / clarify" and "demand elegance" rules apply to commits too. When caught, fix via `git reset --soft HEAD~1` + re-split + `git push --force-with-lease` (safe force-push that refuses if origin moved).
+
+## Lesson: Audit findings require execution/caller proof, not just code reading (2026-07-14)
+
+**Pattern:** During the whole-codebase audit, 3 of 30 findings were false positives because subagents read function bodies but didn't execute or trace them:
+- Claimed "IndexError on clean cohorts" → code actually used `len(recoverables)` not `len(reports)`. A 5-second runtime check would have caught it.
+- Claimed "duplicate dict keys" → they were intentional aliases. An AST key-count would have caught it.
+- Claimed "detector never called" → both callers pass the kwarg explicitly. A `grep` for callers would have caught it.
+
+**Rule:** Any audit finding that claims "this CRASHES" or "this is NEVER CALLED" must include either:
+1. A runtime reproduction (the actual input that triggers the crash), OR
+2. A grep/AST proof that no caller passes the required argument.
+
+Reading the function body alone is insufficient — variable names can be misread, and defaults can be overridden at every call site. **Execute, don't assume.**
