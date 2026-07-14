@@ -419,6 +419,24 @@ def _build_treatment_pricing_context(ctx: Any) -> dict[str, Any]:
         "facility_tier": header.facility_tier or "",
     }
 
+    # facility_type derivation — same logic as gap_closing._build_gap_closing_context.
+    # Revives ~15 rules in treatment_pricing + dental that gate on facility_type.
+    provider_type_lower = (header.provider_type or "").lower()
+    facility_tier_lower = (header.facility_tier or "").lower()
+    if any(
+        token in provider_type_lower
+        for token in ("universite", "egitim_arastirma", "training_research")
+    ) and "vakif" not in provider_type_lower and "vakif" not in facility_tier_lower:
+        context["facility_type"] = "training_research_hospital"
+    elif "vakif" in provider_type_lower or "vakif" in facility_tier_lower:
+        context["facility_type"] = "foundation_university"
+    elif (
+        provider_type_lower in ("private", "ozel")
+        or facility_tier_lower in ("ozel", "2_3_basamak_ozel", "private")
+        or "ozel" in facility_tier_lower
+    ):
+        context["facility_type"] = "private"
+
     # Procedure-derived fields.
     procedure_lines = _lines_for_claim("procedure_lines")
     if procedure_lines:
