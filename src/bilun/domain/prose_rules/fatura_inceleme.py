@@ -157,12 +157,19 @@ def _build_fatura_inceleme_context(ctx: Any) -> dict[str, Any]:
             if getattr(line, "claim_id", None) == claim_id
         ]
 
+    # procedure_specialty_code lives on ProcedureClaimLine, NOT ClaimHeader.
+    # The first billed procedure line's specialty is the claim-level signal.
+    proc_lines = _lines_for_claim("procedure_lines")
+    provider_specialty = ""
+    if proc_lines:
+        provider_specialty = getattr(proc_lines[0], "procedure_specialty_code", "") or ""
+
     context: dict[str, Any] = {
         "facility_tier": header.facility_tier or "",
         "provider_type": header.provider_type or "",
         "claim_type": header.claim_type or "",
         "department": header.department or "",
-        "provider_specialty": getattr(header, "procedure_specialty_code", "") or "",
+        "provider_specialty": provider_specialty,
     }
 
     # Care setting

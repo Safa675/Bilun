@@ -61,7 +61,8 @@ _RULESET_ID = "treatment_pricing_2_4"
 # Condition-key suffixes that denote set-membership predicates (positive or
 # negated). Mirrors gap_closing._SET_PREDICATE_SUFFIXES (a separate copy kept
 # here so the two rule sets can evolve independently).
-_SET_PREDICATE_SUFFIXES = ("_any", "_in", "_not_in", "_not_any")
+# Order matters: longer suffixes MUST come first — see gap_closing.py comment.
+_SET_PREDICATE_SUFFIXES = ("_not_any", "_not_in", "_any", "_in")
 
 # Scalar (exact-equality) fields surfaced by the context builder. Everything
 # not in this set and not ending in a predicate suffix is treated as an unknown

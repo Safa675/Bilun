@@ -24,7 +24,7 @@ carries the regulatory message.
 from __future__ import annotations
 
 import json
-from functools import lru_cache
+from functools import lru_cache, cache
 from typing import Any
 
 from ..constants import _PROSE_RULES_DIR
@@ -36,7 +36,10 @@ _TREATMENT_RULES_PATH = _PROSE_RULES_DIR / "gap_closing_treatment_2.json"
 # Condition keys that are NOT boolean flags but set/scalar predicates resolved
 # against claim fields. Anything not in this set is treated as a boolean flag
 # looked up via context.get(key).
-_SET_PREDICATE_SUFFIXES = ("_any", "_in", "_not_in", "_not_any")
+# Order matters: longer suffixes MUST come first so _suffix_len matches
+# "_not_any" before "_any" (otherwise "procedure_code_not_any" matches "_any"
+# and yields base "procedure_code_not" — wrong). See audit finding #4.
+_SET_PREDICATE_SUFFIXES = ("_not_any", "_not_in", "_any", "_in")
 _SCALAR_FIELDS = {
     "procedure_category",
     "procedure_code",
@@ -277,7 +280,7 @@ def _derive_payment_method_path(
     return None
 
 
-@lru_cache(maxsize=None)
+@cache
 def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
     """Build the flat claim-context dict from a PatientClaimContext.
 
