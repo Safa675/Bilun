@@ -262,52 +262,52 @@ def check_material_pairing_for_context(ctx: Any) -> list[dict[str, Any]]:
     if not claims:
         return []
 
-    claim = claims[0]
-    claim_id = getattr(claim, "claim_id", None)
-    procedure_lines = [
-        line for line in ctx.procedure_lines
-        if getattr(line, "claim_id", None) == claim_id
-    ]
-    if not procedure_lines:
-        return []
-    material_lines = [
-        line for line in (getattr(ctx, "material_lines", ()) or ())
-        if getattr(line, "claim_id", None) == claim_id
-    ]
-    opportunities = detect_missing_billable_material_opportunities(
-        claim,
-        procedure_lines,
-        material_lines,
-    )
-
     violations: list[dict[str, Any]] = []
-    for opp in opportunities:
-        violations.append(
-            {
-                "rule": _VIOLATION_RULE,
-                "severity": _VIOLATION_SEVERITY,
-                "message": str(opp.get("detail") or ""),
-                "savings_try": float(opp.get("recoverable_uplift_try") or 0.0),
-                "risk_amount": 0.0,
-                "sut_section": str(opp.get("sut_section_id") or "3.1.1"),
-                "rule_id": str(opp.get("rule_id") or "material_pairing_uplift"),
-                "claim_id": str(opp.get("claim_id") or claim.claim_id),
-                "procedure_code": str(opp.get("procedure_code") or ""),
-                "material_code": str(opp.get("material_code") or ""),
-                "details": {
-                    "type": opp.get("type"),
-                    "rule_set_id": opp.get("rule_set_id"),
-                    "pairing_mode": opp.get("pairing_mode"),
-                    "specialty_annex": opp.get("specialty_annex"),
-                    "included_in_sgk_total": opp.get("included_in_sgk_total"),
-                    "savings_category": opp.get("savings_category"),
-                    "savings_basis": opp.get("savings_basis"),
-                    "price_methodology": opp.get("price_methodology"),
-                    "ceiling_try": opp.get("ceiling_try"),
-                    "actual_billed_try": opp.get("actual_billed_try"),
-                    "opportunity": opp,
-                },
-            }
+    for claim in claims:
+        claim_id = getattr(claim, "claim_id", None)
+        procedure_lines = [
+            line for line in ctx.procedure_lines
+            if getattr(line, "claim_id", None) == claim_id
+        ]
+        if not procedure_lines:
+            continue
+        material_lines = [
+            line for line in (getattr(ctx, "material_lines", ()) or ())
+            if getattr(line, "claim_id", None) == claim_id
+        ]
+        opportunities = detect_missing_billable_material_opportunities(
+            claim,
+            procedure_lines,
+            material_lines,
         )
+
+        for opp in opportunities:
+            violations.append(
+                {
+                    "rule": _VIOLATION_RULE,
+                    "severity": _VIOLATION_SEVERITY,
+                    "message": str(opp.get("detail") or ""),
+                    "savings_try": float(opp.get("recoverable_uplift_try") or 0.0),
+                    "risk_amount": 0.0,
+                    "sut_section": str(opp.get("sut_section_id") or "3.1.1"),
+                    "rule_id": str(opp.get("rule_id") or "material_pairing_uplift"),
+                    "claim_id": str(opp.get("claim_id") or claim.claim_id),
+                    "procedure_code": str(opp.get("procedure_code") or ""),
+                    "material_code": str(opp.get("material_code") or ""),
+                    "details": {
+                        "type": opp.get("type"),
+                        "rule_set_id": opp.get("rule_set_id"),
+                        "pairing_mode": opp.get("pairing_mode"),
+                        "specialty_annex": opp.get("specialty_annex"),
+                        "included_in_sgk_total": opp.get("included_in_sgk_total"),
+                        "savings_category": opp.get("savings_category"),
+                        "savings_basis": opp.get("savings_basis"),
+                        "price_methodology": opp.get("price_methodology"),
+                        "ceiling_try": opp.get("ceiling_try"),
+                        "actual_billed_try": opp.get("actual_billed_try"),
+                        "opportunity": opp,
+                    },
+                }
+            )
 
     return violations
