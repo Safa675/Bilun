@@ -8,7 +8,8 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
+from collections.abc import AsyncIterator
 
 import httpx
 

@@ -51,7 +51,7 @@ class ClaimEpisodeContext:
 
     proc_specs: list[dict] = field(default_factory=list)
 
-def _procedure_row_as_claim_line(row: dict) -> "ProcedureClaimLine":
+def _procedure_row_as_claim_line(row: dict) -> ProcedureClaimLine:
     from datetime import date
     from decimal import Decimal
 

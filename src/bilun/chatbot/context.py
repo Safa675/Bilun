@@ -806,7 +806,7 @@ def build_medula_context(data: dict[str, Any]) -> str:
         if problem:
             lines.append(f"    Sorun: {problem}")
         if causes:
-            lines.append(f"    Nedenler:")
+            lines.append("    Nedenler:")
             for c in causes:
                 lines.append(f"      - {c}")
         if resolution:

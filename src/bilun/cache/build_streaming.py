@@ -5,7 +5,8 @@ from __future__ import annotations
 import dataclasses
 import json
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 
 from src.bilun.db import write_json_payload_rows_serialized
 

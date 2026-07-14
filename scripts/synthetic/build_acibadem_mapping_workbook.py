@@ -59,9 +59,6 @@ from src.bilun.domain.claims.models import (  # noqa: E402  (path insert above)
     PerformedProcedureLine,
     ProcedureClaimLine,
 )
-from src.bilun.domain.claims.parsing.row_parsers import (  # noqa: E402
-    _MATERIAL_EXPLICIT_FIELDS,
-)
 
 SOURCE_WORKBOOK = REPO_ROOT / "data/synthetic/sut/sentetik_sut_v2_50_hasta.xlsx"
 OUTPUT_WORKBOOK = (

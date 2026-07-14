@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from catalog import _money
-from constants import ICD10_CHAPTER_TO_DRG_GROUP
 from demo_config import vignette_for_patient_id
 from fault_injection import build_optional_override_specs
 from gen.patients import _drg_group

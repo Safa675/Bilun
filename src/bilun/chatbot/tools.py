@@ -791,7 +791,7 @@ async def execute_tool_call(
         content = await asyncio.wait_for(
             asyncio.to_thread(_exec), timeout=TOOL_TIMEOUT_SEC
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         error = f"Tool '{tool_name}' timed out after {TOOL_TIMEOUT_SEC}s"
     except Exception as exc:
         error = f"Tool '{tool_name}' execution failed: {exc}"

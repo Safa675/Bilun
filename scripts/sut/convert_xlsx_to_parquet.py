@@ -391,7 +391,7 @@ def main() -> None:
         state = {
             "last_ingested_folder": latest_folder,
             "last_ingested_date": latest_date,
-            "last_ingested_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "last_ingested_at": dt.datetime.now(dt.UTC).isoformat(),
             "manifest_row_count": manifest_rows,
             "manifest_sha256": manifest_sha,
             "pipeline_version": 2,

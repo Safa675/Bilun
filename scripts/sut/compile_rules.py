@@ -55,7 +55,7 @@ def _strip_batch(rule: dict) -> dict:
     return {k: v for k, v in rule.items() if k != "encode_batch"}
 
 
-def _load_target_rules(target: "CompileTarget") -> list[dict]:
+def _load_target_rules(target: CompileTarget) -> list[dict]:
     """Load rules from YAML section sources."""
     if target.yaml_sources:
         return load_yaml_sources(target.yaml_sources)

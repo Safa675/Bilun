@@ -26,7 +26,6 @@ import sys
 import time
 from pathlib import Path
 
-import numpy as np
 import polars as pl
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent

@@ -235,7 +235,7 @@ class DRGEpisodeResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     @model_validator(mode="after")
-    def _validate_pricing_required_inputs(self) -> "DRGEpisodeResponse":
+    def _validate_pricing_required_inputs(self) -> DRGEpisodeResponse:
         _ensure_required_inputs_for_status(
             status=self.pricing_status,
             required_inputs_missing=self.required_inputs_missing,
@@ -262,7 +262,7 @@ class DRGSummaryResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     @model_validator(mode="after")
-    def _validate_pricing_required_inputs(self) -> "DRGSummaryResponse":
+    def _validate_pricing_required_inputs(self) -> DRGSummaryResponse:
         _ensure_required_inputs_for_status(
             status=self.pricing_status,
             required_inputs_missing=self.required_inputs_missing,
@@ -279,7 +279,7 @@ class BillingExactnessResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     @model_validator(mode="after")
-    def _validate_exactness_required_inputs(self) -> "BillingExactnessResponse":
+    def _validate_exactness_required_inputs(self) -> BillingExactnessResponse:
         if (
             self.exactness_status in _STATUSES_REQUIRING_INPUTS
             and not self.required_inputs_missing
@@ -536,7 +536,7 @@ class BillingReportResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     @model_validator(mode="after")
-    def _validate_exactness_required_inputs(self) -> "BillingReportResponse":
+    def _validate_exactness_required_inputs(self) -> BillingReportResponse:
         if (
             self.exactness_status in _STATUSES_REQUIRING_INPUTS
             and not self.required_inputs_missing

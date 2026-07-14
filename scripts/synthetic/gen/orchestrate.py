@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from catalog import _drug_unit_price, _ek2b, _ek2c1, _ek2c_latest, _ek2g, _ek3_material, _ek4a, _money
+from catalog import _ek2b, _ek2c1, _ek2c_latest, _ek2g, _ek3_material, _ek4a, _money
 from constants import CURATED_DIR
 from gen.claim_lines import (
     ClaimEpisodeContext,

@@ -148,7 +148,7 @@ def _effective_config_hash(
     h = hashlib.sha256()
     h.update(config_hash_from_env(env_keys).encode("utf-8"))
     for key, value in sorted(effective_values.items()):
-        h.update(f"{key}={'' if value is None else value}\n".encode("utf-8"))
+        h.update(f"{key}={'' if value is None else value}\n".encode())
     return h.hexdigest()
 
 

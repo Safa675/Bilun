@@ -46,7 +46,6 @@ from src.bilun.domain.optimization.claim_context import (
     build_copay_rate_claim_context,
     build_surcharge_claim_context,
 )
-from src.bilun.domain.optimization.exactness import is_exact_output
 from src.bilun.domain.optimization.runtime_claim_context import ClaimContextManager
 
 from .provenance import attach_bilun_data_source, read_active_bilun_data_source

@@ -15,7 +15,8 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 
 import pandas as pd
 

@@ -14,7 +14,6 @@ from src.bilun.cache.patient_slice import (
     _partition_by_patient,
 )
 from src.bilun.cache.sut_context import (
-    _extract_icd10_chapters,
     assemble_sut_context,
     build_exact_sut_patient_totals,
     build_sut_patient_alerts_cache,

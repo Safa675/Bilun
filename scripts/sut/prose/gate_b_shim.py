@@ -22,7 +22,6 @@ from scripts.sut.prose.gate_b_generic import (  # noqa: E402
     GateBSection,
     export_candidates as _export_candidates,
     build_manifest as _build_manifest,
-    write_artifacts as _write_artifacts,
 )
 from scripts.sut.prose.gate_b_sections import ALL_SECTIONS  # noqa: E402
 

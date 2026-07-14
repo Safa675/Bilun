@@ -21,7 +21,7 @@ import sys
 import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import polars as pl
 
