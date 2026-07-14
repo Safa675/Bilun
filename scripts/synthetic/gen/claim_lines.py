@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
@@ -13,6 +14,27 @@ from catalog import _drug_unit_price, _money
 from gen.drug_fields import _empty_drug_indication_fields
 from gen.materials_flags import _default_prose_material_flags, _default_specialty_prose_flags, _sample_prose_material_flags
 from gen.reconcile import _reconcile_ek2c1_procedure_lines
+
+# Paired-organ imaging/surgery prefixes that require sag_sol (laterality).
+# Mirrors laterality_validation.py prefixes — codes matching these need a
+# "1" (sol/left) or "2" (sağ/right) side designation.
+_PAIRED_ORGAN_PREFIXES: tuple[str, ...] = (
+    "80101", "80102", "80103", "80104", "80105", "80106", "80119", "80120", "80121",  # MR
+    "80319", "80320", "80321",  # CT
+    "516",  # cataract / eye surgery
+)
+
+
+def _maybe_sag_sol(procedure_code: str) -> str:
+    """Emit sag_sol ('1'=left, '2'=right) for paired-organ codes.
+
+    ~70% get a valid side, ~30% left empty (violation candidate for the
+    laterality detectors). Non-paired codes always return ''.
+    """
+    code = str(procedure_code or "").strip()
+    if not any(code.startswith(p) for p in _PAIRED_ORGAN_PREFIXES):
+        return ""
+    return random.choice(["1", "2"]) if random.random() < 0.7 else ""
 
 @dataclass
 class ClaimEpisodeContext:
@@ -268,6 +290,7 @@ def _append_procedure_lines_for_claim(
             "katilim_payi_orani": copay_rate,
             "beklenen_red_nedeni": denial_reason,
             "beklenen_kural_izi": f"EK-2B:{ps['code']}" if not is_package_proc else f"EK-2C:{ps['code']}",
+            "sag_sol": _maybe_sag_sol(ps["code"]),
         })
 
         if ps["category"] == "laboratuvar":
