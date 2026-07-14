@@ -116,8 +116,12 @@ def test_3day_icu_stay_dual_charge() -> None:
     # Puan: 2 × 1252.27 (first+last) + 1 × 12896.186 (intermediate) × 2.0
     # (EK-2/C-1 ilave oran +100% for Sınıf-3 facility) = 28296.902
     assert opp["total_puan"] == pytest.approx(28296.90, abs=0.01)
-    # recoverable uplift should equal the total TRY.
-    assert opp["recoverable_uplift_try"] == pytest.approx(opp["total_try"], abs=0.01)
+    # recoverable uplift = total TRY minus actual billed ICU amounts.
+    # The fixture bills 510090 (742.60) + P552003 (742.60) = 1485.20 already.
+    assert opp["actual_billed_try"] == pytest.approx(1485.20, abs=0.01)
+    assert opp["recoverable_uplift_try"] == pytest.approx(
+        opp["total_try"] - opp["actual_billed_try"], abs=0.01
+    )
     assert opp["total_try"] > 0.0
 
 
@@ -394,8 +398,8 @@ def test_wrapper_3day_stay() -> None:
     opp = review.opportunities[0]
     assert opp["icu_days"] == 3
     assert opp["intermediate_days"] == 1
-    # confirmed_icu_try aggregates total_try of in-scope opportunities.
-    assert review.confirmed_icu_try == pytest.approx(opp["total_try"], abs=0.01)
+    # confirmed_icu_try aggregates recoverable_uplift_try (net of actuals) of in-scope opportunities.
+    assert review.confirmed_icu_try == pytest.approx(opp["recoverable_uplift_try"], abs=0.01)
     assert review.confirmed_icu_try > 0.0
 
 

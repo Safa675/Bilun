@@ -38,7 +38,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from src.bilun.domain.catalog import get_ek2c1_copay_rates, get_katsayi, lookup_procedure_code
+from src.bilun.domain.catalog import get_ek2c1_copay_rates, lookup_procedure_code
 from src.bilun.domain.money import money_round_half_up as _money
 from src.bilun.domain.prose_rules.catalog_membership import get_ek2c_entry
 from src.bilun.domain.prose_rules.claim_utils import infer_care_setting
@@ -281,6 +281,19 @@ def detect_icu_puani_opportunities(
             + intermediate_days * intermediate_price_try
         )
 
+        # Net out actual billed ICU amounts (510090 + P55200x) so the
+        # recoverable uplift reflects only the UNBILLED portion, not the
+        # full expected charge. A correctly-billed ICU stay produces zero
+        # recoverable uplift rather than a full-sized false opportunity.
+        actual_billed_try = _money(
+            sum(
+                float(p.billed_amount_try)
+                for p in claim_procs
+                if _is_icu_code(p.procedure_code)
+            )
+        )
+        recoverable_try = _money(max(0.0, total_try - actual_billed_try))
+
         # Build the human-readable charge breakdown.
         charge_lines = [
             f"510090 (yoğun bakım, hizmet başı): {first_last_count} day(s) × "
@@ -304,7 +317,7 @@ def detect_icu_puani_opportunities(
             uplift_note = f"No EK-2/C-1 ilave oran ({ilave_oran_reason})."
         detail = " ".join(
             [
-                f"ICU dual-charge (§2.4.4.H):",
+                "ICU dual-charge (§2.4.4.H):",
                 *charge_lines,
                 uplift_note,
             ]
@@ -329,7 +342,8 @@ def detect_icu_puani_opportunities(
                 "ilave_oran_reason": ilave_oran_reason,
                 "total_puan": total_puan,
                 "total_try": total_try,
-                "recoverable_uplift_try": total_try,
+                "actual_billed_try": actual_billed_try,
+                "recoverable_uplift_try": recoverable_try,
                 "included_in_sgk_total": True,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,

@@ -140,6 +140,17 @@ def detect_yatak_puani_opportunities(
         expected = _money(days * daily_rate)
         same_day = gross_days == 1 and claim.admission_date == claim.discharge_date
 
+        # Net out actual billed bed-day amounts (510010) so recoverable
+        # uplift reflects only the UNBILLED portion.
+        actual_billed_try = _money(
+            sum(
+                float(p.billed_amount_try)
+                for p in claim_procs
+                if str(p.procedure_code).strip() == _BED_CODE
+            )
+        )
+        recoverable_try = _money(max(0.0, expected - actual_billed_try))
+
         detail_parts = [
             f"Standart yatak (510010): {days} billable bed-day(s) "
             f"(gross LOS {gross_days} day(s) at {daily_rate:.2f} TRY/day",
@@ -167,7 +178,8 @@ def detect_yatak_puani_opportunities(
                 "bundled_days": bundled_days,
                 "daily_rate_try": daily_rate,
                 "expected_yatak_try": expected,
-                "recoverable_uplift_try": expected,
+                "actual_billed_try": actual_billed_try,
+                "recoverable_uplift_try": recoverable_try,
                 "same_day_stay": same_day,
                 "included_in_sgk_total": True,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
