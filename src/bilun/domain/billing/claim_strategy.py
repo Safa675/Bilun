@@ -21,6 +21,7 @@ from src.bilun.domain.prose_rules.session_pricing import (
 from src.bilun.domain.prose_rules.facility_tier import FACILITY_TIER_MISSING_INPUT
 from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_OPTIONAL_OVERRIDE,
+    SAVINGS_CATEGORY_COMPLIANCE,
     SAVINGS_CATEGORY_SGK_UPLIFT,
     PaymentMethodKind,
     PaymentMethodResult,
@@ -457,6 +458,8 @@ def recommend_billing_strategy_from_claims(
         savings_category = (
             SAVINGS_CATEGORY_SGK_UPLIFT
             if recommendation_kind == "optional_override" and savings > 0
+            else SAVINGS_CATEGORY_COMPLIANCE
+            if recommendation_kind == "mandatory_compliance" and savings > 0
             else None
         )
 

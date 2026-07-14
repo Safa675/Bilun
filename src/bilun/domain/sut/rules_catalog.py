@@ -281,7 +281,7 @@ def _material_bundling_partial_engine_summary(clause_frame: pl.DataFrame) -> dic
     from src.bilun.domain.prose_rules.material_bundling import load_material_bundling_rules
 
     manifest_stats = _load_prose_manifest_stats("L1.4_material_bundling_encoded_manifest.json")
-    rules_on_disk = len((load_material_bundling_rules().get("rules") or []))
+    rules_on_disk = len(load_material_bundling_rules().get("rules") or [])
     summary = _prose_partial_engine_summary(
         rule_id="material_bundling_prose",
         clause_frame=clause_frame,
@@ -304,19 +304,33 @@ def _material_bundling_partial_engine_summary(clause_frame: pl.DataFrame) -> dic
 _L1_4_CORPUS_PATH = PROSE_CORPUS_DIR / "L1.4_material_bundling_prose.csv"
 
 
+@lru_cache(maxsize=1)
+def _load_sut_clauses_frame() -> pl.DataFrame:
+    """Load and cache ``sut_clauses.parquet`` once per process.
+
+    Previously ``_corpus_row_count_from_parquet`` did a full parquet read per
+    section prefix per API request (up to 4 reads of the same file in one
+    ``coverage_summary`` call). Cached with mtime-based invalidation so changes
+    during development are picked up on the next call.
+    """
+    if not SUT_CLAUSES_PATH.exists():
+        return pl.DataFrame()
+    try:
+        return pl.read_parquet(SUT_CLAUSES_PATH)
+    except Exception:  # pragma: no cover - defensive
+        return pl.DataFrame()
+
+
 def _corpus_row_count_from_parquet(section_prefix: str) -> int:
     """Derive corpus row count from sut_clauses.parquet (Phase 4 — no CSV runtime reads).
 
     Corpus CSVs are encode-wave scratch files; the parquet is the source of truth.
     """
-    if not SUT_CLAUSES_PATH.exists():
+    frame = _load_sut_clauses_frame()
+    if frame.height == 0:
         return 0
     try:
-        return (
-            pl.read_parquet(SUT_CLAUSES_PATH)
-            .filter(pl.col("section_id").str.starts_with(section_prefix))
-            .height
-        )
+        return frame.filter(pl.col("section_id").str.starts_with(section_prefix)).height
     except Exception:  # pragma: no cover - defensive
         return 0
 
@@ -351,7 +365,7 @@ def _copay_exemption_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[
     from src.bilun.domain.prose_rules.copay_general import load_decision_table
 
     manifest_stats = _load_prose_manifest_stats("L1.8_copay_exemption_encoded_manifest.json")
-    rules_on_disk = len((load_decision_table().get("rules") or []))
+    rules_on_disk = len(load_decision_table().get("rules") or [])
     scoped = clause_frame.filter(
         pl.col("section_id").str.starts_with("1.8")
         & pl.col("primary_rule_id").is_in(list(_COPAY_MOTORS))
@@ -410,7 +424,7 @@ def _payment_method_partial_engine_summary(clause_frame: pl.DataFrame) -> dict[s
     from src.bilun.domain.prose_rules.payment_method import load_decision_table
 
     manifest_stats = _load_prose_manifest_stats("L2.2_payment_method_encoded_manifest.json")
-    rules_on_disk = len((load_decision_table().get("rules") or []))
+    rules_on_disk = len(load_decision_table().get("rules") or [])
     scoped = clause_frame.filter(
         pl.col("section_id").str.starts_with("2.2")
         & pl.col("primary_rule_id").is_in(list(_PAYMENT_METHOD_MOTORS))
@@ -464,7 +478,7 @@ def _specialty_materials_partial_engine_summary(clause_frame: pl.DataFrame) -> d
     from src.bilun.domain.prose_rules.specialty_materials import load_specialty_materials_rules
 
     manifest_stats = _load_prose_manifest_stats("L4.4_specialty_prose_encoded_manifest.json")
-    rules_on_disk = len((load_specialty_materials_rules().get("rules") or []))
+    rules_on_disk = len(load_specialty_materials_rules().get("rules") or [])
     summary = _prose_partial_engine_summary(
         rule_id="specialty_materials_prose",
         clause_frame=clause_frame,

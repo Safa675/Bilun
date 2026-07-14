@@ -92,6 +92,8 @@ def patient_recovery_summary_from_payload(report: dict[str, Any]) -> dict[str, A
     copay_payload = report.get("copay") or {}
     hospital = float(report.get("total_recoverable_try") or 0)
     gap = _exemption_gap_from_copay_payload(copay_payload)
+    # Mirror the 13 keys in _get_top_action_type so cached-payload and live-object
+    # paths produce identical top_action_type (audit finding #12).
     savings = {
         "session_uplift": float(
             (report.get("session_uplift") or {}).get("total_uplift_try") or 0
@@ -108,9 +110,16 @@ def patient_recovery_summary_from_payload(report: dict[str, Any]) -> dict[str, A
         "material_uplift": float(
             (report.get("material_uplift") or {}).get("confirmed_uplift_try") or 0
         ),
+        "procedure_addon_uplift": float(
+            (report.get("procedure_addon_uplift") or {}).get("confirmed_uplift_try") or 0
+        ),
+        "strategy": float((report.get("billing_strategy") or {}).get("uplift_savings_try") or 0),
+        "capture_gap": float(report.get("capture_gap_try") or 0),
+        "package_adequacy_review": float(report.get("package_adequacy_review_try") or 0),
+        "gazette_repricing": float(report.get("gazette_repricing_try") or 0),
+        "medula_playbook": float(report.get("medula_playbook_entry_count") or 0),
         "lab": float(report.get("compliance_adjustment_try") or 0),
         "copay": gap,
-        "strategy": float((report.get("billing_strategy") or {}).get("uplift_savings_try") or 0),
     }
     return {
         "patient_id": str(report.get("patient_id") or ""),

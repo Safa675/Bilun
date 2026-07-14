@@ -6,6 +6,7 @@ EK-3B-1 bundled consumables and EK-3B-2 non-reimbursable materials.
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
 from typing import Any
 
 import pandas as pd
@@ -15,80 +16,66 @@ from ..utils import _safe_str, turkish_lower, fuzzy_match_name, token_bound_subs
 
 logger = logging.getLogger("ilay.sut_catalog")
 
-_EK3B2_CACHE: list[dict[str, Any]] | None = None
-_EK3B1_CACHE: list[dict[str, Any]] | None = None
 
-
-def get_non_reimbursable_materials() -> list[dict[str, Any]]:
+@lru_cache(maxsize=1)
+def get_non_reimbursable_materials() -> tuple[dict[str, Any], ...]:
     """Get the list of non-reimbursable materials from EK-3B-2.
 
     Returns:
-        List of dicts with keys: sira_no, material_name.
+        Tuple of dicts with keys: sira_no, material_name. (Tuple for
+        hashability so ``@lru_cache`` can memoize — thread-safe by design,
+        replacing the prior mutable-global + ``global`` pattern that raced
+        under ``ThreadPoolExecutor`` cohort runs.)
     """
-    global _EK3B2_CACHE
-    if _EK3B2_CACHE is not None:
-        return _EK3B2_CACHE
-
     if not EK3B2_NON_REIMBURSABLE_PATH.exists():
         logger.warning(
             "EK-3B-2 non-reimbursable catalog not found: %s",
             EK3B2_NON_REIMBURSABLE_PATH,
         )
-        _EK3B2_CACHE = []
-        return _EK3B2_CACHE
+        return ()
 
     try:
         df = pd.read_parquet(EK3B2_NON_REIMBURSABLE_PATH)
-        records: list[dict[str, Any]] = []
-        for _, row in df.iterrows():
-            records.append(
-                {
-                    "sira_no": row.get("sira_no"),
-                    "material_name": _safe_str(row.get("material_name")),
-                }
-            )
+        records = tuple(
+            {
+                "sira_no": row.get("sira_no"),
+                "material_name": _safe_str(row.get("material_name")),
+            }
+            for _, row in df.iterrows()
+        )
         logger.info("EK-3B-2 non-reimbursable materials loaded: %d items", len(records))
-        _EK3B2_CACHE = records
-        return _EK3B2_CACHE
+        return records
     except Exception as e:
         logger.warning("Failed to load EK-3B-2 non-reimbursable materials: %s", e)
-        _EK3B2_CACHE = []
-        return _EK3B2_CACHE
+        return ()
 
 
-def get_bundled_consumables() -> list[dict[str, Any]]:
+@lru_cache(maxsize=1)
+def get_bundled_consumables() -> tuple[dict[str, Any], ...]:
     """Get the list of consumables bundled into procedure prices from EK-3B-1.
 
     Returns:
-        List of dicts with keys: sira_no, item_name, description.
+        Tuple of dicts with keys: sira_no, item_name, description.
     """
-    global _EK3B1_CACHE
-    if _EK3B1_CACHE is not None:
-        return _EK3B1_CACHE
-
     if not EK3B1_BUNDLED_PATH.exists():
         logger.warning("EK-3B-1 bundled consumables not found: %s", EK3B1_BUNDLED_PATH)
-        _EK3B1_CACHE = []
-        return _EK3B1_CACHE
+        return ()
 
     try:
         df = pd.read_parquet(EK3B1_BUNDLED_PATH)
-        records: list[dict[str, Any]] = []
-        for _, row in df.iterrows():
-            records.append(
-                {
-                    "sira_no": row.get("sira_no"),
-                    "item_name": _safe_str(row.get("item_name")),
-                    "description": _safe_str(row.get("description")),
-                }
-            )
+        records = tuple(
+            {
+                "sira_no": row.get("sira_no"),
+                "item_name": _safe_str(row.get("item_name")),
+                "description": _safe_str(row.get("description")),
+            }
+            for _, row in df.iterrows()
+        )
         logger.info("EK-3B-1 bundled consumables loaded: %d items", len(records))
-        _EK3B1_CACHE = records
-        return _EK3B1_CACHE
+        return records
     except Exception as e:
         logger.warning("Failed to load EK-3B-1 bundled consumables: %s", e)
-        _EK3B1_CACHE = []
-        return _EK3B1_CACHE
+        return ()
 
 
 def match_exclusion_entry(
