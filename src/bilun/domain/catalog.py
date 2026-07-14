@@ -12,20 +12,15 @@ Dependencies: .constants, .utils, .loaders
 from __future__ import annotations
 
 import datetime as dt
-import json
 import logging
-from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
 from .constants import (
     BILUN_TO_SUT_CODE,
-    _OLD_TO_NEW_CODE,
 )
 from .loaders import (
-    _build_checkup_lab_index,
-    _build_checkup_procedure_index,
     _load_checkup_json,
     _load_curated_ek2b_by_asof,
     _load_curated_ek2c_by_asof,
@@ -36,7 +31,7 @@ from .loaders import (
     get_cached_ek2a,
 )
 from .money import money_round_half_up as _money
-from .utils import _safe_float, _safe_str
+from .utils import _safe_str
 
 logger = logging.getLogger("ilay.sut_catalog")
 
@@ -406,6 +401,7 @@ def get_ek2c1_copay_rates() -> dict[str, dict[str, Any]]:
 
 # Module-level sorted code list for binary search prefix matching
 _sorted_codes: list[str] | None = None
+_sorted_codes_asof: str = ""
 
 
 def lookup_procedure_code(
@@ -433,9 +429,17 @@ def lookup_procedure_code(
           - ``candidates``: List of entries for prefix search (or []).
     """
     global _sorted_codes
+    global _sorted_codes_asof
 
     catalog = load_sut_catalog(visit_date=visit_date)
     by_code: dict[str, dict[str, Any]] = catalog.get("ek2b", {}).get("by_code", {})
+    # Invalidate _sorted_codes when the asof date changes (not just when the
+    # row count differs — two different as_of dates can have the same row
+    # count but different codes, which would silently return stale results).
+    asof_key = str(visit_date or "default")
+    if _sorted_codes is None or len(_sorted_codes) != len(by_code) or _sorted_codes_asof != asof_key:
+        _sorted_codes = sorted(by_code.keys())
+        _sorted_codes_asof = asof_key
 
     normalized = raw_code.strip().replace(".", "").replace(" ", "").replace("-", "")
 
@@ -454,10 +458,7 @@ def lookup_procedure_code(
     # ── Tier 3: Prefix search (min 3 chars) ───────────────────────────────
     search_key = normalized.lstrip("Pp")
     if len(search_key) >= 3:
-        # Build sorted code list once (for efficient prefix scan)
-        if _sorted_codes is None or len(_sorted_codes) != len(by_code):
-            _sorted_codes = sorted(by_code.keys())
-
+        # _sorted_codes is invalidated above when asof date or row count changes
         import bisect
 
         lo = bisect.bisect_left(_sorted_codes, search_key)

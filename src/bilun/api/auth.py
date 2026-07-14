@@ -90,12 +90,45 @@ def is_auth_optional() -> bool:
 
     Production deployments must leave this unset so the session gate fails
     closed when ``BILUN_AUTH_*`` is missing.
+
+    Safety guard: refuses to activate when the server is NOT on localhost AND
+    the ``TESTING`` env var is not set. This prevents a misconfigured ``.env``
+    from silently exposing the entire API unauthenticated on a production VPS.
+    To override in a non-local environment, set ``BILUN_AUTH_OPTIONAL_INSECURE=1``
+    explicitly (documenting that the operator accepts the risk).
     """
-    return os.getenv("BILUN_AUTH_OPTIONAL", "").strip().lower() in (
+    enabled = os.getenv("BILUN_AUTH_OPTIONAL", "").strip().lower() in (
         "1",
         "true",
         "yes",
     )
+    if not enabled:
+        return False
+    # Allow in test/CI environments unconditionally.
+    if os.getenv("TESTING", "").strip():
+        return True
+    # Allow explicit override (operator accepts the risk).
+    if os.getenv("BILUN_AUTH_OPTIONAL_INSECURE", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    ):
+        return True
+    # Otherwise only allow on localhost.
+    import socket
+
+    try:
+        hostname = socket.gethostname()
+        local_ips = {"127.0.0.1", "::1", "localhost"}
+        local = (
+            hostname in local_ips
+            or hostname.startswith("192.168.")
+            or hostname.startswith("10.")
+            or os.getenv("BILUN_HOST", "").strip() in local_ips
+        )
+    except OSError:
+        local = False
+    return local
 
 
 def resolve_user_role(username: str | None) -> str:

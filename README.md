@@ -33,8 +33,8 @@ BILUN is a standalone healthcare reimbursement intelligence system. It analyzes,
 │   ├── api/             # FastAPI app, routes, schemas (15 endpoints)
 │   ├── domain/          # Core business logic (40+ modules)
 │   │   ├── analytics/   # DRG episode modeling, cost estimation
-│   │   ├── billing/     # 5 optimization algorithms
-│   │   ├── optimization/# 6 revenue rule engines
+│   │   ├── billing/     # 21 billing block detectors (BILLING_BLOCK_SPECS)
+│   │   ├── optimization/# revenue rule engines
 │   │   ├── pricing/     # DRG package pricing lookups
 │   │   ├── rules/       # Claim validation (bundling, exclusions)
 │   │   ├── claims/      # Synthetic claim-line loader

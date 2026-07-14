@@ -117,6 +117,12 @@ jobs:
                 echo "  rebuild in progress... ($((i*10))s elapsed)"
                 sleep 10
               done
+              # Fail the deploy if the cache never became ready.
+              if [ "$READY" != "true" ]; then
+                echo "=== ERROR: cache rebuild timed out after 900s ==="
+                echo "=== Backend may be serving stale/no cache — aborting deploy ==="
+                exit 1
+              fi
               # Reset to load-only so future restarts don't rebuild unnecessarily.
               sed -i 's/^#*\s*BILUN_STARTUP_POLICY=.*/# BILUN_STARTUP_POLICY=load-only/' .env
               echo "=== reset to load-only for future restarts ==="
