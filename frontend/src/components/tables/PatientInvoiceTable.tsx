@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getRevenueRecovery, getSutPatients } from "@/lib/api/sut";
 import type { CohortRecoverySummary } from "@/lib/domains/sut";
@@ -127,6 +127,8 @@ export default function PatientInvoiceTable({
   cohortFilterActive?: boolean;
 } = {}) {
   const t = useT();
+  const tRef = useRef(t);
+  tRef.current = t;
   const sortByTitle = (label: string) => t("home.patientTable.sortBy", { label });
   const router = useRouter();
   const [rows, setRows] = useState<PatientRow[]>([]);
@@ -149,7 +151,7 @@ export default function PatientInvoiceTable({
   }, [sortedRows, currentPage]);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     async function load() {
       try {
@@ -157,11 +159,11 @@ export default function PatientInvoiceTable({
         setError(null);
 
         const [patientsData, recoveryData] = await Promise.all([
-          getSutPatients().catch(() => null),
-          getRevenueRecovery().catch(() => null),
+          getSutPatients(),
+          getRevenueRecovery(),
         ]);
 
-        if (cancelled) return;
+        if (controller.signal.aborted) return;
 
         const metaLookup = new Map<string, PatientMeta>();
         patientsData?.patient_meta?.forEach((m) => {
@@ -208,19 +210,18 @@ export default function PatientInvoiceTable({
         setPage(1);
         setSort(null);
       } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : t("home.patientTable.loadFailed"));
-        }
+        if (controller.signal.aborted) return;
+        setError(err instanceof Error ? err.message : tRef.current("home.patientTable.loadFailed"));
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
 
     void load();
     return () => {
-      cancelled = true;
+      controller.abort();
     };
-  }, [cohortFilterActive, cohortPatientIds, t]);
+  }, [cohortFilterActive, cohortPatientIds]);
 
   function handleSort(column: SortableColumn) {
     setSort((prev) => {

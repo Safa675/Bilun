@@ -84,8 +84,7 @@ describe("SutInlineAIPanel", () => {
             { role: "assistant", content: "The copay savings is 5000 TRY." },
           ],
           autoText: "",
-          autoFiredKey: null,
-          autoError: null,
+          autoFiredKey: "",
           briefedContextKeys: [],
         }}
       />,
@@ -94,24 +93,18 @@ describe("SutInlineAIPanel", () => {
     expect(html).toContain("The copay savings is 5000 TRY.");
   });
 
-  it("shows autoError message when chatState.autoError is set", () => {
-    // autoError is rendered from state via useState — during SSR the component
-    // initializes its internal error state from chatState.autoError, but the
-    // render path only shows it after the first effect cycle. We verify the
-    // component accepts the chatState prop without crashing.
+  it("accepts chatState and renders shell without errors", () => {
     const html = renderToStaticMarkupWithLocale(
       <SutInlineAIPanel
         activeTab="SUT Workspace"
         chatState={{
           messages: [],
           autoText: "",
-          autoFiredKey: null,
-          autoError: "Connection failed",
+          autoFiredKey: "",
           briefedContextKeys: [],
         }}
       />,
     );
-    // The component should at least render its shell
     expect(html).toContain("Bilun Analysis");
   });
 
