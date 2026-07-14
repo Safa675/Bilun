@@ -85,7 +85,7 @@ def _output(key: str, value: str) -> None:
 def main() -> int:
     if not STATE_FILE.exists():
         print(f"State file not found: {STATE_FILE}", file=sys.stderr)
-        _output("new_tebliğ", "")
+        _output("new_teblig", "")
         return 0
 
     state = json.loads(STATE_FILE.read_text())
@@ -95,7 +95,7 @@ def main() -> int:
         html = fetch_duyuru_page()
     except requests.RequestException as exc:
         print(f"Failed to fetch SGK duyuru page: {exc}", file=sys.stderr)
-        _output("new_tebliğ", "")
+        _output("new_teblig", "")
         return 0
 
     tebliğs = find_sut_tebliğs(html)
@@ -103,7 +103,7 @@ def main() -> int:
 
     if not tebliğs:
         print("No SUT tebliğ slugs found.")
-        _output("new_tebliğ", "")
+        _output("new_teblig", "")
         return 0
 
     new = check_for_new(state, tebliğs)

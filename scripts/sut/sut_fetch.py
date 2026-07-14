@@ -39,6 +39,22 @@ _CONSOLIDATED_SUT_DIR_SUFFIX = "Değişiklik Tebliği İşlenmiş Güncel 2013 S
 DEFAULT_RAW_DATA_ROOT = Path(__file__).resolve().parent.parent.parent / "raw data"
 
 
+def _safe_extractall(zf: zipfile.ZipFile, target_dir: Path) -> None:
+    """Extract all members, rejecting any path that escapes ``target_dir``.
+
+    Guards against zip-slip (path traversal via ``../`` entries) on zips
+    downloaded from external sources.
+    """
+    target_resolved = target_dir.resolve()
+    for member in zf.infolist():
+        member_path = (target_dir / member.filename).resolve()
+        if not member_path.is_relative_to(target_resolved):
+            raise ValueError(
+                f"Refusing to extract member outside target dir: {member.filename!r}"
+            )
+    zf.extractall(target_dir)
+
+
 def parse_duyuru_detail(duyuru_url: str) -> str:
     """Fetch duyuru detail page, find the zip download link.
 
@@ -95,7 +111,7 @@ def download_and_extract(
     try:
         with zipfile.ZipFile(tmp_path) as zf:
             target_dir.mkdir(parents=True, exist_ok=True)
-            zf.extractall(target_dir)
+            _safe_extractall(zf, target_dir)
         print(f"Extracted {len(list(target_dir.rglob('*')))} files to: {target_dir}")
     finally:
         Path(tmp_path).unlink(missing_ok=True)
