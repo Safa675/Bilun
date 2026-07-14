@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Iterable
+from collections.abc import Iterable
 
 from src.bilun.domain.claims.models import ProcedureClaimLine
 

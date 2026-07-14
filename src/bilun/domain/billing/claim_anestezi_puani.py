@@ -11,8 +11,6 @@ of the shared one.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any
 
 from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.anestezi_puani import (

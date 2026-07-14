@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Iterable, Mapping
+from collections.abc import Iterable, Mapping
 
 from src.bilun.domain.claims.models import (
     ClaimDiagnosis,

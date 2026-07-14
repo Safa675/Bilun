@@ -6,7 +6,7 @@ import os
 import warnings
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 SYNTHETIC_SUT_DIR = PROJECT_ROOT / "data" / "synthetic" / "sut"

@@ -22,7 +22,6 @@ from .tables import (
     _clear_build_rows,
     read_json_payload,
     upsert_single_json_table,
-    write_dataframe,
 )
 
 

@@ -48,8 +48,6 @@ from src.bilun.domain.prose_rules.types import (
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import (
         ClaimHeader,
-        DrugClaimLine,
-        MaterialClaimLine,
         ProcedureClaimLine,
     )
 

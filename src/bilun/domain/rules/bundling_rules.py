@@ -8,12 +8,14 @@ SUT annex EK-3B-1 (54 consumable categories) + supporting prose §3.1.4.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.materials import get_bundled_consumables
 from src.bilun.domain.materials.catalog_lookup import resolve_material_name_by_code
 from src.bilun.domain.materials.exclusions import match_bundled_material
-from src.bilun.domain.utils import fuzzy_match_name, token_bound_substring_match, turkish_lower
+
+if TYPE_CHECKING:
+    from src.bilun.domain.claims.patient_context import PatientClaimContext
 
 logger = logging.getLogger("ilay.sut_optimization.bundling")
 
@@ -130,7 +132,7 @@ def _add_bundling_violation(
     )
 
 
-def check_bundling_violations_for_context(ctx: "PatientClaimContext") -> list[dict[str, Any]]:
+def check_bundling_violations_for_context(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     """EK-3B-1 bundling check over a PatientClaimContext (Phase 2.1e wrapper).
 
     Reads each MaterialClaimLine's build-time-derived ``is_ek3b1_bundled`` flag

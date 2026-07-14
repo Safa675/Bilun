@@ -40,7 +40,7 @@ and bundling is the correct finding in that situation.
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.money import money_round_half_up as _money

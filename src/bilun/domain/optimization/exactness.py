@@ -9,7 +9,6 @@ from typing import Any
 from .claim_context import (
     CopayRateClaimContext,
     SurchargeClaimContext,
-    procedure_rate_pct,
 )
 
 EXACTNESS_STATUS_EXACT = "exact"

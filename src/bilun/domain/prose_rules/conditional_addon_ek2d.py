@@ -24,6 +24,8 @@ is on the required allow-list.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import json
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any

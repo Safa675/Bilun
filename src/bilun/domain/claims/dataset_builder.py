@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Sequence
+from collections.abc import Sequence
 
 from src.bilun.domain.claims.dataset import SUTClaimDataset
 from src.bilun.domain.claims.errors import ClaimValidationError

@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from math import isnan
-from typing import Any, Mapping
+from typing import Any
 
 from src.bilun.domain.claims.models import Money
 from src.bilun.domain.claims.types import RowDict

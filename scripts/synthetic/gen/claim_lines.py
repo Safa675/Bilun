@@ -5,10 +5,13 @@ from __future__ import annotations
 import random
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    from src.bilun.domain.claims.models import ProcedureClaimLine
 
 from catalog import _drug_unit_price, _money
 from gen.drug_fields import _empty_drug_indication_fields
@@ -74,6 +77,7 @@ class ClaimEpisodeContext:
     proc_specs: list[dict] = field(default_factory=list)
     servis_adi: str = "genel"
 
+    from src.bilun.domain.claims.models import ProcedureClaimLine
 def _procedure_row_as_claim_line(row: dict) -> ProcedureClaimLine:
     from datetime import date
     from decimal import Decimal

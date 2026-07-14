@@ -1,0 +1,45 @@
+# Strix pentest instructions — Bilun (Turkish health-billing SaaS)
+
+## Target
+This is a WHITE-BOX code scan of a Python (FastAPI) backend + Next.js frontend that
+processes SGK (Turkish social security) health-billing claims. Data in this environment
+is SYNTHETIC — no real patient data. Test freely but stay within the codebase.
+
+## Focus areas (in priority order)
+
+1. SQL INJECTION in DuckDB queries. Bilun uses DuckDB with a single-writer model.
+   Look in `src/bilun/domain/` for any raw SQL string construction (f-strings, %, +,
+   .format) that interpolates user-controlled input from API params, query strings, or
+   request bodies. Parameterized queries are SAFE; concatenated strings are NOT.
+
+2. AUTHENTICATION / AUTHORIZATION on API and chatbot endpoints.
+   - `src/bilun/api/` — every FastAPI route. Verify each requires auth and that auth
+     checks the resource owner (not just "is logged in"). In particular: can a user
+     access another patient's claims, billing summaries, or cohort data by changing
+     a patient_id / claim_id in the URL or body (IDOR)?
+   - `src/bilun/chatbot/` — the chat endpoint. Check for prompt-injection paths that
+     could exfiltrate data or bypass authZ (e.g., user message steering the agent to
+     fetch other patients' records).
+
+3. PATH TRAVERSAL / SSRF in ingestion and external-fetch code.
+   - `scripts/sut/extractor.py` and the `.docx/.pdf/.parquet` loaders under
+     `src/bilun/domain/loaders/` — malformed-input handling, XXE in XML parsers,
+     zip-slip in archive extraction.
+   - Any code that fetches external URLs (gazette/SUT document downloads) — SSRF.
+
+4. SESSION / AUTH MIDDLEWARE. Find where login and session validation happen and
+   verify: session fixation, missing secure flags, tokens in URLs, predictable tokens.
+
+5. SECRETS / CONFIG. Grep for hardcoded credentials, API keys, or DB connection
+   strings committed in source (NOT in `.venv/`, `node_modules/`, `raw data/`).
+
+## Out of scope (do NOT analyze — noise / non-authored)
+- `node_modules/`, `.next/`, `.venv/`, `.git/`, `graphify-out/`
+- `raw data/` (regulatory source PDFs/docx — large binaries, not Bilun code)
+- `data/gazette/` (generated parquet catalogs — the *loaders* in src/ are in scope,
+  the data files themselves are not)
+
+## What to report
+For each finding: affected file:line, vuln class (CWE if possible), a concrete
+reproduction or proof, severity (CVSS if you can), and a suggested fix. Distinguish
+"confirmed exploitable" from "theoretical / needs dynamic validation".

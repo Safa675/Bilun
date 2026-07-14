@@ -34,6 +34,7 @@ __all__ = [
     "check_payment_method_compliance",
     "compute_session_point_factors",
     "analyze_claim_unbundling",
+    "detect_blood_component_violations",
     "detect_payment_method_violations",
     "detect_session_point_violations",
     "finding_to_dict",

@@ -38,7 +38,7 @@ class ClaimContextManager:
         self._surcharge_token: Token[SurchargeClaimContext | None] | None = None
         self._copay_rate_token: Token[CopayRateClaimContext | None] | None = None
 
-    def __enter__(self) -> "ClaimContextManager":
+    def __enter__(self) -> ClaimContextManager:
         self._surcharge_token = _surcharge_context.set(self._surcharge)
         self._copay_rate_token = _copay_rate_context.set(self._copay_rate)
         return self

@@ -7,11 +7,14 @@ SUT §3.1.1(7)/(9) — EK-3/B list materials are not reimbursed (13 curated rows
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from src.bilun.domain.materials import get_non_reimbursable_materials
 from src.bilun.domain.materials.catalog_lookup import resolve_material_name_by_code
 from src.bilun.domain.materials.exclusions import match_exclusion_entry
+
+if TYPE_CHECKING:
+    from src.bilun.domain.claims.patient_context import PatientClaimContext
 logger = logging.getLogger("ilay.sut_optimization.exclusion")
 
 
@@ -82,7 +85,7 @@ def check_exclusion_violations(
     return violations
 
 
-def check_exclusion_violations_for_context(ctx: "PatientClaimContext") -> list[dict[str, Any]]:
+def check_exclusion_violations_for_context(ctx: PatientClaimContext) -> list[dict[str, Any]]:
     """EK-3B-2 exclusion check over a PatientClaimContext (Phase 2.1e wrapper).
 
     Reads each MaterialClaimLine's build-time-derived ``is_excluded`` flag

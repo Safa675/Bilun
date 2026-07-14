@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from functools import lru_cache
+from functools import lru_cache, cache
 from typing import Any
 
 from ..constants import _PROSE_RULES_DIR
@@ -197,7 +197,7 @@ def resolve_payment_method(
     )
 
 
-@lru_cache(maxsize=None)
+@cache
 def _resolve_payment_method_cached(
     procedure_code: str,
     care_setting: CareSetting,
