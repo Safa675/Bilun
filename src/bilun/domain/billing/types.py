@@ -159,6 +159,73 @@ DRUG_INDICATION_UNAVAILABLE_REASON = (
 )
 
 
+class _UpliftBlockMixin:
+    """Shared uplift-sum properties for dataclasses with ``opportunities: list[dict]``.
+
+    Eliminates the 7× copy-pasted ``confirmed_uplift_try`` / ``total_uplift_try``
+    pattern across SessionPricingUplift, BloodComponentUplift, MaterialUplift,
+    ProcedureAddonUplift, DrgPackageAdequacyReview, CareSettingReview, and
+    DrgUpliftRecommendation. Each carries ``opportunities`` as a list of dicts
+    with ``recoverable_uplift_try``, ``included_in_sgk_total``, and optionally
+    ``review_uplift_try`` / ``review_kind`` keys.
+    """
+
+    @property
+    def confirmed_uplift_try(self) -> float:
+        """Uplift counted in SGK headline (rows where ``included_in_sgk_total`` is True)."""
+        return round(
+            sum(
+                float(row.get("recoverable_uplift_try") or 0.0)
+                for row in self.opportunities  # type: ignore[attr-defined]
+                if row.get("included_in_sgk_total", True)
+            ),
+            2,
+        )
+
+    @property
+    def total_uplift_try(self) -> float:
+        """Total uplift across ALL opportunity rows (including non-SGK-counted)."""
+        return round(
+            sum(
+                float(row.get("recoverable_uplift_try") or 0.0)
+                for row in self.opportunities  # type: ignore[attr-defined]
+            ),
+            2,
+        )
+
+
+class _ReviewableUpliftBlockMixin(_UpliftBlockMixin):
+    """Adds clinical-review properties for blocks that carry review-kind rows.
+
+    Used by the 3 blocks (SessionPricingUplift, DrgPackageAdequacyReview,
+    CareSettingReview) whose ``total_uplift_try`` includes review-flagged rows
+    and that surface ``review_uplift_try`` + ``review_opportunity_count``.
+    """
+
+    @property
+    def total_uplift_try(self) -> float:
+        """Total = confirmed + review (audit total including clinical-review rows)."""
+        return round(self.confirmed_uplift_try + self.review_uplift_try, 2)
+
+    @property
+    def review_uplift_try(self) -> float:
+        return round(
+            sum(
+                float(row.get("review_uplift_try") or 0.0)
+                for row in self.opportunities  # type: ignore[attr-defined]
+            ),
+            2,
+        )
+
+    @property
+    def review_opportunity_count(self) -> int:
+        return sum(
+            1
+            for row in self.opportunities  # type: ignore[attr-defined]
+            if row.get("review_kind") == "needs_clinical_review"
+        )
+
+
 @dataclass
 class LabOptimization:
     """Normative lab billing analysis for a single patient."""
@@ -282,7 +349,7 @@ class BillingStrategyRecommendation:
 
 
 @dataclass
-class SessionPricingUplift:
+class SessionPricingUplift(_ReviewableUpliftBlockMixin):
     """Recoverable SGK uplift from same-session point-factor under-billing."""
 
     opportunities: list[dict[str, Any]] = field(default_factory=list)
@@ -292,38 +359,6 @@ class SessionPricingUplift:
         default_factory=lambda: list(SESSION_UPLIFT_REQUIRED_INPUTS)
     )
     rule_source: str = "SUT §2.2.2.B session point factors — under-billing"
-
-    @property
-    def total_uplift_try(self) -> float:
-        """Rule-calculated uplift including clinical-review rows (audit total)."""
-        return round(self.confirmed_uplift_try + self.review_uplift_try, 2)
-
-    @property
-    def confirmed_uplift_try(self) -> float:
-        """Uplift counted in SGK headline (excludes needs_clinical_review)."""
-        return round(
-            sum(
-                float(row.get("recoverable_uplift_try") or 0.0)
-                for row in self.opportunities
-                if row.get("included_in_sgk_total", True)
-            ),
-            2,
-        )
-
-    @property
-    def review_uplift_try(self) -> float:
-        return round(
-            sum(float(row.get("review_uplift_try") or 0.0) for row in self.opportunities),
-            2,
-        )
-
-    @property
-    def review_opportunity_count(self) -> int:
-        return sum(
-            1
-            for row in self.opportunities
-            if row.get("review_kind") == "needs_clinical_review"
-        )
 
 
 @dataclass
@@ -353,7 +388,7 @@ class MaterialPreCheck:
 
 
 @dataclass
-class BloodComponentUplift:
+class BloodComponentUplift(_UpliftBlockMixin):
     """Recoverable SGK uplift from blood component fraction under-billing."""
 
     opportunities: list[dict[str, Any]] = field(default_factory=list)
@@ -363,24 +398,6 @@ class BloodComponentUplift:
         default_factory=lambda: list(BLOOD_UPLIFT_REQUIRED_INPUTS)
     )
     rule_source: str = "SUT §2.2.2.B-1.e blood component fraction — under-billing"
-
-    @property
-    def confirmed_uplift_try(self) -> float:
-        return round(
-            sum(
-                float(row.get("recoverable_uplift_try") or 0.0)
-                for row in self.opportunities
-                if row.get("included_in_sgk_total", True)
-            ),
-            2,
-        )
-
-    @property
-    def total_uplift_try(self) -> float:
-        return round(
-            sum(float(row.get("recoverable_uplift_try") or 0.0) for row in self.opportunities),
-            2,
-        )
 
 
 @dataclass
@@ -507,7 +524,7 @@ class AnesteziPuaniReview:
 
 
 @dataclass
-class MaterialUplift:
+class MaterialUplift(_UpliftBlockMixin):
     """Recoverable SGK uplift from missing separately billable materials."""
 
     opportunities: list[dict[str, Any]] = field(default_factory=list)
@@ -518,27 +535,9 @@ class MaterialUplift:
     )
     rule_source: str = "SUT §3.1 missing billable material pairing — uplift-only"
 
-    @property
-    def confirmed_uplift_try(self) -> float:
-        return round(
-            sum(
-                float(row.get("recoverable_uplift_try") or 0.0)
-                for row in self.opportunities
-                if row.get("included_in_sgk_total", True)
-            ),
-            2,
-        )
-
-    @property
-    def total_uplift_try(self) -> float:
-        return round(
-            sum(float(row.get("recoverable_uplift_try") or 0.0) for row in self.opportunities),
-            2,
-        )
-
 
 @dataclass
-class ProcedureAddonUplift:
+class ProcedureAddonUplift(_UpliftBlockMixin):
     """Recoverable SGK uplift from missing same-session procedure add-ons."""
 
     opportunities: list[dict[str, Any]] = field(default_factory=list)
@@ -548,24 +547,6 @@ class ProcedureAddonUplift:
         default_factory=lambda: list(PROCEDURE_ADDON_UPLIFT_REQUIRED_INPUTS)
     )
     rule_source: str = "SUT §2.2.2 procedure add-on pairing — uplift-only"
-
-    @property
-    def confirmed_uplift_try(self) -> float:
-        return round(
-            sum(
-                float(row.get("recoverable_uplift_try") or 0.0)
-                for row in self.opportunities
-                if row.get("included_in_sgk_total", True)
-            ),
-            2,
-        )
-
-    @property
-    def total_uplift_try(self) -> float:
-        return round(
-            sum(float(row.get("recoverable_uplift_try") or 0.0) for row in self.opportunities),
-            2,
-        )
 
 
 @dataclass
@@ -605,7 +586,7 @@ class GazetteRepricingOpportunity:
 
 
 @dataclass
-class DrgPackageAdequacyReview:
+class DrgPackageAdequacyReview(_UpliftBlockMixin):
     """Advisory review when billed EK-2/C package may be under-coded."""
 
     opportunities: list[dict[str, Any]] = field(default_factory=list)
@@ -615,24 +596,6 @@ class DrgPackageAdequacyReview:
         default_factory=lambda: list(DRG_PACKAGE_ADEQUACY_REQUIRED_INPUTS)
     )
     rule_source: str = "SUT §2.2.1.B package adequacy — documentation review"
-
-    @property
-    def total_uplift_try(self) -> float:
-        return round(
-            sum(float(row.get("recoverable_uplift_try") or 0.0) for row in self.opportunities),
-            2,
-        )
-
-    @property
-    def confirmed_uplift_try(self) -> float:
-        return round(
-            sum(
-                float(row.get("recoverable_uplift_try") or 0.0)
-                for row in self.opportunities
-                if row.get("included_in_sgk_total", True)
-            ),
-            2,
-        )
 
     @property
     def review_uplift_try(self) -> float:
@@ -739,7 +702,7 @@ class ProcedureCaptureGap:
 
 
 @dataclass
-class CareSettingReview:
+class CareSettingReview(_UpliftBlockMixin):
     """Advisory coding-review uplift from inpatient vs outpatient ambiguity."""
 
     opportunities: list[dict[str, Any]] = field(default_factory=list)
@@ -749,24 +712,6 @@ class CareSettingReview:
         default_factory=lambda: list(CARE_SETTING_REVIEW_REQUIRED_INPUTS)
     )
     rule_source: str = "SUT §2.2.1.B / §2.2.2 care-setting ambiguity — advisory"
-
-    @property
-    def total_uplift_try(self) -> float:
-        return round(
-            sum(float(row.get("recoverable_uplift_try") or 0.0) for row in self.opportunities),
-            2,
-        )
-
-    @property
-    def confirmed_uplift_try(self) -> float:
-        return round(
-            sum(
-                float(row.get("recoverable_uplift_try") or 0.0)
-                for row in self.opportunities
-                if row.get("included_in_sgk_total", True)
-            ),
-            2,
-        )
 
     @property
     def review_uplift_try(self) -> float:
@@ -782,7 +727,7 @@ class CareSettingReview:
 
 
 @dataclass
-class DrgUpliftRecommendation:
+class DrgUpliftRecommendation(_UpliftBlockMixin):
     """Recoverable SGK uplift from itemized vs package billing comparison."""
 
     opportunities: list[dict[str, Any]] = field(default_factory=list)
@@ -792,24 +737,6 @@ class DrgUpliftRecommendation:
         default_factory=lambda: list(DRG_UPLIFT_REQUIRED_INPUTS)
     )
     rule_source: str = "SUT §2.2.2 itemized vs package — uplift-only"
-
-    @property
-    def confirmed_uplift_try(self) -> float:
-        return round(
-            sum(
-                float(row.get("recoverable_uplift_try") or 0.0)
-                for row in self.opportunities
-                if row.get("included_in_sgk_total", True)
-            ),
-            2,
-        )
-
-    @property
-    def total_uplift_try(self) -> float:
-        return round(
-            sum(float(row.get("recoverable_uplift_try") or 0.0) for row in self.opportunities),
-            2,
-        )
 
 
 @dataclass
