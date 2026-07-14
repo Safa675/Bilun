@@ -1,7 +1,11 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import type { BillingActionReport, SutPatientOutcomeData } from "@/lib/domains/sut";
+import type {
+  BillingActionReport,
+  PatientClaimSummary,
+  SutPatientOutcomeData,
+} from "@/lib/domains/sut";
 import { fmtNum, fmtTRY2, fmtPriorityLabel } from "@/components/tabs/sut/shared";
 import { chipVariantFromColor } from "@/components/patient/SutBillingReportSections";
 import { Chip, Eyebrow, Stat, Surface } from "@/components/primitives";
@@ -21,6 +25,10 @@ export interface PatientFinancialSummaryProps {
   selectedClaimId?: string | null;
   /** Fallback when `sut_claim_totals.claim_count` is absent. */
   claimCount?: number;
+  /** Per-bill summary for the selected claim. When present alongside a
+   *  `selectedClaimId`, the Total billed / Expected payable tiles source
+   *  from this bill instead of the patient-level `sut_claim_totals`. */
+  selectedClaimSummary?: PatientClaimSummary | null;
 }
 
 export function PatientFinancialSummary({
@@ -28,11 +36,20 @@ export function PatientFinancialSummary({
   billingReport,
   selectedClaimId = null,
   claimCount,
+  selectedClaimSummary = null,
 }: PatientFinancialSummaryProps) {
   const t = useT();
   const isBillScoped = Boolean(selectedClaimId?.trim());
   const claimTotals = outcome?.sut_claim_totals;
   const claimTotalsExact = isExactOutput(claimTotals);
+  // When bill-scoped, the Total billed / Expected payable tiles reflect the
+  // selected bill's summary rather than the patient-level rollup.
+  const billBilled = isBillScoped
+    ? selectedClaimSummary?.expected_total_billed_try
+    : undefined;
+  const billPayable = isBillScoped
+    ? selectedClaimSummary?.expected_total_payable_try
+    : undefined;
   const reportHasTotals = hasRecoverableBillingTotals(billingReport);
   const recoverable =
     billingReport?.total_recoverable_try ?? billingReport?.sgk_uplift_try ?? null;
@@ -77,17 +94,25 @@ export function PatientFinancialSummary({
         <Stat
           label={t("patient.financialSummary.totalBilled")}
           value={
-            claimTotalsExact && claimTotals?.total_billed_try != null
-              ? fmtTRY2(claimTotals.total_billed_try)
-              : t("common.unavailable")
+            isBillScoped
+              ? billBilled != null
+                ? fmtTRY2(billBilled)
+                : t("common.unavailable")
+              : claimTotalsExact && claimTotals?.total_billed_try != null
+                ? fmtTRY2(claimTotals.total_billed_try)
+                : t("common.unavailable")
           }
         />
         <Stat
           label={t("patient.financialSummary.expectedPayable")}
           value={
-            claimTotalsExact && claimTotals?.total_expected_payable_try != null
-              ? fmtTRY2(claimTotals.total_expected_payable_try)
-              : t("common.unavailable")
+            isBillScoped
+              ? billPayable != null
+                ? fmtTRY2(billPayable)
+                : t("common.unavailable")
+              : claimTotalsExact && claimTotals?.total_expected_payable_try != null
+                ? fmtTRY2(claimTotals.total_expected_payable_try)
+                : t("common.unavailable")
           }
         />
         <Stat
@@ -101,7 +126,13 @@ export function PatientFinancialSummary({
         />
         <Stat
           label={t("patient.financialSummary.billCount")}
-          value={bills != null ? fmtNum(bills) : t("common.unavailable")}
+          value={
+            isBillScoped
+              ? fmtNum(1)
+              : bills != null
+                ? fmtNum(bills)
+                : t("common.unavailable")
+          }
         />
         <Stat
           label={t("patient.financialSummary.overallPriority")}

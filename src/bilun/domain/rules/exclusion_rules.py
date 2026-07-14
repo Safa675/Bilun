@@ -30,7 +30,12 @@ def check_exclusion_violations(
 
         unit_price = float(mat.get("unit_price", 0.0))
         quantity = int(mat.get("quantity", 1))
-        billed = round(unit_price * quantity, 2)
+        # Parity with the adapter path (claims/adapter.py:161) and the legacy
+        # pricer (analytics/materials.py:50-53): prefer an explicit billed_amount
+        # (the amount actually submitted to MEDULA) over unit_price × quantity.
+        billed = round(float(mat.get("billed_amount", 0.0) or 0.0), 2)
+        if billed <= 0.0:
+            billed = round(unit_price * quantity, 2)
 
         lookup_name = mat_name
         match_kind = "name"

@@ -5,6 +5,7 @@ import { ArrowLeft, ShieldAlert } from "lucide-react";
 import type {
   CopayExemptionResult,
   BillingActionReport,
+  PatientClaimSummary,
   PatientOptimization,
   SutPatientOutcomeData,
 } from "@/lib/domains/sut";
@@ -207,6 +208,7 @@ export default function SutPatientWorkspace({
   billingReport,
   selectedClaimId = null,
   claimCount,
+  selectedClaimSummary = null,
 }: {
   patientId: string;
   outcome: SutPatientOutcomeData | null;
@@ -214,6 +216,7 @@ export default function SutPatientWorkspace({
   billingReport?: BillingActionReport | null;
   selectedClaimId?: string | null;
   claimCount?: number;
+  selectedClaimSummary?: PatientClaimSummary | null;
 }) {
   const t = useT();
   const primaryFocusLabel = optimization?.copay_exemptions.exempt
@@ -257,6 +260,7 @@ export default function SutPatientWorkspace({
         billingReport={billingReport ?? null}
         selectedClaimId={selectedClaimId}
         claimCount={claimCount}
+        selectedClaimSummary={selectedClaimSummary}
       />
 
       {optimization && (

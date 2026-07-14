@@ -156,8 +156,10 @@ def build_context_from_material_dict(claim: dict[str, Any]) -> PatientClaimConte
         line_id = f"ML-{claim_id}-{idx:03d}"
         quantity = int(mat.get("quantity", 1) or 1)
         unit_price = Decimal(str(mat.get("unit_price", 0) or 0))
-        # billed_amount mirrors the legacy compute: explicit billed_amount if
-        # provided, else unit_price * quantity (rule_engine.py:52).
+        # billed_amount is the amount actually submitted to MEDULA; fall back to
+        # unit_price * quantity when not provided. Mirrors the legacy pricer
+        # (analytics/materials.py:50-53) and the dict-path rule motors
+        # (rules/bundling_rules.py, rules/exclusion_rules.py).
         billed = Decimal(str(mat.get("billed_amount", 0) or 0)) or (unit_price * quantity)
         materials[line_id] = MaterialClaimLine(
             material_line_id=line_id,
