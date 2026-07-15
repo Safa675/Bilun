@@ -10,10 +10,11 @@ surfaced on material/procedure lines:
 - ``2.4.1.B-3.(1).treating_physician_continuity`` — treatment by a physician
   who is a first-degree relative and signed the board report is not paid.
 
-The remaining 7 rules require ``patient_age``, ``years_since_last_prosthesis``,
-``facility_type``, ``board_from``/``board_includes`` — data not on the claim
-model. They stay in the rule set for inventory/coverage but are skipped at
-evaluation time (honesty guard) rather than guessing.
+The remaining dormant rules require ``patient_age``, ``years_since_last_prosthesis``,
+``board_from``/``board_includes`` — data not on the claim model. ``facility_type``
+is now derived from the claim header and surfaced in each material dict. The
+schema-gap fields stay in the rule set for inventory/coverage but are skipped
+at evaluation time (honesty guard) rather than guessing.
 
 Operates on material-line dicts (like specialty_materials) since dental rules
 key on ``material_name`` and ``procedure_category``.
@@ -119,6 +120,14 @@ def _condition_matches(condition: dict[str, Any], mat: dict[str, Any]) -> bool:
             if cat not in expected_set:
                 return False
             continue
+        if key in ("facility_type", "facility_type_any"):
+            ft = mat.get("facility_type")
+            if ft is None:
+                return False
+            expected_set = {expected} if isinstance(expected, str) else set(expected or [])
+            if ft not in expected_set:
+                return False
+            continue
         # Boolean flag resolved against the material line.
         actual = mat.get(key)
         if actual is None:
@@ -206,8 +215,10 @@ def check_dental_2_4_1_for_context(ctx: Any) -> list[dict[str, Any]]:
     ``MaterialClaimLine`` fields. They are copied through ``hasattr`` so the
     module's existing honesty guard (``_condition_matches`` skips rules whose
     condition data is absent rather than guessing) keeps the non-surfaced rules
-    silent. Today only the three wireable rules whose data the context carries
-    fire; the remaining seven stay in the rule set for inventory/coverage.
+    silent. ``facility_type`` is derived from the claim header and injected
+    into each material dict so ~7 rules gating on facility type now fire.
+    The remaining dormant rules require ``patient_age``, ``board_from``/
+    ``board_includes`` — schema-gap fields not on the claim model.
     """
     # Index procedure lines by procedure_line_id so each material resolves its
     # own category (a patient with mixed dental + non-dental lines must not
@@ -218,6 +229,28 @@ def check_dental_2_4_1_for_context(ctx: Any) -> list[dict[str, Any]]:
         if getattr(line, "procedure_category", None)
     }
 
+    # Derive facility_type from the claim header — same logic as gap_closing
+    # and treatment_pricing context builders. Unblocks ~7 dental rules that
+    # gate on facility_type / facility_type_any.
+    facility_type: str | None = None
+    if ctx.claims:
+        header = ctx.claims[0]
+        provider_type_lower = (header.provider_type or "").lower()
+        facility_tier_lower = (header.facility_tier or "").lower()
+        if any(
+            token in provider_type_lower
+            for token in ("universite", "egitim_arastirma", "training_research")
+        ) and "vakif" not in provider_type_lower and "vakif" not in facility_tier_lower:
+            facility_type = "training_research_hospital"
+        elif "vakif" in provider_type_lower or "vakif" in facility_tier_lower:
+            facility_type = "foundation_university"
+        elif (
+            provider_type_lower in ("private", "ozel")
+            or facility_tier_lower in ("ozel", "2_3_basamak_ozel", "private")
+            or "ozel" in facility_tier_lower
+        ):
+            facility_type = "private"
+
     materials: list[dict[str, Any]] = []
     precious_keywords = _precious_metal_keywords()
     for line in ctx.material_lines:
@@ -225,6 +258,7 @@ def check_dental_2_4_1_for_context(ctx: Any) -> list[dict[str, Any]]:
             "name": line.material_name,
             "code": line.material_code,
             "unit_price": float(line.billed_amount_try),
+            **({"facility_type": facility_type} if facility_type else {}),
             # procedure_category lives on ProcedureClaimLine; resolve via the
             # material's procedure_line_id, falling back to the material's own
             # specialty_category (e.g. "dental_restoration") when no linked

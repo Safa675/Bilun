@@ -71,6 +71,7 @@ _SCALAR_FIELDS = {
     "procedure_category",
     "provider_type",
     "health_board_report_present",
+    "health_report_present",
 }
 
 # Fields where membership is resolved via ICD-10 PREFIX matching (not exact
@@ -644,6 +645,9 @@ def _build_treatment_pricing_context(ctx: Any) -> dict[str, Any]:
     if drug_lines:
         reports = [d for d in drug_lines if getattr(d, "drug_specialty_board_report_present", None)]
         context["health_board_report_present"] = bool(reports)
+        # Alias: gap_closing uses 'health_report_present' — surface both so
+        # rules using either spelling fire consistently.
+        context["health_report_present"] = bool(reports)
 
     return context
 

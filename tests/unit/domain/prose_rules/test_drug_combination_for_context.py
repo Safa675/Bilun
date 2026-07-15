@@ -28,7 +28,7 @@ from src.bilun.domain.prose_rules.drug_combination import (
 pytestmark = pytest.mark.unit
 
 _TOTAL_RULE_COUNT = 53
-_WIREABLE_RULE_COUNT = 6
+_WIREABLE_RULE_COUNT = 8
 
 
 # ---------------------------------------------------------------------------

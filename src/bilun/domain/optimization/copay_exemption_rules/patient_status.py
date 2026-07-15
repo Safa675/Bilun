@@ -82,7 +82,9 @@ def evaluate_patient_status_exemptions(
 
     age = age_at_latest_claim
     if age is None and profile.birth_year is not None:
-        age = None
+        from datetime import date
+
+        age = float(date.today().year - int(profile.birth_year))
 
     allowance = bool(profile.elderly_allowance_2022)
     if allowance and age is not None and age >= 65:

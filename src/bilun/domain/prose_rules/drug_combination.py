@@ -56,6 +56,9 @@ _WIREABLE_KEYS: frozenset[str] = frozenset(
         "combination",
         "two_distinct_agents_same_class_concurrent",
         "two_distinct_active_ingredients_concurrent",
+        # Claim-level scalar predicates (unblocked from _BLOCKED_KEYS).
+        "facility_tier_in",
+        "indication_not_in",
     }
 )
 
@@ -71,7 +74,6 @@ _BLOCKED_KEYS: frozenset[str] = frozenset(
         "pdl1_expression_pct",
         "ecog_score",
         "drug_category",
-        "indication_not_in",
         "pdl1_cps",
         "stage",
         "treatment_line",
@@ -107,7 +109,6 @@ _BLOCKED_KEYS: frozenset[str] = frozenset(
         "expected_neutropenia_days",
         "prescribed_as",
         "drug_class_set",
-        "facility_tier_in",
         "two_distinct_agents_same_eye_same_time",
         "loading_dose_incomplete",
         "switched_to_other_agent",
@@ -225,6 +226,8 @@ def _check_combo_condition(
     condition: dict[str, Any],
     drug_names_on_claim: set[str],
     diagnoses: list[str],
+    *,
+    facility_tier: str | None = None,
 ) -> tuple[bool, str]:
     """Evaluate one rule's ``condition`` dict against a single claim's facts.
 
@@ -299,6 +302,20 @@ def _check_combo_condition(
             "two_distinct_active_ingredients_concurrent",
         ):
             if not has_two_distinct:
+                return False, "not_matched"
+
+        elif key == "facility_tier_in":
+            if facility_tier is None:
+                return False, "skipped_no_data"
+            expected_tiers = {expected} if isinstance(expected, str) else set(expected or [])
+            if facility_tier not in expected_tiers:
+                return False, "not_matched"
+
+        elif key == "indication_not_in":
+            # Negated diagnosis membership: NONE of the listed indications
+            # may be present in the claim's diagnoses (ICD-10 prefix match).
+            rule_codes = list(expected or [])
+            if _diagnosis_matches(diagnoses, rule_codes):
                 return False, "not_matched"
 
     return True, "matched"
@@ -406,10 +423,16 @@ def check_drug_combination_for_context(ctx: Any) -> list[dict[str, Any]]:
     for claim_id in claim_ids:
         drug_names = _collect_drug_names(ctx, claim_id=claim_id)
         diagnoses = _collect_diagnoses(ctx, claim_id)
+        # Derive facility_tier from the claim header for facility_tier_in predicate.
+        facility_tier: str | None = None
+        for claim in (getattr(ctx, "claims", None) or ()):
+            if getattr(claim, "claim_id", None) == claim_id:
+                facility_tier = (getattr(claim, "facility_tier", "") or "").strip().lower()
+                break
         for rule in rules:
             condition = rule.get("condition") or {}
             matches, _reason = _check_combo_condition(
-                condition, drug_names, diagnoses
+                condition, drug_names, diagnoses, facility_tier=facility_tier
             )
             if matches:
                 violations.append(_violation_from_rule(rule, claim_id))
