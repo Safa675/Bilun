@@ -378,6 +378,18 @@ def _build_gap_closing_context(ctx: Any) -> dict[str, Any]:
             context["procedure_code_any"] = sorted(codes)
             if len(codes) == 1:
                 context["procedure_code"] = next(iter(codes))
+            # Specialty surfacing — future-proofing for rules that gate on
+            # the billing specialty. No current gap_closing rule references
+            # this key, but treatment_pricing + fatura_inceleme already surface it.
+            specialties = {
+                getattr(p, "procedure_specialty_code", "") or ""
+                for p in procedure_lines
+            }
+            specialties.discard("")
+            if specialties:
+                context["specialty_any"] = sorted(specialties)
+                if len(specialties) == 1:
+                    context["specialty"] = next(iter(specialties))
             # §1.9.1.(1) extra-fee-scope gate: EK-2/A is the outpatient
             # VISIT-FEE annex (not a procedure list — the catalog resolver
             # for "EK-2/A" deliberately returns an empty set, see

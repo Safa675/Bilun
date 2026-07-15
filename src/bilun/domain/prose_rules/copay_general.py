@@ -28,9 +28,12 @@ def _rules_by_service_type() -> dict[str, dict]:
     """Index copay rules by ``service_type`` (W2.1 refactor).
 
     Replaces the 4 hardcoded ``rule_id`` lookups with a single
-    service_type-keyed dispatch. Each resolver knows its target service_type
-    (``drug``, ``material``, ``ivf_treatment``, ``drug_prescription_flat``),
-    so the lookup is O(1) and unblocks the 13 dormant rules structurally.
+    service_type-keyed dispatch. 4 of 10 service_types have resolvers today
+    (``drug``, ``material``, ``ivf_treatment``, ``drug_prescription_flat``);
+    the remaining 6 (``copay_exemption``, ``copay_surcharge``, ``copay_muayene``,
+    ``copay_muayene_modifier``, ``copay_refund``, ``drug_injectable_box_count``)
+    are documentation-only rules with empty rate tables — they need custom
+    evaluators or schema expansion before they can fire.
 
     Two rules share ``service_type: "material"`` — ``1.8.3.(1).protez_ortez``
     (external prosthesis/orthosis) and ``1.8.3.(2)`` (general materials). They
