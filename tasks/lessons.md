@@ -319,3 +319,15 @@ For simple messages with no metacharacters, `-m` is fine.
 2. A grep/AST proof that no caller passes the required argument.
 
 Reading the function body alone is insufficient — variable names can be misread, and defaults can be overridden at every call site. **Execute, don't assume.**
+
+---
+
+## 2026-07-16 — Deferral reasons are assumptions that must be verified, not stated
+
+**Pattern:** In the finans coder Phase 2 plan, I deferred the DRUG crosswalk with reason "needs external TTCK brand→barcode list" and the MATERIAL crosswalk with reason "genuine 1:many ambiguity, low payoff." Both reasons sounded plausible enough to commit to a plan and ship as "Out of scope." When the user pushed back ("investigate this properly"), ~15 minutes of catalog inspection disproved both: EK-4A has a full `drug_name` column (not barcode-only) → 84% brand-match feasible; EK-3 has 3,659 codes across 23 families (not 280) → consumables DO map to categories. Both crosswalks were built in Phase 3 and hit 74% (drug) / 93% (material) coverage. The deferral cost nothing in rework, but it left ~525 mappings on the table for an entire phase because I trusted my own plausible-sounding reasons without checking.
+
+**Rule:** When deferring work with a stated reason ("needs X", "has Y problem", "not feasible because Z"), the reason is itself an unverified claim about the codebase and MUST be checked before it ships in a plan — same standard as §11 anti-hallucination for code claims. Concretely:
+1. A deferral reason citing a catalog's structure ("barcode-only", "1:many") requires a `pl.read_parquet(...)` inspection of that catalog, not a memory of what some function returned.
+2. "Needs external data" is the most dangerous deferral reason — it sounds decisive but is usually wrong (the data is often already in the repo under a different path or column name). Grep the parquet columns before claiming absence.
+3. If a deferral would strand >10% of the dataset, the reason deserves the same investigation budget as the implementation itself. Cheap to check, expensive to leave wrong.
+4. Phrasing hedge: prefer "deferred pending investigation of whether X" over "deferred because X" when X is unverified. The former invites the check; the latter forecloses it.
