@@ -331,3 +331,26 @@ Reading the function body alone is insufficient — variable names can be misrea
 2. "Needs external data" is the most dangerous deferral reason — it sounds decisive but is usually wrong (the data is often already in the repo under a different path or column name). Grep the parquet columns before claiming absence.
 3. If a deferral would strand >10% of the dataset, the reason deserves the same investigation budget as the implementation itself. Cheap to check, expensive to leave wrong.
 4. Phrasing hedge: prefer "deferred pending investigation of whether X" over "deferred because X" when X is unverified. The former invites the check; the latter forecloses it.
+
+---
+
+## Polars `with_columns` in-flight column reference (2026-07-16, finans pricing audit)
+
+**Incident:** A classifier computed `delta_pct` and derived a `flag` from `pl.col("delta_pct")` inside the *same* `with_columns` call. The flag expression read the stale (null) pre-existing column, so every row fell through to `otherwise → UNDERCHARGE`. 2019 rows mislabeled; the OVERCHARGE sign was inverted (positive deltas flagged UNDERCHARGE).
+
+**Rule:** Polars evaluates all expressions in a single `with_columns` against the *input* schema — a column created in that call is NOT visible to sibling expressions. When a derived column feeds a classification:
+1. Materialize the numeric columns (`delta_pct`, ratio, etc.) in one `with_columns` step.
+2. Derive the flag in a *second* `with_columns` that reads the now-materialized column.
+This is the Polars analog of not reading a variable before it's assigned.
+
+## Verify column semantics from the data, not the name (2026-07-16)
+
+**Incident:** Built the EK-4A tier audit assuming `INDIRIM_ORANI` ("discount ratio") was a discount fraction (0–1). It was not — values included 0.0, 1.3333, 41.87, 44.5. Produced 1989 meaningless TIER_MISMATCH flags.
+
+**Rule:** A column's *name* is a hypothesis about its semantics, not a proof. Before building comparison logic on a column, inspect its actual value distribution (`describe()`, `unique().sort()`). If the values violate the assumed domain (e.g. a "ratio" with values >1 or negative), the assumption is wrong — find the real semantics by deriving from related columns (here: the real discount was `1 - KDVSIZ_INDIRIMLI/KDVSIZ_FIYAT`).
+
+## `get_ek4a_drugs()` return type (2026-07-16)
+
+**Incident:** Assumed `get_ek4a_drugs()` returned a Polars DataFrame (by analogy with other loaders). It returns `list[dict]`. Accessing `.columns` raised `AttributeError`.
+
+**Rule:** Never assume a loader's return type from naming convention. For domain accessor functions, confirm the return type by calling it once in the REPL before wiring it into a script. When converting a `list[dict]` to a frame, use `pl.from_dicts()` (vectorized, not a row loop).
