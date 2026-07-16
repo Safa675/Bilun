@@ -311,7 +311,9 @@ def _classify_ek2b(df: pl.DataFrame) -> pl.DataFrame:
         pl.when(sut > 0).then(((billed - sut) / sut) * 100.0).otherwise(None).alias("delta_pct"),
     )
     return df.with_columns(
-        pl.when(sut.is_null())
+        pl.when(billed == 0)
+        .then(pl.lit("VOIDED_LINE"))
+        .when(sut.is_null())
         .then(pl.lit("NO_SUT_PRICE"))
         .when(billed_after_abolition)
         .then(pl.lit("MULGA_BILLED_AFTER_ABOLITION"))
@@ -341,7 +343,9 @@ def _classify_ek3(df: pl.DataFrame) -> pl.DataFrame:
         .alias("delta_pct"),
     )
     return df.with_columns(
-        pl.when(ceiling.is_null())
+        pl.when(billed == 0)
+        .then(pl.lit("VOIDED_LINE"))
+        .when(ceiling.is_null())
         .then(pl.lit("NO_SUT_PRICE"))
         .when(pl.col("delta_pct").abs() < MATCH_THRESHOLD_PCT)
         .then(pl.lit("MATCH"))
@@ -554,6 +558,11 @@ def render_report(
     ek2b = df.filter(pl.col("catalog") == "EK-2B")
     ek2b_match = ek2b.filter(pl.col("flag") == "MATCH").height
     ek2b_over = ek2b.filter(pl.col("flag") == "OVERCHARGE").height
+    ek3 = df.filter(pl.col("catalog") == "EK-3")
+    ek3_voided = ek3.filter(pl.col("flag") == "VOIDED_LINE").height
+    ek3_real_under = ek3.filter(
+        (pl.col("flag") == "UNDERCHARGE") & (pl.col("KDVSIZ_FIYAT") > 0)
+    ).height
     p("## Key findings\n")
     p(
         f"1. **Crosswalk validated (side-effect goal met).** {ek2b_match} EK-2B rows "
@@ -570,12 +579,18 @@ def render_report(
         "crosswalk error.\n"
     )
     p(
-        "3. **⚠️ EK-3 (materials) results are NOT trustworthy.** The EK-3 curated "
-        "parquet carries implausible list prices (e.g. KN1069 = 103,084 TRY, AE0900 = "
-        "8,903 TRY — a catheter is not 100K TRY). This is a catalog data-quality bug "
-        "(likely unit/per-box mismatch in gazette extraction), not an audit-script bug. "
-        "The EK-3 numbers below are computed but should be ignored until the EK-3 "
-        "catalog prices are fixed. **Scope: defer EK-3 to a follow-up.**\n"
+        "3. **EK-3 (materials) catalog is correct; crosswalk had wrong mappings (now "
+        "fixed).** Earlier the EK-3 comparison looked absurd (e.g. KN1069 = 103K TRY "
+        "vs a 97.9 TRY billed line, flagged -99.9% 'undercharge'). Investigation "
+        "proved the EK-3 prices are the genuine SGK gazette rates — KN1069 is an "
+        "*implantable intrathecal baclofen pump system kit*, not a single catheter. "
+        "The real defect was 26 wrong MATERIAL crosswalk mappings from substring "
+        "collisions ('Serum **Seti**' → meniscus repair **Seti**; 'IV **Kateter** "
+        "Bandı' → anesthesia **Kateter** set). The resolver's `build_material_candidates` "
+        "has been fixed (denominator, rare-token gate, material stopwords) and the 26 "
+        "wrong rows removed from `hospital_to_sut.csv`. The remaining EK-3 'undercharge' "
+        f"is mostly VOIDED lines (billed 0): {ek3_voided} voided + {ek3_real_under} "
+        "real low-billed material rows (genuine under-billing candidates for review).\n"
     )
     p(
         "4. **EK-4A tier audit:** `INDIRIM_ORANI` is NOT a discount rate (values >1, "

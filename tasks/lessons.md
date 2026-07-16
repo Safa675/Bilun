@@ -354,3 +354,26 @@ This is the Polars analog of not reading a variable before it's assigned.
 **Incident:** Assumed `get_ek4a_drugs()` returned a Polars DataFrame (by analogy with other loaders). It returns `list[dict]`. Accessing `.columns` raised `AttributeError`.
 
 **Rule:** Never assume a loader's return type from naming convention. For domain accessor functions, confirm the return type by calling it once in the REPL before wiring it into a script. When converting a `list[dict]` to a frame, use `pl.from_dicts()` (vectorized, not a row loop).
+
+---
+
+## Don't diagnose "bad data" from a truncated display name (2026-07-16, EK-3 audit)
+
+**Incident:** I reported "⚠️ EK-3 catalog NOT trustworthy — KN1069 = 103K TRY for a catheter, a catheter is not 100K" and recommended a catalog-cleanup follow-up. Investigation proved this wrong: KN1069's full name is "TÜM SİSTEM KİT (İNTRATEKAL KATETER VE SABİT SALIMLI İNFÜZYON POMPASI)" — a complete implantable pump *system kit*, for which 103K TRY is realistic. I had read the truncated display name "İNTRATEKAL KAT…" and assumed "catheter." The real bug was in the crosswalk (substring collisions), not the catalog.
+
+**Rule:** Before declaring a data value "implausible" and attributing a root cause, read the FULL untruncated field (name, description, category). A truncated display string is a hypothesis, not evidence. Concretely:
+1. When a price seems absurd, print the FULL record (all columns: name, description, category, source) before judging — the qualifying noun may be past the truncation point.
+2. Distinguish "this value is wrong" from "this value is surprising." Verify against the upstream source (raw parquet / original XLSX) before claiming corruption.
+3. A "catalog bug" diagnosis that would defer an entire sub-system deserves the same investigation budget as the implementation — cheap to check (one `material_name` print), expensive to leave wrong.
+
+## IDF-overlap denominator must not exclude rare query tokens (2026-07-16, material resolver)
+
+**Incident:** `build_material_candidates` computed `query_idf` only over tokens with `df > 1`, excluding rare-in-catalog tokens. For "Serum Seti" this meant the denominator was just `idf(seti)`, so any entry containing "seti" scored `shared_idf/query_idf = 1.0` — a single common device word produced a perfect match. Result: 26+ wrong mappings (IV giving set → meniscus repair set, fixation band → anesthesia set) via generic-word collisions.
+
+**Rule:** In IDF-weighted overlap scoring, the denominator (query self-similarity) must include the tokens you're actually matching against. Excluding rare tokens from the denominator lets one common word divide by itself. The correct exclusion is catalog-ABSENT tokens only (`df >= 1`), not rare-in-catalog tokens (`df > 1`) — brand names / SKU codes that appear in no catalog entry legitimately shouldn't inflate the denominator, but a genuinely-rare-but-present word should.
+
+## A regression-baseline check before claiming "my change broke it" (2026-07-16)
+
+**Incident:** The full test suite failed on `test_sut.py::test_cardiac_stent_separately_payable` (401 auth). I needed to know if my change caused it. Stashing everything was awkward (the data file is gitignored). Solution: `git checkout` ONLY the changed src file, re-run the one test, restore.
+
+**Rule:** To isolate whether a failure is a regression from your change, revert ONLY the specific file under test (`cp file /tmp/fix.py && git checkout file && pytest ...; cp /tmp/fix.py file`), not the whole working tree. Faster, and works even when some changed files are untracked/gitignored. If the test fails with your change reverted, it's pre-existing — report it as such, don't fix it as part of an unrelated task.

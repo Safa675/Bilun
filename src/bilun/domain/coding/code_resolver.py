@@ -594,6 +594,18 @@ _MATERIAL_ALIASES: dict[str, str] = {
     "iyneli": "igne",
 }
 
+# Material-only stopword set: generic device-class words that appear across
+# hundreds of unrelated EK-3 categories and thus carry little discriminative
+# signal. Without filtering these, a hospital "Serum Seti" (IV giving set)
+# matches every "*SETİ" entry, and "IV Kateter Bandı" matches every "*KATETER"
+# entry. These are dropped ONLY in build_material_candidates (not in the
+# shared _meaningful_tokens, which other matchers rely on).
+_MATERIAL_STOPWORDS: frozenset[str] = frozenset({
+    "seti", "set", "sistem", "komple", "tamam", "kullanim", "tek",
+    "kullanimlik", "adet", "malzeme", "kateter", "katater", "strip",
+    "bandi", "steril", "disposable", "mm", "cm", "fr", "ml",
+})
+
 
 def _apply_material_aliases(tokens: list[str]) -> list[str]:
     return [_MATERIAL_ALIASES.get(t, t) for t in tokens]
@@ -615,6 +627,10 @@ def build_material_candidates(
     if not norm:
         return []
     desc_tokens = set(_apply_material_aliases(_meaningful_tokens(norm)))
+    # Drop generic device-class words (seti/kateter/strip/...) that appear
+    # across hundreds of unrelated EK-3 categories and carry little signal.
+    # Without this a "Serum Seti" matches every "*SETİ" entry.
+    desc_tokens = {t for t in desc_tokens if t not in _MATERIAL_STOPWORDS}
     if not desc_tokens:
         return []
     (all_entries,) = _ek3_index()
@@ -627,6 +643,18 @@ def build_material_candidates(
         for t in me.tokens:
             df[t] = df.get(t, 0) + 1
 
+    # Per-token IDF over query tokens that appear in the catalog (df >= 1).
+    # We exclude catalog-absent tokens (brand names, SKU codes like "16ch" that
+    # no EK-3 entry has) so they don't inflate the denominator and suppress
+    # otherwise-good matches. The OLD code used df > 1, which also excluded
+    # genuinely rare catalog tokens and let a single common word ("seti") score
+    # 1.0 — df >= 1 is the correct cutoff (absent-only exclusion).
+    query_idf = sum(
+        math.log(n_entries / max(df.get(t, 1), 1))
+        for t in desc_tokens
+        if df.get(t, 0) >= 1
+    )
+
     scored: list[tuple[float, _MaterialEntry]] = []
     for me in all_entries:
         if not me.tokens:
@@ -637,20 +665,17 @@ def build_material_candidates(
         # IDF-weighted overlap.
         idfs = {t: math.log(n_entries / max(df.get(t, 1), 1)) for t in inter}
         shared_idf = sum(idfs.values())
-        query_idf = sum(
-            math.log(n_entries / max(df.get(t, 1), 1))
-            for t in desc_tokens
-            if df.get(t, 1) > 1
-        )
         if query_idf <= 0:
             score = len(inter) / len(desc_tokens) * 0.4
         else:
             score = shared_idf / query_idf
-        # Rare-token bonus: if the match includes a very rare token (IDF ≥ 4,
-        # i.e. ≤~2% of categories have it), boost — that token is near-
-        # determinative (e.g. "foley" pins the Foley-catheter family).
+        # Rare-token bonus: a very rare shared token (IDF ≥ 4, ≤~2% of
+        # categories) is near-determinative (e.g. "foley" pins the Foley
+        # family) — but ONLY boost when the match already explains a good
+        # chunk of the query (base ratio ≥ 0.5). This stops a single rare
+        # word from rescuing an otherwise-unrelated candidate.
         has_rare = any(idf >= 4.0 for idf in idfs.values())
-        if has_rare:
+        if has_rare and score >= 0.5:
             score = min(score + 0.3, 1.0)
         if score >= 0.4:
             scored.append((score, me))
