@@ -162,8 +162,8 @@ _HOTEL_RE = re.compile(
 # predicate is used — physiotherapy just won't match an R-prefix and will
 # fall through to the no-prefix generator path.
 _RADIOLOGY_RE = re.compile(
-    r"grafisi|radyografi|\bbt\b|\bmr\b|\bmrg\b|\busg\b|röntgen|rontgen|"
-    r"floroskop|skopi|tomografi|mamografi|dopler|doppler|ekokardiyograf|"
+    r"grafisi|radyografi|\bbt\b|\bmr\b(?!\s*[\d.,]+\s*(?:mg|mcg|gr|iu))|\bmrg\b|\busg\b|röntgen|rontgen|"
+    r"floroskop|tomografi|mamografi|dopler|doppler|ekokardiyograf|"
     r"anjiografi|anjiyograf|sintigraf|scintigraf|"
     r"galyum|ga-68|pet-ct|soğuk ve ısıtıcı|ısıtıcı|enfraruj|galvani|"
     r"faradi|tens|diadinami|frekanslı akım|lazer terapi|fizik tedavi|"
@@ -207,7 +207,19 @@ _MATERIAL_RE = re.compile(
     r"box önlüğü|onlugu|önlük|onluk|alçı|alcı|terlik|bacaklık|dizlik|"
     r"ateli|atel |sargı|sargi|lavman|enema|laksatif|koruyucu ekipman|"
     r"covid koruyucu|karton sürgü|surgu|kord yüzüklü|imaging systems protector|"
-    r"karl storz|karl storz|morsacyberg|morsa",
+    r"karl storz|karl storz|morsacyberg|morsa|"
+    # Phase 5 additions: brand-only consumables (actual source-data spellings,
+    # including the "Steri-Stip" typo — source says Stip not Strip)
+    r"yara retraktörü|yara retractor|boyunkluk|boyunluk|damar askısı|damar askisi|"
+    r"steri-stip|steri-strip|cilt kapatma|penroz|penrose|alet cebi|"
+    r"mıs kompresör|mis kompresor|kompresör|kompresor|kılıç|kilic|hook|"
+    r"nebulizatör|nebulizator|inhalasyon|spirometre|"
+    r"şerit|serit|stripper|venöz|venöz|fire |filtreli|"
+    r"punch|biyopsi iğnesi|biyopsi ignesi|tru-cut|trucut|"
+    r"retraktör|retractor|distraktör|distraktor|ekspandr|ekspandor|"
+    # Phase 5: surgical stapler/cartridge brand names (Ethicon Endo-Surgery)
+    r"echelon|reload|rotikulatör|rotikulator|endogia|endo gia|endo clip|"
+    r"endocutter|synchroseal|sealer|ligating clip|energy device",
     re.IGNORECASE,
 )
 
@@ -243,7 +255,13 @@ _PROCEDURE_RE = re.compile(
     r"değerlendirme|degerlendirme|inceleme|sistektomi|mesane|diversiyon|"
     r"sempatektomi|plörektomi|plorektomi|vats|stend yerleştir|stent|"
     r"penil protez|elektrokoterizasyon|kontrollü analjezi|yaklaş\.|yaklas|"
-    r"vertebraya|korreks|ortotopik",
+    r"vertebraya|korreks|ortotopik|"
+    # Phase 5 additions: abbreviated procedures
+    r"serum takma|kan gazı alma|intravenöz\s|kriyoterapi|"
+    r"sistoskopi|üretroskopi|uretroskopi|"
+    r"dializ|diyaliz|hemodiyaliz|"
+    r"reduksiyon|redüksiyon|manipülasyon|manipulasyon|"
+    r"ekstraksiyon|ekstraksyon|çekimi|cekimi",
     re.IGNORECASE,
 )
 

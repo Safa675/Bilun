@@ -95,6 +95,9 @@ GOLDEN = [
     # Verified during Phase 4 LLM pass.
     ("C7125004", "BT, Toraks (düşük doz) (Kontrastsız)", "RADIOLOGY", "R100450"),
     ("C7101001", "Akciğer Grafisi (Arka Ön)", "RADIOLOGY", "801720"),
+    # Phase 5 recoveries — Panoramik (dental EK-2Ç) + Tansiyon Holter (ABPM).
+    ("06100015", "Panoramik film", "RADIOLOGY", "401080"),
+    ("C9378401", "Tansiyon Holter (24 saat)", "PROCEDURE", "700470"),
 ]
 
 
@@ -114,7 +117,7 @@ def test_golden_set_resolves_to_expected_sut_code(
 def test_golden_set_count() -> None:
     """Guard: the golden set must have exactly 20 cases — if someone adds or
     removes one, this test forces a deliberate acknowledgement."""
-    assert len(GOLDEN) == 26
+    assert len(GOLDEN) == 28
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -281,6 +284,34 @@ def test_classify_category_recovered_labs_and_sutures() -> None:
     assert classify_category("Kan Gazları, Arteriyel (Günlük)") == "LAB"
     assert classify_category("4/0 Vicryl, 17mm, Ethicon, W9106") == "MATERIAL"
     assert classify_category("3/0 Pegelak, 25mm, Doğsan, L4250") == "MATERIAL"
+
+
+def test_classify_category_skopi_substring_regression() -> None:
+    """Regression (Phase 5): the bare 'skopi' token matched inside 'Laparoskopik'
+    and '(Skopi Dahil)', misrouting 32 surgical items to RADIOLOGY. The fix
+    (keep only 'floroskop') must route laparoscopic surgery to PROCEDURE/
+    MATERIAL while keeping genuine fluoroscopy as RADIOLOGY. This test locks
+    the fix — if someone re-adds bare 'skopi', it fails."""
+    from src.bilun.domain.coding import classify_category
+
+    # Misroutes that MUST now classify correctly
+    assert classify_category("Laparoskopik Kolesistektomi") == "PROCEDURE"
+    assert classify_category("Laparoskopik Aspiratör, 5mm") == "MATERIAL"
+    assert classify_category("Anterior yaklaş.diskektomi (Skopi Dahil)") == "PROCEDURE"
+    # Genuine fluoroscopy MUST stay RADIOLOGY
+    assert classify_category("Floroskopik muayene") == "RADIOLOGY"
+
+
+def test_classify_category_mr_drug_vs_imaging_regression() -> None:
+    """Regression (Phase 5): 'Flomax Mr 0,4 mg' misclassified as RADIOLOGY
+    because \\bmr\\b matched the drug abbreviation (modified-release), not
+    MRI. The negative-lookahead gate (reject Mr before a dose) fixes it.
+    Genuine MR imaging ('MR, Abdomen') must still classify as RADIOLOGY."""
+    from src.bilun.domain.coding import classify_category
+
+    assert classify_category("Flomax Mr 0,4 mg 30 Kapsül") == "DRUG"
+    assert classify_category("MR, Abdomen alt (Kontrastlı)(3.0 T)") == "RADIOLOGY"
+    assert classify_category("MR, Beyin (kranium) (Kontrastsız)") == "RADIOLOGY"
 
 
 def test_option_b_drug_resolves_to_equivalence_group() -> None:

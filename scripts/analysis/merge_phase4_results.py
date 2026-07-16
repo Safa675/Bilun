@@ -60,11 +60,12 @@ FROZEN_COLUMNS = [
 ]
 
 PHASE4_LLM_FILES = [Path(f"/tmp/p4/batch_{i}_result.json") for i in range(1, 5)]
+PHASE5_LLM_FILES = [Path(f"/tmp/p5/batch_{i}_result.json") for i in range(1, 3)]
 
 
 def load_phase4_llm() -> dict[str, dict]:
     merged: dict[str, dict] = {}
-    for path in PHASE4_LLM_FILES:
+    for path in [*PHASE4_LLM_FILES, *PHASE5_LLM_FILES]:
         if not path.exists():
             print(f"WARN: {path} missing")
             continue
