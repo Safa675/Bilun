@@ -274,7 +274,37 @@ Pushing to GitHub while CI is failing is a critical failure.
 Fix CI first. Push second. No exceptions.
 
                                            
-## 11. Anti Hallucination Rules
+## 11. PR Review Check Before Every Merge
+
+Before merging ANY PR to main, check the PR review feedback first — bot reviewers
+(`pr_agent`, Copilot) AND any human reviews.
+
+### Steps
+- After CI passes, fetch the PR review comments (`gh pr view <n> --json reviews,comments`)
+- Read every comment; classify each as: (a) real bug — must fix, (b) clarity/style —
+  should fix if cheap, (c) low-value/defensive — skip with documented reason
+- If any comment is a real bug (a): fix it, push, re-verify CI green, THEN merge
+- If comments are only (b)/(c): fix the cheap ones, skip the rest with a one-line
+  reason in the commit message, then merge
+- Never merge with an unaddressed (a)-class review finding
+
+### Hard Rule
+Merging a PR with an unaddressed real-bug review finding is a critical failure.
+The review is the last gate before main — read it, don't rubber-stamp it.
+
+### Notes
+- Bot reviewers (the `pr_agent` GitHub Action runs on every PR) catch real bugs —
+  PR #37's review found 3 genuine issues (identical if/else branches, atexit cleanup
+  deleting preserved dirs, a regex that failed on dash-less tokens). Treat bot reviews
+  as substantive, not noise.
+- "Real bug" = the code would produce wrong output, crash on a realistic input, or
+  contradict its own docstring/comment. Style nits and low-probability defensive
+  measures are NOT real bugs.
+- When skipping a suggestion, say WHY in the commit message (`Skipped: <reason>`) so
+  the next reader knows it was considered, not missed.
+
+                                           
+## 12. Anti Hallucination Rules
 1. NEVER name a library, model, or function without grep/read confirming it exists first.
 2. When asked for deep analysis, the FIRST action must be tool calls, not prose.
 3. Every factual claim about the codebase requires a file:line citation.

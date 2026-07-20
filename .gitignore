@@ -87,3 +87,8 @@ raw data/faturalandirma-usul-ve-esaslari-el-kitabi-06122022pdf.pdf
 *.pptx
 reports/agent/
 data/gazette/.pipeline_smoke_tmp/
+reports/agent/.mem0/
+reports/finans_*
+
+# ZCode session-scratch plans (tool-local, not source)
+.zcode/plans/plan-sess_*

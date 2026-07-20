@@ -420,3 +420,78 @@ This is the Polars analog of not reading a variable before it's assigned.
 3. **Do NOT try to fix this by `chmod 777` on the host repo or by `setfacl` granting uid 10001** — both give the agent write access to the real repo, crossing the read-only boundary. The subdir-mount pattern is the correct fix.
 4. The uid-mismatch is by design in this OpenHands version — don't waste time looking for a `SANDBOX_USER_ID`-style override on the sandbox side; there isn't one.
 5. To verify the mount worked before running a full agent task: `docker exec <sandbox> sh -c 'ls /workspace/<name> && head -3 /workspace/<name>/AGENTS.md && touch /workspace/conversations/test && rm /workspace/conversations/test && touch /workspace/<name>/test'` — last command should FAIL with read-only.
+
+---
+
+## OpenHands agent iteration caps + the per-role tuning needed (2026-07-20)
+
+**Pattern:** Ran all 3 employee agents end-to-end on the custom sandbox image. Reimbursement (15 iter, 80s) and Full-stack (15 iter, 195s) finished cleanly. Data Engineer hit `MaxIterationsReached` at 15 iterations ~260s — it ran both checkers successfully (pipeline_smoke PASS, freshness correct) but spent too many iterations reading `pipeline_smoke.py` source to understand the temp-dir behavior before writing its report, and ran out of budget. The checkers themselves weren't the cost — the agent's investigative thoroughness was.
+
+**Rule:** Per-role iteration caps must match the role's investigation depth, not be uniform:
+1. **Reimbursement** (15 iter): sufficient — 3 checkers, well-documented, agent reads AGENTS.md + runs + writes.
+2. **Full-stack** (15 iter): sufficient but tight — tsc + vitest add runtime, agent barely finished. Bump to 20 if it starts hitting the cap.
+3. **Data** (15 iter): INSUFFICIENT — pipeline_smoke is slow (~18s) and the agent wanted to understand its internals. Needs 20-25 iterations.
+4. The cap is set per-conversation in the `POST /api/conversations` body (`max_iterations`), NOT globally. Tune per role by embedding the right default in each role's `system-prompt.md` invocation instruction.
+5. When an agent errors with `MaxIterationsReached`, the checkers may have ALREADY run successfully — check `reports/agent/<role>/` for outputs before assuming total failure. The Data agent's pipeline_smoke + freshness outputs were on disk; only the report write was skipped.
+
+---
+
+## Checker scripts crash on the app's read-only log file (2026-07-20)
+
+**Pattern:** `scripts/agent/endpoint_coverage.py` imports `src.bilun.api.app`, which triggers the app's startup logging. The logging config (`src/bilun/shared/state.py:27`) opens `logs/bilun.log` with a `FileHandler` for append. Inside the sandbox, the repo is mounted `:ro` AND the `logs/` dir is owned by host user `pn` — so the `openhands` (uid 10001) user gets `PermissionError: [Errno 13] Permission denied: '/workspace/bilun/logs/bilun.log'`. The checker crashes not because of its own logic but because importing the app triggers a write to a read-only path. The Full-stack agent correctly diagnosed this with file:line citation and fell back to the frozen baseline.
+
+**Rule:** Any checker that imports `src.bilun.api.app` (or anything transitively touching the logging config) must set `BILUN_LOG_TO_FILE=0` (or the equivalent env override) BEFORE the import, OR the logging config must guard against read-only CWD. Concretely:
+1. In `endpoint_coverage.py`, set `os.environ["BILUN_DISABLE_FILE_LOG"] = "1"` (verify the actual env var name in `state.py`) before `from src.bilun.api import app`.
+2. The durable fix is in `src/bilun/shared/state.py:27`: wrap the FileHandler creation in `try/except (PermissionError, OSError)` so a read-only log dir degrades to stdout-only instead of crashing the whole import chain. This also helps VPS deployments where the log dir might not exist yet.
+3. The pattern generalizes: importing a FastAPI app for introspection (route-walking) should NOT trigger side-effecting startup like file logging. The import path and the run path should be separable.
+
+---
+
+## Agent-written files have uid-10001-only perms (2026-07-20)
+
+**Pattern:** Reports written by the agent (e.g. `findings-2026-07-20.md`) land with `-rw-------` owned by `openhands:openhands` (uid 10001). The host user `safa` (uid 1000) cannot `cat` them — "Permission denied" — even though `reports/agent/` has a default ACL granting uid 10001 rwx. The ACL governs the DIRECTORY (create files inside) but not the FILE mode the agent's process uses (Python's default `0o600` via `open(..., 'w')`). Reading required `docker exec <sandbox> cat <path>` instead of a host-side `cat`.
+
+**Rule:** When the host user needs to read agent-written reports without `docker exec`:
+1. The agent's report-writing step (or `run_checks.sh`) should `chmod 644` the file after writing, OR set `os.umask(0o022)` at the start of the checker.
+2. Alternatively, the default ACL on `reports/agent/` should be `d:m::rwx` (mask) + the files inherit via `setfacl -m d:g:safa:rwx` if safa is in a group — but the simplest fix is `chmod 644` post-write.
+3. This is cosmetic — the agent's findings are accessible via `docker exec`. But for the daily-driver workflow where Safa reads reports from his editor, file mode matters.
+
+---
+
+## mem0's LLM extractor chokes on large structured inputs (2026-07-20)
+
+**Pattern:** `scripts/agent/memory/save.py` sent an 8KB structured markdown report to
+`mem0.add()`. mem0's glm-4.6 fact-extraction LLM returned 0 memories — silently. The
+underlying issue: mem0's extraction prompt expects conversational/natural-language input,
+not tables + tier classifications + per-rule breakdowns. Large structured markdown has
+low signal-to-noise for the extractor; it gives up and returns empty.
+
+**Rule:** When feeding reports to mem0 for fact extraction:
+1. **Cap input at ~2500 chars.** Larger inputs silently return 0 memories.
+2. **Prefer the Summary section**, not the full report. If the report has a `## Summary`
+   section, extract from there; the full report is the durable artifact on disk, memory
+   only needs the headline distillation.
+3. **Test extraction on a simple single-fact input first** ("Found 116 TIER-1 refs across
+   9 rule sets") — if that works but the full report doesn't, it's an input-size issue,
+   not a config bug.
+4. mem0's `add()` does NOT error on empty extraction — it returns `{'results': []}`. Always
+   check the result count and log it; a silent 0 is the failure mode.
+
+---
+
+## OpenHands Z_API_KEY env forwarding gap (2026-07-20)
+
+**Pattern:** Set `Z_API_KEY` on the `openhands-app` container (`-e Z_API_KEY=...`), expecting
+the sandbox (spawned separately) to inherit it. The sandbox did NOT — `os.environ['Z_API_KEY']`
+was unset inside the agent's terminal sessions, so `python -m scripts.agent.memory.load`
+failed with "Z_API_KEY env var not set." The app container has the key; the sandbox doesn't
+auto-inherit arbitrary env vars.
+
+**Rule:** To pass secrets to the OpenHands sandbox:
+1. The app auto-forwards env vars with prefixes `LLM_*` and `LMNR_*` only (verified in
+   `sandbox_spec_service.py:AUTO_FORWARD_PREFIXES`). `Z_API_KEY` doesn't match.
+2. Workaround: set `OH_AGENT_SERVER_ENV` (JSON) on the app container to forward arbitrary
+   vars: `-e OH_AGENT_SERVER_ENV='{"Z_API_KEY":"..."}'`. This injects them into every
+   spawned sandbox.
+3. OR rename to `LLM_Z_API_KEY` to match the auto-forward prefix (hackier).
+4. For production: use a secret file mounted into both containers, not env vars.
