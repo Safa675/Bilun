@@ -16,7 +16,6 @@ review path (the honest-skip pattern) rather than hard errors.
 
 from __future__ import annotations
 
-from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 

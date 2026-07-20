@@ -19,10 +19,7 @@ Output:
 
 from __future__ import annotations
 
-import json
 import time
-from collections import Counter
-from datetime import date
 from pathlib import Path
 
 import polars as pl
@@ -194,11 +191,11 @@ def run_validation() -> None:
     print("=" * 60)
     if violations:
         vdf = pl.DataFrame(violations)
-        print(f"\nSeverity breakdown:")
+        print("\nSeverity breakdown:")
         print(vdf.group_by("severity").len().sort("len", descending=True))
-        print(f"\nTop 10 drugs by specialty-mismatch count:")
+        print("\nTop 10 drugs by specialty-mismatch count:")
         print(vdf.group_by("drug_name").len().sort("len", descending=True).head(10))
-        print(f"\nTop 10 prescribing departments by mismatch count:")
+        print("\nTop 10 prescribing departments by mismatch count:")
         print(
             vdf.group_by("prescriber_specialty")
             .len()

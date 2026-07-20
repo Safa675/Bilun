@@ -118,7 +118,7 @@ def build_golden_dataset() -> None:
     kind_counts: dict[str, int] = defaultdict(int)
     for s in all_samples:
         kind_counts[s["expect_violation"]] += 1
-    print(f"\nViolation kind distribution in golden set:")
+    print("\nViolation kind distribution in golden set:")
     for kind, count in sorted(kind_counts.items(), key=lambda kv: -kv[1]):
         print(f"  {kind}: {count}")
 

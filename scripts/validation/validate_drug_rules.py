@@ -18,9 +18,7 @@ Output:
 
 from __future__ import annotations
 
-import json
 import time
-from datetime import date
 from pathlib import Path
 
 import polars as pl
@@ -171,11 +169,11 @@ def run_validation() -> None:
     print("=" * 60)
     if violations:
         vdf = pl.DataFrame(violations)
-        print(f"\nViolation breakdown:")
+        print("\nViolation breakdown:")
         print(vdf.group_by("violation_kind").len().sort("len", descending=True))
-        print(f"\nSeverity breakdown:")
+        print("\nSeverity breakdown:")
         print(vdf.group_by("severity").len().sort("len", descending=True))
-        print(f"\nTop 10 drugs by violation count:")
+        print("\nTop 10 drugs by violation count:")
         print(vdf.group_by("drug_name").len().sort("len", descending=True).head(10))
 
     print(f"\nTotal runtime: {(time.time() - t_start) / 60:.1f} minutes")

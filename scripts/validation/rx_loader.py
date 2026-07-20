@@ -185,11 +185,11 @@ def load_drug_diagnosis_pairs() -> pl.DataFrame:
 
 if __name__ == "__main__":
     df = load_drug_diagnosis_pairs()
-    print(f"\n=== FINAL DATASET ===")
+    print("\n=== FINAL DATASET ===")
     print(f"Rows: {df.height:,}")
     print(f"Unique drugs: {df['drug_name'].n_unique():,}")
     print(f"Unique diagnoses: {df['primary_icd10'].n_unique():,}")
-    print(f"\nTop 15 drugs by prescription count:")
+    print("\nTop 15 drugs by prescription count:")
     print(df.group_by("drug_name").len().sort("len", descending=True).head(15))
 
 
