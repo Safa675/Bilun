@@ -21,8 +21,6 @@ from pathlib import Path
 import polars as pl
 import pytest
 
-pytestmark = pytest.mark.unit
-
 _REPO = Path(__file__).resolve().parents[3]
 _SCRIPTS = _REPO / "scripts" / "analysis"
 if str(_SCRIPTS) not in sys.path:
@@ -31,6 +29,15 @@ if str(_SCRIPTS) not in sys.path:
 import analyze_finans_data as af  # noqa: E402
 
 _SOURCE = _REPO / "data" / "Finans.XLSX"
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.skipif(
+        not _SOURCE.exists(),
+        reason="data/Finans.XLSX is KVKK-sensitive and not committed; "
+        "tests run only where the real source file is present",
+    ),
+]
 
 # ---- Frozen ground-truth constants (probe 2026-07-15) ----
 RAW_ROWS = 7_646

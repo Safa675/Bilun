@@ -18,12 +18,26 @@ from pathlib import Path
 
 import pytest
 
-pytestmark = pytest.mark.unit
-
 _REPO = Path(__file__).resolve().parents[4]
 _SRC = _REPO / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_REPO))
+
+# The golden-set and frozen-table tests require data files that are
+# KVKK-sensitive / local-only (gitignored under data/*). Skip them in CI
+# where the real data isn't present rather than reporting false failures.
+_FROZEN_TABLE = _REPO / "data" / "coding" / "hospital_to_sut.csv"
+_DATA_PRESENT = _FROZEN_TABLE.exists()
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.skipif(
+        not _DATA_PRESENT,
+        reason="data/coding/hospital_to_sut.csv (frozen table) is local-only "
+        "(gitignored under data/*); resolver golden-set + mechanics tests "
+        "run only where the real data is present",
+    ),
+]
 
 from src.bilun.domain.coding import (  # noqa: E402
     CategoryHint,
@@ -32,6 +46,7 @@ from src.bilun.domain.coding import (  # noqa: E402
     resolve_code,
 )
 from src.bilun.domain.coding.code_resolver import (  # noqa: E402
+    FROZEN_MAPPING_PATH,
     clear_resolver_cache,
     normalize_name,
 )
