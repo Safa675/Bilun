@@ -21,7 +21,7 @@ jobs:
     # both success and failure; this guard turns failures into a no-op.)
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Abort unless invoked from main
@@ -92,41 +92,68 @@ jobs:
             (cd frontend && npm run build)
           fi
 
-          # Restart backend. If rule/evaluator data changed, force a cache
-          # rebuild by temporarily setting BILUN_STARTUP_POLICY=rebuild.
+          # Restart backend. If rule/evaluator data changed, rebuild the cache
+          # to a STAGING FILE in the background while the old backend keeps
+          # serving the existing cache. When the build finishes, atomically
+          # swap the file and restart in load-only mode (~5s downtime instead
+          # of the previous ~15min blocking rebuild that raced the 900s timeout).
           if [ -n "$BACKEND_CHANGED" ] || [ -n "$DEPS_CHANGED" ]; then
             if [ -n "$CACHE_REBUILD" ]; then
-              echo "=== rule/evaluator data changed — triggering cache rebuild ==="
-              sed -i 's/^#*\s*BILUN_STARTUP_POLICY=.*/BILUN_STARTUP_POLICY=rebuild/' .env
-              grep -q 'BILUN_STARTUP_POLICY' .env || echo 'BILUN_STARTUP_POLICY=rebuild' >> .env
-            fi
-            echo "=== restarting backend ==="
-            systemctl restart bilun-backend
+              echo "=== rule/evaluator data changed — background cache rebuild to staging file ==="
+              STAGING=".cache/bilun.duckdb.new"
 
-            # If we triggered a rebuild, wait for it to finish (blocking, can
-            # take several minutes). Then reset to load-only for future restarts.
-            if [ -n "$CACHE_REBUILD" ]; then
-              echo "=== waiting for cache rebuild to complete ==="
-              for i in $(seq 1 90); do
-                HEALTH=$(curl -sf --max-time 5 localhost:8001/health 2>/dev/null || echo "")
-                READY=$(echo "$HEALTH" | grep -o '"cache_ready":[a-z]*' | cut -d: -f2 || echo "")
-                if [ "$READY" = "true" ]; then
-                  echo "=== cache rebuild complete ==="
+              # Build to a separate file — no DuckDB lock conflict with the
+              # live backend (which is still serving the old bilun.duckdb).
+              # The --activate flag sets the build pointer inside the staging
+              # file so it's ready to serve immediately after the swap.
+              nohup .venv/bin/python scripts/bilun/build_cache.py \
+                  --db-path "$STAGING" --activate \
+                  > /tmp/bilun_build.log 2>&1 &
+              BUILD_PID=$!
+              echo "Background build PID: $BUILD_PID"
+
+              # Wait for the staging build to finish (20-min ceiling).
+              # The backend stays UP serving the old cache this entire time.
+              BUILD_OK=""
+              for i in $(seq 1 120); do
+                if ! kill -0 "$BUILD_PID" 2>/dev/null; then
+                  wait "$BUILD_PID"; BUILD_EXIT=$?
+                  if [ "$BUILD_EXIT" -eq 0 ]; then
+                    echo "=== staging cache build complete ==="
+                    BUILD_OK=1
+                  else
+                    echo "=== ERROR: staging cache build failed (exit $BUILD_EXIT) ==="
+                    tail -30 /tmp/bilun_build.log
+                    rm -f "$STAGING" "$STAGING.wal"
+                    exit 1
+                  fi
                   break
                 fi
-                echo "  rebuild in progress... ($((i*10))s elapsed)"
+                echo "  background rebuild in progress... ($((i*10))s elapsed)"
                 sleep 10
               done
-              # Fail the deploy if the cache never became ready.
-              if [ "$READY" != "true" ]; then
-                echo "=== ERROR: cache rebuild timed out after 900s ==="
-                echo "=== Backend may be serving stale/no cache — aborting deploy ==="
+
+              if [ -z "$BUILD_OK" ]; then
+                echo "=== ERROR: cache build timed out after 1200s ==="
+                kill "$BUILD_PID" 2>/dev/null || true
+                rm -f "$STAGING" "$STAGING.wal"
                 exit 1
               fi
-              # Reset to load-only so future restarts don't rebuild unnecessarily.
-              sed -i 's/^#*\s*BILUN_STARTUP_POLICY=.*/# BILUN_STARTUP_POLICY=load-only/' .env
-              echo "=== reset to load-only for future restarts ==="
+
+              # Atomic swap: move staging file over the live one.
+              # Linux leaves the old inode alive for the backend's open FD,
+              # so in-flight queries finish against the old data. The restart
+              # below is what makes the process pick up the new file.
+              mv -f "$STAGING" .cache/bilun.duckdb
+              echo "=== atomic cache swap complete ==="
             fi
+
+            # Restart in load-only mode — picks up the (already-built) cache
+            # file in ~5s. No synchronous rebuild, no 503 window.
+            sed -i 's/^#*\s*BILUN_STARTUP_POLICY=.*/BILUN_STARTUP_POLICY=load-only/' .env
+            grep -q 'BILUN_STARTUP_POLICY' .env || echo 'BILUN_STARTUP_POLICY=load-only' >> .env
+            echo "=== restarting backend (load-only) ==="
+            systemctl restart bilun-backend
           fi
           if [ -n "$FRONTEND_CHANGED" ] || [ -n "$DEPS_CHANGED" ]; then
             echo "=== restarting frontend ==="
