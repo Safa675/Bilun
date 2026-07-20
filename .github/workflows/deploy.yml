@@ -102,6 +102,10 @@ jobs:
               echo "=== rule/evaluator data changed — background cache rebuild to staging file ==="
               STAGING=".cache/bilun.duckdb.new"
 
+              # Remove any leftover staging file from a previous interrupted
+              # deploy so the build always starts from a clean slate.
+              rm -f "$STAGING" "$STAGING.wal"
+
               # Build to a separate file — no DuckDB lock conflict with the
               # live backend (which is still serving the old bilun.duckdb).
               # The --activate flag sets the build pointer inside the staging
@@ -144,7 +148,17 @@ jobs:
               # Linux leaves the old inode alive for the backend's open FD,
               # so in-flight queries finish against the old data. The restart
               # below is what makes the process pick up the new file.
+              #
+              # Also swap the WAL sidecar. DuckDB replays *.wal on open; leaving
+              # the old WAL would replay foreign transactions against the new
+              # main file. If the staging build left a WAL, move it; otherwise
+              # remove any stale old WAL so the restart starts clean.
               mv -f "$STAGING" .cache/bilun.duckdb
+              if [ -f "$STAGING.wal" ]; then
+                mv -f "$STAGING.wal" .cache/bilun.duckdb.wal
+              else
+                rm -f .cache/bilun.duckdb.wal
+              fi
               echo "=== atomic cache swap complete ==="
             fi
 
