@@ -300,45 +300,5 @@ Fix CI first. Push second. No exceptions.
 6. **Capture Lessons**  
    After corrections or mistakes, update `tasks/lessons.md`.
 
-7. **Zero Assumptions**  
+7. **Zero Assumptions**
    Ask questions before implementing if anything is unclear.
-
-## graphify
-
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
-
-When the user types `/graphify`, invoke the `skill` tool with `skill: "graphify"` before doing anything else.
-
-### Hard Rule — Graphify-first for codebase exploration
-
-**For codebase exploration (finding where something lives, how pieces relate, scoping a change), run `graphify query` / `path` / `explain` BEFORE open-ended Grep/Glob when `graphify-out/graph.json` exists.** Going straight to fishing Grep for orientation is a critical failure — it wastes 5–10× the tokens that a scoped graphify subgraph would cost.
-
-Exceptions (graphify may be skipped, Grep/Read is correct):
-- Known file paths (`edit AppSidebar.tsx line 40`, `read the file graphify just named`)
-- Exact-string hunts (`grep "SENTETIK-HASTA-0001"`)
-- Secrets / env / config values
-- Generated data, build artifacts, lockfiles
-- Reading a file that a graphify result already pointed you to
-- The user explicitly said to skip graphify
-- The task is about stale/incorrect graph output itself
-
-Command cheat sheet:
-- `graphify query "<question>"` — BFS traversal, broad context (default for orientation)
-- `graphify path "<A>" "<B>"` — relationship between two nodes/files
-- `graphify explain "<concept>"` — focused concept subgraph
-- `graphify query "<q>" --budget 1500` — cap answer at N tokens
-- `graphify update .` — refresh graph after code changes (AST-only, no API cost)
-
-### Hard Rule — Exploration subagents MUST start with graphify
-
-Every subagent spawned for **explore / research / "where is X" / relationship** questions MUST receive this as the first instruction in its prompt:
-
-> **Step 1 (mandatory): Before any Grep/Read, run `graphify query "<the question>"` and use the scoped subgraph as your starting point. Only Grep/Read for things graphify doesn't surface.**
-
-The orchestrator writes this into the subagent prompt — subagents will not do it on their own.
-
-### Other rules
-- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
-- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

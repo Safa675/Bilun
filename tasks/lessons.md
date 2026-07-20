@@ -9,15 +9,15 @@ Format per entry:
 
 ---
 
-## 2026-07-13 — Graphify installed but NEVER used by any agent (126 subagents, 0 graphify calls)
+## 2026-07-13 → 2026-07-20 — Graphify installed but NEVER used by any agent; tool removed (126 subagents, 0 graphify calls)
 
-**Pattern:** graphify was installed specifically to cut subagent token usage on codebase exploration — `graphify-out/graph.json` (11MB) was present and fresh, the `graphify` binary (v0.8.49) was on PATH, the `/graphify` skill was registered, and AGENTS.md had a soft "for codebase questions, first run graphify query" rule. A full audit of all 126 subagent artifact directories under `~/.zcode/cli/artifacts/` showed **zero** executed `graphify query`/`path`/`explain` commands — the word "graphify" only appeared incidentally in file-path listings. The orchestrator (me) never once ran a graphify query either, nor wrote graphify-first instructions into any subagent prompt. Every codebase question was answered via raw Grep + Read — exactly the 5–10× token burn that graphify was supposed to eliminate. The tool was fully wired but produced zero value because the rule was phrased as guidance, not as a Hard Rule, and was never enforced.
+**Pattern:** graphify was installed specifically to cut subagent token usage on codebase exploration — `graphify-out/graph.json` (11MB) was present and fresh, the `graphify` binary (v0.8.49) was on PATH, the `/graphify` skill was registered, and AGENTS.md had escalating rules from soft guidance up to a Hard Rule. A full audit of all agent session directories under `~/.zcode/cli/agents/` (16 sessions) showed **zero** executed `graphify query`/`path`/`explain` commands across every single one. The word "graphify" appeared 927 times in transcripts, but every occurrence was either AGENTS.md text being echoed into context (~574) or the model discussing graphify in prose — never an actual Bash command execution. The tool was fully wired, rules escalated from guidance to Hard Rule, and it produced **zero** value. Developer research confirmed this is an industry-wide pattern: AGENTS.md/CLAUDE.md instructions are hints, not enforcement, and agents default to Grep/Read because it's lower-friction.
 
-**Rule:** Codebase exploration (where does X live, how do A and B relate, scope a change) MUST go through graphify first. Concretely:
-1. **Orchestrator duty:** Every subagent spawned for explore/research/relationship questions MUST receive "Step 1: run `graphify query '<question>'` before any Grep/Read" as the FIRST instruction in its prompt. Subagents will not do this on their own — the orchestrator writes it in.
-2. **Graphify-first is a Hard Rule (critical failure tier), not guidance.** Going straight to fishing Grep for orientation when `graphify-out/graph.json` exists wastes 5–10× tokens and is treated the same as the §5 zombie-process / §7 plan-first violations.
-3. **Exceptions where Grep/Read is correct and graphify is wrong:** known file paths (`edit X.tsx line 40`), exact-string hunts, secrets/env, generated data, build artifacts, reading a file graphify already named, or user said skip.
-4. **Self-check at session start:** when reviewing AGENTS.md per §1, confirm graphify is in the Hard Rule tier, not soft guidance. Soft guidance gets ignored — this entry is proof.
+**Rule:** Don't install agent-integration tools that depend on the agent choosing to use them. Before installing any "agents will automatically use X" tool:
+1. **Verify it actually works.** Check real session logs for actual tool invocations, not just mentions. A tool mentioned 927 times with 0 executions is dead weight, not an integration.
+2. **Instruction-following is a hint, not a contract.** Escalating wording (guidance → MUST → Hard Rule → critical failure) does NOT increase invocation rate. The failure isn't the wording; it's the assumption that instructions reliably control agent tool selection.
+3. **Right-size the tool to the repo.** Graphify's token savings (40-70%) only materialize on large repos where Grep returns too much. At ~146K LOC with clean module boundaries, Grep + Glob + Read genuinely works. Don't pay the complexity tax for a benefit you won't see until 500K+ LOC.
+4. **The costs are real even when the tool is unused.** graphify cost 255M of `.git` bloat, inotify watcher exhaustion (ENOSPC errors), context-window tax (574 echoed mentions per session), and maintenance overhead (regenerating graphs after every change). All for zero executions.
 
 ---
 
@@ -377,3 +377,46 @@ This is the Polars analog of not reading a variable before it's assigned.
 **Incident:** The full test suite failed on `test_sut.py::test_cardiac_stent_separately_payable` (401 auth). I needed to know if my change caused it. Stashing everything was awkward (the data file is gitignored). Solution: `git checkout` ONLY the changed src file, re-run the one test, restore.
 
 **Rule:** To isolate whether a failure is a regression from your change, revert ONLY the specific file under test (`cp file /tmp/fix.py && git checkout file && pytest ...; cp /tmp/fix.py file`), not the whole working tree. Faster, and works even when some changed files are untracked/gitignored. If the test fails with your change reverted, it's pre-existing — report it as such, don't fix it as part of an unrelated task.
+
+---
+
+## OpenHands + Z coding-plan: litellm requires a provider prefix the upstream rejects (2026-07-19)
+
+**Pattern:** Configured OpenHands to use the Z coding-plan endpoint (`https://api.z.ai/api/coding/paas/v4`) with model `glm-5.2`. The first agent conversation failed with `LLMBadRequestError: LLM Provider NOT provided. Pass in the LLM provider you are trying to call. You passed model=glm-5.2`. OpenHands uses **litellm** as its LLM router, which REQUIRES a provider prefix on the model string (e.g. `openai/`, `anthropic/`, `huggingface/`). A bare model name is ambiguous and rejected. BUT — the Z-API itself REJECTS the prefixed name: sending `openai/glm-5.2` to `https://api.z.ai/api/coding/paas/v4/chat/completions` returns `code 1211: Unknown Model`. The apparent contradiction resolves because litellm STRIPS the prefix before forwarding to the upstream when `base_url` is set — so `openai/glm-5.2` + `base_url=...z.ai...` means "route as OpenAI protocol, send bare `glm-5.2` to the upstream." This is invisible unless you test both layers separately.
+
+**Rule:** When wiring an OpenAI-compatible but non-OpenAI endpoint (Z-API, Together, Anyscale, local vLLM) into any tool built on litellm (OpenHands, Continue, Aider):
+1. The model string passed to the tool MUST have a provider prefix (`openai/<model>`), even though the upstream endpoint rejects it — litellm strips it.
+2. To diagnose a "model not found" / "provider not provided" error, test BOTH layers: (a) raw curl to the upstream with the bare model name (should work), (b) the same curl with the prefixed name (should fail with "Unknown Model"). If (a) works and (b) fails, the tool's litellm layer is the issue, not the endpoint.
+3. `base_url` MUST be set explicitly — without it, litellm sends the prefixed call to OpenAI's real endpoint and you get an auth error.
+4. The Z coding-plan base URL is `https://api.z.ai/api/coding/paas/v4` (the `/coding/` segment routes to the subscription tier; the standard PAYG endpoint is `/api/paas/v4` without it).
+
+---
+
+## OpenHands local install gotchas (2026-07-19)
+
+**Pattern:** Five concrete gotchas hit during `openhands serve` install on this host, none documented in the official quickstart:
+
+1. **`openhands serve` hardcodes `-p 3000:3000`** (`openhands_cli/gui_launcher.py:190`) — there is NO `OPENHANDS_PORT` env override. To bind a different port, bypass the wrapper and run the equivalent `docker run -p <port>:3000 ...` directly (mirror `gui_launcher.py:127-197`).
+
+2. **Docker group changes don't propagate to existing shells.** After `sudo usermod -aG docker safa`, my bash tool shells (spawned before the change) still got "permission denied on docker.sock" because group membership is evaluated at session start. Workaround that does NOT require re-login or reboot: prefix docker commands with `sg docker -c "..."` (runs with the docker group active). Verified working.
+
+3. **Image tag is `latest`, not the SDK version.** `get_openhands_version()` (`gui_launcher.py:80-88`) returns `$OPENHANDS_VERSION` or `latest` — NOT the installed package version (`1.16.0`) or the SDK banner version (`v1.21.0`). Pulling `docker.openhands.dev/openhands/openhands:1.21.0` 404s. Use `:latest`.
+
+4. **LLM config is NOT in the DB** — `openhands.db` only has `alembic_version`. Settings persist as `~/.openhands/settings.json` via `FileSettingsStore`. If the user can't find the "Custom/Other" provider in the UI (common — it's buried under Advanced), write `settings.json` directly via `docker exec openhands-app python3 -c '...'`. The file is owned by root (Docker created it), so write from inside the container. The file lives outside the repo (no git risk) but `api_key` is plaintext in it — don't commit `~/.openhands/`.
+
+5. **The agent-server REST API is the clean test path, not the app-server.** The app-server (`:3001`) wraps everything in async start-tasks that are brittle to poll. The agent-server (exposed on a random port per sandbox, e.g. `:52527`) has a SYNCHRONOUS REST API: `POST /api/conversations` (start), `POST /api/conversations/{id}/events` (send msg), `GET /api/conversations/{id}/events/search` (trace), `GET /api/conversations/{id}/agent_final_response` (result). Auth header is `X-Session-API-Key: <session_api_key>` (NOT `X-API-Key`), where session_api_key comes from `GET /api/v1/sandboxes/search` on the app-server. Get the agent-server port + key from that same response.
+
+**Rule:** For any future OpenHands local setup, check all five before declaring done. The `sg docker` workaround and the read-only-subdir mount pattern (next lesson) are reusable on any host.
+
+---
+
+## OpenHands sandbox: mount as read-only subdir, NOT as `/workspace` root (2026-07-19)
+
+**Pattern:** Mounted the Bilun repo as `/workspace` (`SANDBOX_VOLUMES=/home/safa/Documents/Bilun:/workspace:rw`) to give the agent repo access. Sandbox failed to boot: `PermissionError: [Errno 13] Permission denied: '/workspace/conversations'`. Root cause: the agent-server sandbox hardcodes its run user as uid/gid 10001 (`remote_sandbox_service.py:470-471` `'run_as_user': 10001`) — `SANDBOX_USER_ID` env is IGNORED for the sandbox (it only affects the app container's launcher). Bilun is owned by safa/1000 on the host. uid 10001 cannot write to a uid-1000-owned bind-mount. Overlaying `/workspace` (which the image pre-creates as writable-by-openhands) with the Bilun mount destroyed that writability, and the agent-server needs to create `/workspace/conversations/` there.
+
+**Rule:** When mounting a host repo into an OpenHands sandbox:
+1. **Mount as a SUBDIRECTORY, not as `/workspace` root**: `SANDBOX_VOLUMES=/host/repo:/workspace/<name>:ro`. This keeps `/workspace` itself owned by the image's openhands user (writable, so `conversations/` creates succeed) and exposes the repo at `/workspace/<name>`.
+2. **Use `:ro` for read-only** — honors the "agent reads repo but can't mutate it" safety contract until write access is explicitly authorized. The agent-server correctly respects this: `touch /workspace/<name>/foo` returns "Read-only file system".
+3. **Do NOT try to fix this by `chmod 777` on the host repo or by `setfacl` granting uid 10001** — both give the agent write access to the real repo, crossing the read-only boundary. The subdir-mount pattern is the correct fix.
+4. The uid-mismatch is by design in this OpenHands version — don't waste time looking for a `SANDBOX_USER_ID`-style override on the sandbox side; there isn't one.
+5. To verify the mount worked before running a full agent task: `docker exec <sandbox> sh -c 'ls /workspace/<name> && head -3 /workspace/<name>/AGENTS.md && touch /workspace/conversations/test && rm /workspace/conversations/test && touch /workspace/<name>/test'` — last command should FAIL with read-only.
