@@ -1,0 +1,44 @@
+{
+  "source": "ILAY real prescription data",
+  "generated_by": "scripts/validation/build_golden_dataset.py",
+  "section": "4.2.27",
+  "sample_count": 4,
+  "samples": [
+    {
+      "rule_id": "4.2.27.B.anti_d_itp_iv_report",
+      "drug_name": "RHOGAM",
+      "primary_icd10": "O21.1",
+      "expect_violation": "indication_mismatch",
+      "source": "ilay_real_data",
+      "department": "Kadın Hastalıkları ve Doğum",
+      "severity": "error"
+    },
+    {
+      "rule_id": "4.2.27.D.eltrombopag_discontinuation_criteria",
+      "drug_name": "REVOLADE",
+      "primary_icd10": "K59.1",
+      "expect_violation": "indication_mismatch",
+      "source": "ilay_real_data",
+      "department": "Hematoloji",
+      "severity": "error"
+    },
+    {
+      "rule_id": "4.2.27.D.eltrombopag_discontinuation_criteria",
+      "drug_name": "REVOLADE",
+      "primary_icd10": "D69.3",
+      "expect_violation": "needs_report_verification",
+      "source": "ilay_real_data",
+      "department": "Hematoloji",
+      "severity": "review"
+    },
+    {
+      "rule_id": "4.2.27.C.factor_viia_3day_haematology_report",
+      "drug_name": "Novoseven",
+      "primary_icd10": "D68.8",
+      "expect_violation": "needs_report_verification",
+      "source": "ilay_real_data",
+      "department": "Hematoloji",
+      "severity": "review"
+    }
+  ]
+}

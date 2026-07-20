@@ -1,0 +1,26 @@
+{
+  "source": "ILAY real prescription data",
+  "generated_by": "scripts/validation/build_golden_dataset.py",
+  "section": "4.2.36",
+  "sample_count": 2,
+  "samples": [
+    {
+      "rule_id": "4.2.36.amantadine_sulfate_report",
+      "drug_name": "PK-MERZ",
+      "primary_icd10": "I64",
+      "expect_violation": "indication_mismatch",
+      "source": "ilay_real_data",
+      "department": "Beyin ve Sinir Cerrahisi",
+      "severity": "error"
+    },
+    {
+      "rule_id": "4.2.36.amantadine_sulfate_report",
+      "drug_name": "PK-MERZ",
+      "primary_icd10": "G20",
+      "expect_violation": "needs_report_verification",
+      "source": "ilay_real_data",
+      "department": "Nöroloji",
+      "severity": "review"
+    }
+  ]
+}

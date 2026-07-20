@@ -1,79 +1,118 @@
-## Task: Fix MATERIAL crosswalk substring collisions + correct audit report
+## Task: Specialty Scope Validation (Option B)
 
 ### Goal
-The EK-3 catalog is CORRECT (verified end-to-end). The real bug is in the
-Phases 1-5 frozen crosswalk: ~42 MATERIAL mappings are wrong because
-`build_material_candidates` over-matches on generic device words (`seti`,
-`kateter`, `strip`, `bandi`). Fix the resolver scoring, re-resolve & re-freeze
-the affected mappings, and correct the audit report's false "EK-3 catalog
-broken" claim.
+Build a validation harness that tests Bilun's 366 specialty-restricted
+`drug_indication` rules against real ILAY prescribing data joined to hospital
+departments. Produce violation log + per-rule compliance + golden test cases.
 
-### Diagnosis (verified 2026-07-16)
-42/175 (24%) of material mappings have hospital item billed <5% of SUT ceiling.
-Root cause = 3 compounding bugs in `code_resolver.py:build_material_candidates`:
-- **B1 (line 643):** `if df.get(t,1) > 1` excludes rare query tokens from the
-  denominator → a single shared common word (`seti`) divides by itself → score 1.0.
-- **B2 (line 652-654):** rare-token bonus `min(score+0.3, 1.0)` clamps
-  single-shared-token collisions to a perfect 1.0.
-- **B3 (line 130):** generic device words (`seti/set/kateter/strip/bandi/sistem`)
-  are NOT stopwords → high-DF tokens that should be near-meaningless.
+Plan file: `plans/backend/specialty-scope-validation-plan.md`
 
 ### Subtasks
-- [ ] **F1** Fix `build_material_candidates`:
-  - [ ] F1a denominator: include ALL query tokens (drop the `> 1` exclusion)
-  - [ ] F1b rare-token bonus: gate on shared_idf/query_idf >= 0.5 before +0.3
-  - [ ] F1c material stopwords: add generic device words to a material-only set
-- [ ] **F2** Verify resolver: before/after on the 4 known-bad pairs (must now NO_MATCH or pick correct code)
-- [ ] **F3** Re-resolve the 42 wrong hospital codes; update `hospital_to_sut.csv`
-  (set wrong rows to sut_code="" unresolvable, or remap if a correct candidate exists)
-- [ ] **F4** Re-run `finans_pricing_audit.py`; confirm EK-3 numbers are sane
-- [ ] **F5** Correct audit report + script comments: EK-3 catalog is correct; bug was crosswalk
-- [ ] **F6** Run full test suite (code_resolver tests) to confirm no regressions
-- [ ] **F7** Commit on finans-coder
 
-### Key files
-- `src/bilun/domain/coding/code_resolver.py:602-667` (build_material_candidates)
-- `src/bilun/domain/coding/code_resolver.py:123-138` (_meaningful_tokens stopword set)
-- `data/coding/hospital_to_sut.csv` (frozen crosswalk — 42 rows to fix)
-- `scripts/analysis/finans_pricing_audit.py` (correct the report comment)
+#### Phase 1 — Data join
+- [x] 1.1 Add `load_specialty_pairs()` to `rx_loader.py`
+- [x] 1.2 Reuse `_normalize_tr` for specialty normalization
+- [x] 1.3 Sanity-check join produces ≥30K rows *(actual: 15,887 — below threshold but usable, see note below)*
+- [x] 1.4 Persist `specialty_pairs.parquet` for debugging
 
-### Out of scope
-- EK-4A retail-price audit (still needs TİTCK)
-- Re-resolving DRUG/LAB/PROCEDURE categories (only MATERIAL is affected)
-- The EK-2B inpatient-panel overcharge finding (separate, valid)
+#### Phase 2 — Claim builder extension
+- [x] 2.1 Extend `build_drug_line()` with `prescriber_specialty` param
+- [x] 2.2 Extend `build_claim()` to forward specialty
+- [x] 2.3 Regression: re-run item 1, confirm identical output *(18,062 rows, byte-identical keys)*
 
-### Definition of done
-- 4 known-bad pairs (AE0900/KN1069/KN1122/AN1070) no longer match on the generic word
-- EK-3 audit "UNDERCHARGE" count drops substantially (most were crosswalk artifacts)
-- Audit report states the corrected finding (crosswalk bug, not catalog bug)
-- code_resolver tests green
+#### Phase 3 — Specialty validation harness
+- [x] 3.1 Create `validate_specialty_rules.py`
+- [x] 3.2 Filter to fireable specialty rules *(actual: 399 of 930 rules have prescriber_specialties)*
+- [x] 3.3 Build claims with SERVISADI as prescriber_specialty
+- [x] 3.4 Run `evaluate_drug_indication_line()` per row
+- [x] 3.5 Write `specialty_violation_log.parquet` *(53 rows)*
+- [x] 3.6 Write `specialty_rule_compliance.csv`
+- [x] 3.7 Print headline summary
 
-### Review — Completed (2026-07-16)
-- **Root cause reversed:** the EK-3 catalog is CORRECT (verified end-to-end: curated
-  == raw parquet == SGK gov XLSX, no collisions/parsing/unit bugs). KN1069 = intrathecal
-  baclofen pump *system kit* (103K is realistic), not a catheter. The prior "⚠️ EK-3 not
-  trustworthy" warning was my own misread of a truncated display name.
-- **Real bug:** `build_material_candidates` over-matched on generic device words.
-  3 compounding defects fixed in `code_resolver.py`:
-  - denominator excluded rare query tokens (`df>1`) → single shared common word hit 1.0
-  - rare-token bonus clamped single-token collisions to 1.0
-  - generic words (seti/kateter/strip/bandi) were not stopwords
-- **Fix:** denominator now uses `df>=1` (excludes only catalog-absent tokens like SKU
-  codes); rare-token bonus gated on base score ≥0.5; added `_MATERIAL_STOPWORDS`.
-- **Crosswalk:** removed 26 wrong MATERIAL rows from `hospital_to_sut.csv` (conservative
-  rule: generator no longer reproduces AND price ratio <5%). Golden case (OR1160 Foley)
-  preserved. NOTE: CSV is gitignored/derived — the durable fix is the resolver change;
-  re-running merge_phase4 would regenerate a corrected table.
-- **Audit improvement:** EK-3 UNDERCHARGE 1,343 → 347 real + 496 VOIDED_LINE (new flag
-  for billed-0 lines). EK-2B UNDERCHARGE 77→23 (+76 voided separated). Suspected-wrong-
-  mappings 50→22 codes. Report finding #3 corrected.
-- **Tests:** 52/52 coding tests pass. 1 smoke test fails but is PRE-EXISTING (401 auth
-  issue, fails identically with my change reverted) — not a regression.
+#### Phase 4 — Golden dataset
+- [x] 4.1 Extend `build_golden_dataset.py` with `--specialty` mode
+- [x] 4.2 Extract representative cases per rule across departments
+- [x] 4.3 Write golden JSONs to `golden/ilay/specialty_ilay_*.json`
+- [x] 4.4 *(target was 50-150, actual: 8 across 3 rules — see README for why)*
 
-### Lessons (→ tasks/lessons.md)
-- Verify a "bad data" claim's premise before reporting it: I called the EK-3 catalog
-  broken based on reading a TRUNCATED display name ("İNTRATEKAL KAT…"). The full name
-  was "...VE SABİT SALIMLI İNFÜZYON POMPASI" (a pump kit). Truncated ≠ truth.
-- IDF-overlap scoring that excludes rare query tokens from the denominator lets a single
-  common word divide by itself → false 1.0 matches. Denominator must use all (or
-  catalog-present) query tokens.
+#### Phase 5 — README + mapping
+- [x] 5.1 Update README.md with specialty section
+- [x] 5.2 Document SERVISADI → rule specialty mapping table
+- [x] 5.3 Document department ≠ doctor caveat + KVC substring-collision bug
+
+#### Phase 6 — Pytest integration
+- [x] 6.1 Add `test_specialty_real_data.py`
+- [x] 6.2 Confirm 10/10 tests pass; 1272 prose_rules tests pass overall (no regressions)
+
+### Out of Scope
+- 260 specialty rules with no ILAY drug overlap
+- 69% unjoined prescriptions (no department data)
+- Clinical-false-positive adjudication (refill prescriptions, comanagement)
+- Individual doctor attribution (we have department, not doctor ID)
+- Building a dashboard UI (data outputs are sufficient)
+
+---
+
+## Review
+
+**All 6 phases complete.** Build ran from 2026-07-20, end-to-end in worktree
+`/home/safa/Documents/Bilun-specialty` on branch `feature/specialty-validation`.
+
+### What was actually delivered vs planned
+
+| Metric | Plan target | Actual |
+|---|---|---|
+| Joined prescription-department pairs | ~30-60K | 15,887 (lower than estimated) |
+| Specialty-restricted rules loaded | ~341 | 399 (more than estimated) |
+| Violations fired | 1,000-15,000 | **53** (much lower) |
+| Golden test cases | 50-150 | **8** across 3 rules |
+| Build time | 3 days | <1 day (clean execution, no surprises) |
+
+### Why the actuals diverged from the plan
+
+1. **Only 53 violations fired** (vs expected 1,000-15,000). The investigation
+   showed high "wrong-specialty" prescribing rates (4-43% per drug), but most
+   of those prescriptions went to specialties that ARE in the rule's allowed
+   list. Example: investigation flagged "PLAVIX prescribed by İç Hastalıkları
+   at 6.8%" — but the rule explicitly allows "iç hastalıkları". Not a violation.
+
+2. **43 of 53 violations are false positives** from a Bilun engine bug:
+   `_specialty_matches` does naive substring matching, so "Kalp ve Damar
+   Cerrahisi" doesn't match the rule token "kalp damar cerrahisi" because
+   of the "ve" word. Documented in README §Finding 1.
+
+3. **Only ~10 real specialty-scope violations** in the dataset — mostly
+   CYMBALTA prescribed by Cardiology/Internal Medicine (requires endokrinoloji
+   or nöroloji). This is genuine signal but a small number.
+
+4. **8 golden cases** reflects the actual engine output honestly. Padding
+   the count would defeat the purpose of real-data validation.
+
+### Honest recommendation
+
+The specialty-scope dimension turned out to be **less valuable than the
+diagnosis dimension** (item 1) for Bilun's product. Item 1 delivered 89
+golden cases and 18K real violations; item 2 delivered 8 golden cases and
+53 violations (43 of which are engine bugs). The biggest concrete output
+of item 2 is **the discovery that `_specialty_matches` needs improvement
+before specialty-scope checks can ship to hospitals**.
+
+The harness and pytest are still useful — they lock in current behavior so
+future fixes to the substring-collision bug will require explicitly updating
+the golden dataset. But this should not be marketed as a headline Bilun
+feature; item 1 is the real validation win.
+
+### Files changed
+- `scripts/validation/rx_loader.py` — added `load_specialty_pairs()` + `load_specialty_rule_drug_tokens()`
+- `scripts/validation/claim_builder.py` — added `prescriber_specialty` param (item 1 unaffected)
+- `scripts/validation/validate_specialty_rules.py` — new file, harness
+- `scripts/validation/build_golden_dataset.py` — added `--specialty` mode
+- `scripts/validation/README.md` — added full specialty section + SERVISADI mapping + honest findings
+- `tests/unit/domain/prose_rules/test_specialty_real_data.py` — new pytest, 10/10 pass
+- `data/synthetic/sut/claims/ilay_validation/specialty_pairs.parquet` — intermediate data
+- `data/synthetic/sut/claims/ilay_validation/specialty_violation_log.parquet` — 53 rows
+- `data/synthetic/sut/claims/ilay_validation/specialty_rule_compliance.csv` — 399 rules
+- `data/gazette/prose_rules/golden/ilay/specialty_ilay_4_2_15.json` — 6 golden cases
+- `data/gazette/prose_rules/golden/ilay/specialty_ilay_4_2_35.json` — 2 golden cases
+- `plans/backend/specialty-scope-validation-plan.md` — plan document
+- `tasks/todo.md` — this file
