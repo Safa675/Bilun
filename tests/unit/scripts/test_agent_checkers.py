@@ -7,10 +7,8 @@ these are the seed conditions named in plans/tooling/employee-agents-plan.md.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-import polars as pl
 import pytest
 
 pytestmark = pytest.mark.unit

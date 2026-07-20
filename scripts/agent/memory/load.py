@@ -14,7 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 
 from scripts.agent.memory.config import get_memory, validate_role
 
@@ -65,7 +65,7 @@ def main() -> int:
 
     # Human-readable output (what the agent reads at conversation start)
     print(f"=== Prior context ({role}) ===")
-    print(f"Loaded: {datetime.now(timezone.utc).isoformat(timespec='seconds')}")
+    print(f"Loaded: {datetime.now(UTC).isoformat(timespec='seconds')}")
     print(f"Total memories: {len(records)}")
     print()
     if not records:

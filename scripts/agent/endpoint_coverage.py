@@ -41,7 +41,7 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from collections.abc import Iterable
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:

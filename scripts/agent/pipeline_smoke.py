@@ -222,7 +222,7 @@ def main() -> int:
             if proc.returncode != 0:
                 failed = True
                 stderr_tail = "\n".join((proc.stderr or "").splitlines()[-20:])
-                print(f"[pipeline_smoke] stderr tail:")
+                print("[pipeline_smoke] stderr tail:")
                 for line in stderr_tail.splitlines():
                     print(f"  ! {line}")
                 break  # fail fast
@@ -245,7 +245,7 @@ def main() -> int:
         return 1
     if not args.keep_temp:
         shutil.rmtree(temp_dir, ignore_errors=True)
-        print(f"[pipeline_smoke] cleaned temp dir (use --keep-temp to preserve)")
+        print("[pipeline_smoke] cleaned temp dir (use --keep-temp to preserve)")
     else:
         print(f"[pipeline_smoke] kept temp dir: {temp_dir.relative_to(PROJECT_ROOT)}")
     return 0

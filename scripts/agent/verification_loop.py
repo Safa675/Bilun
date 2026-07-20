@@ -34,7 +34,7 @@ import argparse
 import json
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 import polars as pl
@@ -178,7 +178,7 @@ def main() -> int:
 
     passed = len(failures) == 0
     summary = {
-        "run_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "run_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "coverage_pct": round(coverage, 6),
         "coverage_floor": COVERAGE_FLOOR,
         "suspected_wrong_mappings": wrong_mappings,

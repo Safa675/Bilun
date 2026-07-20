@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 from scripts.agent.memory.config import get_memory, validate_role
@@ -79,7 +79,7 @@ def main() -> int:
 
     import json
     metadata = {
-        "run_date": datetime.now(timezone.utc).date().isoformat(),
+        "run_date": datetime.now(UTC).date().isoformat(),
         "source_report": str(report_path.relative_to(PROJECT_ROOT)) if str(PROJECT_ROOT) in str(report_path) else str(report_path),
     }
     if args.metadata_json:
