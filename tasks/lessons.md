@@ -9,15 +9,15 @@ Format per entry:
 
 ---
 
-## 2026-07-13 — Graphify installed but NEVER used by any agent (126 subagents, 0 graphify calls)
+## 2026-07-13 → 2026-07-20 — Graphify installed but NEVER used by any agent; tool removed (126 subagents, 0 graphify calls)
 
-**Pattern:** graphify was installed specifically to cut subagent token usage on codebase exploration — `graphify-out/graph.json` (11MB) was present and fresh, the `graphify` binary (v0.8.49) was on PATH, the `/graphify` skill was registered, and AGENTS.md had a soft "for codebase questions, first run graphify query" rule. A full audit of all 126 subagent artifact directories under `~/.zcode/cli/artifacts/` showed **zero** executed `graphify query`/`path`/`explain` commands — the word "graphify" only appeared incidentally in file-path listings. The orchestrator (me) never once ran a graphify query either, nor wrote graphify-first instructions into any subagent prompt. Every codebase question was answered via raw Grep + Read — exactly the 5–10× token burn that graphify was supposed to eliminate. The tool was fully wired but produced zero value because the rule was phrased as guidance, not as a Hard Rule, and was never enforced.
+**Pattern:** graphify was installed specifically to cut subagent token usage on codebase exploration — `graphify-out/graph.json` (11MB) was present and fresh, the `graphify` binary (v0.8.49) was on PATH, the `/graphify` skill was registered, and AGENTS.md had escalating rules from soft guidance up to a Hard Rule. A full audit of all agent session directories under `~/.zcode/cli/agents/` (16 sessions) showed **zero** executed `graphify query`/`path`/`explain` commands across every single one. The word "graphify" appeared 927 times in transcripts, but every occurrence was either AGENTS.md text being echoed into context (~574) or the model discussing graphify in prose — never an actual Bash command execution. The tool was fully wired, rules escalated from guidance to Hard Rule, and it produced **zero** value. Developer research confirmed this is an industry-wide pattern: AGENTS.md/CLAUDE.md instructions are hints, not enforcement, and agents default to Grep/Read because it's lower-friction.
 
-**Rule:** Codebase exploration (where does X live, how do A and B relate, scope a change) MUST go through graphify first. Concretely:
-1. **Orchestrator duty:** Every subagent spawned for explore/research/relationship questions MUST receive "Step 1: run `graphify query '<question>'` before any Grep/Read" as the FIRST instruction in its prompt. Subagents will not do this on their own — the orchestrator writes it in.
-2. **Graphify-first is a Hard Rule (critical failure tier), not guidance.** Going straight to fishing Grep for orientation when `graphify-out/graph.json` exists wastes 5–10× tokens and is treated the same as the §5 zombie-process / §7 plan-first violations.
-3. **Exceptions where Grep/Read is correct and graphify is wrong:** known file paths (`edit X.tsx line 40`), exact-string hunts, secrets/env, generated data, build artifacts, reading a file graphify already named, or user said skip.
-4. **Self-check at session start:** when reviewing AGENTS.md per §1, confirm graphify is in the Hard Rule tier, not soft guidance. Soft guidance gets ignored — this entry is proof.
+**Rule:** Don't install agent-integration tools that depend on the agent choosing to use them. Before installing any "agents will automatically use X" tool:
+1. **Verify it actually works.** Check real session logs for actual tool invocations, not just mentions. A tool mentioned 927 times with 0 executions is dead weight, not an integration.
+2. **Instruction-following is a hint, not a contract.** Escalating wording (guidance → MUST → Hard Rule → critical failure) does NOT increase invocation rate. The failure isn't the wording; it's the assumption that instructions reliably control agent tool selection.
+3. **Right-size the tool to the repo.** Graphify's token savings (40-70%) only materialize on large repos where Grep returns too much. At ~146K LOC with clean module boundaries, Grep + Glob + Read genuinely works. Don't pay the complexity tax for a benefit you won't see until 500K+ LOC.
+4. **The costs are real even when the tool is unused.** graphify cost 255M of `.git` bloat, inotify watcher exhaustion (ENOSPC errors), context-window tax (574 echoed mentions per session), and maintenance overhead (regenerating graphs after every change). All for zero executions.
 
 ---
 
@@ -319,3 +319,104 @@ For simple messages with no metacharacters, `-m` is fine.
 2. A grep/AST proof that no caller passes the required argument.
 
 Reading the function body alone is insufficient — variable names can be misread, and defaults can be overridden at every call site. **Execute, don't assume.**
+
+---
+
+## 2026-07-16 — Deferral reasons are assumptions that must be verified, not stated
+
+**Pattern:** In the finans coder Phase 2 plan, I deferred the DRUG crosswalk with reason "needs external TTCK brand→barcode list" and the MATERIAL crosswalk with reason "genuine 1:many ambiguity, low payoff." Both reasons sounded plausible enough to commit to a plan and ship as "Out of scope." When the user pushed back ("investigate this properly"), ~15 minutes of catalog inspection disproved both: EK-4A has a full `drug_name` column (not barcode-only) → 84% brand-match feasible; EK-3 has 3,659 codes across 23 families (not 280) → consumables DO map to categories. Both crosswalks were built in Phase 3 and hit 74% (drug) / 93% (material) coverage. The deferral cost nothing in rework, but it left ~525 mappings on the table for an entire phase because I trusted my own plausible-sounding reasons without checking.
+
+**Rule:** When deferring work with a stated reason ("needs X", "has Y problem", "not feasible because Z"), the reason is itself an unverified claim about the codebase and MUST be checked before it ships in a plan — same standard as §11 anti-hallucination for code claims. Concretely:
+1. A deferral reason citing a catalog's structure ("barcode-only", "1:many") requires a `pl.read_parquet(...)` inspection of that catalog, not a memory of what some function returned.
+2. "Needs external data" is the most dangerous deferral reason — it sounds decisive but is usually wrong (the data is often already in the repo under a different path or column name). Grep the parquet columns before claiming absence.
+3. If a deferral would strand >10% of the dataset, the reason deserves the same investigation budget as the implementation itself. Cheap to check, expensive to leave wrong.
+4. Phrasing hedge: prefer "deferred pending investigation of whether X" over "deferred because X" when X is unverified. The former invites the check; the latter forecloses it.
+
+---
+
+## Polars `with_columns` in-flight column reference (2026-07-16, finans pricing audit)
+
+**Incident:** A classifier computed `delta_pct` and derived a `flag` from `pl.col("delta_pct")` inside the *same* `with_columns` call. The flag expression read the stale (null) pre-existing column, so every row fell through to `otherwise → UNDERCHARGE`. 2019 rows mislabeled; the OVERCHARGE sign was inverted (positive deltas flagged UNDERCHARGE).
+
+**Rule:** Polars evaluates all expressions in a single `with_columns` against the *input* schema — a column created in that call is NOT visible to sibling expressions. When a derived column feeds a classification:
+1. Materialize the numeric columns (`delta_pct`, ratio, etc.) in one `with_columns` step.
+2. Derive the flag in a *second* `with_columns` that reads the now-materialized column.
+This is the Polars analog of not reading a variable before it's assigned.
+
+## Verify column semantics from the data, not the name (2026-07-16)
+
+**Incident:** Built the EK-4A tier audit assuming `INDIRIM_ORANI` ("discount ratio") was a discount fraction (0–1). It was not — values included 0.0, 1.3333, 41.87, 44.5. Produced 1989 meaningless TIER_MISMATCH flags.
+
+**Rule:** A column's *name* is a hypothesis about its semantics, not a proof. Before building comparison logic on a column, inspect its actual value distribution (`describe()`, `unique().sort()`). If the values violate the assumed domain (e.g. a "ratio" with values >1 or negative), the assumption is wrong — find the real semantics by deriving from related columns (here: the real discount was `1 - KDVSIZ_INDIRIMLI/KDVSIZ_FIYAT`).
+
+## `get_ek4a_drugs()` return type (2026-07-16)
+
+**Incident:** Assumed `get_ek4a_drugs()` returned a Polars DataFrame (by analogy with other loaders). It returns `list[dict]`. Accessing `.columns` raised `AttributeError`.
+
+**Rule:** Never assume a loader's return type from naming convention. For domain accessor functions, confirm the return type by calling it once in the REPL before wiring it into a script. When converting a `list[dict]` to a frame, use `pl.from_dicts()` (vectorized, not a row loop).
+
+---
+
+## Don't diagnose "bad data" from a truncated display name (2026-07-16, EK-3 audit)
+
+**Incident:** I reported "⚠️ EK-3 catalog NOT trustworthy — KN1069 = 103K TRY for a catheter, a catheter is not 100K" and recommended a catalog-cleanup follow-up. Investigation proved this wrong: KN1069's full name is "TÜM SİSTEM KİT (İNTRATEKAL KATETER VE SABİT SALIMLI İNFÜZYON POMPASI)" — a complete implantable pump *system kit*, for which 103K TRY is realistic. I had read the truncated display name "İNTRATEKAL KAT…" and assumed "catheter." The real bug was in the crosswalk (substring collisions), not the catalog.
+
+**Rule:** Before declaring a data value "implausible" and attributing a root cause, read the FULL untruncated field (name, description, category). A truncated display string is a hypothesis, not evidence. Concretely:
+1. When a price seems absurd, print the FULL record (all columns: name, description, category, source) before judging — the qualifying noun may be past the truncation point.
+2. Distinguish "this value is wrong" from "this value is surprising." Verify against the upstream source (raw parquet / original XLSX) before claiming corruption.
+3. A "catalog bug" diagnosis that would defer an entire sub-system deserves the same investigation budget as the implementation — cheap to check (one `material_name` print), expensive to leave wrong.
+
+## IDF-overlap denominator must not exclude rare query tokens (2026-07-16, material resolver)
+
+**Incident:** `build_material_candidates` computed `query_idf` only over tokens with `df > 1`, excluding rare-in-catalog tokens. For "Serum Seti" this meant the denominator was just `idf(seti)`, so any entry containing "seti" scored `shared_idf/query_idf = 1.0` — a single common device word produced a perfect match. Result: 26+ wrong mappings (IV giving set → meniscus repair set, fixation band → anesthesia set) via generic-word collisions.
+
+**Rule:** In IDF-weighted overlap scoring, the denominator (query self-similarity) must include the tokens you're actually matching against. Excluding rare tokens from the denominator lets one common word divide by itself. The correct exclusion is catalog-ABSENT tokens only (`df >= 1`), not rare-in-catalog tokens (`df > 1`) — brand names / SKU codes that appear in no catalog entry legitimately shouldn't inflate the denominator, but a genuinely-rare-but-present word should.
+
+## A regression-baseline check before claiming "my change broke it" (2026-07-16)
+
+**Incident:** The full test suite failed on `test_sut.py::test_cardiac_stent_separately_payable` (401 auth). I needed to know if my change caused it. Stashing everything was awkward (the data file is gitignored). Solution: `git checkout` ONLY the changed src file, re-run the one test, restore.
+
+**Rule:** To isolate whether a failure is a regression from your change, revert ONLY the specific file under test (`cp file /tmp/fix.py && git checkout file && pytest ...; cp /tmp/fix.py file`), not the whole working tree. Faster, and works even when some changed files are untracked/gitignored. If the test fails with your change reverted, it's pre-existing — report it as such, don't fix it as part of an unrelated task.
+
+---
+
+## OpenHands + Z coding-plan: litellm requires a provider prefix the upstream rejects (2026-07-19)
+
+**Pattern:** Configured OpenHands to use the Z coding-plan endpoint (`https://api.z.ai/api/coding/paas/v4`) with model `glm-5.2`. The first agent conversation failed with `LLMBadRequestError: LLM Provider NOT provided. Pass in the LLM provider you are trying to call. You passed model=glm-5.2`. OpenHands uses **litellm** as its LLM router, which REQUIRES a provider prefix on the model string (e.g. `openai/`, `anthropic/`, `huggingface/`). A bare model name is ambiguous and rejected. BUT — the Z-API itself REJECTS the prefixed name: sending `openai/glm-5.2` to `https://api.z.ai/api/coding/paas/v4/chat/completions` returns `code 1211: Unknown Model`. The apparent contradiction resolves because litellm STRIPS the prefix before forwarding to the upstream when `base_url` is set — so `openai/glm-5.2` + `base_url=...z.ai...` means "route as OpenAI protocol, send bare `glm-5.2` to the upstream." This is invisible unless you test both layers separately.
+
+**Rule:** When wiring an OpenAI-compatible but non-OpenAI endpoint (Z-API, Together, Anyscale, local vLLM) into any tool built on litellm (OpenHands, Continue, Aider):
+1. The model string passed to the tool MUST have a provider prefix (`openai/<model>`), even though the upstream endpoint rejects it — litellm strips it.
+2. To diagnose a "model not found" / "provider not provided" error, test BOTH layers: (a) raw curl to the upstream with the bare model name (should work), (b) the same curl with the prefixed name (should fail with "Unknown Model"). If (a) works and (b) fails, the tool's litellm layer is the issue, not the endpoint.
+3. `base_url` MUST be set explicitly — without it, litellm sends the prefixed call to OpenAI's real endpoint and you get an auth error.
+4. The Z coding-plan base URL is `https://api.z.ai/api/coding/paas/v4` (the `/coding/` segment routes to the subscription tier; the standard PAYG endpoint is `/api/paas/v4` without it).
+
+---
+
+## OpenHands local install gotchas (2026-07-19)
+
+**Pattern:** Five concrete gotchas hit during `openhands serve` install on this host, none documented in the official quickstart:
+
+1. **`openhands serve` hardcodes `-p 3000:3000`** (`openhands_cli/gui_launcher.py:190`) — there is NO `OPENHANDS_PORT` env override. To bind a different port, bypass the wrapper and run the equivalent `docker run -p <port>:3000 ...` directly (mirror `gui_launcher.py:127-197`).
+
+2. **Docker group changes don't propagate to existing shells.** After `sudo usermod -aG docker safa`, my bash tool shells (spawned before the change) still got "permission denied on docker.sock" because group membership is evaluated at session start. Workaround that does NOT require re-login or reboot: prefix docker commands with `sg docker -c "..."` (runs with the docker group active). Verified working.
+
+3. **Image tag is `latest`, not the SDK version.** `get_openhands_version()` (`gui_launcher.py:80-88`) returns `$OPENHANDS_VERSION` or `latest` — NOT the installed package version (`1.16.0`) or the SDK banner version (`v1.21.0`). Pulling `docker.openhands.dev/openhands/openhands:1.21.0` 404s. Use `:latest`.
+
+4. **LLM config is NOT in the DB** — `openhands.db` only has `alembic_version`. Settings persist as `~/.openhands/settings.json` via `FileSettingsStore`. If the user can't find the "Custom/Other" provider in the UI (common — it's buried under Advanced), write `settings.json` directly via `docker exec openhands-app python3 -c '...'`. The file is owned by root (Docker created it), so write from inside the container. The file lives outside the repo (no git risk) but `api_key` is plaintext in it — don't commit `~/.openhands/`.
+
+5. **The agent-server REST API is the clean test path, not the app-server.** The app-server (`:3001`) wraps everything in async start-tasks that are brittle to poll. The agent-server (exposed on a random port per sandbox, e.g. `:52527`) has a SYNCHRONOUS REST API: `POST /api/conversations` (start), `POST /api/conversations/{id}/events` (send msg), `GET /api/conversations/{id}/events/search` (trace), `GET /api/conversations/{id}/agent_final_response` (result). Auth header is `X-Session-API-Key: <session_api_key>` (NOT `X-API-Key`), where session_api_key comes from `GET /api/v1/sandboxes/search` on the app-server. Get the agent-server port + key from that same response.
+
+**Rule:** For any future OpenHands local setup, check all five before declaring done. The `sg docker` workaround and the read-only-subdir mount pattern (next lesson) are reusable on any host.
+
+---
+
+## OpenHands sandbox: mount as read-only subdir, NOT as `/workspace` root (2026-07-19)
+
+**Pattern:** Mounted the Bilun repo as `/workspace` (`SANDBOX_VOLUMES=/home/safa/Documents/Bilun:/workspace:rw`) to give the agent repo access. Sandbox failed to boot: `PermissionError: [Errno 13] Permission denied: '/workspace/conversations'`. Root cause: the agent-server sandbox hardcodes its run user as uid/gid 10001 (`remote_sandbox_service.py:470-471` `'run_as_user': 10001`) — `SANDBOX_USER_ID` env is IGNORED for the sandbox (it only affects the app container's launcher). Bilun is owned by safa/1000 on the host. uid 10001 cannot write to a uid-1000-owned bind-mount. Overlaying `/workspace` (which the image pre-creates as writable-by-openhands) with the Bilun mount destroyed that writability, and the agent-server needs to create `/workspace/conversations/` there.
+
+**Rule:** When mounting a host repo into an OpenHands sandbox:
+1. **Mount as a SUBDIRECTORY, not as `/workspace` root**: `SANDBOX_VOLUMES=/host/repo:/workspace/<name>:ro`. This keeps `/workspace` itself owned by the image's openhands user (writable, so `conversations/` creates succeed) and exposes the repo at `/workspace/<name>`.
+2. **Use `:ro` for read-only** — honors the "agent reads repo but can't mutate it" safety contract until write access is explicitly authorized. The agent-server correctly respects this: `touch /workspace/<name>/foo` returns "Read-only file system".
+3. **Do NOT try to fix this by `chmod 777` on the host repo or by `setfacl` granting uid 10001** — both give the agent write access to the real repo, crossing the read-only boundary. The subdir-mount pattern is the correct fix.
+4. The uid-mismatch is by design in this OpenHands version — don't waste time looking for a `SANDBOX_USER_ID`-style override on the sandbox side; there isn't one.
+5. To verify the mount worked before running a full agent task: `docker exec <sandbox> sh -c 'ls /workspace/<name> && head -3 /workspace/<name>/AGENTS.md && touch /workspace/conversations/test && rm /workspace/conversations/test && touch /workspace/<name>/test'` — last command should FAIL with read-only.

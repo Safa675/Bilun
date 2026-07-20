@@ -43,7 +43,6 @@ data/*
 !data/synthetic/
 !data/gazette/
 data/gazette/coverage/
-graphify-out/cache/
 !data/legacy/
 !data/medula/
 !data/medula/**
@@ -83,3 +82,8 @@ reports/tier_c_drug_extraction_summary.json
 reports/deontic_4214c_encode_report.json
 
 raw data/faturalandirma-usul-ve-esaslari-el-kitabi-06122022pdf.pdf
+
+# Presentation files — local working artifacts, not source
+*.pptx
+reports/agent/
+data/gazette/.pipeline_smoke_tmp/

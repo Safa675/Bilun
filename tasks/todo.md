@@ -1,44 +1,79 @@
-# Task: Payment-Method Re-derivation + Cross-Detector Dependency Cleanup
+## Task: Fix MATERIAL crosswalk substring collisions + correct audit report
 
 ### Goal
-Payment-method classification'ı claim başına bir kez hesapla (5N–9N → N), duplikat fonksiyonları konsolide et, cross-detector kwargs'ı standardize et.
+The EK-3 catalog is CORRECT (verified end-to-end). The real bug is in the
+Phases 1-5 frozen crosswalk: ~42 MATERIAL mappings are wrong because
+`build_material_candidates` over-matches on generic device words (`seti`,
+`kateter`, `strip`, `bandi`). Fix the resolver scoring, re-resolve & re-freeze
+the affected mappings, and correct the audit report's false "EK-3 catalog
+broken" claim.
 
-**Tam plan:** `plans/backend/payment-method-dedup-and-deps.md`
+### Diagnosis (verified 2026-07-16)
+42/175 (24%) of material mappings have hospital item billed <5% of SUT ceiling.
+Root cause = 3 compounding bugs in `code_resolver.py:build_material_candidates`:
+- **B1 (line 643):** `if df.get(t,1) > 1` excludes rare query tokens from the
+  denominator → a single shared common word (`seti`) divides by itself → score 1.0.
+- **B2 (line 652-654):** rare-token bonus `min(score+0.3, 1.0)` clamps
+  single-shared-token collisions to a perfect 1.0.
+- **B3 (line 130):** generic device words (`seti/set/kateter/strip/bandi/sistem`)
+  are NOT stopwords → high-DF tokens that should be near-meaningless.
 
 ### Subtasks
+- [ ] **F1** Fix `build_material_candidates`:
+  - [ ] F1a denominator: include ALL query tokens (drop the `> 1` exclusion)
+  - [ ] F1b rare-token bonus: gate on shared_idf/query_idf >= 0.5 before +0.3
+  - [ ] F1c material stopwords: add generic device words to a material-only set
+- [ ] **F2** Verify resolver: before/after on the 4 known-bad pairs (must now NO_MATCH or pick correct code)
+- [ ] **F3** Re-resolve the 42 wrong hospital codes; update `hospital_to_sut.csv`
+  (set wrong rows to sut_code="" unresolvable, or remap if a correct candidate exists)
+- [ ] **F4** Re-run `finans_pricing_audit.py`; confirm EK-3 numbers are sane
+- [ ] **F5** Correct audit report + script comments: EK-3 catalog is correct; bug was crosswalk
+- [ ] **F6** Run full test suite (code_resolver tests) to confirm no regressions
+- [ ] **F7** Commit on finans-coder
 
-#### Phase 1 — `resolve_payment_method` memoization (HIGH, en yüksek etki)
-- [ ] 1.1 `as_of_date=None` cache key sorununu çöz (date.today() resolve stabilitesi)
-- [ ] 1.2 `resolve_payment_method`'a `@lru_cache(maxsize=4096)` ekle (`payment_method.py:170`); `PaymentMethodResult` frozen=True doğrula
-- [ ] 1.3 `check_payment_method_compliance` otomatik faydalanır (1.2 üzerinden) — ekstra cache yok
-- [ ] 1.4 `resolve_payment_method.cache_clear()` test fixture'larına expose (conftest)
-- [ ] 1.5 Benchmark: 10-line claim `compute_patient_billing_report` before/after
-- [ ] 1.6 Test: cache hit rate >80% doğrula; mevcut payment-method testleri yeşil
+### Key files
+- `src/bilun/domain/coding/code_resolver.py:602-667` (build_material_candidates)
+- `src/bilun/domain/coding/code_resolver.py:123-138` (_meaningful_tokens stopword set)
+- `data/coding/hospital_to_sut.csv` (frozen crosswalk — 42 rows to fix)
+- `scripts/analysis/finans_pricing_audit.py` (correct the report comment)
 
-#### Phase 2 — Duplikat fonksiyonları konsolide (MED)
-- [ ] 2.1 `_derive_payment_method_path`: `fatura_inceleme.py:370` kopyasını sil → `gap_closing.py:236`'dan import
-- [ ] 2.2 `fatura_inceleme._condition_matches` (~57 satır) → `gap_closing`'den import (`payment_method.py:415` precedent)
-- [ ] 2.3 `_aggregate_claim_kind` 2 kopyayı birleştir (`care_setting_review.py:45` + `claim_strategy.py:188`)
-- [ ] 2.4 `_build_gap_closing_context` 3× rebuild'i önle (`engine.py:172,173,184` → local var)
-- [ ] 2.5 `claim_strategy.py:369-370` `lines_for_legal_itemized_alternative` 2× çağrıyı tek çağrıya indir
-- [ ] 2.6 Test: `test_claim_strategy_*`, `test_gap_closing_*`, `test_fatura_inceleme_*`, `test_payment_method_*` yeşil
+### Out of scope
+- EK-4A retail-price audit (still needs TİTCK)
+- Re-resolving DRUG/LAB/PROCEDURE categories (only MATERIAL is affected)
+- The EK-2B inpatient-panel overcharge finding (separate, valid)
 
-#### Phase 3 — Cross-detector kwarg standardizasyonu (LOW)
-- [ ] 3.1 `session_opportunities` vs `session_uplift_opportunities` — bir isim seç, her iki detectörde uygula
-- [ ] 3.2 `patient_report.py:107-111,128-134` cross-detector sıra bağımlılığını comment ile belgele
-- [ ] 3.3 NO-OP: findings dict eklenmedi (araştırma: sadece 3 kwarg/2 detectör, payoff yok — belgelendi)
+### Definition of done
+- 4 known-bad pairs (AE0900/KN1069/KN1122/AN1070) no longer match on the generic word
+- EK-3 audit "UNDERCHARGE" count drops substantially (most were crosswalk artifacts)
+- Audit report states the corrected finding (crosswalk bug, not catalog bug)
+- code_resolver tests green
 
-### Out of Scope
-- `report_totals.py` exactness fusion — kanıtlanmış keep-as-is (merkezileştirilmiş, data-driven spec)
-- JSON condition-on-derived-field pattern — kanıtlanmış keep-as-is (honest-skip güvenli, regression test'li)
-- `engine.py:analyze_claim`'deki 22 `check_*_for_context(ctx)` — hepsi ctx-only, cross-detector veri taşımıyor
-- Findings dict — AŞIRI KILL (3 kwarg için yeni abstraction)
-- Payment-method'ın kendisini yeniden yazma (sadece cache ekle)
-- `_condition_matches` 5 ek kopya (treatment_pricing, material_bundling, specialty_materials, dental_2_4_1) — farklı uzantıları var, ayrı task
+### Review — Completed (2026-07-16)
+- **Root cause reversed:** the EK-3 catalog is CORRECT (verified end-to-end: curated
+  == raw parquet == SGK gov XLSX, no collisions/parsing/unit bugs). KN1069 = intrathecal
+  baclofen pump *system kit* (103K is realistic), not a catheter. The prior "⚠️ EK-3 not
+  trustworthy" warning was my own misread of a truncated display name.
+- **Real bug:** `build_material_candidates` over-matched on generic device words.
+  3 compounding defects fixed in `code_resolver.py`:
+  - denominator excluded rare query tokens (`df>1`) → single shared common word hit 1.0
+  - rare-token bonus clamped single-token collisions to 1.0
+  - generic words (seti/kateter/strip/bandi) were not stopwords
+- **Fix:** denominator now uses `df>=1` (excludes only catalog-absent tokens like SKU
+  codes); rare-token bonus gated on base score ≥0.5; added `_MATERIAL_STOPWORDS`.
+- **Crosswalk:** removed 26 wrong MATERIAL rows from `hospital_to_sut.csv` (conservative
+  rule: generator no longer reproduces AND price ratio <5%). Golden case (OR1160 Foley)
+  preserved. NOTE: CSV is gitignored/derived — the durable fix is the resolver change;
+  re-running merge_phase4 would regenerate a corrected table.
+- **Audit improvement:** EK-3 UNDERCHARGE 1,343 → 347 real + 496 VOIDED_LINE (new flag
+  for billed-0 lines). EK-2B UNDERCHARGE 77→23 (+76 voided separated). Suspected-wrong-
+  mappings 50→22 codes. Report finding #3 corrected.
+- **Tests:** 52/52 coding tests pass. 1 smoke test fails but is PRE-EXISTING (401 auth
+  issue, fails identically with my change reverted) — not a regression.
 
-### Review — Tamamlandı ✅ (2026-07-13)
-- **Phase 1:** `resolve_payment_method` wrapper + `_resolve_payment_method_cached` (`@lru_cache(maxsize=None)`). Benchmark: 5N→N, 80% hit rate.
-- **Phase 2:** fatura_inceleme `_condition_matches` + `_derive_payment_method_path` gap_closing'den import edildi (~110 satır silindi); `_pick_claim_kind` ortak helper; `_build_gap_closing_context` `@lru_cache`; claim_strategy 2× çağrı → 1×.
-- **Phase 3:** `session_opportunities` standardize + wiring comment.
-- **Test:** 1415/1415 prose_rules+billing yeşil; 2165 unit test 0 failure (1 API failure environment issue — DuckDB lock).
-- **Net:** ~95 satır azalma + memoization 5× compute azalması. Tam plan: `plans/backend/payment-method-dedup-and-deps.md`
+### Lessons (→ tasks/lessons.md)
+- Verify a "bad data" claim's premise before reporting it: I called the EK-3 catalog
+  broken based on reading a TRUNCATED display name ("İNTRATEKAL KAT…"). The full name
+  was "...VE SABİT SALIMLI İNFÜZYON POMPASI" (a pump kit). Truncated ≠ truth.
+- IDF-overlap scoring that excludes rare query tokens from the denominator lets a single
+  common word divide by itself → false 1.0 matches. Denominator must use all (or
+  catalog-present) query tokens.

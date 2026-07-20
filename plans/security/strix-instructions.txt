@@ -34,7 +34,7 @@ is SYNTHETIC — no real patient data. Test freely but stay within the codebase.
    strings committed in source (NOT in `.venv/`, `node_modules/`, `raw data/`).
 
 ## Out of scope (do NOT analyze — noise / non-authored)
-- `node_modules/`, `.next/`, `.venv/`, `.git/`, `graphify-out/`
+- `node_modules/`, `.next/`, `.venv/`, `.git/`
 - `raw data/` (regulatory source PDFs/docx — large binaries, not Bilun code)
 - `data/gazette/` (generated parquet catalogs — the *loaders* in src/ are in scope,
   the data files themselves are not)
