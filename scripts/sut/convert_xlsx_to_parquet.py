@@ -133,8 +133,19 @@ def parse_effective_date(path: Path) -> str | None:
 
 
 def is_mulga_path(path: Path) -> bool:
-    joined = " / ".join(p.name.upper() for p in [path, *path.parents])
-    return "MULGA" in joined or "MULGA" in joined
+    """Return True if any path component (or its parents) is a MÜLGA folder.
+
+    Turkish-aware: real SGK folders are named ``MÜLGA`` (with dotted Ü), and
+    ``"MÜLGA".upper()`` stays ``"MÜLGA"`` (Python str.upper preserves dotted İ/Ü), so a
+    naive ``"MULGA" in joined`` test never matches. We ASCII-fold Ü→U before comparing.
+    Also note the prior implementation had ``"MULGA" in joined or "MULGA" in joined`` —
+    identical operands, so the ``or`` was dead code.
+    """
+    joined = " / ".join(p.name for p in [path, *path.parents])
+    # ASCII-fold common Turkish letters in SGK folder names (Ü/İ/Ş/Ç/Ğ/Ö)
+    folded = joined.upper().replace("Ü", "U").replace("İ", "I").replace("Ş", "S") \
+        .replace("Ç", "C").replace("Ğ", "G").replace("Ö", "O")
+    return "MULGA" in folded
 
 
 def clean_sheet(df: pd.DataFrame) -> pd.DataFrame:
