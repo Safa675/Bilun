@@ -66,6 +66,7 @@ def main() -> int:
     # is the durable artifact; memory should hold only the headline distillation. So we
     # extract just the summary section + first ~30 lines (the parts a human would skim).
     MAX_REPORT_CHARS = 2500
+    original_len = len(report_text)  # capture before reassignment for the log
     if len(report_text) > MAX_REPORT_CHARS:
         # Try to keep the Summary section if present, else just the head
         summary_marker = report_text.lower().find("## summary")
@@ -75,7 +76,9 @@ def main() -> int:
         else:
             kept = report_text[:MAX_REPORT_CHARS]
         report_text = kept + "\n\n[... report truncated for memory extraction; full report at the source_report path ...]"
-        print(f"[save] truncated report to ~{MAX_REPORT_CHARS} chars (was {len(report_text)}); memory holds summary only")
+        # Log the ORIGINAL length (caught by PR #37 review — prior code printed the
+        # post-truncation length, which was always ~MAX_REPORT_CHARS + suffix).
+        print(f"[save] truncated report to ~{MAX_REPORT_CHARS} chars (was {original_len}); memory holds summary only")
 
     import json
     metadata = {

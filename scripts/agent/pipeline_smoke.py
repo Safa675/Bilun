@@ -163,8 +163,13 @@ def main() -> int:
     temp_dir = Path(tempfile.mkdtemp(prefix="run_", dir=TEMP_BASE))
     print(f"[pipeline_smoke] temp_dir: {temp_dir.relative_to(PROJECT_ROOT)}")
 
+    # On failure we print "temp dir preserved for debugging" and return 1 — but the
+    # atexit handler below would still delete it. This flag tells _cleanup to skip when
+    # the dir was intentionally preserved. Caught by PR #37 review.
+    state = {"preserved_on_failure": False}
+
     def _cleanup() -> None:
-        if temp_dir.exists() and not args.keep_temp:
+        if temp_dir.exists() and not args.keep_temp and not state["preserved_on_failure"]:
             shutil.rmtree(temp_dir, ignore_errors=True)
 
     # onsigint / normal-exit cleanup. On a non-keep-temp success we clean explicitly below;
@@ -241,6 +246,9 @@ def main() -> int:
         print(f"  {marker} {name:35s} exit={code:<3} {elapsed:6.1f}s")
 
     if failed:
+        # Set the flag so the atexit _cleanup handler doesn't delete the dir we're
+        # telling the user is preserved. Caught by PR #37 review.
+        state["preserved_on_failure"] = True
         print(f"\n[pipeline_smoke] temp dir preserved for debugging: {temp_dir.relative_to(PROJECT_ROOT)}")
         return 1
     if not args.keep_temp:

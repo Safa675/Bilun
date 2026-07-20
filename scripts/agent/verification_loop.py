@@ -121,9 +121,13 @@ def _count_wrong_mappings(parquet_path: Path) -> int:
             f"got {df.columns}"
         )
     if df.schema[WRONG_MAPPING_COLUMN] != pl.Boolean:
-        # Defensive: tolerate a stringified bool column without failing the gate
-        # on a schema drift — but still surface it loudly via the count.
-        return int(df.filter(pl.col(WRONG_MAPPING_COLUMN)).height)
+        # Defensive: tolerate a stringified bool column without erroring. Polars
+        # `.filter()` requires a boolean expression — passing a string column
+        # directly errors. Cast to lowercase and compare to "true" (mirrors
+        # _coverage_pct's handling of the same pattern). Caught by PR #37 review.
+        return int(
+            df.filter(pl.col(WRONG_MAPPING_COLUMN).str.to_lowercase() == "true").height
+        )
     return int(df.filter(pl.col(WRONG_MAPPING_COLUMN)).height)
 
 

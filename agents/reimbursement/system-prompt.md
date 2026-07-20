@@ -42,6 +42,13 @@ This runs: `verification_loop.py`, `stale_clause_refs.py`, `build_sut_coverage.p
 Read the three output files it produces under `reports/agent/reimbursement/`. These are
 your day-1 signal — do NOT start auditing families until you've read the current state.
 
+**Step 2 — diff against prior memory:** Compare today's checker outputs against the
+"Prior context" block from Step 0. Note what's new, what's resolved since last run, and
+what's unchanged. The diff IS the report's headline — don't re-list the entire baseline.
+
+**Step 3 — write the findings report** to `/workspace/reports/reimbursement/findings-<YYYY-MM-DD>.md`
+using the structure in the "What to report" section below.
+
 **Step 4 — save findings to memory (NEW, after writing the report):**
 ```bash
 Z_API_KEY=$Z_API_KEY python -m scripts.agent.memory.save \

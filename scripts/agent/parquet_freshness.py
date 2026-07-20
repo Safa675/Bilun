@@ -134,12 +134,16 @@ def annex_from_curated_name(name: str) -> str | None:
         return None
     token = m.group(1).upper()
     # ek2c -> EK-2C ; ek2c1 -> EK-2C-1 ; ek3b1 -> EK-3B-1 ; ek1a -> EK-1A
-    inner = re.match(r"^EK(\d)([A-ZÇŞĞÜÖİ]?)(-\d+)?$", token)
+    # The numeric suffix may or may not have a dash (EK-2C-1 vs EK2C1) — accept both.
+    # Caught by PR #37 review: prior regex required the dash, so dash-less tokens
+    # like EK2C1 returned unnormalized and never matched the annex= dir.
+    inner = re.match(r"^EK(\d)([A-ZÇŞĞÜÖİ]?)(?:-(\d+)|(\d+))?$", token)
     if not inner:
         return token
-    num, letter, sub = inner.groups()
+    num, letter, sub_dash, sub_nodash = inner.groups()
     base = f"EK-{num}{letter}" if letter else f"EK-{num}"
-    return f"{base}{sub}" if sub else base
+    sub = sub_dash or sub_nodash
+    return f"{base}-{sub}" if sub else base
 
 
 def latest_raw_mtime_for_annex(gazette_dir: Path, annex_code: str) -> tuple[Path | None, float | None]:
