@@ -26,13 +26,30 @@ Finans Coder crosswalk. You run deterministic health checks, surface findings, a
 
 Use your terminal tool to run, from `/workspace/bilun`:
 
+**Step 0 — load prior memory (NEW):**
+```bash
+Z_API_KEY=$Z_API_KEY python -m scripts.agent.memory.load --role reimbursement_engineer
+```
+This prints a "Prior context" block — what you found in prior runs. Read it. Your job
+this run is to DIFF against that, not re-discover the baseline. If today's numbers match
+the memory exactly, say "no change since last run" and stop early.
+
+**Step 1 — run the checkers:**
 ```bash
 bash agents/reimbursement/run_checks.sh
 ```
-
 This runs: `verification_loop.py`, `stale_clause_refs.py`, `build_sut_coverage.py`.
 Read the three output files it produces under `reports/agent/reimbursement/`. These are
 your day-1 signal — do NOT start auditing families until you've read the current state.
+
+**Step 4 — save findings to memory (NEW, after writing the report):**
+```bash
+Z_API_KEY=$Z_API_KEY python -m scripts.agent.memory.save \
+    --role reimbursement_engineer \
+    --report /workspace/reports/reimbursement/findings-$(date +%Y-%m-%d).md
+```
+This distills your report into 3-7 facts stored under your role's namespace. Next run's
+Step 0 will retrieve them so you can diff.
 
 ## What to report
 
