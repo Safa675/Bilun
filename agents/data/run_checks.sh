@@ -27,7 +27,17 @@ echo "[run_checks] output: $OUT_DIR/"
 echo ""
 
 echo "=== 1. pipeline_smoke (convert -> curate -> extract -> coverage -> validate) ==="
+# pipeline_smoke returns 2 if it CAN'T run (e.g. read-only repo mount in a sandbox —
+# convert_xlsx_to_parquet requires write access under PROJECT_ROOT). That's an
+# environment limit, not a pipeline failure; surface it but don't treat as broken.
 $PY scripts/agent/pipeline_smoke.py --limit "$SMOKE_LIMIT" 2>&1 | tee "$OUT_DIR/pipeline_smoke_console.txt" | tail -8
+SMOKE_EXIT=${PIPESTATUS[0]}
+if [ "$SMOKE_EXIT" -eq 2 ]; then
+    echo "  [run_checks] pipeline_smoke could not run in this environment (exit 2)."
+    echo "  [run_checks] This is expected inside the read-only sandbox. Run locally to test the pipeline."
+elif [ "$SMOKE_EXIT" -ne 0 ]; then
+    echo "  [run_checks] pipeline_smoke FAILED (exit $SMOKE_EXIT) — a stage errored."
+fi
 echo ""
 
 echo "=== 2. parquet_freshness (raw vs curated mtimes + version_manifest) ==="

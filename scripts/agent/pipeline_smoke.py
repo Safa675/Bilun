@@ -157,10 +157,33 @@ def main() -> int:
     else:
         print(f"[pipeline_smoke] docx: {docx.relative_to(PROJECT_ROOT)}")
 
-    # Temp dir INSIDE the repo (see TEMP_BASE comment). mkdtemp under TEMP_BASE so
-    # multiple runs don't clobber each other.
-    TEMP_BASE.mkdir(parents=True, exist_ok=True)
-    temp_dir = Path(tempfile.mkdtemp(prefix="run_", dir=TEMP_BASE))
+    # Temp dir MUST be inside the repo (see TEMP_BASE comment) because
+    # convert_xlsx_to_parquet.py calls .relative_to(PROJECT_ROOT) on its output paths.
+    # The repo mount may be read-only (OpenHands sandbox runs the repo :ro), in which
+    # case we cannot create the temp dir here. Detect that and exit cleanly —
+    # pipeline_smoke is a local-dev tool, not a sandbox tool. The agent's run_checks.sh
+    # should still run the other Data checkers (parquet_freshness) and surface the
+    # pipeline-smoke-can't-run-here signal rather than crashing.
+    def _cant_run_here(msg: str) -> int:
+        print(
+            f"[pipeline_smoke] CANNOT RUN in this environment: {msg} "
+            "convert_xlsx_to_parquet.py requires write access under PROJECT_ROOT for "
+            "path resolution. Run pipeline_smoke locally outside the sandbox (e.g. "
+            "`python scripts/agent/pipeline_smoke.py --limit 3` from your dev "
+            "checkout). Exiting without testing the pipeline.",
+            file=sys.stderr,
+        )
+        return 2  # distinct exit code: "couldn't run", not "pipeline broken"
+
+    try:
+        TEMP_BASE.mkdir(parents=True, exist_ok=True)
+        temp_dir = Path(tempfile.mkdtemp(prefix="run_", dir=TEMP_BASE))
+    except (OSError, PermissionError) as e:
+        # errno 30 = read-only filesystem; errno 13 = permission denied (read-only mount
+        # may allow the mkdir but block the mkdtemp inside it, as observed in testing).
+        if getattr(e, "errno", None) in (13, 30) or "Read-only" in str(e):
+            return _cant_run_here(f"{type(e).__name__}: {e}")
+        raise
     print(f"[pipeline_smoke] temp_dir: {temp_dir.relative_to(PROJECT_ROOT)}")
 
     # On failure we print "temp dir preserved for debugging" and return 1 — but the
