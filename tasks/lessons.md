@@ -495,3 +495,63 @@ auto-inherit arbitrary env vars.
    spawned sandbox.
 3. OR rename to `LLM_Z_API_KEY` to match the auto-forward prefix (hackier).
 4. For production: use a secret file mounted into both containers, not env vars.
+
+---
+
+## Lesson (2026-07-21): Don't assume a single VPS — confirm which box a deploy targets
+
+**Mistake:** I assumed `165.245.243.183` (the web-app VPS documented in
+`plans/deployment/vps-deploy-plan.md`) was the only VPS, and deployed the
+OpenHands smoke-test plan there. It's the wrong box — Bilun has TWO VPSes:
+- `165.245.243.183` — the production web app (DigitalOcean, 4 GB RAM)
+- `169.58.50.165` — the Cloud VPS 8 (2026) reserved for agentic orchestration
+
+When reviewer feedback mentioned `169.58.50.165`, I grepped the repo, found zero
+matches, and dismissed it as a phantom. **The repo only documents the web-app
+VPS; the agent VPS isn't in any tracked file.** Absence from the repo is not
+absence from reality.
+
+**Pattern:** Infrastructure not documented in the repo may still exist. When a
+deploy target is ambiguous and someone (user or reviewer) names a specific host,
+treat that as a signal to ask "is this a different box?" — not to grep-and-dismiss.
+
+**Rule:** Before any deploy, confirm the target host with the user explicitly.
+If the user or a reviewer names an IP/hostname that differs from what's in the
+repo, STOP and ask which box — do not assume the repo is authoritative for
+undocumented infrastructure.
+
+**Concrete fix applied:** Aborted the deploy on the wrong box (no writes happened
+— Step 0 was read-only, Step 0.5+ never ran). Re-targeting to `169.58.50.165`.
+
+---
+
+## Agent-surfaced bugs: pricing import + pipeline_smoke :ro + missing tabulate dep (2026-07-21)
+
+**Pattern:** The 3 employee agents ran 2026-07-21 and surfaced 3 real Bilun bugs that
+sat unfixed in the working tree. All 3 were blocking the finans pricing audit chain —
+the Reimbursement Engineer correctly flagged them with file:line citations.
+
+1. **`src/bilun/domain/pricing/__init__.py:7`** used `from src.bilun.domain.pricing.keywords`
+   (absolute-from-src) — fails with `ModuleNotFoundError: No module named 'src'` whenever
+   the package isn't on sys.path as `src.*` (i.e. always, in the deployed/installed layout).
+   House style is relative imports (see `drugs/__init__.py:7` `from .ek4d_exempt import ...`).
+   Fixed to `from .keywords import _ICD10_CHAPTER_KEYWORDS`. This fix also unblocked 3
+   `test_material_kdv.py` tests that were silently failing on the broken import.
+
+2. **`scripts/agent/pipeline_smoke.py`** wrote its temp dir at `data/gazette/.pipeline_smoke_tmp/`
+   (inside the repo) because `convert_xlsx_to_parquet.py:289` calls
+   `.relative_to(PROJECT_ROOT)` on output paths. Under the OpenHands sandbox's `:ro` repo
+   mount this crashed with `OSError: Read-only file system` — and the Data agent correctly
+   reported it as a pipeline-smoke FAIL (a false negative: pipeline is healthy, the
+   CHECKER couldn't run). Fixed: detect the read-only case and exit cleanly with code 2
+   ("couldn't run in this environment"), distinct from real pipeline failure. Updated
+   `agents/data/run_checks.sh` to handle exit 2 as an environment limit, not a bug.
+
+3. **`tabulate` was not in `requirements.txt`** — `finans_pricing_audit.py` calls
+   `df.to_markdown()` which needs it. Worked on prior machines because tabulate got
+   pulled in transitively; broke on fresh installs. Added `tabulate>=0.9` to requirements.
+
+**Rule:** When an agent reports "X FAILED", distinguish "X is broken" from "X couldn't run
+in this environment". The pipeline_smoke FAIL was the latter — the agent had no way to
+know that, but the human reading the report should. Checker scripts should use distinct
+exit codes for "couldn't run" (we now use 2) vs "ran and found problems" (1) vs "clean" (0).
