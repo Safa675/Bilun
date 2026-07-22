@@ -552,8 +552,8 @@ def _gap_composition_summary(clause_frame: pl.DataFrame) -> dict[str, Any]:
         "footnote_tr": (
             f"Gerçek algoritmik boşluklar (kodlanmamış): {true_gaps:,}. "
             f"Kayıt-kısmi işaretli satırlar: {total_gaps:,} "
-            f"({drug_gaps:,} drug_indication_prose). "
-            f"{non_algorithmic_rows:,} hüküm bilinçli non-algorithmic "
+            f"({drug_gaps:,} ilaç endikasyon metni). "
+            f"{non_algorithmic_rows:,} hüküm bilinçli olarak algoritmik değil "
             "(§5 idari, provizyon, tanım, RG mülga/değişiklik satırları)."
         ),
     }

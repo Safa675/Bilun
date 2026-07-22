@@ -134,6 +134,70 @@ const api = {
     missing_inputs: "Eksik girdiler",
     not_in_sut: "SUT'da yok",
   },
+  billingProse: {
+    yatakStandardWithSurgery:
+      "Standart yatak (510010): {days} faturalanabilir yatak-günü (brüt YOB {grossDays} gün, {rate} ₺/gün, ameliyat günü {surgeryDay} EK-2/C paketine dahil) = {amount} ₺ (dahil YOB, taburcu günü faturalanır).",
+    yatakStandard:
+      "Standart yatak (510010): {days} faturalanabilir yatak-günü (brüt YOB {grossDays} gün, {rate} ₺/gün) = {amount} ₺ (dahil YOB, taburcu günü faturalanır).",
+    yatakSameDay:
+      "Aynı gün yatış/taburcu — 24 saatten kısa yatışlarda 510010 yerine 510120 (gündüz yatak) değerlendirin.",
+    catalogMiat:
+      "Katalog MIAT süresi: {period} — aralığı hasta öyküsüyle doğrulayın",
+    preauthNote:
+      "EK-3C-1 — SGK gönderiminden önce tıbbi uygunluk gerekli (§3.1.2)",
+    bundledEk3b1:
+      "Pakete dahil malzeme ayrı faturalandırılmış — paket kapsamını gözden geçirin (EK-3B-1)",
+    bundledPackageFlag:
+      "Paket bileşeni olarak işaretlenmiş ve ayrı faturalandırılmış — fatura/paket bayrağı, EK-3B-1 düzenleyici ek değil",
+    claimPackageOk:
+      "{claimId} talebi SUT §2.2.2(1)'e göre paket olarak doğru faturalandırılmış. Paket toplamı {amount} ₺.",
+    claimItemizedOk:
+      "{claimId} talebi SUT §2.2'ye göre kalemli olarak doğru faturalandırılmış. Kalemli toplam {amount} ₺.",
+    claimMandatePackage:
+      "SUT §2.2, {claimId} talebi için paket faturalandırmayı zorunlu kılar (EK-2/C işlem mevcut). Paket toplamı {packageTotal} ₺, kalemli {itemizedTotal} ₺.",
+    claimMandateItemized:
+      "SUT §2.2, {claimId} talebi için kalemli faturalandırmayı zorunlu kılar. Kalemli toplam {itemizedTotal} ₺, paket {packageTotal} ₺.",
+    claimOptionalPackageHigher:
+      "{claimId} talebi: isteğe bağlı §2.2.2(2) geçersiz kılma — paket faturalandırma ({packageTotal} ₺), kalemliye ({itemizedTotal} ₺) göre daha yüksek yasal seçenek.",
+    claimOptionalItemizedHigher:
+      "{claimId} talebi: isteğe bağlı §2.2.2(2) geçersiz kılma — kalemli faturalandırma ({itemizedTotal} ₺), pakete ({packageTotal} ₺) göre daha yüksek yasal seçenek.",
+    procedureMustPackage:
+      "{code} işlemi {section} uyarınca paket faturalandırma kullanmalıdır ({method}).",
+    procedureMustItemized:
+      "{code} işlemi {section} uyarınca kalemli faturalandırma kullanmalıdır ({method}).",
+    billedCorrectlyPackage: "Paket olarak doğru faturalandırılmış.",
+    billedCorrectlyItemized: "Kalemli olarak doğru faturalandırılmış.",
+    materialCopayRate: "SUT §1.8.3(2) malzeme katılım payı referans oranı: %{rate}",
+    ek1aChronic: "SUT §1.8.5(7) + EK-1/A kronik hastalık katılım payı muafiyetleri",
+    emergencyWaiver: "SUT §1.8.5(5) acil ziyaret katılım payı muafiyeti (520021 hariç)",
+    preventiveWaiver: "SUT §1.8.5(6) koruyucu sağlık katılım payı muafiyeti",
+    workAccident: "SUT §1.8.5(1) iş kazası / meslek hastalığı",
+    vataniHizmet: "SUT §1.8.5(11),(12) — Vatani Hizmet kanunları",
+    gssBeneficiary: "SUT §1.8.5(22)a — 5510 md.60(12) GSS hak sahibi grupları",
+    visitTypeRuleSource:
+      "EK-1A, ziyaret türü (acil/koruyucu), SGK statüsü, mesleki bağlam",
+    ek1aChronicShort: "EK-1A kronik hastalık katılım payı muafiyetleri",
+    ek1aChronicRanges: "EK-1A kronik hastalık katılım payı muafiyetleri (98 ICD-10 aralığı)",
+    honestyDrugIndication:
+      "Kayıt {status}; {encoded} satır kodlandı, {deferred} C kademesi/yapısal ertelendi, {gaps} gerçek algoritmik boşluk. {emr} EMR engelli (klinik veri gerekli).",
+    honestyMaterialBundling:
+      "Metin motoru için kayıt uygulanmış; bildirim §3.1–3.2 kodlama adaylarını izler ({clauseIds} hüküm ID) ve diskte {rulesOnDisk} JSON kural var. Uzun kuyruk §3.1 fıkraları yalnızca bildirimde kalır.",
+    honestySpecialty:
+      "L4.4 dışa aktarım alt kümesi 84 deontik §3.3 satırıdır; bildirim hepsini izler, {rulesOnDisk} JSON kural dal temalarını kapsar (3.3.1–3.3.4). Katalog fiyatlandırması (specialty_materials) ayrı kalır.",
+  },
+  llmError: {
+    malformed: "İstek hatalı biçimlendirilmiş.",
+    authFailed: "LLM kimlik doğrulaması başarısız — API anahtarı eksik veya geçersiz.",
+    quotaExhausted: "LLM kotası doldu — faturalandırma gerekli.",
+    forbidden: "LLM erişimi yasaklandı.",
+    timedOut: "LLM isteği zaman aşımına uğradı.",
+    contextTooLarge:
+      "İstek model bağlam penceresini aştı — çalışma alanı bağlamı çok büyük.",
+    rateLimited: "LLM hız sınırına ulaşıldı — kısa süre sonra yeniden deneyin.",
+    serverError: "LLM sağlayıcısı sunucu hatası döndürdü ({status}). Yeniden deneyin.",
+    unexpected: "LLM sağlayıcısı beklenmeyen hata döndürdü ({status}).",
+    prefix: "API hatası {status}: {detail}",
+  },
 } as const;
 
 export default api;

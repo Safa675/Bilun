@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { setModuleLocale } from "@/lib/i18n/localeModule";
 import {
   formatRequiredInputsLocalized,
+  translateApiText,
   translateMethodology,
   translateUnavailableReason,
   translateValidationMessage,
@@ -60,5 +61,39 @@ describe("apiMessages", () => {
     expect(translateValidationMessage("Uzmanlık sağlık kurulu raporu eksik")).toBe(
       "Uzmanlık sağlık kurulu raporu eksik",
     );
+  });
+
+  it("translates billing prose and LLM errors in Turkish", () => {
+    setModuleLocale("tr");
+    expect(
+      translateApiText(
+        "Standart yatak (510010): 16 billable bed-day(s) (gross LOS 17 day(s) at 222.36 TRY/day, surgery day 2024-10-11 bundled into EK-2/C package) = 3557.76 TRY (inclusive LOS, discharge day billed).",
+      ),
+    ).toContain("faturalanabilir yatak-günü");
+    expect(
+      translateApiText(
+        "Claim F-SENTETIK-HASTA-0001-001 is billed correctly as package per SUT §2.2.2(1). Package total 8705.13 TRY.",
+      ),
+    ).toContain("paket olarak doğru");
+    expect(
+      translateApiText(
+        "SUT §1.8.5(7) + EK-1/A chronic disease copay exemptions · SUT §1.8.5(5) emergency visit copay waiver (520021 excluded)",
+      ),
+    ).toContain("kronik hastalık");
+    expect(
+      translateApiText(
+        '⚠️ API error 401: {"error":{"message":"User not found.","code":401}}',
+      ),
+    ).toContain("kimlik doğrulaması");
+    expect(
+      translateApiText(
+        "Claim F-SENTETIK-HASTA-0003-011: optional §2.2.2(2) override — package billing (9000.00 TRY) is the higher legal option vs itemized (2700.00 TRY).",
+      ),
+    ).toContain("isteğe bağlı");
+    expect(
+      translateMethodology(
+        "Aggregated per-patient DRG unbundling findings from exact claim lines with SUT §2.2 prose rule checks.",
+      ),
+    ).toContain("DRG paket ayrıştırma");
   });
 });

@@ -133,6 +133,68 @@ const api = {
     missing_inputs: "Missing inputs",
     not_in_sut: "Not in SUT",
   },
+  billingProse: {
+    yatakStandardWithSurgery:
+      "Standard bed (510010): {days} billable bed-day(s) (gross LOS {grossDays} day(s) at {rate} TRY/day, surgery day {surgeryDay} bundled into EK-2/C package) = {amount} TRY (inclusive LOS, discharge day billed).",
+    yatakStandard:
+      "Standard bed (510010): {days} billable bed-day(s) (gross LOS {grossDays} day(s) at {rate} TRY/day) = {amount} TRY (inclusive LOS, discharge day billed).",
+    yatakSameDay:
+      "Same-day admission/discharge — consider 510120 (gündüz yatak) instead of 510010 for <24h stays.",
+    catalogMiat: "Catalog MIAT period: {period} — verify interval vs patient history",
+    preauthNote:
+      "EK-3C-1 — medical appropriateness (tıbbi uygunluk) required before SGK submission (§3.1.2)",
+    bundledEk3b1: "Bundled material billed separately — review package inclusion (EK-3B-1)",
+    bundledPackageFlag:
+      "Marked as package component and billed separately — invoice/package flag, not EK-3B-1 regulatory annex",
+    claimPackageOk:
+      "Claim {claimId} is billed correctly as package per SUT §2.2.2(1). Package total {amount} TRY.",
+    claimItemizedOk:
+      "Claim {claimId} is billed correctly as itemized per SUT §2.2. Itemized total {amount} TRY.",
+    claimMandatePackage:
+      "SUT §2.2 mandates package billing for claim {claimId} (EK-2/C procedure present). Package total {packageTotal} TRY vs itemized {itemizedTotal} TRY.",
+    claimMandateItemized:
+      "SUT §2.2 mandates itemized billing for claim {claimId}. Itemized total {itemizedTotal} TRY vs package {packageTotal} TRY.",
+    claimOptionalPackageHigher:
+      "Claim {claimId}: optional §2.2.2(2) override — package billing ({packageTotal} TRY) is the higher legal option vs itemized ({itemizedTotal} TRY).",
+    claimOptionalItemizedHigher:
+      "Claim {claimId}: optional §2.2.2(2) override — itemized billing ({itemizedTotal} TRY) is the higher legal option vs package ({packageTotal} TRY).",
+    procedureMustPackage:
+      "Procedure {code} must use package billing ({method}) per {section}.",
+    procedureMustItemized:
+      "Procedure {code} must use itemized billing ({method}) per {section}.",
+    billedCorrectlyPackage: "Billed correctly as package.",
+    billedCorrectlyItemized: "Billed correctly as itemized.",
+    materialCopayRate: "SUT §1.8.3(2) material copay reference rate: {rate}%",
+    ek1aChronic: "SUT §1.8.5(7) + EK-1/A chronic disease copay exemptions",
+    emergencyWaiver: "SUT §1.8.5(5) emergency visit copay waiver (520021 excluded)",
+    preventiveWaiver: "SUT §1.8.5(6) preventive health copay waiver",
+    workAccident: "SUT §1.8.5(1) work accident / occupational disease",
+    vataniHizmet: "SUT §1.8.5(11),(12) — Vatani Hizmet laws",
+    gssBeneficiary: "SUT §1.8.5(22)a — 5510 md.60(12) GSS beneficiary groups",
+    visitTypeRuleSource:
+      "EK-1A, visit type (acil/koruyucu), SGK status, occupational context",
+    ek1aChronicShort: "EK-1A chronic disease copay exemptions",
+    ek1aChronicRanges: "EK-1A chronic disease copay exemptions (98 ICD-10 ranges)",
+    honestyDrugIndication:
+      "Registry is {status}; {encoded} rows encoded, {deferred} tier-C/structural deferred, {gaps} true algorithmic gaps. {emr} EMR-blocked (clinical data required).",
+    honestyMaterialBundling:
+      "Registry is implemented for the prose engine; manifest traces §3.1–3.2 encode candidates ({clauseIds} clause IDs) vs {rulesOnDisk} JSON rules on disk. Long-tail §3.1 fikra stay manifest-only.",
+    honestySpecialty:
+      "L4.4 export subset is 84 deontic §3.3 rows; manifest traces all of them while {rulesOnDisk} JSON rules cover branch themes (3.3.1–3.3.4). Catalog pricing (specialty_materials) remains separate.",
+  },
+  llmError: {
+    malformed: "The request was malformed.",
+    authFailed: "LLM authentication failed — the API key is missing or invalid.",
+    quotaExhausted: "LLM quota exhausted — billing required.",
+    forbidden: "LLM access forbidden.",
+    timedOut: "The LLM request timed out.",
+    contextTooLarge:
+      "The request exceeded the model's context window — the workspace context is too large.",
+    rateLimited: "The LLM rate limit was hit — please retry shortly.",
+    serverError: "The LLM provider returned a server error ({status}). Please retry.",
+    unexpected: "The LLM provider returned an unexpected error ({status}).",
+    prefix: "API error {status}: {detail}",
+  },
 } as const;
 
 export default api;

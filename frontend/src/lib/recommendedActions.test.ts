@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  findingTypeChipVariant,
+  getFindingType,
   getRecommendedActions,
   recommendedActionAmountParts,
+  recommendedActionKindLabel,
   recommendedActionLineCodes,
+  recommendedActionSurfaceLabel,
   recommendedActionTitle,
 } from "@/lib/recommendedActions";
 import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
@@ -13,6 +17,62 @@ const t = (key: string, params?: Record<string, string | number>) => {
   }
   return key;
 };
+
+describe("getFindingType", () => {
+  const cases: Array<[string, string, "compliance" | "opportunity" | "informational"]> = [
+    ["materials", "material_bundling", "compliance"],
+    ["materials", "material_pre_auth", "compliance"],
+    ["drug_indication", "drug_indication", "compliance"],
+    ["lab", "hemogram_unbundling", "compliance"],
+    ["billing_strategy", "compliance_violation", "compliance"],
+    ["billing_strategy", "mandatory_compliance", "compliance"],
+    ["billing_strategy", "optional_override", "opportunity"],
+    ["copay", "exemption_review", "opportunity"],
+    ["session_uplift", "session_uplift", "opportunity"],
+    ["drg_uplift", "drg_uplift", "opportunity"],
+    ["blood_uplift", "blood_uplift", "opportunity"],
+    ["yatak_puani", "yatak_puani", "opportunity"],
+    ["material_uplift", "missing_billable_material", "opportunity"],
+    ["procedure_addon_uplift", "procedure_addon_uplift", "opportunity"],
+    ["procedure_capture_gap", "capture_gap", "opportunity"],
+    ["drg_package_adequacy", "drg_package_adequacy", "opportunity"],
+    ["gazette_repricing", "gazette_repricing", "opportunity"],
+    ["care_setting_review", "care_setting_review", "opportunity"],
+    ["medula_playbook", "medula_rejection", "informational"],
+    ["claim_checklist", "submission_check", "informational"],
+    ["unknown_surface", "whatever", "informational"],
+  ];
+
+  it.each(cases)("maps %s/%s → %s", (surface, kind, expected) => {
+    expect(getFindingType({ action_id: "x", surface, kind })).toBe(expected);
+  });
+
+  it("maps finding types to chip variants", () => {
+    expect(findingTypeChipVariant("compliance")).toBe("danger");
+    expect(findingTypeChipVariant("opportunity")).toBe("success");
+    expect(findingTypeChipVariant("informational")).toBe("neutral");
+  });
+});
+
+describe("recommendedAction labels", () => {
+  it("labels material and yatak kinds instead of Unknown", () => {
+    expect(
+      recommendedActionKindLabel(t, "material_pre_auth"),
+    ).toBe("billing.recommendedActions.kinds.materialPreAuth");
+    expect(
+      recommendedActionKindLabel(t, "material_bundling"),
+    ).toBe("billing.recommendedActions.kinds.materialBundling");
+    expect(
+      recommendedActionSurfaceLabel(t, "yatak_puani"),
+    ).toBe("billing.recommendedActions.surfaces.yatakPuani");
+  });
+
+  it("humanizes unmapped snake_case kinds instead of Unknown", () => {
+    expect(recommendedActionKindLabel(t, "brand_new_detector")).toBe(
+      "Brand New Detector",
+    );
+  });
+});
 
 describe("recommendedActions", () => {
   it("uses API recommended_actions when present", () => {

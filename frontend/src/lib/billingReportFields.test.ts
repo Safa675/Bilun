@@ -4,7 +4,9 @@ import {
   formatSutSectionLabel,
   isClaimLevelStrategyRow,
   isComplianceViolationRow,
+  mergeClaimStrategyTableRows,
   strategyCatalogAsOfFootnote,
+  strategyRowStatus,
   strategySavingsTryDisplay,
   usesHeuristicStrategyReviewShape,
   usesInsightOnlyCopayCorrectionShape,
@@ -75,5 +77,23 @@ describe("billingReportFields honest gaps", () => {
         procedure_code: "610070",
       }),
     ).toBe(true);
+  });
+
+  it("merges violations ahead of claim-level strategy rows", () => {
+    const claim = {
+      claim_id: "CLM1",
+      recommendation: "package" as const,
+      recommendation_kind: "mandatory_compliance" as const,
+      savings_try: 0,
+    };
+    const violation = {
+      type: "compliance_violation" as const,
+      claim_id: "CLM1",
+      procedure_code: "610070",
+    };
+    const merged = mergeClaimStrategyTableRows([claim], [violation]);
+    expect(merged).toEqual([violation, claim]);
+    expect(strategyRowStatus(violation)).toBe("violation");
+    expect(strategyRowStatus(claim)).toBe("compliant");
   });
 });

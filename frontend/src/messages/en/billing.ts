@@ -36,6 +36,11 @@ const billing = {
     "section": "SUT",
     "amount": "Amount",
     "detail": "Note",
+    "findingTypes": {
+      "compliance": "Compliance risk",
+      "opportunity": "Revenue opportunity",
+      "informational": "Informational"
+    },
     "surfaces": {
       "lab": "Laboratory",
       "copay": "Copay",
@@ -52,7 +57,8 @@ const billing = {
       "medulaPlaybook": "MEDULA playbook",
       "claimChecklist": "Claim checklist",
       "drugIndication": "Drug indication",
-      "materials": "Materials pre-check"
+      "materials": "Materials pre-check",
+      "yatakPuani": "Bed-day (yatak puanı)"
     },
     "kinds": {
       "complianceViolation": "Payment method violation",
@@ -60,7 +66,15 @@ const billing = {
       "mandatoryCompliance": "Mandatory billing method",
       "exemptionReview": "EK-1A exemption review",
       "hemogramUnbundling": "Hemogram bundling",
-      "missingMaterial": "Missing billable material"
+      "missingMaterial": "Missing billable material",
+      "materialPreAuth": "Pre-authorization required",
+      "materialMiat": "MIAT restricted",
+      "materialMiatInterval": "MIAT interval",
+      "materialBundling": "Bundled — billed separately",
+      "materialProseBundling": "§3.1 prose bundling",
+      "materialSpecialtyProse": "§3.3 specialty prose",
+      "yatakPuani": "Bed-day charge",
+      "yatakPuaniStandardBed": "Standard bed-day charge"
     },
     "titleWithCode": "{kind}: {code}",
     "titleWithName": "{kind}: {code} — {name}",
@@ -340,6 +354,10 @@ const billing = {
     "methodItemized": "Itemized only",
     "methodNotInSut": "Not in SUT lists",
     "compliant": "Compliant",
+    "status": "Status",
+    "statusCompliant": "Compliant",
+    "statusViolation": "Violation",
+    "statusReview": "Review",
     "correctiveSavings": "Corrective savings",
     "optionalSavings": "Difference if alternate method chosen",
     "complianceViolations": "Payment method compliance issues",
@@ -356,8 +374,8 @@ const billing = {
     "miatCatalog": "MIAT catalog (verify interval)",
     "miatIntervalViolations": "MIAT interval — prior use too soon",
     "lastUse": "Last use",
-    "bundledSeparate": "Bundled — billed separately (EK-3B-1)",
-    "scopeNotice": "Bundling flags use the EK-3B-1 catalog (54 items) only — not full SUT §3.1–3.2 prose.",
+    "bundledSeparate": "Bundled — billed separately",
+    "scopeNotice": "Rows may come from the EK-3B-1 annex (54 items) or from a broader invoice/package flag — check the note per row. Not full SUT §3.1–3.2 prose.",
     "advisoryFootnote": "These flags are pre-MEDULA compliance checks only. They do not guarantee SGK reimbursement.",
     "proseBundling": "§3.1 prose bundling (partial engine)",
     "specialtyProse": "§3.3 specialty annex prose (L4.4)",

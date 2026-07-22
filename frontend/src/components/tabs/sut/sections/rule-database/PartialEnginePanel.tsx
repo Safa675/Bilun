@@ -2,6 +2,7 @@
 
 import type { PartialEngineCoverage } from "@/lib/api/sut";
 import { Eyebrow, Stat, Surface } from "@/components/primitives";
+import { translateApiText } from "@/lib/apiMessages";
 import { useT } from "@/lib/i18n/useTranslations";
 import { fmtNum } from "../../shared";
 
@@ -23,7 +24,7 @@ export function PartialEnginePanel({
       <p className="font-mono text-[11px] font-semibold text-[var(--text-primary)]">
         {engine.rule_id}
       </p>
-      <p className="text-xs text-[var(--text-muted)]">{engine.honesty_note}</p>
+      <p className="text-xs text-[var(--text-muted)]">{translateApiText(engine.honesty_note)}</p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Stat
           label={t("sections.ruleDatabase.coverage.partialEngineEncoded")}

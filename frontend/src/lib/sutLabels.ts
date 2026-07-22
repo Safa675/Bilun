@@ -92,7 +92,7 @@ export function getSutRiskTierLabel(value: string | null | undefined): string {
 function lookupDomainLabel(
   group: keyof Pick<
     typeof enMessages.labels.sut,
-    "priority" | "actionType" | "savingsCategory" | "flagType" | "paymentMethod"
+    "priority" | "actionType" | "savingsCategory" | "flagType" | "paymentMethod" | "ruleCategory"
   >,
   normalized: string,
 ): string | null {
@@ -126,7 +126,7 @@ export function getSutDomainLabel(value: string | null | undefined): string {
     return t("labels.sut.unknown");
   }
 
-  for (const group of ["savingsCategory", "actionType", "flagType", "paymentMethod", "priority"] as const) {
+  for (const group of ["savingsCategory", "actionType", "flagType", "paymentMethod", "priority", "ruleCategory"] as const) {
     const known = lookupDomainLabel(group, normalized);
     if (known) {
       return known;

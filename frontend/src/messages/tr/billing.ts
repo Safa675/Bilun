@@ -36,6 +36,11 @@ const billing = {
     "section": "SUT",
     "amount": "Tutar",
     "detail": "Not",
+    "findingTypes": {
+      "compliance": "Uyumluluk riski",
+      "opportunity": "Gelir fırsatı",
+      "informational": "Bilgi"
+    },
     "surfaces": {
       "lab": "Laboratuvar",
       "copay": "Katılım payı",
@@ -52,7 +57,8 @@ const billing = {
       "medulaPlaybook": "MEDULA rehberi",
       "claimChecklist": "Talep kontrol listesi",
       "drugIndication": "İlaç endikasyonu",
-      "materials": "Malzeme ön kontrol"
+      "materials": "Malzeme ön kontrol",
+      "yatakPuani": "Yatak puanı"
     },
     "kinds": {
       "complianceViolation": "Ödeme yöntemi ihlali",
@@ -60,7 +66,15 @@ const billing = {
       "mandatoryCompliance": "Zorunlu fatura yöntemi",
       "exemptionReview": "EK-1A muafiyet kontrolü",
       "hemogramUnbundling": "Hemogram paketleme",
-      "missingMaterial": "Eksik faturalanabilir malzeme"
+      "missingMaterial": "Eksik faturalanabilir malzeme",
+      "materialPreAuth": "Ön onay gerekli",
+      "materialMiat": "MIAT kısıtlı",
+      "materialMiatInterval": "MIAT aralığı",
+      "materialBundling": "Pakete dahil — ayrı faturalandırılmış",
+      "materialProseBundling": "§3.1 metin paketleme",
+      "materialSpecialtyProse": "§3.3 uzmanlık metni",
+      "yatakPuani": "Yatak puanı ücreti",
+      "yatakPuaniStandardBed": "Standart yatak puanı"
     },
     "titleWithCode": "{kind}: {code}",
     "titleWithName": "{kind}: {code} — {name}",
@@ -340,6 +354,10 @@ const billing = {
     "methodItemized": "Yalnızca kalem",
     "methodNotInSut": "SUT listelerinde yok",
     "compliant": "Uyumlu",
+    "status": "Durum",
+    "statusCompliant": "Uyumlu",
+    "statusViolation": "İhlal",
+    "statusReview": "İncele",
     "correctiveSavings": "Düzeltici tasarruf",
     "optionalSavings": "Alternatif yöntem farkı",
     "complianceViolations": "Ödeme yöntemi uyum sorunları",
@@ -356,8 +374,8 @@ const billing = {
     "miatCatalog": "MIAT katalog (aralığı doğrulayın)",
     "miatIntervalViolations": "MIAT aralığı — önceki kullanım çok yakın",
     "lastUse": "Son kullanım",
-    "bundledSeparate": "Pakete dahil — ayrı faturalandırılmış (EK-3B-1)",
-    "scopeNotice": "Paketleme işaretleri yalnızca EK-3B-1 kataloğunu (54 kalem) kullanır — SUT §3.1–3.2 tam metin kuralları değil.",
+    "bundledSeparate": "Pakete dahil — ayrı faturalandırılmış",
+    "scopeNotice": "Satırlar EK-3B-1 ekinden (54 kalem) veya daha geniş fatura/paket işaretinden gelebilir — satır notuna bakın. SUT §3.1–3.2 tam metin kuralları değil.",
     "advisoryFootnote": "Bu işaretler yalnızca MEDULA öncesi uyumluluk kontrolleridir. SGK ödemesini garanti etmezler.",
     "proseBundling": "§3.1 metin paketleme (kısmi motor)",
     "specialtyProse": "§3.3 uzmanlık eki metin (L4.4)",

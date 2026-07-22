@@ -53,6 +53,7 @@ import {
 import { useCohortFilter } from "@/hooks/useCohortFilter";
 import { SutAlertTableSkeleton } from "@/components/skeletons/SutSkeletons";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
+import { translateMethodology } from "@/lib/apiMessages";
 import {
   getSutAlertBadgeLabel,
   getSutRecommendedActionLabel,
@@ -738,7 +739,7 @@ function MethodologyBadge({
         {badgeLabel}
       </span>
       <span className="mx-1.5" style={{ color: separatorColor }}>|</span>
-      {text}
+      {translateMethodology(text)}
     </div>
   );
 }

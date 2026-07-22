@@ -286,9 +286,14 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("Mandatory billing rule");
     expect(html).toContain("DRG mandatory");
     expect(html).toContain("Compliant");
-    expect(html).toContain("Payment method compliance issues");
+    expect(html).toContain("Violation");
+    expect(html).toContain("Package procedure");
     expect(html).toContain("14637.06 TRY");
     expect(html).not.toContain("0.00 TRY");
+    // Single merged table — no separate red compliance-violations subheading.
+    expect(html).not.toContain("Payment method compliance issues");
+    // Violation row appears before compliant claim-level content in markup order.
+    expect(html.indexOf("Violation")).toBeLessThan(html.indexOf("Mandatory billing rule"));
   });
 
   it("shows override badge and optional savings header", () => {

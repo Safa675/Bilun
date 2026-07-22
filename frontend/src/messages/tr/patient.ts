@@ -41,7 +41,7 @@ const patient = {
     "compliance": "Uyumluluk incelemesi",
     "complianceDescription": "Katılım payı, ilave ücret ayrımı ve faturalama stratejisi.",
     "opportunities": "Gelir fırsatları",
-    "opportunitiesDescription": "Seans, DRG, malzeme ve işlem uplift tespitleri.",
+    "opportunitiesDescription": "Seans, DRG, malzeme ve işlem artış tespitleri.",
     "reference": "Referans ve gönderim",
     "referenceDescription": "Kontrol listeleri, MEDULA playbook ve ilaç endikasyon incelemesi."
   },
