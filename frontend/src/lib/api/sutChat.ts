@@ -155,7 +155,12 @@ export async function sendSutChatMessage(
         if (frame.event === "error") {
           throw new Error(translateApiText(payload));
         }
-        onToken(payload, frame.event || undefined);
+        // LLM error yields arrive as plain data tokens (not event:error).
+        const localized =
+          typeof payload === "string" && /^(⚠️\s*)?(API error|The LLM|LLM )/i.test(payload)
+            ? translateApiText(payload)
+            : payload;
+        onToken(localized, frame.event || undefined);
         tokenCount += 1;
         lastActivityTime = Date.now();
       }

@@ -14,7 +14,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/sessionToken";
 
 const LOGIN_PATH = "/login";
-const PUBLIC_PATHS = [LOGIN_PATH];
+// Login/logout API must be reachable without a session — otherwise the login
+// form's POST /api/auth/login is redirected to /login and credentials look "wrong".
+const PUBLIC_PATHS = [LOGIN_PATH, "/api/auth/login", "/api/auth/logout"];
 
 // Match all routes except Next.js internals and static assets.
 export const config = {

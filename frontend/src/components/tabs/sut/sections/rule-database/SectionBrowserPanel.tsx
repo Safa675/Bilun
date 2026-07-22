@@ -13,6 +13,7 @@ import {
 import { isAbortError } from "@/lib/api/request";
 import { SutReferenceSectionSkeleton } from "@/components/skeletons/SutSkeletons";
 import { cn } from "@/lib/cn";
+import { getSutDomainLabel } from "@/lib/sutLabels";
 import {
   Chip,
   Surface,
@@ -242,7 +243,7 @@ export function SectionBrowserPanel({
                           <div className="flex flex-wrap gap-1">
                             {section.primary_categories.map((cat) => (
                               <Chip key={cat} variant="outline">
-                                {cat}
+                                {getSutDomainLabel(cat)}
                               </Chip>
                             ))}
                           </div>

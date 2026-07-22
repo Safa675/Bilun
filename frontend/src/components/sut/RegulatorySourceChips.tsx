@@ -1,4 +1,5 @@
 import { Chip } from "@/components/primitives";
+import { translateApiText } from "@/lib/apiMessages";
 import type { RegulatorySourceRef } from "@/lib/sutRegulatorySources";
 import type { CopayExemptionResult, PatientAlertCopay } from "@/lib/domains/sut";
 import {
@@ -98,7 +99,7 @@ export function RuleSourceAttribution({
   return (
     <span
       className={`inline-flex flex-wrap items-center gap-1 ${className ?? ""}`}
-      title={trimmed}
+      title={translateApiText(trimmed)}
     >
       {labels.length > 0 ? (
         <EkAnnexChips labels={labels} />
@@ -140,7 +141,7 @@ export function PatientExemptionRuleSourceAttribution({
   return (
     <span
       className={`inline-flex flex-wrap items-center gap-1 ${className ?? ""}`}
-      title={tooltip || undefined}
+      title={tooltip ? translateApiText(tooltip) : undefined}
     >
       {labels.length > 0 ? (
         <EkAnnexChips labels={labels} />

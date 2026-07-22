@@ -1,4 +1,5 @@
 import type { BillingActionReport, RecommendedActionItem } from "@/lib/domains/sut";
+import type { ChipVariant } from "@/components/primitives/Chip";
 
 type TranslateFn = (
   key: string,
@@ -6,6 +7,82 @@ type TranslateFn = (
 ) => string;
 
 export type { RecommendedActionItem };
+
+/** User-facing finding class for recommended-action rows (not backend motors). */
+export type FindingType = "compliance" | "opportunity" | "informational";
+
+const COMPLIANCE_SURFACES = new Set([
+  "materials",
+  "drug_indication",
+  "lab",
+]);
+
+const OPPORTUNITY_SURFACES = new Set([
+  "session_uplift",
+  "drg_uplift",
+  "blood_uplift",
+  "yatak_puani",
+  "material_uplift",
+  "procedure_addon_uplift",
+  "procedure_capture_gap",
+  "drg_package_adequacy",
+  "gazette_repricing",
+  "care_setting_review",
+  "copay",
+]);
+
+const INFORMATIONAL_SURFACES = new Set([
+  "medula_playbook",
+  "claim_checklist",
+]);
+
+/**
+ * Classify a recommended action for UI badges.
+ * Surface-primary using real `collect_billing_actions` values; strategy uses kind.
+ */
+export function getFindingType(action: RecommendedActionItem): FindingType {
+  const surface = action.surface;
+  const kind = action.kind;
+
+  if (surface === "billing_strategy") {
+    if (kind === "optional_override") return "opportunity";
+    if (
+      kind === "compliance_violation" ||
+      kind === "mandatory_compliance" ||
+      kind === "strategy"
+    ) {
+      return "compliance";
+    }
+    return "informational";
+  }
+
+  if (COMPLIANCE_SURFACES.has(surface)) return "compliance";
+  if (OPPORTUNITY_SURFACES.has(surface)) return "opportunity";
+  if (INFORMATIONAL_SURFACES.has(surface)) return "informational";
+  return "informational";
+}
+
+export function findingTypeChipVariant(type: FindingType): ChipVariant {
+  switch (type) {
+    case "compliance":
+      return "danger";
+    case "opportunity":
+      return "success";
+    default:
+      return "neutral";
+  }
+}
+
+export function findingTypeLabelKey(type: FindingType): string {
+  switch (type) {
+    case "compliance":
+      return "billing.recommendedActions.findingTypes.compliance";
+    case "opportunity":
+      return "billing.recommendedActions.findingTypes.opportunity";
+    default:
+      return "billing.recommendedActions.findingTypes.informational";
+  }
+}
 
 export function getRecommendedActions(
   report: BillingActionReport,
@@ -148,6 +225,7 @@ const SURFACE_LABEL_KEYS: Record<string, string> = {
   claim_checklist: "billing.recommendedActions.surfaces.claimChecklist",
   drug_indication: "billing.recommendedActions.surfaces.drugIndication",
   materials: "billing.recommendedActions.surfaces.materials",
+  yatak_puani: "billing.recommendedActions.surfaces.yatakPuani",
 };
 
 const KIND_LABEL_KEYS: Record<string, string> = {
@@ -157,19 +235,53 @@ const KIND_LABEL_KEYS: Record<string, string> = {
   exemption_review: "billing.recommendedActions.kinds.exemptionReview",
   hemogram_unbundling: "billing.recommendedActions.kinds.hemogramUnbundling",
   missing_billable_material: "billing.recommendedActions.kinds.missingMaterial",
+  material_pre_auth: "billing.recommendedActions.kinds.materialPreAuth",
+  material_miat: "billing.recommendedActions.kinds.materialMiat",
+  material_miat_interval: "billing.recommendedActions.kinds.materialMiatInterval",
+  material_bundling: "billing.recommendedActions.kinds.materialBundling",
+  material_prose_bundling: "billing.recommendedActions.kinds.materialProseBundling",
+  material_specialty_prose: "billing.recommendedActions.kinds.materialSpecialtyProse",
+  yatak_puani: "billing.recommendedActions.kinds.yatakPuani",
+  yatak_puani_standard_bed: "billing.recommendedActions.kinds.yatakPuaniStandardBed",
 };
+
+/** Prefer i18n map; otherwise humanize snake_case so new backend kinds aren't "Unknown". */
+function labelOrHumanize(
+  t: TranslateFn,
+  key: string | undefined,
+  raw: string,
+  unknownKey: string,
+): string {
+  if (key) {
+    return t(key);
+  }
+  const humanized = raw
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (ch) => ch.toUpperCase());
+  return humanized || t(unknownKey);
+}
 
 export function recommendedActionSurfaceLabel(
   t: TranslateFn,
   surface: string,
 ): string {
-  const key = SURFACE_LABEL_KEYS[surface];
-  return key ? t(key) : t("common.unknownSurface");
+  return labelOrHumanize(
+    t,
+    SURFACE_LABEL_KEYS[surface],
+    surface,
+    "common.unknownSurface",
+  );
 }
 
 export function recommendedActionKindLabel(t: TranslateFn, kind: string): string {
-  const key = KIND_LABEL_KEYS[kind];
-  return key ? t(key) : t("common.unknownKind");
+  return labelOrHumanize(
+    t,
+    KIND_LABEL_KEYS[kind],
+    kind,
+    "common.unknownKind",
+  );
 }
 
 const MATERIAL_BILLED_KINDS = new Set([

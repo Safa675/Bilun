@@ -25,6 +25,7 @@ import {
   formatSutSectionLabel,
   isClaimLevelStrategyRow,
   isComplianceViolationRow,
+  mergeClaimStrategyTableRows,
   strategyBadgeColor,
   strategyItemizedTotalTry,
   strategyModeLabel,
@@ -33,6 +34,9 @@ import {
   strategyPrimaryLabel,
   strategyRecommendationKindMessageKey,
   strategyCatalogAsOfFootnote,
+  strategyRowStatus,
+  strategyRowStatusChipVariant,
+  strategyRowStatusMessageKey,
   strategySavingsHeaderKey,
   strategySavingsTryDisplay,
   strategySecondaryLabel,
@@ -41,6 +45,9 @@ import {
   usesInsightOnlyCopayCorrectionShape,
 } from "@/lib/billingReportFields";
 import {
+  findingTypeChipVariant,
+  findingTypeLabelKey,
+  getFindingType,
   getRecommendedActions,
   recommendedActionSectionId,
   recommendedActionAmountParts,
@@ -188,6 +195,7 @@ export function RecommendedActionsPanel({
             const amount = recommendedActionAmountParts(t, action);
             const sectionId = recommendedActionSectionId(action.surface);
             const isActive = action.action_id === selectedActionId;
+            const findingType = getFindingType(action);
             // Selection drives invoice-line highlighting (independent of scroll),
             // so every row is clickable; scroll is a bonus when an anchor exists.
             const handleSelect = () => {
@@ -218,9 +226,14 @@ export function RecommendedActionsPanel({
                 tabIndex={0}
               >
                 <td>
-                  <Chip variant="neutral">
-                    {recommendedActionSurfaceLabel(t, action.surface)}
-                  </Chip>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Chip variant="neutral">
+                      {recommendedActionSurfaceLabel(t, action.surface)}
+                    </Chip>
+                    <Chip variant={findingTypeChipVariant(findingType)}>
+                      {t(findingTypeLabelKey(findingType))}
+                    </Chip>
+                  </div>
                 </td>
                 <td className="font-medium text-[var(--text-primary)]">
                   {recommendedActionTitle(t, action)}
@@ -649,7 +662,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
           <div className="space-y-2">
             {insightOnlyRows.map((correction, index) => (
               <p key={`insight-${index}`} className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                {correction.detail}
+                {translateApiText(correction.detail)}
               </p>
             ))}
           </div>
@@ -744,6 +757,7 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
   const complianceViolations = strategyData.recommendations.filter((item) =>
     isComplianceViolationRow(item),
   );
+  const mergedClaimRows = mergeClaimStrategyTableRows(claimLevelRows, complianceViolations);
   const hasRecommendations =
     heuristicRows.length > 0 ||
     claimLevelRows.length > 0 ||
@@ -761,8 +775,8 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
     return null;
   }
 
-  const heuristicOnly = heuristicRows.length > 0 && claimLevelRows.length === 0;
-  const usesClaimTable = claimLevelRows.length > 0;
+  const heuristicOnly = heuristicRows.length > 0 && mergedClaimRows.length === 0;
+  const usesClaimTable = mergedClaimRows.length > 0;
   const savingsHeaderKey = usesClaimTable
     ? strategySavingsHeaderKey(claimLevelRows)
     : "billing.strategy.savings";
@@ -773,6 +787,9 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
 
   const renderSutRuleBadge = (item: (typeof claimLevelRows)[number]) => {
     const section = formatSutSectionLabel(item.sut_section_id ?? item.sut_section);
+    if (isComplianceViolationRow(item)) {
+      return section;
+    }
     const label =
       item.recommendation_kind === "optional_override"
         ? t("billing.strategy.badgeOverride", { section })
@@ -795,29 +812,14 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
           {t("billing.strategy.overrideScopeNotice")}
         </p>
       )}
-      {(heuristicOnly || usesClaimTable) && (
-        <TableWrap minWidth={heuristicOnly ? 760 : 1180}>
+      {heuristicOnly && (
+        <TableWrap minWidth={760}>
           <thead>
             <tr>
-              {heuristicOnly ? (
-                <>
-                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.chapter")}</th>
-                  <th>{t("billing.strategy.recommendation")}</th>
-                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
-                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
-                </>
-              ) : (
-                <>
-                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.claim")}</th>
-                  <th>{t("billing.strategy.recommendation")}</th>
-                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.recommendationKind")}</th>
-                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.sutSection")}</th>
-                  <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.paymentMethodKind")}</th>
-                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.packageTotal")}</th>
-                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.itemizedTotal")}</th>
-                  <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t(savingsHeaderKey)}</th>
-                </>
-              )}
+              <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.chapter")}</th>
+              <th>{t("billing.strategy.recommendation")}</th>
+              <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+              <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
             </tr>
           </thead>
           <tbody>
@@ -827,53 +829,103 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
                 <td>
                   <Chip variant="outline">{t("patient.workspace.reviewPackage")}</Chip>
                 </td>
-                <td>{item.detail ?? strategySecondaryLabel(item)}</td>
+                <td>{translateApiText(item.detail ?? strategySecondaryLabel(item))}</td>
                 <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                   {fmtTRY2OrUnavailable(item.savings_try ?? null)}
                 </td>
               </tr>
             ))}
-            {claimLevelRows.map((item, index) => {
+          </tbody>
+        </TableWrap>
+      )}
+      {usesClaimTable && (
+        <TableWrap minWidth={1280}>
+          <thead>
+            <tr>
+              <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.status")}</th>
+              <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.claim")}</th>
+              <th>{t("billing.strategy.recommendation")}</th>
+              <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.recommendationKind")}</th>
+              <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.sutSection")}</th>
+              <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.paymentMethodKind")}</th>
+              <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.packageTotal")}</th>
+              <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.itemizedTotal")}</th>
+              <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t(savingsHeaderKey)}</th>
+              <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mergedClaimRows.map((item, index) => {
+              const status = strategyRowStatus(item);
+              const isViolation = isComplianceViolationRow(item);
               const savings = strategySavingsTryDisplay(item);
               const kindKey = strategyRecommendationKindMessageKey(item);
               const methodKey = strategyPaymentMethodKindMessageKey(item);
               return (
-                <tr key={`${strategyPrimaryLabel(item)}-${index}`}>
+                <tr key={`${strategyPrimaryLabel(item)}-${item.procedure_code ?? "row"}-${index}`}>
                   <td>
-                    <div className="font-semibold text-slate-950">{strategyPrimaryLabel(item)}</div>
-                    {strategySecondaryLabel(item) && (
-                      <div className="mt-1 text-xs" style={{ color: "#71717A" }}>
-                        {strategySecondaryLabel(item)}
-                      </div>
-                    )}
-                  </td>
-                  <td>
-                    <Chip variant={chipVariantFromColor(strategyModeLabel(item) === "package" ? ACCENT : "#2563EB")}>
-                      {fmtLabel(strategyModeLabel(item))}
+                    <Chip variant={strategyRowStatusChipVariant(status)}>
+                      {t(strategyRowStatusMessageKey(status))}
                     </Chip>
                   </td>
+                  <td className="font-semibold text-slate-950">
+                    {isViolation ? (item.claim_id ?? "—") : strategyPrimaryLabel(item)}
+                  </td>
                   <td>
-                    {kindKey ? (
-                      <Chip variant={chipVariantFromColor(strategyBadgeColor(item))}>{t(kindKey)}</Chip>
+                    {isViolation ? (
+                      <>
+                        <div className="font-semibold text-slate-950">
+                          {item.procedure_name ?? item.procedure_code ?? "—"}
+                        </div>
+                        {item.procedure_code && item.procedure_name && (
+                          <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
+                            {item.procedure_code}
+                          </div>
+                        )}
+                      </>
                     ) : (
-                      "—"
+                      <Chip variant={chipVariantFromColor(strategyModeLabel(item) === "package" ? ACCENT : "#2563EB")}>
+                        {fmtLabel(strategyModeLabel(item))}
+                      </Chip>
                     )}
                   </td>
+                  <td>
+                    {isViolation
+                      ? "—"
+                      : kindKey
+                        ? (
+                          <Chip variant={chipVariantFromColor(strategyBadgeColor(item))}>{t(kindKey)}</Chip>
+                        )
+                        : "—"}
+                  </td>
                   <td>{renderSutRuleBadge(item)}</td>
-                  <td>{methodKey ? t(methodKey) : "—"}</td>
-                  <td className="num-col tabular-nums text-right">
-                    {fmtTRY2OrUnavailable(strategyPackageTotalTry(item))}
+                  <td>
+                    {isViolation
+                      ? fmtLabel(item.mandated_method ?? "—")
+                      : methodKey
+                        ? t(methodKey)
+                        : "—"}
                   </td>
                   <td className="num-col tabular-nums text-right">
-                    {fmtTRY2OrUnavailable(strategyItemizedTotalTry(item))}
+                    {isViolation ? "—" : fmtTRY2OrUnavailable(strategyPackageTotalTry(item))}
+                  </td>
+                  <td className="num-col tabular-nums text-right">
+                    {isViolation ? "—" : fmtTRY2OrUnavailable(strategyItemizedTotalTry(item))}
                   </td>
                   <td
                     className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]"
-                    style={savings.muted ? { color: "#71717A" } : undefined}
+                    style={!isViolation && savings.muted ? { color: "#71717A" } : undefined}
                   >
-                    {savings.muted
-                      ? t("billing.strategy.compliant")
-                      : fmtTRY2OrUnavailable(savings.amount)}
+                    {isViolation
+                      ? "—"
+                      : savings.muted
+                        ? t("billing.strategy.compliant")
+                        : fmtTRY2OrUnavailable(savings.amount)}
+                  </td>
+                  <td className="text-sm text-[var(--text-secondary)]">
+                    {isViolation
+                      ? (item.detail ? translateApiText(item.detail) : "—")
+                      : (translateApiText(strategySecondaryLabel(item)) || "—")}
                   </td>
                 </tr>
               );
@@ -881,36 +933,28 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
           </tbody>
         </TableWrap>
       )}
-      {complianceViolations.length > 0 && (
-        <div className="mt-6 space-y-2">
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#B91C1C" }}>
-            {t("billing.strategy.complianceViolations")}
-          </p>
-          <TableWrap minWidth={920}>
+      {!heuristicOnly && heuristicRows.length > 0 && (
+        <div className="mt-6">
+          <TableWrap minWidth={760}>
             <thead>
               <tr>
-                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.claim")}</th>
-                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.procedure")}</th>
-                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.mandatedMethod")}</th>
-                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.sutSection")}</th>
+                <th style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.chapter")}</th>
+                <th>{t("billing.strategy.recommendation")}</th>
                 <th style={WRAPPED_HEADER_STYLE}>{t("billing.materials.note")}</th>
+                <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.strategy.savings")}</th>
               </tr>
             </thead>
             <tbody>
-              {complianceViolations.map((item, index) => (
-                <tr key={`${item.claim_id}-${item.procedure_code}-${index}`}>
-                  <td className="font-semibold text-slate-950">{item.claim_id ?? "—"}</td>
+              {heuristicRows.map((item, index) => (
+                <tr key={`heuristic-${strategyPrimaryLabel(item)}-${index}`}>
+                  <td className="font-semibold text-slate-950">{item.chapter ?? "—"}</td>
                   <td>
-                    <div className="font-semibold text-slate-950">{item.procedure_name ?? item.procedure_code ?? "—"}</div>
-                    {item.procedure_code && item.procedure_name && (
-                      <div className="mt-1 font-mono text-xs" style={{ color: "#71717A" }}>
-                        {item.procedure_code}
-                      </div>
-                    )}
+                    <Chip variant="outline">{t("patient.workspace.reviewPackage")}</Chip>
                   </td>
-                  <td>{fmtLabel(item.mandated_method ?? "—")}</td>
-                  <td>{formatSutSectionLabel(item.sut_section_id ?? item.sut_section)}</td>
-                  <td>{item.detail ?? "—"}</td>
+                  <td>{translateApiText(item.detail ?? strategySecondaryLabel(item))}</td>
+                  <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                    {fmtTRY2OrUnavailable(item.savings_try ?? null)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -1012,7 +1056,7 @@ export function OptionalOverrideSection({
                 })()}
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
-              <td>{item.detail ?? "—"}</td>
+              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1102,7 +1146,7 @@ export function MaterialUpliftSection({
                 <BillingRegulatorySourceCell ruleSource={materialData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
-              <td>{item.detail ?? "—"}</td>
+              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1307,7 +1351,7 @@ export function ProcedureAddonUpliftSection({
                 <BillingRegulatorySourceCell ruleSource={addonData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
-              <td>{item.detail ?? "—"}</td>
+              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1404,7 +1448,7 @@ export function GazetteRepricingSection({
                   rowCatalog={item.catalog}
                 />
               </td>
-              <td>{item.detail ?? "—"}</td>
+              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1726,7 +1770,7 @@ export function DrgPackageAdequacyReviewSection({
               <td>
                 <BillingRegulatorySourceCell ruleSource={reviewData.rule_source} />
               </td>
-              <td>{item.detail ?? "—"}</td>
+              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1826,7 +1870,7 @@ export function CareSettingReviewSection({
                 <BillingRegulatorySourceCell ruleSource={reviewData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
-              <td>{item.detail ?? "—"}</td>
+              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1919,7 +1963,7 @@ export function BloodComponentUpliftSection({
                 <BillingRegulatorySourceCell ruleSource={bloodData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
-              <td>{item.detail ?? "—"}</td>
+              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1996,7 +2040,7 @@ export function DrgUpliftSection({
                 <BillingRegulatorySourceCell ruleSource={drgData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
-              <td>{item.detail ?? "—"}</td>
+              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -2105,7 +2149,7 @@ export function SessionUpliftSection({
                 <BillingRegulatorySourceCell ruleSource={sessionData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
-              <td>{item.detail ?? "—"}</td>
+              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -2168,7 +2212,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
                     <td className="font-mono text-xs">{material.sut_code}</td>
                     <td>{material.material_name}</td>
                     <td className="num-col tabular-nums text-right">{fmtTRY2(material.price_try)}</td>
-                    <td>{material.note}</td>
+                    <td>{material.note ? translateApiText(material.note) : "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2198,7 +2242,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
                     <td>{material.material_name}</td>
                     <td>{material.last_use_date ? fmtDate(material.last_use_date) : "—"}</td>
                     <td>{material.miat_period}</td>
-                    <td>{material.note}</td>
+                    <td>{material.note ? translateApiText(material.note) : "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2228,7 +2272,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
                     <td>{material.material_name}</td>
                     <td>{material.miat_period}</td>
                     <td className="num-col tabular-nums text-right">{fmtTRY2(material.price_try)}</td>
-                    <td>{material.note}</td>
+                    <td>{material.note ? translateApiText(material.note) : "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2256,7 +2300,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
                     <td className="font-mono text-xs">{material.sut_code}</td>
                     <td>{material.material_name}</td>
                     <td className="num-col tabular-nums text-right">{fmtTRY2(material.price_try)}</td>
-                    <td>{material.note}</td>
+                    <td>{material.note ? translateApiText(material.note) : "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2352,7 +2396,7 @@ export function MaterialsPreCheckSection({ materialsData }: { materialsData: Bil
                     <td className="num-col tabular-nums text-right">
                       {row.gazette_ceiling_try != null ? fmtTRY2(row.gazette_ceiling_try) : "—"}
                     </td>
-                    <td>{row.note || (row.kdv_applied ? t("billing.materials.kdvApplied") : "—")}</td>
+                    <td>{row.note ? translateApiText(row.note) : (row.kdv_applied ? t("billing.materials.kdvApplied") : "—")}</td>
                   </tr>
                 ))}
               </tbody>

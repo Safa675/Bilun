@@ -538,7 +538,7 @@ async def stream_chat_response(
                         response.status_code,
                         error_text,
                     )
-                    yield f"⚠️ API error {response.status_code}: {error_text[:200]}"
+                    yield f"⚠️ {_llm_http_error_message(response.status_code, error_text)}"
                     return
 
                 async for line in response.aiter_lines():

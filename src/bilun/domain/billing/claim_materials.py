@@ -21,6 +21,14 @@ _PREAUTH_NOTE = (
     "EK-3C-1 — tıbbi uygunluk (medical appropriateness) required before SGK submission (§3.1.2)"
 )
 
+_BUNDLED_EK3B1_NOTE = (
+    "Bundled material billed separately — review package inclusion (EK-3B-1)"
+)
+_BUNDLED_PACKAGE_FLAG_NOTE = (
+    "Marked as package component and billed separately — invoice/package flag, "
+    "not EK-3B-1 regulatory annex"
+)
+
 _MATERIAL_LIST_SUT_SECTION: dict[str, str] = {
     "pre_auth_required": "3.1.2",
     "miat_restricted": "3.1.4",
@@ -218,6 +226,15 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
                 )
 
         if line.is_bundled and float(line.billed_amount_try) > 0:
+            # is_bundled = broad CSV/pricing package flag; is_ek3b1_bundled =
+            # narrow EK-3B-1 annex. Label honestly so UI does not claim EK-3B-1
+            # for flag-only rows (Option A — gate still uses is_bundled).
+            if line.is_ek3b1_bundled:
+                bundled_note = _BUNDLED_EK3B1_NOTE
+                bundled_section = "EK-3B-1"
+            else:
+                bundled_note = _BUNDLED_PACKAGE_FLAG_NOTE
+                bundled_section = "package_flag"
             result.bundled_separate_billing.append(
                 _enrich_material_precheck_row(
                     ctx,
@@ -225,7 +242,8 @@ def precheck_materials_from_claims(ctx: PatientClaimContext) -> MaterialPreCheck
                         "sut_code": code,
                         "material_name": line.material_name,
                         "price_try": float(line.billed_amount_try),
-                        "note": "Bundled material billed separately — review package inclusion (EK-3B-1)",
+                        "note": bundled_note,
+                        "sut_section_id": bundled_section,
                     },
                     list_key="bundled_separate_billing",
                     claim_id=line.claim_id,

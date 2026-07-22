@@ -17,6 +17,7 @@ def _material_line(
     line_id: str = "M1",
     material_date: date = date(2024, 6, 1),
     is_bundled: bool = False,
+    is_ek3b1_bundled: bool = False,
     requires_pre_auth: bool = False,
     billed: str = "100",
     material_name: str = "Test material",
@@ -38,6 +39,7 @@ def _material_line(
         billed_amount_try=Decimal(billed),
         expected_payable_try=Decimal("80"),
         is_bundled=is_bundled,
+        is_ek3b1_bundled=is_ek3b1_bundled,
         requires_pre_auth=requires_pre_auth,
         denial_reason_expected="",
         rule_trace_expected="",
@@ -72,6 +74,37 @@ def test_bundled_separate_billing_not_miat_only_bucket(monkeypatch: pytest.Monke
     assert result.bundled_separate_billing[0]["sut_code"] == "EK3B99"
     assert result.miat_restricted == []
     assert result.miat_interval_violations == []
+
+
+def test_bundled_note_distinguishes_ek3b1_vs_package_flag(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Option A: labels must not claim EK-3B-1 for broad is_bundled-only rows."""
+    from src.bilun.domain.billing import claim_materials as cm
+
+    monkeypatch.setattr(cm, "_get_ek3c1_preauth", lambda: [])
+    monkeypatch.setattr(cm, "_get_ek3c2_miat", lambda: [])
+    monkeypatch.setattr(cm, "check_material_bundling_for_context", lambda _ctx: [])
+
+    flag_only = _material_line(code="FLAG1", is_bundled=True, is_ek3b1_bundled=False)
+    ek3b1 = _material_line(
+        code="EK3B1",
+        line_id="M2",
+        is_bundled=True,
+        is_ek3b1_bundled=True,
+    )
+    result = cm.precheck_materials_from_claims(_ctx(flag_only, ek3b1))
+    by_code = {row["sut_code"]: row for row in result.bundled_separate_billing}
+
+    assert by_code["FLAG1"]["sut_section_id"] == "package_flag"
+    assert "invoice/package flag" in by_code["FLAG1"]["note"]
+    assert "not EK-3B-1 regulatory annex" in by_code["FLAG1"]["note"]
+    # Must not claim the row *is* an EK-3B-1 annex hit (negation phrase is ok).
+    assert "review package inclusion (EK-3B-1)" not in by_code["FLAG1"]["note"]
+
+    assert "EK-3B-1" in by_code["EK3B1"]["note"]
+    assert by_code["EK3B1"]["sut_section_id"] == "EK-3B-1"
+    assert "review package inclusion (EK-3B-1)" in by_code["EK3B1"]["note"]
 
 
 def test_specialty_prose_violation_on_wound_keyword(monkeypatch: pytest.MonkeyPatch) -> None:

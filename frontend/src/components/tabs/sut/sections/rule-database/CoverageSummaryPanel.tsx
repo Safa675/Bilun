@@ -3,6 +3,7 @@
 import type { CoverageSummary, RuleCoverageStatus } from "@/lib/api/sut";
 import { Eyebrow, Stat, Surface } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
+import { getSutDomainLabel } from "@/lib/sutLabels";
 import { fmtNum } from "../../shared";
 import { CoverageChip } from "./shared";
 import { GlossaryStrip } from "./GlossaryStrip";
@@ -110,7 +111,7 @@ export function CoverageSummaryPanel({ summary }: { summary: CoverageSummary }) 
                 key={cat.category}
                 className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-base)] px-2.5 py-1 text-xs text-[var(--text-secondary)]"
               >
-                <span>{cat.category}</span>
+                <span>{getSutDomainLabel(cat.category)}</span>
                 <span className="tabular-nums font-semibold">{fmtNum(cat.count)}</span>
               </span>
             ))}

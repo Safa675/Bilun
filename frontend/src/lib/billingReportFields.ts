@@ -1,3 +1,4 @@
+import { translateApiText } from "@/lib/apiMessages";
 import type {
   BillingStrategyRecommendation,
   CopayOptimization,
@@ -134,10 +135,10 @@ export function strategyPrimaryLabel(row: BillingStrategyRow): string {
 
 export function strategySecondaryLabel(row: BillingStrategyRow): string {
   if (row.detail?.trim()) {
-    return row.detail;
+    return translateApiText(row.detail);
   }
   if (row.chapter_description?.trim()) {
-    return row.chapter_description;
+    return translateApiText(row.chapter_description);
   }
   return row.ek2c_group?.trim() || "";
 }
@@ -270,5 +271,51 @@ export function strategyCatalogAsOfFootnote(rows: BillingStrategyRow[]): string 
   }
   const unique = [...new Set(dates)].sort();
   return unique.join(", ");
+}
+
+/** UI status for the merged claim-level + violation strategy table. */
+export type StrategyRowStatus = "violation" | "compliant" | "review";
+
+export function strategyRowStatus(row: BillingStrategyRow): StrategyRowStatus {
+  if (isComplianceViolationRow(row)) {
+    return "violation";
+  }
+  const savings = strategySavingsTryDisplay(row);
+  return savings.muted ? "compliant" : "review";
+}
+
+export function strategyRowStatusMessageKey(status: StrategyRowStatus): string {
+  switch (status) {
+    case "violation":
+      return "billing.strategy.statusViolation";
+    case "compliant":
+      return "billing.strategy.statusCompliant";
+    default:
+      return "billing.strategy.statusReview";
+  }
+}
+
+export function strategyRowStatusChipVariant(
+  status: StrategyRowStatus,
+): "danger" | "success" | "warning" {
+  switch (status) {
+    case "violation":
+      return "danger";
+    case "compliant":
+      return "success";
+    default:
+      return "warning";
+  }
+}
+
+/**
+ * Merge claim-level strategy rows with compliance violations for one table.
+ * Violations first; claim-level rows keep money columns.
+ */
+export function mergeClaimStrategyTableRows(
+  claimLevelRows: BillingStrategyRow[],
+  complianceViolations: BillingStrategyRow[],
+): BillingStrategyRow[] {
+  return [...complianceViolations, ...claimLevelRows];
 }
 

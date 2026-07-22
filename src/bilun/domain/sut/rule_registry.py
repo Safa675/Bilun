@@ -470,12 +470,12 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         annex_refs=("EK-2/B",),
         keywords=("aynı seans", "polipektomi"),
         description="Same-session procedure add-on pairing uplift (6 pilot rules)",
-        description_tr="Aynı seans işlem add-on eşleştirme uplift (6 pilot kural)",
+        description_tr="Aynı seans işlem eklentisi eşleştirme artışı (6 pilot kural)",
     ),
     RuleRegistryEntry(
         rule_id="material_pairing",
         rule_category="material_pairing",
-        rule_category_tr="Malzeme Eşleştirme (Uplift)",
+        rule_category_tr="Malzeme Eşleştirme (Artış)",
         coverage_status="partial",
         domain_modules=(
             "src/bilun/domain/prose_rules/material_uplift.py",
@@ -487,7 +487,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         annex_refs=("EK-3/C", "EK-3/H", "EK-3/I", "EK-3/F"),
         keywords=("eksik veya sıfır faturalanmış", "ayrıca faturalandırılabilir"),
         description="Procedure-to-material pairing uplift (12 pilot rules; inverse EK-3B-1)",
-        description_tr="İşlem-malzeme eşleştirme uplift (12 pilot kural; EK-3B-1 tersi)",
+        description_tr="İşlem-malzeme eşleştirme artışı (12 pilot kural; EK-3B-1 tersi)",
     ),
     RuleRegistryEntry(
         rule_id="drg_unbundling",
@@ -625,7 +625,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         annex_refs=(),
         keywords=("sözleşmesiz", "ödenmez", "acil haller dışında"),
         description="Cross-section gap-closing gates (§1.5/§1.6 provider contracting, §3-§6 cross-cutting no-pay). Partial: rules execute against claim-context flags; rules needing unsurfaced clinical data are skipped honestly.",
-        description_tr="Bölümler arası boşluk kapatma kapıları (§1.5/§1.6 sunucu sözleşmesi, §3-§6 genel ödenmez). Kısmi: kurallar claim-context flag'lerine göre çalışır; yüzeylenmemiş klinik veri gerektiren kurallar dürüstçe atlanır.",
+        description_tr="Bölümler arası boşluk kapatma kapıları (§1.5/§1.6 sunucu sözleşmesi, §3-§6 genel ödenmez). Kısmi: kurallar talep-bağlam bayraklarına göre çalışır; yüzeylenmemiş klinik veri gerektiren kurallar dürüstçe atlanır.",
     ),
     RuleRegistryEntry(
         rule_id="gap_closing_treatment_2",
@@ -641,7 +641,7 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         annex_refs=(),
         keywords=("ayrıca faturalandırılamaz", "paket kapsamında", "ödenmez"),
         description="§2 treatment gap-closing gates (§2.2 payment method, §2.3/§2.5 emergency/overseas bundling). Partial: executes against claim-context flags; rules needing hours_since_onset/stem_cell_type/overseas_treatment_days are skipped.",
-        description_tr="§2 tedavi boşluk kapatma kapıları (§2.2 ödeme yöntemi, §2.3/§2.5 acil/yurtdışı paketleme). Kısmi: claim-context flag'lerine göre çalışır; hours_since_onset/stem_cell_type/overseas_treatment_days gerektiren kurallar atlanır.",
+        description_tr="§2 tedavi boşluk kapatma kapıları (§2.2 ödeme yöntemi, §2.3/§2.5 acil/yurtdışı paketleme). Kısmi: talep-bağlam bayraklarına göre çalışır; hours_since_onset/stem_cell_type/overseas_treatment_days gerektiren kurallar atlanır.",
     ),
     RuleRegistryEntry(
         rule_id="dental_2_4_1",
