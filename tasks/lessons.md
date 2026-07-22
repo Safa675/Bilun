@@ -555,6 +555,7 @@ the Reimbursement Engineer correctly flagged them with file:line citations.
 in this environment". The pipeline_smoke FAIL was the latter — the agent had no way to
 know that, but the human reading the report should. Checker scripts should use distinct
 exit codes for "couldn't run" (we now use 2) vs "ran and found problems" (1) vs "clean" (0).
+<<<<<<< HEAD
 
 ## 2026-07-22 — i18n pattern catalog incomplete when crawl covers one patient
 
@@ -564,3 +565,5 @@ exit codes for "couldn't run" (we now use 2) vs "ran and found problems" (1) vs 
 1. Enumerate **all** string templates in the generator module (e.g. `claim_strategy.py` note builder), not only strings seen in one demo patient crawl.
 2. Add golden tests for every template branch (mandatory package/itemized, optional override both directions).
 3. Treat crawl as a regression gate, not the sole inventory source.
+=======
+>>>>>>> origin/main
