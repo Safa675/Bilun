@@ -358,8 +358,12 @@
         "annex_basis": "EK-2/C"
       },
       "gate_b_sources": [
+        "C001220"
+      ],
+      "superseded_sources": [
         "C001207"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "2.4.4.H.(5).platelet_pheresis_separate_bill",
@@ -522,8 +526,12 @@
         "severity": "error"
       },
       "gate_b_sources": [
+        "C001433"
+      ],
+      "superseded_sources": [
         "C001431"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "2.5.3.A-2.(4).organ_transplant_wait_in_host_country",

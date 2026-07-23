@@ -353,7 +353,7 @@
       "sut_section": "3.3.35",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C003302"
+        "C003289"
       ],
       "condition": {
         "hearing_ear_mold_with_initial_device": true
@@ -362,7 +362,11 @@
         "material_outcome": "no_pay",
         "severity": "error",
         "message_tr": "İşitme cihazı ilk alımında kulak kalıbı — ayrıca karşılanmaz (§3.3.35(6))."
-      }
+      },
+      "superseded_sources": [
+        "C003302"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.36.B.(10).cochlear_implant_under_12_months",
@@ -884,7 +888,7 @@
       "sut_section": "3.3.26",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003201"
+        "C003207"
       ],
       "condition": {
         "orthopedic_tumor_prosthesis_third_step_facility": true
@@ -893,7 +897,11 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "EK-3/F-3 tümör/rezeksiyon alan grubu protezleri — geri ödeme kriterlerine uygun ve eğitim yetkili 3. basamak/vakıf protokollü özel hastanede kullanımı halinde Kurumca karşılanır (§3.3.26(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003201"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.26.a.saddle_prosthesis_coverage",
@@ -1092,7 +1100,7 @@
       "sut_section": "3.3.33.A",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003306"
+        "C003307"
       ],
       "condition": {
         "auditory_implant_non_third_step_facility": true
@@ -1101,7 +1109,11 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "İşitsel implantlar yalnızca 3. basamak resmi sunucu veya vakıf protokollü özel hastanede uygulandığında Kurumca karşılanır (§3.3.33.A(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003306"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.33.B.cochlear_implant_coverage_general",
@@ -2195,7 +2207,7 @@
       "sut_section": "3.3.3.B",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C002902"
+        "C002907"
       ],
       "condition": {
         "material_name_any": [
@@ -2207,14 +2219,18 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Teleskopik görmeye yardımcı malzeme — iyi gören gözde düzeltmiş uzak görme keskinliği 3/10 ve altı hastalarda 3. basamak sağlık kurulu raporuna istinaden bedeli Kurumca karşılanır (§3.3.3.B(1))."
-      }
+      },
+      "superseded_sources": [
+        "C002902"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.3.C.contact_lens_ek3d_must_bill",
       "sut_section": "3.3.3.C",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C002913"
+        "C002916"
       ],
       "condition": {
         "material_name_any": [
@@ -2226,7 +2242,11 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Kontakt lens — 3. basamak göz sağlığı uzmanı içeren sağlık kurulu raporunda çap/derinlik/diyoptri/nitelik belirtilmesi ve sözleşmeli optisyenlikten temin şartıyla EK-3/D bedeli üzerinden Kurumca karşılanır (§3.3.3.C)."
-      }
+      },
+      "superseded_sources": [
+        "C002913"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.3.C.(3).konjenital_katarakt_cocuk_must_bill",
@@ -2369,7 +2389,7 @@
       "sut_section": "3.3.32",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003298"
+        "C003291"
       ],
       "condition": {
         "material_name_any": [
@@ -2381,14 +2401,18 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "0-18 yaş çocuklarda işitme cihazı için en az 1 KBB uzmanı yer alan 3. basamak resmi sunucu sağlık kurulu raporu düzenlenmesi gerekmektedir (§3.3.32 a)."
-      }
+      },
+      "superseded_sources": [
+        "C003298"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.32.b.yetiskin_kbb_rapor_regulatory",
       "sut_section": "3.3.32",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003299"
+        "C003292"
       ],
       "condition": {
         "material_name_any": [
@@ -2400,7 +2424,11 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "18 yaş üzeri hastalarda işitme cihazı için en az 1 KBB uzmanı yer alan resmi sunucu sağlık kurulu raporu düzenlenmesi gerekmektedir (§3.3.32 b)."
-      }
+      },
+      "superseded_sources": [
+        "C003299"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.32.c.kalici_isitme_kaybi_kriter_regulatory",
@@ -2782,7 +2810,7 @@
       "sut_section": "3.3.8",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003075"
+        "C003074"
       ],
       "condition": {
         "material_name_any": [
@@ -2794,14 +2822,18 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Ortopedi ve travmatoloji branşı ameliyatlarında kullanılan tıbbi malzemeler — eğitim verme yetkisi olan 3. basamak resmi sunucularda uygulanması halinde bedeli Kurumca karşılanır (§3.3.8(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003075"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.8.(2).ortopedi_danisma_kurulu_onay_must_bill",
       "sut_section": "3.3.8",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003093"
+        "C003074"
       ],
       "condition": {
         "material_name_any": [
@@ -2813,14 +2845,18 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "Belirtilen tıbbi malzemeler — eğitim verme yetkisi olan 3. basamak resmi sunucularda uygulanması ve Sağlık Bakanlığı Ortopedi Bilimsel Danışma Kurulundan her hasta için onay alınması şartıyla bedeli Kurumca karşılanır (§3.3.8(2))."
-      }
+      },
+      "superseded_sources": [
+        "C003093"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.12.(1).kulak_kepecesi_protezi_must_bill",
       "sut_section": "3.3.12",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003148"
+        "C003147"
       ],
       "condition": {
         "material_name_any": [
@@ -2832,14 +2868,18 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Kulak kepçesi protezi — 3. basamak resmi sunucularda sağlık kurulu raporuna istinaden kulak burun boğaz veya plastik rekonstrüktif ve estetik cerrahi hekimlerince uygulanması halinde bedeli Kurumca karşılanır (§3.3.12(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003148"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.12.(2).kulak_kepecesi_protezi_yenileme_must_bill",
       "sut_section": "3.3.12",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003149"
+        "C003147"
       ],
       "condition": {
         "material_name_any": [
@@ -2851,14 +2891,18 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Kulak kepçesi protezi — ilgili dal uzmanlarınca düzenlenen sağlık kurulu raporuna istinaden kulak burun boğaz veya plastik rekonstrüktif ve estetik cerrahi hekimlerince gerekli durumlarda yenilenmesi halinde bedeli Kurumca karşılanır (§3.3.12(2))."
-      }
+      },
+      "superseded_sources": [
+        "C003149"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.13.(1).kikirdak_hucre_kulturu_danisma_onay_must_bill",
       "sut_section": "3.3.13",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003151"
+        "C003150"
       ],
       "condition": {
         "material_name_any": [
@@ -2871,14 +2915,18 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "Kıkırdak hücre kültürleri — EK-2/B 612731/612975 ve EK-2/C P612731/P612975 kodlarıyla birlikte, eğitim verme yetkisi olan 3. basamak resmi sunucularda ve Ortopedi Bilimsel Danışma Kurulundan her hasta için onay alınması şartıyla bedelleri Kurumca karşılanır (§3.3.13(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003151"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.14.(2).cift_yuzlu_mesh_defekt_goruntu_must_bill",
       "sut_section": "3.3.14",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003154"
+        "C003153"
       ],
       "condition": {
         "material_name_any": [
@@ -2891,7 +2939,11 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "Çift yüzlü yamalar (meshler) — özellikli vakalarda ameliyat öncesi karın duvarı defektinin görüntüsünün epikrize eklenmesi, mesh ve defekt boyutlarının ilişkilendirilmesi ve genel cerrahi/göğüs cerrahisi/plastik rekonstrüktif cerrahi sağlık kurulu raporuyla 3. basamakta bedeli Kurumca karşılanır (§3.3.14(2))."
-      }
+      },
+      "superseded_sources": [
+        "C003154"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.14.c.hiatus_diyafragma_herni_must_bill",
@@ -3013,7 +3065,7 @@
       "sut_section": "3.3.19",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003187"
+        "C003186"
       ],
       "condition": {
         "material_name_any": [
@@ -3026,14 +3078,18 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Damar kapama ve kesme probu ile ultrasonik cerrahi problar — 3. basamak resmi sunucularda kullanılması halinde bedelleri Kurumca karşılanır (§3.3.19(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003187"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.20.(1).burun_protezi_total_defekt_must_bill",
       "sut_section": "3.3.20",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003189"
+        "C003188"
       ],
       "condition": {
         "material_name_any": [
@@ -3045,7 +3101,11 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Burun protezi — total burun defektlerinin rekonstrüksiyonu veya epitezin yenilenmesine gerek duyulan hallerde 3. basamak resmi sunucularda sağlık kurulu raporuna istinaden bedeli Kurumca karşılanır (§3.3.20(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003189"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.21.(1).dura_yapistirici_bos_fistulu_must_bill",
@@ -3071,7 +3131,7 @@
       "sut_section": "3.3.22",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003193"
+        "C003192"
       ],
       "condition": {
         "material_name_any": [
@@ -3083,14 +3143,18 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "Sentetik menisküs implantları — 3. basamak resmi sunucularda uygulanması şartıyla, 45 yaş altında subtotal menisektomi sonrası en az 1 yıl geçmesine rağmen konvansiyonel tedavi ile ağrısı azalmayan vakalarda bedelleri Kurumca karşılanır (§3.3.22(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003193"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.23.(1).meniskus_tamiri_urun_must_bill",
       "sut_section": "3.3.23",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003195"
+        "C003194"
       ],
       "condition": {
         "material_name_any": [
@@ -3104,14 +3168,18 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "Menisküs tamiri ürünleri — 55 yaş altında, eğitim verme yetkisi 3. basamak sunucularda 3 ortopedi uzmanı sağlık kurulu raporuyla (Nitinol/Tek Barlı en fazla 1, Çift Barlı en fazla 2 adet) onarılabilir kıkırdak lezyonu veya dejeneratif olmayan Zon-1/2 menisküs yırtığı olan vakalarda bedelleri Kurumca karşılanır (§3.3.23(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003195"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.24.(1).sinus_tarsi_vidasi_cocuk_must_bill",
       "sut_section": "3.3.24",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003197"
+        "C003196"
       ],
       "condition": {
         "material_name_any": [
@@ -3123,14 +3191,18 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Sinüs tarsi vidası — esnek, ağrılı 8-14 yaş vaka grubunda eğitim verme yetkisi bulunan 3. basamak resmi sunucularda kullanılması halinde bedelleri Kurumca karşılanır (§3.3.24(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003197"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.25.(1).omuz_balon_spacer_rotator_must_bill",
       "sut_section": "3.3.25",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003199"
+        "C003198"
       ],
       "condition": {
         "material_name_any": [
@@ -3142,14 +3214,18 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "Absorbe olabilir omuz balon spacer — 3. basamak resmi sunucularda, tamir edilemeyen tam kat rotator cuff yırtıklarında sağlık kurulu raporuyla belgelendirilmesi ve başka tıbbi malzeme kullanılmaması kaydıyla işlem başına en fazla 1 adet kullanılması halinde bedeli Kurumca karşılanır (§3.3.25(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003199"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.28.(1).hucresiz_kikirdak_matriks_danisma_must_bill",
       "sut_section": "3.3.28",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003268"
+        "C003267"
       ],
       "condition": {
         "material_name_any": [
@@ -3161,14 +3237,18 @@
         "material_outcome": "review_required",
         "severity": "warning",
         "message_tr": "Hücresiz kıkırdak matriksleri — EK-2/B 612732/612976 ve EK-2/C P612732/P612976 kodlarıyla birlikte, eğitim verme yetkisi olan 3. basamak resmi sunucularda işlem başına en fazla 1 adet kullanılması halinde bedeli Kurumca karşılanır (§3.3.28(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003268"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.29.(1).hucresiz_meniskus_implant_must_bill",
       "sut_section": "3.3.29",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003270"
+        "C003269"
       ],
       "condition": {
         "material_name_any": [
@@ -3180,7 +3260,11 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Hücresiz menisküs implantları — eğitim verme yetkisi olan 3. basamak resmi sunucularda işlem başına en fazla 1 adet kullanıldığında bedeli Kurumca karşılanır (§3.3.29(1))."
-      }
+      },
+      "superseded_sources": [
+        "C003270"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "3.3.30.(1).bag_tendon_guclendirici_sutursuz_must_bill",
@@ -3602,7 +3686,7 @@
       "deontic": "MUST_BILL",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C002857"
+        "C002853"
       ],
       "condition": {
         "material_name_any": [
@@ -3615,7 +3699,10 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Dermis iskeleti tam kat dermis hasarli 3. derece yaniklarda yuz/boyun/el/ayak/perine/eklem bölgelerini içeren veya toplamin %40i 0-12 yas %20 astigi yaniklarda yanik merkezi ve 3. basamak saglik kurulu raporuyla karsilanir"
-      }
+      },
+      "superseded_sources": [
+        "C002857"
+      ]
     },
     {
       "rule_id": "3.3.1.(9).b.deri_benzerleri_burn_coverage_must_bill",
@@ -3623,7 +3710,7 @@
       "deontic": "MUST_BILL",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C002858"
+        "C002842"
       ],
       "condition": {
         "material_name_any": [
@@ -3636,7 +3723,10 @@
         "material_outcome": "review_required",
         "severity": "info",
         "message_tr": "Deri benzerleri derin 2. ve veya 3. derece yaniklarda enfeksiyon kontaminasyondan koruma amaciyla %40i 0-12 yas %20 gecen yaniklarda yanik ünitesi merkezi saglik kurulu raporuyla karsilanir"
-      }
+      },
+      "superseded_sources": [
+        "C002858"
+      ]
     }
   ],
   "rules_added": 52,

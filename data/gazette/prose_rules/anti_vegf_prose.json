@@ -638,9 +638,13 @@
       ],
       "message_tr": "Bevacizumab — ranibizumab/aflibersept arasında ilaç değişimi gereken hallerde tedaviye bevacizumab ile devam; göz hastalıkları raporu (§4.2.33/7).",
       "gate_b_sources": [
+        "C006553"
+      ],
+      "loading_dose_count": 3,
+      "superseded_sources": [
         "C006549"
       ],
-      "loading_dose_count": 3
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.33.Ç.bevacizumab_dmo",
@@ -864,10 +868,13 @@
       ],
       "message_tr": "Glokomun eşlik ettiği retinal ven tıkanıklığı hastalarında bevacizumab yükleme dozu sonrası yetersiz cevap alınması durumunda, bu durum sağlık raporunda belirtildiği takdirde deksametazon intravitreal implant KULLANILMAKSIZIN ranibizumab veya aflibersept ile tedaviye devam edilebilir (§4.2.33/(11)).",
       "gate_b_sources": [
-        "C006557"
+        "C006553"
       ],
       "verification_status": "ai_generated_pending_review",
-      "content_note": "Partially-struck clause — only the leading \"(Mülga...) Retinal ven tıkanıklığı\" title phrase was repealed; the operative permission text is in-force. MODIFIES the §4.2.33.B deksametazon-RVT path: when glaucoma coexists, deksametazon ITV must NOT be used — switch to ranibizumab/aflibersept. Needs human confirmation of the strike scope."
+      "content_note": "Partially-struck clause — only the leading \"(Mülga...) Retinal ven tıkanıklığı\" title phrase was repealed; the operative permission text is in-force. MODIFIES the §4.2.33.B deksametazon-RVT path: when glaucoma coexists, deksametazon ITV must NOT be used — switch to ranibizumab/aflibersept. Needs human confirmation of the strike scope.",
+      "superseded_sources": [
+        "C006557"
+      ]
     }
   ]
 }

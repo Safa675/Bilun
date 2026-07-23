@@ -174,7 +174,7 @@
       "rule_id": "2.6.1.B.(7).non_medula_facility_wet_signature",
       "sut_section": "2.6.1.B",
       "gate_b_sources": [
-        "C001513"
+        "C001503"
       ],
       "condition": {
         "definition_scope": "MEDULA altyapısı olmayan sunucularda elektronik kabul yapılamaması halinde ıslak imza",
@@ -183,7 +183,11 @@
       "action": {
         "enforcement": "gate",
         "message_tr": "MEDULA olmayan sunucuda elektronik kabul yapılamazsa ilgili hekimce başvuru/ayrılış, tedavi, istirahat ve refakat bilgileri ıslak imza ile onaylanmalıdır."
-      }
+      },
+      "superseded_sources": [
+        "C001513"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "2.6.1.B-1.(1).unspecified_vehicle_default_fee",
@@ -316,7 +320,7 @@
       "rule_id": "2.6.1.B-4.(4).scheduled_air_economy_plus_boarding",
       "sut_section": "2.6.1.B-4",
       "gate_b_sources": [
-        "C001547"
+        "C001548"
       ],
       "condition": {
         "definition_scope": "Tarifeli uçak için ekonomi sınıf bedeli + uçak seyahatini teyitleme (biniş/QR)",
@@ -325,7 +329,11 @@
       "action": {
         "enforcement": "gate",
         "message_tr": "Tarifeli uçak için ibraz edilen bilet/fatura tutarı ekonomi sınıf bedeli üzerinden ödenir; uçak sevklerinde fatura/bilet yanında biniş kartı veya eşleşen QR çıktısı ibraz edilmelidir."
-      }
+      },
+      "superseded_sources": [
+        "C001547"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "2.6.1.B-4.(5).ground_ambulance_min_price",
@@ -492,7 +500,7 @@
       "rule_id": "2.6.3.(1).companion_one_person_documentation",
       "sut_section": "2.6.3",
       "gate_b_sources": [
-        "C001571"
+        "C001572"
       ],
       "condition": {
         "definition_scope": "Bir kişiyle sınırlı refakatçi gideri için tıbbi gereklilik + refakat teyiti",
@@ -508,7 +516,11 @@
       "action": {
         "enforcement": "gate",
         "message_tr": "Refakatçi gideri bir kişiyle sınırlıdır; sevk eden sunucu tıbbi gerekliliği, müracaat edilen sunucu refakat eşliğini elektronik/ EK-2/F ile belirtmelidir (%40+ engelli, nakil/replantasyon ve 18 yaş altı için koşul aranmaz)."
-      }
+      },
+      "superseded_sources": [
+        "C001571"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "2.6.3.(3).icu_companion_daily_allowance",

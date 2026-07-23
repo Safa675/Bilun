@@ -74,7 +74,7 @@
       "rule_id": "4.1.2.manual_prescription_inpatient_chief_approval_mandatory",
       "sut_section": "4.1.2",
       "gate_b_sources": [
-        "C003429"
+        "C003428"
       ],
       "condition": {
         "manual_prescription": true,
@@ -83,7 +83,11 @@
       "action": {
         "enforcement": "mandatory: manual prescriptions for inpatient drugs not procurable by contracted institutions must carry 'Yatan/Günübirlik Hasta' phrase + chief-physician approval; overseas-drug prescriptions do not require these",
         "message_tr": "Kurumla sözleşmeli/protokollü kuruluşlarca temin edilemeyen inpatient ilaçlar için düzenlenen manuel reçetelerde 'Yatan/Günübirlik Hasta' ibaresi ve başhekimlik onayı zorunludur; yurtdışı ilaç reçetelerinde bu ibare ve onay zorunlu değildir (§4.1.2)."
-      }
+      },
+      "superseded_sources": [
+        "C003429"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.1.3.copay_exemption_report_icd10_diagnosis",
@@ -321,7 +325,7 @@
       "rule_id": "4.1.5.official_private_setting_prescriptions_mandatory",
       "sut_section": "4.1.5",
       "gate_b_sources": [
-        "C003495"
+        "C003501"
       ],
       "condition": {
         "e_prescription": true
@@ -329,7 +333,11 @@
       "action": {
         "enforcement": "mandatory: prescriptions issued in various official/private settings (institution physicians, occupational physicians, municipality polyclinics, care homes, non-family-medicine primary-care public providers, university medico-social units, TSK first-line providers) — once they start using MEDULA hospital system or build infrastructure they must move to e-prescription",
         "message_tr": "Resmi ve özel sağlık kuruluşlarından; kamu idareleri bünyesindeki kurum hekimliklerinde, işyeri hekimliklerinde, belediyelere ait polikliniklerde, huzur evlerinde, aile hekimliği dışındaki birinci basamak resmi sunucularda, üniversitelerin mediko-sosyal birimlerinde, TSK'nın birinci basamak sunucularında düzenlenen reçeteler (MEDULA hastane sistemini kullanmaya başlamaları veya teknik altyapı oluşturmaları halinde e-reçeteye geçmeleri zorunludur) (§4.1.5)."
-      }
+      },
+      "superseded_sources": [
+        "C003495"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.1.5.overseas_duty_official_document_mandatory",
@@ -633,7 +641,7 @@
       "rule_id": "4.2.1.C.ankylosing_spondylitis_nsaids_failure_report",
       "sut_section": "4.2.1.C-1",
       "gate_b_sources": [
-        "C003605"
+        "C003610"
       ],
       "drug_names": [
         "anti-tnf",
@@ -655,7 +663,11 @@
       "action": {
         "enforcement": "aksiyel SpA/AS: ≥3 NSAİİ maksimum dozda yetersiz (BASDAİ>5) + ESH>28 veya CRP↑ veya MR/sintigrafi aktif sakroilit; başlangıç 3 ay, devam 6 ay rapor",
         "message_tr": "Aksiyel tutulumlu ankilozan spondilit/non-radyografik aksiyel spondilartrit: en az 3 NSAİİ maksimum dozda yetersiz (BASDAİ>5), ESH>28 mm/s veya CRP↑ veya MR/sintigrafi ile aktif sakroilit varsa 3 ay süreli sağlık kurulu raporuyla başlanır; 3. ay değerlendirmesinde yetersiz cevap (BASDAİ'de <2 düzelme) devamında bedeli ödenmez, cevap alınırsa 6 ay süreli rapor gerekir (§4.2.1.C-1)."
-      }
+      },
+      "superseded_sources": [
+        "C003605"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.1.C.anti_tnf_biologic_combo_nopay",
@@ -2115,7 +2127,7 @@
       ],
       "message_tr": "Anti-TNF ilaçlar — romatoid artritte romatoloji/klinik immunoloji/fiziksel tıp uzmanının yer aldığı en fazla 6 aylık sağlık kurulu raporu gerekir (§4.2.1.C-1).",
       "gate_b_sources": [
-        "C003622"
+        "C003627"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -2124,7 +2136,11 @@
         "klinik immunoloji",
         "çocuk sağlığı"
       ],
-      "report_duration_months": 6
+      "report_duration_months": 6,
+      "superseded_sources": [
+        "C003622"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.1.anti_tnf_psoriasis_vulgaris_board",
@@ -2211,7 +2227,7 @@
       ],
       "message_tr": "Anti-TNF — erişkin romatoid artritte DMARD yetersizliğinde DAS28 takibi ile 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
       "gate_b_sources": [
-        "C003587"
+        "C003591"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -2221,7 +2237,11 @@
         "çocuk sağlığı",
         "çocuk romatoloji"
       ],
-      "report_duration_months": 3
+      "report_duration_months": 3,
+      "superseded_sources": [
+        "C003587"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.1.anti_tnf_uc_conv_failure_board",
@@ -3147,7 +3167,7 @@
       ],
       "message_tr": "Leflunomid — romatoid/psoriatik artritte sulfasalazin veya methotrexat yetersiz/kontrendike olduğunda uzman hekim raporu gerekir (§4.2.1.A).",
       "gate_b_sources": [
-        "C003563"
+        "C003562"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -3155,7 +3175,11 @@
         "fiziksel tıp",
         "klinik immunoloji",
         "çocuk sağlığı"
-      ]
+      ],
+      "superseded_sources": [
+        "C003563"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.1.risankizumab_psoriasis_pasi_systemic_failure",
@@ -3669,14 +3693,18 @@
       ],
       "message_tr": "Tosilizumab — NSAİ/methotrexat/anti-TNF sonrası ACR pediatrik 30 yanıtı alınamayan juvenil artritte 3 ay süreli çocuk romatoloji sağlık kurulu raporu gerekir (§4.2.1.C-5).",
       "gate_b_sources": [
-        "C003698",
+        "C003699",
         "C003714"
       ],
       "prescriber_specialties": [
         "çocuk sağlığı",
         "çocuk romatoloji"
       ],
-      "report_duration_months": 3
+      "report_duration_months": 3,
+      "superseded_sources": [
+        "C003698"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.1.tocilizumab_pediatric_anti_tnf_failure",
@@ -3765,7 +3793,7 @@
       ],
       "message_tr": "Tosilizumab — DMARD/anti-TNF yetersiz romatoid artritte methotreksat ile kombine 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-5).",
       "gate_b_sources": [
-        "C003692"
+        "C003691"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -3775,7 +3803,11 @@
         "çocuk sağlığı",
         "çocuk romatoloji"
       ],
-      "report_duration_months": 3
+      "report_duration_months": 3,
+      "superseded_sources": [
+        "C003692"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.1.tocilizumab_ra_c5_university_das",
@@ -5530,10 +5562,14 @@
       ],
       "message_tr": "HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu yeni raporda belirtilmelidir (§4.2.13.1 (7)).",
       "gate_b_sources": [
-        "C004572",
+        "C004587",
         "C004584",
         "C004624"
-      ]
+      ],
+      "superseded_sources": [
+        "C004572"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.13.hbv_antiviral_report_renewal_initiation_f8",
@@ -5557,8 +5593,12 @@
       ],
       "message_tr": "HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu yeni raporda belirtilmelidir (§4.2.13.1 (8)).",
       "gate_b_sources": [
+        "C004587"
+      ],
+      "superseded_sources": [
         "C004572"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.13.hbv_dna_initiation_board",
@@ -5609,8 +5649,12 @@
       ],
       "message_tr": "Entekavir — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).",
       "gate_b_sources": [
+        "C004587"
+      ],
+      "superseded_sources": [
         "C004572"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.13.hbv_immunosuppression_lamivudin_prophylaxis",
@@ -5654,8 +5698,12 @@
       ],
       "message_tr": "Lamivudin — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).",
       "gate_b_sources": [
+        "C004587"
+      ],
+      "superseded_sources": [
         "C004572"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.13.hbv_oral_antiviral_switch_adult_report",
@@ -5752,8 +5800,12 @@
       ],
       "message_tr": "Tenofovir — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).",
       "gate_b_sources": [
+        "C004587"
+      ],
+      "superseded_sources": [
         "C004572"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.13.hcv_acute_interferon_24w_monotherapy",
@@ -5797,9 +5849,12 @@
       ],
       "message_tr": "Akut hepatit C interferon tedavisi — gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.1).",
       "gate_b_sources": [
-        "C004636",
+        "C004636"
+      ],
+      "superseded_sources": [
         "C004637"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.13.hcv_daa_child_pugh_report",
@@ -6120,12 +6175,16 @@
       ],
       "message_tr": "HDV(+) kronik hepatit B — interferon/pegile interferon; anti-HDV ve HBV DNA reçete/raporda belirtilmelidir (§4.2.13.2).",
       "gate_b_sources": [
-        "C004628"
+        "C004629"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
         "enfeksiyon hastalıkları"
-      ]
+      ],
+      "superseded_sources": [
+        "C004628"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.13.hepatitis_prior_therapy_documentation",
@@ -6170,10 +6229,14 @@
       "message_tr": "Hepatit tedavisi — önceki ilaçlar, tanı ve tedavi başlama/kesilme kriterleri raporda belirtilmelidir; oral antiviral ilk rapor en fazla 6 ay (§4.2.13).",
       "gate_b_sources": [
         "C004498",
-        "C004637",
+        "C004636",
         "C004912",
         "C004919"
-      ]
+      ],
+      "superseded_sources": [
+        "C004637"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.13.hepatitis_viral_gastro_inf_report",
@@ -6452,8 +6515,12 @@
       ],
       "message_tr": "Interleukin-2 — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1)).",
       "gate_b_sources": [
+        "C005095"
+      ],
+      "superseded_sources": [
         "C004935"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(1).kabazitaxel_prostate_board",
@@ -6533,8 +6600,12 @@
       ],
       "message_tr": "Octreotid/lanreotid — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1)).",
       "gate_b_sources": [
+        "C005095"
+      ],
+      "superseded_sources": [
         "C004935"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(1).paclitaxel_oncology_board",
@@ -6574,9 +6645,13 @@
       "gate_b_sources": [
         "C005104",
         "C005105",
-        "C005108",
+        "C005049",
         "C005109"
-      ]
+      ],
+      "superseded_sources": [
+        "C005108"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(1).pertuzumab_her2_board",
@@ -6631,8 +6706,12 @@
       ],
       "message_tr": "Sonidegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
+        "C005104"
+      ],
+      "superseded_sources": [
         "C005235"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(1).streptozocin_oncology_board",
@@ -6650,8 +6729,12 @@
       ],
       "message_tr": "Streptozosin — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1)).",
       "gate_b_sources": [
+        "C005095"
+      ],
+      "superseded_sources": [
         "C004935"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(1).temozolomide_oncology_board",
@@ -6711,12 +6794,15 @@
       "gate_b_sources": [
         "C004927",
         "C004928",
-        "C004929",
         "C004930",
         "C004932",
         "C005276",
         "C005278"
-      ]
+      ],
+      "superseded_sources": [
+        "C004929"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(1).vismodegib_bcc_board",
@@ -6733,8 +6819,12 @@
       ],
       "message_tr": "Vismodegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
+        "C005104"
+      ],
+      "superseded_sources": [
         "C005235"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(1).zoledronate_oncology_board",
@@ -7006,8 +7096,12 @@
       ],
       "message_tr": "Anagrelid — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
       "gate_b_sources": [
+        "C004985"
+      ],
+      "superseded_sources": [
         "C004936"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(2).azacitidine_mds_board",
@@ -7074,8 +7168,12 @@
       ],
       "message_tr": "Bortezomib — hematoloji ve/veya tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
       "gate_b_sources": [
+        "C004985"
+      ],
+      "superseded_sources": [
         "C004936"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(2).daratumumab_mm_board",
@@ -7190,9 +7288,13 @@
       ],
       "message_tr": "Fludarabin/kladribin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
       "gate_b_sources": [
-        "C004936",
+        "C004985",
         "C004976"
-      ]
+      ],
+      "superseded_sources": [
+        "C004936"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(2).gilteritinib_aml_board",
@@ -7233,8 +7335,12 @@
       ],
       "message_tr": "İdarubisin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
       "gate_b_sources": [
+        "C004985"
+      ],
+      "superseded_sources": [
         "C004936"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(2).lenalidomide_mm_board",
@@ -7342,8 +7448,12 @@
       ],
       "message_tr": "Pentostatin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
       "gate_b_sources": [
+        "C004985"
+      ],
+      "superseded_sources": [
         "C004936"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(2).pomalidomide_mm_board",
@@ -7411,8 +7521,12 @@
       ],
       "message_tr": "Talidomid — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
       "gate_b_sources": [
+        "C004985"
+      ],
+      "superseded_sources": [
         "C004936"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(2).tretinoin_heme_onc_board",
@@ -7431,8 +7545,12 @@
       ],
       "message_tr": "Tretinoin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
       "gate_b_sources": [
+        "C004985"
+      ],
+      "superseded_sources": [
         "C004936"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.(3).abiraterone_prostate_board",
@@ -8050,9 +8168,13 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004936",
+        "C004985",
         "C004938"
-      ]
+      ],
+      "superseded_sources": [
+        "C004936"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.arsenic_trioxide_apl",
@@ -8751,7 +8873,7 @@
       ],
       "message_tr": "Endikasyon: a) Diğer terapilerden sonra refrakter veya kalıcı hastalığı olan veya diğer tedavileri tolere edemeyen Evre IA veya Evre IB (Ek: RG-25/03/2025-32852/9-c md. Yürürlük:04/04/2025) veya Evre IIA kutanöz T-hücreli lenfoma hastalarının kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır. (Mülga:RG-25/08/2022-31934/27-d md. Yürürlük:03/09/2022) (§4.2.14.C deontic encode).",
       "gate_b_sources": [
-        "C005234"
+        "C005741"
       ],
       "icd10_codes": [
         "C81",
@@ -8766,7 +8888,11 @@
       "report_specialties": [
         "tıbbi onkoloji",
         "hematoloji"
-      ]
+      ],
+      "superseded_sources": [
+        "C005234"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.deontic.C005239",
@@ -9185,7 +9311,7 @@
       ],
       "message_tr": "Endikasyon: 3) (Mülga:RG-16/06/2020-31157/9-f md. Yürürlük:24/06/2020) en az bir hematoloji uzmanının yer aldığı en fazla 3 ay süreli sağlık kurulu raporuna istinaden hematoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır. Sağlık kurulu raporu ekinde tetkik belgelerinin yer alması gerekmektedir. Rapor süresinin sonunda tedavinin devamı için yapılan değerlendirmede hastalığın stabil kaldığı veya en az kısmi yanıtın alınmış olduğu yeni düzenlenecek rapo… (§4.2.14.C deontic encode).",
       "gate_b_sources": [
-        "C005555"
+        "C005507"
       ],
       "icd10_ranges": [
         "C00-C97"
@@ -9194,7 +9320,11 @@
       "report_specialties": [
         "tıbbi onkoloji",
         "hematoloji"
-      ]
+      ],
+      "superseded_sources": [
+        "C005555"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.deontic.C005560",
@@ -10314,14 +10444,17 @@
         "C004923",
         "C004927",
         "C004928",
-        "C004929",
         "C004930",
         "C004932",
         "C005271",
         "C005274",
         "C005276",
         "C005278"
-      ]
+      ],
+      "superseded_sources": [
+        "C004929"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.mifamurtide_osteosarcoma_board",
@@ -10476,7 +10609,7 @@
       "rule_id": "4.2.14.C.nopay_after_cabozantinib_rcc_seq",
       "sut_section": "4.2.14.C",
       "gate_b_sources": [
-        "C005054",
+        "C005049",
         "C005064",
         "C005111",
         "C005562"
@@ -10491,7 +10624,11 @@
       "action": {
         "enforcement": "no-pay: temsirolimus/sunitinib/sorafenib/pazopanib sequential/combination after cabozantinib progression",
         "message_tr": "Kabozantinib tedavisinden sonra progresyon gelişenlerde ardışık ya da kombine temsirolimus, sunitinib, sorafenib veya pazopanib kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.14.C 3)."
-      }
+      },
+      "superseded_sources": [
+        "C005054"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.nopay_after_lorlatinib_alk_seq",
@@ -10806,10 +10943,13 @@
         "C005736",
         "C005737",
         "C005738",
-        "C005739",
         "C005740",
         "C005754"
-      ]
+      ],
+      "superseded_sources": [
+        "C005739"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.pemetrexed_mesothelioma_board",
@@ -11529,7 +11669,7 @@
       ],
       "gate_b_sources": [
         "C005016",
-        "C005025",
+        "C005024",
         "C005029",
         "C005644"
       ],
@@ -11546,7 +11686,11 @@
       "requires_prior_therapy": {
         "drug_or_class": "prior_therapy",
         "outcome": "resistant"
-      }
+      },
+      "superseded_sources": [
+        "C005025"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.tier_c_b.C005024.dasatinib",
@@ -11567,7 +11711,6 @@
       ],
       "gate_b_sources": [
         "C005024",
-        "C005025",
         "C005043"
       ],
       "message_tr": "1) Dasatinib; imatinib dahil önceki tedavilere dirençli veya intolere (aşağıdaki 4. ve 5. maddede belirtilen koşullarda), Philadelphia kromozomu pozitif kronik, hızlanmış veya blastik evre kronik miye",
@@ -11583,7 +11726,11 @@
       "requires_prior_therapy": {
         "drug_or_class": "imatinib",
         "outcome": "resistant_or_intolerant"
-      }
+      },
+      "superseded_sources": [
+        "C005025"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.tier_c_b.C005043.bosutinib",
@@ -12172,12 +12319,15 @@
       "gate_b_sources": [
         "C004927",
         "C004928",
-        "C004929",
         "C004930",
         "C004932",
         "C005276",
         "C005278"
-      ]
+      ],
+      "superseded_sources": [
+        "C004929"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.C.trastuzumab_metastatic_prescriber_oncology",
@@ -12199,12 +12349,15 @@
       "gate_b_sources": [
         "C004927",
         "C004928",
-        "C004929",
         "C004930",
         "C004932",
         "C005276",
         "C005278"
-      ]
+      ],
+      "superseded_sources": [
+        "C004929"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.14.offlabel_oncology_board_report",
@@ -12449,8 +12602,7 @@
       "rule_id": "4.2.15.D_1.three_physician_1yr_report",
       "sut_section": "4.2.15.D-1",
       "gate_b_sources": [
-        "C005831",
-        "C005835"
+        "C005831"
       ],
       "drug_names": [
         "dabigatran",
@@ -12489,7 +12641,11 @@
         "I25",
         "I48",
         "I82"
-      ]
+      ],
+      "superseded_sources": [
+        "C005835"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.15.D_2.report_renewal_to_continue",
@@ -13508,7 +13664,7 @@
       "gate_b_sources": [
         "C006018",
         "C006030",
-        "C006031"
+        "C006041"
       ],
       "drug_names": [
         "bifosfonat",
@@ -13529,7 +13685,11 @@
       "action": {
         "enforcement": "bifosfonatlar ve diğer osteoporoz ilaçları tanımlı koşullarda ödenir; tedavi süresinin belirtildiği 2 yıllık sağlık raporu gerekir; kombine kullanımda yalnızca birinin bedeli ödenir",
         "message_tr": "Osteoporoz tedavisinde bifosfonatlar (kombinasyonları dahil) ve diğer osteoporoz ilaçları (raloksifen, calcitonin, stronsiyum ranelat, denosumab) belirtilen koşullarda ödenir. Bu ilaçlar tedavi süresinin belirtildiği sağlık raporuna dayanılarak reçete edilir; rapor süresi 2 yıldır. Bu grup ilaçların kombine kullanımında sadece birinin bedeli ödenir (§4.2.17.A)."
-      }
+      },
+      "superseded_sources": [
+        "C006031"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.17.B.calcitonin_first_6mo_only",
@@ -13847,8 +14007,12 @@
       ],
       "message_tr": "Stronsiyum ranelat / raloksifen — bifosfonat tolere edilemeyen veya yanıtsız osteoporozlu hastalarda uzman hekim raporu gerekir (§4.2.17.A).",
       "gate_b_sources": [
+        "C006041"
+      ],
+      "superseded_sources": [
         "C006031"
-      ]
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.17.teriparatid_severe_osteoporosis_board",
@@ -13999,7 +14163,7 @@
       "rule_id": "4.2.2.antidepressants_1yr_all_physicians",
       "sut_section": "4.2.2",
       "gate_b_sources": [
-        "C003898"
+        "C003902"
       ],
       "drug_names": [
         "trisiklik antidepresan",
@@ -14018,13 +14182,17 @@
       "action": {
         "enforcement": "trisiklik/tetrasiklik/SSRI antidepresanlar tüm hekimlerce ≤1 yıl; gruplar arası geçiş veya >1 yıl kullanım gerektiğinde psikiyatri uzman raporuyla tüm hekimlerce",
         "message_tr": "Trisiklik, tetrasiklik ve SSRI grubu antidepresanlar tüm hekimlerce toplam 1 yıl süre ile reçete edilebilir; bu gruplar arasında ilaç değişimi gereken hallerde ve/veya bu ilaçların 1 yıldan uzun süre kullanılması gereken durumlarda psikiyatri uzmanlarınca veya psikiyatri uzmanınca düzenlenen rapora dayanılarak tüm hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.2)."
-      }
+      },
+      "superseded_sources": [
+        "C003898"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.2.antipsychotics_psychiatry_report",
       "sut_section": "4.2.2",
       "gate_b_sources": [
-        "C003901"
+        "C003902"
       ],
       "drug_names": [
         "klozapin",
@@ -14055,7 +14223,11 @@
       "action": {
         "enforcement": "klozapin/olanzapin/risperidon/amisülpirid/ketiapin/ziprosidon/aripiprazol/zotepin/sertindol/brekspiprazol/lurasidon/kariprazin/paliperidon: psikiyatri uzmanınca veya raporuyla tüm hekimlerce",
         "message_tr": "Klozapin, olanzapin, olanzapin kombinasyonları, risperidon, amisülpirid, ketiapin, ziprosidon, aripiprazol, zotepin, sertindol, brekspiprazol, lurasidon, kariprazin veya paliperidon içeren ürünlerin psikiyatri uzmanlarınca veya psikiyatri uzmanınca düzenlenecek rapora dayanılarak tüm hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.2)."
-      }
+      },
+      "superseded_sources": [
+        "C003901"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.2.atypical_antipsychotics_dementia",
@@ -14384,7 +14556,7 @@
       "rule_id": "4.2.23.posaconazole_parenteral_oral_unable",
       "sut_section": "4.2.23",
       "gate_b_sources": [
-        "C006096"
+        "C006093"
       ],
       "drug_names": [
         "posakonazol"
@@ -14393,7 +14565,11 @@
       "action": {
         "enforcement": "posakonazol'ün parenteral formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir; invazif mantar enfeksiyonu profilaksisi endikasyonu",
         "message_tr": "Belirtilen hastalardaki invazif mantar enfeksiyonlarının profilaksisinde kullanılır. Posakonazol'ün parenteral formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir (§4.2.23)."
-      }
+      },
+      "superseded_sources": [
+        "C006096"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.23.systemic_fungal_infection_coverage",
@@ -14875,7 +15051,7 @@
       "rule_id": "4.2.24.B.resp.laba_lama_iks_mono_and_triple_maintenance",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006171"
+        "C006180"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti",
@@ -14899,7 +15075,11 @@
       "action": {
         "enforcement": "LABA/LAMA/İKS mono ürünler tek başına veya birlikte reçete edilirse ödenir; (LABA+LAMA+İKS) mono veya sabit doz üçlü kombinasyonlar ≥3 ay İKS+LABA yetersiz + sık atak + dispneli orta-ağır KOAH erişkin idame tedavisinde kullanılır ve durum raporda belirtilirse ödenir",
         "message_tr": "Uzun etkili solunum yolu beta-agonistleri (LABA), obstrüktif solunum yolu hastalıklarında kullanılan uzun etkili antikolinerjikler (LAMA) ve inhale kortikosteroidler (İKS) gruplarında mono olarak yer alan ürünlerin tek başına veya birlikte reçete edilmesi halinde bedelleri Kurumca karşılanır. (LABA+LAMA+İKS) şeklinde mono ürünlerle veya sabit doz kombinasyonlarla yapılacak üçlü kombinasyon tedavilerin; en az 3 ay süreyle inhale kortikosteroid (İKS) ve uzun etkili solunum yolu beta-agonistleri (LABA) ile tedavi edildiği halde yeterli yanıt alınamayan, sık atak geçiren (yılda 2 ve üzeri atak veya 1 ve üzeri yatarak tedavi) ve dispnesi olan (mMrc 2 ve üzeri veya CAT skoru 10 ve üzeri) orta-ağır kronik obstrüktif akciğer hastalığı (KOAH) olan erişkin hastaların idame tedavisinde kullanılmaları ve bu durumların uzman hekim raporunda belirtilmesi halinde bedelleri Kurumca karşılanır (§4.2.24.B)."
-      }
+      },
+      "superseded_sources": [
+        "C006171"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.24.B.resp.laba_lama_iks_otherwise_nopay",
@@ -15241,7 +15421,7 @@
       ],
       "message_tr": "LABA+LAMA+İKS üçlü kombinasyon — en az 3 ay İKS+LABA veya İKS+LAMA sonrası göğüs hastalıkları uzman sağlık kurulu raporu gerekir (§4.2.24.B-4).",
       "gate_b_sources": [
-        "C006171"
+        "C006180"
       ],
       "report_required": true,
       "report_specialties": [
@@ -15251,7 +15431,11 @@
         "iç hastalıkları",
         "çocuk sağlığı"
       ],
-      "report_duration_months": 3
+      "report_duration_months": 3,
+      "superseded_sources": [
+        "C006171"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.24.laba_mono_invalid_prescription",
@@ -15358,7 +15542,7 @@
       "rule_id": "4.2.25.gabapentin_1yr_report_combo_nopay",
       "sut_section": "4.2.25",
       "gate_b_sources": [
-        "C006204"
+        "C006199"
       ],
       "drug_names": [
         "gabapentin",
@@ -15381,7 +15565,11 @@
       "action": {
         "enforcement": "gabapentin 2/3. basamakta en az bir nöroloji uzmanı içeren 1 yıllık sağlık kurulu raporuyla nöroloji uzmanlarınca reçete edilirse ödenir; pregabalin ve gabapentin kombine kullanılamaz",
         "message_tr": "Gabapentin etken maddeli ilaçların ikinci veya üçüncü basamak sağlık hizmeti sunucularında düzenlenen en az bir nöroloji uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna istinaden nöroloji uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır. Pregabalin ve gabapentin kombine olarak kullanılamaz (§4.2.25)."
-      }
+      },
+      "superseded_sources": [
+        "C006204"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.25.lacosamide_16yr_partial_2aed_6mo",
@@ -15444,7 +15632,7 @@
       "rule_id": "4.2.25.pregabalin_1yr_report_no_gad",
       "sut_section": "4.2.25",
       "gate_b_sources": [
-        "C006200"
+        "C006199"
       ],
       "drug_names": [
         "pregabalin"
@@ -15466,7 +15654,11 @@
       "action": {
         "enforcement": "pregabalin mono/sabit doz kombinasyonları 2/3. basamakta en az bir nöroloji uzmanı içeren 1 yıllık sağlık kurulu raporuyla nöroloji uzmanlarınca reçete edilirse ödenir; yaygın anksiyete bozukluğu endikasyonunda ödenmez",
         "message_tr": "Pregabalin etken maddeli ilaçların mono veya sabit doz kombinasyonlarının ikinci veya üçüncü basamak sağlık hizmeti sunucularında düzenlenen en az bir nöroloji uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna istinaden nöroloji uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır; yaygın anksiyete bozukluğu endikasyonunda ödenmez (§4.2.25)."
-      }
+      },
+      "superseded_sources": [
+        "C006200"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.25.zonisamide_neurology_1yr_report",
@@ -15695,7 +15887,7 @@
       "rule_id": "4.2.27.C.albumin_inpatient_3day_report",
       "sut_section": "4.2.27.Ç",
       "gate_b_sources": [
-        "C006275"
+        "C006274"
       ],
       "drug_names": [
         "human albumin",
@@ -15716,7 +15908,11 @@
       "icd10_ranges": [
         "E87.0",
         "K74"
-      ]
+      ],
+      "superseded_sources": [
+        "C006275"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.27.C.factor_viia_3day_haematology_report",
@@ -15960,7 +16156,7 @@
       "message_tr": "Koagülasyon faktörü — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu; hematoloji/iç hastalıkları/çocuk sağlığı uzman reçetesi (§4.2.27.A).",
       "gate_b_sources": [
         "C006210",
-        "C006225",
+        "C006255",
         "C006232",
         "C006233",
         "C006247"
@@ -15973,7 +16169,11 @@
         "hematoloji",
         "iç hastalıkları",
         "çocuk sağlığı"
-      ]
+      ],
+      "superseded_sources": [
+        "C006225"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.27.coumarin_active_bleed_one_day",
@@ -16041,7 +16241,7 @@
       ],
       "message_tr": "Koagülasyon faktörü — 1 yıllık sağlık kurulu raporu; ilk rapor üçüncü basamak resmi sağlık kurumunda düzenlenmeli (§4.2.27.A).",
       "gate_b_sources": [
-        "C006225"
+        "C006255"
       ],
       "report_required": true,
       "report_specialties": [
@@ -16052,7 +16252,11 @@
         "hematoloji",
         "iç hastalıkları",
         "çocuk sağlığı"
-      ]
+      ],
+      "superseded_sources": [
+        "C006225"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.27.factor_seven_a_bleeding_board",
@@ -17337,8 +17541,7 @@
       "rule_id": "4.2.33.rvo_glaucoma_ranibizumab_aflibercept",
       "sut_section": "4.2.33",
       "gate_b_sources": [
-        "C006553",
-        "C006557"
+        "C006553"
       ],
       "drug_names": [
         "ranibizumab",
@@ -17356,7 +17559,11 @@
       "action": {
         "enforcement": "retinal ven tıkanıklığı + glokomda bevacizumab yükleme sonrası yetersiz cevap raporla dokümante edilirse deksametazon implant olmadan ranibizumab/aflibersepte geçiş",
         "message_tr": "Retinal ven tıkanıklığı tanılı glokomun eşlik ettiği hastalarda bevacizumab ile yükleme dozu sonrası yetersiz cevap alınması durumunda, bu durumun raporda belirtilmesi kaydıyla deksametazon intravitreal implant kullanılmaksızın ranibizumab veya aflibercept ile tedaviye devam edilebilir (§4.2.33)."
-      }
+      },
+      "superseded_sources": [
+        "C006557"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.33.same_eye_combo_nopay",
@@ -17916,7 +18123,7 @@
       "rule_id": "4.2.35.A.gabapentin_6mo_report_combo_nopay",
       "sut_section": "4.2.35.A",
       "gate_b_sources": [
-        "C006692"
+        "C006699"
       ],
       "drug_names": [
         "gabapentin",
@@ -17952,13 +18159,17 @@
       "action": {
         "enforcement": "gabapentin 2/3. basamakta ilgili uzmanlardan en az birinin yer aldığı 6 ay süreli sağlık kurulu raporuyla bu hekimlerce reçete edilirse ödenir; pregabalin ve gabapentin kombine kullanılamaz",
         "message_tr": "Gabapentin etken maddeli ilaçların ilgili uzman hekimlerden en az birinin yer aldığı ikinci veya üçüncü basamak sağlık hizmeti sunucularında düzenlenen 6 ay süreli sağlık kurulu raporuna istinaden bu hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır. Pregabalin ve gabapentin kombine olarak kullanılamaz (§4.2.35.A)."
-      }
+      },
+      "superseded_sources": [
+        "C006692"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.35.A.pregabalin_6mo_report_combo_nopay",
       "sut_section": "4.2.35.A",
       "gate_b_sources": [
-        "C006693"
+        "C006699"
       ],
       "drug_names": [
         "pregabalin",
@@ -17996,7 +18207,11 @@
       "action": {
         "enforcement": "pregabalin mono/sabit doz kombinasyonları 2/3. basamakta ilgili uzmanlardan en az birinin yer aldığı 6 ay süreli sağlık kurulu raporuyla bu hekimlerce reçete edilirse ödenir; pregabalin ve gabapentin kombine kullanılamaz",
         "message_tr": "Pregabalin etken maddeli ilaçların mono veya sabit doz kombinasyonlarının ilgili uzman hekimlerden en az birinin yer aldığı ikinci veya üçüncü basamak sağlık hizmeti sunucularında düzenlenen 6 ay süreli sağlık kurulu raporuna istinaden bu hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır. Pregabalin ve gabapentin kombine olarak kullanılamaz (§4.2.35.A)."
-      }
+      },
+      "superseded_sources": [
+        "C006693"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.35.B.chronic_msk_fibromyalgia_specialists",
@@ -20720,7 +20935,7 @@
       "report_required": true,
       "message_tr": "Pediatrik somatropin başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.6.A-1).",
       "gate_b_sources": [
-        "C003966"
+        "C003977"
       ],
       "report_specialties": [
         "çocuk endokrinoloji",
@@ -20729,7 +20944,11 @@
       "prescriber_specialties": [
         "çocuk endokrinoloji"
       ],
-      "report_duration_months": 12
+      "report_duration_months": 12,
+      "superseded_sources": [
+        "C003966"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.6.pws_somatropin_tertiary_board",
@@ -20987,7 +21206,7 @@
       "rule_id": "4.2.65.derm.diabetic_foot_4wk_response_continue_coverage",
       "sut_section": "4.2.65",
       "gate_b_sources": [
-        "C007143"
+        "C007144"
       ],
       "drug_names": [
         "epidermal büyüme faktörü (topikal)"
@@ -21024,13 +21243,17 @@
       "action": {
         "enforcement": "4 haftalık tedavi sonrası yanıt alınan ve tedavinin devamı gereken hastalarda; 2./3. basamakta ilgili uzmanlardan üçünün yer aldığı 4 hafta süreli uzman hekim raporuyla yine bu uzmanlarca 4 haftalık dozda reçete edilirse ödenir",
         "message_tr": "4 (dört) haftalık tedavi sonrasında yanıt alınan hastalarda tedavinin devamının gerekmesi halinde; ikinci basamak ya da üçüncü basamak resmi sağlık hizmeti sunucularında enfeksiyon hastalıkları ve klinik mikrobiyoloji, kalp ve damar cerrahisi, ortopedi ve travmatoloji, plastik, rekonstrüktif ve estetik cerrahi, endokrinoloji ve metabolizma hastalıkları veya genel cerrahi uzman hekimlerince düzenlenen 4 (dört) hafta süreli uzman hekim raporuna istinaden yine bu uzman hekimler tarafından 4 (dört) haftalık dozda reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.65)."
-      }
+      },
+      "superseded_sources": [
+        "C007143"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.65.derm.diabetic_foot_osteomyelitis_softtissue_report_mandatory",
       "sut_section": "4.2.65",
       "gate_b_sources": [
-        "C007146"
+        "C007145"
       ],
       "drug_names": [
         "epidermal büyüme faktörü (topikal)"
@@ -21051,7 +21274,11 @@
       "action": {
         "enforcement": "mandatory: osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun ortopedi ve travmatoloji uzmanınca, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının enfeksiyon hastalıkları ve klinik mikrobiyoloji uzmanınca raporda belirtilmesi gerekir",
         "message_tr": "Osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun ortopedi ve travmatoloji uzman hekimi tarafından, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının enfeksiyon hastalıkları ve klinik mikrobiyoloji hastalıkları uzman hekimi tarafından raporda belirtilmesi gerekmektedir (§4.2.65)."
-      }
+      },
+      "superseded_sources": [
+        "C007146"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.65.derm.diabetic_foot_prior_conventional_tx_report_mandatory",
@@ -21080,7 +21307,7 @@
       "rule_id": "4.2.65.derm.diabetic_foot_wagner12_4wk_specialty_coverage",
       "sut_section": "4.2.65",
       "gate_b_sources": [
-        "C007142"
+        "C007145"
       ],
       "drug_names": [
         "epidermal büyüme faktörü (topikal)"
@@ -21117,7 +21344,11 @@
       "action": {
         "enforcement": "konvansiyonel yara tedavisine rağmen iyileşmeyen kuru/yaş gangrensiz, osteomiyeliti ve enfeksiyonu tedavi olmuş Wagner 1 veya 2 nöropatik diyabetik ayak ülserinde; 2./3. basamakta ilgili uzmanlardan üçünün yer aldığı 4 hafta süreli uzman hekim raporuyla yine bu uzmanlarca 4 haftalık dozda reçete edilirse ödenir",
         "message_tr": "Konvansiyonel yara tedavi prensiplerinin uygulanmasına rağmen yarada iyileşmenin izlenmediği kuru veya yaş gangrensiz, osteomiyeliti ve enfeksiyonu tedavi olmuş, Wagner 1 veya 2 nöropatik diyabetik ayak ülserleri olan hastalarda, ikinci basamak ya da üçüncü basamak resmi sağlık hizmeti sunucularında enfeksiyon hastalıkları ve klinik mikrobiyoloji, kalp ve damar cerrahisi, ortopedi ve travmatoloji, plastik, rekonstrüktif ve estetik cerrahi, endokrinoloji ve metabolizma hastalıkları veya genel cerrahi uzman hekimlerince 4 (dört) hafta süreli uzman hekim raporuna istinaden yine bu uzman hekimler tarafından 4 (dört) haftalık dozda reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.65)."
-      }
+      },
+      "superseded_sources": [
+        "C007142"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.66.bucket_a.c007149",
@@ -21184,7 +21415,7 @@
       "rule_id": "4.2.67.renal.adpkd_tolvaptan_tertiary_nephrology_1yr_coverage",
       "sut_section": "4.2.67",
       "gate_b_sources": [
-        "C007162"
+        "C007159"
       ],
       "drug_names": [
         "tolvaptan"
@@ -21207,7 +21438,11 @@
       "action": {
         "enforcement": "üçüncü basamakta en az bir nefroloji uzmanının yer aldığı sağlık kurulu raporuyla nefroloji uzmanlarınca reçete edilirse ödenir; rapor en fazla 1 yıl geçerli olup başlangıç kriterleri raporda belirtilir; maksimum doz günde 120 mg'yi aşmamalı; GFR<25 ml/dk olduğunda ilaç sonlandırılır",
         "message_tr": "Üçüncü basamak resmi sağlık hizmeti sunucularında en az bir nefroloji uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak nefroloji uzmanlarınca reçete edilmesi halinde bedeli ödenir. Rapor en fazla 1 yıl süreyle geçerli olup, yukarıda yer alan kriterler belirtilir. Maksimum doz günde 120 mg'yi aşmamalıdır. GFR<25 ml/dk olduğunda ilaç sonlandırılır (§4.2.67)."
-      }
+      },
+      "superseded_sources": [
+        "C007162"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.68.neuro.lems_congenital_myasthenic_amifampridine_coverage",
@@ -22555,8 +22790,7 @@
       "message_tr": "MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile tedaviye başlanır; hematoloji uzman hekim raporu ve hemogram sonucu reçetede belirtilir (§4.2.9.A-2).",
       "gate_b_sources": [
         "C004135",
-        "C004136",
-        "C004137"
+        "C004136"
       ],
       "report_required": true,
       "report_specialties": [
@@ -22565,7 +22799,11 @@
       "prescriber_specialties": [
         "hematoloji",
         "iç hastalıkları"
-      ]
+      ],
+      "superseded_sources": [
+        "C004137"
+      ],
+      "verification_status": "ai_generated_pending_review"
     },
     {
       "rule_id": "4.2.9.mds_esa_initiation_hematology_report",
