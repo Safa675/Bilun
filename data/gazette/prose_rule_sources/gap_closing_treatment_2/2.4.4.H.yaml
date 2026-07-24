@@ -22,7 +22,10 @@ rules:
     payment_tr: yoğun bakım sürerken EK-2/C A/B/C grubu işlem; işlem puanı eklenerek faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
+  - C001220
+  superseded_sources:
   - C001207
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.H.(5).platelet_pheresis_separate_bill
   sut_section: 2.4.4.H
   condition:

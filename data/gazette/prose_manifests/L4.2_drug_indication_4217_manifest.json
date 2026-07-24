@@ -205,8 +205,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Stronsiyum ranelat (kombinasyonları dahil)",
       "linked_rule_ids": [
-        "4.2.17.A.osteoporosis_2yr_report_combo_one_paid",
-        "4.2.17.strontium_raloxifene_bisph_fail"
+        "4.2.17.A.osteoporosis_2yr_report_combo_one_paid"
       ]
     },
     {
@@ -287,7 +286,9 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Kalsitonin",
       "linked_rule_ids": [
-        "4.2.17.calcitonin_tertiary_bisph_fail"
+        "4.2.17.A.osteoporosis_2yr_report_combo_one_paid",
+        "4.2.17.calcitonin_tertiary_bisph_fail",
+        "4.2.17.strontium_raloxifene_bisph_fail"
       ]
     },
     {

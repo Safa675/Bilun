@@ -5,7 +5,7 @@
   "rule_set_id": "anti_vegf_prose",
   "rules_in_json": 37,
   "section_clause_total": 55,
-  "encoded_clause_count": 27,
+  "encoded_clause_count": 25,
   "encoded_clause_ids": [
     "C006455",
     "C006526",
@@ -14,11 +14,9 @@
     "C006529",
     "C006530",
     "C006548",
-    "C006549",
     "C006550",
     "C006553",
     "C006556",
-    "C006557",
     "C006558",
     "C006559",
     "C006560",
@@ -50,15 +48,17 @@
     "C006545",
     "C006546",
     "C006547",
+    "C006549",
     "C006551",
     "C006554",
+    "C006557",
     "C006573",
     "C006576",
     "C006579",
     "C006581",
     "C006584"
   ],
-  "tier_c_deferred_count": 21,
+  "tier_c_deferred_count": 23,
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [
     "C006525",
@@ -271,10 +271,11 @@
     {
       "clause_id": "C006549",
       "section_id": "4.2.33",
-      "manifest_status": "encoded",
-      "linked_rule_ids": [
-        "4.2.33.general_switch_to_bevacizumab"
-      ]
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
       "clause_id": "C006550",
@@ -298,7 +299,9 @@
       "section_id": "4.2.33",
       "manifest_status": "encoded",
       "linked_rule_ids": [
-        "4.2.33.general_ranibizumab_aflibersept_loading_protocol"
+        "4.2.33.general_ranibizumab_aflibersept_loading_protocol",
+        "4.2.33.general_switch_to_bevacizumab",
+        "4.2.33.rvt_with_glaucoma_avoid_deksametazon"
       ]
     },
     {
@@ -325,10 +328,11 @@
     {
       "clause_id": "C006557",
       "section_id": "4.2.33",
-      "manifest_status": "encoded",
-      "linked_rule_ids": [
-        "4.2.33.rvt_with_glaucoma_avoid_deksametazon"
-      ]
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — dose pathway / combination rule not yet structurable (clinical_pathway)."
     },
     {
       "clause_id": "C006558",
@@ -542,8 +546,8 @@
       ]
     }
   ],
-  "encode_tier_C_deferred_count": 21,
+  "encode_tier_C_deferred_count": 23,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 49.1
+  "encoded_clause_pct": 45.5
 }

@@ -1,4 +1,5 @@
 section_id: 4.1.2
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.1.2.contracted_pharmacy_supply_coverage
   sut_section: 4.1.2
@@ -31,7 +32,7 @@ rules:
 - rule_id: 4.1.2.manual_prescription_inpatient_chief_approval_mandatory
   sut_section: 4.1.2
   gate_b_sources:
-  - C003429
+  - C003428
   condition:
     manual_prescription: true
     inpatient_care: true
@@ -41,4 +42,6 @@ rules:
     message_tr: Kurumla sözleşmeli/protokollü kuruluşlarca temin edilemeyen inpatient ilaçlar için düzenlenen manuel reçetelerde
       'Yatan/Günübirlik Hasta' ibaresi ve başhekimlik onayı zorunludur; yurtdışı ilaç reçetelerinde bu ibare ve onay zorunlu
       değildir (§4.1.2).
-source_note: Exported from drug_indication_prose.json (YAML source migration)
+  superseded_sources:
+  - C003429
+  verification_status: ai_generated_pending_review

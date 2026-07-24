@@ -13,7 +13,10 @@ rules:
     billable: true
     payment_tr: aynı başvuru altında yatarak tedavide Kurumca karşılanan sağlık hizmetleri pakete dahil
   gate_b_sources:
+  - C000383
+  superseded_sources:
   - C000410
+  verification_status: ai_generated_pending_review
 - rule_id: 1.9.1.(1).extra_fee_permissible_scope
   sut_section: 1.9.1
   condition:

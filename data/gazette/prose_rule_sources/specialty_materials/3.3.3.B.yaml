@@ -31,7 +31,7 @@ rules:
   sut_section: 3.3.3.B
   deontic: MUST_BILL
   gate_b_sources:
-  - C002902
+  - C002907
   condition:
     material_name_any:
     - teleskopik
@@ -41,3 +41,6 @@ rules:
     severity: info
     message_tr: Teleskopik görmeye yardımcı malzeme — iyi gören gözde düzeltmiş uzak görme keskinliği 3/10 ve altı hastalarda
       3. basamak sağlık kurulu raporuna istinaden bedeli Kurumca karşılanır (§3.3.3.B(1)).
+  superseded_sources:
+  - C002902
+  verification_status: ai_generated_pending_review

@@ -1,9 +1,10 @@
 section_id: 2.6.3
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py
 rules:
 - rule_id: 2.6.3.(1).companion_one_person_documentation
   sut_section: 2.6.3
   gate_b_sources:
-  - C001571
+  - C001572
   condition:
     definition_scope: Bir kişiyle sınırlı refakatçi gideri için tıbbi gereklilik + refakat teyiti
     applies_to: Refakatçi gideri
@@ -17,6 +18,9 @@ rules:
     enforcement: gate
     message_tr: Refakatçi gideri bir kişiyle sınırlıdır; sevk eden sunucu tıbbi gerekliliği, müracaat edilen sunucu refakat
       eşliğini elektronik/ EK-2/F ile belirtmelidir (%40+ engelli, nakil/replantasyon ve 18 yaş altı için koşul aranmaz).
+  superseded_sources:
+  - C001571
+  verification_status: ai_generated_pending_review
 - rule_id: 2.6.3.(3).icu_companion_daily_allowance
   sut_section: 2.6.3
   gate_b_sources:
@@ -39,4 +43,3 @@ rules:
     message_tr: Yatarak tedavi sırasında refakatçinin yatak ve yemek giderleri, sunucuca Kuruma fatura edilmesi halinde SUT
       eki EK-2/B “refakat” puanı esas alınarak karşılanır; ayrıca bu günler için ilgililere gündelik ödenmez. Günübirlik tedavilerde
       SUT eki EK-2/B “refakat” kodu faturalandırılamaz.
-source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

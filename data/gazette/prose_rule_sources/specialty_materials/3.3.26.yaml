@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003201
+  - C003207
   condition:
     orthopedic_tumor_prosthesis_third_step_facility: true
   action:
@@ -13,6 +13,9 @@ rules:
     severity: info
     message_tr: EK-3/F-3 tümör/rezeksiyon alan grubu protezleri — geri ödeme kriterlerine uygun ve eğitim yetkili 3. basamak/vakıf
       protokollü özel hastanede kullanımı halinde Kurumca karşılanır (§3.3.26(1)).
+  superseded_sources:
+  - C003201
+  verification_status: ai_generated_pending_review
 - rule_id: 3.3.26.a.saddle_prosthesis_coverage
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION

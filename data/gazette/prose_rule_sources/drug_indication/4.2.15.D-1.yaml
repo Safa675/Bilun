@@ -1,4 +1,5 @@
 section_id: 4.2.15.D-1
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.15.D_1.noac_combination_nopay
   sut_section: 4.2.15.D-1
@@ -16,15 +17,8 @@ rules:
       bedelleri Kurumca karşılanmaz (§4.2.15.D-1).
 - rule_id: 4.2.15.D_1.three_physician_1yr_report
   sut_section: 4.2.15.D-1
-  icd10_ranges:
-  - I20
-  - I21
-  - I25
-  - I48
-  - I82
   gate_b_sources:
   - C005831
-  - C005835
   drug_names:
   - dabigatran
   - rivaroksaban
@@ -56,4 +50,12 @@ rules:
       iç hastalıkları, göğüs hastalıkları, kalp damar cerrahisi ve nöroloji uzman hekimlerinden en az üçünün bulunduğu 1 yıl
       süreli sağlık kurulu raporuyla bu uzmanlarca reçete edilmesi halinde bedeli ödenir; ilk iki rapor süresi (toplam 24
       ay) sonunda sonraki raporlar bu uzmanlarca ve aile hekimlerince düzenlenen rapora istinaden reçete edilebilir (§4.2.15.D-1).
-source_note: Exported from drug_indication_prose.json (YAML source migration)
+  icd10_ranges:
+  - I20
+  - I21
+  - I25
+  - I48
+  - I82
+  superseded_sources:
+  - C005835
+  verification_status: ai_generated_pending_review

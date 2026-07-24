@@ -1,4 +1,5 @@
 section_id: 4.2.17.A
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.17.A.active_vitamin_d_osteoporosis_nopay
   sut_section: 4.2.17.A
@@ -50,6 +51,7 @@ rules:
   - C006018
   - C006030
   - C006031
+  - C006041
   drug_names:
   - bifosfonat
   - raloksifen
@@ -70,6 +72,9 @@ rules:
       stronsiyum ranelat, denosumab) belirtilen koşullarda ödenir. Bu ilaçlar tedavi süresinin belirtildiği sağlık raporuna
       dayanılarak reçete edilir; rapor süresi 2 yıldır. Bu grup ilaçların kombine kullanımında sadece birinin bedeli ödenir
       (§4.2.17.A).
+  superseded_sources:
+  - C006031
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.17.bisphosphonate_ho_no_bmd
   sut_section: 4.2.17.A
   drug_names:
@@ -259,5 +264,7 @@ rules:
   message_tr: Stronsiyum ranelat / raloksifen — bifosfonat tolere edilemeyen veya yanıtsız osteoporozlu hastalarda uzman hekim
     raporu gerekir (§4.2.17.A).
   gate_b_sources:
+  - C006041
+  superseded_sources:
   - C006031
-source_note: Exported from drug_indication_prose.json (YAML source migration)
+  verification_status: ai_generated_pending_review

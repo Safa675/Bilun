@@ -4,7 +4,7 @@
   "section_id": "",
   "encoded_clause_ids": [
     "C003581",
-    "C003605",
+    "C003610",
     "C003831",
     "C003918",
     "C003938",
@@ -17,7 +17,7 @@
     "C004489",
     "C004497",
     "C004961",
-    "C005054",
+    "C005049",
     "C005064",
     "C005111",
     "C005224",
@@ -54,7 +54,7 @@
     "C006116",
     "C006148",
     "C006163",
-    "C006200",
+    "C006199",
     "C006343",
     "C006420",
     "C006530",
@@ -84,7 +84,7 @@
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C003605",
+      "clause_id": "C003610",
       "manifest_status": "encoded"
     },
     {
@@ -136,7 +136,7 @@
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C005054",
+      "clause_id": "C005049",
       "manifest_status": "encoded"
     },
     {
@@ -284,7 +284,7 @@
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C006200",
+      "clause_id": "C006199",
       "manifest_status": "encoded"
     },
     {

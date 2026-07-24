@@ -1,12 +1,8 @@
 section_id: 4.2.6.A-1
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.6.A1.neurosecretory_bioinactive_gh_somatropin
   sut_section: 4.2.6.A-1
-  icd10_ranges:
-  - E23.0
-  - E23.1
-  - E23.7
-  - E34.3
   gate_b_sources:
   - C003977
   - C003982
@@ -23,13 +19,13 @@ rules:
       hastalara uyku esnasında büyüme hormonu profili çıkartılmalı; nörosekretuar disfonksiyon veya serum IGF-1 <-2 SD olması
       koşuluyla yapılacak IGF-1 jenerasyon testi ile biyoinaktif büyüme hormonu saptanması halinde (yalnızca somatropin) kullanılabilir
       (§4.2.6.A-1).
-- rule_id: 4.2.6.A1.somatropin_listed_cases_no_condition
-  sut_section: 4.2.6.A-1
   icd10_ranges:
   - E23.0
   - E23.1
   - E23.7
   - E34.3
+- rule_id: 4.2.6.A1.somatropin_listed_cases_no_condition
+  sut_section: 4.2.6.A-1
   gate_b_sources:
   - C003979
   drug_names:
@@ -42,6 +38,11 @@ rules:
     enforcement: bu bendin uygulanmasında başkaca şart aranmaksızın belirtilen hallerde yalnızca somatropin kullanılabilir
     message_tr: Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde yalnızca somatropin etkin maddeli ilaçlar
       kullanılabilir (§4.2.6.A-1).
+  icd10_ranges:
+  - E23.0
+  - E23.1
+  - E23.7
+  - E34.3
 - rule_id: 4.2.6.pediatric_gh_monitoring_board
   sut_section: 4.2.6.A-1
   drug_names:
@@ -114,11 +115,13 @@ rules:
   message_tr: Pediatrik somatropin başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu
     gerekir (§4.2.6.A-1).
   gate_b_sources:
-  - C003966
+  - C003977
   report_specialties:
   - çocuk endokrinoloji
   - çocuk endokrinolojisi ve metabolizma
   prescriber_specialties:
   - çocuk endokrinoloji
   report_duration_months: 12
-source_note: Exported from drug_indication_prose.json (YAML source migration)
+  superseded_sources:
+  - C003966
+  verification_status: ai_generated_pending_review

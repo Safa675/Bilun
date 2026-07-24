@@ -1,9 +1,10 @@
 section_id: 4.2.65
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.65.derm.diabetic_foot_4wk_response_continue_coverage
   sut_section: 4.2.65
   gate_b_sources:
-  - C007143
+  - C007144
   drug_names:
   - epidermal büyüme faktörü (topikal)
   icd10_codes:
@@ -39,10 +40,13 @@ rules:
       ve damar cerrahisi, ortopedi ve travmatoloji, plastik, rekonstrüktif ve estetik cerrahi, endokrinoloji ve metabolizma
       hastalıkları veya genel cerrahi uzman hekimlerince düzenlenen 4 (dört) hafta süreli uzman hekim raporuna istinaden yine
       bu uzman hekimler tarafından 4 (dört) haftalık dozda reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.65).
+  superseded_sources:
+  - C007143
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.65.derm.diabetic_foot_osteomyelitis_softtissue_report_mandatory
   sut_section: 4.2.65
   gate_b_sources:
-  - C007146
+  - C007145
   drug_names:
   - epidermal büyüme faktörü (topikal)
   icd10_codes:
@@ -64,6 +68,9 @@ rules:
       uzman hekimi tarafından, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının
       enfeksiyon hastalıkları ve klinik mikrobiyoloji hastalıkları uzman hekimi tarafından raporda belirtilmesi gerekmektedir
       (§4.2.65).
+  superseded_sources:
+  - C007146
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.65.derm.diabetic_foot_prior_conventional_tx_report_mandatory
   sut_section: 4.2.65
   gate_b_sources:
@@ -86,7 +93,7 @@ rules:
 - rule_id: 4.2.65.derm.diabetic_foot_wagner12_4wk_specialty_coverage
   sut_section: 4.2.65
   gate_b_sources:
-  - C007142
+  - C007145
   drug_names:
   - epidermal büyüme faktörü (topikal)
   icd10_codes:
@@ -124,4 +131,6 @@ rules:
       kalp ve damar cerrahisi, ortopedi ve travmatoloji, plastik, rekonstrüktif ve estetik cerrahi, endokrinoloji ve metabolizma
       hastalıkları veya genel cerrahi uzman hekimlerince 4 (dört) hafta süreli uzman hekim raporuna istinaden yine bu uzman
       hekimler tarafından 4 (dört) haftalık dozda reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.65).
-source_note: Exported from drug_indication_prose.json (YAML source migration)
+  superseded_sources:
+  - C007142
+  verification_status: ai_generated_pending_review

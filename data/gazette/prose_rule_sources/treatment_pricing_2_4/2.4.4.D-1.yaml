@@ -15,7 +15,10 @@ rules:
     payment_tr: hemodiyaliz EK-2/C işlem puanı üzerinden faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
+  - C000953
+  superseded_sources:
   - C000938
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.D-1.(8).hemodialysis_consumables_reuse_prohibited
   sut_section: 2.4.4.D-1
   condition:
@@ -92,7 +95,10 @@ rules:
     denial_tr: ev hemodiyalizinde rapordaki haftalık seans üstü ek tedavi bedelleri ödenmez
     severity: error
   gate_b_sources:
+  - C000940
+  superseded_sources:
   - C000955
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.D-1.(3).dialysis_prescription_by_center_physician
   sut_section: 2.4.4.D-1
   condition:

@@ -1,4 +1,5 @@
 section_id: 4.2.1.C-5
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.1.C.das28_1p2_improvement_continue_c5
   sut_section: 4.2.1.C-5
@@ -168,12 +169,15 @@ rules:
   message_tr: Tosilizumab — NSAİ/methotrexat/anti-TNF sonrası ACR pediatrik 30 yanıtı alınamayan juvenil artritte 3 ay süreli
     çocuk romatoloji sağlık kurulu raporu gerekir (§4.2.1.C-5).
   gate_b_sources:
-  - C003698
+  - C003699
   - C003714
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
   report_duration_months: 3
+  superseded_sources:
+  - C003698
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.1.tocilizumab_ra_c5_methotrexat_combo
   sut_section: 4.2.1.C-5
   drug_names:
@@ -195,7 +199,7 @@ rules:
   message_tr: Tosilizumab — DMARD/anti-TNF yetersiz romatoid artritte methotreksat ile kombine 3 ay süreli sağlık kurulu raporu
     gerekir (§4.2.1.C-5).
   gate_b_sources:
-  - C003692
+  - C003691
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -204,6 +208,9 @@ rules:
   - çocuk sağlığı
   - çocuk romatoloji
   report_duration_months: 3
+  superseded_sources:
+  - C003692
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.1.tocilizumab_ra_c5_university_das
   sut_section: 4.2.1.C-5
   drug_names:
@@ -341,4 +348,3 @@ rules:
   - çocuk sağlığı
   - çocuk romatoloji
   report_duration_months: 3
-source_note: Exported from drug_indication_prose.json (YAML source migration)

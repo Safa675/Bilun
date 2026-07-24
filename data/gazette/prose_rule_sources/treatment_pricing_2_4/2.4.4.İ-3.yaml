@@ -20,7 +20,10 @@ rules:
     annex_basis: EK-2/K
     severity: error
   gate_b_sources:
+  - C001324
+  superseded_sources:
   - C001317
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.I-3.(4).pgt_hereditary_ek2k_genetic_report_required
   sut_section: 2.4.4.İ-3
   condition:
@@ -52,7 +55,10 @@ rules:
       raporların Kuruma incelemeye esas belge olarak gönderilmesi gereklidir
     severity: error
   gate_b_sources:
+  - C001323
+  superseded_sources:
   - C001322
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.I-3.(10).pgt_healthy_embryo_freezing_if_cycles_remaining
   sut_section: 2.4.4.İ-3
   condition:
@@ -81,7 +87,6 @@ rules:
     annex_basis: EK-2/C
   gate_b_sources:
   - C001327
-
 - rule_id: 2.4.4.I-3.(5).pgt_hereditary_billing_code_908747_includes_prep
   sut_section: 2.4.4.İ-3
   verification_status: ai_generated_pending_review
@@ -93,7 +98,8 @@ rules:
   action:
     billable: true
     enforcement: pricing_basis
-    message_tr: PGT saglam-cocuk tetkikleri EK-2/B 908747 G101610 kodlu islemden fatura edilir; on hazirlik ve embriyoya yapilan tum islemler dahildir
+    message_tr: PGT saglam-cocuk tetkikleri EK-2/B 908747 G101610 kodlu islemden fatura edilir; on hazirlik ve embriyoya yapilan
+      tum islemler dahildir
     annex_basis: EK-2/B
   gate_b_sources:
   - C001321

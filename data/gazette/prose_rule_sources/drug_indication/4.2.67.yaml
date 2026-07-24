@@ -1,4 +1,5 @@
 section_id: 4.2.67
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.67.renal.adpkd_tolvaptan_initiation_criteria_regulatory
   sut_section: 4.2.67
@@ -20,7 +21,7 @@ rules:
 - rule_id: 4.2.67.renal.adpkd_tolvaptan_tertiary_nephrology_1yr_coverage
   sut_section: 4.2.67
   gate_b_sources:
-  - C007162
+  - C007159
   drug_names:
   - tolvaptan
   icd10_codes:
@@ -42,4 +43,6 @@ rules:
       raporuna dayanılarak nefroloji uzmanlarınca reçete edilmesi halinde bedeli ödenir. Rapor en fazla 1 yıl süreyle geçerli
       olup, yukarıda yer alan kriterler belirtilir. Maksimum doz günde 120 mg'yi aşmamalıdır. GFR<25 ml/dk olduğunda ilaç
       sonlandırılır (§4.2.67).
-source_note: Exported from drug_indication_prose.json (YAML source migration)
+  superseded_sources:
+  - C007162
+  verification_status: ai_generated_pending_review

@@ -17,7 +17,6 @@
     "C000383",
     "C000402",
     "C000405",
-    "C000410",
     "C000460",
     "C002689",
     "C002692",
@@ -50,7 +49,7 @@
     "C008152",
     "C008243"
   ],
-  "encoded_clause_count": 46,
+  "encoded_clause_count": 45,
   "tier_c_deferred_clause_ids": [],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
@@ -116,10 +115,6 @@
     },
     {
       "clause_id": "C000405",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000410",
       "manifest_status": "encoded"
     },
     {

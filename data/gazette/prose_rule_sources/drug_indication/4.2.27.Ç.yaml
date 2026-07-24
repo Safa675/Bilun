@@ -1,12 +1,10 @@
 section_id: 4.2.27.Ç
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.27.C.albumin_inpatient_3day_report
   sut_section: 4.2.27.Ç
-  icd10_ranges:
-  - E87.0
-  - K74
   gate_b_sources:
-  - C006275
+  - C006274
   drug_names:
   - human albumin
   - albumin
@@ -24,6 +22,12 @@ rules:
       protokolü ile kan albümin düzeyinin 2.5 g/dl ve altında olduğunu gösteren uzman raporuna dayanılarak en fazla 3 günlük
       dozda 'Yatan/Günübirlik Hasta' ibaresi ve başhekimlik onayıyla reçete düzenlenmesi kaydıyla karşılanır, ödenen tutar
       ilgili kurumun alacağından §4.1.2 kapsamında mahsup edilir (§4.2.27.Ç).
+  icd10_ranges:
+  - E87.0
+  - K74
+  superseded_sources:
+  - C006275
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.27.human_albumin_inpatient_hypoalbuminemia
   sut_section: 4.2.27.Ç
   drug_names:
@@ -43,4 +47,3 @@ rules:
   gate_b_sources:
   - C006274
   inpatient_only: true
-source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -5,7 +5,7 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 61,
   "section_clause_total": 354,
-  "encoded_clause_count": 47,
+  "encoded_clause_count": 45,
   "encoded_clause_ids": [
     "C004498",
     "C004503",
@@ -14,7 +14,6 @@
     "C004543",
     "C004551",
     "C004552",
-    "C004572",
     "C004579",
     "C004581",
     "C004584",
@@ -27,7 +26,6 @@
     "C004616",
     "C004620",
     "C004624",
-    "C004628",
     "C004636",
     "C004637",
     "C004892",
@@ -59,6 +57,7 @@
     "C004506",
     "C004514",
     "C004535",
+    "C004628",
     "C004634",
     "C004642",
     "C004679",
@@ -140,6 +139,7 @@
     "C004568",
     "C004569",
     "C004571",
+    "C004572",
     "C004575",
     "C004578",
     "C004580",
@@ -370,9 +370,9 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 24,
+  "tier_a_pending_count": 25,
   "tier_b_pending_count": 13,
-  "tier_c_deferred_count": 270,
+  "tier_c_deferred_count": 271,
   "clause_traces": [
     {
       "clause_id": "C004498",
@@ -971,15 +971,12 @@
       "clause_id": "C004572",
       "section_id": "4.2.13.1",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "Erişkin hastalarda oral antiviral tedaviye",
-      "linked_rule_ids": [
-        "4.2.13.hbv_antiviral_report_renewal_initiation_f7",
-        "4.2.13.hbv_antiviral_report_renewal_initiation_f8",
-        "4.2.13.hbv_entekavir_board",
-        "4.2.13.hbv_lamivudin_board",
-        "4.2.13.hbv_tenofovir_board"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C004575",
@@ -1096,7 +1093,12 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Lamivudin ile 3 mg/kg/gün (günlük maksimum doz 100 mg) dozunda 2-18 yaş grubunda",
       "linked_rule_ids": [
-        "4.2.13.1.paediatric_lamivudine_wk24_switch"
+        "4.2.13.1.paediatric_lamivudine_wk24_switch",
+        "4.2.13.hbv_antiviral_report_renewal_initiation_f7",
+        "4.2.13.hbv_antiviral_report_renewal_initiation_f8",
+        "4.2.13.hbv_entekavir_board",
+        "4.2.13.hbv_lamivudin_board",
+        "4.2.13.hbv_tenofovir_board"
       ]
     },
     {
@@ -1389,11 +1391,8 @@
       "clause_id": "C004628",
       "section_id": "4.2.13.2",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "hepatit_ilac",
-      "linked_rule_ids": [
-        "4.2.13.hdv_interferon_board"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "hepatit_ilac"
     },
     {
       "clause_id": "C004630",
@@ -1454,7 +1453,8 @@
       "heuristic_inn": "",
       "linked_rule_ids": [
         "4.2.13.1.pegifn_adult_hbv_criteria",
-        "4.2.13.hcv_acute_interferon_report"
+        "4.2.13.hcv_acute_interferon_report",
+        "4.2.13.hepatitis_prior_therapy_documentation"
       ]
     },
     {
@@ -1464,7 +1464,6 @@
       "manifest_status": "encoded",
       "heuristic_inn": "hepatit_ilac",
       "linked_rule_ids": [
-        "4.2.13.hcv_acute_interferon_report",
         "4.2.13.hepatitis_prior_therapy_documentation"
       ]
     },
@@ -4111,8 +4110,8 @@
   "section_4.2.16_tier_c_count": 18,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 270,
+  "encode_tier_C_deferred_count": 271,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 13.3
+  "encoded_clause_pct": 12.7
 }

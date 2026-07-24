@@ -5562,8 +5562,8 @@
       ],
       "message_tr": "HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu yeni raporda belirtilmelidir (§4.2.13.1 (7)).",
       "gate_b_sources": [
-        "C004587",
         "C004584",
+        "C004587",
         "C004624"
       ],
       "superseded_sources": [
@@ -6230,6 +6230,7 @@
       "gate_b_sources": [
         "C004498",
         "C004636",
+        "C004637",
         "C004912",
         "C004919"
       ],
@@ -7288,8 +7289,8 @@
       ],
       "message_tr": "Fludarabin/kladribin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).",
       "gate_b_sources": [
-        "C004985",
-        "C004976"
+        "C004976",
+        "C004985"
       ],
       "superseded_sources": [
         "C004936"
@@ -8168,8 +8169,8 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004985",
-        "C004938"
+        "C004938",
+        "C004985"
       ],
       "superseded_sources": [
         "C004936"
@@ -10610,6 +10611,7 @@
       "sut_section": "4.2.14.C",
       "gate_b_sources": [
         "C005049",
+        "C005054",
         "C005064",
         "C005111",
         "C005562"
@@ -11670,6 +11672,7 @@
       "gate_b_sources": [
         "C005016",
         "C005024",
+        "C005025",
         "C005029",
         "C005644"
       ],
@@ -13664,6 +13667,7 @@
       "gate_b_sources": [
         "C006018",
         "C006030",
+        "C006031",
         "C006041"
       ],
       "drug_names": [

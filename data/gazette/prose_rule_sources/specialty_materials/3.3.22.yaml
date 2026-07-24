@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.22
   deontic: MUST_BILL
   gate_b_sources:
-  - C003193
+  - C003192
   condition:
     material_name_any:
     - sentetik menisküs implant
@@ -16,3 +16,6 @@ rules:
     message_tr: Sentetik menisküs implantları — 3. basamak resmi sunucularda uygulanması şartıyla, 45 yaş altında subtotal
       menisektomi sonrası en az 1 yıl geçmesine rağmen konvansiyonel tedavi ile ağrısı azalmayan vakalarda bedelleri Kurumca
       karşılanır (§3.3.22(1)).
+  superseded_sources:
+  - C003193
+  verification_status: ai_generated_pending_review

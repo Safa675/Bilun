@@ -30,7 +30,10 @@ rules:
       mahsus karşılanır
     billing_method: procedure_package
   gate_b_sources:
+  - C000856
+  superseded_sources:
   - C000855
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.3.(C).pneumococcal_vaccine_5_year_risk_groups
   sut_section: 2.4.3
   condition:

@@ -64,7 +64,10 @@ rules:
     annex_basis: EK-2/C
     severity: error
   gate_b_sources:
+  - C001220
+  superseded_sources:
   - C001207
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.H.(3).icu_pacu_no_icu_fee
   sut_section: 2.4.4.H
   condition:
@@ -148,7 +151,8 @@ rules:
   action:
     billable: true
     payment_uplift_tl_per_day: 60
-    message_tr: e-nabız'a 278 veri paketini gönderen sunuculara EK-2/C yoğun bakım puanlarına günlük 60 TL ilave edilerek ödeme yapılır
+    message_tr: e-nabız'a 278 veri paketini gönderen sunuculara EK-2/C yoğun bakım puanlarına günlük 60 TL ilave edilerek
+      ödeme yapılır
     annex_basis: EK-2/C
   gate_b_sources:
   - C001220
@@ -161,7 +165,8 @@ rules:
   action:
     billable: true
     enforcement: payment_downgrade_one_icu_level
-    message_tr: 278 veri paketini e-nabız'a göndermeyen sunucularda faturalandırılan basamak yerine bir alt basamağın puanı üzerinden ödenir
+    message_tr: 278 veri paketini e-nabız'a göndermeyen sunucularda faturalandırılan basamak yerine bir alt basamağın puanı
+      üzerinden ödenir
     severity: error
   gate_b_sources:
   - C001220

@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.23
   deontic: MUST_BILL
   gate_b_sources:
-  - C003195
+  - C003194
   condition:
     material_name_any:
     - menisküs tamiri
@@ -18,3 +18,6 @@ rules:
     message_tr: Menisküs tamiri ürünleri — 55 yaş altında, eğitim verme yetkisi 3. basamak sunucularda 3 ortopedi uzmanı sağlık
       kurulu raporuyla (Nitinol/Tek Barlı en fazla 1, Çift Barlı en fazla 2 adet) onarılabilir kıkırdak lezyonu veya dejeneratif
       olmayan Zon-1/2 menisküs yırtığı olan vakalarda bedelleri Kurumca karşılanır (§3.3.23(1)).
+  superseded_sources:
+  - C003195
+  verification_status: ai_generated_pending_review

@@ -5,14 +5,12 @@
   "rule_set_id": "drug_indication_4.2.14.C",
   "rules_in_json": 930,
   "section_clause_total": 615,
-  "encoded_clause_count": 415,
+  "encoded_clause_count": 408,
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 8,
+  "tier_c_deferred_count": 12,
   "encoded_clause_ids": [
     "C004934",
-    "C004935",
-    "C004936",
     "C004937",
     "C004938",
     "C004942",
@@ -112,7 +110,6 @@
     "C005103",
     "C005104",
     "C005105",
-    "C005108",
     "C005109",
     "C005111",
     "C005112",
@@ -168,8 +165,6 @@
     "C005223",
     "C005224",
     "C005225",
-    "C005234",
-    "C005235",
     "C005239",
     "C005240",
     "C005241",
@@ -298,7 +293,6 @@
     "C005552",
     "C005553",
     "C005554",
-    "C005555",
     "C005560",
     "C005561",
     "C005562",
@@ -400,7 +394,6 @@
     "C005736",
     "C005737",
     "C005738",
-    "C005739",
     "C005740",
     "C005741",
     "C005742",
@@ -429,9 +422,13 @@
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
+    "C004935",
+    "C004936",
     "C005056",
     "C005151",
     "C005185",
+    "C005234",
+    "C005235",
     "C005244",
     "C005275",
     "C005331",
@@ -450,6 +447,7 @@
     "C005063",
     "C005069",
     "C005075",
+    "C005108",
     "C005110",
     "C005263",
     "C005269",
@@ -461,11 +459,13 @@
     "C005327",
     "C005484",
     "C005488",
+    "C005555",
     "C005591",
     "C005641",
     "C005691",
     "C005692",
-    "C005729"
+    "C005729",
+    "C005739"
   ],
   "non_actionable_clause_ids": [
     "C004947",
@@ -634,7 +634,7 @@
     "C005757",
     "C005763"
   ],
-  "emr_blocked_count": 27,
+  "emr_blocked_count": 30,
   "non_actionable_count": 165,
   "clause_traces": [
     {
@@ -650,29 +650,22 @@
     {
       "clause_id": "C004935",
       "encode_tier": "B",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Mülga: RG-21/03/2018- 30367/ 23-a md. Yürürlük: 01/04/2018) Bevacizumab",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).interleukin2_oncology_board",
-        "4.2.14.C.(1).octreotid_lanreotid_oncology_board",
-        "4.2.14.C.(1).streptozocin_oncology_board"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C004936",
       "encode_tier": "B",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "(Değişik: RG- 26/09/2013- 28777/ 5-a md. Yürürlük: 04/10/2013) Tioguanin",
-      "linked_rule_ids": [
-        "4.2.14.C.(2).anagrelide_board",
-        "4.2.14.C.(2).bortezomib_heme_onc_board",
-        "4.2.14.C.(2).fludarabine_cladribine_board",
-        "4.2.14.C.(2).idarubicin_board",
-        "4.2.14.C.(2).pentostatin_board",
-        "4.2.14.C.(2).talidomid_heme_onc_board",
-        "4.2.14.C.(2).tretinoin_heme_onc_board",
-        "4.2.14.C.alemtuzumab_cll_heme"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C004937",
@@ -969,7 +962,15 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Temozolomid",
       "linked_rule_ids": [
-        "4.2.14.C.(2).azacitidine_mds_board"
+        "4.2.14.C.(2).anagrelide_board",
+        "4.2.14.C.(2).azacitidine_mds_board",
+        "4.2.14.C.(2).bortezomib_heme_onc_board",
+        "4.2.14.C.(2).fludarabine_cladribine_board",
+        "4.2.14.C.(2).idarubicin_board",
+        "4.2.14.C.(2).pentostatin_board",
+        "4.2.14.C.(2).talidomid_heme_onc_board",
+        "4.2.14.C.(2).tretinoin_heme_onc_board",
+        "4.2.14.C.alemtuzumab_cll_heme"
       ]
     },
     {
@@ -1217,6 +1218,7 @@
       "heuristic_inn": "Dasatinib",
       "linked_rule_ids": [
         "4.2.14.C.tier_c.C005020.dasatinib",
+        "4.2.14.C.tier_c_b.C005021.nilotinib",
         "4.2.14.C.tier_c_b.C005024.dasatinib"
       ]
     },
@@ -1431,7 +1433,9 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Temsirolimus",
       "linked_rule_ids": [
-        "4.2.14.C.(3).sorafenib_hcc_rcc_board"
+        "4.2.14.C.(1).panitumumab_crc_board",
+        "4.2.14.C.(3).sorafenib_hcc_rcc_board",
+        "4.2.14.C.nopay_after_cabozantinib_rcc_seq"
       ]
     },
     {
@@ -1797,6 +1801,9 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "4.2.14.C.(1).interleukin2_oncology_board",
+        "4.2.14.C.(1).octreotid_lanreotid_oncology_board",
+        "4.2.14.C.(1).streptozocin_oncology_board",
         "4.2.14.C.(3).pazopanib_rcc_board",
         "4.2.14.C.(3).sirolimus_oncology_board",
         "4.2.14.C.(3).sorafenib_hcc_rcc_board",
@@ -1884,7 +1891,9 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
-        "4.2.14.C.(1).panitumumab_crc_board"
+        "4.2.14.C.(1).panitumumab_crc_board",
+        "4.2.14.C.(1).sonidegib_bcc_board",
+        "4.2.14.C.(1).vismodegib_bcc_board"
       ]
     },
     {
@@ -1899,11 +1908,12 @@
     {
       "clause_id": "C005108",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "emr_blocked",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).panitumumab_crc_board"
-      ]
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
     },
     {
       "clause_id": "C005109",
@@ -2642,21 +2652,22 @@
     {
       "clause_id": "C005234",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.14.C.deontic.C005234"
-      ]
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: prior_therapy. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C005235",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).sonidegib_bcc_board",
-        "4.2.14.C.(1).vismodegib_bcc_board"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C005236",
@@ -4237,7 +4248,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
-        "4.2.14.C.deontic.C005507"
+        "4.2.14.C.deontic.C005507",
+        "4.2.14.C.deontic.C005555"
       ]
     },
     {
@@ -4518,11 +4530,12 @@
     {
       "clause_id": "C005555",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "emr_blocked",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.14.C.deontic.C005555"
-      ]
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
     },
     {
       "clause_id": "C005556",
@@ -5827,11 +5840,14 @@
     {
       "clause_id": "C005739",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "emr_blocked",
       "heuristic_inn": "Nivolumab ve ipilimumab kombinasyonu",
-      "linked_rule_ids": [
-        "4.2.14.C.pembrolizumab_6mo_nsclc"
-      ]
+      "defer_themes": [
+        "ecog",
+        "prior_therapy",
+        "response_assessment"
+      ],
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
     },
     {
       "clause_id": "C005740",
@@ -5848,7 +5864,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
       "linked_rule_ids": [
-        "4.2.14.C.(15).atezolizumab_nsclc_board"
+        "4.2.14.C.(15).atezolizumab_nsclc_board",
+        "4.2.14.C.deontic.C005234"
       ]
     },
     {
@@ -6068,8 +6085,26 @@
   ],
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encode_tier_C_deferred_count": 8,
+  "encode_tier_C_deferred_count": 12,
   "tier_c_manifest": [
+    {
+      "clause_id": "C004935",
+      "encode_tier": "B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
+      "heuristic_inn": "(Mülga: RG-21/03/2018- 30367/ 23-a md. Yürürlük: 01/04/2018) Bevacizumab"
+    },
+    {
+      "clause_id": "C004936",
+      "encode_tier": "B",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
+      "heuristic_inn": "(Değişik: RG- 26/09/2013- 28777/ 5-a md. Yürürlük: 04/10/2013) Tioguanin"
+    },
     {
       "clause_id": "C005056",
       "encode_tier": "C",
@@ -6090,6 +6125,24 @@
     },
     {
       "clause_id": "C005185",
+      "encode_tier": "C",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
+      "heuristic_inn": ""
+    },
+    {
+      "clause_id": "C005234",
+      "encode_tier": "C",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: prior_therapy. Batch encode when EMR/report fields support this pathway.",
+      "heuristic_inn": ""
+    },
+    {
+      "clause_id": "C005235",
       "encode_tier": "C",
       "defer_themes": [
         "clinical_pathway"
@@ -6144,19 +6197,20 @@
     }
   ],
   "tier_c_defer_themes_summary": {
-    "clinical_pathway": 8
+    "clinical_pathway": 11,
+    "prior_therapy": 1
   },
   "emr_blocked_note": "EMR-blocked clauses require clinical assessment (ECOG, mutation panel, response/progression) not available on DrugClaimLine alone.",
-  "tier_c_manifest_note": "A1 repair — 8 tier-C deferred, 27 EMR-blocked, 165 non-actionable; 615 in-force traces (lists synced from traces).",
+  "tier_c_manifest_note": "A1 repair — 12 tier-C deferred, 30 EMR-blocked, 165 non-actionable; 615 in-force traces (lists synced from traces).",
   "a1_coverage_gap": {
     "canonical_count": 615,
     "traced_count": 615,
     "missing_clause_ids": [],
     "extra_clause_ids": [],
-    "encoded_count": 415,
-    "tier_c_deferred_count": 8,
-    "emr_blocked_count": 27,
+    "encoded_count": 408,
+    "tier_c_deferred_count": 12,
+    "emr_blocked_count": 30,
     "gate_b_total": 832
   },
-  "encoded_clause_pct": 67.5
+  "encoded_clause_pct": 66.3
 }

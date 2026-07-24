@@ -63,7 +63,10 @@ rules:
       kadar bedeller ödenmez
     severity: error
   gate_b_sources:
+  - C001261
+  superseded_sources:
   - C001300
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.I-1.(1).ivf_married_no_child_max_3_cycles
   sut_section: 2.4.4.İ-1
   condition:
@@ -95,7 +98,10 @@ rules:
       sonuç alınamamış olduğunun sözleşmeli/protokollü sunucu sağlık kurullarınca belgelenmesi gerekir
     severity: error
   gate_b_sources:
+  - C001292
+  superseded_sources:
   - C001260
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.I-1.(3).ivf_prior_cycles_counted
   sut_section: 2.4.4.İ-1
   condition:

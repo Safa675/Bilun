@@ -13,7 +13,10 @@ rules:
     denial_tr: yurt dışı tedavi süresi raporu geçemez; Kurum onaysız uzatma ödenmez
     severity: error
   gate_b_sources:
+  - C001433
+  superseded_sources:
   - C001431
+  verification_status: ai_generated_pending_review
 - rule_id: 2.5.3.A-2.(4).organ_transplant_wait_in_host_country
   sut_section: 2.5.3.A-2
   condition:

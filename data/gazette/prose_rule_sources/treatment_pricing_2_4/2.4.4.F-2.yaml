@@ -28,7 +28,10 @@ rules:
     denial_tr: fizik tedavi; sağlık raporu tarihinden itibaren 15 gün içinde tedaviye başlanmamışsa ödenmez
     severity: error
   gate_b_sources:
+  - C001025
+  superseded_sources:
   - C001017
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.F-2.(8).physio_report_modification_5d
   sut_section: 2.4.4.F-2
   condition:
@@ -67,7 +70,10 @@ rules:
       olmaksızın, raporlu sağlık kurullarınca (30'ar seanslık rapor koşuluyla) fizik tedavi karşılanır
     annex_basis: EK-2/D-2
   gate_b_sources:
+  - C001032
+  superseded_sources:
   - C001011
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.F-2.(5).physio_annual_region_session_caps
   sut_section: 2.4.4.F-2
   condition:
@@ -85,7 +91,10 @@ rules:
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
+  - C001014
+  superseded_sources:
   - C001015
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.F-2.(5).physio_respiratory_diagnosis_additional_30_sessions
   sut_section: 2.4.4.F-2
   condition:
@@ -103,10 +112,10 @@ rules:
     additional_sessions_beyond_30: true
   action:
     billable: true
-    payment_tr: EK-2/D-2 solunum sistemi tanılarında (cerrahi sonrası tanısı hariç; kronik pulmoner yetmezlik), hastanın
-      klinik tablosunun tedavinin sürdürülmesini gerektirmesi halinde, en az bir fiziksel tıp ve rehabilitasyon uzman hekiminin
-      yer aldığı sağlık kurulu raporu ve tedavinin Sağlık Bakanlığı/devlet üniversitesi sunucularında verilmesi kaydıyla her
-      yıl için 30 seansa ek olarak 30 seans daha faturalandırılabilir; raporda uygulanacak tedavi ve tedavi süresi belirtilmelidir
+    payment_tr: EK-2/D-2 solunum sistemi tanılarında (cerrahi sonrası tanısı hariç; kronik pulmoner yetmezlik), hastanın klinik
+      tablosunun tedavinin sürdürülmesini gerektirmesi halinde, en az bir fiziksel tıp ve rehabilitasyon uzman hekiminin yer
+      aldığı sağlık kurulu raporu ve tedavinin Sağlık Bakanlığı/devlet üniversitesi sunucularında verilmesi kaydıyla her yıl
+      için 30 seansa ek olarak 30 seans daha faturalandırılabilir; raporda uygulanacak tedavi ve tedavi süresi belirtilmelidir
     annex_basis: EK-2/D-2
   gate_b_sources:
   - C001394
@@ -125,7 +134,10 @@ rules:
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
+  - C001025
+  superseded_sources:
   - C001016
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.F-2.(9).inpatient_physio_concomitant_services_fee_for_service
   sut_section: 2.4.4.F-2
   condition:
@@ -183,7 +195,10 @@ rules:
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
+  - C001024
+  superseded_sources:
   - C001028
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.F-2.(12).disaster_provision_amputation_fracture_additional_30
   sut_section: 2.4.4.F-2
   condition:

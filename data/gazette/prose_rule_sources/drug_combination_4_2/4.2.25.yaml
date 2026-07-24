@@ -13,4 +13,7 @@ rules:
     billable: true
     payment_tr: pregabalin 2./3. basamak sunucularında reçete edilir
   gate_b_sources:
+  - C006199
+  superseded_sources:
   - C006200
+  verification_status: ai_generated_pending_review

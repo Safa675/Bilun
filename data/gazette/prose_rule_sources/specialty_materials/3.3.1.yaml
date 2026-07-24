@@ -182,7 +182,7 @@ rules:
   deontic: MUST_BILL
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C002857
+  - C002853
   condition:
     material_name_any:
     - dermis iskeleti
@@ -193,12 +193,14 @@ rules:
     severity: info
     message_tr: Dermis iskeleti tam kat dermis hasarli 3. derece yaniklarda yuz/boyun/el/ayak/perine/eklem bölgelerini içeren
       veya toplamin %40i 0-12 yas %20 astigi yaniklarda yanik merkezi ve 3. basamak saglik kurulu raporuyla karsilanir
+  superseded_sources:
+  - C002857
 - rule_id: 3.3.1.(9).b.deri_benzerleri_burn_coverage_must_bill
   sut_section: 3.3.1
   deontic: MUST_BILL
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C002858
+  - C002842
   condition:
     material_name_any:
     - deri benzeri
@@ -209,3 +211,5 @@ rules:
     severity: info
     message_tr: Deri benzerleri derin 2. ve veya 3. derece yaniklarda enfeksiyon kontaminasyondan koruma amaciyla %40i 0-12
       yas %20 gecen yaniklarda yanik ünitesi merkezi saglik kurulu raporuyla karsilanir
+  superseded_sources:
+  - C002858

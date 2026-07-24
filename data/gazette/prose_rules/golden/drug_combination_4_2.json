@@ -7,9 +7,9 @@
       "encode_batch": "D42-1"
     },
     {
-      "clause_id": "C003605",
+      "clause_id": "C003610",
       "expected_rule_id": "4.2.1.C-1.(2).as_nsaid_failure_required",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
       "clause_id": "C003831",
@@ -72,9 +72,9 @@
       "encode_batch": "D42-1"
     },
     {
-      "clause_id": "C005054",
+      "clause_id": "C005049",
       "expected_rule_id": "4.2.14.C.(renal).temsirolimus_poor_prognosis_3of6",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
       "clause_id": "C005064",
@@ -257,9 +257,9 @@
       "encode_batch": "D42-1"
     },
     {
-      "clause_id": "C006200",
+      "clause_id": "C006199",
       "expected_rule_id": "4.2.25.(3).pregabalin_2nd_3rd_step",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
       "clause_id": "C006343",

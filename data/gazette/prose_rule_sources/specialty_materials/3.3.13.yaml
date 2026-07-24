@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.13
   deontic: MUST_BILL
   gate_b_sources:
-  - C003151
+  - C003150
   condition:
     material_name_any:
     - kıkırdak hücre kültürü
@@ -17,3 +17,6 @@ rules:
     message_tr: Kıkırdak hücre kültürleri — EK-2/B 612731/612975 ve EK-2/C P612731/P612975 kodlarıyla birlikte, eğitim verme
       yetkisi olan 3. basamak resmi sunucularda ve Ortopedi Bilimsel Danışma Kurulundan her hasta için onay alınması şartıyla
       bedelleri Kurumca karşılanır (§3.3.13(1)).
+  superseded_sources:
+  - C003151
+  verification_status: ai_generated_pending_review

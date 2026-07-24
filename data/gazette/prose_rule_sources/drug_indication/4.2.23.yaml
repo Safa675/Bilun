@@ -1,4 +1,5 @@
 section_id: 4.2.23
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.23.itraconazole_oral_ek4e_105
   sut_section: 4.2.23
@@ -35,7 +36,7 @@ rules:
 - rule_id: 4.2.23.posaconazole_parenteral_oral_unable
   sut_section: 4.2.23
   gate_b_sources:
-  - C006096
+  - C006093
   drug_names:
   - posakonazol
   report_required: true
@@ -44,6 +45,9 @@ rules:
       mantar enfeksiyonu profilaksisi endikasyonu
     message_tr: Belirtilen hastalardaki invazif mantar enfeksiyonlarının profilaksisinde kullanılır. Posakonazol'ün parenteral
       formları yalnızca oral formlarını kullanamayan hastalarda kullanılabilir (§4.2.23).
+  superseded_sources:
+  - C006096
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.23.systemic_fungal_infection_coverage
   sut_section: 4.2.23
   gate_b_sources:
@@ -74,4 +78,3 @@ rules:
       karşılanır
     message_tr: Bu maddede belirtilen etken maddeli ilaçların sistemik mantar enfeksiyonları tedavisinde kullanılması halinde
       bedelleri Kurumca karşılanır (§4.2.23).
-source_note: Exported from drug_indication_prose.json (YAML source migration)

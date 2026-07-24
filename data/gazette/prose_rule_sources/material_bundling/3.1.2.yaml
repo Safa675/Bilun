@@ -262,7 +262,7 @@ rules:
   gate_b_sources:
   - C002759
   - C002719
-  - C002753
+  - C002756
   - C002760
   - C002764
   - C002761
@@ -278,6 +278,9 @@ rules:
     material_outcome: review_required
     severity: warning
     message_tr: Malzeme sağlık raporu/reçete süresi veya basamak şartı sağlanmıyor (§3.1.2 / §3.1.2.2).
+  superseded_sources:
+  - C002753
+  verification_status: ai_generated_pending_review
 - rule_id: 3.1.2.b.material_invoice_documentation_incomplete
   sut_section: 3.1.2
   deontic: NO_PAY

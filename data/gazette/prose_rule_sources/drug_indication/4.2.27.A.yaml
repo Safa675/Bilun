@@ -1,10 +1,8 @@
 section_id: 4.2.27.A
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.27.A.acquired_coagulopathy_bleed_report_free
   sut_section: 4.2.27.A
-  icd10_ranges:
-  - D65
-  - D68
   gate_b_sources:
   - C006235
   - C006244
@@ -30,11 +28,11 @@ rules:
       kanamalarda kanama yeri belirtilmek koşuluyla uzmanlarca yatan/acil müracaatta rapor aranmaksızın en fazla bir günlük
       dozda reçete edilirse bedeli Kurumca karşılanır; bir günden uzun tedavide ≤3 gün süreli hematoloji (yoksa dahiliye/çocuk
       sağlığı dahil) raporuyla ödenir, tedavinin devamı durumunda hematoloji uzmanı bulunan hastaneye sevk edilir (§4.2.27.A).
-- rule_id: 4.2.27.A.coumarin_noac_bleed_report_free
-  sut_section: 4.2.27.A
   icd10_ranges:
   - D65
   - D68
+- rule_id: 4.2.27.A.coumarin_noac_bleed_report_free
+  sut_section: 4.2.27.A
   gate_b_sources:
   - C006243
   - C006246
@@ -61,6 +59,9 @@ rules:
       fazla bir günlük dozda reçete edilirse bedeli Kurumca karşılanır; bir günden uzun tedavide kanamanın devam ettiğini
       bildiren günlük dozlu en fazla üç gün süreli hematoloji uzmanı (yoksa dahiliye/çocuk sağlığı uzmanı içeren sağlık kurulu)
       raporuyla ödenir (§4.2.27.A).
+  icd10_ranges:
+  - D65
+  - D68
 - rule_id: 4.2.27.A.emicizumab_dosing_schedule
   sut_section: 4.2.27.A
   gate_b_sources:
@@ -236,7 +237,7 @@ rules:
     hastalıkları/çocuk sağlığı uzman reçetesi (§4.2.27.A).
   gate_b_sources:
   - C006210
-  - C006225
+  - C006255
   - C006232
   - C006233
   - C006247
@@ -247,6 +248,9 @@ rules:
   - hematoloji
   - iç hastalıkları
   - çocuk sağlığı
+  superseded_sources:
+  - C006225
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.27.coumarin_active_bleed_one_day
   sut_section: 4.2.27.A
   drug_names:
@@ -301,7 +305,7 @@ rules:
   message_tr: Koagülasyon faktörü — 1 yıllık sağlık kurulu raporu; ilk rapor üçüncü basamak resmi sağlık kurumunda düzenlenmeli
     (§4.2.27.A).
   gate_b_sources:
-  - C006225
+  - C006255
   report_required: true
   report_specialties:
   - hematoloji
@@ -310,6 +314,9 @@ rules:
   - hematoloji
   - iç hastalıkları
   - çocuk sağlığı
+  superseded_sources:
+  - C006225
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.27.factor_seven_a_bleeding_board
   sut_section: 4.2.27.A
   drug_names:
@@ -517,4 +524,3 @@ rules:
   report_specialties:
   - hematoloji
   report_duration_months: 6
-source_note: Exported from drug_indication_prose.json (YAML source migration)

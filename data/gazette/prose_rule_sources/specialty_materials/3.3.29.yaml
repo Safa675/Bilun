@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.29
   deontic: MUST_BILL
   gate_b_sources:
-  - C003270
+  - C003269
   condition:
     material_name_any:
     - hücresiz menisküs implant
@@ -15,3 +15,6 @@ rules:
     severity: info
     message_tr: Hücresiz menisküs implantları — eğitim verme yetkisi olan 3. basamak resmi sunucularda işlem başına en fazla
       1 adet kullanıldığında bedeli Kurumca karşılanır (§3.3.29(1)).
+  superseded_sources:
+  - C003270
+  verification_status: ai_generated_pending_review

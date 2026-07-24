@@ -1,4 +1,5 @@
 section_id: 4.2.14.C
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.14.C.(1).aflibercept_crc_board
   sut_section: 4.2.14.C
@@ -143,7 +144,10 @@ rules:
   - tıbbi onkoloji
   message_tr: Interleukin-2 — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1)).
   gate_b_sources:
+  - C005095
+  superseded_sources:
   - C004935
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(1).kabazitaxel_prostate_board
   sut_section: 4.2.14.C
   drug_names:
@@ -200,7 +204,10 @@ rules:
   - tıbbi onkoloji
   message_tr: Octreotid/lanreotid — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1)).
   gate_b_sources:
+  - C005095
+  superseded_sources:
   - C004935
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(1).paclitaxel_oncology_board
   sut_section: 4.2.14.C
   drug_names:
@@ -229,8 +236,11 @@ rules:
   gate_b_sources:
   - C005104
   - C005105
-  - C005108
+  - C005049
   - C005109
+  superseded_sources:
+  - C005108
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(1).pertuzumab_her2_board
   sut_section: 4.2.14.C
   drug_names:
@@ -268,7 +278,10 @@ rules:
   - tıbbi onkoloji
   message_tr: Sonidegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
+  - C005104
+  superseded_sources:
   - C005235
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(1).streptozocin_oncology_board
   sut_section: 4.2.14.C
   drug_names:
@@ -281,7 +294,10 @@ rules:
   - tıbbi onkoloji
   message_tr: Streptozosin — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1)).
   gate_b_sources:
+  - C005095
+  superseded_sources:
   - C004935
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(1).temozolomide_oncology_board
   sut_section: 4.2.14.C
   drug_names:
@@ -324,11 +340,13 @@ rules:
   gate_b_sources:
   - C004927
   - C004928
-  - C004929
   - C004930
   - C004932
   - C005276
   - C005278
+  superseded_sources:
+  - C004929
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(1).vismodegib_bcc_board
   sut_section: 4.2.14.C
   drug_names:
@@ -340,7 +358,10 @@ rules:
   - tıbbi onkoloji
   message_tr: Vismodegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
+  - C005104
+  superseded_sources:
   - C005235
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(1).zoledronate_oncology_board
   sut_section: 4.2.14.C
   drug_names:
@@ -535,7 +556,10 @@ rules:
   - hematoloji
   message_tr: Anagrelid — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).
   gate_b_sources:
+  - C004985
+  superseded_sources:
   - C004936
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(2).azacitidine_mds_board
   sut_section: 4.2.14.C
   drug_names:
@@ -585,7 +609,10 @@ rules:
   - hematoloji
   message_tr: Bortezomib — hematoloji ve/veya tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).
   gate_b_sources:
+  - C004985
+  superseded_sources:
   - C004936
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(2).daratumumab_mm_board
   sut_section: 4.2.14.C
   drug_names:
@@ -671,8 +698,11 @@ rules:
   - hematoloji
   message_tr: Fludarabin/kladribin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).
   gate_b_sources:
-  - C004936
   - C004976
+  - C004985
+  superseded_sources:
+  - C004936
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(2).gilteritinib_aml_board
   sut_section: 4.2.14.C
   drug_names:
@@ -702,7 +732,10 @@ rules:
   - hematoloji
   message_tr: İdarubisin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).
   gate_b_sources:
+  - C004985
+  superseded_sources:
   - C004936
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(2).lenalidomide_mm_board
   sut_section: 4.2.14.C
   drug_names:
@@ -781,7 +814,10 @@ rules:
   - hematoloji
   message_tr: Pentostatin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).
   gate_b_sources:
+  - C004985
+  superseded_sources:
   - C004936
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(2).pomalidomide_mm_board
   sut_section: 4.2.14.C
   drug_names:
@@ -832,7 +868,10 @@ rules:
   - hematoloji
   message_tr: Talidomid — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).
   gate_b_sources:
+  - C004985
+  superseded_sources:
   - C004936
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(2).tretinoin_heme_onc_board
   sut_section: 4.2.14.C
   drug_names:
@@ -846,7 +885,10 @@ rules:
   - hematoloji
   message_tr: Tretinoin — hematoloji/tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(2)).
   gate_b_sources:
+  - C004985
+  superseded_sources:
   - C004936
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(3).abiraterone_prostate_board
   sut_section: 4.2.14.C
   drug_names:
@@ -1268,8 +1310,11 @@ rules:
   - hematoloji
   - tıbbi onkoloji
   gate_b_sources:
-  - C004936
   - C004938
+  - C004985
+  superseded_sources:
+  - C004936
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.arsenic_trioxide_apl
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2056,13 +2101,15 @@ rules:
   - C004923
   - C004927
   - C004928
-  - C004929
   - C004930
   - C004932
   - C005271
   - C005274
   - C005276
   - C005278
+  superseded_sources:
+  - C004929
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.mifamurtide_osteosarcoma_board
   sut_section: 4.2.14.C
   drug_names:
@@ -2205,6 +2252,7 @@ rules:
 - rule_id: 4.2.14.C.nopay_after_cabozantinib_rcc_seq
   sut_section: 4.2.14.C
   gate_b_sources:
+  - C005049
   - C005054
   - C005064
   - C005111
@@ -2219,6 +2267,9 @@ rules:
     enforcement: 'no-pay: temsirolimus/sunitinib/sorafenib/pazopanib sequential/combination after cabozantinib progression'
     message_tr: Kabozantinib tedavisinden sonra progresyon gelişenlerde ardışık ya da kombine temsirolimus, sunitinib, sorafenib
       veya pazopanib kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.14.C 3).
+  superseded_sources:
+  - C005054
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.nopay_after_lorlatinib_alk_seq
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2464,9 +2515,11 @@ rules:
   - C005736
   - C005737
   - C005738
-  - C005739
   - C005740
   - C005754
+  superseded_sources:
+  - C005739
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.pemetrexed_mesothelioma_board
   sut_section: 4.2.14.C
   drug_names:
@@ -2872,6 +2925,7 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005016
+  - C005024
   - C005025
   - C005029
   - C005644
@@ -2885,6 +2939,9 @@ rules:
   requires_prior_therapy:
     drug_or_class: prior_therapy
     outcome: resistant
+  superseded_sources:
+  - C005025
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.tier_c_b.C005024.dasatinib
   sut_section: 4.2.14.C
   drug_names:
@@ -2899,7 +2956,6 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005024
-  - C005025
   - C005043
   message_tr: 1) Dasatinib; imatinib dahil önceki tedavilere dirençli veya intolere (aşağıdaki 4. ve 5. maddede belirtilen
     koşullarda), Philadelphia kromozomu pozitif kronik, hızlanmış veya blastik evre kronik miye
@@ -2911,6 +2967,9 @@ rules:
   requires_prior_therapy:
     drug_or_class: imatinib
     outcome: resistant_or_intolerant
+  superseded_sources:
+  - C005025
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.tier_c_b.C005043.bosutinib
   sut_section: 4.2.14.C
   drug_names:
@@ -3320,11 +3379,13 @@ rules:
   gate_b_sources:
   - C004927
   - C004928
-  - C004929
   - C004930
   - C004932
   - C005276
   - C005278
+  superseded_sources:
+  - C004929
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.trastuzumab_metastatic_prescriber_oncology
   sut_section: 4.2.14.C
   drug_names:
@@ -3340,11 +3401,13 @@ rules:
   gate_b_sources:
   - C004927
   - C004928
-  - C004929
   - C004930
   - C004932
   - C005276
   - C005278
+  superseded_sources:
+  - C004929
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.deontic.C005098
   sut_section: 4.2.14.C
   drug_names:
@@ -3591,7 +3654,7 @@ rules:
     kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır. (Mülga:RG-25/08/2022-31934/27-d
     md. Yürürlük:03/09/2022) (§4.2.14.C deontic encode).'
   gate_b_sources:
-  - C005234
+  - C005741
   icd10_codes:
   - C81
   - C82
@@ -3604,6 +3667,9 @@ rules:
   report_specialties:
   - tıbbi onkoloji
   - hematoloji
+  superseded_sources:
+  - C005234
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.deontic.C005239
   sut_section: 4.2.14.C
   drug_names:
@@ -3959,13 +4025,16 @@ rules:
     tedavinin devamı için yapılan değerlendirmede hastalığın stabil kaldığı veya en az kısmi yanıtın alınmış olduğu yeni düzenlenecek
     rapo… (§4.2.14.C deontic encode).'
   gate_b_sources:
-  - C005555
+  - C005507
   icd10_ranges:
   - C00-C97
   report_required: true
   report_specialties:
   - tıbbi onkoloji
   - hematoloji
+  superseded_sources:
+  - C005555
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.deontic.C005560
   sut_section: 4.2.14.C
   drug_names:
@@ -4414,9 +4483,9 @@ rules:
     coverage_note: true
   action:
     billable: true
-    enforcement: 'PNH: ≥10 kg çocuk/yetişkin, 7 kriterden en az biri (FLAER granülosit klonu >%1 + LDH >1,5xNÜS kronik
-      hemoliz vb.); transplantasyon öncesi/kök hücre nakli sonrası/komplikasyon/gebe bentleri için Bakanlık endikasyon dışı
-      onay; üçüncü basamakta en az bir hematoloji uzmanının yer aldığı ≤6 ay süreli sağlık kurulu raporu; hematoloji uzmanlarınca
+    enforcement: 'PNH: ≥10 kg çocuk/yetişkin, 7 kriterden en az biri (FLAER granülosit klonu >%1 + LDH >1,5xNÜS kronik hemoliz
+      vb.); transplantasyon öncesi/kök hücre nakli sonrası/komplikasyon/gebe bentleri için Bakanlık endikasyon dışı onay;
+      üçüncü basamakta en az bir hematoloji uzmanının yer aldığı ≤6 ay süreli sağlık kurulu raporu; hematoloji uzmanlarınca
       reçete'
     message_tr: Ravulizumab — Paroksismal Noktürnal Hemoglobinüri (PNH) tedavisinde vücut ağırlığı 10 kg ve üzerindeki çocuk
       ve yetişkin hastalarda kriterlerden en az birinin karşılanması halinde, üçüncü basamak sağlık hizmeti sunucusunda en
@@ -4514,8 +4583,8 @@ rules:
     billable: false
     enforcement: NMOSB 6 aylık tedavi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS her sağlık kurulu raporunda
       belirtilmelidir
-    message_tr: NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS her
-      sağlık kurulu raporunda belirtilmelidir (§4.2.14.C yyy/2-b).
+    message_tr: NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS
+      her sağlık kurulu raporunda belirtilmelidir (§4.2.14.C yyy/2-b).
 - rule_id: 4.2.14.C.ravulizumab_meningococcal_vaccination
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
@@ -4525,11 +4594,10 @@ rules:
   - C008286
   action:
     billable: true
-    enforcement: 'tedaviden 2 hafta önce meningokok bağışıklaması tamamlanmış + Ravulizumab Kullanımı İçin Bilgilendirilmiş
+    enforcement: tedaviden 2 hafta önce meningokok bağışıklaması tamamlanmış + Ravulizumab Kullanımı İçin Bilgilendirilmiş
       Hasta Olur Formu reçete ekinde; 2 yaş altı veya bağışıklamayı takiben 2 hafta geçmeden başlanması gerekenlerde antibiyotik
-      profilaksisi reçetede belirtilmeli'
+      profilaksisi reçetede belirtilmeli
     message_tr: Ravulizumab tedavisine başlamadan iki hafta önce meningokok bağışıklaması tamamlanmış ve Ravulizumab Kullanımı
       İçin Bilgilendirilmiş Hasta Olur Formu tedaviyi yürüten hekim tarafından düzenlenerek reçete ekine konmuş olmalıdır;
       iki yaşından küçük çocuklarda veya bağışıklamayı takiben iki hafta geçmeden ravulizumab başlanması gereken olgularda
       antibiyotik profilaksisi uygulanmış olduğu reçetede belirtilmelidir (§4.2.14.C yyy/3).
-source_note: Exported from drug_indication_prose.json (YAML source migration)

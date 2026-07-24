@@ -52,7 +52,7 @@
       "encode_batch": null
     },
     {
-      "clause_id": "C001513",
+      "clause_id": "C001503",
       "expected_rule_id": "2.6.1.B.(7).non_medula_facility_wet_signature",
       "encode_batch": null
     },
@@ -97,7 +97,7 @@
       "encode_batch": null
     },
     {
-      "clause_id": "C001547",
+      "clause_id": "C001548",
       "expected_rule_id": "2.6.1.B-4.(4).scheduled_air_economy_plus_boarding",
       "encode_batch": null
     },
@@ -152,7 +152,7 @@
       "encode_batch": null
     },
     {
-      "clause_id": "C001571",
+      "clause_id": "C001572",
       "expected_rule_id": "2.6.3.(1).companion_one_person_documentation",
       "encode_batch": null
     },

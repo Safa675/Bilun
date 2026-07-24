@@ -40,8 +40,11 @@ rules:
   message_tr: Bevacizumab — ranibizumab/aflibersept arasında ilaç değişimi gereken hallerde tedaviye bevacizumab ile devam;
     göz hastalıkları raporu (§4.2.33/7).
   gate_b_sources:
-  - C006549
+  - C006553
   loading_dose_count: 3
+  superseded_sources:
+  - C006549
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.33.same_eye_combination_no_pay
   sut_section: 4.2.33
   deontic: NO_PAY
@@ -51,8 +54,8 @@ rules:
   gate_b_sources:
   - C006530
   verification_status: ai_generated_pending_review
-  content_note: 'Same-eye combination of §4.2.33 anti-VEGF/ITV agents is a hard no-pay; different-eye use is explicitly allowed.
-    Previously only mentioned in prose inside the YAŞ-AMD ranibizumab message, not encoded as its own rule.'
+  content_note: Same-eye combination of §4.2.33 anti-VEGF/ITV agents is a hard no-pay; different-eye use is explicitly allowed.
+    Previously only mentioned in prose inside the YAŞ-AMD ranibizumab message, not encoded as its own rule.
 - rule_id: 4.2.33.incomplete_loading_switch_no_pay
   sut_section: 4.2.33
   deontic: NO_PAY
@@ -79,8 +82,8 @@ rules:
   report_duration_months: 1
   prescriber_specialties:
   - göz hastalıkları
-  message_tr: İdame tedavilerde yükleme dozu (3 doz) sonrası bevacizumab için göz hastalıkları uzman hekimi tarafından 1
-    ay süreli tek hekim raporu ile günübirlik tedavi (§4.2.33/b). Deksametazon ITV implant ve verteporfin bu idame kapsamı dışındadır.
+  message_tr: İdame tedavilerde yükleme dozu (3 doz) sonrası bevacizumab için göz hastalıkları uzman hekimi tarafından 1 ay
+    süreli tek hekim raporu ile günübirlik tedavi (§4.2.33/b). Deksametazon ITV implant ve verteporfin bu idame kapsamı dışındadır.
   gate_b_sources:
   - C006528
   verification_status: ai_generated_pending_review
@@ -109,7 +112,8 @@ rules:
   max_applications_per_year: 4
   min_gap_months_after_antivegf: 1
   message_tr: Deksametazon intravitreal implant, anti-VEGF ilaçların uygulamasını takiben en erken 1 ay sonra kullanılmak
-    kaydıyla yılda en fazla 4 defa kullanılması halinde Kurumca karşılanır (§4.2.33/(10)). Aynı göze ardışık uygulama kuralları saklıdır.
+    kaydıyla yılda en fazla 4 defa kullanılması halinde Kurumca karşılanır (§4.2.33/(10)). Aynı göze ardışık uygulama kuralları
+    saklıdır.
   gate_b_sources:
   - C006556
   verification_status: ai_generated_pending_review
@@ -142,8 +146,10 @@ rules:
     durumunda, bu durum sağlık raporunda belirtildiği takdirde deksametazon intravitreal implant KULLANILMAKSIZIN ranibizumab
     veya aflibersept ile tedaviye devam edilebilir (§4.2.33/(11)).
   gate_b_sources:
-  - C006557
+  - C006553
   verification_status: ai_generated_pending_review
   content_note: 'Partially-struck clause — only the leading "(Mülga...) Retinal ven tıkanıklığı" title phrase was repealed;
     the operative permission text is in-force. MODIFIES the §4.2.33.B deksametazon-RVT path: when glaucoma coexists, deksametazon
     ITV must NOT be used — switch to ranibizumab/aflibersept. Needs human confirmation of the strike scope.'
+  superseded_sources:
+  - C006557

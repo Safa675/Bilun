@@ -61,7 +61,6 @@
     "C002749",
     "C002750",
     "C002751",
-    "C002753",
     "C002756",
     "C002758",
     "C002759",
@@ -110,7 +109,7 @@
     "C002836",
     "C008292"
   ],
-  "encoded_clause_count": 106,
+  "encoded_clause_count": 105,
   "gate_b_deferred_clause_ids": [],
   "kdv_pricing_clause_ids": [
     "C002692"

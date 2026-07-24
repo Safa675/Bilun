@@ -14,7 +14,10 @@ rules:
       dahildir
     severity: error
   gate_b_sources:
+  - C001239
+  superseded_sources:
   - C001242
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.I.(2).ophthalmology_outpatient_daily_exam_cap_45
   sut_section: 2.4.4.I
   condition:
@@ -32,7 +35,10 @@ rules:
     annex_basis: EK-2/C
     severity: error
   gate_b_sources:
+  - C001239
+  superseded_sources:
   - C001241
+  verification_status: ai_generated_pending_review
 - rule_id: 2.4.4.I.(3).ophthalmology_15day_revisit_ek2a2_only
   sut_section: 2.4.4.I
   condition:
@@ -50,4 +56,7 @@ rules:
     annex_basis: EK-2/A-2
     severity: error
   gate_b_sources:
+  - C001239
+  superseded_sources:
   - C001242
+  verification_status: ai_generated_pending_review

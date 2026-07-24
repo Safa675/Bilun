@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.33.A
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003306
+  - C003307
   condition:
     auditory_implant_non_third_step_facility: true
   action:
@@ -13,3 +13,6 @@ rules:
     severity: warning
     message_tr: İşitsel implantlar yalnızca 3. basamak resmi sunucu veya vakıf protokollü özel hastanede uygulandığında Kurumca
       karşılanır (§3.3.33.A(1)).
+  superseded_sources:
+  - C003306
+  verification_status: ai_generated_pending_review

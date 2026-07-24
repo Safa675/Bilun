@@ -17,4 +17,7 @@ rules:
     denial_tr: epidermolizis bülloza yara bakımı 3. basamak resmi sunucularca yapılmalı
     severity: error
   gate_b_sources:
+  - C001365
+  superseded_sources:
   - C001366
+  verification_status: ai_generated_pending_review

@@ -20,4 +20,7 @@ rules:
       biyolojik başlanamaz
     severity: error
   gate_b_sources:
+  - C003610
+  superseded_sources:
   - C003605
+  verification_status: ai_generated_pending_review

@@ -5,7 +5,7 @@
   "effective_date": "2026-06-29",
   "rules_in_json": 55,
   "section_clause_total": 128,
-  "encoded_clause_count": 65,
+  "encoded_clause_count": 62,
   "encoded_clause_ids": [
     "C004113",
     "C004125",
@@ -18,7 +18,6 @@
     "C004133",
     "C004134",
     "C004136",
-    "C004137",
     "C004141",
     "C004147",
     "C004151",
@@ -35,7 +34,6 @@
     "C004204",
     "C004205",
     "C006210",
-    "C006225",
     "C006227",
     "C006228",
     "C006232",
@@ -63,7 +61,6 @@
     "C006271",
     "C006272",
     "C006274",
-    "C006275",
     "C006286",
     "C006287",
     "C006290",
@@ -78,7 +75,9 @@
     "C004119",
     "C004121",
     "C004122",
-    "C004160"
+    "C004137",
+    "C004160",
+    "C006225"
   ],
   "tier_b_pending_clause_ids": [
     "C004117"
@@ -129,6 +128,7 @@
     "C006266",
     "C006270",
     "C006273",
+    "C006275",
     "C006276",
     "C006277",
     "C006284",
@@ -144,9 +144,9 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 5,
+  "tier_a_pending_count": 7,
   "tier_b_pending_count": 1,
-  "tier_c_deferred_count": 57,
+  "tier_c_deferred_count": 58,
   "clause_traces": [
     {
       "clause_id": "C004113",
@@ -370,11 +370,8 @@
       "clause_id": "C004137",
       "section_id": "4.2.9.A-2",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Hemoglobin değeri 11 gr/dl'nin",
-      "linked_rule_ids": [
-        "4.2.9.mds_esa_hematology_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Hemoglobin değeri 11 gr/dl'nin"
     },
     {
       "clause_id": "C004141",
@@ -801,12 +798,8 @@
       "clause_id": "C006225",
       "section_id": "4.2.27.A",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Hastanın tanısı",
-      "linked_rule_ids": [
-        "4.2.27.coagulation_factor_board_report",
-        "4.2.27.factor_annual_board_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Hastanın tanısı"
     },
     {
       "clause_id": "C006226",
@@ -1062,6 +1055,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Von Willebrand Faktör: Hastanın tanısı",
       "linked_rule_ids": [
+        "4.2.27.coagulation_factor_board_report",
+        "4.2.27.factor_annual_board_report",
         "4.2.27.vwf_factor_board_report"
       ]
     },
@@ -1259,6 +1254,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Human albümin preparatları",
       "linked_rule_ids": [
+        "4.2.27.C.albumin_inpatient_3day_report",
         "4.2.27.human_albumin_inpatient_hypoalbuminemia"
       ]
     },
@@ -1266,11 +1262,12 @@
       "clause_id": "C006275",
       "section_id": "4.2.27.Ç",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.27.C.albumin_inpatient_3day_report"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C006276",
@@ -1493,8 +1490,8 @@
   "section_4.2.27_tier_c_count": 49,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 57,
+  "encode_tier_C_deferred_count": 58,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 50.8
+  "encoded_clause_pct": 48.4
 }

@@ -33,7 +33,7 @@ rules:
   sut_section: 3.3.12
   deontic: MUST_BILL
   gate_b_sources:
-  - C003148
+  - C003147
   condition:
     material_name_any:
     - kulak kepçesi protezi
@@ -43,11 +43,14 @@ rules:
     severity: info
     message_tr: Kulak kepçesi protezi — 3. basamak resmi sunucularda sağlık kurulu raporuna istinaden kulak burun boğaz veya
       plastik rekonstrüktif ve estetik cerrahi hekimlerince uygulanması halinde bedeli Kurumca karşılanır (§3.3.12(1)).
+  superseded_sources:
+  - C003148
+  verification_status: ai_generated_pending_review
 - rule_id: 3.3.12.(2).kulak_kepecesi_protezi_yenileme_must_bill
   sut_section: 3.3.12
   deontic: MUST_BILL
   gate_b_sources:
-  - C003149
+  - C003147
   condition:
     material_name_any:
     - kulak kepçesi protezi
@@ -58,3 +61,6 @@ rules:
     message_tr: Kulak kepçesi protezi — ilgili dal uzmanlarınca düzenlenen sağlık kurulu raporuna istinaden kulak burun boğaz
       veya plastik rekonstrüktif ve estetik cerrahi hekimlerince gerekli durumlarda yenilenmesi halinde bedeli Kurumca karşılanır
       (§3.3.12(2)).
+  superseded_sources:
+  - C003149
+  verification_status: ai_generated_pending_review

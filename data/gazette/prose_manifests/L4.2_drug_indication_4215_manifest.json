@@ -5,7 +5,7 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 21,
   "section_clause_total": 59,
-  "encoded_clause_count": 18,
+  "encoded_clause_count": 17,
   "encoded_clause_ids": [
     "C005776",
     "C005777",
@@ -20,13 +20,14 @@
     "C005817",
     "C005820",
     "C005831",
-    "C005835",
     "C005859",
     "C005860",
     "C005869",
     "C005870"
   ],
-  "tier_a_pending_clause_ids": [],
+  "tier_a_pending_clause_ids": [
+    "C005835"
+  ],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C005775",
@@ -73,7 +74,7 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 0,
+  "tier_a_pending_count": 1,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 41,
   "clause_traces": [
@@ -446,11 +447,8 @@
       "clause_id": "C005835",
       "section_id": "4.2.15.D-1",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Yukarıda tanımlanan durumların belirtildiği",
-      "linked_rule_ids": [
-        "4.2.15.D_1.three_physician_1yr_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Yukarıda tanımlanan durumların belirtildiği"
     },
     {
       "clause_id": "C005836",
@@ -719,5 +717,5 @@
   "encode_tier_C_deferred_count": 41,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 30.5
+  "encoded_clause_pct": 28.8
 }

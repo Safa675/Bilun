@@ -1,4 +1,5 @@
 section_id: 4.2.13.1
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.13.1.lamivudine_telbivudine_wk24_switch
   sut_section: 4.2.13.1
@@ -141,9 +142,12 @@ rules:
   message_tr: HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu
     yeni raporda belirtilmelidir (§4.2.13.1 (7)).
   gate_b_sources:
-  - C004572
   - C004584
+  - C004587
   - C004624
+  superseded_sources:
+  - C004572
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.13.hbv_antiviral_report_renewal_initiation_f8
   sut_section: 4.2.13.1
   drug_names:
@@ -163,7 +167,10 @@ rules:
   message_tr: HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu
     yeni raporda belirtilmelidir (§4.2.13.1 (8)).
   gate_b_sources:
+  - C004587
+  superseded_sources:
   - C004572
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.13.hbv_dna_initiation_board
   sut_section: 4.2.13.1
   drug_names:
@@ -202,7 +209,10 @@ rules:
   - enfeksiyon hastalıkları
   message_tr: Entekavir — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).
   gate_b_sources:
+  - C004587
+  superseded_sources:
   - C004572
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.13.hbv_lamivudin_board
   sut_section: 4.2.13.1
   drug_names:
@@ -217,7 +227,10 @@ rules:
   - enfeksiyon hastalıkları
   message_tr: Lamivudin — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).
   gate_b_sources:
+  - C004587
+  superseded_sources:
   - C004572
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.13.hbv_oral_antiviral_switch_adult_report
   sut_section: 4.2.13.1
   drug_names:
@@ -293,5 +306,7 @@ rules:
   - enfeksiyon hastalıkları
   message_tr: Tenofovir — kronik HBV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.1).
   gate_b_sources:
+  - C004587
+  superseded_sources:
   - C004572
-source_note: Exported from drug_indication_prose.json (YAML source migration)
+  verification_status: ai_generated_pending_review

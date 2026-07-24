@@ -1,4 +1,5 @@
 section_id: 2.6.1.B
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py
 rules:
 - rule_id: 2.6.1.B.(3).referral_form_vehicle_required
   sut_section: 2.6.1.B
@@ -24,7 +25,7 @@ rules:
 - rule_id: 2.6.1.B.(7).non_medula_facility_wet_signature
   sut_section: 2.6.1.B
   gate_b_sources:
-  - C001513
+  - C001503
   condition:
     definition_scope: MEDULA altyapısı olmayan sunucularda elektronik kabul yapılamaması halinde ıslak imza
     applies_to: 1. basamak/diyaliz/kaplıca vb. MEDULA'sız sunucular
@@ -32,4 +33,6 @@ rules:
     enforcement: gate
     message_tr: MEDULA olmayan sunucuda elektronik kabul yapılamazsa ilgili hekimce başvuru/ayrılış, tedavi, istirahat ve
       refakat bilgileri ıslak imza ile onaylanmalıdır.
-source_note: Migrated from definitions_2_6_wave1*_batch_rules.py
+  superseded_sources:
+  - C001513
+  verification_status: ai_generated_pending_review

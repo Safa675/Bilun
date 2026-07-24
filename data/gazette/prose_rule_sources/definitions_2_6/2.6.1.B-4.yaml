@@ -1,4 +1,5 @@
 section_id: 2.6.1.B-4
+source_note: Migrated from definitions_2_6_wave1*_batch_rules.py
 rules:
 - rule_id: 2.6.1.B-4.(1).non_routine_invoice_required
   sut_section: 2.6.1.B-4
@@ -24,7 +25,7 @@ rules:
 - rule_id: 2.6.1.B-4.(4).scheduled_air_economy_plus_boarding
   sut_section: 2.6.1.B-4
   gate_b_sources:
-  - C001547
+  - C001548
   condition:
     definition_scope: Tarifeli uçak için ekonomi sınıf bedeli + uçak seyahatini teyitleme (biniş/QR)
     applies_to: Uçak ile sevk
@@ -32,6 +33,9 @@ rules:
     enforcement: gate
     message_tr: Tarifeli uçak için ibraz edilen bilet/fatura tutarı ekonomi sınıf bedeli üzerinden ödenir; uçak sevklerinde
       fatura/bilet yanında biniş kartı veya eşleşen QR çıktısı ibraz edilmelidir.
+  superseded_sources:
+  - C001547
+  verification_status: ai_generated_pending_review
 - rule_id: 2.6.1.B-4.(5).ground_ambulance_min_price
   sut_section: 2.6.1.B-4
   gate_b_sources:
@@ -106,4 +110,3 @@ rules:
     enforcement: gate
     message_tr: Ambulans ücretleri (gidiş-dönüş, saat başına, KDV hariç) — turbo-prop uçak 2.000 TL, jet 3.500 TL, tek motorlu
       helikopter 1.500 TL, çift motorlu helikopter 2.750 TL, deniz ambulansı 1.500 TL üzerinden ödenir.
-source_note: Migrated from definitions_2_6_wave1*_batch_rules.py

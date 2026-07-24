@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.20
   deontic: MUST_BILL
   gate_b_sources:
-  - C003189
+  - C003188
   condition:
     material_name_any:
     - burun protezi
@@ -15,3 +15,6 @@ rules:
     severity: info
     message_tr: Burun protezi — total burun defektlerinin rekonstrüksiyonu veya epitezin yenilenmesine gerek duyulan hallerde
       3. basamak resmi sunucularda sağlık kurulu raporuna istinaden bedeli Kurumca karşılanır (§3.3.20(1)).
+  superseded_sources:
+  - C003189
+  verification_status: ai_generated_pending_review

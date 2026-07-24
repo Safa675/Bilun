@@ -5,10 +5,8 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 12,
   "section_clause_total": 26,
-  "encoded_clause_count": 14,
+  "encoded_clause_count": 12,
   "encoded_clause_ids": [
-    "C006692",
-    "C006693",
     "C006694",
     "C006696",
     "C006697",
@@ -29,6 +27,8 @@
     "C006687",
     "C006688",
     "C006691",
+    "C006692",
+    "C006693",
     "C006695",
     "C006698",
     "C006700",
@@ -42,7 +42,7 @@
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 12,
+  "tier_c_deferred_count": 14,
   "clause_traces": [
     {
       "clause_id": "C006681",
@@ -92,21 +92,23 @@
       "clause_id": "C006692",
       "section_id": "4.2.35.A",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.35.A.gabapentin_6mo_report_combo_nopay"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C006693",
       "section_id": "4.2.35.A",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.35.A.pregabalin_6mo_report_combo_nopay"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C006694",
@@ -167,7 +169,9 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
-        "4.2.35.A.capsaicin_phn_dpn_arthritis_nopay"
+        "4.2.35.A.capsaicin_phn_dpn_arthritis_nopay",
+        "4.2.35.A.gabapentin_6mo_report_combo_nopay",
+        "4.2.35.A.pregabalin_6mo_report_combo_nopay"
       ]
     },
     {
@@ -325,8 +329,8 @@
   "section_4.2.37_tier_c_count": 6,
   "emr_blocked_count": 0,
   "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 12,
+  "encode_tier_C_deferred_count": 14,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 53.8
+  "encoded_clause_pct": 46.2
 }

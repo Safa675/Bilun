@@ -1,9 +1,10 @@
 section_id: 4.2.1.C-1
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.1.C.ankylosing_spondylitis_nsaids_failure_report
   sut_section: 4.2.1.C-1
   gate_b_sources:
-  - C003605
+  - C003610
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -25,6 +26,9 @@ rules:
       yetersiz (BASDAİ>5), ESH>28 mm/s veya CRP↑ veya MR/sintigrafi ile aktif sakroilit varsa 3 ay süreli sağlık kurulu raporuyla
       başlanır; 3. ay değerlendirmesinde yetersiz cevap (BASDAİ''de <2 düzelme) devamında bedeli ödenmez, cevap alınırsa 6
       ay süreli rapor gerekir (§4.2.1.C-1).'
+  superseded_sources:
+  - C003605
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.1.C.anti_tnf_dmard_combination
   sut_section: 4.2.1.C-1
   gate_b_sources:
@@ -430,7 +434,7 @@ rules:
   message_tr: Anti-TNF ilaçlar — romatoid artritte romatoloji/klinik immunoloji/fiziksel tıp uzmanının yer aldığı en fazla
     6 aylık sağlık kurulu raporu gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003622
+  - C003627
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -438,6 +442,9 @@ rules:
   - klinik immunoloji
   - çocuk sağlığı
   report_duration_months: 6
+  superseded_sources:
+  - C003622
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.1.anti_tnf_psoriasis_vulgaris_board
   sut_section: 4.2.1.C-1
   drug_names:
@@ -508,7 +515,7 @@ rules:
   message_tr: Anti-TNF — erişkin romatoid artritte DMARD yetersizliğinde DAS28 takibi ile 3 ay süreli sağlık kurulu raporu
     gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003587
+  - C003591
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -517,6 +524,9 @@ rules:
   - çocuk sağlığı
   - çocuk romatoloji
   report_duration_months: 3
+  superseded_sources:
+  - C003587
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.1.anti_tnf_uc_conv_failure_board
   sut_section: 4.2.1.C-1
   drug_names:
@@ -775,4 +785,3 @@ rules:
   - çocuk sağlığı
   - çocuk romatoloji
   report_duration_months: 3
-source_note: Exported from drug_indication_prose.json (YAML source migration)

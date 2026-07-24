@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.25
   deontic: MUST_BILL
   gate_b_sources:
-  - C003199
+  - C003198
   condition:
     material_name_any:
     - omuz balon spacer
@@ -16,3 +16,6 @@ rules:
     message_tr: Absorbe olabilir omuz balon spacer — 3. basamak resmi sunucularda, tamir edilemeyen tam kat rotator cuff yırtıklarında
       sağlık kurulu raporuyla belgelendirilmesi ve başka tıbbi malzeme kullanılmaması kaydıyla işlem başına en fazla 1 adet
       kullanılması halinde bedeli Kurumca karşılanır (§3.3.25(1)).
+  superseded_sources:
+  - C003199
+  verification_status: ai_generated_pending_review

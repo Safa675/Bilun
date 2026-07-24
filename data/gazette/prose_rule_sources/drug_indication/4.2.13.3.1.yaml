@@ -1,4 +1,5 @@
 section_id: 4.2.13.3.1
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.13.hcv_acute_interferon_report
   sut_section: 4.2.13.3.1
@@ -15,5 +16,6 @@ rules:
   message_tr: Akut hepatit C interferon tedavisi — gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.1).
   gate_b_sources:
   - C004636
+  superseded_sources:
   - C004637
-source_note: Exported from drug_indication_prose.json (YAML source migration)
+  verification_status: ai_generated_pending_review

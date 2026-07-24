@@ -1,4 +1,5 @@
 section_id: 4.2.13
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.13.acute_hbv_severe_antiviral_coverage
   sut_section: 4.2.13
@@ -65,9 +66,13 @@ rules:
     ilk rapor en fazla 6 ay (§4.2.13).
   gate_b_sources:
   - C004498
+  - C004636
   - C004637
   - C004912
   - C004919
+  superseded_sources:
+  - C004637
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.13.hepatitis_viral_gastro_inf_report
   sut_section: 4.2.13
   drug_names:
@@ -93,4 +98,3 @@ rules:
   - enfeksiyon hastalıkları
   - çocuk sağlığı
   - iç hastalıkları
-source_note: Exported from drug_indication_prose.json (YAML source migration)

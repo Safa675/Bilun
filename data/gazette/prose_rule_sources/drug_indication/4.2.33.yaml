@@ -1,4 +1,5 @@
 section_id: 4.2.33
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.33.dexamethasone_ivt_implant_frequency
   sut_section: 4.2.33
@@ -102,7 +103,6 @@ rules:
   sut_section: 4.2.33
   gate_b_sources:
   - C006553
-  - C006557
   drug_names:
   - ranibizumab
   - aflibersept
@@ -119,6 +119,9 @@ rules:
     message_tr: Retinal ven tıkanıklığı tanılı glokomun eşlik ettiği hastalarda bevacizumab ile yükleme dozu sonrası yetersiz
       cevap alınması durumunda, bu durumun raporda belirtilmesi kaydıyla deksametazon intravitreal implant kullanılmaksızın
       ranibizumab veya aflibercept ile tedaviye devam edilebilir (§4.2.33).
+  superseded_sources:
+  - C006557
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.33.same_eye_combo_nopay
   sut_section: 4.2.33
   gate_b_sources:
@@ -128,4 +131,3 @@ rules:
     enforcement: 'no-pay condition: aynı anda aynı gözde kombine anti-VEGF kullanımı; farklı göz kullanımları kombine sayılmaz'
     message_tr: Bu etkin maddeleri içeren ilaçların aynı anda aynı gözde kombine olarak kullanılması halinde bedelleri Kurumca
       karşılanmaz; farklı göze kullanımlar kombine kullanım olarak değerlendirilmez (§4.2.33).
-source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -5,23 +5,20 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 139,
   "section_clause_total": 282,
-  "encoded_clause_count": 128,
+  "encoded_clause_count": 123,
   "encoded_clause_ids": [
-    "C003563",
+    "C003562",
     "C003565",
-    "C003587",
     "C003591",
     "C003593",
     "C003602",
     "C003603",
     "C003604",
-    "C003605",
     "C003609",
     "C003610",
     "C003614",
     "C003617",
     "C003621",
-    "C003622",
     "C003623",
     "C003624",
     "C003625",
@@ -59,11 +56,9 @@
     "C003686",
     "C003687",
     "C003691",
-    "C003692",
     "C003693",
     "C003694",
     "C003695",
-    "C003698",
     "C003699",
     "C003705",
     "C003706",
@@ -136,13 +131,18 @@
     "C003894",
     "C003896"
   ],
-  "tier_a_pending_clause_ids": [],
+  "tier_a_pending_clause_ids": [
+    "C003563",
+    "C003587",
+    "C003622",
+    "C003692",
+    "C003698"
+  ],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C003558",
     "C003559",
     "C003561",
-    "C003562",
     "C003564",
     "C003566",
     "C003567",
@@ -163,6 +163,7 @@
     "C003592",
     "C003594",
     "C003601",
+    "C003605",
     "C003606",
     "C003611",
     "C003615",
@@ -296,7 +297,7 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 0,
+  "tier_a_pending_count": 5,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 154,
   "clause_traces": [
@@ -337,22 +338,18 @@
       "clause_id": "C003562",
       "section_id": "4.2.1.A",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "2.1.A - Leflunomid",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.1.leflunomid_ra_psa_report"
+      ]
     },
     {
       "clause_id": "C003563",
       "section_id": "4.2.1.A",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "linked_rule_ids": [
-        "4.2.1.leflunomid_ra_psa_report"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "biyolojik_ajan"
     },
     {
       "clause_id": "C003564",
@@ -544,11 +541,8 @@
       "clause_id": "C003587",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_ra_das28_initiation"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "biyolojik_ajan"
     },
     {
       "clause_id": "C003588",
@@ -569,6 +563,7 @@
       "heuristic_inn": "İnfliksimab",
       "linked_rule_ids": [
         "4.2.1.C.anti_tnf_biologic_combo_nopay",
+        "4.2.1.anti_tnf_ra_das28_initiation",
         "4.2.1.inflix_cert_gol_ra_second_line",
         "4.2.1.infliximab_ra_das28_second_line"
       ]
@@ -655,11 +650,12 @@
       "clause_id": "C003605",
       "section_id": "4.2.1.C-1",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
-      "linked_rule_ids": [
-        "4.2.1.C.ankylosing_spondylitis_nsaids_failure_report"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     },
     {
       "clause_id": "C003606",
@@ -694,6 +690,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Periferik eklem tutulumlu ankilozan spondilitli hastalarda",
       "linked_rule_ids": [
+        "4.2.1.C.ankylosing_spondylitis_nsaids_failure_report",
         "4.2.1.anti_tnf_peripheral_as_board"
       ]
     },
@@ -767,11 +764,8 @@
       "clause_id": "C003622",
       "section_id": "4.2.1.C-1",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Anti-TNF ilaçlar",
-      "linked_rule_ids": [
-        "4.2.1.anti_tnf_prescriber_board"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Anti-TNF ilaçlar"
     },
     {
       "clause_id": "C003623",
@@ -821,6 +815,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 07/10/2016- 29850/ 15 md. Yürürlük: 15/10/2016) Fistülize",
       "linked_rule_ids": [
+        "4.2.1.anti_tnf_prescriber_board",
         "4.2.1.crohn_fistulizing_month4_cdai_report"
       ]
     },
@@ -1434,6 +1429,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "biyolojik_ajan",
       "linked_rule_ids": [
+        "4.2.1.tocilizumab_ra_c5_methotrexat_combo",
         "4.2.1.tocilizumab_ra_c5_university_das"
       ]
     },
@@ -1441,11 +1437,8 @@
       "clause_id": "C003692",
       "section_id": "4.2.1.C-5",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Aktif romatoid artriti bulunan",
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_ra_c5_methotrexat_combo"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Aktif romatoid artriti bulunan"
     },
     {
       "clause_id": "C003693",
@@ -1503,11 +1496,8 @@
       "clause_id": "C003698",
       "section_id": "4.2.1.C-5",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "biyolojik_ajan",
-      "linked_rule_ids": [
-        "4.2.1.tocilizumab_jia_c5_prior_therapy_failure"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "biyolojik_ajan"
     },
     {
       "clause_id": "C003699",
@@ -1517,7 +1507,8 @@
       "heuristic_inn": "biyolojik_ajan",
       "linked_rule_ids": [
         "4.2.1.tocilizumab_jia_c5_acr30_continuation",
-        "4.2.1.tocilizumab_jia_c5_acr50_continuation"
+        "4.2.1.tocilizumab_jia_c5_acr50_continuation",
+        "4.2.1.tocilizumab_jia_c5_prior_therapy_failure"
       ]
     },
     {
@@ -3322,5 +3313,5 @@
   "encode_tier_C_deferred_count": 154,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 45.4
+  "encoded_clause_pct": 43.6
 }

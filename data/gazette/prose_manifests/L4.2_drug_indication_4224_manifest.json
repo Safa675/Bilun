@@ -5,7 +5,7 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 34,
   "section_clause_total": 59,
-  "encoded_clause_count": 30,
+  "encoded_clause_count": 29,
   "encoded_clause_ids": [
     "C006124",
     "C006125",
@@ -23,7 +23,6 @@
     "C006162",
     "C006167",
     "C006169",
-    "C006171",
     "C006172",
     "C006173",
     "C006174",
@@ -38,7 +37,9 @@
     "C006190",
     "C006192"
   ],
-  "tier_a_pending_clause_ids": [],
+  "tier_a_pending_clause_ids": [
+    "C006171"
+  ],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C006123",
@@ -73,7 +74,7 @@
   ],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
-  "tier_a_pending_count": 0,
+  "tier_a_pending_count": 1,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 29,
   "clause_traces": [
@@ -499,12 +500,8 @@
       "clause_id": "C006171",
       "section_id": "4.2.24.B",
       "encode_tier": "A",
-      "manifest_status": "encoded",
-      "heuristic_inn": "Uzun etkili solunum yolu beta-agonistleri (LABA)",
-      "linked_rule_ids": [
-        "4.2.24.B.resp.laba_lama_iks_mono_and_triple_maintenance",
-        "4.2.24.laba_lama_ics_triple_prior"
-      ]
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Uzun etkili solunum yolu beta-agonistleri (LABA)"
     },
     {
       "clause_id": "C006172",
@@ -595,7 +592,9 @@
       "manifest_status": "encoded",
       "heuristic_inn": "(4)",
       "linked_rule_ids": [
-        "4.2.24.B.resp.copd_triple_combo_maintenance"
+        "4.2.24.B.resp.copd_triple_combo_maintenance",
+        "4.2.24.B.resp.laba_lama_iks_mono_and_triple_maintenance",
+        "4.2.24.laba_lama_ics_triple_prior"
       ]
     },
     {
@@ -709,5 +708,5 @@
   "encode_tier_C_deferred_count": 29,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 50.8
+  "encoded_clause_pct": 49.2
 }

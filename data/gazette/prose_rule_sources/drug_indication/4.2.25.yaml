@@ -1,9 +1,10 @@
 section_id: 4.2.25
+source_note: Exported from drug_indication_prose.json (YAML source migration)
 rules:
 - rule_id: 4.2.25.gabapentin_1yr_report_combo_nopay
   sut_section: 4.2.25
   gate_b_sources:
-  - C006204
+  - C006199
   drug_names:
   - gabapentin
   - pregabalin
@@ -23,6 +24,9 @@ rules:
     message_tr: Gabapentin etken maddeli ilaçların ikinci veya üçüncü basamak sağlık hizmeti sunucularında düzenlenen en az
       bir nöroloji uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna istinaden nöroloji uzman hekimlerince reçete
       edilmesi halinde bedelleri Kurumca karşılanır. Pregabalin ve gabapentin kombine olarak kullanılamaz (§4.2.25).
+  superseded_sources:
+  - C006204
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.25.lacosamide_16yr_partial_2aed_6mo
   sut_section: 4.2.25
   gate_b_sources:
@@ -73,7 +77,7 @@ rules:
 - rule_id: 4.2.25.pregabalin_1yr_report_no_gad
   sut_section: 4.2.25
   gate_b_sources:
-  - C006200
+  - C006199
   drug_names:
   - pregabalin
   icd10_codes:
@@ -93,6 +97,9 @@ rules:
       hizmeti sunucularında düzenlenen en az bir nöroloji uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna istinaden
       nöroloji uzman hekimlerince reçete edilmesi halinde bedelleri Kurumca karşılanır; yaygın anksiyete bozukluğu endikasyonunda
       ödenmez (§4.2.25).
+  superseded_sources:
+  - C006200
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.25.zonisamide_neurology_1yr_report
   sut_section: 4.2.25
   gate_b_sources:
@@ -115,4 +122,3 @@ rules:
       edilirse ödenir
     message_tr: Zonisamit etken maddeli ilaçların nöroloji uzman hekimleri tarafından veya bu uzman hekimler tarafından düzenlenen
       1 yıl süreli uzman hekim raporuna dayanılarak tüm hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.25).
-source_note: Exported from drug_indication_prose.json (YAML source migration)

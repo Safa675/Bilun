@@ -33,7 +33,7 @@ rules:
   sut_section: 3.3.32
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003298
+  - C003291
   condition:
     material_name_any:
     - işitme cihazı
@@ -43,11 +43,14 @@ rules:
     severity: warning
     message_tr: 0-18 yaş çocuklarda işitme cihazı için en az 1 KBB uzmanı yer alan 3. basamak resmi sunucu sağlık kurulu raporu
       düzenlenmesi gerekmektedir (§3.3.32 a).
+  superseded_sources:
+  - C003298
+  verification_status: ai_generated_pending_review
 - rule_id: 3.3.32.b.yetiskin_kbb_rapor_regulatory
   sut_section: 3.3.32
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003299
+  - C003292
   condition:
     material_name_any:
     - işitme cihazı
@@ -57,6 +60,9 @@ rules:
     severity: warning
     message_tr: 18 yaş üzeri hastalarda işitme cihazı için en az 1 KBB uzmanı yer alan resmi sunucu sağlık kurulu raporu düzenlenmesi
       gerekmektedir (§3.3.32 b).
+  superseded_sources:
+  - C003299
+  verification_status: ai_generated_pending_review
 - rule_id: 3.3.32.c.kalici_isitme_kaybi_kriter_regulatory
   sut_section: 3.3.32
   deontic: REGULATORY_ACTION

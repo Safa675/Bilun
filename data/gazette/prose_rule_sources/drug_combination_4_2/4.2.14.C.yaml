@@ -36,7 +36,10 @@ rules:
     denial_tr: temsirolimus; metastatik RCC'de 6 kötü prognoz kriterinden ≥3 olan hastalarda 2 onkoloji uzmanı raporuyla ödenir
     severity: error
   gate_b_sources:
+  - C005049
+  superseded_sources:
   - C005054
+  verification_status: ai_generated_pending_review
 - rule_id: 4.2.14.C.(renal).rcc_tki_sequential_combo_no_pay
   sut_section: 4.2.14.C
   condition:

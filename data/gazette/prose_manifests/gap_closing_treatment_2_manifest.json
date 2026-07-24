@@ -23,8 +23,8 @@
     "C001055",
     "C001136",
     "C001206",
-    "C001207",
     "C001210",
+    "C001220",
     "C001310",
     "C001332",
     "C001401",
@@ -33,7 +33,6 @@
     "C001409",
     "C001410",
     "C001413",
-    "C001431",
     "C001433",
     "C001446",
     "C001449",
@@ -48,7 +47,7 @@
     "C001603",
     "C001604"
   ],
-  "encoded_clause_count": 44,
+  "encoded_clause_count": 43,
   "tier_c_deferred_clause_ids": [],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
@@ -141,11 +140,11 @@
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C001207",
+      "clause_id": "C001210",
       "manifest_status": "encoded"
     },
     {
-      "clause_id": "C001210",
+      "clause_id": "C001220",
       "manifest_status": "encoded"
     },
     {
@@ -178,10 +177,6 @@
     },
     {
       "clause_id": "C001413",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C001431",
       "manifest_status": "encoded"
     },
     {

@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.24
   deontic: MUST_BILL
   gate_b_sources:
-  - C003197
+  - C003196
   condition:
     material_name_any:
     - sinüs tarsi vidası
@@ -15,3 +15,6 @@ rules:
     severity: info
     message_tr: Sinüs tarsi vidası — esnek, ağrılı 8-14 yaş vaka grubunda eğitim verme yetkisi bulunan 3. basamak resmi sunucularda
       kullanılması halinde bedelleri Kurumca karşılanır (§3.3.24(1)).
+  superseded_sources:
+  - C003197
+  verification_status: ai_generated_pending_review

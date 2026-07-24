@@ -97,9 +97,9 @@
       "encode_batch": "G2"
     },
     {
-      "clause_id": "C001207",
+      "clause_id": "C001220",
       "expected_rule_id": "2.4.4.H.(2).icu_bundled_with_abc_procedures",
-      "encode_batch": "G2"
+      "encode_batch": null
     },
     {
       "clause_id": "C001210",
@@ -147,9 +147,9 @@
       "encode_batch": "G2"
     },
     {
-      "clause_id": "C001431",
+      "clause_id": "C001433",
       "expected_rule_id": "2.5.3.A-2.(2).overseas_duration_cannot_exceed_report",
-      "encode_batch": "G2"
+      "encode_batch": null
     },
     {
       "clause_id": "C001433",

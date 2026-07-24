@@ -30,7 +30,7 @@ rules:
   sut_section: 3.3.3.C
   deontic: MUST_BILL
   gate_b_sources:
-  - C002913
+  - C002916
   condition:
     material_name_any:
     - kontakt lens
@@ -40,6 +40,9 @@ rules:
     severity: info
     message_tr: Kontakt lens — 3. basamak göz sağlığı uzmanı içeren sağlık kurulu raporunda çap/derinlik/diyoptri/nitelik
       belirtilmesi ve sözleşmeli optisyenlikten temin şartıyla EK-3/D bedeli üzerinden Kurumca karşılanır (§3.3.3.C).
+  superseded_sources:
+  - C002913
+  verification_status: ai_generated_pending_review
 - rule_id: 3.3.3.C.(3).konjenital_katarakt_cocuk_must_bill
   sut_section: 3.3.3.C
   deontic: MUST_BILL

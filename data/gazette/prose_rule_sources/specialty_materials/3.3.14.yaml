@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.14
   deontic: MUST_BILL
   gate_b_sources:
-  - C003154
+  - C003153
   condition:
     material_name_any:
     - çift yüzlü yama
@@ -17,6 +17,9 @@ rules:
     message_tr: Çift yüzlü yamalar (meshler) — özellikli vakalarda ameliyat öncesi karın duvarı defektinin görüntüsünün epikrize
       eklenmesi, mesh ve defekt boyutlarının ilişkilendirilmesi ve genel cerrahi/göğüs cerrahisi/plastik rekonstrüktif cerrahi
       sağlık kurulu raporuyla 3. basamakta bedeli Kurumca karşılanır (§3.3.14(2)).
+  superseded_sources:
+  - C003154
+  verification_status: ai_generated_pending_review
 - rule_id: 3.3.14.c.hiatus_diyafragma_herni_must_bill
   sut_section: 3.3.14
   deontic: MUST_BILL

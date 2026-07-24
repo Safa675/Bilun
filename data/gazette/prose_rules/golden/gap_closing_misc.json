@@ -52,9 +52,9 @@
       "encode_batch": "Gmisc"
     },
     {
-      "clause_id": "C000410",
+      "clause_id": "C000383",
       "expected_rule_id": "1.9.1.(7).foundation_university_2_3_step_private_inpatient_bundled",
-      "encode_batch": "Gmisc"
+      "encode_batch": null
     },
     {
       "clause_id": "C000460",
