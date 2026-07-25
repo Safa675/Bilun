@@ -10,6 +10,23 @@ from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_
 pytestmark = pytest.mark.unit
 
 
+
+def _patient_for_scenario(tag: str) -> str:
+    """Resolve demo patient via vignette registry (not hardcoded SENTETIK ids)."""
+    import sys
+    from pathlib import Path as _Path
+
+    scripts = _Path(__file__).resolve().parents[4] / "scripts" / "synthetic"
+    if str(scripts) not in sys.path:
+        sys.path.insert(0, str(scripts))
+    from demo_config import vignette_for_scenario_tag
+
+    vignette = vignette_for_scenario_tag(tag)
+    if vignette is None:
+        pytest.fail(f"No vignette for scenario_tag={tag!r}")
+    return vignette.patient_id
+
+
 def _claim_by_scenario_tag(ctx, tag_substr: str):
     for claim in ctx.claims:
         if tag_substr in (claim.scenario_tag or ""):
@@ -32,7 +49,7 @@ def dataset():
 
 class TestOptionalOverrideSyntheticDemos:
     def test_0002_itemized_higher_demo_has_recoverable_override(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0002"
+        patient_id = _patient_for_scenario("sgk_optional_override_itemized_higher")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -53,7 +70,7 @@ class TestOptionalOverrideSyntheticDemos:
         assert report.billing_strategy.optional_override_uplift_try > 0
 
     def test_0003_package_higher_demo_has_recoverable_override(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0003"
+        patient_id = _patient_for_scenario("sgk_optional_override_package_higher")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -76,7 +93,7 @@ class TestOptionalOverrideSyntheticDemos:
 
 class TestDrgUpliftSyntheticDemo:
     def test_0005_drg_uplift_demo_in_sgk_headline(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0005"
+        patient_id = _patient_for_scenario("sgk_drg_uplift_yatis")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -103,7 +120,7 @@ class TestDrgUpliftSyntheticDemo:
 
 class TestMaterialUpliftSyntheticDemo:
     def test_0006_material_uplift_demo_in_sgk_headline(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0006"
+        patient_id = _patient_for_scenario("sgk_material_uplift_yatis")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -120,7 +137,7 @@ class TestMaterialUpliftSyntheticDemo:
 
 class TestProcedureAddonSyntheticDemo:
     def test_0008_procedure_addon_in_sgk_headline(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0008"
+        patient_id = _patient_for_scenario("sgk_procedure_addon_kolonoskopi")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -161,64 +178,54 @@ class TestProcedureAddonSyntheticDemo:
 
 class TestMedulaPlaybookSyntheticDemo:
     @pytest.mark.parametrize(
-        ("patient_id", "scenario_tag", "sonuc_kodu", "playbook_key"),
+        ("scenario_tag", "sonuc_kodu", "playbook_key"),
         [
             (
-                "SENTETIK-HASTA-0012",
                 "medula_rejection_1688_molecular_microbiology",
                 "1688",
                 "1688_molecular_microbiology",
             ),
             (
-                "SENTETIK-HASTA-0018",
                 "medula_rejection_0612_board_report_missing",
                 "0612",
                 "0612_board_report_missing",
             ),
             (
-                "SENTETIK-HASTA-0025",
                 "medula_rejection_1205_service_date_mismatch",
                 "1205",
                 "1205_service_date_mismatch",
             ),
             (
-                "SENTETIK-HASTA-0026",
                 "medula_rejection_0521_provision_not_obtained",
                 "0521",
                 "0521_provision_not_obtained",
             ),
             (
-                "SENTETIK-HASTA-0027",
                 "medula_rejection_0315_specialty_mismatch",
                 "0315",
                 "0315_specialty_mismatch",
             ),
             (
-                "SENTETIK-HASTA-0028",
                 "medula_rejection_0901_duplicate_procedure",
                 "0901",
                 "0901_duplicate_procedure",
             ),
             (
-                "SENTETIK-HASTA-0029",
                 "medula_rejection_0704_uts_barcode_missing",
                 "0704",
                 "0704_uts_barcode_missing",
             ),
             (
-                "SENTETIK-HASTA-0030",
                 "medula_rejection_0320_package_bundled_procedure",
                 "0320",
                 "0320_package_bundled_procedure",
             ),
             (
-                "SENTETIK-HASTA-0031",
                 "medula_rejection_0411_drug_report_missing",
                 "0411",
                 "0411_drug_report_missing",
             ),
             (
-                "SENTETIK-HASTA-0032",
                 "medula_rejection_1102_uncontracted_facility",
                 "1102",
                 "1102_uncontracted_facility",
@@ -228,11 +235,11 @@ class TestMedulaPlaybookSyntheticDemo:
     def test_medula_playbook_demo_excluded_from_sgk_headline(
         self,
         dataset,
-        patient_id: str,
         scenario_tag: str,
         sonuc_kodu: str,
         playbook_key: str,
     ) -> None:
+        patient_id = _patient_for_scenario(scenario_tag)
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
         assert len(ctx.medula_rejection_events) == 1
@@ -260,7 +267,7 @@ class TestMedulaPlaybookSyntheticDemo:
 
 class TestGazetteRepricingSyntheticDemo:
     def test_0011_gazette_repricing_excluded_from_sgk_headline(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0011"
+        patient_id = _patient_for_scenario("sgk_gazette_repricing_600150")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -287,7 +294,7 @@ class TestGazetteRepricingSyntheticDemo:
 
 class TestPackageAdequacySyntheticDemo:
     def test_0010_package_adequacy_excluded_from_sgk_headline(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0010"
+        patient_id = _patient_for_scenario("sgk_package_adequacy_undercoded")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -320,7 +327,7 @@ class TestPackageAdequacySyntheticDemo:
 
 class TestProcedureCaptureSyntheticDemo:
     def test_0009_capture_gap_excluded_from_sgk_headline(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0009"
+        patient_id = _patient_for_scenario("sgk_procedure_capture_kolonoskopi")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -350,7 +357,7 @@ class TestProcedureCaptureSyntheticDemo:
 
 class TestCareSettingReviewSyntheticDemo:
     def test_0007_care_setting_review_excluded_from_sgk_headline(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0007"
+        patient_id = _patient_for_scenario("sgk_care_setting_review_gunubirlik")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -377,7 +384,7 @@ class TestCareSettingReviewSyntheticDemo:
 
 class TestBloodUpliftSyntheticDemo:
     def test_0004_blood_uplift_demo_in_sgk_headline(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0004"
+        patient_id = _patient_for_scenario("sgk_blood_uplift_yatis")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -394,40 +401,34 @@ class TestBloodUpliftSyntheticDemo:
 
 class TestDrugIndicationSyntheticDemo:
     @pytest.mark.parametrize(
-        ("patient_id", "scenario_tag", "expect_kind", "expect_count"),
+        ("scenario_tag", "expect_kind", "expect_count"),
         [
             (
-                "SENTETIK-HASTA-0014",
                 "sgk_drug_indication_bevacizumab_missing_report",
                 "missing_board_report",
                 1,
             ),
             (
-                "SENTETIK-HASTA-0015",
                 "sgk_drug_indication_nivolumab_indication_mismatch",
                 "indication_mismatch",
                 1,
             ),
             (
-                "SENTETIK-HASTA-0016",
                 "sgk_drug_indication_daratumumab_report_unknown",
                 "needs_report_verification",
                 1,
             ),
             (
-                "SENTETIK-HASTA-0017",
                 "sgk_drug_indication_pembrolizumab_report_ok",
                 None,
                 0,
             ),
             (
-                "SENTETIK-HASTA-0019",
                 "sgk_drug_indication_trastuzumab_report_duration_mismatch",
                 "report_duration_mismatch",
                 1,
             ),
             (
-                "SENTETIK-HASTA-0020",
                 "sgk_drug_indication_trabectedin_missing_report",
                 "missing_board_report",
                 1,
@@ -437,11 +438,11 @@ class TestDrugIndicationSyntheticDemo:
     def test_drug_indication_demo_patients(
         self,
         dataset,
-        patient_id: str,
         scenario_tag: str,
         expect_kind: str | None,
         expect_count: int,
     ) -> None:
+        patient_id = _patient_for_scenario(scenario_tag)
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
@@ -467,7 +468,7 @@ class TestDrugIndicationSyntheticDemo:
 
 class TestClaimReadinessSyntheticDemo:
     def test_0033_proactive_uts_checklist_without_medula_event(self, dataset) -> None:
-        patient_id = "SENTETIK-HASTA-0033"
+        patient_id = _patient_for_scenario("sgk_claim_readiness_uts_barcode_missing")
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
         assert len(ctx.medula_rejection_events) == 0
@@ -494,25 +495,21 @@ class TestClaimReadinessSyntheticDemo:
 
 class TestMaterialProseSyntheticDemo:
     @pytest.mark.parametrize(
-        ("patient_id", "scenario_tag", "check"),
+        ("scenario_tag", "check"),
         [
             (
-                "SENTETIK-HASTA-0021",
                 "sgk_specialty_prose_optical_lens_upgrade",
                 "specialty",
             ),
             (
-                "SENTETIK-HASTA-0022",
                 "sgk_specialty_prose_hip_graft_no_pay",
                 "specialty",
             ),
             (
-                "SENTETIK-HASTA-0023",
                 "sgk_material_kdv_ceiling_exceeded",
                 "kdv",
             ),
             (
-                "SENTETIK-HASTA-0024",
                 "sgk_material_bundling_procurement_incomplete",
                 "bundling",
             ),
@@ -521,10 +518,10 @@ class TestMaterialProseSyntheticDemo:
     def test_material_prose_demo_patients(
         self,
         dataset,
-        patient_id: str,
         scenario_tag: str,
         check: str,
     ) -> None:
+        patient_id = _patient_for_scenario(scenario_tag)
         ctx = build_patient_claim_context(patient_id, dataset)
         assert ctx is not None
 
