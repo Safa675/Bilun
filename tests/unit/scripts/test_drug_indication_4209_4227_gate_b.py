@@ -62,7 +62,8 @@ def _export_candidates(clauses_path: Path) -> pl.DataFrame:
 def _build_manifest(frame: pl.DataFrame, rules: list[dict[str, Any]], *, effective_date: str) -> dict[str, Any]:
     from scripts.sut.prose.gate_b_shim import shim_build_manifest
 
-    return shim_build_manifest(_SECTION, frame, rules, effective_date=effective_date)
+    return shim_build_manifest(_SECTION, frame, rules, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date=effective_date)
 
 
 def audit_4227_gap_parity(
@@ -184,6 +185,7 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
         manifest_path=manifest,
         effective_date="2026-06-27",
         batch_rules=combined,
+        write_corpus=True,
     )
     assert corpus.is_file()
     assert manifest.is_file()

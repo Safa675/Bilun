@@ -71,9 +71,10 @@ def test_gate_b_csv_schema() -> None:
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
     from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
 
-    frame = pl.read_csv(_CORPUS) if _CORPUS.is_file() else shim_export_candidates(_SECTION, _CLAUSES)
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
     rules = _all_4206_batch_rules()
-    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date="2026-06-27")
+    manifest = shim_build_manifest(_SECTION, frame, rules, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _ALL_ENCODED
     assert manifest["tier_c_deferred_count"] >= 28
@@ -94,6 +95,7 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
         corpus_csv=corpus,
         manifest_path=manifest_path,
         effective_date="2026-06-27",
+        write_corpus=True,
     )
     assert corpus.is_file()
     assert manifest_path.is_file()

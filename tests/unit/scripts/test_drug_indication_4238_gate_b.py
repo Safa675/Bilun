@@ -58,8 +58,9 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
     BATCH_A5_RULES = load_legacy_drug_batch("drug_indication_4238_batch_rules.py:BATCH_A5_RULES")
 
-    frame = pl.read_csv(_CORPUS) if _CORPUS.is_file() else shim_export_candidates(_SECTION, _CLAUSES)
-    manifest = shim_build_manifest(_SECTION, frame, BATCH_A5_RULES, effective_date="2026-06-27")
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    manifest = shim_build_manifest(_SECTION, frame, BATCH_A5_RULES, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
     on_disk = json.loads(_MANIFEST.read_text(encoding="utf-8")) if _MANIFEST.is_file() else {}
     encoded = manifest["encoded_clause_ids"]
     # Fresh build is a subset of on-disk (reconciliation may expand encoded beyond the batch).
@@ -87,6 +88,7 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
         corpus_csv=corpus,
         manifest_path=manifest_path,
         effective_date="2026-06-27",
+        write_corpus=True,
     )
     assert corpus.is_file()
     assert manifest_path.is_file()

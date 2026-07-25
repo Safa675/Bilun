@@ -99,7 +99,8 @@ def _run_audit(clauses_path: Path, rules: list[dict[str, Any]], *, effective_dat
     from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
 
     frame = shim_export_candidates(_SECTION, clauses_path)
-    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date=effective_date)
+    manifest = shim_build_manifest(_SECTION, frame, rules, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date=effective_date)
     before = _audit_gap_parity(clauses_path, manifest, gate_b_frame=frame)
     manifest, repaired = repair_untraced(
         manifest,
@@ -152,7 +153,8 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
     frame = shim_export_candidates(_SECTION, _CLAUSES)
     rules = _combined_rules()
-    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date="2026-06-27")
+    manifest = shim_build_manifest(_SECTION, frame, rules, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert _ALL_ENCODED_IDS <= encoded
     assert manifest["tier_a_pending_count"] == 0
@@ -166,7 +168,8 @@ def test_audit_gap_parity_zero_untraced() -> None:
 
     frame = shim_export_candidates(_SECTION, _CLAUSES)
     rules = _combined_rules()
-    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date="2026-06-27")
+    manifest = shim_build_manifest(_SECTION, frame, rules, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
 
     report = _audit_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
     assert report["gap_count"] == len(_gap_clause_ids())
@@ -182,7 +185,13 @@ def test_audit_tier_c_deferred_have_defer_reason() -> None:
     from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
 
     frame = shim_export_candidates(_SECTION, _CLAUSES)
-    manifest = shim_build_manifest(_SECTION, frame, _combined_rules(), effective_date="2026-06-27")
+    manifest = shim_build_manifest(
+        _SECTION,
+        frame,
+        _combined_rules(),
+        resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27",
+    )
     gap_ids = _gap_clause_ids()
 
     for trace in manifest["clause_traces"]:
@@ -228,13 +237,14 @@ def test_audit_no_actionable_tier_ab_promotions() -> None:
 
 
 def test_gate_b_artifacts_on_disk() -> None:
-    assert _CORPUS.is_file()
     assert _MANIFEST.is_file()
 
-    corpus = pl.read_csv(_CORPUS)
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+
+    corpus = shim_export_candidates(_SECTION, _CLAUSES)
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
 
-    soft_floor(corpus.height, 100, label="committed corpus height")
+    soft_floor(corpus.height, 100, label="section export height")
     assert manifest["section_clause_total"] == corpus.height
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0

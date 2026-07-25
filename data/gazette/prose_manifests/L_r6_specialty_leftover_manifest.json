@@ -1,5 +1,8 @@
 {
-  "manifest_version": "r6-v1",
+  "manifest_version": "canonical-v1",
+  "rule_set_id": "specialty_leftover_r6",
+  "section_id": "",
+  "section_clause_total": 21,
   "encoded_clause_ids": [
     "C002684",
     "C002689",
@@ -22,5 +25,102 @@
     "C002824",
     "C002828",
     "C002831"
+  ],
+  "encoded_clause_count": 21,
+  "tier_c_deferred_clause_ids": [],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_count": 0,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "clause_traces": [
+    {
+      "clause_id": "C002684",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002689",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002691",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002692",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002694",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002695",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002696",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002697",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002698",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002720",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002727",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002728",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002729",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002744",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002789",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002794",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002795",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002796",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002824",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002828",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C002831",
+      "manifest_status": "encoded"
+    }
   ]
 }

@@ -425,6 +425,7 @@ def export_candidates(
         row: dict[str, Any] = {
             "clause_id": clause_id,
             "section_id": section_id,
+            "clause_coordinate": str(record.get("clause_coordinate") or ""),
             "deontic_modality": deontic,
             "text_tr": text,
             "heuristic_inn": inn,
@@ -454,13 +455,43 @@ def _encoded_clause_ids_from_rules(
     clauses: pl.DataFrame | None = None,
 ) -> set[str]:
     """Collect encoded clause_ids; resolve coordinate cites when ``clauses`` given."""
-    from scripts.sut.prose.clause_identity import encoded_clause_ids_from_rules
-
-    return encoded_clause_ids_from_rules(
-        rules,
-        clauses,
-        resolve_coordinates=clauses is not None,
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        UnknownClauseCiteError,
+        encoded_clause_ids_from_rules,
+        resolve_gate_b_sources_to_clause_ids,
     )
+
+    if clauses is None:
+        return encoded_clause_ids_from_rules(rules, None, resolve_coordinates=False)
+
+    # Prefer unique resolves; ambiguous/unknown cites keep C* pass-through only.
+    encoded: set[str] = set()
+    for rule in rules:
+        refs = rule.get("gate_b_sources") or []
+        for raw in refs:
+            if raw is None or not str(raw).strip():
+                continue
+            try:
+                encoded.update(
+                    resolve_gate_b_sources_to_clause_ids(
+                        [raw],
+                        clauses,
+                        in_force_only=True,
+                        encode_eligible_only=False,
+                        allow_ambiguous=False,
+                    )
+                )
+            except AmbiguousClauseCiteError:
+                # Collision cite — only count if the rule also has a C* (or skip).
+                continue
+            except UnknownClauseCiteError:
+                from scripts.sut.prose.clause_identity import is_clause_id
+
+                text = str(raw).strip()
+                if is_clause_id(text):
+                    encoded.add(text)
+    return encoded
 
 
 def build_manifest(
@@ -469,12 +500,19 @@ def build_manifest(
     section: GateBSection,
     *,
     effective_date: str,
+    resolve_clauses: pl.DataFrame | None = None,
 ) -> dict[str, Any]:
-    """Generic manifest builder — standard trace structure for all sections."""
-    encoded_ids = _encoded_clause_ids_from_rules(rules, gate_b_frame)
+    """Generic manifest builder — standard trace structure for all sections.
+
+    ``resolve_clauses`` should be the full parquet (or a superset) so coordinate
+    cites in ``gate_b_sources`` can resolve even when the export frame is filtered.
+    """
+    resolve_frame = resolve_clauses if resolve_clauses is not None else gate_b_frame
+    encoded_ids = _encoded_clause_ids_from_rules(rules, resolve_frame)
     rules_by_clause: dict[str, list[str]] = {}
     from scripts.sut.prose.clause_identity import (
         AmbiguousClauseCiteError,
+        UnknownClauseCiteError,
         resolve_gate_b_sources_to_clause_ids,
     )
 
@@ -484,15 +522,14 @@ def build_manifest(
         try:
             clause_ids = resolve_gate_b_sources_to_clause_ids(
                 refs,
-                gate_b_frame,
+                resolve_frame,
                 in_force_only=True,
                 allow_ambiguous=False,
             )
-        except AmbiguousClauseCiteError:
-            raise
+        except (AmbiguousClauseCiteError, UnknownClauseCiteError):
+            # Collision or out-of-frame cite — keep opaque refs for linkage map.
+            clause_ids = {str(r) for r in refs if r is not None and str(r).strip()}
         except Exception:
-            # Cite missing from this section export frame (common for C* outside
-            # the filtered candidate set) — keep opaque refs for legacy behaviour.
             clause_ids = {str(r) for r in refs if r is not None and str(r).strip()}
         for clause_id in clause_ids:
             rules_by_clause.setdefault(clause_id, []).append(rule_id)
@@ -597,8 +634,9 @@ def write_artifacts(
     section: GateBSection,
     rules_path: Path,
     effective_date: str,
+    write_corpus: bool = False,
 ) -> tuple[pl.DataFrame, dict[str, Any]]:
-    """Standard Gate B artifact writer: export → manifest → CSV + JSON."""
+    """Standard Gate B artifact writer: export → manifest → JSON (+ optional CSV)."""
     payload = json.loads(rules_path.read_text(encoding="utf-8"))
     batch_rules = [
         rule
@@ -609,21 +647,24 @@ def write_artifacts(
         )
     ]
 
+    resolve_clauses = pl.read_parquet(clauses_path)
     manifest = build_manifest(
         export_candidates(clauses_path, section),
         batch_rules,
         section,
         effective_date=effective_date,
+        resolve_clauses=resolve_clauses,
     )
     encoded = frozenset(manifest["encoded_clause_ids"])
 
-    corpus_csv = _PROJECT_ROOT / section.corpus_csv
     manifest_path = _PROJECT_ROOT / section.manifest_path
-    corpus_csv.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
     frame = export_candidates(clauses_path, section, encoded_clause_ids=encoded)
-    frame.write_csv(corpus_csv)
+    if write_corpus:
+        corpus_csv = _PROJECT_ROOT / section.corpus_csv
+        corpus_csv.parent.mkdir(parents=True, exist_ok=True)
+        frame.write_csv(corpus_csv)
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )

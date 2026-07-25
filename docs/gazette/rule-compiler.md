@@ -66,8 +66,10 @@ These paths are **committed** and verified by `compile_rules.py --check`:
 | Gate B manifests | `data/gazette/prose_manifests/*.json` | Gate B / manifest stages |
 | Prose corpus CSVs | `data/gazette/prose_corpus/*.csv` | Gate B stages |
 
-Manifest-only constants (material/specialty clause-ID sets, §4.2.14.C patches) live in
-`scripts/sut/prose/manifest_clause_ids.py` and `drug_indication_4214c_patches.py`.
+Manifest-only constants (material/specialty clause-ID sets) live in
+`scripts/sut/prose/manifest_clause_ids.py`. Source linkage is authored only in
+`data/gazette/prose_rule_sources/` YAML (`gate_b_sources`); compile stages no longer
+apply `SOURCE_PATCHES` / `SOURCE_DROPS`.
 
 Gate B manifest/corpus stages use `scripts/sut/prose/gate_b_core.py` primitives where
 applicable. Drug-indication CSV wave clause inventories are frozen in
@@ -100,7 +102,7 @@ locally and commit the artifact diffs with the code change.
 ## Ownership
 
 - **Rule data**: `data/gazette/prose_rule_sources/<family>/<section>.yaml`
-- **Manifest constants**: `manifest_clause_ids.py`, `drug_indication_4214c_patches.py`
+- **Manifest constants**: `manifest_clause_ids.py`
 - **Gate B / manifests**: `*_gate_b.py` modules + `gate_b_core.py`
 - **Orchestration**: `compile_rules.py` (ordering, dedup, schema validation, manifest accumulation)
 - **Runtime contract**: `data/gazette/prose_rules/*.json` (read by `src/bilun/`)

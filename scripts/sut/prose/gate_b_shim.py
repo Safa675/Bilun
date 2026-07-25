@@ -38,9 +38,15 @@ def shim_export_candidates(name: str, clauses_path: Path, *, encoded_clause_ids:
     return _export_candidates(clauses_path, _section_for(name), encoded_clause_ids=encoded_clause_ids)
 
 
-def shim_build_manifest(name: str, gate_b_frame: pl.DataFrame, rules: list[dict[str, Any]], *, effective_date: str) -> dict[str, Any]:
+def shim_build_manifest(name: str, gate_b_frame: pl.DataFrame, rules: list[dict[str, Any]], *, effective_date: str, resolve_clauses: pl.DataFrame | None = None) -> dict[str, Any]:
     """Generic build_manifest delegation."""
-    manifest = _build_manifest(gate_b_frame, rules, _section_for(name), effective_date=effective_date)
+    manifest = _build_manifest(
+        gate_b_frame,
+        rules,
+        _section_for(name),
+        effective_date=effective_date,
+        resolve_clauses=resolve_clauses,
+    )
     return manifest
 
 
@@ -48,19 +54,21 @@ def shim_write_artifacts(
     name: str,
     *,
     clauses_path: Path,
-    corpus_csv: Path,
+    corpus_csv: Path | None = None,
     manifest_path: Path | None = None,
     shared_manifest_path: Path | None = None,
     effective_date: str,
     rules_path: Path | None = None,
     rules: list[dict[str, Any]] | None = None,
     batch_rules: list[dict[str, Any]] | None = None,
+    write_corpus: bool = False,
     **_kwargs: Any,
 ) -> tuple[pl.DataFrame, dict[str, Any]]:
     """Generic write_artifacts delegation — handles all 4 kwarg flavors.
 
     Resolves rules from: batch_rules > rules > rules_path (JSON load).
     Resolves manifest path from: manifest_path > shared_manifest_path.
+    Corpus CSV is optional (Track C4 — default off; pass write_corpus=True for human export).
     """
     section = _section_for(name)
 
@@ -82,17 +90,25 @@ def shim_write_artifacts(
     if resolved_manifest_path is None:
         resolved_manifest_path = _PROJECT_ROOT / section.manifest_path
 
-    # Build manifest
+    # Build manifest against full parquet so coordinate cites resolve.
+    resolve_clauses = pl.read_parquet(clauses_path)
     frame = _export_candidates(clauses_path, section)
-    manifest = _build_manifest(frame, resolved_rules, section, effective_date=effective_date)
+    manifest = _build_manifest(
+        frame,
+        resolved_rules,
+        section,
+        effective_date=effective_date,
+        resolve_clauses=resolve_clauses,
+    )
 
     # Write artifacts
-    corpus_csv.parent.mkdir(parents=True, exist_ok=True)
     resolved_manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
     encoded = frozenset(manifest["encoded_clause_ids"])
     frame = _export_candidates(clauses_path, section, encoded_clause_ids=encoded)
-    frame.write_csv(corpus_csv)
+    if write_corpus and corpus_csv is not None:
+        corpus_csv.parent.mkdir(parents=True, exist_ok=True)
+        frame.write_csv(corpus_csv)
     resolved_manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )

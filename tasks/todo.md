@@ -1,39 +1,48 @@
-## Task: SUT pipeline god plan (simplify encode identity + SoT)
+## Task: Track C — One derive pipeline (slice A)
 
 ### Goal
-Execute `plans/billing/sut-pipeline-god-plan.md`: SUT-native paragraph identity (`clause_coordinate`), single authored truth (YAML + deferral), derived manifests/coverage, thin compile.
+Manifest + coverage are boring, single-shaped derivatives for drug Gate B: one `canonical-v1` schema, thin drug compile path, no corpus CSV in runtime/CI lock. C3+C5 deferred to next PR.
 
-### Decisions (locked 2026-07-25)
-- [x] D1 Full simplification
-- [x] D2 Phased `C*` removal (coordinates when unique; `C*` for collisions)
-- [x] D3 Non-drug Gate B = Track F last
-- [x] D4 Encode-eligible universe only
+### Decisions (locked)
+- [x] Phased: this PR = C1 + C2 + C4-partial; next PR = C3 + C5
+- [x] Non-drug (payment / material / specialty / anti-vegf / copay) = Track F exceptions
+- [x] Fold uncommitted B1 delete-cut into this PR
 
 ### Subtasks
-- [x] Draft + approve god plan
-- [x] Track A0: uniqueness audit (`plans/billing/sut-pipeline-a0-uniqueness-audit.md`)
-- [x] Track A1 foundation: `clause_identity.py` dual-read + schema + gate_b_generic resolve + tests
-- [x] Coverage dual-read via `clause_identity` (`coverage.py` + tests)
-- [x] Deferral table accepts optional `clause_coordinate` keys (resolve → clause_id)
-- [x] Track A3: compile write path asserts resolvable cites (`assert_gate_b_sources_resolvable`)
-- [x] Track A2 pilot: migrate `definitions_2_6` unique cites (56/70) + recompile
-- [x] Track A2 bulk: migrate remaining families (1128 cites) + recompile fresh targets
-- [x] Update tests for dual-read (manifest invariants, treatment provenance, 4218 tier-A)
-- [x] Track B1: YAML-only — retire SOURCE_PATCHES/DROPS stages (no-op + empty modules)
-- [x] Track B2: move coverage reclassify set → deferral_table `non_actionable`
-- [x] Track B3: derive provenance goldens; delete pure-provenance golden JSON
-- [ ] Track C: canonical manifest + thin compile + coverage + drop corpus CSV + retire shims
-- [ ] Track D: UI/docs audit UX on coordinates
-- [ ] Track E: delete/demote public `C*`
-- [ ] Track F (optional): non-drug Gate B onto generic
+
+#### C1 — Canonical manifest
+- [x] Add JSON schema for `canonical-v1`
+- [x] Extend `build_canonical_encoded_shell` (section_clause_total + preserve buckets)
+- [x] Re-stamp SUT non-canonical manifests (skip fatura + L1.8 copay)
+- [x] Set every `GateBSection.manifest_version` → `canonical-v1`
+- [x] Flip compile targets still on `t1-v1` / wave labels
+- [x] Test: every SUT manifest validates + version == canonical-v1
+
+#### C2 — Thin compile (drug)
+- [x] Collapse drug `gate_b_writer` flavors → one `gate_b_generic`/`shim` path
+- [x] Delete dead `gate_b_module` / `from_prose` branch
+- [x] Document ≤2 exceptions: `4201_w4`, `4213_tier_b_remap`
+- [x] Port phase5 off corpus write; keep `repair_4214c` as documented exception until C3
+- [x] Leave payment / material / specialty / anti-vegf as Track F
+
+#### C4 partial — Corpus CSV
+- [x] Stop writing corpus CSV from generic/shim (default `write_corpus=False`)
+- [x] Drop `prose_corpus/*.csv` from `compile_rules.py --check`
+- [x] Delete dead `_L*_CORPUS_PATH` in `rules_catalog.py`
+- [x] Update gate_b tests off committed CSV; optional export via `write_corpus=True`
+
+#### Deferred (slice B)
+- [ ] C3: coverage one function; delete a0/a1/manifest helpers
+- [ ] C5: delete `gate_b_shim` + dead exports
 
 ### Out of Scope
-- Evaluator clinical matching rewrites
-- LLM bulk extraction as the simplification strategy
-- Fatura `F*` merge into SUT ids
+- Track D/E, full Track F non-drug port
+- Evaluator clinical matching
+- `plans/deployment/vps-openhands-smoke-test.md`
 
 ### Review
 - Branch / PR: `refactor/sut-pipeline-god-plan` → https://github.com/Safa675/Bilun/pull/43
-- A0: 357 encode-eligible coordinate collisions — keep `C*` for those
-- A2 pilot: definitions_2_6 YAML/JSON/golden/manifest now use coordinates where unique
-- Migrate tool: `python -m scripts.sut.prose.migrate_gate_b_sources_to_coordinates --family …`
+- C1: schema + restamp; exceptions fatura + L1.8
+- C2: one writer path; export includes `clause_coordinate`; resolve against full parquet
+- C4: CSV optional export only; `--check` no longer fingerprints corpus
+- Verified: 123 gate_b + schema tests pass; compile `drug_indication_4206` OK

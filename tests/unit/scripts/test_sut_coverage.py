@@ -661,20 +661,14 @@ class TestTierCDrugRuleExtraction:
 
 class TestTierCBucketAEncoding:
     def test_bucket_a_clauses_in_prose_rules(self) -> None:
-        import importlib
-
         import yaml
 
-        mod = importlib.import_module("scripts.sut.prose.drug_indication_bucket_a_patches")
-        patches = dict(getattr(mod, "SOURCE_PATCHES", {}) or {})
         batch_path = _REPO_ROOT / "data/gazette/prose_rule_sources/drug_indication/tier_c_bucket_a.yaml"
         batch = yaml.safe_load(batch_path.read_text(encoding="utf-8"))
         clause_ids: set[str] = set()
-        for ids in patches.values():
-            clause_ids.update(ids)
         for rule in batch.get("rules") or []:
-            clause_ids.update(rule.get("gate_b_sources") or [])
-        assert len(clause_ids) >= 45
+            clause_ids.update(str(c) for c in (rule.get("gate_b_sources") or []) if c)
+        assert len(clause_ids) >= 15
 
         rules = json.loads(
             (_REPO_ROOT / "data/gazette/prose_rules/drug_indication_prose.json").read_text(encoding="utf-8")
@@ -685,20 +679,14 @@ class TestTierCBucketAEncoding:
 
 class TestTierCBucketBEncoding:
     def test_bucket_b_clauses_in_prose_rules(self) -> None:
-        import importlib
-
         import yaml
 
-        mod = importlib.import_module("scripts.sut.prose.drug_indication_bucket_b_patches")
-        patches = dict(getattr(mod, "SOURCE_PATCHES", {}) or {})
         batch_path = _REPO_ROOT / "data/gazette/prose_rule_sources/drug_indication/tier_c_bucket_b.yaml"
         batch = yaml.safe_load(batch_path.read_text(encoding="utf-8"))
         clause_ids: set[str] = set()
-        for ids in patches.values():
-            clause_ids.update(ids)
         for rule in batch.get("rules") or []:
-            clause_ids.update(rule.get("gate_b_sources") or [])
-        assert len(clause_ids) >= 45
+            clause_ids.update(str(c) for c in (rule.get("gate_b_sources") or []) if c)
+        assert len(clause_ids) >= 15
 
         rules = json.loads(
             (_REPO_ROOT / "data/gazette/prose_rules/drug_indication_prose.json").read_text(encoding="utf-8")

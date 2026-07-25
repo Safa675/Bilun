@@ -64,10 +64,40 @@ def assert_manifest_consistent(
         assert_count_matches_list(manifest, list_key, count_key)
 
     if rules is not None and "encoded_clause_ids" in manifest:
-        rule_sources: set[str] = set()
-        for rule in rules:
-            for cid in rule.get("gate_b_sources") or []:
-                rule_sources.add(str(cid))
+        # Dual-read: rules may cite coordinates while manifests list clause_ids.
+        if frame is not None:
+            from scripts.sut.prose.clause_identity import (
+                AmbiguousClauseCiteError,
+                UnknownClauseCiteError,
+                is_clause_id,
+                resolve_gate_b_sources_to_clause_ids,
+            )
+
+            rule_sources: set[str] = set()
+            for rule in rules:
+                for raw in rule.get("gate_b_sources") or []:
+                    if raw is None or not str(raw).strip():
+                        continue
+                    try:
+                        rule_sources.update(
+                            resolve_gate_b_sources_to_clause_ids(
+                                [raw],
+                                frame,
+                                in_force_only="is_in_force" in frame.columns,
+                                allow_ambiguous=False,
+                            )
+                        )
+                    except (AmbiguousClauseCiteError, UnknownClauseCiteError):
+                        text = str(raw).strip()
+                        if is_clause_id(text):
+                            rule_sources.add(text)
+        else:
+            rule_sources = {
+                str(cid)
+                for rule in rules
+                for cid in (rule.get("gate_b_sources") or [])
+                if cid is not None and str(cid).strip()
+            }
         encoded = {str(c) for c in (manifest.get("encoded_clause_ids") or [])}
         orphaned = encoded - rule_sources
         assert not orphaned, (

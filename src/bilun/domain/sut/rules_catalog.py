@@ -33,7 +33,6 @@ from pathlib import Path
 
 from ..constants import (
     _PROSE_RULES_DIR,
-    PROSE_CORPUS_DIR,
     PROSE_MANIFESTS_DIR,
     SUT_CLAUSES_PATH,
     SUT_CLAUSE_COVERAGE_PATH,
@@ -301,18 +300,14 @@ def _material_bundling_partial_engine_summary(clause_frame: pl.DataFrame) -> dic
     return summary
 
 
-_L1_4_CORPUS_PATH = PROSE_CORPUS_DIR / "L1.4_material_bundling_prose.csv"
+def _l14_corpus_row_count() -> int:
+    """L1.4 material bundling corpus count (§3.1–3.2 clauses)."""
+    return _corpus_row_count_from_parquet("3.1") + _corpus_row_count_from_parquet("3.2")
 
 
 @lru_cache(maxsize=1)
 def _load_sut_clauses_frame() -> pl.DataFrame:
-    """Load and cache ``sut_clauses.parquet`` once per process.
-
-    Previously ``_corpus_row_count_from_parquet`` did a full parquet read per
-    section prefix per API request (up to 4 reads of the same file in one
-    ``coverage_summary`` call). Cached with mtime-based invalidation so changes
-    during development are picked up on the next call.
-    """
+    """Load and cache ``sut_clauses.parquet`` once per process."""
     if not SUT_CLAUSES_PATH.exists():
         return pl.DataFrame()
     try:
@@ -322,10 +317,7 @@ def _load_sut_clauses_frame() -> pl.DataFrame:
 
 
 def _corpus_row_count_from_parquet(section_prefix: str) -> int:
-    """Derive corpus row count from sut_clauses.parquet (Phase 4 — no CSV runtime reads).
-
-    Corpus CSVs are encode-wave scratch files; the parquet is the source of truth.
-    """
+    """Derive corpus row count from sut_clauses.parquet (no CSV runtime reads)."""
     frame = _load_sut_clauses_frame()
     if frame.height == 0:
         return 0
@@ -335,18 +327,11 @@ def _corpus_row_count_from_parquet(section_prefix: str) -> int:
         return 0
 
 
-def _l14_corpus_row_count() -> int:
-    """L1.4 material bundling corpus count (§3.1–3.2 clauses)."""
-    return _corpus_row_count_from_parquet("3.1") + _corpus_row_count_from_parquet("3.2")
-
-
 _PAYMENT_METHOD_MOTORS = (
     "payment_method_package",
     "payment_method_itemized",
     "payment_method_tier_override",
 )
-_L22_CORPUS_PATH = PROSE_CORPUS_DIR / "L2.2_payment_method_prose.csv"
-_L18_CORPUS_PATH = PROSE_CORPUS_DIR / "L1.8_copay_exemption_prose.csv"
 
 _COPAY_MOTORS = (
     "copay_rate_general",

@@ -1,5 +1,8 @@
 {
-  "manifest_version": "r6-v1",
+  "manifest_version": "canonical-v1",
+  "rule_set_id": "L4.2_drug_indication_tail_b_r6_manifest",
+  "section_id": "",
+  "section_clause_total": 346,
   "encoded_clause_ids": [
     "C003913",
     "C003917",
@@ -72,6 +75,7 @@
     "C007271",
     "C007286"
   ],
+  "encoded_clause_count": 70,
   "tier_c_deferred_clause_ids": [
     "C003928",
     "C004090",
@@ -207,11 +211,6 @@
     "C007280",
     "C007285"
   ],
-  "tier_c_deferred_count": 133,
-  "effective_date": "2026-06-30",
-  "gap_closure_note": "Wave 1 Tier-C defer — 299 clause(s) added 2026-06-30",
-  "encoded_clause_count": 70,
-  "bucket_a_encode_note": "Tier-C Bucket A promoted 25 clause(s) on 2026-07-01",
   "emr_blocked_clause_ids": [
     "C003553",
     "C003911",
@@ -337,7 +336,6 @@
     "C007283",
     "C007284"
   ],
-  "emr_blocked_count": 123,
   "non_actionable_clause_ids": [
     "C004479",
     "C004492",
@@ -360,8 +358,2446 @@
     "C007078",
     "C007264"
   ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_count": 133,
+  "emr_blocked_count": 123,
   "non_actionable_count": 20,
-  "bucket_b_encode_note": "bucket_b_encode updated 17 clause(s) on 2026-07-01",
-  "bucket_c_emr_blocked_note": "bucket_c_emr_blocked updated 123 clause(s) on 2026-07-01",
-  "bucket_d_non_actionable_note": "bucket_d_non_actionable updated 20 clause(s) on 2026-07-01"
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "clause_traces": [
+    {
+      "clause_id": "C003553",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C003911",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C003913",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003917",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003919",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C003926",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003928",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C003929",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003932",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C003933",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004090",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004091",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004092",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004093",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004095",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004099",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004100",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004101",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004102",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004103",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004106",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004107",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004401",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004418",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004419",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004420",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004421",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004422",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004423",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004424",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004425",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004426",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004428",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004433",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004434",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004435",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004438",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004479",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C004480",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C004481",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004482",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004483",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004485",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004488",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004492",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C004493",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004494",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004495",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C004496",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006076",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006077",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006078",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006079",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006080",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006083",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006205",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006207",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006208",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006209",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006304",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006307",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006308",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006309",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006310",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006311",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006312",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006313",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006314",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006315",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006319",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006323",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006324",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006325",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006326",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006327",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006328",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006329",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006330",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006332",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006333",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006334",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006335",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006336",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006339",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006345",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006346",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006347",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006350",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006351",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006382",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006385",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006399",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006400",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006401",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006402",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006404",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006407",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006408",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006411",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006423",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006424",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006425",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006426",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006427",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006428",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006429",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006431",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006440",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006750",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006752",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006753",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006755",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006757",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006758",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006759",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006760",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006761",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006762",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006763",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006764",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006765",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006766",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006767",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006768",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006769",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006770",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006771",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006772",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006775",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006776",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006778",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006781",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006782",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006784",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006790",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006791",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006794",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006796",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006800",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006801",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006803",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006804",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006806",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006826",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006836",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006837",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006838",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006841",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006842",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006843",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006845",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006846",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006847",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006849",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006851",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006853",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006854",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006856",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006857",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006858",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006859",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006860",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006861",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006863",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006864",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006865",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006869",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006870",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006871",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006891",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006892",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006893",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C006894",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006895",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006896",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006897",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006898",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C006899",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006900",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C006901",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006902",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C006903",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007008",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007009",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007012",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007014",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007015",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007019",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007020",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007022",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007023",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007027",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007028",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007030",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C007033",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007034",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007036",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007037",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007039",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007043",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007044",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007046",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C007050",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007052",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007061",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007066",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007073",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007077",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007078",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C007079",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007084",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007087",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007088",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007090",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007091",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007092",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007093",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007094",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007096",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007097",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007098",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007099",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007101",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007104",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007107",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007109",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007110",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007111",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007112",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007113",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007114",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007115",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007116",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007117",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007118",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007119",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007120",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007121",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007122",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007123",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007124",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007125",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007128",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007130",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007131",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007132",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007133",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007134",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007137",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007139",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007142",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007143",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007144",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007145",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007146",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007149",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007150",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007152",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007153",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007154",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007155",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007156",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007157",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007158",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007159",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007160",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007161",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007162",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007164",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007165",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007168",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007169",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007170",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007171",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007177",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007178",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007179",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007180",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007181",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007182",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007183",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007184",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007185",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007187",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007188",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007189",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007190",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007191",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007192",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007193",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007194",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007195",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007196",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007202",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007207",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007208",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007209",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007210",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007213",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007214",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007215",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007216",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007217",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007218",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007219",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007220",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007221",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007245",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007246",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007247",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007248",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007249",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007250",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007251",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007252",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007253",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007254",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007255",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007256",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007257",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007258",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007259",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007260",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007261",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007262",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007264",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C007265",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007266",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007269",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007270",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007271",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C007272",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007273",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007274",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007275",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007276",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007277",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007278",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007279",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007280",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007281",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007282",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007283",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007284",
+      "manifest_status": "emr_blocked",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
+      "defer_themes": [
+        "clinical_pathway"
+      ]
+    },
+    {
+      "clause_id": "C007285",
+      "manifest_status": "tier_c_deferred",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C007286",
+      "manifest_status": "encoded"
+    }
+  ],
+  "effective_date": "2026-06-30",
+  "encode_tier_C_deferred_count": 133,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 20.2
 }

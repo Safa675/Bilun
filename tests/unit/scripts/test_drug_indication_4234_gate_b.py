@@ -67,8 +67,9 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
     BATCH_MS4234_RULES = load_legacy_drug_batch("drug_indication_4234_batch_rules.py:BATCH_MS4234_RULES")
 
-    frame = pl.read_csv(_CORPUS) if _CORPUS.is_file() else shim_export_candidates(_SECTION, _CLAUSES)
-    manifest = shim_build_manifest(_SECTION, frame, BATCH_MS4234_RULES, effective_date="2026-06-27")
+    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    manifest = shim_build_manifest(_SECTION, frame, BATCH_MS4234_RULES, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _TIER_A_IDS
     soft_floor(int(manifest["tier_c_deferred_count"]), 21, label="test_drug_indication_4234_gate_b tier_c_deferred")
@@ -89,6 +90,7 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
         corpus_csv=corpus,
         manifest_path=manifest_path,
         effective_date="2026-06-27",
+        write_corpus=True,
     )
     assert corpus.is_file()
     assert manifest_path.is_file()

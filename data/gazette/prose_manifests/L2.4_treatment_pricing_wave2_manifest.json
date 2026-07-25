@@ -727,5 +727,6 @@
       "manifest_status": "encoded"
     }
   ],
-  "rules_in_json": 202
+  "rules_in_json": 202,
+  "section_clause_total": 142
 }

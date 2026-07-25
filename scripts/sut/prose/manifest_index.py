@@ -103,26 +103,59 @@ def build_canonical_encoded_shell(
     rules_in_json: int | None = None,
     effective_date: str | None = None,
     extra_keys: dict[str, Any] | None = None,
+    tier_c_deferred_clause_ids: list[str] | set[str] | None = None,
+    emr_blocked_clause_ids: list[str] | set[str] | None = None,
+    non_actionable_clause_ids: list[str] | set[str] | None = None,
+    tier_a_pending_clause_ids: list[str] | set[str] | None = None,
+    tier_b_pending_clause_ids: list[str] | set[str] | None = None,
+    section_clause_total: int | None = None,
 ) -> dict[str, Any]:
-    """Minimal canonical-v1 manifest for encoded-only rule families (gap/wave2/r6 stubs)."""
+    """Minimal canonical-v1 manifest for encoded-only rule families (gap/wave2/r6 stubs).
+
+    Optional bucket lists are preserved for coverage parity when restamping
+    legacy manifests that carried emr/non_actionable/deferred IDs outside deferral_table.
+    """
     encoded = sorted({str(cid) for cid in encoded_clause_ids})
-    traces = [{"clause_id": cid, "manifest_status": "encoded"} for cid in encoded]
+    tier_c = sorted({str(cid) for cid in (tier_c_deferred_clause_ids or [])})
+    emr = sorted({str(cid) for cid in (emr_blocked_clause_ids or [])})
+    non_actionable = sorted({str(cid) for cid in (non_actionable_clause_ids or [])})
+    tier_a = sorted({str(cid) for cid in (tier_a_pending_clause_ids or [])})
+    tier_b = sorted({str(cid) for cid in (tier_b_pending_clause_ids or [])})
+
+    traces: list[dict[str, Any]] = [
+        {"clause_id": cid, "manifest_status": "encoded"} for cid in encoded
+    ]
+    for cid in tier_c:
+        traces.append({"clause_id": cid, "manifest_status": "tier_c_deferred"})
+    for cid in emr:
+        traces.append({"clause_id": cid, "manifest_status": "emr_blocked"})
+    for cid in non_actionable:
+        traces.append({"clause_id": cid, "manifest_status": "non_actionable"})
+    for cid in tier_a:
+        traces.append({"clause_id": cid, "manifest_status": "tier_a_pending", "encode_tier": "A"})
+    for cid in tier_b:
+        traces.append({"clause_id": cid, "manifest_status": "tier_b_pending", "encode_tier": "B"})
+
+    union_n = len(
+        set(encoded) | set(tier_c) | set(emr) | set(non_actionable) | set(tier_a) | set(tier_b)
+    )
     payload: dict[str, Any] = {
         "manifest_version": "canonical-v1",
         "rule_set_id": rule_set_id,
         "section_id": section_id,
+        "section_clause_total": section_clause_total if section_clause_total is not None else union_n,
         "encoded_clause_ids": encoded,
         "encoded_clause_count": len(encoded),
-        "tier_c_deferred_clause_ids": [],
-        "emr_blocked_clause_ids": [],
-        "non_actionable_clause_ids": [],
-        "tier_a_pending_clause_ids": [],
-        "tier_b_pending_clause_ids": [],
-        "tier_c_deferred_count": 0,
-        "emr_blocked_count": 0,
-        "non_actionable_count": 0,
-        "tier_a_pending_count": 0,
-        "tier_b_pending_count": 0,
+        "tier_c_deferred_clause_ids": tier_c,
+        "emr_blocked_clause_ids": emr,
+        "non_actionable_clause_ids": non_actionable,
+        "tier_a_pending_clause_ids": tier_a,
+        "tier_b_pending_clause_ids": tier_b,
+        "tier_c_deferred_count": len(tier_c),
+        "emr_blocked_count": len(emr),
+        "non_actionable_count": len(non_actionable),
+        "tier_a_pending_count": len(tier_a),
+        "tier_b_pending_count": len(tier_b),
         "clause_traces": traces,
     }
     if rules_in_json is not None:

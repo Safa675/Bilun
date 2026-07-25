@@ -173,15 +173,15 @@ Prefer **Track A → B → C → D → E**. Track F optional. Do not start Track
 **Goal:** Manifest + coverage are boring, single-shaped derivatives.
 
 #### C1 — Canonical manifest only
-- [ ] One schema (`manifest_version: canonical-v1`) — see prior plan fields; keys use coordinates post-A
-- [ ] Re-stamp all GateBSection / existing manifests; delete `r5-*` / `wave2-v1` / `t1-v1` shells
-- [ ] Drop dead fields (pcts, duplicate source maps, inn_named_*, etc.)
-- [ ] **Exit:** every committed manifest validates against one JSON schema
+- [x] One schema (`manifest_version: canonical-v1`) — see prior plan fields; keys use coordinates post-A
+- [x] Re-stamp all GateBSection / existing manifests; delete `r5-*` / `wave2-v1` / `t1-v1` shells
+- [x] Drop dead fields (pcts, duplicate source maps, inn_named_*, etc.) *(restamp strips non-canonical shells; Track F extras preserved on pad)*
+- [x] **Exit:** every committed SUT manifest validates against one JSON schema *(exceptions: fatura, L1.8 copay)*
 
 #### C2 — Thin `compile_rules.py`
-- [ ] Collapse `gate_b_writer` flavors → one path: load section YAML → write JSON → derive manifest via `gate_b_generic`
-- [ ] Target: compile orchestrator understandable in one screenful of stage list
-- [ ] **Exit:** no `shared_manifest` / `rules_path_with_batch_rules` special cases (or ≤1 documented exception)
+- [x] Collapse `gate_b_writer` flavors → one path: load section YAML → write JSON → derive manifest via `gate_b_generic`
+- [x] Target: compile orchestrator understandable in one screenful of stage list
+- [x] **Exit:** no `shared_manifest` / `rules_path_with_batch_rules` special cases (or ≤1 documented exception) *(exceptions: `4201_w4`, `4213_tier_b_remap`; phase5 repair until C3)*
 
 #### C3 — Coverage = one function
 - [ ] Input: parquet + rule JSON + deferral  
@@ -191,9 +191,9 @@ Prefer **Track A → B → C → D → E**. Track F optional. Do not start Track
 - [ ] **Exit:** “what is a gap?” answerable from one predicate + deferral
 
 #### C4 — Corpus CSVs
-- [ ] Stop committing / stop runtime-reading Gate B corpus CSVs; optional export-only for humans
-- [ ] Counts from parquet  
-- [ ] **Exit:** `rules_catalog` / coverage do not open `prose_corpus/*.csv`
+- [x] Stop committing / stop runtime-reading Gate B corpus CSVs; optional export-only for humans *(compile no longer writes/checks CSV; committed CSVs may still exist until cleanup)*
+- [x] Counts from parquet  
+- [x] **Exit:** `rules_catalog` / coverage do not open `prose_corpus/*.csv`
 
 #### C5 — Retire shims & one-offs
 - [ ] Remove `gate_b_shim` once tests call generic  

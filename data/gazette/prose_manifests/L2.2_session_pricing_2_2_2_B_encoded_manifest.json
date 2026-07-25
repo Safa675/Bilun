@@ -53,5 +53,6 @@
     }
   ],
   "rules_in_json": 4,
-  "session_fraction_status": "PARTIAL"
+  "session_fraction_status": "PARTIAL",
+  "section_clause_total": 7
 }

@@ -16,7 +16,7 @@ PYTHONPATH=. python scripts/sut/compile_rules.py --target <rule_set_id>
 ```
 
 4. Do **not** hand-edit `data/gazette/prose_rules/*.json` or provenance goldens.
-5. `SOURCE_PATCHES` / `SOURCE_DROPS` stages are retired no-ops (Track B1).
+5. `SOURCE_PATCHES` / `SOURCE_DROPS` modules and compile stages are deleted (Track B1). Edit YAML only.
 
 ## Deferrals (Track B2)
 

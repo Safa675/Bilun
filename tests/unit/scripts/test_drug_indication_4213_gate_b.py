@@ -67,7 +67,8 @@ def _run_audit(clauses_path: Path, rules_path: Path, *, effective_date: str) -> 
         if str(r.get("sut_section") or "").startswith(_SECTION_PREFIX)
     ]
     frame = shim_export_candidates(_SECTION, clauses_path)
-    manifest = shim_build_manifest(_SECTION, frame, rules_4213, effective_date=effective_date)
+    manifest = shim_build_manifest(_SECTION, frame, rules_4213, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date=effective_date)
     before = _audit_gap_parity(clauses_path, manifest, gate_b_frame=frame)
     return {
         **before,
@@ -98,7 +99,8 @@ def _write_shared_artifacts(
     ]
 
     frame = shim_export_candidates(_SECTION, clauses_path)
-    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date=effective_date)
+    manifest = shim_build_manifest(_SECTION, frame, rules, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date=effective_date)
 
     corpus_csv.parent.mkdir(parents=True, exist_ok=True)
     shared_manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -161,7 +163,8 @@ def test_manifest_covers_all_in_force_4213_clauses() -> None:
         if str(rule.get("sut_section") or "").startswith("4.2.13")
     ]
     frame = shim_export_candidates(_SECTION, _CLAUSES)
-    manifest = shim_build_manifest(_SECTION, frame, rules_4213, effective_date="2026-06-27")
+    manifest = shim_build_manifest(_SECTION, frame, rules_4213, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
 
     in_force = _in_force_4213_ids()
     trace_ids = {t["clause_id"] for t in manifest["clause_traces"]}
@@ -246,7 +249,8 @@ def test_audit_gap_parity_zero_untraced() -> None:
         if str(rule.get("sut_section") or "").startswith("4.2.13")
     ]
     frame = shim_export_candidates(_SECTION, _CLAUSES)
-    manifest = shim_build_manifest(_SECTION, frame, rules_4213, effective_date="2026-06-27")
+    manifest = shim_build_manifest(_SECTION, frame, rules_4213, resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
 
     report = _audit_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
     soft_floor(int(report["gap_count"]), 35, label="test_drug_indication_4213_gate_b gap_count")
@@ -277,11 +281,12 @@ def test_audit_oral_switch_tier_b_not_tier_c() -> None:
 
 
 def test_gate_b_artifacts_on_disk() -> None:
-    assert _CORPUS.is_file()
     assert _SHARED_MANIFEST.is_file()
-    corpus = pl.read_csv(_CORPUS)
+    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+
+    corpus = shim_export_candidates(_SECTION, _CLAUSES)
     manifest = json.loads(_SHARED_MANIFEST.read_text(encoding="utf-8"))
-    # Corpus height tracks the in-force §4.2.13 candidate count (single source).
+    # Export height tracks the in-force §4.2.13 candidate count (single source).
     assert corpus.height == _in_force_4213_ids().__len__()
     # Manifest section_total counts ALL §4.2.13 traces (incl. out-of-force),
     # so it must be >= the in-force corpus subset, not equal to it.

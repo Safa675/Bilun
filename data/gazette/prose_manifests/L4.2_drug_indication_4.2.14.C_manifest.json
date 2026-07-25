@@ -5,10 +5,10 @@
   "rule_set_id": "drug_indication_4.2.14.C",
   "rules_in_json": 930,
   "section_clause_total": 615,
-  "encoded_clause_count": 415,
+  "encoded_clause_count": 396,
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 8,
+  "tier_c_deferred_count": 9,
   "encoded_clause_ids": [
     "C004934",
     "C004935",
@@ -39,9 +39,6 @@
     "C004982",
     "C004983",
     "C004984",
-    "C004985",
-    "C004986",
-    "C004987",
     "C004988",
     "C004996",
     "C004997",
@@ -59,7 +56,6 @@
     "C005013",
     "C005014",
     "C005015",
-    "C005016",
     "C005024",
     "C005027",
     "C005029",
@@ -79,12 +75,9 @@
     "C005050",
     "C005051",
     "C005052",
-    "C005053",
-    "C005054",
     "C005055",
     "C005058",
     "C005060",
-    "C005061",
     "C005062",
     "C005064",
     "C005065",
@@ -100,29 +93,21 @@
     "C005088",
     "C005090",
     "C005092",
-    "C005093",
-    "C005094",
     "C005095",
     "C005096",
-    "C005097",
     "C005098",
     "C005099",
     "C005100",
     "C005102",
     "C005103",
     "C005104",
-    "C005105",
     "C005108",
     "C005109",
     "C005111",
-    "C005112",
     "C005113",
-    "C005114",
-    "C005119",
     "C005120",
     "C005121",
     "C005122",
-    "C005133",
     "C005134",
     "C005136",
     "C005137",
@@ -151,9 +136,6 @@
     "C005189",
     "C005190",
     "C005191",
-    "C005192",
-    "C005193",
-    "C005194",
     "C005195",
     "C005197",
     "C005200",
@@ -267,7 +249,6 @@
     "C005482",
     "C005483",
     "C005485",
-    "C005487",
     "C005489",
     "C005498",
     "C005505",
@@ -436,6 +417,7 @@
     "C005275",
     "C005331",
     "C005344",
+    "C005487",
     "C005638"
   ],
   "emr_blocked_clause_ids": [
@@ -445,12 +427,17 @@
     "C005028",
     "C005039",
     "C005048",
+    "C005053",
+    "C005054",
     "C005057",
     "C005059",
     "C005063",
     "C005069",
     "C005075",
+    "C005093",
     "C005110",
+    "C005114",
+    "C005193",
     "C005263",
     "C005269",
     "C005273",
@@ -472,9 +459,13 @@
     "C004951",
     "C004954",
     "C004966",
+    "C004985",
+    "C004986",
+    "C004987",
     "C005001",
     "C005006",
     "C005011",
+    "C005016",
     "C005018",
     "C005023",
     "C005025",
@@ -482,6 +473,7 @@
     "C005032",
     "C005044",
     "C005047",
+    "C005061",
     "C005068",
     "C005071",
     "C005072",
@@ -489,8 +481,14 @@
     "C005083",
     "C005089",
     "C005091",
+    "C005094",
+    "C005097",
     "C005101",
+    "C005105",
+    "C005112",
     "C005115",
+    "C005119",
+    "C005133",
     "C005135",
     "C005138",
     "C005141",
@@ -505,6 +503,8 @@
     "C005186",
     "C005187",
     "C005188",
+    "C005192",
+    "C005194",
     "C005196",
     "C005198",
     "C005214",
@@ -634,8 +634,8 @@
     "C005757",
     "C005763"
   ],
-  "emr_blocked_count": 27,
-  "non_actionable_count": 165,
+  "emr_blocked_count": 32,
+  "non_actionable_count": 178,
   "clause_traces": [
     {
       "clause_id": "C004934",
@@ -966,29 +966,23 @@
     {
       "clause_id": "C004985",
       "encode_tier": "A",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Temozolomid",
-      "linked_rule_ids": [
-        "4.2.14.C.(2).azacitidine_mds_board"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C004986",
       "encode_tier": "A",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Floxuridin",
-      "linked_rule_ids": [
-        "4.2.14.C.tier_c.C004986.floxuridin"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C004987",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Azasitidin ve decitabin",
-      "linked_rule_ids": [
-        "4.2.14.C.azacitidine_mds_6mo_heme"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C004988",
@@ -1189,12 +1183,9 @@
     {
       "clause_id": "C005016",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Dasatinib (Ek: RG- 04/09/2019- 30878/ 23-a md. Yürürlük: 12/09/2019)",
-      "linked_rule_ids": [
-        "4.2.14.C.tier_c.C005019.dasatinib",
-        "4.2.14.C.tier_c_b.C005021.nilotinib"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005018",
@@ -1468,21 +1459,23 @@
     {
       "clause_id": "C005053",
       "encode_tier": "A",
-      "manifest_status": "encoded",
+      "manifest_status": "emr_blocked",
       "heuristic_inn": "Lapatinib",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).lapatinib_her2_board",
-        "4.2.14.C.(3).sorafenib_hcc_rcc_board"
-      ]
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
     },
     {
       "clause_id": "C005054",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "emr_blocked",
       "heuristic_inn": "Temsirolimus",
-      "linked_rule_ids": [
-        "4.2.14.C.nopay_after_cabozantinib_rcc_seq"
-      ]
+      "defer_themes": [
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
     },
     {
       "clause_id": "C005055",
@@ -1544,11 +1537,9 @@
     {
       "clause_id": "C005061",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Sorafenib",
-      "linked_rule_ids": [
-        "4.2.14.C.fikra2_second_tier_prescriber"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005062",
@@ -1774,22 +1765,22 @@
     {
       "clause_id": "C005093",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "emr_blocked",
       "heuristic_inn": "Erlotinib",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).gefitinib_oncology_board",
-        "4.2.14.C.(3).pazopanib_rcc_board",
-        "4.2.14.C.erlottinib_nsclc_board"
-      ]
+      "defer_themes": [
+        "mutation_panel",
+        "prior_therapy",
+        "response_assessment",
+        "moh_patient_approval"
+      ],
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
     },
     {
       "clause_id": "C005094",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Raltitreksed",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).interferon_oncology_board"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005095",
@@ -1816,11 +1807,9 @@
     {
       "clause_id": "C005097",
       "encode_tier": "A",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Everolimus",
-      "linked_rule_ids": [
-        "4.2.14.C.tier_c.C005097.everolimus"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005098",
@@ -1890,11 +1879,9 @@
     {
       "clause_id": "C005105",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Pazopanib",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).panitumumab_crc_board"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005108",
@@ -1936,12 +1923,9 @@
     {
       "clause_id": "C005112",
       "encode_tier": "A",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Cinacalcet",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).kabazitaxel_prostate_board",
-        "4.2.14.C.(3).abiraterone_prostate_board"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005113",
@@ -1957,11 +1941,12 @@
     {
       "clause_id": "C005114",
       "encode_tier": "A",
-      "manifest_status": "encoded",
+      "manifest_status": "emr_blocked",
       "heuristic_inn": "Trabektedin",
-      "linked_rule_ids": [
-        "4.2.14.C.(3).enzalutamide_prostate_board"
-      ]
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
     },
     {
       "clause_id": "C005115",
@@ -1973,13 +1958,9 @@
     {
       "clause_id": "C005119",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Panitumumab",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).kabazitaxel_prostate_board",
-        "4.2.14.C.(3).abiraterone_prostate_board",
-        "4.2.14.C.(3).enzalutamide_prostate_board"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005120",
@@ -2016,11 +1997,9 @@
     {
       "clause_id": "C005133",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Kabazitaksel",
-      "linked_rule_ids": [
-        "4.2.14.C.tier_c.C005131.kabazitaksel"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005134",
@@ -2407,31 +2386,26 @@
     {
       "clause_id": "C005192",
       "encode_tier": "A",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Fluorourasil topikal formları",
-      "linked_rule_ids": [
-        "4.2.14.C.(3).dabrafenib_melanoma_board",
-        "4.2.14.C.(3).trametinib_melanoma_board",
-        "4.2.14.C.(3).vemurafenib_melanoma_board"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005193",
       "encode_tier": "A",
-      "manifest_status": "encoded",
+      "manifest_status": "emr_blocked",
       "heuristic_inn": "Aksitinib",
-      "linked_rule_ids": [
-        "4.2.14.C.aksitinib_rcc_board"
-      ]
+      "defer_themes": [
+        "response_assessment"
+      ],
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
     },
     {
       "clause_id": "C005194",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "non_actionable",
       "heuristic_inn": "Setuksimab:",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).cetuximab_oncology_board"
-      ]
+      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
     },
     {
       "clause_id": "C005195",
@@ -4125,11 +4099,12 @@
     {
       "clause_id": "C005487",
       "encode_tier": "A",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda",
-      "linked_rule_ids": [
-        "4.2.14.C.nmosd_3neurology_6m"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C005488",
@@ -6068,7 +6043,7 @@
   ],
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
-  "encode_tier_C_deferred_count": 8,
+  "encode_tier_C_deferred_count": 9,
   "tier_c_manifest": [
     {
       "clause_id": "C005056",
@@ -6134,6 +6109,15 @@
       "heuristic_inn": "Evre IV CD30 pozitif klasik Hodgkin Lenfoma tanısı konmuş olan hastalardan"
     },
     {
+      "clause_id": "C005487",
+      "encode_tier": "A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
+      "heuristic_inn": "NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda"
+    },
+    {
       "clause_id": "C005638",
       "encode_tier": "C",
       "defer_themes": [
@@ -6144,19 +6128,19 @@
     }
   ],
   "tier_c_defer_themes_summary": {
-    "clinical_pathway": 8
+    "clinical_pathway": 9
   },
   "emr_blocked_note": "EMR-blocked clauses require clinical assessment (ECOG, mutation panel, response/progression) not available on DrugClaimLine alone.",
-  "tier_c_manifest_note": "A1 repair — 8 tier-C deferred, 27 EMR-blocked, 165 non-actionable; 615 in-force traces (lists synced from traces).",
+  "tier_c_manifest_note": "A1 repair — 9 tier-C deferred, 32 EMR-blocked, 178 non-actionable; 615 in-force traces (lists synced from traces).",
   "a1_coverage_gap": {
     "canonical_count": 615,
     "traced_count": 615,
     "missing_clause_ids": [],
     "extra_clause_ids": [],
-    "encoded_count": 415,
-    "tier_c_deferred_count": 8,
-    "emr_blocked_count": 27,
+    "encoded_count": 396,
+    "tier_c_deferred_count": 9,
+    "emr_blocked_count": 32,
     "gate_b_total": 832
   },
-  "encoded_clause_pct": 67.5
+  "encoded_clause_pct": 64.4
 }
