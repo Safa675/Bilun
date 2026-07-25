@@ -784,22 +784,45 @@ def _stage_treatment_pricing_wave2_manifest(target: CompileTarget, ctx: dict[str
 
 def _compile_antivegf_manifest(target: CompileTarget) -> dict:
     import polars as pl
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
+        UnknownClauseCiteError,
+        resolve_gate_b_ref_to_clause_ids,
+    )
     from scripts.sut.prose.drug_indication_gate_b import infer_defer_themes
 
     payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
     merged = list(payload.get("rules") or [])
-    encoded_ids = {str(cid) for rule in merged for cid in (rule.get("gate_b_sources") or [])}
     clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
-    section = pl.read_parquet(clauses_path).filter(
+    clauses = pl.read_parquet(clauses_path)
+    section = clauses.filter(
         pl.col("section_id").str.starts_with("4.2.33") & pl.col("is_in_force")
     )
     rules_by_clause: dict[str, list[str]] = {}
-    clause_traces: dict[str, list[str]] = {}
+    encoded_ids: set[str] = set()
     for rule in merged:
         rid = str(rule.get("rule_id") or "")
-        clause_traces[rid] = sorted(str(c) for c in (rule.get("gate_b_sources") or []))
-        for cid in rule.get("gate_b_sources") or []:
-            rules_by_clause.setdefault(str(cid), []).append(rid)
+        for raw in rule.get("gate_b_sources") or []:
+            if raw is None or not str(raw).strip():
+                continue
+            try:
+                resolved = resolve_gate_b_ref_to_clause_ids(
+                    str(raw),
+                    clauses,
+                    in_force_only=True,
+                    encode_eligible_only=True,
+                    allow_ambiguous=False,
+                )
+            except (
+                AmbiguousClauseCiteError,
+                NonEncodeEligibleCiteError,
+                UnknownClauseCiteError,
+            ):
+                continue
+            for cid in resolved:
+                encoded_ids.add(cid)
+                rules_by_clause.setdefault(cid, []).append(rid)
 
     tier_c_deferred: list[str] = []
     traces: list[dict[str, Any]] = []
@@ -811,7 +834,7 @@ def _compile_antivegf_manifest(target: CompileTarget) -> dict:
                 "clause_id": clause_id,
                 "section_id": str(row.get("section_id") or ""),
                 "manifest_status": "encoded",
-                "linked_rule_ids": sorted(rules_by_clause.get(clause_id, [])),
+                "linked_rule_ids": sorted(set(rules_by_clause.get(clause_id, []))),
             }
         elif str(row.get("clause_type") or "") in {"section_heading", "chapter"} and not row.get("deontic_modality"):
             entry = {
@@ -836,6 +859,11 @@ def _compile_antivegf_manifest(target: CompileTarget) -> dict:
 
     in_force_ids = {str(cid) for cid in section["clause_id"].to_list()}
     effective_date = _existing_effective_date(target.manifest_path) or date.today().isoformat()
+    encoded_in_force = sorted(encoded_ids & in_force_ids)
+    coord_by_id = {
+        str(row["clause_id"]): str(row.get("clause_coordinate") or "")
+        for row in section.iter_rows(named=True)
+    }
     manifest = {
         "manifest_version": "canonical-v1",
         "section_id": "4.2.33",
@@ -843,8 +871,15 @@ def _compile_antivegf_manifest(target: CompileTarget) -> dict:
         "rule_set_id": "anti_vegf_prose",
         "rules_in_json": len(merged),
         "section_clause_total": section.height,
-        "encoded_clause_count": len(encoded_ids & in_force_ids),
-        "encoded_clause_ids": sorted(encoded_ids & in_force_ids),
+        "encoded_clause_count": len(encoded_in_force),
+        "encoded_clause_ids": encoded_in_force,
+        "encoded_clause_coordinates": sorted(
+            {
+                coord_by_id[cid]
+                for cid in encoded_in_force
+                if coord_by_id.get(cid)
+            }
+        ),
         "tier_c_deferred_clause_ids": sorted(tier_c_deferred),
         "tier_c_deferred_count": len(tier_c_deferred),
         "emr_blocked_clause_ids": [],
@@ -864,6 +899,13 @@ def _compile_antivegf_manifest(target: CompileTarget) -> dict:
 
 
 def _write_specialty_materials_manifest(target: CompileTarget) -> dict:
+    import polars as pl
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
+        UnknownClauseCiteError,
+        resolve_gate_b_ref_to_clause_ids,
+    )
     from scripts.sut.prose.manifest_clause_ids import (
         GLUCOSE_METER_BATCH_CLAUSE_IDS,
         OTHER_3_3_TAIL_CLAUSE_IDS,
@@ -878,28 +920,58 @@ def _write_specialty_materials_manifest(target: CompileTarget) -> dict:
 
     payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
     rules = list(payload.get("rules") or [])
-    sources = sorted({str(cid) for rule in rules for cid in (rule.get("gate_b_sources") or [])})
-    manifest = {
-        "manifest_version": "canonical-v1",
-        "rule_set_id": "specialty_materials_prose",
-        "rules_in_json": len(rules),
-        "encoded_clause_ids": sources,
-        "encoded_clause_count": len(sources),
-        "rules_added": 0,
-        "rules_patched": 0,
-        "pilot_331_clause_ids": sorted(WOUND_331_PILOT_CLAUSE_IDS),
-        "vision_optik_batch_clause_ids": sorted(VISION_OPTIK_BATCH_CLAUSE_IDS),
-        "specialty_334_batch_clause_ids": sorted(SPECIALTY_334_BATCH_CLAUSE_IDS),
-        "glucose_meter_batch_clause_ids": sorted(GLUCOSE_METER_BATCH_CLAUSE_IDS),
-        "specialty_337_batch_clause_ids": sorted(SPECIALTY_337_BATCH_CLAUSE_IDS),
-        "specialty_338_batch_clause_ids": sorted(SPECIALTY_338_BATCH_CLAUSE_IDS),
-        "specialty_336_batch_clause_ids": sorted(SPECIALTY_336_BATCH_CLAUSE_IDS),
-        "other_3_3_tail_clause_ids": sorted(OTHER_3_3_TAIL_CLAUSE_IDS),
-        "r5_specialty_header_clause_ids": sorted(SPECIALTY_R5_HEADER_CLAUSE_IDS),
-        "encoded_clause_ids": sources,
-    }
+    clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
+    clauses = pl.read_parquet(clauses_path) if clauses_path.is_file() else None
+    sources: set[str] = set()
+    for rule in rules:
+        for raw in rule.get("gate_b_sources") or []:
+            if raw is None or not str(raw).strip():
+                continue
+            text = str(raw).strip()
+            if clauses is None:
+                sources.add(text)
+                continue
+            try:
+                sources.update(
+                    resolve_gate_b_ref_to_clause_ids(
+                        text,
+                        clauses,
+                        in_force_only=True,
+                        encode_eligible_only=True,
+                        allow_ambiguous=False,
+                    )
+                )
+            except (
+                AmbiguousClauseCiteError,
+                NonEncodeEligibleCiteError,
+                UnknownClauseCiteError,
+            ):
+                continue
+    sorted_sources = sorted(sources)
+    from scripts.sut.prose.manifest_index import build_canonical_encoded_shell
+
+    manifest = build_canonical_encoded_shell(
+        rule_set_id="specialty_materials_prose",
+        encoded_clause_ids=sorted_sources,
+        section_id="3.3",
+        rules_in_json=len(rules),
+        section_clause_total=len(sorted_sources),
+        extra_keys={
+            "rules_added": 0,
+            "rules_patched": 0,
+            "pilot_331_clause_ids": sorted(WOUND_331_PILOT_CLAUSE_IDS),
+            "vision_optik_batch_clause_ids": sorted(VISION_OPTIK_BATCH_CLAUSE_IDS),
+            "specialty_334_batch_clause_ids": sorted(SPECIALTY_334_BATCH_CLAUSE_IDS),
+            "glucose_meter_batch_clause_ids": sorted(GLUCOSE_METER_BATCH_CLAUSE_IDS),
+            "specialty_337_batch_clause_ids": sorted(SPECIALTY_337_BATCH_CLAUSE_IDS),
+            "specialty_338_batch_clause_ids": sorted(SPECIALTY_338_BATCH_CLAUSE_IDS),
+            "specialty_336_batch_clause_ids": sorted(SPECIALTY_336_BATCH_CLAUSE_IDS),
+            "other_3_3_tail_clause_ids": sorted(OTHER_3_3_TAIL_CLAUSE_IDS),
+            "r5_specialty_header_clause_ids": sorted(SPECIALTY_R5_HEADER_CLAUSE_IDS),
+        },
+    )
     _write_json(_MANIFEST_DIR / "L4.4_specialty_prose_encoded_manifest.json", manifest)
-    return {"added": 0, "patched": 0, "encoded": len(sources)}
+    return {"added": 0, "patched": 0, "encoded": len(sorted_sources)}
 
 
 _STAGES = {
