@@ -1,23 +1,28 @@
-## Task: Turkish UI full i18n (Phases 0–5)
+## Task: Full brittle-test remediation (plan first)
 
 ### Goal
-`bilun:locale=tr` shows zero allowlist-excluded English user-facing strings (per `plans/frontend/turkish-ui-full-i18n.md`).
+Replace hardcoded census locks in unit tests with derived counts, soft floors, and self-consistency invariants so SUT re-extract / encode / synthetic regen no longer mass-break CI. Plan: `plans/refactor/brittle-test-remediation-plan.md`.
 
 ### Subtasks
-- [x] Phase 0: Stabilize audit allowlist + script
-- [x] Phase 1: Wire `translateApiText` on all detail/note/rule_source renders
-- [x] Phase 2: Expand `apiMessages` EN→TR patterns + messages
-- [x] Phase 3: Kind maps + loanword cleanup + Gazette/surcharge labels
-- [x] Phase 4: Chat error surface TR
-- [x] Phase 5: Rule DB / Revenue EN prose → TR messages
-- [x] Verify: vitest + Playwright TR crawl → 0 unexpected EN
-- [x] Update plan Review + tasks/todo.md
+- [x] Investigate brittle patterns (gate_b counts, rule-set lens, synthetic pins, catalog goldens, API/FE copy)
+- [x] Write full remediation plan under `plans/refactor/brittle-test-remediation-plan.md`
+- [x] **Verify plan with Safa** (approve / adjust scope before any test rewrites)
+- [x] Phase 1: Finish gap-closure 0.3 (`==832/282/131` + helpers + `test_rule_sources` leftovers)
+- [x] Phase 2: Rest of gate_b suite → invariant helpers
+- [x] Phase 3: Rule-set `len() == N` locks (fatura, treatment_pricing, BATCH_*, fact_check)
+- [x] Phase 4: Synthetic census + patient/claim ID pins → scenario_tag / soft floors
+- [x] Phase 5: Catalog goldens + API/FE copy; mark pipeline Phase 5 done
+- [x] Phase 6: Residual grep triage, cross-plan checkboxes, allowed-exact note
+- [x] Finish previously deferred: FE TRY HTML asserts + catalog stubs
 
 ### Out of Scope
-- Phase 6 backend locale-aware note generation
-- Changing EN locale copy
+- Changing extractor/evaluator/rule JSON contents
+- Regenerating parquet or synthetic cohort
+- Non-drug gate_b **code** consolidation
+- Frontend i18n catalog expansion
 
 ### Review
-- Playwright `scripts/i18n/audit-tr-ui-english.mjs`: **findingCount=0**, unique=0
-- Vitest: `apiMessages`, `sutLabels`, `billingReportFields`, `recommendedActions` pass
-- Key fixes: billing prose patterns in `apiMessages.ts`; render wraps; kind/label maps; LLM error sanitization; Rule DB honesty/footnote/description_tr + category chips
+- Helpers: `brittle_guards.py`, `catalog_stubs.py`, `frontend/src/test/fmtMoney.ts`
+- DoD: `==832/282/131` clean; SGK zero hardcoded patient IDs; loader soft floors; catalog prices from stubs; FE money from fixtures
+- Verification: 813+ backend remediations; 27 catalog-stub tests; 39 FE vitest
+- Cross-plan: gap-closure §0.3 + pipeline Phase 5 marked done

@@ -43,18 +43,23 @@ from src.bilun.domain.prose_rules.anestezi_puani import (
 )
 from src.bilun.domain.prose_rules.refakatci import detect_refakatci_opportunities
 from src.bilun.domain.prose_rules.yatak_puani import detect_yatak_puani_opportunities
+from tests.unit._helpers.catalog_stubs import (
+    FIXTURE_BED_DAILY_TRY,
+    FIXTURE_KATSAYI,
+    FIXTURE_PROC_PUAN,
+    install_anestezi_catalog_stub,
+    install_yatak_catalog_stub,
+)
 
 pytestmark = pytest.mark.unit
 
-_KATSAYI = 0.593
+_A1_GROUP_PUAN = 8942.14
 
-# ── Catalog constants (verified against EK-2B/EK-2C asof_2026-01-31) ──────────
-#   610130 (Appendektomi) EK-2B: puan = 3397.78, price_try = 2014.88
-#   P610130 EK-2C package:       puan = 8567.091, price_try = 5080.28
-#   510010 (Standart yatak):     puan = 374.97,  price_try = 222.36
-#   705371 (Eritrosit susp.):    puan = 7525.54, price_try = 4462.65
-#   550130 (Anestezi A1 group):  puan = 8942.14, price_try = 5302.69
 
+@pytest.fixture(autouse=True)
+def _stub_catalogs(monkeypatch: pytest.MonkeyPatch) -> None:
+    install_yatak_catalog_stub(monkeypatch)
+    install_anestezi_catalog_stub(monkeypatch)
 
 def _make_tablo23_claim() -> ClaimHeader:
     """ClaimHeader for the Tablo 23 appendectomy patient.
@@ -167,7 +172,7 @@ def test_tablo23_yatak_days_count_no_procedures() -> None:
     assert opp["bed_days"] == 4
     assert opp["gross_bed_days"] == 4
     assert opp["surgery_day_bundled"] is False
-    assert opp["daily_rate_try"] == pytest.approx(222.36, abs=0.01)
+    assert opp["daily_rate_try"] == pytest.approx(FIXTURE_BED_DAILY_TRY, abs=0.01)
 
 
 def test_tablo23_yatak_days_count_with_package_bundling() -> None:
@@ -190,21 +195,21 @@ def test_tablo23_yatak_days_count_with_package_bundling() -> None:
     assert opp["bed_days"] == 3
     assert opp["surgery_day_bundled"] is True
     assert opp["bundled_days"] == 1
-    assert opp["daily_rate_try"] == pytest.approx(222.36, abs=0.01)
-    assert opp["expected_yatak_try"] == pytest.approx(667.08, abs=0.01)
+    assert opp["daily_rate_try"] == pytest.approx(FIXTURE_BED_DAILY_TRY, abs=0.01)
+    assert opp["expected_yatak_try"] == pytest.approx(3 * FIXTURE_BED_DAILY_TRY, abs=0.01)
 
 
 def test_tablo23_yatak_amount_matches_catalog() -> None:
-    """Gross yatak amount = 4 days × ₺222.36/day = ₺889.44 (no procedure lines)."""
+    """Gross yatak amount = 4 days × stubbed daily rate (no procedure lines)."""
     claim = _make_tablo23_claim()
     opps = detect_yatak_puani_opportunities(
         [claim], claim_ids_with_procs={"TABLO23-C1"}
     )
-    assert opps[0]["expected_yatak_try"] == pytest.approx(889.44, abs=0.01)
+    assert opps[0]["expected_yatak_try"] == pytest.approx(4 * FIXTURE_BED_DAILY_TRY, abs=0.01)
 
 
 def test_tablo23_yatak_bundled_amount() -> None:
-    """With package bundling, 3 billable days × ₺222.36 = ₺667.08."""
+    """With package bundling, 3 billable days × stubbed daily rate."""
     claim = _make_tablo23_claim()
     procs = _make_tablo23_procedures()
     opps = detect_yatak_puani_opportunities(
@@ -212,7 +217,7 @@ def test_tablo23_yatak_bundled_amount() -> None:
         procedure_lines=procs,
         claim_ids_with_procs={"TABLO23-C1"},
     )
-    assert opps[0]["expected_yatak_try"] == pytest.approx(667.08, abs=0.01)
+    assert opps[0]["expected_yatak_try"] == pytest.approx(3 * FIXTURE_BED_DAILY_TRY, abs=0.01)
 
 
 # ── Anestezi puani — the anesthesia charge should match the handbook ────────
@@ -256,9 +261,8 @@ def test_tablo23_anestezi_group_is_a1() -> None:
     opp = opps[0]
     assert opp["anestezi_group"] == "A1"
     assert opp["anestezi_code"] == "550130"
-    assert opp["anestezi_puan"] == pytest.approx(8942.14)
-    # 8942.14 × 0.593 = 5302.69
-    assert opp["expected_try"] == pytest.approx(5302.69, abs=0.01)
+    assert opp["anestezi_puan"] == pytest.approx(_A1_GROUP_PUAN)
+    assert opp["expected_try"] == pytest.approx(_A1_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
 
 
 # ── Refakatçi (companion bed) — El Kitabı does not mention a companion ───────
@@ -360,6 +364,6 @@ def test_tablo23_full_billing_summary() -> None:
     ) if refakatci_opps else 0.0
 
     # Summary assertions — values are catalog-derived + bundling rule
-    assert yatak_total == pytest.approx(667.08, abs=0.01)
-    assert anestezi_total == pytest.approx(5302.69, abs=0.01)
+    assert yatak_total == pytest.approx(3 * FIXTURE_BED_DAILY_TRY, abs=0.01)
+    assert anestezi_total == pytest.approx(_A1_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
     assert refakatci_total > 0, "Refakatçi should produce a positive amount"

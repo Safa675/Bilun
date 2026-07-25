@@ -74,6 +74,8 @@ Replace rules_catalog.py corpus-row-count reads with parquet-derived counts.
 ## Phase 5 — Property-based test assertions
 Replace hardcoded literal counts with derived assertions.
 
+**DONE 2026-07-25** (expanded): see `plans/refactor/brittle-test-remediation-plan.md`. Shared helpers in `tests/unit/_helpers/brittle_guards.py`; gate_b / rule-set / synthetic / API census locks softened to derived/`>=`/invariant assertions. Pre-existing: `test_manifest_derivation_invariants.py`.
+
 ## Phase 6 — Simplify coverage derivation
 Reduces coverage.py from ~500 lines to ~200.
 

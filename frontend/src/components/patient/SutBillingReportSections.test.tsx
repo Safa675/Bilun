@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
+import { fmtTRY2Fixture } from "@/test/fmtMoney";
 import type { BillingActionReport } from "@/lib/domains/sut";
 import {
   BillingStrategySection,
@@ -116,7 +117,7 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("katilimPayindanMuaf=E");
     expect(html).toContain("Procedure exemption gap");
     expect(html).toContain("Total exemption gap");
-    expect(html).toContain("110.00 TRY");
+    expect(html).toContain(fmtTRY2Fixture(110.00));
     expect(html).toContain("Compliance correction");
     expect(html).toContain("Copay (participation fee)");
   });
@@ -159,8 +160,8 @@ describe("SutBillingReportSections honest gaps", () => {
 
     expect(html).toContain("Ilave ücret");
     expect(html).toContain("Ilave ücret total");
-    expect(html).toContain("25.00 TRY");
-    expect(html).toContain("10.00 TRY");
+    expect(html).toContain(fmtTRY2Fixture(25.00));
+    expect(html).toContain(fmtTRY2Fixture(10.00));
     expect(html).toContain("exemption does not waive ilave");
   });
 
@@ -223,7 +224,7 @@ describe("SutBillingReportSections honest gaps", () => {
     );
 
     expect(html).toContain("Ilave ücret (informational)");
-    expect(html).toContain("15.00 TRY");
+    expect(html).toContain(fmtTRY2Fixture(15.00));
     expect(html).toContain("exemption does not waive ilave");
   });
 
@@ -288,7 +289,7 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("Compliant");
     expect(html).toContain("Violation");
     expect(html).toContain("Package procedure");
-    expect(html).toContain("14637.06 TRY");
+    expect(html).toContain(fmtTRY2Fixture(14637.06));
     expect(html).not.toContain("0.00 TRY");
     // Single merged table — no separate red compliance-violations subheading.
     expect(html).not.toContain("Payment method compliance issues");
@@ -321,7 +322,7 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("§2.2.2(2) optional billing method");
     expect(html).toContain("compare package vs itemized");
     expect(html).toContain("Recoverable uplift");
-    expect(html).toContain("1200.00 TRY");
+    expect(html).toContain(fmtTRY2Fixture(1200.00));
   });
 
   it("shows catalog as-of footnote for claim-level strategy", () => {
@@ -639,7 +640,7 @@ describe("DrugIndicationReviewSection", () => {
     expect(html).toContain("OP1198");
     expect(html).toContain("Ortez");
     expect(html).toContain("§3.1.2");
-    expect(html).toContain("1250.00 TRY");
+    expect(html).toContain(fmtTRY2Fixture(1250.00));
     expect(html).toContain("EK-3C-1 — pre-auth required");
   });
 });

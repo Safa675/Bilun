@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
+import { fmtTRYFixture } from "@/test/fmtMoney";
 
 vi.mock("@/hooks/useStaggeredReveal", () => ({
   default: () => ({}),
@@ -90,7 +91,7 @@ describe("ClaimSummaryPanel", () => {
     );
 
     expect(html).toContain("Exact Claim-Line Summary");
-    expect(html).toContain("132 TRY");
+    expect(html).toContain(fmtTRYFixture(Math.round(131.77)));
     expect(html).toContain("520030");
     expect(html).toContain("EK-2C-1 copay rate");
     expect(html).toContain("EK-2C-1");
@@ -184,7 +185,7 @@ describe("DRGPanel exactness rendering", () => {
       />,
     );
 
-    expect(html).toContain("20 TRY");
+    expect(html).toContain(fmtTRYFixture(20)); // episode.drg_package_price from fixture above
     expect(html).not.toContain("Reimbursement Gap:");
     expect(html).not.toContain("Missing admission date");
   });

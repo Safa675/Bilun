@@ -9,6 +9,12 @@ from typing import Any
 import polars as pl
 import pytest
 
+from tests.unit._helpers.brittle_guards import (
+    assert_audit_report_consistent,
+    assert_manifest_consistent,
+    soft_floor,
+)
+
 pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[3]
@@ -107,7 +113,9 @@ def test_gate_b_exports_4201_candidates() -> None:
     from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
     frame = shim_export_candidates(_SECTION, _CLAUSES)
-    assert frame.height == 282
+    expected = len(_in_force_clause_ids(_CLAUSES))
+    assert frame.height == expected
+    soft_floor(frame.height, 200, label="§4.2.1 export height")
     assert frame.filter(pl.col("section_id").str.starts_with("4.2.17")).height == 0
     assert frame.filter(pl.col("section_id") == "4.2.1.A").height >= 1
 
@@ -142,11 +150,12 @@ def test_manifest_pilot_encoded_and_pending_trace() -> None:
     frame = shim_export_candidates(_SECTION, _CLAUSES)
     manifest = shim_build_manifest(_SECTION, frame, BATCH_A1_RULES, effective_date="2026-06-27")
     encoded = manifest["encoded_clause_ids"]
-    assert len(encoded) >= 14
-    assert manifest["rules_in_json"] == 14
-    assert manifest["tier_a_pending_count"] >= 25
-    assert manifest["tier_c_deferred_count"] >= 5
+    soft_floor(len(encoded), 14, label="pilot encoded")
+    assert manifest["rules_in_json"] == len(BATCH_A1_RULES)
+    soft_floor(manifest["tier_a_pending_count"], 25, label="tier_a_pending")
+    soft_floor(manifest["tier_c_deferred_count"], 5, label="tier_c_deferred")
     assert manifest["section_id"] == "4.2.1"
+    assert_manifest_consistent(manifest, frame, rules=BATCH_A1_RULES)
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
@@ -166,10 +175,12 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     assert corpus.is_file()
     assert manifest_path.is_file()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["section_clause_total"] == 282
-    assert manifest["encoded_clause_count"] >= 90
+    corpus_frame = pl.read_csv(corpus)
+    assert manifest["section_clause_total"] == corpus_frame.height
+    soft_floor(manifest["encoded_clause_count"], 90, label="encoded_clause_count")
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
+    assert_manifest_consistent(manifest, corpus_frame)
 
 
 def test_a2_manifest_covers_pending_sources() -> None:
@@ -193,8 +204,8 @@ def test_a2_manifest_covers_pending_sources() -> None:
     encoded = set(manifest["encoded_clause_ids"])
     assert a2_sources <= encoded
     assert manifest["rules_in_json"] == len(combined)
-    assert manifest["encoded_clause_count"] >= 25
-    assert manifest["section_clause_total"] == 282
+    soft_floor(manifest["encoded_clause_count"], 25, label="a2 encoded")
+    assert_manifest_consistent(manifest, frame, rules=combined)
 
 
 def test_a3_manifest_covers_batch_sources() -> None:
@@ -219,22 +230,22 @@ def test_a3_manifest_covers_batch_sources() -> None:
     encoded = set(manifest["encoded_clause_ids"])
     assert a3_sources <= encoded
     assert manifest["rules_in_json"] == len(combined)
-    assert manifest["encoded_clause_count"] >= 40
-    assert manifest["section_clause_total"] == 282
+    soft_floor(manifest["encoded_clause_count"], 40, label="a3 encoded")
+    assert_manifest_consistent(manifest, frame, rules=combined)
 
 
 def test_in_force_manifest_traces_all_clauses() -> None:
     from scripts.sut.prose.gate_b_shim import shim_export_candidates
 
     in_force = _in_force_clause_ids(_CLAUSES)
-    assert len(in_force) == 282
+    soft_floor(len(in_force), 200, label="§4.2.1 in-force")
     frame = shim_export_candidates(_SECTION, _CLAUSES)
     assert frame.height == len(in_force)
     if _MANIFEST.is_file():
         manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
         traced_ids = {t["clause_id"] for t in manifest["clause_traces"]}
         assert in_force <= traced_ids
-        assert manifest["section_clause_total"] == 282
+        assert manifest["section_clause_total"] == frame.height
 
 
 def test_a4_manifest_covers_all_parallel_clusters() -> None:
@@ -262,8 +273,8 @@ def test_a4_manifest_covers_all_parallel_clusters() -> None:
     encoded = set(manifest["encoded_clause_ids"])
     assert a4_sources <= encoded
     assert manifest["rules_in_json"] == len(combined)
-    assert manifest["encoded_clause_count"] >= 55
-    assert manifest["section_clause_total"] == 282
+    soft_floor(manifest["encoded_clause_count"], 55, label="a4 encoded")
+    assert_manifest_consistent(manifest, frame, rules=combined)
 
 
 def _gap_clause_ids() -> frozenset[str]:
@@ -284,13 +295,8 @@ def test_audit_gap_parity_zero_untraced() -> None:
     manifest = shim_build_manifest(_SECTION, frame, rules, effective_date="2026-06-27")
 
     report = _audit_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
-    assert report["gap_count"] == 154
-    assert report["encoded_count"] == 129
-    assert report["tier_c_deferred_count"] == 154
-    assert report["untraced_clause_ids"] == []
-    assert report["misclassified_ab_gap_ids"] == []
-    assert report["missing_from_traces"] == []
-    assert report["gaps_missing_export"] == []
+    assert report["gap_count"] == len(_gap_clause_ids())
+    assert_audit_report_consistent(report, manifest)
     assert report["defer_reason_gap_count"] == 0
 
     full = _run_audit(

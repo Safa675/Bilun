@@ -29,6 +29,7 @@ from src.bilun.domain.prose_rules.treatment_pricing import (
     check_treatment_pricing_for_context,
     load_treatment_pricing_rules,
 )
+from tests.unit._helpers.brittle_guards import soft_floor
 
 pytestmark = pytest.mark.unit
 
@@ -164,8 +165,8 @@ def test_smoke_loads_all_treatment_pricing_rules() -> None:
     """The loader returns the full rule set; the evaluator only fires wireable ones."""
     rules = load_treatment_pricing_rules()
     assert rules["rule_set_id"] == "treatment_pricing_2_4"
-    # Was 193 before SUT 2026-07-01; +9 from §2.4.4.R Pulmoner Rehab + FTR respiratory
-    assert len(rules["rules"]) == 202
+    # Soft floor: corpus grows with SUT encodes (was 193 → 202 at 2026-07-01).
+    soft_floor(len(rules["rules"]), 180, label="treatment_pricing_2_4")
 
 
 def test_build_context_maps_header_fields() -> None:
