@@ -126,13 +126,14 @@ describe("SUTOptimizer shell", () => {
 
 describe("Revenue recovery optimization panels", () => {
   it("shows methodology for exact DRG unbundling instead of unavailable banner", () => {
+    const totalPotentialSavings = 121738.79;
     const data = {
       drg_unbundling: {
         exactness_status: "exact",
         n_patients_checked: 50,
         n_patients_with_risk: 19,
         risk_rate: 0.38,
-        total_potential_savings: 121738.79,
+        total_potential_savings: totalPotentialSavings,
         top_risky_chapters: [{ chapter: "I", count: 3 }],
         methodology: "Aggregated per-patient DRG unbundling findings from exact claim lines.",
       },
@@ -143,7 +144,7 @@ describe("Revenue recovery optimization panels", () => {
     expect(html).toContain("Aggregated per-patient DRG unbundling findings from exact claim lines.");
     expect(html).not.toContain("Unavailable:DRG unbundling risk is unavailable");
     expect(html).toContain("Patients With Risk:19");
-    expect(html).toContain(`Claim-backed savings:${fmtTRYFixture(data.drg_unbundling.total_potential_savings as number)}`);
+    expect(html).toContain(`Claim-backed savings:${fmtTRYFixture(totalPotentialSavings)}`);
   });
 
   it("shows unavailable banner for missing DRG inputs", () => {

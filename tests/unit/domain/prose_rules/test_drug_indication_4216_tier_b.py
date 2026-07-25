@@ -89,6 +89,8 @@ def _drug_line(
 
 def test_4216_tier_b_batch_rule_count() -> None:
     soft_floor(len(BATCH_4216_TIER_B_RULES), 2, label='BATCH_4216_TIER_B_RULES')
+
+
 def test_4216_tier_b_gate_b_sources_count() -> None:
     assert _TIER_B_GATE_B_SOURCES
     assert all(rule.get("gate_b_sources") for rule in BATCH_4216_TIER_B_RULES)

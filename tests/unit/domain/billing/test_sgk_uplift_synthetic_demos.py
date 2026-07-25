@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
 import pytest
 
 from src.bilun.domain.billing.orchestrator import compute_patient_billing_report
@@ -9,18 +12,15 @@ from src.bilun.domain.claims import build_patient_claim_context, load_sut_claim_
 
 pytestmark = pytest.mark.unit
 
+_SCRIPTS_SYNTHETIC = Path(__file__).resolve().parents[4] / "scripts" / "synthetic"
+if str(_SCRIPTS_SYNTHETIC) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_SYNTHETIC))
+
+from demo_config import vignette_for_scenario_tag  # noqa: E402
 
 
 def _patient_for_scenario(tag: str) -> str:
     """Resolve demo patient via vignette registry (not hardcoded SENTETIK ids)."""
-    import sys
-    from pathlib import Path as _Path
-
-    scripts = _Path(__file__).resolve().parents[4] / "scripts" / "synthetic"
-    if str(scripts) not in sys.path:
-        sys.path.insert(0, str(scripts))
-    from demo_config import vignette_for_scenario_tag
-
     vignette = vignette_for_scenario_tag(tag)
     if vignette is None:
         pytest.fail(f"No vignette for scenario_tag={tag!r}")

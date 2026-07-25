@@ -59,19 +59,20 @@ const baseBillingReport: BillingActionReport = {
 
 describe("PatientFinancialSummary", () => {
   it("renders all-bills totals and recoverable priority", () => {
+    const claimTotals = {
+      exactness_status: "exact" as const,
+      patient_id: "P-001",
+      total_billed_try: 12000,
+      total_expected_payable_try: 9600,
+      claim_count: 3,
+      procedure_line_count: 10,
+      material_line_count: 2,
+      drug_line_count: 1,
+      lab_billed_line_count: 4,
+    };
     const outcome: SutPatientOutcomeData = {
       drg_summary: null,
-      sut_claim_totals: {
-        exactness_status: "exact",
-        patient_id: "P-001",
-        total_billed_try: 12000,
-        total_expected_payable_try: 9600,
-        claim_count: 3,
-        procedure_line_count: 10,
-        material_line_count: 2,
-        drug_line_count: 1,
-        lab_billed_line_count: 4,
-      },
+      sut_claim_totals: claimTotals,
     };
 
     const html = renderToStaticMarkupWithLocale(
@@ -79,8 +80,8 @@ describe("PatientFinancialSummary", () => {
     );
 
     expect(html).toContain("All bills at a glance");
-    expect(html).toContain(fmtTRY2Fixture(outcome.sut_claim_totals!.total_billed_try));
-    expect(html).toContain(fmtTRY2Fixture(outcome.sut_claim_totals!.total_expected_payable_try));
+    expect(html).toContain(fmtTRY2Fixture(claimTotals.total_billed_try));
+    expect(html).toContain(fmtTRY2Fixture(claimTotals.total_expected_payable_try));
     expect(html).toContain(fmtTRY2Fixture(baseBillingReport.total_recoverable_try));
     expect(html).toContain("3");
     expect(html).toContain("high");

@@ -88,6 +88,8 @@ def _drug_line(
 
 def test_a4_c2_batch_rule_count() -> None:
     soft_floor(len(BATCH_A4_C2_RULES), 12, label='BATCH_A4_C2_RULES')
+
+
 def test_a4_c2_gate_b_sources_count() -> None:
     assert len(_A4_C2_GATE_B_SOURCES) == 10
 

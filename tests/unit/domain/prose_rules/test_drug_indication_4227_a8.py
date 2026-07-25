@@ -96,6 +96,8 @@ def _drug_line(
 
 def test_a8_rule_count() -> None:
     soft_floor(len(BATCH_A8_RULES), 10, label='BATCH_A8_RULES')
+
+
 def test_a8_gate_b_sources_cover_section_4227_tier_a_pending() -> None:
     assert _A8_GATE_B_SOURCES
     assert all(rule.get("gate_b_sources") for rule in BATCH_A8_RULES)

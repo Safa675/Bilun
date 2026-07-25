@@ -114,6 +114,8 @@ def test_gate_b_exports_both_section_prefixes() -> None:
     frame = _export_candidates(_CLAUSES)
     assert frame.filter(pl.col("section_id").str.starts_with("4.2.9")).height >= 30
     soft_floor(frame.filter(pl.col("section_id").str.starts_with("4.2.27")).height, 48, label="test_drug_indication_4209_4227_gate_b 4.2.27")
+
+
 def test_gate_b_4227_in_force_export() -> None:
     in_force = _in_force_clause_ids_4227(_CLAUSES)
     frame = _export_candidates(_CLAUSES)

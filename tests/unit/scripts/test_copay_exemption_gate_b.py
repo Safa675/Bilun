@@ -111,6 +111,8 @@ def test_manifest_has_encoded_clause_ids_union() -> None:
     assert "C000379" in patient_status
     assert "C000355" not in manifest["compositor_clause_traces"]["copay_exemption_visit_type"]
     soft_floor(int(manifest["rules_in_json"]), 21, label="test_copay_exemption_gate_b rules_in_json")
+
+
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     from scripts.sut.prose.copay_exemption_gate_b import write_gate_b_artifacts
 

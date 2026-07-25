@@ -48,14 +48,18 @@ def test_gate_b_exports_both_section_prefixes() -> None:
     soft_floor(frame.height, 7, label="test_drug_indication_4218_4236_gate_b frame.height")
     soft_floor(frame.filter(pl.col("section_id").str.starts_with("4.2.18")).height, 3, label="test_drug_indication_4218_4236_gate_b 4.2.18")
     soft_floor(frame.filter(pl.col("section_id").str.starts_with("4.2.36")).height, 4, label="test_drug_indication_4218_4236_gate_b 4.2.36")
+
+
 def test_gate_b_tier_counts_per_subsection() -> None:
     frame = _export_candidates(_CLAUSES)
     s418 = frame.filter(pl.col("section_id").str.starts_with("4.2.18"))
     s436 = frame.filter(pl.col("section_id").str.starts_with("4.2.36"))
-    soft_floor(s418.filter(pl.col("encode_tier") == "A").height, 0, label="test_drug_indication_4218_4236_gate_b tier A")
+    soft_floor(s418.filter(pl.col("encode_tier") == "A").height, 1, label="test_drug_indication_4218_4236_gate_b tier A")
     soft_floor(s418.filter(pl.col("encode_tier") == "C").height, 2, label="test_drug_indication_4218_4236_gate_b tier C")
     soft_floor(s436.filter(pl.col("encode_tier") == "A").height, 2, label="test_drug_indication_4218_4236_gate_b tier A")
     soft_floor(s436.filter(pl.col("encode_tier") == "C").height, 1, label="test_drug_indication_4218_4236_gate_b tier C")
+
+
 def test_gate_b_csv_schema() -> None:
     frame = _export_candidates(_CLAUSES)
     for col in (

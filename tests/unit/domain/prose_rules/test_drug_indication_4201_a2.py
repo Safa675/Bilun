@@ -90,6 +90,8 @@ def _drug_line(
 
 def test_a2_batch_rule_count() -> None:
     soft_floor(len(BATCH_A2_RULES), 15, label='BATCH_A2_RULES')
+
+
 def test_a2_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = encoded_like_clause_ids(manifest)

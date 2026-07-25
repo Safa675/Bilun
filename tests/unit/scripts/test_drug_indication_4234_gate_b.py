@@ -75,6 +75,8 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     assert manifest["tier_a_pending_count"] == 0
     soft_floor(int(manifest["rules_in_json"]), 4, label="test_drug_indication_4234_gate_b rules_in_json")
     soft_floor(int(manifest["section_clause_total"]), 33, label="test_drug_indication_4234_gate_b section_clause_total")
+
+
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     from scripts.sut.prose.gate_b_shim import shim_write_artifacts
 

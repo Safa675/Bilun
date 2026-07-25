@@ -31,6 +31,8 @@ def test_gate_b_exports_4235_4237_candidates() -> None:
     soft_floor(frame.height, 18, label="test_drug_indication_4235_4237_gate_b frame.height")
     soft_floor(frame.filter(pl.col("section_id").str.starts_with("4.2.35")).height, 11, label="test_drug_indication_4235_4237_gate_b 4.2.35")
     soft_floor(frame.filter(pl.col("section_id").str.starts_with("4.2.37")).height, 6, label="test_drug_indication_4235_4237_gate_b 4.2.37")
+
+
 def test_gate_b_tier_counts() -> None:
     from scripts.sut.prose.gate_b_shim import shim_export_candidates
 

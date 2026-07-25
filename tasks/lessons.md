@@ -555,7 +555,6 @@ the Reimbursement Engineer correctly flagged them with file:line citations.
 in this environment". The pipeline_smoke FAIL was the latter — the agent had no way to
 know that, but the human reading the report should. Checker scripts should use distinct
 exit codes for "couldn't run" (we now use 2) vs "ran and found problems" (1) vs "clean" (0).
-<<<<<<< HEAD
 
 ## 2026-07-22 — i18n pattern catalog incomplete when crawl covers one patient
 
@@ -565,5 +564,15 @@ exit codes for "couldn't run" (we now use 2) vs "ran and found problems" (1) vs 
 1. Enumerate **all** string templates in the generator module (e.g. `claim_strategy.py` note builder), not only strings seen in one demo patient crawl.
 2. Add golden tests for every template branch (mandatory package/itemized, optional override both directions).
 3. Treat crawl as a regression gate, not the sole inventory source.
-=======
->>>>>>> origin/main
+
+## 2026-07-25 — Don't defer approved plan phases for convenience
+
+**Pattern:** After implementing most of brittle-test remediation, Phase 5 (FE TRY asserts + catalog stubs) was deferred as "nice to have" even though it was in the approved plan and the user had chosen full remediation.
+
+**Rule:** If a phase is in the approved `tasks/todo.md` / plan, finish it or ask the user before cutting scope. Convenience is not a reason to leave approved work unfinished.
+
+## 2026-07-25 — FE CI typechecks test files
+
+**Pattern:** Frontend CI failed on `tsc --noEmit` in `*.test.tsx` after introducing `fmtTRY2Fixture(number)` helpers — fixture fields typed `number | null` / optional nested fields were passed without narrowing, so Vitest could pass locally while CI failed.
+
+**Rule:** When adding typed helpers used in FE tests, ensure call sites satisfy `tsc` (local non-null fixtures or narrowing). Run `npx tsc --noEmit` from `frontend/` before pushing FE test changes — Vitest alone is not enough.

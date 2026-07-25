@@ -91,6 +91,8 @@ def _drug_line(
 
 def test_a5_c6_batch_rule_count() -> None:
     soft_floor(len(BATCH_A5_C6_RULES), 23, label='BATCH_A5_C6_RULES')
+
+
 def test_a5_c6_encoded_clause_ids_in_manifest() -> None:
     assert _A5_GATE_B_SOURCES <= _ENCODED
 

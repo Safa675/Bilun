@@ -25,6 +25,8 @@ _A4_GATE_B_SOURCES = frozenset(
 
 def test_a4_combined_rule_count() -> None:
     soft_floor(len(BATCH_A4_RULES), 75, label='BATCH_A4_RULES')
+
+
 def test_a4_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = encoded_like_clause_ids(manifest)

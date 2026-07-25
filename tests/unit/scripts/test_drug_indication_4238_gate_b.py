@@ -47,8 +47,11 @@ def test_gate_b_csv_schema() -> None:
         assert col in frame.columns
     tier_counts = dict(frame.group_by("encode_tier").len().iter_rows())
     soft_floor(int(tier_counts.get("A") or 0), 3, label="test_drug_indication_4238_gate_b tier_counts A")
-    soft_floor(int(tier_counts.get("B") or 0), 0, label="test_drug_indication_4238_gate_b tier_counts B")
+    # Original exact lock was B==1; soft floor retains that regression guard.
+    soft_floor(int(tier_counts.get("B") or 0), 1, label="test_drug_indication_4238_gate_b tier_counts B")
     soft_floor(int(tier_counts.get("C") or 0), 14, label="test_drug_indication_4238_gate_b tier_counts C")
+
+
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
     from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
     from scripts.sut.rule_sources import load_legacy_drug_batch

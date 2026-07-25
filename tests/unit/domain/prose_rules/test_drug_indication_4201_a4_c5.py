@@ -91,6 +91,8 @@ def _drug_line(
 
 def test_a4_c5_batch_rule_count() -> None:
     soft_floor(len(BATCH_A4_C5_RULES), 14, label='BATCH_A4_C5_RULES')
+
+
 def test_a4_c5_gate_b_sources_count() -> None:
     assert _A4_C5_GATE_B_SOURCES
     assert all(rule.get("gate_b_sources") for rule in BATCH_A4_C5_RULES)
