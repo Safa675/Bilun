@@ -54,7 +54,7 @@ const sections = {
       glossary: {
         title: "What do these numbers mean?",
         toggle: "Explain the numbers",
-        hukum: "Hüküm (clause): {count} in-force SUT paragraphs. Primary id is clause_coordinate (e.g. 2.2.1.(1)); C* is secondary.",
+        hukum: "Hüküm (clause): {count} in-force SUT paragraphs. Primary id is clause_coordinate (e.g. 2.2.1.(1)). C* is an opaque/collision key only.",
         hukumTurleri: "Of those, {numbered} are numbered rule clauses (fıkra/bent), {prose} are prose paragraphs, and {structural} are structural scaffolding (section/chapter headings) — not billing rules.",
         kuralMotoru: "Rule engine: {count} registry entries (e.g. drug_indication_prose, copay_rate_ek2c1).",
         jsonSatir: "JSON rule rows: {count} rule objects across prose_rules/*.json (the executable rules within engines).",

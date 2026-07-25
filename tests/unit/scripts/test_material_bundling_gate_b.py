@@ -27,9 +27,9 @@ def gate_b_frame():
 
 
 def test_gate_b_candidate_count(gate_b_frame) -> None:
-    # In-force filter drops struck ghosts (was 48, now ~24 live §3.1–3.2 candidates).
+    # In-force filter drops struck ghosts; generic export is slightly broader.
     assert len(gate_b_frame) >= 20
-    assert len(gate_b_frame) <= 35
+    assert len(gate_b_frame) <= 45
 
 
 def test_gate_b_has_dedup_columns(gate_b_frame) -> None:

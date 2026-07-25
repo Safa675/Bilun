@@ -1,24 +1,28 @@
-## Task: Track D — Product / audit UX (coordinate-first)
+## Task: Track F — Non-drug Gate B onto generic
 
 ### Goal
-Specialists can audit rules/gaps without needing `C*`: Hüküm shows coordinates, rule detail shows coordinate cites + snippets, gap/deferral views keyed by coordinate, 4-verb pipeline docs.
+Port payment_method / material_bundling / copay_exemption onto `gate_b_generic` + canonical manifests with the same coordinate identity rules as drug Gate B. Exit: no bespoke drug-vs-nondrug Gate B architecture stories.
 
 ### Subtasks
-- [x] Scout + lock scope (API + UI surfaces)
-- [x] Hüküm list/detail: primary id = coordinate; copyable; search by coordinate + text
-- [x] Rule detail: `gate_b_sources` as coordinates + text snippets
-- [x] Gap / deferral review views keyed by coordinate
-- [x] Docs: 4-verb README `extract → compile → derive → evaluate`
-- [x] Verify demo path; mark god-plan D boxes; Review
+- [x] Scout current non-drug gate_b modules vs generic + compile wiring
+- [x] Port payment_method onto GateBSection + generic build_manifest
+- [x] Port material_bundling onto GateBSection + generic build_manifest
+- [x] Port copay_exemption onto GateBSection + generic build_manifest
+- [x] Retire/thin bespoke writers; update compile_rules targets
+- [x] Same coordinate / dual-read / encode-eligible rules as drug path
+- [x] Tests + mark god-plan F; Review
 
 ### Out of Scope
-- Track E (delete C* column)
-- Track F non-drug Gate B
-- Polars coverage enrich (C leftover)
+- Deleting parquet `clause_id` / wiping collision YAML C*
+- Fatura F* (D5)
+- Extractor collision fixes (A0)
+- New clinical rule content
+- specialty_materials / anti_vegf bespoke stages (not in Track F list)
 
 ### Review
 - Branch / PR: `refactor/sut-pipeline-god-plan` → https://github.com/Safa675/Bilun/pull/43
-- API: `get_clause` dual-read; `list_deferrals`; `list/resolve prose gate_b_sources`
-- UI: Hüküm coordinate-primary + copy; Prose expand → cites; Deferrals tab
-- Docs: `docs/gazette/sut-pipeline.md`
-- God-plan Track D checkboxes marked
+- Sections: `payment_22`, `material_31_32`, `copay_18` in `ALL_SECTIONS`
+- Compile targets all use `write_gate_b_artifacts`
+- Legacy modules kept as thin facades for import compatibility
+- Manifests: canonical-v1 + `encoded_clause_coordinates` + family extras
+- Tests: payment / material / copay Gate B green (17)

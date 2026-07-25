@@ -445,13 +445,15 @@ def _drug_gate_b_target(
     manifest_name: str,
     corpus_name: str,
     merge_rules: bool = False,
+    rule_json_name: str = "drug_indication_prose.json",
+    rule_set_id: str | None = None,
 ) -> CompileTarget:
     return CompileTarget(
         name=name,
-        rule_json=_RULES_DIR / "drug_indication_prose.json",
+        rule_json=_RULES_DIR / rule_json_name,
         mode="stage",
         dedup="union_overwrite",
-        rule_set_id=name,
+        rule_set_id=rule_set_id or name,
         title="",
         sut_anchors=[],
         stages=["write_gate_b_artifacts"],
@@ -489,7 +491,6 @@ def _drug_gate_b_targets() -> list[CompileTarget]:
 
 def _gate_b_stage_targets() -> list[CompileTarget]:
     """Manifest/corpus stages that do not merge Python batch rules."""
-    payment_json = _RULES_DIR / "payment_method_2_2.json"
     wave_manifest_targets = [
         CompileTarget(
             name=f"csv_wave_clause_ids_{suffix}",
@@ -524,17 +525,29 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             wave_scope_note=_TREATMENT_PRICING_WAVE2_SCOPE,
         ),
         *wave_manifest_targets,
-        CompileTarget(
-            name="payment_method_gate_b",
-            rule_json=payment_json,
-            mode="stage",
-            dedup="skip_dup",
+        _drug_gate_b_target(
+            "payment_method_gate_b",
+            gate_b_section="payment_22",
+            manifest_name="L2.2_payment_method_encoded_manifest.json",
+            corpus_name="L2.2_payment_method_prose.csv",
+            rule_json_name="payment_method_2_2.json",
             rule_set_id="payment_method_2_2",
-            title="",
-            sut_anchors=[],
-            stages=["payment_pipeline"],
-            manifest_path=_MANIFEST_DIR / "L2.2_payment_method_encoded_manifest.json",
-            corpus_csv=_PROJECT_ROOT / "data/gazette/prose_corpus/L2.2_payment_method_prose.csv",
+        ),
+        _drug_gate_b_target(
+            "material_bundling_manifest",
+            gate_b_section="material_31_32",
+            manifest_name="L1.4_material_bundling_encoded_manifest.json",
+            corpus_name="L1.4_material_bundling_prose.csv",
+            rule_json_name="material_bundling_prose.json",
+            rule_set_id="material_bundling_prose",
+        ),
+        _drug_gate_b_target(
+            "copay_exemption_gate_b",
+            gate_b_section="copay_18",
+            manifest_name="L1.8_copay_exemption_encoded_manifest.json",
+            corpus_name="L1.8_copay_exemption_prose.csv",
+            rule_json_name="copay_general_1_8.json",
+            rule_set_id="copay_general_1_8",
         ),
         CompileTarget(
             name="anti_vegf_manifest",
@@ -546,16 +559,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             sut_anchors=[],
             stages=["antivegf_manifest"],
             manifest_path=_MANIFEST_DIR / "L4.33_anti_vegf_4.2.33_manifest.json",
-        ),
-        CompileTarget(
-            name="material_bundling_manifest",
-            rule_json=_RULES_DIR / "material_bundling_prose.json",
-            mode="stage",
-            dedup="skip_dup",
-            rule_set_id="material_bundling_prose",
-            title="",
-            sut_anchors=[],
-            stages=["material_bundling_manifest"],
         ),
         CompileTarget(
             name="specialty_materials_manifest",
@@ -644,30 +647,6 @@ def _write_payment_session_manifest() -> None:
     _write_json(_MANIFEST_DIR / "L2.2_session_pricing_2_2_2_B_encoded_manifest.json", manifest)
 
 
-def _apply_payment_manifest_cross_refs(
-    manifest: dict[str, object],
-    rule_count: int,
-    batch_num: str,
-) -> dict[str, object]:
-    suffix = {
-        "2": "batch-1+2",
-        "3": "batch-1+2+3",
-        "4": "batch-1–4",
-    }.get(batch_num, f"batch-{batch_num}")
-    manifest["scope_note"] = f"§2.2 package vs itemized vs tier-override ({rule_count} JSON rules, C2 {suffix})"
-    manifest["rules_in_json"] = rule_count
-    manifest["session_fraction_status"] = "PARTIAL"
-    manifest["related_rule_sets"] = [
-        {
-            "rule_set_id": "session_pricing_2_2_2_B",
-            "json_path": "session_pricing_2_2_2_B.json",
-            "manifest": "L2.2_session_pricing_2_2_2_B_encoded_manifest.json",
-            "note": "§2.2.2.B session-fraction remains PARTIAL — see session_pricing.py",
-        }
-    ]
-    return manifest
-
-
 def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) -> dict:
     """Drug Gate B stage — one path: section config → shim → gate_b_generic.
 
@@ -736,6 +715,11 @@ def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) ->
         del write_kwargs["rules_path"]
 
     frame, manifest = write_artifacts(**write_kwargs)
+
+    # Track F: payment still needs the session-pricing stub sibling manifest.
+    if section_key == "payment_22":
+        _write_payment_session_manifest()
+
     return {
         "rows": getattr(frame, "height", None),
         "encoded": manifest.get("encoded_clause_count") or len(manifest.get("encoded_clause_ids") or []),
@@ -759,38 +743,12 @@ def _stage_csv_wave_clause_ids(target: CompileTarget, ctx: dict[str, Any]) -> di
     return {"added": 0, "encoded": len(wave_clause_ids)}
 
 
-def _stage_payment_pipeline(target: CompileTarget, ctx: dict[str, Any]) -> dict:
-    from scripts.sut.prose.payment_method_gate_b import run_gate_b_pipeline
-
-    if not target.manifest_path or not target.corpus_csv:
-        raise ValueError(f"target {target.name} missing payment pipeline paths")
-    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
-    rules = list(payload.get("rules") or [])
-
-    _write_payment_session_manifest()
-
-    result = run_gate_b_pipeline(
-        clauses_path=_PROJECT_ROOT / "data/gazette/sut_clauses.parquet",
-        prose_json_path=target.rule_json,
-        corpus_csv_path=target.corpus_csv,
-        manifest_path=target.manifest_path,
-        write_prose_json=True,
-    )
-    manifest = _apply_payment_manifest_cross_refs(result["manifest"], len(rules), "4")
-    _write_json(target.manifest_path, manifest)
-    return {"added": 0, "skipped": [], "encoded": len(manifest.get("encoded_clause_ids") or [])}
-
-
 def _stage_antivegf_manifest(target: CompileTarget, ctx: dict[str, Any]) -> dict:
     return _compile_antivegf_manifest(target)
 
 
 def _stage_tier_b_remap(target: CompileTarget, ctx: dict[str, Any]) -> dict:
     return _stage_write_gate_b_artifacts(target, ctx)
-
-
-def _stage_material_bundling_manifest(target: CompileTarget, ctx: dict[str, Any]) -> dict:
-    return _write_material_bundling_manifest(target)
 
 
 def _stage_specialty_materials_manifest(target: CompileTarget, ctx: dict[str, Any]) -> dict:
@@ -905,45 +863,6 @@ def _compile_antivegf_manifest(target: CompileTarget) -> dict:
     return {"added": 0, "covered": len(encoded_ids)}
 
 
-def _write_material_bundling_manifest(target: CompileTarget) -> dict:
-    from scripts.sut.prose.manifest_clause_ids import (
-        EK3C_LIST_PRICE_CEILING_CLAUSE_IDS,
-        EK3_SCOPE_ONLY_CLAUSE_IDS,
-        GATE_B_STILL_DEFERRED_CLAUSE_IDS,
-        KDV_PRICING_CLAUSE_IDS,
-        MALZEME_SCOPE_ONLY_CLAUSE_IDS,
-        R5_AMENDMENT_HEADER_CLAUSE_IDS,
-        R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS,
-        SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS,
-        load_ek3_annex_header_clause_ids,
-        load_malzeme_general_header_clause_ids,
-    )
-
-    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
-    rules = list(payload.get("rules") or [])
-    sources = sorted({str(cid) for rule in rules for cid in (rule.get("gate_b_sources") or [])})
-    manifest = {
-        "manifest_version": "canonical-v1",
-        "rule_set_id": "material_bundling_prose",
-        "rules_in_json": len(rules),
-        "encoded_clause_ids": sources,
-        "encoded_clause_count": len(sources),
-        "gate_b_deferred_clause_ids": sorted(GATE_B_STILL_DEFERRED_CLAUSE_IDS),
-        "kdv_pricing_clause_ids": sorted(KDV_PRICING_CLAUSE_IDS),
-        "separate_billing_allowlist_clause_ids": ["C001823"],
-        "ek3c_list_price_ceiling_clause_ids": sorted(EK3C_LIST_PRICE_CEILING_CLAUSE_IDS),
-        "sut_material_list_price_ceiling_clause_ids": sorted(SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS),
-        "corpus_ek3_annex_header_clause_ids": sorted(load_ek3_annex_header_clause_ids()),
-        "corpus_ek3_scope_clause_ids": sorted(EK3_SCOPE_ONLY_CLAUSE_IDS),
-        "corpus_malzeme_general_header_clause_ids": sorted(load_malzeme_general_header_clause_ids()),
-        "corpus_malzeme_scope_clause_ids": sorted(MALZEME_SCOPE_ONLY_CLAUSE_IDS),
-        "r5_amendment_header_clause_ids": sorted(R5_AMENDMENT_HEADER_CLAUSE_IDS),
-        "r5_manifest_header_only_clause_ids": sorted(R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS),
-    }
-    _write_json(_MANIFEST_DIR / "L1.4_material_bundling_encoded_manifest.json", manifest)
-    return {"added": 0, "patched": 0, "encoded": len(sources)}
-
-
 def _write_specialty_materials_manifest(target: CompileTarget) -> dict:
     from scripts.sut.prose.manifest_clause_ids import (
         GLUCOSE_METER_BATCH_CLAUSE_IDS,
@@ -986,11 +905,9 @@ def _write_specialty_materials_manifest(target: CompileTarget) -> dict:
 _STAGES = {
     "write_gate_b_artifacts": _stage_write_gate_b_artifacts,
     "csv_wave_clause_ids": _stage_csv_wave_clause_ids,
-    "payment_pipeline": _stage_payment_pipeline,
     "antivegf_manifest": _stage_antivegf_manifest,
     "tier_b_remap": _stage_tier_b_remap,
     "treatment_pricing_wave2_manifest": _stage_treatment_pricing_wave2_manifest,
-    "material_bundling_manifest": _stage_material_bundling_manifest,
     "specialty_materials_manifest": _stage_specialty_materials_manifest,
 }
 

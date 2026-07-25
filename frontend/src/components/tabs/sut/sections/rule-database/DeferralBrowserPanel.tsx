@@ -130,19 +130,20 @@ export function DeferralBrowserPanel({
           </div>
           <ul className="space-y-1.5">
             {rows.map((row) => {
-              const primary = row.clause_coordinate || row.clause_id;
+              const primary = row.clause_coordinate || row.clause_id || "";
+              const rowKey = primary || row.defer_reason;
               return (
                 <li
-                  key={row.clause_id}
+                  key={rowKey}
                   className="rounded-[var(--r-sm)] border border-[var(--border-subtle)] px-3 py-2"
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => onCoordinateClick?.(primary)}
+                      onClick={() => primary && onCoordinateClick?.(primary)}
                       className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-primary)] hover:opacity-80"
                     >
-                      {primary}
+                      {primary || "—"}
                     </button>
                     <span className="rounded border border-[var(--border-subtle)] px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
                       {t(`sections.ruleDatabase.deferrals.status.${row.status}`)}

@@ -2,6 +2,7 @@
   "manifest_version": "canonical-v1",
   "rule_set_id": "session_pricing_2_2_2_B",
   "section_id": "2.2.2.B",
+  "section_clause_total": 7,
   "encoded_clause_ids": [
     "C000654",
     "C000655",
@@ -53,6 +54,5 @@
     }
   ],
   "rules_in_json": 4,
-  "session_fraction_status": "PARTIAL",
-  "section_clause_total": 7
+  "session_fraction_status": "PARTIAL"
 }

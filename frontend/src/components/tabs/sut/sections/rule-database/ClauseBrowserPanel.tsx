@@ -53,9 +53,6 @@ function CopyableCoordinate({
       className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-soft)]"
     >
       {primary}
-      {coordinate && clauseId ? (
-        <span className="ml-1 font-normal text-[var(--text-muted)]">{clauseId}</span>
-      ) : null}
     </button>
   );
 }
@@ -293,9 +290,10 @@ export function ClauseBrowserPanel({
                 {clauses.map((clause) => {
                   const isSelected =
                     selectedClause?.clause_id === clause.clause_id;
+                  const rowKey = clause.clause_coordinate || clause.clause_id || "";
                   return (
                     <li
-                      key={clause.clause_id}
+                      key={rowKey}
                       onClick={() => {
                         setSelectedClause(clause);
                         onUrlUpdate?.({ rdClause: clauseDeepLinkKey(clause) || null });

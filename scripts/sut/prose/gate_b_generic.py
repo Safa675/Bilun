@@ -131,7 +131,15 @@ def load_deferral_table(
 # ── Shared constants (byte-identical across all 14 legacy modules) ────────────
 
 _DEONTIC_MODALITIES = frozenset(
-    {"MUST_BILL", "MUST_NOT_BILL", "NO_PAY", "MAY_BILL", "PROHIBITED", "REGULATORY_ACTION"}
+    {
+        "MUST_BILL",
+        "MUST_NOT_BILL",
+        "NO_PAY",
+        "MAY_BILL",
+        "PROHIBITED",
+        "REGULATORY_ACTION",
+        "MANDATORY",
+    }
 )
 
 
@@ -207,6 +215,11 @@ class GateBSection:
     corpus_csv: str  # relative to project root
     manifest_path: str  # relative to project root
 
+    # Manifest / coverage identity (Track F: non-drug rule sets)
+    rule_set_id: str = "drug_indication_prose"
+    # Named post-build extras: "material_buckets" | "payment_cross_refs" | "copay_compositor"
+    extra_manifest: str = ""
+
     # Tier classification config
     token_promotions: tuple[TokenPromotion, ...] = ()
     tier_a_overrides: tuple[TierOverride, ...] = ()
@@ -224,6 +237,8 @@ class GateBSection:
     superseded_ids: frozenset[str] = frozenset()  # always exclude
     force_include_ids: dict[str, frozenset[str]] = field(default_factory=dict)  # {prefix: ids}
     force_include_section: str = ""  # include ALL clauses from this section prefix
+    # Extra deontic tags treated as signal (unioned with module-wide set)
+    admit_deontic_modalities: frozenset[str] = frozenset()
 
     # Output config
     signal_score: bool = False
@@ -324,11 +339,14 @@ def _in_force_clause_ids(
         return frozenset()
     cov = pl.read_parquet(coverage_path)
     filter_prefix = section.in_force_section_filter or section.match.prefixes[0]
-    di = cov.filter(
-        (pl.col("primary_rule_id") == "drug_indication_prose")
-        & pl.col("section_id").str.starts_with(filter_prefix)
-    )
-    return frozenset(di["clause_id"].cast(pl.Utf8).to_list())
+    scoped = cov.filter(pl.col("section_id").str.starts_with(filter_prefix))
+    if "primary_rule_id" in scoped.columns and section.rule_set_id:
+        # Prefer rows owned by this engine; fall back to section scope if empty
+        # (non-drug engines may not yet be primary on every row).
+        owned = scoped.filter(pl.col("primary_rule_id") == section.rule_set_id)
+        if not owned.is_empty():
+            scoped = owned
+    return frozenset(scoped["clause_id"].cast(pl.Utf8).to_list())
 
 
 def _should_include_row(
@@ -355,7 +373,7 @@ def _should_include_row(
         if section_id.startswith(prefix) and clause_id in ids:
             return True
 
-    has_deontic = deontic in _DEONTIC_MODALITIES
+    has_deontic = deontic in (_DEONTIC_MODALITIES | section.admit_deontic_modalities)
     has_keyword = any(kw in normalize_tr(text) for kw in section.drug_keywords)
 
     # In-force filtering applies ONLY to the in_force_section_filter sub-section
@@ -649,13 +667,21 @@ def build_manifest(
 
     manifest: dict[str, Any] = {
         "manifest_version": "canonical-v1",
-        "rule_set_id": "drug_indication_prose",
+        "rule_set_id": section.rule_set_id,
         "section_id": section.manifest_section_id,
         "effective_date": effective_date,
         "rules_in_json": len(rules),
         "section_clause_total": gate_b_frame.height,
         "encoded_clause_count": len(encoded_ids),
         "encoded_clause_ids": sorted(encoded_ids),
+        "encoded_clause_coordinates": sorted(
+            {
+                str(row.get("clause_coordinate") or "")
+                for row in gate_b_frame.iter_rows(named=True)
+                if str(row.get("clause_id") or "") in encoded_ids
+                and row.get("clause_coordinate")
+            }
+        ),
         "tier_a_pending_clause_ids": sorted(tier_a_pending),
         "tier_b_pending_clause_ids": sorted(tier_b_pending),
         "tier_c_deferred_clause_ids": sorted(tier_c_deferred),
@@ -685,7 +711,95 @@ def build_manifest(
                     pl.col("encode_tier") == "C"
                 ).height
 
+    if section.extra_manifest:
+        extras = _extra_manifest_fields(section, rules, encoded_ids)
+        if section.extra_manifest == "copay_compositor":
+            for ids in (extras.get("compositor_clause_traces") or {}).values():
+                encoded_ids.update(str(cid) for cid in ids)
+            manifest["encoded_clause_ids"] = sorted(encoded_ids)
+            manifest["encoded_clause_count"] = len(encoded_ids)
+            # Recompute ek4d overlap against the unioned encoded set.
+            compositor = extras.get("compositor_clause_traces") or {}
+            extras["ek4d_overlap_clause_ids"] = sorted(
+                cid
+                for cid in encoded_ids
+                if cid in compositor.get("copay_exemption_ek4d", [])
+            )
+        manifest.update(extras)
+
     return manifest
+
+
+def _extra_manifest_fields(
+    section: GateBSection,
+    rules: list[dict[str, Any]],
+    encoded_ids: set[str],
+) -> dict[str, Any]:
+    """Track F: non-drug manifest extras that used to live in bespoke writers."""
+    if section.extra_manifest == "payment_cross_refs":
+        return {
+            "scope_note": (
+                f"§2.2 package vs itemized vs tier-override "
+                f"({len(rules)} JSON rules)"
+            ),
+            "session_fraction_status": "PARTIAL",
+            "related_rule_sets": [
+                {
+                    "rule_set_id": "session_pricing_2_2_2_B",
+                    "json_path": "session_pricing_2_2_2_B.json",
+                    "manifest": "L2.2_session_pricing_2_2_2_B_encoded_manifest.json",
+                    "note": (
+                        "§2.2.2.B session-fraction remains PARTIAL — "
+                        "see session_pricing.py"
+                    ),
+                }
+            ],
+        }
+    if section.extra_manifest == "material_buckets":
+        from scripts.sut.prose.manifest_clause_ids import (
+            EK3C_LIST_PRICE_CEILING_CLAUSE_IDS,
+            EK3_SCOPE_ONLY_CLAUSE_IDS,
+            GATE_B_STILL_DEFERRED_CLAUSE_IDS,
+            KDV_PRICING_CLAUSE_IDS,
+            MALZEME_SCOPE_ONLY_CLAUSE_IDS,
+            R5_AMENDMENT_HEADER_CLAUSE_IDS,
+            R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS,
+            SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS,
+            load_ek3_annex_header_clause_ids,
+            load_malzeme_general_header_clause_ids,
+        )
+
+        return {
+            "gate_b_deferred_clause_ids": sorted(GATE_B_STILL_DEFERRED_CLAUSE_IDS),
+            "kdv_pricing_clause_ids": sorted(KDV_PRICING_CLAUSE_IDS),
+            "separate_billing_allowlist_clause_ids": ["C001823"],
+            "ek3c_list_price_ceiling_clause_ids": sorted(EK3C_LIST_PRICE_CEILING_CLAUSE_IDS),
+            "sut_material_list_price_ceiling_clause_ids": sorted(
+                SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS
+            ),
+            "corpus_ek3_annex_header_clause_ids": sorted(load_ek3_annex_header_clause_ids()),
+            "corpus_ek3_scope_clause_ids": sorted(EK3_SCOPE_ONLY_CLAUSE_IDS),
+            "corpus_malzeme_general_header_clause_ids": sorted(
+                load_malzeme_general_header_clause_ids()
+            ),
+            "corpus_malzeme_scope_clause_ids": sorted(MALZEME_SCOPE_ONLY_CLAUSE_IDS),
+            "r5_amendment_header_clause_ids": sorted(R5_AMENDMENT_HEADER_CLAUSE_IDS),
+            "r5_manifest_header_only_clause_ids": sorted(R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS),
+        }
+    if section.extra_manifest == "copay_compositor":
+        from scripts.sut.prose.copay_compositor_traces import COMPOSITOR_CLAUSE_TRACES
+
+        compositor = COMPOSITOR_CLAUSE_TRACES
+        ek4d = sorted(
+            cid
+            for cid in encoded_ids
+            if cid in compositor.get("copay_exemption_ek4d", [])
+        )
+        return {
+            "compositor_clause_traces": compositor,
+            "ek4d_overlap_clause_ids": ek4d,
+        }
+    raise ValueError(f"unknown extra_manifest={section.extra_manifest!r}")
 
 
 def gate_b_summary(enriched: pl.DataFrame) -> dict[str, int]:

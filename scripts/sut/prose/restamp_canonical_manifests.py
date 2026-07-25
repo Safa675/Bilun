@@ -1,8 +1,8 @@
 """Restamp SUT prose manifests to canonical-v1 (Track C1).
 
-Skips fatura (non-SUT) and L1.8 copay (Track F shape). Preserves encoded +
-emr/non_actionable/deferred buckets and any other ``*_clause_ids`` lists that
-coverage's ``encoded_like_clause_ids`` already counted.
+Skips fatura (non-SUT). Preserves encoded + emr/non_actionable/deferred
+buckets and any other ``*_clause_ids`` lists that coverage's
+``encoded_like_clause_ids`` already counted. L1.8 copay is canonical after Track F.
 """
 
 from __future__ import annotations
@@ -25,7 +25,6 @@ _MANIFEST_DIR = _PROJECT_ROOT / "data/gazette/prose_manifests"
 _SKIP = frozenset(
     {
         "fatura_inceleme_prose_manifest.json",
-        "L1.8_copay_exemption_encoded_manifest.json",
     }
 )
 

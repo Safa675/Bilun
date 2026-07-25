@@ -1,98 +1,11 @@
 {
+  "manifest_version": "canonical-v1",
+  "rule_set_id": "copay_general_1_8",
+  "section_id": "1.8",
+  "effective_date": "2026-07-25",
   "rules_in_json": 30,
-  "json_rule_clause_traces": {
-    "1.8.(4).copay_refund_sydv": "C000237",
-    "1.8.1.(1).muayene_copay_schedule": [
-      "C000287",
-      "C000288",
-      "C000289",
-      "C000290",
-      "C000291",
-      "C000292",
-      "C000293"
-    ],
-    "1.8.1.(6).farkli_kurum_artis": "C000312",
-    "1.8.1.family_physician_referral_50pct_reduction": "C000294",
-    "1.8.2.(1)": [
-      "C000314",
-      "C000327",
-      "C000328",
-      "C000329",
-      "C000330",
-      "C000331"
-    ],
-    "1.8.2.(2)": [
-      "C000321",
-      "C000322",
-      "C000323"
-    ],
-    "1.8.2.(3).enjektabl_kutu": "C000325",
-    "1.8.3.(1).protez_ortez": [
-      "C000333",
-      "C000338"
-    ],
-    "1.8.3.(2)": [
-      "C000334",
-      "C000335",
-      "C000336",
-      "C000338",
-      "C000340",
-      "C000341",
-      "C000342",
-      "C000346",
-      "C000348"
-    ],
-    "1.8.4.(1)": [
-      "C000352",
-      "C000353"
-    ],
-    "1.8.5.(1).work_accident_occupational_disease": "C000355",
-    "1.8.5.(10).organ_nakli": "C000364",
-    "1.8.5.(11).istiklal_madalyasi_pensioner": "C000365",
-    "1.8.5.(12).vatani_hizmet_pensioner": "C000366",
-    "1.8.5.(13).nakdi_tazminat_pensioner": "C000367",
-    "1.8.5.(14).kanun_2828": "C000368",
-    "1.8.5.(15).harp_mallulu_terorle_mucadele": "C000369",
-    "1.8.5.(16).vazife_mallulu": "C000370",
-    "1.8.5.(17).iade_malzeme": "C000371",
-    "1.8.5.(18).polis_akademisi": "C000372",
-    "1.8.5.(19).harp_okulu": "C000373",
-    "1.8.5.(2).askeri_tatbikat": "C000356",
-    "1.8.5.(20).deprem_protez": "C000374",
-    "1.8.5.(21).wounded_3713_21": "C000375",
-    "1.8.5.(22)a.gss_5510_60_12": "C000378",
-    "1.8.5.(22)b.gss_5510_60_13_14": "C000379",
-    "1.8.5.(3).afet_savas_hali": "C000357",
-    "1.8.5.(4).kontrol_muayenesi": "C000358",
-    "1.8.5.(6).preventive_health_institution_funded": "C000360",
-    "1.8.5.(9).tibbi_sarf_malzeme": "C000363"
-  },
-  "compositor_clause_traces": {
-    "copay_exemption_ek1a": [
-      "C000361"
-    ],
-    "copay_exemption_ek4d": [
-      "C000326",
-      "C000362"
-    ],
-    "copay_exemption_visit_type": [
-      "C000359",
-      "C000360"
-    ],
-    "copay_exemption_occupational": [
-      "C000355"
-    ],
-    "copay_exemption_patient_status": [
-      "C000365",
-      "C000366",
-      "C000367",
-      "C000369",
-      "C000370",
-      "C000375",
-      "C000378",
-      "C000379"
-    ]
-  },
+  "section_clause_total": 103,
+  "encoded_clause_count": 56,
   "encoded_clause_ids": [
     "C000237",
     "C000287",
@@ -151,6 +64,1176 @@
     "C000378",
     "C000379"
   ],
+  "encoded_clause_coordinates": [
+    "1.8.(4)",
+    "1.8.1",
+    "1.8.1.(1)",
+    "1.8.1.(6)",
+    "1.8.1.a",
+    "1.8.1.b",
+    "1.8.1.d",
+    "1.8.1.e",
+    "1.8.1.f",
+    "1.8.1.ç",
+    "1.8.2",
+    "1.8.2.(1)",
+    "1.8.2.(2)",
+    "1.8.2.(4)",
+    "1.8.2.a",
+    "1.8.2.b",
+    "1.8.2.c",
+    "1.8.3",
+    "1.8.3.(1)",
+    "1.8.3.(2)",
+    "1.8.3.a",
+    "1.8.3.b",
+    "1.8.3.c",
+    "1.8.4.(1)",
+    "1.8.4.(2)",
+    "1.8.5.(1)",
+    "1.8.5.(10)",
+    "1.8.5.(11)",
+    "1.8.5.(12)",
+    "1.8.5.(13)",
+    "1.8.5.(14)",
+    "1.8.5.(15)",
+    "1.8.5.(16)",
+    "1.8.5.(17)",
+    "1.8.5.(18)",
+    "1.8.5.(19)",
+    "1.8.5.(2)",
+    "1.8.5.(20)",
+    "1.8.5.(21)",
+    "1.8.5.(3)",
+    "1.8.5.(4)",
+    "1.8.5.(6)",
+    "1.8.5.(9)",
+    "1.8.5.a",
+    "1.8.5.b"
+  ],
+  "tier_a_pending_clause_ids": [
+    "C000361"
+  ],
+  "tier_b_pending_clause_ids": [
+    "C000362"
+  ],
+  "tier_c_deferred_clause_ids": [
+    "C000224",
+    "C000225",
+    "C000227",
+    "C000233",
+    "C000234",
+    "C000235",
+    "C000238",
+    "C000239",
+    "C000248",
+    "C000257",
+    "C000266",
+    "C000276",
+    "C000295",
+    "C000299",
+    "C000304",
+    "C000306",
+    "C000308",
+    "C000309",
+    "C000311",
+    "C000313",
+    "C000315",
+    "C000324",
+    "C000326",
+    "C000332",
+    "C000337",
+    "C000339",
+    "C000344",
+    "C000347",
+    "C000349",
+    "C000350",
+    "C000351",
+    "C000354",
+    "C000359",
+    "C000376"
+  ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [
+    "C000226",
+    "C000228",
+    "C000229",
+    "C000230",
+    "C000231",
+    "C000232",
+    "C000236",
+    "C000258",
+    "C000296",
+    "C000297",
+    "C000298",
+    "C000305",
+    "C000307",
+    "C000343",
+    "C000377"
+  ],
+  "tier_a_pending_count": 1,
+  "tier_b_pending_count": 1,
+  "tier_c_deferred_count": 34,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 15,
+  "clause_traces": [
+    {
+      "clause_id": "C000224",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "8 - Katılım payı",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000225",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Katılım payı",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000226",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Katılım payı uygulanacak sağlık hizmetleri aşağıda belirtilmiştir:",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000227",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Sağlık Bakanlığı tarafından sözleşme imzalanmış",
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: moh_patient_approval. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000228",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Ayakta tedavide sağlanan ilaçlar",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000229",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Vücut dışı protez ve ortezler",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000230",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Yardımcı üreme yöntemi tedavileri.",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000231",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Katılım paylarının tahsil şekli ilgili maddelerde açıklanmıştır. Ancak",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000232",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000233",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000234",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek:RG- 28/12/2018-30639/ 1 md. Yürürlük: 15/01/2019)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000235",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000236",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "kişilerden tahsil edilir.",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000237",
+      "section_id": "1.8",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "5510 sayılı Kanunun 60 ıncı maddesinin birinci fıkrasının (c) bendinin (1)",
+      "linked_rule_ids": [
+        "1.8.(4).copay_refund_sydv"
+      ]
+    },
+    {
+      "clause_id": "C000238",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "8.1 - Ayakta tedavide hekim ve diş hekimi muayenesi katılım payı",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000239",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 25/08/2022- 31934/ 6-a md. Yürürlük: 03/09/2022)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000248",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 21/04/2024- 32524/2 md. Yürürlük: 30/04/2024)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000257",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG-25 /01/2025-32793/1 md. Yürürlük: 15/01/2025)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000258",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000266",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG-23/02/2025-32822/1 md. Yürürlük: 15/01/2025)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000276",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG-31/12/2025-33124/1 md. Yürürlük: 01/01/2026)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000287",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.1.(1).muayene_copay_schedule"
+      ]
+    },
+    {
+      "clause_id": "C000288",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.1.(1).muayene_copay_schedule"
+      ]
+    },
+    {
+      "clause_id": "C000289",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.1.(1).muayene_copay_schedule"
+      ]
+    },
+    {
+      "clause_id": "C000290",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.1.(1).muayene_copay_schedule"
+      ]
+    },
+    {
+      "clause_id": "C000291",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.1.(1).muayene_copay_schedule"
+      ]
+    },
+    {
+      "clause_id": "C000292",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.1.(1).muayene_copay_schedule"
+      ]
+    },
+    {
+      "clause_id": "C000293",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.1.(1).muayene_copay_schedule"
+      ]
+    },
+    {
+      "clause_id": "C000294",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sağlık Bakanlığı tarafından sözleşme imzalanmış",
+      "linked_rule_ids": [
+        "1.8.1.family_physician_referral_50pct_reduction"
+      ]
+    },
+    {
+      "clause_id": "C000295",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000296",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000297",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000298",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "tahsil edilir.",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000299",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 25/08/2022- 31934/ 6-c md. Yürürlük: 03/09/2022)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000304",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000305",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000306",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Diğer kişiler için",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000307",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "tahsil edilir.",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000308",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000309",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 25/08/2022- 31934/ 6-ç md. Yürürlük: 03/09/2022)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000311",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000312",
+      "section_id": "1.8.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.1.(6).farkli_kurum_artis"
+      ]
+    },
+    {
+      "clause_id": "C000313",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "8.2 - Ayakta tedavide sağlanan ilaçlar için katılım payı",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000314",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.2.(1)"
+      ]
+    },
+    {
+      "clause_id": "C000315",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG-31/12/2025-33124/2 md. Yürürlük: 01/01/2026)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000321",
+      "section_id": "1.8.2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Ayrıca her bir reçete için",
+      "linked_rule_ids": [
+        "1.8.2.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000322",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "3 kutuya kadar (üç kutu dâhil) temin edilen ilaçlar için……………………….……3",
+      "linked_rule_ids": [
+        "1.8.2.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000323",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "3 kutuya ilave temin edilen her bir kutu ilaç için……….……………………………1",
+      "linked_rule_ids": [
+        "1.8.2.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000324",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "olmak üzere katılım payı alınır.",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000325",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Enjektabl formlar ile serum",
+      "linked_rule_ids": [
+        "1.8.2.(3).enjektabl_kutu"
+      ]
+    },
+    {
+      "clause_id": "C000326",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000327",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.2.(1)"
+      ]
+    },
+    {
+      "clause_id": "C000328",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.2.(1)"
+      ]
+    },
+    {
+      "clause_id": "C000329",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Diğer kişiler için ise Kurumla sözleşmeli eczaneler tarafından kişilerden",
+      "linked_rule_ids": [
+        "1.8.2.(1)"
+      ]
+    },
+    {
+      "clause_id": "C000330",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Yurt dışından temin edilen ilaçlar için",
+      "linked_rule_ids": [
+        "1.8.2.(1)"
+      ]
+    },
+    {
+      "clause_id": "C000331",
+      "section_id": "1.8.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "tahsil edilir.",
+      "linked_rule_ids": [
+        "1.8.2.(1)"
+      ]
+    },
+    {
+      "clause_id": "C000332",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "8.3 - Tıbbi malzeme katılım payı",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000333",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Vücut dışı protez ve ortezlerden",
+      "linked_rule_ids": [
+        "1.8.3.(1).protez_ortez"
+      ]
+    },
+    {
+      "clause_id": "C000334",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Görmeye yardımcı tıbbi malzemelerden",
+      "linked_rule_ids": [
+        "1.8.3.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000335",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.3.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000336",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.3.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000337",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "katılım payı alınır.",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000338",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Vücut dışı protez ve ortezlerden",
+      "linked_rule_ids": [
+        "1.8.3.(1).protez_ortez",
+        "1.8.3.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000339",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000340",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.3.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000341",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.3.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000342",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "tahsil edilir.",
+      "linked_rule_ids": [
+        "1.8.3.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000343",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Ağız protezlerine ilişkin katılım payı",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000344",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Değişik: RG- 25/08/2022- 31934/ 6-d md. Yürürlük: 03/09/2022)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000346",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.3.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000347",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Kurumla sözleşmesiz",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000348",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "tahsil edilir.",
+      "linked_rule_ids": [
+        "1.8.3.(2)"
+      ]
+    },
+    {
+      "clause_id": "C000349",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000350",
+      "section_id": "1.8.3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000351",
+      "section_id": "1.8.4",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "8.4 - Yardımcı üreme yöntemi katılım payları",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000352",
+      "section_id": "1.8.4",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.4.(1)"
+      ]
+    },
+    {
+      "clause_id": "C000353",
+      "section_id": "1.8.4",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Yardımcı üreme yöntemi katılım payları",
+      "linked_rule_ids": [
+        "1.8.4.(1)"
+      ]
+    },
+    {
+      "clause_id": "C000354",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "8.5 - Katılım payı alınmayacak haller",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000355",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İş kazasına uğrayan veya meslek hastalığına yakalanan sigortalılardan",
+      "linked_rule_ids": [
+        "1.8.5.(1).work_accident_occupational_disease"
+      ]
+    },
+    {
+      "clause_id": "C000356",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Askerî tatbikat ve manevralarda sağlanan sağlık hizmetleri için SUT’un 1.8.1",
+      "linked_rule_ids": [
+        "1.8.5.(2).askeri_tatbikat"
+      ]
+    },
+    {
+      "clause_id": "C000357",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.5.(3).afet_savas_hali"
+      ]
+    },
+    {
+      "clause_id": "C000358",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.5.(4).kontrol_muayenesi"
+      ]
+    },
+    {
+      "clause_id": "C000359",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: moh_patient_approval. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000360",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.5.(6).preventive_health_institution_funded"
+      ]
+    },
+    {
+      "clause_id": "C000361",
+      "section_id": "1.8.5",
+      "encode_tier": "A",
+      "manifest_status": "tier_a_pending",
+      "heuristic_inn": "Sağlık raporu ile belgelendirilmesi şartıyla"
+    },
+    {
+      "clause_id": "C000362",
+      "section_id": "1.8.5",
+      "encode_tier": "B",
+      "manifest_status": "tier_b_pending",
+      "heuristic_inn": "Tetkik ve tahliller ile diğer tanı yöntemlerinde kullanılan ilaçlardan"
+    },
+    {
+      "clause_id": "C000363",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.5.(9).tibbi_sarf_malzeme"
+      ]
+    },
+    {
+      "clause_id": "C000364",
+      "section_id": "1.8.5",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sağlık raporu ile belgelendirilmek şartıyla",
+      "linked_rule_ids": [
+        "1.8.5.(10).organ_nakli"
+      ]
+    },
+    {
+      "clause_id": "C000365",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.5.(11).istiklal_madalyasi_pensioner"
+      ]
+    },
+    {
+      "clause_id": "C000366",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.5.(12).vatani_hizmet_pensioner"
+      ]
+    },
+    {
+      "clause_id": "C000367",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.5.(13).nakdi_tazminat_pensioner"
+      ]
+    },
+    {
+      "clause_id": "C000368",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "2828 sayılı Kanunu hükümlerine göre korunma",
+      "linked_rule_ids": [
+        "1.8.5.(14).kanun_2828"
+      ]
+    },
+    {
+      "clause_id": "C000369",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.5.(15).harp_mallulu_terorle_mucadele"
+      ]
+    },
+    {
+      "clause_id": "C000370",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Vazife malûllerinden SUT’un 1.8.1",
+      "linked_rule_ids": [
+        "1.8.5.(16).vazife_mallulu"
+      ]
+    },
+    {
+      "clause_id": "C000371",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Kurumca iade alınan tıbbi malzemelerden katılım payı alınmaz.",
+      "linked_rule_ids": [
+        "1.8.5.(17).iade_malzeme"
+      ]
+    },
+    {
+      "clause_id": "C000372",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Polis akademisi ile fakülte ve yüksekokullarda",
+      "linked_rule_ids": [
+        "1.8.5.(18).polis_akademisi"
+      ]
+    },
+    {
+      "clause_id": "C000373",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Harp okulları ile fakülte ve yüksekokullarda",
+      "linked_rule_ids": [
+        "1.8.5.(19).harp_okulu"
+      ]
+    },
+    {
+      "clause_id": "C000374",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "19.05.2011",
+      "linked_rule_ids": [
+        "1.8.5.(20).deprem_protez"
+      ]
+    },
+    {
+      "clause_id": "C000375",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.5.(21).wounded_3713_21"
+      ]
+    },
+    {
+      "clause_id": "C000376",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "(Ek: RG- 25/03/2017- 30018/ 2 md. Yürürlük: 01/03/2017)",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000377",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "5510 sayılı Kanunun 60 ıncı maddesinin",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000378",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Onikinci fıkrası kapsamında genel sağlık sigortalısı sayılanlardan SUT’un 1.8.1",
+      "linked_rule_ids": [
+        "1.8.5.(22)a.gss_5510_60_12"
+      ]
+    },
+    {
+      "clause_id": "C000379",
+      "section_id": "1.8.5",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "1.8.5.(22)b.gss_5510_60_13_14"
+      ]
+    }
+  ],
+  "clause_trace_complete": true,
+  "compositor_clause_traces": {
+    "copay_exemption_ek1a": [
+      "C000361"
+    ],
+    "copay_exemption_ek4d": [
+      "C000326",
+      "C000362"
+    ],
+    "copay_exemption_visit_type": [
+      "C000359",
+      "C000360"
+    ],
+    "copay_exemption_occupational": [
+      "C000355"
+    ],
+    "copay_exemption_patient_status": [
+      "C000365",
+      "C000366",
+      "C000367",
+      "C000369",
+      "C000370",
+      "C000375",
+      "C000378",
+      "C000379"
+    ]
+  },
   "ek4d_overlap_clause_ids": [
     "C000326",
     "C000362"

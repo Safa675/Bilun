@@ -1,7 +1,9 @@
 # SUT pipeline (4 verbs)
 
 Coordinate-first provenance for SUT prose rules. Specialists audit by
-**clause_coordinate** (e.g. `2.2.1.(1)`); surrogate `C*` ids are secondary until Track E.
+**clause_coordinate** (e.g. `2.2.1.(1)`). Surrogate `C*` ids are an **opaque
+remappable join key** (and collision disambiguator only) — not part of the
+public authored contract (Track E). Fatura `F*` is a separate epic.
 
 ```
 extract → compile → derive → evaluate
@@ -60,14 +62,15 @@ uvicorn src.bilun.api.app:app --reload
 # Frontend Rule DB → Hükümler: search by coordinate; Prose: expand engine → source snippets
 ```
 
-## Audit without `C*`
+## Audit without needing `C*`
 
 | Surface | Primary key |
 |---------|-------------|
 | Hüküm list/detail | `clause_coordinate` (copyable); deep link `?rdClause=2.2.1.(1)` |
 | Prose rule sources | Resolved `gate_b_sources` → coordinate + text snippet |
-| Deferrals | Coordinate when present; else `clause_id` until Track E backfill |
-| Search | Coordinate, text, or legacy `C*` |
+| Deferrals | `clause_coordinate` (backfilled); opaque `clause_id` for joins |
+| Search | Coordinate or text; legacy `C*` still dual-reads |
+| Manifests | `encoded_clause_coordinates` public; `encoded_clause_ids` opaque derived |
 
 ## Related
 

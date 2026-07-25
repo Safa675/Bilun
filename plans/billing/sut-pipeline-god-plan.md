@@ -218,19 +218,19 @@ Prefer **Track A → B → C → D → E**. Track F optional. Do not start Track
 
 **Goal:** Surrogate gone or demoted to non-referenced internal column.
 
-- [ ] Prove: no YAML/deferral/manifest/API contract requires `C*`  
-- [ ] Optional: stop emitting `clause_id` **or** keep as opaque remappable column never used in authored data  
-- [ ] Embeddings / joins migrate to coordinate (+ hash)  
-- [ ] Update `stale_clause_refs`, schemas (`^[CF][0-9]{6}$` → coordinate pattern), tests  
-- [ ] **Exit:** artificial SUT `C*` not part of public contract; Fatura `F*` unchanged until its own epic (D5)
+- [x] Prove: no YAML/deferral/manifest/API contract requires `C*`  
+- [x] Optional: stop emitting `clause_id` **or** keep as opaque remappable column never used in authored data  
+- [x] Embeddings / joins migrate to coordinate (+ hash) *(joins keep opaque `clause_id`; public surfaces use coordinate; embeddings unchanged as remappable cache key)*  
+- [x] Update `stale_clause_refs`, schemas (`^[CF][0-9]{6}$` → coordinate pattern), tests  
+- [x] **Exit:** artificial SUT `C*` not part of public contract; Fatura `F*` unchanged until its own epic (D5)
 
 ---
 
 ### Track F — Non-drug Gate B (optional, last)
 
-- [ ] Port payment_method / material_bundling / copay_exemption onto generic + canonical manifest  
-- [ ] Same coordinate identity rules  
-- [ ] **Exit:** zero bespoke drug-vs-nondrug architecture stories
+- [x] Port payment_method / material_bundling / copay_exemption onto generic + canonical manifest  
+- [x] Same coordinate identity rules  
+- [x] **Exit:** zero bespoke drug-vs-nondrug architecture stories
 
 ---
 

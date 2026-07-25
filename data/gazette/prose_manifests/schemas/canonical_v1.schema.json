@@ -24,6 +24,12 @@
     "section_clause_total": { "type": "integer", "minimum": 0 },
     "encoded_clause_ids": {
       "type": "array",
+      "description": "Opaque remappable parquet clause_id keys derived at compile (not authored). Prefer encoded_clause_coordinates for human audit.",
+      "items": { "type": "string" }
+    },
+    "encoded_clause_coordinates": {
+      "type": "array",
+      "description": "Public SUT cites for encoded clauses (clause_coordinate). Track E public contract.",
       "items": { "type": "string" }
     },
     "tier_c_deferred_clause_ids": {

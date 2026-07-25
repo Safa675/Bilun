@@ -553,6 +553,85 @@ SECTION_4214C = GateBSection(
 )
 
 
+# ── Track F — non-drug Gate B (same engine as drug) ───────────────────────────
+
+SECTION_PAYMENT_22 = GateBSection(
+    name="payment_22",
+    match=SectionMatch(prefixes=("2.2",)),
+    drug_keywords=(
+        "tanıya dayalı işlem",
+        "hizmet başına ödeme",
+        "hizmet başı",
+        "ek-2/c",
+        "ek-2/b",
+        "ek-2/a",
+        "faturalandır",
+        "ödeme yöntemi",
+        "yatarak tedavi",
+        "ayakta tedavi",
+        "basamak",
+        "gündüz yatak",
+        "yatak bedeli",
+    ),
+    manifest_version="canonical-v1",
+    manifest_section_id="2.2",
+    corpus_csv=f"{_CORPUS_DIR}/L2.2_payment_method_prose.csv",
+    manifest_path=f"{_MANIFEST_DIR}/L2.2_payment_method_encoded_manifest.json",
+    rule_set_id="payment_method_2_2",
+    extra_manifest="payment_cross_refs",
+    parquet_in_force_only=True,
+    requires_signal_for_export=True,
+    filter_rules_by_section_prefix=False,
+)
+
+SECTION_MATERIAL_31_32 = GateBSection(
+    name="material_31_32",
+    match=SectionMatch(prefixes=("3.1", "3.2")),
+    drug_keywords=(
+        "ayrıca faturalandır",
+        "faturalandırılmayacak",
+        "faturalandırılamaz",
+        "ayrı faturalandır",
+        "ayrıca faturalandırılamaz",
+        "ayrıca faturalandırılmaz",
+    ),
+    manifest_version="canonical-v1",
+    manifest_section_id="3.1,3.2",
+    corpus_csv=f"{_CORPUS_DIR}/L1.4_material_bundling_prose.csv",
+    manifest_path=f"{_MANIFEST_DIR}/L1.4_material_bundling_encoded_manifest.json",
+    rule_set_id="material_bundling_prose",
+    extra_manifest="material_buckets",
+    parquet_in_force_only=True,
+    requires_signal_for_export=True,
+    filter_rules_by_section_prefix=False,
+    admit_deontic_modalities=frozenset({"MANDATORY"}),
+)
+
+SECTION_COPAY_18 = GateBSection(
+    name="copay_18",
+    match=SectionMatch(prefixes=("1.8",)),
+    drug_keywords=(
+        "katılım payı",
+        "katilim payi",
+        "muayene",
+        "eczane",
+        "ek-1/a",
+        "ek-4/d",
+        "istisna",
+        "muaf",
+    ),
+    manifest_version="canonical-v1",
+    manifest_section_id="1.8",
+    corpus_csv=f"{_CORPUS_DIR}/L1.8_copay_exemption_prose.csv",
+    manifest_path=f"{_MANIFEST_DIR}/L1.8_copay_exemption_encoded_manifest.json",
+    rule_set_id="copay_general_1_8",
+    extra_manifest="copay_compositor",
+    parquet_in_force_only=True,
+    requires_signal_for_export=False,
+    filter_rules_by_section_prefix=False,
+)
+
+
 # ── Registry ─────────────────────────────────────────────────────────────────
 
 ALL_SECTIONS: dict[str, GateBSection] = {
@@ -573,5 +652,8 @@ ALL_SECTIONS: dict[str, GateBSection] = {
         SECTION_4234,
         SECTION_4235_4237,
         SECTION_4238,
+        SECTION_PAYMENT_22,
+        SECTION_MATERIAL_31_32,
+        SECTION_COPAY_18,
     ]
 }

@@ -1,9 +1,11 @@
 {
   "manifest_version": "canonical-v1",
   "rule_set_id": "payment_method_2_2",
-  "scope_note": "§2.2 package vs itemized vs tier-override (42 JSON rules, C2 batch-1–4)",
+  "section_id": "2.2",
+  "effective_date": "2026-07-25",
   "rules_in_json": 42,
-  "session_fraction_status": "PARTIAL",
+  "section_clause_total": 81,
+  "encoded_clause_count": 41,
   "encoded_clause_ids": [
     "C000521",
     "C000523",
@@ -47,319 +49,936 @@
     "C000703",
     "C000704"
   ],
-  "gate_b_sources_by_rule": {
-    "2.2.(12).no_pay_without_documentation": [
-      "C000530"
-    ],
-    "2.2.(13).health_report_single_bill": [
-      "C000531"
-    ],
-    "2.2.(14).committee_report_exam_fee": [
-      "C000532"
-    ],
-    "2.2.(3).aesthetic_must_not_bill": [
-      "C000521"
-    ],
-    "2.2.(5).interim_supplier_spa_reimbursement": [
-      "C000523"
-    ],
-    "2.2.(6).workplace_polyclinic_homecare_no_pay": [
-      "C000524"
-    ],
-    "2.2.(8).contracted_tetkik_mandatory": [
-      "C000526"
-    ],
-    "2.2.1.(20).class3_package_surcharge": [
-      "C000538"
-    ],
-    "2.2.1.B-1.(11).private_daily_visit_cap": [
-      "C000576"
-    ],
-    "2.2.1.B-1.(2).ten_day_same_specialty_no_visit": [
-      "C000562"
-    ],
-    "2.2.1.B-1.(3).deferred_ek2a2_no_second_visit": [
-      "C000563"
-    ],
-    "2.2.1.B-1.(4).same_day_outpatient_to_inpatient": [
-      "C000564"
-    ],
-    "2.2.1.B-1.(5).multi_specialty_same_day_no_visit": [
-      "C000565"
-    ],
-    "2.2.1.B-1.(6).followup_specialty_no_visit_fee": [
-      "C000566"
-    ],
-    "2.2.1.B-1.(7).main_side_specialty_split": [
-      "C000567"
-    ],
-    "2.2.1.B-1.(8).reported_therapy_subsequent_days": [
-      "C000568"
-    ],
-    "2.2.1.B-1.a": [
-      "C000571"
-    ],
-    "2.2.1.B-1.b": [
-      "C000572"
-    ],
-    "2.2.1.B-1.c.training_hospital_outpatient": [
-      "C000573"
-    ],
-    "2.2.1.B-2.(2).g.no_visit_fee": [
-      "C000606"
-    ],
-    "2.2.1.B-2.(4).training_hospital_inpatient": [
-      "C000612"
-    ],
-    "2.2.1.B-2.a.itemized_ek2b_ek2c_basis": [
-      "C000592"
-    ],
-    "2.2.1.B-3.(1).home_health_daily_cap": [
-      "C000618"
-    ],
-    "2.2.1.B-3.(2).home_health_10day_cooldown": [
-      "C000619"
-    ],
-    "2.2.1.B-3.(4).epidermolysis_home_wound_care": [
-      "C000621"
-    ],
-    "2.2.1.B-4.(1).telehealth_520032_billing": [
-      "C000624"
-    ],
-    "2.2.1.B-4.(4).same_specialty_10day_no_visit": [
-      "C000627"
-    ],
-    "2.2.1.B-4.(5).same_specialty_10day_no_telehealth": [
-      "C000628"
-    ],
-    "2.2.2.(1).itemized": [
-      "C000633"
-    ],
-    "2.2.2.(1).package": [
-      "C000633"
-    ],
-    "2.2.2.(2).override": [
-      "C000634"
-    ],
-    "2.2.2.(3).short_stay_day_bed": [
-      "C000635"
-    ],
-    "2.2.2.(4).gunubirlik_no_day_bed": [
-      "C000636"
-    ],
-    "2.2.2.(5).gunubirlik_no_companion_fee": [
-      "C000637"
-    ],
-    "2.2.2.A(1).itemized_basis": [
-      "C000639"
-    ],
-    "2.2.2.A(2).itemized_materials_drugs": [
-      "C000640"
-    ],
-    "2.2.2.A(3).companion_fee_itemized": [
-      "C000641"
-    ],
-    "2.2.2.A(4).ivd_kit_control_no_pay": [
-      "C000644"
-    ],
-    "2.2.2.A(6).training_hospital_itemized": [
-      "C000652"
-    ],
-    "2.2.2.A.cross_specialty_uplift_25pt": [
-      "C000649"
-    ],
-    "2.2.2.C.(1).complication_itemized_discount": [
-      "C000703"
-    ],
-    "2.2.2.C.(2).comorbidity_itemized": [
-      "C000704"
-    ]
-  },
+  "encoded_clause_coordinates": [
+    "2.2.(12)",
+    "2.2.(13)",
+    "2.2.(14)",
+    "2.2.(20)",
+    "2.2.(3)",
+    "2.2.(5)",
+    "2.2.(6)",
+    "2.2.(8)",
+    "2.2.1.B-1.(11)",
+    "2.2.1.B-1.(2)",
+    "2.2.1.B-1.(3)",
+    "2.2.1.B-1.(4)",
+    "2.2.1.B-1.(5)",
+    "2.2.1.B-1.(6)",
+    "2.2.1.B-1.(7)",
+    "2.2.1.B-1.(8)",
+    "2.2.1.B-1.a",
+    "2.2.1.B-1.b",
+    "2.2.1.B-1.c",
+    "2.2.1.B-2",
+    "2.2.1.B-2.(4)",
+    "2.2.1.B-3.(1)",
+    "2.2.1.B-3.(2)",
+    "2.2.1.B-3.(4)",
+    "2.2.1.B-4.(1)",
+    "2.2.1.B-4.(4)",
+    "2.2.1.B-4.(5)",
+    "2.2.2.(1)",
+    "2.2.2.(2)",
+    "2.2.2.(3)",
+    "2.2.2.(4)",
+    "2.2.2.(5)",
+    "2.2.2.A",
+    "2.2.2.A.(1)",
+    "2.2.2.A.(2)",
+    "2.2.2.A.(3)",
+    "2.2.2.A.(4)",
+    "2.2.2.A.(6)",
+    "2.2.2.C.(1)",
+    "2.2.2.C.(2)"
+  ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_clause_ids": [
+    "C000519",
+    "C000525",
+    "C000533",
+    "C000535",
+    "C000537",
+    "C000539",
+    "C000540",
+    "C000542",
+    "C000560",
+    "C000561",
+    "C000569",
+    "C000577",
+    "C000620",
+    "C000626",
+    "C000629",
+    "C000646",
+    "C000654",
+    "C000655",
+    "C000659",
+    "C000660",
+    "C000661",
+    "C000662",
+    "C000665",
+    "C000672",
+    "C000677",
+    "C000681",
+    "C000686",
+    "C000687",
+    "C000694",
+    "C000697",
+    "C000701"
+  ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [
+    "C000528",
+    "C000534",
+    "C000541",
+    "C000570",
+    "C000587",
+    "C000591",
+    "C000593",
+    "C000667",
+    "C000673"
+  ],
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 31,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 9,
+  "clause_traces": [
+    {
+      "clause_id": "C000519",
+      "section_id": "2.2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000521",
+      "section_id": "2.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Vücut bütünlüğünü sağlamak amacıyla yapılan ve iş kazası ile meslek hastalığına",
+      "linked_rule_ids": [
+        "2.2.(3).aesthetic_must_not_bill"
+      ]
+    },
+    {
+      "clause_id": "C000523",
+      "section_id": "2.2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Ancak",
+      "linked_rule_ids": [
+        "2.2.(5).interim_supplier_spa_reimbursement"
+      ]
+    },
+    {
+      "clause_id": "C000524",
+      "section_id": "2.2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İşyeri sağlık ve güvenlik hizmeti sunulan birimler",
+      "linked_rule_ids": [
+        "2.2.(6).workplace_polyclinic_homecare_no_pay"
+      ]
+    },
+    {
+      "clause_id": "C000525",
+      "section_id": "2.2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "prior_therapy",
+        "moh_patient_approval"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: prior_therapy, moh_patient_approval. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000526",
+      "section_id": "2.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sözleşmeli sağlık hizmeti sunucuları",
+      "linked_rule_ids": [
+        "2.2.(8).contracted_tetkik_mandatory"
+      ]
+    },
+    {
+      "clause_id": "C000528",
+      "section_id": "2.2",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Kurumla sözleşmeli sağlık hizmeti sunucuları",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000530",
+      "section_id": "2.2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Kurum ile sözleşmeli sağlık hizmeti sunucuları",
+      "linked_rule_ids": [
+        "2.2.(12).no_pay_without_documentation"
+      ]
+    },
+    {
+      "clause_id": "C000531",
+      "section_id": "2.2",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Kişilere sağlanan sağlık hizmetlerine ilişkin düzenlenen sağlık raporu bedelleri",
+      "linked_rule_ids": [
+        "2.2.(13).health_report_single_bill"
+      ]
+    },
+    {
+      "clause_id": "C000532",
+      "section_id": "2.2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Kişilere sağlanan tıbbi malzeme",
+      "linked_rule_ids": [
+        "2.2.(14).committee_report_exam_fee"
+      ]
+    },
+    {
+      "clause_id": "C000533",
+      "section_id": "2.2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000534",
+      "section_id": "2.2",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Sağlık hizmeti sunucularınca gerçekleştirilecek check-up",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000535",
+      "section_id": "2.2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "SUT eki EK-2/B ve EK-2/C listelerinde yer alan işlemlerin laparoskopik",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000537",
+      "section_id": "2.2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000538",
+      "section_id": "2.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.(20).class3_package_surcharge"
+      ]
+    },
+    {
+      "clause_id": "C000539",
+      "section_id": "2.2.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1 - Ayakta tedavilerde ödeme",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000540",
+      "section_id": "2.2.1.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "prior_therapy"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: prior_therapy. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000541",
+      "section_id": "2.2.1.A",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000542",
+      "section_id": "2.2.1.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000560",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.B-1 - Ayakta tedavilerde ödeme uygulaması",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000561",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "“Ayakta tedavilerde ödeme” uygulaması kapsamında",
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: moh_patient_approval. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000562",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Hastanın aynı sağlık hizmeti sunucusuna",
+      "linked_rule_ids": [
+        "2.2.1.B-1.(2).ten_day_same_specialty_no_visit"
+      ]
+    },
+    {
+      "clause_id": "C000563",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-1.(3).deferred_ek2a2_no_second_visit"
+      ]
+    },
+    {
+      "clause_id": "C000564",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-1.(4).same_day_outpatient_to_inpatient"
+      ]
+    },
+    {
+      "clause_id": "C000565",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Hastanın aynı gün içerisinde",
+      "linked_rule_ids": [
+        "2.2.1.B-1.(5).multi_specialty_same_day_no_visit"
+      ]
+    },
+    {
+      "clause_id": "C000566",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Hastanın",
+      "linked_rule_ids": [
+        "2.2.1.B-1.(6).followup_specialty_no_visit_fee"
+      ]
+    },
+    {
+      "clause_id": "C000567",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-1.(7).main_side_specialty_split"
+      ]
+    },
+    {
+      "clause_id": "C000568",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sağlık raporu ile yapılması gerekli görülen hiperbarik oksijen tedavisi",
+      "linked_rule_ids": [
+        "2.2.1.B-1.(8).reported_therapy_subsequent_days"
+      ]
+    },
+    {
+      "clause_id": "C000569",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Hastanın",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000570",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Ayakta tedavilerde ödeme uygulamasında",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000571",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-1.a"
+      ]
+    },
+    {
+      "clause_id": "C000572",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "İşlemin sadece SUT eki EK-2/B Listesinde yer alması halinde",
+      "linked_rule_ids": [
+        "2.2.1.B-1.b"
+      ]
+    },
+    {
+      "clause_id": "C000573",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sağlık Bakanlığına bağlı eğitim ve araştırma hastaneler",
+      "linked_rule_ids": [
+        "2.2.1.B-1.c.training_hospital_outpatient"
+      ]
+    },
+    {
+      "clause_id": "C000576",
+      "section_id": "2.2.1.B-1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-1.(11).private_daily_visit_cap"
+      ]
+    },
+    {
+      "clause_id": "C000577",
+      "section_id": "2.2.1.B-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.1.B-2 - Hizmet başına ödeme yöntemi ile faturalandırılacak ayakta tedaviler",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000587",
+      "section_id": "2.2.1.B-2",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Birinci basamak sağlık hizmeti sunucularında",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000591",
+      "section_id": "2.2.1.B-2",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000592",
+      "section_id": "2.2.1.B-2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-2.a.itemized_ek2b_ek2c_basis"
+      ]
+    },
+    {
+      "clause_id": "C000593",
+      "section_id": "2.2.1.B-2",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000606",
+      "section_id": "2.2.1.B-2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-2.(2).g.no_visit_fee"
+      ]
+    },
+    {
+      "clause_id": "C000612",
+      "section_id": "2.2.1.B-2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sağlık Bakanlığına bağlı eğitim ve araştırma hastaneler",
+      "linked_rule_ids": [
+        "2.2.1.B-2.(4).training_hospital_inpatient"
+      ]
+    },
+    {
+      "clause_id": "C000618",
+      "section_id": "2.2.1.B-3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-3.(1).home_health_daily_cap"
+      ]
+    },
+    {
+      "clause_id": "C000619",
+      "section_id": "2.2.1.B-3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-3.(2).home_health_10day_cooldown"
+      ]
+    },
+    {
+      "clause_id": "C000620",
+      "section_id": "2.2.1.B-3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000621",
+      "section_id": "2.2.1.B-3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-3.(4).epidermolysis_home_wound_care"
+      ]
+    },
+    {
+      "clause_id": "C000624",
+      "section_id": "2.2.1.B-4",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.1.B-4.(1).telehealth_520032_billing"
+      ]
+    },
+    {
+      "clause_id": "C000626",
+      "section_id": "2.2.1.B-4",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000627",
+      "section_id": "2.2.1.B-4",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Hastanın aynı sağlık hizmeti sunucusuna",
+      "linked_rule_ids": [
+        "2.2.1.B-4.(4).same_specialty_10day_no_visit"
+      ]
+    },
+    {
+      "clause_id": "C000628",
+      "section_id": "2.2.1.B-4",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Hastanın aynı sağlık hizmeti sunucusuna",
+      "linked_rule_ids": [
+        "2.2.1.B-4.(5).same_specialty_10day_no_telehealth"
+      ]
+    },
+    {
+      "clause_id": "C000629",
+      "section_id": "2.2.2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "2.2 - Yatarak tedavilerde ödeme",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000633",
+      "section_id": "2.2.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.2.(1).itemized",
+        "2.2.2.(1).package"
+      ]
+    },
+    {
+      "clause_id": "C000634",
+      "section_id": "2.2.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.2.(2).override"
+      ]
+    },
+    {
+      "clause_id": "C000635",
+      "section_id": "2.2.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "24 saatten kısa süreli yatışlarda yatak bedeli",
+      "linked_rule_ids": [
+        "2.2.2.(3).short_stay_day_bed"
+      ]
+    },
+    {
+      "clause_id": "C000636",
+      "section_id": "2.2.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.2.(4).gunubirlik_no_day_bed"
+      ]
+    },
+    {
+      "clause_id": "C000637",
+      "section_id": "2.2.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Günübirlik tedavilerde",
+      "linked_rule_ids": [
+        "2.2.2.(5).gunubirlik_no_companion_fee"
+      ]
+    },
+    {
+      "clause_id": "C000639",
+      "section_id": "2.2.2.A",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Hizmet başına ödeme yönteminde sağlık hizmeti bedelleri",
+      "linked_rule_ids": [
+        "2.2.2.A(1).itemized_basis"
+      ]
+    },
+    {
+      "clause_id": "C000640",
+      "section_id": "2.2.2.A",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.2.A(2).itemized_materials_drugs"
+      ]
+    },
+    {
+      "clause_id": "C000641",
+      "section_id": "2.2.2.A",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.2.A(3).companion_fee_itemized"
+      ]
+    },
+    {
+      "clause_id": "C000644",
+      "section_id": "2.2.2.A",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.2.A(4).ivd_kit_control_no_pay"
+      ]
+    },
+    {
+      "clause_id": "C000646",
+      "section_id": "2.2.2.A",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000649",
+      "section_id": "2.2.2.A",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.2.A.cross_specialty_uplift_25pt"
+      ]
+    },
+    {
+      "clause_id": "C000652",
+      "section_id": "2.2.2.A",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Sağlık Bakanlığına bağlı eğitim ve araştırma hastaneler",
+      "linked_rule_ids": [
+        "2.2.2.A(6).training_hospital_itemized"
+      ]
+    },
+    {
+      "clause_id": "C000654",
+      "section_id": "2.2.2.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Tanıya dayalı işlem üzerinden ödeme yönteminde",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000655",
+      "section_id": "2.2.2.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000659",
+      "section_id": "2.2.2.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000660",
+      "section_id": "2.2.2.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000661",
+      "section_id": "2.2.2.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000662",
+      "section_id": "2.2.2.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Anatomik olarak göğüs bölgesinde yapılacak planlı ameliyatlarda",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000665",
+      "section_id": "2.2.2.B",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Sağlık Bakanlığına bağlı eğitim ve araştırma hastaneler",
+      "defer_themes": [
+        "moh_patient_approval"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: moh_patient_approval. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000667",
+      "section_id": "2.2.2.B",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000672",
+      "section_id": "2.2.2.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000673",
+      "section_id": "2.2.2.B-1",
+      "encode_tier": "C",
+      "manifest_status": "non_actionable",
+      "heuristic_inn": "Yatak bedeli",
+      "defer_reason": "Reference/definitional or supporting text — not a billing decision (migrated from coverage._RECLASSIFY_AS_NON_ALGORITHMIC; Track B2)."
+    },
+    {
+      "clause_id": "C000677",
+      "section_id": "2.2.2.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000681",
+      "section_id": "2.2.2.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000686",
+      "section_id": "2.2.2.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000687",
+      "section_id": "2.2.2.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000694",
+      "section_id": "2.2.2.B-1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000697",
+      "section_id": "2.2.2.B-2",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000701",
+      "section_id": "2.2.2.B-3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "Hastanın taburcu (Taburcu işleminin A",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C000703",
+      "section_id": "2.2.2.C",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.2.C.(1).complication_itemized_discount"
+      ]
+    },
+    {
+      "clause_id": "C000704",
+      "section_id": "2.2.2.C",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "2.2.2.C.(2).comorbidity_itemized"
+      ]
+    }
+  ],
+  "clause_trace_complete": true,
+  "scope_note": "§2.2 package vs itemized vs tier-override (42 JSON rules)",
+  "session_fraction_status": "PARTIAL",
   "related_rule_sets": [
     {
       "rule_set_id": "session_pricing_2_2_2_B",
       "json_path": "session_pricing_2_2_2_B.json",
       "manifest": "L2.2_session_pricing_2_2_2_B_encoded_manifest.json",
       "note": "§2.2.2.B session-fraction remains PARTIAL — see session_pricing.py"
-    }
-  ],
-  "section_id": "",
-  "tier_c_deferred_clause_ids": [],
-  "emr_blocked_clause_ids": [],
-  "non_actionable_clause_ids": [],
-  "tier_a_pending_clause_ids": [],
-  "tier_b_pending_clause_ids": [],
-  "encoded_clause_count": 41,
-  "tier_c_deferred_count": 0,
-  "emr_blocked_count": 0,
-  "non_actionable_count": 0,
-  "tier_a_pending_count": 0,
-  "tier_b_pending_count": 0,
-  "section_clause_total": 41,
-  "clause_traces": [
-    {
-      "clause_id": "C000521",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000523",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000524",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000526",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000530",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000531",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000532",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000538",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000562",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000563",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000564",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000565",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000566",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000567",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000568",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000571",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000572",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000573",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000576",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000592",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000606",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000612",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000618",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000619",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000621",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000624",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000627",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000628",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000633",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000634",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000635",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000636",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000637",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000639",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000640",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000641",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000644",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000649",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000652",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000703",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "C000704",
-      "manifest_status": "encoded"
     }
   ]
 }

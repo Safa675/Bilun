@@ -18,7 +18,8 @@ Track A3 resolve policy for ``gate_b_sources`` (compile assert):
 from __future__ import annotations
 
 import re
-from typing import Any, Iterable
+from typing import Any
+from collections.abc import Iterable
 
 import polars as pl
 

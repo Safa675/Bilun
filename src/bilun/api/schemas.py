@@ -1113,9 +1113,13 @@ class ProseRulesSourcesListResponse(BaseModel):
 
 
 class DeferralEntry(BaseModel):
-    """One deferral_table row for coordinate-first review."""
+    """One deferral_table row for coordinate-first review.
 
-    clause_id: str
+    ``clause_id`` is an opaque remappable join key (optional for clients).
+    ``clause_coordinate`` is the public SUT cite when known.
+    """
+
+    clause_id: str | None = None
     clause_coordinate: str | None = None
     section_id: str | None = None
     status: str

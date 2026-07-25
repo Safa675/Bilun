@@ -54,7 +54,7 @@ const sections = {
       glossary: {
         title: "Bu sayılar ne anlama geliyor?",
         toggle: "Sayıları açıkla",
-        hukum: "Hüküm: Yürürlükteki {count} SUT paragrafı. Birincil kimlik clause_coordinate (örn. 2.2.1.(1)); C* yalnızca ikincil.",
+        hukum: "Hüküm: Yürürlükteki {count} SUT paragrafı. Birincil kimlik clause_coordinate (örn. 2.2.1.(1)). C* yalnızca dahili/çakışma anahtarıdır.",
         hukumTurleri: "Bunların {numbered} tanesi numaralı kural hükmü (fıkra/bent), {prose} tanesi düz metin paragrafı, {structural} tanesi ise yapısal iskele (bölüm/başlık) olup fatura kuralı değildir.",
         kuralMotoru: "Kural motoru: {count} kayıt girdisi (örn. drug_indication_prose, copay_rate_ek2c1).",
         jsonSatir: "JSON kural satırı: prose_rules/*.json içinde {count} kural nesnesi (motorların içindeki çalıştırılabilir kurallar).",

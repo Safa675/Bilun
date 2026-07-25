@@ -827,7 +827,7 @@ export async function listProseRuleSources(
 }
 
 export interface DeferralEntry {
-  clause_id: string;
+  clause_id: string | null;
   clause_coordinate: string | null;
   section_id: string | null;
   status: string;

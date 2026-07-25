@@ -32,6 +32,7 @@
         "sut_section": { "type": "string", "minLength": 1 },
         "gate_b_sources": {
           "type": "array",
+          "description": "Public cites prefer clause_coordinate. Opaque C*/F* ids are allowed only for collision disambiguation (Track E); Fatura F* remains its own epic.",
           "items": {
             "type": "string",
             "anyOf": [
