@@ -71,12 +71,9 @@ Manifest-only constants (material/specialty clause-ID sets) live in
 `data/gazette/prose_rule_sources/` YAML (`gate_b_sources`); compile stages no longer
 apply `SOURCE_PATCHES` / `SOURCE_DROPS`.
 
-Gate B manifest/corpus stages use `scripts/sut/prose/gate_b_core.py` primitives where
-applicable. Drug-indication CSV wave clause inventories are frozen in
-`scripts/sut/gate_b_wave_config.py`.
-
-Section-specific `*_gate_b.py` modules remain as manifest builders; further consolidation
-into `gate_b_core` is optional follow-up.
+Gate B manifest stages use `scripts/sut/prose/gate_b_generic.py` +
+`gate_b_sections.py`. Section-specific `*_gate_b.py` modules remain for
+non-drug families (Track F) and shared primitives (`drug_indication_gate_b`).
 
 `test_all_rule_family_yaml_sources.py` enforces exact rule-level parity between every YAML
 source family and its runtime JSON.
@@ -103,6 +100,6 @@ locally and commit the artifact diffs with the code change.
 
 - **Rule data**: `data/gazette/prose_rule_sources/<family>/<section>.yaml`
 - **Manifest constants**: `manifest_clause_ids.py`
-- **Gate B / manifests**: `*_gate_b.py` modules + `gate_b_core.py`
+- **Gate B / manifests**: `gate_b_generic.py` + `gate_b_sections.py` (+ Track F `*_gate_b.py`)
 - **Orchestration**: `compile_rules.py` (ordering, dedup, schema validation, manifest accumulation)
 - **Runtime contract**: `data/gazette/prose_rules/*.json` (read by `src/bilun/`)

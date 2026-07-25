@@ -7,6 +7,10 @@ from typing import Any
 import polars as pl
 
 from scripts.sut.prose.drug_indication_gate_b import infer_defer_themes
+from scripts.sut.prose.gate_b_generic import build_defer_reason
+
+# Re-export for callers that import from this module.
+__all__ = ["build_defer_reason", "build_phase5_manifest", "build_clause_trace"]
 
 
 def _rules_by_clause(rules: list[dict[str, Any]]) -> dict[str, list[str]]:
@@ -23,19 +27,6 @@ def _rules_by_clause(rules: list[dict[str, Any]]) -> dict[str, list[str]]:
     for clause_id in index:
         index[clause_id].sort()
     return index
-
-
-def build_defer_reason(themes: list[str]) -> str:
-    if not themes:
-        return (
-            "Deferred — multi-step clinical pathway not yet structurable on exact "
-            "drug claim lines (Tier C manifest-only)."
-        )
-    labels = ", ".join(themes)
-    return (
-        f"Deferred — requires structured ingest for: {labels}. "
-        "Batch encode when EMR/report fields support this pathway."
-    )
 
 
 def _manifest_status(

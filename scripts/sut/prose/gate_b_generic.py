@@ -36,6 +36,20 @@ from scripts.sut.prose.drug_indication_gate_b import (  # noqa: E402
 )
 
 
+def build_defer_reason(themes: list[str]) -> str:
+    """Human-readable Tier C deferral reason from theme tags (Track C3 shared util)."""
+    if not themes:
+        return (
+            "Deferred — multi-step clinical pathway not yet structurable on exact "
+            "drug claim lines (Tier C manifest-only)."
+        )
+    labels = ", ".join(themes)
+    return (
+        f"Deferred — requires structured ingest for: {labels}. "
+        "Batch encode when EMR/report fields support this pathway."
+    )
+
+
 # ── Deferral table loader (Phase 3 — first-class data file) ──────────────────
 
 _DEFERRAL_TABLE_PATH = _PROJECT_ROOT / "data/gazette/prose_rules/deferral_table.yaml"
@@ -632,40 +646,57 @@ def write_artifacts(
     *,
     clauses_path: Path,
     section: GateBSection,
-    rules_path: Path,
     effective_date: str,
+    rules_path: Path | None = None,
+    rules: list[dict[str, Any]] | None = None,
+    batch_rules: list[dict[str, Any]] | None = None,
+    manifest_path: Path | None = None,
+    corpus_csv: Path | None = None,
     write_corpus: bool = False,
 ) -> tuple[pl.DataFrame, dict[str, Any]]:
-    """Standard Gate B artifact writer: export → manifest → JSON (+ optional CSV)."""
-    payload = json.loads(rules_path.read_text(encoding="utf-8"))
-    batch_rules = [
-        rule
-        for rule in (payload.get("rules") or [])
-        if any(
-            str(rule.get("sut_section") or "").startswith(prefix)
-            for prefix in section.match.prefixes
-        )
-    ]
+    """Standard Gate B artifact writer: export → manifest → JSON (+ optional CSV).
+
+    Rules resolve as: batch_rules > rules > rules_path (prefix-filtered).
+    Manifest path defaults to ``section.manifest_path``.
+    """
+    resolved_rules: list[dict[str, Any]]
+    if batch_rules is not None:
+        resolved_rules = batch_rules
+    elif rules is not None:
+        resolved_rules = rules
+    elif rules_path is not None:
+        payload = json.loads(rules_path.read_text(encoding="utf-8"))
+        resolved_rules = [
+            rule
+            for rule in (payload.get("rules") or [])
+            if any(
+                str(rule.get("sut_section") or "").startswith(prefix)
+                for prefix in section.match.prefixes
+            )
+        ]
+    else:
+        raise ValueError("write_artifacts requires rules_path, rules, or batch_rules")
 
     resolve_clauses = pl.read_parquet(clauses_path)
+    frame = export_candidates(clauses_path, section)
     manifest = build_manifest(
-        export_candidates(clauses_path, section),
-        batch_rules,
+        frame,
+        resolved_rules,
         section,
         effective_date=effective_date,
         resolve_clauses=resolve_clauses,
     )
     encoded = frozenset(manifest["encoded_clause_ids"])
 
-    manifest_path = _PROJECT_ROOT / section.manifest_path
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    out_manifest = Path(manifest_path) if manifest_path else (_PROJECT_ROOT / section.manifest_path)
+    out_manifest.parent.mkdir(parents=True, exist_ok=True)
 
     frame = export_candidates(clauses_path, section, encoded_clause_ids=encoded)
     if write_corpus:
-        corpus_csv = _PROJECT_ROOT / section.corpus_csv
-        corpus_csv.parent.mkdir(parents=True, exist_ok=True)
-        frame.write_csv(corpus_csv)
-    manifest_path.write_text(
+        out_csv = Path(corpus_csv) if corpus_csv else (_PROJECT_ROOT / section.corpus_csv)
+        out_csv.parent.mkdir(parents=True, exist_ok=True)
+        frame.write_csv(out_csv)
+    out_manifest.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     return frame, manifest

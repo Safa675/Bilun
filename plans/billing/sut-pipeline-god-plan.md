@@ -184,11 +184,11 @@ Prefer **Track A → B → C → D → E**. Track F optional. Do not start Track
 - [x] **Exit:** no `shared_manifest` / `rules_path_with_batch_rules` special cases (or ≤1 documented exception) *(exceptions: `4201_w4`, `4213_tier_b_remap`; phase5 repair until C3)*
 
 #### C3 — Coverage = one function
-- [ ] Input: parquet + rule JSON + deferral  
-- [ ] Output: coverage parquets  
-- [ ] Delete §4.2.14.C-only side tools (`drug_indication_manifest`, `a1_manifest_coverage`, a0 inventory) once generic covers them
-- [ ] Prefer Polars end-to-end (drop pandas dual stack in prose coverage/classify when touched)
-- [ ] **Exit:** “what is a gap?” answerable from one predicate + deferral
+- [x] Input: parquet + rule JSON + deferral *(encoding via `_clause_has_rule_encoding`; drug supplements via manifest globs)*
+- [x] Output: coverage parquets  
+- [ ] Delete §4.2.14.C-only side tools (`drug_indication_manifest`, `a1_manifest_coverage`) once generic covers them *(kept — phase5 still uses a1 repair; a0 deleted)*
+- [ ] Prefer Polars end-to-end (drop pandas dual stack in prose coverage/classify when touched) *(deferred — pandas still in `_enrich_with_coverage`)*
+- [x] **Exit:** “what is a gap?” answerable from one predicate + deferral *(`_clause_has_rule_encoding` + structural/deferral exclusions)*
 
 #### C4 — Corpus CSVs
 - [x] Stop committing / stop runtime-reading Gate B corpus CSVs; optional export-only for humans *(compile no longer writes/checks CSV; committed CSVs may still exist until cleanup)*
@@ -196,9 +196,9 @@ Prefer **Track A → B → C → D → E**. Track F optional. Do not start Track
 - [x] **Exit:** `rules_catalog` / coverage do not open `prose_corpus/*.csv`
 
 #### C5 — Retire shims & one-offs
-- [ ] Remove `gate_b_shim` once tests call generic  
-- [ ] Delete dead export/repair scripts superseded by generic audit  
-- [ ] **Exit:** `scripts/sut/prose/gate_b*.py` is generic + sections + audit only (plus Track F non-drug if deferred)
+- [x] Remove `gate_b_shim` once tests call generic  
+- [x] Delete dead export/repair scripts superseded by generic audit *(a0 inventory, anti_vegf_4233_export)*
+- [x] **Exit:** `scripts/sut/prose/gate_b*.py` is generic + sections + audit (+ Track F non-drug if deferred) *(plus `drug_indication_gate_b` primitives + phase5 a1 until 4214c port)*
 
 ---
 

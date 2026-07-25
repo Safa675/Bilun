@@ -693,7 +693,7 @@ def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) ->
         raise ValueError(f"target {target.name} missing gate_b_section")
 
     from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
-    from scripts.sut.prose.gate_b_shim import shim_write_artifacts
+    from scripts.sut.prose.gate_b_generic import write_artifacts
 
     payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
     existing = list(payload.get("rules") or [])
@@ -728,10 +728,12 @@ def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) ->
     effective_date = _existing_effective_date(target.manifest_path) or date.today().isoformat()
     clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
     section_key = str(target.gate_b_section)
-    shim_kwargs: dict[str, Any] = {
+    section = ALL_SECTIONS[section_key]
+    write_kwargs: dict[str, Any] = {
         "clauses_path": clauses_path,
-        "corpus_csv": target.corpus_csv,
+        "section": section,
         "manifest_path": target.manifest_path,
+        "corpus_csv": target.corpus_csv,
         "effective_date": effective_date,
         "rules_path": target.rule_json,
         "write_corpus": False,
@@ -740,12 +742,12 @@ def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) ->
     # Exception: §4.2.1 wave-4 uses regex boundary (not bare prefix) for rule filter.
     if target.name == "drug_indication_4201_w4":
         is_421_proper = ALL_SECTIONS["4201"].match.matches
-        shim_kwargs["batch_rules"] = [
+        write_kwargs["batch_rules"] = [
             rule for rule in merged if is_421_proper(str(rule.get("sut_section") or ""))
         ]
-        del shim_kwargs["rules_path"]
+        del write_kwargs["rules_path"]
 
-    frame, manifest = shim_write_artifacts(section_key, **shim_kwargs)
+    frame, manifest = write_artifacts(**write_kwargs)
     return {
         "rows": getattr(frame, "height", None),
         "encoded": manifest.get("encoded_clause_count") or len(manifest.get("encoded_clause_ids") or []),

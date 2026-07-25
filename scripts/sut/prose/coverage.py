@@ -27,26 +27,6 @@ _SUT_CLAUSES_PARQUET = _REPO_ROOT / "data/gazette/sut_clauses.parquet"
 _SUT_CLAUSES_FRAME_UNSET: object = object()
 _sut_clauses_frame_cache: pl.DataFrame | None | object = _SUT_CLAUSES_FRAME_UNSET
 
-_DRUG_INDICATION_MANIFEST = (
-    Path(__file__).resolve().parents[3]
-    / "data/gazette/prose_manifests/L4.2_drug_indication_4.2.14.C_manifest.json"
-)
-_ANTI_VEGF_MANIFEST = (
-    Path(__file__).resolve().parents[3]
-    / "data/gazette/prose_manifests/L4.33_anti_vegf_4.2.33_manifest.json"
-)
-_DRUG_4213_4216_MANIFEST = (
-    Path(__file__).resolve().parents[3]
-    / "data/gazette/prose_manifests/L4.2_drug_indication_4213_4216_manifest.json"
-)
-_DRUG_4217_MANIFEST = (
-    Path(__file__).resolve().parents[3]
-    / "data/gazette/prose_manifests/L4.2_drug_indication_4217_manifest.json"
-)
-_DRUG_4219_MANIFEST = (
-    Path(__file__).resolve().parents[3]
-    / "data/gazette/prose_manifests/L4.2_drug_indication_4219_manifest.json"
-)
 _MANIFEST_DIR = Path(__file__).resolve().parents[3] / "data/gazette/prose_manifests"
 _DRUG_INDICATION_RULES_JSON = (
     Path(__file__).resolve().parents[3] / "data/gazette/prose_rules/drug_indication_prose.json"
@@ -244,21 +224,16 @@ def _load_gate_b_sources_from_rules_json(path: Path) -> frozenset[str]:
 
 
 def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
-    """Encoded clause IDs for the merged drug_indication corpus.
+    """Encoded clause IDs for the merged drug_indication corpus (Track C3).
 
-    Phase 6 simplification: derive the encoded set directly from rule JSON
-    gate_b_sources (the single source of truth), supplemented by manifests
-    for sections whose rules haven't been fully encoded yet.
+    Primary: rule JSON ``gate_b_sources`` (drug + anti-VEGF).
+    Supplement: R6/wave manifests whose rules are not yet in the main JSON.
     """
-    # Primary: derive from rules JSON gate_b_sources (canonical source of truth)
     encoded: frozenset[str] = _load_gate_b_sources_from_rules_json(_DRUG_INDICATION_RULES_JSON)
 
-    # Supplement: anti-VEGF corpus (separate JSON)
     anti_vegf_rules = _DRUG_INDICATION_RULES_JSON.parent / "anti_vegf_prose.json"
     encoded |= _load_gate_b_sources_from_rules_json(anti_vegf_rules)
 
-    # Supplement: R6 deontic-wave manifests (sections whose rules aren't in the
-    # main JSON yet — these are still manifest-tracked only)
     for name in (
         "L4.2_drug_indication_4_2_14_wave2_manifest.json",
         "L4.2_drug_indication_rheum_biologics_manifest.json",
@@ -341,6 +316,34 @@ def _section_r6_misc_encoding(clause_id: str, section_id: str) -> bool:
     if section_id.startswith(("3.1", "3.2")):
         return clause_id in _load_encoded_clause_ids("L_r6_specialty_leftover_manifest.json")
     return False
+
+def _clause_has_rule_encoding(
+    *,
+    clause_id: str,
+    primary_rule_id: str | None,
+    section_id: str,
+    drug_encoded_ids: frozenset[str],
+) -> bool:
+    """Single encoding predicate (Track C3) — motor map + section overrides."""
+    if primary_rule_id == "drug_indication_prose":
+        if clause_id in drug_encoded_ids:
+            return True
+    elif primary_rule_id in _WAVE2_MANIFESTS:
+        if clause_id in _load_wave2_encoded_clause_ids(str(primary_rule_id)):
+            return True
+    elif primary_rule_id in _PROSE_MANIFESTS:
+        if clause_id in _load_encoded_clause_ids(_PROSE_MANIFESTS[str(primary_rule_id)]):
+            return True
+
+    for _override in (
+        _section_manifest_encode_override,
+        _section_drug_indication_wave_encoding,
+        _section_r6_misc_encoding,
+    ):
+        if _override(clause_id, section_id):
+            return True
+    return False
+
 
 _STATUS_RANK: dict[str, int] = {
     "implemented": 0,
@@ -450,28 +453,13 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
             )
 
         # Compute has_rule_encoding FIRST — has_algorithmic_gap depends on it.
-        if primary_rule_id == "drug_indication_prose":
-            has_rule_encoding = clause_id in encoded_clause_ids
-        elif primary_rule_id in _WAVE2_MANIFESTS:
-            has_rule_encoding = clause_id in _load_wave2_encoded_clause_ids(primary_rule_id)
-        elif primary_rule_id in _PROSE_MANIFESTS:
-            manifest_name = _PROSE_MANIFESTS[primary_rule_id]
-            has_rule_encoding = clause_id in _load_encoded_clause_ids(manifest_name)
-        else:
-            has_rule_encoding = False
-
         section_id = str(row.get("section_id") or "")
-        if not has_rule_encoding:
-            # Section-specific overrides: reflect encodes whose manifest motor
-            # differs from the classifier's primary_rule_id.
-            for _override in (
-                _section_manifest_encode_override,
-                _section_drug_indication_wave_encoding,
-                _section_r6_misc_encoding,
-            ):
-                if _override(clause_id, section_id):
-                    has_rule_encoding = True
-                    break
+        has_rule_encoding = _clause_has_rule_encoding(
+            clause_id=clause_id,
+            primary_rule_id=str(primary_rule_id) if primary_rule_id else None,
+            section_id=section_id,
+            drug_encoded_ids=encoded_clause_ids,
+        )
 
         # A clause has an algorithmic gap when its motor is not fully
         # implemented/encoded — either the motor itself is partial/missing,

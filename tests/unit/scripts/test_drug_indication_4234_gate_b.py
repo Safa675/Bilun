@@ -35,17 +35,19 @@ _TIER_A_IDS = {
 
 
 def test_gate_b_exports_4234_candidates() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     soft_floor(frame.height, 33, label="test_drug_indication_4234_gate_b frame.height")
     assert frame["section_id"].str.starts_with("4.2.34").all()
 
 
 def test_gate_b_csv_schema_and_tier_breakdown() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     for col in (
         "clause_id",
         "section_id",
@@ -62,13 +64,14 @@ def test_gate_b_csv_schema_and_tier_breakdown() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import build_manifest, export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
     from scripts.sut.rule_sources import load_legacy_drug_batch
 
     BATCH_MS4234_RULES = load_legacy_drug_batch("drug_indication_4234_batch_rules.py:BATCH_MS4234_RULES")
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
-    manifest = shim_build_manifest(_SECTION, frame, BATCH_MS4234_RULES, resolve_clauses=pl.read_parquet(_CLAUSES),
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
+    manifest = build_manifest(frame, BATCH_MS4234_RULES, ALL_SECTIONS[_SECTION], resolve_clauses=pl.read_parquet(_CLAUSES),
         effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _TIER_A_IDS
@@ -79,12 +82,12 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
-    from scripts.sut.prose.gate_b_shim import shim_write_artifacts
+    from scripts.sut.prose.gate_b_generic import write_artifacts
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
     corpus = tmp_path / _CORPUS.name
     manifest_path = tmp_path / _MANIFEST.name
-    shim_write_artifacts(
-        _SECTION,
+    write_artifacts(section=ALL_SECTIONS[_SECTION],
         clauses_path=_CLAUSES,
         rules_path=_RULES,
         corpus_csv=corpus,

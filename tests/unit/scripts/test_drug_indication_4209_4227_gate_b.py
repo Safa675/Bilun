@@ -54,15 +54,17 @@ def _with_defer_themes(frame: pl.DataFrame) -> pl.DataFrame:
 
 
 def _export_candidates(clauses_path: Path) -> pl.DataFrame:
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    return _with_defer_themes(shim_export_candidates(_SECTION, clauses_path))
+    return _with_defer_themes(export_candidates(clauses_path, ALL_SECTIONS[_SECTION]))
 
 
 def _build_manifest(frame: pl.DataFrame, rules: list[dict[str, Any]], *, effective_date: str) -> dict[str, Any]:
-    from scripts.sut.prose.gate_b_shim import shim_build_manifest
+    from scripts.sut.prose.gate_b_generic import build_manifest
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    return shim_build_manifest(_SECTION, frame, rules, resolve_clauses=pl.read_parquet(_CLAUSES),
+    return build_manifest(frame, rules, ALL_SECTIONS[_SECTION], resolve_clauses=pl.read_parquet(_CLAUSES),
         effective_date=effective_date)
 
 
@@ -169,7 +171,8 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
-    from scripts.sut.prose.gate_b_shim import shim_write_artifacts
+    from scripts.sut.prose.gate_b_generic import write_artifacts
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
     from scripts.sut.rule_sources import load_legacy_drug_batch
 
     BATCH_A6_RULES = load_legacy_drug_batch("drug_indication_4209_4227_batch_rules.py:BATCH_A6_RULES")
@@ -177,8 +180,7 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     corpus = tmp_path / "corpus.csv"
     manifest = tmp_path / "manifest.json"
     combined = BATCH_A6_RULES + BATCH_A8_RULES
-    shim_write_artifacts(
-        _SECTION,
+    write_artifacts(section=ALL_SECTIONS[_SECTION],
         clauses_path=_CLAUSES,
         rules_path=_REPO / "data/gazette/prose_rules/drug_indication_prose.json",
         corpus_csv=corpus,

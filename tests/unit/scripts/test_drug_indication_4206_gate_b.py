@@ -43,18 +43,20 @@ def _all_4206_batch_rules() -> list[dict[str, Any]]:
 
 
 def test_gate_b_exports_4206_candidates() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     assert frame.height >= 40
     assert frame["section_id"].str.starts_with("4.2.6.").all()
     assert not frame["section_id"].str.starts_with("4.2.60").any()
 
 
 def test_gate_b_csv_schema() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     for col in (
         "clause_id",
         "section_id",
@@ -69,11 +71,12 @@ def test_gate_b_csv_schema() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import build_manifest, export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     rules = _all_4206_batch_rules()
-    manifest = shim_build_manifest(_SECTION, frame, rules, resolve_clauses=pl.read_parquet(_CLAUSES),
+    manifest = build_manifest(frame, rules, ALL_SECTIONS[_SECTION], resolve_clauses=pl.read_parquet(_CLAUSES),
         effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _ALL_ENCODED
@@ -84,12 +87,12 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
-    from scripts.sut.prose.gate_b_shim import shim_write_artifacts
+    from scripts.sut.prose.gate_b_generic import write_artifacts
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
     corpus = tmp_path / _CORPUS.name
     manifest_path = tmp_path / _MANIFEST.name
-    shim_write_artifacts(
-        _SECTION,
+    write_artifacts(section=ALL_SECTIONS[_SECTION],
         clauses_path=_CLAUSES,
         rules=_all_4206_batch_rules(),
         corpus_csv=corpus,

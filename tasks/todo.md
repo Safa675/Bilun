@@ -1,48 +1,37 @@
-## Task: Track C — One derive pipeline (slice A)
+## Task: Track C slice B — Coverage one function + retire shims (C3 + C5)
 
 ### Goal
-Manifest + coverage are boring, single-shaped derivatives for drug Gate B: one `canonical-v1` schema, thin drug compile path, no corpus CSV in runtime/CI lock. C3+C5 deferred to next PR.
+Coverage derives from parquet + rule JSON + deferral only; delete §4.2.14.C-only side tools once generic covers them; retire `gate_b_shim` and dead exports so `gate_b*.py` is generic + sections + audit.
 
 ### Decisions (locked)
-- [x] Phased: this PR = C1 + C2 + C4-partial; next PR = C3 + C5
-- [x] Non-drug (payment / material / specialty / anti-vegf / copay) = Track F exceptions
-- [x] Fold uncommitted B1 delete-cut into this PR
+- [x] Stay on PR #43 / branch `refactor/sut-pipeline-god-plan`
+- [x] Slice A committed (`ad97020`)
+- [x] Non-drug ports remain Track F
+- [x] Keep phase5 `a1`/`drug_indication_manifest` until §4.2.14.C GateBSection port
+- [x] Drug encoded supplement list stays explicit (not full glob) to avoid gap-count drift
 
 ### Subtasks
 
-#### C1 — Canonical manifest
-- [x] Add JSON schema for `canonical-v1`
-- [x] Extend `build_canonical_encoded_shell` (section_clause_total + preserve buckets)
-- [x] Re-stamp SUT non-canonical manifests (skip fatura + L1.8 copay)
-- [x] Set every `GateBSection.manifest_version` → `canonical-v1`
-- [x] Flip compile targets still on `t1-v1` / wave labels
-- [x] Test: every SUT manifest validates + version == canonical-v1
+#### C3 — Coverage = one function
+- [x] Single `_clause_has_rule_encoding` predicate
+- [x] Move `build_defer_reason` → `gate_b_generic` (re-exported from manifest module)
+- [x] Delete unused dead manifest path constants
+- [x] Delete `drug_indication_a0_inventory` + test
+- [ ] Port §4.2.14.C onto `GateBSection` / delete a1 (deferred — high risk)
+- [ ] Polars end-to-end enrich (deferred)
 
-#### C2 — Thin compile (drug)
-- [x] Collapse drug `gate_b_writer` flavors → one `gate_b_generic`/`shim` path
-- [x] Delete dead `gate_b_module` / `from_prose` branch
-- [x] Document ≤2 exceptions: `4201_w4`, `4213_tier_b_remap`
-- [x] Port phase5 off corpus write; keep `repair_4214c` as documented exception until C3
-- [x] Leave payment / material / specialty / anti-vegf as Track F
-
-#### C4 partial — Corpus CSV
-- [x] Stop writing corpus CSV from generic/shim (default `write_corpus=False`)
-- [x] Drop `prose_corpus/*.csv` from `compile_rules.py --check`
-- [x] Delete dead `_L*_CORPUS_PATH` in `rules_catalog.py`
-- [x] Update gate_b tests off committed CSV; optional export via `write_corpus=True`
-
-#### Deferred (slice B)
-- [ ] C3: coverage one function; delete a0/a1/manifest helpers
-- [ ] C5: delete `gate_b_shim` + dead exports
+#### C5 — Retire shims
+- [x] Extend `gate_b_generic.write_artifacts` (batch_rules / manifest_path / write_corpus)
+- [x] Compile + tests call generic / `ALL_SECTIONS` directly
+- [x] Delete `gate_b_shim.py`
+- [x] Delete `anti_vegf_4233_export.py`
 
 ### Out of Scope
-- Track D/E, full Track F non-drug port
-- Evaluator clinical matching
+- Track D/E, Track F non-drug Gate B port
+- Full §4.2.14.C generic port (follow-up)
 - `plans/deployment/vps-openhands-smoke-test.md`
 
 ### Review
 - Branch / PR: `refactor/sut-pipeline-god-plan` → https://github.com/Safa675/Bilun/pull/43
-- C1: schema + restamp; exceptions fatura + L1.8
-- C2: one writer path; export includes `clause_coordinate`; resolve against full parquet
-- C4: CSV optional export only; `--check` no longer fingerprints corpus
-- Verified: 123 gate_b + schema tests pass; compile `drug_indication_4206` OK
+- Baseline gaps: 222 / encoded 1994 / di gaps 63 (pin before C3)
+- Verified: 123 gate_b + schema tests pass after shim deletion
