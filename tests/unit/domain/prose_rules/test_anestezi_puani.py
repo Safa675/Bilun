@@ -2,6 +2,9 @@
 
 Covers the surgical-procedure-puan → anesthesia-group lookup defined in
 SUT §2.4.4.A and EK-2B section "5. ANESTEZİ VE REANİMASYON".
+
+Catalog lookups are stubbed via ``install_anestezi_catalog_stub`` so these
+tests do not freeze live gazette prices/katsayı.
 """
 
 from __future__ import annotations
@@ -22,14 +25,23 @@ from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.anestezi_puani import (
     detect_anestezi_puani_opportunities,
 )
+from tests.unit._helpers.catalog_stubs import (
+    FIXTURE_KATSAYI,
+    FIXTURE_PROC_PUAN,
+    install_anestezi_catalog_stub,
+)
 
 pytestmark = pytest.mark.unit
 
-# Verified against the EK-2B asof_2026-01-31 snapshot:
-#   610130 (Appendektomi)               puan = 3397.78 → A1 group (550130, 8942.14)
-#   530390 (Subkütan enjeksiyon)        puan =   22.46 → E  group (550190, 372.93)
-#   620462 (Labioplasti)                puan = 5053.36 → beyond table (>5000), skip
-_KATSAYI = 0.593
+# Group puan values come from the module's Phase-1 hardcoded table
+# (``_ANESTEZI_GROUPS``), not the live catalog.
+_A1_GROUP_PUAN = 8942.14
+_E_GROUP_PUAN = 372.93
+
+
+@pytest.fixture(autouse=True)
+def _stub_catalog(monkeypatch: pytest.MonkeyPatch) -> None:
+    install_anestezi_catalog_stub(monkeypatch)
 
 
 def _make_claim_header(
@@ -93,7 +105,7 @@ def _make_proc_line(
 
 
 def test_a1_group_appendektomi() -> None:
-    """Appendektomi (610130, puan 3397.78) → A1 group (550130, 8942.14)."""
+    """Appendektomi (stubbed puan) → A1 group (550130)."""
     claim = _make_claim_header()
     line = _make_proc_line(procedure_code="610130")
     opps = detect_anestezi_puani_opportunities(
@@ -104,17 +116,16 @@ def test_a1_group_appendektomi() -> None:
     opp = opps[0]
     assert opp["anestezi_group"] == "A1"
     assert opp["anestezi_code"] == "550130"
-    assert opp["anestezi_puan"] == pytest.approx(8942.14)
-    assert opp["procedure_puan"] == pytest.approx(3397.78, abs=0.01)
-    # 8942.14 × 0.593 = 5302.69
-    assert opp["expected_try"] == pytest.approx(8942.14 * _KATSAYI, abs=0.01)
+    assert opp["anestezi_puan"] == pytest.approx(_A1_GROUP_PUAN)
+    assert opp["procedure_puan"] == pytest.approx(FIXTURE_PROC_PUAN["610130"], abs=0.01)
+    assert opp["expected_try"] == pytest.approx(_A1_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
     assert opp["rule_id"] == "anestezi_puani_group_lookup"
     assert opp["included_in_sgk_total"] is True
     assert opp["sut_section_id"] == "2.4.4.A"
 
 
 def test_e_group_low_puan_procedure() -> None:
-    """Subkütan enjeksiyon (530390, puan 22.46) → E group (550190, 372.93)."""
+    """Low-puan stubbed procedure → E group (550190)."""
     claim = _make_claim_header()
     line = _make_proc_line(
         procedure_line_id="PL2", procedure_code="530390"
@@ -127,10 +138,9 @@ def test_e_group_low_puan_procedure() -> None:
     opp = opps[0]
     assert opp["anestezi_group"] == "E"
     assert opp["anestezi_code"] == "550190"
-    assert opp["anestezi_puan"] == pytest.approx(372.93)
-    assert opp["procedure_puan"] == pytest.approx(22.46, abs=0.01)
-    # 372.93 × 0.593 = 221.17
-    assert opp["expected_try"] == pytest.approx(372.93 * _KATSAYI, abs=0.01)
+    assert opp["anestezi_puan"] == pytest.approx(_E_GROUP_PUAN)
+    assert opp["procedure_puan"] == pytest.approx(FIXTURE_PROC_PUAN["530390"], abs=0.01)
+    assert opp["expected_try"] == pytest.approx(_E_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01)
 
 
 # ── Skip cases ───────────────────────────────────────────────────────────────
@@ -236,5 +246,5 @@ def test_wrapper_exact_with_appendektomi() -> None:
     assert len(review.opportunities) == 1
     # confirmed_anestezi_try sums included expected_try values
     assert review.confirmed_anestezi_try == pytest.approx(
-        8942.14 * _KATSAYI, abs=0.01
+        _A1_GROUP_PUAN * FIXTURE_KATSAYI, abs=0.01
     )

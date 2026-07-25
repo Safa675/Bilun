@@ -11,6 +11,17 @@ from src.bilun.domain.billing.claim_gazette_repricing import (
 from src.bilun.domain.billing.types import EXACTNESS_STATUS_EXACT
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from tests.unit._helpers.catalog_stubs import (
+    FIXTURE_GAZETTE_SERVICE_TRY,
+    install_gazette_price_stub,
+)
+
+import pytest
+
+@pytest.fixture(autouse=True)
+def _stub_gazette(monkeypatch):
+    return install_gazette_price_stub(monkeypatch)
+
 
 
 def _ctx() -> PatientClaimContext:
@@ -29,8 +40,8 @@ def _ctx() -> PatientClaimContext:
         claim_end_date=date(2025, 12, 2),
         primary_icd10="L98.9",
         package_candidate=False,
-        expected_total_billed_try=Decimal("449.73"),
-        expected_total_payable_try=Decimal("449.73"),
+        expected_total_billed_try=Decimal(str(FIXTURE_GAZETTE_SERVICE_TRY)),
+        expected_total_payable_try=Decimal(str(FIXTURE_GAZETTE_SERVICE_TRY)),
         expected_denial_reason="",
         scenario_tag="sgk_gazette_repricing_600150",
     )
@@ -44,9 +55,9 @@ def _ctx() -> PatientClaimContext:
         procedure_name="Proc",
         procedure_category="islem",
         quantity=1,
-        unit_price_try=Decimal("449.73"),
-        billed_amount_try=Decimal("449.73"),
-        expected_payable_try=Decimal("449.73"),
+        unit_price_try=Decimal(str(FIXTURE_GAZETTE_SERVICE_TRY)),
+        billed_amount_try=Decimal(str(FIXTURE_GAZETTE_SERVICE_TRY)),
+        expected_payable_try=Decimal(str(FIXTURE_GAZETTE_SERVICE_TRY)),
         is_package_included=False,
         package_code="",
         surcharge_applicable=False,
@@ -65,9 +76,10 @@ def _ctx() -> PatientClaimContext:
 
 
 class TestGazetteRepricingWiring:
-    def test_recommend_returns_review_opportunity(self) -> None:
+    def test_recommend_returns_review_opportunity(self, _stub_gazette) -> None:
+        _stub = _stub_gazette
         block = recommend_gazette_repricing_from_claims(_ctx())
         assert block.exactness_status == EXACTNESS_STATUS_EXACT
         assert len(block.opportunities) == 1
         assert block.confirmed_repricing_try == 0.0
-        assert block.review_repricing_try == 89.95
+        assert block.review_repricing_try == pytest.approx(float(_stub['recoverable']), abs=0.01)

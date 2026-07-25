@@ -25,8 +25,17 @@ from src.bilun.domain.claims.patient_context import PatientClaimContext
 from src.bilun.domain.prose_rules.gazette_repricing import (
     check_gazette_repricing_for_context,
 )
+from tests.unit._helpers.catalog_stubs import (
+    FIXTURE_GAZETTE_AMENDED_TRY,
+    FIXTURE_GAZETTE_SERVICE_TRY,
+    install_gazette_price_stub,
+)
 
 pytestmark = pytest.mark.unit
+
+@pytest.fixture(autouse=True)
+def _stub_gazette(monkeypatch):
+    return install_gazette_price_stub(monkeypatch)
 
 
 def _claim(**overrides) -> ClaimHeader:
@@ -45,8 +54,8 @@ def _claim(**overrides) -> ClaimHeader:
         "claim_end_date": date(2025, 12, 2),
         "primary_icd10": "L98.9",
         "package_candidate": False,
-        "expected_total_billed_try": Decimal("449.73"),
-        "expected_total_payable_try": Decimal("449.73"),
+        "expected_total_billed_try": Decimal(str(FIXTURE_GAZETTE_SERVICE_TRY)),
+        "expected_total_payable_try": Decimal(str(FIXTURE_GAZETTE_SERVICE_TRY)),
         "expected_denial_reason": "",
         "scenario_tag": "sgk_gazette_repricing_600150",
     }
@@ -65,9 +74,9 @@ def _proc_line(**overrides) -> ProcedureClaimLine:
         "procedure_name": "Proc",
         "procedure_category": "islem",
         "quantity": 1,
-        "unit_price_try": Decimal("449.73"),
-        "billed_amount_try": Decimal("449.73"),
-        "expected_payable_try": Decimal("449.73"),
+        "unit_price_try": Decimal(str(FIXTURE_GAZETTE_SERVICE_TRY)),
+        "billed_amount_try": Decimal(str(FIXTURE_GAZETTE_SERVICE_TRY)),
+        "expected_payable_try": Decimal(str(FIXTURE_GAZETTE_SERVICE_TRY)),
         "is_package_included": False,
         "package_code": "",
         "surcharge_applicable": False,
@@ -91,7 +100,7 @@ def _ctx(claims, procs) -> PatientClaimContext:
 
 
 class TestCheckGazetteRepricingForContext:
-    def test_stale_price_after_tebliğ_returns_violation(self) -> None:
+    def test_stale_price_after_teblig_returns_violation(self, _stub_gazette) -> None:
         # 600150 billed at the pre-amendment rate, service within 30 days of
         # the 2026-01-01 tebliğ → gazette repricing review flag.
         ctx = _ctx([_claim()], [_proc_line()])
@@ -111,7 +120,7 @@ class TestCheckGazetteRepricingForContext:
         assert v["review_only"] is True
         assert v["risk_amount"] == 0.0
         # recoverable repricing surfaces as the savings headline.
-        assert v["savings_try"] == pytest.approx(89.95, rel=0.01)
+        assert v["savings_try"] == pytest.approx(float(_stub_gazette["recoverable"]), rel=0.01)
         # the full opportunity dict is preserved for downstream consumers.
         assert v["details"]["type"] == "stale_gazette_price"
         assert v["details"]["opportunity"]["procedure_code"] == "600150"
@@ -123,9 +132,9 @@ class TestCheckGazetteRepricingForContext:
             [_claim()],
             [
                 _proc_line(
-                    expected_payable_try=Decimal("539.68"),
-                    billed_amount_try=Decimal("539.68"),
-                    unit_price_try=Decimal("539.68"),
+                    expected_payable_try=Decimal(str(FIXTURE_GAZETTE_AMENDED_TRY)),
+                    billed_amount_try=Decimal(str(FIXTURE_GAZETTE_AMENDED_TRY)),
+                    unit_price_try=Decimal(str(FIXTURE_GAZETTE_AMENDED_TRY)),
                 )
             ],
         )
