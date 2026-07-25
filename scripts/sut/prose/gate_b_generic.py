@@ -411,12 +411,18 @@ def export_candidates(
 # ── Generic manifest builder ─────────────────────────────────────────────────
 
 
-def _encoded_clause_ids_from_rules(rules: list[dict[str, Any]]) -> set[str]:
-    encoded: set[str] = set()
-    for rule in rules:
-        for clause_id in rule.get("gate_b_sources") or []:
-            encoded.add(str(clause_id))
-    return encoded
+def _encoded_clause_ids_from_rules(
+    rules: list[dict[str, Any]],
+    clauses: pl.DataFrame | None = None,
+) -> set[str]:
+    """Collect encoded clause_ids; resolve coordinate cites when ``clauses`` given."""
+    from scripts.sut.prose.clause_identity import encoded_clause_ids_from_rules
+
+    return encoded_clause_ids_from_rules(
+        rules,
+        clauses,
+        resolve_coordinates=clauses is not None,
+    )
 
 
 def build_manifest(
@@ -427,12 +433,31 @@ def build_manifest(
     effective_date: str,
 ) -> dict[str, Any]:
     """Generic manifest builder — standard trace structure for all sections."""
-    encoded_ids = _encoded_clause_ids_from_rules(rules)
+    encoded_ids = _encoded_clause_ids_from_rules(rules, gate_b_frame)
     rules_by_clause: dict[str, list[str]] = {}
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        resolve_gate_b_sources_to_clause_ids,
+    )
+
     for rule in rules:
         rule_id = str(rule.get("rule_id") or "")
-        for clause_id in rule.get("gate_b_sources") or []:
-            rules_by_clause.setdefault(str(clause_id), []).append(rule_id)
+        refs = rule.get("gate_b_sources") or []
+        try:
+            clause_ids = resolve_gate_b_sources_to_clause_ids(
+                refs,
+                gate_b_frame,
+                in_force_only=True,
+                allow_ambiguous=False,
+            )
+        except AmbiguousClauseCiteError:
+            raise
+        except Exception:
+            # Cite missing from this section export frame (common for C* outside
+            # the filtered candidate set) — keep opaque refs for legacy behaviour.
+            clause_ids = {str(r) for r in refs if r is not None and str(r).strip()}
+        for clause_id in clause_ids:
+            rules_by_clause.setdefault(clause_id, []).append(rule_id)
 
     traces: list[dict[str, Any]] = []
     tier_a_pending: list[str] = []

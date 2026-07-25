@@ -208,6 +208,45 @@ def test_schema_rejects_both_icd10_fields() -> None:
         validate_rule_set_payload(payload, "drug_indication_prose")
 
 
+def test_schema_accepts_clause_coordinate_gate_b_sources() -> None:
+    payload = {
+        "rule_set_id": "drug_indication_prose",
+        "title": "test",
+        "effective_date": "2026-06-30",
+        "rules": [
+            {
+                "rule_id": "test.coord_cite",
+                "sut_section": "4.2.24.B",
+                "drug_names": ["x"],
+                "gate_b_sources": ["4.2.24.B.(3)", "C000001"],
+                "condition": {"coverage_note": True},
+                "action": {"message_tr": "ok"},
+            }
+        ],
+    }
+    validate_rule_set_payload(payload, "drug_indication_prose")
+
+
+def test_schema_rejects_garbage_gate_b_sources() -> None:
+    payload = {
+        "rule_set_id": "drug_indication_prose",
+        "title": "test",
+        "effective_date": "2026-06-30",
+        "rules": [
+            {
+                "rule_id": "test.bad_cite",
+                "sut_section": "4.2.1",
+                "drug_names": ["x"],
+                "gate_b_sources": ["not-a-cite"],
+                "condition": {"coverage_note": True},
+                "action": {"message_tr": "ok"},
+            }
+        ],
+    }
+    with pytest.raises(ValueError, match="gate_b_sources"):
+        validate_rule_set_payload(payload, "drug_indication_prose")
+
+
 def test_drug_yaml_has_multiline_friendly_message_tr() -> None:
     text = _DRUG_YAML.read_text(encoding="utf-8")
     payload = yaml.safe_load(text)
