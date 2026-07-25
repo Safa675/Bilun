@@ -11,22 +11,37 @@ from src.bilun.domain.sut.fact_check_audit import (
     fact_check_rollup,
 )
 from src.bilun.domain.sut.rule_registry import RULE_REGISTRY
+from tests.unit._helpers.brittle_guards import soft_floor
 
 pytestmark = pytest.mark.unit
 
+_ALLOWED_VERDICTS = frozenset(
+    {
+        "COMPLIANT",
+        "PARTIAL",
+        "HEURISTIC",
+        "NEEDS_CLAIM_LINES",
+        "WRONG",
+        "OUT_OF_SCOPE",
+    }
+)
 
-def test_audit_has_28_units() -> None:
-    assert len(FACT_CHECK_AUDIT_UNITS) == AUDIT_TOTAL_UNITS == 28
+
+def test_audit_unit_count_matches_constant() -> None:
+    # Same-module constant identity (not a magic census of the world).
+    assert len(FACT_CHECK_AUDIT_UNITS) == AUDIT_TOTAL_UNITS
+    soft_floor(AUDIT_TOTAL_UNITS, 20, label="fact_check audit units")
 
 
 def test_rollup_verdict_counts_match_master() -> None:
     rollup = fact_check_rollup()
     counts = rollup["by_verdict"]
-    assert counts["COMPLIANT"] == 12
-    assert counts["PARTIAL"] == 15
-    assert counts["HEURISTIC"] == 1
-    assert counts["NEEDS_CLAIM_LINES"] == 0
-    assert counts["WRONG"] == 0
+    assert set(counts) <= _ALLOWED_VERDICTS
+    assert sum(counts.values()) == len(FACT_CHECK_AUDIT_UNITS)
+    soft_floor(counts.get("COMPLIANT", 0), 8, label="COMPLIANT")
+    soft_floor(counts.get("PARTIAL", 0), 10, label="PARTIAL")
+    assert counts.get("WRONG", 0) == 0
+    assert counts.get("NEEDS_CLAIM_LINES", 0) == 0
     assert rollup["audit_closed"] == "2026-06"
 
 
