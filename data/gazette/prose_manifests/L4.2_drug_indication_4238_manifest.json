@@ -18,6 +18,17 @@
     "C006747",
     "C006749"
   ],
+  "encoded_clause_coordinates": [
+    "4.2.38.(1)",
+    "4.2.38.(3)",
+    "4.2.38.(4)",
+    "4.2.38.(6)",
+    "4.2.38.(7)",
+    "4.2.38.(8)",
+    "4.2.38.a",
+    "4.2.38.b",
+    "4.2.38.c"
+  ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
@@ -39,6 +50,8 @@
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 12,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
   "clause_traces": [
     {
       "clause_id": "C006721",
@@ -273,10 +286,8 @@
       ]
     }
   ],
-  "emr_blocked_count": 0,
-  "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 12,
   "clause_trace_complete": true,
+  "encode_tier_C_deferred_count": 12,
   "manifest_coverage_pct": 100.0,
   "encoded_clause_pct": 45.5
 }

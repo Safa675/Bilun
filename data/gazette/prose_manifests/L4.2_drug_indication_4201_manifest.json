@@ -5,7 +5,7 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 139,
   "section_clause_total": 282,
-  "encoded_clause_count": 128,
+  "encoded_clause_count": 127,
   "encoded_clause_ids": [
     "C003563",
     "C003565",
@@ -72,7 +72,6 @@
     "C003714",
     "C003719",
     "C003722",
-    "C003737",
     "C003738",
     "C003739",
     "C003741",
@@ -94,7 +93,7 @@
     "C003775",
     "C003778",
     "C003781",
-    "C003783",
+    "C003784",
     "C003787",
     "C003790",
     "C003791",
@@ -135,6 +134,79 @@
     "C003889",
     "C003894",
     "C003896"
+  ],
+  "encoded_clause_coordinates": [
+    "4.2.1.A.(1)",
+    "4.2.1.B.(1)",
+    "4.2.1.C-1.(1)",
+    "4.2.1.C-1.(10)",
+    "4.2.1.C-1.(11)",
+    "4.2.1.C-1.(13)",
+    "4.2.1.C-1.(2)",
+    "4.2.1.C-1.(3)",
+    "4.2.1.C-1.(5)",
+    "4.2.1.C-1.(6)",
+    "4.2.1.C-1.(7)",
+    "4.2.1.C-1.(8)",
+    "4.2.1.C-1.(9)",
+    "4.2.1.C-1.a",
+    "4.2.1.C-1.b",
+    "4.2.1.C-10.a",
+    "4.2.1.C-10.c",
+    "4.2.1.C-11.a",
+    "4.2.1.C-11.c",
+    "4.2.1.C-12.a",
+    "4.2.1.C-12.c",
+    "4.2.1.C-13.(1)",
+    "4.2.1.C-13.(2)",
+    "4.2.1.C-14.a",
+    "4.2.1.C-14.c",
+    "4.2.1.C-2.(1)",
+    "4.2.1.C-2.(2)",
+    "4.2.1.C-2.a",
+    "4.2.1.C-2.b",
+    "4.2.1.C-2.c",
+    "4.2.1.C-2.d",
+    "4.2.1.C-2.ç",
+    "4.2.1.C-3.a",
+    "4.2.1.C-3.b",
+    "4.2.1.C-3.c",
+    "4.2.1.C-3.ç",
+    "4.2.1.C-4.(2)",
+    "4.2.1.C-4.(3)",
+    "4.2.1.C-4.(4)",
+    "4.2.1.C-4.a",
+    "4.2.1.C-4.b",
+    "4.2.1.C-4.ç",
+    "4.2.1.C-5.(1)",
+    "4.2.1.C-5.(2)",
+    "4.2.1.C-5.(3)",
+    "4.2.1.C-5.(4)",
+    "4.2.1.C-5.a",
+    "4.2.1.C-5.b",
+    "4.2.1.C-5.c",
+    "4.2.1.C-5.ç",
+    "4.2.1.C-6.(1)",
+    "4.2.1.C-6.(2)",
+    "4.2.1.C-6.a",
+    "4.2.1.C-6.b",
+    "4.2.1.C-6.c",
+    "4.2.1.C-6.d",
+    "4.2.1.C-6.ç",
+    "4.2.1.C-7.(1)",
+    "4.2.1.C-7.(2)",
+    "4.2.1.C-7.(3)",
+    "4.2.1.C-7.(4)",
+    "4.2.1.C-7.(5)",
+    "4.2.1.C-7.b",
+    "4.2.1.C-7.c",
+    "4.2.1.C-7.ç",
+    "4.2.1.C-8.(1)",
+    "4.2.1.C-8.(2)",
+    "4.2.1.C-9",
+    "4.2.1.C-9.a",
+    "4.2.1.C-9.b",
+    "4.2.1.C-9.c"
   ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
@@ -211,6 +283,7 @@
     "C003720",
     "C003721",
     "C003723",
+    "C003737",
     "C003740",
     "C003742",
     "C003744",
@@ -234,7 +307,7 @@
     "C003779",
     "C003780",
     "C003782",
-    "C003784",
+    "C003783",
     "C003785",
     "C003786",
     "C003788",
@@ -298,7 +371,9 @@
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 154,
+  "tier_c_deferred_count": 155,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
   "clause_traces": [
     {
       "clause_id": "C003558",
@@ -1774,11 +1849,12 @@
       "clause_id": "C003737",
       "section_id": "4.2.1.C-6",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.1.C-6 –Tofacitinib",
-      "linked_rule_ids": [
-        "4.2.1.tofacitinib_ra_prescriber_board_c6"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C003738",
@@ -1788,7 +1864,8 @@
       "heuristic_inn": "Romatoid artritli erişkin hastalarda",
       "linked_rule_ids": [
         "4.2.1.jak_ra_dmard_initiation",
-        "4.2.1.tofacitinib_ra_board"
+        "4.2.1.tofacitinib_ra_board",
+        "4.2.1.tofacitinib_ra_prescriber_board_c6"
       ]
     },
     {
@@ -2254,23 +2331,23 @@
       "clause_id": "C003783",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.1.C-7 – Kanakinumab (Ek:RG-12/12/2024-32750/7-a md. Yürürlük:20/12/2024)",
-      "linked_rule_ids": [
-        "4.2.1.canakinumab_fmf_anakinra_failure_switch",
-        "4.2.1.kanakinumab_fmf_3mo_response_c7"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C003784",
       "section_id": "4.2.1.C-7",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.1.canakinumab_fmf_anakinra_failure_switch",
+        "4.2.1.kanakinumab_fmf_3mo_response_c7"
+      ]
     },
     {
       "clause_id": "C003785",
@@ -3317,10 +3394,8 @@
       ]
     }
   ],
-  "emr_blocked_count": 0,
-  "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 154,
   "clause_trace_complete": true,
+  "encode_tier_C_deferred_count": 155,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 45.4
+  "encoded_clause_pct": 45.0
 }

@@ -26,7 +26,9 @@ import { fmtNum } from "../../shared";
 import { CLAUSES_PER_PAGE, COVERAGE_KEY, STATUS_FILTERS, UtilizationChip, useDeonticLabel } from "./shared";
 
 function clauseDeepLinkKey(clause: RuleClause): string {
-  return clause.clause_coordinate || clause.clause_id || "";
+  // Prefer unique opaque id for deep-links / React keys. Coordinates collide
+  // across in-force rows; get_clause(coord) returns null when ambiguous.
+  return clause.clause_id || clause.clause_coordinate || "";
 }
 
 function CopyableCoordinate({
@@ -290,7 +292,7 @@ export function ClauseBrowserPanel({
                 {clauses.map((clause) => {
                   const isSelected =
                     selectedClause?.clause_id === clause.clause_id;
-                  const rowKey = clause.clause_coordinate || clause.clause_id || "";
+                  const rowKey = clause.clause_id || clause.clause_coordinate || "";
                   return (
                     <li
                       key={rowKey}

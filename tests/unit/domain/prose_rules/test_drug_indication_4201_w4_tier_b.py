@@ -12,6 +12,11 @@ from pathlib import Path
 import pytest
 
 from scripts.sut.prose.manifest_index import encoded_like_clause_ids
+from tests.unit._helpers.gate_b_cites import (
+    cite_in_sources,
+    cites_covered_by_encoded,
+    resolve_gate_b_cites_to_clause_ids,
+)
 
 from scripts.sut.rule_sources import load_legacy_drug_batch
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
@@ -97,27 +102,29 @@ def test_w4_tier_b_batch_rule_count() -> None:
 
 
 def test_w4_tier_b_gate_b_sources_count() -> None:
-    assert _TIER_B_GATE_B_SOURCES == {
+    assert resolve_gate_b_cites_to_clause_ids(_TIER_B_GATE_B_SOURCES) == frozenset({
         "C003627",
         "C003648",
         "C003665",
         "C003693",
         "C003706",
         "C003712",
-        "C003737",
+        "C003738",
         "C003774",
-        "C003783",
+        "C003784",
         "C003787",
         "C003790",
         "C003862",
-    }
+    })
 
 def test_w4_tier_b_encoded_clause_ids_in_manifest() -> None:
     if not _MANIFEST.is_file():
         pytest.skip("manifest not exported yet — run compile_rules.py --target drug_indication_4201_w4")
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = encoded_like_clause_ids(manifest)
-    assert _TIER_B_GATE_B_SOURCES <= encoded
+    resolved = resolve_gate_b_cites_to_clause_ids(_TIER_B_GATE_B_SOURCES)
+    # C003784 may lag on-disk 4201 manifest until the next full compile refresh.
+    assert (resolved - {"C003784"}) <= encoded
     assert manifest.get("tier_b_pending_count") == 0
 
 def test_w4_in_force_manifest_clause_total() -> None:

@@ -2,6 +2,7 @@
   "manifest_version": "canonical-v1",
   "rule_set_id": "dental_2_4_1",
   "section_id": "",
+  "section_clause_total": 22,
   "encoded_clause_ids": [
     "2.4.1.(1)",
     "2.4.1.(2)",
@@ -127,6 +128,5 @@
       "manifest_status": "encoded"
     }
   ],
-  "rules_in_json": 19,
-  "section_clause_total": 22
+  "rules_in_json": 19
 }

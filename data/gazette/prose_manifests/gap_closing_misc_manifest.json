@@ -2,6 +2,7 @@
   "manifest_version": "canonical-v1",
   "rule_set_id": "gap_closing_misc",
   "section_id": "",
+  "section_clause_total": 46,
   "encoded_clause_ids": [
     "1.10.(1)",
     "1.5.1.(3)",
@@ -247,6 +248,5 @@
       "manifest_status": "encoded"
     }
   ],
-  "rules_in_json": 46,
-  "section_clause_total": 46
+  "rules_in_json": 46
 }

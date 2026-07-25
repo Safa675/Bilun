@@ -2,6 +2,7 @@
   "manifest_version": "canonical-v1",
   "rule_set_id": "drug_indication_metabolic_mid",
   "section_id": "",
+  "section_clause_total": 66,
   "encoded_clause_ids": [
     "C003898",
     "C003901",
@@ -349,7 +350,6 @@
   ],
   "rules_in_json": 930,
   "encode_tier_C_deferred_count": 0,
-  "section_clause_total": 66,
   "clause_trace_complete": true,
   "manifest_coverage_pct": 100.0,
   "encoded_clause_pct": 100.0

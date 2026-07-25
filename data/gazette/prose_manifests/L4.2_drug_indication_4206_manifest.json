@@ -5,11 +5,10 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 16,
   "section_clause_total": 42,
-  "encoded_clause_count": 16,
+  "encoded_clause_count": 15,
   "encoded_clause_ids": [
     "C003941",
     "C003942",
-    "C003965",
     "C003966",
     "C003977",
     "C003979",
@@ -24,6 +23,23 @@
     "C004033",
     "C004039"
   ],
+  "encoded_clause_coordinates": [
+    "4.2.6.A-1.(1)",
+    "4.2.6.A-1.(2)",
+    "4.2.6.A-1.e",
+    "4.2.6.A-1.ç",
+    "4.2.6.A-2.(4)",
+    "4.2.6.A-2.(5)",
+    "4.2.6.A-3.(1)",
+    "4.2.6.A-4.(1)",
+    "4.2.6.A-4.(2)",
+    "4.2.6.A-5.(1)",
+    "4.2.6.A-5.(4)",
+    "4.2.6.A.(1)",
+    "4.2.6.A.(2)",
+    "4.2.6.B-2.(1)",
+    "4.2.6.B.(1)"
+  ],
   "tier_a_pending_clause_ids": [
     "C003956",
     "C003957"
@@ -34,6 +50,7 @@
     "C003953",
     "C003954",
     "C003955",
+    "C003965",
     "C003976",
     "C003978",
     "C003991",
@@ -59,7 +76,9 @@
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 2,
   "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 24,
+  "tier_c_deferred_count": 25,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
   "clause_traces": [
     {
       "clause_id": "C003940",
@@ -144,11 +163,12 @@
       "clause_id": "C003965",
       "section_id": "4.2.6.A-1",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.6.A-1 – Çocuklarda somatropin ve somatrogon kullanım ilkeleri",
-      "linked_rule_ids": [
-        "4.2.6.pediatric_gh_monitoring_board"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C003966",
@@ -507,10 +527,8 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     }
   ],
-  "emr_blocked_count": 0,
-  "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 24,
   "clause_trace_complete": true,
+  "encode_tier_C_deferred_count": 25,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 38.1
+  "encoded_clause_pct": 35.7
 }

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from tests.unit._helpers.brittle_guards import soft_floor
+from tests.unit._helpers.gate_b_cites import resolve_gate_b_cites_to_clause_ids
 
 import json
 from datetime import date
@@ -76,14 +77,14 @@ def _drug_line(
 def test_ms4234_batch_rule_count() -> None:
     soft_floor(len(BATCH_MS4234_RULES), 6, label='BATCH_MS4234_RULES')
     sources = {src for rule in BATCH_MS4234_RULES for src in rule["gate_b_sources"]}
-    assert sources == {
+    assert resolve_gate_b_cites_to_clause_ids(sources) == frozenset({
         "C006626",
         "C006634",
         "C006640",
         "C006646",
         "C006670",
         "C006676",
-    }
+    })
 
 def test_ms4234_tier_a_clause_ids() -> None:
     tier_a = {

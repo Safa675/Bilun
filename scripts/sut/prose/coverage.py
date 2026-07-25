@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -87,6 +88,7 @@ def _has_actionable_signal(row: pd.Series) -> bool:
     return bool(has_normative_or_annex or clause_type in {"fikra", "bent"})
 
 
+@lru_cache(maxsize=64)
 def _load_encoded_clause_ids(manifest_name: str) -> frozenset[str]:
     path = _MANIFEST_DIR / manifest_name
     if not path.is_file():
@@ -180,6 +182,9 @@ def _reset_sut_clauses_frame_cache() -> None:
     """Test helper — clear the module-level parquet cache."""
     global _sut_clauses_frame_cache
     _sut_clauses_frame_cache = _SUT_CLAUSES_FRAME_UNSET
+    _load_encoded_clause_ids.cache_clear()
+    _load_gate_b_sources_from_rules_json.cache_clear()
+    _load_drug_indication_encoded_clause_ids.cache_clear()
 
 
 def _resolve_rule_json_gate_b_sources(
@@ -227,6 +232,7 @@ def _resolve_rule_json_gate_b_sources(
     return out
 
 
+@lru_cache(maxsize=8)
 def _load_gate_b_sources_from_rules_json(path: Path) -> frozenset[str]:
     if not path.is_file():
         return frozenset()
@@ -237,6 +243,7 @@ def _load_gate_b_sources_from_rules_json(path: Path) -> frozenset[str]:
     return frozenset(_resolve_rule_json_gate_b_sources(payload, _load_sut_clauses_frame()))
 
 
+@lru_cache(maxsize=1)
 def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
     """Encoded clause IDs for the merged drug_indication corpus (Track C3).
 

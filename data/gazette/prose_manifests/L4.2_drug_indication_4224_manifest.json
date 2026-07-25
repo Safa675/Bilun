@@ -38,6 +38,38 @@
     "C006190",
     "C006192"
   ],
+  "encoded_clause_coordinates": [
+    "4.2.24.A.(1)",
+    "4.2.24.A.(10)",
+    "4.2.24.A.(11)",
+    "4.2.24.A.(2)",
+    "4.2.24.A.(4)",
+    "4.2.24.A.(5)",
+    "4.2.24.A.(6)",
+    "4.2.24.A.(7)",
+    "4.2.24.A.(8)",
+    "4.2.24.A.(9)",
+    "4.2.24.A.b",
+    "4.2.24.A.c",
+    "4.2.24.B.(1)",
+    "4.2.24.B.(10)",
+    "4.2.24.B.(11)",
+    "4.2.24.B.(12)",
+    "4.2.24.B.(13)",
+    "4.2.24.B.(4)",
+    "4.2.24.B.(5)",
+    "4.2.24.B.(6)",
+    "4.2.24.B.(7)",
+    "4.2.24.B.(8)",
+    "4.2.24.B.(9)",
+    "4.2.24.B.a",
+    "4.2.24.B.b",
+    "4.2.24.B.ç",
+    "4.2.24.C.(1)",
+    "4.2.24.C.(2)",
+    "4.2.24.C.(3)",
+    "4.2.24.Ç.(1)"
+  ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
@@ -76,6 +108,8 @@
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 29,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
   "clause_traces": [
     {
       "clause_id": "C006123",
@@ -704,10 +738,8 @@
       ]
     }
   ],
-  "emr_blocked_count": 0,
-  "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 29,
   "clause_trace_complete": true,
+  "encode_tier_C_deferred_count": 29,
   "manifest_coverage_pct": 100.0,
   "encoded_clause_pct": 50.8
 }

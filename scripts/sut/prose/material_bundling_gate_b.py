@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import unicodedata
 from pathlib import Path
 
 import polars as pl
@@ -10,6 +11,12 @@ from scripts.sut.prose.gate_b_generic import export_candidates, gate_b_summary
 from scripts.sut.prose.gate_b_sections import SECTION_MATERIAL_31_32
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+
+def _normalize_tr(text: str) -> str:
+    """NFKD fold used by material triage/export scripts (kept on facade)."""
+    folded = unicodedata.normalize("NFKD", str(text).casefold())
+    return "".join(ch for ch in folded if not unicodedata.combining(ch))
 
 
 def load_candidate_clauses(clauses_path: Path) -> pl.DataFrame:
@@ -56,4 +63,5 @@ __all__ = [
     "enrich_gate_b_dataframe",
     "build_review_sample",
     "gate_b_summary",
+    "_normalize_tr",
 ]

@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+from tests.unit._helpers.gate_b_cites import (
+    cite_in_sources,
+    cites_covered_by_encoded,
+    resolve_gate_b_cites_to_clause_ids,
+)
+
 from tests.unit._helpers.brittle_guards import soft_floor
 
 import json
@@ -103,7 +109,7 @@ def _drug_line(
     )
 
 def test_a5_combined_batch_encoded_clause_ids_in_manifest() -> None:
-    assert _A5_ALL_GATE_B <= _ENCODED
+    assert cites_covered_by_encoded(_A5_ALL_GATE_B, _ENCODED)
     assert _MANIFEST_DATA.get("tier_a_pending_count") == 0
 
 def test_a5_c10_14_batch_rule_count() -> None:

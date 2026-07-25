@@ -2,6 +2,7 @@
   "manifest_version": "canonical-v1",
   "rule_set_id": "drug_combination_4_2",
   "section_id": "",
+  "section_clause_total": 63,
   "encoded_clause_ids": [
     "4.2.1.C.(3)",
     "4.2.10.B-3.(4)",
@@ -332,6 +333,5 @@
       "manifest_status": "encoded"
     }
   ],
-  "rules_in_json": 53,
-  "section_clause_total": 63
+  "rules_in_json": 53
 }

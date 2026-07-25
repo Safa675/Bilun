@@ -12,6 +12,11 @@ from pathlib import Path
 import pytest
 
 from scripts.sut.prose.manifest_index import encoded_like_clause_ids
+from tests.unit._helpers.gate_b_cites import (
+    cite_in_sources,
+    cites_covered_by_encoded,
+    resolve_gate_b_cites_to_clause_ids,
+)
 from scripts.sut.rule_sources import load_legacy_drug_batch
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
 from src.bilun.domain.prose_rules.drug_indication import evaluate_drug_indication_line
@@ -107,12 +112,14 @@ def test_tier_b_oral_switch_in_force_sources() -> None:
         for rule in oral_switch
         for clause_id in (rule.get("gate_b_sources") or [])
     }
-    assert sources == {"C004584", "C004593"}
+    assert cite_in_sources("C004584", sources)
+    assert cite_in_sources("C004593", sources)
+    assert resolve_gate_b_cites_to_clause_ids(sources) >= frozenset({"C004584", "C004593"})
 
 def test_tier_b_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     covered = encoded_like_clause_ids(manifest)
-    assert _TIER_B_GATE_B_SOURCES <= covered
+    assert cites_covered_by_encoded(_TIER_B_GATE_B_SOURCES, covered)
 
 @pytest.mark.parametrize(
     ("sample",),
@@ -124,7 +131,7 @@ def test_tier_b_golden_samples(sample: dict) -> None:
     gate_b_source = sample.get("gate_b_source")
     if gate_b_source:
         rule = _tier_b_rule(rule_id)
-        assert gate_b_source in (rule.get("gate_b_sources") or []), sample
+        assert cite_in_sources(gate_b_source, rule.get("gate_b_sources") or []), sample
     hit = evaluate_drug_indication_line(
         drug_line=_drug_line(
             drug_name=sample["drug_name"],

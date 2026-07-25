@@ -168,11 +168,19 @@ def build_canonical_encoded_shell(
 
 
 def encoded_like_clause_ids(payload: dict[str, Any]) -> frozenset[str]:
-    """Coverage semantics: encoded_clause_ids + non-deferred ``*_clause_ids``."""
+    """Coverage semantics: encoded ids + coordinates + non-deferred ``*_clause_ids``.
+
+    Track E dual-read: manifests expose opaque ``encoded_clause_ids`` and public
+    ``encoded_clause_coordinates``. Tests that assert ``gate_b_sources ⊆ encoded``
+    must accept either form.
+    """
     ids: set[str] = set()
     encoded = payload.get("encoded_clause_ids")
     if isinstance(encoded, list):
         ids.update(str(clause_id) for clause_id in encoded)
+    coords = payload.get("encoded_clause_coordinates")
+    if isinstance(coords, list):
+        ids.update(str(coord) for coord in coords if coord)
     for key, value in payload.items():
         if not isinstance(value, list):
             continue

@@ -131,7 +131,7 @@ export function DeferralBrowserPanel({
           <ul className="space-y-1.5">
             {rows.map((row) => {
               const primary = row.clause_coordinate || row.clause_id || "";
-              const rowKey = primary || row.defer_reason;
+              const rowKey = row.clause_id || primary || row.defer_reason;
               return (
                 <li
                   key={rowKey}
@@ -140,7 +140,10 @@ export function DeferralBrowserPanel({
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => primary && onCoordinateClick?.(primary)}
+                      onClick={() =>
+                        (row.clause_id || primary) &&
+                        onCoordinateClick?.(row.clause_id || primary)
+                      }
                       className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-primary)] hover:opacity-80"
                     >
                       {primary || "—"}

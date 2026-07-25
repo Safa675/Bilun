@@ -5,9 +5,8 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 61,
   "section_clause_total": 354,
-  "encoded_clause_count": 47,
+  "encoded_clause_count": 45,
   "encoded_clause_ids": [
-    "C004498",
     "C004503",
     "C004509",
     "C004540",
@@ -30,7 +29,6 @@
     "C004628",
     "C004636",
     "C004637",
-    "C004892",
     "C004897",
     "C004898",
     "C004902",
@@ -54,6 +52,49 @@
     "C006007",
     "C006012",
     "C006013"
+  ],
+  "encoded_clause_coordinates": [
+    "4.2.13.(1)",
+    "4.2.13.1",
+    "4.2.13.1.(1)",
+    "4.2.13.1.(3)",
+    "4.2.13.1.(5)",
+    "4.2.13.1.(8)",
+    "4.2.13.1.2.(1)",
+    "4.2.13.1.2.(3)",
+    "4.2.13.1.3.(1)",
+    "4.2.13.1.4.(2)",
+    "4.2.13.1.a",
+    "4.2.13.1.b",
+    "4.2.13.1.c",
+    "4.2.13.1.e",
+    "4.2.13.2.(1)",
+    "4.2.13.3.1.(1)",
+    "4.2.13.3.1.(2)",
+    "4.2.13.3.2.(5)",
+    "4.2.13.3.2.(6)",
+    "4.2.13.3.2.A.(2)",
+    "4.2.13.3.2.A.(3)",
+    "4.2.13.3.2.A.(4)",
+    "4.2.13.3.2.B",
+    "4.2.13.3.2.B.(1)",
+    "4.2.13.3.2.B.(2)",
+    "4.2.13.3.2.B.(3)",
+    "4.2.13.3.2.B.(4)",
+    "4.2.13.3.2.B.a",
+    "4.2.13.3.2.B.b",
+    "4.2.13.a",
+    "4.2.16.(1)",
+    "4.2.16.(2)",
+    "4.2.16.(3)",
+    "4.2.16.(4)",
+    "4.2.16.(5)",
+    "4.2.16.(6)",
+    "4.2.16.(7)",
+    "4.2.16.(8)",
+    "4.2.16.a",
+    "4.2.16.b",
+    "4.2.16.c"
   ],
   "tier_a_pending_clause_ids": [
     "C004506",
@@ -97,6 +138,7 @@
     "C005987"
   ],
   "tier_c_deferred_clause_ids": [
+    "C004498",
     "C004501",
     "C004502",
     "C004508",
@@ -341,6 +383,7 @@
     "C004888",
     "C004889",
     "C004890",
+    "C004892",
     "C004894",
     "C004895",
     "C004896",
@@ -372,17 +415,20 @@
   "non_actionable_clause_ids": [],
   "tier_a_pending_count": 24,
   "tier_b_pending_count": 13,
-  "tier_c_deferred_count": 270,
+  "tier_c_deferred_count": 272,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
   "clause_traces": [
     {
       "clause_id": "C004498",
       "section_id": "4.2.13",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.13 - Hepatit tedavisi",
-      "linked_rule_ids": [
-        "4.2.13.hepatitis_prior_therapy_documentation"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C004501",
@@ -3413,11 +3459,12 @@
       "clause_id": "C004892",
       "section_id": "4.2.13.3.2",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.13.3.2- Kronik Hepatit C tedavisinde genel hükümler",
-      "linked_rule_ids": [
-        "4.2.13.hcv_glecaprevir_pibrentasvir_board"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C004894",
@@ -4103,16 +4150,14 @@
       ]
     }
   ],
+  "clause_trace_complete": true,
   "section_4.2.13_clause_total": 310,
   "section_4.2.13_tier_a_count": 18,
   "section_4.2.13_tier_c_count": 287,
   "section_4.2.16_clause_total": 44,
   "section_4.2.16_tier_a_count": 17,
   "section_4.2.16_tier_c_count": 18,
-  "emr_blocked_count": 0,
-  "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 270,
-  "clause_trace_complete": true,
+  "encode_tier_C_deferred_count": 272,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 13.3
+  "encoded_clause_pct": 12.7
 }

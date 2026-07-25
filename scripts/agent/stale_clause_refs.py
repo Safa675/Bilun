@@ -209,7 +209,18 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
         right_on="clause_id",
         how="left",
     )
-    # Polars keeps both join keys; unmatched C* have null clause_id → TIER 4.
+    # Polars drops the right join key (`clause_id`). Restore it from the cite
+    # when the left join matched (staleness columns present); leave null when
+    # unmatched so TIER 4 still fires for dangling C*/F*.
+    if "is_in_force" in by_id.columns:
+        by_id = by_id.with_columns(
+            pl.when(pl.col("is_in_force").is_not_null())
+            .then(pl.col("gate_b_ref"))
+            .otherwise(None)
+            .alias("clause_id")
+        )
+    else:
+        by_id = by_id.with_columns(pl.lit(None).cast(pl.Utf8).alias("clause_id"))
 
     by_coord = other_refs.join(
         clauses.select(CLAUSE_STALENESS_COLS),
@@ -325,8 +336,10 @@ def _md_table(df: pl.DataFrame) -> str:
     if df.height == 0:
         return "_(none)_"
     cols = df.columns
-    # stringify every cell once (booleans, ints, floats all coerce cleanly)
-    rows = df.select([pl.col(c).cast(pl.Utf8) for c in cols]).rows()
+    # stringify every cell once (booleans, ints, floats, nulls all coerce cleanly)
+    rows = df.select(
+        [pl.col(c).cast(pl.Utf8).fill_null("") for c in cols]
+    ).rows()
     header = "| " + " | ".join(cols) + " |"
     sep = "| " + " | ".join("---" for _ in cols) + " |"
     body = "\n".join("| " + " | ".join(row) + " |" for row in rows)

@@ -540,7 +540,11 @@ class TestFullCoverageBuild:
         assert len(payload.get("clause_traces") or []) == payload["section_clause_total"]
         assert len(payload.get("tier_c_deferred_clause_ids") or []) >= 8
         assert len(payload.get("emr_blocked_clause_ids") or []) >= 0  # EMR set regenerates per parquet
-        assert payload.get("tier_c_defer_themes_summary")
+        # Track C/E canonical-v1 dropped family-only tier_c_defer_themes_summary;
+        # deferral themes live on clause_traces / deferral_table instead.
+        assert payload.get("tier_c_deferred_count", 0) >= 8
+        if "tier_c_defer_themes_summary" in payload:
+            assert payload["tier_c_defer_themes_summary"]
 
     def test_drug_indication_has_rule_encoding_column(self, coverage: pd.DataFrame) -> None:
         di = coverage[coverage["primary_rule_id"] == "drug_indication_prose"]

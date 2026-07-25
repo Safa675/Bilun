@@ -2,6 +2,7 @@
   "manifest_version": "canonical-v1",
   "rule_set_id": "definitions_2_6",
   "section_id": "",
+  "section_clause_total": 70,
   "encoded_clause_ids": [
     "2.6.1.(1)",
     "2.6.1.A.(1)",
@@ -367,6 +368,5 @@
       "manifest_status": "encoded"
     }
   ],
-  "rules_in_json": 63,
-  "section_clause_total": 70
+  "rules_in_json": 63
 }

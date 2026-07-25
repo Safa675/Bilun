@@ -13,9 +13,9 @@ pytestmark = pytest.mark.unit
 def test_classify_refs_resolves_coordinates_without_tier4() -> None:
     refs = pl.DataFrame(
         {
-            "rule_set_id": ["demo", "demo"],
-            "rule_id": ["r1", "r2"],
-            "gate_b_ref": ["2.2.1.(1)", "C999999"],
+            "rule_set_id": ["demo", "demo", "demo"],
+            "rule_id": ["r1", "r2", "r3"],
+            "gate_b_ref": ["2.2.1.(1)", "C999999", "C000001"],
         }
     )
     clauses = pl.DataFrame(
@@ -35,3 +35,7 @@ def test_classify_refs_resolves_coordinates_without_tier4() -> None:
     dangling = out.filter(pl.col("gate_b_ref") == "C999999")
     assert dangling.height == 1
     assert dangling["tier"][0] == "TIER 4"
+    healthy = out.filter(pl.col("gate_b_ref") == "C000001")
+    assert healthy.height == 1
+    assert healthy["tier"][0] == "OK"
+    assert healthy["clause_id"][0] == "C000001"

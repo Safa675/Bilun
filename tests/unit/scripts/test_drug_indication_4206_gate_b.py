@@ -20,14 +20,14 @@ _SECTION = "4206"
 
 _A2_ENCODED = {
     "C003941",
-    "C003965",
+    # C003965 is section_heading 4.2.6.A-1 — Track A3 refuses heading cites.
     "C003966",
     "C003982",
     "C004016",
     "C004030",
     "C004033",
 }
-_A2_TIER_A_ENCODED = _A2_ENCODED - {"C003965"}
+_A2_TIER_A_ENCODED = set(_A2_ENCODED)
 _A6_ENCODED = {"C003998", "C004003", "C004039"}
 _ALL_ENCODED = _A6_ENCODED | _A2_ENCODED
 _ALL_TIER_A_ENCODED = _A6_ENCODED | _A2_TIER_A_ENCODED
