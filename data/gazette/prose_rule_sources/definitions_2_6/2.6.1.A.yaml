@@ -3,7 +3,7 @@ rules:
 - rule_id: 2.6.1.A.(1).nearest_provider_referral_principle
   sut_section: 2.6.1.A
   gate_b_sources:
-  - C001479
+  - 2.6.1.A.(1)
   condition:
     definition_scope: Sevkin teşhis/tedavinin sağlanabildiği en yakın sunucuya yapılması esastır
     applies_to: Yerleşim yeri dışı sevk (tıbbi/zorunlu neden)
@@ -35,7 +35,7 @@ rules:
 - rule_id: 2.6.1.A.(3).board_control_examination_travel
   sut_section: 2.6.1.A
   gate_b_sources:
-  - C001495
+  - 2.6.1.A.(3)
   condition:
     definition_scope: Sürekli iş göremezlik/malullük tespiti ile 5510 md.94 kontrol muayeneleri için Kurum sevkleri
     applies_to: Kurumca yerleşim yeri dışına yapılan kontrol sevkleri
@@ -47,7 +47,7 @@ rules:
 - rule_id: 2.6.1.A.(4).thermal_spa_travel_nearest
   sut_section: 2.6.1.A
   gate_b_sources:
-  - C001496
+  - 2.6.1.A.(4)
   condition:
     definition_scope: Kaplıca tedavisinde yol giderinin en yakın kaplıca tesisi esas alınması
     applies_to: Kaplıca tedavisi
@@ -58,7 +58,7 @@ rules:
 - rule_id: 2.6.1.A.(5).dialysis_service_courtesy_no_travel
   sut_section: 2.6.1.A
   gate_b_sources:
-  - C001497
+  - 2.6.1.A.(5)
   condition:
     expense_not_covered: diyaliz_sunucusunun_servis_hizmeti_vermesi_halinde_yol_gideri
     applies_to: Servis hizmetinden faydalanan diyaliz hastaları

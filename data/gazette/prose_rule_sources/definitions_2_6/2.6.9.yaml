@@ -3,7 +3,7 @@ rules:
 - rule_id: 2.6.9.(3).non_contracted_referral_emergency_accepted
   sut_section: 2.6.9
   gate_b_sources:
-  - C001605
+  - 2.6.9.(3)
   condition:
     definition_scope: Sözleşmesiz sunucu sevklerinde ödeme için acil halinin Kurumca kabulü zorunluluğu
     applies_to: Sözleşmesiz sunucu sevkleri
@@ -14,7 +14,7 @@ rules:
 - rule_id: 2.6.9.(4).missing_specialist_documented_travel
   sut_section: 2.6.9
   gate_b_sources:
-  - C001606
+  - 2.6.9.(4)
   condition:
     definition_scope: İlgili branş uzmanı bulunmaması nedeniyle hizmet verilemediği başhekimlikçe onaylanırsa gider
     applies_to: Ayakta müracaat — uzman yokluğu
@@ -25,7 +25,7 @@ rules:
 - rule_id: 2.6.9.(6).scope_5510_md60_scope_travel
   sut_section: 2.6.9
   gate_b_sources:
-  - C001608
+  - 2.6.9.(6)
   condition:
     definition_scope: 5510 md.60(1)(c)(1)/(3) kapsamındaki kişilerin 1.5.1 usulüne uygun sevklerinin 2.6 kapsamında ödenmesi
     applies_to: Genel sağlık sigortası kapsamına alınan kişiler
@@ -36,7 +36,7 @@ rules:
 - rule_id: 2.6.9.(8).disability_pension_funding_source
   sut_section: 2.6.9
   gate_b_sources:
-  - C001610
+  - 2.6.9.(8)
   condition:
     definition_scope: Sürekli iş göremezlik/malullük/çalışma gücü kaybı tespit kontrolleri için giderlerin kısa/uzun vadeli
       sigorta prim gelirlerinden karşılanması
@@ -49,7 +49,7 @@ rules:
 - rule_id: 2.6.9.(1).intra_settlement_transport_no_travel_daily
   sut_section: 2.6.9
   gate_b_sources:
-  - C001603
+  - 2.6.9.(1)
   condition:
     expense_not_covered: yerlesim_yeri_icindeki_nakiller
     applies_to: Genel sağlık sigortalısı, bakmakla yükümlü olunan kişiler ve refakatçiler
@@ -60,7 +60,7 @@ rules:
 - rule_id: 2.6.9.(2).unreferred_cross_settlement_no_travel_daily
   sut_section: 2.6.9
   gate_b_sources:
-  - C001604
+  - 2.6.9.(2)
   condition:
     expense_not_covered: sevk_yapilmaksizin_dis_yerlesim_yerinden_hizmet_alinmasi
     applies_to: Belediye/büyükşehir belediye mücavir alanı yerleşim yeri dışı sevk edilmeksizin hizmet

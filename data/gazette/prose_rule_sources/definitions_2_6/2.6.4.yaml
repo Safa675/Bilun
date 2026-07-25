@@ -3,7 +3,7 @@ rules:
 - rule_id: 2.6.4.(b).control_call_document_required
   sut_section: 2.6.4
   gate_b_sources:
-  - C001577
+  - 2.6.4.b
   condition:
     definition_scope: Kontrol çağrısı sevklerinde kontrol çağrı belgesinin ibraz zorunluluğu
     applies_to: 1. basamak kontrol çağrısı sevkleri
@@ -14,7 +14,7 @@ rules:
 - rule_id: 2.6.4.(c).non_listed_control_call_not_covered
   sut_section: 2.6.4
   gate_b_sources:
-  - C001579
+  - 2.6.4.ç
   condition:
     expense_not_covered: ilk_fikrada_sayilmayan_tedavi_hastalik_kontrol_cagrisi_giderleri
     applies_to: Birinci fıkra kapsamı dışındaki tedavi/hastalık kontrol çağrıları
