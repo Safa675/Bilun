@@ -19,7 +19,9 @@ Execute `plans/billing/sut-pipeline-god-plan.md`: SUT-native paragraph identity 
 - [x] Track A2 pilot: migrate `definitions_2_6` unique cites (56/70) + recompile
 - [x] Track A2 bulk: migrate remaining families (1128 cites) + recompile fresh targets
 - [x] Update tests for dual-read (manifest invariants, treatment provenance, 4218 tier-A)
-- [ ] Track B: YAML-only + deferral SoT + goldens policy
+- [x] Track B1: YAML-only — retire SOURCE_PATCHES/DROPS stages (no-op + empty modules)
+- [x] Track B2: move coverage reclassify set → deferral_table `non_actionable`
+- [x] Track B3: derive provenance goldens; delete pure-provenance golden JSON
 - [ ] Track C: canonical manifest + thin compile + coverage + drop corpus CSV + retire shims
 - [ ] Track D: UI/docs audit UX on coordinates
 - [ ] Track E: delete/demote public `C*`

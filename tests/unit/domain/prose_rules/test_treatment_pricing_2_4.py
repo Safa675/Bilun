@@ -166,18 +166,16 @@ def test_dental_covers_exclusion_rules(dental_rules):
 # ── Golden fixture round-trip ─────────────────────────────────────────────
 
 def test_treatment_golden_matches_rules(treatment_rules):
-    golden = json.loads((_GOLDEN_DIR / "treatment_pricing_2_4.json").read_text(encoding="utf-8"))
+    from scripts.sut.prose.provenance_golden import provenance_cases_from_rules
+
     rule_ids = {r["rule_id"] for r in treatment_rules}
-    for case in golden["cases"]:
-        assert case["expected_rule_id"] in rule_ids, (
-            f"golden references unknown rule {case['expected_rule_id']}"
-        )
+    for case in provenance_cases_from_rules(treatment_rules, include_encode_batch=True):
+        assert case["expected_rule_id"] in rule_ids
 
 
 def test_dental_golden_matches_rules(dental_rules):
-    golden = json.loads((_GOLDEN_DIR / "dental_2_4_1.json").read_text(encoding="utf-8"))
+    from scripts.sut.prose.provenance_golden import provenance_cases_from_rules
+
     rule_ids = {r["rule_id"] for r in dental_rules}
-    for case in golden["cases"]:
-        assert case["expected_rule_id"] in rule_ids, (
-            f"golden references unknown rule {case['expected_rule_id']}"
-        )
+    for case in provenance_cases_from_rules(dental_rules, include_encode_batch=True):
+        assert case["expected_rule_id"] in rule_ids

@@ -153,137 +153,27 @@ def _is_structural_gap_excluded(row: pd.Series) -> bool:
 _ACTIONABLE_COVERAGE_STATUSES: frozenset[str] = frozenset({"implemented", "partial"})
 
 
-# Phase 4.2/4.3 — explicit, auditable, reversible reclassification set.
-# Clauses here are body text (bent/fikra/prose) that was auto-classified to a
-# billing motor via section-prefix fallback but is NOT a billing decision:
-# either reference/definitional text (visit-fee tables, section enumeration)
-# or supporting text (indication lists, report-content specs) whose decisional
-# parent is already encoded. Each clause_id was individually audited against
-# its text_tr + the motor's declared scope; reclassifying hides nothing — the
-# decisional rules for these sections are already in the prose JSONs. See
-# plans/refactor/rule-encoding-gap-closure-roadmap.md Phase 4.2/4.3.
-#
-# §1.8.1 visit-fee table (12) + §1.8 enumeration (6) — reference/definitional,
-# no deontic, no annex; routed to copay_rate_general by the ("1.8", ...) prefix
-# fallback at classify.py:150 but contain no rate/fee logic.
-_RECLASSIFY_AS_NON_ALGORITHMIC: frozenset[str] = frozenset({
-    # §1.8.1 visit-fee table — fixed TL amounts by facility tier (reference data,
-    # not a billing rule; the amounts live in EK-2/C-1, not in copay_general).
-    "C000258", "C000288", "C000289", "C000290", "C000291", "C000292",
-    "C000293", "C000296", "C000297", "C000298", "C000305", "C000307",
-    # §1.8 top-level enumeration — "ayakta tedavide ilaçlar", "vücut dışı protez",
-    # "yardımcı üreme", collection-channel prose, income-threshold fikra.
-    "C000228", "C000229", "C000230", "C000231", "C000232", "C000236",
-    # §3.3 specialty_materials supporting text (Phase 4.3) — 261 clauses that
-    # are the indication-list / report-content-spec / MIAT-renewal text
-    # SURROUNDING the already-encoded 202 specialty_materials_prose decision
-    # rules. All carry deontic_modality=None, annex_refs=[]; zero contain
-    # negative-coverage language ("karşılanmaz") or EK-3 references. The
-    # decisional parents (e.g. "bedelleri Kurumca karşılanır") ARE encoded;
-    # these are the bullet-list indications + report fields those decisions
-    # reference. Reclassifying closes the gap honestly without duplicating the
-    # decisional rules. See plans/refactor/rule-encoding-gap-closure-roadmap.md
-    # Phase 4.3.
-    "C002840", "C002841", "C002842", "C002843", "C002844", "C002845",
-    "C002846", "C002847", "C002848", "C002849", "C002851", "C002852",
-    "C002854", "C002859", "C002876", "C002877", "C002878", "C002879",
-    "C002880", "C002885", "C002896", "C002903", "C002906", "C002909",
-    "C002910", "C002911", "C002912", "C002914", "C002916", "C002922",
-    "C002923", "C002925", "C002929", "C002935", "C002940", "C002941",
-    "C002942", "C002943", "C002944", "C002945", "C002949", "C002955",
-    "C002959", "C002974", "C002975", "C002977", "C002978", "C002979",
-    "C002980", "C002981", "C002982", "C002983", "C002984", "C002991",
-    "C002992", "C002993", "C002994", "C002995", "C002996", "C003002",
-    "C003003", "C003004", "C003005", "C003006", "C003007", "C003013",
-    "C003014", "C003015", "C003016", "C003017", "C003018", "C003019",
-    "C003021", "C003024", "C003029", "C003033", "C003034", "C003038",
-    "C003039", "C003042", "C003043", "C003047", "C003048", "C003049",
-    "C003050", "C003052", "C003053", "C003054", "C003055", "C003062",
-    "C003063", "C003064", "C003067", "C003068", "C003069", "C003070",
-    "C003076", "C003077", "C003078", "C003079", "C003080", "C003081",
-    "C003082", "C003083", "C003084", "C003085", "C003086", "C003087",
-    "C003088", "C003089", "C003090", "C003091", "C003092", "C003094",
-    "C003095", "C003096", "C003097", "C003100", "C003102", "C003104",
-    "C003105", "C003106", "C003107", "C003108", "C003109", "C003110",
-    "C003112", "C003116", "C003117", "C003118", "C003119", "C003120",
-    "C003121", "C003122", "C003126", "C003128", "C003129", "C003130",
-    "C003131", "C003132", "C003133", "C003134", "C003135", "C003136",
-    "C003137", "C003138", "C003139", "C003153", "C003155", "C003156",
-    "C003157", "C003164", "C003165", "C003166", "C003167", "C003172",
-    "C003173", "C003174", "C003175", "C003176", "C003177", "C003178",
-    "C003179", "C003182", "C003183", "C003184", "C003203", "C003204",
-    "C003205", "C003206", "C003208", "C003209", "C003210", "C003211",
-    "C003212", "C003213", "C003214", "C003215", "C003217", "C003218",
-    "C003219", "C003221", "C003222", "C003223", "C003224", "C003225",
-    "C003226", "C003228", "C003229", "C003230", "C003232", "C003233",
-    "C003235", "C003236", "C003237", "C003238", "C003239", "C003241",
-    "C003242", "C003244", "C003246", "C003247", "C003249", "C003250",
-    "C003252", "C003253", "C003257", "C003258", "C003259", "C003262",
-    "C003263", "C003264", "C003265", "C003266", "C003284", "C003285",
-    "C003286", "C003287", "C003288", "C003290", "C003291", "C003292",
-    "C003293", "C003294", "C003295", "C003297", "C003333", "C003335",
-    "C003336", "C003337", "C003338", "C003341", "C003342", "C003343",
-    "C003351", "C003352", "C003353", "C003356", "C003357", "C003358",
-    "C003359", "C003360", "C003361", "C003367", "C003368", "C003370",
-    "C003371", "C003372", "C003373", "C003374", "C003375", "C003376",
-    "C003380", "C003381", "C003382", "C003387", "C003388", "C003389",
-    "C003390", "C003392", "C003395",
-    # Phase 7 — residual gap resolution (283 clauses). 3 buckets:
-    # (a) payment_method 203: §2.4 clinical content (cardiac risk, IVF, dialysis,
-    #   physio, palliative) + §2.2 reference tables (DRG duration, package enum)
-    #   mis-routed via classify.py:159 fallback; §2.2 code motor (42 rules) complete.
-    # (b) bundling 28: EK-3 annex-list citations (C002767-C002788) + C002815/C008293.
-    # (c) smaller motors 52: drg_coding 16 (§2.2.1.B service-category lists) +
-    #   drug 17 (price lines + Mülga + cross-ref) + surcharge/copay/drg_unbundling/preauth.
-    "C000226", "C000343", "C000377", "C000390", "C000428", "C000429",
-    "C000430", "C000431", "C000432", "C000434", "C000449", "C000453",
-    "C000520", "C000528", "C000529", "C000534", "C000541", "C000570",
-    "C000587", "C000588", "C000589", "C000591", "C000593", "C000595",
-    "C000596", "C000597", "C000598", "C000599", "C000600", "C000601",
-    "C000602", "C000605", "C000625", "C000656", "C000667", "C000673",
-    "C000674", "C000675", "C000676", "C000682", "C000683", "C000684",
-    "C000685", "C000688", "C000689", "C000690", "C000691", "C000692",
-    "C000693", "C000743", "C000798", "C000806", "C000817", "C000820",
-    "C000831", "C000836", "C000837", "C000844", "C000845", "C000846",
-    "C000848", "C000862", "C000863", "C000871", "C000872", "C000873",
-    "C000879", "C000885", "C000886", "C000887", "C000888", "C000889",
-    "C000890", "C000891", "C000892", "C000893", "C000894", "C000895",
-    "C000898", "C000918", "C000919", "C000920", "C000921", "C000922",
-    "C000923", "C000932", "C000933", "C000935", "C000936", "C000937",
-    "C000948", "C000949", "C000951", "C000952", "C000960", "C000961",
-    "C000965", "C000967", "C000969", "C000981", "C000985", "C000989",
-    "C000990", "C000992", "C001008", "C001021", "C001024", "C001057",
-    "C001062", "C001069", "C001103", "C001111", "C001121", "C001133",
-    "C001134", "C001137", "C001138", "C001139", "C001140", "C001141",
-    "C001142", "C001143", "C001144", "C001145", "C001146", "C001147",
-    "C001148", "C001149", "C001150", "C001151", "C001152", "C001153",
-    "C001154", "C001155", "C001156", "C001157", "C001158", "C001159",
-    "C001160", "C001161", "C001162", "C001163", "C001164", "C001165",
-    "C001166", "C001167", "C001168", "C001169", "C001170", "C001171",
-    "C001172", "C001173", "C001174", "C001175", "C001176", "C001177",
-    "C001178", "C001179", "C001180", "C001181", "C001182", "C001183",
-    "C001184", "C001185", "C001186", "C001187", "C001188", "C001189",
-    "C001190", "C001191", "C001192", "C001193", "C001194", "C001195",
-    "C001196", "C001197", "C001198", "C001199", "C001200", "C001201",
-    "C001202", "C001209", "C001214", "C001220", "C001240", "C001245",
-    "C001256", "C001257", "C001258", "C001259", "C001263", "C001265",
-    "C001267", "C001268", "C001269", "C001270", "C001271", "C001272",
-    "C001273", "C001277", "C001278", "C001279", "C001280", "C001281",
-    "C001282", "C001283", "C001292", "C001303", "C001311", "C001312",
-    "C001314", "C001318", "C001319", "C001321", "C001323", "C001324",
-    "C001325", "C001339", "C001341", "C001342", "C001343", "C001344",
-    "C001354", "C001355", "C001356", "C001357", "C001358", "C001359",
-    "C001363", "C001369", "C001373", "C001374", "C001388", "C001391",
-    "C002701", "C002702", "C002703", "C002704", "C002705", "C002713",
-    "C002767", "C002768", "C002769", "C002770", "C002771", "C002772",
-    "C002773", "C002774", "C002775", "C002776", "C002777", "C002778",
-    "C002779", "C002780", "C002781", "C002782", "C002783", "C002784",
-    "C002785", "C002786", "C002787", "C002788", "C002798", "C002815",
-    "C004623", "C005026", "C005232", "C005313", "C005467", "C005633",
-    "C005994", "C005995", "C005996", "C005997", "C006008", "C006009",
-    "C006010", "C006014", "C006087", "C006106", "C006122", "C007824",
-    "C008293",
-})
+# Track B2 — non-algorithmic reclassifications live in deferral_table.yaml
+# (status=non_actionable, theme=reclassify_non_algorithmic). coverage.py must
+# not maintain a parallel frozenset taxonomy.
+_non_actionable_clause_ids_cache: frozenset[str] | None = None
+
+
+def _load_non_actionable_clause_ids() -> frozenset[str]:
+    """Clause ids marked non_actionable in deferral_table.yaml (Track B2)."""
+    global _non_actionable_clause_ids_cache
+    if _non_actionable_clause_ids_cache is not None:
+        return _non_actionable_clause_ids_cache
+    from scripts.sut.prose.gate_b_generic import load_deferral_table
+
+    table = load_deferral_table()
+    _non_actionable_clause_ids_cache = frozenset(
+        cid
+        for cid, entry in table.items()
+        if str(entry.get("status") or "") == "non_actionable"
+    )
+    return _non_actionable_clause_ids_cache
+
 
 
 def _load_sut_clauses_frame() -> pl.DataFrame | None:
@@ -547,12 +437,10 @@ def _enrich_with_coverage(classified: pd.DataFrame) -> pd.DataFrame:
 
         clause_id = str(row.get("clause_id") or "")
 
-        # Phase 4.2/4.3 — explicit reclassification of audited non-decisional
-        # body text (visit-fee tables, section enumeration, supporting-text
-        # indication lists). See _RECLASSIFY_AS_NON_ALGORITHMIC above.
+        # Track B2 — non_actionable deferral rows (ex-coverage reclassify set).
         if (
             primary_status in {"implemented", "partial", "missing", "needs_claim_lines"}
-            and clause_id in _RECLASSIFY_AS_NON_ALGORITHMIC
+            and clause_id in _load_non_actionable_clause_ids()
         ):
             primary_status = "non_algorithmic"
             worst_status = "non_algorithmic"

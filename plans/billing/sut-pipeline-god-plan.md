@@ -151,20 +151,20 @@ Prefer **Track A → B → C → D → E**. Track F optional. Do not start Track
 **Goal:** One place to edit rules; one place to edit deferrals.
 
 #### B1 — YAML-only authoring
-- [ ] Delete / stop using `SOURCE_PATCHES` / `SOURCE_DROPS` and `drug_indication_*_patches.py` as edit paths
-- [ ] All linkage lives in YAML `gate_b_sources` (coordinates after A2)
-- [ ] Committed JSON is compile output only (CI `--check` proves drift)
-- [ ] **Exit:** documented “edit YAML → run compile”; patch modules gone or empty shims removed
+- [x] Delete / stop using `SOURCE_PATCHES` / `SOURCE_DROPS` and `drug_indication_*_patches.py` as edit paths
+- [x] All linkage lives in YAML `gate_b_sources` (coordinates after A2)
+- [x] Committed JSON is compile output only (CI `--check` proves drift)
+- [x] **Exit:** documented “edit YAML → run compile”; patch modules empty/deprecated (`plans/billing/sut-pipeline-yaml-only.md`)
 
 #### B2 — Deferral table is the only judgment store
-- [ ] Normalize statuses: `encoded` (derived), `tier_c_deferred`, `emr_blocked`, `non_actionable`, pending A/B
-- [ ] Move `_RECLASSIFY_AS_NON_ALGORITHMIC` (~566 ids in `coverage.py`) into deferral / non_actionable data
-- [ ] Manifests **derive** bucket lists + traces from rules ∪ deferral; no hand-maintained defer themes in manifests
-- [ ] **Exit:** deleting a deferral row changes coverage; no parallel Python frozenset taxonomy
+- [x] Normalize statuses: `encoded` (derived), `tier_c_deferred`, `emr_blocked`, `non_actionable`, pending A/B
+- [x] Move `_RECLASSIFY_AS_NON_ALGORITHMIC` (~562 ids in `coverage.py`) into deferral / non_actionable data
+- [ ] Manifests **derive** bucket lists + traces from rules ∪ deferral; no hand-maintained defer themes in manifests *(partial — coverage reads deferral; full manifest derive = Track C)*
+- [x] **Exit (coverage):** deleting a deferral `non_actionable` row changes coverage taxonomy; no parallel Python frozenset
 
 #### B3 — Goldens
-- [ ] Prefer ephemeral goldens in CI from `gate_b_sources`, **or** delete committed golden JSON provenance files
-- [ ] **Exit:** no third maintained `clause → rule` artifact
+- [x] Prefer ephemeral / derived provenance goldens from `gate_b_sources` (`provenance_golden.py`); delete committed pure-provenance golden JSON
+- [x] **Exit:** no third maintained `clause → rule` artifact (behavioral `samples` goldens kept)
 
 ---
 
