@@ -1,4 +1,7 @@
 Plan
+> **Superseded as living roadmap by** `plans/billing/sut-pipeline-god-plan.md` (2026-07-25).  
+> Keep this file for Phase 1–7 history; new work tracks A–F live in the god plan.
+
 Plan: Architectural simplification — pipeline from ~29K to ~10K SLOC
 Goal
 Eliminate the accidental complexity (duplicate gate_b modules, redundant manifest representations, dead metadata fields, brittle literal tests) while preserving the irreducible logic (extractor, evaluator, rule data, deferral taxonomy). Target: ~10,000 SLOC from ~29,000.

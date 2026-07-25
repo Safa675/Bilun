@@ -1,28 +1,31 @@
-## Task: Full brittle-test remediation (plan first)
+## Task: SUT pipeline god plan (simplify encode identity + SoT)
 
 ### Goal
-Replace hardcoded census locks in unit tests with derived counts, soft floors, and self-consistency invariants so SUT re-extract / encode / synthetic regen no longer mass-break CI. Plan: `plans/refactor/brittle-test-remediation-plan.md`.
+Execute `plans/billing/sut-pipeline-god-plan.md`: SUT-native paragraph identity (`clause_coordinate`), single authored truth (YAML + deferral), derived manifests/coverage, thin compile.
+
+### Decisions (locked 2026-07-25)
+- [x] D1 Full simplification
+- [x] D2 Phased `C*` removal (coordinates when unique; `C*` for collisions)
+- [x] D3 Non-drug Gate B = Track F last
+- [x] D4 Encode-eligible universe only
 
 ### Subtasks
-- [x] Investigate brittle patterns (gate_b counts, rule-set lens, synthetic pins, catalog goldens, API/FE copy)
-- [x] Write full remediation plan under `plans/refactor/brittle-test-remediation-plan.md`
-- [x] **Verify plan with Safa** (approve / adjust scope before any test rewrites)
-- [x] Phase 1: Finish gap-closure 0.3 (`==832/282/131` + helpers + `test_rule_sources` leftovers)
-- [x] Phase 2: Rest of gate_b suite → invariant helpers
-- [x] Phase 3: Rule-set `len() == N` locks (fatura, treatment_pricing, BATCH_*, fact_check)
-- [x] Phase 4: Synthetic census + patient/claim ID pins → scenario_tag / soft floors
-- [x] Phase 5: Catalog goldens + API/FE copy; mark pipeline Phase 5 done
-- [x] Phase 6: Residual grep triage, cross-plan checkboxes, allowed-exact note
-- [x] Finish previously deferred: FE TRY HTML asserts + catalog stubs
+- [x] Draft + approve god plan
+- [x] Track A0: uniqueness audit (`plans/billing/sut-pipeline-a0-uniqueness-audit.md`)
+- [x] Track A1 foundation: `clause_identity.py` dual-read + schema + gate_b_generic resolve + tests
+- [ ] Track A2: migrate authored YAML/deferral refs to coordinates where unique
+- [ ] Track A3: wire loud ambiguity into compile `--check` end-to-end
+- [ ] Track B: YAML-only + deferral SoT + goldens policy
+- [ ] Track C: canonical manifest + thin compile + coverage + drop corpus CSV + retire shims
+- [ ] Track D: UI/docs audit UX on coordinates
+- [ ] Track E: delete/demote public `C*`
+- [ ] Track F (optional): non-drug Gate B onto generic
 
 ### Out of Scope
-- Changing extractor/evaluator/rule JSON contents
-- Regenerating parquet or synthetic cohort
-- Non-drug gate_b **code** consolidation
-- Frontend i18n catalog expansion
+- Evaluator clinical matching rewrites
+- LLM bulk extraction as the simplification strategy
+- Fatura `F*` merge into SUT ids
 
 ### Review
-- Helpers: `brittle_guards.py`, `catalog_stubs.py`, `frontend/src/test/fmtMoney.ts`
-- DoD: `==832/282/131` clean; SGK zero hardcoded patient IDs; loader soft floors; catalog prices from stubs; FE money from fixtures
-- Verification: 813+ backend remediations; 27 catalog-stub tests; 39 FE vitest
-- Cross-plan: gap-closure §0.3 + pipeline Phase 5 marked done
+- Branch: `refactor/sut-pipeline-god-plan`
+- A0 finding: 357 encode-eligible coordinate collisions — dual-read must fail loud
