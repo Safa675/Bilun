@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.9.B.renal.phosphate_binder_prior_3mo_use_mandatory
   sut_section: 4.2.9.B
   gate_b_sources:
-  - C004141
+  - 4.2.9.B.(1)
   drug_names:
   - sevelamer
   - lantanyum karbonat
@@ -25,7 +25,7 @@ rules:
 - rule_id: 4.2.9.B.renal.phosphate_binders_dialysis_report_coverage
   sut_section: 4.2.9.B
   gate_b_sources:
-  - C004147
+  - 4.2.9.B.(2)
   drug_names:
   - sevelamer
   - lantanyum karbonat
@@ -55,7 +55,7 @@ rules:
 - rule_id: 4.2.9.B.renal.sevelamer_lanthanum_combination_prohibited
   sut_section: 4.2.9.B
   gate_b_sources:
-  - C004151
+  - 4.2.9.B.(5)
   drug_names:
   - sevelamer
   - lantanyum karbonat

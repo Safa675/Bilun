@@ -12,4 +12,4 @@ rules:
     bill_materials_separately: true
     bill_drugs_separately: true
   gate_b_sources:
-  - C000538
+  - 2.2.(20)

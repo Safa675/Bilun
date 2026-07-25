@@ -11,7 +11,7 @@ rules:
     denial_tr: yatış dönemi ilaçları tanıya dayalı pakete dahildir (kan ürünleri ayrı; kanama durdurucu yapıştırıcılar hariç)
     severity: error
   gate_b_sources:
-  - C000677
+  - 2.2.2.B-1.d
 - rule_id: 2.2.2.B-1.(e).blood_components_bundled_with_fraction
   sut_section: 2.2.2.B-1
   condition:
@@ -26,7 +26,7 @@ rules:
     payment_tr: kan bileşenleri tanıya dayalı pakette puanların düşülerek faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C000681
+  - 2.2.2.B-1.e
 - rule_id: 2.2.2.B-1.(diagnostics_bundled).no_separate_bill
   sut_section: 2.2.2.B-1
   condition:
@@ -47,4 +47,4 @@ rules:
     billable: true
     payment_tr: süre aşımında verilen hizmetler ayrıca faturalandırılır
   gate_b_sources:
-  - C000694
+  - 2.2.2.B-1.(4)

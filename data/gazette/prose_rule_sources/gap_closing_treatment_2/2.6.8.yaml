@@ -10,4 +10,4 @@ rules:
     denial_tr: sevk edilmeksizin müracaat edilen sunucuda vefat edenlerin cenaze nakil giderleri ödenmez
     severity: error
   gate_b_sources:
-  - C001600
+  - 2.6.8.(2)

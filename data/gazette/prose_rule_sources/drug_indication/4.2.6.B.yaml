@@ -16,7 +16,7 @@ rules:
   message_tr: Laron sendromu rhIGF-I (mecasermin) başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu
     raporu ve reçete gerekir (§4.2.6.B).
   gate_b_sources:
-  - C004033
+  - 4.2.6.B.(1)
   report_specialties:
   - çocuk endokrinoloji
   - çocuk endokrinolojisi ve metabolizma

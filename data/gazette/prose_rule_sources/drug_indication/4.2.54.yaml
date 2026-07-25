@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.54.inf.cutaneous_leishmaniasis_3mo_report_coverage
   sut_section: 4.2.54
   gate_b_sources:
-  - C007075
+  - 4.2.54.b
   drug_names:
   - miltefosin
   - liposomal amfoterisin b
@@ -41,7 +41,7 @@ rules:
 - rule_id: 4.2.54.inf.visceral_leishmaniasis_amphotericin_coverage
   sut_section: 4.2.54
   gate_b_sources:
-  - C007074
+  - 4.2.54.a
   drug_names:
   - miltefosin
   - liposomal amfoterisin b

@@ -19,7 +19,7 @@ rules:
   message_tr: Analog insülinler ve pioglitazon — endokrinoloji, iç hastalıkları, çocuk sağlığı veya kardiyoloji uzman hekim
     raporu/reçetesi gerekir (§4.2.38).
   gate_b_sources:
-  - C006727
+  - 4.2.38.(3)
   report_required: true
   report_specialties:
   - endokrinoloji
@@ -59,7 +59,7 @@ rules:
 - rule_id: 4.2.38.diab.dpp4_antagonist_combo_nopay
   sut_section: 4.2.38
   gate_b_sources:
-  - C006743
+  - 4.2.38.ç
   drug_names:
   - empagliflozin
   - linagliptin
@@ -90,8 +90,8 @@ rules:
 - rule_id: 4.2.38.diab.empagliflozin_linagliptin_specialty_combo_nopay
   sut_section: 4.2.38
   gate_b_sources:
-  - C006745
-  - C006749
+  - 4.2.38.(6)
+  - 4.2.38.(8)
   drug_names:
   - empagliflozin
   - linagliptin
@@ -130,7 +130,7 @@ rules:
   message_tr: DPP-4 antagonistleri — metformin/sülfonilüre maksimum dozda yetersiz kontrol sonrası endokrinoloji veya iç hastalıkları
     uzman hekim raporu gerekir (§4.2.38).
   gate_b_sources:
-  - C006735
+  - 4.2.38.(4)
   report_required: true
   report_specialties:
   - endokrinoloji
@@ -156,9 +156,9 @@ rules:
   message_tr: Metformin, sulfonilüreler, alfa glukozidaz inhibitörleri ve insan insülinleri — tip 1/2 diyabet endikasyonunda
     tüm hekimler reçete edebilir (§4.2.38).
   gate_b_sources:
-  - C006723
-  - C006739
-  - C006741
+  - 4.2.38.(1)
+  - 4.2.38.a
+  - 4.2.38.c
 - rule_id: 4.2.38.glargine_lixisenatide_obesity_report
   sut_section: 4.2.38
   drug_names:
@@ -176,7 +176,7 @@ rules:
   message_tr: İnsülin glarjin+liksisenatid kombinasyonu — VKİ≥35, pankreatit öyküsü olmayan tip 2 diyabette 1 yıllık endokrinoloji
     uzman hekim raporu gerekir (§4.2.38).
   gate_b_sources:
-  - C006747
+  - 4.2.38.(7)
   report_required: true
   report_specialties:
   - endokrinoloji

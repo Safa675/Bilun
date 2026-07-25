@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.4.B
   deontic: NO_PAY
   gate_b_sources:
-  - C002962
+  - 3.3.4.B.c
   condition:
     primary_ligament_tendon_injury_graft: true
   action:
@@ -16,7 +16,7 @@ rules:
   sut_section: 3.3.4.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002960
+  - 3.3.4.B.a
   condition:
     reconstruction_revision_one_unit_cap: true
   action:
@@ -27,7 +27,7 @@ rules:
   sut_section: 3.3.4.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002961
+  - 3.3.4.B.b
   condition:
     multi_ligament_reconstruction_two_unit_cap: true
   action:

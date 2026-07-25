@@ -75,7 +75,7 @@ rules:
   sut_section: 3.3.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002856
+  - 3.3.1.(9)
   condition:
     skin_substitute_non_burn_use: true
   action:
@@ -86,7 +86,7 @@ rules:
   sut_section: 3.3.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002856
+  - 3.3.1.(9)
   condition:
     material_name_any:
     - deri esdeger
@@ -124,7 +124,7 @@ rules:
   sut_section: 3.3.1
   deontic: MUST_BILL
   gate_b_sources:
-  - C002839
+  - 3.3.1.(1)
   condition:
     material_name_any:
     - yara bakim
@@ -150,7 +150,7 @@ rules:
   sut_section: 3.3.1
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002853
+  - 3.3.1.(6)
   condition:
     material_name_any:
     - yara bakim
@@ -164,7 +164,7 @@ rules:
   sut_section: 3.3.1
   deontic: MUST_BILL
   gate_b_sources:
-  - C002855
+  - 3.3.1.(8)
   condition:
     material_name_any:
     - hydrocolloid

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.65.derm.diabetic_foot_4wk_response_continue_coverage
   sut_section: 4.2.65
   gate_b_sources:
-  - C007143
+  - 4.2.65.(2)
   drug_names:
   - epidermal büyüme faktörü (topikal)
   icd10_codes:
@@ -42,7 +42,7 @@ rules:
 - rule_id: 4.2.65.derm.diabetic_foot_osteomyelitis_softtissue_report_mandatory
   sut_section: 4.2.65
   gate_b_sources:
-  - C007146
+  - 4.2.65.(5)
   drug_names:
   - epidermal büyüme faktörü (topikal)
   icd10_codes:
@@ -67,7 +67,7 @@ rules:
 - rule_id: 4.2.65.derm.diabetic_foot_prior_conventional_tx_report_mandatory
   sut_section: 4.2.65
   gate_b_sources:
-  - C007145
+  - 4.2.65.(4)
   drug_names:
   - epidermal büyüme faktörü (topikal)
   icd10_codes:
@@ -86,7 +86,7 @@ rules:
 - rule_id: 4.2.65.derm.diabetic_foot_wagner12_4wk_specialty_coverage
   sut_section: 4.2.65
   gate_b_sources:
-  - C007142
+  - 4.2.65.(1)
   drug_names:
   - epidermal büyüme faktörü (topikal)
   icd10_codes:

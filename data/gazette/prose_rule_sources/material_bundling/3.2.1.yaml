@@ -28,13 +28,13 @@ rules:
   sut_section: 3.2.1
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002823
-  - C002830
-  - C002690
-  - C002766
-  - C002790
-  - C002797
-  - C002827
+  - 3.2.1.A.(1)
+  - 3.2.1.C.(1)
+  - 3.1.1.(8)
+  - 3.1.3.(1)
+  - 3.1.3.(3)
+  - 3.1.3.(10)
+  - 3.2.1.B.(1)
   condition:
     unlisted_material_surcharge_billing: true
   action:

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.24.A.resp.iks_one_per_prescription_coverage
   sut_section: 4.2.24.A
   gate_b_sources:
-  - C006147
+  - 4.2.24.A.(6)
   drug_names:
   - inhale kortikosteroid
   - iks
@@ -19,7 +19,7 @@ rules:
 - rule_id: 4.2.24.A.resp.laba_iks_mono_or_combined_coverage
   sut_section: 4.2.24.A
   gate_b_sources:
-  - C006145
+  - 4.2.24.A.(4)
   drug_names:
   - uzun etkili solunum yolu beta-agonisti
   - laba
@@ -36,7 +36,7 @@ rules:
 - rule_id: 4.2.24.A.resp.laba_iks_otherwise_nopay
   sut_section: 4.2.24.A
   gate_b_sources:
-  - C006148
+  - 4.2.24.A.(7)
   drug_names:
   - uzun etkili solunum yolu beta-agonisti
   - laba
@@ -53,7 +53,7 @@ rules:
 - rule_id: 4.2.24.A.resp.laba_one_per_prescription_coverage
   sut_section: 4.2.24.A
   gate_b_sources:
-  - C006146
+  - 4.2.24.A.(5)
   drug_names:
   - uzun etkili solunum yolu beta-agonisti
   - laba
@@ -69,7 +69,7 @@ rules:
 - rule_id: 4.2.24.A.resp.nebul_respiratory_first_box_report
   sut_section: 4.2.24.A
   gate_b_sources:
-  - C006155
+  - 4.2.24.A.(11)
   drug_names:
   - nebül formu solunum sistemi ilaçları
   icd10_codes:
@@ -94,7 +94,7 @@ rules:
 - rule_id: 4.2.24.A.resp.saba_sama_inhale_exemption
   sut_section: 4.2.24.A
   gate_b_sources:
-  - C006149
+  - 4.2.24.A.(8)
   drug_names:
   - kısa etkili solunum yolu beta-agonisti
   - saba
@@ -112,7 +112,7 @@ rules:
 - rule_id: 4.2.24.A.resp.tertiary_allergy_board_coverage
   sut_section: 4.2.24.A
   gate_b_sources:
-  - C006142
+  - 4.2.24.A.b
   drug_names:
   - uzun etkili solunum yolu beta-agonisti
   - laba
@@ -139,7 +139,7 @@ rules:
 - rule_id: 4.2.24.A.resp.triple_combo_asthma_maintenance_a
   sut_section: 4.2.24.A
   gate_b_sources:
-  - C006151
+  - 4.2.24.A.(9)
   drug_names:
   - beklometazon+formoterol+glikopironyum
   - flutikazonfuroat+umeklidinyum+vilanterol
@@ -170,7 +170,7 @@ rules:
 - rule_id: 4.2.24.A.resp.triple_combo_asthma_maintenance_b
   sut_section: 4.2.24.A
   gate_b_sources:
-  - C006153
+  - 4.2.24.A.(10)
   drug_names:
   - flutikazonfuroat+umeklidinyum+vilanterol
   icd10_codes:
@@ -197,7 +197,7 @@ rules:
 - rule_id: 4.2.24.A.resp.week16_response_allergy_board_coverage
   sut_section: 4.2.24.A
   gate_b_sources:
-  - C006143
+  - 4.2.24.A.c
   drug_names:
   - uzun etkili solunum yolu beta-agonisti
   - laba
@@ -235,7 +235,7 @@ rules:
   message_tr: Mepolizumab/benralizumab — üçüncü basamak kurumda alerji/immünoloji uzmanının yer aldığı sağlık kurulu raporu
     ve göğüs hastalıkları/alerji reçetesi gerekir (§4.2.24.A-3).
   gate_b_sources:
-  - C006142
+  - 4.2.24.A.b
   report_required: true
   report_specialties:
   - alerji

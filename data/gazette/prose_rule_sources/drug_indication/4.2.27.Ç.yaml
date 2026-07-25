@@ -6,7 +6,7 @@ rules:
   - E87.0
   - K74
   gate_b_sources:
-  - C006275
+  - 4.2.27.Ç.(2)
   drug_names:
   - human albumin
   - albumin
@@ -41,6 +41,6 @@ rules:
   message_tr: Human albümin — yalnızca yatarak tedavi gören hastalarda albümin ≤2.5 g/dl için uzman hekim reçetesi; laboratuvar
     sonuçları epikrizde belirtilir (§4.2.27.Ç).
   gate_b_sources:
-  - C006274
+  - 4.2.27.Ç.(1)
   inpatient_only: true
 source_note: Exported from drug_indication_prose.json (YAML source migration)

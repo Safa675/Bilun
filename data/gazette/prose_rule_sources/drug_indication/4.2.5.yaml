@@ -3,8 +3,8 @@ rules:
 - rule_id: 4.2.5.botox.axillary_hyperhidrosis_tertiary_coverage
   sut_section: 4.2.5
   gate_b_sources:
-  - C003932
-  - C003935
+  - 4.2.5.c
+  - 4.2.5.e
   drug_names:
   - botulinum toksini
   - botox
@@ -39,7 +39,7 @@ rules:
 - rule_id: 4.2.5.botox.outside_indications_nopay
   sut_section: 4.2.5
   gate_b_sources:
-  - C003938
+  - 4.2.5.(3)
   drug_names:
   - botulinum toksini
   - botox
@@ -53,9 +53,9 @@ rules:
 - rule_id: 4.2.5.botox.paediatric_cerebral_palsy_tertiary_coverage
   sut_section: 4.2.5
   gate_b_sources:
-  - C003929
-  - C003930
-  - C003933
+  - 4.2.5.a
+  - 4.2.5.b
+  - 4.2.5.d
   drug_names:
   - botulinum toksini
   - botox
@@ -89,7 +89,7 @@ rules:
 - rule_id: 4.2.5.botox.repeat_application_6mo_report_permission
   sut_section: 4.2.5
   gate_b_sources:
-  - C003936
+  - 4.2.5.(2)
   drug_names:
   - botulinum toksini
   - botox

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.9.E.renal.cinacalcet_etelcalcetide_combination_nopay
   sut_section: 4.2.9.E
   gate_b_sources:
-  - C004201
+  - 4.2.9.E.(7)
   drug_names:
   - cinacalcet
   - etelkalsetid
@@ -17,8 +17,8 @@ rules:
 - rule_id: 4.2.9.E.renal.etelcalcetide_adult_hdi_secondary_hpt_coverage
   sut_section: 4.2.9.E
   gate_b_sources:
-  - C004199
-  - C004200
+  - 4.2.9.E.(5)
+  - 4.2.9.E.(6)
   drug_names:
   - etelkalsetid
   icd10_codes:
@@ -39,7 +39,7 @@ rules:
 - rule_id: 4.2.9.E.renal.etelcalcetide_hemodialysis_report_coverage
   sut_section: 4.2.9.E
   gate_b_sources:
-  - C004197
+  - 4.2.9.E.(3)
   drug_names:
   - etelkalsetid
   icd10_codes:
@@ -78,5 +78,5 @@ rules:
   message_tr: Etelkalsedid — yalnızca hemodiyaliz KBY endikasyonunda karşılanır; paratiroid karsinomu, primer hiperparatiroidizm
     veya diyalizsiz KBY endikasyonlarında bedel karşılanmaz (§4.2.9.E).
   gate_b_sources:
-  - C004200
+  - 4.2.9.E.(6)
 source_note: Exported from drug_indication_prose.json (YAML source migration)

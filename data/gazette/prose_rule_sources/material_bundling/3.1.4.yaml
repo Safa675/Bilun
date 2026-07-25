@@ -5,32 +5,30 @@ rules:
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002800
+  - 3.1.4.(1)
   condition:
     diagnosis_bundled_material_scope: true
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Tanıya dayalı paket dahil malzeme — §3.1–3.2 SUT kuralları geçerlidir
-      (§3.1.4(1)).
+    message_tr: Tanıya dayalı paket dahil malzeme — §3.1–3.2 SUT kuralları geçerlidir (§3.1.4(1)).
 - rule_id: 3.1.4.diagnosis_package_material_unbundled
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002818
-  - C002801
+  - 3.1.4.n
+  - 3.1.4.(2)
   condition:
     diagnosis_package_material_unbundled: true
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Tanıya dayalı paket dışı malzeme — EK-2/C ve SUT paket kurallarına
-      uygunluk doğrulanmalı (§3.1.4).
+    message_tr: Tanıya dayalı paket dışı malzeme — EK-2/C ve SUT paket kurallarına uygunluk doğrulanmalı (§3.1.4).
 - rule_id: 3.1.4.(a).plate_screw_nail_anchor
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002802
+  - 3.1.4.a
   condition:
     material_name_any:
     - plak
@@ -42,13 +40,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Plak, çivi, vida, ankor tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(a)).
+    message_tr: Plak, çivi, vida, ankor tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca
+      ayrıca karşılanır (§3.1.4(a)).
 - rule_id: 3.1.4.(b).bone_cement
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002803
+  - 3.1.4.b
   condition:
     material_name_any:
     - kemik çimentosu
@@ -58,13 +56,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Kemik çimentosu tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(b)).
+    message_tr: Kemik çimentosu tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca
+      karşılanır (§3.1.4(b)).
 - rule_id: 3.1.4.(c).external_fixator_sets
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002804
+  - 3.1.4.c
   condition:
     material_name_any:
     - eksternal fiksatör
@@ -74,13 +72,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Eksternal fiksatör setleri tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(c)).
+    message_tr: Eksternal fiksatör setleri tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca
+      ayrıca karşılanır (§3.1.4(c)).
 - rule_id: 3.1.4.(ç).all_joint_implants
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002805
+  - 3.1.4.ç
   condition:
     material_name_any:
     - eklem implant
@@ -95,13 +93,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Her türlü eklem implantı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(ç)).
+    message_tr: Her türlü eklem implantı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca
+      ayrıca karşılanır (§3.1.4(ç)).
 - rule_id: 3.1.4.(d).spinal_implant
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002806
+  - 3.1.4.d
   condition:
     material_name_any:
     - omurga implant
@@ -113,13 +111,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Omurga implantı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(d)).
+    message_tr: Omurga implantı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca
+      karşılanır (§3.1.4(d)).
 - rule_id: 3.1.4.(e).pacemaker
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002807
+  - 3.1.4.e
   condition:
     material_name_any:
     - kalp pili
@@ -130,12 +128,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Kalp pili tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(e)).
+    message_tr: Kalp pili tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
+      (§3.1.4(e)).
 - rule_id: 3.1.4.(f).pacemaker_electrode
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002808
+  - 3.1.4.f
   condition:
     material_name_any:
     - pace elektrodu
@@ -147,13 +146,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Pace elektrodu tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(f)).
+    message_tr: Pace elektrodu tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca
+      karşılanır (§3.1.4(f)).
 - rule_id: 3.1.4.(g).coronary_stents
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002809
+  - 3.1.4.g
   condition:
     material_name_any:
     - koroner stent
@@ -163,13 +162,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Koroner stentler tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(g)).
+    message_tr: Koroner stentler tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca
+      karşılanır (§3.1.4(g)).
 - rule_id: 3.1.4.(ğ).heart_valves
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002810
+  - 3.1.4.ğ
   condition:
     material_name_any:
     - kalp kapağı
@@ -180,13 +179,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Kalp kapakları tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(ğ)).
+    message_tr: Kalp kapakları tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca
+      karşılanır (§3.1.4(ğ)).
 - rule_id: 3.1.4.(h).intraaortic_balloon_vad
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002811
+  - 3.1.4.h
   condition:
     material_name_any:
     - intraaortik balon
@@ -200,12 +199,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: İntraaortik balon / ventrikül destek cihazı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(h)).
+    message_tr: İntraaortik balon / ventrikül destek cihazı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri
+      doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(h)).
 - rule_id: 3.1.4.(ı).valved_valveless_conduit
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002812
+  - 3.1.4.ı
   condition:
     material_name_any:
     - kondüit
@@ -218,13 +218,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Kapaklı/kapaksız kondüit tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(ı)).
+    message_tr: Kapaklı/kapaksız kondüit tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca
+      ayrıca karşılanır (§3.1.4(ı)).
 - rule_id: 3.1.4.(i).valve_ring
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002813
+  - 3.1.4.i
   condition:
     material_name_any:
     - valf ringi
@@ -238,12 +238,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Valf ringi tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(i)).
+    message_tr: Valf ringi tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
+      (§3.1.4(i)).
 - rule_id: 3.1.4.(j).grafts_shunts_vascular_prosthesis
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002814
+  - 3.1.4.j
   condition:
     material_name_any:
     - greft
@@ -261,12 +262,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Her türlü greft, şunt ve suni damar tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(j)).
+    message_tr: Her türlü greft, şunt ve suni damar tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda
+      Kurumca ayrıca karşılanır (§3.1.4(j)).
 - rule_id: 3.1.4.(l).atherectomy_device
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002816
+  - 3.1.4.l
   condition:
     material_name_any:
     - aterektomi
@@ -276,13 +278,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Aterektomi cihazı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(l)).
+    message_tr: Aterektomi cihazı tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca
+      karşılanır (§3.1.4(l)).
 - rule_id: 3.1.4.(m).double_sided_mesh_patches
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002817
+  - 3.1.4.m
   condition:
     material_name_any:
     - çift yüzlü yama
@@ -295,13 +297,13 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Çift yüzlü yamalar (meshler) tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(m)).
+    message_tr: Çift yüzlü yamalar (meshler) tanıya dayalı ödeme kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca
+      ayrıca karşılanır (§3.1.4(m)).
 - rule_id: 3.1.4.(o).arthroscopy_set_ek3f2
   sut_section: 3.1.4
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002819
+  - 3.1.4.o
   condition:
     material_name_any:
     - artroskopi ve eklem cerrahisi malzeme seti
@@ -315,6 +317,5 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: EK-3/F-2 "Artroskopi ve Eklem Cerrahisi Malzeme Seti" tanıya dayalı ödeme
-      kapsamında değildir; bedeli SUT hükümleri doğrultusunda Kurumca ayrıca karşılanır
-      (§3.1.4(o)).
+    message_tr: EK-3/F-2 "Artroskopi ve Eklem Cerrahisi Malzeme Seti" tanıya dayalı ödeme kapsamında değildir; bedeli SUT
+      hükümleri doğrultusunda Kurumca ayrıca karşılanır (§3.1.4(o)).

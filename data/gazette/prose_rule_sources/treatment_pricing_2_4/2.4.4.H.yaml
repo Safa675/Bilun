@@ -11,7 +11,7 @@ rules:
     denial_tr: anestezi sonrası bakım (PACU) için yoğun bakım bedelleri faturalandırılamaz
     severity: error
   gate_b_sources:
-  - C001208
+  - 2.4.4.H.(3)
 - rule_id: 2.4.4.H.(7).same_day_multi_level_one_icu_fee
   sut_section: 2.4.4.H
   condition:
@@ -22,7 +22,7 @@ rules:
     payment_tr: aynı gün birden fazla basamakta yoğun bakım için tek yoğun bakım bedeli
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001215
+  - 2.4.4.H.(7)
 - rule_id: 2.4.4.H.(8).icu_admission_discharge_fee_for_service
   sut_section: 2.4.4.H
   condition:
@@ -35,7 +35,7 @@ rules:
     payment_tr: yoğun bakıma giriş/çıkış/vefat/sevk günü hizmet başına ödeme yöntemiyle
     annex_basis: EK-2/B
   gate_b_sources:
-  - C001216
+  - 2.4.4.H.(8)
 - rule_id: 2.4.4.H.(1).icu_unleveled_level1_unregistered_not_billable
   sut_section: 2.4.4.H
   condition:
@@ -48,7 +48,7 @@ rules:
       bakım yataklarında verilen tedaviler faturalandırılamaz
     severity: error
   gate_b_sources:
-  - C001206
+  - 2.4.4.H.(1)
 - rule_id: 2.4.4.H.(2).icu_group_de_bundled_abc_addon_same_day
   sut_section: 2.4.4.H
   condition:
@@ -64,7 +64,7 @@ rules:
     annex_basis: EK-2/C
     severity: error
   gate_b_sources:
-  - C001207
+  - 2.4.4.H.(2)
 - rule_id: 2.4.4.H.(3).icu_pacu_no_icu_fee
   sut_section: 2.4.4.H
   condition:
@@ -75,7 +75,7 @@ rules:
     message_tr: anestezi sonrası bakım hizmetleri (PACU) için yoğun bakım bedelleri faturalandırılamaz
     severity: error
   gate_b_sources:
-  - C001208
+  - 2.4.4.H.(3)
 - rule_id: 2.4.4.H.(5a).icu_platelet_apheresis_full_billable
   sut_section: 2.4.4.H
   verification_status: ai_generated_pending_review
@@ -93,7 +93,7 @@ rules:
     message_tr: trombosit süspansiyonu (705440-705443) bedelleri tam olarak ayrıca faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001210
+  - 2.4.4.H.(5)
 - rule_id: 2.4.4.H.(5b).icu_platelet_pheresis_36pct_billable
   sut_section: 2.4.4.H
   verification_status: ai_generated_pending_review
@@ -109,7 +109,7 @@ rules:
     message_tr: 705371/705430 için puanın %36'sı sunucunca ayrıca faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001210
+  - 2.4.4.H.(5)
 - rule_id: 2.4.4.H.(5c).icu_platelet_pheresis_24pct_billable
   sut_section: 2.4.4.H
   verification_status: ai_generated_pending_review
@@ -125,7 +125,7 @@ rules:
     message_tr: 705372/705373 için puanın %24'ü sunucunca ayrıca faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001210
+  - 2.4.4.H.(5)
 - rule_id: 2.4.4.H.(9).icu_blood_products_bundled_in_points
   sut_section: 2.4.4.H
   verification_status: ai_generated_pending_review
@@ -138,7 +138,7 @@ rules:
     message_tr: yoğun bakım tedavileri EK-2/C'den faturalandırıldığında kan ürünleri işlem puanına dahildir, ayrıca faturalandırılamaz
     severity: error
   gate_b_sources:
-  - C001218
+  - 2.4.4.H.(9)
 - rule_id: 2.4.4.H.(10a).icu_enabiz_uplift_plus_60tl
   sut_section: 2.4.4.H
   verification_status: ai_generated_pending_review
@@ -148,10 +148,11 @@ rules:
   action:
     billable: true
     payment_uplift_tl_per_day: 60
-    message_tr: e-nabız'a 278 veri paketini gönderen sunuculara EK-2/C yoğun bakım puanlarına günlük 60 TL ilave edilerek ödeme yapılır
+    message_tr: e-nabız'a 278 veri paketini gönderen sunuculara EK-2/C yoğun bakım puanlarına günlük 60 TL ilave edilerek
+      ödeme yapılır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001220
+  - 2.4.4.H.(10)
 - rule_id: 2.4.4.H.(10b).icu_enabiz_not_sent_downgrade_one_level
   sut_section: 2.4.4.H
   verification_status: ai_generated_pending_review
@@ -161,10 +162,11 @@ rules:
   action:
     billable: true
     enforcement: payment_downgrade_one_icu_level
-    message_tr: 278 veri paketini e-nabız'a göndermeyen sunucularda faturalandırılan basamak yerine bir alt basamağın puanı üzerinden ödenir
+    message_tr: 278 veri paketini e-nabız'a göndermeyen sunucularda faturalandırılan basamak yerine bir alt basamağın puanı
+      üzerinden ödenir
     severity: error
   gate_b_sources:
-  - C001220
+  - 2.4.4.H.(10)
 - rule_id: 2.4.4.H.(7).icu_single_fee_multiple_levels_same_day
   sut_section: 2.4.4.H
   condition:
@@ -177,7 +179,7 @@ rules:
     message_tr: aynı sunucuda aynı gün birden fazla basamakta yoğun bakım tedavisi gören hasta için bir yoğun bakım bedeli
       faturalandırılır; basamak değişikliği epikriz notunda belirtilir
   gate_b_sources:
-  - C001215
+  - 2.4.4.H.(7)
 - rule_id: 2.4.4.H.(8).icu_admission_discharge_day_fee_for_service
   sut_section: 2.4.4.H
   condition:
@@ -190,4 +192,4 @@ rules:
       yoğun bakımına sevk edildiği gün verilen sağlık hizmetleri hizmet başına ödeme yöntemiyle faturalandırılır
     annex_basis: fee_for_service
   gate_b_sources:
-  - C001216
+  - 2.4.4.H.(8)

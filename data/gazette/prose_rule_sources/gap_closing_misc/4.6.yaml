@@ -11,4 +11,4 @@ rules:
     denial_tr: EK-2/C tanıya dayalı işlemlerde kan/kan bileşenleri pakete dahil; ayrı fatura edilemez
     severity: error
   gate_b_sources:
-  - C007809
+  - 4.6.(4)

@@ -10,7 +10,7 @@ rules:
     payment_tr: robotik rehabilitasyon EK-2/D-2 grupları + EK-2/C puan üzerinden
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001071
+  - 2.4.4.F-5.(3)
 - rule_id: 2.4.4.F-5.(4).robotic_rehab_no_combo
   sut_section: 2.4.4.F-5
   condition:
@@ -21,7 +21,7 @@ rules:
     denial_tr: robotik rehabilitasyon diğer fizik tedavi/rehab ile birlikte faturalanamaz
     severity: error
   gate_b_sources:
-  - C001072
+  - 2.4.4.F-5.(4)
 - rule_id: 2.4.4.F-5.(2).robotic_rehab_double_star_indications_only
   sut_section: 2.4.4.F-5
   condition:
@@ -37,7 +37,7 @@ rules:
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
-  - C001070
+  - 2.4.4.F-5.(2)
 - rule_id: 2.4.4.F-5.(3).robotic_rehab_billed_ek2c_points
   sut_section: 2.4.4.F-5
   condition:
@@ -50,7 +50,7 @@ rules:
       faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001071
+  - 2.4.4.F-5.(3)
 - rule_id: 2.4.4.F-5.(4).robotic_rehab_not_with_other_physio
   sut_section: 2.4.4.F-5
   condition:
@@ -62,7 +62,7 @@ rules:
     message_tr: robotik rehabilitasyon sistemi uygulaması diğer fizik tedavi ve rehabilitasyon işlemleri ile birlikte faturalandırılamaz
     severity: error
   gate_b_sources:
-  - C001072
+  - 2.4.4.F-5.(4)
 - rule_id: 2.4.4.F-5.(5).robotic_rehab_30_sessions_annual_8_daily_per_system
   sut_section: 2.4.4.F-5
   condition:
@@ -76,4 +76,4 @@ rules:
       başına günlük en fazla 8, 4+ tam zamanlı PMR uzmanı olan sunucular ilave 6 hasta için seans faturalandırabilir
     severity: error
   gate_b_sources:
-  - C001077
+  - 2.4.4.F-5.(5)

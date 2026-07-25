@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.53.metabolic.nutrition_supplement_fatty_acid_coverage
   sut_section: 4.2.53
   gate_b_sources:
-  - C007071
+  - 4.2.53.(1)
   drug_names:
   - beslenme ürünü
   - medical food

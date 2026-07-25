@@ -5,7 +5,7 @@ rules:
   sut_section: 3.2.1.B
   deontic: NO_PAY
   gate_b_sources:
-  - C002828
+  - 3.2.1.B.(2)
   condition:
     material_not_in_sut_lists_invoiced_for_payment: true
   action:

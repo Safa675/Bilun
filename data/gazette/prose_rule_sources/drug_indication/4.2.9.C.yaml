@@ -3,8 +3,8 @@ rules:
 - rule_id: 4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage
   sut_section: 4.2.9.C
   gate_b_sources:
-  - C004167
-  - C004168
+  - 4.2.9.C.(4)
+  - 4.2.9.C.(5)
   drug_names:
   - parikalsitol
   icd10_codes:
@@ -27,7 +27,7 @@ rules:
 - rule_id: 4.2.9.C.renal.paricalcitol_parenteral_hemodialysis_coverage
   sut_section: 4.2.9.C
   gate_b_sources:
-  - C004166
+  - 4.2.9.C.(3)
   drug_names:
   - parikalsitol
   icd10_codes:

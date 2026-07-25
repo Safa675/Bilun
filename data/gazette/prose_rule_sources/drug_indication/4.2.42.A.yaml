@@ -70,7 +70,7 @@ rules:
 - rule_id: 4.2.42.A.repeat_application_new_report
   sut_section: 4.2.42.A
   gate_b_sources:
-  - C006780
+  - 4.2.42.A.(4)
   drug_names:
   - gonadotropin
   - fsh
@@ -103,7 +103,7 @@ rules:
   gate_b_sources:
   - C006775
   - C006778
-  - C006779
+  - 4.2.42.A.(3)
   drug_names:
   - gonadotropin
   - fsh

@@ -16,7 +16,7 @@ rules:
     denial_tr: hemodiyalizde heparinler tanıya dayalı işlem puanına dahildir; reçete edilse dahi ödenmez
     severity: error
   gate_b_sources:
-  - C004055
+  - 4.2.7.(3)
 - rule_id: 4.2.7.(4).distinct_lmw_heparin_combo_no_pay
   sut_section: 4.2.7
   condition:
@@ -27,4 +27,4 @@ rules:
     denial_tr: farklı etken maddeli düşük molekül ağırlıklı heparinler birlikte kullanılırsa ödenmez
     severity: error
   gate_b_sources:
-  - C004057
+  - 4.2.7.(4)

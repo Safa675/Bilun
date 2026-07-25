@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.3.Ç
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002920
+  - 3.3.3.Ç.(1)
   condition:
     material_name_any:
     - e-recete
@@ -19,7 +19,7 @@ rules:
   sut_section: 3.3.3.Ç
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002921
+  - 3.3.3.Ç.(2)
   condition:
     material_name_any:
     - e-recete
@@ -34,7 +34,7 @@ rules:
   sut_section: 3.3.3.Ç
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002924
+  - 3.3.3.Ç.b
   condition:
     material_name_any:
     - e-recete

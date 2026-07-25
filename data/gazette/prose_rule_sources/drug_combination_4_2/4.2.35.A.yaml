@@ -16,4 +16,4 @@ rules:
       polinöropatide ödenir
     severity: error
   gate_b_sources:
-  - C006699
+  - 4.2.35.A.(5)

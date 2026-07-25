@@ -14,4 +14,4 @@ rules:
     billable: true
     payment_tr: lokal anestezi altında cerrahide greft/membran iyileştirici malzemeler faturalandırılabilir
   gate_b_sources:
-  - C003143
+  - 3.3.11.(1)

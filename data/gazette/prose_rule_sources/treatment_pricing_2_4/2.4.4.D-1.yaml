@@ -40,7 +40,7 @@ rules:
       ödenmez
     severity: error
   gate_b_sources:
-  - C000940
+  - 2.4.4.D-1.(9)
 - rule_id: 2.4.4.D-1.(11).hemodialysis_bundled_tests_no_separate_bill
   sut_section: 2.4.4.D-1
   condition:
@@ -54,7 +54,7 @@ rules:
       ayrı faturalanamaz
     severity: error
   gate_b_sources:
-  - C000944
+  - 2.4.4.D-1.(11)
 - rule_id: 2.4.4.D-1.(6).home_hemodialysis_ek2c_pricing
   sut_section: 2.4.4.D-1
   condition:
@@ -118,7 +118,7 @@ rules:
     denial_tr: hemodiyaliz tedavisinin her bir seansı tıbbi zorunluluklar hariç en az 4 saat olarak uygulanır
     severity: error
   gate_b_sources:
-  - C000941
+  - 2.4.4.D-1.(10)
 - rule_id: 2.4.4.D-1.(3ev).home_dialysis_prescription_by_followup_center
   sut_section: 2.4.4.D-1
   condition:

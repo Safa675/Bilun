@@ -43,6 +43,10 @@ def _all_drug_manifests() -> list[Path]:
 @pytest.mark.parametrize("manifest_path", _all_drug_manifests())
 def test_manifest_encoded_set_matches_rule_sources(manifest_path: Path) -> None:
     """Invariant 1: encoded_clause_ids should trace to rule gate_b_sources."""
+    import polars as pl
+
+    from scripts.sut.prose.clause_identity import resolve_gate_b_sources_to_clause_ids
+
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     section_id = manifest.get("section_id", "")
     # Parse section prefixes from manifest section_id (e.g. "4.2.13,4.2.16")
@@ -54,22 +58,50 @@ def test_manifest_encoded_set_matches_rule_sources(manifest_path: Path) -> None:
     # the reverse: every encoded ID in the manifest should trace to a rule.
     # (Full bidirectional parity requires manifest regeneration.)
     rules_by_section = _load_rules_by_section()
-    rule_source_ids: set[str] = set()
-    for section, rules in rules_by_section.items():
-        if any(section.startswith(p) for p in prefixes):
-            for rule in rules:
-                for cid in rule.get("gate_b_sources") or []:
-                    rule_source_ids.add(str(cid))
+    clauses = pl.read_parquet(_PROJECT_ROOT / "data/gazette/sut_clauses.parquet")
 
-    actual_encoded = set(manifest.get("encoded_clause_ids") or [])
-    # The manifest's encoded IDs should be a subset of ALL rule sources
-    # (no encoded ID should exist without a corresponding rule gate_b_source).
-    all_rule_sources: set[str] = set()
-    for rules in rules_by_section.values():
-        for rule in rules:
-            for cid in rule.get("gate_b_sources") or []:
-                all_rule_sources.add(str(cid))
+    def _resolved_sources(rules: list[dict]) -> set[str]:
+        refs = [
+            str(cid)
+            for rule in rules
+            for cid in (rule.get("gate_b_sources") or [])
+            if cid is not None and str(cid).strip()
+        ]
+        # allow_ambiguous: section exports may cite collision-heavy bent letters;
+        # for orphan detection we only need the C* expansion of unique cites plus
+        # opaque C* passthrough.
+        from scripts.sut.prose.clause_identity import (
+            AmbiguousClauseCiteError,
+            UnknownClauseCiteError,
+            is_clause_id,
+            resolve_gate_b_ref_to_clause_ids,
+        )
 
+        out: set[str] = set()
+        for ref in refs:
+            if is_clause_id(ref):
+                out.add(ref)
+                continue
+            try:
+                out.update(
+                    resolve_gate_b_ref_to_clause_ids(
+                        ref,
+                        clauses,
+                        in_force_only=True,
+                        allow_ambiguous=True,
+                    )
+                )
+            except (AmbiguousClauseCiteError, UnknownClauseCiteError):
+                out.add(ref)
+        return out
+
+    all_rule_sources = _resolved_sources(
+        [rule for rules in rules_by_section.values() for rule in rules]
+    )
+
+    actual_encoded = set(str(x) for x in (manifest.get("encoded_clause_ids") or []))
+    # Manifests still store C*; compare in clause_id space after resolving
+    # coordinate cites from rules (Track A dual-read).
     orphaned_encoded = actual_encoded - all_rule_sources
     drift_pct = len(orphaned_encoded) / max(len(actual_encoded), 1) * 100
     assert drift_pct <= 10.0, (

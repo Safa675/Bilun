@@ -8,7 +8,7 @@ rules:
   - E23.7
   - E34.3
   gate_b_sources:
-  - C003997
+  - 4.2.6.A-2.(4)
   drug_names:
   - somatropin
   - büyüme hormonu
@@ -38,7 +38,7 @@ rules:
   message_tr: Erişkin büyüme hormonu — erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl)
     ve endokrinoloji veya iç hastalıkları uzman hekim reçetesi gerekir (§4.2.6.A-2).
   gate_b_sources:
-  - C003998
+  - 4.2.6.A-2.(5)
   report_required: true
   report_specialties:
   - endokrinoloji

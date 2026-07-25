@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.13.3.2.B.hcv_geno1_4_rgtr_duration
   sut_section: 4.2.13.3.2.B
   gate_b_sources:
-  - C004912
+  - 4.2.13.3.2.B.(3)
   drug_names:
   - interferon
   - peginterferon
@@ -44,7 +44,7 @@ rules:
 - rule_id: 4.2.13.3.2.B.paediatric_hcv_ribavirin_pegifn
   sut_section: 4.2.13.3.2.B
   gate_b_sources:
-  - C004913
+  - 4.2.13.3.2.B.(4)
   drug_names:
   - ribavirin
   - peginterferon
@@ -80,7 +80,7 @@ rules:
   message_tr: HCV genotip 1/4 peginterferon+ribavirin — 48 hafta tedavi; 12. hafta HCV RNA monitoring ve erken kesme kriterleri
     raporda belirtilmelidir (§4.2.13.3.2.B).
   gate_b_sources:
-  - C004912
+  - 4.2.13.3.2.B.(3)
   report_duration_months: 48
 - rule_id: 4.2.13.hcv_pediatric_early_stop_rechallenge
   sut_section: 4.2.13.3.2.B

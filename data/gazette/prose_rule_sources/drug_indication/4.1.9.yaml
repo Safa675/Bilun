@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.1.9.non_ek4a_drug_nopay
   sut_section: 4.1.9
   gate_b_sources:
-  - C003540
+  - 4.1.9.(1)
   pay: false
   condition:
     not_in_ek4a_list: true

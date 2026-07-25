@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.71.onco.al_amyloidosis_daratumumab_cardiac_mayo_iiib_nopay
   sut_section: 4.2.71
   gate_b_sources:
-  - C007209
+  - 4.2.71.(3)
   drug_names:
   - daratumumab
   icd10_codes:
@@ -20,7 +20,7 @@ rules:
 - rule_id: 4.2.71.onco.al_amyloidosis_daratumumab_cyborg_combo_coverage
   sut_section: 4.2.71
   gate_b_sources:
-  - C007207
+  - 4.2.71.(1)
   drug_names:
   - daratumumab
   icd10_codes:
@@ -44,7 +44,7 @@ rules:
 - rule_id: 4.2.71.onco.al_amyloidosis_daratumumab_response_hematology_3mo_coverage
   sut_section: 4.2.71
   gate_b_sources:
-  - C007208
+  - 4.2.71.(2)
   drug_names:
   - daratumumab
   icd10_codes:

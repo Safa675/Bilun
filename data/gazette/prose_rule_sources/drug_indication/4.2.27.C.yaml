@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.27.C.factor_viia_3day_haematology_report
   sut_section: 4.2.27.C
   gate_b_sources:
-  - C006271
+  - 4.2.27.C.(1)
   drug_names:
   - rekombinan faktör viia
   - rviia
@@ -22,7 +22,7 @@ rules:
 - rule_id: 4.2.27.C.factor_viia_reuse_documentation
   sut_section: 4.2.27.C
   gate_b_sources:
-  - C006272
+  - 4.2.27.C.(2)
   drug_names:
   - rekombinan faktör viia
   - rviia

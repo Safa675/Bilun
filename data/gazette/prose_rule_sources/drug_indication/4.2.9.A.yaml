@@ -3,11 +3,11 @@ rules:
 - rule_id: 4.2.9.A.renal.esa_roxadustat_offlabel_nopay
   sut_section: 4.2.9.A
   gate_b_sources:
-  - C004125
-  - C004128
-  - C004131
-  - C004132
-  - C004133
+  - 4.2.9.A.(1)
+  - 4.2.9.A.(4)
+  - 4.2.9.A-1.(2)
+  - 4.2.9.A-1.(3)
+  - 4.2.9.A-1.(4)
   drug_names:
   - eritropoietin
   - darbepoietin
@@ -42,8 +42,8 @@ rules:
   message_tr: Eritropoietin alfa-beta-zeta, metoksipolietilen glikol epoetin beta ve darbepoetin endikasyon muadili olarak
     kullanılabilir; raporda doz/süre belirtilir ve bir defada en fazla 1 aylık reçete verilir (§4.2.9.A).
   gate_b_sources:
-  - C004127
-  - C004128
+  - 4.2.9.A.(3)
+  - 4.2.9.A.(4)
   report_required: true
   report_specialties:
   - nefroloji

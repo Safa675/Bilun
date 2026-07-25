@@ -15,4 +15,4 @@ rules:
     denial_tr: dabigatran/rivaroksaban/edoksaban/apiksaban birlikte kullanılırsa ödenmez
     severity: error
   gate_b_sources:
-  - C005838
+  - 4.2.15.D-1.(4)

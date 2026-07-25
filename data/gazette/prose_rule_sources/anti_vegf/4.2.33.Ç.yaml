@@ -18,8 +18,8 @@ rules:
   - göz hastalıkları
   loading_dose_count: 3
   gate_b_sources:
-  - C006570
-  - C006571
+  - 4.2.33.Ç.(1)
+  - 4.2.33.Ç.(2)
   message_tr: Bevacizumab (DMÖ) — ilk tedavi; günübirlik kapsamda 3 yükleme dozu; cevapsızlıkta 1 kez deksametazon ITV (§4.2.33.Ç).
 - rule_id: 4.2.33.Ç.deksametazon_itv_dmo
   sut_section: 4.2.33.Ç
@@ -38,13 +38,13 @@ rules:
   - göz hastalıkları
   max_applications_per_year: 4
   gate_b_sources:
-  - C006570
-  - C006556
-  message_tr: Deksametazon ITV implant (DMÖ) — bevacizumab kontrendike ise 1 defaya mahsus; genel yıl içi üst sınırı yıda en
-    fazla 4 (§4.2.33/(10), C006556).
+  - 4.2.33.Ç.(1)
+  - 4.2.33.(10)
+  message_tr: Deksametazon ITV implant (DMÖ) — bevacizumab kontrendike ise 1 defaya mahsus; genel yıl içi üst sınırı yıda
+    en fazla 4 (§4.2.33/(10), C006556).
   verification_status: ai_generated_pending_review
-  content_note: 'Was "max 2/year" (unsourced). Corrected to 4/year per §4.2.33/(10) (C006556); the "1 defaya mahsus" switch
-    path is from C006570/C006564. Needs human confirmation of the DMÖ-specific sequence.'
+  content_note: Was "max 2/year" (unsourced). Corrected to 4/year per §4.2.33/(10) (C006556); the "1 defaya mahsus" switch
+    path is from C006570/C006564. Needs human confirmation of the DMÖ-specific sequence.
 - rule_id: 4.2.33.Ç.deksametazon_timing_after_anti_vegf
   sut_section: 4.2.33.Ç
   drug_names:
@@ -62,10 +62,10 @@ rules:
   message_tr: Deksametazon ITV — anti-VEGF yükleme sonrası idame sırasında veya anti-VEGF kontrendikasyonunda; anti-VEGF uygulamasını
     takiben en erken 1 ay sonra ve yılda en fazla 4 uygulama (§4.2.33/(10), C006556).
   gate_b_sources:
-  - C006558
-  - C006556
+  - 4.2.33.(12)
+  - 4.2.33.(10)
   max_applications_per_year: 4
   min_gap_months_after_antivegf: 1
   verification_status: ai_generated_pending_review
-  content_note: 'Was "max 2/year" citing only C006558 (which states the coverage condition, not a number). Frequency corrected
-    to 4/year per §4.2.33/(10) (C006556); ≥1 month gap after anti-VEGF.'
+  content_note: Was "max 2/year" citing only C006558 (which states the coverage condition, not a number). Frequency corrected
+    to 4/year per §4.2.33/(10) (C006556); ≥1 month gap after anti-VEGF.

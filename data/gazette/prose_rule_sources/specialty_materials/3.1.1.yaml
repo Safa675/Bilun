@@ -5,7 +5,7 @@ rules:
   sut_section: 3.1.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002684
+  - 3.1.1.(2)
   condition:
     material_titubb_uts_registration_incomplete: true
   action:
@@ -16,7 +16,7 @@ rules:
   sut_section: 3.1.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002689
+  - 3.1.1.(7)
   condition:
     material_listed_in_ek3b_excluded: true
   action:
@@ -27,7 +27,7 @@ rules:
   sut_section: 3.1.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002691
+  - 3.1.1.(9)
   condition:
     material_belonging_to_nonpayable_procedure: true
   action:
@@ -38,7 +38,7 @@ rules:
   sut_section: 3.1.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002692
+  - 3.1.1.(10)
   condition:
     ek3_price_kdv_exception_misapplied: true
   action:
@@ -50,7 +50,7 @@ rules:
   sut_section: 3.1.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002694
+  - 3.1.1.(12)
   condition:
     abroad_sunucu_isletme_hazine_kesinti_claimed: true
   action:
@@ -62,7 +62,7 @@ rules:
   sut_section: 3.1.1
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002695
+  - 3.1.1.(13)
   condition:
     material_additional_billing_requires_sut_provision: true
   action:
@@ -74,7 +74,7 @@ rules:
   sut_section: 3.1.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002696
+  - 3.1.1.(14)
   condition:
     material_not_defined_in_medula_on_procedure_date: true
   action:
@@ -85,7 +85,7 @@ rules:
   sut_section: 3.1.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002697
+  - 3.1.1.(15)
   condition:
     barcode_sut_mismatch_or_noncompliant_invoicing: true
   action:
@@ -97,7 +97,7 @@ rules:
   sut_section: 3.1.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002698
+  - 3.1.1.(16)
   condition:
     material_sunucu_restriction_violated_on_procedure: true
   action:

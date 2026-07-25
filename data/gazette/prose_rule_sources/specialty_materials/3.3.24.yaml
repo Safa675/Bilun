@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.24
   deontic: MUST_BILL
   gate_b_sources:
-  - C003197
+  - 3.3.24.(1)
   condition:
     material_name_any:
     - sinüs tarsi vidası

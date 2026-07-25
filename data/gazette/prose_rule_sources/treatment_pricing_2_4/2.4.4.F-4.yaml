@@ -12,7 +12,7 @@ rules:
     denial_tr: ESWT işlemi diğer fizik tedavi/rehab işlemleriyle aynı gün faturalanamaz
     severity: error
   gate_b_sources:
-  - C001065
+  - 2.4.4.F-4.(4)
 - rule_id: 2.4.4.F-4.(2).eswt_indication_limited
   sut_section: 2.4.4.F-4
   condition:
@@ -29,7 +29,7 @@ rules:
       halinde Kurumca karşılanır
     severity: error
   gate_b_sources:
-  - C001063
+  - 2.4.4.F-4.(2)
 - rule_id: 2.4.4.F-4.(3).eswt_ek2c_2_regions_5_sessions
   sut_section: 2.4.4.F-4
   condition:
@@ -45,7 +45,7 @@ rules:
     annex_basis: EK-2/C
     severity: error
   gate_b_sources:
-  - C001064
+  - 2.4.4.F-4.(3)
 - rule_id: 2.4.4.F-4.(4).eswt_not_with_other_physio
   sut_section: 2.4.4.F-4
   condition:
@@ -57,4 +57,4 @@ rules:
     message_tr: ESWT işlemi diğer fizik tedavi ve rehabilitasyon işlemleri ile birlikte faturalandırılamaz
     severity: error
   gate_b_sources:
-  - C001065
+  - 2.4.4.F-4.(4)

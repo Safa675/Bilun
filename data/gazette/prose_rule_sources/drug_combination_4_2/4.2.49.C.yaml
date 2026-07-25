@@ -18,4 +18,4 @@ rules:
       bozulma/ağır AE hariç)
     severity: error
   gate_b_sources:
-  - C007051
+  - 4.2.49.C.(5)

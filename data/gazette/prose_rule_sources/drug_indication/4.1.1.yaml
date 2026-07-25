@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.1.1.family_medicine_contracted_prescribe_coverage
   sut_section: 4.1.1
   gate_b_sources:
-  - C003412
+  - 4.1.1.(8)
   prescriber_specialties:
   - aile hekimliği sözleşmeli/yetkilendirilmiş hekim
   - aile hekimliği uzman hekim
@@ -19,7 +19,7 @@ rules:
 - rule_id: 4.1.1.prescription_diagnosis_mandatory
   sut_section: 4.1.1
   gate_b_sources:
-  - C003406
+  - 4.1.1.(2)
   condition:
     diagnosis_required: true
   action:

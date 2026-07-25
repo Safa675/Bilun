@@ -18,7 +18,7 @@ rules:
   sut_section: 3.3.6.B
   deontic: MUST_BILL
   gate_b_sources:
-  - C003058
+  - 3.3.6.B.(6)
   condition:
     material_name_any:
     - taşınabilir oksijen
@@ -32,7 +32,7 @@ rules:
   sut_section: 3.3.6.B
   deontic: MUST_BILL
   gate_b_sources:
-  - C003059
+  - 3.3.6.B.(7)
   condition:
     material_name_any:
     - oksijen tüpü

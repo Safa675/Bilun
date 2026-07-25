@@ -13,4 +13,4 @@ rules:
     denial_tr: risk puanlamasına esas bilgi ve belgeler hasta dosyasında saklanmalı; yoksa ödenmez
     severity: error
   gate_b_sources:
-  - C001136
+  - 2.4.4.Ğ.(2)

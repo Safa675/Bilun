@@ -10,4 +10,4 @@ rules:
     billable: true
     payment_tr: işletme izinli kaplıca sözleşme yapılıncaya kadar; hasta öder, gün başına ödeme
   gate_b_sources:
-  - C001332
+  - 2.4.4.J.(4)

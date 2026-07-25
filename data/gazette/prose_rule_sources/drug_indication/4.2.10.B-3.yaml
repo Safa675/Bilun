@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.10.B3.enzyme_migalastat_combo_nopay
   sut_section: 4.2.10.B-3
   gate_b_sources:
-  - C004304
+  - 4.2.10.B-3.(5)
   drug_names:
   - enzim tedavisi
   - migalastat
@@ -15,7 +15,7 @@ rules:
 - rule_id: 4.2.10.B3.no_change_within_6mo
   sut_section: 4.2.10.B-3
   gate_b_sources:
-  - C004303
+  - 4.2.10.B-3.(4)
   report_required: true
   action:
     enforcement: tedavi seçenekleri arasında 6 aydan kısa sürede değişim yapılamaz; 6 aydan kısa geçişte (anaflaksi/ilaç reaksiyonu
@@ -37,7 +37,7 @@ rules:
     gerekir (§4.2.10.B-3).
   gate_b_sources:
   - C004299
-  - C004300
+  - 4.2.10.B-3.(1)
   report_required: true
   report_specialties:
   - çocuk metabolizma

@@ -14,7 +14,7 @@ rules:
   - fiziksel tıp
   message_tr: Apremilast — DMARD yetersiz psöriyatik artritte romatoloji/klinik immünoloji sağlık kurulu raporu gerekir (§4.2.1.C-13).
   gate_b_sources:
-  - C003888
+  - 4.2.1.C-13.(1)
   prescriber_specialties:
   - romatoloji
   - klinik immunoloji
@@ -32,7 +32,7 @@ rules:
   - dermatoloji
   message_tr: Apremilast — sistemik tedavi yetersiz plak psoriyaziste dermatoloji uzman hekim raporu gerekir (§4.2.1.C-13).
   gate_b_sources:
-  - C003889
+  - 4.2.1.C-13.(2)
   prescriber_specialties:
   - dermatoloji
   report_duration_months: 6

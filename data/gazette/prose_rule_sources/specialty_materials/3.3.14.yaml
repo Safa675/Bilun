@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.14
   deontic: MUST_BILL
   gate_b_sources:
-  - C003154
+  - 3.3.14.(2)
   condition:
     material_name_any:
     - çift yüzlü yama
@@ -21,7 +21,7 @@ rules:
   sut_section: 3.3.14
   deontic: MUST_BILL
   gate_b_sources:
-  - C003158
+  - 3.3.14.c
   condition:
     material_name_any:
     - çift yüzlü yama

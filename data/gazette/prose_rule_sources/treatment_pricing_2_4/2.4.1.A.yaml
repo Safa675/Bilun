@@ -13,7 +13,7 @@ rules:
       ve işçilik ücreti ödenmez (malzeme/döküm/işçilik protez ücretine dahildir)
     severity: error
   gate_b_sources:
-  - C000760
+  - 2.4.1.A.(1)
 - rule_id: 2.4.1.A.(2).disabled_or_special_need_child_ga_sedo_2x
   sut_section: 2.4.1.A
   condition:
@@ -30,4 +30,4 @@ rules:
     billing_method: multiplier_2x
     annex_basis: EK-2/Ç
   gate_b_sources:
-  - C000762
+  - 2.4.1.A.(2)

@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.37
   deontic: NO_PAY
   gate_b_sources:
-  - C003394
+  - 3.3.34.(4)
   condition:
     incontinence_hydrophilic_catheter_diaper_only: true
   action:

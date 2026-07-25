@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.3.allergy_vaccine_oral_forms_nopay
   sut_section: 4.2.3
   gate_b_sources:
-  - C003918
+  - 4.2.3.(6)
   drug_names:
   - alerji aşısı
   - immünoterapi
@@ -14,9 +14,9 @@ rules:
 - rule_id: 4.2.3.immunotherapy_break_restart_initial_dose
   sut_section: 4.2.3
   gate_b_sources:
-  - C003913
-  - C003915
-  - C003917
+  - 4.2.3.(1)
+  - 4.2.3.(3)
+  - 4.2.3.(5)
   drug_names:
   - immünoterapi
   - aşı tedavisi
@@ -32,7 +32,7 @@ rules:
 - rule_id: 4.2.3.immunotherapy_continuation_prescribers
   sut_section: 4.2.3
   gate_b_sources:
-  - C003916
+  - 4.2.3.(4)
   drug_names:
   - immünoterapi
   - alerji aşısı
@@ -56,7 +56,7 @@ rules:
 - rule_id: 4.2.3.immunotherapy_duration_5yr_seasonal
   sut_section: 4.2.3
   gate_b_sources:
-  - C003920
+  - 4.2.3.(8)
   drug_names:
   - aşı tedavisi
   - alergoid immünoterapi
@@ -70,7 +70,7 @@ rules:
 - rule_id: 4.2.3.immunotherapy_max_2_groups
   sut_section: 4.2.3
   gate_b_sources:
-  - C003914
+  - 4.2.3.(2)
   drug_names:
   - immünoterapi
   - alerji aşısı
@@ -88,7 +88,7 @@ rules:
 - rule_id: 4.2.3.poisoning_antidote_full_coverage_no_report
   sut_section: 4.2.3
   gate_b_sources:
-  - C003921
+  - 4.2.3.(9)
   drug_names:
   - antidot
   - panzehir

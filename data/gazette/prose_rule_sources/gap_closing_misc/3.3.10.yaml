@@ -16,4 +16,4 @@ rules:
     denial_tr: konjenital anal rektal malformasyon/rektal prolapsus/İBH/kolostomi/gebelikte kullanılırsa ödenmez
     severity: error
   gate_b_sources:
-  - C003124
+  - 3.3.10.d

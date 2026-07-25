@@ -1,5 +1,5 @@
 section_id: 2.4.4.R
-source_note: "New section added by RG-29/06/2026-33295/5 md. (Yürürlük: 30/07/2026) — Pulmoner rehabilitasyon tedavisi"
+source_note: 'New section added by RG-29/06/2026-33295/5 md. (Yürürlük: 30/07/2026) — Pulmoner rehabilitasyon tedavisi'
 rules:
 - rule_id: 2.4.4.R.(4).pulmoner_rehab_pricing_p701074
   sut_section: 2.4.4.R
@@ -24,12 +24,12 @@ rules:
   action:
     billable: false
     denial_tr: pulmoner rehabilitasyon tedavisi bir hasta için son bir yıl içinde en fazla 30 seans olarak Kurumca karşılanır;
-      bir yıl içinde en fazla üç sağlık kurulu raporu düzenlenebilir; klinik tablonun sürdürülmesini gerektirmesi halinde tıbbi
-      gerekçelerin raporda belirtilmesi kaydıyla Sağlık Bakanlığı ve devlet üniversitesi sunucularınca devam edilebilir
+      bir yıl içinde en fazla üç sağlık kurulu raporu düzenlenebilir; klinik tablonun sürdürülmesini gerektirmesi halinde
+      tıbbi gerekçelerin raporda belirtilmesi kaydıyla Sağlık Bakanlığı ve devlet üniversitesi sunucularınca devam edilebilir
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
-  - C001396
+  - 2.5.1.(1)
 - rule_id: 2.4.4.R.(2).pulmoner_rehab_board_report_requires_chest_specialist
   sut_section: 2.4.4.R
   condition:
@@ -45,7 +45,7 @@ rules:
       uygun uygulanacak tedavi ve tedavi süresi belirtilmelidir
     severity: error
   gate_b_sources:
-  - C001397
+  - 2.5.1.a
 - rule_id: 2.4.4.R.(4).pulmoner_rehab_start_within_15d
   sut_section: 2.4.4.R
   condition:
@@ -58,7 +58,7 @@ rules:
       yeni sağlık raporu düzenlenmesi gerekir
     severity: error
   gate_b_sources:
-  - C001398
+  - 2.5.1.b
 - rule_id: 2.4.4.R.pulmoner_rehab_5_biz_day_gap_excluding_chronic_failure
   sut_section: 2.4.4.R
   condition:
@@ -86,7 +86,7 @@ rules:
       bedeli Kurumca karşılanır
     annex_basis: fee_for_service
   gate_b_sources:
-  - C001400
+  - 2.5.1.(2)
 - rule_id: 2.4.4.R.(6).pulmoner_rehab_16_patients_per_day_cap
   sut_section: 2.4.4.R
   condition:
@@ -99,7 +99,7 @@ rules:
       sonra kabul edilen hastaların işlemleri Kurumca karşılanmaz
     severity: error
   gate_b_sources:
-  - C001401
+  - 2.5.1.(3)
 - rule_id: 2.4.4.R.(6).private_provider_pulmoner_rehab_reduces_daily_visit_count
   sut_section: 2.4.4.R
   condition:
@@ -111,4 +111,4 @@ rules:
       sayısından bir muayene sayısı düşülerek yeni günlük muayene sayısı hesaplanır; her hekim ayrı ayrı olmak üzere bu sınırlarda
       fatura edebilir
   gate_b_sources:
-  - C001402
+  - 2.5.1.(4)

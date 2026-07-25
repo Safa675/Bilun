@@ -81,7 +81,7 @@ rules:
 - rule_id: 4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a
   sut_section: 4.2.49.A
   gate_b_sources:
-  - C007021
+  - 4.2.49.A.c
   drug_names:
   - nusinersen
   - nusinersen sodium

@@ -12,4 +12,4 @@ rules:
     denial_tr: epoprostenol böbrek diyalizi endikasyonunda ödenmez
     severity: error
   gate_b_sources:
-  - C006420
+  - 4.2.30.A.(9)

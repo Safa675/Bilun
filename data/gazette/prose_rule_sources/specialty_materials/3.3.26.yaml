@@ -17,7 +17,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003202
+  - 3.3.26.a
   condition:
     saddle_prosthesis_criteria_met: true
   action:
@@ -28,7 +28,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003207
+  - 3.3.26.b
   condition:
     proximal_femur_resection_prosthesis_criteria_met: true
   action:
@@ -39,7 +39,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003216
+  - 3.3.26.c
   condition:
     total_femur_resection_prosthesis_criteria_met: true
   action:
@@ -50,7 +50,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003220
+  - 3.3.26.ç
   condition:
     distal_femur_resection_prosthesis_criteria_met: true
   action:
@@ -61,7 +61,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003227
+  - 3.3.26.d
   condition:
     proximal_tibia_resection_prosthesis_criteria_met: true
   action:
@@ -72,7 +72,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003231
+  - 3.3.26.e
   condition:
     distal_tibia_resection_prosthesis_criteria_met: true
   action:
@@ -83,7 +83,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003234
+  - 3.3.26.f
   condition:
     skapula_prosthesis_criteria_met: true
   action:
@@ -94,7 +94,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003240
+  - 3.3.26.g
   condition:
     proximal_humerus_resection_prosthesis_criteria_met: true
   action:
@@ -105,7 +105,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003243
+  - 3.3.26.ğ
   condition:
     intercalar_segment_prosthesis_criteria_met: true
   action:
@@ -116,7 +116,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003245
+  - 3.3.26.h
   condition:
     total_humerus_prosthesis_criteria_met: true
   action:
@@ -127,7 +127,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003248
+  - 3.3.26.ı
   condition:
     elbow_resection_prosthesis_criteria_met: true
   action:
@@ -138,7 +138,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003251
+  - 3.3.26.i
   condition:
     expandable_prosthesis_criteria_met: true
   action:

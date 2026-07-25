@@ -19,7 +19,7 @@ rules:
   message_tr: Leflunomid — romatoid/psoriatik artritte sulfasalazin veya methotrexat yetersiz/kontrendike olduğunda uzman
     hekim raporu gerekir (§4.2.1.A).
   gate_b_sources:
-  - C003563
+  - 4.2.1.A.(1)
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji

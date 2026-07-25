@@ -16,7 +16,7 @@ rules:
   - göz hastalıkları
   loading_dose_count: 3
   gate_b_sources:
-  - C006562
+  - 4.2.33.A.(2)
   message_tr: Aflibersept (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 3 yükleme dozu; göz hastalıkları uzmanınca reçete
     (§4.2.33.A).
   verification_status: struck_clause_no_replacement
@@ -35,7 +35,7 @@ rules:
   message_tr: Ranibizumab/aflibersept (YAŞ AMD) — bevacizumab tedavisine cevapsızlıkta göz hastalıkları uzmanı raporu ile
     geçiş (§4.2.33.A/2).
   gate_b_sources:
-  - C006562
+  - 4.2.33.A.(2)
   report_duration_months: 3
   loading_dose_count: 3
 - rule_id: 4.2.33.A.bevacizumab_first_line_wet_amd
@@ -51,7 +51,7 @@ rules:
   - göz hastalıkları
   message_tr: Bevacizumab (YAŞ AMD) — ilk tedavi seçeneği; göz hastalıkları uzmanı sağlık kurulu raporu ve reçete şartı (§4.2.33.A/1).
   gate_b_sources:
-  - C006561
+  - 4.2.33.A.(1)
   report_duration_months: 3
 - rule_id: 4.2.33.A.bevacizumab_wet_amd
   sut_section: 4.2.33.A
@@ -103,7 +103,7 @@ rules:
   - göz hastalıkları
   loading_dose_count: 3
   gate_b_sources:
-  - C006562
+  - 4.2.33.A.(2)
   message_tr: Ranibizumab (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 4-6 hafta arayla 3 kez yükleme dozu; ardışık/kombine
     kullanım yasak (§4.2.33.A).
   verification_status: struck_clause_no_replacement
@@ -122,5 +122,5 @@ rules:
   prescriber_specialties:
   - göz hastalıkları
   gate_b_sources:
-  - C006561
+  - 4.2.33.A.(1)
   message_tr: Verteporfin (YAŞ AMD) — 3 ay süreli sağlık kurulu raporu ve göz hastalıkları uzmanı reçetesi (§4.2.33.A).

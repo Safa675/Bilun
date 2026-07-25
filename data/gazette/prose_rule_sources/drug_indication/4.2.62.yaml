@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.62.peds.infantile_haemangioma_peds_specialty_6mo_terminate
   sut_section: 4.2.62
   gate_b_sources:
-  - C007134
+  - 4.2.62.(2)
   drug_names:
   - propranolol
   icd10_codes:
@@ -37,7 +37,7 @@ rules:
 - rule_id: 4.2.62.peds.infantile_haemangioma_systemic_initiation_coverage
   sut_section: 4.2.62
   gate_b_sources:
-  - C007130
+  - 4.2.62.(1)
   drug_names:
   - propranolol
   icd10_codes:

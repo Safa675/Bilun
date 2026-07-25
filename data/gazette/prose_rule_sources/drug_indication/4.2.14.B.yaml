@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.14.B.gcsf_granulocyte_colony_stimulating_factors
   sut_section: 4.2.14.B
   gate_b_sources:
-  - C004933
+  - 4.2.14.B.(2)
   drug_names:
   - filgrastim
   - lenograstim

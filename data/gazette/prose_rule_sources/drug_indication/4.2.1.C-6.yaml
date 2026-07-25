@@ -132,7 +132,7 @@ rules:
   message_tr: Barisitinib/abrositinib — atopik dermatitte dermatoloji/immünoloji uzman hekimlerinin yer aldığı 4 ay süreli
     sağlık kurulu raporu gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003766
+  - 4.2.1.C-6.d
   prescriber_specialties:
   - dermatoloji
   - immünoloji
@@ -462,7 +462,7 @@ rules:
   message_tr: Upadasitinib — atopik dermatitte üçüncü basamak kurumda üç dermatoloji uzmanının yer aldığı 4 ay süreli sağlık
     kurulu raporu gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003766
+  - 4.2.1.C-6.d
   prescriber_specialties:
   - dermatoloji
   report_duration_months: 4

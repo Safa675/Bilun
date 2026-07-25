@@ -13,4 +13,4 @@ rules:
     waives_sections:
     - 1.8.1
   gate_b_sources:
-  - C000358
+  - 1.8.5.(4)

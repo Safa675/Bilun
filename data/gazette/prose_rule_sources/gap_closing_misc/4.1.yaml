@@ -11,4 +11,4 @@ rules:
     denial_tr: başka ilaç kullanılmış olması şartı varsa MEDULA kaydı zorunludur; yoksa ödenmez
     severity: error
   gate_b_sources:
-  - C003401
+  - 4.1.(2)

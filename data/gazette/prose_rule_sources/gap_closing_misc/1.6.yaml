@@ -10,4 +10,4 @@ rules:
     denial_tr: kişinin kendi adına başkasının hizmet alması veya haksız menfaat sağlaması yasaktır
     severity: error
   gate_b_sources:
-  - C000183
+  - 1.6.(3)

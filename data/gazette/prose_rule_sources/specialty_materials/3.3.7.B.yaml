@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.7.B
   deontic: NO_PAY
   gate_b_sources:
-  - C003072
+  - 3.3.7.B.(2)
   condition:
     wheelchair_stand_device_duplicate_billing: true
   action:
@@ -16,7 +16,7 @@ rules:
   sut_section: 3.3.7.B
   deontic: NO_PAY
   gate_b_sources:
-  - C003073
+  - 3.3.7.B.(3)
   condition:
     stand_up_wheelchair_early_renewal: true
   action:
@@ -27,7 +27,7 @@ rules:
   sut_section: 3.3.7.B
   deontic: MUST_BILL
   gate_b_sources:
-  - C003071
+  - 3.3.7.B.ç
   condition:
     material_name_any:
     - stand up wheelchair

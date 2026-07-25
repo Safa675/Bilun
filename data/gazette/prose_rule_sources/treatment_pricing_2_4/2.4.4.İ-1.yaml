@@ -95,7 +95,7 @@ rules:
       sonuç alınamamış olduğunun sözleşmeli/protokollü sunucu sağlık kurullarınca belgelenmesi gerekir
     severity: error
   gate_b_sources:
-  - C001260
+  - 2.4.4.İ-1.d
 - rule_id: 2.4.4.I-1.(3).ivf_prior_cycles_counted
   sut_section: 2.4.4.İ-1
   condition:
@@ -147,7 +147,7 @@ rules:
     message_tr: her bir IVF tedavisi (ve ikinci tedavi) için sağlık kurulu raporu düzenlenmesi gereklidir
     severity: error
   gate_b_sources:
-  - C001294
+  - 2.4.4.İ-1.(6)
 - rule_id: 2.4.4.I-1.(3c).ivf_not_performed_10pct_discount_ek2b
   sut_section: 2.4.4.İ-1
   condition:

@@ -13,7 +13,7 @@ rules:
 - rule_id: 4.1.4.ek4a_new_indication_offlabel_coverage
   sut_section: 4.1.4
   gate_b_sources:
-  - C003472
+  - 4.1.4.e
   condition:
     coverage_note: true
     off_label_use: true
@@ -41,7 +41,7 @@ rules:
 - rule_id: 4.1.4.non_reimbursed_indication_kub_nopay
   sut_section: 4.1.4
   gate_b_sources:
-  - C003473
+  - 4.1.4.f
   pay: false
   action:
     enforcement: 'no-pay condition: use of a drug in an indication defined in the licensed KUB but not taken into reimbursement
@@ -51,7 +51,7 @@ rules:
 - rule_id: 4.1.4.offlabel_no_sut_condition_nopay
   sut_section: 4.1.4
   gate_b_sources:
-  - C003468
+  - 4.1.4.d
   condition:
     off_label_use: true
   pay: false
@@ -66,7 +66,7 @@ rules:
 - rule_id: 4.1.4.parenteral_magistral_no_report_10day_coverage
   sut_section: 4.1.4
   gate_b_sources:
-  - C003447
+  - 4.1.4.(1)
   condition:
     coverage_note: true
     max_days_per_dispense: 10

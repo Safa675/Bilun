@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: NO_PAY
   gate_b_sources:
-  - C002964
+  - 3.3.4.C.(1)
   condition:
     bone_stimulator_combined_use: true
   action:
@@ -16,7 +16,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: NO_PAY
   gate_b_sources:
-  - C002966
+  - 3.3.4.C.(3)
   condition:
     bone_stimulator_hypertrophic_nonunion: true
   action:
@@ -27,7 +27,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: NO_PAY
   gate_b_sources:
-  - C002967
+  - 3.3.4.C.(4)
   condition:
     bone_stimulator_with_autograft: true
   action:
@@ -49,7 +49,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: NO_PAY
   gate_b_sources:
-  - C002953
+  - 3.3.4.A.(14)
   condition:
     material_name_any:
     - sentetik tendon
@@ -63,7 +63,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002932
+  - 3.3.4.A.(1)
   condition:
     allogreft_titubb_uts_registration_required: true
   action:
@@ -75,7 +75,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002933
+  - 3.3.4.A.(2)
   condition:
     allogreft_donor_id_mandatory: true
   action:
@@ -86,7 +86,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: MUST_NOT_BILL
   gate_b_sources:
-  - C002938
+  - 3.3.4.A.(7)
   condition:
     graft_small_dimension_combined_for_large_qty: true
   action:
@@ -97,7 +97,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002946
+  - 3.3.4.A.e
   condition:
     corpectomy_interbody_cage_fill_graft_coverage: true
   action:
@@ -109,7 +109,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002947
+  - 3.3.4.A.(10)
   condition:
     synthetic_graft_per_case_30cc_cap: true
   action:
@@ -120,7 +120,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002948
+  - 3.3.4.A.(11)
   condition:
     allograft_xenograft_per_case_60cc_cap: true
   action:
@@ -155,7 +155,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002952
+  - 3.3.4.A.(13)
   condition:
     bone_cyst_allograft_xenograft_120cc_ct_documented: true
   action:
@@ -167,7 +167,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002954
+  - 3.3.4.A.(15)
   condition:
     fascia_temporalis_allograft_ent_only: true
   action:
@@ -179,7 +179,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002957
+  - 3.3.4.A.(17)
   condition:
     graft_op_note_epikriz_mandatory: true
   action:

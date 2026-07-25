@@ -12,7 +12,7 @@ rules:
     denial_tr: yurt dışına sevke konu hastalık dışındaki tedavi giderleri ödenmez (komplikasyon hariç)
     severity: error
   gate_b_sources:
-  - C001446
+  - 2.5.3.A-3.(6)
 - rule_id: 2.5.3.A-3.(8).overseas_unauthorized_different_treatment
   sut_section: 2.5.3.A-3
   condition:
@@ -24,4 +24,4 @@ rules:
     denial_tr: yurt dışında sevke konu tedavi dışında farklı tedavi önerilirse 2.5.3.A-1 hükmü uygulanır
     severity: error
   gate_b_sources:
-  - C001449
+  - 2.5.3.A-3.(8)

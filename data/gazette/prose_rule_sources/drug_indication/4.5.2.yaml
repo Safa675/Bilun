@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.5.2.refill_15days_before_end_permission
   sut_section: 4.5.2
   gate_b_sources:
-  - C007799
+  - 4.5.2.(2)
   report_required: true
   condition:
     refill_early_days: 15

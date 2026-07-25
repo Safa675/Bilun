@@ -13,5 +13,5 @@ rules:
     denial_tr: LABA ve İKS mono veya sabit doz kombinasyonu dışında reçete edilirse ödenmez
     severity: error
   gate_b_sources:
-  - C006148
+  - 4.2.24.A.(7)
   gate_b_sources_extra: []

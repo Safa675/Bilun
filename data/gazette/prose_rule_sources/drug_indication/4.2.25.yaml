@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.25.gabapentin_1yr_report_combo_nopay
   sut_section: 4.2.25
   gate_b_sources:
-  - C006204
+  - 4.2.25.(5)
   drug_names:
   - gabapentin
   - pregabalin
@@ -26,7 +26,7 @@ rules:
 - rule_id: 4.2.25.lacosamide_16yr_partial_2aed_6mo
   sut_section: 4.2.25
   gate_b_sources:
-  - C006202
+  - 4.2.25.(4)
   drug_names:
   - lakozamid
   - lacosamide
@@ -47,7 +47,7 @@ rules:
 - rule_id: 4.2.25.new_gen_antiepileptics_coverage
   sut_section: 4.2.25
   gate_b_sources:
-  - C006198
+  - 4.2.25.(1)
   drug_names:
   - lamotrigin
   - topiramat
@@ -73,7 +73,7 @@ rules:
 - rule_id: 4.2.25.pregabalin_1yr_report_no_gad
   sut_section: 4.2.25
   gate_b_sources:
-  - C006200
+  - 4.2.25.(3)
   drug_names:
   - pregabalin
   icd10_codes:
@@ -96,7 +96,7 @@ rules:
 - rule_id: 4.2.25.zonisamide_neurology_1yr_report
   sut_section: 4.2.25
   gate_b_sources:
-  - C006199
+  - 4.2.25.(2)
   drug_names:
   - zonisamit
   - zonisamid

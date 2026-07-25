@@ -15,6 +15,6 @@ rules:
   prescriber_specialties:
   - göz hastalıkları
   gate_b_sources:
-  - C006586
+  - 4.2.33.F.(1)
   message_tr: Ranibizumab (ROP) — prematüre bebeklerde zon I/II evre 3+ veya APROP tanısı; çocuk göz hastalıkları uzmanı raporu
     (§4.2.33.F).

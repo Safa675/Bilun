@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.46.C.ssc_ild_nintedanib_criteria
   sut_section: 4.2.46.C
   gate_b_sources:
-  - C006867
+  - 4.2.46.C.(1)
   drug_names:
   - nintedanib
   icd10_codes:
@@ -22,9 +22,9 @@ rules:
 - rule_id: 4.2.46.C.ssc_ild_tertiary_rheum_pulmonology_1yr
   sut_section: 4.2.46.C
   gate_b_sources:
-  - C006868
-  - C006870
-  - C006871
+  - 4.2.46.C.(2)
+  - 4.2.46.C.a
+  - 4.2.46.C.b
   drug_names:
   - nintedanib
   icd10_codes:

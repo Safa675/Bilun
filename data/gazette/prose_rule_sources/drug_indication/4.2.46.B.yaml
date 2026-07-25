@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.46.B.ipf_continuation_criteria
   sut_section: 4.2.46.B
   gate_b_sources:
-  - C006862
+  - 4.2.46.B.(2)
   - C006865
   drug_names:
   - pirfenidon
@@ -18,7 +18,7 @@ rules:
 - rule_id: 4.2.46.B.ipf_report_criteria_a
   sut_section: 4.2.46.B
   gate_b_sources:
-  - C006852
+  - 4.2.46.B.(1)
   - C006864
   drug_names:
   - pirfenidon
@@ -36,7 +36,7 @@ rules:
 - rule_id: 4.2.46.B.ipf_report_criteria_b
   sut_section: 4.2.46.B
   gate_b_sources:
-  - C006855
+  - 4.2.46.B.c
   drug_names:
   - pirfenidon
   - nintedanib

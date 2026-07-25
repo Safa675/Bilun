@@ -3,8 +3,8 @@ rules:
 - rule_id: 4.2.46.A.ipf_coverage
   sut_section: 4.2.46.A
   gate_b_sources:
-  - C006826
-  - C006836
+  - 4.2.46.A.(1)
+  - 4.2.46.A.(2)
   - C006840
   drug_names:
   - pirfenidon

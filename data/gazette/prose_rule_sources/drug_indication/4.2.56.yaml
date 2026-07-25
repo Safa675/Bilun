@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.56.meta.classic_pku_sapropterin_metabolic_coverage
   sut_section: 4.2.56
   gate_b_sources:
-  - C007079
+  - 4.2.56.(1)
   drug_names:
   - sapropterin
   - sapropterin dihidroklorür

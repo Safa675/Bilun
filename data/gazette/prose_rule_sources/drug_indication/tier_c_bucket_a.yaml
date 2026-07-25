@@ -17,7 +17,7 @@ rules:
   drug_names:
   - myeloablatif dozda coklu ajanlı kemoterapi uygulanan
   gate_b_sources:
-  - C003926
+  - 4.2.4.(1)
   report_required: true
   message_tr: (1) Myeloablatif dozda çoklu ajanlı kemoterapi uygulanan, tümör yükü olan hematolojik maligniteli veya akut
     lösemi tanısı almış ve beyaz küre sayısı 100.000/mm3’den fazla olan, allopurinol ve hidrasyon tedavisine rağmen böbrek
@@ -25,10 +25,12 @@ rules:
     prospektüs şartlarına (en fazla 5 günlük tedavi) göre yatan hastalarda kullanılır. Hematoloji, tıbbi onkoloji veya nefroloji
     uz
   encode_bucket: A
-  prescriber_specialties: &id001
+  prescriber_specialties:
   - tıbbi onkoloji
   - hematoloji
-  report_specialties: *id001
+  report_specialties:
+  - tıbbi onkoloji
+  - hematoloji
 - rule_id: 4.2.10.A-1.bucket_a.c004221
   sut_section: 4.2.10.A-1
   drug_names:
@@ -45,7 +47,7 @@ rules:
   drug_names:
   - enzim tedavisi
   gate_b_sources:
-  - C004223
+  - 4.2.10.A-1.(3)
   report_required: false
   message_tr: (3) Aşağıdaki kriterlerden en az birisinin varlığında ise hastaya doğrudan 2 haftada bir gün en fazla 60 IU/kg
     dozunda enzim tedavisi uygulanacaktır.
@@ -56,36 +58,39 @@ rules:
   drug_names:
   - cerrahi
   gate_b_sources:
-  - C004483
+  - 4.2.12.B-1.c
   report_required: true
   message_tr: c) Kanama riski yüksek olan veya cerrahi müdahale öncesi trombosit sayısının hızla yükseltilmesi gereken İmmün
     Trombositopeni (İTP) olgularında 1 yıl süre ile hematoloji uzman hekimi tarafından,
   encode_bucket: A
-  prescriber_specialties: &id002
+  prescriber_specialties:
   - hematoloji
-  report_specialties: *id002
+  report_specialties:
+  - hematoloji
 - rule_id: 4.2.15.Ç.bucket_a.c005817
   sut_section: 4.2.15.Ç
   drug_names:
   - cerrahi
   gate_b_sources:
-  - C005817
+  - 4.2.15.Ç.(3)
   report_required: true
   message_tr: (3) Bu durumlarda rapor aranmaksızın 4 haftalık doz kardiyoloji veya kalp damar cerrahi uzman hekimlerince veya
     bu durumların belirtildiği en az bir kardiyoloji veya kalp damar cerrahi uzman hekiminin yer aldığı 1 yıl süreli sağlık
     kurulu raporuna dayanılarak yine bu hekimlerce ya da iç hastalıkları uzman hekimlerince reçetelenebilir. Tedavi süresi
     1 yıldır. İlacın hastaya tekrar kullanımı ancak hastada aynı koşulların yeniden oluşması halinde mümkündür.
   encode_bucket: A
-  prescriber_specialties: &id003
+  prescriber_specialties:
   - kardiyoloji
   - kalp ve damar cerrahisi
-  report_specialties: *id003
+  report_specialties:
+  - kardiyoloji
+  - kalp ve damar cerrahisi
 - rule_id: 4.2.15.E.bucket_a.c005869
   sut_section: 4.2.15.E
   drug_names:
   - cerrahi
   gate_b_sources:
-  - C005869
+  - 4.2.15.E.(5)
   report_required: true
   message_tr: '(5) Yukarıdaki maddelerde tanımlanan koşulların tamamını gösteren hastalarda (Ek: RG-25/08/2022-31934/28-b
     md. Yürürlük:03/09/2022) rapor aranmaksızın 4 haftalık doz kardiyoloji veya kalp damar cerrahi uzman hekimlerince veya
@@ -93,16 +98,18 @@ rules:
     kurulu raporuna dayanılarak (Değişik: RG- 05/08/2015- 29436/ 16-b md. Yürürlük: 13/08/2015) kardiyoloji, kalp damar cerrahisi
     veya '
   encode_bucket: A
-  prescriber_specialties: &id004
+  prescriber_specialties:
   - kardiyoloji
   - kalp ve damar cerrahisi
-  report_specialties: *id004
+  report_specialties:
+  - kardiyoloji
+  - kalp ve damar cerrahisi
 - rule_id: 4.2.17.C.bucket_a.c006046
   sut_section: 4.2.17.C
   drug_names:
   - endokrin tedavi
   gate_b_sources:
-  - C006046
+  - 4.2.17.C.(1)
   report_required: true
   message_tr: (1) Uzman hekim raporuna dayanılarak uzman hekimlerce reçete edilir. Rapor süresi 1 yıldır.
   encode_bucket: A
@@ -111,65 +118,70 @@ rules:
   drug_names:
   - endokrin tedavi
   gate_b_sources:
-  - C006048
+  - 4.2.17.Ç.(1)
   report_required: true
   message_tr: (1) Endokrinoloji uzman hekimi tarafından düzenlenen uzman hekim raporuna istinaden tüm uzman hekimlerce reçete
     edilir. Rapor süresi 1 yıldır.
   encode_bucket: A
-  prescriber_specialties: &id005
+  prescriber_specialties:
   - endokrinoloji
-  report_specialties: *id005
+  report_specialties:
+  - endokrinoloji
 - rule_id: 4.2.37.B.bucket_a.c006720
   sut_section: 4.2.37.B
   drug_names:
   - cerrahi
   gate_b_sources:
-  - C006720
+  - 4.2.37.B.(1)
   report_required: true
   message_tr: (1) Akromegali tedavisinde endokrinoloji ve metabolizma uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak
     endokrinoloji ve metabolizma veya beyin ve sinir cerrahisi uzman hekimlerince reçete edilir.
   encode_bucket: A
-  prescriber_specialties: &id006
+  prescriber_specialties:
   - endokrinoloji
-  report_specialties: *id006
+  report_specialties:
+  - endokrinoloji
 - rule_id: 4.2.41.bucket_a.c006757
   sut_section: 4.2.41
   drug_names:
   - cerrahi
   gate_b_sources:
-  - C006757
+  - 4.2.41.(1)
   report_required: true
   message_tr: '(1) Parenteral demir preparatları aşağıda yer alan durumlarda (Ek:RG-02/11/2024-32710/23 md.Yürürlük: 09/11/2024)
     görülen demir eksikliğinin tedavisinde bu durumların belirtildiği (Değişik:RG-09/05/2024-32541/18 md. Yürürlük:17/05/2024)
     6 ay süreli kardiyoloji, kadın hastalıkları ve doğum, genel cerrahi, iç hastalıkları, çocuk sağlığı ve hastalıkları (Ek:RG-25/03/2025-32852/20
     md. Yürürlük:04/04/2025) veya anestezi ve reanimasyon uzmanlarınca düzenlenen rapora istinaden bu he'
   encode_bucket: A
-  prescriber_specialties: &id007
+  prescriber_specialties:
   - kardiyoloji
   - kadın hastalıkları ve doğum
-  report_specialties: *id007
+  report_specialties:
+  - kardiyoloji
+  - kadın hastalıkları ve doğum
   report_duration_months: 6
 - rule_id: 4.2.42.C.bucket_a.c006796
   sut_section: 4.2.42.C
   drug_names:
   - gonadotropin
   gate_b_sources:
-  - C006796
+  - 4.2.42.C.(1)
   report_required: true
   message_tr: (1) Kök hücre vericisi kardeş doğmasına yönelik IVF tedavisinde kullanılacak ilaçlar; SUT’un 2.4.4.İ.2 maddesi
     koşullarına uyan ve söz konusu maddede belirtilen sağlık kurulu raporuna istinaden IVF tedavisinin yapıldığı üremeye yardımcı
     tedavi merkezinde kadın hastalıkları ve doğum uzman hekimlerince reçeteye yazılabilecektir. Her bir IVF denemesine ilişkin
     olarak kullanılacak gonadotropin dozu en fazla 3000 IU olacak ve raporda belirtilecektir.
   encode_bucket: A
-  prescriber_specialties: &id008
+  prescriber_specialties:
   - kadın hastalıkları ve doğum
-  report_specialties: *id008
+  report_specialties:
+  - kadın hastalıkları ve doğum
 - rule_id: 4.2.42.D.bucket_a.c006801
   sut_section: 4.2.42.D
   drug_names:
   - gonadotropin
   gate_b_sources:
-  - C006801
+  - 4.2.42.D.(1)
   report_required: true
   message_tr: (1) Sağlam çocuk doğmasına yönelik Preimlantasyon Genetik Tanı (PGT) ile İnvitro Fertilizasyon (IVF) tedavisinde
     kullanılacak ilaçlar; SUT’un 2.4.4.İ-3 maddesi koşullarına uyan ve söz konusu maddede belirtilen sağlık kurulu raporuna
@@ -177,9 +189,10 @@ rules:
     ve doğum uzman hekimlerince reçete edilebilecektir. Her bir IVF denemesine ilişkin olarak kullanılacak gonadotropin dozu
     en f
   encode_bucket: A
-  prescriber_specialties: &id009
+  prescriber_specialties:
   - kadın hastalıkları ve doğum
-  report_specialties: *id009
+  report_specialties:
+  - kadın hastalıkları ve doğum
 - rule_id: 4.2.46.A.bucket_a.c006842
   sut_section: 4.2.46.A
   drug_names:
@@ -217,16 +230,17 @@ rules:
   drug_names:
   - fsh
   gate_b_sources:
-  - C007149
+  - 4.2.66.(1)
   report_required: true
   message_tr: '(1) Hipogonadotropik hipogonadizm tanısı; 6 ay ara ile yapılan değerlendirmelerde toplamda 3 yıl süre ile FSH
     ve LH değerleri normal aralığın alt sınırında veya düşük olan ve total testesteron değeri sayısal olarak düşük olan erkek
     hastalarda bu durumların belirtildiği en az biri endokrinoloji ve metabolizma uzman (Değişik:RG-16/03/2023-32134/36 md.
     Yürürlük: 24/03/2023) hekimi veya üroloji uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporuna dayanılarak endokrinoloj'
   encode_bucket: A
-  prescriber_specialties: &id010
+  prescriber_specialties:
   - endokrinoloji
-  report_specialties: *id010
+  report_specialties:
+  - endokrinoloji
   report_duration_months: 6
 - rule_id: 4.2.70.A.bucket_a.c007184
   sut_section: 4.2.70.A
@@ -238,6 +252,7 @@ rules:
   message_tr: c) Yukardaki bulgulardan herhangi birinin pozitif olması halinde hematoloji uzman hekimi tarafından monoklonal
     gamapatinin dışlanması.
   encode_bucket: A
-  prescriber_specialties: &id011
+  prescriber_specialties:
   - hematoloji
-  report_specialties: *id011
+  report_specialties:
+  - hematoloji

@@ -4,7 +4,7 @@ rules:
   sut_section: 4.2.42.B
   gate_b_sources:
   - C006792
-  - C006794
+  - 4.2.42.B.b
   drug_names:
   - gonadotropin
   - fsh
@@ -22,7 +22,7 @@ rules:
 - rule_id: 4.2.42.B.ivf_poor_response_quota
   sut_section: 4.2.42.B
   gate_b_sources:
-  - C006793
+  - 4.2.42.B.(2)
   drug_names:
   - gonadotropin
   - fsh

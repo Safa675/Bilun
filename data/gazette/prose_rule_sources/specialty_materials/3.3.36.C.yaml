@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.36.C
   deontic: NO_PAY
   gate_b_sources:
-  - C003363
+  - 3.3.33.C.(3)
   condition:
     speech_processor_under_5_years: true
   action:

@@ -17,4 +17,4 @@ rules:
     annex_basis: EK-2/C
     severity: error
   gate_b_sources:
-  - C000864
+  - 2.4.4.A.(3)

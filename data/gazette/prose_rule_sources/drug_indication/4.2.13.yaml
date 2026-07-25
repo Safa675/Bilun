@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.13.acute_hbv_severe_antiviral_coverage
   sut_section: 4.2.13
   gate_b_sources:
-  - C004509
+  - 4.2.13.a
   drug_names:
   - entekavir
   - tenofovir
@@ -65,9 +65,9 @@ rules:
     ilk rapor en fazla 6 ay (§4.2.13).
   gate_b_sources:
   - C004498
-  - C004637
-  - C004912
-  - C004919
+  - 4.2.13.3.1.(2)
+  - 4.2.13.3.2.B.(3)
+  - 4.2.13.3.2.B.b
 - rule_id: 4.2.13.hepatitis_viral_gastro_inf_report
   sut_section: 4.2.13
   drug_names:
@@ -86,8 +86,8 @@ rules:
   message_tr: Viral hepatit ilaçları — gastroenteroloji veya enfeksiyon hastalıkları uzman hekim ilaç kullanım raporu gerekir
     (§4.2.13).
   gate_b_sources:
-  - C004503
-  - C004897
+  - 4.2.13.(1)
+  - 4.2.13.3.2.(5)
   prescriber_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları

@@ -12,6 +12,6 @@ rules:
     base_up_to_3_boxes: 3.0
     per_extra_box: 1.0
   gate_b_sources:
-  - C000321
+  - 1.8.2.(2)
   - C000322
   - C000323

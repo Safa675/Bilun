@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.50.metabolic.ctx_chenodeoxycholic_acid_coverage
   sut_section: 4.2.50
   gate_b_sources:
-  - C007055
+  - 4.2.50.(1)
   drug_names:
   - kenodeoksikolik asit
   - chenodeoxycholic acid

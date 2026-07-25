@@ -22,8 +22,8 @@
       "verification_status": "pilot_heuristic",
       "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
       "gate_b_sources": [
-        "C000646",
-        "C000647"
+        "2.2.2.A.(5)",
+        "2.2.2.A.a"
       ]
     },
     {
@@ -42,8 +42,8 @@
       "verification_status": "pilot_heuristic",
       "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
       "gate_b_sources": [
-        "C000646",
-        "C000647"
+        "2.2.2.A.(5)",
+        "2.2.2.A.a"
       ]
     },
     {
@@ -61,8 +61,8 @@
       "verification_status": "pilot_heuristic",
       "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
       "gate_b_sources": [
-        "C000646",
-        "C000647"
+        "2.2.2.A.(5)",
+        "2.2.2.A.a"
       ]
     },
     {
@@ -80,8 +80,8 @@
       "verification_status": "pilot_heuristic",
       "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
       "gate_b_sources": [
-        "C000646",
-        "C000647"
+        "2.2.2.A.(5)",
+        "2.2.2.A.a"
       ]
     },
     {
@@ -99,8 +99,8 @@
       "verification_status": "pilot_heuristic",
       "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
       "gate_b_sources": [
-        "C000646",
-        "C000647"
+        "2.2.2.A.(5)",
+        "2.2.2.A.a"
       ]
     },
     {
@@ -118,8 +118,8 @@
       "verification_status": "pilot_heuristic",
       "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
       "gate_b_sources": [
-        "C000646",
-        "C000647"
+        "2.2.2.A.(5)",
+        "2.2.2.A.a"
       ]
     },
     {
@@ -130,8 +130,8 @@
       "message_tr": "Aynı seansta ayrı kesiden yapılan işlemlerde puanı yüksek olan tam, sonrakiler her birinin %50'si ile faturalandırılmalıdır (SUT 2.2.2.A(5)(b)).",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C000646",
-        "C000648"
+        "2.2.2.A.(5)",
+        "2.2.2.A.b"
       ],
       "provenance_note": "Normative rule — SUT §2.2.2.A(5)(b). Farklı kesiden işlemlerde %50 addon."
     },

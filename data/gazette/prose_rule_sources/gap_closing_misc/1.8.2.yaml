@@ -22,4 +22,4 @@ rules:
     copay_required: false
     payment_tr: EK-4/D Hasta Katılım Payından Muaf İlaçlar Listesi'nde katılım payı alınmaz
   gate_b_sources:
-  - C000326
+  - 1.8.2.(3)

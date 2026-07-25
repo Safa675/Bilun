@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.28.E.pcsk9_hofh_max_statin_ezetimibe
   sut_section: 4.2.28.E
   gate_b_sources:
-  - C006357
+  - 4.2.28.E.(1)
   drug_names:
   - evolocumab
   - alirocumab

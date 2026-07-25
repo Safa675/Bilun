@@ -414,7 +414,7 @@ rules:
   message_tr: İmmün tolerans tedavisi — üçüncü basamak kurumda üç hematoloji uzmanının 6 aya kadar süreli sağlık kurulu raporu;
     yalnızca hematoloji reçetesi (§4.2.27.A).
   gate_b_sources:
-  - C006249
+  - 4.2.27.A.(6)
   report_required: true
   report_specialties:
   - hematoloji
@@ -440,7 +440,7 @@ rules:
   message_tr: Kombine koagülasyon faktörü/protrombin kompleksi — kazanılmış koagülasyon bozukluğunda tanı ve faktör düzeyini
     gösteren hematoloji sağlık kurulu raporu ile bir dozda reçete (§4.2.27.A).
   gate_b_sources:
-  - C006234
+  - 4.2.27.A.(4)
   report_required: true
   report_specialties:
   - hematoloji
@@ -492,7 +492,7 @@ rules:
   - D68
   message_tr: Von Willebrand faktör — tanı ve faktör düzeyini gösteren 1 yıllık hematoloji sağlık kurulu raporu gerekir (§4.2.27.A).
   gate_b_sources:
-  - C006255
+  - 4.2.27.A.(7)
   report_required: true
   report_specialties:
   - hematoloji

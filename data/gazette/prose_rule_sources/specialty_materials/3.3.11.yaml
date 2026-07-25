@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.11
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003143
+  - 3.3.11.(1)
   condition:
     material_name_any:
     - greft
@@ -21,7 +21,7 @@ rules:
   sut_section: 3.3.11
   deontic: MUST_BILL
   gate_b_sources:
-  - C003144
+  - 3.3.11.(2)
   condition:
     material_name_any:
     - greft
@@ -35,7 +35,7 @@ rules:
   sut_section: 3.3.11
   deontic: MUST_BILL
   gate_b_sources:
-  - C003145
+  - 3.3.11.(3)
   condition:
     material_name_any:
     - greft

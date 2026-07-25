@@ -15,7 +15,7 @@ rules:
   - göz hastalıkları
   loading_dose_count: 3
   gate_b_sources:
-  - C006568
+  - 4.2.33.C.(2)
   message_tr: Aflibersept (PM-KNV) — 3 göz hastalıkları uzmanı sağlık kurulu raporu; ayakta tedavi kapsamında (§4.2.33.C).
 - rule_id: 4.2.33.C.anti_vegf_switch_after_bevacizumab_pm_knv
   sut_section: 4.2.33.C
@@ -31,7 +31,7 @@ rules:
   - göz hastalıkları
   message_tr: Ranibizumab/aflibersept (PM-KNV) — bevacizumab cevapsızlığında göz hastalıkları uzmanı raporu ile geçiş (§4.2.33.C/2).
   gate_b_sources:
-  - C006568
+  - 4.2.33.C.(2)
   report_duration_months: 3
   loading_dose_count: 3
 - rule_id: 4.2.33.C.bevacizumab_pm_knv
@@ -48,7 +48,7 @@ rules:
   - göz hastalıkları
   loading_dose_count: null
   gate_b_sources:
-  - C006567
+  - 4.2.33.C.(1)
   - C006527
   message_tr: Bevacizumab (PM-KNV) — yükleme dozu şartı aranmaz (istisna, §4.2.33.C/C006527a); göz hastalıkları uzmanı raporu.
 - rule_id: 4.2.33.C.ranibizumab_pm_knv
@@ -65,5 +65,5 @@ rules:
   - göz hastalıkları
   loading_dose_count: 3
   gate_b_sources:
-  - C006568
+  - 4.2.33.C.(2)
   message_tr: Ranibizumab (PM-KNV) — 3 göz hastalıkları uzmanı sağlık kurulu raporu; ayakta tedavi kapsamında (§4.2.33.C).

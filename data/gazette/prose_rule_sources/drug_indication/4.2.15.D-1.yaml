@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.15.D_1.noac_combination_nopay
   sut_section: 4.2.15.D-1
   gate_b_sources:
-  - C005838
+  - 4.2.15.D-1.(4)
   drug_names:
   - dabigatran
   - rivaroksaban
@@ -23,8 +23,8 @@ rules:
   - I48
   - I82
   gate_b_sources:
-  - C005831
-  - C005835
+  - 4.2.15.D-1.(1)
+  - 4.2.15.D-1.(2)
   drug_names:
   - dabigatran
   - rivaroksaban

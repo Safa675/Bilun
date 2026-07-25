@@ -20,7 +20,7 @@ rules:
       bozukluklarında (doğumsal hariç) 3. basamak veya Sağlık Bakanlığı 2. basamak fiziksel tıp ve rehabilitasyon uzmanınca
       düzenlenir
   gate_b_sources:
-  - C000984
+  - 2.4.4.F-1.a
 - rule_id: 2.4.4.F-1.health_report_required
   sut_section: 2.4.4.F-1
   condition:

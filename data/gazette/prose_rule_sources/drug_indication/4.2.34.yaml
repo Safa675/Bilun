@@ -44,7 +44,7 @@ rules:
 - rule_id: 4.2.34.cladribine_extra_course_offlabel_approval
   sut_section: 4.2.34
   gate_b_sources:
-  - C006668
+  - 4.2.34.d
   drug_names:
   - kladribin
   - cladribine
@@ -76,7 +76,7 @@ rules:
   message_tr: Kladribin — nöroloji uzman hekim raporunda güncel vücut ağırlığı belirtilmeli; en fazla 1 yıllık rapor ve nöroloji
     reçetesi gerekir (§4.2.34).
   gate_b_sources:
-  - C006670
+  - 4.2.34.f
   report_duration_months: 12
   prescriber_specialties:
   - nöroloji

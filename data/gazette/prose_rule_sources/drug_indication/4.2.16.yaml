@@ -3,10 +3,10 @@ rules:
 - rule_id: 4.2.16.adult_metabolic_3yr_report_all_prescribe
   sut_section: 4.2.16
   gate_b_sources:
-  - C005982
+  - 4.2.16.(2)
   - C005983
   - C005984
-  - C005999
+  - 4.2.16.(4)
   report_required: true
   report_duration_months: 36
   report_specialties:
@@ -54,7 +54,7 @@ rules:
   - gastroenteroloji
   message_tr: Çölyak glutensiz ürün — gastroenteroloji uzman hekim 1 yıl süreli rapor gerekir (§4.2.16).
   gate_b_sources:
-  - C006007
+  - 4.2.16.(6)
   prescriber_specialties:
   - gastroenteroloji
   report_duration_months: 12
@@ -73,7 +73,7 @@ rules:
   message_tr: Çölyak glutensiz ürün — gastroenteroloji (veya yoksa çocuk sağlığı/iç hastalıkları) 3 yıl süreli rapor gerekir
     (§4.2.16).
   gate_b_sources:
-  - C006007
+  - 4.2.16.(6)
   prescriber_specialties:
   - gastroenteroloji
   - çocuk sağlığı
@@ -92,11 +92,11 @@ rules:
   - gastroenteroloji
   message_tr: Çölyak hastalığı glutensiz ürün — gastroenteroloji uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
-  - C006007
+  - 4.2.16.(6)
 - rule_id: 4.2.16.ckd_children_growth_sds_3bottles
   sut_section: 4.2.16
   gate_b_sources:
-  - C006012
+  - 4.2.16.(7)
   icd10_codes:
   - N18
   - N18.2
@@ -131,11 +131,11 @@ rules:
   - göğüs hastalıkları
   message_tr: Kistik fibrozis özel maması — gastroenteroloji/göğüs hastalıkları uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
-  - C005999
+  - 4.2.16.(4)
 - rule_id: 4.2.16.ek4b_unlisted_products_nopay
   sut_section: 4.2.16
   gate_b_sources:
-  - C006013
+  - 4.2.16.(8)
   pay: false
   action:
     enforcement: 'no-pay condition: ilgili hastalıklarda EK-4/B listesinde yer almayan ürün bedelleri ödenmez'
@@ -213,7 +213,7 @@ rules:
     sağlığı) uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
   - C005979
-  - C006000
+  - 4.2.16.(5)
   legacy_provision: true
   prescriber_specialties:
   - çocuk gastroenteroloji
@@ -240,7 +240,7 @@ rules:
   message_tr: İki yaşına kadar CMPA tıbbi mama — çocuk gastroenteroloji/alerji/immünoloji (veya çocuk sağlığı) uzman hekim
     raporu gerekir (§4.2.16).
   gate_b_sources:
-  - C006000
+  - 4.2.16.(5)
   prescriber_specialties:
   - çocuk gastroenteroloji
   - çocuk immünoloji
@@ -263,7 +263,7 @@ rules:
   - metabolizma hastalıkları
   message_tr: Malabsorbsiyona neden olan hastalıkta özel mama — gastroenteroloji/metabolizma uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
-  - C005981
+  - 4.2.16.(1)
   prescriber_specialties:
   - gastroenteroloji
   - çocuk metabolizma
@@ -321,7 +321,7 @@ rules:
   message_tr: Metabolik özel formül — uzman hekim bulunmadığında çocuk sağlığı veya iç hastalıkları uzman hekim raporu ile
     reçete edilebilir (§4.2.16).
   gate_b_sources:
-  - C005981
+  - 4.2.16.(1)
   - C005983
   prescriber_specialties:
   - çocuk sağlığı
@@ -382,7 +382,7 @@ rules:
   message_tr: Protein metabolizması bozukluğu özel formüllü un — kısıtlı diyet nedeniyle hayati öneme haiz ürünler uzman hekim
     raporuna dayanılarak karşılanır (§4.2.16 (3)).
   gate_b_sources:
-  - C005993
+  - 4.2.16.(3)
   prescriber_specialties:
   - çocuk metabolizma
   - metabolizma hastalıkları
@@ -407,8 +407,8 @@ rules:
   - gastroenteroloji
   message_tr: Protein metabolizması bozukluğu özel formülü — uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
-  - C005982
-  - C005993
+  - 4.2.16.(2)
+  - 4.2.16.(3)
 - rule_id: 4.2.16.protein_metabolism_specialist_prescriber
   sut_section: 4.2.16
   drug_names:
@@ -430,7 +430,7 @@ rules:
   message_tr: Protein metabolizması bozukluğu özel formül — çocuk metabolizma/endokrinoloji/gastroenteroloji uzman hekim raporu
     gerekir (§4.2.16 (2)).
   gate_b_sources:
-  - C005982
+  - 4.2.16.(2)
   prescriber_specialties:
   - çocuk metabolizma
   - metabolizma hastalıkları
@@ -491,7 +491,7 @@ rules:
   message_tr: EK-4/B özel mama — metabolizma/endokrinoloji/gastroenteroloji uzman hekim raporu gerekir; yoksa çocuk sağlığı/iç
     hastalıkları (§4.2.16).
   gate_b_sources:
-  - C005981
+  - 4.2.16.(1)
   prescriber_specialties:
   - çocuk metabolizma
   - metabolizma hastalıkları

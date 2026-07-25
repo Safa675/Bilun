@@ -5,7 +5,7 @@ rules:
   sut_section: 3.2.3
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002836
+  - 3.2.3.(1)
   condition:
     emergency_uncontracted_facility_material: true
   action:

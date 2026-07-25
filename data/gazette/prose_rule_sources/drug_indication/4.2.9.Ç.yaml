@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.9.C.renal.cinacalcet_etelcalcetide_combination_nopay_variant
   sut_section: 4.2.9.Ç
   gate_b_sources:
-  - C004179
+  - 4.2.9.Ç.(6)
   drug_names:
   - cinacalcet
   - etelkalsetid

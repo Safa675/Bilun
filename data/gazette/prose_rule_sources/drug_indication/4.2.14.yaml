@@ -3,8 +3,8 @@ rules:
 - rule_id: 4.2.14.offlabel_oncology_board_report
   sut_section: 4.2.14
   gate_b_sources:
-  - C004927
-  - C005767
+  - 4.2.14.(3)
+  - 4.2.14.Ç.(1)
   condition:
     coverage_note: true
   report_required: true
@@ -19,8 +19,8 @@ rules:
 - rule_id: 4.2.14.outpatient_chemo_dose_cycle
   sut_section: 4.2.14
   gate_b_sources:
-  - C004925
-  - C004926
+  - 4.2.14.(1)
+  - 4.2.14.(2)
   condition:
     coverage_note: true
   drug_names: []

@@ -17,7 +17,7 @@ rules:
   sut_section: 3.3.33.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003334
+  - 3.3.33.B.(2)
   condition:
     cochlear_implant_alternative_criteria_health_board: true
   action:
@@ -29,7 +29,7 @@ rules:
   sut_section: 3.3.33.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003339
+  - 3.3.33.B.(5)
   condition:
     cochlear_implant_meningitis_post_hearing_loss: true
   action:
@@ -41,7 +41,7 @@ rules:
   sut_section: 3.3.33.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003340
+  - 3.3.33.B.(6)
   condition:
     cochlear_implant_auditory_neuropathy_no_benefit: true
   action:
@@ -53,7 +53,7 @@ rules:
   sut_section: 3.3.33.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003344
+  - 3.3.33.B.c
   condition:
     cochlear_implant_bilateral_blindness_over_48_months: true
   action:
@@ -64,7 +64,7 @@ rules:
   sut_section: 3.3.33.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003345
+  - 3.3.33.B.(8)
   condition:
     cochlear_implant_internal_part_revision_no_term: true
   action:
@@ -76,7 +76,7 @@ rules:
   sut_section: 3.3.33.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003347
+  - 3.3.33.B.(10)
   condition:
     cochlear_implant_audiologic_protocol_required: true
   action:
@@ -111,7 +111,7 @@ rules:
   sut_section: 3.3.33.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003350
+  - 3.3.33.B.(11)
   condition:
     cochlear_implant_minimum_kit_content_check: true
   action:

@@ -12,4 +12,4 @@ rules:
     ek2b_procedure_factor: 0.3
     ek2b_higher_than_ek2c_fallback: 2.2.2.A.(5)
   gate_b_sources:
-  - C000659
+  - 2.2.2.B.c

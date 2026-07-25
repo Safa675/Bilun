@@ -5,7 +5,7 @@ rules:
   sut_section: 3.1.3
   deontic: NO_PAY
   gate_b_sources:
-  - C002789
+  - 3.1.3.(2)
   condition:
     material_not_in_sut_lists_without_contract: true
   action:
@@ -16,7 +16,7 @@ rules:
   sut_section: 3.1.3
   deontic: NO_PAY
   gate_b_sources:
-  - C002794
+  - 3.1.3.(7)
   condition:
     material_entered_as_serbest_kodsuz_in_medula: true
   action:
@@ -28,7 +28,7 @@ rules:
   sut_section: 3.1.3
   deontic: NO_PAY
   gate_b_sources:
-  - C002795
+  - 3.1.3.(8)
   condition:
     demirbas_or_reusable_accessory_spare_part_claimed: true
   action:
@@ -40,7 +40,7 @@ rules:
   sut_section: 3.1.3
   deontic: NO_PAY
   gate_b_sources:
-  - C002796
+  - 3.1.3.(9)
   condition:
     reusable_material_supplied_by_sunucu_claimed: true
   action:

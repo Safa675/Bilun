@@ -11,7 +11,7 @@ rules:
     denial_tr: yoğun bakım üniteleri standartları/personel/yatak/cihaz şartlarını sağlamazsa ödenmez
     severity: error
   gate_b_sources:
-  - C001206
+  - 2.4.4.H.(1)
 - rule_id: 2.4.4.H.(2).icu_bundled_with_abc_procedures
   sut_section: 2.4.4.H
   condition:
@@ -22,7 +22,7 @@ rules:
     payment_tr: yoğun bakım sürerken EK-2/C A/B/C grubu işlem; işlem puanı eklenerek faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001207
+  - 2.4.4.H.(2)
 - rule_id: 2.4.4.H.(5).platelet_pheresis_separate_bill
   sut_section: 2.4.4.H
   condition:
@@ -35,4 +35,4 @@ rules:
     billable: true
     payment_tr: trombosit süspansiyonu/aferez trombosit bedelleri ayrıca faturalandırılabilir
   gate_b_sources:
-  - C001210
+  - 2.4.4.H.(5)

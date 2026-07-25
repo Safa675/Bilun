@@ -10,4 +10,4 @@ rules:
     billable: true
     payment_tr: yatarak tedavide refakatçi yatak/yemek/temel ihtiyaç bedelleri tanıya dayalı pakete dahil
   gate_b_sources:
-  - C001572
+  - 2.6.3.(2)

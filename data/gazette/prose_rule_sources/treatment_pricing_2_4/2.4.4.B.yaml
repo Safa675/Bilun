@@ -15,7 +15,7 @@ rules:
       test zorunlu
     severity: error
   gate_b_sources:
-  - C000876
+  - 2.4.4.B.(8)
 - rule_id: 2.4.4.B.(1).hbo_facility_coverage
   sut_section: 2.4.4.B
   condition:
@@ -29,7 +29,7 @@ rules:
       kapsamında faaliyet süren sözleşmeli özel 2./3. basamak sunucuda yapılması halinde Kurumca karşılanır
     severity: error
   gate_b_sources:
-  - C000869
+  - 2.4.4.B.(1)
 - rule_id: 2.4.4.B.(2).hbo_health_board_report
   sut_section: 2.4.4.B
   condition:
@@ -42,7 +42,7 @@ rules:
       sağlık kurulu raporu düzenlenmelidir
     severity: error
   gate_b_sources:
-  - C000870
+  - 2.4.4.B.(2)
 - rule_id: 2.4.4.B.(6).hbo_start_10d_gap_7_biz_days
   sut_section: 2.4.4.B
   condition:
@@ -55,7 +55,7 @@ rules:
       ara verilebilir, daha uzun arada yeni rapor düzenlenir
     severity: error
   gate_b_sources:
-  - C000874
+  - 2.4.4.B.(6)
 - rule_id: 2.4.4.B.(7).hbo_one_session_per_day
   sut_section: 2.4.4.B
   condition:
@@ -69,7 +69,7 @@ rules:
       günde günde birden fazla seans ödenir
     severity: error
   gate_b_sources:
-  - C000875
+  - 2.4.4.B.(7)
 - rule_id: 2.4.4.B.(9).hbo_crao_start_within_5d
   sut_section: 2.4.4.B
   condition:
@@ -83,7 +83,7 @@ rules:
     denial_tr: santral retinal arter tıkanıklığında HBO ödenebilmesi için tanıyı takiben 5 gün içinde tedaviye başlanmış olmalı
     severity: error
   gate_b_sources:
-  - C000877
+  - 2.4.4.B.(9)
 - rule_id: 2.4.4.B.(10).hbo_anoxic_encephalopathy_start_5d
   sut_section: 2.4.4.B
   condition:
@@ -98,7 +98,7 @@ rules:
       olmalı
     severity: error
   gate_b_sources:
-  - C000878
+  - 2.4.4.B.(10)
 - rule_id: 2.4.4.B.(12).hbo_ek2d3_indications_only
   sut_section: 2.4.4.B
   condition:
@@ -111,7 +111,7 @@ rules:
     annex_basis: EK-2/C
     severity: error
   gate_b_sources:
-  - C000880
+  - 2.4.4.B.(12)
 - rule_id: 2.4.4.B.(13).hbo_traffic_accident_no_session_limit
   sut_section: 2.4.4.B
   condition:
@@ -122,8 +122,7 @@ rules:
     payment_tr: trafik kazası sonrası gerekli görülen HBO uygulamalarında EK-2/D-3 seans sayısı sınırlamaları dikkate alınmaz
     annex_basis: EK-2/C
   gate_b_sources:
-  - C000881
-
+  - 2.4.4.B.(13)
 - rule_id: 2.4.4.B.(4).hbo_emergency_no_board_report_but_session_cap
   sut_section: 2.4.4.B
   verification_status: ai_generated_pending_review
@@ -134,7 +133,8 @@ rules:
   action:
     billable: false
     enforcement: documentation_required
-    message_tr: Acil endikasyonlarda sevk/uygulayici hekim imzali belge sartiyla saglik kurulu raporu aranmaz; ilk sevkte belirtilen seans sayisi asilirsa rapor duzenlenir
+    message_tr: Acil endikasyonlarda sevk/uygulayici hekim imzali belge sartiyla saglik kurulu raporu aranmaz; ilk sevkte
+      belirtilen seans sayisi asilirsa rapor duzenlenir
     severity: error
   gate_b_sources:
-  - C000872
+  - 2.4.4.B.(4)

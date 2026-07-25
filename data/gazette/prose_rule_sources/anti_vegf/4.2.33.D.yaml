@@ -38,7 +38,7 @@ rules:
   - göz hastalıkları
   loading_dose_count: 3
   gate_b_sources:
-  - C006548
+  - 4.2.33.(6)
   message_tr: Bevacizumab (DMÖ) — ilk tedavi seçeneği; günübirlik kapsamda 3 yükleme dozu (1,25 mg) (§4.2.33).
 - rule_id: 4.2.33.D.deksametazon_itv_dmo
   sut_section: 4.2.33.D
@@ -58,11 +58,11 @@ rules:
   max_applications_per_year: 4
   gate_b_sources:
   - C006526
-  - C006556
+  - 4.2.33.(10)
   message_tr: Deksametazon ITV implant (DMÖ) — anti-VEGF sonrası en erken 1 ay, her göz için yılda maksimum 4 uygulama (§4.2.33/(10),
     C006556).
   verification_status: ai_generated_pending_review
-  content_note: 'Was "max 2/year" citing C006526 (no number). Corrected to 4/year per §4.2.33/(10) (C006556).'
+  content_note: Was "max 2/year" citing C006526 (no number). Corrected to 4/year per §4.2.33/(10) (C006556).
 - rule_id: 4.2.33.D.ranibizumab_dmo
   sut_section: 4.2.33.D
   drug_names:
@@ -99,7 +99,7 @@ rules:
     dayanılarak etkilenen göze günde en fazla 7 damla reçete edilmesi halinde Kurumca karşılanır. Aile hekimlerince raporsuz
     olarak yılda bir yıl süresince her reçetede ayda en fazla bir kutu reçete edilmesi halinde de karşılanır (§4.2.33.D/(2)).
   gate_b_sources:
-  - C006578
+  - 4.2.33.D.(2)
   verification_status: ai_generated_pending_review
   content_note: 'Artificial tears (suni gözyaşı) coverage under §4.2.33.D — distinct from the siklosporin rules filed under
     §4.2.33.E. Two prescription paths: specialist/1-yr-report (max 7 drops/day to affected eye) or family doctor (1 box/month,

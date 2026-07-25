@@ -3,12 +3,12 @@ rules:
 - rule_id: 4.2.6.A.max_3_month_supply_daily_dose
   sut_section: 4.2.6.A
   gate_b_sources:
-  - C003941
-  - C003942
-  - C003998
-  - C004016
-  - C004030
-  - C004033
+  - 4.2.6.A.(1)
+  - 4.2.6.A.(2)
+  - 4.2.6.A-2.(5)
+  - 4.2.6.A-4.(2)
+  - 4.2.6.A-5.(4)
+  - 4.2.6.B.(1)
   drug_names:
   - büyüme hormonu
   - somatropin
@@ -37,7 +37,7 @@ rules:
   message_tr: Büyüme hormonu — yaş grubuna göre endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu (en fazla 1
     yıl) ve endokrinoloji uzman reçetesi gerekir (§4.2.6.A).
   gate_b_sources:
-  - C003941
+  - 4.2.6.A.(1)
   report_specialties:
   - endokrinoloji
   prescriber_specialties:

@@ -11,4 +11,4 @@ rules:
     denial_tr: sözleşmesiz eczaneden acil dışı temin edilen ilaç ödenmez
     severity: error
   gate_b_sources:
-  - C007795
+  - 4.5.1.(2)

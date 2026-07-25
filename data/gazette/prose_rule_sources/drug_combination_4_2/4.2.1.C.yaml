@@ -15,4 +15,4 @@ rules:
     denial_tr: aynı hastada iki farklı tanı ile iki farklı anti-TNF veya iki farklı biyolojik ajan birlikte kullanılırsa ödenmez
     severity: error
   gate_b_sources:
-  - C003581
+  - 4.2.1.C.(3)

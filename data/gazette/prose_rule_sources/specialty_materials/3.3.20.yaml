@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.20
   deontic: MUST_BILL
   gate_b_sources:
-  - C003189
+  - 3.3.20.(1)
   condition:
     material_name_any:
     - burun protezi

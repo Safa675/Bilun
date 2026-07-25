@@ -16,4 +16,4 @@ rules:
     denial_tr: eritropoietin/darbepoietin sadece KBH-anemi ve MDS'de; roksadustat sadece KBH-anemi'de ödenir
     severity: error
   gate_b_sources:
-  - C004125
+  - 4.2.9.A.(1)

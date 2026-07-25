@@ -2,9 +2,9 @@
   "description": "Gate B golden — drug_combination_4_2 clause → rule_id provenance",
   "cases": [
     {
-      "clause_id": "C003581",
+      "clause_id": "4.2.1.C.(3)",
       "expected_rule_id": "4.2.1.C.(3).dual_anti_tnf_or_biologic_combo_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
       "clause_id": "C003605",
@@ -17,44 +17,44 @@
       "encode_batch": "D42-1"
     },
     {
-      "clause_id": "C003918",
+      "clause_id": "4.2.3.(6)",
       "expected_rule_id": "4.2.3.(6).allergy_vaccine_oral_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C003938",
+      "clause_id": "4.2.5.(3)",
       "expected_rule_id": "4.2.5.(3).out_of_indication_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C004055",
+      "clause_id": "4.2.7.(3)",
       "expected_rule_id": "4.2.7.(3).heparin_in_hemodialysis_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C004057",
+      "clause_id": "4.2.7.(4)",
       "expected_rule_id": "4.2.7.(4).distinct_lmw_heparin_combo_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C004125",
+      "clause_id": "4.2.9.A.(1)",
       "expected_rule_id": "4.2.9.A.(1).epoetin_out_of_indication",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C004179",
+      "clause_id": "4.2.9.Ç.(6)",
       "expected_rule_id": "4.2.9.C-c.(6).cinacalcet_etelcalsetid_combo_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C004201",
+      "clause_id": "4.2.9.E.(7)",
       "expected_rule_id": "4.2.9.E.(7).cinacalcet_etelcalsetid_combo_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C004303",
+      "clause_id": "4.2.10.B-3.(4)",
       "expected_rule_id": "4.2.10.B-3.(4).ms_treatment_switch_6mo_rule",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
       "clause_id": "C004489",
@@ -72,9 +72,9 @@
       "encode_batch": "D42-1"
     },
     {
-      "clause_id": "C005054",
+      "clause_id": "4.2.14.C.k",
       "expected_rule_id": "4.2.14.C.(renal).temsirolimus_poor_prognosis_3of6",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
       "clause_id": "C005064",
@@ -222,24 +222,24 @@
       "encode_batch": "D42-1"
     },
     {
-      "clause_id": "C005838",
+      "clause_id": "4.2.15.D-1.(4)",
       "expected_rule_id": "4.2.15.D-1.(4).doac_combo_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C006013",
+      "clause_id": "4.2.16.(8)",
       "expected_rule_id": "4.2.16.(8).out_of_ek4b_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C006042",
+      "clause_id": "4.2.17.A.(9)",
       "expected_rule_id": "4.2.17.A.(9).active_vitamin_d_osteoporosis_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C006044",
+      "clause_id": "4.2.17.B.(1)",
       "expected_rule_id": "4.2.17.B.(1).calcitonin_6mo_cap",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
       "clause_id": "C006116",
@@ -247,9 +247,9 @@
       "encode_batch": "D42-1"
     },
     {
-      "clause_id": "C006148",
+      "clause_id": "4.2.24.A.(7)",
       "expected_rule_id": "4.2.24.A.(7).laba_iks_mono_offlabel_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
       "clause_id": "C006163",
@@ -257,29 +257,29 @@
       "encode_batch": "D42-1"
     },
     {
-      "clause_id": "C006200",
+      "clause_id": "4.2.25.(3)",
       "expected_rule_id": "4.2.25.(3).pregabalin_2nd_3rd_step",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C006343",
+      "clause_id": "4.2.28.C.(3)",
       "expected_rule_id": "4.2.28.C.(3).bile_acid_sequestrant_t2dm_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C006420",
+      "clause_id": "4.2.30.A.(9)",
       "expected_rule_id": "4.2.30.A.(9).epoprostenol_dialysis_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C006530",
+      "clause_id": "4.2.33.ç",
       "expected_rule_id": "4.2.33.(c).anti_vegf_same_eye_combo_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C006550",
+      "clause_id": "4.2.33.(8)",
       "expected_rule_id": "4.2.33.(8).loading_dose_required_before_switch",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
       "clause_id": "C006627",
@@ -292,29 +292,29 @@
       "encode_batch": "D42-1"
     },
     {
-      "clause_id": "C006699",
+      "clause_id": "4.2.35.A.(5)",
       "expected_rule_id": "4.2.35.A.(5).capsaicin_postherpetic_diabetic_neuralgia",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C006743",
+      "clause_id": "4.2.38.ç",
       "expected_rule_id": "4.2.38.(c).dpp4_combo_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C006749",
+      "clause_id": "4.2.38.(8)",
       "expected_rule_id": "4.2.38.(8).empagliflozin_linagliptin_combo_indication",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C007051",
+      "clause_id": "4.2.49.C.(5)",
       "expected_rule_id": "4.2.49.C.(5).sma_smn2_modifier_1yr_switch_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     },
     {
-      "clause_id": "C007209",
+      "clause_id": "4.2.71.(3)",
       "expected_rule_id": "4.2.71.(3).tafamidis_advanced_heart_failure_no_pay",
-      "encode_batch": "D42-1"
+      "encode_batch": null
     }
   ]
 }

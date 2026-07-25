@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.70.A.continuation_15mo_no_hf_admission
   sut_section: 4.2.70.A
   gate_b_sources:
-  - C007199
+  - 4.2.70.A.(5)
   drug_names:
   - tafamidis
   - akoramidis

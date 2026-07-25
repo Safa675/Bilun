@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.33.C
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003355
+  - 3.3.33.C.(1)
   condition:
     bone_anchored_hearing_aid_over_5y_criteria: true
   action:
@@ -17,7 +17,7 @@ rules:
   sut_section: 3.3.33.C
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003362
+  - 3.3.33.C.e
   condition:
     bone_anchored_hearing_aid_single_sided_deafness: true
   action:
@@ -29,7 +29,7 @@ rules:
   sut_section: 3.3.33.C
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003364
+  - 3.3.33.C.(4)
   condition:
     bone_anchored_hearing_aid_headband_internal_part: true
   action:

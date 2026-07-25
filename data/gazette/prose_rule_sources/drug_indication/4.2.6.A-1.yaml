@@ -8,7 +8,7 @@ rules:
   - E23.7
   - E34.3
   gate_b_sources:
-  - C003977
+  - 4.2.6.A-1.ç
   - C003982
   drug_names:
   - somatropin
@@ -31,7 +31,7 @@ rules:
   - E23.7
   - E34.3
   gate_b_sources:
-  - C003979
+  - 4.2.6.A-1.e
   drug_names:
   - somatropin
   - büyüme hormonu

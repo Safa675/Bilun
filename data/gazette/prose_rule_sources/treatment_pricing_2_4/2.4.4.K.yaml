@@ -12,7 +12,7 @@ rules:
     denial_tr: palyatif bakım; Bakanlıkça tescilli yataklı tesis veya tıp fakülteli üniversite ARA-M'den yapılmazsa ödenmez
     severity: error
   gate_b_sources:
-  - C001338
+  - 2.4.4.K.(1)
 - rule_id: 2.4.4.K.(3).palliative_non_accredited_bed_no_pay
   sut_section: 2.4.4.K
   condition:
@@ -24,7 +24,7 @@ rules:
     denial_tr: tescil dışı yataktan palyatif bakım hizmeti gönderilirse bedeller ödenmez
     severity: error
   gate_b_sources:
-  - C001340
+  - 2.4.4.K.(3)
 - rule_id: 2.4.4.K.(5).palliative_p560000_once_per_day
   sut_section: 2.4.4.K
   condition:
@@ -37,7 +37,7 @@ rules:
     denial_tr: P560000 palyatif bakım günde en fazla 1 kez faturalandırılır
     severity: error
   gate_b_sources:
-  - C001345
+  - 2.4.4.K.(5)
 - rule_id: 2.4.4.K.(6).palliative_ek2c_procedure_same_day_no_double
   sut_section: 2.4.4.K
   condition:
@@ -50,7 +50,7 @@ rules:
       ödenmez
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001346
+  - 2.4.4.K.(6)
 - rule_id: 2.4.4.K.(7).palliative_bundled_no_separate_bill
   sut_section: 2.4.4.K
   condition:
@@ -62,7 +62,7 @@ rules:
     denial_tr: palyatif bakımda tanı/tedavi işlemleri 2.2.2.B-1(e) kapsamında ayrı faturalanamaz (işlem dahil)
     severity: error
   gate_b_sources:
-  - C001349
+  - 2.4.4.K.(7)
 - rule_id: 2.4.4.K.(1).palliative_care_certified_facilities_only
   sut_section: 2.4.4.K
   condition:
@@ -78,7 +78,7 @@ rules:
       sağlık tesislerince ve tıp fakültesi bulunan devlet/vakıf üniversiteleri SAUM'lerince faturalandırılır
     severity: error
   gate_b_sources:
-  - C001338
+  - 2.4.4.K.(1)
 - rule_id: 2.4.4.K.(3).palliative_care_unregistered_bed_not_covered
   sut_section: 2.4.4.K
   condition:
@@ -91,7 +91,7 @@ rules:
       göndermesi durumunda bu hizmet bedelleri Kurumca karşılanmaz
     severity: error
   gate_b_sources:
-  - C001340
+  - 2.4.4.K.(3)
 - rule_id: 2.4.4.K.(5).palliative_care_p560000_once_per_day
   sut_section: 2.4.4.K
   condition:
@@ -107,7 +107,7 @@ rules:
     annex_basis: EK-2/C
     severity: error
   gate_b_sources:
-  - C001345
+  - 2.4.4.K.(5)
 - rule_id: 2.4.4.K.(6).palliative_care_ek2c_procedure_no_palliative_fee
   sut_section: 2.4.4.K
   condition:
@@ -122,4 +122,4 @@ rules:
     annex_basis: EK-2/C
     severity: error
   gate_b_sources:
-  - C001346
+  - 2.4.4.K.(6)

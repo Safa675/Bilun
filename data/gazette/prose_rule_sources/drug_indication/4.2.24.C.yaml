@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.24.C.resp.rhinitis_azelastine_fluticasone_combo
   sut_section: 4.2.24.C
   gate_b_sources:
-  - C006188
+  - 4.2.24.C.(2)
   drug_names:
   - azelastin hidroklorür
   - flutikazon propiyonat
@@ -30,7 +30,7 @@ rules:
 - rule_id: 4.2.24.C.resp.rhinitis_intranazal_steroid_antihistamine_couse
   sut_section: 4.2.24.C
   gate_b_sources:
-  - C006190
+  - 4.2.24.C.(3)
   drug_names:
   - mono intranazal kortikosteroid
   - mono intranazal antihistaminik
@@ -67,7 +67,7 @@ rules:
     uzman reçetesi/raporu gerekir (§4.2.24.C-1).
   gate_b_sources:
   - C006125
-  - C006184
+  - 4.2.24.C.(1)
   report_required: true
   prescriber_specialties:
   - kulak burun boğaz

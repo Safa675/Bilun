@@ -14,7 +14,7 @@ rules:
     payment_tr: spor hekimi/hidroklimatoloji uzmanınca EK-2/D-2 tanı + P915030 puanı
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001087
+  - 2.4.4.F-6.(3)
 - rule_id: 2.4.4.F-6.(1).sports_med_ecology_health_report_required
   sut_section: 2.4.4.F-6
   condition:
@@ -30,7 +30,7 @@ rules:
       ilgili hekim/uzman tarafından tedavi ve tedavi süresini belirten sağlık raporu düzenlenmelidir
     severity: error
   gate_b_sources:
-  - C001085
+  - 2.4.4.F-6.(1)
 - rule_id: 2.4.4.F-6.(2).sports_ecology_annual_region_session_caps
   sut_section: 2.4.4.F-6
   condition:
@@ -46,7 +46,7 @@ rules:
       bölgeye yılda en fazla 2 sağlık raporu; kontrollerde 2.4.4.F-2(5) sayıları da hesaba katılır
     severity: error
   gate_b_sources:
-  - C001086
+  - 2.4.4.F-6.(2)
 - rule_id: 2.4.4.F-6.(3).sports_ecology_physio_billed_p915030
   sut_section: 2.4.4.F-6
   condition:
@@ -63,4 +63,4 @@ rules:
       EK-2/C'deki 'P915030' kodlu işlem puanı esas alınarak faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001087
+  - 2.4.4.F-6.(3)

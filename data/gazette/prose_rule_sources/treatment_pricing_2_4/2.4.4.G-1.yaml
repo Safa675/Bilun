@@ -16,7 +16,7 @@ rules:
   gate_b_sources:
   - C001102
   - C001109
-  - C001110
+  - 2.4.4.G-1.b
 - rule_id: 2.4.4.G-1.(1).cytogenetic_tests_scope_header
   sut_section: 2.4.4.G-1
   condition:
@@ -29,7 +29,7 @@ rules:
     message_tr: EK-2/B '9.B. Sitogenetik Tetkikler' kodları ('9.B.1. Moleküler Sitogenetik Tetkikler' hariç) aşağıdaki faturalandırma
       kurallarına tabidir
   gate_b_sources:
-  - C001096
+  - 2.4.4.G-1.(1)
 - rule_id: 2.4.4.G-1.(a_b).cytogenetic_3rd_step_public_or_licensed_ghdm
   sut_section: 2.4.4.G-1
   condition:
@@ -75,4 +75,4 @@ rules:
       sunucularında yapılması halinde faturalandırılır
     severity: error
   gate_b_sources:
-  - C001110
+  - 2.4.4.G-1.b

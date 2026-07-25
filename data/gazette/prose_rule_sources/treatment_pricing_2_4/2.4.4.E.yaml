@@ -13,7 +13,7 @@ rules:
     annex_basis: EK-2/C
     fraction_applied_to_secondary: 0.25
   gate_b_sources:
-  - C000968
+  - 2.4.4.E.(2)
 - rule_id: 2.4.4.E.(4).angio_pcı_per_physician_daily_cap_15
   sut_section: 2.4.4.E
   condition:
@@ -28,4 +28,4 @@ rules:
       her hekim için günlük en fazla 15 hastaya yapılan işlem bedeli karşılanır
     severity: error
   gate_b_sources:
-  - C000970
+  - 2.4.4.E.(4)

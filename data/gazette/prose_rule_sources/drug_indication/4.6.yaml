@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.6.blood_component_procurement_coverage
   sut_section: '4.6'
   gate_b_sources:
-  - C007807
+  - 4.6.(2)
   drug_names:
   - kan ve kan bileşenleri
   condition:
@@ -21,7 +21,7 @@ rules:
 - rule_id: 4.6.ek2b_blood_component_isbt_barcode_coverage
   sut_section: '4.6'
   gate_b_sources:
-  - C007808
+  - 4.6.(3)
   drug_names:
   - kan ve kan bileşenleri
   condition:
@@ -38,7 +38,7 @@ rules:
 - rule_id: 4.6.ek2c_blood_component_drg_unbundling_must_bill
   sut_section: '4.6'
   gate_b_sources:
-  - C007809
+  - 4.6.(4)
   drug_names:
   - kan ve kan bileşenleri
   pay: false

@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.12
   deontic: NO_PAY
   gate_b_sources:
-  - C003146
+  - 3.3.11.(4)
   condition:
     material_name_any:
     - protez yapistirici
@@ -22,7 +22,7 @@ rules:
   sut_section: 3.3.12
   deontic: NO_PAY
   gate_b_sources:
-  - C003146
+  - 3.3.11.(4)
   condition:
     dental_prosthesis_adhesive_claim: true
   action:
@@ -33,7 +33,7 @@ rules:
   sut_section: 3.3.12
   deontic: MUST_BILL
   gate_b_sources:
-  - C003148
+  - 3.3.12.(1)
   condition:
     material_name_any:
     - kulak kepçesi protezi
@@ -47,7 +47,7 @@ rules:
   sut_section: 3.3.12
   deontic: MUST_BILL
   gate_b_sources:
-  - C003149
+  - 3.3.12.(2)
   condition:
     material_name_any:
     - kulak kepçesi protezi

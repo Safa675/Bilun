@@ -16,7 +16,7 @@ rules:
   sut_section: 3.3.4
   deontic: NO_PAY
   gate_b_sources:
-  - C002934
+  - 3.3.4.A.(3)
   condition:
     material_name_any:
     - dermis allogreft
@@ -32,7 +32,7 @@ rules:
   sut_section: 3.3.4
   deontic: NO_PAY
   gate_b_sources:
-  - C002936
+  - 3.3.4.A.(5)
   condition:
     open_physis_primary_fracture_graft: true
   action:
@@ -43,7 +43,7 @@ rules:
   sut_section: 3.3.4
   deontic: NO_PAY
   gate_b_sources:
-  - C002970
+  - 3.3.4.C.(7)
   condition:
     adult_primary_fracture_bone_stimulator: true
   action:
@@ -54,7 +54,7 @@ rules:
   sut_section: 3.3.4
   deontic: NO_PAY
   gate_b_sources:
-  - C002937
+  - 3.3.4.A.(6)
   condition:
     hip_arthroplasty_graft_claim: true
   action:
@@ -65,7 +65,7 @@ rules:
   sut_section: 3.3.4
   deontic: NO_PAY
   gate_b_sources:
-  - C002939
+  - 3.3.4.A.(8)
   condition:
     graft_allograft_xenograft_combined: true
   action:

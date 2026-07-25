@@ -28,7 +28,7 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006562"
+        "4.2.33.A.(2)"
       ],
       "message_tr": "Aflibersept (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 3 yükleme dozu; göz hastalıkları uzmanınca reçete (§4.2.33.A).",
       "verification_status": "struck_clause_no_replacement"
@@ -52,7 +52,7 @@
       ],
       "message_tr": "Ranibizumab/aflibersept (YAŞ AMD) — bevacizumab tedavisine cevapsızlıkta göz hastalıkları uzmanı raporu ile geçiş (§4.2.33.A/2).",
       "gate_b_sources": [
-        "C006562"
+        "4.2.33.A.(2)"
       ],
       "report_duration_months": 3,
       "loading_dose_count": 3
@@ -75,7 +75,7 @@
       ],
       "message_tr": "Bevacizumab (YAŞ AMD) — ilk tedavi seçeneği; göz hastalıkları uzmanı sağlık kurulu raporu ve reçete şartı (§4.2.33.A/1).",
       "gate_b_sources": [
-        "C006561"
+        "4.2.33.A.(1)"
       ],
       "report_duration_months": 3
     },
@@ -146,7 +146,7 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006562"
+        "4.2.33.A.(2)"
       ],
       "message_tr": "Ranibizumab (YAŞ AMD) — 3 ay süreli sağlık kurulu raporuyla 4-6 hafta arayla 3 kez yükleme dozu; ardışık/kombine kullanım yasak (§4.2.33.A).",
       "verification_status": "struck_clause_no_replacement"
@@ -171,7 +171,7 @@
         "göz hastalıkları"
       ],
       "gate_b_sources": [
-        "C006561"
+        "4.2.33.A.(1)"
       ],
       "message_tr": "Verteporfin (YAŞ AMD) — 3 ay süreli sağlık kurulu raporu ve göz hastalıkları uzmanı reçetesi (§4.2.33.A)."
     },
@@ -195,7 +195,7 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006565"
+        "4.2.33.B.(2)"
       ],
       "message_tr": "Aflibersept (RVDT/SRVT) — deksametazon uygun değilse 3 ay süreli rapor ve 3 yükleme dozu (§4.2.33.B)."
     },
@@ -218,8 +218,8 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006564",
-        "C006565"
+        "4.2.33.B.(1)",
+        "4.2.33.B.(2)"
       ],
       "message_tr": "Bevacizumab (RVDT/SRVT) — ilk tedavi; günübirlik kapsamda 3 yükleme dozu (§4.2.33.B/Ç)."
     },
@@ -242,8 +242,8 @@
       ],
       "max_applications_per_year": 4,
       "gate_b_sources": [
-        "C006564",
-        "C006556"
+        "4.2.33.B.(1)",
+        "4.2.33.(10)"
       ],
       "message_tr": "Deksametazon intravitreal implant (RVDT/SRVT) — bevacizumab kontrendike olduğunda 1 defaya mahsus; genel yıl içi üst sınırı yılda en fazla 4 (§4.2.33/(10), C006556; §4.2.33.B.(1), C006564).",
       "verification_status": "ai_generated_pending_review",
@@ -293,7 +293,7 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006565"
+        "4.2.33.B.(2)"
       ],
       "message_tr": "Ranibizumab (RVDT/SRVT) — deksametazon uygun değilse 3 ay süreli rapor ve 3 yükleme dozu (§4.2.33.B)."
     },
@@ -316,7 +316,7 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006568"
+        "4.2.33.C.(2)"
       ],
       "message_tr": "Aflibersept (PM-KNV) — 3 göz hastalıkları uzmanı sağlık kurulu raporu; ayakta tedavi kapsamında (§4.2.33.C)."
     },
@@ -339,7 +339,7 @@
       ],
       "message_tr": "Ranibizumab/aflibersept (PM-KNV) — bevacizumab cevapsızlığında göz hastalıkları uzmanı raporu ile geçiş (§4.2.33.C/2).",
       "gate_b_sources": [
-        "C006568"
+        "4.2.33.C.(2)"
       ],
       "report_duration_months": 3,
       "loading_dose_count": 3
@@ -363,7 +363,7 @@
       ],
       "loading_dose_count": null,
       "gate_b_sources": [
-        "C006567",
+        "4.2.33.C.(1)",
         "C006527"
       ],
       "message_tr": "Bevacizumab (PM-KNV) — yükleme dozu şartı aranmaz (istisna, §4.2.33.C/C006527a); göz hastalıkları uzmanı raporu."
@@ -387,7 +387,7 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006568"
+        "4.2.33.C.(2)"
       ],
       "message_tr": "Ranibizumab (PM-KNV) — 3 göz hastalıkları uzmanı sağlık kurulu raporu; ayakta tedavi kapsamında (§4.2.33.C)."
     },
@@ -440,7 +440,7 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006548"
+        "4.2.33.(6)"
       ],
       "message_tr": "Bevacizumab (DMÖ) — ilk tedavi seçeneği; günübirlik kapsamda 3 yükleme dozu (1,25 mg) (§4.2.33)."
     },
@@ -467,7 +467,7 @@
       "max_applications_per_year": 4,
       "gate_b_sources": [
         "C006526",
-        "C006556"
+        "4.2.33.(10)"
       ],
       "message_tr": "Deksametazon ITV implant (DMÖ) — anti-VEGF sonrası en erken 1 ay, her göz için yılda maksimum 4 uygulama (§4.2.33/(10), C006556).",
       "verification_status": "ai_generated_pending_review",
@@ -516,7 +516,7 @@
       ],
       "message_tr": "Siklosporin göz damlası — göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.D/1, C006575).",
       "gate_b_sources": [
-        "C006575"
+        "4.2.33.D.(1)"
       ],
       "report_duration_months": 12
     },
@@ -537,7 +537,7 @@
         "göz hastalıkları"
       ],
       "gate_b_sources": [
-        "C006575"
+        "4.2.33.D.(1)"
       ],
       "message_tr": "Siklosporin göz damlası — 3 göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.E).",
       "verification_status": "struck_clause_no_replacement"
@@ -561,7 +561,7 @@
         "göz hastalıkları"
       ],
       "gate_b_sources": [
-        "C006583"
+        "4.2.33.E.(1)"
       ],
       "message_tr": "Sisteamin hidroklorür — CTNS gen mutasyonu/sistin düzeyiyle doğrulanmış sistinozis tanısı, yarık lamba bulgusu raporu (§4.2.33.E)."
     },
@@ -584,7 +584,7 @@
         "göz hastalıkları"
       ],
       "gate_b_sources": [
-        "C006586"
+        "4.2.33.F.(1)"
       ],
       "message_tr": "Ranibizumab (ROP) — prematüre bebeklerde zon I/II evre 3+ veya APROP tanısı; çocuk göz hastalıkları uzmanı raporu (§4.2.33.F)."
     },
@@ -611,7 +611,7 @@
       ],
       "message_tr": "Ranibizumab/aflibersept — 4-6 hafta arayla ardışık 3 yükleme dozu; göz hastalıkları uzmanı raporu (§4.2.33/9).",
       "gate_b_sources": [
-        "C006553"
+        "4.2.33.(9)"
       ],
       "report_duration_months": 3,
       "loading_dose_count": 3
@@ -638,7 +638,7 @@
       ],
       "message_tr": "Bevacizumab — ranibizumab/aflibersept arasında ilaç değişimi gereken hallerde tedaviye bevacizumab ile devam; göz hastalıkları raporu (§4.2.33/7).",
       "gate_b_sources": [
-        "C006549"
+        "4.2.33.(7)"
       ],
       "loading_dose_count": 3
     },
@@ -664,8 +664,8 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006570",
-        "C006571"
+        "4.2.33.Ç.(1)",
+        "4.2.33.Ç.(2)"
       ],
       "message_tr": "Bevacizumab (DMÖ) — ilk tedavi; günübirlik kapsamda 3 yükleme dozu; cevapsızlıkta 1 kez deksametazon ITV (§4.2.33.Ç)."
     },
@@ -691,8 +691,8 @@
       ],
       "max_applications_per_year": 4,
       "gate_b_sources": [
-        "C006570",
-        "C006556"
+        "4.2.33.Ç.(1)",
+        "4.2.33.(10)"
       ],
       "message_tr": "Deksametazon ITV implant (DMÖ) — bevacizumab kontrendike ise 1 defaya mahsus; genel yıl içi üst sınırı yıda en fazla 4 (§4.2.33/(10), C006556).",
       "verification_status": "ai_generated_pending_review",
@@ -719,8 +719,8 @@
       ],
       "message_tr": "Deksametazon ITV — anti-VEGF yükleme sonrası idame sırasında veya anti-VEGF kontrendikasyonunda; anti-VEGF uygulamasını takiben en erken 1 ay sonra ve yılda en fazla 4 uygulama (§4.2.33/(10), C006556).",
       "gate_b_sources": [
-        "C006558",
-        "C006556"
+        "4.2.33.(12)",
+        "4.2.33.(10)"
       ],
       "max_applications_per_year": 4,
       "min_gap_months_after_antivegf": 1,
@@ -771,7 +771,7 @@
       "min_gap_months_after_antivegf": 1,
       "message_tr": "Deksametazon intravitreal implant, anti-VEGF ilaçların uygulamasını takiben en erken 1 ay sonra kullanılmak kaydıyla yılda en fazla 4 defa kullanılması halinde Kurumca karşılanır (§4.2.33/(10)). Aynı göze ardışık uygulama kuralları saklıdır.",
       "gate_b_sources": [
-        "C006556"
+        "4.2.33.(10)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Authoritative deksametazon frequency clause. Corrects the earlier unsourced \"max 2/year\" figure used in the Ç/D/B deksametazon rules."
@@ -783,7 +783,7 @@
       "icd10_codes": [],
       "message_tr": "Yükleme dozu aranan durumlarda yükleme dozu tamamlanmaksızın diğer etkin maddeli ilacın kullanımı halinde bu ilaç bedelleri Kurumca karşılanmaz (§4.2.33/(8)).",
       "gate_b_sources": [
-        "C006550"
+        "4.2.33.(8)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Sanction for switching anti-VEGF agent before completing the loading course. Pairs with loading_dose_completion_mandatory."
@@ -795,7 +795,7 @@
       "icd10_codes": [],
       "message_tr": "İlk defa tedaviye başlanan hastaların tedavilerinde kullanılacak etkin maddeler açısından yükleme dozlarının tamamlanması esastır (§4.2.33/c). Yükleme tamamlanmaksızın diğer etkin maddeye geçilirse §4.2.33/(8) uyarınca ödenmez.",
       "gate_b_sources": [
-        "C006529"
+        "4.2.33.c"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Deontic \"esastır\" (mandatory) on loading completion for newly-started patients. The sanction arm is C006550/(8)."
@@ -807,7 +807,7 @@
       "icd10_codes": [],
       "message_tr": "Bu etkin maddeleri içeren ilaçların aynı anda aynı gözde kombine olarak kullanılması halinde bedelleri Kurumca karşılanmaz; farklı göze kullanımlar kombine kullanım olarak değerlendirilmez (§4.2.33/ç).",
       "gate_b_sources": [
-        "C006530"
+        "4.2.33.ç"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Same-eye combination of §4.2.33 anti-VEGF/ITV agents is a hard no-pay; different-eye use is explicitly allowed. Previously only mentioned in prose inside the YAŞ-AMD ranibizumab message, not encoded as its own rule."
@@ -829,7 +829,7 @@
       "max_drops_per_day": 7,
       "message_tr": "Suni gözyaşları; göz hastalıkları uzman hekimi veya bunların düzenleyeceği 1 yıl süreli uzman hekim raporuna dayanılarak etkilenen göze günde en fazla 7 damla reçete edilmesi halinde Kurumca karşılanır. Aile hekimlerince raporsuz olarak yılda bir yıl süresince her reçetede ayda en fazla bir kutu reçete edilmesi halinde de karşılanır (§4.2.33.D/(2)).",
       "gate_b_sources": [
-        "C006578"
+        "4.2.33.D.(2)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Artificial tears (suni gözyaşı) coverage under §4.2.33.D — distinct from the siklosporin rules filed under §4.2.33.E. Two prescription paths: specialist/1-yr-report (max 7 drops/day to affected eye) or family doctor (1 box/month, no report)."
@@ -841,7 +841,7 @@
       "icd10_codes": [],
       "message_tr": "Anti-VEGF ilaçlar son 3 ay içinde geçirilmiş miyokard enfarktüsü, serebrovasküler olay veya benzeri vasküler patoloji durumlarında kontrendikedir; kontrendikasyon oluşturan gerekçe hekim tarafından sağlık kurulu raporunda mutlaka belirtilir (§4.2.33/(13)).",
       "gate_b_sources": [
-        "C006559"
+        "4.2.33.(13)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Safety / contraindication documentation rule. Applies across all anti-VEGF agents in §4.2.33."
@@ -864,7 +864,7 @@
       ],
       "message_tr": "Glokomun eşlik ettiği retinal ven tıkanıklığı hastalarında bevacizumab yükleme dozu sonrası yetersiz cevap alınması durumunda, bu durum sağlık raporunda belirtildiği takdirde deksametazon intravitreal implant KULLANILMAKSIZIN ranibizumab veya aflibersept ile tedaviye devam edilebilir (§4.2.33/(11)).",
       "gate_b_sources": [
-        "C006557"
+        "4.2.33.(11)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Partially-struck clause — only the leading \"(Mülga...) Retinal ven tıkanıklığı\" title phrase was repealed; the operative permission text is in-force. MODIFIES the §4.2.33.B deksametazon-RVT path: when glaucoma coexists, deksametazon ITV must NOT be used — switch to ranibizumab/aflibersept. Needs human confirmation of the strike scope."

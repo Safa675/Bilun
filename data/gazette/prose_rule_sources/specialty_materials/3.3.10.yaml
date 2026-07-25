@@ -19,7 +19,7 @@ rules:
   sut_section: 3.3.10
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003123
+  - 3.3.10.ç
   condition:
     material_name_any:
     - sakropelvik

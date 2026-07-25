@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.12.B-1.immunglob.igm_enriched_ivig_septic_shock
   sut_section: 4.2.12.B-1
   gate_b_sources:
-  - C004491
+  - 4.2.12.B-1.(2)
   drug_names:
   - immunoglobulin m ile zenginleştirilmiş intravenöz immünglobulin
   - igm ile zenginleştirilmiş ivig
@@ -26,7 +26,7 @@ rules:
 - rule_id: 4.2.12.B-1.immunglob.ivig_board_report_1mo_dose_acute_emergency
   sut_section: 4.2.12.B-1
   gate_b_sources:
-  - C004481
+  - 4.2.12.B-1.a
   - C004489
   drug_names:
   - intravenöz immünglobulin
@@ -50,7 +50,7 @@ rules:
 - rule_id: 4.2.12.B-1.immunglob.ivig_cidp_steroid_failure
   sut_section: 4.2.12.B-1
   gate_b_sources:
-  - C004487
+  - 4.2.12.B-1.f
   drug_names:
   - intravenöz immünglobulin
   - ivig
@@ -74,7 +74,7 @@ rules:
 - rule_id: 4.2.12.B-1.immunglob.ivig_guillain_barre_loading
   sut_section: 4.2.12.B-1
   gate_b_sources:
-  - C004484
+  - 4.2.12.B-1.ç
   drug_names:
   - intravenöz immünglobulin
   - ivig
@@ -95,7 +95,7 @@ rules:
 - rule_id: 4.2.12.B-1.immunglob.ivig_multifocal_motor_neuropathy
   sut_section: 4.2.12.B-1
   gate_b_sources:
-  - C004486
+  - 4.2.12.B-1.e
   drug_names:
   - intravenöz immünglobulin
   - ivig

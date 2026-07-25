@@ -11,7 +11,7 @@ rules:
     payment_method_tr: bilgi/belge ibraz edilemeyen tetkik/tahlil bedeli ödenmez
     billable: false
   gate_b_sources:
-  - C000530
+  - 2.2.(12)
 - rule_id: 2.2.(13).health_report_single_bill
   sut_section: '2.2'
   condition:
@@ -22,7 +22,7 @@ rules:
     payment_method_tr: sağlık raporu bedeli EK-2/B puanları — sadece bir adet
     max_bill_count: 1
   gate_b_sources:
-  - C000531
+  - 2.2.(13)
 - rule_id: 2.2.(14).committee_report_exam_fee
   sut_section: '2.2'
   condition:
@@ -33,7 +33,7 @@ rules:
     payment_method_tr: sağlık kurulu raporu için sadece bir adet muayene bedeli
     max_bill_count: 1
   gate_b_sources:
-  - C000532
+  - 2.2.(14)
 - rule_id: 2.2.(3).aesthetic_must_not_bill
   sut_section: '2.2'
   condition:
@@ -44,7 +44,7 @@ rules:
     payment_method_tr: estetik amaçlı hizmetler Kuruma faturalandırılamaz
     billable: false
   gate_b_sources:
-  - C000521
+  - 2.2.(3)
 - rule_id: 2.2.(5).interim_supplier_spa_reimbursement
   sut_section: '2.2'
   condition:
@@ -56,7 +56,7 @@ rules:
     billable: false
     payer: individual_reimbursement
   gate_b_sources:
-  - C000523
+  - 2.2.(5)
 - rule_id: 2.2.(6).workplace_polyclinic_homecare_no_pay
   sut_section: '2.2'
   condition:
@@ -66,7 +66,7 @@ rules:
     payment_method_tr: işyeri sağlık birimi/özel poliklinik/evde bakım merkezi — Kurumdan ücret talep edilemez
     billable: false
   gate_b_sources:
-  - C000524
+  - 2.2.(6)
 - rule_id: 2.2.(8).contracted_tetkik_mandatory
   sut_section: '2.2'
   condition:
@@ -77,4 +77,4 @@ rules:
     payment_method_tr: sözleşmeli kuruluş tetkik/tahlil zorunluluğu
     tetkik_supply: in_house_or_procurement
   gate_b_sources:
-  - C000526
+  - 2.2.(8)

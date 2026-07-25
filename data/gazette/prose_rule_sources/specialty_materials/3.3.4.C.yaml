@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.4.C
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002965
+  - 3.3.4.C.(2)
   condition:
     dbm_cervical_fusion_1cc_per_disc_cap: true
   action:
@@ -17,7 +17,7 @@ rules:
   sut_section: 3.3.4.C
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002968
+  - 3.3.4.C.(5)
   condition:
     open_physis_tumor_defect_health_board_volume_cap: true
   action:
@@ -29,7 +29,7 @@ rules:
   sut_section: 3.3.4.C
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002969
+  - 3.3.4.C.(6)
   condition:
     spinal_fusion_revision_nonunion_5cc_cap: true
   action:

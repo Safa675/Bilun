@@ -17,7 +17,8 @@ Execute `plans/billing/sut-pipeline-god-plan.md`: SUT-native paragraph identity 
 - [x] Deferral table accepts optional `clause_coordinate` keys (resolve → clause_id)
 - [x] Track A3: compile write path asserts resolvable cites (`assert_gate_b_sources_resolvable`)
 - [x] Track A2 pilot: migrate `definitions_2_6` unique cites (56/70) + recompile
-- [ ] Track A2 remaining families (drug_indication, treatment_pricing, …)
+- [x] Track A2 bulk: migrate remaining families (1128 cites) + recompile fresh targets
+- [x] Update tests for dual-read (manifest invariants, treatment provenance, 4218 tier-A)
 - [ ] Track B: YAML-only + deferral SoT + goldens policy
 - [ ] Track C: canonical manifest + thin compile + coverage + drop corpus CSV + retire shims
 - [ ] Track D: UI/docs audit UX on coordinates

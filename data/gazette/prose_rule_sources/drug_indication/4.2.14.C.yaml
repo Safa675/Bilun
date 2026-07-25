@@ -37,7 +37,7 @@ rules:
   - tıbbi onkoloji
   message_tr: Setuksimab — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1)).
   gate_b_sources:
-  - C005194
+  - 4.2.14.C.y
 - rule_id: 4.2.14.C.(1).denosumab_oncology_board
   sut_section: 4.2.14.C
   drug_names:
@@ -85,7 +85,7 @@ rules:
   - tıbbi onkoloji
   message_tr: Gefitinib — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1)).
   gate_b_sources:
-  - C005093
+  - 4.2.14.C.o
 - rule_id: 4.2.14.C.(1).gemtuzumab_aml_board
   sut_section: 4.2.14.C
   drug_names:
@@ -128,7 +128,7 @@ rules:
   gate_b_sources:
   - C005036
   - C005051
-  - C005094
+  - 4.2.14.C.ö
   - C005096
   - C005330
   - C005362
@@ -156,9 +156,9 @@ rules:
   - tıbbi onkoloji
   message_tr: Kabazitaksel — prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
-  - C005112
+  - 4.2.14.C.s
   - C005113
-  - C005119
+  - 4.2.14.C.t
   - C005121
   - C005122
   - C005146
@@ -175,7 +175,7 @@ rules:
   - tıbbi onkoloji
   message_tr: Lapatinib — HER2+ meme kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
-  - C005053
+  - 4.2.14.C.j
 - rule_id: 4.2.14.C.(1).niraparib_parpi_board
   sut_section: 4.2.14.C
   drug_names:
@@ -228,7 +228,7 @@ rules:
   message_tr: Panitumumab — kolorektal kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
   - C005104
-  - C005105
+  - 4.2.14.C.r
   - C005108
   - C005109
 - rule_id: 4.2.14.C.(1).pertuzumab_her2_board
@@ -322,9 +322,9 @@ rules:
   - tıbbi onkoloji
   message_tr: Trastuzumab — HER2+ meme kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
-  - C004927
+  - 4.2.14.(3)
   - C004928
-  - C004929
+  - 4.2.14.A.(1)
   - C004930
   - C004932
   - C005276
@@ -552,7 +552,7 @@ rules:
   - C004975
   - C004979
   - C004982
-  - C004985
+  - 4.2.14.C.g
   - C004988
   - C004999
   - C005003
@@ -858,9 +858,9 @@ rules:
   - tıbbi onkoloji
   message_tr: Abirateron — prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
-  - C005112
+  - 4.2.14.C.s
   - C005113
-  - C005119
+  - 4.2.14.C.t
   - C005120
   - C005121
   - C005146
@@ -921,7 +921,7 @@ rules:
   gate_b_sources:
   - C005190
   - C005191
-  - C005192
+  - 4.2.14.C.ü
   - C005197
   - C005200
   - C005274
@@ -975,8 +975,8 @@ rules:
   message_tr: Enzalutamid — kastrasyon dirençli prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
   - C005113
-  - C005114
-  - C005119
+  - 4.2.14.C.ş
+  - 4.2.14.C.t
   - C005120
   - C005121
   - C005146
@@ -1067,7 +1067,7 @@ rules:
   gate_b_sources:
   - C005037
   - C005052
-  - C005093
+  - 4.2.14.C.o
   - C005095
   - C005099
   - C005546
@@ -1115,7 +1115,7 @@ rules:
   - C005049
   - C005050
   - C005052
-  - C005053
+  - 4.2.14.C.j
   - C005055
   - C005065
   - C005085
@@ -1174,7 +1174,7 @@ rules:
   message_tr: Trametinib — melanom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
   - C005191
-  - C005192
+  - 4.2.14.C.ü
   - C005197
   - C005201
   - C005202
@@ -1192,7 +1192,7 @@ rules:
   gate_b_sources:
   - C005190
   - C005191
-  - C005192
+  - 4.2.14.C.ü
   - C005197
   - C005274
   - C005721
@@ -1253,7 +1253,7 @@ rules:
   message_tr: Aksitinib — metastatik RCC endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
   - C005177
-  - C005193
+  - 4.2.14.C.v
 - rule_id: 4.2.14.C.alemtuzumab_cll_heme
   sut_section: 4.2.14.C
   drug_names:
@@ -1346,7 +1346,7 @@ rules:
   prescriber_specialties:
   - hematoloji
   gate_b_sources:
-  - C004987
+  - 4.2.14.C.h
 - rule_id: 4.2.14.C.bcg_intravesical_12mo_urology
   sut_section: 4.2.14.C
   drug_names:
@@ -1740,7 +1740,7 @@ rules:
   - göğüs hastalıkları
   message_tr: Erlotinib — KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
-  - C005093
+  - 4.2.14.C.o
 - rule_id: 4.2.14.C.everolimus_net_12mo_oncology
   sut_section: 4.2.14.C
   drug_names:
@@ -1808,7 +1808,7 @@ rules:
   - C004937
   - C004964
   - C004965
-  - C005061
+  - 4.2.14.C.l
   - C005066
   - C005522
   - C005523
@@ -2054,9 +2054,9 @@ rules:
   inpatient_only: true
   gate_b_sources:
   - C004923
-  - C004927
+  - 4.2.14.(3)
   - C004928
-  - C004929
+  - 4.2.14.A.(1)
   - C004930
   - C004932
   - C005271
@@ -2185,7 +2185,7 @@ rules:
   sut_section: 4.2.14.C
   gate_b_sources:
   - C005464
-  - C005487
+  - 4.2.14.C.(16)
   icd10_codes:
   - G36.0
   report_required: true
@@ -2205,7 +2205,7 @@ rules:
 - rule_id: 4.2.14.C.nopay_after_cabozantinib_rcc_seq
   sut_section: 4.2.14.C
   gate_b_sources:
-  - C005054
+  - 4.2.14.C.k
   - C005064
   - C005111
   - C005562
@@ -2615,7 +2615,7 @@ rules:
   - lipegfilgrastim
   report_required: true
   gate_b_sources:
-  - C004933
+  - 4.2.14.B.(2)
   message_tr: (2) Filgrastim, lenograstim, pegfilgrastim ve lipegfilgrastim; (Değişik:RG-02/11/2024-32710/14md.  Yürürlük:09/11/2024)
     en az bir hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 a
   prescriber_specialties:
@@ -2633,7 +2633,7 @@ rules:
   - floxuridin
   report_required: true
   gate_b_sources:
-  - C004986
+  - 4.2.14.C.ğ
   message_tr: ğ) Floxuridin; Sadece kolon kanserinin karaciğere çoklu metastazlarında ilacın onaylı prospektüs bilgileri dikkate
     alınarak, intraarterial yolla en fazla 6 kür olarak tıbbi onkoloji, genel cerrahi ve
   prescriber_specialties:
@@ -2650,7 +2650,7 @@ rules:
   - nilotinib
   report_required: true
   gate_b_sources:
-  - C005016
+  - 4.2.14.C.ı
   message_tr: Sağlık Bakanlığınca onaylanan prospektüslerinde yer alan endikasyonlarda kullanılmak üzere, söz konusu ilaçların
     prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji
   prescriber_specialties:
@@ -2688,7 +2688,7 @@ rules:
   - sorafenib
   report_required: true
   gate_b_sources:
-  - C005097
+  - 4.2.14.C.p
   message_tr: 'p) Everolimus; (Değişik: RG- 04/05/2013- 28637/ 12-c md. Yürürlük: 11/05/2013) Daha önce sunitinib veya sorafenib
     kullanmış ve direnç göstermiş olan metastatik renal hücreli hastalarda en az bir tıbbi'
   prescriber_specialties:
@@ -2706,7 +2706,7 @@ rules:
   - enzalutamid
   report_required: true
   gate_b_sources:
-  - C005133
+  - 4.2.14.C.u
   - C005134
   - C005184
   message_tr: '5) (Değişik: RG- 18/02/2017- 29983/ 9-a md. Yürürlük: 01/03/2017) Kabazitaksel ve abirateron ardışık olarak
@@ -2871,7 +2871,7 @@ rules:
   icd10_ranges:
   - C00-C97
   gate_b_sources:
-  - C005016
+  - 4.2.14.C.ı
   - C005025
   - C005029
   - C005644
@@ -3318,9 +3318,9 @@ rules:
   prescriber_specialties:
   - tıbbi onkoloji
   gate_b_sources:
-  - C004927
+  - 4.2.14.(3)
   - C004928
-  - C004929
+  - 4.2.14.A.(1)
   - C004930
   - C004932
   - C005276
@@ -3338,9 +3338,9 @@ rules:
   prescriber_specialties:
   - tıbbi onkoloji
   gate_b_sources:
-  - C004927
+  - 4.2.14.(3)
   - C004928
-  - C004929
+  - 4.2.14.A.(1)
   - C004930
   - C004932
   - C005276
@@ -4414,9 +4414,9 @@ rules:
     coverage_note: true
   action:
     billable: true
-    enforcement: 'PNH: ≥10 kg çocuk/yetişkin, 7 kriterden en az biri (FLAER granülosit klonu >%1 + LDH >1,5xNÜS kronik
-      hemoliz vb.); transplantasyon öncesi/kök hücre nakli sonrası/komplikasyon/gebe bentleri için Bakanlık endikasyon dışı
-      onay; üçüncü basamakta en az bir hematoloji uzmanının yer aldığı ≤6 ay süreli sağlık kurulu raporu; hematoloji uzmanlarınca
+    enforcement: 'PNH: ≥10 kg çocuk/yetişkin, 7 kriterden en az biri (FLAER granülosit klonu >%1 + LDH >1,5xNÜS kronik hemoliz
+      vb.); transplantasyon öncesi/kök hücre nakli sonrası/komplikasyon/gebe bentleri için Bakanlık endikasyon dışı onay;
+      üçüncü basamakta en az bir hematoloji uzmanının yer aldığı ≤6 ay süreli sağlık kurulu raporu; hematoloji uzmanlarınca
       reçete'
     message_tr: Ravulizumab — Paroksismal Noktürnal Hemoglobinüri (PNH) tedavisinde vücut ağırlığı 10 kg ve üzerindeki çocuk
       ve yetişkin hastalarda kriterlerden en az birinin karşılanması halinde, üçüncü basamak sağlık hizmeti sunucusunda en
@@ -4451,7 +4451,7 @@ rules:
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C008283
+  - 6.4.(1)
   drug_names:
   - ravulizumab
   icd10_ranges:
@@ -4473,7 +4473,7 @@ rules:
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C008284
+  - 6.4.(2)
   drug_names:
   - ravulizumab
   icd10_ranges:
@@ -4514,20 +4514,20 @@ rules:
     billable: false
     enforcement: NMOSB 6 aylık tedavi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS her sağlık kurulu raporunda
       belirtilmelidir
-    message_tr: NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS her
-      sağlık kurulu raporunda belirtilmelidir (§4.2.14.C yyy/2-b).
+    message_tr: NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS
+      her sağlık kurulu raporunda belirtilmelidir (§4.2.14.C yyy/2-b).
 - rule_id: 4.2.14.C.ravulizumab_meningococcal_vaccination
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
   drug_names:
   - ravulizumab
   gate_b_sources:
-  - C008286
+  - 6.5.(1)
   action:
     billable: true
-    enforcement: 'tedaviden 2 hafta önce meningokok bağışıklaması tamamlanmış + Ravulizumab Kullanımı İçin Bilgilendirilmiş
+    enforcement: tedaviden 2 hafta önce meningokok bağışıklaması tamamlanmış + Ravulizumab Kullanımı İçin Bilgilendirilmiş
       Hasta Olur Formu reçete ekinde; 2 yaş altı veya bağışıklamayı takiben 2 hafta geçmeden başlanması gerekenlerde antibiyotik
-      profilaksisi reçetede belirtilmeli'
+      profilaksisi reçetede belirtilmeli
     message_tr: Ravulizumab tedavisine başlamadan iki hafta önce meningokok bağışıklaması tamamlanmış ve Ravulizumab Kullanımı
       İçin Bilgilendirilmiş Hasta Olur Formu tedaviyi yürüten hekim tarafından düzenlenerek reçete ekine konmuş olmalıdır;
       iki yaşından küçük çocuklarda veya bağışıklamayı takiben iki hafta geçmeden ravulizumab başlanması gereken olgularda

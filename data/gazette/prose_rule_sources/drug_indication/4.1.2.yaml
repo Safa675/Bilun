@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.1.2.contracted_pharmacy_supply_coverage
   sut_section: 4.1.2
   gate_b_sources:
-  - C003430
+  - 4.1.2.(3)
   condition:
     coverage_note: true
     max_days_per_dispense: 5
@@ -19,7 +19,7 @@ rules:
 - rule_id: 4.1.2.inpatient_drug_procurement_mandatory
   sut_section: 4.1.2
   gate_b_sources:
-  - C003428
+  - 4.1.2.(1)
   condition:
     inpatient_care: true
     procurement_by_contracted_institution: true
@@ -31,7 +31,7 @@ rules:
 - rule_id: 4.1.2.manual_prescription_inpatient_chief_approval_mandatory
   sut_section: 4.1.2
   gate_b_sources:
-  - C003429
+  - 4.1.2.(2)
   condition:
     manual_prescription: true
     inpatient_care: true

@@ -32,6 +32,39 @@ def clauses_frame() -> set[str]:
 
 
 @pytest.fixture(scope="module")
+def clauses_polars() -> pl.DataFrame:
+    return pl.read_parquet(_CLAUSES_PATH)
+
+
+def _resolved_clause_ids(refs: list, clauses: pl.DataFrame) -> set[str]:
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        UnknownClauseCiteError,
+        is_clause_id,
+        resolve_gate_b_ref_to_clause_ids,
+    )
+
+    out: set[str] = set()
+    for raw in refs:
+        ref = str(raw)
+        if is_clause_id(ref):
+            out.add(ref)
+            continue
+        try:
+            out.update(
+                resolve_gate_b_ref_to_clause_ids(
+                    ref,
+                    clauses,
+                    in_force_only=True,
+                    allow_ambiguous=True,
+                )
+            )
+        except (AmbiguousClauseCiteError, UnknownClauseCiteError):
+            out.add(ref)
+    return out
+
+
+@pytest.fixture(scope="module")
 def treatment_rules() -> list[dict]:
     payload = json.loads((_RULES_DIR / "treatment_pricing_2_4.json").read_text(encoding="utf-8"))
     return payload["rules"]
@@ -78,20 +111,20 @@ def test_actions_well_formed(treatment_rules, dental_rules):
 
 # ── Provenance integrity tests ────────────────────────────────────────────
 
-def test_treatment_gate_b_sources_exist(treatment_rules, clauses_frame):
-    """Every gate_b_sources clause ID must exist in the SUT corpus."""
+def test_treatment_gate_b_sources_exist(treatment_rules, clauses_frame, clauses_polars):
+    """Every gate_b_sources cite must resolve to a SUT corpus clause_id."""
     missing_total = []
     for r in treatment_rules:
-        for cid in r.get("gate_b_sources") or []:
+        for cid in _resolved_clause_ids(r.get("gate_b_sources") or [], clauses_polars):
             if cid not in clauses_frame:
                 missing_total.append((r["rule_id"], cid))
     assert not missing_total, f"unknown clause IDs: {missing_total[:5]}"
 
 
-def test_dental_gate_b_sources_exist(dental_rules, clauses_frame):
+def test_dental_gate_b_sources_exist(dental_rules, clauses_frame, clauses_polars):
     missing_total = []
     for r in dental_rules:
-        for cid in r.get("gate_b_sources") or []:
+        for cid in _resolved_clause_ids(r.get("gate_b_sources") or [], clauses_polars):
             if cid not in clauses_frame:
                 missing_total.append((r["rule_id"], cid))
     assert not missing_total, f"unknown clause IDs: {missing_total[:5]}"

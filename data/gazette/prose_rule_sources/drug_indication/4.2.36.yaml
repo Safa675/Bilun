@@ -12,7 +12,7 @@ rules:
   - G21
   message_tr: Amantadin hidroklorür — yalnızca parkinson hastalığında nöroloji veya geriatri uzman hekim raporu gerekir (§4.2.36).
   gate_b_sources:
-  - C006711
+  - 4.2.36.(4)
   report_required: true
   report_specialties:
   - nöroloji
@@ -31,7 +31,7 @@ rules:
   message_tr: Amantadin sülfat — parkinson veya ilaç kaynaklı ekstrapiramidal reaksiyonlarda nöroloji/geriatri uzman hekim
     raporu gerekir (§4.2.36).
   gate_b_sources:
-  - C006709
+  - 4.2.36.(3)
   report_required: true
   report_specialties:
   - nöroloji
@@ -56,7 +56,7 @@ rules:
   - G21
   message_tr: Parkinson dopamin agonistleri — nöroloji veya geriatri uzman hekim raporuna dayanılarak reçete edilir (§4.2.36).
   gate_b_sources:
-  - C006707
+  - 4.2.36.(1)
   report_required: true
   report_specialties:
   - nöroloji
@@ -72,7 +72,7 @@ rules:
   message_tr: Tolkapon — entakapon dirençli vakalarda nöroloji/geriatri uzman hekim raporu ile nöroloji veya iç hastalıkları
     uzmanı tarafından en fazla 1 aylık reçete (§4.2.36).
   gate_b_sources:
-  - C006708
+  - 4.2.36.(2)
   report_required: true
   report_specialties:
   - nöroloji

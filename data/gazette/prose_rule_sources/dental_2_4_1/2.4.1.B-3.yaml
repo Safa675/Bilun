@@ -12,7 +12,7 @@ rules:
     denial_tr: sağlık kurulu raporunu düzenleyen hekim veya birinci derece yakını tarafından tedavi yapılıyorsa bedel ödenmez
     severity: error
   gate_b_sources:
-  - C000812
+  - 2.4.1.B-3.(1)
 - rule_id: 2.4.1.B-3.(2).specialist_or_doctor_required_for_star_and_7_1
   sut_section: 2.4.1.B-3
   condition:
@@ -24,5 +24,5 @@ rules:
       uzman/doktora diş hekimi tarafından yapıldığı belgelendirilmeli
     annex_basis: EK-2/Ç
   gate_b_sources:
-  - C000813
+  - 2.4.1.B-3.(2)
   verification_status: ai_generated_pending_review
