@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
+import { fmtTRYFixture } from "@/test/fmtMoney";
 
 vi.mock("@/hooks/useStaggeredReveal", () => ({
   default: () => ({
@@ -142,7 +143,7 @@ describe("Revenue recovery optimization panels", () => {
     expect(html).toContain("Aggregated per-patient DRG unbundling findings from exact claim lines.");
     expect(html).not.toContain("Unavailable:DRG unbundling risk is unavailable");
     expect(html).toContain("Patients With Risk:19");
-    expect(html).toContain("Claim-backed savings:121738.79 TRY");
+    expect(html).toContain(`Claim-backed savings:${fmtTRYFixture(data.drg_unbundling.total_potential_savings as number)}`);
   });
 
   it("shows unavailable banner for missing DRG inputs", () => {

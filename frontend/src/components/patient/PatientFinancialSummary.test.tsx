@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
+import { fmtTRY2Fixture } from "@/test/fmtMoney";
 
 vi.mock("@/components/tabs/sut/shared", () => ({
   fmtNum: (value: number) => String(value),
@@ -78,9 +79,9 @@ describe("PatientFinancialSummary", () => {
     );
 
     expect(html).toContain("All bills at a glance");
-    expect(html).toContain("12000.00 TRY");
-    expect(html).toContain("9600.00 TRY");
-    expect(html).toContain("1750.00 TRY");
+    expect(html).toContain(fmtTRY2Fixture(outcome.sut_claim_totals!.total_billed_try));
+    expect(html).toContain(fmtTRY2Fixture(outcome.sut_claim_totals!.total_expected_payable_try));
+    expect(html).toContain(fmtTRY2Fixture(baseBillingReport.total_recoverable_try));
     expect(html).toContain("3");
     expect(html).toContain("high");
   });
