@@ -1,4 +1,4 @@
-"""L2.2 Phase C0 Gate B export and manifest bootstrap."""
+"""L2.2 payment Gate B — generic path (Track F facade removed)."""
 
 from __future__ import annotations
 
@@ -7,31 +7,20 @@ from pathlib import Path
 
 import pytest
 
+from scripts.sut.prose.gate_b_generic import export_candidates
+from scripts.sut.prose.gate_b_sections import SECTION_PAYMENT_22
+
 pytestmark = pytest.mark.unit
 
 ROOT = Path(__file__).resolve().parents[3]
 CLAUSES = ROOT / "data/gazette/sut_clauses.parquet"
 PROSE_JSON = ROOT / "data/gazette/prose_rules/payment_method_2_2.json"
 MANIFEST = ROOT / "data/gazette/prose_manifests/L2.2_payment_method_encoded_manifest.json"
-CORPUS = ROOT / "data/gazette/prose_corpus/L2.2_payment_method_prose.csv"
 
 
 @pytest.fixture(scope="module")
 def gate_b_frame():
-    from scripts.sut.prose.payment_method_gate_b import (
-        enrich_gate_b_dataframe,
-        load_candidate_clauses,
-        run_gate_b_pipeline,
-    )
-
-    run_gate_b_pipeline(
-        clauses_path=CLAUSES,
-        prose_json_path=PROSE_JSON,
-        corpus_csv_path=CORPUS,
-        manifest_path=MANIFEST,
-    )
-    hit = load_candidate_clauses(CLAUSES)
-    return enrich_gate_b_dataframe(hit)
+    return export_candidates(CLAUSES, SECTION_PAYMENT_22)
 
 
 def test_gate_b_exports_section_2_2_candidates(gate_b_frame) -> None:
@@ -63,7 +52,7 @@ def test_manifest_related_session_pricing_cross_ref() -> None:
 def test_manifest_exists_with_encoded_clauses() -> None:
     assert MANIFEST.is_file()
     payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    encoded = payload.get("encoded_clause_ids") or payload.get("encoded_clause_ids") or []
+    encoded = payload.get("encoded_clause_ids") or []
     assert payload.get("rules_in_json", 0) >= 39
     assert len(encoded) >= 38
 

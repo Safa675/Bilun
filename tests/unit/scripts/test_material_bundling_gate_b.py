@@ -1,11 +1,15 @@
-"""L1.4 Phase 1 Gate B export and schema."""
+"""L1.4 material Gate B — generic path (Track F facade + export CLIs removed)."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
+import polars as pl
 import pytest
+
+from scripts.sut.prose.gate_b_generic import export_candidates
+from scripts.sut.prose.gate_b_sections import SECTION_MATERIAL_31_32
 
 pytestmark = pytest.mark.unit
 
@@ -17,17 +21,16 @@ SCHEMA = ROOT / "data/gazette/prose_rules/material_bundling_prose.schema.json"
 
 @pytest.fixture(scope="module")
 def gate_b_frame():
-    from scripts.sut.prose.material_bundling_gate_b import (
-        enrich_gate_b_dataframe,
-        load_candidate_clauses,
+    frame = export_candidates(CLAUSES, SECTION_MATERIAL_31_32)
+    # Legacy enrich stub columns (were on the deleted facade).
+    return frame.with_columns(
+        pl.lit(None, dtype=pl.Utf8).alias("duplicate_of"),
+        pl.lit("generic_export").alias("selection_reason"),
+        pl.lit(None, dtype=pl.Utf8).alias("suggested_condition_type"),
     )
-
-    hit = load_candidate_clauses(CLAUSES)
-    return enrich_gate_b_dataframe(hit, prose_json_path=PROSE_JSON)
 
 
 def test_gate_b_candidate_count(gate_b_frame) -> None:
-    # In-force filter drops struck ghosts; generic export is slightly broader.
     assert len(gate_b_frame) >= 20
     assert len(gate_b_frame) <= 45
 
@@ -60,34 +63,3 @@ def test_schema_covers_live_json_shape() -> None:
     rule_def = schema["$defs"]["rule"]["properties"]
     for rule in payload["rules"]:
         assert set(rule.keys()) >= set(rule_def.keys()) - {"deontic"}
-
-
-def test_export_cli_writes_artifacts(tmp_path: Path) -> None:
-    import subprocess
-    import sys
-
-    out = tmp_path / "export.csv"
-    review = tmp_path / "review.csv"
-    summary = tmp_path / "summary.json"
-    proc = subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts/sut/export_material_bundling_clauses.py"),
-            "--out",
-            str(out),
-            "--review-out",
-            str(review),
-            "--summary-out",
-            str(summary),
-        ],
-        cwd=str(ROOT),
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 0
-    assert out.is_file() and out.stat().st_size > 0
-    assert review.is_file()
-    summary_data = json.loads(summary.read_text(encoding="utf-8"))
-    assert summary_data["total_rows"] >= 20
-    assert summary_data["p1_encode"] >= 1

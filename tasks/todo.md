@@ -1,28 +1,32 @@
-## Task: PR #43 merge gate — make safe to merge
+## Task: SUT pipeline cleanup PR (A+B+C)
 
 ### Goal
-PR https://github.com/Safa675/Bilun/pull/43 is CI-green with real (a)-class bugs fixed so it is safe to merge (cleanup PR waits until then).
+Hard-delete spent SUT pipeline debris after #43 on branch `chore/sut-pipeline-cleanup`. CI green; no intentional opaque-identity changes.
 
 ### Subtasks
-- [x] Fix `stale_clause_refs.classify_refs` Polars C*/F* join dropping `clause_id` (false TIER 4 + md TypeError)
-- [x] Restore `_normalize_tr` on material Gate B facade (export scripts ImportError)
-- [x] Dual-read test helper: coordinate cites compare cleanly to opaque `encoded_clause_ids`
-- [x] Update brittle assertions still expecting C*-only `gate_b_sources` / removed `tier_c_defer_themes_summary`
-- [x] Fix Clause/Deferral browser React keys + deep-links to prefer unique `clause_id`
-- [x] Restore `compile_rules.py --check` parity (regenerate artifacts)
-- [x] Cache coverage encoded-id loaders (pipeline_smoke / build_sut_coverage perf)
-- [x] Locally re-run previously failing tests + compile --check
-- [ ] Push fix commit; watch CI green
-- [ ] Review section: merge-safe verdict (CI + reviews + remaining process blockers)
+- [x] Hard-investigate Slice C keep/delete
+- [x] Branch `chore/sut-pipeline-cleanup` from main
+- [x] Slice A: delete backfill / _split_generators / restamp; docs; dead compile append/shared
+- [x] Slice B: rewrite payment/copay/material tests → delete facades
+- [x] Slice C: delete material export CLIs + R5 test; drop sync subprocesses; thin drug CSV export; rewrite/drop related tests
+- [x] Verify zero imports of deleted modules; pytest + compile --check
+- [ ] Open PR
 
 ### Out of Scope
-- Dead-code cleanup PR
-- Wiping collision YAML C* / deleting parquet `clause_id`
-- Fatura F* (D5)
-- Extractor collision fixes (A0)
-- Merging the PR (needs human approving review per branch protection)
+- `_PAYMENT_SESSION_MANIFEST_STUB` (live coverage) — KEEP
+- `infer_defer_themes` / `_encode_tier` / `_heuristic_inn` — KEEP
+- Collision YAML C* / parquet clause_id / Fatura F* / migrate tool / wave C* inventories
+- Frontend dead-code
+
+### Slice C decision (investigated)
+| Item | Verdict |
+|------|---------|
+| material export CLIs ×3 + R5 triage test | **DELETE** — gitignored CSVs; not compile path; only sync/tests |
+| sync_gate_b_in_force L1.4 subprocesses | **REWRITE** — drop those runs |
+| drug_indication_gate_b CSV/`__main__` | **THIN** — keep primitives |
+| `_PAYMENT_SESSION_MANIFEST_STUB` | **KEEP** — live sibling manifest |
 
 ### Review
-- **Not merge-safe before this fix:** CI red (33 failed / 4 errors); `stale_clause_refs` false TIER 4; material facade ImportError; coverage build hung (~minutes) from uncached dual-read; React keys used colliding coordinates.
-- **Local after fix:** previously failing set green; `pipeline_smoke --limit 3` ~11s; `compile_rules --check` ok.
-- **Still needed for merge:** push + CI green + 1 approving review (`REVIEW_REQUIRED`).
+- Slice C investigated: material export CLIs not on compile path → hard-delete; drug module thinned to primitives; payment stub kept.
+- A+B+C implemented on `chore/sut-pipeline-cleanup`. Focused pytest 60 passed; `compile_rules.py --check` green; zero py imports of deleted modules.
+- Intentionally left: collision YAML C*, parquet clause_id, Fatura F*, migrate tool, wave C* inventories, `_PAYMENT_SESSION_MANIFEST_STUB`.
