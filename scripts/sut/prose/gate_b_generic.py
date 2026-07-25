@@ -42,8 +42,15 @@ _DEFERRAL_TABLE_PATH = _PROJECT_ROOT / "data/gazette/prose_rules/deferral_table.
 _deferral_cache: dict[str, dict[str, Any]] | None = None
 
 
-def load_deferral_table() -> dict[str, dict[str, Any]]:
+def load_deferral_table(
+    clauses: pl.DataFrame | None = None,
+) -> dict[str, dict[str, Any]]:
     """Load deferral_table.yaml → {clause_id: {status, defer_themes, defer_reason}}.
+
+    Entries may key by ``clause_id`` (legacy) and/or ``clause_coordinate`` (Track A).
+    Coordinate-only rows are resolved to ``clause_id`` when a clauses frame is
+    provided (or when ``sut_clauses.parquet`` is readable). Ambiguous coordinates
+    are skipped (entry ignored) so a bad cite cannot poison the whole table.
 
     Cached at module level. The table is the canonical source of human-encoded
     clinical judgment about which clauses are EMR-blocked / tier-C-deferred /
@@ -51,24 +58,55 @@ def load_deferral_table() -> dict[str, dict[str, Any]]:
     backfilling from text heuristics.
     """
     global _deferral_cache
-    if _deferral_cache is not None:
+    if _deferral_cache is not None and clauses is None:
         return _deferral_cache
     if not _DEFERRAL_TABLE_PATH.is_file():
         _deferral_cache = {}
         return _deferral_cache
     import yaml
+
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        UnknownClauseCiteError,
+        resolve_gate_b_ref_to_clause_ids,
+    )
+
     payload = yaml.safe_load(_DEFERRAL_TABLE_PATH.read_text(encoding="utf-8"))
     entries = payload.get("entries") or []
-    _deferral_cache = {
-        str(e["clause_id"]): {
-            "status": e.get("status", "tier_c_deferred"),
-            "defer_themes": e.get("defer_themes", []),
-            "defer_reason": e.get("defer_reason", ""),
+    frame = clauses
+    if frame is None:
+        clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
+        if clauses_path.is_file():
+            frame = pl.read_parquet(clauses_path)
+
+    resolved: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        clause_id = str(entry.get("clause_id") or "").strip()
+        coordinate = str(entry.get("clause_coordinate") or "").strip()
+        if not clause_id and coordinate and frame is not None:
+            try:
+                ids = resolve_gate_b_ref_to_clause_ids(
+                    coordinate,
+                    frame,
+                    in_force_only=True,
+                    allow_ambiguous=False,
+                )
+            except (AmbiguousClauseCiteError, UnknownClauseCiteError):
+                continue
+            if len(ids) != 1:
+                continue
+            clause_id = ids[0]
+        if not clause_id:
+            continue
+        resolved[clause_id] = {
+            "status": entry.get("status", "tier_c_deferred"),
+            "defer_themes": entry.get("defer_themes", []),
+            "defer_reason": entry.get("defer_reason", ""),
+            "clause_coordinate": coordinate or None,
         }
-        for e in entries
-        if e.get("clause_id")
-    }
-    return _deferral_cache
+    if clauses is None:
+        _deferral_cache = resolved
+    return resolved
 
 # ── Shared constants (byte-identical across all 14 legacy modules) ────────────
 

@@ -13,8 +13,11 @@ Execute `plans/billing/sut-pipeline-god-plan.md`: SUT-native paragraph identity 
 - [x] Draft + approve god plan
 - [x] Track A0: uniqueness audit (`plans/billing/sut-pipeline-a0-uniqueness-audit.md`)
 - [x] Track A1 foundation: `clause_identity.py` dual-read + schema + gate_b_generic resolve + tests
-- [ ] Track A2: migrate authored YAML/deferral refs to coordinates where unique
-- [ ] Track A3: wire loud ambiguity into compile `--check` end-to-end
+- [x] Coverage dual-read via `clause_identity` (`coverage.py` + tests)
+- [x] Deferral table accepts optional `clause_coordinate` keys (resolve → clause_id)
+- [x] Track A3: compile write path asserts resolvable cites (`assert_gate_b_sources_resolvable`)
+- [x] Track A2 pilot: migrate `definitions_2_6` unique cites (56/70) + recompile
+- [ ] Track A2 remaining families (drug_indication, treatment_pricing, …)
 - [ ] Track B: YAML-only + deferral SoT + goldens policy
 - [ ] Track C: canonical manifest + thin compile + coverage + drop corpus CSV + retire shims
 - [ ] Track D: UI/docs audit UX on coordinates
@@ -27,5 +30,7 @@ Execute `plans/billing/sut-pipeline-god-plan.md`: SUT-native paragraph identity 
 - Fatura `F*` merge into SUT ids
 
 ### Review
-- Branch: `refactor/sut-pipeline-god-plan`
-- A0 finding: 357 encode-eligible coordinate collisions — dual-read must fail loud
+- Branch / PR: `refactor/sut-pipeline-god-plan` → https://github.com/Safa675/Bilun/pull/43
+- A0: 357 encode-eligible coordinate collisions — keep `C*` for those
+- A2 pilot: definitions_2_6 YAML/JSON/golden/manifest now use coordinates where unique
+- Migrate tool: `python -m scripts.sut.prose.migrate_gate_b_sources_to_coordinates --family …`

@@ -44,6 +44,7 @@ def test_ref_classifiers() -> None:
     assert not is_clause_id("4.2.24.B.(3)")
     assert is_clause_coordinate("4.2.24.B.(3)")
     assert is_clause_coordinate("4.2.24.B.(3).a")
+    assert is_clause_coordinate("2.6.1.B-1.(1)")
     assert is_clause_coordinate("1.1")
     assert not is_clause_coordinate("C000646")
     assert is_gate_b_source_ref("C000646")
@@ -102,8 +103,9 @@ def test_encoded_clause_ids_without_frame_keeps_opaque_strings() -> None:
     assert encoded_clause_ids_from_rules(rules, None) == {"1.1.(1)", "C000001"}
 
 
-def test_resolve_many() -> None:
-    assert resolve_gate_b_sources_to_clause_ids(
-        ["C000001", "1.1.(1)"],
-        _frame(),
-    ) == {"C000001"}
+def test_assert_gate_b_sources_resolvable_flags_ambiguous() -> None:
+    from scripts.sut.prose.clause_identity import assert_gate_b_sources_resolvable
+
+    rules = [{"rule_id": "r_bad", "gate_b_sources": ["4.2.14.C.a"]}]
+    with pytest.raises(AmbiguousClauseCiteError, match="r_bad"):
+        assert_gate_b_sources_resolvable(rules, _frame(), rule_set_id="demo")

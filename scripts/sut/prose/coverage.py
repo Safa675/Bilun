@@ -8,12 +8,24 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import polars as pl
 
 from .classify import classify_clauses
+from .clause_identity import (
+    AmbiguousClauseCiteError,
+    UnknownClauseCiteError,
+    encoded_clause_ids_from_rules,
+    resolve_gate_b_ref_to_clause_ids,
+)
 from .manifest_index import encoded_like_clause_ids, load_drug_bucket_clause_ids
 from .rule_registry import RULE_BY_ID, RULE_REGISTRY, CoverageStatus
 
 _IN_FORCE_ONLY = True
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_SUT_CLAUSES_PARQUET = _REPO_ROOT / "data/gazette/sut_clauses.parquet"
+# Module-level cache: unset sentinel vs None (missing file) vs DataFrame.
+_SUT_CLAUSES_FRAME_UNSET: object = object()
+_sut_clauses_frame_cache: pl.DataFrame | None | object = _SUT_CLAUSES_FRAME_UNSET
 
 _DRUG_INDICATION_MANIFEST = (
     Path(__file__).resolve().parents[3]
@@ -274,6 +286,63 @@ _RECLASSIFY_AS_NON_ALGORITHMIC: frozenset[str] = frozenset({
 })
 
 
+def _load_sut_clauses_frame() -> pl.DataFrame | None:
+    """Load ``sut_clauses.parquet`` once (Polars). None if missing / unreadable."""
+    global _sut_clauses_frame_cache
+    if _sut_clauses_frame_cache is not _SUT_CLAUSES_FRAME_UNSET:
+        return _sut_clauses_frame_cache  # type: ignore[return-value]
+    if not _SUT_CLAUSES_PARQUET.is_file():
+        _sut_clauses_frame_cache = None
+        return None
+    try:
+        _sut_clauses_frame_cache = pl.read_parquet(_SUT_CLAUSES_PARQUET)
+    except Exception:  # pragma: no cover - defensive I/O
+        _sut_clauses_frame_cache = None
+    return _sut_clauses_frame_cache  # type: ignore[return-value]
+
+
+def _reset_sut_clauses_frame_cache() -> None:
+    """Test helper — clear the module-level parquet cache."""
+    global _sut_clauses_frame_cache
+    _sut_clauses_frame_cache = _SUT_CLAUSES_FRAME_UNSET
+
+
+def _resolve_rule_json_gate_b_sources(
+    payload: dict[str, Any],
+    clauses_frame: pl.DataFrame | None,
+) -> set[str]:
+    """Collect clause_ids from rules' ``gate_b_sources`` (dual-read).
+
+    When ``clauses_frame`` is None, keep opaque strings (legacy C*-only path).
+    When provided, resolve coordinate cites via ``clause_identity``. On
+    ``AmbiguousClauseCiteError`` or ``UnknownClauseCiteError`` for a cite,
+    skip that ref (do not insert the coordinate string). ``C*`` / ``F*`` ids
+    always pass through.
+    """
+    rules = list(payload.get("rules") or [])
+    if clauses_frame is None:
+        return encoded_clause_ids_from_rules(rules, None)
+
+    out: set[str] = set()
+    for rule in rules:
+        for raw in rule.get("gate_b_sources") or []:
+            if raw is None:
+                continue
+            text = str(raw).strip()
+            if not text:
+                continue
+            try:
+                out.update(resolve_gate_b_ref_to_clause_ids(text, clauses_frame))
+            except AmbiguousClauseCiteError:
+                # Mixed/legacy data: ambiguous coordinate would not match
+                # clause_id column — skip rather than crash coverage build.
+                continue
+            except UnknownClauseCiteError:
+                # Unknown / invalid coordinate cites — skip. C* never raises.
+                continue
+    return out
+
+
 def _load_gate_b_sources_from_rules_json(path: Path) -> frozenset[str]:
     if not path.is_file():
         return frozenset()
@@ -281,10 +350,7 @@ def _load_gate_b_sources_from_rules_json(path: Path) -> frozenset[str]:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return frozenset()
-    ids: set[str] = set()
-    for rule in payload.get("rules") or []:
-        ids.update(str(c) for c in (rule.get("gate_b_sources") or []) if c)
-    return frozenset(ids)
+    return frozenset(_resolve_rule_json_gate_b_sources(payload, _load_sut_clauses_frame()))
 
 
 def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
@@ -295,31 +361,11 @@ def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
     for sections whose rules haven't been fully encoded yet.
     """
     # Primary: derive from rules JSON gate_b_sources (canonical source of truth)
-    encoded: frozenset[str] = frozenset()
-    if _DRUG_INDICATION_RULES_JSON.is_file():
-        try:
-            payload = json.loads(_DRUG_INDICATION_RULES_JSON.read_text(encoding="utf-8"))
-            rule_encoded = frozenset(
-                str(cid)
-                for rule in (payload.get("rules") or [])
-                for cid in (rule.get("gate_b_sources") or [])
-            )
-            encoded |= rule_encoded
-        except (json.JSONDecodeError, OSError):
-            pass
+    encoded: frozenset[str] = _load_gate_b_sources_from_rules_json(_DRUG_INDICATION_RULES_JSON)
 
     # Supplement: anti-VEGF corpus (separate JSON)
     anti_vegf_rules = _DRUG_INDICATION_RULES_JSON.parent / "anti_vegf_prose.json"
-    if anti_vegf_rules.is_file():
-        try:
-            av_payload = json.loads(anti_vegf_rules.read_text(encoding="utf-8"))
-            encoded |= frozenset(
-                str(cid)
-                for rule in (av_payload.get("rules") or [])
-                for cid in (rule.get("gate_b_sources") or [])
-            )
-        except (json.JSONDecodeError, OSError):
-            pass
+    encoded |= _load_gate_b_sources_from_rules_json(anti_vegf_rules)
 
     # Supplement: R6 deontic-wave manifests (sections whose rules aren't in the
     # main JSON yet — these are still manifest-tracked only)
@@ -339,7 +385,6 @@ def _load_drug_indication_encoded_clause_ids() -> frozenset[str]:
             encoded |= _manifest_clause_ids_from_payload(
                 json.loads(path.read_text(encoding="utf-8"))
             )
-    encoded |= _load_gate_b_sources_from_rules_json(_DRUG_INDICATION_RULES_JSON)
     return encoded
 
 

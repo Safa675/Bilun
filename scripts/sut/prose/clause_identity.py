@@ -18,7 +18,7 @@ import polars as pl
 CLAUSE_ID_RE = re.compile(r"^[CF][0-9]{6}$")
 # SUT-native cite: starts with a section digit path; optional .(N) and/or .letter
 CLAUSE_COORDINATE_RE = re.compile(
-    r"^[0-9]+(?:\.[0-9A-Za-zÇĞİÖŞÜçğıöşü]+)*(?:\.\([0-9]+\))?(?:\.[a-zçğıöşü])?$"
+    r"^[0-9]+(?:\.[0-9A-Za-zÇĞİÖŞÜçğıöşü-]+)*(?:\.\([0-9]+\))?(?:\.[a-zçğıöşü])?$"
 )
 
 ENCODE_ELIGIBLE_TYPES = frozenset({"fikra", "bent", "numbered_item"})
@@ -177,3 +177,42 @@ def encoded_clause_ids_from_rules(
             )
         )
     return encoded
+
+
+def assert_gate_b_sources_resolvable(
+    rules: list[dict[str, Any]],
+    clauses: pl.DataFrame,
+    *,
+    rule_set_id: str = "",
+) -> None:
+    """Fail loud when any gate_b_sources cite is invalid or ambiguous (Track A3).
+
+    ``C*``/``F*`` ids always pass. Coordinates must resolve to exactly one
+    in-force row under the dual-read policy.
+    """
+    prefix = f"{rule_set_id}: " if rule_set_id else ""
+    for index, rule in enumerate(rules):
+        if not isinstance(rule, dict):
+            continue
+        rule_id = str(rule.get("rule_id") or f"rules[{index}]")
+        for raw in rule.get("gate_b_sources") or []:
+            if raw is None or not str(raw).strip():
+                raise UnknownClauseCiteError(
+                    f"{prefix}{rule_id}: empty gate_b_sources entry"
+                )
+            ref = str(raw).strip()
+            try:
+                resolve_gate_b_ref_to_clause_ids(
+                    ref,
+                    clauses,
+                    in_force_only=True,
+                    allow_ambiguous=False,
+                )
+            except AmbiguousClauseCiteError as exc:
+                raise AmbiguousClauseCiteError(f"{prefix}{rule_id}: {exc}") from exc
+            except UnknownClauseCiteError as exc:
+                # Unknown C* is allowed (section-filtered corpora); unknown
+                # coordinates are not — they cannot join to a row.
+                if is_clause_id(ref):
+                    continue
+                raise UnknownClauseCiteError(f"{prefix}{rule_id}: {exc}") from exc
