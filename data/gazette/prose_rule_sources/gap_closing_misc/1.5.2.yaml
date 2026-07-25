@@ -12,7 +12,7 @@ rules:
     denial_tr: acil dışında 2.2(5) istisnaları hariç sözleşmesiz sunucu ödenmez
     severity: error
   gate_b_sources:
-  - C000178
+  - 1.5.2.(2)
 - rule_id: 1.5.2.(3).contracted_provider_must_accept
   sut_section: 1.5.2
   condition:
@@ -23,4 +23,4 @@ rules:
     denial_tr: sözleşmeli sunucular Kurum yararlananlarını ayrım yapmaksızın kabul zorundadır
     severity: error
   gate_b_sources:
-  - C000179
+  - 1.5.2.(3)

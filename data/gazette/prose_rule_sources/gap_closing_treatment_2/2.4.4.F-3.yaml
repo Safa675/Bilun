@@ -10,4 +10,4 @@ rules:
     billable: true
     payment_tr: özel sunucularda fizik tedavi 2.4.4.F-1/F-2 + bu maddeler çerçevesinde
   gate_b_sources:
-  - C001055
+  - 2.4.4.F-3.(1)

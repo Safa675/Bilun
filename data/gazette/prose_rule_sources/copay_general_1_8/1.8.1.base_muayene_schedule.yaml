@@ -35,14 +35,13 @@ rules:
   - C000287
   - C000288
   - C000289
-  - C000290
-  - C000291
-  - C000292
-  - C000293
+  - 1.8.1.ç
+  - 1.8.1.d
+  - 1.8.1.e
+  - 1.8.1.f
   verification_status: ai_generated_pending_review
-  content_note: 'Updated per RG-01/07/2026-33297 (effective 01/07/2026). Previous: 26 TL public/university,
-    60 TL private. Now: 50 TL 2nd-basamak public, 90 TL SB-EAH/3rd-basamak/state-uni, 100 TL foundation-uni/private.
-    First-tier free.'
+  content_note: 'Updated per RG-01/07/2026-33297 (effective 01/07/2026). Previous: 26 TL public/university, 60 TL private.
+    Now: 50 TL 2nd-basamak public, 90 TL SB-EAH/3rd-basamak/state-uni, 100 TL foundation-uni/private. First-tier free.'
 - rule_id: 1.8.1.family_physician_referral_50pct_reduction
   sut_section: 1.8.1
   service_type: copay_muayene_modifier

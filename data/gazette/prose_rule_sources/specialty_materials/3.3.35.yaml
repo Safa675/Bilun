@@ -16,7 +16,7 @@ rules:
   sut_section: 3.3.35
   deontic: NO_PAY
   gate_b_sources:
-  - C003302
+  - 3.3.32.(6)
   condition:
     hearing_ear_mold_with_initial_device: true
   action:

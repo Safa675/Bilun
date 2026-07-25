@@ -11,4 +11,4 @@ rules:
     denial_tr: EK-4/G ilaçları ayakta reçete edilirse ödenmez (özel hükümler hariç)
     severity: error
   gate_b_sources:
-  - C003533
+  - 4.1.7.(2)

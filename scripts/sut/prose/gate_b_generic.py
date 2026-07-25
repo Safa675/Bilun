@@ -36,14 +36,35 @@ from scripts.sut.prose.drug_indication_gate_b import (  # noqa: E402
 )
 
 
+def build_defer_reason(themes: list[str]) -> str:
+    """Human-readable Tier C deferral reason from theme tags (Track C3 shared util)."""
+    if not themes:
+        return (
+            "Deferred — multi-step clinical pathway not yet structurable on exact "
+            "drug claim lines (Tier C manifest-only)."
+        )
+    labels = ", ".join(themes)
+    return (
+        f"Deferred — requires structured ingest for: {labels}. "
+        "Batch encode when EMR/report fields support this pathway."
+    )
+
+
 # ── Deferral table loader (Phase 3 — first-class data file) ──────────────────
 
 _DEFERRAL_TABLE_PATH = _PROJECT_ROOT / "data/gazette/prose_rules/deferral_table.yaml"
 _deferral_cache: dict[str, dict[str, Any]] | None = None
 
 
-def load_deferral_table() -> dict[str, dict[str, Any]]:
+def load_deferral_table(
+    clauses: pl.DataFrame | None = None,
+) -> dict[str, dict[str, Any]]:
     """Load deferral_table.yaml → {clause_id: {status, defer_themes, defer_reason}}.
+
+    Entries may key by ``clause_id`` (legacy) and/or ``clause_coordinate`` (Track A).
+    Coordinate-only rows are resolved to ``clause_id`` when a clauses frame is
+    provided (or when ``sut_clauses.parquet`` is readable). Ambiguous coordinates
+    are skipped (entry ignored) so a bad cite cannot poison the whole table.
 
     Cached at module level. The table is the canonical source of human-encoded
     clinical judgment about which clauses are EMR-blocked / tier-C-deferred /
@@ -51,29 +72,74 @@ def load_deferral_table() -> dict[str, dict[str, Any]]:
     backfilling from text heuristics.
     """
     global _deferral_cache
-    if _deferral_cache is not None:
+    if _deferral_cache is not None and clauses is None:
         return _deferral_cache
     if not _DEFERRAL_TABLE_PATH.is_file():
         _deferral_cache = {}
         return _deferral_cache
     import yaml
+
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
+        UnknownClauseCiteError,
+        resolve_gate_b_ref_to_clause_ids,
+    )
+
     payload = yaml.safe_load(_DEFERRAL_TABLE_PATH.read_text(encoding="utf-8"))
     entries = payload.get("entries") or []
-    _deferral_cache = {
-        str(e["clause_id"]): {
-            "status": e.get("status", "tier_c_deferred"),
-            "defer_themes": e.get("defer_themes", []),
-            "defer_reason": e.get("defer_reason", ""),
+    frame = clauses
+    if frame is None:
+        clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
+        if clauses_path.is_file():
+            frame = pl.read_parquet(clauses_path)
+
+    resolved: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        clause_id = str(entry.get("clause_id") or "").strip()
+        coordinate = str(entry.get("clause_coordinate") or "").strip()
+        if not clause_id and coordinate and frame is not None:
+            try:
+                ids = resolve_gate_b_ref_to_clause_ids(
+                    coordinate,
+                    frame,
+                    in_force_only=True,
+                    encode_eligible_only=True,
+                    allow_ambiguous=False,
+                )
+            except (
+                AmbiguousClauseCiteError,
+                NonEncodeEligibleCiteError,
+                UnknownClauseCiteError,
+            ):
+                continue
+            if len(ids) != 1:
+                continue
+            clause_id = ids[0]
+        if not clause_id:
+            continue
+        resolved[clause_id] = {
+            "status": entry.get("status", "tier_c_deferred"),
+            "defer_themes": entry.get("defer_themes", []),
+            "defer_reason": entry.get("defer_reason", ""),
+            "clause_coordinate": coordinate or None,
         }
-        for e in entries
-        if e.get("clause_id")
-    }
-    return _deferral_cache
+    if clauses is None:
+        _deferral_cache = resolved
+    return resolved
 
 # ── Shared constants (byte-identical across all 14 legacy modules) ────────────
 
 _DEONTIC_MODALITIES = frozenset(
-    {"MUST_BILL", "MUST_NOT_BILL", "NO_PAY", "MAY_BILL", "PROHIBITED", "REGULATORY_ACTION"}
+    {
+        "MUST_BILL",
+        "MUST_NOT_BILL",
+        "NO_PAY",
+        "MAY_BILL",
+        "PROHIBITED",
+        "REGULATORY_ACTION",
+        "MANDATORY",
+    }
 )
 
 
@@ -149,6 +215,11 @@ class GateBSection:
     corpus_csv: str  # relative to project root
     manifest_path: str  # relative to project root
 
+    # Manifest / coverage identity (Track F: non-drug rule sets)
+    rule_set_id: str = "drug_indication_prose"
+    # Named post-build extras: "material_buckets" | "payment_cross_refs" | "copay_compositor"
+    extra_manifest: str = ""
+
     # Tier classification config
     token_promotions: tuple[TokenPromotion, ...] = ()
     tier_a_overrides: tuple[TierOverride, ...] = ()
@@ -162,14 +233,20 @@ class GateBSection:
     in_force_section_filter: str = ""  # which section prefix to use for coverage filter
     requires_signal_for_export: bool = True  # skip rows without deontic or keyword
     in_force_pass_through: bool = False  # in_force membership bypasses signal check
+    parquet_in_force_only: bool = False  # filter to sut_clauses.is_in_force (not coverage)
     superseded_ids: frozenset[str] = frozenset()  # always exclude
     force_include_ids: dict[str, frozenset[str]] = field(default_factory=dict)  # {prefix: ids}
     force_include_section: str = ""  # include ALL clauses from this section prefix
+    # Extra deontic tags treated as signal (unioned with module-wide set)
+    admit_deontic_modalities: frozenset[str] = frozenset()
 
     # Output config
     signal_score: bool = False
     sort_keys: tuple[str, ...] = ("clause_id",)
     sort_descending: tuple[bool, ...] = ()
+
+    # When False, write_artifacts uses all rules from rules_path (not prefix-filtered).
+    filter_rules_by_section_prefix: bool = True
 
     # Per-section manifest totals (multi-section modules emit per-subsection counts)
     per_subsection_totals: bool = False
@@ -262,11 +339,14 @@ def _in_force_clause_ids(
         return frozenset()
     cov = pl.read_parquet(coverage_path)
     filter_prefix = section.in_force_section_filter or section.match.prefixes[0]
-    di = cov.filter(
-        (pl.col("primary_rule_id") == "drug_indication_prose")
-        & pl.col("section_id").str.starts_with(filter_prefix)
-    )
-    return frozenset(di["clause_id"].cast(pl.Utf8).to_list())
+    scoped = cov.filter(pl.col("section_id").str.starts_with(filter_prefix))
+    if "primary_rule_id" in scoped.columns and section.rule_set_id:
+        # Prefer rows owned by this engine; fall back to section scope if empty
+        # (non-drug engines may not yet be primary on every row).
+        owned = scoped.filter(pl.col("primary_rule_id") == section.rule_set_id)
+        if not owned.is_empty():
+            scoped = owned
+    return frozenset(scoped["clause_id"].cast(pl.Utf8).to_list())
 
 
 def _should_include_row(
@@ -293,7 +373,7 @@ def _should_include_row(
         if section_id.startswith(prefix) and clause_id in ids:
             return True
 
-    has_deontic = deontic in _DEONTIC_MODALITIES
+    has_deontic = deontic in (_DEONTIC_MODALITIES | section.admit_deontic_modalities)
     has_keyword = any(kw in normalize_tr(text) for kw in section.drug_keywords)
 
     # In-force filtering applies ONLY to the in_force_section_filter sub-section
@@ -357,6 +437,11 @@ def export_candidates(
     if frame.is_empty():
         return pl.DataFrame()
 
+    if section.parquet_in_force_only and "is_in_force" in frame.columns:
+        frame = frame.filter(pl.col("is_in_force") == True)  # noqa: E712
+        if frame.is_empty():
+            return pl.DataFrame()
+
     in_force = (
         _in_force_clause_ids(clauses_path, section)
         if section.in_force_filtering
@@ -387,6 +472,7 @@ def export_candidates(
         row: dict[str, Any] = {
             "clause_id": clause_id,
             "section_id": section_id,
+            "clause_coordinate": str(record.get("clause_coordinate") or ""),
             "deontic_modality": deontic,
             "text_tr": text,
             "heuristic_inn": inn,
@@ -411,11 +497,49 @@ def export_candidates(
 # ── Generic manifest builder ─────────────────────────────────────────────────
 
 
-def _encoded_clause_ids_from_rules(rules: list[dict[str, Any]]) -> set[str]:
+def _encoded_clause_ids_from_rules(
+    rules: list[dict[str, Any]],
+    clauses: pl.DataFrame | None = None,
+) -> set[str]:
+    """Collect encoded clause_ids; resolve coordinate cites when ``clauses`` given."""
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
+        UnknownClauseCiteError,
+        encoded_clause_ids_from_rules,
+        is_clause_id,
+        resolve_gate_b_sources_to_clause_ids,
+    )
+
+    if clauses is None:
+        return encoded_clause_ids_from_rules(rules, None, resolve_coordinates=False)
+
+    # Prefer unique resolves; ambiguous/non-eligible/unknown cites soft-skip.
     encoded: set[str] = set()
     for rule in rules:
-        for clause_id in rule.get("gate_b_sources") or []:
-            encoded.add(str(clause_id))
+        refs = rule.get("gate_b_sources") or []
+        for raw in refs:
+            if raw is None or not str(raw).strip():
+                continue
+            try:
+                encoded.update(
+                    resolve_gate_b_sources_to_clause_ids(
+                        [raw],
+                        clauses,
+                        in_force_only=True,
+                        encode_eligible_only=True,
+                        allow_ambiguous=False,
+                    )
+                )
+            except AmbiguousClauseCiteError:
+                # Collision cite — only count if the rule also has a C* (or skip).
+                continue
+            except NonEncodeEligibleCiteError:
+                continue
+            except UnknownClauseCiteError:
+                text = str(raw).strip()
+                if is_clause_id(text):
+                    encoded.add(text)
     return encoded
 
 
@@ -425,26 +549,79 @@ def build_manifest(
     section: GateBSection,
     *,
     effective_date: str,
+    resolve_clauses: pl.DataFrame | None = None,
 ) -> dict[str, Any]:
-    """Generic manifest builder — standard trace structure for all sections."""
-    encoded_ids = _encoded_clause_ids_from_rules(rules)
+    """Generic manifest builder — standard trace structure for all sections.
+
+    ``resolve_clauses`` should be the full parquet (or a superset) so coordinate
+    cites in ``gate_b_sources`` can resolve even when the export frame is filtered.
+    """
+    resolve_frame = resolve_clauses if resolve_clauses is not None else gate_b_frame
+    encoded_ids = _encoded_clause_ids_from_rules(rules, resolve_frame)
+    frame_ids = {
+        str(x) for x in gate_b_frame["clause_id"].to_list() if x is not None and str(x).strip()
+    }
+    # §4.2.14.C / parquet_in_force_only: encode list must stay within the in-force
+    # universe. Other sections keep out-of-frame cites (legacy export filters).
+    if section.parquet_in_force_only:
+        encoded_ids = {cid for cid in encoded_ids if cid in frame_ids}
+    deferral = load_deferral_table(resolve_frame)
     rules_by_clause: dict[str, list[str]] = {}
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
+        UnknownClauseCiteError,
+        resolve_gate_b_sources_to_clause_ids,
+    )
+
     for rule in rules:
         rule_id = str(rule.get("rule_id") or "")
-        for clause_id in rule.get("gate_b_sources") or []:
-            rules_by_clause.setdefault(str(clause_id), []).append(rule_id)
+        refs = rule.get("gate_b_sources") or []
+        try:
+            clause_ids = resolve_gate_b_sources_to_clause_ids(
+                refs,
+                resolve_frame,
+                in_force_only=True,
+                encode_eligible_only=True,
+                allow_ambiguous=False,
+            )
+        except (
+            AmbiguousClauseCiteError,
+            NonEncodeEligibleCiteError,
+            UnknownClauseCiteError,
+        ):
+            # Collision / non-eligible / out-of-frame — keep opaque refs for map.
+            clause_ids = {str(r) for r in refs if r is not None and str(r).strip()}
+        except Exception:
+            clause_ids = {str(r) for r in refs if r is not None and str(r).strip()}
+        for clause_id in clause_ids:
+            rules_by_clause.setdefault(clause_id, []).append(rule_id)
 
     traces: list[dict[str, Any]] = []
     tier_a_pending: list[str] = []
     tier_b_pending: list[str] = []
     tier_c_deferred: list[str] = []
+    emr_blocked: list[str] = []
+    non_actionable: list[str] = []
 
     for row in gate_b_frame.iter_rows(named=True):
         clause_id = str(row.get("clause_id") or "")
         encode_tier = str(row.get("encode_tier") or "C")
         text = str(row.get("text_tr") or "")
+        defer_entry = deferral.get(clause_id) or {}
+        defer_status = str(defer_entry.get("status") or "")
+
         if clause_id in encoded_ids:
             status = "encoded"
+        elif defer_status == "emr_blocked":
+            status = "emr_blocked"
+            emr_blocked.append(clause_id)
+        elif defer_status == "non_actionable":
+            status = "non_actionable"
+            non_actionable.append(clause_id)
+        elif defer_status == "tier_c_deferred":
+            status = "tier_c_deferred"
+            tier_c_deferred.append(clause_id)
         elif encode_tier == "A":
             status = "tier_a_pending"
             tier_a_pending.append(clause_id)
@@ -465,33 +642,58 @@ def build_manifest(
         if status == "encoded":
             entry["linked_rule_ids"] = sorted(rules_by_clause.get(clause_id, []))
         elif status == "tier_c_deferred":
-            themes = infer_defer_themes(text)
+            themes = list(defer_entry.get("defer_themes") or []) or infer_defer_themes(text)
             entry["defer_themes"] = themes
-            labels = ", ".join(themes) if themes else "clinical_pathway"
-            entry["defer_reason"] = (
-                f"Deferred — requires structured ingest for: {labels}. "
-                "Tier C manifest-only until EMR fields support pathway."
+            entry["defer_reason"] = str(
+                defer_entry.get("defer_reason") or build_defer_reason(themes)
+            )
+        elif status == "emr_blocked":
+            entry["defer_reason"] = str(
+                defer_entry.get("defer_reason")
+                or (
+                    "EMR-blocked — structured clinical fields (ECOG/mutation/"
+                    "response/progression) required; not encodable on DrugClaimLine alone."
+                )
+            )
+        elif status == "non_actionable":
+            entry["defer_reason"] = str(
+                defer_entry.get("defer_reason")
+                or (
+                    "Non-actionable — structural heading, struck/superseded row, or "
+                    "navigational prose without deontic billing signal."
+                )
             )
         traces.append(entry)
 
     manifest: dict[str, Any] = {
         "manifest_version": "canonical-v1",
-        "rule_set_id": "drug_indication_prose",
+        "rule_set_id": section.rule_set_id,
         "section_id": section.manifest_section_id,
         "effective_date": effective_date,
         "rules_in_json": len(rules),
         "section_clause_total": gate_b_frame.height,
         "encoded_clause_count": len(encoded_ids),
         "encoded_clause_ids": sorted(encoded_ids),
+        "encoded_clause_coordinates": sorted(
+            {
+                str(row.get("clause_coordinate") or "")
+                for row in gate_b_frame.iter_rows(named=True)
+                if str(row.get("clause_id") or "") in encoded_ids
+                and row.get("clause_coordinate")
+            }
+        ),
         "tier_a_pending_clause_ids": sorted(tier_a_pending),
         "tier_b_pending_clause_ids": sorted(tier_b_pending),
         "tier_c_deferred_clause_ids": sorted(tier_c_deferred),
-        "emr_blocked_clause_ids": [],
-        "non_actionable_clause_ids": [],
+        "emr_blocked_clause_ids": sorted(emr_blocked),
+        "non_actionable_clause_ids": sorted(non_actionable),
         "tier_a_pending_count": len(tier_a_pending),
         "tier_b_pending_count": len(tier_b_pending),
         "tier_c_deferred_count": len(tier_c_deferred),
+        "emr_blocked_count": len(emr_blocked),
+        "non_actionable_count": len(non_actionable),
         "clause_traces": traces,
+        "clause_trace_complete": len(traces) == gate_b_frame.height,
     }
 
     # Per-subsection totals (multi-section modules)
@@ -509,7 +711,95 @@ def build_manifest(
                     pl.col("encode_tier") == "C"
                 ).height
 
+    if section.extra_manifest:
+        extras = _extra_manifest_fields(section, rules, encoded_ids)
+        if section.extra_manifest == "copay_compositor":
+            for ids in (extras.get("compositor_clause_traces") or {}).values():
+                encoded_ids.update(str(cid) for cid in ids)
+            manifest["encoded_clause_ids"] = sorted(encoded_ids)
+            manifest["encoded_clause_count"] = len(encoded_ids)
+            # Recompute ek4d overlap against the unioned encoded set.
+            compositor = extras.get("compositor_clause_traces") or {}
+            extras["ek4d_overlap_clause_ids"] = sorted(
+                cid
+                for cid in encoded_ids
+                if cid in compositor.get("copay_exemption_ek4d", [])
+            )
+        manifest.update(extras)
+
     return manifest
+
+
+def _extra_manifest_fields(
+    section: GateBSection,
+    rules: list[dict[str, Any]],
+    encoded_ids: set[str],
+) -> dict[str, Any]:
+    """Track F: non-drug manifest extras that used to live in bespoke writers."""
+    if section.extra_manifest == "payment_cross_refs":
+        return {
+            "scope_note": (
+                f"§2.2 package vs itemized vs tier-override "
+                f"({len(rules)} JSON rules)"
+            ),
+            "session_fraction_status": "PARTIAL",
+            "related_rule_sets": [
+                {
+                    "rule_set_id": "session_pricing_2_2_2_B",
+                    "json_path": "session_pricing_2_2_2_B.json",
+                    "manifest": "L2.2_session_pricing_2_2_2_B_encoded_manifest.json",
+                    "note": (
+                        "§2.2.2.B session-fraction remains PARTIAL — "
+                        "see session_pricing.py"
+                    ),
+                }
+            ],
+        }
+    if section.extra_manifest == "material_buckets":
+        from scripts.sut.prose.manifest_clause_ids import (
+            EK3C_LIST_PRICE_CEILING_CLAUSE_IDS,
+            EK3_SCOPE_ONLY_CLAUSE_IDS,
+            GATE_B_STILL_DEFERRED_CLAUSE_IDS,
+            KDV_PRICING_CLAUSE_IDS,
+            MALZEME_SCOPE_ONLY_CLAUSE_IDS,
+            R5_AMENDMENT_HEADER_CLAUSE_IDS,
+            R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS,
+            SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS,
+            load_ek3_annex_header_clause_ids,
+            load_malzeme_general_header_clause_ids,
+        )
+
+        return {
+            "gate_b_deferred_clause_ids": sorted(GATE_B_STILL_DEFERRED_CLAUSE_IDS),
+            "kdv_pricing_clause_ids": sorted(KDV_PRICING_CLAUSE_IDS),
+            "separate_billing_allowlist_clause_ids": ["C001823"],
+            "ek3c_list_price_ceiling_clause_ids": sorted(EK3C_LIST_PRICE_CEILING_CLAUSE_IDS),
+            "sut_material_list_price_ceiling_clause_ids": sorted(
+                SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS
+            ),
+            "corpus_ek3_annex_header_clause_ids": sorted(load_ek3_annex_header_clause_ids()),
+            "corpus_ek3_scope_clause_ids": sorted(EK3_SCOPE_ONLY_CLAUSE_IDS),
+            "corpus_malzeme_general_header_clause_ids": sorted(
+                load_malzeme_general_header_clause_ids()
+            ),
+            "corpus_malzeme_scope_clause_ids": sorted(MALZEME_SCOPE_ONLY_CLAUSE_IDS),
+            "r5_amendment_header_clause_ids": sorted(R5_AMENDMENT_HEADER_CLAUSE_IDS),
+            "r5_manifest_header_only_clause_ids": sorted(R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS),
+        }
+    if section.extra_manifest == "copay_compositor":
+        from scripts.sut.prose.copay_compositor_traces import COMPOSITOR_CLAUSE_TRACES
+
+        compositor = COMPOSITOR_CLAUSE_TRACES
+        ek4d = sorted(
+            cid
+            for cid in encoded_ids
+            if cid in compositor.get("copay_exemption_ek4d", [])
+        )
+        return {
+            "compositor_clause_traces": compositor,
+            "ek4d_overlap_clause_ids": ek4d,
+        }
+    raise ValueError(f"unknown extra_manifest={section.extra_manifest!r}")
 
 
 def gate_b_summary(enriched: pl.DataFrame) -> dict[str, int]:
@@ -532,36 +822,61 @@ def write_artifacts(
     *,
     clauses_path: Path,
     section: GateBSection,
-    rules_path: Path,
     effective_date: str,
+    rules_path: Path | None = None,
+    rules: list[dict[str, Any]] | None = None,
+    batch_rules: list[dict[str, Any]] | None = None,
+    manifest_path: Path | None = None,
+    corpus_csv: Path | None = None,
+    write_corpus: bool = False,
 ) -> tuple[pl.DataFrame, dict[str, Any]]:
-    """Standard Gate B artifact writer: export → manifest → CSV + JSON."""
-    payload = json.loads(rules_path.read_text(encoding="utf-8"))
-    batch_rules = [
-        rule
-        for rule in (payload.get("rules") or [])
-        if any(
-            str(rule.get("sut_section") or "").startswith(prefix)
-            for prefix in section.match.prefixes
-        )
-    ]
+    """Standard Gate B artifact writer: export → manifest → JSON (+ optional CSV).
 
+    Rules resolve as: batch_rules > rules > rules_path (prefix-filtered).
+    Manifest path defaults to ``section.manifest_path``.
+    """
+    resolved_rules: list[dict[str, Any]]
+    if batch_rules is not None:
+        resolved_rules = batch_rules
+    elif rules is not None:
+        resolved_rules = rules
+    elif rules_path is not None:
+        payload = json.loads(rules_path.read_text(encoding="utf-8"))
+        all_rules = list(payload.get("rules") or [])
+        if section.filter_rules_by_section_prefix:
+            resolved_rules = [
+                rule
+                for rule in all_rules
+                if any(
+                    str(rule.get("sut_section") or "").startswith(prefix)
+                    for prefix in section.match.prefixes
+                )
+            ]
+        else:
+            resolved_rules = all_rules
+    else:
+        raise ValueError("write_artifacts requires rules_path, rules, or batch_rules")
+
+    resolve_clauses = pl.read_parquet(clauses_path)
+    frame = export_candidates(clauses_path, section)
     manifest = build_manifest(
-        export_candidates(clauses_path, section),
-        batch_rules,
+        frame,
+        resolved_rules,
         section,
         effective_date=effective_date,
+        resolve_clauses=resolve_clauses,
     )
     encoded = frozenset(manifest["encoded_clause_ids"])
 
-    corpus_csv = _PROJECT_ROOT / section.corpus_csv
-    manifest_path = _PROJECT_ROOT / section.manifest_path
-    corpus_csv.parent.mkdir(parents=True, exist_ok=True)
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    out_manifest = Path(manifest_path) if manifest_path else (_PROJECT_ROOT / section.manifest_path)
+    out_manifest.parent.mkdir(parents=True, exist_ok=True)
 
     frame = export_candidates(clauses_path, section, encoded_clause_ids=encoded)
-    frame.write_csv(corpus_csv)
-    manifest_path.write_text(
+    if write_corpus:
+        out_csv = Path(corpus_csv) if corpus_csv else (_PROJECT_ROOT / section.corpus_csv)
+        out_csv.parent.mkdir(parents=True, exist_ok=True)
+        frame.write_csv(out_csv)
+    out_manifest.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     return frame, manifest

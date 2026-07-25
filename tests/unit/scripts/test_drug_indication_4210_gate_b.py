@@ -81,7 +81,8 @@ def _audit_gap_parity(
     gate_b_frame: pl.DataFrame | None = None,
 ) -> dict[str, Any]:
     from scripts.sut.prose.gate_b_audit import audit_gap_parity, default_scan_promotions
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
     return audit_gap_parity(
         clauses_path,
@@ -89,17 +90,19 @@ def _audit_gap_parity(
         section_prefix=_SECTION_PREFIX,
         exclude_prefix=_EXCLUDE_PREFIX,
         frame=gate_b_frame,
-        fallback_frame=lambda: shim_export_candidates(_SECTION, clauses_path),
+        fallback_frame=lambda: export_candidates(clauses_path, ALL_SECTIONS[_SECTION]),
         scan=lambda f, e: default_scan_promotions(f, e),
     )
 
 
 def _run_audit(clauses_path: Path, rules: list[dict[str, Any]], *, effective_date: str) -> dict[str, Any]:
     from scripts.sut.prose.gate_b_audit import gap_clause_ids, repair_untraced
-    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import build_manifest, export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, clauses_path)
-    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date=effective_date)
+    frame = export_candidates(clauses_path, ALL_SECTIONS[_SECTION])
+    manifest = build_manifest(frame, rules, ALL_SECTIONS[_SECTION], resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date=effective_date)
     before = _audit_gap_parity(clauses_path, manifest, gate_b_frame=frame)
     manifest, repaired = repair_untraced(
         manifest,
@@ -116,18 +119,20 @@ def _run_audit(clauses_path: Path, rules: list[dict[str, Any]], *, effective_dat
 
 
 def test_gate_b_exports_4210_candidates() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     soft_floor(frame.height, 100, label="§4.2.10 export height")
     assert frame["section_id"].str.starts_with("4.2.10").all()
     assert not frame["section_id"].str.starts_with("4.2.100").any()
 
 
 def test_gate_b_csv_schema_and_tier_breakdown() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     for col in (
         "clause_id",
         "section_id",
@@ -148,11 +153,13 @@ def test_gate_b_csv_schema_and_tier_breakdown() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import build_manifest, export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     rules = _combined_rules()
-    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date="2026-06-27")
+    manifest = build_manifest(frame, rules, ALL_SECTIONS[_SECTION], resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert _ALL_ENCODED_IDS <= encoded
     assert manifest["tier_a_pending_count"] == 0
@@ -162,11 +169,13 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
 
 def test_audit_gap_parity_zero_untraced() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import build_manifest, export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     rules = _combined_rules()
-    manifest = shim_build_manifest(_SECTION, frame, rules, effective_date="2026-06-27")
+    manifest = build_manifest(frame, rules, ALL_SECTIONS[_SECTION], resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
 
     report = _audit_gap_parity(_CLAUSES, manifest, gate_b_frame=frame)
     assert report["gap_count"] == len(_gap_clause_ids())
@@ -179,10 +188,13 @@ def test_audit_gap_parity_zero_untraced() -> None:
 
 
 def test_audit_tier_c_deferred_have_defer_reason() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import build_manifest, export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
-    manifest = shim_build_manifest(_SECTION, frame, _combined_rules(), effective_date="2026-06-27")
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
+    manifest = build_manifest(frame, _combined_rules(), ALL_SECTIONS[_SECTION], resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27",
+    )
     gap_ids = _gap_clause_ids()
 
     for trace in manifest["clause_traces"]:
@@ -218,9 +230,10 @@ def test_tier_c_deferred_all_have_defer_reason() -> None:
 
 def test_audit_no_actionable_tier_ab_promotions() -> None:
     from scripts.sut.prose.gate_b_audit import default_scan_promotions
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     promotions = default_scan_promotions(frame, encoded_clause_ids=_ALL_ENCODED_IDS)
     assert len(promotions) <= 1
     for candidate in promotions:
@@ -228,13 +241,15 @@ def test_audit_no_actionable_tier_ab_promotions() -> None:
 
 
 def test_gate_b_artifacts_on_disk() -> None:
-    assert _CORPUS.is_file()
     assert _MANIFEST.is_file()
 
-    corpus = pl.read_csv(_CORPUS)
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
+
+    corpus = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
 
-    soft_floor(corpus.height, 100, label="committed corpus height")
+    soft_floor(corpus.height, 100, label="section export height")
     assert manifest["section_clause_total"] == corpus.height
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0

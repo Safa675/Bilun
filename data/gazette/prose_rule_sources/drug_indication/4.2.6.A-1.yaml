@@ -8,21 +8,21 @@ rules:
   - E23.7
   - E34.3
   gate_b_sources:
-  - C003977
+  - 4.2.6.A-1.ç
   - C003982
   drug_names:
   - somatropin
   - büyüme hormonu
   report_required: true
   action:
-    enforcement: boy sapması <-2 SD + yıllık uzama hızı yetersiz + kemik yaşı takvim yaşından >2 yıl geri (4 yaş altı/puberte
-      hariç); 2 GH uyarı testine yanıt alınanlarda uyku GH profili; nörosekretuar disfonksiyon veya IGF-1 <-2 SD ise IGF-1
-      jenerasyon testi ile biyoinaktif GH; yalnızca somatropin
-    message_tr: Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan, kemik yaşı takvim yaşına göre 2 yıldan
-      daha fazla geri olan (4 yaş altı veya puberte dönemi hariç), yapılan 2 büyüme hormonu uyarı testine yeterli yanıt alınan
-      hastalara uyku esnasında büyüme hormonu profili çıkartılmalı; nörosekretuar disfonksiyon veya serum IGF-1 <-2 SD olması
-      koşuluyla yapılacak IGF-1 jenerasyon testi ile biyoinaktif büyüme hormonu saptanması halinde (yalnızca somatropin) kullanılabilir
-      (§4.2.6.A-1).
+    enforcement: boy sapması <-2 SD + yıllık uzama hızı yetersiz + kemik yaşı takvim yaşından >2 yıl geri (4 yaş 
+      altı/puberte hariç); 2 GH uyarı testine yanıt alınanlarda uyku GH profili; nörosekretuar disfonksiyon veya IGF-1 
+      <-2 SD ise IGF-1 jenerasyon testi ile biyoinaktif GH; yalnızca somatropin
+    message_tr: Boy sapması patolojik olan <-2 SD ve yıllık uzama hızı yetersiz kalan, kemik yaşı takvim yaşına göre 2 
+      yıldan daha fazla geri olan (4 yaş altı veya puberte dönemi hariç), yapılan 2 büyüme hormonu uyarı testine yeterli
+      yanıt alınan hastalara uyku esnasında büyüme hormonu profili çıkartılmalı; nörosekretuar disfonksiyon veya serum 
+      IGF-1 <-2 SD olması koşuluyla yapılacak IGF-1 jenerasyon testi ile biyoinaktif büyüme hormonu saptanması halinde 
+      (yalnızca somatropin) kullanılabilir (§4.2.6.A-1).
 - rule_id: 4.2.6.A1.somatropin_listed_cases_no_condition
   sut_section: 4.2.6.A-1
   icd10_ranges:
@@ -31,7 +31,7 @@ rules:
   - E23.7
   - E34.3
   gate_b_sources:
-  - C003979
+  - 4.2.6.A-1.e
   drug_names:
   - somatropin
   - büyüme hormonu
@@ -39,9 +39,10 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: bu bendin uygulanmasında başkaca şart aranmaksızın belirtilen hallerde yalnızca somatropin kullanılabilir
-    message_tr: Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde yalnızca somatropin etkin maddeli ilaçlar
-      kullanılabilir (§4.2.6.A-1).
+    enforcement: bu bendin uygulanmasında başkaca şart aranmaksızın belirtilen hallerde yalnızca somatropin 
+      kullanılabilir
+    message_tr: Bu bendin uygulanmasında başkaca şart aranmaksızın aşağıdaki hallerde yalnızca somatropin etkin maddeli 
+      ilaçlar kullanılabilir (§4.2.6.A-1).
 - rule_id: 4.2.6.pediatric_gh_monitoring_board
   sut_section: 4.2.6.A-1
   drug_names:
@@ -60,10 +61,9 @@ rules:
   - E23.7
   - E34.3
   report_required: true
-  message_tr: Pediatrik büyüme hormonu devam tedavisi — endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu
-    ve epifiz hatları takibi gerekir (§4.2.6.A-1).
+  message_tr: Pediatrik büyüme hormonu devam tedavisi — endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu 
+    raporu ve epifiz hatları takibi gerekir (§4.2.6.A-1).
   gate_b_sources:
-  - C003965
   - C003982
   report_specialties:
   - endokrinoloji
@@ -86,7 +86,8 @@ rules:
   - E23.7
   - E34.3
   report_required: true
-  message_tr: Pediatrik büyüme hormonu yenileme — epifiz hatları açık hastalarda 1 yıllık sağlık kurulu raporu gerekir (§4.2.6.A-1).
+  message_tr: Pediatrik büyüme hormonu yenileme — epifiz hatları açık hastalarda 1 yıllık sağlık kurulu raporu gerekir 
+    (§4.2.6.A-1).
   gate_b_sources:
   - C003982
   report_specialties:
@@ -111,8 +112,8 @@ rules:
   - E23.7
   - E34.3
   report_required: true
-  message_tr: Pediatrik somatropin başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu
-    gerekir (§4.2.6.A-1).
+  message_tr: Pediatrik somatropin başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu 
+    raporu gerekir (§4.2.6.A-1).
   gate_b_sources:
   - C003966
   report_specialties:

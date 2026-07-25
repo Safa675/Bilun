@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.9
   deontic: MUST_BILL
   gate_b_sources:
-  - C003099
+  - 3.3.9.(1)
   condition:
     material_name_any:
     - medikal corap
@@ -20,7 +20,7 @@ rules:
   sut_section: 3.3.9
   deontic: MUST_BILL
   gate_b_sources:
-  - C003101
+  - 3.3.9.(3)
   condition:
     material_name_any:
     - medikal corap
@@ -34,7 +34,7 @@ rules:
   sut_section: 3.3.9
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003103
+  - 3.3.9.(5)
   condition:
     material_name_any:
     - medikal corap

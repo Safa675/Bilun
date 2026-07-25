@@ -10,4 +10,4 @@ rules:
     denial_tr: sevk sunucuya müracaat ile tedavi bitiş aynı gün ise gündelik ödenmez
     severity: error
   gate_b_sources:
-  - C001567
+  - 2.6.2.(3)

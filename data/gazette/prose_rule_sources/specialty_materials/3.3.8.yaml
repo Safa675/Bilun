@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.8
   deontic: MUST_BILL
   gate_b_sources:
-  - C003075
+  - 3.3.8.(1)
   condition:
     material_name_any:
     - ortopedi ve travmatoloji
@@ -19,7 +19,7 @@ rules:
   sut_section: 3.3.8
   deontic: MUST_BILL
   gate_b_sources:
-  - C003093
+  - 3.3.8.(2)
   condition:
     material_name_any:
     - ortopedi ve travmatoloji

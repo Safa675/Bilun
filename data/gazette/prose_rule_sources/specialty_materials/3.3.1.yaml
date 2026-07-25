@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002838
+  - 3.3.1.(10)
   condition:
     material_name_any:
     - yara ort
@@ -26,7 +26,7 @@ rules:
   sut_section: 3.3.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002838
+  - 3.3.1.(10)
   condition:
     material_name_any:
     - hidrojel
@@ -47,7 +47,7 @@ rules:
   sut_section: 3.3.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002838
+  - 3.3.1.(10)
   condition:
     material_name_any:
     - larva debridman
@@ -61,7 +61,7 @@ rules:
   sut_section: 3.3.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002838
+  - 3.3.1.(10)
   condition:
     material_name_any:
     - biyostimul
@@ -75,18 +75,19 @@ rules:
   sut_section: 3.3.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002856
+  - 3.3.1.(9)
   condition:
     skin_substitute_non_burn_use: true
   action:
     material_outcome: no_pay
     severity: error
-    message_tr: Deri taklidi/yedeği yalnızca yanık tedavisinde ödenir — diğer endikasyonlarda karşılanmaz (§3.3.1(9)/(10)).
+    message_tr: Deri taklidi/yedeği yalnızca yanık tedavisinde ödenir — diğer endikasyonlarda karşılanmaz 
+      (§3.3.1(9)/(10)).
 - rule_id: 3.3.1.(10).skin_substitute_keyword_no_pay
   sut_section: 3.3.1
   deontic: NO_PAY
   gate_b_sources:
-  - C002856
+  - 3.3.1.(9)
   condition:
     material_name_any:
     - deri esdeger
@@ -102,18 +103,19 @@ rules:
   sut_section: 3.3.1
   deontic: MUST_BILL
   gate_b_sources:
-  - C002838
+  - 3.3.1.(1)
   condition:
     immunobullous_wound_care_patient_supply: true
   action:
     material_outcome: review_required
     severity: warning
-    message_tr: İmmünobüllöz yara bakım malzemesi reçete karşılığı hastaya temin edilmiş — fatura tutarı mahsup/clawback (§3.3.1(13)).
+    message_tr: İmmünobüllöz yara bakım malzemesi reçete karşılığı hastaya temin edilmiş — fatura tutarı mahsup/clawback
+      (§3.3.1(13)).
 - rule_id: 3.3.1.(13).immunobullous_non_moh_supply
   sut_section: 3.3.1
   deontic: MUST_BILL
   gate_b_sources:
-  - C002838
+  - 3.3.1.(1)
   condition:
     immunobullous_wound_care_non_moh_facility: true
   action:
@@ -124,7 +126,7 @@ rules:
   sut_section: 3.3.1
   deontic: MUST_BILL
   gate_b_sources:
-  - C002839
+  - 3.3.1.(1)
   condition:
     material_name_any:
     - yara bakim
@@ -150,7 +152,7 @@ rules:
   sut_section: 3.3.1
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002853
+  - 3.3.1.(6)
   condition:
     material_name_any:
     - yara bakim
@@ -158,13 +160,14 @@ rules:
   action:
     material_outcome: review_required
     severity: warning
-    message_tr: Ayakta tedavi yara bakım ürünleri — sağlık kurulu raporuna dayanılarak genel cerrahi / ortopedi ve travmatoloji
-      / plastik cerrahi / geriatri / enfeksiyon / deri uzman hekimlerinden biri tarafından reçete edilmelidir (§3.3.1(6)).
+    message_tr: Ayakta tedavi yara bakım ürünleri — sağlık kurulu raporuna dayanılarak genel cerrahi / ortopedi ve 
+      travmatoloji / plastik cerrahi / geriatri / enfeksiyon / deri uzman hekimlerinden biri tarafından reçete 
+      edilmelidir (§3.3.1(6)).
 - rule_id: 3.3.1.(8).hydrocolloid_kopuk_fiber_must_bill
   sut_section: 3.3.1
   deontic: MUST_BILL
   gate_b_sources:
-  - C002855
+  - 3.3.1.(8)
   condition:
     material_name_any:
     - hydrocolloid
@@ -175,8 +178,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Ayakta tedavide tedavi edici etkisini sadece hydrocolloid, köpük ve fiber içermesinden gösteren yara bakım
-      ürünleri — Kurumca karşılanır (§3.3.1(8)).
+    message_tr: Ayakta tedavide tedavi edici etkisini sadece hydrocolloid, köpük ve fiber içermesinden gösteren yara 
+      bakım ürünleri — Kurumca karşılanır (§3.3.1(8)).
 - rule_id: 3.3.1.(9).a.dermis_iskeleti_burn_coverage_must_bill
   sut_section: 3.3.1
   deontic: MUST_BILL
@@ -191,8 +194,9 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Dermis iskeleti tam kat dermis hasarli 3. derece yaniklarda yuz/boyun/el/ayak/perine/eklem bölgelerini içeren
-      veya toplamin %40i 0-12 yas %20 astigi yaniklarda yanik merkezi ve 3. basamak saglik kurulu raporuyla karsilanir
+    message_tr: Dermis iskeleti tam kat dermis hasarli 3. derece yaniklarda yuz/boyun/el/ayak/perine/eklem bölgelerini 
+      içeren veya toplamin %40i 0-12 yas %20 astigi yaniklarda yanik merkezi ve 3. basamak saglik kurulu raporuyla 
+      karsilanir
 - rule_id: 3.3.1.(9).b.deri_benzerleri_burn_coverage_must_bill
   sut_section: 3.3.1
   deontic: MUST_BILL
@@ -207,5 +211,5 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Deri benzerleri derin 2. ve veya 3. derece yaniklarda enfeksiyon kontaminasyondan koruma amaciyla %40i 0-12
-      yas %20 gecen yaniklarda yanik ünitesi merkezi saglik kurulu raporuyla karsilanir
+    message_tr: Deri benzerleri derin 2. ve veya 3. derece yaniklarda enfeksiyon kontaminasyondan koruma amaciyla %40i 
+      0-12 yas %20 gecen yaniklarda yanik ünitesi merkezi saglik kurulu raporuyla karsilanir

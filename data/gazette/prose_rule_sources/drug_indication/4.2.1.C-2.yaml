@@ -20,7 +20,7 @@ rules:
 - rule_id: 4.2.1.C.rituximab_relapse_retreatment
   sut_section: 4.2.1.C-2
   gate_b_sources:
-  - C003658
+  - 4.2.1.C-2.ç
   drug_names:
   - rituximab
   - mabthera
@@ -119,7 +119,7 @@ rules:
   message_tr: Rituksimab — pemfigus vulgaris tedavisinde üçüncü basamak kurumda dermatoloji 6 ay süreli sağlık kurulu raporu;
     PDAİ skoru ve yanıt değerlendirmesi belirtilir (§4.2.1.C-2).
   gate_b_sources:
-  - C003659
+  - 4.2.1.C-2.d
   prescriber_specialties:
   - dermatoloji
   report_duration_months: 6

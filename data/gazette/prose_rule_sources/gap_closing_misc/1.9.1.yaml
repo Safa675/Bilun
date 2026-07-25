@@ -13,7 +13,7 @@ rules:
     billable: true
     payment_tr: aynı başvuru altında yatarak tedavide Kurumca karşılanan sağlık hizmetleri pakete dahil
   gate_b_sources:
-  - C000410
+  - 1.9.1.(7)
 - rule_id: 1.9.1.(1).extra_fee_permissible_scope
   sut_section: 1.9.1
   condition:
@@ -42,7 +42,7 @@ rules:
     denial_tr: ilave ücret talebinde bulunulmadan önce hasta veya hasta yakınının yazılı onayı alınması zorunludur
     severity: error
   gate_b_sources:
-  - C000402
+  - 1.9.1.(5)
   verification_status: ai_generated_pending_review
   content_note: Patient-protection rule — mandatory written pre-consent before any extra fee.
 - rule_id: 1.9.1.(6).er_stabilization_24h_before_extra_fee
@@ -57,6 +57,6 @@ rules:
       formu imza karşılığı verilmesi zorunludur
     severity: error
   gate_b_sources:
-  - C000405
+  - 1.9.1.(6)
   verification_status: ai_generated_pending_review
   content_note: ER patient-protection — 24h stabilization + EK-1/D notification form mandatory before any extra fee.

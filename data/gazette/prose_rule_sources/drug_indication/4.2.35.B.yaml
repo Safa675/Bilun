@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.35.B.chronic_msk_fibromyalgia_specialists
   sut_section: 4.2.35.B
   gate_b_sources:
-  - C006703
+  - 4.2.35.B.(1)
   icd10_codes:
   - M79.7
   - M79.0
@@ -38,7 +38,7 @@ rules:
   message_tr: Pregabalin fibromiyalji — ikinci/üçüncü basamak sağlık kurulu raporu (en fazla 6 ay) ve romatoloji/ortopedi/fizik
     tedavi/nöroloji/algoloji uzman reçetesi gerekir (§4.2.35.B).
   gate_b_sources:
-  - C006705
+  - 4.2.35.B.(2)
   report_specialties:
   - romatoloji
   - ortopedi

@@ -26,10 +26,11 @@ rules:
     enforcement: 'kazanılmış koagülasyon bozukluğu (K vitamini yetersizliği, karaciğer yetmezliği) kanaması: kanama yeri belirtilerek
       acilde tüm uzmanlarca raporsuz en fazla 1 günlük doz; >1 gün ≤3 gün hematoloji (yoksa dahiliye/çocuk sağlık dahil) raporu;
       devamında hematoloji olan hastaneye sevk'
-    message_tr: Kazanılmış (edinsel) koagülasyon bozukluklarında (K vitamini yetersizliği, karaciğer yetmezliği gibi) oluşan
-      kanamalarda kanama yeri belirtilmek koşuluyla uzmanlarca yatan/acil müracaatta rapor aranmaksızın en fazla bir günlük
-      dozda reçete edilirse bedeli Kurumca karşılanır; bir günden uzun tedavide ≤3 gün süreli hematoloji (yoksa dahiliye/çocuk
-      sağlığı dahil) raporuyla ödenir, tedavinin devamı durumunda hematoloji uzmanı bulunan hastaneye sevk edilir (§4.2.27.A).
+    message_tr: Kazanılmış (edinsel) koagülasyon bozukluklarında (K vitamini yetersizliği, karaciğer yetmezliği gibi) 
+      oluşan kanamalarda kanama yeri belirtilmek koşuluyla uzmanlarca yatan/acil müracaatta rapor aranmaksızın en fazla 
+      bir günlük dozda reçete edilirse bedeli Kurumca karşılanır; bir günden uzun tedavide ≤3 gün süreli hematoloji 
+      (yoksa dahiliye/çocuk sağlığı dahil) raporuyla ödenir, tedavinin devamı durumunda hematoloji uzmanı bulunan 
+      hastaneye sevk edilir (§4.2.27.A).
 - rule_id: 4.2.27.A.coumarin_noac_bleed_report_free
   sut_section: 4.2.27.A
   icd10_ranges:
@@ -56,11 +57,11 @@ rules:
     enforcement: 'kumarin/NOAK kaynaklı hayatı tehdit eden aktif kanama: INR/PT aranmadan kanama yeri belirtilerek yatan/ayaktan
       acilde tüm uzmanlarca raporsuz en fazla 1 günlük doz; >1 gün ise kanamanın devam ettiğini gösteren günlük dozlu ≤3 gün
       süreli hematoloji (yoksa dahiliye/çocuk sağlık dahil sağlık kurulu) raporu'
-    message_tr: Kumarin türevleri ve NOAK kaynaklı hayatı tehdit eden aktif kanaması olanlarda INR/PT aranmadan kanama yeri
-      belirtilerek yatan hastalarda acil durumlarda veya ayaktan acil müracaatta tüm uzmanlarca rapor şartı aranmaksızın en
-      fazla bir günlük dozda reçete edilirse bedeli Kurumca karşılanır; bir günden uzun tedavide kanamanın devam ettiğini
-      bildiren günlük dozlu en fazla üç gün süreli hematoloji uzmanı (yoksa dahiliye/çocuk sağlığı uzmanı içeren sağlık kurulu)
-      raporuyla ödenir (§4.2.27.A).
+    message_tr: Kumarin türevleri ve NOAK kaynaklı hayatı tehdit eden aktif kanaması olanlarda INR/PT aranmadan kanama 
+      yeri belirtilerek yatan hastalarda acil durumlarda veya ayaktan acil müracaatta tüm uzmanlarca rapor şartı 
+      aranmaksızın en fazla bir günlük dozda reçete edilirse bedeli Kurumca karşılanır; bir günden uzun tedavide 
+      kanamanın devam ettiğini bildiren günlük dozlu en fazla üç gün süreli hematoloji uzmanı (yoksa dahiliye/çocuk 
+      sağlığı uzmanı içeren sağlık kurulu) raporuyla ödenir (§4.2.27.A).
 - rule_id: 4.2.27.A.emicizumab_dosing_schedule
   sut_section: 4.2.27.A
   gate_b_sources:
@@ -76,11 +77,11 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: her reçetede güncel vücut ağırlığı; ilk 4 hafta haftada 1x3 mg/kg yükleme, 5. haftadan idame olarak haftada
-      1x1,5 mg/kg veya 2 haftada 1x3 mg/kg veya 4 haftada 1x6 mg/kg
-    message_tr: Her düzenlenen reçetede hastanın güncel vücut ağırlığı belirtilmelidir; emicizumab ilk 4 hafta haftada 1 kez
-      3 mg/kg yükleme dozuyla başlanır, 5. haftadan itibaren haftada 1 kez 1,5 mg/kg, 2 haftada 1 kez 3 mg/kg veya 4 haftada
-      1 kez 6 mg/kg idame dozlarında reçete edilirse bedeli Kurumca karşılanır (§4.2.27.A).
+    enforcement: her reçetede güncel vücut ağırlığı; ilk 4 hafta haftada 1x3 mg/kg yükleme, 5. haftadan idame olarak 
+      haftada 1x1,5 mg/kg veya 2 haftada 1x3 mg/kg veya 4 haftada 1x6 mg/kg
+    message_tr: Her düzenlenen reçetede hastanın güncel vücut ağırlığı belirtilmelidir; emicizumab ilk 4 hafta haftada 1
+      kez 3 mg/kg yükleme dozuyla başlanır, 5. haftadan itibaren haftada 1 kez 1,5 mg/kg, 2 haftada 1 kez 3 mg/kg veya 4
+      haftada 1 kez 6 mg/kg idame dozlarında reçete edilirse bedeli Kurumca karşılanır (§4.2.27.A).
 - rule_id: 4.2.27.A.emicizumab_inhibitor_prophylaxis
   sut_section: 4.2.27.A
   gate_b_sources:
@@ -98,8 +99,8 @@ rules:
     coverage_note: true
   action:
     enforcement: faktör VIII'e karşı >5 BU inhibitör gelişmiş tüm yaş gruplarında konjenital hemofili A rutin profilaksi
-    message_tr: Faktör VIII'e karşı 5 Bethesda Ünitesi (BU) üzerinde inhibitör gelişmiş tüm yaş gruplarındaki konjenital hemofili
-      A hastalarının rutin profilaksi tedavisinde kullanılması halinde bedeli Kurumca karşılanır (§4.2.27.A).
+    message_tr: Faktör VIII'e karşı 5 Bethesda Ünitesi (BU) üzerinde inhibitör gelişmiş tüm yaş gruplarındaki konjenital
+      hemofili A hastalarının rutin profilaksi tedavisinde kullanılması halinde bedeli Kurumca karşılanır (§4.2.27.A).
 - rule_id: 4.2.27.A.emicizumab_paediatric_prophylaxis
   sut_section: 4.2.27.A
   gate_b_sources:
@@ -115,10 +116,11 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: faktör düzeyi ≤%1 ve/veya ayda >3 kanaması olan konjenital faktör VIII eksiklikli 18 yaş altı hemofili A'da
-      rutin profilaksi
-    message_tr: Faktör düzeyi %1 veya altında ve/veya ayda üçten fazla kanaması olan konjenital faktör VIII eksikliği olan
-      18 yaş altı hemofili A hastalarının rutin profilaksi tedavisinde kullanılması halinde bedeli Kurumca karşılanır (§4.2.27.A).
+    enforcement: faktör düzeyi ≤%1 ve/veya ayda >3 kanaması olan konjenital faktör VIII eksiklikli 18 yaş altı hemofili 
+      A'da rutin profilaksi
+    message_tr: Faktör düzeyi %1 veya altında ve/veya ayda üçten fazla kanaması olan konjenital faktör VIII eksikliği 
+      olan 18 yaş altı hemofili A hastalarının rutin profilaksi tedavisinde kullanılması halinde bedeli Kurumca 
+      karşılanır (§4.2.27.A).
 - rule_id: 4.2.27.A.itt_bypassing_agent_acute_only
   sut_section: 4.2.27.A
   gate_b_sources:
@@ -136,12 +138,12 @@ rules:
   report_specialties:
   - hematoloji
   action:
-    enforcement: İTT esnasında akut kanama/cerrahi gereksiniminde mevcut bypass edici ajanlarla tedavi + İTT sürdürülür; İTT
-      alanlara başka durumlarda bypass edici ajan kullanılmaz; >10 gün ara verilirse İTT'ye devam edilmez (§4.2.27 kapsamına
-      geçilir)
-    message_tr: İTT tedavisi esnasında akut kanaması ve/veya cerrahi girişim gerekli olan hastalarda mevcut bypass edici ajanlar
-      ile kanama tedavisi uygulanabilir ve aynı zamanda İTT tedavisi sürdürülür; İTT alan hastalara bu tedaviler dışında bypass
-      edici ajanlar kullanılmaz, tedaviye 10 günden fazla ara verilirse İTT'ye devam edilmez (§4.2.27.A).
+    enforcement: İTT esnasında akut kanama/cerrahi gereksiniminde mevcut bypass edici ajanlarla tedavi + İTT sürdürülür;
+      İTT alanlara başka durumlarda bypass edici ajan kullanılmaz; >10 gün ara verilirse İTT'ye devam edilmez (§4.2.27 
+      kapsamına geçilir)
+    message_tr: İTT tedavisi esnasında akut kanaması ve/veya cerrahi girişim gerekli olan hastalarda mevcut bypass edici
+      ajanlar ile kanama tedavisi uygulanabilir ve aynı zamanda İTT tedavisi sürdürülür; İTT alan hastalara bu tedaviler
+      dışında bypass edici ajanlar kullanılmaz, tedaviye 10 günden fazla ara verilirse İTT'ye devam edilmez (§4.2.27.A).
 - rule_id: 4.2.27.anticoagulant_bleed_reversal_one_day
   sut_section: 4.2.27.A
   drug_names:
@@ -156,7 +158,8 @@ rules:
   - T45
   - D68
   - K72
-  message_tr: Kumarin/NOAK kaynaklı aktif kanama — kanama yeri belirtilerek en fazla 1 günlük doz ve hematoloji sevki (§4.2.27.A).
+  message_tr: Kumarin/NOAK kaynaklı aktif kanama — kanama yeri belirtilerek en fazla 1 günlük doz ve hematoloji sevki 
+    (§4.2.27.A).
   gate_b_sources:
   - C006243
 - rule_id: 4.2.27.apcc_bleeding_board
@@ -170,8 +173,8 @@ rules:
   - D66
   - D67
   - D68
-  message_tr: aPCC kanama tedavisi — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu ile en fazla
-    3 günlük doz (§4.2.27.A).
+  message_tr: aPCC kanama tedavisi — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu ile en 
+    fazla 3 günlük doz (§4.2.27.A).
   gate_b_sources:
   - C006246
   report_required: true
@@ -188,8 +191,8 @@ rules:
   - D66
   - D67
   - D68
-  message_tr: aPCC proflaksisi — FVIII inhibitör <5 BU oluncaya kadar haftalık 4500 ünite sınırı; 6 aya kadar süreli sağlık
-    kurulu raporu (§4.2.27.A).
+  message_tr: aPCC proflaksisi — FVIII inhibitör <5 BU oluncaya kadar haftalık 4500 ünite sınırı; 6 aya kadar süreli 
+    sağlık kurulu raporu (§4.2.27.A).
   gate_b_sources:
   - C006247
   report_required: true
@@ -210,8 +213,8 @@ rules:
   - D66
   - D67
   - D68
-  message_tr: Koagülasyon faktörü acil müracaat — takip karnesi yoksa el yazısı ile belirtilerek en fazla 1 günlük doz ve
-    hematoloji sevki (§4.2.27.A).
+  message_tr: Koagülasyon faktörü acil müracaat — takip karnesi yoksa el yazısı ile belirtilerek en fazla 1 günlük doz 
+    ve hematoloji sevki (§4.2.27.A).
   gate_b_sources:
   - C006228
   report_required: true
@@ -232,10 +235,9 @@ rules:
   - D67
   - D68
   - D69
-  message_tr: Koagülasyon faktörü — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu; hematoloji/iç
-    hastalıkları/çocuk sağlığı uzman reçetesi (§4.2.27.A).
+  message_tr: Koagülasyon faktörü — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu; 
+    hematoloji/iç hastalıkları/çocuk sağlığı uzman reçetesi (§4.2.27.A).
   gate_b_sources:
-  - C006210
   - C006225
   - C006232
   - C006233
@@ -262,8 +264,8 @@ rules:
   - T45
   - D68
   - K72
-  message_tr: Kumarin kaynaklı aktif kanama — kanama yeri belirtilerek uzman hekimlerce en fazla 1 günlük doz; idame yalnızca
-    hematoloji uzman hekimlerince (§4.2.27.A).
+  message_tr: Kumarin kaynaklı aktif kanama — kanama yeri belirtilerek uzman hekimlerce en fazla 1 günlük doz; idame 
+    yalnızca hematoloji uzman hekimlerince (§4.2.27.A).
   gate_b_sources:
   - C006243
 - rule_id: 4.2.27.emicizumab_hematology_monthly_prescription
@@ -273,8 +275,8 @@ rules:
   - hemlibra
   icd10_ranges:
   - D66
-  message_tr: Emicizumab — 3 ay süreli sağlık kurulu raporu; yalnızca hematoloji uzman reçetesi; ilk 3 aylık tedavi birer
-    aylık dozda reçetelenir (§4.2.27.A).
+  message_tr: Emicizumab — 3 ay süreli sağlık kurulu raporu; yalnızca hematoloji uzman reçetesi; ilk 3 aylık tedavi 
+    birer aylık dozda reçetelenir (§4.2.27.A).
   gate_b_sources:
   - C006264
   report_required: true
@@ -298,8 +300,8 @@ rules:
   - D67
   - D68
   - D69
-  message_tr: Koagülasyon faktörü — 1 yıllık sağlık kurulu raporu; ilk rapor üçüncü basamak resmi sağlık kurumunda düzenlenmeli
-    (§4.2.27.A).
+  message_tr: Koagülasyon faktörü — 1 yıllık sağlık kurulu raporu; ilk rapor üçüncü basamak resmi sağlık kurumunda 
+    düzenlenmeli (§4.2.27.A).
   gate_b_sources:
   - C006225
   report_required: true
@@ -322,8 +324,8 @@ rules:
   - D67
   - D68
   - D69
-  message_tr: Faktör VIIa kanama tedavisi — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu gerekir
-    (§4.2.27.A).
+  message_tr: Faktör VIIa kanama tedavisi — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu 
+    gerekir (§4.2.27.A).
   gate_b_sources:
   - C006232
   - C006263
@@ -341,8 +343,8 @@ rules:
   - D66
   - D67
   - D68
-  message_tr: Faktör VIIa proflaksisi — inhibitörlü hemofili hastalarında 3 aya kadar süreli sağlık kurulu raporu gerekir
-    (§4.2.27.A).
+  message_tr: Faktör VIIa proflaksisi — inhibitörlü hemofili hastalarında 3 aya kadar süreli sağlık kurulu raporu 
+    gerekir (§4.2.27.A).
   gate_b_sources:
   - C006233
   report_required: true
@@ -380,8 +382,8 @@ rules:
   - D66
   - D67
   - D68
-  message_tr: Hemofili acil müracaat — takip karnesi yoksa el yazısı ile belirtilerek en fazla 1 günlük doz ve hematoloji
-    sevki (§4.2.27.A).
+  message_tr: Hemofili acil müracaat — takip karnesi yoksa el yazısı ile belirtilerek en fazla 1 günlük doz ve 
+    hematoloji sevki (§4.2.27.A).
   gate_b_sources:
   - C006228
   report_required: true
@@ -395,8 +397,8 @@ rules:
   - hemofil
   icd10_ranges:
   - D66
-  message_tr: İTT kötü yanıt kriterleri (inhibitör tanısı 5 yıl+ veya tepe titresi >200 BU/ml) — Kurumca karşılanmaz; raporda
-    belirtilmeli (§4.2.27.A).
+  message_tr: İTT kötü yanıt kriterleri (inhibitör tanısı 5 yıl+ veya tepe titresi >200 BU/ml) — Kurumca karşılanmaz; 
+    raporda belirtilmeli (§4.2.27.A).
   gate_b_sources:
   - C006250
   report_required: true
@@ -411,10 +413,10 @@ rules:
   - immun tolerans
   icd10_ranges:
   - D66
-  message_tr: İmmün tolerans tedavisi — üçüncü basamak kurumda üç hematoloji uzmanının 6 aya kadar süreli sağlık kurulu raporu;
-    yalnızca hematoloji reçetesi (§4.2.27.A).
+  message_tr: İmmün tolerans tedavisi — üçüncü basamak kurumda üç hematoloji uzmanının 6 aya kadar süreli sağlık kurulu 
+    raporu; yalnızca hematoloji reçetesi (§4.2.27.A).
   gate_b_sources:
-  - C006249
+  - 4.2.27.A.(6)
   report_required: true
   report_specialties:
   - hematoloji
@@ -437,10 +439,10 @@ rules:
   - D67
   - D68
   - D69
-  message_tr: Kombine koagülasyon faktörü/protrombin kompleksi — kazanılmış koagülasyon bozukluğunda tanı ve faktör düzeyini
-    gösteren hematoloji sağlık kurulu raporu ile bir dozda reçete (§4.2.27.A).
+  message_tr: Kombine koagülasyon faktörü/protrombin kompleksi — kazanılmış koagülasyon bozukluğunda tanı ve faktör 
+    düzeyini gösteren hematoloji sağlık kurulu raporu ile bir dozda reçete (§4.2.27.A).
   gate_b_sources:
-  - C006234
+  - 4.2.27.A.(4)
   report_required: true
   report_specialties:
   - hematoloji
@@ -458,7 +460,8 @@ rules:
   - D66
   - D67
   - D68
-  message_tr: Proflaksi hastasında akut kanama/cerrahi — 3 güne kadar süreli yeni hematoloji uzman hekim raporu gerekir (§4.2.27.A).
+  message_tr: Proflaksi hastasında akut kanama/cerrahi — 3 güne kadar süreli yeni hematoloji uzman hekim raporu gerekir 
+    (§4.2.27.A).
   gate_b_sources:
   - C006257
   report_required: true
@@ -474,7 +477,8 @@ rules:
   icd10_ranges:
   - D68.0
   - D68
-  message_tr: Von Willebrand akut kanama/cerrahi — 3 güne kadar süreli yeni hematoloji uzman hekim raporu gerekir (§4.2.27.A).
+  message_tr: Von Willebrand akut kanama/cerrahi — 3 güne kadar süreli yeni hematoloji uzman hekim raporu gerekir 
+    (§4.2.27.A).
   gate_b_sources:
   - C006257
   report_required: true
@@ -490,9 +494,10 @@ rules:
   icd10_ranges:
   - D68.0
   - D68
-  message_tr: Von Willebrand faktör — tanı ve faktör düzeyini gösteren 1 yıllık hematoloji sağlık kurulu raporu gerekir (§4.2.27.A).
+  message_tr: Von Willebrand faktör — tanı ve faktör düzeyini gösteren 1 yıllık hematoloji sağlık kurulu raporu gerekir 
+    (§4.2.27.A).
   gate_b_sources:
-  - C006255
+  - 4.2.27.A.(7)
   report_required: true
   report_specialties:
   - hematoloji
@@ -509,8 +514,8 @@ rules:
   icd10_ranges:
   - D68.0
   - D68
-  message_tr: Von Willebrand/ağır profilaksi — haftalık faktör kullanımı 4500 üniteyi geçemez; aşım gerekçeleri 6 aya kadar
-    süreli yeni raporda belirtilir (§4.2.27.A).
+  message_tr: Von Willebrand/ağır profilaksi — haftalık faktör kullanımı 4500 üniteyi geçemez; aşım gerekçeleri 6 aya 
+    kadar süreli yeni raporda belirtilir (§4.2.27.A).
   gate_b_sources:
   - C006256
   report_required: true

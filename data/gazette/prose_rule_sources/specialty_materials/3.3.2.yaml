@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002875
+  - 3.3.2.b
   condition:
     material_name_any:
     - kan sekeri olcum cihaz
@@ -34,7 +34,7 @@ rules:
   sut_section: 3.3.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002874
+  - 3.3.2.a
   condition:
     material_name_any:
     - kan sekeri olcum cubugu
@@ -48,7 +48,7 @@ rules:
   sut_section: 3.3.2
   deontic: NO_PAY
   gate_b_sources:
-  - C002875
+  - 3.3.2.b
   condition:
     glucose_meter_early_renewal: true
   action:
@@ -73,7 +73,7 @@ rules:
   sut_section: 3.3.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002882
+  - 3.3.2.ç
   condition:
     material_name_any:
     - kan sekeri olcum cubugu

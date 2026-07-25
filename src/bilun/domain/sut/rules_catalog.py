@@ -33,7 +33,6 @@ from pathlib import Path
 
 from ..constants import (
     _PROSE_RULES_DIR,
-    PROSE_CORPUS_DIR,
     PROSE_MANIFESTS_DIR,
     SUT_CLAUSES_PATH,
     SUT_CLAUSE_COVERAGE_PATH,
@@ -301,18 +300,14 @@ def _material_bundling_partial_engine_summary(clause_frame: pl.DataFrame) -> dic
     return summary
 
 
-_L1_4_CORPUS_PATH = PROSE_CORPUS_DIR / "L1.4_material_bundling_prose.csv"
+def _l14_corpus_row_count() -> int:
+    """L1.4 material bundling corpus count (§3.1–3.2 clauses)."""
+    return _corpus_row_count_from_parquet("3.1") + _corpus_row_count_from_parquet("3.2")
 
 
 @lru_cache(maxsize=1)
 def _load_sut_clauses_frame() -> pl.DataFrame:
-    """Load and cache ``sut_clauses.parquet`` once per process.
-
-    Previously ``_corpus_row_count_from_parquet`` did a full parquet read per
-    section prefix per API request (up to 4 reads of the same file in one
-    ``coverage_summary`` call). Cached with mtime-based invalidation so changes
-    during development are picked up on the next call.
-    """
+    """Load and cache ``sut_clauses.parquet`` once per process."""
     if not SUT_CLAUSES_PATH.exists():
         return pl.DataFrame()
     try:
@@ -322,10 +317,7 @@ def _load_sut_clauses_frame() -> pl.DataFrame:
 
 
 def _corpus_row_count_from_parquet(section_prefix: str) -> int:
-    """Derive corpus row count from sut_clauses.parquet (Phase 4 — no CSV runtime reads).
-
-    Corpus CSVs are encode-wave scratch files; the parquet is the source of truth.
-    """
+    """Derive corpus row count from sut_clauses.parquet (no CSV runtime reads)."""
     frame = _load_sut_clauses_frame()
     if frame.height == 0:
         return 0
@@ -335,18 +327,11 @@ def _corpus_row_count_from_parquet(section_prefix: str) -> int:
         return 0
 
 
-def _l14_corpus_row_count() -> int:
-    """L1.4 material bundling corpus count (§3.1–3.2 clauses)."""
-    return _corpus_row_count_from_parquet("3.1") + _corpus_row_count_from_parquet("3.2")
-
-
 _PAYMENT_METHOD_MOTORS = (
     "payment_method_package",
     "payment_method_itemized",
     "payment_method_tier_override",
 )
-_L22_CORPUS_PATH = PROSE_CORPUS_DIR / "L2.2_payment_method_prose.csv"
-_L18_CORPUS_PATH = PROSE_CORPUS_DIR / "L1.8_copay_exemption_prose.csv"
 
 _COPAY_MOTORS = (
     "copay_rate_general",
@@ -1315,9 +1300,8 @@ def list_clauses(
 ) -> tuple[list[dict[str, Any]], int]:
     """Return ``(clauses, total)`` across all in-force clauses with optional search/filter.
 
-    ``q`` does a case-insensitive contains on both ``clause_id`` and
-    ``in_force_text``. The ``in_force_text`` column carries mixed-case text,
-    so ``str.to_lowercase()`` is mandatory before ``str.contains``.
+    ``q`` does a case-insensitive contains on ``clause_id``, ``clause_coordinate``,
+    and ``in_force_text`` (Track D — coordinate-first search).
     """
     frame = _load_coverage()
     if frame is None:
@@ -1331,10 +1315,19 @@ def list_clauses(
     if q:
         needle = q.strip().lower()
         if needle:
-            frame = frame.filter(
-                pl.col("clause_id").str.to_lowercase().str.contains(needle)
-                | pl.col("in_force_text").str.to_lowercase().str.contains(needle)
-            )
+            id_hit = pl.col("clause_id").str.to_lowercase().str.contains(needle, literal=True)
+            text_hit = pl.col("in_force_text").str.to_lowercase().str.contains(needle, literal=True)
+            if "clause_coordinate" in frame.columns:
+                coord_hit = (
+                    pl.col("clause_coordinate")
+                    .cast(pl.Utf8)
+                    .fill_null("")
+                    .str.to_lowercase()
+                    .str.contains(needle, literal=True)
+                )
+                frame = frame.filter(id_hit | text_hit | coord_hit)
+            else:
+                frame = frame.filter(id_hit | text_hit)
 
     if coverage_status and frame.height > 0:
         frame = frame.filter(pl.col("coverage_status") == coverage_status)
@@ -1370,11 +1363,264 @@ def list_clauses(
 
 
 def get_clause(clause_id: str) -> dict[str, Any] | None:
-    """Return a single clause payload by ``clause_id``, or ``None`` if not found."""
+    """Return a single clause by ``clause_id`` or unique ``clause_coordinate``.
+
+    Track D dual-read: ``C######`` / ``F######`` look up by id; otherwise treat
+    ``clause_id`` as a coordinate when it uniquely matches an in-force row.
+    Ambiguous coordinates return ``None`` (caller should search instead).
+    """
     frame = _load_coverage()
     if frame is None:
         return None
-    matched = frame.filter(pl.col("clause_id") == clause_id)
-    if matched.height == 0:
+    key = str(clause_id or "").strip()
+    if not key:
         return None
-    return _clause_payload(matched.row(0, named=True), None)
+
+    matched = frame.filter(pl.col("clause_id") == key)
+    if matched.height == 1:
+        return _clause_payload(matched.row(0, named=True), None)
+    if matched.height > 1:
+        # Prefer in-force when the coverage frame still carries superseded rows.
+        if "is_in_force" in matched.columns:
+            forced = matched.filter(pl.col("is_in_force") == True)  # noqa: E712
+            if forced.height == 1:
+                return _clause_payload(forced.row(0, named=True), None)
+        return _clause_payload(matched.row(0, named=True), None)
+
+    if "clause_coordinate" not in frame.columns:
+        return None
+    by_coord = frame.filter(pl.col("clause_coordinate").cast(pl.Utf8) == key)
+    if "is_in_force" in by_coord.columns:
+        forced = by_coord.filter(pl.col("is_in_force") == True)  # noqa: E712
+        if not forced.is_empty():
+            by_coord = forced
+    if by_coord.height == 1:
+        return _clause_payload(by_coord.row(0, named=True), None)
+    return None
+
+
+def list_deferrals(
+    *,
+    q: str | None = None,
+    status: str | None = None,
+    limit: int | None = 50,
+    offset: int = 0,
+) -> tuple[list[dict[str, Any]], int]:
+    """Return deferral_table rows joined to coverage for coordinate-first review.
+
+    Each row includes ``clause_id``, ``clause_coordinate`` (when known), status,
+    themes, reason, and a short text snippet from coverage/clauses parquet.
+    """
+    from scripts.sut.prose.gate_b_generic import load_deferral_table
+
+    coverage = _load_coverage()
+    clauses_frame = _load_sut_clauses_frame()
+    clauses = clauses_frame if clauses_frame.height > 0 else None
+    table = load_deferral_table(clauses if clauses is not None else coverage)
+    if not table:
+        return [], 0
+
+    by_id: dict[str, dict[str, Any]] = {}
+    if coverage is not None and "clause_id" in coverage.columns:
+        for row in coverage.iter_rows(named=True):
+            cid = str(row.get("clause_id") or "")
+            if cid:
+                by_id[cid] = row
+    if clauses is not None and "clause_id" in clauses.columns:
+        for row in clauses.iter_rows(named=True):
+            cid = str(row.get("clause_id") or "")
+            if cid and cid not in by_id:
+                by_id[cid] = row
+
+    needle = (q or "").strip().lower()
+    status_filter = (status or "").strip()
+    rows: list[dict[str, Any]] = []
+    for clause_id, entry in table.items():
+        st = str(entry.get("status") or "")
+        if status_filter and st != status_filter:
+            continue
+        src = by_id.get(clause_id) or {}
+        coordinate = (
+            entry.get("clause_coordinate")
+            or src.get("clause_coordinate")
+            or None
+        )
+        text = clause_display_text(src) if src else ""
+        snippet = (text or "")[:240]
+        hay = " ".join(
+            [
+                str(clause_id),
+                str(coordinate or ""),
+                st,
+                str(entry.get("defer_reason") or ""),
+                " ".join(str(x) for x in (entry.get("defer_themes") or [])),
+                snippet,
+            ]
+        ).lower()
+        if needle and needle not in hay:
+            continue
+        rows.append(
+            {
+                "clause_id": clause_id,
+                "clause_coordinate": coordinate,
+                "section_id": src.get("section_id") or entry.get("section_id"),
+                "status": st,
+                "defer_themes": list(entry.get("defer_themes") or []),
+                "defer_reason": entry.get("defer_reason") or "",
+                "text_snippet": snippet or None,
+            }
+        )
+
+    rows.sort(key=lambda r: (str(r.get("clause_coordinate") or ""), str(r["clause_id"])))
+    total = len(rows)
+    if offset:
+        rows = rows[offset:]
+    if limit is not None:
+        rows = rows[:limit]
+    return rows, total
+
+
+def resolve_prose_rule_gate_b_sources(
+    rule_set_id: str,
+    rule_id: str,
+) -> dict[str, Any] | None:
+    """Resolve one prose JSON rule's ``gate_b_sources`` to coordinates + snippets.
+
+    Track D rule-detail provenance: prefer ``clause_coordinate`` when unique;
+    keep ``clause_id`` as secondary.
+    """
+    path = _PROSE_RULES_DIR / f"{rule_set_id}.json"
+    if not path.is_file():
+        # Some engines share drug_indication_prose.json under a different id.
+        candidates = list(_PROSE_RULES_DIR.glob("*.json"))
+        path = next((p for p in candidates if p.stem == rule_set_id), None)
+        if path is None:
+            return None
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning("Failed to read prose rules %s: %s", path, exc)
+        return None
+
+    rules = payload.get("rules") or []
+    target = next((r for r in rules if isinstance(r, dict) and str(r.get("rule_id")) == rule_id), None)
+    if target is None:
+        return None
+
+    clauses_frame = _load_sut_clauses_frame()
+    clauses = clauses_frame if clauses_frame.height > 0 else None
+    coverage = _load_coverage()
+    resolve_frame = clauses if clauses is not None else coverage
+    cites: list[dict[str, Any]] = []
+    for raw in target.get("gate_b_sources") or []:
+        if raw is None or not str(raw).strip():
+            continue
+        ref = str(raw).strip()
+        resolved_ids: list[str] = []
+        coordinate: str | None = None
+        snippet: str | None = None
+        if resolve_frame is not None:
+            try:
+                from scripts.sut.prose.clause_identity import (
+                    AmbiguousClauseCiteError,
+                    NonEncodeEligibleCiteError,
+                    UnknownClauseCiteError,
+                    is_clause_coordinate,
+                    is_clause_id,
+                    resolve_gate_b_ref_to_clause_ids,
+                )
+
+                if is_clause_id(ref) or is_clause_coordinate(ref):
+                    resolved_ids = resolve_gate_b_ref_to_clause_ids(
+                        ref,
+                        resolve_frame,
+                        in_force_only=True,
+                        encode_eligible_only=False,
+                        allow_ambiguous=False,
+                    )
+            except (
+                AmbiguousClauseCiteError,
+                NonEncodeEligibleCiteError,
+                UnknownClauseCiteError,
+                Exception,
+            ):
+                resolved_ids = []
+
+            if resolved_ids:
+                hit = resolve_frame.filter(pl.col("clause_id") == resolved_ids[0])
+                if not hit.is_empty():
+                    row = hit.row(0, named=True)
+                    coordinate = row.get("clause_coordinate") or (
+                        ref if ref == row.get("clause_coordinate") else None
+                    )
+                    if coordinate is None and "clause_coordinate" in row:
+                        coordinate = row.get("clause_coordinate")
+                    snippet = (clause_display_text(row) or "")[:240] or None
+            elif "clause_coordinate" in resolve_frame.columns:
+                hit = resolve_frame.filter(pl.col("clause_coordinate").cast(pl.Utf8) == ref)
+                if hit.height == 1:
+                    row = hit.row(0, named=True)
+                    resolved_ids = [str(row.get("clause_id") or "")]
+                    coordinate = ref
+                    snippet = (clause_display_text(row) or "")[:240] or None
+
+        if coordinate is None and ref and ref[0].isdigit():
+            coordinate = ref
+        cites.append(
+            {
+                "ref": ref,
+                "clause_id": resolved_ids[0] if resolved_ids else None,
+                "clause_coordinate": coordinate,
+                "text_snippet": snippet,
+            }
+        )
+
+    return {
+        "rule_set_id": str(payload.get("rule_set_id") or rule_set_id),
+        "rule_id": rule_id,
+        "sut_section": target.get("sut_section"),
+        "gate_b_sources": cites,
+    }
+
+
+def list_prose_rules_with_gate_b_sources(
+    rule_set_id: str,
+    *,
+    limit: int | None = 50,
+    offset: int = 0,
+) -> dict[str, Any] | None:
+    """List prose JSON rules for one engine with resolved ``gate_b_sources``.
+
+    Used by the Track D prose audit surface (coordinate + snippet, no C* required).
+    """
+    path = _PROSE_RULES_DIR / f"{rule_set_id}.json"
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning("Failed to read prose rules %s: %s", path, exc)
+        return None
+
+    rules = [r for r in (payload.get("rules") or []) if isinstance(r, dict)]
+    total = len(rules)
+    if offset:
+        rules = rules[offset:]
+    if limit is not None:
+        rules = rules[:limit]
+
+    resolved_rules: list[dict[str, Any]] = []
+    for rule in rules:
+        rid = str(rule.get("rule_id") or "")
+        detail = resolve_prose_rule_gate_b_sources(rule_set_id, rid)
+        if detail is None:
+            continue
+        resolved_rules.append(detail)
+
+    return {
+        "rule_set_id": str(payload.get("rule_set_id") or rule_set_id),
+        "rules": resolved_rules,
+        "total": total,
+        "artifacts_available": True,
+    }

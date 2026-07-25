@@ -11,7 +11,7 @@ rules:
     6 aylık sağlık kurulu raporu gerekir (§4.2.10.D-2).
   gate_b_sources:
   - C004379
-  - C004380
+  - 4.2.10.D-2.(1)
   report_required: true
   report_specialties:
   - gastroenteroloji

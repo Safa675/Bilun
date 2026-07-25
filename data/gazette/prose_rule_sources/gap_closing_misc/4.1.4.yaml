@@ -12,7 +12,7 @@ rules:
     denial_tr: endikasyon dışı kullanım için Bakanlık hasta bazlı onay zorunludur
     severity: error
   gate_b_sources:
-  - C003468
+  - 4.1.4.d
 - rule_id: 4.1.4.(f).drug_not_reimbursed_indication_no_pay
   sut_section: 4.1.4
   condition:
@@ -22,7 +22,7 @@ rules:
     denial_tr: Kısa Ürün Bilgisinde var ama geri ödeme kapsamında değilse ödenmez
     severity: error
   gate_b_sources:
-  - C003473
+  - 4.1.4.f
 - rule_id: 4.1.4.(b).ek4d_non_star_drugs_exempt_offlabel_approval
   sut_section: 4.1.4
   condition:
@@ -30,7 +30,8 @@ rules:
     drug_has_star_marker: false
   action:
     billable: true
-    payment_tr: EK-4/D listesinde (*) yıldız işareti bulunmayan ilaçlar için Bakanlık endikasyon dışı ilaç kullanım onayı aranmaz
+    payment_tr: EK-4/D listesinde (*) yıldız işareti bulunmayan ilaçlar için Bakanlık endikasyon dışı ilaç kullanım onayı
+      aranmaz
   gate_b_sources:
   - C003465
   verification_status: ai_generated_pending_review
@@ -58,6 +59,6 @@ rules:
     denial_tr: endikasyon dışı ilaç kullanımı ilgili uzmanlık dalı hekimi tarafından reçete edilmelidir
     severity: error
   gate_b_sources:
-  - C003467
+  - 4.1.4.ç
   verification_status: ai_generated_pending_review
   content_note: Off-label Rx must be by the relevant specialty physician.

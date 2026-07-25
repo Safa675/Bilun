@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.17.A.active_vitamin_d_osteoporosis_nopay
   sut_section: 4.2.17.A
   gate_b_sources:
-  - C006042
+  - 4.2.17.A.(9)
   drug_names:
   - kalsitriol
   - alfakalsidol
@@ -48,7 +48,7 @@ rules:
   sut_section: 4.2.17.A
   gate_b_sources:
   - C006018
-  - C006030
+  - 4.2.17.A.(6)
   - C006031
   drug_names:
   - bifosfonat
@@ -88,7 +88,7 @@ rules:
   message_tr: Heterotopik ossifikasyon endikasyonlu bifosfonat — prospektüs doz/sürelerinde KMY ölçümü aranmaksızın kullanılabilir
     (§4.2.17.A).
   gate_b_sources:
-  - C006026
+  - 4.2.17.A.d
 - rule_id: 4.2.17.bisphosphonate_specialist_report
   sut_section: 4.2.17.A
   drug_names:
@@ -114,7 +114,7 @@ rules:
     hekim raporu gerekir (§4.2.17.A).
   gate_b_sources:
   - C006019
-  - C006027
+  - 4.2.17.A.(5)
   prescriber_specialties:
   - iç hastalıkları
   - fiziksel tıp
@@ -143,7 +143,7 @@ rules:
   message_tr: Kalsitonin — ağrılı vertebral kırığı olmayan, bifosfonat yanıtsız/tolere edilemeyen osteoporozda üçüncü basamak
     kurum ve uzman hekim raporu gerekir (§4.2.17.A).
   gate_b_sources:
-  - C006041
+  - 4.2.17.A.(8)
 - rule_id: 4.2.17.calcitonin_vertebral_fracture_report
   sut_section: 4.2.17.A
   drug_names:
@@ -165,7 +165,7 @@ rules:
   message_tr: Kalsitonin — ağrılı vertebral kırığı olan osteoporozda sağlık kurulu raporu ve en fazla 3 aylık tedavi dozu
     (§4.2.17.A).
   gate_b_sources:
-  - C006040
+  - 4.2.17.A.(7)
   report_duration_months: 3
 - rule_id: 4.2.17.denosumab_board_report
   sut_section: 4.2.17.A
@@ -238,7 +238,7 @@ rules:
   message_tr: Sekonder osteoporoz (steroid, organ nakli, romatolojik hastalık vb.) — uzman hekim raporu ve KMY kriterleri
     gerekir (§4.2.17.A).
   gate_b_sources:
-  - C006025
+  - 4.2.17.A.ç
 - rule_id: 4.2.17.strontium_raloxifene_bisph_fail
   sut_section: 4.2.17.A
   drug_names:

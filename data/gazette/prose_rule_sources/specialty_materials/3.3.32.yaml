@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.32
   deontic: MUST_BILL
   gate_b_sources:
-  - C003283
+  - 3.3.32.(1)
   condition:
     material_name_any:
     - işitme cihazı
@@ -19,7 +19,7 @@ rules:
   sut_section: 3.3.32
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003296
+  - 3.3.32.(4)
   condition:
     material_name_any:
     - işitme cihazı
@@ -89,7 +89,7 @@ rules:
   sut_section: 3.3.32
   deontic: MUST_BILL
   gate_b_sources:
-  - C003303
+  - 3.3.32.(7)
   condition:
     material_name_any:
     - işitme cihazı

@@ -1,116 +1,474 @@
 {
   "manifest_version": "canonical-v1",
   "rule_set_id": "material_bundling_prose",
+  "section_id": "3.1,3.2",
+  "effective_date": "2026-07-25",
   "rules_in_json": 83,
+  "section_clause_total": 37,
+  "encoded_clause_count": 33,
   "encoded_clause_ids": [
-    "C002682",
     "C002684",
     "C002685",
     "C002686",
     "C002687",
-    "C002688",
+    "C002689",
     "C002690",
     "C002691",
-    "C002693",
     "C002694",
     "C002695",
     "C002696",
     "C002697",
     "C002698",
-    "C002699",
-    "C002700",
-    "C002706",
     "C002707",
-    "C002709",
-    "C002710",
-    "C002711",
-    "C002712",
-    "C002713",
-    "C002714",
-    "C002715",
-    "C002716",
-    "C002717",
     "C002718",
-    "C002719",
     "C002720",
-    "C002721",
-    "C002722",
     "C002723",
     "C002724",
-    "C002725",
-    "C002726",
     "C002727",
-    "C002728",
-    "C002729",
-    "C002731",
-    "C002732",
     "C002733",
     "C002734",
-    "C002735",
-    "C002736",
-    "C002737",
-    "C002738",
-    "C002740",
     "C002741",
     "C002742",
     "C002743",
-    "C002744",
-    "C002746",
-    "C002747",
-    "C002748",
     "C002749",
-    "C002750",
-    "C002751",
-    "C002753",
-    "C002756",
     "C002758",
     "C002759",
-    "C002760",
     "C002761",
-    "C002762",
-    "C002763",
-    "C002764",
-    "C002765",
-    "C002766",
     "C002789",
-    "C002790",
-    "C002791",
-    "C002792",
-    "C002793",
     "C002797",
     "C002798",
-    "C002800",
-    "C002801",
-    "C002802",
-    "C002803",
-    "C002804",
-    "C002805",
-    "C002806",
-    "C002807",
-    "C002808",
-    "C002809",
-    "C002810",
-    "C002811",
-    "C002812",
-    "C002813",
-    "C002814",
-    "C002816",
-    "C002817",
-    "C002818",
-    "C002819",
-    "C002821",
-    "C002823",
     "C002824",
-    "C002825",
-    "C002827",
     "C002828",
-    "C002830",
-    "C002831",
-    "C002834",
-    "C002836",
-    "C008292"
+    "C002831"
   ],
-  "encoded_clause_count": 106,
+  "encoded_clause_coordinates": [
+    "3.1.1.(12)",
+    "3.1.1.(13)",
+    "3.1.1.(14)",
+    "3.1.1.(15)",
+    "3.1.1.(16)",
+    "3.1.1.(2)",
+    "3.1.1.(3)",
+    "3.1.1.(4)",
+    "3.1.1.(5)",
+    "3.1.1.(7)",
+    "3.1.1.(8)",
+    "3.1.1.(9)",
+    "3.1.2",
+    "3.1.2.(11)",
+    "3.1.2.(12)",
+    "3.1.2.(17)",
+    "3.1.2.(2)",
+    "3.1.2.(7)",
+    "3.1.2.2.(1)",
+    "3.1.2.2.(2)",
+    "3.1.2.2.(4)",
+    "3.1.2.b",
+    "3.1.2.c",
+    "3.1.2.d",
+    "3.1.2.ç",
+    "3.1.3.(10)",
+    "3.1.3.(11)",
+    "3.1.3.(2)",
+    "3.2.1.A.(2)",
+    "3.2.1.B.(2)",
+    "3.2.1.C.(2)"
+  ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_clause_ids": [
+    "C002692",
+    "C002794",
+    "C002795",
+    "C002796"
+  ],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 4,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "clause_traces": [
+    {
+      "clause_id": "C002684",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Kurumca bedeli karşılanan tıbbi malzemelerin",
+      "linked_rule_ids": [
+        "3.1.1.(2).titubb_uts_incomplete"
+      ]
+    },
+    {
+      "clause_id": "C002685",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.1.(3).ismarlama_device_component_titubb_incomplete",
+        "3.1.1.(4).titubb_uts_barcode_documentation_missing"
+      ]
+    },
+    {
+      "clause_id": "C002686",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.1.(4).ihale_dts_mandatory_fields_incomplete"
+      ]
+    },
+    {
+      "clause_id": "C002687",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.1.(5).procurement_screen_incomplete",
+        "3.1.1.(6).inpatient_facility_supply_violation"
+      ]
+    },
+    {
+      "clause_id": "C002689",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.1.(7).non_reimbursed_inpatient_patient_charge"
+      ]
+    },
+    {
+      "clause_id": "C002690",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "SUT eki listelerde yer alan tıbbi malzeme birim fiyatları",
+      "linked_rule_ids": [
+        "3.2.1.unlisted_material_surcharge_billing"
+      ]
+    },
+    {
+      "clause_id": "C002691",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.1.(9).non_reimbursed_procedure_material"
+      ]
+    },
+    {
+      "clause_id": "C002692",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "SUT eki EK-3 listelerinde yer alan tıbbi malzeme fiyatları",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C002694",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.1.(14).foreign_facility_overhead"
+      ]
+    },
+    {
+      "clause_id": "C002695",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tıbbi malzeme alan tanımları (SUT kodları)",
+      "linked_rule_ids": [
+        "3.1.1.(15).separate_billing_not_authorized"
+      ]
+    },
+    {
+      "clause_id": "C002696",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tıbbi malzeme imal veya ithal eden firmalar tıbbi malzemelerini",
+      "linked_rule_ids": [
+        "3.1.1.(16).medula_code_undefined_on_date"
+      ]
+    },
+    {
+      "clause_id": "C002697",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.1.(17).barcode_sut_mismatch"
+      ]
+    },
+    {
+      "clause_id": "C002698",
+      "section_id": "3.1.1",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.1.(18).facility_procedure_restriction"
+      ]
+    },
+    {
+      "clause_id": "C002707",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "SUT eki EK-3/C listelerinde yer almayan tıbbi malzemelerin bedelleri",
+      "linked_rule_ids": [
+        "3.1.2.(2).not_in_ek3c"
+      ]
+    },
+    {
+      "clause_id": "C002718",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "için tıbbi uygunluk aranması zorunlu olmayıp",
+      "linked_rule_ids": [
+        "3.1.2.(5).ek3c_optional_appropriateness_consumables"
+      ]
+    },
+    {
+      "clause_id": "C002720",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.(7).lost_stolen_miat"
+      ]
+    },
+    {
+      "clause_id": "C002723",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Ortez",
+      "linked_rule_ids": [
+        "3.1.2.(8).warranty_maintenance_procedure_incomplete"
+      ]
+    },
+    {
+      "clause_id": "C002724",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.c.onarim_not_covered"
+      ]
+    },
+    {
+      "clause_id": "C002727",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.(8).protez_repair_documentation_incomplete"
+      ]
+    },
+    {
+      "clause_id": "C002733",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.(11).maintenance_cost_cap_exceeded"
+      ]
+    },
+    {
+      "clause_id": "C002734",
+      "section_id": "3.1.2",
+      "encode_tier": "B",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Tıbbi malzemelerin yenilenmesi için düzenlenecek sağlık kurulu raporlarında",
+      "linked_rule_ids": [
+        "3.1.2.report_prescription_invalid"
+      ]
+    },
+    {
+      "clause_id": "C002741",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.c.warranty_maintenance"
+      ]
+    },
+    {
+      "clause_id": "C002742",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.ç.garanti_renewal_denied"
+      ]
+    },
+    {
+      "clause_id": "C002743",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.d.duplicate_function_garanty"
+      ]
+    },
+    {
+      "clause_id": "C002749",
+      "section_id": "3.1.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.(17).device_consumable_excluded"
+      ]
+    },
+    {
+      "clause_id": "C002758",
+      "section_id": "3.1.2.2",
+      "encode_tier": "A",
+      "manifest_status": "encoded",
+      "heuristic_inn": "Bir defaya mahsus verilen tıbbi malzemeler için",
+      "linked_rule_ids": [
+        "3.1.2.report_prescription_invalid"
+      ]
+    },
+    {
+      "clause_id": "C002759",
+      "section_id": "3.1.2.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.report_prescription_invalid"
+      ]
+    },
+    {
+      "clause_id": "C002761",
+      "section_id": "3.1.2.2",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.report_prescription_invalid"
+      ]
+    },
+    {
+      "clause_id": "C002789",
+      "section_id": "3.1.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.3.(2).branch_unlisted_material"
+      ]
+    },
+    {
+      "clause_id": "C002794",
+      "section_id": "3.1.3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "SUT ve eki listelerde yer alan veya yer almayan malzemeler",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C002795",
+      "section_id": "3.1.3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C002796",
+      "section_id": "3.1.3",
+      "encode_tier": "C",
+      "manifest_status": "tier_c_deferred",
+      "heuristic_inn": "",
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+    },
+    {
+      "clause_id": "C002797",
+      "section_id": "3.1.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.3.(10).lab_material_separate_billing",
+        "3.2.1.unlisted_material_surcharge_billing"
+      ]
+    },
+    {
+      "clause_id": "C002798",
+      "section_id": "3.1.3",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.3.(11).diagnosis_bundled_medula"
+      ]
+    },
+    {
+      "clause_id": "C002824",
+      "section_id": "3.2.1.A",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.(2).not_in_ek3"
+      ]
+    },
+    {
+      "clause_id": "C002828",
+      "section_id": "3.2.1.B",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.(2).not_in_ek3"
+      ]
+    },
+    {
+      "clause_id": "C002831",
+      "section_id": "3.2.1.C",
+      "encode_tier": "C",
+      "manifest_status": "encoded",
+      "heuristic_inn": "",
+      "linked_rule_ids": [
+        "3.1.2.(2).not_in_ek3"
+      ]
+    }
+  ],
+  "clause_trace_complete": true,
   "gate_b_deferred_clause_ids": [],
   "kdv_pricing_clause_ids": [
     "C002692"

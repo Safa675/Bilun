@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.30.A.bosentan_32mg_paediatric_dysphagia
   sut_section: 4.2.30.A
   gate_b_sources:
-  - C006422
+  - 4.2.30.A.(10)
   drug_names:
   - bosentan 32 mg
   icd10_codes:
@@ -21,7 +21,7 @@ rules:
 - rule_id: 4.2.30.A.epoprostenol_dialysis_nopay
   sut_section: 4.2.30.A
   gate_b_sources:
-  - C006420
+  - 4.2.30.A.(9)
   drug_names:
   - epoprostenol
   icd10_codes:
@@ -34,7 +34,7 @@ rules:
 - rule_id: 4.2.30.A.era_combination_prohibited
   sut_section: 4.2.30.A
   gate_b_sources:
-  - C006415
+  - 4.2.30.A.(6)
   drug_names:
   - bosentan
   - masitentan
@@ -49,8 +49,8 @@ rules:
 - rule_id: 4.2.30.A.pah_3month_control_escalation
   sut_section: 4.2.30.A
   gate_b_sources:
-  - C006406
-  - C006408
+  - 4.2.30.A.(2)
+  - 4.2.30.A.(3)
   drug_names:
   - bosentan
   - ambrisentan
@@ -100,7 +100,7 @@ rules:
 - rule_id: 4.2.30.A.pde5_sgc_combination_prohibited
   sut_section: 4.2.30.A
   gate_b_sources:
-  - C006416
+  - 4.2.30.A.(7)
   drug_names:
   - sildenafil
   - riociguat
@@ -115,7 +115,7 @@ rules:
 - rule_id: 4.2.30.A.prostacyclin_selexipag_combination_prohibited
   sut_section: 4.2.30.A
   gate_b_sources:
-  - C006418
+  - 4.2.30.A.(8)
   drug_names:
   - iloprost trometamol
   - epoprostenol
@@ -132,7 +132,7 @@ rules:
 - rule_id: 4.2.30.A.selexipag_combination_only
   sut_section: 4.2.30.A
   gate_b_sources:
-  - C006414
+  - 4.2.30.A.(5)
   drug_names:
   - seleksipag
   - selexipag

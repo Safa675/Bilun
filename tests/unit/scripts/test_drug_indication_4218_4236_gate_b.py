@@ -38,9 +38,10 @@ def _with_defer_themes(frame: pl.DataFrame) -> pl.DataFrame:
 
 
 def _export_candidates(clauses_path: Path) -> pl.DataFrame:
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    return _with_defer_themes(shim_export_candidates(_SECTION, clauses_path))
+    return _with_defer_themes(export_candidates(clauses_path, ALL_SECTIONS[_SECTION]))
 
 
 def test_gate_b_exports_both_section_prefixes() -> None:
@@ -75,13 +76,15 @@ def test_gate_b_csv_schema() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import build_manifest, export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
     from scripts.sut.rule_sources import load_legacy_drug_batch
 
     BATCH_A5_RULES = load_legacy_drug_batch("drug_indication_4218_4236_batch_rules.py:BATCH_A5_RULES")
 
-    frame = pl.read_csv(_CORPUS) if _CORPUS.is_file() else shim_export_candidates(_SECTION, _CLAUSES)
-    manifest = shim_build_manifest(_SECTION, frame, BATCH_A5_RULES, effective_date="2026-06-27")
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
+    manifest = build_manifest(frame, BATCH_A5_RULES, ALL_SECTIONS[_SECTION], resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
     soft_floor(int(manifest["rules_in_json"]), 3, label="test_drug_indication_4218_4236_gate_b rules_in_json")
     assert manifest["encoded_clause_count"] == 5
     soft_floor(int(manifest["tier_c_deferred_count"]), 3, label="test_drug_indication_4218_4236_gate_b tier_c_deferred")
@@ -90,21 +93,22 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
-    from scripts.sut.prose.gate_b_shim import shim_write_artifacts
+    from scripts.sut.prose.gate_b_generic import write_artifacts
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
     from scripts.sut.rule_sources import load_legacy_drug_batch
 
     BATCH_A5_RULES = load_legacy_drug_batch("drug_indication_4218_4236_batch_rules.py:BATCH_A5_RULES")
 
     corpus = tmp_path / _CORPUS.name
     manifest_path = tmp_path / _MANIFEST.name
-    shim_write_artifacts(
-        _SECTION,
+    write_artifacts(section=ALL_SECTIONS[_SECTION],
         clauses_path=_CLAUSES,
         rules_path=_REPO / "data/gazette/prose_rules/drug_indication_prose.json",
         corpus_csv=corpus,
         manifest_path=manifest_path,
         effective_date="2026-06-27",
         batch_rules=BATCH_A5_RULES,
+        write_corpus=True,
     )
     assert corpus.is_file()
     assert manifest_path.is_file()

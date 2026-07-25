@@ -12,7 +12,7 @@ rules:
     payment_method_tr: komplikasyon bedelleri hizmet başına ödeme — %10 indirimli
     discount_rate: 0.1
   gate_b_sources:
-  - C000703
+  - 2.2.2.C.(1)
 - rule_id: 2.2.2.C.(2).comorbidity_itemized
   sut_section: 2.2.2.C
   condition:
@@ -25,4 +25,4 @@ rules:
     bill_materials_separately: true
     bill_drugs_separately: true
   gate_b_sources:
-  - C000704
+  - 2.2.2.C.(2)

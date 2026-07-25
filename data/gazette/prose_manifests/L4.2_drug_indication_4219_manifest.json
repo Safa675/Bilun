@@ -11,6 +11,11 @@
     "C006063",
     "C006064"
   ],
+  "encoded_clause_coordinates": [
+    "4.2.19.(1)",
+    "4.2.19.(2)",
+    "4.2.19.(3)"
+  ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
@@ -21,6 +26,8 @@
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 1,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
   "clause_traces": [
     {
       "clause_id": "C006061",
@@ -64,10 +71,8 @@
       ]
     }
   ],
-  "emr_blocked_count": 0,
-  "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 1,
   "clause_trace_complete": true,
+  "encode_tier_C_deferred_count": 1,
   "manifest_coverage_pct": 100.0,
   "encoded_clause_pct": 75.0
 }

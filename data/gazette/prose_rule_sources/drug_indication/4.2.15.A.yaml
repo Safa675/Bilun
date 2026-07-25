@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.15.A.acs_report_free_then_12mo_report
   sut_section: 4.2.15.A
   gate_b_sources:
-  - C005777
+  - 4.2.15.A.(2)
   drug_names:
   - klopidogrel
   - clopidogrel
@@ -35,7 +35,7 @@ rules:
   - I25
   - Z95.5
   gate_b_sources:
-  - C005776
+  - 4.2.15.A.(1)
   drug_names:
   - ' klopidogrel'
   - clopidogrel
@@ -56,7 +56,7 @@ rules:
 - rule_id: 4.2.15.A.high_risk_vascular_12mo_report
   sut_section: 4.2.15.A
   gate_b_sources:
-  - C005779
+  - 4.2.15.A.(3)
   drug_names:
   - klopidogrel
   - clopidogrel
@@ -82,7 +82,7 @@ rules:
 - rule_id: 4.2.15.A.intravascular_device_report_free_window
   sut_section: 4.2.15.A
   gate_b_sources:
-  - C005780
+  - 4.2.15.A.(4)
   drug_names:
   - klopidogrel
   - clopidogrel
@@ -121,7 +121,7 @@ rules:
   message_tr: Klopidogrel akut koroner sendrom — kardiyoloji, kalp damar cerrahisi, iç hastalıkları veya acil tıp uzmanı rapor
     aranmaksızın reçete edebilir (§4.2.15.A-2).
   gate_b_sources:
-  - C005777
+  - 4.2.15.A.(2)
   prescriber_specialties:
   - kardiyoloji
   - kalp damar cerrahisi
@@ -161,7 +161,7 @@ rules:
   message_tr: Klopidogrel periferik/serebral stent — kardiyoloji, iç hastalıkları, nöroloji, kalp damar cerrahisi, beyin cerrahisi
     veya girişimsel radyoloji uzmanı rapor aranmaksızın reçete edebilir (§4.2.15.A-4).
   gate_b_sources:
-  - C005780
+  - 4.2.15.A.(4)
   prescriber_specialties:
   - kardiyoloji
   - iç hastalıkları
@@ -181,7 +181,7 @@ rules:
   message_tr: Klopidogrel koroner stent — kardiyoloji veya kalp damar cerrahisi uzmanı rapor aranmaksızın stent öncesi 24
     saat ve taburcu sonrası 4 hafta reçete edebilir (§4.2.15.A-1).
   gate_b_sources:
-  - C005776
+  - 4.2.15.A.(1)
   prescriber_specialties:
   - kardiyoloji
   - kalp damar cerrahisi
@@ -202,7 +202,7 @@ rules:
   message_tr: Klopidogrel kapak biyoprotezi / KAH / periferik arter / inme — kardiyoloji, iç hastalıkları, nöroloji, kalp
     damar cerrahisi veya acil tıp uzman raporu (en fazla 12 ay) gerekir (§4.2.15.A-3).
   gate_b_sources:
-  - C005779
+  - 4.2.15.A.(3)
   report_required: true
   report_specialties:
   - kardiyoloji

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.1.C.anti_tnf_biologic_combo_nopay
   sut_section: 4.2.1.C
   gate_b_sources:
-  - C003581
+  - 4.2.1.C.(3)
   - C003591
   - C003602
   - C003609
@@ -11,7 +11,7 @@ rules:
   - C003621
   - C003629
   - C003630
-  - C003636
+  - 4.2.1.C-1.(13)
   - C003672
   drug_names:
   - anti-tnf

@@ -12,8 +12,8 @@ rules:
   message_tr: Kolonoskopi (701450) ile aynı seansta kolonoskopik polipektomi (701460) eksik veya sıfır faturalanmış.
   verification_status: pilot_heuristic
   gate_b_sources:
-  - C000646
-  - C000647
+  - 2.2.2.A.(5)
+  - 2.2.2.A.a
   provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
     practice, not the SUT text. Do not cite as SUT provenance in audit.
 - rule_id: pairing.701540_701410
@@ -28,8 +28,8 @@ rules:
   message_tr: ÖGD (701540/701550) ile aynı seansta gastroskopik polipektomi (701410) eksik veya sıfır faturalanmış.
   verification_status: pilot_heuristic
   gate_b_sources:
-  - C000646
-  - C000647
+  - 2.2.2.A.(5)
+  - 2.2.2.A.a
   provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
     practice, not the SUT text. Do not cite as SUT provenance in audit.
 - rule_id: pairing.701530_701410
@@ -43,8 +43,8 @@ rules:
   message_tr: Özefagogastroskopi (701530) ile aynı seansta gastroskopik polipektomi (701410) eksik veya sıfır faturalanmış.
   verification_status: pilot_heuristic
   gate_b_sources:
-  - C000646
-  - C000647
+  - 2.2.2.A.(5)
+  - 2.2.2.A.a
   provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
     practice, not the SUT text. Do not cite as SUT provenance in audit.
 - rule_id: pairing.701400_701460
@@ -58,8 +58,8 @@ rules:
   message_tr: Rektosigmoidoskopi/biyopsi (701400) ile aynı seansta kolonoskopik polipektomi (701460) eksik veya sıfır faturalanmış.
   verification_status: pilot_heuristic
   gate_b_sources:
-  - C000646
-  - C000647
+  - 2.2.2.A.(5)
+  - 2.2.2.A.a
   provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
     practice, not the SUT text. Do not cite as SUT provenance in audit.
 - rule_id: pairing.701545_701411
@@ -74,8 +74,8 @@ rules:
     eksik veya sıfır faturalanmış.
   verification_status: pilot_heuristic
   gate_b_sources:
-  - C000646
-  - C000647
+  - 2.2.2.A.(5)
+  - 2.2.2.A.a
   provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
     practice, not the SUT text. Do not cite as SUT provenance in audit.
 - rule_id: pairing.701430_701440
@@ -89,24 +89,26 @@ rules:
   message_tr: GİS stent yerleştirme (701430) ile aynı seansta koledok taş çıkarma (701440) eksik veya sıfır faturalanmış.
   verification_status: pilot_heuristic
   gate_b_sources:
-  - C000646
-  - C000647
+  - 2.2.2.A.(5)
+  - 2.2.2.A.a
   provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
     practice, not the SUT text. Do not cite as SUT provenance in audit.
 - rule_id: pairing.2_2_2_A_5_different_incision_50pct
   sut_section: 2.2.2.A.(5)
   addon_factor: 0.5
   same_incision: false
-  message_tr: Aynı seansta ayrı kesiden yapılan işlemlerde puanı yüksek olan tam, sonrakiler her birinin %50'si ile faturalandırılmalıdır (SUT 2.2.2.A(5)(b)).
+  message_tr: Aynı seansta ayrı kesiden yapılan işlemlerde puanı yüksek olan tam, sonrakiler her birinin %50'si ile faturalandırılmalıdır
+    (SUT 2.2.2.A(5)(b)).
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C000646
-  - C000648
+  - 2.2.2.A.(5)
+  - 2.2.2.A.b
   provenance_note: Normative rule — SUT §2.2.2.A(5)(b). Farklı kesiden işlemlerde %50 addon.
 - rule_id: pairing.2_2_2_A_5_different_specialty_plus25
   sut_section: 2.2.2.A.(5)
   specialty_uplift_points: 25
-  message_tr: Aynı seanstaki işlemler farklı uzmanlık dallarında yapılmışsa %30/%50 oranları 25 puan artırılarak uygulanır (SUT 2.2.2.A(5)).
+  message_tr: Aynı seanstaki işlemler farklı uzmanlık dallarında yapılmışsa %30/%50 oranları 25 puan artırılarak uygulanır
+    (SUT 2.2.2.A(5)).
   verification_status: ai_generated_pending_review
   gate_b_sources:
   - C000649

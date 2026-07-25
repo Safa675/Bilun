@@ -39,7 +39,7 @@ rules:
 - rule_id: 4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_a
   sut_section: 4.2.49.B
   gate_b_sources:
-  - C007040
+  - 4.2.49.B.(3)
   drug_names:
   - risdiplam
   icd10_codes:
@@ -77,7 +77,7 @@ rules:
 - rule_id: 4.2.49.B.neuro.risdiplam_no_implanted_csf_shunt
   sut_section: 4.2.49.B
   gate_b_sources:
-  - C007035
+  - 4.2.49.B.c
   drug_names:
   - risdiplam
   icd10_codes:
@@ -94,7 +94,7 @@ rules:
 - rule_id: 4.2.49.B.neuro.risdiplam_no_lumbar_puncture_contraindication
   sut_section: 4.2.49.B
   gate_b_sources:
-  - C007038
+  - 4.2.49.B.e
   drug_names:
   - risdiplam
   icd10_codes:

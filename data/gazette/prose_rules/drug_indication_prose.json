@@ -6,13 +6,13 @@
     "4.2",
     "4.2.14.C"
   ],
-  "coverage_note": "Phase 0–5 — 930 rules for §4.2.14.C; full clause trace manifest (encoded + pending + Tier C deferred with theme tags).",
+  "coverage_note": "R5 TierB remap — 930 rules; §4.2.13 oral-switch sources remapped to in-force C004584/C004593.",
   "rules": [
     {
       "rule_id": "4.1.1.family_medicine_contracted_prescribe_coverage",
       "sut_section": "4.1.1",
       "gate_b_sources": [
-        "C003412"
+        "4.1.1.(8)"
       ],
       "prescriber_specialties": [
         "aile hekimliği sözleşmeli/yetkilendirilmiş hekim",
@@ -30,7 +30,7 @@
       "rule_id": "4.1.1.prescription_diagnosis_mandatory",
       "sut_section": "4.1.1",
       "gate_b_sources": [
-        "C003406"
+        "4.1.1.(2)"
       ],
       "condition": {
         "diagnosis_required": true
@@ -44,7 +44,7 @@
       "rule_id": "4.1.2.contracted_pharmacy_supply_coverage",
       "sut_section": "4.1.2",
       "gate_b_sources": [
-        "C003430"
+        "4.1.2.(3)"
       ],
       "condition": {
         "coverage_note": true,
@@ -59,7 +59,7 @@
       "rule_id": "4.1.2.inpatient_drug_procurement_mandatory",
       "sut_section": "4.1.2",
       "gate_b_sources": [
-        "C003428"
+        "4.1.2.(1)"
       ],
       "condition": {
         "inpatient_care": true,
@@ -74,7 +74,7 @@
       "rule_id": "4.1.2.manual_prescription_inpatient_chief_approval_mandatory",
       "sut_section": "4.1.2",
       "gate_b_sources": [
-        "C003429"
+        "4.1.2.(2)"
       ],
       "condition": {
         "manual_prescription": true,
@@ -89,7 +89,7 @@
       "rule_id": "4.1.3.copay_exemption_report_icd10_diagnosis",
       "sut_section": "4.1.3",
       "gate_b_sources": [
-        "C003438"
+        "4.1.3.(4)"
       ],
       "report_required": true,
       "condition": {
@@ -104,7 +104,7 @@
       "rule_id": "4.1.3.health_report_1_10_specialist_electronic",
       "sut_section": "4.1.3",
       "gate_b_sources": [
-        "C003436"
+        "4.1.3.(2)"
       ],
       "report_required": true,
       "action": {
@@ -116,7 +116,7 @@
       "rule_id": "4.1.3.health_report_format_moh_medula_mandatory",
       "sut_section": "4.1.3",
       "gate_b_sources": [
-        "C003435"
+        "4.1.3.(1)"
       ],
       "report_required": true,
       "action": {
@@ -128,7 +128,7 @@
       "rule_id": "4.1.3.report_active_substance_dose_rule",
       "sut_section": "4.1.3",
       "gate_b_sources": [
-        "C003437"
+        "4.1.3.(3)"
       ],
       "report_required": true,
       "action": {
@@ -140,7 +140,7 @@
       "rule_id": "4.1.3.report_max_2_year_validity",
       "sut_section": "4.1.3",
       "gate_b_sources": [
-        "C003439"
+        "4.1.3.(5)"
       ],
       "report_required": true,
       "report_duration_months": 24,
@@ -153,7 +153,7 @@
       "rule_id": "4.1.3.report_validity_on_sut_change",
       "sut_section": "4.1.3",
       "gate_b_sources": [
-        "C003443"
+        "4.1.3.(9)"
       ],
       "report_required": true,
       "action": {
@@ -180,7 +180,7 @@
       "rule_id": "4.1.4.ek4a_new_indication_offlabel_coverage",
       "sut_section": "4.1.4",
       "gate_b_sources": [
-        "C003472"
+        "4.1.4.e"
       ],
       "condition": {
         "coverage_note": true,
@@ -210,7 +210,7 @@
       "rule_id": "4.1.4.non_reimbursed_indication_kub_nopay",
       "sut_section": "4.1.4",
       "gate_b_sources": [
-        "C003473"
+        "4.1.4.f"
       ],
       "pay": false,
       "action": {
@@ -222,7 +222,7 @@
       "rule_id": "4.1.4.offlabel_no_sut_condition_nopay",
       "sut_section": "4.1.4",
       "gate_b_sources": [
-        "C003468"
+        "4.1.4.d"
       ],
       "condition": {
         "off_label_use": true
@@ -237,7 +237,7 @@
       "rule_id": "4.1.4.parenteral_magistral_no_report_10day_coverage",
       "sut_section": "4.1.4",
       "gate_b_sources": [
-        "C003447"
+        "4.1.4.(1)"
       ],
       "condition": {
         "coverage_note": true,
@@ -275,7 +275,7 @@
       "rule_id": "4.1.5.colored_prescription_eprescription_coverage",
       "sut_section": "4.1.5",
       "gate_b_sources": [
-        "C003500"
+        "4.1.5.(4)"
       ],
       "condition": {
         "coverage_note": true,
@@ -290,7 +290,7 @@
       "rule_id": "4.1.5.eprescription_signing_method_mandatory",
       "sut_section": "4.1.5",
       "gate_b_sources": [
-        "C003485"
+        "4.1.5.(1)"
       ],
       "condition": {
         "e_prescription": true
@@ -304,7 +304,7 @@
       "rule_id": "4.1.5.family_physician_mobile_health_service_mandatory",
       "sut_section": "4.1.5",
       "gate_b_sources": [
-        "C003493"
+        "4.1.5.e"
       ],
       "prescriber_specialties": [
         "aile hekimi"
@@ -321,7 +321,7 @@
       "rule_id": "4.1.5.official_private_setting_prescriptions_mandatory",
       "sut_section": "4.1.5",
       "gate_b_sources": [
-        "C003495"
+        "4.1.5.g"
       ],
       "condition": {
         "e_prescription": true
@@ -335,7 +335,7 @@
       "rule_id": "4.1.5.overseas_duty_official_document_mandatory",
       "sut_section": "4.1.5",
       "gate_b_sources": [
-        "C003505"
+        "4.1.5.(7)"
       ],
       "condition": {
         "overseas_duty_personnel": true,
@@ -350,7 +350,7 @@
       "rule_id": "4.1.5.sgk_password_manual_nopay",
       "sut_section": "4.1.5",
       "gate_b_sources": [
-        "C003486"
+        "4.1.5.(2)"
       ],
       "pay": false,
       "condition": {
@@ -365,7 +365,7 @@
       "rule_id": "4.1.5.work_accident_forensic_eprescription_only_nopay",
       "sut_section": "4.1.5",
       "gate_b_sources": [
-        "C003524"
+        "4.1.5.(10)"
       ],
       "pay": false,
       "condition": {
@@ -381,7 +381,7 @@
       "rule_id": "4.1.6.ek4d_chronic_3month_dose_coverage",
       "sut_section": "4.1.6",
       "gate_b_sources": [
-        "C003526"
+        "4.1.6.(1)"
       ],
       "report_required": true,
       "report_duration_months": 12,
@@ -399,7 +399,7 @@
       "rule_id": "4.1.6.ek4d_copay_exempt",
       "sut_section": "4.1.6",
       "gate_b_sources": [
-        "C003527"
+        "4.1.6.(2)"
       ],
       "report_required": true,
       "condition": {
@@ -415,7 +415,7 @@
       "rule_id": "4.1.6.ek4d_overseas_duty_1year_coverage",
       "sut_section": "4.1.6",
       "gate_b_sources": [
-        "C003529"
+        "4.1.6.(4)"
       ],
       "report_required": true,
       "condition": {
@@ -433,7 +433,7 @@
       "rule_id": "4.1.7.ek4g_outpatient_prescription_nopay",
       "sut_section": "4.1.7",
       "gate_b_sources": [
-        "C003533"
+        "4.1.7.(2)"
       ],
       "pay": false,
       "condition": {
@@ -449,7 +449,7 @@
       "rule_id": "4.1.8.ek4f_copay_unless_ek4d",
       "sut_section": "4.1.8",
       "gate_b_sources": [
-        "C003537"
+        "4.1.8.(3)"
       ],
       "condition": {
         "ek4f_list": true,
@@ -464,7 +464,7 @@
       "rule_id": "4.1.8.ek4f_outpatient_report_3month_coverage",
       "sut_section": "4.1.8",
       "gate_b_sources": [
-        "C003535"
+        "4.1.8.(1)"
       ],
       "report_required": true,
       "condition": {
@@ -481,7 +481,7 @@
       "rule_id": "4.1.9.non_ek4a_drug_nopay",
       "sut_section": "4.1.9",
       "gate_b_sources": [
-        "C003540"
+        "4.1.9.(1)"
       ],
       "pay": false,
       "condition": {
@@ -496,7 +496,7 @@
       "rule_id": "4.1.prior_agent_condition_medula_recording_nopay",
       "sut_section": "4.1",
       "gate_b_sources": [
-        "C003401"
+        "4.1.(2)"
       ],
       "condition": {
         "prior_agent_use_condition": true
@@ -661,7 +661,7 @@
       "rule_id": "4.2.1.C.anti_tnf_biologic_combo_nopay",
       "sut_section": "4.2.1.C",
       "gate_b_sources": [
-        "C003581",
+        "4.2.1.C.(3)",
         "C003591",
         "C003602",
         "C003609",
@@ -669,7 +669,7 @@
         "C003621",
         "C003629",
         "C003630",
-        "C003636",
+        "4.2.1.C-1.(13)",
         "C003672"
       ],
       "drug_names": [
@@ -703,7 +703,7 @@
       "rule_id": "4.2.1.C.anti_tnf_dmard_combination",
       "sut_section": "4.2.1.C-1",
       "gate_b_sources": [
-        "C003624"
+        "4.2.1.C-1.(8)"
       ],
       "drug_names": [
         "anti-tnf",
@@ -723,7 +723,7 @@
       "rule_id": "4.2.1.C.biologic_administration_setting",
       "sut_section": "4.2.1.C-1",
       "gate_b_sources": [
-        "C003623"
+        "4.2.1.C-1.(7)"
       ],
       "drug_names": [
         "anti-tnf",
@@ -744,7 +744,7 @@
       "rule_id": "4.2.1.C.das28_1p2_improvement_continue",
       "sut_section": "4.2.1.C-3",
       "gate_b_sources": [
-        "C003666"
+        "4.2.1.C-3.c"
       ],
       "drug_names": [
         "anti-tnf",
@@ -817,7 +817,7 @@
       "rule_id": "4.2.1.C.moh_offlabel_approval_coverage_c7",
       "sut_section": "4.2.1.C-7",
       "gate_b_sources": [
-        "C003820"
+        "4.2.1.C-7.ç"
       ],
       "drug_names": [
         "anakinra",
@@ -916,7 +916,7 @@
       "rule_id": "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c11",
       "sut_section": "4.2.1.C-11",
       "gate_b_sources": [
-        "C003880"
+        "4.2.1.C-11.c"
       ],
       "drug_names": [
         "biyolojik ajan",
@@ -948,7 +948,7 @@
       "rule_id": "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c12",
       "sut_section": "4.2.1.C-12",
       "gate_b_sources": [
-        "C003885"
+        "4.2.1.C-12.c"
       ],
       "drug_names": [
         "biyolojik ajan",
@@ -980,7 +980,7 @@
       "rule_id": "4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c14",
       "sut_section": "4.2.1.C-14",
       "gate_b_sources": [
-        "C003896"
+        "4.2.1.C-14.c"
       ],
       "drug_names": [
         "biyolojik ajan",
@@ -1183,7 +1183,7 @@
       "rule_id": "4.2.1.C.rituximab_relapse_retreatment",
       "sut_section": "4.2.1.C-2",
       "gate_b_sources": [
-        "C003658"
+        "4.2.1.C-2.ç"
       ],
       "drug_names": [
         "rituximab",
@@ -1513,7 +1513,7 @@
       ],
       "message_tr": "Adalimumab — hidradenitis suppurativa'da antibiyotik yetersizliğinde 3 ay süreli dermatoloji sağlık kurulu raporu gerekir (§4.2.1.C-1).",
       "gate_b_sources": [
-        "C003636"
+        "4.2.1.C-1.(13)"
       ],
       "prescriber_specialties": [
         "dermatoloji"
@@ -2115,7 +2115,7 @@
       ],
       "message_tr": "Anti-TNF ilaçlar — romatoid artritte romatoloji/klinik immunoloji/fiziksel tıp uzmanının yer aldığı en fazla 6 aylık sağlık kurulu raporu gerekir (§4.2.1.C-1).",
       "gate_b_sources": [
-        "C003622"
+        "4.2.1.C-1.(6)"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -2149,7 +2149,7 @@
       ],
       "message_tr": "Anti-TNF — plak psoriyaziste DMARD direncinde dermatoloji uzmanının yer aldığı 6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).",
       "gate_b_sources": [
-        "C003625"
+        "4.2.1.C-1.(9)"
       ],
       "prescriber_specialties": [
         "dermatoloji"
@@ -2179,7 +2179,7 @@
       ],
       "message_tr": "Anti-TNF — psöriyatik artritte DMARD yetersizliğinde sağlık kurulu raporu gerekir (§4.2.1.C-1).",
       "gate_b_sources": [
-        "C003617"
+        "4.2.1.C-1.(5)"
       ]
     },
     {
@@ -2244,7 +2244,7 @@
       ],
       "message_tr": "Anti-TNF — ülseratif kolitte konvansiyonel tedavi yetersizliğinde 6 ay süreli uzman hekim raporu gerekir (§4.2.1.C-1).",
       "gate_b_sources": [
-        "C003631"
+        "4.2.1.C-1.(11)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -2272,7 +2272,7 @@
       ],
       "message_tr": "Apremilast — DMARD yetersiz psöriyatik artritte romatoloji/klinik immünoloji sağlık kurulu raporu gerekir (§4.2.1.C-13).",
       "gate_b_sources": [
-        "C003888"
+        "4.2.1.C-13.(1)"
       ],
       "prescriber_specialties": [
         "romatoloji",
@@ -2297,7 +2297,7 @@
       ],
       "message_tr": "Apremilast — sistemik tedavi yetersiz plak psoriyaziste dermatoloji uzman hekim raporu gerekir (§4.2.1.C-13).",
       "gate_b_sources": [
-        "C003889"
+        "4.2.1.C-13.(2)"
       ],
       "prescriber_specialties": [
         "dermatoloji"
@@ -2324,7 +2324,7 @@
       ],
       "message_tr": "Barisitinib/abrositinib — atopik dermatitte dermatoloji/immünoloji uzman hekimlerinin yer aldığı 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
       "gate_b_sources": [
-        "C003766"
+        "4.2.1.C-6.d"
       ],
       "prescriber_specialties": [
         "dermatoloji",
@@ -2346,7 +2346,7 @@
       "report_required": true,
       "message_tr": "Bimekizumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-14).",
       "gate_b_sources": [
-        "C003894"
+        "4.2.1.C-14.a"
       ]
     },
     {
@@ -2370,7 +2370,7 @@
       ],
       "message_tr": "Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki durumunun sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-7).",
       "gate_b_sources": [
-        "C003783"
+        "C003784"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -2559,7 +2559,7 @@
       ],
       "message_tr": "Altın preparatları — romatoid artritte DMARD yetersizliğinde bir yıllık uzman hekim raporu gerekir (§4.2.1.B).",
       "gate_b_sources": [
-        "C003565"
+        "4.2.1.B.(1)"
       ],
       "prescriber_specialties": [
         "fiziksel tıp",
@@ -2581,7 +2581,7 @@
       "report_required": true,
       "message_tr": "Guselkumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-11).",
       "gate_b_sources": [
-        "C003878"
+        "4.2.1.C-11.a"
       ]
     },
     {
@@ -3113,7 +3113,7 @@
       ],
       "message_tr": "Kanakinumab — FMF tedavisinde 3 aylık yanıt değerlendirmesi yapılmalı; yanıt alınamayan hastalarda tedavi sonlandırılır (§4.2.1.C-7 (3)).",
       "gate_b_sources": [
-        "C003783"
+        "C003784"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -3147,7 +3147,7 @@
       ],
       "message_tr": "Leflunomid — romatoid/psoriatik artritte sulfasalazin veya methotrexat yetersiz/kontrendike olduğunda uzman hekim raporu gerekir (§4.2.1.A).",
       "gate_b_sources": [
-        "C003563"
+        "4.2.1.A.(1)"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -3170,7 +3170,7 @@
       "report_required": true,
       "message_tr": "Risankizumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-12).",
       "gate_b_sources": [
-        "C003883"
+        "4.2.1.C-12.a"
       ]
     },
     {
@@ -3219,7 +3219,7 @@
       ],
       "message_tr": "Rituksimab — pemfigus vulgaris tedavisinde üçüncü basamak kurumda dermatoloji 6 ay süreli sağlık kurulu raporu; PDAİ skoru ve yanıt değerlendirmesi belirtilir (§4.2.1.C-2).",
       "gate_b_sources": [
-        "C003659"
+        "4.2.1.C-2.d"
       ],
       "prescriber_specialties": [
         "dermatoloji"
@@ -3902,7 +3902,7 @@
       ],
       "message_tr": "Tosilizumab — romatoid artritte tedavi devamında DAS28 skorları 6 ay süreli sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-3).",
       "gate_b_sources": [
-        "C003667"
+        "4.2.1.C-3.ç"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -3938,7 +3938,7 @@
       ],
       "message_tr": "Tosilizumab — C-5 romatoid artritte tedavi devamında DAS28 skorları 6 ay süreli sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-5).",
       "gate_b_sources": [
-        "C003695"
+        "4.2.1.C-5.ç"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -4173,7 +4173,7 @@
       ],
       "message_tr": "Tofacitinib/barisitinib — romatoid artritte romatoloji veya üniversite/eğitim hastanesi klinik immunoloji/fiziksel tıp uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6 (2)).",
       "gate_b_sources": [
-        "C003737"
+        "C003738"
       ],
       "prescriber_specialties": [
         "romatoloji",
@@ -4199,7 +4199,7 @@
       ],
       "message_tr": "Upadasitinib — atopik dermatitte üçüncü basamak kurumda üç dermatoloji uzmanının yer aldığı 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).",
       "gate_b_sources": [
-        "C003766"
+        "4.2.1.C-6.d"
       ],
       "prescriber_specialties": [
         "dermatoloji"
@@ -4302,7 +4302,7 @@
       ],
       "message_tr": "Ustekinumab — yetişkin Crohn hastalığında anti-TNF yetersizliğinde 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-4).",
       "gate_b_sources": [
-        "C003686"
+        "4.2.1.C-4.(3)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -4332,7 +4332,7 @@
       ],
       "message_tr": "Ustekinumab — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-4).",
       "gate_b_sources": [
-        "C003682"
+        "4.2.1.C-4.(2)"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -4361,7 +4361,7 @@
       "message_tr": "Ustekinumab — plak psoriyaziste sağlık kurulu raporunda başlangıç PASI değeri ve tedavi şeması belirtilmelidir (§4.2.1.C-4).",
       "gate_b_sources": [
         "C003677",
-        "C003679"
+        "4.2.1.C-4.ç"
       ],
       "prescriber_specialties": [
         "dermatoloji"
@@ -4385,7 +4385,7 @@
       ],
       "message_tr": "Vedolizumab — anti-TNF yetersiz Crohn hastalığında doz/süre belirtilen 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-8).",
       "gate_b_sources": [
-        "C003839"
+        "4.2.1.C-8.(1)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -4412,7 +4412,7 @@
       ],
       "message_tr": "Vedolizumab — anti-TNF yetersiz ülseratif kolitte gastroenteroloji/genel cerrahi uzman hekim raporu gerekir (§4.2.1.C-8).",
       "gate_b_sources": [
-        "C003840"
+        "4.2.1.C-8.(2)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -4439,7 +4439,7 @@
       ],
       "message_tr": "Vedolizumab — anti-TNF yetersiz ülseratif kolitte gastroenteroloji/genel cerrahi uzman hekim raporu gerekir (§4.2.1.C-4).",
       "gate_b_sources": [
-        "C003687"
+        "4.2.1.C-4.(4)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -4470,7 +4470,7 @@
         "enzim tedavisi"
       ],
       "gate_b_sources": [
-        "C004223"
+        "4.2.10.A-1.(3)"
       ],
       "report_required": false,
       "message_tr": "(3) Aşağıdaki kriterlerden en az birisinin varlığında ise hastaya doğrudan 2 haftada bir gün en fazla 60 IU/kg dozunda enzim tedavisi uygulanacaktır.",
@@ -4481,8 +4481,8 @@
       "rule_id": "4.2.10.A3.continuation_improvement_break_reeligibility",
       "sut_section": "4.2.10.A-3",
       "gate_b_sources": [
-        "C004235",
-        "C004254"
+        "4.2.10.A-1.(5)",
+        "4.2.10.A-3.(4)"
       ],
       "report_required": true,
       "action": {
@@ -4509,7 +4509,7 @@
       "rule_id": "4.2.10.B3.enzyme_migalastat_combo_nopay",
       "sut_section": "4.2.10.B-3",
       "gate_b_sources": [
-        "C004304"
+        "4.2.10.B-3.(5)"
       ],
       "drug_names": [
         "enzim tedavisi",
@@ -4526,7 +4526,7 @@
       "rule_id": "4.2.10.B3.no_change_within_6mo",
       "sut_section": "4.2.10.B-3",
       "gate_b_sources": [
-        "C004303"
+        "4.2.10.B-3.(4)"
       ],
       "report_required": true,
       "action": {
@@ -4558,9 +4558,9 @@
       ],
       "message_tr": "Eliglustat — CYP2D6 metabolizör tipi (OM/HM/YM) raporda belirtilmeli; 6 aylık sağlık kurulu raporu ve uzman reçetesi gerekir (§4.2.10.A-3/A-4).",
       "gate_b_sources": [
-        "C004252",
+        "4.2.10.A-3.(2)",
         "C004257",
-        "C004258"
+        "4.2.10.A-4.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -4595,7 +4595,7 @@
       "message_tr": "Fabry hastalığı tedavisi — metabolizma/endokrinoloji uzmanı dahil sağlık kurulu raporu (6 ay) ve uzman reçetesi gerekir (§4.2.10.B-3).",
       "gate_b_sources": [
         "C004299",
-        "C004300"
+        "4.2.10.B-3.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -4632,7 +4632,7 @@
       "message_tr": "Gaucher hastalığı tedavisi — çocuk endokrinolojisi/metabolizma veya gastroenteroloji uzman hekimlerinin yer aldığı 6 aylık sağlık kurulu raporu ve uzman reçetesi gerekir (§4.2.10.A-4).",
       "gate_b_sources": [
         "C004257",
-        "C004258"
+        "4.2.10.A-4.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -4669,7 +4669,7 @@
       ],
       "message_tr": "Gaucher hastalığı enzim tedavisi — yalnızca Tip I (non nöropatik) ve Tip III (kronik nöropatik) formlarda endikedir; Tip II (akut nöropatik) formda enzim tedavisi yapılmaz (§4.2.10.A).",
       "gate_b_sources": [
-        "C004209"
+        "4.2.10.A.(2)"
       ]
     },
     {
@@ -4684,7 +4684,7 @@
       ],
       "message_tr": "Tip I Mukopolisakkaridoz enzim tedavisi — enzim tedavisine başlangıç tarihi her yenilenen raporda belirtilmelidir (§4.2.10.C-2).",
       "gate_b_sources": [
-        "C004353",
+        "4.2.10.C-2.(3)",
         "C004357"
       ],
       "report_required": true,
@@ -4713,7 +4713,7 @@
       "message_tr": "Mukopolisakkaridoz tedavisi — üçüncü basamak resmi sağlık kuruluşunda metabolizma uzmanlarının yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.10.C-3).",
       "gate_b_sources": [
         "C004363",
-        "C004364"
+        "4.2.10.C-3.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -4743,7 +4743,7 @@
       "message_tr": "Niemann-Pick Tip C tedavisi — gastroenteroloji, çocuk metabolizma veya nöroloji uzman hekimlerinin yer aldığı 6 aylık sağlık kurulu raporu gerekir (§4.2.10.D-2).",
       "gate_b_sources": [
         "C004379",
-        "C004380"
+        "4.2.10.D-2.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -4776,7 +4776,7 @@
       "message_tr": "Pompe hastalığı tedavisi — gastroenteroloji, çocuk metabolizma veya nöroloji uzman hekimlerinin yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.10.Ç-2).",
       "gate_b_sources": [
         "C004371",
-        "C004372"
+        "4.2.10.Ç-2.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -4978,7 +4978,7 @@
         "cerrahi"
       ],
       "gate_b_sources": [
-        "C004483"
+        "4.2.12.B-1.c"
       ],
       "report_required": true,
       "message_tr": "c) Kanama riski yüksek olan veya cerrahi müdahale öncesi trombosit sayısının hızla yükseltilmesi gereken İmmün Trombositopeni (İTP) olgularında 1 yıl süre ile hematoloji uzman hekimi tarafından,",
@@ -4994,7 +4994,7 @@
       "rule_id": "4.2.12.B-1.immunglob.igm_enriched_ivig_septic_shock",
       "sut_section": "4.2.12.B-1",
       "gate_b_sources": [
-        "C004491"
+        "4.2.12.B-1.(2)"
       ],
       "drug_names": [
         "immunoglobulin m ile zenginleştirilmiş intravenöz immünglobulin",
@@ -5020,7 +5020,7 @@
       "rule_id": "4.2.12.B-1.immunglob.ivig_board_report_1mo_dose_acute_emergency",
       "sut_section": "4.2.12.B-1",
       "gate_b_sources": [
-        "C004481",
+        "4.2.12.B-1.a",
         "C004489"
       ],
       "drug_names": [
@@ -5047,7 +5047,7 @@
       "rule_id": "4.2.12.B-1.immunglob.ivig_cidp_steroid_failure",
       "sut_section": "4.2.12.B-1",
       "gate_b_sources": [
-        "C004487"
+        "4.2.12.B-1.f"
       ],
       "drug_names": [
         "intravenöz immünglobulin",
@@ -5072,7 +5072,7 @@
       "rule_id": "4.2.12.B-1.immunglob.ivig_guillain_barre_loading",
       "sut_section": "4.2.12.B-1",
       "gate_b_sources": [
-        "C004484"
+        "4.2.12.B-1.ç"
       ],
       "drug_names": [
         "intravenöz immünglobulin",
@@ -5098,7 +5098,7 @@
       "rule_id": "4.2.12.B-1.immunglob.ivig_multifocal_motor_neuropathy",
       "sut_section": "4.2.12.B-1",
       "gate_b_sources": [
-        "C004486"
+        "4.2.12.B-1.e"
       ],
       "drug_names": [
         "intravenöz immünglobulin",
@@ -5146,8 +5146,8 @@
       "rule_id": "4.2.13.1.2.immunosuppressed_occult_hbv_prophylaxis",
       "sut_section": "4.2.13.1.2",
       "gate_b_sources": [
-        "C004604",
-        "C004616"
+        "4.2.13.1.(8)",
+        "4.2.13.1.2.(3)"
       ],
       "drug_names": [
         "lamivudin",
@@ -5177,7 +5177,7 @@
       "gate_b_sources": [
         "C004539",
         "C004540",
-        "C004620"
+        "4.2.13.1.3.(1)"
       ],
       "drug_names": [
         "lamivudin",
@@ -5283,8 +5283,8 @@
       "sut_section": "4.2.13.1",
       "gate_b_sources": [
         "C004551",
-        "C004636",
-        "C004897"
+        "4.2.13.3.1.(1)",
+        "4.2.13.3.2.(5)"
       ],
       "drug_names": [
         "pegile interferon",
@@ -5335,7 +5335,7 @@
       "rule_id": "4.2.13.1.tdf_taf_entecavir_year1_switch",
       "sut_section": "4.2.13.1",
       "gate_b_sources": [
-        "C004581"
+        "4.2.13.1.c"
       ],
       "drug_names": [
         "tenofovir",
@@ -5406,7 +5406,7 @@
       "rule_id": "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration",
       "sut_section": "4.2.13.3.2.B",
       "gate_b_sources": [
-        "C004912"
+        "4.2.13.3.2.B.(3)"
       ],
       "drug_names": [
         "interferon",
@@ -5456,7 +5456,7 @@
       "rule_id": "4.2.13.3.2.B.paediatric_hcv_ribavirin_pegifn",
       "sut_section": "4.2.13.3.2.B",
       "gate_b_sources": [
-        "C004913"
+        "4.2.13.3.2.B.(4)"
       ],
       "drug_names": [
         "ribavirin",
@@ -5481,7 +5481,7 @@
       "rule_id": "4.2.13.acute_hbv_severe_antiviral_coverage",
       "sut_section": "4.2.13",
       "gate_b_sources": [
-        "C004509"
+        "4.2.13.a"
       ],
       "drug_names": [
         "entekavir",
@@ -5531,8 +5531,8 @@
       "message_tr": "HBV antiviral tedavi rapor yenilemesi — başlama kriterlerinin tedaviye başlandığı tarihteki mevzuata uygun olduğu yeni raporda belirtilmelidir (§4.2.13.1 (7)).",
       "gate_b_sources": [
         "C004572",
-        "C004584",
-        "C004624"
+        "4.2.13.1.e",
+        "4.2.13.1.4.(2)"
       ]
     },
     {
@@ -5632,7 +5632,7 @@
       ],
       "message_tr": "HBsAg(+) immünsupresif/kemoterapi/monoklonal antikor tedavisi — lamivudin profilaksisi tedavi süresince ve sonrası en fazla 12 ay rapor gerekir (§4.2.13.1.2).",
       "gate_b_sources": [
-        "C004614"
+        "4.2.13.1.2.(1)"
       ],
       "report_duration_months": 12
     },
@@ -5679,7 +5679,7 @@
       ],
       "message_tr": "Erişkin HBV oral antiviral değişimi veya yeni oral antiviral eklenmesi — gerekçe yeni veya mevcut sağlık kurulu raporunda belirtilmelidir (§4.2.13.1 ç/e).",
       "gate_b_sources": [
-        "C004584"
+        "4.2.13.1.e"
       ]
     },
     {
@@ -5730,7 +5730,7 @@
       ],
       "message_tr": "HBV oral antiviral — ilk rapor süresi en fazla 6 ay olmalıdır (§4.2.13.1).",
       "gate_b_sources": [
-        "C004604"
+        "4.2.13.1.(8)"
       ],
       "report_duration_months": 6
     },
@@ -5797,8 +5797,8 @@
       ],
       "message_tr": "Akut hepatit C interferon tedavisi — gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.1).",
       "gate_b_sources": [
-        "C004636",
-        "C004637"
+        "4.2.13.3.1.(1)",
+        "4.2.13.3.1.(2)"
       ]
     },
     {
@@ -5826,7 +5826,7 @@
       ],
       "message_tr": "HCV DAA — Child-Pugh sınıflamasını kanıtlayıcı belgeler ve tedavi şeması üçüncü basamak uzman hekim raporunda belirtilmelidir (§4.2.13.3.2).",
       "gate_b_sources": [
-        "C004897"
+        "4.2.13.3.2.(5)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -5860,7 +5860,7 @@
       ],
       "message_tr": "HCV DAA — üçüncü basamak kurumda gastroenteroloji/enfeksiyon uzman raporu ve tedavi şeması; bir defaya mahsus (§4.2.13.3.2).",
       "gate_b_sources": [
-        "C004897"
+        "4.2.13.3.2.(5)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -5892,7 +5892,7 @@
       ],
       "message_tr": "HCV genotip 1/4 peginterferon+ribavirin — 48 hafta tedavi; 12. hafta HCV RNA monitoring ve erken kesme kriterleri raporda belirtilmelidir (§4.2.13.3.2.B).",
       "gate_b_sources": [
-        "C004912"
+        "4.2.13.3.2.B.(3)"
       ],
       "report_duration_months": 48
     },
@@ -5913,7 +5913,7 @@
       ],
       "message_tr": "Glekaprevir/pibrentasvir — kronik HCV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.3.2).",
       "gate_b_sources": [
-        "C004892"
+        "4.2.13.3.2.(1)"
       ],
       "legacy_provision": true
     },
@@ -6022,7 +6022,7 @@
       ],
       "message_tr": "HCV ribavirin kombinasyonu — genotip 1/4 için 48 hafta; 12. hafta HCV RNA 2 log azalmama halinde süre sınırı uygulanır (§4.2.13.E-2).",
       "gate_b_sources": [
-        "C004912"
+        "4.2.13.3.2.B.(3)"
       ],
       "report_duration_months": 48
     },
@@ -6043,7 +6043,7 @@
       ],
       "message_tr": "Sofosbuvir/ledipasvir — kronik HCV endikasyonu ve gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.2).",
       "gate_b_sources": [
-        "C004897",
+        "4.2.13.3.2.(5)",
         "C004902"
       ]
     },
@@ -6081,9 +6081,9 @@
       ],
       "message_tr": "HCV uzman hekim raporu — HCV RNA, siroz durumu, Child-Pugh B/C kanıtı, genotip ve önceki tedaviler belirtilmelidir (§4.2.13.3.2).",
       "gate_b_sources": [
-        "C004898",
-        "C004908",
-        "C004918",
+        "4.2.13.3.2.(6)",
+        "4.2.13.3.2.A.(4)",
+        "4.2.13.3.2.B.a",
         "C004921"
       ],
       "prescriber_specialties": [
@@ -6120,7 +6120,7 @@
       ],
       "message_tr": "HDV(+) kronik hepatit B — interferon/pegile interferon; anti-HDV ve HBV DNA reçete/raporda belirtilmelidir (§4.2.13.2).",
       "gate_b_sources": [
-        "C004628"
+        "4.2.13.2.(1)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -6169,10 +6169,9 @@
       ],
       "message_tr": "Hepatit tedavisi — önceki ilaçlar, tanı ve tedavi başlama/kesilme kriterleri raporda belirtilmelidir; oral antiviral ilk rapor en fazla 6 ay (§4.2.13).",
       "gate_b_sources": [
-        "C004498",
-        "C004637",
-        "C004912",
-        "C004919"
+        "4.2.13.3.1.(2)",
+        "4.2.13.3.2.B.(3)",
+        "4.2.13.3.2.B.b"
       ]
     },
     {
@@ -6196,8 +6195,8 @@
       ],
       "message_tr": "Viral hepatit ilaçları — gastroenteroloji veya enfeksiyon hastalıkları uzman hekim ilaç kullanım raporu gerekir (§4.2.13).",
       "gate_b_sources": [
-        "C004503",
-        "C004897"
+        "4.2.13.(1)",
+        "4.2.13.3.2.(5)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -6210,7 +6209,7 @@
       "rule_id": "4.2.14.B.gcsf_granulocyte_colony_stimulating_factors",
       "sut_section": "4.2.14.B",
       "gate_b_sources": [
-        "C004933"
+        "4.2.14.B.(2)"
       ],
       "drug_names": [
         "filgrastim",
@@ -6298,7 +6297,7 @@
       ],
       "message_tr": "Setuksimab — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1)).",
       "gate_b_sources": [
-        "C005194"
+        "4.2.14.C.y"
       ]
     },
     {
@@ -6370,7 +6369,7 @@
       ],
       "message_tr": "Gefitinib — tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(1)).",
       "gate_b_sources": [
-        "C005093"
+        "4.2.14.C.o"
       ]
     },
     {
@@ -6431,7 +6430,7 @@
       "gate_b_sources": [
         "C005036",
         "C005051",
-        "C005094",
+        "4.2.14.C.ö",
         "C005096",
         "C005330",
         "C005362"
@@ -6471,9 +6470,9 @@
       ],
       "message_tr": "Kabazitaksel — prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005112",
+        "4.2.14.C.s",
         "C005113",
-        "C005119",
+        "4.2.14.C.t",
         "C005121",
         "C005122",
         "C005146",
@@ -6496,7 +6495,7 @@
       ],
       "message_tr": "Lapatinib — HER2+ meme kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005053"
+        "4.2.14.C.j"
       ]
     },
     {
@@ -6573,7 +6572,7 @@
       "message_tr": "Panitumumab — kolorektal kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005104",
-        "C005105",
+        "4.2.14.C.r",
         "C005108",
         "C005109"
       ]
@@ -6612,7 +6611,7 @@
       ],
       "message_tr": "Ramucirumab — kolorektal/gastrik kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C004934"
+        "C004935"
       ],
       "legacy_provision": true
     },
@@ -6709,9 +6708,9 @@
       ],
       "message_tr": "Trastuzumab — HER2+ meme kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C004927",
+        "4.2.14.(3)",
         "C004928",
-        "C004929",
+        "4.2.14.A.(1)",
         "C004930",
         "C004932",
         "C005276",
@@ -6986,7 +6985,7 @@
       ],
       "message_tr": "Pemetreksed — KHDAK kemoterapi endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C004934"
+        "C005485"
       ],
       "legacy_provision": true
     },
@@ -7029,7 +7028,7 @@
         "C004975",
         "C004979",
         "C004982",
-        "C004985",
+        "4.2.14.C.g",
         "C004988",
         "C004999",
         "C005003"
@@ -7449,9 +7448,9 @@
       ],
       "message_tr": "Abirateron — prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005112",
+        "4.2.14.C.s",
         "C005113",
-        "C005119",
+        "4.2.14.C.t",
         "C005120",
         "C005121",
         "C005146",
@@ -7536,7 +7535,7 @@
       "gate_b_sources": [
         "C005190",
         "C005191",
-        "C005192",
+        "4.2.14.C.ü",
         "C005197",
         "C005200",
         "C005274",
@@ -7608,8 +7607,8 @@
       "message_tr": "Enzalutamid — kastrasyon dirençli prostat kanseri endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005113",
-        "C005114",
-        "C005119",
+        "4.2.14.C.ş",
+        "4.2.14.C.t",
         "C005120",
         "C005121",
         "C005146",
@@ -7730,7 +7729,7 @@
       "gate_b_sources": [
         "C005037",
         "C005052",
-        "C005093",
+        "4.2.14.C.o",
         "C005095",
         "C005099",
         "C005546"
@@ -7796,7 +7795,7 @@
         "C005049",
         "C005050",
         "C005052",
-        "C005053",
+        "4.2.14.C.j",
         "C005055",
         "C005065",
         "C005085",
@@ -7873,7 +7872,7 @@
       "message_tr": "Trametinib — melanom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005191",
-        "C005192",
+        "4.2.14.C.ü",
         "C005197",
         "C005201",
         "C005202",
@@ -7897,7 +7896,7 @@
       "gate_b_sources": [
         "C005190",
         "C005191",
-        "C005192",
+        "4.2.14.C.ü",
         "C005197",
         "C005274",
         "C005721"
@@ -8028,7 +8027,7 @@
       "message_tr": "Aksitinib — metastatik RCC endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
         "C005177",
-        "C005193"
+        "4.2.14.C.v"
       ]
     },
     {
@@ -8154,7 +8153,7 @@
         "hematoloji"
       ],
       "gate_b_sources": [
-        "C004987"
+        "4.2.14.C.h"
       ]
     },
     {
@@ -8204,7 +8203,7 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924"
+        "4.2.14.(1)"
       ]
     },
     {
@@ -8382,7 +8381,6 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924",
         "C005304",
         "C005311"
       ]
@@ -9898,7 +9896,7 @@
       ],
       "message_tr": "Erlotinib — KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005093"
+        "4.2.14.C.o"
       ]
     },
     {
@@ -9983,11 +9981,10 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924",
         "C004937",
         "C004964",
         "C004965",
-        "C005061",
+        "4.2.14.C.l",
         "C005066",
         "C005522",
         "C005523"
@@ -10312,9 +10309,9 @@
       "inpatient_only": true,
       "gate_b_sources": [
         "C004923",
-        "C004927",
+        "4.2.14.(3)",
         "C004928",
-        "C004929",
+        "4.2.14.A.(1)",
         "C004930",
         "C004932",
         "C005271",
@@ -10452,7 +10449,7 @@
       "sut_section": "4.2.14.C",
       "gate_b_sources": [
         "C005464",
-        "C005487"
+        "4.2.14.C.(16)"
       ],
       "icd10_codes": [
         "G36.0"
@@ -10476,7 +10473,7 @@
       "rule_id": "4.2.14.C.nopay_after_cabozantinib_rcc_seq",
       "sut_section": "4.2.14.C",
       "gate_b_sources": [
-        "C005054",
+        "4.2.14.C.k",
         "C005064",
         "C005111",
         "C005562"
@@ -10903,7 +10900,7 @@
         "ravulizumab"
       ],
       "gate_b_sources": [
-        "C008286"
+        "6.5.(1)"
       ],
       "action": {
         "billable": true,
@@ -10916,7 +10913,7 @@
       "sut_section": "4.2.14.C",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C008284"
+        "6.4.(2)"
       ],
       "drug_names": [
         "ravulizumab"
@@ -10946,7 +10943,7 @@
       "sut_section": "4.2.14.C",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C008285"
+        "6.5.(1)"
       ],
       "drug_names": [
         "ravulizumab"
@@ -10972,7 +10969,7 @@
       "sut_section": "4.2.14.C",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C008283"
+        "6.4.(1)"
       ],
       "drug_names": [
         "ravulizumab"
@@ -11029,7 +11026,7 @@
       "sut_section": "4.2.14.C",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C008282"
+        "6.4.(1)"
       ],
       "drug_names": [
         "ravulizumab"
@@ -11176,9 +11173,9 @@
       ],
       "report_required": true,
       "gate_b_sources": [
-        "C004933"
+        "4.2.14.B.(2)"
       ],
-      "message_tr": "(2) Filgrastim, lenograstim, pegfilgrastim ve lipegfilgrastim; (Değişik:RG-02/11/2024-32710/14md.  Yürürlük:09/11/2024) en az bir hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 a",
+      "message_tr": "(2) Filgrastim, lenograstim, pegfilgrastim ve lipegfilgrastim; (Değişik:RG-02/11/2024-32710/14md. Yürürlük:09/11/2024) en az bir hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 a",
       "prescriber_specialties": [
         "tıbbi onkoloji",
         "hematoloji"
@@ -11200,7 +11197,7 @@
       ],
       "report_required": true,
       "gate_b_sources": [
-        "C004986"
+        "4.2.14.C.ğ"
       ],
       "message_tr": "ğ) Floxuridin; Sadece kolon kanserinin karaciğere çoklu metastazlarında ilacın onaylı prospektüs bilgileri dikkate alınarak, intraarterial yolla en fazla 6 kür olarak tıbbi onkoloji, genel cerrahi ve",
       "prescriber_specialties": [
@@ -11223,7 +11220,7 @@
       ],
       "report_required": true,
       "gate_b_sources": [
-        "C005016"
+        "4.2.14.C.ı"
       ],
       "message_tr": "Sağlık Bakanlığınca onaylanan prospektüslerinde yer alan endikasyonlarda kullanılmak üzere, söz konusu ilaçların prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji",
       "prescriber_specialties": [
@@ -11273,7 +11270,7 @@
       ],
       "report_required": true,
       "gate_b_sources": [
-        "C005097"
+        "4.2.14.C.p"
       ],
       "message_tr": "p) Everolimus; (Değişik: RG- 04/05/2013- 28637/ 12-c md. Yürürlük: 11/05/2013) Daha önce sunitinib veya sorafenib kullanmış ve direnç göstermiş olan metastatik renal hücreli hastalarda en az bir tıbbi",
       "prescriber_specialties": [
@@ -11297,7 +11294,7 @@
       ],
       "report_required": true,
       "gate_b_sources": [
-        "C005133",
+        "4.2.14.C.u",
         "C005134",
         "C005184"
       ],
@@ -11528,7 +11525,7 @@
         "C00-C97"
       ],
       "gate_b_sources": [
-        "C005016",
+        "4.2.14.C.ı",
         "C005025",
         "C005029",
         "C005644"
@@ -12105,7 +12102,7 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924"
+        "4.2.14.(1)"
       ]
     },
     {
@@ -12129,7 +12126,7 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924"
+        "4.2.14.(1)"
       ]
     },
     {
@@ -12170,9 +12167,9 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004927",
+        "4.2.14.(3)",
         "C004928",
-        "C004929",
+        "4.2.14.A.(1)",
         "C004930",
         "C004932",
         "C005276",
@@ -12197,9 +12194,9 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004927",
+        "4.2.14.(3)",
         "C004928",
-        "C004929",
+        "4.2.14.A.(1)",
         "C004930",
         "C004932",
         "C005276",
@@ -12210,8 +12207,8 @@
       "rule_id": "4.2.14.offlabel_oncology_board_report",
       "sut_section": "4.2.14",
       "gate_b_sources": [
-        "C004927",
-        "C005767"
+        "4.2.14.(3)",
+        "4.2.14.Ç.(1)"
       ],
       "condition": {
         "coverage_note": true
@@ -12230,8 +12227,8 @@
       "rule_id": "4.2.14.outpatient_chemo_dose_cycle",
       "sut_section": "4.2.14",
       "gate_b_sources": [
-        "C004925",
-        "C004926"
+        "4.2.14.(1)",
+        "4.2.14.(2)"
       ],
       "condition": {
         "coverage_note": true
@@ -12248,7 +12245,7 @@
       "rule_id": "4.2.15.A.acs_report_free_then_12mo_report",
       "sut_section": "4.2.15.A",
       "gate_b_sources": [
-        "C005777"
+        "4.2.15.A.(2)"
       ],
       "drug_names": [
         "klopidogrel",
@@ -12277,7 +12274,7 @@
       "rule_id": "4.2.15.A.coronary_stent_report_free_window",
       "sut_section": "4.2.15.A",
       "gate_b_sources": [
-        "C005776"
+        "4.2.15.A.(1)"
       ],
       "drug_names": [
         " klopidogrel",
@@ -12308,7 +12305,7 @@
       "rule_id": "4.2.15.A.high_risk_vascular_12mo_report",
       "sut_section": "4.2.15.A",
       "gate_b_sources": [
-        "C005779"
+        "4.2.15.A.(3)"
       ],
       "drug_names": [
         "klopidogrel",
@@ -12337,7 +12334,7 @@
       "rule_id": "4.2.15.A.intravascular_device_report_free_window",
       "sut_section": "4.2.15.A",
       "gate_b_sources": [
-        "C005780"
+        "4.2.15.A.(4)"
       ],
       "drug_names": [
         "klopidogrel",
@@ -12370,7 +12367,7 @@
       "rule_id": "4.2.15.C.ivabradine_chf_hr75_1yr_report",
       "sut_section": "4.2.15.C",
       "gate_b_sources": [
-        "C005793"
+        "4.2.15.C.(2)"
       ],
       "drug_names": [
         "ivabradin",
@@ -12400,8 +12397,8 @@
       "rule_id": "4.2.15.C.ivabradine_chronic_angina_1yr_report",
       "sut_section": "4.2.15.C",
       "gate_b_sources": [
-        "C005792",
-        "C005797"
+        "4.2.15.C.(1)",
+        "4.2.15.C.b"
       ],
       "drug_names": [
         "ivabradin",
@@ -12431,7 +12428,7 @@
       "rule_id": "4.2.15.D_1.noac_combination_nopay",
       "sut_section": "4.2.15.D-1",
       "gate_b_sources": [
-        "C005838"
+        "4.2.15.D-1.(4)"
       ],
       "drug_names": [
         "dabigatran",
@@ -12449,8 +12446,8 @@
       "rule_id": "4.2.15.D_1.three_physician_1yr_report",
       "sut_section": "4.2.15.D-1",
       "gate_b_sources": [
-        "C005831",
-        "C005835"
+        "4.2.15.D-1.(1)",
+        "4.2.15.D-1.(2)"
       ],
       "drug_names": [
         "dabigatran",
@@ -12495,7 +12492,7 @@
       "rule_id": "4.2.15.D_2.report_renewal_to_continue",
       "sut_section": "4.2.15.D-2",
       "gate_b_sources": [
-        "C005860"
+        "4.2.15.D-2.(4)"
       ],
       "drug_names": [
         "klopidogrel",
@@ -12517,7 +12514,7 @@
       "rule_id": "4.2.15.D_2.three_specialty_1yr_report",
       "sut_section": "4.2.15.D-2",
       "gate_b_sources": [
-        "C005859"
+        "4.2.15.D-2.(3)"
       ],
       "drug_names": [
         "klopidogrel",
@@ -12560,7 +12557,7 @@
         "cerrahi"
       ],
       "gate_b_sources": [
-        "C005869"
+        "4.2.15.E.(5)"
       ],
       "report_required": true,
       "message_tr": "(5) Yukarıdaki maddelerde tanımlanan koşulların tamamını gösteren hastalarda (Ek: RG-25/08/2022-31934/28-b md. Yürürlük:03/09/2022) rapor aranmaksızın 4 haftalık doz kardiyoloji veya kalp damar cerrahi uzman hekimlerince veya bu durumların belirtildiği kardiyoloji veya kalp damar cerrahisi uzman hekimlerinden birinin bulunduğu 1 yıl süreli sağlık kurulu raporuna dayanılarak (Değişik: RG- 05/08/2015- 29436/ 16-b md. Yürürlük: 13/08/2015) kardiyoloji, kalp damar cerrahisi veya ",
@@ -12619,7 +12616,7 @@
       ],
       "message_tr": "Klopidogrel akut koroner sendrom — kardiyoloji, kalp damar cerrahisi, iç hastalıkları veya acil tıp uzmanı rapor aranmaksızın reçete edebilir (§4.2.15.A-2).",
       "gate_b_sources": [
-        "C005777"
+        "4.2.15.A.(2)"
       ],
       "prescriber_specialties": [
         "kardiyoloji",
@@ -12640,7 +12637,7 @@
       ],
       "message_tr": "Klopidogrel CABG sonrası — en az bir kalp damar cerrahisi uzmanının yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.15.B-1).",
       "gate_b_sources": [
-        "C005782",
+        "4.2.15.B.(1)",
         "C005785"
       ],
       "report_required": true,
@@ -12692,7 +12689,7 @@
       ],
       "message_tr": "Klopidogrel periferik/serebral stent — kardiyoloji, iç hastalıkları, nöroloji, kalp damar cerrahisi, beyin cerrahisi veya girişimsel radyoloji uzmanı rapor aranmaksızın reçete edebilir (§4.2.15.A-4).",
       "gate_b_sources": [
-        "C005780"
+        "4.2.15.A.(4)"
       ],
       "prescriber_specialties": [
         "kardiyoloji",
@@ -12717,7 +12714,7 @@
       ],
       "message_tr": "Klopidogrel koroner stent — kardiyoloji veya kalp damar cerrahisi uzmanı rapor aranmaksızın stent öncesi 24 saat ve taburcu sonrası 4 hafta reçete edebilir (§4.2.15.A-1).",
       "gate_b_sources": [
-        "C005776"
+        "4.2.15.A.(1)"
       ],
       "prescriber_specialties": [
         "kardiyoloji",
@@ -12743,7 +12740,7 @@
       ],
       "message_tr": "Klopidogrel kapak biyoprotezi / KAH / periferik arter / inme — kardiyoloji, iç hastalıkları, nöroloji, kalp damar cerrahisi veya acil tıp uzman raporu (en fazla 12 ay) gerekir (§4.2.15.A-3).",
       "gate_b_sources": [
-        "C005779"
+        "4.2.15.A.(3)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -12771,7 +12768,7 @@
       ],
       "message_tr": "Dabigatran — tanımlı endikasyonlarda geçiş gerekçeli en az bir kardiyoloji uzmanının yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.15.D-3).",
       "gate_b_sources": [
-        "C005820"
+        "4.2.15.D-1.(2)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -12814,7 +12811,7 @@
         "cerrahi"
       ],
       "gate_b_sources": [
-        "C005817"
+        "4.2.15.Ç.(3)"
       ],
       "report_required": true,
       "message_tr": "(3) Bu durumlarda rapor aranmaksızın 4 haftalık doz kardiyoloji veya kalp damar cerrahi uzman hekimlerince veya bu durumların belirtildiği en az bir kardiyoloji veya kalp damar cerrahi uzman hekiminin yer aldığı 1 yıl süreli sağlık kurulu raporuna dayanılarak yine bu hekimlerce ya da iç hastalıkları uzman hekimlerince reçetelenebilir. Tedavi süresi 1 yıldır. İlacın hastaya tekrar kullanımı ancak hastada aynı koşulların yeniden oluşması halinde mümkündür.",
@@ -12832,10 +12829,10 @@
       "rule_id": "4.2.16.adult_metabolic_3yr_report_all_prescribe",
       "sut_section": "4.2.16",
       "gate_b_sources": [
-        "C005982",
+        "4.2.16.(2)",
         "C005983",
         "C005984",
-        "C005999"
+        "4.2.16.(4)"
       ],
       "report_required": true,
       "report_duration_months": 36,
@@ -12899,7 +12896,7 @@
       ],
       "message_tr": "Çölyak glutensiz ürün — gastroenteroloji uzman hekim 1 yıl süreli rapor gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C006007"
+        "4.2.16.(6)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji"
@@ -12924,7 +12921,7 @@
       ],
       "message_tr": "Çölyak glutensiz ürün — gastroenteroloji (veya yoksa çocuk sağlığı/iç hastalıkları) 3 yıl süreli rapor gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C006007"
+        "4.2.16.(6)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -12950,14 +12947,14 @@
       ],
       "message_tr": "Çölyak hastalığı glutensiz ürün — gastroenteroloji uzman hekim raporu gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C006007"
+        "4.2.16.(6)"
       ]
     },
     {
       "rule_id": "4.2.16.ckd_children_growth_sds_3bottles",
       "sut_section": "4.2.16",
       "gate_b_sources": [
-        "C006012"
+        "4.2.16.(7)"
       ],
       "icd10_codes": [
         "N18",
@@ -12999,14 +12996,14 @@
       ],
       "message_tr": "Kistik fibrozis özel maması — gastroenteroloji/göğüs hastalıkları uzman hekim raporu gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C005999"
+        "4.2.16.(4)"
       ]
     },
     {
       "rule_id": "4.2.16.ek4b_unlisted_products_nopay",
       "sut_section": "4.2.16",
       "gate_b_sources": [
-        "C006013"
+        "4.2.16.(8)"
       ],
       "pay": false,
       "action": {
@@ -13100,7 +13097,7 @@
       "message_tr": "İnek sütü/çoklu gıda protein alerjisi hidrolize mama — çocuk gastroenteroloji/immünoloji-alerji (veya çocuk sağlığı) uzman hekim raporu gerekir (§4.2.16).",
       "gate_b_sources": [
         "C005979",
-        "C006000"
+        "4.2.16.(5)"
       ],
       "prescriber_specialties": [
         "çocuk gastroenteroloji",
@@ -13133,7 +13130,7 @@
       ],
       "message_tr": "İki yaşına kadar CMPA tıbbi mama — çocuk gastroenteroloji/alerji/immünoloji (veya çocuk sağlığı) uzman hekim raporu gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C006000"
+        "4.2.16.(5)"
       ],
       "prescriber_specialties": [
         "çocuk gastroenteroloji",
@@ -13163,7 +13160,7 @@
       ],
       "message_tr": "Malabsorbsiyona neden olan hastalıkta özel mama — gastroenteroloji/metabolizma uzman hekim raporu gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C005981"
+        "4.2.16.(1)"
       ],
       "prescriber_specialties": [
         "gastroenteroloji",
@@ -13234,7 +13231,7 @@
       ],
       "message_tr": "Metabolik özel formül — uzman hekim bulunmadığında çocuk sağlığı veya iç hastalıkları uzman hekim raporu ile reçete edilebilir (§4.2.16).",
       "gate_b_sources": [
-        "C005981",
+        "4.2.16.(1)",
         "C005983"
       ],
       "prescriber_specialties": [
@@ -13307,7 +13304,7 @@
       ],
       "message_tr": "Protein metabolizması bozukluğu özel formüllü un — kısıtlı diyet nedeniyle hayati öneme haiz ürünler uzman hekim raporuna dayanılarak karşılanır (§4.2.16 (3)).",
       "gate_b_sources": [
-        "C005993"
+        "4.2.16.(3)"
       ],
       "prescriber_specialties": [
         "çocuk metabolizma",
@@ -13339,8 +13336,8 @@
       ],
       "message_tr": "Protein metabolizması bozukluğu özel formülü — uzman hekim raporu gerekir (§4.2.16).",
       "gate_b_sources": [
-        "C005982",
-        "C005993"
+        "4.2.16.(2)",
+        "4.2.16.(3)"
       ]
     },
     {
@@ -13367,7 +13364,7 @@
       ],
       "message_tr": "Protein metabolizması bozukluğu özel formül — çocuk metabolizma/endokrinoloji/gastroenteroloji uzman hekim raporu gerekir (§4.2.16 (2)).",
       "gate_b_sources": [
-        "C005982"
+        "4.2.16.(2)"
       ],
       "prescriber_specialties": [
         "çocuk metabolizma",
@@ -13439,7 +13436,7 @@
       ],
       "message_tr": "EK-4/B özel mama — metabolizma/endokrinoloji/gastroenteroloji uzman hekim raporu gerekir; yoksa çocuk sağlığı/iç hastalıkları (§4.2.16).",
       "gate_b_sources": [
-        "C005981"
+        "4.2.16.(1)"
       ],
       "prescriber_specialties": [
         "çocuk metabolizma",
@@ -13454,7 +13451,7 @@
       "rule_id": "4.2.17.A.active_vitamin_d_osteoporosis_nopay",
       "sut_section": "4.2.17.A",
       "gate_b_sources": [
-        "C006042"
+        "4.2.17.A.(9)"
       ],
       "drug_names": [
         "kalsitriol",
@@ -13507,7 +13504,7 @@
       "sut_section": "4.2.17.A",
       "gate_b_sources": [
         "C006018",
-        "C006030",
+        "4.2.17.A.(6)",
         "C006031"
       ],
       "drug_names": [
@@ -13535,8 +13532,8 @@
       "rule_id": "4.2.17.B.calcitonin_first_6mo_only",
       "sut_section": "4.2.17.B",
       "gate_b_sources": [
-        "C006040",
-        "C006044"
+        "4.2.17.A.(7)",
+        "4.2.17.B.(1)"
       ],
       "drug_names": [
         "kalsitonin",
@@ -13574,7 +13571,7 @@
         "endokrin tedavi"
       ],
       "gate_b_sources": [
-        "C006046"
+        "4.2.17.C.(1)"
       ],
       "report_required": true,
       "message_tr": "(1) Uzman hekim raporuna dayanılarak uzman hekimlerce reçete edilir. Rapor süresi 1 yıldır.",
@@ -13584,7 +13581,7 @@
       "rule_id": "4.2.17.D.bmd_measurement_twice_yearly",
       "sut_section": "4.2.17.D",
       "gate_b_sources": [
-        "C006055"
+        "4.2.17.D.(3)"
       ],
       "drug_names": [
         "teriparatid",
@@ -13603,7 +13600,7 @@
       "rule_id": "4.2.17.D.week24_response_teriparatide_romosozumab",
       "sut_section": "4.2.17.D",
       "gate_b_sources": [
-        "C006054"
+        "4.2.17.D.(2)"
       ],
       "drug_names": [
         "teriparatid",
@@ -13640,7 +13637,7 @@
       ],
       "message_tr": "Heterotopik ossifikasyon endikasyonlu bifosfonat — prospektüs doz/sürelerinde KMY ölçümü aranmaksızın kullanılabilir (§4.2.17.A).",
       "gate_b_sources": [
-        "C006026"
+        "4.2.17.A.d"
       ]
     },
     {
@@ -13671,7 +13668,7 @@
       "message_tr": "Bifosfonat grubu — iç hastalıkları, fizik tedavi, ortopedi, romatoloji, endokrinoloji veya kadın doğum uzman hekim raporu gerekir (§4.2.17.A).",
       "gate_b_sources": [
         "C006019",
-        "C006027"
+        "4.2.17.A.(5)"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -13706,7 +13703,7 @@
       ],
       "message_tr": "Kalsitonin — ağrılı vertebral kırığı olmayan, bifosfonat yanıtsız/tolere edilemeyen osteoporozda üçüncü basamak kurum ve uzman hekim raporu gerekir (§4.2.17.A).",
       "gate_b_sources": [
-        "C006041"
+        "4.2.17.A.(8)"
       ]
     },
     {
@@ -13733,7 +13730,7 @@
       ],
       "message_tr": "Kalsitonin — ağrılı vertebral kırığı olan osteoporozda sağlık kurulu raporu ve en fazla 3 aylık tedavi dozu (§4.2.17.A).",
       "gate_b_sources": [
-        "C006040"
+        "4.2.17.A.(7)"
       ],
       "report_duration_months": 3
     },
@@ -13821,7 +13818,7 @@
       ],
       "message_tr": "Sekonder osteoporoz (steroid, organ nakli, romatolojik hastalık vb.) — uzman hekim raporu ve KMY kriterleri gerekir (§4.2.17.A).",
       "gate_b_sources": [
-        "C006025"
+        "4.2.17.A.ç"
       ]
     },
     {
@@ -13873,7 +13870,7 @@
       ],
       "message_tr": "Teriparatid / romosozumab — 65+ yaş, T≤-3,5 ve ≥2 kırık ile röntgen tanılı şiddetli osteoporozda 24 haftalık sağlık kurulu raporu gerekir (§4.2.17.D).",
       "gate_b_sources": [
-        "C006053"
+        "4.2.17.D.(1)"
       ],
       "report_duration_months": 6
     },
@@ -13884,7 +13881,7 @@
         "endokrin tedavi"
       ],
       "gate_b_sources": [
-        "C006048"
+        "4.2.17.Ç.(1)"
       ],
       "report_required": true,
       "message_tr": "(1) Endokrinoloji uzman hekimi tarafından düzenlenen uzman hekim raporuna istinaden tüm uzman hekimlerce reçete edilir. Rapor süresi 1 yıldır.",
@@ -13908,7 +13905,7 @@
       ],
       "message_tr": "Orlistat — reçeteler birer aylık düzenlenmelidir (§4.2.18).",
       "gate_b_sources": [
-        "C006059"
+        "4.2.18.(3)"
       ],
       "report_duration_months": 1
     },
@@ -13916,7 +13913,7 @@
       "rule_id": "4.2.19.migraine.neurology_1yr_report_monthly_dose_coverage",
       "sut_section": "4.2.19",
       "gate_b_sources": [
-        "C006064"
+        "4.2.19.(3)"
       ],
       "drug_names": [
         "topiramat",
@@ -13961,7 +13958,7 @@
       ],
       "message_tr": "Topiramat profilaktik migren — diğer profilaktikler 6 ay etkisiz kaldıktan sonra nöroloji uzman hekim raporu ile başlanır (§4.2.19).",
       "gate_b_sources": [
-        "C006063"
+        "4.2.19.(2)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -13989,7 +13986,7 @@
       ],
       "message_tr": "Triptanlar — migren endikasyonunda nöroloji uzman hekimi reçetesi gerekir (§4.2.19).",
       "gate_b_sources": [
-        "C006062"
+        "4.2.19.(1)"
       ],
       "prescriber_specialties": [
         "nöroloji"
@@ -13999,7 +13996,7 @@
       "rule_id": "4.2.2.antidepressants_1yr_all_physicians",
       "sut_section": "4.2.2",
       "gate_b_sources": [
-        "C003898"
+        "4.2.2.(1)"
       ],
       "drug_names": [
         "trisiklik antidepresan",
@@ -14024,7 +14021,7 @@
       "rule_id": "4.2.2.antipsychotics_psychiatry_report",
       "sut_section": "4.2.2",
       "gate_b_sources": [
-        "C003901"
+        "4.2.2.(2)"
       ],
       "drug_names": [
         "klozapin",
@@ -14061,7 +14058,7 @@
       "rule_id": "4.2.2.atypical_antipsychotics_dementia",
       "sut_section": "4.2.2",
       "gate_b_sources": [
-        "C003905"
+        "4.2.2.(6)"
       ],
       "drug_names": [
         "atipik antipsikotik"
@@ -14090,7 +14087,7 @@
       "rule_id": "4.2.2.lamotrigine_bipolar_disorder",
       "sut_section": "4.2.2",
       "gate_b_sources": [
-        "C003909"
+        "4.2.2.(8)"
       ],
       "drug_names": [
         "lamotrijin",
@@ -14115,7 +14112,7 @@
       "rule_id": "4.2.2.parenteral_atypical_antipsychotics",
       "sut_section": "4.2.2",
       "gate_b_sources": [
-        "C003902"
+        "4.2.2.(3)"
       ],
       "drug_names": [
         "atipik antipsikotik parenteral",
@@ -14140,7 +14137,7 @@
       "rule_id": "4.2.2.parenteral_atypical_emergency_single_dose",
       "sut_section": "4.2.2",
       "gate_b_sources": [
-        "C003904"
+        "4.2.2.(5)"
       ],
       "drug_names": [
         "atipik antipsikotik parenteral"
@@ -14159,7 +14156,7 @@
       "rule_id": "4.2.2.typical_antipsychotics_all_physicians",
       "sut_section": "4.2.2",
       "gate_b_sources": [
-        "C003903"
+        "4.2.2.(4)"
       ],
       "drug_names": [
         "tipik antipsikotik",
@@ -14183,7 +14180,7 @@
       "rule_id": "4.2.2.valproate_bipolar_disorder",
       "sut_section": "4.2.2",
       "gate_b_sources": [
-        "C003906"
+        "4.2.2.(7)"
       ],
       "drug_names": [
         "sodyum valproat",
@@ -14234,7 +14231,7 @@
       "rule_id": "4.2.20.palivizumab.rsv_season_paediatric_coverage",
       "sut_section": "4.2.20",
       "gate_b_sources": [
-        "C006075"
+        "4.2.20.(1)"
       ],
       "drug_names": [
         "palivizumab",
@@ -14281,7 +14278,7 @@
         "hidroksiüre"
       ],
       "gate_b_sources": [
-        "C006083"
+        "4.2.21.(1)"
       ],
       "report_required": true,
       "message_tr": "(1) Hidroksiüre + asetil salisilik asit tedavisine dirençli olduğu ya da hidroksiüre ile dirençli sitopeni (anemi ve/veya lökopeni) geliştiği belgelenen, yüksek vasküler risk taşıyan esansiyel trombositemi hastalıklarında, hematoloji veya tıbbi onkoloji uzman hekimlerinden biri tarafından düzenlenen uzman hekim raporuna dayanılarak bu uzman hekimler tarafından reçete edilebilir.",
@@ -14295,7 +14292,7 @@
       "rule_id": "4.2.22.sepsis.icu_three_consents_two_organ_failure_coverage",
       "sut_section": "4.2.22",
       "gate_b_sources": [
-        "C006085"
+        "4.2.22.(1)"
       ],
       "drug_names": [
         "drotrecogin alfa",
@@ -14330,7 +14327,7 @@
       ],
       "gate_b_sources": [
         "C006102",
-        "C006118"
+        "4.2.23.(7)"
       ],
       "report_required": true,
       "message_tr": "3) Amfoterisin B ile tedaviye refrakter ya da amfoterisin B’yi tolere edemeyen fusariozis hastalığı olan hastalarda.",
@@ -14344,7 +14341,7 @@
       "rule_id": "4.2.23.itraconazole_oral_ek4e_105",
       "sut_section": "4.2.23",
       "gate_b_sources": [
-        "C006094"
+        "4.2.23.c"
       ],
       "drug_names": [
         "itrakonazol"
@@ -14366,7 +14363,7 @@
         "C006103",
         "C006104",
         "C006116",
-        "C006120"
+        "4.2.23.(8)"
       ],
       "drug_names": [
         "posakonazol",
@@ -14402,7 +14399,7 @@
         "C006090",
         "C006100",
         "C006101",
-        "C006118"
+        "4.2.23.(7)"
       ],
       "drug_names": [
         "itrakonazol",
@@ -14434,7 +14431,7 @@
       "rule_id": "4.2.24.A.resp.iks_one_per_prescription_coverage",
       "sut_section": "4.2.24.A",
       "gate_b_sources": [
-        "C006147"
+        "4.2.24.A.(6)"
       ],
       "drug_names": [
         "inhale kortikosteroid",
@@ -14455,7 +14452,7 @@
       "rule_id": "4.2.24.A.resp.laba_iks_mono_or_combined_coverage",
       "sut_section": "4.2.24.A",
       "gate_b_sources": [
-        "C006145"
+        "4.2.24.A.(4)"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti",
@@ -14478,7 +14475,7 @@
       "rule_id": "4.2.24.A.resp.laba_iks_otherwise_nopay",
       "sut_section": "4.2.24.A",
       "gate_b_sources": [
-        "C006148"
+        "4.2.24.A.(7)"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti",
@@ -14499,7 +14496,7 @@
       "rule_id": "4.2.24.A.resp.laba_one_per_prescription_coverage",
       "sut_section": "4.2.24.A",
       "gate_b_sources": [
-        "C006146"
+        "4.2.24.A.(5)"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti",
@@ -14520,7 +14517,7 @@
       "rule_id": "4.2.24.A.resp.nebul_respiratory_first_box_report",
       "sut_section": "4.2.24.A",
       "gate_b_sources": [
-        "C006155"
+        "4.2.24.A.(11)"
       ],
       "drug_names": [
         "nebül formu solunum sistemi ilaçları"
@@ -14548,7 +14545,7 @@
       "rule_id": "4.2.24.A.resp.saba_sama_inhale_exemption",
       "sut_section": "4.2.24.A",
       "gate_b_sources": [
-        "C006149"
+        "4.2.24.A.(8)"
       ],
       "drug_names": [
         "kısa etkili solunum yolu beta-agonisti",
@@ -14569,7 +14566,7 @@
       "rule_id": "4.2.24.A.resp.tertiary_allergy_board_coverage",
       "sut_section": "4.2.24.A",
       "gate_b_sources": [
-        "C006142"
+        "4.2.24.A.b"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti",
@@ -14602,7 +14599,7 @@
       "rule_id": "4.2.24.A.resp.triple_combo_asthma_maintenance_a",
       "sut_section": "4.2.24.A",
       "gate_b_sources": [
-        "C006151"
+        "4.2.24.A.(9)"
       ],
       "drug_names": [
         "beklometazon+formoterol+glikopironyum",
@@ -14636,7 +14633,7 @@
       "rule_id": "4.2.24.A.resp.triple_combo_asthma_maintenance_b",
       "sut_section": "4.2.24.A",
       "gate_b_sources": [
-        "C006153"
+        "4.2.24.A.(10)"
       ],
       "drug_names": [
         "flutikazonfuroat+umeklidinyum+vilanterol"
@@ -14665,7 +14662,7 @@
       "rule_id": "4.2.24.A.resp.week16_response_allergy_board_coverage",
       "sut_section": "4.2.24.A",
       "gate_b_sources": [
-        "C006143"
+        "4.2.24.A.c"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti",
@@ -14727,7 +14724,7 @@
       "rule_id": "4.2.24.B.resp.copd_triple_combo_maintenance",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006180"
+        "4.2.24.B.(12)"
       ],
       "drug_names": [
         "mono laba",
@@ -14756,7 +14753,7 @@
       "rule_id": "4.2.24.B.resp.iks_one_per_prescription_coverage",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006177"
+        "4.2.24.B.(10)"
       ],
       "drug_names": [
         "inhale kortikosteroid",
@@ -14778,7 +14775,7 @@
       "rule_id": "4.2.24.B.resp.laba_iks_with_lama_coverage",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006172"
+        "4.2.24.B.(5)"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti+inhale kortikosteroid",
@@ -14827,7 +14824,7 @@
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
         "C006124",
-        "C006160",
+        "4.2.24.B.(1)",
         "C006167"
       ],
       "drug_names": [
@@ -14875,7 +14872,7 @@
       "rule_id": "4.2.24.B.resp.laba_lama_iks_mono_and_triple_maintenance",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006171"
+        "4.2.24.B.(4)"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti",
@@ -14905,7 +14902,7 @@
       "rule_id": "4.2.24.B.resp.laba_lama_iks_otherwise_nopay",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006174"
+        "4.2.24.B.(7)"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti",
@@ -14929,7 +14926,7 @@
       "rule_id": "4.2.24.B.resp.laba_lama_with_iks_coverage",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006173"
+        "4.2.24.B.(6)"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti+uzun etkili antikolinerjik",
@@ -14953,7 +14950,7 @@
       "rule_id": "4.2.24.B.resp.laba_one_per_prescription_coverage",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006175"
+        "4.2.24.B.(8)"
       ],
       "drug_names": [
         "uzun etkili solunum yolu beta-agonisti",
@@ -14975,7 +14972,7 @@
       "rule_id": "4.2.24.B.resp.lama_one_per_prescription_coverage",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006176"
+        "4.2.24.B.(9)"
       ],
       "drug_names": [
         "uzun etkili antikolinerjik",
@@ -14997,7 +14994,7 @@
       "rule_id": "4.2.24.B.resp.nebul_respiratory_drugs_coverage",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006182"
+        "4.2.24.B.(13)"
       ],
       "drug_names": [
         "nebül formu solunum sistemi ilaçları"
@@ -15028,7 +15025,7 @@
       "rule_id": "4.2.24.B.resp.saba_sama_inhale_exemption",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006178"
+        "4.2.24.B.(11)"
       ],
       "drug_names": [
         "kısa etkili solunum yolu beta-agonisti",
@@ -15050,7 +15047,7 @@
       "rule_id": "4.2.24.B.resp.theophylline_combination_prohibited",
       "sut_section": "4.2.24.B",
       "gate_b_sources": [
-        "C006169"
+        "4.2.24.B.ç"
       ],
       "drug_names": [
         "teofilin",
@@ -15075,7 +15072,7 @@
       "rule_id": "4.2.24.C.resp.rhinitis_azelastine_fluticasone_combo",
       "sut_section": "4.2.24.C",
       "gate_b_sources": [
-        "C006188"
+        "4.2.24.C.(2)"
       ],
       "drug_names": [
         "azelastin hidroklorür",
@@ -15105,7 +15102,7 @@
       "rule_id": "4.2.24.C.resp.rhinitis_intranazal_steroid_antihistamine_couse",
       "sut_section": "4.2.24.C",
       "gate_b_sources": [
-        "C006190"
+        "4.2.24.C.(3)"
       ],
       "drug_names": [
         "mono intranazal kortikosteroid",
@@ -15146,7 +15143,7 @@
       ],
       "message_tr": "Mepolizumab/benralizumab — üçüncü basamak kurumda alerji/immünoloji uzmanının yer aldığı sağlık kurulu raporu ve göğüs hastalıkları/alerji reçetesi gerekir (§4.2.24.A-3).",
       "gate_b_sources": [
-        "C006142"
+        "4.2.24.A.b"
       ],
       "report_required": true,
       "report_specialties": [
@@ -15183,8 +15180,8 @@
       ],
       "message_tr": "KOAH/astım inhale kombinasyonları — göğüs hastalıkları, göğüs cerrahisi, iç hastalıkları veya çocuk sağlığı uzman hekim reçetesi gerekir (§4.2.24.B-1).",
       "gate_b_sources": [
-        "C006151",
-        "C006160"
+        "4.2.24.A.(9)",
+        "4.2.24.B.(1)"
       ],
       "report_required": true,
       "prescriber_specialties": [
@@ -15241,7 +15238,7 @@
       ],
       "message_tr": "LABA+LAMA+İKS üçlü kombinasyon — en az 3 ay İKS+LABA veya İKS+LAMA sonrası göğüs hastalıkları uzman sağlık kurulu raporu gerekir (§4.2.24.B-4).",
       "gate_b_sources": [
-        "C006171"
+        "4.2.24.B.(4)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -15272,7 +15269,7 @@
       ],
       "message_tr": "LABA/LAMA/İKS mono veya sabit doz dışı kombinasyon reçetesi — bedel karşılanmaz (§4.2.24.B-7).",
       "gate_b_sources": [
-        "C006174"
+        "4.2.24.B.(7)"
       ]
     },
     {
@@ -15291,7 +15288,7 @@
       "message_tr": "Montelukast+antihistaminik kombinasyonları — KBB, iç hastalıkları, çocuk sağlığı, göğüs hastalıkları veya alerji uzman reçetesi/raporu gerekir (§4.2.24.C-1).",
       "gate_b_sources": [
         "C006125",
-        "C006184"
+        "4.2.24.C.(1)"
       ],
       "report_required": true,
       "prescriber_specialties": [
@@ -15343,7 +15340,7 @@
       ],
       "message_tr": "Nasal kortikosteroid — 2-5 yaş grubunda yalnızca çocuk sağlığı, alerji, klinik immünoloji, KBB veya aile hekimliği uzman reçetesi gerekir (§4.2.24.Ç-1).",
       "gate_b_sources": [
-        "C006192"
+        "4.2.24.Ç.(1)"
       ],
       "report_required": true,
       "prescriber_specialties": [
@@ -15358,7 +15355,7 @@
       "rule_id": "4.2.25.gabapentin_1yr_report_combo_nopay",
       "sut_section": "4.2.25",
       "gate_b_sources": [
-        "C006204"
+        "4.2.25.(5)"
       ],
       "drug_names": [
         "gabapentin",
@@ -15387,7 +15384,7 @@
       "rule_id": "4.2.25.lacosamide_16yr_partial_2aed_6mo",
       "sut_section": "4.2.25",
       "gate_b_sources": [
-        "C006202"
+        "4.2.25.(4)"
       ],
       "drug_names": [
         "lakozamid",
@@ -15412,7 +15409,7 @@
       "rule_id": "4.2.25.new_gen_antiepileptics_coverage",
       "sut_section": "4.2.25",
       "gate_b_sources": [
-        "C006198"
+        "4.2.25.(1)"
       ],
       "drug_names": [
         "lamotrigin",
@@ -15444,7 +15441,7 @@
       "rule_id": "4.2.25.pregabalin_1yr_report_no_gad",
       "sut_section": "4.2.25",
       "gate_b_sources": [
-        "C006200"
+        "4.2.25.(3)"
       ],
       "drug_names": [
         "pregabalin"
@@ -15472,7 +15469,7 @@
       "rule_id": "4.2.25.zonisamide_neurology_1yr_report",
       "sut_section": "4.2.25",
       "gate_b_sources": [
-        "C006199"
+        "4.2.25.(2)"
       ],
       "drug_names": [
         "zonisamit",
@@ -15669,7 +15666,7 @@
       "rule_id": "4.2.27.B.anti_d_itp_iv_report",
       "sut_section": "4.2.27.B",
       "gate_b_sources": [
-        "C006269"
+        "4.2.27.B.(3)"
       ],
       "drug_names": [
         "anti-d immünglobulin",
@@ -15695,7 +15692,7 @@
       "rule_id": "4.2.27.C.albumin_inpatient_3day_report",
       "sut_section": "4.2.27.Ç",
       "gate_b_sources": [
-        "C006275"
+        "4.2.27.Ç.(2)"
       ],
       "drug_names": [
         "human albumin",
@@ -15722,7 +15719,7 @@
       "rule_id": "4.2.27.C.factor_viia_3day_haematology_report",
       "sut_section": "4.2.27.C",
       "gate_b_sources": [
-        "C006271"
+        "4.2.27.C.(1)"
       ],
       "drug_names": [
         "rekombinan faktör viia",
@@ -15747,7 +15744,7 @@
       "rule_id": "4.2.27.C.factor_viia_reuse_documentation",
       "sut_section": "4.2.27.C",
       "gate_b_sources": [
-        "C006272"
+        "4.2.27.C.(2)"
       ],
       "drug_names": [
         "rekombinan faktör viia",
@@ -15840,8 +15837,8 @@
       ],
       "message_tr": "Anti-Rh — doğum sonu, düşük, küretaj, antenatal veya 28. gebelik haftasında uzman hekim reçetesi gerekir (§4.2.27.B).",
       "gate_b_sources": [
-        "C006267",
-        "C006268"
+        "4.2.27.B.(1)",
+        "4.2.27.B.(2)"
       ]
     },
     {
@@ -15959,7 +15956,6 @@
       ],
       "message_tr": "Koagülasyon faktörü — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu; hematoloji/iç hastalıkları/çocuk sağlığı uzman reçetesi (§4.2.27.A).",
       "gate_b_sources": [
-        "C006210",
         "C006225",
         "C006232",
         "C006233",
@@ -16171,7 +16167,7 @@
       ],
       "message_tr": "Human albümin — yalnızca yatarak tedavi gören hastalarda albümin ≤2.5 g/dl için uzman hekim reçetesi; laboratuvar sonuçları epikrizde belirtilir (§4.2.27.Ç).",
       "gate_b_sources": [
-        "C006274"
+        "4.2.27.Ç.(1)"
       ],
       "inpatient_only": true
     },
@@ -16209,7 +16205,7 @@
       ],
       "message_tr": "İmmün tolerans tedavisi — üçüncü basamak kurumda üç hematoloji uzmanının 6 aya kadar süreli sağlık kurulu raporu; yalnızca hematoloji reçetesi (§4.2.27.A).",
       "gate_b_sources": [
-        "C006249"
+        "4.2.27.A.(6)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -16241,7 +16237,7 @@
       ],
       "message_tr": "Kombine koagülasyon faktörü/protrombin kompleksi — kazanılmış koagülasyon bozukluğunda tanı ve faktör düzeyini gösteren hematoloji sağlık kurulu raporu ile bir dozda reçete (§4.2.27.A).",
       "gate_b_sources": [
-        "C006234"
+        "4.2.27.A.(4)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -16311,7 +16307,7 @@
       ],
       "message_tr": "Von Willebrand faktör — tanı ve faktör düzeyini gösteren 1 yıllık hematoloji sağlık kurulu raporu gerekir (§4.2.27.A).",
       "gate_b_sources": [
-        "C006255"
+        "4.2.27.A.(7)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -16348,7 +16344,7 @@
       "rule_id": "4.2.28.A_1.high_dose_statin_report",
       "sut_section": "4.2.28.A-1",
       "gate_b_sources": [
-        "C006317"
+        "4.2.28.A-1.(4)"
       ],
       "drug_names": [
         "rosuvastatin 20 mg ve üzeri",
@@ -16381,7 +16377,7 @@
       "rule_id": "4.2.28.A_1.initial_report_two_lipid_panels",
       "sut_section": "4.2.28.A-1",
       "gate_b_sources": [
-        "C006316"
+        "4.2.28.A-1.(3)"
       ],
       "drug_names": [
         "statin",
@@ -16468,7 +16464,7 @@
       "rule_id": "4.2.28.C.bile_acid_sequestrant_dm2_nopay",
       "sut_section": "4.2.28.C",
       "gate_b_sources": [
-        "C006343"
+        "4.2.28.C.(3)"
       ],
       "drug_names": [
         "kolesevelam",
@@ -16489,7 +16485,7 @@
       "rule_id": "4.2.28.C.ezetimibe_ldl100_statin",
       "sut_section": "4.2.28.C",
       "gate_b_sources": [
-        "C006340"
+        "4.2.28.C.(1)"
       ],
       "drug_names": [
         "ezetimib",
@@ -16517,7 +16513,7 @@
       "rule_id": "4.2.28.C.ezetimibe_statin_intolerance",
       "sut_section": "4.2.28.C",
       "gate_b_sources": [
-        "C006341"
+        "4.2.28.C.(2)"
       ],
       "drug_names": [
         "ezetimib",
@@ -16572,7 +16568,7 @@
       "rule_id": "4.2.28.E.pcsk9_hofh_max_statin_ezetimibe",
       "sut_section": "4.2.28.E",
       "gate_b_sources": [
-        "C006357"
+        "4.2.28.E.(1)"
       ],
       "drug_names": [
         "evolocumab",
@@ -16607,7 +16603,7 @@
       "rule_id": "4.2.29.hormones.dienogest_monocomponent_coverage",
       "sut_section": "4.2.29",
       "gate_b_sources": [
-        "C006361"
+        "4.2.29.(2)"
       ],
       "drug_names": [
         "dienogest"
@@ -16630,7 +16626,7 @@
       "rule_id": "4.2.29.hormones.estrogen_hrt_progestogen_prescription_permission",
       "sut_section": "4.2.29",
       "gate_b_sources": [
-        "C006359"
+        "4.2.29.(1)"
       ],
       "drug_names": [
         "östradiol",
@@ -16649,7 +16645,7 @@
       "rule_id": "4.2.29.hormones.progesteron_topical_infertility_coverage",
       "sut_section": "4.2.29",
       "gate_b_sources": [
-        "C006362"
+        "4.2.29.(3)"
       ],
       "drug_names": [
         "progesteron",
@@ -16677,7 +16673,7 @@
       "rule_id": "4.2.3.allergy_vaccine_oral_forms_nopay",
       "sut_section": "4.2.3",
       "gate_b_sources": [
-        "C003918"
+        "4.2.3.(6)"
       ],
       "drug_names": [
         "alerji aşısı",
@@ -16693,9 +16689,9 @@
       "rule_id": "4.2.3.immunotherapy_break_restart_initial_dose",
       "sut_section": "4.2.3",
       "gate_b_sources": [
-        "C003913",
-        "C003915",
-        "C003917"
+        "4.2.3.(1)",
+        "4.2.3.(3)",
+        "4.2.3.(5)"
       ],
       "drug_names": [
         "immünoterapi",
@@ -16712,7 +16708,7 @@
       "rule_id": "4.2.3.immunotherapy_continuation_prescribers",
       "sut_section": "4.2.3",
       "gate_b_sources": [
-        "C003916"
+        "4.2.3.(4)"
       ],
       "drug_names": [
         "immünoterapi",
@@ -16740,7 +16736,7 @@
       "rule_id": "4.2.3.immunotherapy_duration_5yr_seasonal",
       "sut_section": "4.2.3",
       "gate_b_sources": [
-        "C003920"
+        "4.2.3.(8)"
       ],
       "drug_names": [
         "aşı tedavisi",
@@ -16757,7 +16753,7 @@
       "rule_id": "4.2.3.immunotherapy_max_2_groups",
       "sut_section": "4.2.3",
       "gate_b_sources": [
-        "C003914"
+        "4.2.3.(2)"
       ],
       "drug_names": [
         "immünoterapi",
@@ -16780,7 +16776,7 @@
       "rule_id": "4.2.3.poisoning_antidote_full_coverage_no_report",
       "sut_section": "4.2.3",
       "gate_b_sources": [
-        "C003921"
+        "4.2.3.(9)"
       ],
       "drug_names": [
         "antidot",
@@ -16824,7 +16820,7 @@
       "rule_id": "4.2.30.A.bosentan_32mg_paediatric_dysphagia",
       "sut_section": "4.2.30.A",
       "gate_b_sources": [
-        "C006422"
+        "4.2.30.A.(10)"
       ],
       "drug_names": [
         "bosentan 32 mg"
@@ -16850,7 +16846,7 @@
         "sama"
       ],
       "gate_b_sources": [
-        "C006411"
+        "4.2.30.A.(4)"
       ],
       "report_required": true,
       "message_tr": "(4) İlgili ilaçlar üçüncü basamak sağlık hizmeti sunucularında bu durumların belirtildiği kardiyoloji, kalp damar cerrahisi, göğüs hastalıkları, çocuk kardiyolojisi uzman hekimlerinden birinin yer aldığı 3 ay süreli sağlık kurulu raporuna dayanılarak belirtilen hekimlerce reçete edilir.",
@@ -16864,7 +16860,7 @@
       "rule_id": "4.2.30.A.epoprostenol_dialysis_nopay",
       "sut_section": "4.2.30.A",
       "gate_b_sources": [
-        "C006420"
+        "4.2.30.A.(9)"
       ],
       "drug_names": [
         "epoprostenol"
@@ -16883,7 +16879,7 @@
       "rule_id": "4.2.30.A.era_combination_prohibited",
       "sut_section": "4.2.30.A",
       "gate_b_sources": [
-        "C006415"
+        "4.2.30.A.(6)"
       ],
       "drug_names": [
         "bosentan",
@@ -16904,8 +16900,8 @@
       "rule_id": "4.2.30.A.pah_3month_control_escalation",
       "sut_section": "4.2.30.A",
       "gate_b_sources": [
-        "C006406",
-        "C006408"
+        "4.2.30.A.(2)",
+        "4.2.30.A.(3)"
       ],
       "drug_names": [
         "bosentan",
@@ -16962,7 +16958,7 @@
       "rule_id": "4.2.30.A.pde5_sgc_combination_prohibited",
       "sut_section": "4.2.30.A",
       "gate_b_sources": [
-        "C006416"
+        "4.2.30.A.(7)"
       ],
       "drug_names": [
         "sildenafil",
@@ -16983,7 +16979,7 @@
       "rule_id": "4.2.30.A.prostacyclin_selexipag_combination_prohibited",
       "sut_section": "4.2.30.A",
       "gate_b_sources": [
-        "C006418"
+        "4.2.30.A.(8)"
       ],
       "drug_names": [
         "iloprost trometamol",
@@ -17005,7 +17001,7 @@
       "rule_id": "4.2.30.A.selexipag_combination_only",
       "sut_section": "4.2.30.A",
       "gate_b_sources": [
-        "C006414"
+        "4.2.30.A.(5)"
       ],
       "drug_names": [
         "seleksipag",
@@ -17032,7 +17028,7 @@
         "cerrahi"
       ],
       "gate_b_sources": [
-        "C006424"
+        "4.2.30.(1)"
       ],
       "report_required": true,
       "message_tr": "(1) Riosiguat; yalnızca inoperabl veya cerrahi tedavi sonrasında dirençli/nükseden KTEPH'li erişkin hastalardan;",
@@ -17050,7 +17046,7 @@
         "sama"
       ],
       "gate_b_sources": [
-        "C006428"
+        "4.2.30.(2)"
       ],
       "report_required": true,
       "message_tr": "(2) Üçüncü basamak sağlık tesislerinde bu durumların belirtildiği ve en az birinin göğüs cerrahisi veya kalp damar cerrahisi uzman hekimi olması koşuluyla, kardiyoloji, göğüs hastalıkları, göğüs cerrahisi veya kalp damar cerrahisi uzman hekimlerinden en az üçünün bulunduğu üç ay süreli sağlık kurulu raporuna dayanılarak yine bu hekimlerce reçete edilir.",
@@ -17064,7 +17060,7 @@
       "rule_id": "4.2.32.gadobutrol_over_15ml_reason",
       "sut_section": "4.2.32",
       "gate_b_sources": [
-        "C006451"
+        "4.2.32.(3)"
       ],
       "drug_names": [
         "gadobutrol"
@@ -17100,7 +17096,7 @@
       "rule_id": "4.2.32.gadoxetate_liver_mr_max_1box",
       "sut_section": "4.2.32",
       "gate_b_sources": [
-        "C006450"
+        "4.2.32.(2)"
       ],
       "drug_names": [
         "gadoksetat",
@@ -17119,7 +17115,7 @@
       "rule_id": "4.2.32.iodized_fatty_acid_interventional_radiology",
       "sut_section": "4.2.32",
       "gate_b_sources": [
-        "C006454"
+        "4.2.32.(6)"
       ],
       "drug_names": [
         "iyodize yağ asitleri etil esterleri",
@@ -17141,7 +17137,7 @@
       "rule_id": "4.2.32.iodized_fatty_acid_lymphography_tace",
       "sut_section": "4.2.32",
       "gate_b_sources": [
-        "C006453"
+        "4.2.32.(5)"
       ],
       "drug_names": [
         "iyodize yağ asitleri etil esterleri",
@@ -17160,7 +17156,7 @@
       "rule_id": "4.2.32.nonionic_iodinated_contrast_coverage",
       "sut_section": "4.2.32",
       "gate_b_sources": [
-        "C006449"
+        "4.2.32.(1)"
       ],
       "drug_names": [
         "non-iyonik iyotlu kontrast madde",
@@ -17179,7 +17175,7 @@
       "rule_id": "4.2.33.D.artificial_tears_drops_report",
       "sut_section": "4.2.33.D",
       "gate_b_sources": [
-        "C006578"
+        "4.2.33.D.(2)"
       ],
       "drug_names": [
         "suni gözyaşı",
@@ -17210,7 +17206,7 @@
       "rule_id": "4.2.33.dexamethasone_ivt_implant_frequency",
       "sut_section": "4.2.33",
       "gate_b_sources": [
-        "C006556"
+        "4.2.33.(10)"
       ],
       "drug_names": [
         "dek sametazon intravitreal implant",
@@ -17277,7 +17273,7 @@
       "rule_id": "4.2.33.incomplete_loading_dose_switch_nopay",
       "sut_section": "4.2.33",
       "gate_b_sources": [
-        "C006550"
+        "4.2.33.(8)"
       ],
       "pay": false,
       "action": {
@@ -17289,8 +17285,8 @@
       "rule_id": "4.2.33.loading_dose_mandatory_numbered",
       "sut_section": "4.2.33",
       "gate_b_sources": [
-        "C006529",
-        "C006559"
+        "4.2.33.c",
+        "4.2.33.(13)"
       ],
       "icd10_codes": [
         "H35.3",
@@ -17337,8 +17333,8 @@
       "rule_id": "4.2.33.rvo_glaucoma_ranibizumab_aflibercept",
       "sut_section": "4.2.33",
       "gate_b_sources": [
-        "C006553",
-        "C006557"
+        "4.2.33.(9)",
+        "4.2.33.(11)"
       ],
       "drug_names": [
         "ranibizumab",
@@ -17362,7 +17358,7 @@
       "rule_id": "4.2.33.same_eye_combo_nopay",
       "sut_section": "4.2.33",
       "gate_b_sources": [
-        "C006530"
+        "4.2.33.ç"
       ],
       "pay": false,
       "action": {
@@ -17425,7 +17421,7 @@
       "rule_id": "4.2.34.cladribine_extra_course_offlabel_approval",
       "sut_section": "4.2.34",
       "gate_b_sources": [
-        "C006668"
+        "4.2.34.d"
       ],
       "drug_names": [
         "kladribin",
@@ -17464,7 +17460,7 @@
       ],
       "message_tr": "Kladribin — nöroloji uzman hekim raporunda güncel vücut ağırlığı belirtilmeli; en fazla 1 yıllık rapor ve nöroloji reçetesi gerekir (§4.2.34).",
       "gate_b_sources": [
-        "C006670"
+        "4.2.34.f"
       ],
       "report_duration_months": 12,
       "prescriber_specialties": [
@@ -17859,7 +17855,7 @@
       "rule_id": "4.2.35.A.capsaicin_phn_dpn_arthritis_nopay",
       "sut_section": "4.2.35.A",
       "gate_b_sources": [
-        "C006699"
+        "4.2.35.A.(5)"
       ],
       "drug_names": [
         "kapsaisin"
@@ -17887,7 +17883,7 @@
       "rule_id": "4.2.35.A.diabetic_neuropathic_pain_specialists",
       "sut_section": "4.2.35.A",
       "gate_b_sources": [
-        "C006696"
+        "4.2.35.A.a"
       ],
       "drug_names": [
         "gabapentin",
@@ -17916,7 +17912,7 @@
       "rule_id": "4.2.35.A.gabapentin_6mo_report_combo_nopay",
       "sut_section": "4.2.35.A",
       "gate_b_sources": [
-        "C006692"
+        "4.2.35.A.(1)"
       ],
       "drug_names": [
         "gabapentin",
@@ -17958,7 +17954,7 @@
       "rule_id": "4.2.35.A.pregabalin_6mo_report_combo_nopay",
       "sut_section": "4.2.35.A",
       "gate_b_sources": [
-        "C006693"
+        "4.2.35.A.(2)"
       ],
       "drug_names": [
         "pregabalin",
@@ -18002,7 +17998,7 @@
       "rule_id": "4.2.35.B.chronic_msk_fibromyalgia_specialists",
       "sut_section": "4.2.35.B",
       "gate_b_sources": [
-        "C006703"
+        "4.2.35.B.(1)"
       ],
       "icd10_codes": [
         "M79.7",
@@ -18044,7 +18040,7 @@
       "report_required": false,
       "message_tr": "Duloksetin — diyabetik periferal nöropatik ağrıda endokrinoloji veya üçüncü basamak nöroloji uzman hekimi reçetesi gerekir (§4.2.35.A).",
       "gate_b_sources": [
-        "C006694"
+        "4.2.35.A.(3)"
       ],
       "prescriber_specialties": [
         "endokrinoloji",
@@ -18071,7 +18067,7 @@
       "report_required": true,
       "message_tr": "Nöropatik ağrı ilaçları — nöroloji, romatoloji, ortopedi veya endokrinoloji uzman hekim raporu gerekir (§4.2.35.A).",
       "gate_b_sources": [
-        "C006697"
+        "4.2.35.A.b"
       ],
       "report_specialties": [
         "nöroloji",
@@ -18101,7 +18097,7 @@
       "report_required": true,
       "message_tr": "Pregabalin fibromiyalji — ikinci/üçüncü basamak sağlık kurulu raporu (en fazla 6 ay) ve romatoloji/ortopedi/fizik tedavi/nöroloji/algoloji uzman reçetesi gerekir (§4.2.35.B).",
       "gate_b_sources": [
-        "C006705"
+        "4.2.35.B.(2)"
       ],
       "report_specialties": [
         "romatoloji",
@@ -18134,7 +18130,7 @@
       ],
       "message_tr": "Amantadin hidroklorür — yalnızca parkinson hastalığında nöroloji veya geriatri uzman hekim raporu gerekir (§4.2.36).",
       "gate_b_sources": [
-        "C006711"
+        "4.2.36.(4)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -18158,7 +18154,7 @@
       ],
       "message_tr": "Amantadin sülfat — parkinson veya ilaç kaynaklı ekstrapiramidal reaksiyonlarda nöroloji/geriatri uzman hekim raporu gerekir (§4.2.36).",
       "gate_b_sources": [
-        "C006709"
+        "4.2.36.(3)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -18189,7 +18185,7 @@
       ],
       "message_tr": "Parkinson dopamin agonistleri — nöroloji veya geriatri uzman hekim raporuna dayanılarak reçete edilir (§4.2.36).",
       "gate_b_sources": [
-        "C006707"
+        "4.2.36.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -18210,7 +18206,7 @@
       ],
       "message_tr": "Tolkapon — entakapon dirençli vakalarda nöroloji/geriatri uzman hekim raporu ile nöroloji veya iç hastalıkları uzmanı tarafından en fazla 1 aylık reçete (§4.2.36).",
       "gate_b_sources": [
-        "C006708"
+        "4.2.36.(2)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -18227,7 +18223,7 @@
       "rule_id": "4.2.37.A.acromegaly.pegvisomant_somatostatin_failure_permission",
       "sut_section": "4.2.37.A",
       "gate_b_sources": [
-        "C006714"
+        "4.2.37.A.(1)"
       ],
       "drug_names": [
         "pegvisomant",
@@ -18256,7 +18252,7 @@
         "cerrahi"
       ],
       "gate_b_sources": [
-        "C006720"
+        "4.2.37.B.(1)"
       ],
       "report_required": true,
       "message_tr": "(1) Akromegali tedavisinde endokrinoloji ve metabolizma uzman hekiminin yer aldığı sağlık kurulu raporuna dayanılarak endokrinoloji ve metabolizma veya beyin ve sinir cerrahisi uzman hekimlerince reçete edilir.",
@@ -18282,8 +18278,8 @@
       "report_required": true,
       "message_tr": "Pegvisomant — endokrinoloji ve metabolizma uzman hekimi reçetesi gerekir; raporda yaşa uygun IGF-1 referans aralığı belirtilmelidir (§4.2.37.A).",
       "gate_b_sources": [
-        "C006716",
-        "C006718"
+        "4.2.37.A.(3)",
+        "4.2.37.A.(5)"
       ],
       "report_specialties": [
         "endokrinoloji",
@@ -18308,8 +18304,8 @@
       "report_required": true,
       "message_tr": "Pegvisomant başlangıç — IGF-1 kontrolü sonrası en fazla 2 ay süreli sağlık kurulu raporu gerekir (§4.2.37.A).",
       "gate_b_sources": [
-        "C006715",
-        "C006717"
+        "4.2.37.A.(2)",
+        "4.2.37.A.(4)"
       ],
       "report_specialties": [
         "endokrinoloji",
@@ -18338,7 +18334,7 @@
       ],
       "message_tr": "Analog insülinler ve pioglitazon — endokrinoloji, iç hastalıkları, çocuk sağlığı veya kardiyoloji uzman hekim raporu/reçetesi gerekir (§4.2.38).",
       "gate_b_sources": [
-        "C006727"
+        "4.2.38.(3)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -18389,7 +18385,7 @@
       "rule_id": "4.2.38.diab.dpp4_antagonist_combo_nopay",
       "sut_section": "4.2.38",
       "gate_b_sources": [
-        "C006743"
+        "4.2.38.ç"
       ],
       "drug_names": [
         "empagliflozin",
@@ -18430,8 +18426,8 @@
       "rule_id": "4.2.38.diab.empagliflozin_linagliptin_specialty_combo_nopay",
       "sut_section": "4.2.38",
       "gate_b_sources": [
-        "C006745",
-        "C006749"
+        "4.2.38.(6)",
+        "4.2.38.(8)"
       ],
       "drug_names": [
         "empagliflozin",
@@ -18471,7 +18467,7 @@
       ],
       "message_tr": "DPP-4 antagonistleri — metformin/sülfonilüre maksimum dozda yetersiz kontrol sonrası endokrinoloji veya iç hastalıkları uzman hekim raporu gerekir (§4.2.38).",
       "gate_b_sources": [
-        "C006735"
+        "4.2.38.(4)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -18502,9 +18498,9 @@
       ],
       "message_tr": "Metformin, sulfonilüreler, alfa glukozidaz inhibitörleri ve insan insülinleri — tip 1/2 diyabet endikasyonunda tüm hekimler reçete edebilir (§4.2.38).",
       "gate_b_sources": [
-        "C006723",
-        "C006739",
-        "C006741"
+        "4.2.38.(1)",
+        "4.2.38.a",
+        "4.2.38.c"
       ]
     },
     {
@@ -18526,7 +18522,7 @@
       ],
       "message_tr": "İnsülin glarjin+liksisenatid kombinasyonu — VKİ≥35, pankreatit öyküsü olmayan tip 2 diyabette 1 yıllık endokrinoloji uzman hekim raporu gerekir (§4.2.38).",
       "gate_b_sources": [
-        "C006747"
+        "4.2.38.(7)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -18542,8 +18538,8 @@
       "rule_id": "4.2.39.derm.sunscreen_xp_albinism_monthly_coverage",
       "sut_section": "4.2.39",
       "gate_b_sources": [
-        "C006751",
-        "C006752"
+        "4.2.39.(1)",
+        "4.2.39.(2)"
       ],
       "drug_names": [
         "güneşten koruyucu krem",
@@ -18574,7 +18570,7 @@
         "myeloablatif dozda coklu ajanlı kemoterapi uygulanan"
       ],
       "gate_b_sources": [
-        "C003926"
+        "4.2.4.(1)"
       ],
       "report_required": true,
       "message_tr": "(1) Myeloablatif dozda çoklu ajanlı kemoterapi uygulanan, tümör yükü olan hematolojik maligniteli veya akut lösemi tanısı almış ve beyaz küre sayısı 100.000/mm3’den fazla olan, allopurinol ve hidrasyon tedavisine rağmen böbrek fonksiyonları bozulmuş (kreatin > 2 mg/dl, kreatin klerensi < 50 ml/dakika) veya allopurinolün kontrendike olduğu hastalarda; prospektüs şartlarına (en fazla 5 günlük tedavi) göre yatan hastalarda kullanılır. Hematoloji, tıbbi onkoloji veya nefroloji uz",
@@ -18595,7 +18591,7 @@
         "cerrahi"
       ],
       "gate_b_sources": [
-        "C006757"
+        "4.2.41.(1)"
       ],
       "report_required": true,
       "message_tr": "(1) Parenteral demir preparatları aşağıda yer alan durumlarda (Ek:RG-02/11/2024-32710/23 md.Yürürlük: 09/11/2024) görülen demir eksikliğinin tedavisinde bu durumların belirtildiği (Değişik:RG-09/05/2024-32541/18 md. Yürürlük:17/05/2024) 6 ay süreli kardiyoloji, kadın hastalıkları ve doğum, genel cerrahi, iç hastalıkları, çocuk sağlığı ve hastalıkları (Ek:RG-25/03/2025-32852/20 md. Yürürlük:04/04/2025) veya anestezi ve reanimasyon uzmanlarınca düzenlenen rapora istinaden bu he",
@@ -18698,7 +18694,7 @@
       "rule_id": "4.2.42.A.repeat_application_new_report",
       "sut_section": "4.2.42.A",
       "gate_b_sources": [
-        "C006780"
+        "4.2.42.A.(4)"
       ],
       "drug_names": [
         "gonadotropin",
@@ -18739,7 +18735,7 @@
       "gate_b_sources": [
         "C006775",
         "C006778",
-        "C006779"
+        "4.2.42.A.(3)"
       ],
       "drug_names": [
         "gonadotropin",
@@ -18758,7 +18754,7 @@
       "sut_section": "4.2.42.B",
       "gate_b_sources": [
         "C006792",
-        "C006794"
+        "4.2.42.B.b"
       ],
       "drug_names": [
         "gonadotropin",
@@ -18779,7 +18775,7 @@
       "rule_id": "4.2.42.B.ivf_poor_response_quota",
       "sut_section": "4.2.42.B",
       "gate_b_sources": [
-        "C006793"
+        "4.2.42.B.(2)"
       ],
       "drug_names": [
         "gonadotropin",
@@ -18803,7 +18799,7 @@
         "gonadotropin"
       ],
       "gate_b_sources": [
-        "C006796"
+        "4.2.42.C.(1)"
       ],
       "report_required": true,
       "message_tr": "(1) Kök hücre vericisi kardeş doğmasına yönelik IVF tedavisinde kullanılacak ilaçlar; SUT’un 2.4.4.İ.2 maddesi koşullarına uyan ve söz konusu maddede belirtilen sağlık kurulu raporuna istinaden IVF tedavisinin yapıldığı üremeye yardımcı tedavi merkezinde kadın hastalıkları ve doğum uzman hekimlerince reçeteye yazılabilecektir. Her bir IVF denemesine ilişkin olarak kullanılacak gonadotropin dozu en fazla 3000 IU olacak ve raporda belirtilecektir.",
@@ -18822,7 +18818,7 @@
         "gonadotropin"
       ],
       "gate_b_sources": [
-        "C006801"
+        "4.2.42.D.(1)"
       ],
       "report_required": true,
       "message_tr": "(1) Sağlam çocuk doğmasına yönelik Preimlantasyon Genetik Tanı (PGT) ile İnvitro Fertilizasyon (IVF) tedavisinde kullanılacak ilaçlar; SUT’un 2.4.4.İ-3 maddesi koşullarına uyan ve söz konusu maddede belirtilen sağlık kurulu raporuna istinaden PGT ile İnvitro Fertilizasyon (IVF) tedavisinin yapıldığı üremeye yardımcı tedavi merkezinde kadın hastalıkları ve doğum uzman hekimlerince reçete edilebilecektir. Her bir IVF denemesine ilişkin olarak kullanılacak gonadotropin dozu en f",
@@ -18838,8 +18834,8 @@
       "rule_id": "4.2.43.bosentan.digital_ulcer_scleroderma_coverage",
       "sut_section": "4.2.43",
       "gate_b_sources": [
-        "C006803",
-        "C006805"
+        "4.2.43.(1)",
+        "4.2.43.a"
       ],
       "drug_names": [
         "bosentan",
@@ -18870,7 +18866,7 @@
         "sama"
       ],
       "gate_b_sources": [
-        "C006806"
+        "4.2.43.b"
       ],
       "report_required": true,
       "message_tr": "b) Bu hususların belirtildiği, üçüncü basamak sağlık kurumlarında en az bir romatoloji uzman hekiminin bulunduğu 6 ay süreli sağlık kurulu raporuna dayanılarak yine bu sağlık kurumlarında romatoloji uzman hekimlerince reçetelenir.",
@@ -18924,8 +18920,8 @@
       "rule_id": "4.2.46.A.ipf_coverage",
       "sut_section": "4.2.46.A",
       "gate_b_sources": [
-        "C006826",
-        "C006836",
+        "4.2.46.A.(1)",
+        "4.2.46.A.(2)",
         "C006840"
       ],
       "drug_names": [
@@ -18948,7 +18944,7 @@
       "rule_id": "4.2.46.B.ipf_continuation_criteria",
       "sut_section": "4.2.46.B",
       "gate_b_sources": [
-        "C006862",
+        "4.2.46.B.(2)",
         "C006865"
       ],
       "drug_names": [
@@ -18968,7 +18964,7 @@
       "rule_id": "4.2.46.B.ipf_report_criteria_a",
       "sut_section": "4.2.46.B",
       "gate_b_sources": [
-        "C006852",
+        "4.2.46.B.(1)",
         "C006864"
       ],
       "drug_names": [
@@ -18991,7 +18987,7 @@
       "rule_id": "4.2.46.B.ipf_report_criteria_b",
       "sut_section": "4.2.46.B",
       "gate_b_sources": [
-        "C006855"
+        "4.2.46.B.c"
       ],
       "drug_names": [
         "pirfenidon",
@@ -19013,7 +19009,7 @@
       "rule_id": "4.2.46.C.ssc_ild_nintedanib_criteria",
       "sut_section": "4.2.46.C",
       "gate_b_sources": [
-        "C006867"
+        "4.2.46.C.(1)"
       ],
       "drug_names": [
         "nintedanib"
@@ -19036,9 +19032,9 @@
       "rule_id": "4.2.46.C.ssc_ild_tertiary_rheum_pulmonology_1yr",
       "sut_section": "4.2.46.C",
       "gate_b_sources": [
-        "C006868",
-        "C006870",
-        "C006871"
+        "4.2.46.C.(2)",
+        "4.2.46.C.a",
+        "4.2.46.C.b"
       ],
       "drug_names": [
         "nintedanib"
@@ -19122,7 +19118,7 @@
       "rule_id": "4.2.48.metabolic.bile_acid_zellweger_mandatory_report",
       "sut_section": "4.2.48",
       "gate_b_sources": [
-        "C006912"
+        "4.2.48.(1)"
       ],
       "drug_names": [
         "kolsik asit",
@@ -19264,7 +19260,7 @@
       "rule_id": "4.2.49.A.neuro.nusinersen_no_csf_shunt_catheter_a",
       "sut_section": "4.2.49.A",
       "gate_b_sources": [
-        "C007021"
+        "4.2.49.A.c"
       ],
       "drug_names": [
         "nusinersen",
@@ -19340,7 +19336,7 @@
       "rule_id": "4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_a",
       "sut_section": "4.2.49.B",
       "gate_b_sources": [
-        "C007040"
+        "4.2.49.B.(3)"
       ],
       "drug_names": [
         "risdiplam"
@@ -19386,7 +19382,7 @@
       "rule_id": "4.2.49.B.neuro.risdiplam_no_implanted_csf_shunt",
       "sut_section": "4.2.49.B",
       "gate_b_sources": [
-        "C007035"
+        "4.2.49.B.c"
       ],
       "drug_names": [
         "risdiplam"
@@ -19409,7 +19405,7 @@
       "rule_id": "4.2.49.B.neuro.risdiplam_no_lumbar_puncture_contraindication",
       "sut_section": "4.2.49.B",
       "gate_b_sources": [
-        "C007038"
+        "4.2.49.B.e"
       ],
       "drug_names": [
         "risdiplam"
@@ -19443,7 +19439,7 @@
         "message_tr": "Gen temelli tedavilerin tümü [gen replasman tedavisi ve SMN2 modifiye eden tedaviler (nusinersen, risdiplam)] birlikte kullanılmamalıdır; gen replasman tedavisinin tek seferlik uygulama olması nedeniyle bu tedavi sonrasında nusinersen veya risdiplam kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.49.C(4), RG-29/06/2026-33295/7 md.)"
       },
       "gate_b_sources": [
-        "C007050"
+        "4.2.49.C.(4)"
       ],
       "icd10_ranges": [
         "G12.0",
@@ -19459,7 +19455,7 @@
       "rule_id": "4.2.49.C.neuro.nusinersen_tertiary_setting_report_durations",
       "sut_section": "4.2.49.C",
       "gate_b_sources": [
-        "C007047"
+        "4.2.49.C.(1)"
       ],
       "drug_names": [
         "nusinersen",
@@ -19493,7 +19489,7 @@
       "rule_id": "4.2.49.C.neuro.risdiplam_tertiary_setting_report_durations",
       "sut_section": "4.2.49.C",
       "gate_b_sources": [
-        "C007048"
+        "4.2.49.C.(2)"
       ],
       "drug_names": [
         "risdiplam"
@@ -19524,7 +19520,7 @@
       "rule_id": "4.2.49.C.neuro.sma_designated_multidisciplinary_center_coverage",
       "sut_section": "4.2.49.C",
       "gate_b_sources": [
-        "C007049"
+        "4.2.49.C.(3)"
       ],
       "drug_names": [
         "nusinersen",
@@ -19552,7 +19548,7 @@
       "rule_id": "4.2.49.C.neuro.sma_modifying_switch_under_1yr_nopay",
       "sut_section": "4.2.49.C",
       "gate_b_sources": [
-        "C007051"
+        "4.2.49.C.(5)"
       ],
       "drug_names": [
         "nusinersen",
@@ -19573,7 +19569,7 @@
       "rule_id": "4.2.49.neuro.nusinersen_no_csf_shunt_catheter",
       "sut_section": "4.2.49",
       "gate_b_sources": [
-        "C007013"
+        "4.2.49.(3)"
       ],
       "drug_names": [
         "nusinersen",
@@ -19597,7 +19593,7 @@
       "rule_id": "4.2.49.neuro.sma_smn2_copy2_3_infant_coverage",
       "sut_section": "4.2.49",
       "gate_b_sources": [
-        "C007010"
+        "4.2.49.b"
       ],
       "drug_names": [
         "nusinersen",
@@ -19625,7 +19621,7 @@
       "rule_id": "4.2.49.neuro.sma_smn2_copy4_symptomatic_coverage",
       "sut_section": "4.2.49",
       "gate_b_sources": [
-        "C007011"
+        "4.2.49.c"
       ],
       "drug_names": [
         "nusinersen",
@@ -19653,8 +19649,8 @@
       "rule_id": "4.2.5.botox.axillary_hyperhidrosis_tertiary_coverage",
       "sut_section": "4.2.5",
       "gate_b_sources": [
-        "C003932",
-        "C003935"
+        "4.2.5.c",
+        "4.2.5.e"
       ],
       "drug_names": [
         "botulinum toksini",
@@ -19691,7 +19687,7 @@
       "rule_id": "4.2.5.botox.outside_indications_nopay",
       "sut_section": "4.2.5",
       "gate_b_sources": [
-        "C003938"
+        "4.2.5.(3)"
       ],
       "drug_names": [
         "botulinum toksini",
@@ -19710,9 +19706,9 @@
       "rule_id": "4.2.5.botox.paediatric_cerebral_palsy_tertiary_coverage",
       "sut_section": "4.2.5",
       "gate_b_sources": [
-        "C003929",
-        "C003930",
-        "C003933"
+        "4.2.5.a",
+        "4.2.5.b",
+        "4.2.5.d"
       ],
       "drug_names": [
         "botulinum toksini",
@@ -19749,7 +19745,7 @@
       "rule_id": "4.2.5.botox.repeat_application_6mo_report_permission",
       "sut_section": "4.2.5",
       "gate_b_sources": [
-        "C003936"
+        "4.2.5.(2)"
       ],
       "drug_names": [
         "botulinum toksini",
@@ -19771,7 +19767,7 @@
       "rule_id": "4.2.50.metabolic.ctx_chenodeoxycholic_acid_coverage",
       "sut_section": "4.2.50",
       "gate_b_sources": [
-        "C007055"
+        "4.2.50.(1)"
       ],
       "drug_names": [
         "kenodeoksikolik asit",
@@ -19806,7 +19802,7 @@
       "rule_id": "4.2.51.neuro.droxidopa_dbh_deficiency_coverage",
       "sut_section": "4.2.51",
       "gate_b_sources": [
-        "C007058"
+        "4.2.51.(1)"
       ],
       "drug_names": [
         "droxidopa",
@@ -19830,7 +19826,7 @@
       "rule_id": "4.2.51.neuro.droxidopa_tertiary_metabolism_cardiology_coverage",
       "sut_section": "4.2.51",
       "gate_b_sources": [
-        "C007059"
+        "4.2.51.(2)"
       ],
       "drug_names": [
         "droxidopa",
@@ -19988,7 +19984,7 @@
       "rule_id": "4.2.53.metabolic.nutrition_supplement_fatty_acid_coverage",
       "sut_section": "4.2.53",
       "gate_b_sources": [
-        "C007071"
+        "4.2.53.(1)"
       ],
       "drug_names": [
         "beslenme ürünü",
@@ -20024,7 +20020,7 @@
       "rule_id": "4.2.54.inf.cutaneous_leishmaniasis_3mo_report_coverage",
       "sut_section": "4.2.54",
       "gate_b_sources": [
-        "C007075"
+        "4.2.54.b"
       ],
       "drug_names": [
         "miltefosin",
@@ -20061,7 +20057,7 @@
       "rule_id": "4.2.54.inf.visceral_leishmaniasis_amphotericin_coverage",
       "sut_section": "4.2.54",
       "gate_b_sources": [
-        "C007074"
+        "4.2.54.a"
       ],
       "drug_names": [
         "miltefosin",
@@ -20095,7 +20091,7 @@
       "rule_id": "4.2.55.ent.otosclerosis_cochlear_kbb_coverage",
       "sut_section": "4.2.55",
       "gate_b_sources": [
-        "C007077"
+        "4.2.55.(1)"
       ],
       "drug_names": [
         "sodyum florür",
@@ -20127,7 +20123,7 @@
       "rule_id": "4.2.56.meta.classic_pku_sapropterin_metabolic_coverage",
       "sut_section": "4.2.56",
       "gate_b_sources": [
-        "C007079"
+        "4.2.56.(1)"
       ],
       "drug_names": [
         "sapropterin",
@@ -20179,7 +20175,7 @@
       "rule_id": "4.2.57.atopic_dermatitis_dupilumab_risk_factor",
       "sut_section": "4.2.57",
       "gate_b_sources": [
-        "C007086"
+        "4.2.57.b"
       ],
       "drug_names": [
         "dupilumab"
@@ -20200,7 +20196,7 @@
       "rule_id": "4.2.57.atopic_dermatitis_jak_after_12wk",
       "sut_section": "4.2.57",
       "gate_b_sources": [
-        "C007085"
+        "4.2.57.a"
       ],
       "drug_names": [
         "abrositinib",
@@ -20278,7 +20274,7 @@
       "rule_id": "4.2.58.derm.topical_hair_loss_2box_10box_tiers_coverage",
       "sut_section": "4.2.58",
       "gate_b_sources": [
-        "C007104"
+        "4.2.58.(1)"
       ],
       "drug_names": [
         "minoksidil (topikal)",
@@ -20305,7 +20301,7 @@
       "rule_id": "4.2.59.onco.relapsed_ptcl_hematology_3mo_coverage",
       "sut_section": "4.2.59",
       "gate_b_sources": [
-        "C007107"
+        "4.2.59.(1)"
       ],
       "drug_names": [
         "pralatreksat",
@@ -20345,12 +20341,12 @@
       "rule_id": "4.2.6.A.max_3_month_supply_daily_dose",
       "sut_section": "4.2.6.A",
       "gate_b_sources": [
-        "C003941",
-        "C003942",
-        "C003998",
-        "C004016",
-        "C004030",
-        "C004033"
+        "4.2.6.A.(1)",
+        "4.2.6.A.(2)",
+        "4.2.6.A-2.(5)",
+        "4.2.6.A-4.(2)",
+        "4.2.6.A-5.(4)",
+        "4.2.6.B.(1)"
       ],
       "drug_names": [
         "büyüme hormonu",
@@ -20366,7 +20362,7 @@
       "rule_id": "4.2.6.A1.neurosecretory_bioinactive_gh_somatropin",
       "sut_section": "4.2.6.A-1",
       "gate_b_sources": [
-        "C003977",
+        "4.2.6.A-1.ç",
         "C003982"
       ],
       "drug_names": [
@@ -20389,7 +20385,7 @@
       "rule_id": "4.2.6.A1.somatropin_listed_cases_no_condition",
       "sut_section": "4.2.6.A-1",
       "gate_b_sources": [
-        "C003979"
+        "4.2.6.A-1.e"
       ],
       "drug_names": [
         "somatropin",
@@ -20414,7 +20410,7 @@
       "rule_id": "4.2.6.A2.insulin_tolerance_test_peak_gh_report",
       "sut_section": "4.2.6.A-2",
       "gate_b_sources": [
-        "C003997"
+        "4.2.6.A-2.(4)"
       ],
       "drug_names": [
         "somatropin",
@@ -20436,7 +20432,7 @@
       "rule_id": "4.2.6.A4.prader_willi_gh_no_stimulation_test",
       "sut_section": "4.2.6.A-4",
       "gate_b_sources": [
-        "C004013"
+        "4.2.6.A-4.(1)"
       ],
       "drug_names": [
         "somatropin",
@@ -20458,7 +20454,7 @@
       "rule_id": "4.2.6.A5.ckd_dialysis_children_gh_coverage",
       "sut_section": "4.2.6.A-5",
       "gate_b_sources": [
-        "C004024"
+        "4.2.6.A-5.(1)"
       ],
       "drug_names": [
         "somatropin",
@@ -20502,7 +20498,7 @@
       ],
       "message_tr": "Erişkin büyüme hormonu — erişkin endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl) ve endokrinoloji veya iç hastalıkları uzman hekim reçetesi gerekir (§4.2.6.A-2).",
       "gate_b_sources": [
-        "C003998"
+        "4.2.6.A-2.(5)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -20536,7 +20532,7 @@
       "report_required": true,
       "message_tr": "KBY ilişkili büyüme bozukluğu somatropin — çocuk nefroloji ve çocuk endokrinoloji uzman hekimlerinin yer aldığı 6 aylık sağlık kurulu raporu gerekir (§4.2.6.A-5).",
       "gate_b_sources": [
-        "C004030"
+        "4.2.6.A-5.(4)"
       ],
       "report_specialties": [
         "çocuk nefroloji",
@@ -20571,7 +20567,7 @@
       "report_required": true,
       "message_tr": "Büyüme hormonu — yaş grubuna göre endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl) ve endokrinoloji uzman reçetesi gerekir (§4.2.6.A).",
       "gate_b_sources": [
-        "C003941"
+        "4.2.6.A.(1)"
       ],
       "report_specialties": [
         "endokrinoloji"
@@ -20598,7 +20594,7 @@
       ],
       "message_tr": "Laron sendromu rhIGF-I (mecasermin) devam tedavisi — epifiz hatları açık hastalarda yılda bir yenilenen sağlık kurulu raporu gerekir (§4.2.6.B-2).",
       "gate_b_sources": [
-        "C004039"
+        "4.2.6.B-2.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -20625,7 +20621,7 @@
       "report_required": true,
       "message_tr": "Laron sendromu rhIGF-I (mecasermin) başlangıcı — çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu ve reçete gerekir (§4.2.6.B).",
       "gate_b_sources": [
-        "C004033"
+        "4.2.6.B.(1)"
       ],
       "report_specialties": [
         "çocuk endokrinoloji",
@@ -20658,7 +20654,6 @@
       "report_required": true,
       "message_tr": "Pediatrik büyüme hormonu devam tedavisi — endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu ve epifiz hatları takibi gerekir (§4.2.6.A-1).",
       "gate_b_sources": [
-        "C003965",
         "C003982"
       ],
       "report_specialties": [
@@ -20751,7 +20746,7 @@
       "report_required": true,
       "message_tr": "Prader-Willi sendromu somatropin — üçüncü basamak kurumda çocuk endokrinoloji uzman hekiminin yer aldığı 3 aylık sağlık kurulu raporu gerekir (§4.2.6.A-4).",
       "gate_b_sources": [
-        "C004016"
+        "4.2.6.A-4.(2)"
       ],
       "report_specialties": [
         "çocuk endokrinoloji",
@@ -20781,7 +20776,7 @@
       ],
       "message_tr": "Turner sendromu somatropin — epifizleri açık, klinik/genetik tanılı hastada en az bir çocuk endokrinoloji uzman hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl) ve çocuk endokrinoloji uzman reçetesi gerekir (§4.2.6.A-3).",
       "gate_b_sources": [
-        "C004003"
+        "4.2.6.A-3.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -20799,7 +20794,7 @@
         "sama"
       ],
       "gate_b_sources": [
-        "C007124"
+        "4.2.60.(4)"
       ],
       "report_required": true,
       "message_tr": "(4) Yukarıdaki durumlardan herhangi birinin belirtildiği, üçüncü basamak (Değişik:RG-25/08/2022-31934/45 md. Yürürlük:03/09/2022) resmi sağlık hizmet sunucularında çocuk metabolizma uzman hekimi veya çocuk endokrinolojisi ve metabolizma hastalıkları uzman hekimlerinden biri tarafından düzenlenen 6 ay süreli uzman hekim raporuna dayanılarak bu uzman hekimlerce veya çocuk sağlığı ve hastalıkları uzman hekimlerince reçete edilmesi halinde,",
@@ -20827,7 +20822,7 @@
       "rule_id": "4.2.61.onco.carmustine_offlabel_bmt_conditioning_coverage",
       "sut_section": "4.2.61",
       "gate_b_sources": [
-        "C007128"
+        "4.2.61.(1)"
       ],
       "drug_names": [
         "karmustin"
@@ -20863,7 +20858,7 @@
       "rule_id": "4.2.62.peds.infantile_haemangioma_peds_specialty_6mo_terminate",
       "sut_section": "4.2.62",
       "gate_b_sources": [
-        "C007134"
+        "4.2.62.(2)"
       ],
       "drug_names": [
         "propranolol"
@@ -20901,7 +20896,7 @@
       "rule_id": "4.2.62.peds.infantile_haemangioma_systemic_initiation_coverage",
       "sut_section": "4.2.62",
       "gate_b_sources": [
-        "C007130"
+        "4.2.62.(1)"
       ],
       "drug_names": [
         "propranolol"
@@ -20924,7 +20919,7 @@
       "rule_id": "4.2.63.gi.wilson_dpenicillamine_intolerant_trientine_coverage",
       "sut_section": "4.2.63",
       "gate_b_sources": [
-        "C007137"
+        "4.2.63.(1)"
       ],
       "drug_names": [
         "trientin",
@@ -20955,7 +20950,7 @@
       "rule_id": "4.2.64.gi.wilson_zinc_maintenance_tertiary_coverage",
       "sut_section": "4.2.64",
       "gate_b_sources": [
-        "C007139"
+        "4.2.64.(1)"
       ],
       "drug_names": [
         "çinko sülfat",
@@ -20987,7 +20982,7 @@
       "rule_id": "4.2.65.derm.diabetic_foot_4wk_response_continue_coverage",
       "sut_section": "4.2.65",
       "gate_b_sources": [
-        "C007143"
+        "4.2.65.(2)"
       ],
       "drug_names": [
         "epidermal büyüme faktörü (topikal)"
@@ -21030,7 +21025,7 @@
       "rule_id": "4.2.65.derm.diabetic_foot_osteomyelitis_softtissue_report_mandatory",
       "sut_section": "4.2.65",
       "gate_b_sources": [
-        "C007146"
+        "4.2.65.(5)"
       ],
       "drug_names": [
         "epidermal büyüme faktörü (topikal)"
@@ -21057,7 +21052,7 @@
       "rule_id": "4.2.65.derm.diabetic_foot_prior_conventional_tx_report_mandatory",
       "sut_section": "4.2.65",
       "gate_b_sources": [
-        "C007145"
+        "4.2.65.(4)"
       ],
       "drug_names": [
         "epidermal büyüme faktörü (topikal)"
@@ -21080,7 +21075,7 @@
       "rule_id": "4.2.65.derm.diabetic_foot_wagner12_4wk_specialty_coverage",
       "sut_section": "4.2.65",
       "gate_b_sources": [
-        "C007142"
+        "4.2.65.(1)"
       ],
       "drug_names": [
         "epidermal büyüme faktörü (topikal)"
@@ -21126,7 +21121,7 @@
         "fsh"
       ],
       "gate_b_sources": [
-        "C007149"
+        "4.2.66.(1)"
       ],
       "report_required": true,
       "message_tr": "(1) Hipogonadotropik hipogonadizm tanısı; 6 ay ara ile yapılan değerlendirmelerde toplamda 3 yıl süre ile FSH ve LH değerleri normal aralığın alt sınırında veya düşük olan ve total testesteron değeri sayısal olarak düşük olan erkek hastalarda bu durumların belirtildiği en az biri endokrinoloji ve metabolizma uzman (Değişik:RG-16/03/2023-32134/36 md. Yürürlük: 24/03/2023) hekimi veya üroloji uzman hekiminin yer aldığı 6 ay süreli sağlık kurulu raporuna dayanılarak endokrinoloj",
@@ -21248,7 +21243,7 @@
         "sama"
       ],
       "gate_b_sources": [
-        "C007169"
+        "4.2.69.a"
       ],
       "report_required": true,
       "message_tr": "a) Pediatrik hastaların tedavisi için; üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen ve yukarıda yer alan tanı kriterlerinin belirtildiği, en az bir çocuk gastroentroloji uzman hekiminin yer aldığı üç çocuk sağlığı ve hastalıkları uzman hekimince düzenlenecek sağlık kurulu raporuna istinaden çocuk sağlığı ve hastalıkları uzman hekimlerince reçete edilmesi halinde,",
@@ -21265,7 +21260,7 @@
         "sama"
       ],
       "gate_b_sources": [
-        "C007170"
+        "4.2.69.b"
       ],
       "report_required": true,
       "message_tr": "b) Yetişkin hastaların tedavisi için; üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen ve yukarıda yer alan tanı kriterlerinin belirtildiği, en az bir gastroentereoloji uzman hekiminin yer aldığı sağlık kurulu raporuna istinaden gastroentereloji uzman hekimlerince reçete edilmesi halinde,",
@@ -21293,7 +21288,7 @@
       "rule_id": "4.2.7.hemodialysis_heparin_nopay",
       "sut_section": "4.2.7",
       "gate_b_sources": [
-        "C004055"
+        "4.2.7.(3)"
       ],
       "drug_names": [
         "heparin",
@@ -21309,7 +21304,7 @@
       "rule_id": "4.2.7.inpatient_emergency_no_report",
       "sut_section": "4.2.7",
       "gate_b_sources": [
-        "C004054"
+        "4.2.7.(2)"
       ],
       "drug_names": [
         "düşük molekül ağırlıklı heparin",
@@ -21325,7 +21320,7 @@
       "rule_id": "4.2.7.lmwh_6mo_report_extended_pregnancy",
       "sut_section": "4.2.7",
       "gate_b_sources": [
-        "C004053"
+        "4.2.7.(1)"
       ],
       "drug_names": [
         "düşük molekül ağırlıklı heparin",
@@ -21356,7 +21351,7 @@
       "rule_id": "4.2.7.lmwh_different_active_combo_nopay",
       "sut_section": "4.2.7",
       "gate_b_sources": [
-        "C004057"
+        "4.2.7.(4)"
       ],
       "drug_names": [
         "düşük molekül ağırlıklı heparin"
@@ -21390,7 +21385,7 @@
       "rule_id": "4.2.70.A.continuation_15mo_no_hf_admission",
       "sut_section": "4.2.70.A",
       "gate_b_sources": [
-        "C007199"
+        "4.2.70.A.(5)"
       ],
       "drug_names": [
         "tafamidis",
@@ -21477,7 +21472,7 @@
       "rule_id": "4.2.70.B.als_stable_stage_3mo_6mo_maintenance",
       "sut_section": "4.2.70.B",
       "gate_b_sources": [
-        "C007203"
+        "4.2.70.B.(2)"
       ],
       "drug_names": [
         "edaravon",
@@ -21497,7 +21492,7 @@
       "rule_id": "4.2.70.B.als_tertiary_3neurology_report",
       "sut_section": "4.2.70.B",
       "gate_b_sources": [
-        "C007204"
+        "4.2.70.B.(3)"
       ],
       "drug_names": [
         "edaravon",
@@ -21525,7 +21520,7 @@
       "rule_id": "4.2.71.onco.al_amyloidosis_daratumumab_cardiac_mayo_iiib_nopay",
       "sut_section": "4.2.71",
       "gate_b_sources": [
-        "C007209"
+        "4.2.71.(3)"
       ],
       "drug_names": [
         "daratumumab"
@@ -21546,7 +21541,7 @@
       "rule_id": "4.2.71.onco.al_amyloidosis_daratumumab_cyborg_combo_coverage",
       "sut_section": "4.2.71",
       "gate_b_sources": [
-        "C007207"
+        "4.2.71.(1)"
       ],
       "drug_names": [
         "daratumumab"
@@ -21575,7 +21570,7 @@
       "rule_id": "4.2.71.onco.al_amyloidosis_daratumumab_response_hematology_3mo_coverage",
       "sut_section": "4.2.71",
       "gate_b_sources": [
-        "C007208"
+        "4.2.71.(2)"
       ],
       "drug_names": [
         "daratumumab"
@@ -21653,7 +21648,7 @@
       "rule_id": "4.2.73.pulm.cftr_tertiary_pulmonology_6mo_coverage",
       "sut_section": "4.2.73",
       "gate_b_sources": [
-        "C007262"
+        "4.2.73.(5)"
       ],
       "drug_names": [
         "elexakaftor/tezakaftor/ivakaftor ve ivakaftor",
@@ -21688,7 +21683,7 @@
       "rule_id": "4.2.74.card.sgli_hfref_dapagliflozin_empagliflozin_cardiology_1yr_coverage",
       "sut_section": "4.2.74",
       "gate_b_sources": [
-        "C007265"
+        "4.2.74.(1)"
       ],
       "drug_names": [
         "dapagliflozin",
@@ -21723,7 +21718,7 @@
       "rule_id": "4.2.74.renal.sgli_ckd_proteinuria_dapagliflozin_empagliflozin_nephrology_coverage",
       "sut_section": "4.2.74",
       "gate_b_sources": [
-        "C007266"
+        "4.2.74.(2)"
       ],
       "drug_names": [
         "dapagliflozin",
@@ -21862,7 +21857,7 @@
       "rule_id": "4.2.8.A.bcaa_enriched_hepatic_encephalopathy",
       "sut_section": "4.2.8.A",
       "gate_b_sources": [
-        "C004110"
+        "4.2.8.A.(4)"
       ],
       "drug_names": [
         "dallı zincirli aminoasit",
@@ -22016,7 +22011,7 @@
       "rule_id": "4.2.8.B.parenteral_nutrition_30day_report",
       "sut_section": "4.2.8.B",
       "gate_b_sources": [
-        "C004112"
+        "4.2.8.B.(1)"
       ],
       "drug_names": [
         "parenteral beslenme ürünü",
@@ -22040,11 +22035,11 @@
       "rule_id": "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
       "sut_section": "4.2.9.A",
       "gate_b_sources": [
-        "C004125",
-        "C004128",
-        "C004131",
-        "C004132",
-        "C004133"
+        "4.2.9.A.(1)",
+        "4.2.9.A.(4)",
+        "4.2.9.A-1.(2)",
+        "4.2.9.A-1.(3)",
+        "4.2.9.A-1.(4)"
       ],
       "drug_names": [
         "eritropoietin",
@@ -22065,7 +22060,7 @@
       "rule_id": "4.2.9.B.renal.phosphate_binder_prior_3mo_use_mandatory",
       "sut_section": "4.2.9.B",
       "gate_b_sources": [
-        "C004141"
+        "4.2.9.B.(1)"
       ],
       "drug_names": [
         "sevelamer",
@@ -22092,7 +22087,7 @@
       "rule_id": "4.2.9.B.renal.phosphate_binders_dialysis_report_coverage",
       "sut_section": "4.2.9.B",
       "gate_b_sources": [
-        "C004147"
+        "4.2.9.B.(2)"
       ],
       "drug_names": [
         "sevelamer",
@@ -22127,7 +22122,7 @@
       "rule_id": "4.2.9.B.renal.sevelamer_lanthanum_combination_prohibited",
       "sut_section": "4.2.9.B",
       "gate_b_sources": [
-        "C004151"
+        "4.2.9.B.(5)"
       ],
       "drug_names": [
         "sevelamer",
@@ -22147,7 +22142,7 @@
       "rule_id": "4.2.9.C.renal.cinacalcet_etelcalcetide_combination_nopay_variant",
       "sut_section": "4.2.9.Ç",
       "gate_b_sources": [
-        "C004179"
+        "4.2.9.Ç.(6)"
       ],
       "drug_names": [
         "cinacalcet",
@@ -22166,8 +22161,8 @@
       "rule_id": "4.2.9.C.renal.paricalcitol_oral_peritoneal_dialysis_coverage",
       "sut_section": "4.2.9.C",
       "gate_b_sources": [
-        "C004167",
-        "C004168"
+        "4.2.9.C.(4)",
+        "4.2.9.C.(5)"
       ],
       "drug_names": [
         "parikalsitol"
@@ -22196,7 +22191,7 @@
       "rule_id": "4.2.9.C.renal.paricalcitol_parenteral_hemodialysis_coverage",
       "sut_section": "4.2.9.C",
       "gate_b_sources": [
-        "C004166"
+        "4.2.9.C.(3)"
       ],
       "drug_names": [
         "parikalsitol"
@@ -22231,7 +22226,7 @@
       "rule_id": "4.2.9.E.renal.cinacalcet_etelcalcetide_combination_nopay",
       "sut_section": "4.2.9.E",
       "gate_b_sources": [
-        "C004201"
+        "4.2.9.E.(7)"
       ],
       "drug_names": [
         "cinacalcet",
@@ -22250,8 +22245,8 @@
       "rule_id": "4.2.9.E.renal.etelcalcetide_adult_hdi_secondary_hpt_coverage",
       "sut_section": "4.2.9.E",
       "gate_b_sources": [
-        "C004199",
-        "C004200"
+        "4.2.9.E.(5)",
+        "4.2.9.E.(6)"
       ],
       "drug_names": [
         "etelkalsetid"
@@ -22279,7 +22274,7 @@
       "rule_id": "4.2.9.E.renal.etelcalcetide_hemodialysis_report_coverage",
       "sut_section": "4.2.9.E",
       "gate_b_sources": [
-        "C004197"
+        "4.2.9.E.(3)"
       ],
       "drug_names": [
         "etelkalsetid"
@@ -22314,7 +22309,7 @@
       "rule_id": "4.2.9.F.renal.hyperkalemia_k_binder_report_coverage",
       "sut_section": "4.2.9.F",
       "gate_b_sources": [
-        "C004204"
+        "4.2.9.F.(1)"
       ],
       "drug_names": [
         "sodyum polistiren sülfonat",
@@ -22345,7 +22340,7 @@
       "rule_id": "4.2.9.F.renal.hyperkalemia_max_2_attacks_6_boxes_coverage",
       "sut_section": "4.2.9.F",
       "gate_b_sources": [
-        "C004205"
+        "4.2.9.F.(2)"
       ],
       "drug_names": [
         "sodyum polistiren sülfonat",
@@ -22391,8 +22386,8 @@
       ],
       "message_tr": "KBY anemisi ESA — TSAT/ferritin ve Hb kriterleri; demir eksikliğinde önce demir tedavisi; hedef Hb 11-12 g/dl; tetkik sonuçları raporda belirtilir (§4.2.9.A-1).",
       "gate_b_sources": [
-        "C004126",
-        "C004130"
+        "4.2.9.A.(2)",
+        "4.2.9.A-1.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -22429,7 +22424,7 @@
       ],
       "message_tr": "KBY anemisi ESA — nefroloji veya diyaliz sertifikalı uzman hekim raporuna dayanılarak nefroloji/diyaliz sertifikalı hekimlerce reçete edilir (§4.2.9.A-1).",
       "gate_b_sources": [
-        "C004131"
+        "4.2.9.A-1.(2)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -22465,11 +22460,11 @@
       ],
       "message_tr": "KBY anemisi ESA — ferritin/TSAT/Hb kriterleri, nefroloji/diyaliz uzman raporu; muadil ESA kullanımı; bir defada en fazla 1 aylık reçete (§4.2.9.A).",
       "gate_b_sources": [
-        "C004127",
-        "C004128",
-        "C004130",
-        "C004131",
-        "C004173"
+        "4.2.9.A.(3)",
+        "4.2.9.A.(4)",
+        "4.2.9.A-1.(1)",
+        "4.2.9.A-1.(2)",
+        "4.2.9.Ç.(4)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -22508,8 +22503,8 @@
       ],
       "message_tr": "Eritropoietin alfa-beta-zeta, metoksipolietilen glikol epoetin beta ve darbepoetin endikasyon muadili olarak kullanılabilir; raporda doz/süre belirtilir ve bir defada en fazla 1 aylık reçete verilir (§4.2.9.A).",
       "gate_b_sources": [
-        "C004127",
-        "C004128"
+        "4.2.9.A.(3)",
+        "4.2.9.A.(4)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -22535,7 +22530,7 @@
       ],
       "message_tr": "Etelkalsedid — yalnızca hemodiyaliz KBY endikasyonunda karşılanır; paratiroid karsinomu, primer hiperparatiroidizm veya diyalizsiz KBY endikasyonlarında bedel karşılanmaz (§4.2.9.E).",
       "gate_b_sources": [
-        "C004200"
+        "4.2.9.E.(6)"
       ]
     },
     {
@@ -22555,7 +22550,7 @@
       "message_tr": "MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile tedaviye başlanır; hematoloji uzman hekim raporu ve hemogram sonucu reçetede belirtilir (§4.2.9.A-2).",
       "gate_b_sources": [
         "C004135",
-        "C004136",
+        "4.2.9.A-2.(1)",
         "C004137"
       ],
       "report_required": true,
@@ -22583,7 +22578,7 @@
       ],
       "message_tr": "MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile başlanır; hedef Hb 12 g/dl; hematoloji uzman raporu ve hemogram reçetede belirtilir (§4.2.9.A-2).",
       "gate_b_sources": [
-        "C004136"
+        "4.2.9.A-2.(1)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -22637,7 +22632,7 @@
       ],
       "message_tr": "Roksadustat — stabil diyaliz hastasında ESA'dan geçişte klinik neden raporda belirtilmeli; başlangıç dozu önceki 4 haftalık ortalama ESA dozuna göre ayarlanır (§4.2.9.A-1).",
       "gate_b_sources": [
-        "C004134"
+        "4.2.9.A-1.(5)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -22662,7 +22657,7 @@
         "albumin"
       ],
       "gate_b_sources": [
-        "C004176"
+        "4.2.9.Ç.b"
       ],
       "report_required": true,
       "message_tr": "b) Opere olmuş ancak nüks olan hastalardan; bifosfonatlar ile hiperkalsemisi kontrol altına alınamamış ve albümin ile düzeltilmiş serum kalsiyum değeri ≥10,5 mg/dl olan hastalar,",
@@ -22676,7 +22671,7 @@
       "rule_id": "4.3.ek4c_ek4d_copay_exempt",
       "sut_section": "4.3",
       "gate_b_sources": [
-        "C007292"
+        "4.3.(5)"
       ],
       "condition": {
         "copay_exempt": true,
@@ -22692,7 +22687,7 @@
       "rule_id": "4.3.ek4c_self_procured_bank_payment_coverage",
       "sut_section": "4.3",
       "gate_b_sources": [
-        "C007291"
+        "4.3.(4)"
       ],
       "condition": {
         "coverage_note": true,
@@ -22707,7 +22702,7 @@
       "rule_id": "4.3.non_ek4c_overseas_drug_nopay",
       "sut_section": "4.3",
       "gate_b_sources": [
-        "C007290"
+        "4.3.(3)"
       ],
       "pay": false,
       "condition": {
@@ -22723,7 +22718,7 @@
       "rule_id": "4.3.overseas_drug_specialist_report_90day_coverage",
       "sut_section": "4.3",
       "gate_b_sources": [
-        "C007293"
+        "4.3.(6)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -22746,7 +22741,7 @@
       "rule_id": "4.3.overseas_licensed_distributed_copay_exempt",
       "sut_section": "4.3",
       "gate_b_sources": [
-        "C007297"
+        "4.3.(8)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -22770,7 +22765,7 @@
       "rule_id": "4.3.overseas_procurement_permission",
       "sut_section": "4.3",
       "gate_b_sources": [
-        "C007288"
+        "4.3.(1)"
       ],
       "condition": {
         "overseas_drug": true
@@ -22860,7 +22855,7 @@
       "rule_id": "4.4.2.internal_reference_pricing_6pct_buffer_regulatory",
       "sut_section": "4.4.2",
       "gate_b_sources": [
-        "C007789"
+        "4.4.2.(2)"
       ],
       "action": {
         "enforcement": "regulatory: in payments for internal-reference-pricing drugs, considering the drug having ≥1% market share, up to 6% above the group's cheapest drug price is taken into account",
@@ -22871,7 +22866,7 @@
       "rule_id": "4.4.2.internal_reference_pricing_excess_nopay",
       "sut_section": "4.4.2",
       "gate_b_sources": [
-        "C007790"
+        "4.4.2.a"
       ],
       "pay": false,
       "action": {
@@ -22883,7 +22878,7 @@
       "rule_id": "4.4.2.internal_reference_pricing_substitution_prohibited",
       "sut_section": "4.4.2",
       "gate_b_sources": [
-        "C007788"
+        "4.4.2.(1)"
       ],
       "action": {
         "enforcement": "prohibited/rule: internal reference pricing — equivalent-group application groups same-active-same-dose same-dosage-form drugs; these ARE substitutable in pharmacy; the Institution may also form non-substitutable groups (per rational-use commissions w/ MoH) for drugs whose access would not be hindered",
@@ -22894,7 +22889,7 @@
       "rule_id": "4.5.1.contracted_pharmacy_supply_coverage",
       "sut_section": "4.5.1",
       "gate_b_sources": [
-        "C007794"
+        "4.5.1.(1)"
       ],
       "condition": {
         "coverage_note": true,
@@ -22909,7 +22904,7 @@
       "rule_id": "4.5.1.non_contracted_pharmacy_nopay_except_emergency",
       "sut_section": "4.5.1",
       "gate_b_sources": [
-        "C007795"
+        "4.5.1.(2)"
       ],
       "pay": false,
       "condition": {
@@ -22925,7 +22920,7 @@
       "rule_id": "4.5.1.payment_dispensing_date_retail_price_regulatory",
       "sut_section": "4.5.1",
       "gate_b_sources": [
-        "C007796"
+        "4.5.1.(3)"
       ],
       "action": {
         "enforcement": "regulatory: in Institution drug payment, the retail sale prices on the drug dispensing date are the basis",
@@ -22936,7 +22931,7 @@
       "rule_id": "4.5.2.refill_15days_before_end_permission",
       "sut_section": "4.5.2",
       "gate_b_sources": [
-        "C007799"
+        "4.5.2.(2)"
       ],
       "report_required": true,
       "condition": {
@@ -22952,7 +22947,7 @@
       "rule_id": "4.5.3.inpatient_drug_cost_coverage",
       "sut_section": "4.5.3",
       "gate_b_sources": [
-        "C007801"
+        "4.5.3.(1)"
       ],
       "condition": {
         "coverage_note": true,
@@ -22967,7 +22962,7 @@
       "rule_id": "4.5.3.outpatient_drug_net_payment_coverage",
       "sut_section": "4.5.3",
       "gate_b_sources": [
-        "C007802"
+        "4.5.3.(2)"
       ],
       "condition": {
         "coverage_note": true,
@@ -22982,7 +22977,7 @@
       "rule_id": "4.6.blood_component_procurement_coverage",
       "sut_section": "4.6",
       "gate_b_sources": [
-        "C007807"
+        "4.6.(2)"
       ],
       "drug_names": [
         "kan ve kan bileşenleri"
@@ -23000,7 +22995,7 @@
       "rule_id": "4.6.ek2b_blood_component_isbt_barcode_coverage",
       "sut_section": "4.6",
       "gate_b_sources": [
-        "C007808"
+        "4.6.(3)"
       ],
       "drug_names": [
         "kan ve kan bileşenleri"
@@ -23019,7 +23014,7 @@
       "rule_id": "4.6.ek2c_blood_component_drg_unbundling_must_bill",
       "sut_section": "4.6",
       "gate_b_sources": [
-        "C007809"
+        "4.6.(4)"
       ],
       "drug_names": [
         "kan ve kan bileşenleri"
@@ -23039,7 +23034,7 @@
       "rule_id": "4.7.hemophilia_cardless_once_blood_product_prescription_mandatory",
       "sut_section": "4.7",
       "gate_b_sources": [
-        "C007821"
+        "4.7.(8)"
       ],
       "report_required": true,
       "report_specialties": [

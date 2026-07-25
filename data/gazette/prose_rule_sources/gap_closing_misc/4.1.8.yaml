@@ -11,4 +11,4 @@ rules:
     copay_required: true
     payment_tr: EK-4/F'de olup EK-4/D'de olmayan ilaçlardan katılım payı alınır
   gate_b_sources:
-  - C003537
+  - 4.1.8.(3)

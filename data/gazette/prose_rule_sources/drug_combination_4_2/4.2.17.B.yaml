@@ -13,4 +13,4 @@ rules:
     denial_tr: kalsitonin tanı sonrası ilk 6 ay ödenir; üstü ödenmez
     severity: error
   gate_b_sources:
-  - C006044
+  - 4.2.17.B.(1)

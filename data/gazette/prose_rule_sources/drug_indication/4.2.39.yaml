@@ -3,8 +3,8 @@ rules:
 - rule_id: 4.2.39.derm.sunscreen_xp_albinism_monthly_coverage
   sut_section: 4.2.39
   gate_b_sources:
-  - C006751
-  - C006752
+  - 4.2.39.(1)
+  - 4.2.39.(2)
   drug_names:
   - güneşten koruyucu krem
   - güneş koruyucu

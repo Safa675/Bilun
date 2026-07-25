@@ -10,7 +10,7 @@ rules:
     payment_method: itemized
     payment_method_tr: hizmet başına ödeme
   gate_b_sources:
-  - C000633
+  - 2.2.2.(1)
 - rule_id: 2.2.2.(1).package
   sut_section: 2.2.2.(1)
   condition:
@@ -20,4 +20,4 @@ rules:
     payment_method: package
     payment_method_tr: tanıya dayalı işlem üzerinden ödeme
   gate_b_sources:
-  - C000633
+  - 2.2.2.(1)

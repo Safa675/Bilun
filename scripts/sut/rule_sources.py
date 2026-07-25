@@ -325,6 +325,17 @@ def _validate_compile_invariants(
             raise ValueError(f"{prefix} ({rule_id}): gate_b_sources is required and must be non-empty")
         if sources is not None and not isinstance(sources, list):
             raise ValueError(f"{prefix} ({rule_id}): gate_b_sources must be a list")
+        if isinstance(sources, list):
+            from scripts.sut.prose.clause_identity import is_gate_b_source_ref
+
+            for src in sources:
+                if src is None or not str(src).strip():
+                    raise ValueError(f"{prefix} ({rule_id}): gate_b_sources entries must be non-empty strings")
+                if not is_gate_b_source_ref(str(src)):
+                    raise ValueError(
+                        f"{prefix} ({rule_id}): invalid gate_b_sources cite {src!r} "
+                        "(expected C/F###### or clause_coordinate)"
+                    )
 
         icd_codes = rule.get("icd10_codes") or []
         icd_ranges = rule.get("icd10_ranges") or []

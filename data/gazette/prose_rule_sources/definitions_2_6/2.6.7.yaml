@@ -5,9 +5,10 @@ rules:
   sut_section: 2.6.7
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C001595
+  - 2.6.7.(1)
   condition:
-    definition_scope: Programlı tedavilerde (kemoterapi, radyoterapi, diyaliz, PUVA vb.) ilk sevk belgesine istinaden her gidiş için sevk aranmaz
+    definition_scope: Programlı tedavilerde (kemoterapi, radyoterapi, diyaliz, PUVA vb.) ilk sevk belgesine istinaden her
+      gidiş için sevk aranmaz
     applies_to: Programlı tedavi gören GSS'li ve bakmakla yükümlü olunan kişiler
   action:
     enforcement: gate
@@ -17,9 +18,10 @@ rules:
   sut_section: 2.6.7
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C001596
+  - 2.6.7.(2)
   condition:
-    definition_scope: Ödeme işlemleri ilk sevk belgesine istinaden, müracaat edilen sunucunun düzenlediği tedavi tarihi belgesi doğrultusunda yürütülür
+    definition_scope: Ödeme işlemleri ilk sevk belgesine istinaden, müracaat edilen sunucunun düzenlediği tedavi tarihi belgesi
+      doğrultusunda yürütülür
     applies_to: Programlı tedavi ödemeleri
   action:
     enforcement: gate
@@ -29,9 +31,10 @@ rules:
   sut_section: 2.6.7
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C001597
+  - 2.6.7.(3)
   condition:
-    definition_scope: Yerleşim yerinde 2/3 basamak sunucu yoksa 1 basamak sevki kabul edilir; sözleşmeli sunucu hiç yoksa geçerli sağlık raporu sevk yerine geçer
+    definition_scope: Yerleşim yerinde 2/3 basamak sunucu yoksa 1 basamak sevki kabul edilir; sözleşmeli sunucu hiç yoksa
+      geçerli sağlık raporu sevk yerine geçer
     applies_to: Yerleşim yerinde 2/3 basamak veya sözleşmeli sunucu bulunmaması
   action:
     enforcement: gate

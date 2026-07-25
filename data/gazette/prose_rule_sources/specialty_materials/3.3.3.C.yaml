@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.3.C
   deontic: NO_PAY
   gate_b_sources:
-  - C002917
+  - 3.3.3.C.(5)
   condition:
     contact_lens_with_spectacle_billing: true
   action:
@@ -16,7 +16,7 @@ rules:
   sut_section: 3.3.3.C
   deontic: NO_PAY
   gate_b_sources:
-  - C002918
+  - 3.3.3.C.(6)
   condition:
     material_name_any:
     - kontakt lens sol
@@ -44,7 +44,7 @@ rules:
   sut_section: 3.3.3.C
   deontic: MUST_BILL
   gate_b_sources:
-  - C002915
+  - 3.3.3.C.(3)
   condition:
     material_name_any:
     - kontakt lens

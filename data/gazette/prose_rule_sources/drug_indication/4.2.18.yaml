@@ -9,6 +9,6 @@ rules:
   - E66
   message_tr: Orlistat — reçeteler birer aylık düzenlenmelidir (§4.2.18).
   gate_b_sources:
-  - C006059
+  - 4.2.18.(3)
   report_duration_months: 1
 source_note: Exported from drug_indication_prose.json (YAML source migration)

@@ -12,4 +12,4 @@ rules:
     denial_tr: diyaliz yol gideri en yakın diyaliz merkezi esas alınır; daha uzak mesafe ödenmez
     severity: error
   gate_b_sources:
-  - C001497
+  - 2.6.1.A.(5)

@@ -10,7 +10,7 @@ rules:
     denial_tr: yerleşim yeri içinde nakiller için yol ve gündelik ödenmez
     severity: error
   gate_b_sources:
-  - C001603
+  - 2.6.9.(1)
 - rule_id: 2.6.9.(2).unreferral_outside_settlement_no_travel
   sut_section: 2.6.9
   condition:
@@ -20,4 +20,4 @@ rules:
     denial_tr: sevk yapılmaksızın yerleşim yeri dışı sunucudan hizmet alınması halinde yol/gündelik ödenmez
     severity: error
   gate_b_sources:
-  - C001604
+  - 2.6.9.(2)

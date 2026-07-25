@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.4.2.internal_reference_pricing_6pct_buffer_regulatory
   sut_section: 4.4.2
   gate_b_sources:
-  - C007789
+  - 4.4.2.(2)
   action:
     enforcement: 'regulatory: in payments for internal-reference-pricing drugs, considering the drug having ≥1% market share,
       up to 6% above the group''s cheapest drug price is taken into account'
@@ -12,7 +12,7 @@ rules:
 - rule_id: 4.4.2.internal_reference_pricing_excess_nopay
   sut_section: 4.4.2
   gate_b_sources:
-  - C007790
+  - 4.4.2.a
   pay: false
   action:
     enforcement: 'no-pay condition: in internal-reference-pricing groups, discounted unit prices (after §4.4.1 public discount)
@@ -25,7 +25,7 @@ rules:
 - rule_id: 4.4.2.internal_reference_pricing_substitution_prohibited
   sut_section: 4.4.2
   gate_b_sources:
-  - C007788
+  - 4.4.2.(1)
   action:
     enforcement: 'prohibited/rule: internal reference pricing — equivalent-group application groups same-active-same-dose
       same-dosage-form drugs; these ARE substitutable in pharmacy; the Institution may also form non-substitutable groups

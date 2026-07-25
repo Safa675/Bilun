@@ -12,7 +12,7 @@ rules:
     payment_tr: ekstrakorporeal fotoferez her seans EK-2/B 704941 veya 704940 üzerinden
     annex_basis: EK-2/B
   gate_b_sources:
-  - C000927
+  - 2.4.4.Ç.(5)
 - rule_id: 2.4.4.C-c.(1).photopheresis_3rd_step_board_report
   sut_section: 2.4.4.Ç
   condition:
@@ -28,7 +28,7 @@ rules:
       solid organ naklinde doku reddini önleme için rapor düzenleyebilir
     severity: error
   gate_b_sources:
-  - C000917
+  - 2.4.4.Ç.(1)
 - rule_id: 2.4.4.C-c.(2).photopheresis_covered_for_indication
   sut_section: 2.4.4.Ç
   condition:
@@ -54,7 +54,7 @@ rules:
       alınıncaya kadar uzatılabilir
     severity: error
   gate_b_sources:
-  - C000925
+  - 2.4.4.Ç.(3)
 - rule_id: 2.4.4.C-c.(4).photopheresis_other_indications_commission_approval
   sut_section: 2.4.4.Ç
   condition:
@@ -73,4 +73,4 @@ rules:
       Danışma Komisyonu'nun uygun görüşü alınması zorunludur
     severity: error
   gate_b_sources:
-  - C000926
+  - 2.4.4.Ç.(4)

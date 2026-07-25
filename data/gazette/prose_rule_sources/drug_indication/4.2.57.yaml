@@ -20,7 +20,7 @@ rules:
 - rule_id: 4.2.57.atopic_dermatitis_dupilumab_risk_factor
   sut_section: 4.2.57
   gate_b_sources:
-  - C007086
+  - 4.2.57.b
   drug_names:
   - dupilumab
   icd10_codes:
@@ -38,7 +38,7 @@ rules:
 - rule_id: 4.2.57.atopic_dermatitis_jak_after_12wk
   sut_section: 4.2.57
   gate_b_sources:
-  - C007085
+  - 4.2.57.a
   drug_names:
   - abrositinib
   - barisitinib

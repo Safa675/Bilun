@@ -16,7 +16,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import importlib
 import json
 import sys
 from dataclasses import dataclass, field
@@ -142,7 +141,26 @@ def _validation_rule_set_id(target: CompileTarget) -> str:
 
 def _write_rule_set_json(path: Path, payload: dict, *, rule_set_id: str) -> None:
     validate_rule_set_payload(payload, rule_set_id)
+    _assert_gate_b_cites_resolvable(payload, rule_set_id)
     _write_json(path, payload)
+
+
+def _assert_gate_b_cites_resolvable(payload: dict, rule_set_id: str) -> None:
+    """Track A3 — gate_b_sources must be unique encode-eligible cites."""
+    clauses_path = _PROJECT_ROOT / "data" / "gazette" / "sut_clauses.parquet"
+    if not clauses_path.is_file():
+        return
+    import polars as pl
+
+    from scripts.sut.prose.clause_identity import assert_gate_b_sources_resolvable
+    from scripts.sut.prose.clause_type_overrides import apply_clause_type_overrides
+
+    frame = apply_clause_type_overrides(pl.read_parquet(clauses_path))
+    assert_gate_b_sources_resolvable(
+        list(payload.get("rules") or []),
+        frame,
+        rule_set_id=rule_set_id,
+    )
 
 
 def _write_rule_set_for_target(target: CompileTarget, payload: dict) -> None:
@@ -336,6 +354,7 @@ def _yaml_fresh_targets() -> list[CompileTarget]:
             strip_batch=False,
             manifest_path=_MANIFEST_DIR / "L2.6_definitions_manifest.json",
             golden_path=_GOLDEN_DIR / "definitions_2_6.json",
+            skip_golden=True,
             golden_include_encode_batch=False,
         ),
         _yaml_fresh_target(
@@ -350,6 +369,7 @@ def _yaml_fresh_targets() -> list[CompileTarget]:
             ],
             manifest_path=_MANIFEST_DIR / "gap_closing_treatment_2_manifest.json",
             golden_path=_GOLDEN_DIR / "gap_closing_treatment_2.json",
+            skip_golden=True,
         ),
         _yaml_fresh_target(
             "gap_closing_misc",
@@ -362,6 +382,7 @@ def _yaml_fresh_targets() -> list[CompileTarget]:
             ],
             manifest_path=_MANIFEST_DIR / "gap_closing_misc_manifest.json",
             golden_path=_GOLDEN_DIR / "gap_closing_misc.json",
+            skip_golden=True,
         ),
         _yaml_fresh_target(
             "treatment_pricing_2_4",
@@ -373,7 +394,7 @@ def _yaml_fresh_targets() -> list[CompileTarget]:
                 "2.4.4.H", "2.4.4.I", "2.4.4.İ-1", "2.4.4.J", "2.4.4.K", "2.4.4.N",
             ],
             manifest_path=_MANIFEST_DIR / "treatment_pricing_2_4_manifest.json",
-            manifest_version="t1-v1",
+            manifest_version="canonical-v1",
             golden_path=_GOLDEN_DIR / "treatment_pricing_2_4.json",
             skip_manifest=True,
             skip_golden=True,
@@ -384,8 +405,9 @@ def _yaml_fresh_targets() -> list[CompileTarget]:
             title="§2.4.1 Diş tedavileri — dışlama/fiyatlandırma kuralları",
             sut_anchors=["2.4.1", "2.4.1.A", "2.4.1.B-1", "2.4.1.B-2", "2.4.1.B-3"],
             manifest_path=_MANIFEST_DIR / "dental_2_4_1_manifest.json",
-            manifest_version="t1-v1",
+            manifest_version="canonical-v1",
             golden_path=_GOLDEN_DIR / "dental_2_4_1.json",
+            skip_golden=True,
         ),
         _yaml_fresh_target(
             "drug_combination_4_2",
@@ -398,8 +420,9 @@ def _yaml_fresh_targets() -> list[CompileTarget]:
                 "4.2.35.A", "4.2.38", "4.2.49.C", "4.2.71",
             ],
             manifest_path=_MANIFEST_DIR / "drug_combination_4_2_manifest.json",
-            manifest_version="d42-v1",
+            manifest_version="canonical-v1",
             golden_path=_GOLDEN_DIR / "drug_combination_4_2.json",
+            skip_golden=True,
         ),
         _yaml_fresh_target("drug_indication_prose", rule_set_id="drug_indication_prose", title=""),
         _yaml_fresh_target("anti_vegf_prose", rule_set_id="anti_vegf_prose", title=""),
@@ -421,22 +444,20 @@ def _drug_gate_b_target(
     gate_b_section: str,
     manifest_name: str,
     corpus_name: str,
-    gate_b_writer: str = "rules_path",
-    section_prefixes: list[str] | None = None,
     merge_rules: bool = False,
+    rule_json_name: str = "drug_indication_prose.json",
+    rule_set_id: str | None = None,
 ) -> CompileTarget:
     return CompileTarget(
         name=name,
-        rule_json=_RULES_DIR / "drug_indication_prose.json",
+        rule_json=_RULES_DIR / rule_json_name,
         mode="stage",
         dedup="union_overwrite",
-        rule_set_id=name,
+        rule_set_id=rule_set_id or name,
         title="",
         sut_anchors=[],
         stages=["write_gate_b_artifacts"],
         gate_b_section=gate_b_section,
-        gate_b_writer=gate_b_writer,
-        section_prefixes=section_prefixes or [],
         merge_rules=merge_rules,
         corpus_csv=_PROJECT_ROOT / f"data/gazette/prose_corpus/{corpus_name}",
         manifest_path=_MANIFEST_DIR / manifest_name,
@@ -444,31 +465,32 @@ def _drug_gate_b_target(
 
 
 def _drug_gate_b_targets() -> list[CompileTarget]:
-    """Gate B manifest/corpus stages for §4.2 drug-indication sections."""
+    """Gate B manifest stages for §4.2 drug-indication sections (Track C2: one writer path)."""
     return [
         _drug_gate_b_target("drug_indication_4201", gate_b_section="4201", manifest_name="L4.2_drug_indication_4201_manifest.json", corpus_name="L4.2_drug_indication_4201.csv"),
-        _drug_gate_b_target("drug_indication_4206", gate_b_section="4206", manifest_name="L4.2_drug_indication_4206_manifest.json", corpus_name="L4.2_drug_indication_4206.csv", gate_b_writer="section_rules", section_prefixes=["4.2.6"]),
+        _drug_gate_b_target("drug_indication_4206", gate_b_section="4206", manifest_name="L4.2_drug_indication_4206_manifest.json", corpus_name="L4.2_drug_indication_4206.csv"),
         _drug_gate_b_target("drug_indication_4209_4227", gate_b_section="4209_4227", manifest_name="L4.2_drug_indication_4209_4227_manifest.json", corpus_name="L4.2_drug_indication_4209_4227.csv"),
-        _drug_gate_b_target("drug_indication_4210", gate_b_section="4210", manifest_name="L4.2_drug_indication_4210_manifest.json", corpus_name="L4.2_drug_indication_4210.csv", gate_b_writer="section_rules", section_prefixes=["4.2.10"]),
+        _drug_gate_b_target("drug_indication_4210", gate_b_section="4210", manifest_name="L4.2_drug_indication_4210_manifest.json", corpus_name="L4.2_drug_indication_4210.csv"),
         _drug_gate_b_target("drug_indication_4213_4216", gate_b_section="4213_4216", manifest_name="L4.2_drug_indication_4213_4216_manifest.json", corpus_name="L4.2_drug_indication_4213_4216.csv"),
-        _drug_gate_b_target("drug_indication_4215", gate_b_section="4215", manifest_name="L4.2_drug_indication_4215_manifest.json", corpus_name="L4.2_drug_indication_4215.csv", gate_b_writer="section_rules", section_prefixes=["4.2.15"]),
+        _drug_gate_b_target("drug_indication_4214c", gate_b_section="4214c", manifest_name="L4.2_drug_indication_4.2.14.C_manifest.json", corpus_name="L4.2_drug_indication_4.2.14.C.csv"),
+        _drug_gate_b_target("drug_indication_4215", gate_b_section="4215", manifest_name="L4.2_drug_indication_4215_manifest.json", corpus_name="L4.2_drug_indication_4215.csv"),
         _drug_gate_b_target("drug_indication_4217", gate_b_section="4217", manifest_name="L4.2_drug_indication_4217_manifest.json", corpus_name="L4.2_drug_indication_4217.csv"),
         _drug_gate_b_target("drug_indication_4218_4236", gate_b_section="4218_4236", manifest_name="L4.2_drug_indication_4218_4236_manifest.json", corpus_name="L4.2_drug_indication_4218_4236.csv"),
         _drug_gate_b_target("drug_indication_4219", gate_b_section="4219", manifest_name="L4.2_drug_indication_4219_manifest.json", corpus_name="L4.2_drug_indication_4219.csv"),
-        _drug_gate_b_target("drug_indication_4224", gate_b_section="4224", manifest_name="L4.2_drug_indication_4224_manifest.json", corpus_name="L4.2_drug_indication_4224.csv", gate_b_writer="section_rules", section_prefixes=["4.2.24"]),
+        _drug_gate_b_target("drug_indication_4224", gate_b_section="4224", manifest_name="L4.2_drug_indication_4224_manifest.json", corpus_name="L4.2_drug_indication_4224.csv"),
         _drug_gate_b_target("drug_indication_4234", gate_b_section="4234", manifest_name="L4.2_drug_indication_4234_manifest.json", corpus_name="L4.2_drug_indication_4234.csv"),
-        _drug_gate_b_target("drug_indication_4235_4237", gate_b_section="4235_4237", manifest_name="L4.2_drug_indication_4235_4237_manifest.json", corpus_name="L4.2_drug_indication_4235_4237.csv", gate_b_writer="batch_rules", section_prefixes=["4.2.35", "4.2.37"]),
-        _drug_gate_b_target("drug_indication_4238", gate_b_section="4238", manifest_name="L4.2_drug_indication_4238_manifest.json", corpus_name="L4.2_drug_indication_4238.csv", gate_b_writer="section_rules", section_prefixes=["4.2.38"]),
-        _drug_gate_b_target("drug_indication_4201_w4", gate_b_section="4201", manifest_name="L4.2_drug_indication_4201_manifest.json", corpus_name="L4.2_drug_indication_4201.csv", gate_b_writer="batch_rules", section_prefixes=["4.2.1"]),
-        _drug_gate_b_target("drug_indication_4227_tier_b", gate_b_section="4209_4227", manifest_name="L4.2_drug_indication_4209_4227_manifest.json", corpus_name="L4.2_drug_indication_4209_4227.csv", gate_b_writer="rules_path_with_batch_rules"),
-        _drug_gate_b_target("drug_indication_4213_tier_b_remap", gate_b_section="4213", manifest_name="L4.2_drug_indication_4213_4216_manifest.json", corpus_name="L4.2_drug_indication_4213.csv", gate_b_writer="shared_manifest", section_prefixes=["4.2.13"]),
-        _drug_gate_b_target("drug_indication_4210_tier_b", gate_b_section="4210", manifest_name="L4.2_drug_indication_4210_manifest.json", corpus_name="L4.2_drug_indication_4210.csv", gate_b_writer="section_rules", section_prefixes=["4.2.10"]),
+        _drug_gate_b_target("drug_indication_4235_4237", gate_b_section="4235_4237", manifest_name="L4.2_drug_indication_4235_4237_manifest.json", corpus_name="L4.2_drug_indication_4235_4237.csv"),
+        _drug_gate_b_target("drug_indication_4238", gate_b_section="4238", manifest_name="L4.2_drug_indication_4238_manifest.json", corpus_name="L4.2_drug_indication_4238.csv"),
+        # Documented exceptions: 4201_w4 (regex filter) + 4213_tier_b_remap (oral-switch merge).
+        _drug_gate_b_target("drug_indication_4201_w4", gate_b_section="4201", manifest_name="L4.2_drug_indication_4201_manifest.json", corpus_name="L4.2_drug_indication_4201.csv"),
+        _drug_gate_b_target("drug_indication_4227_tier_b", gate_b_section="4209_4227", manifest_name="L4.2_drug_indication_4209_4227_manifest.json", corpus_name="L4.2_drug_indication_4209_4227.csv"),
+        _drug_gate_b_target("drug_indication_4213_tier_b_remap", gate_b_section="4213", manifest_name="L4.2_drug_indication_4213_4216_manifest.json", corpus_name="L4.2_drug_indication_4213.csv"),
+        _drug_gate_b_target("drug_indication_4210_tier_b", gate_b_section="4210", manifest_name="L4.2_drug_indication_4210_manifest.json", corpus_name="L4.2_drug_indication_4210.csv"),
     ]
 
 
 def _gate_b_stage_targets() -> list[CompileTarget]:
     """Manifest/corpus stages that do not merge Python batch rules."""
-    payment_json = _RULES_DIR / "payment_method_2_2.json"
     wave_manifest_targets = [
         CompileTarget(
             name=f"csv_wave_clause_ids_{suffix}",
@@ -498,55 +520,34 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             sut_anchors=[],
             stages=["treatment_pricing_wave2_manifest"],
             manifest_path=_MANIFEST_DIR / "L2.4_treatment_pricing_wave2_manifest.json",
-            manifest_version="wave2-v1",
+            manifest_version="canonical-v1",
             manifest_filter_section="2.4.4",
             wave_scope_note=_TREATMENT_PRICING_WAVE2_SCOPE,
         ),
         *wave_manifest_targets,
-        CompileTarget(
-            name="payment_method_gate_b",
-            rule_json=payment_json,
-            mode="stage",
-            dedup="skip_dup",
+        _drug_gate_b_target(
+            "payment_method_gate_b",
+            gate_b_section="payment_22",
+            manifest_name="L2.2_payment_method_encoded_manifest.json",
+            corpus_name="L2.2_payment_method_prose.csv",
+            rule_json_name="payment_method_2_2.json",
             rule_set_id="payment_method_2_2",
-            title="",
-            sut_anchors=[],
-            stages=["payment_pipeline"],
-            manifest_path=_MANIFEST_DIR / "L2.2_payment_method_encoded_manifest.json",
-            corpus_csv=_PROJECT_ROOT / "data/gazette/prose_corpus/L2.2_payment_method_prose.csv",
         ),
-        CompileTarget(
-            name="drug_indication_wave23",
-            rule_json=_RULES_DIR / "drug_indication_prose.json",
-            mode="stage",
-            dedup="union_overwrite",
-            rule_set_id="drug_indication_wave23",
-            title="",
-            sut_anchors=[],
-            stages=["wave23_patches"],
+        _drug_gate_b_target(
+            "material_bundling_manifest",
+            gate_b_section="material_31_32",
+            manifest_name="L1.4_material_bundling_encoded_manifest.json",
+            corpus_name="L1.4_material_bundling_prose.csv",
+            rule_json_name="material_bundling_prose.json",
+            rule_set_id="material_bundling_prose",
         ),
-        CompileTarget(
-            name="drug_indication_orphan_reconciliation",
-            rule_json=_RULES_DIR / "drug_indication_prose.json",
-            mode="stage",
-            dedup="union_overwrite",
-            rule_set_id="drug_indication_prose",
-            title="",
-            sut_anchors=[],
-            stages=["orphan_reconciliation"],
-        ),
-        CompileTarget(
-            name="drug_indication_phase5",
-            rule_json=_RULES_DIR / "drug_indication_prose.json",
-            mode="stage",
-            dedup="skip_dup",
-            rule_set_id="drug_indication_4.2.14.C",
-            title="",
-            sut_anchors=[],
-            stages=["phase5_manifest"],
-            gate_b_module="scripts.sut.prose.drug_indication_4214c_patches",
-            manifest_path=_MANIFEST_DIR / "L4.2_drug_indication_4.2.14.C_manifest.json",
-            corpus_csv=_PROJECT_ROOT / "data/gazette/prose_corpus/L4.2_drug_indication_4.2.14.C.csv",
+        _drug_gate_b_target(
+            "copay_exemption_gate_b",
+            gate_b_section="copay_18",
+            manifest_name="L1.8_copay_exemption_encoded_manifest.json",
+            corpus_name="L1.8_copay_exemption_prose.csv",
+            rule_json_name="copay_general_1_8.json",
+            rule_set_id="copay_general_1_8",
         ),
         CompileTarget(
             name="anti_vegf_manifest",
@@ -558,16 +559,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             sut_anchors=[],
             stages=["antivegf_manifest"],
             manifest_path=_MANIFEST_DIR / "L4.33_anti_vegf_4.2.33_manifest.json",
-        ),
-        CompileTarget(
-            name="material_bundling_manifest",
-            rule_json=_RULES_DIR / "material_bundling_prose.json",
-            mode="stage",
-            dedup="skip_dup",
-            rule_set_id="material_bundling_prose",
-            title="",
-            sut_anchors=[],
-            stages=["material_bundling_manifest"],
         ),
         CompileTarget(
             name="specialty_materials_manifest",
@@ -589,12 +580,7 @@ def all_targets() -> list[CompileTarget]:
     tier_b_targets = [t for t in drug_gate_b if "tier_b" in t.name]
     drug_gate_b_main = [t for t in drug_gate_b if "tier_b" not in t.name]
     stages = _gate_b_stage_targets()
-    phase5 = [t for t in stages if t.name == "drug_indication_phase5"]
-    wave23 = [t for t in stages if t.name == "drug_indication_wave23"]
-    stages_main = [
-        t for t in stages if t.name not in {"drug_indication_phase5", "drug_indication_wave23"}
-    ]
-    return fresh + wave23 + tier_b_targets + drug_gate_b_main + phase5 + stages_main
+    return fresh + tier_b_targets + drug_gate_b_main + stages
 
 
 # ─── compiler stages ──────────────────────────────────────────────────────────
@@ -661,41 +647,26 @@ def _write_payment_session_manifest() -> None:
     _write_json(_MANIFEST_DIR / "L2.2_session_pricing_2_2_2_B_encoded_manifest.json", manifest)
 
 
-def _apply_payment_manifest_cross_refs(
-    manifest: dict[str, object],
-    rule_count: int,
-    batch_num: str,
-) -> dict[str, object]:
-    suffix = {
-        "2": "batch-1+2",
-        "3": "batch-1+2+3",
-        "4": "batch-1–4",
-    }.get(batch_num, f"batch-{batch_num}")
-    manifest["scope_note"] = f"§2.2 package vs itemized vs tier-override ({rule_count} JSON rules, C2 {suffix})"
-    manifest["rules_in_json"] = rule_count
-    manifest["session_fraction_status"] = "PARTIAL"
-    manifest["related_rule_sets"] = [
-        {
-            "rule_set_id": "session_pricing_2_2_2_B",
-            "json_path": "session_pricing_2_2_2_B.json",
-            "manifest": "L2.2_session_pricing_2_2_2_B_encoded_manifest.json",
-            "note": "§2.2.2.B session-fraction remains PARTIAL — see session_pricing.py",
-        }
-    ]
-    return manifest
-
-
 def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) -> dict:
-    """Phase 3 gate-B stage — routes via gate_b_section + gate_b_shim (or legacy gate_b_module)."""
-    if not target.manifest_path or not target.corpus_csv:
-        raise ValueError(f"target {target.name} missing gate-B stage configuration")
-    if not target.gate_b_section and not target.gate_b_module:
-        raise ValueError(f"target {target.name} missing gate_b_section or gate_b_module")
+    """Drug Gate B stage — one path: section config → shim → gate_b_generic.
+
+    Documented exceptions (Track C2):
+    - ``drug_indication_4213_tier_b_remap``: merges oral-switch YAML rules into JSON first
+    - ``drug_indication_4201_w4``: filters rules with §4.2.1 regex boundary before write
+    """
+    if not target.manifest_path:
+        raise ValueError(f"target {target.name} missing gate-B manifest path")
+    if not target.gate_b_section:
+        raise ValueError(f"target {target.name} missing gate_b_section")
+
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
+    from scripts.sut.prose.gate_b_generic import write_artifacts
+
     payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
     existing = list(payload.get("rules") or [])
     stage_rules = _load_stage_rules(target.yaml_sources)
-    manifest_rules = _load_stage_rules()
 
+    # Exception: §4.2.13 oral-switch remap merges stage YAML into the prose JSON.
     if target.name == "drug_indication_4213_tier_b_remap":
         oral_switch_rule_ids = {
             "4.2.13.hbv_oral_antiviral_switch_adult_report",
@@ -723,113 +694,32 @@ def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) ->
 
     effective_date = _existing_effective_date(target.manifest_path) or date.today().isoformat()
     clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
+    section_key = str(target.gate_b_section)
+    section = ALL_SECTIONS[section_key]
+    write_kwargs: dict[str, Any] = {
+        "clauses_path": clauses_path,
+        "section": section,
+        "manifest_path": target.manifest_path,
+        "corpus_csv": target.corpus_csv,
+        "effective_date": effective_date,
+        "rules_path": target.rule_json,
+        "write_corpus": False,
+    }
 
-    if target.gate_b_section:
-        from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
-        from scripts.sut.prose.gate_b_shim import shim_write_artifacts
+    # Exception: §4.2.1 wave-4 uses regex boundary (not bare prefix) for rule filter.
+    if target.name == "drug_indication_4201_w4":
+        is_421_proper = ALL_SECTIONS["4201"].match.matches
+        write_kwargs["batch_rules"] = [
+            rule for rule in merged if is_421_proper(str(rule.get("sut_section") or ""))
+        ]
+        del write_kwargs["rules_path"]
 
-        section_key = str(target.gate_b_section)
-        shim_kwargs: dict[str, Any] = {
-            "clauses_path": clauses_path,
-            "corpus_csv": target.corpus_csv,
-            "effective_date": effective_date,
-        }
-        if target.gate_b_writer == "section_rules":
-            rules = manifest_rules or _rules_for_sections(merged, target.section_prefixes) or merged
-            shim_kwargs["rules"] = rules
-            shim_kwargs["manifest_path"] = target.manifest_path
-        elif target.gate_b_writer == "batch_rules":
-            if target.name == "drug_indication_4201_w4":
-                is_421_proper = ALL_SECTIONS["4201"].match.matches
-                base_rules = [
-                    rule for rule in merged if is_421_proper(str(rule.get("sut_section") or ""))
-                ]
-            else:
-                base_rules = (
-                    _rules_for_sections(merged, target.section_prefixes)
-                    if target.section_prefixes
-                    else merged
-                )
-            combined, _added, _covered = _dedup_union_overwrite(base_rules, manifest_rules)
-            shim_kwargs["batch_rules"] = combined
-            shim_kwargs["manifest_path"] = target.manifest_path
-        elif target.gate_b_writer == "rules_path_with_batch_rules":
-            shim_kwargs["rules_path"] = target.rule_json
-            shim_kwargs["manifest_path"] = target.manifest_path
-            if manifest_rules:
-                shim_kwargs["batch_rules"] = manifest_rules
-        elif target.gate_b_writer == "shared_manifest":
-            shim_kwargs["rules_path"] = target.rule_json
-            shim_kwargs["shared_manifest_path"] = target.manifest_path
-        else:
-            shim_kwargs["rules_path"] = target.rule_json
-            shim_kwargs["manifest_path"] = target.manifest_path
-        frame, manifest = shim_write_artifacts(section_key, **shim_kwargs)
-    else:
-        mod = importlib.import_module(str(target.gate_b_module))
-        if target.gate_b_writer == "from_prose":
-            writer = getattr(mod, "write_gate_b_artifacts_from_prose")
-            frame, manifest = writer(
-                clauses_path=clauses_path,
-                rules_path=target.rule_json,
-                corpus_csv=target.corpus_csv,
-                manifest_path=target.manifest_path,
-                effective_date=effective_date,
-            )
-        elif target.gate_b_writer == "section_rules":
-            writer = getattr(mod, "write_gate_b_artifacts")
-            rules = manifest_rules or _rules_for_sections(merged, target.section_prefixes) or merged
-            frame, manifest = writer(
-                clauses_path=clauses_path,
-                rules=rules,
-                corpus_csv=target.corpus_csv,
-                manifest_path=target.manifest_path,
-                effective_date=effective_date,
-            )
-        elif target.gate_b_writer == "batch_rules":
-            writer = getattr(mod, "write_gate_b_artifacts")
-            if target.name == "drug_indication_4201_w4" and hasattr(mod, "is_421_proper"):
-                is_421_proper = getattr(mod, "is_421_proper")
-                base_rules = [rule for rule in merged if is_421_proper(str(rule.get("sut_section") or ""))]
-            else:
-                base_rules = _rules_for_sections(merged, target.section_prefixes) if target.section_prefixes else merged
-            combined, _added, _covered = _dedup_union_overwrite(base_rules, manifest_rules)
-            frame, manifest = writer(
-                clauses_path=clauses_path,
-                batch_rules=combined,
-                corpus_csv=target.corpus_csv,
-                manifest_path=target.manifest_path,
-                effective_date=effective_date,
-            )
-        elif target.gate_b_writer == "rules_path_with_batch_rules":
-            writer = getattr(mod, "write_gate_b_artifacts")
-            batch_for_writer = manifest_rules if manifest_rules else None
-            frame, manifest = writer(
-                clauses_path=clauses_path,
-                rules_path=target.rule_json,
-                corpus_csv=target.corpus_csv,
-                manifest_path=target.manifest_path,
-                effective_date=effective_date,
-                batch_rules=batch_for_writer,
-            )
-        elif target.gate_b_writer == "shared_manifest":
-            writer = getattr(mod, "write_gate_b_artifacts")
-            frame, manifest = writer(
-                clauses_path=clauses_path,
-                rules_path=target.rule_json,
-                corpus_csv=target.corpus_csv,
-                shared_manifest_path=target.manifest_path,
-                effective_date=effective_date,
-            )
-        else:
-            writer = getattr(mod, "write_gate_b_artifacts")
-            frame, manifest = writer(
-                clauses_path=clauses_path,
-                rules_path=target.rule_json,
-                corpus_csv=target.corpus_csv,
-                manifest_path=target.manifest_path,
-                effective_date=effective_date,
-            )
+    frame, manifest = write_artifacts(**write_kwargs)
+
+    # Track F: payment still needs the session-pricing stub sibling manifest.
+    if section_key == "payment_22":
+        _write_payment_session_manifest()
+
     return {
         "rows": getattr(frame, "height", None),
         "encoded": manifest.get("encoded_clause_count") or len(manifest.get("encoded_clause_ids") or []),
@@ -853,161 +743,12 @@ def _stage_csv_wave_clause_ids(target: CompileTarget, ctx: dict[str, Any]) -> di
     return {"added": 0, "encoded": len(wave_clause_ids)}
 
 
-def _stage_payment_pipeline(target: CompileTarget, ctx: dict[str, Any]) -> dict:
-    from scripts.sut.prose.payment_method_gate_b import run_gate_b_pipeline
-
-    if not target.manifest_path or not target.corpus_csv:
-        raise ValueError(f"target {target.name} missing payment pipeline paths")
-    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
-    rules = list(payload.get("rules") or [])
-
-    _write_payment_session_manifest()
-
-    result = run_gate_b_pipeline(
-        clauses_path=_PROJECT_ROOT / "data/gazette/sut_clauses.parquet",
-        prose_json_path=target.rule_json,
-        corpus_csv_path=target.corpus_csv,
-        manifest_path=target.manifest_path,
-        write_prose_json=True,
-    )
-    manifest = _apply_payment_manifest_cross_refs(result["manifest"], len(rules), "4")
-    _write_json(target.manifest_path, manifest)
-    return {"added": 0, "skipped": [], "encoded": len(manifest.get("encoded_clause_ids") or [])}
-
-
-def _apply_source_patches(
-    rules: list[dict[str, Any]],
-    patch_modules: list[str],
-) -> tuple[list[dict[str, Any]], int]:
-    """Merge SOURCE_PATCHES clause IDs into existing rules (append-only)."""
-    by_id = {str(rule["rule_id"]): dict(rule) for rule in rules}
-    patched = 0
-    for module_path in patch_modules:
-        mod = importlib.import_module(module_path)
-        for rule_id, clause_ids in getattr(mod, "SOURCE_PATCHES", {}).items():
-            if rule_id not in by_id:
-                raise KeyError(f"SOURCE_PATCHES references missing rule_id: {rule_id} ({module_path})")
-            before = set(by_id[rule_id].get("gate_b_sources") or [])
-            by_id[rule_id]["gate_b_sources"] = sorted(before | {str(c) for c in clause_ids})
-            if set(by_id[rule_id]["gate_b_sources"]) != before:
-                patched += 1
-    merged = sorted(by_id.values(), key=lambda r: str(r.get("rule_id", "")))
-    return merged, patched
-
-
-def _apply_source_drops(
-    rules: list[dict[str, Any]],
-    drop_modules: list[str],
-) -> tuple[list[dict[str, Any]], int]:
-    """Remove SOURCE_DROPS clause IDs from existing rules gate_b_sources."""
-    by_id = {str(rule["rule_id"]): dict(rule) for rule in rules}
-    dropped = 0
-    for module_path in drop_modules:
-        mod = importlib.import_module(module_path)
-        for rule_id, clause_ids in getattr(mod, "SOURCE_DROPS", {}).items():
-            before = set(by_id[rule_id].get("gate_b_sources") or [])
-            after = before - {str(c) for c in clause_ids}
-            by_id[rule_id]["gate_b_sources"] = sorted(after)
-            if after != before:
-                dropped += 1
-    merged = sorted(by_id.values(), key=lambda r: str(r.get("rule_id", "")))
-    return merged, dropped
-
-
-def _stage_wave23_patches(target: CompileTarget, ctx: dict[str, Any]) -> dict:
-    """Wave 2/3 — append gate_b_sources for tier A/B promotions."""
-    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
-    existing = list(payload.get("rules") or [])
-    modules = [
-        "scripts.sut.prose.drug_indication_wave23_patches",
-        "scripts.sut.prose.drug_indication_bucket_a_patches",
-        "scripts.sut.prose.drug_indication_bucket_b_patches",
-    ]
-    if target.gate_b_module:
-        modules.insert(0, str(target.gate_b_module))
-    merged, patched = _apply_source_patches(existing, modules)
-    payload["rules"] = sorted([_strip_batch(r) for r in merged], key=lambda r: str(r.get("rule_id", "")))
-    _write_rule_set_for_target(target, payload)
-    return {"patched": patched, "rules": len(merged)}
-
-
-def _stage_orphan_reconciliation(target: CompileTarget, ctx: dict[str, Any]) -> dict:
-    """Phase 0.1 — drop struck-clause orphan refs + append in-force replacements."""
-    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
-    existing = list(payload.get("rules") or [])
-    merged, dropped = _apply_source_drops(
-        existing, ["scripts.sut.prose.drug_indication_orphan_drops"]
-    )
-    merged, patched = _apply_source_patches(
-        merged, ["scripts.sut.prose.drug_indication_orphan_reattach_patches"]
-    )
-    payload["rules"] = sorted([_strip_batch(r) for r in merged], key=lambda r: str(r.get("rule_id", "")))
-    _write_rule_set_for_target(target, payload)
-    return {"dropped": dropped, "reattached": patched, "rules": len(merged)}
-
-
-def _stage_phase5_manifest(target: CompileTarget, ctx: dict[str, Any]) -> dict:
-    from scripts.sut.prose.drug_indication_a1_manifest_coverage import repair_4214c_manifest
-    from scripts.sut.prose.drug_indication_gate_b import write_gate_b_export
-
-    if not target.manifest_path or not target.corpus_csv:
-        raise ValueError(f"target {target.name} missing phase5 manifest paths")
-    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
-    existing = list(payload.get("rules") or [])
-
-    added = patched = 0
-    if target.gate_b_module:
-        mod = importlib.import_module(str(target.gate_b_module))
-        merged, patched = _apply_source_patches(existing, [str(target.gate_b_module)])
-        covered: set[str] = set()
-        for rule_id, clause_ids in getattr(mod, "SOURCE_PATCHES", {}).items():
-            covered.update(clause_ids)
-        pending = getattr(mod, "PENDING_CLAUSE_IDS", set())
-        if pending:
-            missing = sorted(pending - covered)
-            if missing:
-                raise RuntimeError(f"Phase 5 merge did not cover pending clause IDs: {missing}")
-        phase1_added, phase2_added = 0, 0
-    else:
-        merged = existing
-        phase1_added, phase2_added = 0, 0
-
-    payload["rules"] = sorted([_strip_batch(r) for r in merged], key=lambda r: str(r.get("rule_id", "")))
-    payload["title"] = "SUT §4.2 drug indication and report requirements (4.2.14.C Phase 5)"
-    payload["coverage_note"] = (
-        f"Phase 0–5 — {len(payload['rules'])} rules for §4.2.14.C; full clause trace manifest "
-        "(encoded + pending + Tier C deferred with theme tags)."
-    )
-    payload["sut_anchors"] = ["4.2", "4.2.14.C"]
-    _write_rule_set_for_target(target, payload)
-
-    clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
-    write_gate_b_export(clauses_path, target.corpus_csv, rules_path=target.rule_json)
-    effective_date = _existing_effective_date(target.manifest_path) or date.today().isoformat()
-    manifest = repair_4214c_manifest(
-        clauses_path=clauses_path,
-        rules_path=target.rule_json,
-        manifest_path=target.manifest_path,
-        effective_date=effective_date,
-    )
-    return {
-        "added": phase1_added + phase2_added,
-        "patched": patched,
-        "encoded": manifest.get("encoded_clause_count", 0),
-        "in_force_traces": manifest.get("section_clause_total", 0),
-    }
-
-
 def _stage_antivegf_manifest(target: CompileTarget, ctx: dict[str, Any]) -> dict:
     return _compile_antivegf_manifest(target)
 
 
 def _stage_tier_b_remap(target: CompileTarget, ctx: dict[str, Any]) -> dict:
     return _stage_write_gate_b_artifacts(target, ctx)
-
-
-def _stage_material_bundling_manifest(target: CompileTarget, ctx: dict[str, Any]) -> dict:
-    return _write_material_bundling_manifest(target)
 
 
 def _stage_specialty_materials_manifest(target: CompileTarget, ctx: dict[str, Any]) -> dict:
@@ -1043,22 +784,45 @@ def _stage_treatment_pricing_wave2_manifest(target: CompileTarget, ctx: dict[str
 
 def _compile_antivegf_manifest(target: CompileTarget) -> dict:
     import polars as pl
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
+        UnknownClauseCiteError,
+        resolve_gate_b_ref_to_clause_ids,
+    )
     from scripts.sut.prose.drug_indication_gate_b import infer_defer_themes
 
     payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
     merged = list(payload.get("rules") or [])
-    encoded_ids = {str(cid) for rule in merged for cid in (rule.get("gate_b_sources") or [])}
     clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
-    section = pl.read_parquet(clauses_path).filter(
+    clauses = pl.read_parquet(clauses_path)
+    section = clauses.filter(
         pl.col("section_id").str.starts_with("4.2.33") & pl.col("is_in_force")
     )
     rules_by_clause: dict[str, list[str]] = {}
-    clause_traces: dict[str, list[str]] = {}
+    encoded_ids: set[str] = set()
     for rule in merged:
         rid = str(rule.get("rule_id") or "")
-        clause_traces[rid] = sorted(str(c) for c in (rule.get("gate_b_sources") or []))
-        for cid in rule.get("gate_b_sources") or []:
-            rules_by_clause.setdefault(str(cid), []).append(rid)
+        for raw in rule.get("gate_b_sources") or []:
+            if raw is None or not str(raw).strip():
+                continue
+            try:
+                resolved = resolve_gate_b_ref_to_clause_ids(
+                    str(raw),
+                    clauses,
+                    in_force_only=True,
+                    encode_eligible_only=True,
+                    allow_ambiguous=False,
+                )
+            except (
+                AmbiguousClauseCiteError,
+                NonEncodeEligibleCiteError,
+                UnknownClauseCiteError,
+            ):
+                continue
+            for cid in resolved:
+                encoded_ids.add(cid)
+                rules_by_clause.setdefault(cid, []).append(rid)
 
     tier_c_deferred: list[str] = []
     traces: list[dict[str, Any]] = []
@@ -1070,7 +834,7 @@ def _compile_antivegf_manifest(target: CompileTarget) -> dict:
                 "clause_id": clause_id,
                 "section_id": str(row.get("section_id") or ""),
                 "manifest_status": "encoded",
-                "linked_rule_ids": sorted(rules_by_clause.get(clause_id, [])),
+                "linked_rule_ids": sorted(set(rules_by_clause.get(clause_id, []))),
             }
         elif str(row.get("clause_type") or "") in {"section_heading", "chapter"} and not row.get("deontic_modality"):
             entry = {
@@ -1095,6 +859,11 @@ def _compile_antivegf_manifest(target: CompileTarget) -> dict:
 
     in_force_ids = {str(cid) for cid in section["clause_id"].to_list()}
     effective_date = _existing_effective_date(target.manifest_path) or date.today().isoformat()
+    encoded_in_force = sorted(encoded_ids & in_force_ids)
+    coord_by_id = {
+        str(row["clause_id"]): str(row.get("clause_coordinate") or "")
+        for row in section.iter_rows(named=True)
+    }
     manifest = {
         "manifest_version": "canonical-v1",
         "section_id": "4.2.33",
@@ -1102,8 +871,15 @@ def _compile_antivegf_manifest(target: CompileTarget) -> dict:
         "rule_set_id": "anti_vegf_prose",
         "rules_in_json": len(merged),
         "section_clause_total": section.height,
-        "encoded_clause_count": len(encoded_ids & in_force_ids),
-        "encoded_clause_ids": sorted(encoded_ids & in_force_ids),
+        "encoded_clause_count": len(encoded_in_force),
+        "encoded_clause_ids": encoded_in_force,
+        "encoded_clause_coordinates": sorted(
+            {
+                coord_by_id[cid]
+                for cid in encoded_in_force
+                if coord_by_id.get(cid)
+            }
+        ),
         "tier_c_deferred_clause_ids": sorted(tier_c_deferred),
         "tier_c_deferred_count": len(tier_c_deferred),
         "emr_blocked_clause_ids": [],
@@ -1122,46 +898,14 @@ def _compile_antivegf_manifest(target: CompileTarget) -> dict:
     return {"added": 0, "covered": len(encoded_ids)}
 
 
-def _write_material_bundling_manifest(target: CompileTarget) -> dict:
-    from scripts.sut.prose.manifest_clause_ids import (
-        EK3C_LIST_PRICE_CEILING_CLAUSE_IDS,
-        EK3_SCOPE_ONLY_CLAUSE_IDS,
-        GATE_B_STILL_DEFERRED_CLAUSE_IDS,
-        KDV_PRICING_CLAUSE_IDS,
-        MALZEME_SCOPE_ONLY_CLAUSE_IDS,
-        R5_AMENDMENT_HEADER_CLAUSE_IDS,
-        R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS,
-        SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS,
-        load_ek3_annex_header_clause_ids,
-        load_malzeme_general_header_clause_ids,
-    )
-
-    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
-    rules = list(payload.get("rules") or [])
-    sources = sorted({str(cid) for rule in rules for cid in (rule.get("gate_b_sources") or [])})
-    manifest = {
-        "manifest_version": "canonical-v1",
-        "rule_set_id": "material_bundling_prose",
-        "rules_in_json": len(rules),
-        "encoded_clause_ids": sources,
-        "encoded_clause_count": len(sources),
-        "gate_b_deferred_clause_ids": sorted(GATE_B_STILL_DEFERRED_CLAUSE_IDS),
-        "kdv_pricing_clause_ids": sorted(KDV_PRICING_CLAUSE_IDS),
-        "separate_billing_allowlist_clause_ids": ["C001823"],
-        "ek3c_list_price_ceiling_clause_ids": sorted(EK3C_LIST_PRICE_CEILING_CLAUSE_IDS),
-        "sut_material_list_price_ceiling_clause_ids": sorted(SUT_MATERIAL_LIST_PRICE_CEILING_CLAUSE_IDS),
-        "corpus_ek3_annex_header_clause_ids": sorted(load_ek3_annex_header_clause_ids()),
-        "corpus_ek3_scope_clause_ids": sorted(EK3_SCOPE_ONLY_CLAUSE_IDS),
-        "corpus_malzeme_general_header_clause_ids": sorted(load_malzeme_general_header_clause_ids()),
-        "corpus_malzeme_scope_clause_ids": sorted(MALZEME_SCOPE_ONLY_CLAUSE_IDS),
-        "r5_amendment_header_clause_ids": sorted(R5_AMENDMENT_HEADER_CLAUSE_IDS),
-        "r5_manifest_header_only_clause_ids": sorted(R5_MANIFEST_HEADER_ONLY_CLAUSE_IDS),
-    }
-    _write_json(_MANIFEST_DIR / "L1.4_material_bundling_encoded_manifest.json", manifest)
-    return {"added": 0, "patched": 0, "encoded": len(sources)}
-
-
 def _write_specialty_materials_manifest(target: CompileTarget) -> dict:
+    import polars as pl
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
+        UnknownClauseCiteError,
+        resolve_gate_b_ref_to_clause_ids,
+    )
     from scripts.sut.prose.manifest_clause_ids import (
         GLUCOSE_METER_BATCH_CLAUSE_IDS,
         OTHER_3_3_TAIL_CLAUSE_IDS,
@@ -1176,41 +920,66 @@ def _write_specialty_materials_manifest(target: CompileTarget) -> dict:
 
     payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
     rules = list(payload.get("rules") or [])
-    sources = sorted({str(cid) for rule in rules for cid in (rule.get("gate_b_sources") or [])})
-    manifest = {
-        "manifest_version": "canonical-v1",
-        "rule_set_id": "specialty_materials_prose",
-        "rules_in_json": len(rules),
-        "encoded_clause_ids": sources,
-        "encoded_clause_count": len(sources),
-        "rules_added": 0,
-        "rules_patched": 0,
-        "pilot_331_clause_ids": sorted(WOUND_331_PILOT_CLAUSE_IDS),
-        "vision_optik_batch_clause_ids": sorted(VISION_OPTIK_BATCH_CLAUSE_IDS),
-        "specialty_334_batch_clause_ids": sorted(SPECIALTY_334_BATCH_CLAUSE_IDS),
-        "glucose_meter_batch_clause_ids": sorted(GLUCOSE_METER_BATCH_CLAUSE_IDS),
-        "specialty_337_batch_clause_ids": sorted(SPECIALTY_337_BATCH_CLAUSE_IDS),
-        "specialty_338_batch_clause_ids": sorted(SPECIALTY_338_BATCH_CLAUSE_IDS),
-        "specialty_336_batch_clause_ids": sorted(SPECIALTY_336_BATCH_CLAUSE_IDS),
-        "other_3_3_tail_clause_ids": sorted(OTHER_3_3_TAIL_CLAUSE_IDS),
-        "r5_specialty_header_clause_ids": sorted(SPECIALTY_R5_HEADER_CLAUSE_IDS),
-        "encoded_clause_ids": sources,
-    }
+    clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
+    clauses = pl.read_parquet(clauses_path) if clauses_path.is_file() else None
+    sources: set[str] = set()
+    for rule in rules:
+        for raw in rule.get("gate_b_sources") or []:
+            if raw is None or not str(raw).strip():
+                continue
+            text = str(raw).strip()
+            if clauses is None:
+                sources.add(text)
+                continue
+            try:
+                sources.update(
+                    resolve_gate_b_ref_to_clause_ids(
+                        text,
+                        clauses,
+                        in_force_only=True,
+                        encode_eligible_only=True,
+                        allow_ambiguous=False,
+                    )
+                )
+            except (
+                AmbiguousClauseCiteError,
+                NonEncodeEligibleCiteError,
+                UnknownClauseCiteError,
+            ):
+                continue
+    sorted_sources = sorted(sources)
+    from scripts.sut.prose.manifest_index import build_canonical_encoded_shell
+
+    manifest = build_canonical_encoded_shell(
+        rule_set_id="specialty_materials_prose",
+        encoded_clause_ids=sorted_sources,
+        section_id="3.3",
+        rules_in_json=len(rules),
+        section_clause_total=len(sorted_sources),
+        extra_keys={
+            "rules_added": 0,
+            "rules_patched": 0,
+            "pilot_331_clause_ids": sorted(WOUND_331_PILOT_CLAUSE_IDS),
+            "vision_optik_batch_clause_ids": sorted(VISION_OPTIK_BATCH_CLAUSE_IDS),
+            "specialty_334_batch_clause_ids": sorted(SPECIALTY_334_BATCH_CLAUSE_IDS),
+            "glucose_meter_batch_clause_ids": sorted(GLUCOSE_METER_BATCH_CLAUSE_IDS),
+            "specialty_337_batch_clause_ids": sorted(SPECIALTY_337_BATCH_CLAUSE_IDS),
+            "specialty_338_batch_clause_ids": sorted(SPECIALTY_338_BATCH_CLAUSE_IDS),
+            "specialty_336_batch_clause_ids": sorted(SPECIALTY_336_BATCH_CLAUSE_IDS),
+            "other_3_3_tail_clause_ids": sorted(OTHER_3_3_TAIL_CLAUSE_IDS),
+            "r5_specialty_header_clause_ids": sorted(SPECIALTY_R5_HEADER_CLAUSE_IDS),
+        },
+    )
     _write_json(_MANIFEST_DIR / "L4.4_specialty_prose_encoded_manifest.json", manifest)
-    return {"added": 0, "patched": 0, "encoded": len(sources)}
+    return {"added": 0, "patched": 0, "encoded": len(sorted_sources)}
 
 
 _STAGES = {
     "write_gate_b_artifacts": _stage_write_gate_b_artifacts,
     "csv_wave_clause_ids": _stage_csv_wave_clause_ids,
-    "payment_pipeline": _stage_payment_pipeline,
-    "phase5_manifest": _stage_phase5_manifest,
-    "wave23_patches": _stage_wave23_patches,
-    "orphan_reconciliation": _stage_orphan_reconciliation,
     "antivegf_manifest": _stage_antivegf_manifest,
     "tier_b_remap": _stage_tier_b_remap,
     "treatment_pricing_wave2_manifest": _stage_treatment_pricing_wave2_manifest,
-    "material_bundling_manifest": _stage_material_bundling_manifest,
     "specialty_materials_manifest": _stage_specialty_materials_manifest,
 }
 
@@ -1455,9 +1224,8 @@ def check(targets: list[CompileTarget] | None = None) -> int:
     paths: set[Path] = set()
     paths.update(_RULES_DIR.rglob("*.json"))
     paths.update(_MANIFEST_DIR.glob("*.json"))
-    paths.update((_PROJECT_ROOT / "data/gazette/prose_corpus").glob("*.csv"))
     for t in targets:
-        paths.update(p for p in [t.rule_json, t.manifest_path, t.golden_path, t.corpus_csv] if p is not None)
+        paths.update(p for p in [t.rule_json, t.manifest_path, t.golden_path] if p is not None)
         paths.update(t.output_paths)
 
     before = {path: path.read_bytes() if path.exists() else None for path in sorted(paths)}
@@ -1471,7 +1239,6 @@ def check(targets: list[CompileTarget] | None = None) -> int:
         after_paths = set(before)
         after_paths.update(_RULES_DIR.rglob("*.json"))
         after_paths.update(_MANIFEST_DIR.glob("*.json"))
-        after_paths.update((_PROJECT_ROOT / "data/gazette/prose_corpus").glob("*.csv"))
         mismatches = []
         for path in sorted(after_paths):
             old = before.get(path)
@@ -1486,7 +1253,7 @@ def check(targets: list[CompileTarget] | None = None) -> int:
             if len(mismatches) > 50:
                 print(f"  ... {len(mismatches) - 50} more")
             return 1
-        print(f"check ok: {len(after_paths)} rule/manifest/corpus artifacts byte-identical")
+        print(f"check ok: {len(after_paths)} rule/manifest artifacts byte-identical")
         return 0
     finally:
         for path, content in before.items():

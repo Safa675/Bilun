@@ -13,7 +13,7 @@ rules:
     denial_tr: yurt dışı tedavi süresi raporu geçemez; Kurum onaysız uzatma ödenmez
     severity: error
   gate_b_sources:
-  - C001431
+  - 2.5.3.A-2.(2)
 - rule_id: 2.5.3.A-2.(4).organ_transplant_wait_in_host_country
   sut_section: 2.5.3.A-2
   condition:
@@ -24,4 +24,4 @@ rules:
     denial_tr: organ nakli için yurt dışına gönderilenin organ teminine kadar bekleme süresi hedef ülkede geçmeli (belgeli)
     severity: error
   gate_b_sources:
-  - C001433
+  - 2.5.3.A-2.(4)

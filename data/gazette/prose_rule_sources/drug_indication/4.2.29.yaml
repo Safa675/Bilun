@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.29.hormones.dienogest_monocomponent_coverage
   sut_section: 4.2.29
   gate_b_sources:
-  - C006361
+  - 4.2.29.(2)
   drug_names:
   - dienogest
   report_specialties:
@@ -21,7 +21,7 @@ rules:
 - rule_id: 4.2.29.hormones.estrogen_hrt_progestogen_prescription_permission
   sut_section: 4.2.29
   gate_b_sources:
-  - C006359
+  - 4.2.29.(1)
   drug_names:
   - östradiol
   - konjüge östrojen
@@ -41,7 +41,7 @@ rules:
 - rule_id: 4.2.29.hormones.progesteron_topical_infertility_coverage
   sut_section: 4.2.29
   gate_b_sources:
-  - C006362
+  - 4.2.29.(3)
   drug_names:
   - progesteron
   - progesterone

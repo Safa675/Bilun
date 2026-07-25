@@ -13,4 +13,4 @@ rules:
     - electronic_referral
     - emergency
   gate_b_sources:
-  - C000312
+  - 1.8.1.(6)

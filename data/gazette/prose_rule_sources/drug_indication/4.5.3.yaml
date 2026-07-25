@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.5.3.inpatient_drug_cost_coverage
   sut_section: 4.5.3
   gate_b_sources:
-  - C007801
+  - 4.5.3.(1)
   condition:
     coverage_note: true
     inpatient_care: true
@@ -15,7 +15,7 @@ rules:
 - rule_id: 4.5.3.outpatient_drug_net_payment_coverage
   sut_section: 4.5.3
   gate_b_sources:
-  - C007802
+  - 4.5.3.(2)
   condition:
     coverage_note: true
     outpatient_care: true

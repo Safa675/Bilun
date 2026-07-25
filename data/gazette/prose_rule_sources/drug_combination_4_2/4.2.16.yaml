@@ -10,4 +10,4 @@ rules:
     denial_tr: EK-4/B listesinde yer almayan ürünler ödenmez
     severity: error
   gate_b_sources:
-  - C006013
+  - 4.2.16.(8)

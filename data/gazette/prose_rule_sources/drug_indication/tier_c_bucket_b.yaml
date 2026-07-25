@@ -20,7 +20,7 @@ rules:
   - bifosfonat
   - albumin
   gate_b_sources:
-  - C004176
+  - 4.2.9.Ç.b
   report_required: true
   message_tr: b) Opere olmuş ancak nüks olan hastalardan; bifosfonatlar ile hiperkalsemisi kontrol altına alınamamış ve albümin
     ile düzeltilmiş serum kalsiyum değeri ≥10,5 mg/dl olan hastalar,
@@ -66,7 +66,7 @@ rules:
   drug_names:
   - hidroksiüre
   gate_b_sources:
-  - C006083
+  - 4.2.21.(1)
   report_required: true
   message_tr: (1) Hidroksiüre + asetil salisilik asit tedavisine dirençli olduğu ya da hidroksiüre ile dirençli sitopeni (anemi
     ve/veya lökopeni) geliştiği belgelenen, yüksek vasküler risk taşıyan esansiyel trombositemi hastalıklarında, hematoloji
@@ -82,7 +82,7 @@ rules:
   - amfoterisin
   gate_b_sources:
   - C006102
-  - C006118
+  - 4.2.23.(7)
   report_required: true
   message_tr: 3) Amfoterisin B ile tedaviye refrakter ya da amfoterisin B’yi tolere edemeyen fusariozis hastalığı olan hastalarda.
   encode_bucket: B
@@ -95,7 +95,7 @@ rules:
   - cerrahi
   - sama
   gate_b_sources:
-  - C006411
+  - 4.2.30.A.(4)
   report_required: true
   message_tr: (4) İlgili ilaçlar üçüncü basamak sağlık hizmeti sunucularında bu durumların belirtildiği kardiyoloji, kalp
     damar cerrahisi, göğüs hastalıkları, çocuk kardiyolojisi uzman hekimlerinden birinin yer aldığı 3 ay süreli sağlık kurulu
@@ -109,7 +109,7 @@ rules:
   drug_names:
   - cerrahi
   gate_b_sources:
-  - C006424
+  - 4.2.30.(1)
   report_required: true
   message_tr: (1) Riosiguat; yalnızca inoperabl veya cerrahi tedavi sonrasında dirençli/nükseden KTEPH'li erişkin hastalardan;
   encode_bucket: B
@@ -122,7 +122,7 @@ rules:
   - cerrahi
   - sama
   gate_b_sources:
-  - C006428
+  - 4.2.30.(2)
   report_required: true
   message_tr: (2) Üçüncü basamak sağlık tesislerinde bu durumların belirtildiği ve en az birinin göğüs cerrahisi veya kalp
     damar cerrahisi uzman hekimi olması koşuluyla, kardiyoloji, göğüs hastalıkları, göğüs cerrahisi veya kalp damar cerrahisi
@@ -136,7 +136,7 @@ rules:
   drug_names:
   - sama
   gate_b_sources:
-  - C006806
+  - 4.2.43.b
   report_required: true
   message_tr: b) Bu hususların belirtildiği, üçüncü basamak sağlık kurumlarında en az bir romatoloji uzman hekiminin bulunduğu
     6 ay süreli sağlık kurulu raporuna dayanılarak yine bu sağlık kurumlarında romatoloji uzman hekimlerince reçetelenir.
@@ -195,7 +195,7 @@ rules:
   drug_names:
   - sama
   gate_b_sources:
-  - C007124
+  - 4.2.60.(4)
   report_required: true
   message_tr: (4) Yukarıdaki durumlardan herhangi birinin belirtildiği, üçüncü basamak (Değişik:RG-25/08/2022-31934/45 md.
     Yürürlük:03/09/2022) resmi sağlık hizmet sunucularında çocuk metabolizma uzman hekimi veya çocuk endokrinolojisi ve metabolizma
@@ -210,7 +210,7 @@ rules:
   drug_names:
   - sama
   gate_b_sources:
-  - C007169
+  - 4.2.69.a
   report_required: true
   message_tr: a) Pediatrik hastaların tedavisi için; üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen ve yukarıda
     yer alan tanı kriterlerinin belirtildiği, en az bir çocuk gastroentroloji uzman hekiminin yer aldığı üç çocuk sağlığı
@@ -225,7 +225,7 @@ rules:
   drug_names:
   - sama
   gate_b_sources:
-  - C007170
+  - 4.2.69.b
   report_required: true
   message_tr: b) Yetişkin hastaların tedavisi için; üçüncü basamak resmi sağlık hizmeti sunucularında düzenlenen ve yukarıda
     yer alan tanı kriterlerinin belirtildiği, en az bir gastroentereoloji uzman hekiminin yer aldığı sağlık kurulu raporuna

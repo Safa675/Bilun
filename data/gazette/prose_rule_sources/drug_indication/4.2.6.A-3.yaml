@@ -17,7 +17,7 @@ rules:
   message_tr: Turner sendromu somatropin — epifizleri açık, klinik/genetik tanılı hastada en az bir çocuk endokrinoloji uzman
     hekiminin yer aldığı sağlık kurulu raporu (en fazla 1 yıl) ve çocuk endokrinoloji uzman reçetesi gerekir (§4.2.6.A-3).
   gate_b_sources:
-  - C004003
+  - 4.2.6.A-3.(1)
   report_required: true
   report_specialties:
   - çocuk endokrinoloji

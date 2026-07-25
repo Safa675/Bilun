@@ -36,7 +36,7 @@ rules:
 - rule_id: 2.6.2.(1c_ext).outpatient_over_10_days_documented
   sut_section: 2.6.2
   gate_b_sources:
-  - C001565
+  - 2.6.2.ç
   condition:
     definition_scope: Ayakta tedavinin 10 günü aşması halinde gerekçe sevk belgesinde belirtilince gündelik
     applies_to: Ayakta tedavi — programlı tedaviler hariç
@@ -48,7 +48,7 @@ rules:
 - rule_id: 2.6.2.(2).daily_allowance_coefficients
   sut_section: 2.6.2
   gate_b_sources:
-  - C001566
+  - 2.6.2.(2)
   condition:
     definition_scope: Gündeliklerin gösterge rakamı x devlet memuru katsayısı ile ödenmesi
     applies_to: Gündelik hesabı
@@ -62,7 +62,7 @@ rules:
 - rule_id: 2.6.2.(4).continuation_specialty_daily_allowance
   sut_section: 2.6.2
   gate_b_sources:
-  - C001568
+  - 2.6.2.(4)
   condition:
     definition_scope: Sevk edilen branş dışında tedavi devamı sevk edilip belgelendirilirse gündelik
     applies_to: Ayakta tedavi — branş değişimi
@@ -73,7 +73,7 @@ rules:
 - rule_id: 2.6.2.(5).continuation_provider_daily_allowance
   sut_section: 2.6.2
   gate_b_sources:
-  - C001569
+  - 2.6.2.(5)
   condition:
     definition_scope: Aynı yerleşim yerinde başka sunucuya tedavi devamı sevk edilip belgelendirilirse gündelik
     applies_to: Ayakta tedavi — aynı yerleşimde sunucu değişimi
@@ -84,7 +84,7 @@ rules:
 - rule_id: 2.6.2.(3).same_day_application_no_daily_allowance
   sut_section: 2.6.2
   gate_b_sources:
-  - C001567
+  - 2.6.2.(3)
   condition:
     expense_not_covered: muracaat_ve_tedavi_bitisi_ayni_gun_ise_gundelik
     applies_to: Sevk edilen sağlık hizmeti sunucusuna müracaat — aynı gün biten tedavi

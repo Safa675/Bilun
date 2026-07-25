@@ -14,6 +14,6 @@ rules:
   - enfeksiyon hastalıkları
   message_tr: Akut hepatit C interferon tedavisi — gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.1).
   gate_b_sources:
-  - C004636
-  - C004637
+  - 4.2.13.3.1.(1)
+  - 4.2.13.3.1.(2)
 source_note: Exported from drug_indication_prose.json (YAML source migration)

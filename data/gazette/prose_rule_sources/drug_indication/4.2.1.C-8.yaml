@@ -15,7 +15,7 @@ rules:
   message_tr: Vedolizumab — anti-TNF yetersiz Crohn hastalığında doz/süre belirtilen 4 ay süreli sağlık kurulu raporu gerekir
     (§4.2.1.C-8).
   gate_b_sources:
-  - C003839
+  - 4.2.1.C-8.(1)
   prescriber_specialties:
   - gastroenteroloji
   - genel cerrahi
@@ -36,7 +36,7 @@ rules:
   message_tr: Vedolizumab — anti-TNF yetersiz ülseratif kolitte gastroenteroloji/genel cerrahi uzman hekim raporu gerekir
     (§4.2.1.C-8).
   gate_b_sources:
-  - C003840
+  - 4.2.1.C-8.(2)
   prescriber_specialties:
   - gastroenteroloji
   - genel cerrahi

@@ -5,7 +5,7 @@ rules:
   sut_section: 3.1.2
   deontic: NO_PAY
   gate_b_sources:
-  - C002720
+  - 3.1.2.(7)
   condition:
     material_lost_or_stolen_before_miat_expiry: true
   action:
@@ -53,7 +53,7 @@ rules:
   sut_section: 3.1.2
   deontic: MUST_BILL
   gate_b_sources:
-  - C002744
+  - 3.1.2.e
   condition:
     ek3c2_c5_material_unusable_after_warranty_health_board: true
   action:

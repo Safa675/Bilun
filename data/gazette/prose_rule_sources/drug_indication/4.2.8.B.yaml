@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.8.B.parenteral_nutrition_30day_report
   sut_section: 4.2.8.B
   gate_b_sources:
-  - C004112
+  - 4.2.8.B.(1)
   drug_names:
   - parenteral beslenme ürünü
   - parenteral nutrition

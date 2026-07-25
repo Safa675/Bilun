@@ -1,8 +1,26 @@
 {
-  "manifest_version": "wave2-v1",
-  "rule_id": "procedure_pairing",
-  "scope_note": "§2.2.2.A same-session add-on pairing pilot (6 JSON rules)",
+  "manifest_version": "canonical-v1",
+  "rule_set_id": "procedure_pairing",
+  "section_id": "",
+  "section_clause_total": 1,
   "encoded_clause_ids": [
     "C000646"
+  ],
+  "encoded_clause_count": 1,
+  "tier_c_deferred_clause_ids": [],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_count": 0,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "clause_traces": [
+    {
+      "clause_id": "C000646",
+      "manifest_status": "encoded"
+    }
   ]
 }

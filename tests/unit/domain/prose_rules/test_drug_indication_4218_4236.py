@@ -83,11 +83,22 @@ def test_a5_batch_has_five_rules() -> None:
     assert "4.2.36.amantadine_hcl_parkinson_report" in rule_ids
 
 def test_a5_gate_b_sources_cover_all_tier_a_clauses() -> None:
-    encoded = {
+    import polars as pl
+
+    from scripts.sut.prose.clause_identity import resolve_gate_b_sources_to_clause_ids
+
+    clauses = pl.read_parquet(_REPO / "data/gazette/sut_clauses.parquet")
+    refs = [
         clause_id
         for rule in BATCH_A5_RULES
         for clause_id in rule.get("gate_b_sources") or []
-    }
+    ]
+    encoded = resolve_gate_b_sources_to_clause_ids(
+        refs,
+        clauses,
+        in_force_only=True,
+        allow_ambiguous=True,
+    )
     assert encoded == {"C006059", "C006707", "C006708", "C006709", "C006711"}
 
 def test_a5_manifest_section_counts() -> None:

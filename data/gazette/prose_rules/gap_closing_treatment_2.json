@@ -48,7 +48,7 @@
         "annex_basis": "EK-2/C"
       },
       "gate_b_sources": [
-        "C000620"
+        "2.2.1.B-3.(3)"
       ]
     },
     {
@@ -63,7 +63,7 @@
         "annex_basis": "EK-2/C"
       },
       "gate_b_sources": [
-        "C000654"
+        "2.2.2.B.(1)"
       ]
     },
     {
@@ -79,7 +79,7 @@
         "annex_basis": "EK-2/B"
       },
       "gate_b_sources": [
-        "C000655"
+        "2.2.2.B.(2)"
       ]
     },
     {
@@ -111,7 +111,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000662"
+        "2.2.2.B.(4)"
       ]
     },
     {
@@ -127,7 +127,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000677"
+        "2.2.2.B-1.d"
       ]
     },
     {
@@ -148,7 +148,7 @@
         "annex_basis": "EK-2/C"
       },
       "gate_b_sources": [
-        "C000681"
+        "2.2.2.B-1.e"
       ]
     },
     {
@@ -179,7 +179,7 @@
         "payment_tr": "süre aşımında verilen hizmetler ayrıca faturalandırılır"
       },
       "gate_b_sources": [
-        "C000694"
+        "2.2.2.B-1.(4)"
       ]
     },
     {
@@ -193,7 +193,7 @@
         "payment_tr": "tanıya dayalı işlem öncesi ölüm/paket kapsamına girmeyen müdahale; ameliyat/girişim kararına kadar hizmet başına ödeme"
       },
       "gate_b_sources": [
-        "C000697"
+        "2.2.2.B-2.(1)"
       ]
     },
     {
@@ -209,7 +209,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000701"
+        "2.2.2.B-3.(1)"
       ]
     },
     {
@@ -226,7 +226,7 @@
         "payment_tr": "acil hal; olay sonrası ilk 24 saatte tıbbi müdahale"
       },
       "gate_b_sources": [
-        "C000714"
+        "2.3.(1)"
       ]
     },
     {
@@ -242,7 +242,7 @@
         "payment_tr": "sözleşmesiz sunucuda ilk başvuru acil hal kapsamında; hizmet başına ödeme"
       },
       "gate_b_sources": [
-        "C000726"
+        "2.3.1.(4)"
       ]
     },
     {
@@ -258,7 +258,7 @@
         "payment_tr": "24 saatte stabilize edilemeyen acil durumda yatarak tedavi SUT hükümleri çerçevesinde"
       },
       "gate_b_sources": [
-        "C000727"
+        "2.3.1.(5)"
       ]
     },
     {
@@ -275,7 +275,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000827"
+        "2.4.2.A.(6)"
       ]
     },
     {
@@ -292,7 +292,7 @@
         "payment_tr": "mezenkimal kök hücre nakli kemik iliği nakil bedellerine dahil değil; ayrı faturalanabilir"
       },
       "gate_b_sources": [
-        "C000850"
+        "2.4.2.B-2.(4)"
       ]
     },
     {
@@ -307,7 +307,7 @@
         "payment_tr": "özel sunucularda fizik tedavi 2.4.4.F-1/F-2 + bu maddeler çerçevesinde"
       },
       "gate_b_sources": [
-        "C001055"
+        "2.4.4.F-3.(1)"
       ]
     },
     {
@@ -326,7 +326,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001136"
+        "2.4.4.Ğ.(2)"
       ]
     },
     {
@@ -342,7 +342,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001206"
+        "2.4.4.H.(1)"
       ]
     },
     {
@@ -358,7 +358,7 @@
         "annex_basis": "EK-2/C"
       },
       "gate_b_sources": [
-        "C001207"
+        "2.4.4.H.(2)"
       ]
     },
     {
@@ -377,7 +377,7 @@
         "payment_tr": "trombosit süspansiyonu/aferez trombosit bedelleri ayrıca faturalandırılabilir"
       },
       "gate_b_sources": [
-        "C001210"
+        "2.4.4.H.(5)"
       ]
     },
     {
@@ -392,7 +392,7 @@
         "payment_tr": "işletme izinli kaplıca sözleşme yapılıncaya kadar; hasta öder, gün başına ödeme"
       },
       "gate_b_sources": [
-        "C001332"
+        "2.4.4.J.(4)"
       ]
     },
     {
@@ -408,7 +408,7 @@
         "payment_tr": "hasta çocuk + tedavi başka yolla mümkün değilse PGT ile uygun verici kardeş doğumu amaçlı tanı ödenir"
       },
       "gate_b_sources": [
-        "C001310"
+        "2.4.4.İ-2.(1)"
       ]
     },
     {
@@ -424,7 +424,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001401"
+        "2.5.1.(3)"
       ]
     },
     {
@@ -439,7 +439,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001403"
+        "2.5.1.(5)"
       ]
     },
     {
@@ -456,7 +456,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001405"
+        "2.5.1.(6)"
       ]
     },
     {
@@ -472,7 +472,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001409"
+        "2.5.2.(1)"
       ]
     },
     {
@@ -487,7 +487,7 @@
         "payment_tr": "KKTC'de sağlanan hizmet Türk vatandaşlarına yurt dışı hükümlerine göre ödenir"
       },
       "gate_b_sources": [
-        "C001410"
+        "2.5.2.(2)"
       ]
     },
     {
@@ -503,7 +503,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001413"
+        "2.5.3.A.(1)"
       ]
     },
     {
@@ -522,7 +522,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001431"
+        "2.5.3.A-2.(2)"
       ]
     },
     {
@@ -538,7 +538,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001433"
+        "2.5.3.A-2.(4)"
       ]
     },
     {
@@ -555,7 +555,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001446"
+        "2.5.3.A-3.(6)"
       ]
     },
     {
@@ -572,7 +572,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001449"
+        "2.5.3.A-3.(8)"
       ]
     },
     {
@@ -588,7 +588,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001451"
+        "2.5.3.B.(1)"
       ]
     },
     {
@@ -605,7 +605,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001497"
+        "2.6.1.A.(5)"
       ]
     },
     {
@@ -620,7 +620,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001541"
+        "2.6.1.B-3.(3)"
       ]
     },
     {
@@ -635,7 +635,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001567"
+        "2.6.2.(3)"
       ]
     },
     {
@@ -650,7 +650,7 @@
         "payment_tr": "yatarak tedavide refakatçi yatak/yemek/temel ihtiyaç bedelleri tanıya dayalı pakete dahil"
       },
       "gate_b_sources": [
-        "C001572"
+        "2.6.3.(2)"
       ]
     },
     {
@@ -666,7 +666,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001579"
+        "2.6.4.ç"
       ]
     },
     {
@@ -682,7 +682,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001591"
+        "2.6.6.(3)"
       ]
     },
     {
@@ -697,7 +697,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001600"
+        "2.6.8.(2)"
       ]
     },
     {
@@ -712,7 +712,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001603"
+        "2.6.9.(1)"
       ]
     },
     {
@@ -727,7 +727,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001604"
+        "2.6.9.(2)"
       ]
     },
     {
@@ -746,7 +746,7 @@
         "payment_tr": "eğitim/araştırma hastaneleri ile üniversite tıp fakültelerinde EK-2/C listesinde (*) işareti bulunan işlemler listedeki puanlara %30 ilave edilerek faturalandırılır"
       },
       "gate_b_sources": [
-        "C000665"
+        "2.2.2.B.(5)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "CORRECTS fabricated rule: was procedure_category=specialist_consultation with no uplift. C000665 is about +30% on (*)-marked EK-2/C procedures at training/uni hospitals — not about specialist consultations. Invented subject removed, +30% uplift restored, (*) filter added."

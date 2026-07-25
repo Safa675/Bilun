@@ -14,7 +14,7 @@ rules:
       nakli tedavilerine ilişkin giderler ile verici durumundaki kişinin bu tedaviye ilişkin giderleri Kurum tarafından karşılanır
     billing_method: procedure_package
   gate_b_sources:
-  - C000816
+  - 2.4.2.A.(1)
 - rule_id: 2.4.2.A.(4).domestic_organ_transfer_per_2_6
   sut_section: 2.4.2.A
   condition:
@@ -27,7 +27,7 @@ rules:
       karşılanır
     billing_method: fee_for_service
   gate_b_sources:
-  - C000821
+  - 2.4.2.A.(4)
 - rule_id: 2.4.2.A.(5).cadaver_donor_procurement_p911146_ek2c
   sut_section: 2.4.2.A
   condition:
@@ -41,7 +41,7 @@ rules:
     billing_method: fee_for_service
     annex_basis: EK-2/C
   gate_b_sources:
-  - C000824
+  - 2.4.2.A.(5)
 - rule_id: 2.4.2.A.(6).abo_incompatible_kidney_transplant_no_pay
   sut_section: 2.4.2.A
   condition:
@@ -54,8 +54,7 @@ rules:
       uygulanacak aferez işlemi ve tıbbi malzeme bedelleri ayrıca faturalandırılamaz
     severity: error
   gate_b_sources:
-  - C000827
-
+  - 2.4.2.A.(6)
 - rule_id: 2.4.2.A.(2).non_covered_donor_organ_tissue_no_pay
   sut_section: 2.4.2.A
   verification_status: ai_generated_pending_review
@@ -65,7 +64,8 @@ rules:
   action:
     billable: false
     enforcement: exclusion
-    message_tr: Kurumca saglik yardimlari karsilanmayan alici durumundaki kisilerin organ/doku vericisi olmasi halinde bu islemlere ait bedeller karsilanmaz
+    message_tr: Kurumca saglik yardimlari karsilanmayan alici durumundaki kisilerin organ/doku vericisi olmasi halinde bu
+      islemlere ait bedeller karsilanmaz
     severity: error
   gate_b_sources:
-  - C000817
+  - 2.4.2.A.(2)

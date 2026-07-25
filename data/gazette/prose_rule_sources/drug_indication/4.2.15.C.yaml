@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.15.C.ivabradine_chf_hr75_1yr_report
   sut_section: 4.2.15.C
   gate_b_sources:
-  - C005793
+  - 4.2.15.C.(2)
   drug_names:
   - ivabradin
   - ivabradine
@@ -27,8 +27,8 @@ rules:
 - rule_id: 4.2.15.C.ivabradine_chronic_angina_1yr_report
   sut_section: 4.2.15.C
   gate_b_sources:
-  - C005792
-  - C005797
+  - 4.2.15.C.(1)
+  - 4.2.15.C.b
   drug_names:
   - ivabradin
   - ivabradine

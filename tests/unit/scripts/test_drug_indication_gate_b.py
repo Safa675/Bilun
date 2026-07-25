@@ -31,5 +31,11 @@ def test_gate_b_export_has_defer_themes_column() -> None:
     assert tier_c.filter(pl.col("defer_themes").str.len_chars() > 0).height == tier_c.height
 
 
-def test_gate_b_corpus_file_on_disk() -> None:
-    assert _CORPUS.is_file()
+def test_gate_b_corpus_export_optional(tmp_path: Path) -> None:
+    """Track C4: corpus CSV is optional human export, not a committed runtime artifact."""
+    from scripts.sut.prose.drug_indication_gate_b import write_gate_b_export
+
+    out = tmp_path / "L4.2_drug_indication_4.2.14.C.csv"
+    write_gate_b_export(_CLAUSES, out)
+    assert out.is_file()
+    soft_floor(pl.read_csv(out).height, 700, label="exported §4.2.14.C height")

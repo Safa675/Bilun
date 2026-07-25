@@ -1,45 +1,8 @@
 {
-  "manifest_id": "L4.2_drug_indication_4_2_14_wave2",
+  "manifest_version": "canonical-v1",
   "rule_set_id": "drug_indication_prose",
-  "source_csv": "tasks/archive/encode-waves-2026-06/A1a_4_2_14_oncology.csv",
-  "batch_module": "scripts/sut/prose/drug_indication_4_2_14_wave2_batch_rules.py",
-  "description": "Wave-2 §4.2.14 oncology encodes — chemotherapy/targeted/immunotherapy report, prescriber, line-of-therapy and NO_PAY combination exclusions.",
-  "rule_count": 33,
-  "rule_ids": [
-    "4.2.14.outpatient_chemo_dose_cycle",
-    "4.2.14.offlabel_oncology_board_report",
-    "4.2.14.B.gcsf_granulocyte_colony_stimulating_factors",
-    "4.2.14.C.hormone_receptor_positive_breast_recurrence",
-    "4.2.14.C.er_positive_her2_negative_breast_board",
-    "4.2.14.C.oncology_hematology_board_prescriber_gate",
-    "4.2.14.C.cd20_dlblc_rituximab_chop",
-    "4.2.14.C.oncology_hematology_board_only_prescriber",
-    "4.2.14.C.hematology_board_6m_prescriber",
-    "4.2.14.C.oncology_6m_continuation",
-    "4.2.14.C.arsenic_trioxide_apl",
-    "4.2.14.C.pre_transplant_blast_clearance_max2cycles",
-    "4.2.14.C.cutaneous_tcell_lymphoma_cd30_brentuximab",
-    "4.2.14.C.giant_cell_tumor_of_bone_denosumab",
-    "4.2.14.C.ahus_eculizumab_ravulizumab_board",
-    "4.2.14.C.pnh_board_hematology_6m",
-    "4.2.14.C.generalized_myasthenia_gravis_3neurology_3m",
-    "4.2.14.C.nmosd_3neurology_6m",
-    "4.2.14.C.pediatric_myasthenia_gravis_pedneurology_3m",
-    "4.2.14.C.cll_second_line_venetoclax",
-    "4.2.14.C.hematology_oncology_3m_third_step_board",
-    "4.2.14.C.asparaginase_hypersensitivity_substitution",
-    "4.2.14.C.oncology_6m_prescriber_permission",
-    "4.2.14.C.hematology_3m_third_step_prescriber",
-    "4.2.14.C.gynecologic_malignity_obgyn_third_step",
-    "4.2.14.C.nopay_crizotinib_after_alk_inhibitors",
-    "4.2.14.C.nopay_outside_conditions_generic",
-    "4.2.14.C.nopay_myeloma_pi_imid_combination",
-    "4.2.14.C.nopay_daratumumab_isatuximab_resistance",
-    "4.2.14.C.nopay_after_cabozantinib_rcc_seq",
-    "4.2.14.C.nopay_after_lorlatinib_alk_seq",
-    "4.2.14.C.nopay_cdk46_fulvestrant_combo_exclusions_b",
-    "4.2.14.C.nopay_cdk46_fulvestrant_combo_exclusions_c"
-  ],
+  "section_id": "",
+  "section_clause_total": 51,
   "encoded_clause_ids": [
     "C004925",
     "C004926",
@@ -89,19 +52,236 @@
     "C005730",
     "C005731"
   ],
-  "tier_c_deferred_clause_ids": [],
-  "tier_c_deferred_count": 0,
-  "effective_date": "2026-06-30",
-  "gap_closure_note": "Wave 1 Tier-C defer — 2 clause(s) added 2026-06-30",
   "encoded_clause_count": 47,
+  "tier_c_deferred_clause_ids": [],
   "emr_blocked_clause_ids": [],
-  "emr_blocked_count": 0,
   "non_actionable_clause_ids": [
     "C004928",
     "C004929",
     "C004930",
     "C004931"
   ],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_count": 0,
+  "emr_blocked_count": 0,
   "non_actionable_count": 4,
-  "bucket_d_non_actionable_note": "bucket_d_non_actionable updated 4 clause(s) on 2026-07-01"
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "clause_traces": [
+    {
+      "clause_id": "C004925",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004926",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004927",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004928",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C004929",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C004930",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C004931",
+      "manifest_status": "non_actionable",
+      "defer_reason": "Non-actionable — structural heading, pathway fragment, or navigational prose without encodable billing matcher."
+    },
+    {
+      "clause_id": "C004933",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004959",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004960",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004972",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004983",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C004984",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005002",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005241",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005247",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005304",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005316",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005332",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005346",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005374",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005433",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005437",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005452",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005464",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005475",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005535",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005547",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005551",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005554",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005562",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005566",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005568",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005569",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005589",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005593",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005606",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005608",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005614",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005656",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005661",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005675",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005680",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005685",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005693",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005710",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005715",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005720",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005721",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005730",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C005731",
+      "manifest_status": "encoded"
+    }
+  ],
+  "rules_in_json": 33,
+  "effective_date": "2026-06-30",
+  "encode_tier_C_deferred_count": 0,
+  "clause_trace_complete": true,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 92.2
 }

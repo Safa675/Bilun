@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.33.A
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003306
+  - 3.3.33.A.(1)
   condition:
     auditory_implant_non_third_step_facility: true
   action:

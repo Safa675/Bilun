@@ -14,7 +14,7 @@ rules:
     aldığı 6 aylık sağlık kurulu raporu ve uzman reçetesi gerekir (§4.2.10.A-4).
   gate_b_sources:
   - C004257
-  - C004258
+  - 4.2.10.A-4.(1)
   report_required: true
   report_specialties:
   - çocuk endokrinolojisi ve metabolizma

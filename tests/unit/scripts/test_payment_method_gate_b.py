@@ -45,8 +45,8 @@ def test_gate_b_csv_columns(gate_b_frame) -> None:
         "section_id",
         "text_tr",
         "deontic_modality",
-        "payment_kind_hint",
         "encode_priority",
+        "clause_coordinate",
     ):
         assert col in gate_b_frame.columns
 

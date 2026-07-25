@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.70.B.als_stable_stage_3mo_6mo_maintenance
   sut_section: 4.2.70.B
   gate_b_sources:
-  - C007203
+  - 4.2.70.B.(2)
   drug_names:
   - edaravon
   - riluzol
@@ -21,7 +21,7 @@ rules:
 - rule_id: 4.2.70.B.als_tertiary_3neurology_report
   sut_section: 4.2.70.B
   gate_b_sources:
-  - C007204
+  - 4.2.70.B.(3)
   drug_names:
   - edaravon
   - riluzol

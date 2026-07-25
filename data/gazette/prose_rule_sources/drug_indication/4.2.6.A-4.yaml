@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.6.A4.prader_willi_gh_no_stimulation_test
   sut_section: 4.2.6.A-4
   gate_b_sources:
-  - C004013
+  - 4.2.6.A-4.(1)
   drug_names:
   - somatropin
   - büyüme hormonu
@@ -36,7 +36,7 @@ rules:
   message_tr: Prader-Willi sendromu somatropin — üçüncü basamak kurumda çocuk endokrinoloji uzman hekiminin yer aldığı 3 aylık
     sağlık kurulu raporu gerekir (§4.2.6.A-4).
   gate_b_sources:
-  - C004016
+  - 4.2.6.A-4.(2)
   report_specialties:
   - çocuk endokrinoloji
   - çocuk endokrinolojisi ve metabolizma

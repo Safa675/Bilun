@@ -13,7 +13,7 @@ rules:
     annex_basis: EK-2/C
     severity: warning
   gate_b_sources:
-  - C000884
+  - 2.4.4.C.(2)
 - rule_id: 2.4.4.C.(1).radiosurgery_board_report_required
   sut_section: 2.4.4.C
   condition:
@@ -26,4 +26,4 @@ rules:
       kurulu raporu düzenlenmelidir
     severity: error
   gate_b_sources:
-  - C000883
+  - 2.4.4.C.(1)

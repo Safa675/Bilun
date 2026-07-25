@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.32.gadobutrol_over_15ml_reason
   sut_section: 4.2.32
   gate_b_sources:
-  - C006451
+  - 4.2.32.(3)
   drug_names:
   - gadobutrol
   report_required: true
@@ -30,7 +30,7 @@ rules:
 - rule_id: 4.2.32.gadoxetate_liver_mr_max_1box
   sut_section: 4.2.32
   gate_b_sources:
-  - C006450
+  - 4.2.32.(2)
   drug_names:
   - gadoksetat
   - gadoxetat
@@ -45,7 +45,7 @@ rules:
 - rule_id: 4.2.32.iodized_fatty_acid_interventional_radiology
   sut_section: 4.2.32
   gate_b_sources:
-  - C006454
+  - 4.2.32.(6)
   drug_names:
   - iyodize yağ asitleri etil esterleri
   - lipiodol
@@ -63,7 +63,7 @@ rules:
 - rule_id: 4.2.32.iodized_fatty_acid_lymphography_tace
   sut_section: 4.2.32
   gate_b_sources:
-  - C006453
+  - 4.2.32.(5)
   drug_names:
   - iyodize yağ asitleri etil esterleri
   - lipiodol
@@ -80,7 +80,7 @@ rules:
 - rule_id: 4.2.32.nonionic_iodinated_contrast_coverage
   sut_section: 4.2.32
   gate_b_sources:
-  - C006449
+  - 4.2.32.(1)
   drug_names:
   - non-iyonik iyotlu kontrast madde
   - non-iyonik radyo-opak madde

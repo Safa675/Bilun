@@ -54,7 +54,7 @@ const sections = {
       glossary: {
         title: "Bu sayılar ne anlama geliyor?",
         toggle: "Sayıları açıkla",
-        hukum: "Hüküm: Yürürlükteki {count} SUT paragrafı. Her biri bir clause_id taşır (örn. C002684).",
+        hukum: "Hüküm: Yürürlükteki {count} SUT paragrafı. Birincil kimlik clause_coordinate (örn. 2.2.1.(1)). C* yalnızca dahili/çakışma anahtarıdır.",
         hukumTurleri: "Bunların {numbered} tanesi numaralı kural hükmü (fıkra/bent), {prose} tanesi düz metin paragrafı, {structural} tanesi ise yapısal iskele (bölüm/başlık) olup fatura kuralı değildir.",
         kuralMotoru: "Kural motoru: {count} kayıt girdisi (örn. drug_indication_prose, copay_rate_ek2c1).",
         jsonSatir: "JSON kural satırı: prose_rules/*.json içinde {count} kural nesnesi (motorların içindeki çalıştırılabilir kurallar).",
@@ -90,15 +90,27 @@ const sections = {
       sections: "Bölümler",
       clauses: "Hükümler",
       prose: "Düz metin motorları",
+      deferrals: "Ertelenenler",
     },
     clauses: {
-      searchPlaceholder: "Hüküm id veya metin ara…",
+      searchPlaceholder: "Koordinat, hüküm id veya metin ara…",
+      copyCoordinate: "Koordinatı kopyala",
       filterGap: "Boşluk",
       filterEncoded: "Kodlanmış",
       filterHideReferans: "Referans gizle",
       filterHideHeadings: "Başlıkları gizle",
       filterMotor: "Motor",
       resultCount: "{count} hüküm",
+    },
+    deferrals: {
+      searchPlaceholder: "Koordinat, durum veya gerekçe ara…",
+      resultCount: "{count} erteleme",
+      empty: "Eşleşen erteleme yok.",
+      status: {
+        emr_blocked: "EMR engelli",
+        non_actionable: "İşlenemez",
+        tier_c_deferred: "C kademesi",
+      },
     },
     utilization: {
       referans: "Referans",
@@ -136,6 +148,10 @@ const sections = {
       anchors: "SUT bağlayıcıları",
       noEngines: "Düz metin kural motoru bulunamadı.",
       artifactsUnavailable: "Düz metin envanteri kullanılamıyor — düz metin JSON dosyası yok.",
+      loadSources: "Kaynak fıkraları göster",
+      loadingSources: "Kaynaklar yükleniyor…",
+      noRules: "Bu motorda kural yok.",
+      noSources: "gate_b_sources boş.",
     },
     list: {
       clauseCount: "{count} hüküm",

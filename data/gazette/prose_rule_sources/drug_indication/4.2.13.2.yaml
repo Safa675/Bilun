@@ -25,7 +25,7 @@ rules:
   - enfeksiyon hastalıkları
   message_tr: HDV(+) kronik hepatit B — interferon/pegile interferon; anti-HDV ve HBV DNA reçete/raporda belirtilmelidir (§4.2.13.2).
   gate_b_sources:
-  - C004628
+  - 4.2.13.2.(1)
   prescriber_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları

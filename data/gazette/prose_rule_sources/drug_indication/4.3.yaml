@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.3.ek4c_ek4d_copay_exempt
   sut_section: '4.3'
   gate_b_sources:
-  - C007292
+  - 4.3.(5)
   condition:
     copay_exempt: true
     overseas_drug: true
@@ -14,7 +14,7 @@ rules:
 - rule_id: 4.3.ek4c_self_procured_bank_payment_coverage
   sut_section: '4.3'
   gate_b_sources:
-  - C007291
+  - 4.3.(4)
   condition:
     coverage_note: true
     overseas_drug: true
@@ -30,7 +30,7 @@ rules:
 - rule_id: 4.3.non_ek4c_overseas_drug_nopay
   sut_section: '4.3'
   gate_b_sources:
-  - C007290
+  - 4.3.(3)
   pay: false
   condition:
     overseas_drug: true
@@ -47,7 +47,7 @@ rules:
 - rule_id: 4.3.overseas_drug_specialist_report_90day_coverage
   sut_section: '4.3'
   gate_b_sources:
-  - C007293
+  - 4.3.(6)
   report_required: true
   report_specialties:
   - uzman hekim
@@ -67,7 +67,7 @@ rules:
 - rule_id: 4.3.overseas_licensed_distributed_copay_exempt
   sut_section: '4.3'
   gate_b_sources:
-  - C007297
+  - 4.3.(8)
   report_required: true
   report_specialties:
   - uzman hekim
@@ -95,7 +95,7 @@ rules:
 - rule_id: 4.3.overseas_procurement_permission
   sut_section: '4.3'
   gate_b_sources:
-  - C007288
+  - 4.3.(1)
   condition:
     overseas_drug: true
   action:

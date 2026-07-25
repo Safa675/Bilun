@@ -16,4 +16,4 @@ rules:
     - package
     - itemized
   gate_b_sources:
-  - C000634
+  - 2.2.2.(2)

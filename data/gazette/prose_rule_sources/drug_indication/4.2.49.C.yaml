@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.49.C.neuro.nusinersen_tertiary_setting_report_durations
   sut_section: 4.2.49.C
   gate_b_sources:
-  - C007047
+  - 4.2.49.C.(1)
   drug_names:
   - nusinersen
   - nusinersen sodium
@@ -36,7 +36,7 @@ rules:
 - rule_id: 4.2.49.C.neuro.risdiplam_tertiary_setting_report_durations
   sut_section: 4.2.49.C
   gate_b_sources:
-  - C007048
+  - 4.2.49.C.(2)
   drug_names:
   - risdiplam
   icd10_codes:
@@ -64,7 +64,7 @@ rules:
 - rule_id: 4.2.49.C.neuro.sma_designated_multidisciplinary_center_coverage
   sut_section: 4.2.49.C
   gate_b_sources:
-  - C007049
+  - 4.2.49.C.(3)
   drug_names:
   - nusinersen
   - nusinersen sodium
@@ -88,7 +88,7 @@ rules:
 - rule_id: 4.2.49.C.neuro.sma_modifying_switch_under_1yr_nopay
   sut_section: 4.2.49.C
   gate_b_sources:
-  - C007051
+  - 4.2.49.C.(5)
   drug_names:
   - nusinersen
   - nusinersen sodium
@@ -114,13 +114,13 @@ rules:
   - risdiplam
   pay: false
   action:
-    enforcement: 'no-pay: gen temelli tedaviler (gen replasman + SMN2 modifiye eden) birlikte kullanilmaz;
-      gen replasman tek seferlik olduğundan bu tedavi sonrası nusinersen/risdiplam kullanilmasi halinde ödenmez'
+    enforcement: 'no-pay: gen temelli tedaviler (gen replasman + SMN2 modifiye eden) birlikte kullanilmaz; gen replasman tek
+      seferlik olduğundan bu tedavi sonrası nusinersen/risdiplam kullanilmasi halinde ödenmez'
     message_tr: Gen temelli tedavilerin tümü [gen replasman tedavisi ve SMN2 modifiye eden tedaviler (nusinersen, risdiplam)]
       birlikte kullanılmamalıdır; gen replasman tedavisinin tek seferlik uygulama olması nedeniyle bu tedavi sonrasında nusinersen
       veya risdiplam kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.49.C(4), RG-29/06/2026-33295/7 md.)
   gate_b_sources:
-  - C007050
+  - 4.2.49.C.(4)
   icd10_ranges:
   - G12.0
   - G12.1

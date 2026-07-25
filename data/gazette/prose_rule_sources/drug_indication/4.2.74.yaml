@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.74.card.sgli_hfref_dapagliflozin_empagliflozin_cardiology_1yr_coverage
   sut_section: 4.2.74
   gate_b_sources:
-  - C007265
+  - 4.2.74.(1)
   drug_names:
   - dapagliflozin
   - empagliflozin
@@ -40,7 +40,7 @@ rules:
 - rule_id: 4.2.74.renal.sgli_ckd_proteinuria_dapagliflozin_empagliflozin_nephrology_coverage
   sut_section: 4.2.74
   gate_b_sources:
-  - C007266
+  - 4.2.74.(2)
   drug_names:
   - dapagliflozin
   - empagliflozin

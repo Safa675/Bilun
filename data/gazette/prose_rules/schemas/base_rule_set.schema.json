@@ -32,7 +32,16 @@
         "sut_section": { "type": "string", "minLength": 1 },
         "gate_b_sources": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^[CF][0-9]{6}$" },
+          "description": "Public cites prefer clause_coordinate. Opaque C*/F* ids are allowed only for collision disambiguation (Track E); Fatura F* remains its own epic.",
+          "items": {
+            "type": "string",
+            "anyOf": [
+              { "pattern": "^[CF][0-9]{6}$" },
+              {
+                "pattern": "^[0-9]+(?:\\.[0-9A-Za-zÇĞİÖŞÜçğıöşü-]+)*(?:\\.\\([0-9]+\\))?(?:\\.[a-zçğıöşü])?$"
+              }
+            ]
+          },
           "minItems": 1
         },
         "encode_batch": { "type": "string" },

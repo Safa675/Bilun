@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.13.acute_hbv_severe_antiviral_coverage
   sut_section: 4.2.13
   gate_b_sources:
-  - C004509
+  - 4.2.13.a
   drug_names:
   - entekavir
   - tenofovir
@@ -23,8 +23,9 @@ rules:
   action:
     enforcement: 'akut HBV ciddi klinik/lab (INR≥1,5 veya PT uzamış, sarılık >4 hafta): HBsAg iki kez (4 hafta arayla) negatiflenene
       kadar antiviral ödenir'
-    message_tr: Akut hepatit B'de ciddi klinik/lab bulgusu (INR≥1,5 veya PT normalin üst sınırından >4 sn uzun, sarılık >4
-      hafta) olanlarda HBsAg iki kez 4 hafta arayla negatiflenene kadar onaylı antiviral ilaç bedeli Kurumca karşılanır (§4.2.13).
+    message_tr: Akut hepatit B'de ciddi klinik/lab bulgusu (INR≥1,5 veya PT normalin üst sınırından >4 sn uzun, sarılık 
+      >4 hafta) olanlarda HBsAg iki kez 4 hafta arayla negatiflenene kadar onaylı antiviral ilaç bedeli Kurumca 
+      karşılanır (§4.2.13).
 - rule_id: 4.2.13.hepatitis_prior_therapy_documentation
   sut_section: 4.2.13
   drug_names:
@@ -61,13 +62,12 @@ rules:
   report_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları
-  message_tr: Hepatit tedavisi — önceki ilaçlar, tanı ve tedavi başlama/kesilme kriterleri raporda belirtilmelidir; oral antiviral
-    ilk rapor en fazla 6 ay (§4.2.13).
+  message_tr: Hepatit tedavisi — önceki ilaçlar, tanı ve tedavi başlama/kesilme kriterleri raporda belirtilmelidir; oral
+    antiviral ilk rapor en fazla 6 ay (§4.2.13).
   gate_b_sources:
-  - C004498
-  - C004637
-  - C004912
-  - C004919
+  - 4.2.13.3.1.(2)
+  - 4.2.13.3.2.B.(3)
+  - 4.2.13.3.2.B.b
 - rule_id: 4.2.13.hepatitis_viral_gastro_inf_report
   sut_section: 4.2.13
   drug_names:
@@ -83,11 +83,11 @@ rules:
   report_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları
-  message_tr: Viral hepatit ilaçları — gastroenteroloji veya enfeksiyon hastalıkları uzman hekim ilaç kullanım raporu gerekir
-    (§4.2.13).
+  message_tr: Viral hepatit ilaçları — gastroenteroloji veya enfeksiyon hastalıkları uzman hekim ilaç kullanım raporu 
+    gerekir (§4.2.13).
   gate_b_sources:
-  - C004503
-  - C004897
+  - 4.2.13.(1)
+  - 4.2.13.3.2.(5)
   prescriber_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları

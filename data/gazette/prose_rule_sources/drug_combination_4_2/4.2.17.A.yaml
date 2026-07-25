@@ -15,4 +15,4 @@ rules:
     denial_tr: aktif D vitaminleri (kalsitriol/alfakalsidol) osteoporozda ödenmez (EK-4/D hariç)
     severity: error
   gate_b_sources:
-  - C006042
+  - 4.2.17.A.(9)

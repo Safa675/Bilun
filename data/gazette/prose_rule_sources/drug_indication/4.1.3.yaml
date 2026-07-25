@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.1.3.copay_exemption_report_icd10_diagnosis
   sut_section: 4.1.3
   gate_b_sources:
-  - C003438
+  - 4.1.3.(4)
   report_required: true
   condition:
     copay_exemption_report: true
@@ -15,7 +15,7 @@ rules:
 - rule_id: 4.1.3.health_report_1_10_specialist_electronic
   sut_section: 4.1.3
   gate_b_sources:
-  - C003436
+  - 4.1.3.(2)
   report_required: true
   action:
     enforcement: 'regulatory: reports issued per SUT §1.10; per §1.10.1 by specialist physician, SUT §1.10.2 health-board
@@ -26,7 +26,7 @@ rules:
 - rule_id: 4.1.3.health_report_format_moh_medula_mandatory
   sut_section: 4.1.3
   gate_b_sources:
-  - C003435
+  - 4.1.3.(1)
   report_required: true
   action:
     enforcement: 'mandatory: health report formats, attestations, stamps and other practices must comply with MoH legislation
@@ -36,7 +36,7 @@ rules:
 - rule_id: 4.1.3.report_active_substance_dose_rule
   sut_section: 4.1.3
   gate_b_sources:
-  - C003437
+  - 4.1.3.(3)
   report_required: true
   action:
     enforcement: 'regulatory: except drugs with special rules, report need not state dose — active substance name suffices;
@@ -47,7 +47,7 @@ rules:
 - rule_id: 4.1.3.report_max_2_year_validity
   sut_section: 4.1.3
   gate_b_sources:
-  - C003439
+  - 4.1.3.(5)
   report_required: true
   report_duration_months: 24
   action:
@@ -56,7 +56,7 @@ rules:
 - rule_id: 4.1.3.report_validity_on_sut_change
   sut_section: 4.1.3
   gate_b_sources:
-  - C003443
+  - 4.1.3.(9)
   report_required: true
   action:
     enforcement: 'regulatory: on SUT change reports remain valid until expiry if they comply with new provisions; non-compliant

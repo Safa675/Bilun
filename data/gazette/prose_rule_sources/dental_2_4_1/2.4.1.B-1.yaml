@@ -17,7 +17,7 @@ rules:
       tedavileri ödenmez
     severity: error
   gate_b_sources:
-  - C000791
+  - 2.4.1.B-1.(1)
 - rule_id: 2.4.1.B-1.(2).disabled_special_needs_doc_and_10_day_start
   sut_section: 2.4.1.B-1
   condition:
@@ -36,7 +36,7 @@ rules:
       için engellilik/özel gereksinim belgelendirilmeli; ADSM/ağız-diş sağlığı hastanesi/eğitim-araştırma/üniversite diş hekimliği
       fakültesi raporuyla ve rapor tarihinden itibaren 10 iş günü içinde tedaviye başlanmalı
   gate_b_sources:
-  - C000794
+  - 2.4.1.B-1.(2)
   verification_status: ai_generated_pending_review
 - rule_id: 2.4.1.B-1.(3).disabled_ga_sedo_facility_gate
   sut_section: 2.4.1.B-1
@@ -49,11 +49,11 @@ rules:
     ga_performed_by_specialist_documented: true
   action:
     billable: true
-    payment_tr: engelli diş tedavisinde GA/sedo-analjezi bedelinin ödenebilmesi için anesteziyoloji ve reanimasyon uzmanı sorumluluğunda,
-      GA üniteli ADSM/tıp merkezi/hastanede yapıldığı belgelendirilmeli
+    payment_tr: engelli diş tedavisinde GA/sedo-analjezi bedelinin ödenebilmesi için anesteziyoloji ve reanimasyon uzmanı
+      sorumluluğunda, GA üniteli ADSM/tıp merkezi/hastanede yapıldığı belgelendirilmeli
     annex_basis: EK-2/Ç
   gate_b_sources:
-  - C000795
+  - 2.4.1.B-1.(3)
   verification_status: ai_generated_pending_review
 - rule_id: 2.4.1.B-1.(5).orthodontics_3_dentist_board_6_month_start
   sut_section: 2.4.1.B-1
@@ -71,5 +71,5 @@ rules:
       estetik olmadığı ve maloklüzyon tipi belirtilmiş; rapor tarihinden 6 ay içinde tedaviye başlanmış olmalı
     annex_basis: EK-2/Ç
   gate_b_sources:
-  - C000799
+  - 2.4.1.B-1.(5)
   verification_status: ai_generated_pending_review

@@ -12,6 +12,11 @@ from pathlib import Path
 import pytest
 
 from scripts.sut.prose.manifest_index import encoded_like_clause_ids
+from tests.unit._helpers.gate_b_cites import (
+    cite_in_sources,
+    cites_covered_by_encoded,
+    resolve_gate_b_cites_to_clause_ids,
+)
 
 from scripts.sut.rule_sources import load_drug_section_rules
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine
@@ -100,7 +105,7 @@ def test_a4_c5_gate_b_sources_count() -> None:
 def test_a4_c5_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = encoded_like_clause_ids(manifest)
-    assert _A4_C5_GATE_B_SOURCES <= encoded
+    assert cites_covered_by_encoded(_A4_C5_GATE_B_SOURCES, encoded)
 
 @pytest.mark.parametrize(
     ("sample",),

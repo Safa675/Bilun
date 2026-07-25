@@ -12,6 +12,11 @@ from pathlib import Path
 import pytest
 
 from scripts.sut.prose.manifest_index import encoded_like_clause_ids
+from tests.unit._helpers.gate_b_cites import (
+    cite_in_sources,
+    cites_covered_by_encoded,
+    resolve_gate_b_cites_to_clause_ids,
+)
 
 from scripts.sut.rule_sources import load_legacy_drug_batch
 BATCH_A2_RULES = load_legacy_drug_batch("drug_indication_4201_a2_batch_rules.py:BATCH_A2_RULES")
@@ -95,7 +100,7 @@ def test_a2_batch_rule_count() -> None:
 def test_a2_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = encoded_like_clause_ids(manifest)
-    assert _A2_GATE_B_SOURCES <= encoded
+    assert cites_covered_by_encoded(_A2_GATE_B_SOURCES, encoded)
     assert manifest.get("encoded_clause_count", 0) >= len(_A2_GATE_B_SOURCES)
 
 @pytest.mark.parametrize(

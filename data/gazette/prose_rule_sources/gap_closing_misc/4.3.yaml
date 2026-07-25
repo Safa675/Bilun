@@ -11,7 +11,7 @@ rules:
     denial_tr: EK-4/C Yurt Dışı İlaç Fiyat Listesi'nde yer almayan ilaç ödenmez
     severity: error
   gate_b_sources:
-  - C007290
+  - 4.3.(3)
 - rule_id: 4.3.(5).ek4d_overseas_no_copay
   sut_section: '4.3'
   condition:
@@ -22,7 +22,7 @@ rules:
     copay_required: false
     payment_tr: EK-4/D kapsamındaki yurt dışı temin ilaçlardan katılım payı alınmaz
   gate_b_sources:
-  - C007292
+  - 4.3.(5)
 - rule_id: 4.3.(8).overseas_drug_domestic_license_continues
   sut_section: '4.3'
   condition:
@@ -32,4 +32,4 @@ rules:
     billable: true
     payment_tr: yurt dışından temin edilip sonradan ruhsat/distribution belgesi alan ilaçlar kurallara göre
   gate_b_sources:
-  - C007297
+  - 4.3.(8)

@@ -17,12 +17,12 @@ rules:
     triage_red_total_daily_cap: 120
     komuta_kontrol_112_may_exceed_120: true
     transesophageal_echo_codes:
-    - "700610"
-    - "700611"
+    - '700610'
+    - '700611'
     transesophageal_echo_deduct_per_procedure: 1
     over_limit_not_billable: true
   gate_b_sources:
-  - C000576
+  - 2.2.1.B-1.(11)
   verification_status: ai_generated_pending_review
   content_note: 'Added the concrete caps dropped from C000576: per-physician 60, emergency 90, triyaj-red total 120, 112 Komuta
     Kontrol may exceed 120, transesophageal echo (700610/700611) deducts 1 muayene each, over-limit not billable.'
@@ -38,7 +38,7 @@ rules:
     visit_fee_annex: EK-2/A-2
     bill_visit_fee: false
   gate_b_sources:
-  - C000562
+  - 2.2.1.B-1.(2)
 - rule_id: 2.2.1.B-1.(3).deferred_ek2a2_no_second_visit
   sut_section: 2.2.1.B-1
   condition:
@@ -51,7 +51,7 @@ rules:
     bill_visit_fee: false
     visit_fee_annex: EK-2/A
   gate_b_sources:
-  - C000563
+  - 2.2.1.B-1.(3)
 - rule_id: 2.2.1.B-1.(4).same_day_outpatient_to_inpatient
   sut_section: 2.2.1.B-1
   condition:
@@ -64,7 +64,7 @@ rules:
     bill_materials_separately: true
     bill_drugs_separately: true
   gate_b_sources:
-  - C000564
+  - 2.2.1.B-1.(4)
 - rule_id: 2.2.1.B-1.(5).multi_specialty_same_day_no_visit
   sut_section: 2.2.1.B-1
   condition:
@@ -77,7 +77,7 @@ rules:
     bill_visit_fee: false
     visit_fee_annex: EK-2/A
   gate_b_sources:
-  - C000565
+  - 2.2.1.B-1.(5)
 - rule_id: 2.2.1.B-1.(6).followup_specialty_no_visit_fee
   sut_section: 2.2.1.B-1
   condition:
@@ -89,7 +89,7 @@ rules:
     bill_visit_fee: false
     visit_fee_annex: EK-2/B
   gate_b_sources:
-  - C000566
+  - 2.2.1.B-1.(6)
 - rule_id: 2.2.1.B-1.(7).main_side_specialty_split
   sut_section: 2.2.1.B-1
   condition:
@@ -101,7 +101,7 @@ rules:
     visit_fee_annex: EK-2/B
     main_specialty_bill_visit_fee: false
   gate_b_sources:
-  - C000567
+  - 2.2.1.B-1.(7)
 - rule_id: 2.2.1.B-1.(8).reported_therapy_subsequent_days
   sut_section: 2.2.1.B-1
   condition:
@@ -115,10 +115,10 @@ rules:
     bill_visit_fee: false
     visit_fee_annex: EK-2/C
   gate_b_sources:
-  - C000568
+  - 2.2.1.B-1.(8)
   verification_status: ai_generated_pending_review
-  content_note: 'Was bill_visit_fee:true + visit_fee_annex:EK-2/A-2. C000568 says the opposite — bill over EK-2/C with EK-2/A
-    amounts NOT entered (girilmeksizin).'
+  content_note: Was bill_visit_fee:true + visit_fee_annex:EK-2/A-2. C000568 says the opposite — bill over EK-2/C with EK-2/A
+    amounts NOT entered (girilmeksizin).
 - rule_id: 2.2.1.B-1.c.training_hospital_outpatient
   sut_section: 2.2.1.B-1
   condition:
@@ -129,4 +129,4 @@ rules:
     payment_method_tr: eğitim/araştırma hastanesi ayakta — EK-2/B poliklinik + EK-2/A-2 esas
     visit_fee_annex: EK-2/B
   gate_b_sources:
-  - C000573
+  - 2.2.1.B-1.c

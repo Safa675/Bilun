@@ -14,4 +14,4 @@ rules:
     denial_tr: tafamidis NYHA IIIB/IV kalp hastalığında ödenmez
     severity: error
   gate_b_sources:
-  - C007209
+  - 4.2.71.(3)

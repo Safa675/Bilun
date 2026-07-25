@@ -12,7 +12,7 @@ rules:
     bill_materials_separately: true
     bill_drugs_separately: true
   gate_b_sources:
-  - C000639
+  - 2.2.2.A.(1)
 - rule_id: 2.2.2.A(2).itemized_materials_drugs
   sut_section: 2.2.2.A
   condition:
@@ -24,7 +24,7 @@ rules:
     bill_materials_separately: true
     bill_drugs_separately: true
   gate_b_sources:
-  - C000640
+  - 2.2.2.A.(2)
 - rule_id: 2.2.2.A(3).companion_fee_itemized
   sut_section: 2.2.2.A
   condition:
@@ -37,7 +37,7 @@ rules:
     bill_materials_separately: false
     bill_drugs_separately: false
   gate_b_sources:
-  - C000641
+  - 2.2.2.A.(3)
 - rule_id: 2.2.2.A(4).ivd_kit_control_no_pay
   sut_section: 2.2.2.A
   condition:
@@ -51,7 +51,7 @@ rules:
     payment_method_tr: invitro diyagnostik kit kontrol testleri (serokonversiyon/doğrulama hariç) Kurumca karşılanmaz
     billable: false
   gate_b_sources:
-  - C000644
+  - 2.2.2.A.(4)
 - rule_id: 2.2.2.A(6).training_hospital_itemized
   sut_section: 2.2.2.A
   condition:
@@ -64,7 +64,7 @@ rules:
     bill_materials_separately: true
     bill_drugs_separately: true
   gate_b_sources:
-  - C000652
+  - 2.2.2.A.(6)
 - rule_id: 2.2.2.A.cross_specialty_uplift_25pt
   sut_section: 2.2.2.A
   condition:

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.2.antidepressants_1yr_all_physicians
   sut_section: 4.2.2
   gate_b_sources:
-  - C003898
+  - 4.2.2.(1)
   drug_names:
   - trisiklik antidepresan
   - tetrasiklik antidepresan
@@ -25,7 +25,7 @@ rules:
 - rule_id: 4.2.2.antipsychotics_psychiatry_report
   sut_section: 4.2.2
   gate_b_sources:
-  - C003901
+  - 4.2.2.(2)
   drug_names:
   - klozapin
   - olanzapin
@@ -58,7 +58,7 @@ rules:
 - rule_id: 4.2.2.atypical_antipsychotics_dementia
   sut_section: 4.2.2
   gate_b_sources:
-  - C003905
+  - 4.2.2.(6)
   drug_names:
   - atipik antipsikotik
   icd10_codes:
@@ -80,7 +80,7 @@ rules:
 - rule_id: 4.2.2.lamotrigine_bipolar_disorder
   sut_section: 4.2.2
   gate_b_sources:
-  - C003909
+  - 4.2.2.(8)
   drug_names:
   - lamotrijin
   - lamotrigine
@@ -98,7 +98,7 @@ rules:
 - rule_id: 4.2.2.parenteral_atypical_antipsychotics
   sut_section: 4.2.2
   gate_b_sources:
-  - C003902
+  - 4.2.2.(3)
   drug_names:
   - atipik antipsikotik parenteral
   - risperidon depo
@@ -119,7 +119,7 @@ rules:
 - rule_id: 4.2.2.parenteral_atypical_emergency_single_dose
   sut_section: 4.2.2
   gate_b_sources:
-  - C003904
+  - 4.2.2.(5)
   drug_names:
   - atipik antipsikotik parenteral
   icd10_codes:
@@ -134,7 +134,7 @@ rules:
 - rule_id: 4.2.2.typical_antipsychotics_all_physicians
   sut_section: 4.2.2
   gate_b_sources:
-  - C003903
+  - 4.2.2.(4)
   drug_names:
   - tipik antipsikotik
   - haloperidol
@@ -152,7 +152,7 @@ rules:
 - rule_id: 4.2.2.valproate_bipolar_disorder
   sut_section: 4.2.2
   gate_b_sources:
-  - C003906
+  - 4.2.2.(7)
   drug_names:
   - sodyum valproat
   - valproik asit

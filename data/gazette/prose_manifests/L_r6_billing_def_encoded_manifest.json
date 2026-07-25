@@ -1,5 +1,8 @@
 {
-  "manifest_version": "r6-v1",
+  "manifest_version": "canonical-v1",
+  "rule_set_id": "billing_def_r6",
+  "section_id": "",
+  "section_clause_total": 42,
   "encoded_clause_ids": [
     "C000227",
     "C000237",
@@ -43,5 +46,186 @@
     "C008236",
     "C008243",
     "C008250"
+  ],
+  "encoded_clause_count": 42,
+  "tier_c_deferred_clause_ids": [],
+  "emr_blocked_clause_ids": [],
+  "non_actionable_clause_ids": [],
+  "tier_a_pending_clause_ids": [],
+  "tier_b_pending_clause_ids": [],
+  "tier_c_deferred_count": 0,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "clause_traces": [
+    {
+      "clause_id": "C000227",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000237",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000308",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000312",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000324",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C000337",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008040",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008042",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008046",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008050",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008058",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008061",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008067",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008068",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008078",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008082",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008083",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008090",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008091",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008092",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008096",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008097",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008098",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008102",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008103",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008104",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008121",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008148",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008152",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008172",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008183",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008213",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008214",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008215",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008221",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008223",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008224",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008225",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008231",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008236",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008243",
+      "manifest_status": "encoded"
+    },
+    {
+      "clause_id": "C008250",
+      "manifest_status": "encoded"
+    }
   ]
 }

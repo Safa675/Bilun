@@ -25,6 +25,40 @@ import { ruleMotorLabel } from "@/lib/clauseUtilization";
 import { fmtNum } from "../../shared";
 import { CLAUSES_PER_PAGE, COVERAGE_KEY, STATUS_FILTERS, UtilizationChip, useDeonticLabel } from "./shared";
 
+function clauseDeepLinkKey(clause: RuleClause): string {
+  // Prefer unique opaque id for deep-links / React keys. Coordinates collide
+  // across in-force rows; get_clause(coord) returns null when ambiguous.
+  return clause.clause_id || clause.clause_coordinate || "";
+}
+
+function CopyableCoordinate({
+  coordinate,
+  clauseId,
+}: {
+  coordinate: string | null;
+  clauseId: string | null;
+}) {
+  const t = useT();
+  const primary = coordinate || clauseId;
+  if (!primary) return null;
+
+  const copy = (e: ReactMouseEvent) => {
+    e.stopPropagation();
+    void navigator.clipboard?.writeText(primary);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      title={t("sections.ruleDatabase.clauses.copyCoordinate")}
+      className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-soft)]"
+    >
+      {primary}
+    </button>
+  );
+}
+
 export function ClauseBrowserPanel({
   initialQuery = "",
   initialClauseId,
@@ -58,7 +92,7 @@ export function ClauseBrowserPanel({
     if (initialQuery) setQuery(initialQuery);
   }, [initialQuery]);
 
-  // Deep link: ?rdClause=C002684 → fetch and pre-select that clause on mount.
+  // Deep link: ?rdClause=2.2.1.(1) or C002684 → fetch and pre-select.
   useEffect(() => {
     if (!initialClauseId) return;
     let active = true;
@@ -258,12 +292,13 @@ export function ClauseBrowserPanel({
                 {clauses.map((clause) => {
                   const isSelected =
                     selectedClause?.clause_id === clause.clause_id;
+                  const rowKey = clause.clause_id || clause.clause_coordinate || "";
                   return (
                     <li
-                      key={clause.clause_id}
+                      key={rowKey}
                       onClick={() => {
                         setSelectedClause(clause);
-                        onUrlUpdate?.({ rdClause: clause.clause_id });
+                        onUrlUpdate?.({ rdClause: clauseDeepLinkKey(clause) || null });
                       }}
                       className={`cursor-pointer rounded-[var(--r-sm)] border px-3 py-2 transition-colors hover:bg-[var(--surface-default)] ${
                         isSelected
@@ -272,11 +307,10 @@ export function ClauseBrowserPanel({
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        {clause.clause_id && (
-                          <span className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-secondary)]">
-                            {clause.clause_id}
-                          </span>
-                        )}
+                        <CopyableCoordinate
+                          coordinate={clause.clause_coordinate}
+                          clauseId={clause.clause_id}
+                        />
                         <UtilizationChip clause={clause} />
                         {clause.primary_rule_id && (
                           <span className="font-mono text-[10px] text-[var(--text-muted)]">
@@ -359,11 +393,10 @@ export function ClauseCard({
   return (
     <li className="min-h-[80px] rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-soft)] p-3">
       <div className="mb-1.5 flex flex-wrap items-center gap-2">
-        {clause.clause_id && (
-          <span className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-secondary)]">
-            {clause.clause_id}
-          </span>
-        )}
+        <CopyableCoordinate
+          coordinate={clause.clause_coordinate}
+          clauseId={clause.clause_id}
+        />
         {sectionLabel && (
           <span className="font-mono text-[11px] font-semibold text-[var(--text-primary)]">
             {sectionLabel}

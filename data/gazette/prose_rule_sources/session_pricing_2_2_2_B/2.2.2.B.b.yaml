@@ -11,4 +11,4 @@ rules:
     highest_procedure_factor: 1.0
     other_procedure_factor: 0.5
   gate_b_sources:
-  - C000658
+  - 2.2.2.B.b

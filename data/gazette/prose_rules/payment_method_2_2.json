@@ -22,7 +22,7 @@
         "billable": false
       },
       "gate_b_sources": [
-        "C000530"
+        "2.2.(12)"
       ]
     },
     {
@@ -38,7 +38,7 @@
         "max_bill_count": 1
       },
       "gate_b_sources": [
-        "C000531"
+        "2.2.(13)"
       ]
     },
     {
@@ -54,7 +54,7 @@
         "max_bill_count": 1
       },
       "gate_b_sources": [
-        "C000532"
+        "2.2.(14)"
       ]
     },
     {
@@ -70,7 +70,7 @@
         "billable": false
       },
       "gate_b_sources": [
-        "C000521"
+        "2.2.(3)"
       ]
     },
     {
@@ -87,7 +87,7 @@
         "payer": "individual_reimbursement"
       },
       "gate_b_sources": [
-        "C000523"
+        "2.2.(5)"
       ]
     },
     {
@@ -102,7 +102,7 @@
         "billable": false
       },
       "gate_b_sources": [
-        "C000524"
+        "2.2.(6)"
       ]
     },
     {
@@ -118,7 +118,7 @@
         "tetkik_supply": "in_house_or_procurement"
       },
       "gate_b_sources": [
-        "C000526"
+        "2.2.(8)"
       ]
     },
     {
@@ -135,7 +135,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000538"
+        "2.2.(20)"
       ]
     },
     {
@@ -161,7 +161,7 @@
         "over_limit_not_billable": true
       },
       "gate_b_sources": [
-        "C000576"
+        "2.2.1.B-1.(11)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Added the concrete caps dropped from C000576: per-physician 60, emergency 90, triyaj-red total 120, 112 Komuta Kontrol may exceed 120, transesophageal echo (700610/700611) deducts 1 muayene each, over-limit not billable."
@@ -181,7 +181,7 @@
         "bill_visit_fee": false
       },
       "gate_b_sources": [
-        "C000562"
+        "2.2.1.B-1.(2)"
       ]
     },
     {
@@ -199,7 +199,7 @@
         "visit_fee_annex": "EK-2/A"
       },
       "gate_b_sources": [
-        "C000563"
+        "2.2.1.B-1.(3)"
       ]
     },
     {
@@ -217,7 +217,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000564"
+        "2.2.1.B-1.(4)"
       ]
     },
     {
@@ -235,7 +235,7 @@
         "visit_fee_annex": "EK-2/A"
       },
       "gate_b_sources": [
-        "C000565"
+        "2.2.1.B-1.(5)"
       ]
     },
     {
@@ -252,7 +252,7 @@
         "visit_fee_annex": "EK-2/B"
       },
       "gate_b_sources": [
-        "C000566"
+        "2.2.1.B-1.(6)"
       ]
     },
     {
@@ -269,7 +269,7 @@
         "main_specialty_bill_visit_fee": false
       },
       "gate_b_sources": [
-        "C000567"
+        "2.2.1.B-1.(7)"
       ]
     },
     {
@@ -287,7 +287,7 @@
         "visit_fee_annex": "EK-2/C"
       },
       "gate_b_sources": [
-        "C000568"
+        "2.2.1.B-1.(8)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Was bill_visit_fee:true + visit_fee_annex:EK-2/A-2. C000568 says the opposite — bill over EK-2/C with EK-2/A amounts NOT entered (girilmeksizin)."
@@ -305,7 +305,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000571"
+        "2.2.1.B-1.a"
       ]
     },
     {
@@ -322,7 +322,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000572"
+        "2.2.1.B-1.b"
       ]
     },
     {
@@ -338,7 +338,7 @@
         "visit_fee_annex": "EK-2/B"
       },
       "gate_b_sources": [
-        "C000573"
+        "2.2.1.B-1.c"
       ]
     },
     {
@@ -374,7 +374,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000612"
+        "2.2.1.B-2.(4)"
       ]
     },
     {
@@ -409,7 +409,7 @@
         "procedure_in_annex": "EK-2/C"
       },
       "gate_b_sources": [
-        "C000618"
+        "2.2.1.B-3.(1)"
       ]
     },
     {
@@ -428,7 +428,7 @@
         "max_bill_count": 0
       },
       "gate_b_sources": [
-        "C000619"
+        "2.2.1.B-3.(2)"
       ]
     },
     {
@@ -446,7 +446,7 @@
         "procedure_in_annex": "EK-2/B"
       },
       "gate_b_sources": [
-        "C000621"
+        "2.2.1.B-3.(4)"
       ]
     },
     {
@@ -463,7 +463,7 @@
         "procedure_in_annex": "EK-2/B"
       },
       "gate_b_sources": [
-        "C000624"
+        "2.2.1.B-4.(1)"
       ]
     },
     {
@@ -482,7 +482,7 @@
         "billable": false
       },
       "gate_b_sources": [
-        "C000627"
+        "2.2.1.B-4.(4)"
       ]
     },
     {
@@ -500,7 +500,7 @@
         "billable": false
       },
       "gate_b_sources": [
-        "C000628"
+        "2.2.1.B-4.(5)"
       ]
     },
     {
@@ -515,7 +515,7 @@
         "payment_method_tr": "hizmet başına ödeme"
       },
       "gate_b_sources": [
-        "C000633"
+        "2.2.2.(1)"
       ]
     },
     {
@@ -530,7 +530,7 @@
         "payment_method_tr": "tanıya dayalı işlem üzerinden ödeme"
       },
       "gate_b_sources": [
-        "C000633"
+        "2.2.2.(1)"
       ]
     },
     {
@@ -552,7 +552,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000634"
+        "2.2.2.(2)"
       ]
     },
     {
@@ -568,7 +568,7 @@
         "bed_fee_basis": "day_rate"
       },
       "gate_b_sources": [
-        "C000635"
+        "2.2.2.(3)"
       ]
     },
     {
@@ -585,7 +585,7 @@
         "bill_day_bed": false
       },
       "gate_b_sources": [
-        "C000636"
+        "2.2.2.(4)"
       ]
     },
     {
@@ -603,7 +603,7 @@
         "billable": false
       },
       "gate_b_sources": [
-        "C000637"
+        "2.2.2.(5)"
       ]
     },
     {
@@ -620,7 +620,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000639"
+        "2.2.2.A.(1)"
       ]
     },
     {
@@ -637,7 +637,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000640"
+        "2.2.2.A.(2)"
       ]
     },
     {
@@ -655,7 +655,7 @@
         "bill_drugs_separately": false
       },
       "gate_b_sources": [
-        "C000641"
+        "2.2.2.A.(3)"
       ]
     },
     {
@@ -675,7 +675,7 @@
         "billable": false
       },
       "gate_b_sources": [
-        "C000644"
+        "2.2.2.A.(4)"
       ]
     },
     {
@@ -693,7 +693,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000652"
+        "2.2.2.A.(6)"
       ]
     },
     {
@@ -727,7 +727,7 @@
         "discount_rate": 0.1
       },
       "gate_b_sources": [
-        "C000703"
+        "2.2.2.C.(1)"
       ]
     },
     {
@@ -745,7 +745,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000704"
+        "2.2.2.C.(2)"
       ]
     }
   ],

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.23.itraconazole_oral_ek4e_105
   sut_section: 4.2.23
   gate_b_sources:
-  - C006094
+  - 4.2.23.c
   drug_names:
   - itrakonazol
   report_required: true
@@ -20,7 +20,7 @@ rules:
   - C006103
   - C006104
   - C006116
-  - C006120
+  - 4.2.23.(8)
   drug_names:
   - posakonazol
   - itrakonazol
@@ -50,7 +50,7 @@ rules:
   - C006090
   - C006100
   - C006101
-  - C006118
+  - 4.2.23.(7)
   drug_names:
   - itrakonazol
   - posakonazol

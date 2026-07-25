@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+from tests.unit._helpers.gate_b_cites import (
+    cite_in_sources,
+    cites_covered_by_encoded,
+    resolve_gate_b_cites_to_clause_ids,
+)
+
 from tests.unit._helpers.brittle_guards import soft_floor
 
 import json
@@ -93,7 +99,7 @@ def test_a5_c2_c5_batch_rule_count() -> None:
 
 
 def test_a5_c2_c5_encoded_clause_ids_in_manifest() -> None:
-    assert _A5_GATE_B_SOURCES <= _ENCODED
+    assert cites_covered_by_encoded(_A5_GATE_B_SOURCES, _ENCODED)
 
 @pytest.mark.parametrize(
     ("sample",),

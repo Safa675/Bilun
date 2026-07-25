@@ -11,4 +11,4 @@ rules:
     denial_tr: MEDULA hastane sistemini kullanan sunucular raporları elektronik kaydetmek zorunda
     severity: error
   gate_b_sources:
-  - C000460
+  - 1.10.(1)

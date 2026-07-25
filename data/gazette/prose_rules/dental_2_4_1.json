@@ -33,7 +33,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000734"
+        "2.4.1.(1)"
       ]
     },
     {
@@ -49,7 +49,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000742"
+        "2.4.1.(2)"
       ]
     },
     {
@@ -104,7 +104,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000748"
+        "2.4.1.(3)"
       ]
     },
     {
@@ -124,7 +124,7 @@
       },
       "gate_b_sources": [
         "C000752",
-        "C000751"
+        "2.4.1.(4)"
       ]
     },
     {
@@ -140,7 +140,7 @@
         "annex_basis": "EK-2/Ç"
       },
       "gate_b_sources": [
-        "C000760"
+        "2.4.1.A.(1)"
       ]
     },
     {
@@ -162,7 +162,7 @@
         "multiplier": 2.0
       },
       "gate_b_sources": [
-        "C000762"
+        "2.4.1.A.(2)"
       ]
     },
     {
@@ -185,7 +185,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000791"
+        "2.4.1.B-1.(1)"
       ]
     },
     {
@@ -202,7 +202,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000812"
+        "2.4.1.B-3.(1)"
       ]
     },
     {
@@ -222,7 +222,7 @@
         "payment_tr": "üniversite diş fakültesinde engelli/özel gereksinimli çocuk GA/sedo tedavisinde %50 ilave oran ayrıca uygulanmaz"
       },
       "gate_b_sources": [
-        "C000763"
+        "2.4.1.A.(3)"
       ]
     },
     {
@@ -246,7 +246,7 @@
         "payment_tr": "engelli (%40 ve üzeri) veya özel gereksinimli çocuğun özel/sözleşmesiz sunucuda diş tedavisinin ödenebilmesi için engellilik/özel gereksinim belgelendirilmeli; ADSM/ağız-diş sağlığı hastanesi/eğitim-araştırma/üniversite diş hekimliği fakültesi raporuyla ve rapor tarihinden itibaren 10 iş günü içinde tedaviye başlanmalı"
       },
       "gate_b_sources": [
-        "C000794"
+        "2.4.1.B-1.(2)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -268,7 +268,7 @@
         "annex_basis": "EK-2/Ç"
       },
       "gate_b_sources": [
-        "C000795"
+        "2.4.1.B-1.(3)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -291,7 +291,7 @@
         "annex_basis": "EK-2/Ç"
       },
       "gate_b_sources": [
-        "C000799"
+        "2.4.1.B-1.(5)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -315,7 +315,7 @@
         "annex_basis": "EK-2/Ç"
       },
       "gate_b_sources": [
-        "C000804"
+        "2.4.1.B-2.(1)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -339,7 +339,7 @@
         "annex_basis": "EK-2/Ç"
       },
       "gate_b_sources": [
-        "C000806"
+        "2.4.1.B-2.(3)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -364,7 +364,7 @@
         "annex_basis": "EK-2/Ç"
       },
       "gate_b_sources": [
-        "C000807"
+        "2.4.1.B-2.(4)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "CORRECTS a fabricated rule. The prior encoding claimed billable:true + multiplier:2.0 (2× private pricing) citing C000807, but C000807 actually says the OPPOSITE — prosthesis casting+labor (material included) is NO_PAY at private/uncontracted. The 2× pricing exists only for PUBLIC facilities (C000762, encoded as 2.4.1.A.(2))."
@@ -387,7 +387,7 @@
         "billing_method": "stage_completion"
       },
       "gate_b_sources": [
-        "C000810"
+        "2.4.1.B-2.(5)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -404,7 +404,7 @@
         "annex_basis": "EK-2/Ç"
       },
       "gate_b_sources": [
-        "C000813"
+        "2.4.1.B-3.(2)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -436,7 +436,7 @@
         "multiplier": 1.5
       },
       "gate_b_sources": [
-        "C000760"
+        "2.4.1.A.(1)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Encodes the university dental-faculty +50% EK-2/Ç surcharge from C000760 (was previously only loose prose in 2.4.1.A.(1)). Excluded codes (401051/060/070/080/090/100/110/120/130/135/150/170) do NOT get the +50%. Interaction: for disabled/special-needs GA/sedo at university faculty the +50% is NOT additionally applied — see 2.4.1.A.(3) (C000763)."

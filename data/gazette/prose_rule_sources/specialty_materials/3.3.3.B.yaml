@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.3.B
   deontic: NO_PAY
   gate_b_sources:
-  - C002907
+  - 3.3.3.B.(4)
   condition:
     optical_telescopic_with_cap_claim: true
   action:
@@ -16,7 +16,7 @@ rules:
   sut_section: 3.3.3.B
   deontic: NO_PAY
   gate_b_sources:
-  - C002907
+  - 3.3.3.B.(4)
   condition:
     material_name_any:
     - teleskopik gozluk
@@ -31,7 +31,7 @@ rules:
   sut_section: 3.3.3.B
   deontic: MUST_BILL
   gate_b_sources:
-  - C002902
+  - 3.3.3.B.(1)
   condition:
     material_name_any:
     - teleskopik

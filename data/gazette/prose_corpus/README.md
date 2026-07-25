@@ -1,9 +1,11 @@
 # Prose corpus exports (Gate B)
 
-Regenerable CSV/JSON exports from `sut_clauses.parquet` — candidate clauses for prose encoding.
+Optional regenerable CSV/JSON exports from `sut_clauses.parquet` — candidate
+clauses for human review. **Not** part of the compile/coverage derive pipeline
+(Track C4).
 
-- **Regenerable** — re-run `scripts/sut/export_material_bundling_clauses.py`, `export_material_bundling_corpus_batch2.py`, `export_specialty_prose_corpus.py`.
+- **Not committed** — `*.csv` under this directory are gitignored; regenerate locally when needed.
+- **Regenerate** — `scripts/sut/export_material_bundling_clauses.py`, `export_material_bundling_corpus_batch2.py`, `export_specialty_prose_corpus.py`, or Gate B writers with `write_corpus=True`.
 - **Human review** — see `docs/gazette/prose-encoding.md`.
-- **Review prototypes (XLSX + HTML)** — `python scripts/sut/export_prose_review_bundle.py` → `review/*.review.xlsx` and `*.review.html` (legend + readable excerpts). Plan: `plans/billing/prose-corpus-review-export-plan.md`.
+- **Review prototypes (XLSX + HTML)** — `python scripts/sut/export_prose_review_bundle.py` → `review/*.review.xlsx` and `*.review.html`.
 - **Encode manifests** (which rows became JSON rules) → `data/gazette/prose_manifests/`.
-- **Audit citation CSVs** (§1.8, §2.2 section dumps) → archived under `tasks/archive/sut-fact-check-2026-06/`; live clause text via Rule Database API.

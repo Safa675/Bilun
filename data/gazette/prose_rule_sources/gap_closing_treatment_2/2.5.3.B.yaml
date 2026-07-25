@@ -11,4 +11,4 @@ rules:
     denial_tr: yurt dışı tetkik/tahlil için numune gönderilebilir; hasta yurt dışına gönderilemez
     severity: error
   gate_b_sources:
-  - C001451
+  - 2.5.3.B.(1)

@@ -3,8 +3,8 @@ rules:
 - rule_id: 4.2.10.A3.continuation_improvement_break_reeligibility
   sut_section: 4.2.10.A-3
   gate_b_sources:
-  - C004235
-  - C004254
+  - 4.2.10.A-1.(5)
+  - 4.2.10.A-3.(4)
   report_required: true
   action:
     enforcement: düzelmeye devam kararı verilenlerde yeni raporda başlangıç kriterlerinden birinde düzelme belirtilirse tedaviye
@@ -24,9 +24,9 @@ rules:
   message_tr: Eliglustat — CYP2D6 metabolizör tipi (OM/HM/YM) raporda belirtilmeli; 6 aylık sağlık kurulu raporu ve uzman
     reçetesi gerekir (§4.2.10.A-3/A-4).
   gate_b_sources:
-  - C004252
+  - 4.2.10.A-3.(2)
   - C004257
-  - C004258
+  - 4.2.10.A-4.(1)
   report_required: true
   report_specialties:
   - çocuk endokrinolojisi ve metabolizma

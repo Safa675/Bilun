@@ -61,12 +61,22 @@ def main() -> None:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     enriched.write_csv(args.out)
     review.write_csv(args.review_out)
+    # Normalize summary keys for the legacy CLI printout.
+    total = int(summary.get("total") or enriched.height)
+    p1 = int(summary.get("encode_priority:p1_encode") or 0)
+    skip = int(summary.get("encode_priority:skip_already_encoded") or 0)
+    summary_out = {
+        **summary,
+        "total_rows": total,
+        "p1_encode": p1,
+        "skip_annex_duplicate": skip,
+    }
     args.summary_out.write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(summary_out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
 
-    print(f"Wrote {summary['total_rows']} rows to {args.out}")
-    print(f"  p1_encode={summary['p1_encode']} skip_annex={summary['skip_annex_duplicate']}")
+    print(f"Wrote {total} rows to {args.out}")
+    print(f"  p1_encode={p1} skip_annex={skip}")
     print(f"Wrote {len(review)} review rows to {args.review_out}")
     print(f"Summary: {args.summary_out}")
 

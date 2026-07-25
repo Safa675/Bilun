@@ -10,7 +10,7 @@ rules:
     denial_tr: EK-3/B'de yer alan malzemelerin bedelleri Kurumca karşılanmaz (SUT istisnaları hariç)
     severity: error
   gate_b_sources:
-  - C002689
+  - 3.1.1.(7)
 - rule_id: 3.1.1.(10).ek3_prices_kdv_excluded
   sut_section: 3.1.1
   condition:
@@ -21,4 +21,4 @@ rules:
     denial_tr: EK-3 malzeme fiyatları KDV hariç; KDV eklenerek faturalandırılamaz
     severity: error
   gate_b_sources:
-  - C002692
+  - 3.1.1.(10)

@@ -10,4 +10,4 @@ rules:
     denial_tr: EK-4/A Bedeli Ödenecek İlaçlar Listesi'nde ticari adı/barkodu olmayan ilaç ödenmez
     severity: error
   gate_b_sources:
-  - C003540
+  - 4.1.9.(1)

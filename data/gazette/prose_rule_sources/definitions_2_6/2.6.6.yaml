@@ -3,7 +3,7 @@ rules:
 - rule_id: 2.6.6.(1).thermal_spa_health_board_report
   sut_section: 2.6.6
   gate_b_sources:
-  - C001589
+  - 2.6.6.(1)
   condition:
     definition_scope: Kaplıca yol/gündelik/refakatçi giderinin tedavi sağlık kurulu raporuna dayanması
     applies_to: Kaplıca tedavisi
@@ -14,7 +14,7 @@ rules:
 - rule_id: 2.6.6.(2).thermal_spa_5_business_day_application
   sut_section: 2.6.6
   gate_b_sources:
-  - C001590
+  - 2.6.6.(2)
   condition:
     definition_scope: Sağlık kurulu raporu günü dahil 5 işgününde kaplıca tesisine müracaat zorunluluğu
     applies_to: Kaplıca tedavisi — müracaat süresi
@@ -26,7 +26,7 @@ rules:
 - rule_id: 2.6.6.(4).thermal_spa_companion_documented
   sut_section: 2.6.6
   gate_b_sources:
-  - C001592
+  - 2.6.6.(4)
   condition:
     definition_scope: Kaplıca refakatçisinin tıbbi gereklik bildirimi + tesis tarafından refakat teyiti
     applies_to: Kaplıca — refakatçi
@@ -38,7 +38,7 @@ rules:
 - rule_id: 2.6.6.(5).thermal_spa_travel_routine_vehicle_fee
   sut_section: 2.6.6
   gate_b_sources:
-  - C001593
+  - 2.6.6.(5)
   condition:
     definition_scope: Kaplıca yol giderlerinin mutat taşıt bedeli üzerinden ödenmesi
     applies_to: Kaplıca tedavisi — yol gideri
@@ -48,7 +48,7 @@ rules:
 - rule_id: 2.6.6.(3).unlicensed_thermal_spa_not_covered
   sut_section: 2.6.6
   gate_b_sources:
-  - C001591
+  - 2.6.6.(3)
   condition:
     expense_not_covered: isletme_izni_verilmeyen_kaplica_giderleri
     applies_to: Sağlık Bakanlığınca işletme izni verilmeyen kaplıcalar

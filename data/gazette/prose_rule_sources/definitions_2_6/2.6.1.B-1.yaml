@@ -3,7 +3,7 @@ rules:
 - rule_id: 2.6.1.B-1.(1).unspecified_vehicle_default_fee
   sut_section: 2.6.1.B-1
   gate_b_sources:
-  - C001515
+  - 2.6.1.B-1.(1)
   condition:
     definition_scope: Sevk formunda vasıta belirtilmemişse mutat taşıt ücreti ödenmesi
     applies_to: Mutat taşıt
@@ -13,7 +13,7 @@ rules:
 - rule_id: 2.6.1.B-1.(2).free_travel_ticket_invoice_required
   sut_section: 2.6.1.B-1
   gate_b_sources:
-  - C001516
+  - 2.6.1.B-1.(2)
   condition:
     definition_scope: Ücretsiz seyahat hakkı olanlar için bilet/fatura ibraz zorunluluğu
     applies_to: Mutat taşıt — şehirlerarası ücretsiz seyahat haktan yararlananlar

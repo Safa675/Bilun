@@ -10,7 +10,7 @@ rules:
     payment_tr: tanıya dayalı işlem EK-2/C üzerinden
     annex_basis: EK-2/C
   gate_b_sources:
-  - C000654
+  - 2.2.2.B.(1)
 - rule_id: 2.2.2.B.(2).non_diagnosis_fee_for_service
   sut_section: 2.2.2.B
   condition:
@@ -21,7 +21,7 @@ rules:
     payment_tr: tanıya dayalı dışındaki işlemler hizmet başına ödeme
     annex_basis: EK-2/B
   gate_b_sources:
-  - C000655
+  - 2.2.2.B.(2)
 - rule_id: 2.2.2.B.(3b).different_specialty_25pt_uplift
   sut_section: 2.2.2.B
   condition:
@@ -43,7 +43,7 @@ rules:
     denial_tr: göğüs bölgesi planlı ameliyatlarda kapalı göğüs drenajı/tüpü ayrı faturalanamaz
     severity: error
   gate_b_sources:
-  - C000662
+  - 2.2.2.B.(4)
 - rule_id: 2.2.2.B.(5).training_research_hospital_ek2c_star_30pct_uplift
   sut_section: 2.2.2.B
   condition:
@@ -57,7 +57,7 @@ rules:
     payment_tr: eğitim/araştırma hastaneleri ile üniversite tıp fakültelerinde EK-2/C listesinde (*) işareti bulunan işlemler
       listedeki puanlara %30 ilave edilerek faturalandırılır
   gate_b_sources:
-  - C000665
+  - 2.2.2.B.(5)
   verification_status: ai_generated_pending_review
   content_note: 'CORRECTS fabricated rule: was procedure_category=specialist_consultation with no uplift. C000665 is about
     +30% on (*)-marked EK-2/C procedures at training/uni hospitals — not about specialist consultations. Invented subject

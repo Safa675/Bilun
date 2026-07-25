@@ -11,4 +11,4 @@ rules:
     billable: true
     payment_tr: hasta çocuk + tedavi başka yolla mümkün değilse PGT ile uygun verici kardeş doğumu amaçlı tanı ödenir
   gate_b_sources:
-  - C001310
+  - 2.4.4.İ-2.(1)

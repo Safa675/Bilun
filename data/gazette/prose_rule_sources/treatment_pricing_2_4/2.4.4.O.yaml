@@ -16,7 +16,7 @@ rules:
       gerekmektedir
     severity: error
   gate_b_sources:
-  - C001370
+  - 2.4.4.O.a
 - rule_id: 2.4.4.O.(b).bariatric_bmi35_40_comorbidity_board_report
   sut_section: 2.4.4.O
   condition:
@@ -34,7 +34,7 @@ rules:
       endikasyonun belirtildiği sağlık kurulu raporu düzenlenmesi gerekmektedir
     severity: error
   gate_b_sources:
-  - C001371
+  - 2.4.4.O.b
 - rule_id: 2.4.4.O.(c).bariatric_bmi35_40_6mo_unsuccessful_weight_loss
   sut_section: 2.4.4.O
   condition:
@@ -51,4 +51,4 @@ rules:
       en az 6 ay yaşam tarzı değişikliği ve/veya medikal tedavi ile kilo verilemediğinin belirtilmesi gerekmektedir
     severity: error
   gate_b_sources:
-  - C001372
+  - 2.4.4.O.c

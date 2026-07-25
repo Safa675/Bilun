@@ -2,7 +2,8 @@
 """Stale SUT clause-reference reporter for the Reimbursement Engineer.
 
 The Reimbursement Engineer agent uses this as a *reporter* (not a gate): it
-checks every ``gate_b_sources`` clause-id referenced by the prose rule sets in
+checks every ``gate_b_sources`` cite (opaque ``C*/F*`` **or**
+``clause_coordinate``) referenced by the prose rule sets in
 ``data/gazette/prose_rules/*.json`` against the staleness columns of
 ``data/gazette/sut_clauses.parquet`` and classifies each reference into one of
 four severity tiers, then writes a markdown triage report. The script always
@@ -62,6 +63,7 @@ TIER3_HIGH_VOLUME_THRESHOLD = 100
 
 CLAUSE_STALENESS_COLS = [
     "clause_id",
+    "clause_coordinate",
     "is_in_force",
     "is_superseded_marker",
     "had_struck_content",
@@ -75,7 +77,7 @@ TIER_LABELS = {
     "TIER 1": "superseded marker (clause replaced by amendment)",
     "TIER 2": "not in force (clause no longer legally active)",
     "TIER 3": "had struck content (historical edit; often benign)",
-    "TIER 4": "dangling reference (clause-id not in sut_clauses)",
+    "TIER 4": "dangling reference (cite not in sut_clauses)",
 }
 
 
@@ -106,13 +108,11 @@ def _build_parser() -> argparse.ArgumentParser:
 def load_rule_refs(
     glob_pattern: Path, rule_set_filter: str | None = None
 ) -> pl.DataFrame:
-    """Load (rule_set_id, rule_id, clause_id) tuples from every prose rule file.
+    """Load (rule_set_id, rule_id, gate_b_ref) tuples from every prose rule file.
 
-    Files without a ``rule_set_id`` + ``rules`` array (e.g. ``*.schema.json``
-    or code-list files like ``ek2c_prose_drg_locked_codes.json``) are skipped
-    silently — they are not rule sets. The collection is vectorized at the end
-    (one ``pl.DataFrame`` build from the full tuple list) rather than concat-
-    per-file, to keep the hot path allocation-free of repeated small frames.
+    ``gate_b_ref`` may be an opaque ``C*/F*`` id or a ``clause_coordinate``
+    (Track E dual-read). Files without a ``rule_set_id`` + ``rules`` array
+    (e.g. ``*.schema.json`` or code-list files) are skipped silently.
     """
     rows: list[tuple[str, str, str]] = []
     skipped: list[str] = []
@@ -143,11 +143,19 @@ def load_rule_refs(
 
     if not rows:
         return pl.DataFrame(
-            schema={"rule_set_id": pl.Utf8, "rule_id": pl.Utf8, "clause_id": pl.Utf8}
+            schema={
+                "rule_set_id": pl.Utf8,
+                "rule_id": pl.Utf8,
+                "gate_b_ref": pl.Utf8,
+            }
         )
     return pl.DataFrame(
         rows,
-        schema={"rule_set_id": pl.Utf8, "rule_id": pl.Utf8, "clause_id": pl.Utf8},
+        schema={
+            "rule_set_id": pl.Utf8,
+            "rule_id": pl.Utf8,
+            "gate_b_ref": pl.Utf8,
+        },
         orient="row",
     )
 
@@ -159,22 +167,140 @@ def load_clauses(parquet_path: Path) -> pl.DataFrame:
 
 
 def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
-    """Left-join refs onto clauses and assign a tier to each reference.
+    """Resolve gate_b cites (C* or coordinate) then assign staleness tiers.
 
-    Left join keeps every rule reference even when the clause is missing
-    (those become TIER 4). Tier precedence is evaluated in severity order so a
-    clause that is *both* superseded and not-in-force is reported once, at the
-    higher tier.
+    Coordinates may fan out to multiple parquet rows (collision groups); each
+    resolved clause_id is tiered independently. Unresolvable cites → TIER 4.
     """
-    joined = refs.join(
-        clauses.select(CLAUSE_STALENESS_COLS),
-        on="clause_id",
-        how="left",
-    ).with_columns(
-        pl.col("is_in_force").is_null().alias("_missing"),
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
+        UnknownClauseCiteError,
+        is_clause_id,
+        resolve_gate_b_ref_to_clause_ids,
     )
 
-    tier_expr = (
+    if refs.is_empty():
+        return pl.DataFrame(
+            schema={
+                "rule_set_id": pl.Utf8,
+                "rule_id": pl.Utf8,
+                "gate_b_ref": pl.Utf8,
+                "clause_id": pl.Utf8,
+                "is_in_force": pl.Boolean,
+                "is_superseded_marker": pl.Boolean,
+                "had_struck_content": pl.Boolean,
+                "tier": pl.Utf8,
+            }
+        )
+
+    # Prefer vectorized C* / unique-coordinate joins; fall back per-ref resolve
+    # only for odd cites (keeps the hot path Polars-first).
+    id_refs = refs.filter(pl.col("gate_b_ref").str.contains(r"^[CF][0-9]{6}$"))
+    other_refs = refs.join(
+        id_refs.select(["rule_set_id", "rule_id", "gate_b_ref"]),
+        on=["rule_set_id", "rule_id", "gate_b_ref"],
+        how="anti",
+    )
+
+    by_id = id_refs.join(
+        clauses.select(CLAUSE_STALENESS_COLS),
+        left_on="gate_b_ref",
+        right_on="clause_id",
+        how="left",
+    )
+    # Polars drops the right join key (`clause_id`). Restore it from the cite
+    # when the left join matched (staleness columns present); leave null when
+    # unmatched so TIER 4 still fires for dangling C*/F*.
+    if "is_in_force" in by_id.columns:
+        by_id = by_id.with_columns(
+            pl.when(pl.col("is_in_force").is_not_null())
+            .then(pl.col("gate_b_ref"))
+            .otherwise(None)
+            .alias("clause_id")
+        )
+    else:
+        by_id = by_id.with_columns(pl.lit(None).cast(pl.Utf8).alias("clause_id"))
+
+    by_coord = other_refs.join(
+        clauses.select(CLAUSE_STALENESS_COLS),
+        left_on="gate_b_ref",
+        right_on="clause_coordinate",
+        how="left",
+    )
+
+    # Cites that looked like coordinates but matched nothing: try identity resolve
+    # (handles edge formats); otherwise leave as dangling.
+    unresolved = by_coord.filter(pl.col("clause_id").is_null())
+    resolved_extra: list[dict] = []
+    if not unresolved.is_empty():
+        for row in unresolved.iter_rows(named=True):
+            ref = str(row["gate_b_ref"])
+            ids: list[str] = []
+            try:
+                ids = resolve_gate_b_ref_to_clause_ids(
+                    ref,
+                    clauses,
+                    in_force_only=False,
+                    encode_eligible_only=False,
+                    allow_ambiguous=True,
+                )
+            except (
+                AmbiguousClauseCiteError,
+                NonEncodeEligibleCiteError,
+                UnknownClauseCiteError,
+            ):
+                ids = [ref] if is_clause_id(ref) else []
+            if not ids:
+                resolved_extra.append(
+                    {
+                        "rule_set_id": row["rule_set_id"],
+                        "rule_id": row["rule_id"],
+                        "gate_b_ref": ref,
+                        "clause_id": None,
+                        "is_in_force": None,
+                        "is_superseded_marker": None,
+                        "had_struck_content": None,
+                    }
+                )
+                continue
+            hit = clauses.filter(pl.col("clause_id").is_in(ids))
+            if hit.is_empty():
+                for cid in ids:
+                    resolved_extra.append(
+                        {
+                            "rule_set_id": row["rule_set_id"],
+                            "rule_id": row["rule_id"],
+                            "gate_b_ref": ref,
+                            "clause_id": cid,
+                            "is_in_force": None,
+                            "is_superseded_marker": None,
+                            "had_struck_content": None,
+                        }
+                    )
+            else:
+                for crec in hit.iter_rows(named=True):
+                    resolved_extra.append(
+                        {
+                            "rule_set_id": row["rule_set_id"],
+                            "rule_id": row["rule_id"],
+                            "gate_b_ref": ref,
+                            "clause_id": crec.get("clause_id"),
+                            "is_in_force": crec.get("is_in_force"),
+                            "is_superseded_marker": crec.get("is_superseded_marker"),
+                            "had_struck_content": crec.get("had_struck_content"),
+                        }
+                    )
+
+    by_coord_matched = by_coord.filter(pl.col("clause_id").is_not_null())
+    parts = [by_id, by_coord_matched]
+    if resolved_extra:
+        parts.append(pl.DataFrame(resolved_extra))
+    joined = pl.concat(parts, how="diagonal_relaxed")
+
+    tiered = joined.with_columns(
+        pl.col("clause_id").is_null().alias("_missing"),
+    ).with_columns(
         pl.when(pl.col("is_superseded_marker") == True)  # noqa: E712
         .then(pl.lit("TIER 1"))
         .when(pl.col("is_in_force") == False)  # noqa: E712
@@ -185,8 +311,19 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
         .then(pl.lit("TIER 4"))
         .otherwise(pl.lit("OK"))
         .alias("tier")
-    )
-    return joined.with_columns(tier_expr).drop("_missing")
+    ).drop("_missing")
+
+    out_cols = [
+        "rule_set_id",
+        "rule_id",
+        "gate_b_ref",
+        "clause_id",
+        "is_in_force",
+        "is_superseded_marker",
+        "had_struck_content",
+        "tier",
+    ]
+    return tiered.select([c for c in out_cols if c in tiered.columns])
 
 
 def _md_table(df: pl.DataFrame) -> str:
@@ -199,8 +336,10 @@ def _md_table(df: pl.DataFrame) -> str:
     if df.height == 0:
         return "_(none)_"
     cols = df.columns
-    # stringify every cell once (booleans, ints, floats all coerce cleanly)
-    rows = df.select([pl.col(c).cast(pl.Utf8) for c in cols]).rows()
+    # stringify every cell once (booleans, ints, floats, nulls all coerce cleanly)
+    rows = df.select(
+        [pl.col(c).cast(pl.Utf8).fill_null("") for c in cols]
+    ).rows()
     header = "| " + " | ".join(cols) + " |"
     sep = "| " + " | ".join("---" for _ in cols) + " |"
     body = "\n".join("| " + " | ".join(row) + " |" for row in rows)
@@ -267,7 +406,7 @@ def render_report(
         # Per-rule_set detail tables, with the high-volume guard for tier 3.
         for rsid in rule_sets:
             sub = tier_df.filter(pl.col("rule_set_id") == rsid).select(
-                "rule_set_id", "rule_id", "clause_id"
+                "rule_set_id", "rule_id", "gate_b_ref", "clause_id"
             )
             if sub.height == 0:
                 continue

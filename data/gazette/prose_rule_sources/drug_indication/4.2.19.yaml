@@ -5,7 +5,7 @@ rules:
   icd10_ranges:
   - G43
   gate_b_sources:
-  - C006064
+  - 4.2.19.(3)
   drug_names:
   - topiramat
   - topiramate
@@ -40,7 +40,7 @@ rules:
   message_tr: Topiramat profilaktik migren — diğer profilaktikler 6 ay etkisiz kaldıktan sonra nöroloji uzman hekim raporu
     ile başlanır (§4.2.19).
   gate_b_sources:
-  - C006063
+  - 4.2.19.(2)
   report_required: true
   report_specialties:
   - nöroloji
@@ -61,7 +61,7 @@ rules:
   - G43
   message_tr: Triptanlar — migren endikasyonunda nöroloji uzman hekimi reçetesi gerekir (§4.2.19).
   gate_b_sources:
-  - C006062
+  - 4.2.19.(1)
   prescriber_specialties:
   - nöroloji
 source_note: Exported from drug_indication_prose.json (YAML source migration)

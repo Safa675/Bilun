@@ -5,7 +5,7 @@ rules:
   sut_section: 3.2.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002834
+  - 3.2.2.(2)
   condition:
     ek3c_list_price_missing: true
   action:

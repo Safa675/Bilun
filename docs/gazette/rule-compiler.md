@@ -1,5 +1,7 @@
 # SUT Rule Compiler
 
+> Pipeline overview (extract → compile → derive → evaluate): [sut-pipeline.md](./sut-pipeline.md).
+
 `scripts/sut/compile_rules.py` is the single entrypoint for generated SUT prose rule artifacts.
 It replaces the retired `merge_*.py` scripts and writes rule JSON, Gate B manifests, golden
 fixtures, and prose-corpus CSVs from YAML section sources and named compile stages.
@@ -38,7 +40,7 @@ source_note: "optional migration provenance"
 rules:
   - rule_id: ...
     sut_section: ...
-    gate_b_sources: [C003839]
+    gate_b_sources: ["4.2.1.C-8.(1)"]   # prefer clause_coordinate; C* only for collisions
     ...
 ```
 
@@ -66,15 +68,14 @@ These paths are **committed** and verified by `compile_rules.py --check`:
 | Gate B manifests | `data/gazette/prose_manifests/*.json` | Gate B / manifest stages |
 | Prose corpus CSVs | `data/gazette/prose_corpus/*.csv` | Gate B stages |
 
-Manifest-only constants (material/specialty clause-ID sets, §4.2.14.C patches) live in
-`scripts/sut/prose/manifest_clause_ids.py` and `drug_indication_4214c_patches.py`.
+Manifest-only constants (material/specialty clause-ID sets) live in
+`scripts/sut/prose/manifest_clause_ids.py`. Source linkage is authored only in
+`data/gazette/prose_rule_sources/` YAML (`gate_b_sources`); compile stages no longer
+apply `SOURCE_PATCHES` / `SOURCE_DROPS`.
 
-Gate B manifest/corpus stages use `scripts/sut/prose/gate_b_core.py` primitives where
-applicable. Drug-indication CSV wave clause inventories are frozen in
-`scripts/sut/gate_b_wave_config.py`.
-
-Section-specific `*_gate_b.py` modules remain as manifest builders; further consolidation
-into `gate_b_core` is optional follow-up.
+Gate B manifest stages use `scripts/sut/prose/gate_b_generic.py` +
+`gate_b_sections.py`. Section-specific `*_gate_b.py` modules remain for
+non-drug families (Track F) and shared primitives (`drug_indication_gate_b`).
 
 `test_all_rule_family_yaml_sources.py` enforces exact rule-level parity between every YAML
 source family and its runtime JSON.
@@ -100,7 +101,7 @@ locally and commit the artifact diffs with the code change.
 ## Ownership
 
 - **Rule data**: `data/gazette/prose_rule_sources/<family>/<section>.yaml`
-- **Manifest constants**: `manifest_clause_ids.py`, `drug_indication_4214c_patches.py`
-- **Gate B / manifests**: `*_gate_b.py` modules + `gate_b_core.py`
+- **Manifest constants**: `manifest_clause_ids.py`
+- **Gate B / manifests**: `gate_b_generic.py` + `gate_b_sections.py` (+ Track F `*_gate_b.py`)
 - **Orchestration**: `compile_rules.py` (ordering, dedup, schema validation, manifest accumulation)
 - **Runtime contract**: `data/gazette/prose_rules/*.json` (read by `src/bilun/`)

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.7.hemophilia_cardless_once_blood_product_prescription_mandatory
   sut_section: '4.7'
   gate_b_sources:
-  - C007821
+  - 4.7.(8)
   report_required: true
   report_specialties:
   - sağlık kurulu

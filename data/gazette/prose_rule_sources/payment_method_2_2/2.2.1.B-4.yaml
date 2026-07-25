@@ -12,7 +12,7 @@ rules:
     payment_method_tr: uzaktan hasta değerlendirme — EK-2/B 520032 işlem kodu esas
     procedure_in_annex: EK-2/B
   gate_b_sources:
-  - C000624
+  - 2.2.1.B-4.(1)
 - rule_id: 2.2.1.B-4.(4).same_specialty_10day_no_visit
   sut_section: 2.2.1.B-4
   condition:
@@ -26,7 +26,7 @@ rules:
     bill_visit_fee: false
     billable: false
   gate_b_sources:
-  - C000627
+  - 2.2.1.B-4.(4)
 - rule_id: 2.2.1.B-4.(5).same_specialty_10day_no_telehealth
   sut_section: 2.2.1.B-4
   condition:
@@ -39,4 +39,4 @@ rules:
     payment_method_tr: aynı uzmanlık 10 gün içinde tekrar — 520032 uzaktan değerlendirme yok (acil hariç)
     billable: false
   gate_b_sources:
-  - C000628
+  - 2.2.1.B-4.(5)

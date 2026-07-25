@@ -10,7 +10,7 @@ rules:
   message_tr: Klopidogrel CABG sonrası — en az bir kalp damar cerrahisi uzmanının yer aldığı 1 yıllık sağlık kurulu raporu
     gerekir (§4.2.15.B-1).
   gate_b_sources:
-  - C005782
+  - 4.2.15.B.(1)
   - C005785
   report_required: true
   report_specialties:

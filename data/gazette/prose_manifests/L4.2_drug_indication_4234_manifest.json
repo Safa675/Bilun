@@ -24,6 +24,14 @@
     "C006676",
     "C006679"
   ],
+  "encoded_clause_coordinates": [
+    "4.2.34.(1)",
+    "4.2.34.a",
+    "4.2.34.b",
+    "4.2.34.c",
+    "4.2.34.d",
+    "4.2.34.f"
+  ],
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
@@ -65,6 +73,8 @@
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
   "tier_c_deferred_count": 32,
+  "emr_blocked_count": 0,
+  "non_actionable_count": 0,
   "clause_traces": [
     {
       "clause_id": "C006624",
@@ -579,10 +589,8 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     }
   ],
-  "emr_blocked_count": 0,
-  "non_actionable_count": 0,
-  "encode_tier_C_deferred_count": 32,
   "clause_trace_complete": true,
+  "encode_tier_C_deferred_count": 32,
   "manifest_coverage_pct": 100.0,
   "encoded_clause_pct": 33.3
 }

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.37.A.acromegaly.pegvisomant_somatostatin_failure_permission
   sut_section: 4.2.37.A
   gate_b_sources:
-  - C006714
+  - 4.2.37.A.(1)
   drug_names:
   - pegvisomant
   - somavert
@@ -36,8 +36,8 @@ rules:
   message_tr: Pegvisomant — endokrinoloji ve metabolizma uzman hekimi reçetesi gerekir; raporda yaşa uygun IGF-1 referans
     aralığı belirtilmelidir (§4.2.37.A).
   gate_b_sources:
-  - C006716
-  - C006718
+  - 4.2.37.A.(3)
+  - 4.2.37.A.(5)
   report_specialties:
   - endokrinoloji
   - metabolizma
@@ -55,8 +55,8 @@ rules:
   report_required: true
   message_tr: Pegvisomant başlangıç — IGF-1 kontrolü sonrası en fazla 2 ay süreli sağlık kurulu raporu gerekir (§4.2.37.A).
   gate_b_sources:
-  - C006715
-  - C006717
+  - 4.2.37.A.(2)
+  - 4.2.37.A.(4)
   report_specialties:
   - endokrinoloji
   - metabolizma

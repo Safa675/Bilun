@@ -11,4 +11,4 @@ rules:
     billable: true
     payment_tr: acil hal; olay sonrası ilk 24 saatte tıbbi müdahale
   gate_b_sources:
-  - C000714
+  - 2.3.(1)

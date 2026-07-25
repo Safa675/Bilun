@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.35.A.capsaicin_phn_dpn_arthritis_nopay
   sut_section: 4.2.35.A
   gate_b_sources:
-  - C006699
+  - 4.2.35.A.(5)
   drug_names:
   - kapsaisin
   icd10_codes:
@@ -29,7 +29,7 @@ rules:
 - rule_id: 4.2.35.A.diabetic_neuropathic_pain_specialists
   sut_section: 4.2.35.A
   gate_b_sources:
-  - C006696
+  - 4.2.35.A.a
   drug_names:
   - gabapentin
   - pregabalin
@@ -54,7 +54,7 @@ rules:
 - rule_id: 4.2.35.A.gabapentin_6mo_report_combo_nopay
   sut_section: 4.2.35.A
   gate_b_sources:
-  - C006692
+  - 4.2.35.A.(1)
   drug_names:
   - gabapentin
   - pregabalin
@@ -91,7 +91,7 @@ rules:
 - rule_id: 4.2.35.A.pregabalin_6mo_report_combo_nopay
   sut_section: 4.2.35.A
   gate_b_sources:
-  - C006693
+  - 4.2.35.A.(2)
   drug_names:
   - pregabalin
   - gabapentin
@@ -141,7 +141,7 @@ rules:
   message_tr: Duloksetin — diyabetik periferal nöropatik ağrıda endokrinoloji veya üçüncü basamak nöroloji uzman hekimi reçetesi
     gerekir (§4.2.35.A).
   gate_b_sources:
-  - C006694
+  - 4.2.35.A.(3)
   prescriber_specialties:
   - endokrinoloji
   - nöroloji
@@ -162,7 +162,7 @@ rules:
   report_required: true
   message_tr: Nöropatik ağrı ilaçları — nöroloji, romatoloji, ortopedi veya endokrinoloji uzman hekim raporu gerekir (§4.2.35.A).
   gate_b_sources:
-  - C006697
+  - 4.2.35.A.b
   report_specialties:
   - nöroloji
   - beyin cerrahisi

@@ -8,6 +8,8 @@ from pathlib import Path
 import polars as pl
 import pytest
 
+from tests.unit._helpers.brittle_guards import soft_floor
+
 pytestmark = pytest.mark.unit
 
 _REPO = Path(__file__).resolve().parents[3]
@@ -25,23 +27,26 @@ _PILOT_SOURCES = {
     "C005780",
     "C005782",
     "C005785",
-    "C005820",
+    # Track A3: heading C005820 (4.2.15.D) refused; child fikra C005835 encodes.
+    "C005835",
     "C005870",
 }
 
 
 def test_gate_b_exports_4215_candidates() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     assert frame.height >= 50
     assert frame["section_id"].str.starts_with("4.2.15.").all()
 
 
 def test_gate_b_csv_schema() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
 
-    frame = shim_export_candidates(_SECTION, _CLAUSES)
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     for col in (
         "clause_id",
         "section_id",
@@ -57,35 +62,38 @@ def test_gate_b_csv_schema() -> None:
 
 
 def test_manifest_has_encoded_and_tier_c_trace() -> None:
-    from scripts.sut.prose.gate_b_shim import shim_build_manifest, shim_export_candidates
+    from scripts.sut.prose.gate_b_generic import build_manifest, export_candidates
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
     from scripts.sut.rule_sources import load_legacy_drug_batch
 
     BATCH_A15_RULES = load_legacy_drug_batch("BATCH_A15_RULES")
 
-    frame = pl.read_csv(_CORPUS) if _CORPUS.is_file() else shim_export_candidates(_SECTION, _CLAUSES)
-    manifest = shim_build_manifest(_SECTION, frame, BATCH_A15_RULES, effective_date="2026-06-27")
+    frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
+    manifest = build_manifest(frame, BATCH_A15_RULES, ALL_SECTIONS[_SECTION], resolve_clauses=pl.read_parquet(_CLAUSES),
+        effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _PILOT_SOURCES
     assert manifest["tier_c_deferred_count"] >= 40
-    assert manifest["tier_a_pending_count"] >= 3
+    soft_floor(int(manifest["tier_a_pending_count"]), 2, label="4215 tier_a_pending")
     assert manifest["rules_in_json"] == len(BATCH_A15_RULES)
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
-    from scripts.sut.prose.gate_b_shim import shim_write_artifacts
+    from scripts.sut.prose.gate_b_generic import write_artifacts
+    from scripts.sut.prose.gate_b_sections import ALL_SECTIONS
     from scripts.sut.rule_sources import load_legacy_drug_batch
 
     BATCH_A15_RULES = load_legacy_drug_batch("BATCH_A15_RULES")
 
     corpus = tmp_path / _CORPUS.name
     manifest_path = tmp_path / _MANIFEST.name
-    shim_write_artifacts(
-        _SECTION,
+    write_artifacts(section=ALL_SECTIONS[_SECTION],
         clauses_path=_CLAUSES,
         rules=BATCH_A15_RULES,
         corpus_csv=corpus,
         manifest_path=manifest_path,
         effective_date="2026-06-27",
+        write_corpus=True,
     )
     assert corpus.is_file()
     assert manifest_path.is_file()

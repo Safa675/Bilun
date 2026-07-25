@@ -61,7 +61,7 @@ rules:
   message_tr: Ustekinumab — yetişkin Crohn hastalığında anti-TNF yetersizliğinde 4 ay süreli sağlık kurulu raporu gerekir
     (§4.2.1.C-4).
   gate_b_sources:
-  - C003686
+  - 4.2.1.C-4.(3)
   prescriber_specialties:
   - gastroenteroloji
   - genel cerrahi
@@ -85,7 +85,7 @@ rules:
   message_tr: Ustekinumab — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte 3 ay süreli sağlık kurulu raporu gerekir
     (§4.2.1.C-4).
   gate_b_sources:
-  - C003682
+  - 4.2.1.C-4.(2)
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -108,7 +108,7 @@ rules:
     (§4.2.1.C-4).
   gate_b_sources:
   - C003677
-  - C003679
+  - 4.2.1.C-4.ç
   prescriber_specialties:
   - dermatoloji
 - rule_id: 4.2.1.vedolizumab_uc_report
@@ -126,7 +126,7 @@ rules:
   message_tr: Vedolizumab — anti-TNF yetersiz ülseratif kolitte gastroenteroloji/genel cerrahi uzman hekim raporu gerekir
     (§4.2.1.C-4).
   gate_b_sources:
-  - C003687
+  - 4.2.1.C-4.(4)
   prescriber_specialties:
   - gastroenteroloji
   - genel cerrahi

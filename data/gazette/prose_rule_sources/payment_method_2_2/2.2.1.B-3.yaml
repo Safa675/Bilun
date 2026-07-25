@@ -13,7 +13,7 @@ rules:
     max_bill_count: 1
     procedure_in_annex: EK-2/C
   gate_b_sources:
-  - C000618
+  - 2.2.1.B-3.(1)
 - rule_id: 2.2.1.B-3.(2).home_health_10day_cooldown
   sut_section: 2.2.1.B-3
   condition:
@@ -27,7 +27,7 @@ rules:
     billable: false
     max_bill_count: 0
   gate_b_sources:
-  - C000619
+  - 2.2.1.B-3.(2)
 - rule_id: 2.2.1.B-3.(4).epidermolysis_home_wound_care
   sut_section: 2.2.1.B-3
   condition:
@@ -40,4 +40,4 @@ rules:
     payment_method_tr: epidermolizis bülloza evde yara bakımı — EK-2/B 530533 esas
     procedure_in_annex: EK-2/B
   gate_b_sources:
-  - C000621
+  - 2.2.1.B-3.(4)

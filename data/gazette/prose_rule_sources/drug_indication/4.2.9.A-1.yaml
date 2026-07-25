@@ -18,8 +18,8 @@ rules:
   message_tr: KBY anemisi ESA — TSAT/ferritin ve Hb kriterleri; demir eksikliğinde önce demir tedavisi; hedef Hb 11-12 g/dl;
     tetkik sonuçları raporda belirtilir (§4.2.9.A-1).
   gate_b_sources:
-  - C004126
-  - C004130
+  - 4.2.9.A.(2)
+  - 4.2.9.A-1.(1)
   report_required: true
   report_specialties:
   - nefroloji
@@ -50,7 +50,7 @@ rules:
   message_tr: KBY anemisi ESA — nefroloji veya diyaliz sertifikalı uzman hekim raporuna dayanılarak nefroloji/diyaliz sertifikalı
     hekimlerce reçete edilir (§4.2.9.A-1).
   gate_b_sources:
-  - C004131
+  - 4.2.9.A-1.(2)
   report_required: true
   report_specialties:
   - nefroloji
@@ -80,11 +80,11 @@ rules:
   message_tr: KBY anemisi ESA — ferritin/TSAT/Hb kriterleri, nefroloji/diyaliz uzman raporu; muadil ESA kullanımı; bir defada
     en fazla 1 aylık reçete (§4.2.9.A).
   gate_b_sources:
-  - C004127
-  - C004128
-  - C004130
-  - C004131
-  - C004173
+  - 4.2.9.A.(3)
+  - 4.2.9.A.(4)
+  - 4.2.9.A-1.(1)
+  - 4.2.9.A-1.(2)
+  - 4.2.9.Ç.(4)
   report_required: true
   report_specialties:
   - nefroloji
@@ -108,7 +108,7 @@ rules:
   message_tr: Roksadustat — stabil diyaliz hastasında ESA'dan geçişte klinik neden raporda belirtilmeli; başlangıç dozu önceki
     4 haftalık ortalama ESA dozuna göre ayarlanır (§4.2.9.A-1).
   gate_b_sources:
-  - C004134
+  - 4.2.9.A-1.(5)
   report_required: true
   report_specialties:
   - nefroloji

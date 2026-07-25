@@ -11,4 +11,4 @@ rules:
     denial_tr: taburcu olduktan sonra aynı sunucu aynı uzmanlıkta paket süresi içinde tekrar muayene/kabul ayrı ödenmez
     severity: error
   gate_b_sources:
-  - C000701
+  - 2.2.2.B-3.(1)

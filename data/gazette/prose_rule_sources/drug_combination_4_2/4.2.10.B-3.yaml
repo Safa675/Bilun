@@ -15,4 +15,4 @@ rules:
       ödenmez
     severity: error
   gate_b_sources:
-  - C004303
+  - 4.2.10.B-3.(4)

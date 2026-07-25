@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.58.derm.topical_hair_loss_2box_10box_tiers_coverage
   sut_section: 4.2.58
   gate_b_sources:
-  - C007104
+  - 4.2.58.(1)
   drug_names:
   - minoksidil (topikal)
   - topikal saç dökülmesi ilaçları

@@ -29,7 +29,7 @@ rules:
 - rule_id: 4.2.24.B.resp.copd_triple_combo_maintenance
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006180
+  - 4.2.24.B.(12)
   drug_names:
   - mono laba
   - mono lama
@@ -55,7 +55,7 @@ rules:
 - rule_id: 4.2.24.B.resp.iks_one_per_prescription_coverage
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006177
+  - 4.2.24.B.(10)
   drug_names:
   - inhale kortikosteroid
   - iks
@@ -72,7 +72,7 @@ rules:
 - rule_id: 4.2.24.B.resp.laba_iks_with_lama_coverage
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006172
+  - 4.2.24.B.(5)
   drug_names:
   - uzun etkili solunum yolu beta-agonisti+inhale kortikosteroid
   - laba+iks
@@ -112,7 +112,7 @@ rules:
   sut_section: 4.2.24.B
   gate_b_sources:
   - C006124
-  - C006160
+  - 4.2.24.B.(1)
   - C006167
   drug_names:
   - formeterol
@@ -157,7 +157,7 @@ rules:
 - rule_id: 4.2.24.B.resp.laba_lama_iks_mono_and_triple_maintenance
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006171
+  - 4.2.24.B.(4)
   drug_names:
   - uzun etkili solunum yolu beta-agonisti
   - laba
@@ -188,7 +188,7 @@ rules:
 - rule_id: 4.2.24.B.resp.laba_lama_iks_otherwise_nopay
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006174
+  - 4.2.24.B.(7)
   drug_names:
   - uzun etkili solunum yolu beta-agonisti
   - laba
@@ -209,7 +209,7 @@ rules:
 - rule_id: 4.2.24.B.resp.laba_lama_with_iks_coverage
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006173
+  - 4.2.24.B.(6)
   drug_names:
   - uzun etkili solunum yolu beta-agonisti+uzun etkili antikolinerjik
   - laba+lama
@@ -228,7 +228,7 @@ rules:
 - rule_id: 4.2.24.B.resp.laba_one_per_prescription_coverage
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006175
+  - 4.2.24.B.(8)
   drug_names:
   - uzun etkili solunum yolu beta-agonisti
   - laba
@@ -245,7 +245,7 @@ rules:
 - rule_id: 4.2.24.B.resp.lama_one_per_prescription_coverage
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006176
+  - 4.2.24.B.(9)
   drug_names:
   - uzun etkili antikolinerjik
   - lama
@@ -263,7 +263,7 @@ rules:
 - rule_id: 4.2.24.B.resp.nebul_respiratory_drugs_coverage
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006182
+  - 4.2.24.B.(13)
   drug_names:
   - nebül formu solunum sistemi ilaçları
   icd10_codes:
@@ -291,7 +291,7 @@ rules:
 - rule_id: 4.2.24.B.resp.saba_sama_inhale_exemption
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006178
+  - 4.2.24.B.(11)
   drug_names:
   - kısa etkili solunum yolu beta-agonisti
   - saba
@@ -310,7 +310,7 @@ rules:
 - rule_id: 4.2.24.B.resp.theophylline_combination_prohibited
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006169
+  - 4.2.24.B.ç
   drug_names:
   - teofilin
   - uzun etkili solunum yolu beta-agonisti
@@ -347,8 +347,8 @@ rules:
   message_tr: KOAH/astım inhale kombinasyonları — göğüs hastalıkları, göğüs cerrahisi, iç hastalıkları veya çocuk sağlığı
     uzman hekim reçetesi gerekir (§4.2.24.B-1).
   gate_b_sources:
-  - C006151
-  - C006160
+  - 4.2.24.A.(9)
+  - 4.2.24.B.(1)
   report_required: true
   prescriber_specialties:
   - göğüs hastalıkları
@@ -371,7 +371,7 @@ rules:
   message_tr: LABA+LAMA+İKS üçlü kombinasyon — en az 3 ay İKS+LABA veya İKS+LAMA sonrası göğüs hastalıkları uzman sağlık kurulu
     raporu gerekir (§4.2.24.B-4).
   gate_b_sources:
-  - C006171
+  - 4.2.24.B.(4)
   report_required: true
   report_specialties:
   - göğüs hastalıkları
@@ -396,5 +396,5 @@ rules:
   - J46
   message_tr: LABA/LAMA/İKS mono veya sabit doz dışı kombinasyon reçetesi — bedel karşılanmaz (§4.2.24.B-7).
   gate_b_sources:
-  - C006174
+  - 4.2.24.B.(7)
 source_note: Exported from drug_indication_prose.json (YAML source migration)

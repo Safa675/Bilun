@@ -10,7 +10,7 @@ rules:
   message_tr: Tip I Mukopolisakkaridoz enzim tedavisi — enzim tedavisine başlangıç tarihi her yenilenen raporda belirtilmelidir
     (§4.2.10.C-2).
   gate_b_sources:
-  - C004353
+  - 4.2.10.C-2.(3)
   - C004357
   report_required: true
   report_specialties:

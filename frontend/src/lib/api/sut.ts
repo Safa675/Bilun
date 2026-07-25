@@ -787,6 +787,80 @@ export async function getProseInventory(options?: RequestInit): Promise<ProseInv
   return requestJSON<ProseInventoryResponse>("/api/rules/prose-inventory", options);
 }
 
+export interface GateBSourceCite {
+  ref: string;
+  clause_id: string | null;
+  clause_coordinate: string | null;
+  text_snippet: string | null;
+}
+
+export interface ProseRuleSources {
+  rule_set_id: string;
+  rule_id: string;
+  sut_section: string | null;
+  gate_b_sources: GateBSourceCite[];
+}
+
+export interface ProseRulesSourcesListResponse {
+  rule_set_id: string;
+  rules: ProseRuleSources[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+  artifacts_available: boolean;
+}
+
+export async function listProseRuleSources(
+  ruleSetId: string,
+  params?: { page?: number; per_page?: number },
+  options?: RequestInit,
+): Promise<ProseRulesSourcesListResponse> {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.per_page) qs.set("per_page", String(params.per_page));
+  const query = qs.toString();
+  return requestJSON<ProseRulesSourcesListResponse>(
+    `/api/rules/prose-rules/${encodeURIComponent(ruleSetId)}${query ? `?${query}` : ""}`,
+    options,
+  );
+}
+
+export interface DeferralEntry {
+  clause_id: string | null;
+  clause_coordinate: string | null;
+  section_id: string | null;
+  status: string;
+  defer_themes: string[];
+  defer_reason: string;
+  text_snippet: string | null;
+}
+
+export interface DeferralListResponse {
+  deferrals: DeferralEntry[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+  artifacts_available: boolean;
+}
+
+export async function listDeferrals(
+  params?: { q?: string; status?: string; page?: number; per_page?: number },
+  options?: RequestInit,
+): Promise<DeferralListResponse> {
+  const qs = new URLSearchParams();
+  if (params?.q) qs.set("q", params.q);
+  if (params?.status) qs.set("status", params.status);
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.per_page) qs.set("per_page", String(params.per_page));
+  const query = qs.toString();
+  return requestJSON<DeferralListResponse>(
+    `/api/rules/deferrals${query ? `?${query}` : ""}`,
+    options,
+  );
+}
+
 export interface SpecialtyMeta {
   label: string;
   name: string;

@@ -12,7 +12,7 @@ rules:
     yıllık sağlık kurulu raporu gerekir (§4.2.10.Ç-2).
   gate_b_sources:
   - C004371
-  - C004372
+  - 4.2.10.Ç-2.(1)
   report_required: true
   report_specialties:
   - gastroenteroloji

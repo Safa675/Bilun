@@ -6,7 +6,9 @@ import pytest
 
 from src.bilun.api.routes import rules as rules_route
 from src.bilun.api.schemas import (
+    DeferralListResponse,
     ProseInventoryResponse,
+    ProseRulesSourcesListResponse,
     RuleCatalogResponse,
     RuleClause,
     RuleDetailResponse,
@@ -299,3 +301,31 @@ class TestProseInventoryEndpoint:
             "drug_combination_4_2",
         }:
             assert required in listed, f"wired engine {required} missing from inventory"
+
+
+@_needs_coverage
+class TestTrackDCoordinateSurfaces:
+    def test_clause_lookup_by_coordinate(self) -> None:
+        by_id = rules_route.get_single_clause(clause_id="C002684")
+        coord = by_id.get("clause_coordinate")
+        assert coord
+        by_coord = rules_route.get_single_clause(clause_id=coord)
+        assert by_coord["clause_id"] == "C002684"
+        RuleClause.model_validate(by_coord)
+
+    def test_deferrals_list(self) -> None:
+        payload = rules_route.list_deferrals(page=1, per_page=10)
+        model = DeferralListResponse.model_validate(payload)
+        assert model.total > 0
+        assert len(model.deferrals) <= 10
+        assert model.deferrals[0].clause_id
+
+    def test_prose_rule_sources_list(self) -> None:
+        payload = rules_route.list_prose_rule_sources(
+            rule_set_id="definitions_2_6", page=1, per_page=5
+        )
+        model = ProseRulesSourcesListResponse.model_validate(payload)
+        assert model.total > 0
+        assert model.rules
+        cite = model.rules[0].gate_b_sources[0]
+        assert cite.clause_coordinate or cite.ref

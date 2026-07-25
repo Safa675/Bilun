@@ -11,7 +11,7 @@ rules:
     billable: true
     payment_tr: sözleşmesiz sunucuda ilk başvuru acil hal kapsamında; hizmet başına ödeme
   gate_b_sources:
-  - C000726
+  - 2.3.1.(4)
 - rule_id: 2.3.1.(5).unstabilized_24h_inpatient_sut
   sut_section: 2.3.1
   condition:
@@ -22,4 +22,4 @@ rules:
     billable: true
     payment_tr: 24 saatte stabilize edilemeyen acil durumda yatarak tedavi SUT hükümleri çerçevesinde
   gate_b_sources:
-  - C000727
+  - 2.3.1.(5)

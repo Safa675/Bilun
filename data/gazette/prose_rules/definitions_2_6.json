@@ -23,7 +23,7 @@
       "rule_id": "2.6.1.(1).travel_daily_companion_conditions",
       "sut_section": "2.6.1",
       "gate_b_sources": [
-        "C001470"
+        "2.6.1.(1)"
       ],
       "condition": {
         "definition_scope": "Yol/gündelik/refakatçi gideri ödenebilmesi için önkoşullar",
@@ -38,7 +38,7 @@
       "rule_id": "2.6.1.(1b).referral_by_contracted_2_3_step",
       "sut_section": "2.6.1",
       "gate_b_sources": [
-        "C001472"
+        "2.6.1.b"
       ],
       "condition": {
         "definition_scope": "Sevkin Kurumca belirlenen istisnalar hariç sözleşmeli 2. veya 3. basamak sunucusunca yapılması",
@@ -68,7 +68,7 @@
       "rule_id": "2.6.1.A.(1).nearest_provider_referral_principle",
       "sut_section": "2.6.1.A",
       "gate_b_sources": [
-        "C001479"
+        "2.6.1.A.(1)"
       ],
       "condition": {
         "definition_scope": "Sevkin teşhis/tedavinin sağlanabildiği en yakın sunucuya yapılması esastır",
@@ -113,7 +113,7 @@
       "rule_id": "2.6.1.A.(3).board_control_examination_travel",
       "sut_section": "2.6.1.A",
       "gate_b_sources": [
-        "C001495"
+        "2.6.1.A.(3)"
       ],
       "condition": {
         "definition_scope": "Sürekli iş göremezlik/malullük tespiti ile 5510 md.94 kontrol muayeneleri için Kurum sevkleri",
@@ -129,7 +129,7 @@
       "rule_id": "2.6.1.A.(4).thermal_spa_travel_nearest",
       "sut_section": "2.6.1.A",
       "gate_b_sources": [
-        "C001496"
+        "2.6.1.A.(4)"
       ],
       "condition": {
         "definition_scope": "Kaplıca tedavisinde yol giderinin en yakın kaplıca tesisi esas alınması",
@@ -159,7 +159,7 @@
       "rule_id": "2.6.1.B.(4).e_sevk_signed_standards",
       "sut_section": "2.6.1.B",
       "gate_b_sources": [
-        "C001507"
+        "2.6.1.B.(4)"
       ],
       "condition": {
         "definition_scope": "E-sevkin Kurum yöntem/standartlarla (elektronik imza, şifre) imzalanması şartı",
@@ -174,7 +174,7 @@
       "rule_id": "2.6.1.B.(7).non_medula_facility_wet_signature",
       "sut_section": "2.6.1.B",
       "gate_b_sources": [
-        "C001513"
+        "2.6.1.B.(7)"
       ],
       "condition": {
         "definition_scope": "MEDULA altyapısı olmayan sunucularda elektronik kabul yapılamaması halinde ıslak imza",
@@ -189,7 +189,7 @@
       "rule_id": "2.6.1.B-1.(1).unspecified_vehicle_default_fee",
       "sut_section": "2.6.1.B-1",
       "gate_b_sources": [
-        "C001515"
+        "2.6.1.B-1.(1)"
       ],
       "condition": {
         "definition_scope": "Sevk formunda vasıta belirtilmemişse mutat taşıt ücreti ödenmesi",
@@ -204,7 +204,7 @@
       "rule_id": "2.6.1.B-1.(2).free_travel_ticket_invoice_required",
       "sut_section": "2.6.1.B-1",
       "gate_b_sources": [
-        "C001516"
+        "2.6.1.B-1.(2)"
       ],
       "condition": {
         "definition_scope": "Ücretsiz seyahat hakkı olanlar için bilet/fatura ibraz zorunluluğu",
@@ -219,7 +219,7 @@
       "rule_id": "2.6.1.B-2.(1).routine_vehicle_ek2l_tariff",
       "sut_section": "2.6.1.B-2",
       "gate_b_sources": [
-        "C001530"
+        "2.6.1.B-2.(1)"
       ],
       "condition": {
         "definition_scope": "Mutat taşıt giderlerinin SUT EK-2/L KDV dahil ücretleri üzerinden ödenmesi",
@@ -234,7 +234,7 @@
       "rule_id": "2.6.1.B-2.(2).ministry_tariff_override",
       "sut_section": "2.6.1.B-2",
       "gate_b_sources": [
-        "C001531"
+        "2.6.1.B-2.(2)"
       ],
       "condition": {
         "definition_scope": "Ulaştırma Bakanlığı daha düşük taban/tavan ücreti varsa en düşüğün esas alınması",
@@ -270,7 +270,7 @@
       "rule_id": "2.6.1.B-3.(2b).dialysis_transport_health_board_specialist",
       "sut_section": "2.6.1.B-3",
       "gate_b_sources": [
-        "C001540"
+        "2.6.1.B-3.b"
       ],
       "condition": {
         "definition_scope": "Diyaliz nakli sağlık kurulu raporunda nefroloji/iç/çocuk uzmanı bulunması ve 3 ay geçerli",
@@ -286,7 +286,7 @@
       "rule_id": "2.6.1.B-4.(1).non_routine_invoice_required",
       "sut_section": "2.6.1.B-4",
       "gate_b_sources": [
-        "C001544"
+        "2.6.1.B-4.(1)"
       ],
       "condition": {
         "definition_scope": "Mutat taşıt dışı araçla sevkte bilet/fatura ibraz zorunluluğu",
@@ -301,7 +301,7 @@
       "rule_id": "2.6.1.B-4.(2).private_vehicle_routine_fee",
       "sut_section": "2.6.1.B-4",
       "gate_b_sources": [
-        "C001545"
+        "2.6.1.B-4.(2)"
       ],
       "condition": {
         "definition_scope": "Kişilerin özel araçları ile gidiş/dönüşünde mutat taşıt ücreti ödenmesi",
@@ -316,7 +316,7 @@
       "rule_id": "2.6.1.B-4.(4).scheduled_air_economy_plus_boarding",
       "sut_section": "2.6.1.B-4",
       "gate_b_sources": [
-        "C001547"
+        "2.6.1.B-4.(4)"
       ],
       "condition": {
         "definition_scope": "Tarifeli uçak için ekonomi sınıf bedeli + uçak seyahatini teyitleme (biniş/QR)",
@@ -331,7 +331,7 @@
       "rule_id": "2.6.1.B-4.(5).ground_ambulance_min_price",
       "sut_section": "2.6.1.B-4",
       "gate_b_sources": [
-        "C001548"
+        "2.6.1.B-4.(5)"
       ],
       "condition": {
         "definition_scope": "Kara ambulansı/hasta nakil aracı ücretinin yönetmelik asgari fiyatları esas alınması",
@@ -346,7 +346,7 @@
       "rule_id": "2.6.1.B-4.(6).air_ambulance_scoped",
       "sut_section": "2.6.1.B-4",
       "gate_b_sources": [
-        "C001549"
+        "2.6.1.B-4.(6)"
       ],
       "condition": {
         "definition_scope": "Hava ambulansının yalnızca uzuv replantasyonu/2.4.2 kapsamı ile ödenmesi + kule/ucucu kayıt",
@@ -366,7 +366,7 @@
       "rule_id": "2.6.1.B-4.(7).funeral_vehicle_municipal_tariff",
       "sut_section": "2.6.1.B-4",
       "gate_b_sources": [
-        "C001558"
+        "2.6.1.B-4.(7)"
       ],
       "condition": {
         "definition_scope": "Cenaze nakil aracı ücretinin ilgili belediye tarifesi üzerinden ödenmesi",
@@ -427,7 +427,7 @@
       "rule_id": "2.6.2.(1c_ext).outpatient_over_10_days_documented",
       "sut_section": "2.6.2",
       "gate_b_sources": [
-        "C001565"
+        "2.6.2.ç"
       ],
       "condition": {
         "definition_scope": "Ayakta tedavinin 10 günü aşması halinde gerekçe sevk belgesinde belirtilince gündelik",
@@ -443,7 +443,7 @@
       "rule_id": "2.6.2.(2).daily_allowance_coefficients",
       "sut_section": "2.6.2",
       "gate_b_sources": [
-        "C001566"
+        "2.6.2.(2)"
       ],
       "condition": {
         "definition_scope": "Gündeliklerin gösterge rakamı x devlet memuru katsayısı ile ödenmesi",
@@ -462,7 +462,7 @@
       "rule_id": "2.6.2.(4).continuation_specialty_daily_allowance",
       "sut_section": "2.6.2",
       "gate_b_sources": [
-        "C001568"
+        "2.6.2.(4)"
       ],
       "condition": {
         "definition_scope": "Sevk edilen branş dışında tedavi devamı sevk edilip belgelendirilirse gündelik",
@@ -477,7 +477,7 @@
       "rule_id": "2.6.2.(5).continuation_provider_daily_allowance",
       "sut_section": "2.6.2",
       "gate_b_sources": [
-        "C001569"
+        "2.6.2.(5)"
       ],
       "condition": {
         "definition_scope": "Aynı yerleşim yerinde başka sunucuya tedavi devamı sevk edilip belgelendirilirse gündelik",
@@ -492,7 +492,7 @@
       "rule_id": "2.6.3.(1).companion_one_person_documentation",
       "sut_section": "2.6.3",
       "gate_b_sources": [
-        "C001571"
+        "2.6.3.(1)"
       ],
       "condition": {
         "definition_scope": "Bir kişiyle sınırlı refakatçi gideri için tıbbi gereklilik + refakat teyiti",
@@ -514,7 +514,7 @@
       "rule_id": "2.6.3.(3).icu_companion_daily_allowance",
       "sut_section": "2.6.3",
       "gate_b_sources": [
-        "C001573"
+        "2.6.3.(3)"
       ],
       "condition": {
         "definition_scope": "Yoğun bakım yatarak tedavi süresince sunucuda kalınmayan günler için refakatçiye gündelik",
@@ -529,7 +529,7 @@
       "rule_id": "2.6.4.(b).control_call_document_required",
       "sut_section": "2.6.4",
       "gate_b_sources": [
-        "C001577"
+        "2.6.4.b"
       ],
       "condition": {
         "definition_scope": "Kontrol çağrısı sevklerinde kontrol çağrı belgesinin ibraz zorunluluğu",
@@ -544,7 +544,7 @@
       "rule_id": "2.6.5.(1).organ_transplant_transfer_documented",
       "sut_section": "2.6.5",
       "gate_b_sources": [
-        "C001582"
+        "2.6.5.(1)"
       ],
       "condition": {
         "definition_scope": "Organ naklinde hasta/organ nakline gidiş-dönüş transfer masrafının koordinasyon tutanağıyla",
@@ -559,7 +559,7 @@
       "rule_id": "2.6.5.(2).organ_transplant_fee_per_2_6_1_B4",
       "sut_section": "2.6.5",
       "gate_b_sources": [
-        "C001583"
+        "2.6.5.(2)"
       ],
       "condition": {
         "definition_scope": "Koordinasyonca belirlenen ulaşım aracı bedelinin 2.6.1.B-4 doğrultusunda ödenmesi",
@@ -574,7 +574,7 @@
       "rule_id": "2.6.5.(4).bone_marrow_travel_per_2_6_1_B4_6",
       "sut_section": "2.6.5",
       "gate_b_sources": [
-        "C001585"
+        "2.6.5.(4)"
       ],
       "condition": {
         "definition_scope": "Kemik iliği/kordon kanı nakli yol giderinin 2.6.1.B-4(6) doğrultusunda karşılanması",
@@ -589,7 +589,7 @@
       "rule_id": "2.6.5.(5).limb_replantation_air_ambulance",
       "sut_section": "2.6.5",
       "gate_b_sources": [
-        "C001586"
+        "2.6.5.(5)"
       ],
       "condition": {
         "definition_scope": "Uzuv replantasyonu acil hizmeti için hava ambulansı sevkinin belgelendirilmesi koşuluyla bedel",
@@ -604,7 +604,7 @@
       "rule_id": "2.6.5.(6).donor_travel_daily_companion",
       "sut_section": "2.6.5",
       "gate_b_sources": [
-        "C001587"
+        "2.6.5.(6)"
       ],
       "condition": {
         "definition_scope": "Donörün sağlık finansmanı Kurumca karşılanıyorsa mevzuata uygun sevkiyle yol/gündelik/refakatçi",
@@ -619,7 +619,7 @@
       "rule_id": "2.6.6.(1).thermal_spa_health_board_report",
       "sut_section": "2.6.6",
       "gate_b_sources": [
-        "C001589"
+        "2.6.6.(1)"
       ],
       "condition": {
         "definition_scope": "Kaplıca yol/gündelik/refakatçi giderinin tedavi sağlık kurulu raporuna dayanması",
@@ -634,7 +634,7 @@
       "rule_id": "2.6.6.(2).thermal_spa_5_business_day_application",
       "sut_section": "2.6.6",
       "gate_b_sources": [
-        "C001590"
+        "2.6.6.(2)"
       ],
       "condition": {
         "definition_scope": "Sağlık kurulu raporu günü dahil 5 işgününde kaplıca tesisine müracaat zorunluluğu",
@@ -650,7 +650,7 @@
       "rule_id": "2.6.6.(4).thermal_spa_companion_documented",
       "sut_section": "2.6.6",
       "gate_b_sources": [
-        "C001592"
+        "2.6.6.(4)"
       ],
       "condition": {
         "definition_scope": "Kaplıca refakatçisinin tıbbi gereklik bildirimi + tesis tarafından refakat teyiti",
@@ -666,7 +666,7 @@
       "rule_id": "2.6.6.(5).thermal_spa_travel_routine_vehicle_fee",
       "sut_section": "2.6.6",
       "gate_b_sources": [
-        "C001593"
+        "2.6.6.(5)"
       ],
       "condition": {
         "definition_scope": "Kaplıca yol giderlerinin mutat taşıt bedeli üzerinden ödenmesi",
@@ -681,7 +681,7 @@
       "rule_id": "2.6.8.(1).death_outside_settlement_funeral_capped",
       "sut_section": "2.6.8",
       "gate_b_sources": [
-        "C001599"
+        "2.6.8.(1)"
       ],
       "condition": {
         "definition_scope": "Yerleşim yeri dışında sevk edilip vefat edenin cenaze naklinin sevk mesafesini aşmamak üzere",
@@ -696,7 +696,7 @@
       "rule_id": "2.6.9.(3).non_contracted_referral_emergency_accepted",
       "sut_section": "2.6.9",
       "gate_b_sources": [
-        "C001605"
+        "2.6.9.(3)"
       ],
       "condition": {
         "definition_scope": "Sözleşmesiz sunucu sevklerinde ödeme için acil halinin Kurumca kabulü zorunluluğu",
@@ -711,7 +711,7 @@
       "rule_id": "2.6.9.(4).missing_specialist_documented_travel",
       "sut_section": "2.6.9",
       "gate_b_sources": [
-        "C001606"
+        "2.6.9.(4)"
       ],
       "condition": {
         "definition_scope": "İlgili branş uzmanı bulunmaması nedeniyle hizmet verilemediği başhekimlikçe onaylanırsa gider",
@@ -726,7 +726,7 @@
       "rule_id": "2.6.9.(6).scope_5510_md60_scope_travel",
       "sut_section": "2.6.9",
       "gate_b_sources": [
-        "C001608"
+        "2.6.9.(6)"
       ],
       "condition": {
         "definition_scope": "5510 md.60(1)(c)(1)/(3) kapsamındaki kişilerin 1.5.1 usulüne uygun sevklerinin 2.6 kapsamında ödenmesi",
@@ -741,7 +741,7 @@
       "rule_id": "2.6.9.(8).disability_pension_funding_source",
       "sut_section": "2.6.9",
       "gate_b_sources": [
-        "C001610"
+        "2.6.9.(8)"
       ],
       "condition": {
         "definition_scope": "Sürekli iş göremezlik/malullük/çalışma gücü kaybı tespit kontrolleri için giderlerin kısa/uzun vadeli sigorta prim gelirlerinden karşılanması",
@@ -756,7 +756,7 @@
       "rule_id": "2.6.1.A.(5).dialysis_service_courtesy_no_travel",
       "sut_section": "2.6.1.A",
       "gate_b_sources": [
-        "C001497"
+        "2.6.1.A.(5)"
       ],
       "condition": {
         "expense_not_covered": "diyaliz_sunucusunun_servis_hizmeti_vermesi_halinde_yol_gideri",
@@ -771,7 +771,7 @@
       "rule_id": "2.6.1.B-3.(3).vehicle_allocated_escort_no_travel",
       "sut_section": "2.6.1.B-3",
       "gate_b_sources": [
-        "C001541"
+        "2.6.1.B-3.(3)"
       ],
       "condition": {
         "expense_not_covered": "vasita_tahsis_edilen_refakatci_yol_gideri",
@@ -786,7 +786,7 @@
       "rule_id": "2.6.2.(3).same_day_application_no_daily_allowance",
       "sut_section": "2.6.2",
       "gate_b_sources": [
-        "C001567"
+        "2.6.2.(3)"
       ],
       "condition": {
         "expense_not_covered": "muracaat_ve_tedavi_bitisi_ayni_gun_ise_gundelik",
@@ -801,7 +801,7 @@
       "rule_id": "2.6.3.(2).companion_ek2b_point_no_separate_daily",
       "sut_section": "2.6.3",
       "gate_b_sources": [
-        "C001572"
+        "2.6.3.(2)"
       ],
       "condition": {
         "expense_not_billed": "ayrica_gundelik_veya_outpatient_refakat_kodu",
@@ -816,7 +816,7 @@
       "rule_id": "2.6.4.(c).non_listed_control_call_not_covered",
       "sut_section": "2.6.4",
       "gate_b_sources": [
-        "C001579"
+        "2.6.4.ç"
       ],
       "condition": {
         "expense_not_covered": "ilk_fikrada_sayilmayan_tedavi_hastalik_kontrol_cagrisi_giderleri",
@@ -831,7 +831,7 @@
       "rule_id": "2.6.6.(3).unlicensed_thermal_spa_not_covered",
       "sut_section": "2.6.6",
       "gate_b_sources": [
-        "C001591"
+        "2.6.6.(3)"
       ],
       "condition": {
         "expense_not_covered": "isletme_izni_verilmeyen_kaplica_giderleri",
@@ -846,7 +846,7 @@
       "rule_id": "2.6.8.(2).funeral_transport_without_referral_not_covered",
       "sut_section": "2.6.8",
       "gate_b_sources": [
-        "C001600"
+        "2.6.8.(2)"
       ],
       "condition": {
         "expense_not_covered": "sevk_edilmeksizin_muracaat_edilen_sunucuda_vefat",
@@ -861,7 +861,7 @@
       "rule_id": "2.6.9.(1).intra_settlement_transport_no_travel_daily",
       "sut_section": "2.6.9",
       "gate_b_sources": [
-        "C001603"
+        "2.6.9.(1)"
       ],
       "condition": {
         "expense_not_covered": "yerlesim_yeri_icindeki_nakiller",
@@ -876,7 +876,7 @@
       "rule_id": "2.6.9.(2).unreferred_cross_settlement_no_travel_daily",
       "sut_section": "2.6.9",
       "gate_b_sources": [
-        "C001604"
+        "2.6.9.(2)"
       ],
       "condition": {
         "expense_not_covered": "sevk_yapilmaksizin_dis_yerlesim_yerinden_hizmet_alinmasi",
@@ -892,7 +892,7 @@
       "sut_section": "2.6.1.B-4",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C001546"
+        "2.6.1.B-4.(3)"
       ],
       "condition": {
         "definition_scope": "Ticari taksi için ödenecek ücretin mutat taşıt ücretinin 5 katını geçememesi",
@@ -909,10 +909,10 @@
       "sut_section": "2.6.1.B-4",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C001550",
+        "2.6.1.B-4.a",
         "C001551",
         "C001552",
-        "C001553",
+        "2.6.1.B-4.b",
         "C001554",
         "C001555",
         "C001556",
@@ -939,7 +939,7 @@
       "sut_section": "2.6.5",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C001584"
+        "2.6.5.(3)"
       ],
       "condition": {
         "definition_scope": "Organ naklinin gerçekleştirilememiş olması yol gideri ödenmesine engel teşkil etmez",
@@ -955,7 +955,7 @@
       "sut_section": "2.6.7",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C001595"
+        "2.6.7.(1)"
       ],
       "condition": {
         "definition_scope": "Programlı tedavilerde (kemoterapi, radyoterapi, diyaliz, PUVA vb.) ilk sevk belgesine istinaden her gidiş için sevk aranmaz",
@@ -971,7 +971,7 @@
       "sut_section": "2.6.7",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C001596"
+        "2.6.7.(2)"
       ],
       "condition": {
         "definition_scope": "Ödeme işlemleri ilk sevk belgesine istinaden, müracaat edilen sunucunun düzenlediği tedavi tarihi belgesi doğrultusunda yürütülür",
@@ -987,7 +987,7 @@
       "sut_section": "2.6.7",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C001597"
+        "2.6.7.(3)"
       ],
       "condition": {
         "definition_scope": "Yerleşim yerinde 2/3 basamak sunucu yoksa 1 basamak sevki kabul edilir; sözleşmeli sunucu hiç yoksa geçerli sağlık raporu sevk yerine geçer",
@@ -1003,7 +1003,7 @@
       "sut_section": "2.6.8",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C001601"
+        "2.6.8.(3)"
       ],
       "condition": {
         "expense_not_covered": "5510_sayili_kanun_4_1_c_sigortalilari_cenaze_nakli",

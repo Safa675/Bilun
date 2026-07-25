@@ -135,8 +135,16 @@ def test_a2c_golden_samples(sample: dict) -> None:
 
 
 def test_a2c_encoded_clause_ids_in_coverage_union() -> None:
+    from scripts.sut.prose.clause_identity import STRUCTURAL_NON_LINKABLE_TYPES
     from scripts.sut.prose.coverage import _load_drug_indication_encoded_clause_ids
+    import polars as pl
 
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = frozenset(str(c) for c in (manifest.get("encoded_clause_ids") or []))
-    assert encoded.issubset(_load_drug_indication_encoded_clause_ids())
+    clauses = pl.read_parquet(_REPO / "data/gazette/sut_clauses.parquet")
+    structural = frozenset(
+        clauses.filter(pl.col("clause_type").is_in(list(STRUCTURAL_NON_LINKABLE_TYPES)))[
+            "clause_id"
+        ].to_list()
+    )
+    assert (encoded - structural).issubset(_load_drug_indication_encoded_clause_ids())

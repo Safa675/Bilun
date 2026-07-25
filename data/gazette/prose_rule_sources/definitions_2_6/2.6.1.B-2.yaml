@@ -3,7 +3,7 @@ rules:
 - rule_id: 2.6.1.B-2.(1).routine_vehicle_ek2l_tariff
   sut_section: 2.6.1.B-2
   gate_b_sources:
-  - C001530
+  - 2.6.1.B-2.(1)
   condition:
     definition_scope: Mutat taşıt giderlerinin SUT EK-2/L KDV dahil ücretleri üzerinden ödenmesi
     applies_to: Yerleşim yeri dışı mutat taşıt gideri
@@ -14,7 +14,7 @@ rules:
 - rule_id: 2.6.1.B-2.(2).ministry_tariff_override
   sut_section: 2.6.1.B-2
   gate_b_sources:
-  - C001531
+  - 2.6.1.B-2.(2)
   condition:
     definition_scope: Ulaştırma Bakanlığı daha düşük taban/tavan ücreti varsa en düşüğün esas alınması
     applies_to: Mutat taşıt — karayolu şehirlerarası

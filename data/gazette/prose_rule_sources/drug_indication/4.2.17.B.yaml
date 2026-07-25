@@ -7,8 +7,8 @@ rules:
   - M81
   - M48.5
   gate_b_sources:
-  - C006040
-  - C006044
+  - 4.2.17.A.(7)
+  - 4.2.17.B.(1)
   drug_names:
   - kalsitonin
   - calcitonin

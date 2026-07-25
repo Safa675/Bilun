@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.7.hemodialysis_heparin_nopay
   sut_section: 4.2.7
   gate_b_sources:
-  - C004055
+  - 4.2.7.(3)
   drug_names:
   - heparin
   - düşük molekül ağırlıklı heparin
@@ -16,7 +16,7 @@ rules:
 - rule_id: 4.2.7.inpatient_emergency_no_report
   sut_section: 4.2.7
   gate_b_sources:
-  - C004054
+  - 4.2.7.(2)
   drug_names:
   - düşük molekül ağırlıklı heparin
   - heparin
@@ -29,7 +29,7 @@ rules:
 - rule_id: 4.2.7.lmwh_6mo_report_extended_pregnancy
   sut_section: 4.2.7
   gate_b_sources:
-  - C004053
+  - 4.2.7.(1)
   drug_names:
   - düşük molekül ağırlıklı heparin
   - heparin
@@ -57,7 +57,7 @@ rules:
 - rule_id: 4.2.7.lmwh_different_active_combo_nopay
   sut_section: 4.2.7
   gate_b_sources:
-  - C004057
+  - 4.2.7.(4)
   drug_names:
   - düşük molekül ağırlıklı heparin
   pay: false

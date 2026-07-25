@@ -164,14 +164,25 @@ def test_celiac_formula_missing_report_is_error() -> None:
 
 
 def test_manifest_union_wires_encoded_clauses() -> None:
+    from scripts.sut.prose.clause_identity import STRUCTURAL_NON_LINKABLE_TYPES
     from scripts.sut.prose.coverage import _load_drug_indication_encoded_clause_ids
+    import polars as pl
 
     assert _MANIFEST.is_file()
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
     assert "C004572" in encoded
     assert "C005999" in encoded
-    assert encoded.issubset(_load_drug_indication_encoded_clause_ids())
+    # Track A3: heading/chapter ids may linger on older manifests; coverage union
+    # only keeps encode-eligible cites from rule JSON.
+    clauses = pl.read_parquet(_REPO / "data/gazette/sut_clauses.parquet")
+    structural = set(
+        clauses.filter(pl.col("clause_type").is_in(list(STRUCTURAL_NON_LINKABLE_TYPES)))[
+            "clause_id"
+        ].to_list()
+    )
+    actionable = encoded - structural
+    assert actionable.issubset(_load_drug_indication_encoded_clause_ids())
 
 
 @pytest.mark.parametrize(

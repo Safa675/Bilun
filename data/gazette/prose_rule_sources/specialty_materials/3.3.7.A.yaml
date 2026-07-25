@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.7.A
   deontic: MUST_BILL
   gate_b_sources:
-  - C003065
+  - 3.3.7.A.c
   condition:
     material_name_any:
     - standing table

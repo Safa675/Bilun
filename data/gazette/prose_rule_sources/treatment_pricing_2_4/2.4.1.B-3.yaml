@@ -11,7 +11,7 @@ rules:
       özel muayenehanelerince/özel sunucularınca tedavi edilmesi halinde söz konusu tedavi giderleri ödenmez
     severity: error
   gate_b_sources:
-  - C000812
+  - 2.4.1.B-3.(1)
 - rule_id: 2.4.1.B-3.(2).star_and_7_1_orthodontics_specialist_required
   sut_section: 2.4.1.B-3
   condition:
@@ -24,4 +24,4 @@ rules:
       gerekmektedir
     severity: error
   gate_b_sources:
-  - C000813
+  - 2.4.1.B-3.(2)

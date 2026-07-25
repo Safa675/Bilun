@@ -21,4 +21,4 @@ rules:
     denial_tr: acil haller dışında sözleşmesiz özel sunucudan alınan hizmet ödenmez
     severity: error
   gate_b_sources:
-  - C000099
+  - 1.5.1.(3)

@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.6
   deontic: NO_PAY
   gate_b_sources:
-  - C002997
+  - 3.3.6.(2)
   condition:
     returned_device_without_kurum_approval: true
   action:

@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.5
   deontic: MUST_BILL
   gate_b_sources:
-  - C002986
+  - 3.3.5.(1)
   condition:
     material_name_any:
     - enjektör
@@ -19,7 +19,7 @@ rules:
   sut_section: 3.3.5
   deontic: MUST_BILL
   gate_b_sources:
-  - C002989
+  - 3.3.5.(2)
   condition:
     material_name_any:
     - insülin kalem iğne ucu

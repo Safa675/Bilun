@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bilun.local/schemas/canonical_v1.schema.json",
+  "title": "SUT prose Gate B canonical-v1 manifest",
+  "type": "object",
+  "required": [
+    "manifest_version",
+    "rule_set_id",
+    "section_id",
+    "section_clause_total",
+    "encoded_clause_ids",
+    "tier_c_deferred_clause_ids",
+    "emr_blocked_clause_ids",
+    "non_actionable_clause_ids",
+    "tier_a_pending_clause_ids",
+    "tier_b_pending_clause_ids",
+    "clause_traces"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "manifest_version": { "const": "canonical-v1" },
+    "rule_set_id": { "type": "string", "minLength": 1 },
+    "section_id": { "type": "string" },
+    "section_clause_total": { "type": "integer", "minimum": 0 },
+    "encoded_clause_ids": {
+      "type": "array",
+      "description": "Opaque remappable parquet clause_id keys derived at compile (not authored). Prefer encoded_clause_coordinates for human audit.",
+      "items": { "type": "string" }
+    },
+    "encoded_clause_coordinates": {
+      "type": "array",
+      "description": "Public SUT cites for encoded clauses (clause_coordinate). Track E public contract.",
+      "items": { "type": "string" }
+    },
+    "tier_c_deferred_clause_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "emr_blocked_clause_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "non_actionable_clause_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tier_a_pending_clause_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tier_b_pending_clause_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "clause_traces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["clause_id", "manifest_status"],
+        "additionalProperties": true,
+        "properties": {
+          "clause_id": { "type": "string", "minLength": 1 },
+          "manifest_status": { "type": "string", "minLength": 1 },
+          "encode_tier": { "type": "string" },
+          "defer_themes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "defer_reason": { "type": "string" }
+        }
+      }
+    },
+    "effective_date": { "type": "string" },
+    "rules_in_json": { "type": "integer", "minimum": 0 },
+    "encoded_clause_count": { "type": "integer", "minimum": 0 }
+  }
+}

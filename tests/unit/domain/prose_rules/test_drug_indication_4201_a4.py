@@ -8,6 +8,11 @@ import json
 from pathlib import Path
 
 from scripts.sut.prose.manifest_index import encoded_like_clause_ids
+from tests.unit._helpers.gate_b_cites import (
+    cite_in_sources,
+    cites_covered_by_encoded,
+    resolve_gate_b_cites_to_clause_ids,
+)
 from scripts.sut.rule_sources import load_drug_sections_rules
 
 _REPO = Path(__file__).resolve().parents[4]
@@ -30,5 +35,5 @@ def test_a4_combined_rule_count() -> None:
 def test_a4_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = encoded_like_clause_ids(manifest)
-    assert _A4_GATE_B_SOURCES <= encoded
+    assert cites_covered_by_encoded(_A4_GATE_B_SOURCES, encoded)
     assert manifest.get("encoded_clause_count", 0) >= len(_A4_GATE_B_SOURCES)

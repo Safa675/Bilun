@@ -10,4 +10,4 @@ rules:
     denial_tr: sağlık raporu formatları/tasdik/mühürMEDULA mevzuatına uymalı
     severity: error
   gate_b_sources:
-  - C003435
+  - 4.1.3.(1)

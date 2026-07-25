@@ -64,8 +64,8 @@ rules:
   sut_section: 4.2.13.1
   gate_b_sources:
   - C004551
-  - C004636
-  - C004897
+  - 4.2.13.3.1.(1)
+  - 4.2.13.3.2.(5)
   drug_names:
   - pegile interferon
   - peginterferon
@@ -106,7 +106,7 @@ rules:
 - rule_id: 4.2.13.1.tdf_taf_entecavir_year1_switch
   sut_section: 4.2.13.1
   gate_b_sources:
-  - C004581
+  - 4.2.13.1.c
   drug_names:
   - tenofovir
   - entekavir
@@ -142,8 +142,8 @@ rules:
     yeni raporda belirtilmelidir (§4.2.13.1 (7)).
   gate_b_sources:
   - C004572
-  - C004584
-  - C004624
+  - 4.2.13.1.e
+  - 4.2.13.1.4.(2)
 - rule_id: 4.2.13.hbv_antiviral_report_renewal_initiation_f8
   sut_section: 4.2.13.1
   drug_names:
@@ -237,7 +237,7 @@ rules:
   message_tr: Erişkin HBV oral antiviral değişimi veya yeni oral antiviral eklenmesi — gerekçe yeni veya mevcut sağlık kurulu
     raporunda belirtilmelidir (§4.2.13.1 ç/e).
   gate_b_sources:
-  - C004584
+  - 4.2.13.1.e
 - rule_id: 4.2.13.hbv_oral_antiviral_switch_pediatric_report
   sut_section: 4.2.13.1
   drug_names:
@@ -277,7 +277,7 @@ rules:
   - enfeksiyon hastalıkları
   message_tr: HBV oral antiviral — ilk rapor süresi en fazla 6 ay olmalıdır (§4.2.13.1).
   gate_b_sources:
-  - C004604
+  - 4.2.13.1.(8)
   report_duration_months: 6
 - rule_id: 4.2.13.hbv_tenofovir_board
   sut_section: 4.2.13.1

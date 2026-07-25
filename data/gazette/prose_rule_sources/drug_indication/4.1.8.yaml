@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.1.8.ek4f_copay_unless_ek4d
   sut_section: 4.1.8
   gate_b_sources:
-  - C003537
+  - 4.1.8.(3)
   condition:
     ek4f_list: true
     copay_exempt: false
@@ -15,7 +15,7 @@ rules:
 - rule_id: 4.1.8.ek4f_outpatient_report_3month_coverage
   sut_section: 4.1.8
   gate_b_sources:
-  - C003535
+  - 4.1.8.(1)
   report_required: true
   condition:
     coverage_note: true

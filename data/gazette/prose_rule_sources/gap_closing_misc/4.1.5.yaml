@@ -15,4 +15,4 @@ rules:
     denial_tr: iş kazası/meslek hastalığı/adli/trafik kazasında sadece e-reçete; manuel reçete ödenmez
     severity: error
   gate_b_sources:
-  - C003524
+  - 4.1.5.(10)

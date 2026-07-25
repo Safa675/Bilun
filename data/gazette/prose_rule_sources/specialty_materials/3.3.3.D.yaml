@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.3.D
   deontic: MUST_BILL
   gate_b_sources:
-  - C002928
+  - 3.3.3.D.(1)
   condition:
     material_name_any:
     - prizma

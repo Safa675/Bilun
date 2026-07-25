@@ -24,7 +24,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000312"
+        "1.8.1.(6)"
       ]
     },
     {
@@ -36,8 +36,8 @@
         "other": 0.2
       },
       "gate_b_sources": [
-        "C000314",
-        "C000327",
+        "1.8.2.(1)",
+        "1.8.2.(4)",
         "C000328",
         "C000329",
         "C000330",
@@ -58,7 +58,7 @@
         "per_extra_box": 1.0
       },
       "gate_b_sources": [
-        "C000321",
+        "1.8.2.(2)",
         "C000322",
         "C000323"
       ]
@@ -94,8 +94,8 @@
         "line_kind": "external_prosthesis_orthosis"
       },
       "gate_b_sources": [
-        "C000333",
-        "C000338"
+        "1.8.3.(1)",
+        "1.8.3.(2)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Misattribution fixed: the 10%/20% rates were cited only to C000333 (a bare lead-in with no rate). The rates actually live in C000338 (§1.8.3.(2)); added it as a source. Largely redundant with 1.8.3.(2) — consider consolidating."
@@ -111,8 +111,8 @@
       "gate_b_sources": [
         "C000334",
         "C000335",
-        "C000336",
-        "C000338",
+        "1.8.3.c",
+        "1.8.3.(2)",
         "C000340",
         "C000341",
         "C000342",
@@ -142,8 +142,8 @@
         }
       },
       "gate_b_sources": [
-        "C000352",
-        "C000353"
+        "1.8.4.(1)",
+        "1.8.4.(2)"
       ]
     },
     {
@@ -164,7 +164,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000364"
+        "1.8.5.(10)"
       ]
     },
     {
@@ -185,7 +185,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000368"
+        "1.8.5.(14)"
       ]
     },
     {
@@ -203,7 +203,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000371"
+        "1.8.5.(17)"
       ]
     },
     {
@@ -223,7 +223,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000372"
+        "1.8.5.(18)"
       ]
     },
     {
@@ -243,7 +243,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000373"
+        "1.8.5.(19)"
       ]
     },
     {
@@ -263,7 +263,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000356"
+        "1.8.5.(2)"
       ]
     },
     {
@@ -282,7 +282,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000374"
+        "1.8.5.(20)"
       ]
     },
     {
@@ -303,7 +303,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000357"
+        "1.8.5.(3)"
       ]
     },
     {
@@ -322,7 +322,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000358"
+        "1.8.5.(4)"
       ]
     },
     {
@@ -340,7 +340,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000363"
+        "1.8.5.(9)"
       ]
     },
     {
@@ -356,7 +356,7 @@
         "refund_scope": "previously_collected_copay"
       },
       "gate_b_sources": [
-        "C000237"
+        "1.8.(4)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "GSS beneficiaries under 5510/60/1(c)(1-3) (and dependents) may have paid copays refunded by the social solidarity foundation (SYDV) on request."
@@ -406,10 +406,10 @@
         "C000287",
         "C000288",
         "C000289",
-        "C000290",
-        "C000291",
-        "C000292",
-        "C000293"
+        "1.8.1.ç",
+        "1.8.1.d",
+        "1.8.1.e",
+        "1.8.1.f"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Updated per RG-01/07/2026-33297 (effective 01/07/2026). Previous: 26 TL public/university, 60 TL private. Now: 50 TL 2nd-basamak public, 90 TL SB-EAH/3rd-basamak/state-uni, 100 TL foundation-uni/private. First-tier free."
@@ -448,7 +448,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000355"
+        "1.8.5.(1)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -470,7 +470,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000365"
+        "1.8.5.(11)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -491,7 +491,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000366"
+        "1.8.5.(12)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -513,7 +513,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000367"
+        "1.8.5.(13)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -535,7 +535,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000369"
+        "1.8.5.(15)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -557,7 +557,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000370"
+        "1.8.5.(16)"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -580,7 +580,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000375"
+        "1.8.5.(21)"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Time-bounded exemption — applies until treatment concludes or disability is finalized."
@@ -602,7 +602,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000378"
+        "1.8.5.a"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -624,7 +624,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000379"
+        "1.8.5.b"
       ],
       "verification_status": "ai_generated_pending_review"
     },
@@ -645,7 +645,7 @@
         ]
       },
       "gate_b_sources": [
-        "C000360"
+        "1.8.5.(6)"
       ],
       "verification_status": "ai_generated_pending_review"
     }

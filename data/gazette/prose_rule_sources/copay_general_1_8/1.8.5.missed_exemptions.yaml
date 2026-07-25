@@ -14,7 +14,7 @@ rules:
     - 1.8.2
     - 1.8.3
   gate_b_sources:
-  - C000355
+  - 1.8.5.(1)
   verification_status: ai_generated_pending_review
 - rule_id: 1.8.5.(6).preventive_health_institution_funded
   sut_section: 1.8.5
@@ -29,7 +29,7 @@ rules:
     - 1.8.2
     - 1.8.3
   gate_b_sources:
-  - C000360
+  - 1.8.5.(6)
   verification_status: ai_generated_pending_review
 - rule_id: 1.8.5.(11).istiklal_madalyasi_pensioner
   sut_section: 1.8.5
@@ -45,7 +45,7 @@ rules:
     - 1.8.3
     - 1.8.4
   gate_b_sources:
-  - C000365
+  - 1.8.5.(11)
   verification_status: ai_generated_pending_review
 - rule_id: 1.8.5.(12).vatani_hizmet_pensioner
   sut_section: 1.8.5
@@ -60,7 +60,7 @@ rules:
     - 1.8.2
     - 1.8.3
   gate_b_sources:
-  - C000366
+  - 1.8.5.(12)
   verification_status: ai_generated_pending_review
 - rule_id: 1.8.5.(13).nakdi_tazminat_pensioner
   sut_section: 1.8.5
@@ -76,7 +76,7 @@ rules:
     - 1.8.3
     - 1.8.4
   gate_b_sources:
-  - C000367
+  - 1.8.5.(13)
   verification_status: ai_generated_pending_review
 - rule_id: 1.8.5.(15).harp_mallulu_terorle_mucadele
   sut_section: 1.8.5
@@ -92,7 +92,7 @@ rules:
     - 1.8.3
     - 1.8.4
   gate_b_sources:
-  - C000369
+  - 1.8.5.(15)
   verification_status: ai_generated_pending_review
 - rule_id: 1.8.5.(16).vazife_mallulu
   sut_section: 1.8.5
@@ -108,7 +108,7 @@ rules:
     - 1.8.3
     - 1.8.4
   gate_b_sources:
-  - C000370
+  - 1.8.5.(16)
   verification_status: ai_generated_pending_review
 - rule_id: 1.8.5.(21).wounded_3713_21
   sut_section: 1.8.5
@@ -125,7 +125,7 @@ rules:
     - 1.8.3
     - 1.8.4
   gate_b_sources:
-  - C000375
+  - 1.8.5.(21)
   verification_status: ai_generated_pending_review
   content_note: Time-bounded exemption — applies until treatment concludes or disability is finalized.
 - rule_id: 1.8.5.(22)a.gss_5510_60_12
@@ -141,7 +141,7 @@ rules:
     - 1.8.2
     - 1.8.3
   gate_b_sources:
-  - C000378
+  - 1.8.5.a
   verification_status: ai_generated_pending_review
 - rule_id: 1.8.5.(22)b.gss_5510_60_13_14
   sut_section: 1.8.5
@@ -157,5 +157,5 @@ rules:
     - 1.8.3
     - 1.8.4
   gate_b_sources:
-  - C000379
+  - 1.8.5.b
   verification_status: ai_generated_pending_review

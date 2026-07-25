@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.5.1.contracted_pharmacy_supply_coverage
   sut_section: 4.5.1
   gate_b_sources:
-  - C007794
+  - 4.5.1.(1)
   condition:
     coverage_note: true
     contracted_pharmacy: true
@@ -13,7 +13,7 @@ rules:
 - rule_id: 4.5.1.non_contracted_pharmacy_nopay_except_emergency
   sut_section: 4.5.1
   gate_b_sources:
-  - C007795
+  - 4.5.1.(2)
   pay: false
   condition:
     non_contracted_pharmacy: true
@@ -32,7 +32,7 @@ rules:
 - rule_id: 4.5.1.payment_dispensing_date_retail_price_regulatory
   sut_section: 4.5.1
   gate_b_sources:
-  - C007796
+  - 4.5.1.(3)
   action:
     enforcement: 'regulatory: in Institution drug payment, the retail sale prices on the drug dispensing date are the basis'
     message_tr: Kurum ilaç ödemesinde, ilacın veriliş tarihindeki perakende satış fiyatları esas alınır (§4.5.1).

@@ -15,7 +15,7 @@ rules:
     sonucu reçetede belirtilir (§4.2.9.A-2).
   gate_b_sources:
   - C004135
-  - C004136
+  - 4.2.9.A-2.(1)
   - C004137
   report_required: true
   report_specialties:
@@ -37,7 +37,7 @@ rules:
   message_tr: MDS anemisi ESA — Hb<11, blast <%5 ve sEPO<500 ile başlanır; hedef Hb 12 g/dl; hematoloji uzman raporu ve hemogram
     reçetede belirtilir (§4.2.9.A-2).
   gate_b_sources:
-  - C004136
+  - 4.2.9.A-2.(1)
   report_required: true
   report_specialties:
   - hematoloji

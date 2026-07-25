@@ -20,7 +20,7 @@ rules:
 - rule_id: 4.2.20.palivizumab.rsv_season_paediatric_coverage
   sut_section: 4.2.20
   gate_b_sources:
-  - C006075
+  - 4.2.20.(1)
   drug_names:
   - palivizumab
   - synagis

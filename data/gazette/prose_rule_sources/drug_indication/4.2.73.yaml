@@ -31,7 +31,7 @@ rules:
 - rule_id: 4.2.73.pulm.cftr_tertiary_pulmonology_6mo_coverage
   sut_section: 4.2.73
   gate_b_sources:
-  - C007262
+  - 4.2.73.(5)
   drug_names:
   - elexakaftor/tezakaftor/ivakaftor ve ivakaftor
   - ivakaftor

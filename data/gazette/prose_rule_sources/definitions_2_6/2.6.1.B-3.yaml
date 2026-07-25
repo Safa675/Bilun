@@ -13,7 +13,7 @@ rules:
 - rule_id: 2.6.1.B-3.(2b).dialysis_transport_health_board_specialist
   sut_section: 2.6.1.B-3
   gate_b_sources:
-  - C001540
+  - 2.6.1.B-3.b
   condition:
     definition_scope: Diyaliz nakli sağlık kurulu raporunda nefroloji/iç/çocuk uzmanı bulunması ve 3 ay geçerli
     applies_to: Diyaliz tedavisi — mutat taşıt dışı nakil
@@ -25,7 +25,7 @@ rules:
 - rule_id: 2.6.1.B-3.(3).vehicle_allocated_escort_no_travel
   sut_section: 2.6.1.B-3
   gate_b_sources:
-  - C001541
+  - 2.6.1.B-3.(3)
   condition:
     expense_not_covered: vasita_tahsis_edilen_refakatci_yol_gideri
     applies_to: Bir vasıta tahsis edilerek gönderilen GSS'li ve bakmakla yükümlü olunan kişiler

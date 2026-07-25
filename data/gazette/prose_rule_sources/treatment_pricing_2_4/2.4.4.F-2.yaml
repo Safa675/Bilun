@@ -11,12 +11,12 @@ rules:
     - G80
   action:
     billable: false
-    denial_tr: ayakta fizik tedavide günde en fazla 1 seans; yatarak G80 ve (*) tanılarda günde 1, diğer tanılarda aynı bölge
-      için 1 seans ödenir
+    denial_tr: ayakta fizik tedavide günde en fazla 1 seans; yatarak G80 ve (*) tanılarda günde 1, diğer tanılarda aynı 
+      bölge için 1 seans ödenir
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
-  - C001014
+  - 2.4.4.F-2.(4)
 - rule_id: 2.4.4.F-2.(7).physio_start_within_15d
   sut_section: 2.4.4.F-2
   condition:
@@ -28,7 +28,7 @@ rules:
     denial_tr: fizik tedavi; sağlık raporu tarihinden itibaren 15 gün içinde tedaviye başlanmamışsa ödenmez
     severity: error
   gate_b_sources:
-  - C001017
+  - 2.4.4.F-2.(7)
 - rule_id: 2.4.4.F-2.(8).physio_report_modification_5d
   sut_section: 2.4.4.F-2
   condition:
@@ -38,11 +38,11 @@ rules:
     report_modified_after_5_biz_days: true
   action:
     billable: false
-    denial_tr: G80 ve (*) dışındaki tanılarda tedavi başlandıktan 5 iş günü sonra rapor değişikliği ile yapılan fizik tedavi
-      ödenmez
+    denial_tr: G80 ve (*) dışındaki tanılarda tedavi başlandıktan 5 iş günü sonra rapor değişikliği ile yapılan fizik 
+      tedavi ödenmez
     severity: error
   gate_b_sources:
-  - C001018
+  - 2.4.4.F-2.(8)
 - rule_id: 2.4.4.F-2.(1).physio_billing_requires_f1_report
   sut_section: 2.4.4.F-2
   condition:
@@ -50,11 +50,11 @@ rules:
     report_per_2_4_4_F1_present: false
   action:
     billable: false
-    denial_tr: fizik tedavi ve rehabilitasyon işlemlerinin faturalandırılabilmesi için SUT 2.4.4.F-1 maddesinde tanımlanan
-      sağlık raporunun düzenlenmesi gerekir
+    denial_tr: fizik tedavi ve rehabilitasyon işlemlerinin faturalandırılabilmesi için SUT 2.4.4.F-1 maddesinde 
+      tanımlanan sağlık raporunun düzenlenmesi gerekir
     severity: error
   gate_b_sources:
-  - C001007
+  - 2.4.4.F-2.(1)
 - rule_id: 2.4.4.F-2.(3).duty_war_veterans_physio_all_diagnoses
   sut_section: 2.4.4.F-2
   condition:
@@ -63,11 +63,11 @@ rules:
     report_tier: third_step_public_with_pmnr_specialist
   action:
     billable: true
-    payment_tr: 3713/5434/2330 kapsamı vazife ve harp malulleri ile yaralananlara EK-2/D-2 tüm tanılarında bölge kontrolü
-      olmaksızın, raporlu sağlık kurullarınca (30'ar seanslık rapor koşuluyla) fizik tedavi karşılanır
+    payment_tr: 3713/5434/2330 kapsamı vazife ve harp malulleri ile yaralananlara EK-2/D-2 tüm tanılarında bölge 
+      kontrolü olmaksızın, raporlu sağlık kurullarınca (30'ar seanslık rapor koşuluyla) fizik tedavi karşılanır
     annex_basis: EK-2/D-2
   gate_b_sources:
-  - C001011
+  - 2.4.4.F-2.(3)
 - rule_id: 2.4.4.F-2.(5).physio_annual_region_session_caps
   sut_section: 2.4.4.F-2
   condition:
@@ -79,13 +79,13 @@ rules:
       min: 31
   action:
     billable: false
-    denial_tr: son bir yılda aynı bölgeden en fazla 30 seans, iki farklı bölgeden en fazla 60 seans ödenir; aynı bölge için
-      yılda en fazla 3 sağlık raporu düzenlenebilir; bölge, seans ve sağlık raporu sayısı kontrollerinde 2.4.4.F-6 (2) ve
-      2.4.4.R maddelerindeki sayılar da hesaba katılır; EK-2/D-2 (*) ve G80 tanılarında bölge kontrolü yapılmaz
+    denial_tr: son bir yılda aynı bölgeden en fazla 30 seans, iki farklı bölgeden en fazla 60 seans ödenir; aynı bölge 
+      için yılda en fazla 3 sağlık raporu düzenlenebilir; bölge, seans ve sağlık raporu sayısı kontrollerinde 2.4.4.F-6 
+      (2) ve 2.4.4.R maddelerindeki sayılar da hesaba katılır; EK-2/D-2 (*) ve G80 tanılarında bölge kontrolü yapılmaz
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
-  - C001015
+  - 2.4.4.F-2.(5)
 - rule_id: 2.4.4.F-2.(5).physio_respiratory_diagnosis_additional_30_sessions
   sut_section: 2.4.4.F-2
   condition:
@@ -104,12 +104,13 @@ rules:
   action:
     billable: true
     payment_tr: EK-2/D-2 solunum sistemi tanılarında (cerrahi sonrası tanısı hariç; kronik pulmoner yetmezlik), hastanın
-      klinik tablosunun tedavinin sürdürülmesini gerektirmesi halinde, en az bir fiziksel tıp ve rehabilitasyon uzman hekiminin
-      yer aldığı sağlık kurulu raporu ve tedavinin Sağlık Bakanlığı/devlet üniversitesi sunucularında verilmesi kaydıyla her
-      yıl için 30 seansa ek olarak 30 seans daha faturalandırılabilir; raporda uygulanacak tedavi ve tedavi süresi belirtilmelidir
+      klinik tablosunun tedavinin sürdürülmesini gerektirmesi halinde, en az bir fiziksel tıp ve rehabilitasyon uzman 
+      hekiminin yer aldığı sağlık kurulu raporu ve tedavinin Sağlık Bakanlığı/devlet üniversitesi sunucularında 
+      verilmesi kaydıyla her yıl için 30 seansa ek olarak 30 seans daha faturalandırılabilir; raporda uygulanacak tedavi
+      ve tedavi süresi belirtilmelidir
     annex_basis: EK-2/D-2
   gate_b_sources:
-  - C001394
+  - 2.4.4.F-2.(5)
 - rule_id: 2.4.4.F-2.(6).physio_star_diagnosis_annual_window
   sut_section: 2.4.4.F-2
   condition:
@@ -120,12 +121,13 @@ rules:
     report_per_2_4_4_F1_present: false
   action:
     billable: false
-    denial_tr: EK-2/D-2 (*) tanılar hariç bölge başına en fazla 30 seans; (*) tanılarda ilk rapor tarihi itibarıyla bir yıl
-      içinde uygulanan tedavi ödenir, devam yıllarında 0-30 ve 31-60 seans için F-1 raporu, 61+ için 3. basamak raporu gerekir
+    denial_tr: EK-2/D-2 (*) tanılar hariç bölge başına en fazla 30 seans; (*) tanılarda ilk rapor tarihi itibarıyla bir 
+      yıl içinde uygulanan tedavi ödenir, devam yıllarında 0-30 ve 31-60 seans için F-1 raporu, 61+ için 3. basamak 
+      raporu gerekir
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
-  - C001016
+  - 2.4.4.F-2.(6)
 - rule_id: 2.4.4.F-2.(9).inpatient_physio_concomitant_services_fee_for_service
   sut_section: 2.4.4.F-2
   condition:
@@ -133,11 +135,11 @@ rules:
     concomitant_service: true
   action:
     billable: true
-    payment_tr: yatarak fizik tedavide; fizik tedavi dışındaki hizmetler (yatak bedeli, tetkik, ilaç, tıbbi malzeme) SUT hükümlerine
-      uyulmak koşuluyla hizmet başına ödeme yöntemiyle karşılanır
+    payment_tr: yatarak fizik tedavide; fizik tedavi dışındaki hizmetler (yatak bedeli, tetkik, ilaç, tıbbi malzeme) SUT
+      hükümlerine uyulmak koşuluyla hizmet başına ödeme yöntemiyle karşılanır
     annex_basis: fee_for_service
   gate_b_sources:
-  - C001019
+  - 2.4.4.F-2.(9)
 - rule_id: 2.4.4.F-2.(10).traffic_accident_physio_controls_isolated
   sut_section: 2.4.4.F-2
   condition:
@@ -145,10 +147,10 @@ rules:
     origin_is_traffic_accident: true
   action:
     billable: true
-    payment_tr: trafik kazası sonrası fizik tedavinin süre, seans ve bölge kontrollerinde kazayla ilişkisiz fizik tedavi uygulamaları
-      dikkate alınmaz
+    payment_tr: trafik kazası sonrası fizik tedavinin süre, seans ve bölge kontrollerinde kazayla ilişkisiz fizik tedavi
+      uygulamaları dikkate alınmaz
   gate_b_sources:
-  - C001020
+  - 2.4.4.F-2.(10)
 - rule_id: 2.4.4.F-2.(a).physio_star_diagnosis_90_sessions_annual
   sut_section: 2.4.4.F-2
   condition:
@@ -160,12 +162,12 @@ rules:
       min: 91
   action:
     billable: false
-    denial_tr: F-1 raporlarına istinaden yıl içinde en fazla 90 seans fizik tedavi ödenir; 16 yaş üstü 31-60 ve 61-90 seans
-      resmi sunucuca uygulanmalı, 61+ seans Bakanlık sunucusunda PMR uzmanlı sağlık kurulu raporuyla
+    denial_tr: F-1 raporlarına istinaden yıl içinde en fazla 90 seans fizik tedavi ödenir; 16 yaş üstü 31-60 ve 61-90 
+      seans resmi sunucuca uygulanmalı, 61+ seans Bakanlık sunucusunda PMR uzmanlı sağlık kurulu raporuyla
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
-  - C001025
+  - 2.4.4.F-2.a
 - rule_id: 2.4.4.F-2.(b).g80_post_surgery_additional_30_sessions
   sut_section: 2.4.4.F-2
   condition:
@@ -178,12 +180,12 @@ rules:
     report_tier: third_step_public_with_pmnr_specialist
   action:
     billable: false
-    denial_tr: G80 tanısında cerrahi/botulinium sonrası mobilitenin korunması için 3. basamak sağlık kurulu raporuyla yılda
-      en fazla iki kez ilave 30 seans fizik tedavi karşılanır
+    denial_tr: G80 tanısında cerrahi/botulinium sonrası mobilitenin korunması için 3. basamak sağlık kurulu raporuyla 
+      yılda en fazla iki kez ilave 30 seans fizik tedavi karşılanır
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
-  - C001028
+  - 2.4.4.F-2.b
 - rule_id: 2.4.4.F-2.(12).disaster_provision_amputation_fracture_additional_30
   sut_section: 2.4.4.F-2
   condition:
@@ -200,9 +202,10 @@ rules:
     already_used_one_time_additional: true
   action:
     billable: false
-    denial_tr: 5510 md.75 afet yaralanmalarında 'doğal afet' provizyonuyla EK-2/D-2 ampütasyon/kırık/periferik sinir/lumbosakral
-      pleksus/tendon yaralanması tanılarında 3. basamak sağlık kurulu raporuyla bir defaya mahsus ilave 30 seans ödenir
+    denial_tr: 5510 md.75 afet yaralanmalarında 'doğal afet' provizyonuyla EK-2/D-2 ampütasyon/kırık/periferik 
+      sinir/lumbosakral pleksus/tendon yaralanması tanılarında 3. basamak sağlık kurulu raporuyla bir defaya mahsus 
+      ilave 30 seans ödenir
     annex_basis: EK-2/D-2
     severity: error
   gate_b_sources:
-  - C001032
+  - 2.4.4.F-2.(12)

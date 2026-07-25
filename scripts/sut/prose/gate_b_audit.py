@@ -96,6 +96,10 @@ def _manifest_status_ids(
     tier_c = frozenset(str(cid) for cid in manifest.get("tier_c_deferred_clause_ids") or [])
     tier_a = frozenset(str(cid) for cid in manifest.get("tier_a_pending_clause_ids") or [])
     tier_b = frozenset(str(cid) for cid in manifest.get("tier_b_pending_clause_ids") or [])
+    non_actionable = frozenset(
+        str(cid) for cid in manifest.get("non_actionable_clause_ids") or []
+    )
+    emr_blocked = frozenset(str(cid) for cid in manifest.get("emr_blocked_clause_ids") or [])
     if section_prefix:
         scope_ids = frozenset(
             str(t.get("clause_id") or "")
@@ -106,11 +110,15 @@ def _manifest_status_ids(
         tier_c = tier_c & scope_ids
         tier_a = tier_a & scope_ids
         tier_b = tier_b & scope_ids
+        non_actionable = non_actionable & scope_ids
+        emr_blocked = emr_blocked & scope_ids
     return {
         "encoded": encoded,
         "tier_c_deferred": tier_c,
         "tier_a_pending": tier_a,
         "tier_b_pending": tier_b,
+        "non_actionable": non_actionable,
+        "emr_blocked": emr_blocked,
     }
 
 
@@ -177,7 +185,12 @@ def audit_gap_parity(
         if str(t.get("section_id") or "").startswith(section_prefix)
     }
 
-    honest = statuses["encoded"] | statuses["tier_c_deferred"]
+    honest = (
+        statuses["encoded"]
+        | statuses["tier_c_deferred"]
+        | statuses["non_actionable"]
+        | statuses["emr_blocked"]
+    )
     if include_pending_honest:
         honest = honest | statuses["tier_a_pending"] | statuses["tier_b_pending"]
     if include_pending_honest:

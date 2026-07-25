@@ -49,11 +49,35 @@ def test_rule_ids_unique_within_campaign(rule_sets):
 
 
 def test_provenance_integrity(rule_sets, clauses_frame):
-    """Every gate_b_sources clause ID must exist in the SUT corpus."""
+    """Every gate_b_sources cite must resolve to a SUT corpus clause_id."""
+    from scripts.sut.prose.clause_identity import (
+        AmbiguousClauseCiteError,
+        UnknownClauseCiteError,
+        is_clause_id,
+        resolve_gate_b_ref_to_clause_ids,
+    )
+
+    clauses = pl.read_parquet(_CLAUSES_PATH)
     for name, rules in rule_sets.items():
         for r in rules:
-            for cid in r.get("gate_b_sources") or []:
-                assert cid in clauses_frame, f"{name}/{r['rule_id']}: unknown clause {cid}"
+            for raw in r.get("gate_b_sources") or []:
+                ref = str(raw)
+                if is_clause_id(ref):
+                    assert ref in clauses_frame, f"{name}/{r['rule_id']}: unknown clause {ref}"
+                    continue
+                try:
+                    resolved = resolve_gate_b_ref_to_clause_ids(
+                        ref,
+                        clauses,
+                        in_force_only=True,
+                        allow_ambiguous=True,
+                    )
+                except (AmbiguousClauseCiteError, UnknownClauseCiteError) as exc:
+                    raise AssertionError(f"{name}/{r['rule_id']}: {exc}") from exc
+                assert resolved, f"{name}/{r['rule_id']}: unresolved cite {ref}"
+                assert all(cid in clauses_frame for cid in resolved), (
+                    f"{name}/{r['rule_id']}: cite {ref} resolved outside corpus"
+                )
 
 
 def test_all_rules_have_provenance(rule_sets):
@@ -78,13 +102,11 @@ def test_campaign_covers_broad_sections(rule_sets):
 
 
 def test_golden_round_trips(rule_sets):
+    from scripts.sut.prose.provenance_golden import provenance_cases_from_rules
+
     for name, rules in rule_sets.items():
-        golden_path = _RULES_DIR / "golden" / f"{name}.json"
-        if not golden_path.exists():
-            continue
-        golden = json.loads(golden_path.read_text(encoding="utf-8"))
         rule_ids = {r["rule_id"] for r in rules}
-        for case in golden["cases"]:
+        for case in provenance_cases_from_rules(rules, include_encode_batch=True):
             assert case["expected_rule_id"] in rule_ids, (
-                f"{name} golden references unknown rule {case['expected_rule_id']}"
+                f"{name} derived provenance references unknown rule {case['expected_rule_id']}"
             )

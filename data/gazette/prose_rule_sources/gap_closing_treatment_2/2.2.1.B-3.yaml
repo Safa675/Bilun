@@ -12,4 +12,4 @@ rules:
     payment_tr: kullanılan tıbbi malzeme sunucu tarafından temin zorunludur; Kurumca bedeli karşılanmayanlar hariç faturalandırılabilir
     annex_basis: EK-2/C
   gate_b_sources:
-  - C000620
+  - 2.2.1.B-3.(3)

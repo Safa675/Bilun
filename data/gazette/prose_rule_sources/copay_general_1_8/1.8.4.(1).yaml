@@ -15,5 +15,5 @@ rules:
       sgk_income_recipient: 0.2
       other: 0.2
   gate_b_sources:
-  - C000352
-  - C000353
+  - 1.8.4.(1)
+  - 1.8.4.(2)

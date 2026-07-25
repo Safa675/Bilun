@@ -123,7 +123,7 @@
         "message_tr": "Malzeme kodu EK-3/C listelerinde yok — Kurumca karşılanmaz (§3.1.2(2))."
       },
       "gate_b_sources": [
-        "C002707"
+        "3.1.2.(2)"
       ]
     },
     {
@@ -145,7 +145,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002684"
+        "3.1.1.(2)"
       ],
       "condition": {
         "titubb_uts_incomplete": true
@@ -161,7 +161,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002697"
+        "3.1.1.(15)"
       ],
       "condition": {
         "material_name_any": [
@@ -183,7 +183,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002691"
+        "3.1.1.(9)"
       ],
       "condition": {
         "material_name_any": [
@@ -203,9 +203,9 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002824",
-        "C002828",
-        "C002831"
+        "3.2.1.A.(2)",
+        "3.2.1.B.(2)",
+        "3.2.1.C.(2)"
       ],
       "condition": {
         "material_not_in_ek3": true
@@ -221,7 +221,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002720"
+        "3.1.2.(7)"
       ],
       "condition": {
         "material_name_any": [
@@ -304,7 +304,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002749"
+        "3.1.2.(17)"
       ],
       "condition": {
         "material_name_any": [
@@ -325,7 +325,7 @@
       "sut_section": "3.1.3",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002789"
+        "3.1.3.(2)"
       ],
       "condition": {
         "material_name_any": [
@@ -345,7 +345,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002682"
+        "3.1.1.(5)"
       ],
       "condition": {
         "procurement_record_incomplete": true
@@ -361,7 +361,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002682"
+        "3.1.1.(11)"
       ],
       "condition": {
         "procedure_not_reimbursed": true
@@ -377,7 +377,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002694"
+        "3.1.1.(12)"
       ],
       "condition": {
         "foreign_facility": true
@@ -393,7 +393,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002698"
+        "3.1.1.(16)"
       ],
       "condition": {
         "facility_procedure_restriction_violation": true
@@ -409,7 +409,7 @@
       "sut_section": "3.1.3",
       "deontic": "MUST_NOT_BILL",
       "gate_b_sources": [
-        "C002798"
+        "3.1.3.(11)"
       ],
       "condition": {
         "diagnosis_bundled_no_separate_bill": true
@@ -425,7 +425,7 @@
       "sut_section": "3.1.1",
       "deontic": "MUST_NOT_BILL",
       "gate_b_sources": [
-        "C002695"
+        "3.1.1.(13)"
       ],
       "condition": {
         "separate_billing_not_authorized": true
@@ -441,7 +441,7 @@
       "sut_section": "3.2.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002821"
+        "3.2.1.A.(1)"
       ],
       "condition": {
         "procurement_price_refs_insufficient": true
@@ -457,7 +457,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002696"
+        "3.1.1.(14)"
       ],
       "condition": {
         "medula_code_undefined_on_date": true
@@ -473,7 +473,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002800"
+        "3.1.4.(1)"
       ],
       "condition": {
         "diagnosis_bundled_material_scope": true
@@ -489,7 +489,7 @@
       "sut_section": "3.1.3",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002791"
+        "3.1.3.(4)"
       ],
       "condition": {
         "cross_branch_material_unauthorized": true
@@ -541,7 +541,7 @@
         "C002727",
         "C002728",
         "C002729",
-        "C002744"
+        "3.1.2.e"
       ],
       "condition": {
         "protez_repair_documentation_incomplete": true
@@ -573,7 +573,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002721",
+        "3.1.2.(8)",
         "C002722"
       ],
       "condition": {
@@ -590,7 +590,7 @@
       "sut_section": "3.1.1",
       "deontic": "MANDATORY",
       "gate_b_sources": [
-        "C002686"
+        "3.1.1.(4)"
       ],
       "condition": {
         "ihale_dts_mandatory_fields_incomplete": true
@@ -606,7 +606,7 @@
       "sut_section": "3.2.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002821"
+        "3.2.1.A.(1)"
       ],
       "condition": {
         "supplier_contract_pricing_path": true
@@ -622,7 +622,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002751"
+        "3.1.2.(19)"
       ],
       "condition": {
         "ek3c_inpatient_external_supply_invalid": true
@@ -638,7 +638,7 @@
       "sut_section": "3.2.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002834"
+        "3.2.2.(2)"
       ],
       "condition": {
         "ek3c_list_price_missing": true
@@ -654,7 +654,7 @@
       "sut_section": "3.1.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002693"
+        "3.1.1.(11)"
       ],
       "condition": {
         "ek3_quality_documentation_incomplete": true
@@ -670,7 +670,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002725"
+        "3.1.2.(9)"
       ],
       "condition": {
         "ek3c_miat_early_renewal_unauthorized": true
@@ -686,7 +686,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002709"
+        "3.1.2.(4)"
       ],
       "condition": {
         "ek3c_custom_order_billing_invalid": true
@@ -702,7 +702,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002713"
+        "3.1.2.(5)"
       ],
       "condition": {
         "ek3c_medical_appropriateness_incomplete": true
@@ -734,7 +734,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002735"
+        "3.1.2.(13)"
       ],
       "condition": {
         "ek3c_force_majeure_renewal_claim": true
@@ -750,7 +750,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002700"
+        "3.1.2.(1)"
       ],
       "condition": {
         "ek3c_outpatient_material_scope": true
@@ -766,7 +766,7 @@
       "sut_section": "3.1.1",
       "deontic": "MANDATORY",
       "gate_b_sources": [
-        "C002687"
+        "3.1.1.(5)"
       ],
       "condition": {
         "inpatient_material_facility_supply_violation": true
@@ -782,7 +782,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002682"
+        "3.1.1.(7)"
       ],
       "condition": {
         "non_reimbursed_inpatient_patient_charge": true
@@ -798,7 +798,7 @@
       "sut_section": "3.1.3",
       "deontic": "MUST_NOT_BILL",
       "gate_b_sources": [
-        "C002765"
+        "3.1.3.(10)"
       ],
       "condition": {
         "lab_material_separate_billing": true
@@ -814,7 +814,7 @@
       "sut_section": "3.1.3",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002765"
+        "3.1.3.(3)"
       ],
       "condition": {
         "shared_consumable_wrong_branch_billing": true
@@ -830,7 +830,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002699"
+        "3.1.2.(6)"
       ],
       "condition": {
         "material_prescription_quantity_exceeded": true
@@ -846,17 +846,17 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002759",
-        "C002719",
-        "C002753",
-        "C002760",
-        "C002764",
-        "C002761",
-        "C002792",
-        "C002793",
-        "C002758",
-        "C002762",
-        "C002734",
+        "3.1.2.2.(2)",
+        "3.1.2.(6)",
+        "3.1.2.1.(1)",
+        "3.1.2.2.(3)",
+        "3.1.2.2.(6)",
+        "3.1.2.2.(4)",
+        "3.1.3.(5)",
+        "3.1.3.(6)",
+        "3.1.2.2.(1)",
+        "3.1.2.2.(5)",
+        "3.1.2.(12)",
         "C002763"
       ],
       "condition": {
@@ -889,8 +889,8 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002818",
-        "C002801"
+        "3.1.4.n",
+        "3.1.4.(2)"
       ],
       "condition": {
         "diagnosis_package_material_unbundled": true
@@ -906,7 +906,7 @@
       "sut_section": "3.2.3",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002836"
+        "3.2.3.(1)"
       ],
       "condition": {
         "emergency_uncontracted_facility_material": true
@@ -922,13 +922,13 @@
       "sut_section": "3.2.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002823",
-        "C002830",
-        "C002690",
-        "C002766",
-        "C002790",
-        "C002797",
-        "C002827"
+        "3.2.1.A.(1)",
+        "3.2.1.C.(1)",
+        "3.1.1.(8)",
+        "3.1.3.(1)",
+        "3.1.3.(3)",
+        "3.1.3.(10)",
+        "3.2.1.B.(1)"
       ],
       "condition": {
         "unlisted_material_surcharge_billing": true
@@ -944,7 +944,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002746"
+        "3.1.2.g"
       ],
       "condition": {
         "wheelchair_dual_prescription_invalid": true
@@ -960,7 +960,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002748"
+        "3.1.2.(16)"
       ],
       "condition": {
         "outpatient_contract_center_supply_required": true
@@ -992,8 +992,8 @@
       "sut_section": "3.1.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002688",
-        "C002825",
+        "3.1.1.(6)",
+        "3.2.1.A.(3)",
         "C002715"
       ],
       "condition": {
@@ -1010,7 +1010,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002682"
+        "3.1.1.(3)"
       ],
       "condition": {
         "ismarlama_device_component_titubb_incomplete": true
@@ -1026,7 +1026,7 @@
       "sut_section": "3.1.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002685"
+        "3.1.1.(3)"
       ],
       "condition": {
         "titubb_uts_barcode_documentation_missing": true
@@ -1094,7 +1094,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002736",
+        "3.1.2.(14)",
         "C002737",
         "C002738"
       ],
@@ -1112,7 +1112,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002747"
+        "3.1.2.(15)"
       ],
       "condition": {
         "terror_victim_ortez_protez_documentation_incomplete": true
@@ -1128,7 +1128,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002750"
+        "3.1.2.(18)"
       ],
       "condition": {
         "material_prescription_correction_invalid": true
@@ -1144,7 +1144,7 @@
       "sut_section": "3.1.2.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002756"
+        "3.1.2.1.(3)"
       ],
       "condition": {
         "device_return_application_deadline_missed": true
@@ -1176,7 +1176,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002802"
+        "3.1.4.a"
       ],
       "condition": {
         "material_name_any": [
@@ -1199,7 +1199,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002803"
+        "3.1.4.b"
       ],
       "condition": {
         "material_name_any": [
@@ -1220,7 +1220,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002804"
+        "3.1.4.c"
       ],
       "condition": {
         "material_name_any": [
@@ -1241,7 +1241,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002806"
+        "3.1.4.d"
       ],
       "condition": {
         "material_name_any": [
@@ -1264,7 +1264,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002807"
+        "3.1.4.e"
       ],
       "condition": {
         "material_name_any": [
@@ -1286,7 +1286,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002808"
+        "3.1.4.f"
       ],
       "condition": {
         "material_name_any": [
@@ -1309,7 +1309,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002809"
+        "3.1.4.g"
       ],
       "condition": {
         "material_name_any": [
@@ -1330,7 +1330,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002811"
+        "3.1.4.h"
       ],
       "condition": {
         "material_name_any": [
@@ -1355,7 +1355,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002813"
+        "3.1.4.i"
       ],
       "condition": {
         "material_name_any": [
@@ -1380,7 +1380,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002814"
+        "3.1.4.j"
       ],
       "condition": {
         "material_name_any": [
@@ -1409,7 +1409,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002816"
+        "3.1.4.l"
       ],
       "condition": {
         "material_name_any": [
@@ -1430,7 +1430,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002817"
+        "3.1.4.m"
       ],
       "condition": {
         "material_name_any": [
@@ -1454,7 +1454,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002819"
+        "3.1.4.o"
       ],
       "condition": {
         "material_name_any": [
@@ -1479,7 +1479,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002805"
+        "3.1.4.ç"
       ],
       "condition": {
         "material_name_any": [
@@ -1505,7 +1505,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002810"
+        "3.1.4.ğ"
       ],
       "condition": {
         "material_name_any": [
@@ -1527,7 +1527,7 @@
       "sut_section": "3.1.4",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002812"
+        "3.1.4.ı"
       ],
       "condition": {
         "material_name_any": [
