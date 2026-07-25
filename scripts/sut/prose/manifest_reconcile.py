@@ -20,7 +20,7 @@ from scripts.sut.audit_manifest_parity import (  # noqa: E402
     audit_manifest_payload,
 )
 from scripts.sut.prose.drug_indication_gate_b import infer_defer_themes  # noqa: E402
-from scripts.sut.prose.drug_indication_manifest import build_defer_reason  # noqa: E402
+from scripts.sut.prose.gate_b_generic import build_defer_reason  # noqa: E402
 
 _MANIFEST_DIR = _PROJECT_ROOT / "data/gazette/prose_manifests"
 

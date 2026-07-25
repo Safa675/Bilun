@@ -12,7 +12,10 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from src.bilun.api.schemas import (
+    DeferralListResponse,
     ProseInventoryResponse,
+    ProseRuleSourcesResponse,
+    ProseRulesSourcesListResponse,
     RuleCatalogResponse,
     RuleClause,
     RuleDetailResponse,
@@ -110,6 +113,83 @@ def get_prose_inventory():
     return rules_catalog.prose_inventory()
 
 
+@router.get(
+    "/rules/prose-rules/{rule_set_id}",
+    response_model=ProseRulesSourcesListResponse,
+)
+def list_prose_rule_sources(
+    rule_set_id: str,
+    page: int = 1,
+    per_page: int = _DEFAULT_PER_PAGE,
+):
+    """Prose JSON rules with ``gate_b_sources`` resolved to coordinates + snippets."""
+    if page < 1:
+        raise ValidationError("page must be >= 1", page=page)
+    if per_page < 1 or per_page > _MAX_PER_PAGE:
+        raise ValidationError(
+            f"per_page must be between 1 and {_MAX_PER_PAGE}", per_page=per_page
+        )
+    offset = (page - 1) * per_page
+    payload = rules_catalog.list_prose_rules_with_gate_b_sources(
+        rule_set_id, limit=per_page, offset=offset
+    )
+    if payload is None:
+        raise NotFoundError(f"Unknown prose rule_set_id: {rule_set_id}", rule_set_id=rule_set_id)
+    total = int(payload.get("total") or 0)
+    total_pages = (total + per_page - 1) // per_page if total else 0
+    return {
+        **payload,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages,
+    }
+
+
+@router.get(
+    "/rules/prose-rules/{rule_set_id}/{rule_id}",
+    response_model=ProseRuleSourcesResponse,
+)
+def get_prose_rule_sources(rule_set_id: str, rule_id: str):
+    """One prose rule's ``gate_b_sources`` as coordinates + text snippets."""
+    detail = rules_catalog.resolve_prose_rule_gate_b_sources(rule_set_id, rule_id)
+    if detail is None:
+        raise NotFoundError(
+            f"Unknown prose rule: {rule_set_id}/{rule_id}",
+            rule_set_id=rule_set_id,
+            rule_id=rule_id,
+        )
+    return detail
+
+
+@router.get("/rules/deferrals", response_model=DeferralListResponse)
+def list_deferrals(
+    q: str | None = None,
+    status: str | None = None,
+    page: int = 1,
+    per_page: int = _DEFAULT_PER_PAGE,
+):
+    """Deferral-table review rows keyed by coordinate when known (Track D)."""
+    if page < 1:
+        raise ValidationError("page must be >= 1", page=page)
+    if per_page < 1 or per_page > _MAX_PER_PAGE:
+        raise ValidationError(
+            f"per_page must be between 1 and {_MAX_PER_PAGE}", per_page=per_page
+        )
+    offset = (page - 1) * per_page
+    rows, total = rules_catalog.list_deferrals(
+        q=q, status=status, limit=per_page, offset=offset
+    )
+    total_pages = (total + per_page - 1) // per_page if total else 0
+    return {
+        "deferrals": rows,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "total_pages": total_pages,
+        "artifacts_available": rules_catalog.artifacts_available(),
+    }
+
+
 @router.get("/rules/clauses", response_model=SectionClausesResponse)
 def list_all_clauses(
     q: str | None = None,
@@ -156,10 +236,13 @@ def list_all_clauses(
 
 @router.get("/rules/clauses/{clause_id}", response_model=RuleClause)
 def get_single_clause(clause_id: str):
-    """Single SUT clause by clause_id."""
+    """Single SUT clause by ``clause_id`` or unique ``clause_coordinate``."""
     clause = rules_catalog.get_clause(clause_id)
     if clause is None:
-        raise NotFoundError(f"Unknown clause_id: {clause_id}", clause_id=clause_id)
+        raise NotFoundError(
+            f"Unknown clause_id or clause_coordinate: {clause_id}",
+            clause_id=clause_id,
+        )
     return clause
 
 

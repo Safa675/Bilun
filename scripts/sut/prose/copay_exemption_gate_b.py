@@ -211,6 +211,7 @@ def write_gate_b_artifacts(
     rules_path: Path,
     corpus_csv: Path,
     manifest_path: Path,
+    write_corpus: bool = False,
 ) -> tuple[pl.DataFrame, dict[str, Any]]:
     manifest = build_encoded_manifest(rules_path, clauses_path)
     encoded = frozenset(manifest["encoded_clause_ids"])
@@ -219,7 +220,8 @@ def write_gate_b_artifacts(
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
     frame = export_copay_exemption_candidates(clauses_path, encoded_clause_ids=encoded)
-    frame.write_csv(corpus_csv)
+    if write_corpus:
+        frame.write_csv(corpus_csv)
     manifest_path.write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",

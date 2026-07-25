@@ -25,6 +25,41 @@ import { ruleMotorLabel } from "@/lib/clauseUtilization";
 import { fmtNum } from "../../shared";
 import { CLAUSES_PER_PAGE, COVERAGE_KEY, STATUS_FILTERS, UtilizationChip, useDeonticLabel } from "./shared";
 
+function clauseDeepLinkKey(clause: RuleClause): string {
+  return clause.clause_coordinate || clause.clause_id || "";
+}
+
+function CopyableCoordinate({
+  coordinate,
+  clauseId,
+}: {
+  coordinate: string | null;
+  clauseId: string | null;
+}) {
+  const t = useT();
+  const primary = coordinate || clauseId;
+  if (!primary) return null;
+
+  const copy = (e: ReactMouseEvent) => {
+    e.stopPropagation();
+    void navigator.clipboard?.writeText(primary);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      title={t("sections.ruleDatabase.clauses.copyCoordinate")}
+      className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-soft)]"
+    >
+      {primary}
+      {coordinate && clauseId ? (
+        <span className="ml-1 font-normal text-[var(--text-muted)]">{clauseId}</span>
+      ) : null}
+    </button>
+  );
+}
+
 export function ClauseBrowserPanel({
   initialQuery = "",
   initialClauseId,
@@ -58,7 +93,7 @@ export function ClauseBrowserPanel({
     if (initialQuery) setQuery(initialQuery);
   }, [initialQuery]);
 
-  // Deep link: ?rdClause=C002684 → fetch and pre-select that clause on mount.
+  // Deep link: ?rdClause=2.2.1.(1) or C002684 → fetch and pre-select.
   useEffect(() => {
     if (!initialClauseId) return;
     let active = true;
@@ -263,7 +298,7 @@ export function ClauseBrowserPanel({
                       key={clause.clause_id}
                       onClick={() => {
                         setSelectedClause(clause);
-                        onUrlUpdate?.({ rdClause: clause.clause_id });
+                        onUrlUpdate?.({ rdClause: clauseDeepLinkKey(clause) || null });
                       }}
                       className={`cursor-pointer rounded-[var(--r-sm)] border px-3 py-2 transition-colors hover:bg-[var(--surface-default)] ${
                         isSelected
@@ -272,11 +307,10 @@ export function ClauseBrowserPanel({
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        {clause.clause_id && (
-                          <span className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-secondary)]">
-                            {clause.clause_id}
-                          </span>
-                        )}
+                        <CopyableCoordinate
+                          coordinate={clause.clause_coordinate}
+                          clauseId={clause.clause_id}
+                        />
                         <UtilizationChip clause={clause} />
                         {clause.primary_rule_id && (
                           <span className="font-mono text-[10px] text-[var(--text-muted)]">
@@ -359,11 +393,10 @@ export function ClauseCard({
   return (
     <li className="min-h-[80px] rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-soft)] p-3">
       <div className="mb-1.5 flex flex-wrap items-center gap-2">
-        {clause.clause_id && (
-          <span className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-secondary)]">
-            {clause.clause_id}
-          </span>
-        )}
+        <CopyableCoordinate
+          coordinate={clause.clause_coordinate}
+          clauseId={clause.clause_id}
+        />
         {sectionLabel && (
           <span className="font-mono text-[11px] font-semibold text-[var(--text-primary)]">
             {sectionLabel}

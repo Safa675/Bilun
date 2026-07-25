@@ -62,8 +62,9 @@ const mockClause: RuleClause = {
 };
 
 describe("ClauseCard", () => {
-  it("renders clause_id in a mono badge", () => {
+  it("renders clause_coordinate as primary identity", () => {
     const html = renderToStaticMarkupWithLocale(<ClauseCard clause={mockClause} />);
+    expect(html).toContain("2.2.1.(1)");
     expect(html).toContain("C002684");
   });
 

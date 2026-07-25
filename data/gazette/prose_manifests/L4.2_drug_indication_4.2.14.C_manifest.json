@@ -1,16 +1,12 @@
 {
   "manifest_version": "canonical-v1",
+  "rule_set_id": "drug_indication_prose",
   "section_id": "4.2.14.C",
-  "effective_date": "2026-06-29",
-  "rule_set_id": "drug_indication_4.2.14.C",
+  "effective_date": "2026-07-25",
   "rules_in_json": 930,
   "section_clause_total": 615,
-  "encoded_clause_count": 396,
-  "tier_a_pending_count": 0,
-  "tier_b_pending_count": 0,
-  "tier_c_deferred_count": 9,
+  "encoded_clause_count": 416,
   "encoded_clause_ids": [
-    "C004934",
     "C004935",
     "C004936",
     "C004937",
@@ -39,6 +35,9 @@
     "C004982",
     "C004983",
     "C004984",
+    "C004985",
+    "C004986",
+    "C004987",
     "C004988",
     "C004996",
     "C004997",
@@ -56,7 +55,9 @@
     "C005013",
     "C005014",
     "C005015",
+    "C005016",
     "C005024",
+    "C005025",
     "C005027",
     "C005029",
     "C005030",
@@ -67,6 +68,7 @@
     "C005036",
     "C005037",
     "C005038",
+    "C005039",
     "C005040",
     "C005043",
     "C005045",
@@ -75,9 +77,12 @@
     "C005050",
     "C005051",
     "C005052",
+    "C005053",
+    "C005054",
     "C005055",
     "C005058",
     "C005060",
+    "C005061",
     "C005062",
     "C005064",
     "C005065",
@@ -93,21 +98,29 @@
     "C005088",
     "C005090",
     "C005092",
+    "C005093",
+    "C005094",
     "C005095",
     "C005096",
+    "C005097",
     "C005098",
     "C005099",
     "C005100",
     "C005102",
     "C005103",
     "C005104",
+    "C005105",
     "C005108",
     "C005109",
     "C005111",
+    "C005112",
     "C005113",
+    "C005114",
+    "C005119",
     "C005120",
     "C005121",
     "C005122",
+    "C005133",
     "C005134",
     "C005136",
     "C005137",
@@ -136,6 +149,9 @@
     "C005189",
     "C005190",
     "C005191",
+    "C005192",
+    "C005193",
+    "C005194",
     "C005195",
     "C005197",
     "C005200",
@@ -249,6 +265,7 @@
     "C005482",
     "C005483",
     "C005485",
+    "C005487",
     "C005489",
     "C005498",
     "C005505",
@@ -410,6 +427,7 @@
   "tier_a_pending_clause_ids": [],
   "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
+    "C004934",
     "C005056",
     "C005151",
     "C005185",
@@ -417,7 +435,6 @@
     "C005275",
     "C005331",
     "C005344",
-    "C005487",
     "C005638"
   ],
   "emr_blocked_clause_ids": [
@@ -425,19 +442,13 @@
     "C004981",
     "C005000",
     "C005028",
-    "C005039",
     "C005048",
-    "C005053",
-    "C005054",
     "C005057",
     "C005059",
     "C005063",
     "C005069",
     "C005075",
-    "C005093",
     "C005110",
-    "C005114",
-    "C005193",
     "C005263",
     "C005269",
     "C005273",
@@ -459,21 +470,15 @@
     "C004951",
     "C004954",
     "C004966",
-    "C004985",
-    "C004986",
-    "C004987",
     "C005001",
     "C005006",
     "C005011",
-    "C005016",
     "C005018",
     "C005023",
-    "C005025",
     "C005026",
     "C005032",
     "C005044",
     "C005047",
-    "C005061",
     "C005068",
     "C005071",
     "C005072",
@@ -481,14 +486,8 @@
     "C005083",
     "C005089",
     "C005091",
-    "C005094",
-    "C005097",
     "C005101",
-    "C005105",
-    "C005112",
     "C005115",
-    "C005119",
-    "C005133",
     "C005135",
     "C005138",
     "C005141",
@@ -503,8 +502,6 @@
     "C005186",
     "C005187",
     "C005188",
-    "C005192",
-    "C005194",
     "C005196",
     "C005198",
     "C005214",
@@ -634,32 +631,39 @@
     "C005757",
     "C005763"
   ],
-  "emr_blocked_count": 32,
-  "non_actionable_count": 178,
+  "tier_a_pending_count": 0,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 9,
+  "emr_blocked_count": 26,
+  "non_actionable_count": 164,
   "clause_traces": [
     {
       "clause_id": "C004934",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "encoded",
+      "manifest_status": "tier_c_deferred",
       "heuristic_inn": "2.14.C - Özel düzenleme yapılan ilaçlar",
-      "linked_rule_ids": [
-        "4.2.14.C.(1).ramucirumab_crc_board",
-        "4.2.14.C.(15).pemetrexed_nsclc_board"
-      ]
+      "defer_themes": [
+        "clinical_pathway"
+      ],
+      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     },
     {
       "clause_id": "C004935",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "(Mülga: RG-21/03/2018- 30367/ 23-a md. Yürürlük: 01/04/2018) Bevacizumab",
       "linked_rule_ids": [
         "4.2.14.C.(1).interleukin2_oncology_board",
         "4.2.14.C.(1).octreotid_lanreotid_oncology_board",
+        "4.2.14.C.(1).ramucirumab_crc_board",
         "4.2.14.C.(1).streptozocin_oncology_board"
       ]
     },
     {
       "clause_id": "C004936",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 26/09/2013- 28777/ 5-a md. Yürürlük: 04/10/2013) Tioguanin",
@@ -676,6 +680,7 @@
     },
     {
       "clause_id": "C004937",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -685,6 +690,7 @@
     },
     {
       "clause_id": "C004938",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 18/02/2015- 29271/ 12-a md. Yürürlük: 28/02/2015)",
@@ -694,6 +700,7 @@
     },
     {
       "clause_id": "C004942",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Trastuzumab",
@@ -704,6 +711,7 @@
     },
     {
       "clause_id": "C004943",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 25/08/2022- 31934/ 27-a md. Yürürlük: 03/09/2022)",
@@ -714,6 +722,7 @@
     },
     {
       "clause_id": "C004945",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda",
@@ -723,6 +732,7 @@
     },
     {
       "clause_id": "C004946",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -734,6 +744,7 @@
     },
     {
       "clause_id": "C004947",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Mülga: RG-09/05/2020-31122/1-a md. Yürürlük: 16/05/2020)",
@@ -741,6 +752,7 @@
     },
     {
       "clause_id": "C004951",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 04/02/2018- 30322/ 16-a md. Yürürlük: 15/02/2018)",
@@ -748,6 +760,7 @@
     },
     {
       "clause_id": "C004953",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "BCG canlı intravezikal",
@@ -758,6 +771,7 @@
     },
     {
       "clause_id": "C004954",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-28/04/2021-31468/ 15-a md. Yürürlük: 06/05/2021)",
@@ -765,6 +779,7 @@
     },
     {
       "clause_id": "C004958",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Fulvestrant",
@@ -774,6 +789,7 @@
     },
     {
       "clause_id": "C004959",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -783,6 +799,7 @@
     },
     {
       "clause_id": "C004960",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -792,6 +809,7 @@
     },
     {
       "clause_id": "C004961",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -801,6 +819,7 @@
     },
     {
       "clause_id": "C004962",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -810,16 +829,18 @@
     },
     {
       "clause_id": "C004963",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C004964",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "İmatinib",
@@ -829,6 +850,7 @@
     },
     {
       "clause_id": "C004965",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "İmiquimod",
@@ -838,6 +860,7 @@
     },
     {
       "clause_id": "C004966",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Rituksimab",
@@ -845,6 +868,7 @@
     },
     {
       "clause_id": "C004972",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -854,6 +878,7 @@
     },
     {
       "clause_id": "C004973",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nükseden veya kemorezistan CD20 pozitif foliküler lenfoma",
@@ -863,6 +888,7 @@
     },
     {
       "clause_id": "C004974",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Foliküler lenfomada",
@@ -872,6 +898,7 @@
     },
     {
       "clause_id": "C004975",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Kronik Lenfositik Lösemi (KLL)",
@@ -882,6 +909,7 @@
     },
     {
       "clause_id": "C004976",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Performans durumu iyi olan (ECOG 0-1)",
@@ -891,6 +919,7 @@
     },
     {
       "clause_id": "C004977",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Relaps/Refrakter (Nükseden/Dirençli)tedavide",
@@ -900,6 +929,7 @@
     },
     {
       "clause_id": "C004978",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek:RG- 28/12/2018- 30639/ 20-a md. Yürürlük: 08/01/2019)",
@@ -909,6 +939,7 @@
     },
     {
       "clause_id": "C004979",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Rituksimab 1400 mg subkütan formu Non-Hodgkin Lenfomada",
@@ -919,6 +950,7 @@
     },
     {
       "clause_id": "C004980",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nükseden veya kemorezistan CD20 pozitif folliküler lenfoma",
@@ -928,16 +960,18 @@
     },
     {
       "clause_id": "C004981",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
         "clinical_pathway"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      ]
     },
     {
       "clause_id": "C004982",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -947,6 +981,7 @@
     },
     {
       "clause_id": "C004983",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "CD20 pozitif",
@@ -956,6 +991,7 @@
     },
     {
       "clause_id": "C004984",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -965,27 +1001,37 @@
     },
     {
       "clause_id": "C004985",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Temozolomid",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.(2).azacitidine_mds_board"
+      ]
     },
     {
       "clause_id": "C004986",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Floxuridin",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.tier_c.C004986.floxuridin"
+      ]
     },
     {
       "clause_id": "C004987",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Azasitidin ve decitabin",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.azacitidine_mds_6mo_heme"
+      ]
     },
     {
       "clause_id": "C004988",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 30/08/2014- 29104/ 14-b md. Yürürlük: 06/09/2014)",
@@ -995,6 +1041,7 @@
     },
     {
       "clause_id": "C004996",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Söz konusu teşhislerde en fazla 4 kür kullanılabilir.",
@@ -1004,6 +1051,7 @@
     },
     {
       "clause_id": "C004997",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Azasitidin",
@@ -1013,6 +1061,7 @@
     },
     {
       "clause_id": "C004998",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Miyelodisplastik Sendromda (MDS) görülen dirençli anemi tedavisinde",
@@ -1022,6 +1071,7 @@
     },
     {
       "clause_id": "C004999",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "Kemik iliği blast oranının %5’in üzerinde artmış olduğunun belirtildiği",
@@ -1032,16 +1082,18 @@
     },
     {
       "clause_id": "C005000",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005001",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Azasitidin",
@@ -1049,6 +1101,7 @@
     },
     {
       "clause_id": "C005002",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1058,6 +1111,7 @@
     },
     {
       "clause_id": "C005003",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Söz konusu teşhislerde en fazla 6 siklus kullanılabilir.",
@@ -1068,6 +1122,7 @@
     },
     {
       "clause_id": "C005004",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 05/08/2015- 29436/ 15-a md. Yürürlük: 13/08/2015)",
@@ -1079,6 +1134,7 @@
     },
     {
       "clause_id": "C005005",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Azasitidin ve decitabin birlikte kullanılamaz.",
@@ -1088,6 +1144,7 @@
     },
     {
       "clause_id": "C005006",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Decitabin",
@@ -1095,6 +1152,7 @@
     },
     {
       "clause_id": "C005007",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Miyelodisplastik Sendromda (MDS) görülen dirençli anemi tedavisinde",
@@ -1105,6 +1163,7 @@
     },
     {
       "clause_id": "C005008",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "Kemik iliği blast oranının %5’in üzerinde artmış olduğunun belirtildiği",
@@ -1114,6 +1173,7 @@
     },
     {
       "clause_id": "C005009",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1124,6 +1184,7 @@
     },
     {
       "clause_id": "C005010",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Decitabin",
@@ -1134,6 +1195,7 @@
     },
     {
       "clause_id": "C005011",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -1141,6 +1203,7 @@
     },
     {
       "clause_id": "C005012",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1151,6 +1214,7 @@
     },
     {
       "clause_id": "C005013",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Söz konusu teşhiste en fazla 6 siklus kullanılabilir.",
@@ -1162,6 +1226,7 @@
     },
     {
       "clause_id": "C005014",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 05/08/2015- 29436/ 15-b md. Yürürlük: 13/08/2015)",
@@ -1173,6 +1238,7 @@
     },
     {
       "clause_id": "C005015",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Azasitidin ve decitabin birlikte kullanılamaz.",
@@ -1182,13 +1248,18 @@
     },
     {
       "clause_id": "C005016",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Dasatinib (Ek: RG- 04/09/2019- 30878/ 23-a md. Yürürlük: 12/09/2019)",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.tier_c.C005019.dasatinib",
+        "4.2.14.C.tier_c_b.C005021.nilotinib"
+      ]
     },
     {
       "clause_id": "C005018",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 18/02/2015- 29271/ 12-c md. Yürürlük: 28/02/2015)",
@@ -1196,6 +1267,7 @@
     },
     {
       "clause_id": "C005023",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Kronik miyeloid lösemi tanılı yetişkin hastaların tedavisinde",
@@ -1203,6 +1275,7 @@
     },
     {
       "clause_id": "C005024",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Dasatinib",
@@ -1213,13 +1286,18 @@
     },
     {
       "clause_id": "C005025",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Nilotinib (Mülga:RG-23/05/2026-33262/4-a md. Yürürlük:04/06/2026)  yalnızca",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.tier_c_b.C005021.nilotinib",
+        "4.2.14.C.tier_c_b.C005024.dasatinib"
+      ]
     },
     {
       "clause_id": "C005026",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -1227,6 +1305,7 @@
     },
     {
       "clause_id": "C005027",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Direnç gelişmesi durumu",
@@ -1238,16 +1317,18 @@
     },
     {
       "clause_id": "C005028",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005029",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1257,6 +1338,7 @@
     },
     {
       "clause_id": "C005030",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1269,6 +1351,7 @@
     },
     {
       "clause_id": "C005031",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1279,6 +1362,7 @@
     },
     {
       "clause_id": "C005032",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Tam hematolojik yanıt kaybı",
@@ -1286,6 +1370,7 @@
     },
     {
       "clause_id": "C005033",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Tam sitogenetik yanıt kaybı",
@@ -1295,6 +1380,7 @@
     },
     {
       "clause_id": "C005034",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1305,6 +1391,7 @@
     },
     {
       "clause_id": "C005035",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Mutasyon",
@@ -1314,6 +1401,7 @@
     },
     {
       "clause_id": "C005036",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Philadelphia kromozomu pozitifliği ile birlikte klonal karyotipik anormallik",
@@ -1324,6 +1412,7 @@
     },
     {
       "clause_id": "C005037",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İntolerans gelişmesi durumu",
@@ -1337,6 +1426,7 @@
     },
     {
       "clause_id": "C005038",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1346,16 +1436,17 @@
     },
     {
       "clause_id": "C005039",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "emr_blocked",
+      "manifest_status": "encoded",
       "heuristic_inn": "Dasatinib (Ek: RG- 04/09/2019- 30878/ 23-b md. Yürürlük: 12/09/2019)",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      "linked_rule_ids": [
+        "4.2.14.C.(cml).tki_combo_no_pay"
+      ]
     },
     {
       "clause_id": "C005040",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik:RG-28/04/2021-31468/15-b md. Yürürlük: 06/05/2021)",
@@ -1366,6 +1457,7 @@
     },
     {
       "clause_id": "C005043",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Bosutinib",
@@ -1376,6 +1468,7 @@
     },
     {
       "clause_id": "C005044",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "ALL (akut lenfoblastik lösemili) yetişkin hastaların tedavisinde",
@@ -1383,6 +1476,7 @@
     },
     {
       "clause_id": "C005045",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Dasatinib",
@@ -1392,6 +1486,7 @@
     },
     {
       "clause_id": "C005046",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Dasatinib ve nilotinib kombine olarak kullanılamayacaktır.",
@@ -1401,6 +1496,7 @@
     },
     {
       "clause_id": "C005047",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Sunitinib",
@@ -1408,16 +1504,18 @@
     },
     {
       "clause_id": "C005048",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005049",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Temsirolimus",
@@ -1427,6 +1525,7 @@
     },
     {
       "clause_id": "C005050",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "Metastatik ya da lokal ileri evrede olan ve cerrahi tedavinin mümkün olmadığı",
@@ -1436,6 +1535,7 @@
     },
     {
       "clause_id": "C005051",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 04/05/2013- 28637/ 12-b md. Yürürlük: 11/05/2013)",
@@ -1445,6 +1545,7 @@
     },
     {
       "clause_id": "C005052",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1458,27 +1559,28 @@
     },
     {
       "clause_id": "C005053",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "emr_blocked",
+      "manifest_status": "encoded",
       "heuristic_inn": "Lapatinib",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      "linked_rule_ids": [
+        "4.2.14.C.(1).lapatinib_her2_board",
+        "4.2.14.C.(3).sorafenib_hcc_rcc_board"
+      ]
     },
     {
       "clause_id": "C005054",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "emr_blocked",
+      "manifest_status": "encoded",
       "heuristic_inn": "Temsirolimus",
-      "defer_themes": [
-        "response_assessment",
-        "moh_patient_approval"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      "linked_rule_ids": [
+        "4.2.14.C.nopay_after_cabozantinib_rcc_seq"
+      ]
     },
     {
       "clause_id": "C005055",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Laktat dehidrogenaz düzeyinin normalin üst sınırından 1",
@@ -1488,6 +1590,7 @@
     },
     {
       "clause_id": "C005056",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "Hemoglobinin normal değerinin alt sınırdan düşük olması",
@@ -1498,16 +1601,18 @@
     },
     {
       "clause_id": "C005057",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "Düzeltilmiş kalsiyum düzeyinin 10mg/dl nin üzerinde olması",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
         "clinical_pathway"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      ]
     },
     {
       "clause_id": "C005058",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1517,16 +1622,18 @@
     },
     {
       "clause_id": "C005059",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "Performans durumu ECOG’ a göre 2 ve üzerinde olması",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "ecog"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005060",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İki ya da daha fazla organ metastazının bulunması",
@@ -1536,13 +1643,17 @@
     },
     {
       "clause_id": "C005061",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Sorafenib",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.fikra2_second_tier_prescriber"
+      ]
     },
     {
       "clause_id": "C005062",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Metastatik renal hücreli karsinom (mRCC) endikasyonunda",
@@ -1552,16 +1663,18 @@
     },
     {
       "clause_id": "C005063",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005064",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Temsirolimus",
@@ -1571,6 +1684,7 @@
     },
     {
       "clause_id": "C005065",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Karaciğer kanserinde",
@@ -1580,6 +1694,7 @@
     },
     {
       "clause_id": "C005066",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 05/08/2015- 29436/ 15-ç md. Yürürlük: 13/08/2015)",
@@ -1589,6 +1704,7 @@
     },
     {
       "clause_id": "C005067",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Tiroid kanseri endikasyonunda",
@@ -1598,6 +1714,7 @@
     },
     {
       "clause_id": "C005068",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Pemetrekset",
@@ -1605,17 +1722,18 @@
     },
     {
       "clause_id": "C005069",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "prior_therapy",
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005070",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Malign plevral mezotelyomada",
@@ -1625,6 +1743,7 @@
     },
     {
       "clause_id": "C005071",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 18/02/2015- 29271/ 12-ç md. Yürürlük: 28/02/2015)",
@@ -1632,6 +1751,7 @@
     },
     {
       "clause_id": "C005072",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Lenalidomid",
@@ -1639,16 +1759,18 @@
     },
     {
       "clause_id": "C005075",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005076",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 09/05/2024-32541/10-d md. Yürürlük: 17/05/2024)",
@@ -1658,6 +1780,7 @@
     },
     {
       "clause_id": "C005081",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Multipl Miyelom",
@@ -1669,6 +1792,7 @@
     },
     {
       "clause_id": "C005082",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -1676,6 +1800,7 @@
     },
     {
       "clause_id": "C005083",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -1683,6 +1808,7 @@
     },
     {
       "clause_id": "C005084",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1692,6 +1818,7 @@
     },
     {
       "clause_id": "C005085",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Kök hücre transplanstasyonuna uygun olmayan",
@@ -1703,6 +1830,7 @@
     },
     {
       "clause_id": "C005086",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1713,6 +1841,7 @@
     },
     {
       "clause_id": "C005087",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "IPSS(Uluslararası prognoz puanlama sistemi)'ye göre düşük veya orta-1 riskli ve",
@@ -1722,6 +1851,7 @@
     },
     {
       "clause_id": "C005088",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1732,6 +1862,7 @@
     },
     {
       "clause_id": "C005089",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 21/03/2018- 30367/ 23-b md. Yürürlük: 01/04/2018)",
@@ -1739,6 +1870,7 @@
     },
     {
       "clause_id": "C005090",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1748,6 +1880,7 @@
     },
     {
       "clause_id": "C005091",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 16/03/2023-32134/24-a md. Yürürlük: 24/03/2023)",
@@ -1755,6 +1888,7 @@
     },
     {
       "clause_id": "C005092",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1764,26 +1898,29 @@
     },
     {
       "clause_id": "C005093",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "emr_blocked",
+      "manifest_status": "encoded",
       "heuristic_inn": "Erlotinib",
-      "defer_themes": [
-        "mutation_panel",
-        "prior_therapy",
-        "response_assessment",
-        "moh_patient_approval"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      "linked_rule_ids": [
+        "4.2.14.C.(1).gefitinib_oncology_board",
+        "4.2.14.C.(3).pazopanib_rcc_board",
+        "4.2.14.C.erlottinib_nsclc_board"
+      ]
     },
     {
       "clause_id": "C005094",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Raltitreksed",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.(1).interferon_oncology_board"
+      ]
     },
     {
       "clause_id": "C005095",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1797,6 +1934,7 @@
     },
     {
       "clause_id": "C005096",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Malign plevral mezotelyomada",
@@ -1806,13 +1944,17 @@
     },
     {
       "clause_id": "C005097",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Everolimus",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.tier_c.C005097.everolimus"
+      ]
     },
     {
       "clause_id": "C005098",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1822,6 +1964,7 @@
     },
     {
       "clause_id": "C005099",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "Cerrahi ya da diğer lokal tedavi yaklaşımlarına uygun bulunmayan",
@@ -1835,6 +1978,7 @@
     },
     {
       "clause_id": "C005100",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1844,6 +1988,7 @@
     },
     {
       "clause_id": "C005101",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 04/09/2019- 30878/ 23-ç md. Yürürlük: 12/09/2019)",
@@ -1851,6 +1996,7 @@
     },
     {
       "clause_id": "C005102",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Rezeke edilemeyen metastatik veya lokal ilerlemiş hastalığı olan",
@@ -1860,6 +2006,7 @@
     },
     {
       "clause_id": "C005103",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1869,6 +2016,7 @@
     },
     {
       "clause_id": "C005104",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1878,13 +2026,17 @@
     },
     {
       "clause_id": "C005105",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Pazopanib",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.(1).panitumumab_crc_board"
+      ]
     },
     {
       "clause_id": "C005108",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1894,6 +2046,7 @@
     },
     {
       "clause_id": "C005109",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "En az bir",
@@ -1903,16 +2056,18 @@
     },
     {
       "clause_id": "C005110",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005111",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Temsirolimus",
@@ -1922,13 +2077,18 @@
     },
     {
       "clause_id": "C005112",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Cinacalcet",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.(1).kabazitaxel_prostate_board",
+        "4.2.14.C.(3).abiraterone_prostate_board"
+      ]
     },
     {
       "clause_id": "C005113",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 25/07/2014- 29071/ 27-b md. Yürürlük: 07/08/2014)",
@@ -1940,16 +2100,17 @@
     },
     {
       "clause_id": "C005114",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "emr_blocked",
+      "manifest_status": "encoded",
       "heuristic_inn": "Trabektedin",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      "linked_rule_ids": [
+        "4.2.14.C.(3).enzalutamide_prostate_board"
+      ]
     },
     {
       "clause_id": "C005115",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-25/03/2025-32852/9-a md. Yürürlük: 04/04/2025)",
@@ -1957,13 +2118,19 @@
     },
     {
       "clause_id": "C005119",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Panitumumab",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.(1).kabazitaxel_prostate_board",
+        "4.2.14.C.(3).abiraterone_prostate_board",
+        "4.2.14.C.(3).enzalutamide_prostate_board"
+      ]
     },
     {
       "clause_id": "C005120",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1975,6 +2142,7 @@
     },
     {
       "clause_id": "C005121",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -1987,6 +2155,7 @@
     },
     {
       "clause_id": "C005122",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 30/12/2020- 31350/ 4-a md. Yürürlük: 08/01/2021)",
@@ -1996,13 +2165,17 @@
     },
     {
       "clause_id": "C005133",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Kabazitaksel",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.tier_c.C005131.kabazitaksel"
+      ]
     },
     {
       "clause_id": "C005134",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Kabazitaksel",
@@ -2012,6 +2185,7 @@
     },
     {
       "clause_id": "C005135",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Enzalutamid",
@@ -2019,6 +2193,7 @@
     },
     {
       "clause_id": "C005136",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2028,6 +2203,7 @@
     },
     {
       "clause_id": "C005137",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Hormonal tedaviye ve sonrasında dosetaksel temelli kemoterapiye dirençli",
@@ -2037,6 +2213,7 @@
     },
     {
       "clause_id": "C005138",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 25/08/2022- 31934/ 27-ç md. Yürürlük: 03/09/2022)",
@@ -2044,6 +2221,7 @@
     },
     {
       "clause_id": "C005139",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2053,6 +2231,7 @@
     },
     {
       "clause_id": "C005140",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2062,6 +2241,7 @@
     },
     {
       "clause_id": "C005141",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Abirateron",
@@ -2069,6 +2249,7 @@
     },
     {
       "clause_id": "C005142",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2078,6 +2259,7 @@
     },
     {
       "clause_id": "C005143",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Hormonal tedaviye ve sonrasında dosetaksel temelli kemoterapiye dirençli",
@@ -2087,6 +2269,7 @@
     },
     {
       "clause_id": "C005144",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 26/10/2021- 31640/ 6-a md. Yürürlük: 04/11/2021)",
@@ -2094,6 +2277,7 @@
     },
     {
       "clause_id": "C005145",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2103,6 +2287,7 @@
     },
     {
       "clause_id": "C005146",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "1- Gleason skorunun 8 veya üzerinde olması",
@@ -2114,6 +2299,7 @@
     },
     {
       "clause_id": "C005147",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "2- En az 3 kemik metastazının olması",
@@ -2121,6 +2307,7 @@
     },
     {
       "clause_id": "C005148",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "3- Visseral metastaz olması.",
@@ -2128,6 +2315,7 @@
     },
     {
       "clause_id": "C005149",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 09/05/2024-32541/10-ğ md. Yürürlük: 17/05/2024)",
@@ -2135,6 +2323,7 @@
     },
     {
       "clause_id": "C005150",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Sağlık Bakanlığınca onaylı endikasyonu olması halinde",
@@ -2144,6 +2333,7 @@
     },
     {
       "clause_id": "C005151",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "1- Gleason skorunun 8 veya üzerinde olması",
@@ -2154,6 +2344,7 @@
     },
     {
       "clause_id": "C005152",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "2- En az 3 kemik metastazının olması",
@@ -2164,6 +2355,7 @@
     },
     {
       "clause_id": "C005153",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "3- Visseral metastaz olması.",
@@ -2173,6 +2365,7 @@
     },
     {
       "clause_id": "C005154",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG-25/11/2025-33088/ 5-a md. Yürürlük: 03/12/2025)",
@@ -2180,6 +2373,7 @@
     },
     {
       "clause_id": "C005155",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Sağlık Bakanlığınca onaylı endikasyonu olması halinde",
@@ -2189,6 +2383,7 @@
     },
     {
       "clause_id": "C005156",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Sağlık Bakanlığınca onaylı endikasyonu olması halinde",
@@ -2198,6 +2393,7 @@
     },
     {
       "clause_id": "C005157",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG-23/05/2026-33262/4-b md. Yürürlük:04/06/2026)",
@@ -2209,6 +2405,7 @@
     },
     {
       "clause_id": "C005158",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Sağlık Bakanlığınca onaylı endikasyonu olması halinde",
@@ -2218,6 +2415,7 @@
     },
     {
       "clause_id": "C005159",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 09/05/2024-32541/10-h md. Yürürlük: 17/05/2024)",
@@ -2225,6 +2423,7 @@
     },
     {
       "clause_id": "C005167",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Apalutamid",
@@ -2234,6 +2433,7 @@
     },
     {
       "clause_id": "C005168",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "ECOG performans statüsü 0-1 olan",
@@ -2246,6 +2446,7 @@
     },
     {
       "clause_id": "C005169",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2255,6 +2456,7 @@
     },
     {
       "clause_id": "C005170",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-25/03/2025-32852/9-b md. Yürürlük: 04/04/2025)",
@@ -2262,6 +2464,7 @@
     },
     {
       "clause_id": "C005177",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 09/05/2024-32541/10-h md. Yürürlük: 17/05/2024)",
@@ -2271,6 +2474,7 @@
     },
     {
       "clause_id": "C005179",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Darolutamid",
@@ -2280,6 +2484,7 @@
     },
     {
       "clause_id": "C005180",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "ECOG performans statüsü 0-1 olan",
@@ -2289,6 +2494,7 @@
     },
     {
       "clause_id": "C005181",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2298,6 +2504,7 @@
     },
     {
       "clause_id": "C005182",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG-23/05/2026-33262/4-c md. Yürürlük: 04/06/2026)",
@@ -2305,6 +2512,7 @@
     },
     {
       "clause_id": "C005183",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2314,6 +2522,7 @@
     },
     {
       "clause_id": "C005184",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Kabazitaksel",
@@ -2324,6 +2533,7 @@
     },
     {
       "clause_id": "C005185",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
@@ -2334,6 +2544,7 @@
     },
     {
       "clause_id": "C005186",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "ECOG performans skorunun >1 olması veya",
@@ -2341,6 +2552,7 @@
     },
     {
       "clause_id": "C005187",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -2348,6 +2560,7 @@
     },
     {
       "clause_id": "C005188",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Kreatinin klirensinin <45 ml/dk olması veya",
@@ -2355,6 +2568,7 @@
     },
     {
       "clause_id": "C005189",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2364,6 +2578,7 @@
     },
     {
       "clause_id": "C005190",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG-25/03/2025-32852/9-b md. Yürürlük: 04/04/2025)",
@@ -2374,6 +2589,7 @@
     },
     {
       "clause_id": "C005191",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Enzalutamid",
@@ -2385,30 +2601,39 @@
     },
     {
       "clause_id": "C005192",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Fluorourasil topikal formları",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.(3).dabrafenib_melanoma_board",
+        "4.2.14.C.(3).trametinib_melanoma_board",
+        "4.2.14.C.(3).vemurafenib_melanoma_board"
+      ]
     },
     {
       "clause_id": "C005193",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "emr_blocked",
+      "manifest_status": "encoded",
       "heuristic_inn": "Aksitinib",
-      "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      "linked_rule_ids": [
+        "4.2.14.C.aksitinib_rcc_board"
+      ]
     },
     {
       "clause_id": "C005194",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "non_actionable",
+      "manifest_status": "encoded",
       "heuristic_inn": "Setuksimab:",
-      "defer_reason": "Non-actionable — structural heading, struck/superseded row, or navigational prose without deontic billing signal."
+      "linked_rule_ids": [
+        "4.2.14.C.(1).cetuximab_oncology_board"
+      ]
     },
     {
       "clause_id": "C005195",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Metastatik kolorektal kanser endikasyonunda",
@@ -2418,6 +2643,7 @@
     },
     {
       "clause_id": "C005196",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -2425,6 +2651,7 @@
     },
     {
       "clause_id": "C005197",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2436,6 +2663,7 @@
     },
     {
       "clause_id": "C005198",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik:RG-09/09/2017- 30175/ 20-c md. Yürürlük:  23/09/2017)",
@@ -2443,6 +2671,7 @@
     },
     {
       "clause_id": "C005200",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Skuamoz hücreli baş ve boyun kanseri endikasyonunda",
@@ -2452,6 +2681,7 @@
     },
     {
       "clause_id": "C005201",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2461,6 +2691,7 @@
     },
     {
       "clause_id": "C005202",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Sisplatin ile tedavi edilemeyen",
@@ -2470,6 +2701,7 @@
     },
     {
       "clause_id": "C005203",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2479,6 +2711,7 @@
     },
     {
       "clause_id": "C005214",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik:RG-28/04/2021-31468/15-c md. Yürürlük: 06/05/2021)",
@@ -2486,6 +2719,7 @@
     },
     {
       "clause_id": "C005215",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Dabrafenib",
@@ -2493,6 +2727,7 @@
     },
     {
       "clause_id": "C005216",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Dabrafenib",
@@ -2500,6 +2735,7 @@
     },
     {
       "clause_id": "C005217",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Daha önce herhangi bir RAF yolağı inhibitörü kullanmamış",
@@ -2509,6 +2745,7 @@
     },
     {
       "clause_id": "C005218",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2518,6 +2755,7 @@
     },
     {
       "clause_id": "C005219",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Trametinib",
@@ -2525,6 +2763,7 @@
     },
     {
       "clause_id": "C005220",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Daha önce herhangi bir RAF yolağı inhibitörü kullanmamış",
@@ -2534,6 +2773,7 @@
     },
     {
       "clause_id": "C005221",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2543,6 +2783,7 @@
     },
     {
       "clause_id": "C005222",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Kobimetinib",
@@ -2552,6 +2793,7 @@
     },
     {
       "clause_id": "C005223",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Vemurafenib",
@@ -2561,6 +2803,7 @@
     },
     {
       "clause_id": "C005224",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Dabrafenib",
@@ -2570,6 +2813,7 @@
     },
     {
       "clause_id": "C005225",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 04/09/2019- 30878/ 23-d md. Yürürlük: 12/09/2019)",
@@ -2580,6 +2824,7 @@
     },
     {
       "clause_id": "C005229",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "aa) Beksaroten",
@@ -2587,6 +2832,7 @@
     },
     {
       "clause_id": "C005230",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Beksaroten oral",
@@ -2594,6 +2840,7 @@
     },
     {
       "clause_id": "C005231",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -2601,6 +2848,7 @@
     },
     {
       "clause_id": "C005232",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -2608,6 +2856,7 @@
     },
     {
       "clause_id": "C005233",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Beksaroten topikal",
@@ -2615,6 +2864,7 @@
     },
     {
       "clause_id": "C005234",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2624,6 +2874,7 @@
     },
     {
       "clause_id": "C005235",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2634,6 +2885,7 @@
     },
     {
       "clause_id": "C005236",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-10/05/2018-30417/ 13-c md. Yürürlük:18/05/2018)",
@@ -2641,6 +2893,7 @@
     },
     {
       "clause_id": "C005238",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "bb) Krizotinib",
@@ -2648,6 +2901,7 @@
     },
     {
       "clause_id": "C005239",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2657,6 +2911,7 @@
     },
     {
       "clause_id": "C005240",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2666,6 +2921,7 @@
     },
     {
       "clause_id": "C005241",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Alektinib (Ek:RG-28/04/2021-31468/15-ç md. Yürürlük:06/05/2021)",
@@ -2675,6 +2931,7 @@
     },
     {
       "clause_id": "C005242",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2684,6 +2941,7 @@
     },
     {
       "clause_id": "C005243",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 18/06/2016- 29746/ 14-b md. Yürürlük: 25/06/2016)",
@@ -2693,6 +2951,7 @@
     },
     {
       "clause_id": "C005244",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "cc) Vismodegib (Ek:RG-25/03/2025-32852/9-ç md. Yürürlük:04/04/2025)",
@@ -2703,6 +2962,7 @@
     },
     {
       "clause_id": "C005245",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Cerrahi",
@@ -2712,6 +2972,7 @@
     },
     {
       "clause_id": "C005246",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2721,6 +2982,7 @@
     },
     {
       "clause_id": "C005247",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2730,6 +2992,7 @@
     },
     {
       "clause_id": "C005248",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2739,6 +3002,7 @@
     },
     {
       "clause_id": "C005249",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2748,6 +3012,7 @@
     },
     {
       "clause_id": "C005250",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG-25/03/2025-32852/9-ç md. Yürürlük: 04/04/2025)",
@@ -2755,6 +3020,7 @@
     },
     {
       "clause_id": "C005251",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Vismodegib ve sonidegib ardışık olarak kullanılmaz.",
@@ -2764,6 +3030,7 @@
     },
     {
       "clause_id": "C005252",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-19/10/2023- 32344/ 9-c md. Yürürlük: 27/10/2023)",
@@ -2771,6 +3038,7 @@
     },
     {
       "clause_id": "C005262",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "çç) Ruksolitinib",
@@ -2778,16 +3046,18 @@
     },
     {
       "clause_id": "C005263",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "Primer miyelofibrosis",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
         "clinical_pathway"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      ]
     },
     {
       "clause_id": "C005264",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Semptomatik masif splenomegalisi bulunan",
@@ -2795,6 +3065,7 @@
     },
     {
       "clause_id": "C005265",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "DIPPS plus skorlama sistemine göre orta veya yüksek risk grubu olan",
@@ -2804,6 +3075,7 @@
     },
     {
       "clause_id": "C005266",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -2811,6 +3083,7 @@
     },
     {
       "clause_id": "C005267",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Güncel kan sayım değerlerinde trombosit sayısının ≥100.000/mm3",
@@ -2822,6 +3095,7 @@
     },
     {
       "clause_id": "C005268",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Kemik iliği nakline uygun olmayan.",
@@ -2829,16 +3103,18 @@
     },
     {
       "clause_id": "C005269",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005270",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Kortikosteroidler veya diğer sistemik tedavilere yetersiz yanıt veren",
@@ -2848,6 +3124,7 @@
     },
     {
       "clause_id": "C005271",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2857,6 +3134,7 @@
     },
     {
       "clause_id": "C005272",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2866,16 +3144,18 @@
     },
     {
       "clause_id": "C005273",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
         "clinical_pathway"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      ]
     },
     {
       "clause_id": "C005274",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Trombosit sayısının >400000/mm3",
@@ -2887,6 +3167,7 @@
     },
     {
       "clause_id": "C005275",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "Dalak boyutlarında ultrasonografi ile küçülme saptanmaması veya",
@@ -2897,6 +3178,7 @@
     },
     {
       "clause_id": "C005276",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Yeni tromboz gelişmesi.",
@@ -2911,16 +3193,18 @@
     },
     {
       "clause_id": "C005277",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "2- Tam veya kısmi yanıt için gerekli en düşük hidroksiüre dozunda",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005278",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "3- Hidroksiüre ilişkili bacak ülseri",
@@ -2934,16 +3218,18 @@
     },
     {
       "clause_id": "C005279",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "Polisitemi Vera (PV) tanılı hastaların 32 haftalık tedavisinin sonunda",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
         "clinical_pathway"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      ]
     },
     {
       "clause_id": "C005280",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2953,6 +3239,7 @@
     },
     {
       "clause_id": "C005281",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "dd) Regorafenib",
@@ -2960,28 +3247,29 @@
     },
     {
       "clause_id": "C005282",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "Öncesinde floropirimidin",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "ecog",
-        "mutation_panel",
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005283",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005284",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -2991,6 +3279,7 @@
     },
     {
       "clause_id": "C005285",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Mülga: RG- 10/07/2025-32952/ 1-a md. Yürürlük: 26/07/2025)",
@@ -2998,6 +3287,7 @@
     },
     {
       "clause_id": "C005291",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 25/08/2016- 29812/ 15 md. Yürürlük: 30/08/2016)",
@@ -3005,6 +3295,7 @@
     },
     {
       "clause_id": "C005292",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "ff) Trastuzumab emtansin",
@@ -3014,6 +3305,7 @@
     },
     {
       "clause_id": "C005293",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 07/10/2016- 29850/ 23-ç md. Yürürlük: 15/10/2016)",
@@ -3021,6 +3313,7 @@
     },
     {
       "clause_id": "C005294",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "gg) pertuzumab",
@@ -3030,6 +3323,7 @@
     },
     {
       "clause_id": "C005295",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-12/12/2024-32750/8-a md. Yürürlük: 20/12/2024)",
@@ -3037,6 +3331,7 @@
     },
     {
       "clause_id": "C005296",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 26/11/2016- 29900/ 16-b md. Yürürlük: 29/11/2016)",
@@ -3044,6 +3339,7 @@
     },
     {
       "clause_id": "C005301",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "ğğ) Karmustin",
@@ -3053,6 +3349,7 @@
     },
     {
       "clause_id": "C005302",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Beyin tümörleri-glioblastom",
@@ -3062,6 +3359,7 @@
     },
     {
       "clause_id": "C005303",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3071,6 +3369,7 @@
     },
     {
       "clause_id": "C005304",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Yukarıdaki koşullar dışında kullanılması halinde bedelleri Kurumca karşılanmaz.",
@@ -3081,6 +3380,7 @@
     },
     {
       "clause_id": "C005305",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 18/02/2017- 29983/ 9-b md. Yürürlük: 01/03/2017)",
@@ -3088,6 +3388,7 @@
     },
     {
       "clause_id": "C005306",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "hh) Aflibercept:",
@@ -3097,6 +3398,7 @@
     },
     {
       "clause_id": "C005307",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "ECOG performans skoru 0-1 olan",
@@ -3104,6 +3406,7 @@
     },
     {
       "clause_id": "C005308",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3111,6 +3414,7 @@
     },
     {
       "clause_id": "C005309",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3118,6 +3422,7 @@
     },
     {
       "clause_id": "C005310",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3127,6 +3432,7 @@
     },
     {
       "clause_id": "C005311",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3136,6 +3442,7 @@
     },
     {
       "clause_id": "C005312",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG-08/06/2017-30090/12 md. Yürürlük:16/06/2017)",
@@ -3143,6 +3450,7 @@
     },
     {
       "clause_id": "C005313",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "ıı) (Mülga:RG- 28/12/2018-30639/ 20-b md. Yürürlük: 01/04/2018) Nivolumab",
@@ -3150,6 +3458,7 @@
     },
     {
       "clause_id": "C005314",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "ii) Mifamurtide",
@@ -3160,6 +3469,7 @@
     },
     {
       "clause_id": "C005315",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG-09/09/2017- 30175/ 20-ç md. Yürürlük:  23/09/2017)",
@@ -3167,6 +3477,7 @@
     },
     {
       "clause_id": "C005316",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3176,6 +3487,7 @@
     },
     {
       "clause_id": "C005317",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 16/03/2023-32134/24-ç md. Yürürlük: 24/03/2023)",
@@ -3183,6 +3495,7 @@
     },
     {
       "clause_id": "C005318",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 04/02/2018- 30322/ 16-b md. Yürürlük:  15/02/2018)",
@@ -3192,6 +3505,7 @@
     },
     {
       "clause_id": "C005326",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "kk) Blinatumomab",
@@ -3201,16 +3515,18 @@
     },
     {
       "clause_id": "C005327",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "En az bir kurtarma tedavisi (FLAG+antrasiklin",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005328",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Sistemik mantar enfeksiyonu olmayan",
@@ -3218,6 +3534,7 @@
     },
     {
       "clause_id": "C005329",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Merkezi sinir sistemi tutulumu olmayan",
@@ -3227,6 +3544,7 @@
     },
     {
       "clause_id": "C005330",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Karaciğer ve böbrek fonksiyonları normal olan",
@@ -3236,6 +3554,7 @@
     },
     {
       "clause_id": "C005331",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "HLA doku grubu uyumlu vericisi olan ve kök hücre nakline uygun olan",
@@ -3246,6 +3565,7 @@
     },
     {
       "clause_id": "C005332",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "hastalarda",
@@ -3255,6 +3575,7 @@
     },
     {
       "clause_id": "C005333",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "ll) Brentuksimab vedotin",
@@ -3262,6 +3583,7 @@
     },
     {
       "clause_id": "C005334",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Aşağıdaki endikasyonlarda",
@@ -3271,6 +3593,7 @@
     },
     {
       "clause_id": "C005335",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3278,6 +3601,7 @@
     },
     {
       "clause_id": "C005336",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3287,6 +3611,7 @@
     },
     {
       "clause_id": "C005337",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3294,6 +3619,7 @@
     },
     {
       "clause_id": "C005338",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "kullanılması halinde.",
@@ -3301,6 +3627,7 @@
     },
     {
       "clause_id": "C005339",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 09/05/2024-32541/10-ı md. Yürürlük: 17/05/2024)",
@@ -3310,6 +3637,7 @@
     },
     {
       "clause_id": "C005340",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3317,6 +3645,7 @@
     },
     {
       "clause_id": "C005341",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 09/05/2024- 32541/10-i md. Yürürlük: 17/05/2024)",
@@ -3328,6 +3657,7 @@
     },
     {
       "clause_id": "C005344",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "Evre IV CD30 pozitif klasik Hodgkin Lenfoma tanısı konmuş olan hastalardan",
@@ -3338,6 +3668,7 @@
     },
     {
       "clause_id": "C005345",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "18 yaş üzerinde olup",
@@ -3347,6 +3678,7 @@
     },
     {
       "clause_id": "C005346",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3356,6 +3688,7 @@
     },
     {
       "clause_id": "C005347",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 09/05/2024-32541/10-i md. Yürürlük: 17/05/2024)",
@@ -3363,6 +3696,7 @@
     },
     {
       "clause_id": "C005348",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3372,6 +3706,7 @@
     },
     {
       "clause_id": "C005349",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3381,6 +3716,7 @@
     },
     {
       "clause_id": "C005350",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "mm) Afatinib",
@@ -3388,6 +3724,7 @@
     },
     {
       "clause_id": "C005351",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 28/12/2018- 30639/ 20-c md. Yürürlük: 08/01/2019)",
@@ -3395,6 +3732,7 @@
     },
     {
       "clause_id": "C005355",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Aşağıdaki endikasyonlarda monoterapi şeklinde kullanılır.",
@@ -3405,6 +3743,7 @@
     },
     {
       "clause_id": "C005356",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3414,6 +3753,7 @@
     },
     {
       "clause_id": "C005357",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3423,6 +3763,7 @@
     },
     {
       "clause_id": "C005358",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 21/03/2018- 30367/ 23-c md. Yürürlük: 01/04/2018)",
@@ -3432,6 +3773,7 @@
     },
     {
       "clause_id": "C005359",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "nn) Bevasizumab",
@@ -3439,6 +3781,7 @@
     },
     {
       "clause_id": "C005360",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Metastatik kolorektal kanser tedavisinde",
@@ -3449,6 +3792,7 @@
     },
     {
       "clause_id": "C005361",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3458,6 +3802,7 @@
     },
     {
       "clause_id": "C005362",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3467,6 +3812,7 @@
     },
     {
       "clause_id": "C005363",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3476,6 +3822,7 @@
     },
     {
       "clause_id": "C005364",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Malign glioma (DSÖ evre IV) – glioblastoma tedavisinde",
@@ -3485,6 +3832,7 @@
     },
     {
       "clause_id": "C005365",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Serviks kanseri tedavisinde",
@@ -3495,6 +3843,7 @@
     },
     {
       "clause_id": "C005366",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3504,6 +3853,7 @@
     },
     {
       "clause_id": "C005367",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "oo) Pleriksafor",
@@ -3514,6 +3864,7 @@
     },
     {
       "clause_id": "C005368",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3523,6 +3874,7 @@
     },
     {
       "clause_id": "C005369",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3530,6 +3882,7 @@
     },
     {
       "clause_id": "C005370",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3537,6 +3890,7 @@
     },
     {
       "clause_id": "C005371",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "Bünyesinde terapötik aferez merkezi bulunan sağlık hizmeti sunucularında",
@@ -3547,6 +3901,7 @@
     },
     {
       "clause_id": "C005372",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "öö) Denosumab 120 mg",
@@ -3554,6 +3909,7 @@
     },
     {
       "clause_id": "C005373",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Daha önce zoledronik asit kullanmamış",
@@ -3563,6 +3919,7 @@
     },
     {
       "clause_id": "C005374",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Rezeke edilemeyen veya cerrahi morbidite riski yüksek",
@@ -3572,6 +3929,7 @@
     },
     {
       "clause_id": "C005382",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Mülga: RG- 10/07/2025-32952/ 1-a md. Yürürlük: 26/07/2025)",
@@ -3579,6 +3937,7 @@
     },
     {
       "clause_id": "C005389",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-12/12/2024-32750/8-b md. Yürürlük: 20/12/2024)",
@@ -3586,6 +3945,7 @@
     },
     {
       "clause_id": "C005390",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG-10/05/2018-30417/ 13-e md. Yürürlük: 18/05/2018)",
@@ -3595,6 +3955,7 @@
     },
     {
       "clause_id": "C005394",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "rr) Osimertinib",
@@ -3604,6 +3965,7 @@
     },
     {
       "clause_id": "C005395",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3613,6 +3975,7 @@
     },
     {
       "clause_id": "C005396",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3622,6 +3985,7 @@
     },
     {
       "clause_id": "C005397",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3631,6 +3995,7 @@
     },
     {
       "clause_id": "C005398",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3640,6 +4005,7 @@
     },
     {
       "clause_id": "C005399",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "ss) Gefitinib",
@@ -3651,6 +4017,7 @@
     },
     {
       "clause_id": "C005400",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3660,6 +4027,7 @@
     },
     {
       "clause_id": "C005401",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3669,6 +4037,7 @@
     },
     {
       "clause_id": "C005402",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Erlotinib",
@@ -3678,6 +4047,7 @@
     },
     {
       "clause_id": "C005403",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "şş) Seritinib",
@@ -3685,6 +4055,7 @@
     },
     {
       "clause_id": "C005404",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3694,6 +4065,7 @@
     },
     {
       "clause_id": "C005405",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3703,6 +4075,7 @@
     },
     {
       "clause_id": "C005406",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3712,6 +4085,7 @@
     },
     {
       "clause_id": "C005407",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3721,6 +4095,7 @@
     },
     {
       "clause_id": "C005408",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "tt) Alektinib",
@@ -3728,6 +4103,7 @@
     },
     {
       "clause_id": "C005409",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3737,6 +4113,7 @@
     },
     {
       "clause_id": "C005410",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3746,6 +4123,7 @@
     },
     {
       "clause_id": "C005411",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3755,6 +4133,7 @@
     },
     {
       "clause_id": "C005412",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3764,6 +4143,7 @@
     },
     {
       "clause_id": "C005413",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG-10/05/2018-30417/ 13-e md. Yürürlük: 30/06/2018)",
@@ -3775,6 +4155,7 @@
     },
     {
       "clause_id": "C005414",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-16/06/2020-31157/9-e md. Yürürlük: 01/07/2020)",
@@ -3782,6 +4163,7 @@
     },
     {
       "clause_id": "C005432",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "uu) Ekulizumab yalnızca",
@@ -3793,6 +4175,7 @@
     },
     {
       "clause_id": "C005433",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "Atipik Hemolitik Üremik Sendrom (aHÜS) tedavisinde aşağıdaki (a)",
@@ -3802,6 +4185,7 @@
     },
     {
       "clause_id": "C005434",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3811,6 +4195,7 @@
     },
     {
       "clause_id": "C005435",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Yaygın damar içi pıhtılaşma sendromu",
@@ -3818,6 +4203,7 @@
     },
     {
       "clause_id": "C005436",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3827,6 +4213,7 @@
     },
     {
       "clause_id": "C005437",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3836,6 +4223,7 @@
     },
     {
       "clause_id": "C005438",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3843,6 +4231,7 @@
     },
     {
       "clause_id": "C005439",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3850,6 +4239,7 @@
     },
     {
       "clause_id": "C005440",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3857,6 +4247,7 @@
     },
     {
       "clause_id": "C005441",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3864,6 +4255,7 @@
     },
     {
       "clause_id": "C005442",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3871,6 +4263,7 @@
     },
     {
       "clause_id": "C005443",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Tromboembolik olay",
@@ -3882,6 +4275,7 @@
     },
     {
       "clause_id": "C005444",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3889,6 +4283,7 @@
     },
     {
       "clause_id": "C005445",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 05/08/2024- 32623/4-b md. Yürürlük: 13/08/2024)",
@@ -3896,6 +4291,7 @@
     },
     {
       "clause_id": "C005452",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Jeneralize Miyastenia Gravis tedavisinde",
@@ -3905,6 +4301,7 @@
     },
     {
       "clause_id": "C005453",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Asetilkolin Reseptör (AChR) antikorları serolojik olarak pozitif",
@@ -3912,6 +4309,7 @@
     },
     {
       "clause_id": "C005454",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -3924,6 +4322,7 @@
     },
     {
       "clause_id": "C005455",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Myasthenia Gravis Activities of Daily Living (MG-ADL) toplam skoru ≥ 6 olan",
@@ -3931,6 +4330,7 @@
     },
     {
       "clause_id": "C005456",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -3938,6 +4338,7 @@
     },
     {
       "clause_id": "C005457",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Mülga: RG- 11/08/2021- 31565 /5-f md. Yürürlük: 01/07/2021)",
@@ -3945,6 +4346,7 @@
     },
     {
       "clause_id": "C005463",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 11/08/2021- 31565 / 5-f md. Yürürlük: 01/07/2021)",
@@ -3952,6 +4354,7 @@
     },
     {
       "clause_id": "C005464",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Yüksek hastalık aktivitesi gösteren",
@@ -3961,6 +4364,7 @@
     },
     {
       "clause_id": "C005465",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Aquaporin 4 (AQP4) antikoru pozitif",
@@ -3968,6 +4372,7 @@
     },
     {
       "clause_id": "C005466",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Expanded Disability Status Scale (EDSS) 7 ve altında olan",
@@ -3979,6 +4384,7 @@
     },
     {
       "clause_id": "C005467",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "En az iki ya da daha fazla immünosüpresan tedaviyi (azatiyoprin",
@@ -3986,6 +4392,7 @@
     },
     {
       "clause_id": "C005468",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-17/10/2025-33050/5-c md. Yürürlük: 25/10/2025)",
@@ -3993,6 +4400,7 @@
     },
     {
       "clause_id": "C005475",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "Pediatrik jeneralize miyastenia gravis (6 yaş ve üzeri) tedavisinde",
@@ -4002,6 +4410,7 @@
     },
     {
       "clause_id": "C005476",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Asetilkolin Reseptör (AChR) antikorları serolojik olarak pozitif.",
@@ -4012,6 +4421,7 @@
     },
     {
       "clause_id": "C005477",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4022,6 +4432,7 @@
     },
     {
       "clause_id": "C005478",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Myasthenia Gravis Activities of Daily Living (MG-ADL) toplam skoru ≥ 6 olan.",
@@ -4029,6 +4440,7 @@
     },
     {
       "clause_id": "C005479",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -4036,6 +4448,7 @@
     },
     {
       "clause_id": "C005480",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -4043,6 +4456,7 @@
     },
     {
       "clause_id": "C005481",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Sağlık Bakanlığınca hasta bazında",
@@ -4053,6 +4467,7 @@
     },
     {
       "clause_id": "C005482",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4062,6 +4477,7 @@
     },
     {
       "clause_id": "C005483",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "aHÜS hastalarında 6 aylık ilaç kullanım süresi sonunda",
@@ -4072,25 +4488,29 @@
     },
     {
       "clause_id": "C005484",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "PNH hastalarında 6 aylık ilaç kullanım süresi sonunda",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
         "clinical_pathway"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      ]
     },
     {
       "clause_id": "C005485",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "Jeneralize miyastenia gravis hastalarında yetişkin olanlarda 12 haftalık",
       "linked_rule_ids": [
+        "4.2.14.C.(15).pemetrexed_nsclc_board",
         "4.2.14.C.pediatric_myasthenia_gravis_pedneurology_3m"
       ]
     },
     {
       "clause_id": "C005486",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG-17/10/2025-33050/5-c md. Yürürlük: 25/10/2025)",
@@ -4098,26 +4518,28 @@
     },
     {
       "clause_id": "C005487",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.nmosd_3neurology_6m"
+      ]
     },
     {
       "clause_id": "C005488",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "Pediatrik jeneralize miyastenia gravis hastalarında tedavi olmamış timoma",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
         "clinical_pathway"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      ]
     },
     {
       "clause_id": "C005489",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek:RG- 28/12/2018- 30639/ 20-d md. Yürürlük: 08/01/2019)",
@@ -4127,6 +4549,7 @@
     },
     {
       "clause_id": "C005490",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-09/05/2020-31122/1-b md. Yürürlük: 16/05/2020)",
@@ -4134,6 +4557,7 @@
     },
     {
       "clause_id": "C005495",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "üü) Venetoklaks",
@@ -4141,6 +4565,7 @@
     },
     {
       "clause_id": "C005496",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-30/12/2020-31350/4-b md. Yürürlük: 08/01/2021)",
@@ -4148,6 +4573,7 @@
     },
     {
       "clause_id": "C005498",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4157,6 +4583,7 @@
     },
     {
       "clause_id": "C005499",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "17p delesyonu",
@@ -4164,6 +4591,7 @@
     },
     {
       "clause_id": "C005500",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "İlk basamak tedaviye yanıtsız",
@@ -4171,6 +4599,7 @@
     },
     {
       "clause_id": "C005501",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Birinci basamak tedavi sonrası 6 ay içinde nüks gelişen",
@@ -4178,6 +4607,7 @@
     },
     {
       "clause_id": "C005502",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -4185,6 +4615,7 @@
     },
     {
       "clause_id": "C005503",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 09/05/2024- 32541/10-m md. Yürürlük: 17/05/2024)",
@@ -4192,6 +4623,7 @@
     },
     {
       "clause_id": "C005505",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Daha önce tedavi edilmemiş",
@@ -4201,6 +4633,7 @@
     },
     {
       "clause_id": "C005506",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 09/05/2024-32541/10-m md. Yürürlük: 17/05/2024)",
@@ -4208,6 +4641,7 @@
     },
     {
       "clause_id": "C005507",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4217,6 +4651,7 @@
     },
     {
       "clause_id": "C005508",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4226,6 +4661,7 @@
     },
     {
       "clause_id": "C005509",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-02/11/2024- 32710/15-b md. Yürürlük: 09/11/2024)",
@@ -4233,6 +4669,7 @@
     },
     {
       "clause_id": "C005520",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "vv) İbrutinib",
@@ -4240,6 +4677,7 @@
     },
     {
       "clause_id": "C005521",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4249,6 +4687,7 @@
     },
     {
       "clause_id": "C005522",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Daha önce tedavi edilmemiş 17p delesyonu",
@@ -4258,6 +4697,7 @@
     },
     {
       "clause_id": "C005523",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4268,6 +4708,7 @@
     },
     {
       "clause_id": "C005524",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "bedelleri Kurumca karşılanır.",
@@ -4277,6 +4718,7 @@
     },
     {
       "clause_id": "C005525",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4287,6 +4729,7 @@
     },
     {
       "clause_id": "C005526",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Mantle Hücreli Lenfoma (MHL) tedavisinde",
@@ -4296,6 +4739,7 @@
     },
     {
       "clause_id": "C005527",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4305,6 +4749,7 @@
     },
     {
       "clause_id": "C005528",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4314,6 +4759,7 @@
     },
     {
       "clause_id": "C005529",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "yy) İksazomib",
@@ -4323,6 +4769,7 @@
     },
     {
       "clause_id": "C005530",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 09/05/2024- 32541/10-o md. Yürürlük: 17/05/2024)",
@@ -4330,6 +4777,7 @@
     },
     {
       "clause_id": "C005533",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4339,6 +4787,7 @@
     },
     {
       "clause_id": "C005534",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Hematoloji veya onkoloji uzman hekiminin yer aldığı",
@@ -4348,6 +4797,7 @@
     },
     {
       "clause_id": "C005535",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İksazomib",
@@ -4360,6 +4810,7 @@
     },
     {
       "clause_id": "C005536",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 09/05/2024- 32541/10-ö md. Yürürlük: 17/05/2024)",
@@ -4369,6 +4820,7 @@
     },
     {
       "clause_id": "C005542",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "zz) Pomalidomid",
@@ -4378,6 +4830,7 @@
     },
     {
       "clause_id": "C005543",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Otolog kök hücre nakline uygun olmayan",
@@ -4387,6 +4840,7 @@
     },
     {
       "clause_id": "C005544",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Otolog kök hücre nakline uygun olan",
@@ -4397,6 +4851,7 @@
     },
     {
       "clause_id": "C005545",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Daha önce lenalidomid de dahil olmak üzere en az bir tedavi rejimi alan",
@@ -4406,6 +4861,7 @@
     },
     {
       "clause_id": "C005546",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Hematoloji veya onkoloji uzman hekiminin yer aldığı",
@@ -4419,6 +4875,7 @@
     },
     {
       "clause_id": "C005547",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İksazomib",
@@ -4428,6 +4885,7 @@
     },
     {
       "clause_id": "C005548",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "aaa) Karfilzomib",
@@ -4435,6 +4893,7 @@
     },
     {
       "clause_id": "C005549",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4445,6 +4904,7 @@
     },
     {
       "clause_id": "C005550",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "3 üncü kür sonunda en az minör yanıt",
@@ -4454,6 +4914,7 @@
     },
     {
       "clause_id": "C005551",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İksazomib",
@@ -4463,6 +4924,7 @@
     },
     {
       "clause_id": "C005552",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "bbb) Obinutuzumab",
@@ -4473,6 +4935,7 @@
     },
     {
       "clause_id": "C005553",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4483,6 +4946,7 @@
     },
     {
       "clause_id": "C005554",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4492,6 +4956,7 @@
     },
     {
       "clause_id": "C005555",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4501,6 +4966,7 @@
     },
     {
       "clause_id": "C005556",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 11/08/2021- 31565 / 5-g md. Yürürlük: 19/08/2021)",
@@ -4508,6 +4974,7 @@
     },
     {
       "clause_id": "C005557",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 01/02/2019- 30673/ 7 md. Yürürlük: 09/02/2019)",
@@ -4515,6 +4982,7 @@
     },
     {
       "clause_id": "C005559",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "ccc) Kabozantinib",
@@ -4522,6 +4990,7 @@
     },
     {
       "clause_id": "C005560",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4531,6 +5000,7 @@
     },
     {
       "clause_id": "C005561",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4541,6 +5011,7 @@
     },
     {
       "clause_id": "C005562",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4552,6 +5023,7 @@
     },
     {
       "clause_id": "C005563",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4561,6 +5033,7 @@
     },
     {
       "clause_id": "C005564",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 09/05/2020-31122/1-e md. Yürürlük: 16/05/2020)",
@@ -4568,6 +5041,7 @@
     },
     {
       "clause_id": "C005565",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "ççç) Palbosiklib",
@@ -4575,6 +5049,7 @@
     },
     {
       "clause_id": "C005566",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4584,6 +5059,7 @@
     },
     {
       "clause_id": "C005567",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4593,6 +5069,7 @@
     },
     {
       "clause_id": "C005568",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4602,6 +5079,7 @@
     },
     {
       "clause_id": "C005569",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4613,6 +5091,7 @@
     },
     {
       "clause_id": "C005570",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4622,6 +5101,7 @@
     },
     {
       "clause_id": "C005571",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 19/10/2023- 32344/9-ç md. Yürürlük: 27/10/2023)",
@@ -4632,6 +5112,7 @@
     },
     {
       "clause_id": "C005572",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Pre/perimenopozal kadınlarda endokrin tedavisi",
@@ -4642,6 +5123,7 @@
     },
     {
       "clause_id": "C005573",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Değişik: RG- 25/09/2024-32673/ 8-a md. Yürürlük:03/10/2024)",
@@ -4652,6 +5134,7 @@
     },
     {
       "clause_id": "C005585",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "ddd) Ribosiklib",
@@ -4662,6 +5145,7 @@
     },
     {
       "clause_id": "C005586",
+      "section_id": "4.2.14.C",
       "encode_tier": "B",
       "manifest_status": "encoded",
       "heuristic_inn": "Nonsteroidal aromataz inhibitörü (NSAİ) ile kombine kullanımı halinde",
@@ -4671,6 +5155,7 @@
     },
     {
       "clause_id": "C005587",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4680,6 +5165,7 @@
     },
     {
       "clause_id": "C005588",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4690,6 +5176,7 @@
     },
     {
       "clause_id": "C005589",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4699,6 +5186,7 @@
     },
     {
       "clause_id": "C005590",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Pre/perimenopozal kadınlarda endokrin tedavisi",
@@ -4710,16 +5198,18 @@
     },
     {
       "clause_id": "C005591",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005592",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "eee) Midostaurin",
@@ -4730,6 +5220,7 @@
     },
     {
       "clause_id": "C005593",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4739,6 +5230,7 @@
     },
     {
       "clause_id": "C005594",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4748,6 +5240,7 @@
     },
     {
       "clause_id": "C005595",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İlerlemiş sistemik mastositoz (Agresif Sistemik Mastositoz",
@@ -4757,6 +5250,7 @@
     },
     {
       "clause_id": "C005596",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4766,6 +5260,7 @@
     },
     {
       "clause_id": "C005597",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-02/11/2024- 32710/15-e md. Yürürlük: 09/11/2024)",
@@ -4773,6 +5268,7 @@
     },
     {
       "clause_id": "C005602",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "fff) Daratumumab",
@@ -4780,6 +5276,7 @@
     },
     {
       "clause_id": "C005603",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "SC ve İV formları",
@@ -4789,6 +5286,7 @@
     },
     {
       "clause_id": "C005604",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Yalnızca SC formu",
@@ -4798,6 +5296,7 @@
     },
     {
       "clause_id": "C005605",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Üçüncü kür sonunda en az minör yanıt",
@@ -4807,6 +5306,7 @@
     },
     {
       "clause_id": "C005606",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İksazomib",
@@ -4816,6 +5316,7 @@
     },
     {
       "clause_id": "C005607",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 25/11/2025-33088/ 5-d md. Yürürlük: 03/12/2025)",
@@ -4823,6 +5324,7 @@
     },
     {
       "clause_id": "C005608",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Daratumumab direnci olan hastalarda isatuksimabın",
@@ -4832,6 +5334,7 @@
     },
     {
       "clause_id": "C005609",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 30/12/2020-31350/4-c md. Yürürlük: 08/01/2021)",
@@ -4839,6 +5342,7 @@
     },
     {
       "clause_id": "C005610",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "ggg) Vinflunin",
@@ -4848,6 +5352,7 @@
     },
     {
       "clause_id": "C005611",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "ğğğ) Lorlatinib",
@@ -4855,6 +5360,7 @@
     },
     {
       "clause_id": "C005612",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4864,6 +5370,7 @@
     },
     {
       "clause_id": "C005613",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4873,6 +5380,7 @@
     },
     {
       "clause_id": "C005614",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4882,6 +5390,7 @@
     },
     {
       "clause_id": "C005615",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek:RG-28/04/2021-31468/15-f md. Yürürlük: 06/05/2021)",
@@ -4889,6 +5398,7 @@
     },
     {
       "clause_id": "C005616",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "hhh) Brigatinib",
@@ -4896,6 +5406,7 @@
     },
     {
       "clause_id": "C005617",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4905,6 +5416,7 @@
     },
     {
       "clause_id": "C005618",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4914,6 +5426,7 @@
     },
     {
       "clause_id": "C005619",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4923,6 +5436,7 @@
     },
     {
       "clause_id": "C005620",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4932,6 +5446,7 @@
     },
     {
       "clause_id": "C005621",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 25/09/2024-32673/ 8-b md. Yürürlük:03/10/2024)",
@@ -4939,6 +5454,7 @@
     },
     {
       "clause_id": "C005632",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "ııı) Dinutuksimab beta",
@@ -4946,6 +5462,7 @@
     },
     {
       "clause_id": "C005633",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Başlangıç kriteri",
@@ -4953,6 +5470,7 @@
     },
     {
       "clause_id": "C005634",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -4962,6 +5480,7 @@
     },
     {
       "clause_id": "C005635",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Primer olgularda",
@@ -4971,6 +5490,7 @@
     },
     {
       "clause_id": "C005636",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -4978,6 +5498,7 @@
     },
     {
       "clause_id": "C005637",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -4985,6 +5506,7 @@
     },
     {
       "clause_id": "C005638",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "tier_c_deferred",
       "heuristic_inn": "",
@@ -4995,6 +5517,7 @@
     },
     {
       "clause_id": "C005639",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5004,6 +5527,7 @@
     },
     {
       "clause_id": "C005640",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "bedelleri Kurumca karşılanır.",
@@ -5013,16 +5537,18 @@
     },
     {
       "clause_id": "C005641",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
         "clinical_pathway"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+      ]
     },
     {
       "clause_id": "C005642",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek:RG-26/10/2021-31640/6-b md. Yürürlük: 04/11/2021)",
@@ -5032,6 +5558,7 @@
     },
     {
       "clause_id": "C005643",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "iii) İnotuzumab ozogamisin",
@@ -5039,6 +5566,7 @@
     },
     {
       "clause_id": "C005644",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5048,6 +5576,7 @@
     },
     {
       "clause_id": "C005645",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "En az bir kurtarma tedavisi (FLAG+antrasiklin",
@@ -5055,6 +5584,7 @@
     },
     {
       "clause_id": "C005646",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Sistemik mantar enfeksiyonu olmayan",
@@ -5062,6 +5592,7 @@
     },
     {
       "clause_id": "C005647",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Merkezi sinir sistemi tutulumu olmayan",
@@ -5071,6 +5602,7 @@
     },
     {
       "clause_id": "C005648",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Karaciğer ve böbrek fonksiyonları normal olan",
@@ -5078,6 +5610,7 @@
     },
     {
       "clause_id": "C005649",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "HLA doku grubu uyumlu vericisi olanlarda.",
@@ -5085,6 +5618,7 @@
     },
     {
       "clause_id": "C005650",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5094,6 +5628,7 @@
     },
     {
       "clause_id": "C005651",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -5101,6 +5636,7 @@
     },
     {
       "clause_id": "C005652",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Sistemik mantar enfeksiyonu olmayan",
@@ -5108,6 +5644,7 @@
     },
     {
       "clause_id": "C005653",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Merkezi sinir sistemi tutulumu olmayan",
@@ -5115,6 +5652,7 @@
     },
     {
       "clause_id": "C005654",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Karaciğer ve böbrek fonksiyonları normal olan",
@@ -5124,6 +5662,7 @@
     },
     {
       "clause_id": "C005655",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "HLA doku grubu uyumlu vericisi olanlarda.",
@@ -5131,6 +5670,7 @@
     },
     {
       "clause_id": "C005656",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5140,6 +5680,7 @@
     },
     {
       "clause_id": "C005657",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG- 21/04/2022- 31816/3 md. Yürürlük: 29/04/2022)",
@@ -5149,6 +5690,7 @@
     },
     {
       "clause_id": "C005658",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "jjj) Gemtuzumab ozogamisin",
@@ -5158,6 +5700,7 @@
     },
     {
       "clause_id": "C005659",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 25/08/2022- 31934/ 27-g md. Yürürlük: 03/09/2022)",
@@ -5165,6 +5708,7 @@
     },
     {
       "clause_id": "C005660",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "kkk) Asparaginase erwinia chrysanthemi kullanım ilkeleri",
@@ -5174,6 +5718,7 @@
     },
     {
       "clause_id": "C005661",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5183,6 +5728,7 @@
     },
     {
       "clause_id": "C005662",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 16/03/2023-32134/24-e md. Yürürlük: 24/03/2023)",
@@ -5190,6 +5736,7 @@
     },
     {
       "clause_id": "C005663",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "lll) Nelarabin",
@@ -5199,6 +5746,7 @@
     },
     {
       "clause_id": "C005664",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG-02/11/2024- 32710/15-f md. Yürürlük: 09/11/2024)",
@@ -5206,6 +5754,7 @@
     },
     {
       "clause_id": "C005670",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "mmm) Olaparib",
@@ -5213,6 +5762,7 @@
     },
     {
       "clause_id": "C005671",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Birinci basamak over kanseri idame tedavisinde",
@@ -5222,6 +5772,7 @@
     },
     {
       "clause_id": "C005672",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Rekürren (tekrarlayan) over kanseri idame tedavisinde",
@@ -5231,6 +5782,7 @@
     },
     {
       "clause_id": "C005673",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5240,6 +5792,7 @@
     },
     {
       "clause_id": "C005674",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Germline patojenik veya patojenik benzeri BRCA1 veya 2 mutasyonlarına sahip olan",
@@ -5249,6 +5802,7 @@
     },
     {
       "clause_id": "C005675",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5258,6 +5812,7 @@
     },
     {
       "clause_id": "C005676",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "nnn) Niraparib",
@@ -5265,6 +5820,7 @@
     },
     {
       "clause_id": "C005677",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Birinci basamak over kanseri idame tedavisinde",
@@ -5274,6 +5830,7 @@
     },
     {
       "clause_id": "C005678",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Rekürren (Tekrarlayan) over kanseri idame tedavisinde",
@@ -5283,6 +5840,7 @@
     },
     {
       "clause_id": "C005679",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5292,6 +5850,7 @@
     },
     {
       "clause_id": "C005680",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5301,6 +5860,7 @@
     },
     {
       "clause_id": "C005681",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "ooo) Lipozomal doksorubisin",
@@ -5310,6 +5870,7 @@
     },
     {
       "clause_id": "C005682",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5321,6 +5882,7 @@
     },
     {
       "clause_id": "C005683",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5330,6 +5892,7 @@
     },
     {
       "clause_id": "C005684",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5339,6 +5902,7 @@
     },
     {
       "clause_id": "C005685",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5348,6 +5912,7 @@
     },
     {
       "clause_id": "C005686",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 09/05/2024-32541/10-p md. Yürürlük: 17/05/2024)",
@@ -5355,6 +5920,7 @@
     },
     {
       "clause_id": "C005687",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "ööö) Avelumab",
@@ -5362,6 +5928,7 @@
     },
     {
       "clause_id": "C005688",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5371,6 +5938,7 @@
     },
     {
       "clause_id": "C005689",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5380,6 +5948,7 @@
     },
     {
       "clause_id": "C005690",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "ppp) Akalabrutinib",
@@ -5389,27 +5958,29 @@
     },
     {
       "clause_id": "C005691",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "Daha önce tedavi edilmemiş 17p delesyonu",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "mutation_panel"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005692",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "prior_therapy",
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005693",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5419,6 +5990,7 @@
     },
     {
       "clause_id": "C005694",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5430,6 +6002,7 @@
     },
     {
       "clause_id": "C005695",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "rrr) Dakomitinib",
@@ -5439,6 +6012,7 @@
     },
     {
       "clause_id": "C005696",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5448,6 +6022,7 @@
     },
     {
       "clause_id": "C005697",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5457,6 +6032,7 @@
     },
     {
       "clause_id": "C005698",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Erlotinib",
@@ -5466,6 +6042,7 @@
     },
     {
       "clause_id": "C005699",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "sss) Sacituzumab govitekan",
@@ -5477,6 +6054,7 @@
     },
     {
       "clause_id": "C005700",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "şşş) Gilteritinib",
@@ -5486,6 +6064,7 @@
     },
     {
       "clause_id": "C005701",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Değişik: RG- 25/11/2025-33088/5-e md. Yürürlük: 03/12/2025)",
@@ -5493,6 +6072,7 @@
     },
     {
       "clause_id": "C005702",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "(Ek: RG-25/03/2025-32852/9-e md. Yürürlük: 04/04/2025)",
@@ -5503,6 +6083,7 @@
     },
     {
       "clause_id": "C005706",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "ttt) Selineksor",
@@ -5512,6 +6093,7 @@
     },
     {
       "clause_id": "C005707",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5521,6 +6103,7 @@
     },
     {
       "clause_id": "C005708",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5530,6 +6113,7 @@
     },
     {
       "clause_id": "C005709",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Üçüncü kür sonunda en az minör yanıt",
@@ -5539,6 +6123,7 @@
     },
     {
       "clause_id": "C005710",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İksazomib",
@@ -5548,6 +6133,7 @@
     },
     {
       "clause_id": "C005711",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "uuu) Elranatamab",
@@ -5555,6 +6141,7 @@
     },
     {
       "clause_id": "C005712",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Daha önce bir immünomodülatör ajan",
@@ -5564,6 +6151,7 @@
     },
     {
       "clause_id": "C005713",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "3 üncü kür sonunda en az minör yanıt",
@@ -5573,6 +6161,7 @@
     },
     {
       "clause_id": "C005714",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG- 25/11/2025-33088/ 5-f md. Yürürlük: 03/12/2025)",
@@ -5580,6 +6169,7 @@
     },
     {
       "clause_id": "C005715",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İksazomib",
@@ -5589,6 +6179,7 @@
     },
     {
       "clause_id": "C005716",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG-25/11/2025-33088/ 5-g md. Yürürlük: 03/12/2025)",
@@ -5596,6 +6187,7 @@
     },
     {
       "clause_id": "C005717",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "üüü) İsatuksimab",
@@ -5603,6 +6195,7 @@
     },
     {
       "clause_id": "C005718",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5613,6 +6206,7 @@
     },
     {
       "clause_id": "C005719",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Üçüncü kür sonunda en az minör yanıt",
@@ -5623,6 +6217,7 @@
     },
     {
       "clause_id": "C005720",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İksazomib",
@@ -5634,6 +6229,7 @@
     },
     {
       "clause_id": "C005721",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Daratumumab direnci olan hastalarda isatuksimabın",
@@ -5647,6 +6243,7 @@
     },
     {
       "clause_id": "C005722",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "vvv) Fedratinib:",
@@ -5657,6 +6254,7 @@
     },
     {
       "clause_id": "C005723",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Primer miyelofibrosis",
@@ -5667,6 +6265,7 @@
     },
     {
       "clause_id": "C005724",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Semptomatik masif splenomegalisi bulunan.",
@@ -5677,6 +6276,7 @@
     },
     {
       "clause_id": "C005725",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "DIPPS plus skorlama sistemine göre orta veya yüksek risk grubu olan.",
@@ -5688,6 +6288,7 @@
     },
     {
       "clause_id": "C005726",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "",
@@ -5695,6 +6296,7 @@
     },
     {
       "clause_id": "C005727",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Güncel kan sayım değerlerinde trombosit sayısının ≥50.000/ mm³",
@@ -5702,6 +6304,7 @@
     },
     {
       "clause_id": "C005728",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Kemik iliği nakline uygun olmayan.",
@@ -5709,16 +6312,18 @@
     },
     {
       "clause_id": "C005729",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "emr_blocked",
       "heuristic_inn": "",
+      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone.",
       "defer_themes": [
-        "response_assessment"
-      ],
-      "defer_reason": "EMR-blocked — clinical assessment fields (ECOG, mutation panel, response/progression) required; not encodable on DrugClaimLine alone."
+        "clinical_pathway"
+      ]
     },
     {
       "clause_id": "C005730",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5728,6 +6333,7 @@
     },
     {
       "clause_id": "C005731",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5737,6 +6343,7 @@
     },
     {
       "clause_id": "C005732",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "(Ek: RG-10/07/2025-32952/ 1-b md. Yürürlük: 26/07/2025)",
@@ -5744,6 +6351,7 @@
     },
     {
       "clause_id": "C005733",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "",
@@ -5753,6 +6361,7 @@
     },
     {
       "clause_id": "C005734",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab ve/veya ipilimumab",
@@ -5764,6 +6373,7 @@
     },
     {
       "clause_id": "C005735",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
@@ -5773,6 +6383,7 @@
     },
     {
       "clause_id": "C005736",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab ve ipilimumab kombinasyonu",
@@ -5783,6 +6394,7 @@
     },
     {
       "clause_id": "C005737",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "İpilimumab",
@@ -5792,6 +6404,7 @@
     },
     {
       "clause_id": "C005738",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
@@ -5801,6 +6414,7 @@
     },
     {
       "clause_id": "C005739",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab ve ipilimumab kombinasyonu",
@@ -5810,6 +6424,7 @@
     },
     {
       "clause_id": "C005740",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
@@ -5819,6 +6434,7 @@
     },
     {
       "clause_id": "C005741",
+      "section_id": "4.2.14.C",
       "encode_tier": "A",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
@@ -5828,6 +6444,7 @@
     },
     {
       "clause_id": "C005742",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab ve ipilimumab kombinasyonu",
@@ -5837,6 +6454,7 @@
     },
     {
       "clause_id": "C005743",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
@@ -5846,6 +6464,7 @@
     },
     {
       "clause_id": "C005744",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
@@ -5855,6 +6474,7 @@
     },
     {
       "clause_id": "C005745",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
@@ -5865,6 +6485,7 @@
     },
     {
       "clause_id": "C005746",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
@@ -5875,6 +6496,7 @@
     },
     {
       "clause_id": "C005747",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
@@ -5884,6 +6506,7 @@
     },
     {
       "clause_id": "C005748",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab",
@@ -5893,6 +6516,7 @@
     },
     {
       "clause_id": "C005749",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Nivolumab ve ipilimumab",
@@ -5902,6 +6526,7 @@
     },
     {
       "clause_id": "C005750",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Pembrolizumab",
@@ -5911,6 +6536,7 @@
     },
     {
       "clause_id": "C005751",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Pembrolizumab",
@@ -5920,6 +6546,7 @@
     },
     {
       "clause_id": "C005752",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Pembrolizumab",
@@ -5929,6 +6556,7 @@
     },
     {
       "clause_id": "C005753",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Pembrolizumab",
@@ -5938,6 +6566,7 @@
     },
     {
       "clause_id": "C005754",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Pembrolizumab",
@@ -5947,6 +6576,7 @@
     },
     {
       "clause_id": "C005755",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Pembrolizumab",
@@ -5956,6 +6586,7 @@
     },
     {
       "clause_id": "C005756",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Pembrolizumab",
@@ -5965,6 +6596,7 @@
     },
     {
       "clause_id": "C005757",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Atezolizumab",
@@ -5972,6 +6604,7 @@
     },
     {
       "clause_id": "C005758",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Atezolizumab",
@@ -5981,6 +6614,7 @@
     },
     {
       "clause_id": "C005759",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Atezolizumab",
@@ -5990,6 +6624,7 @@
     },
     {
       "clause_id": "C005760",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Atezolizumab",
@@ -5999,6 +6634,7 @@
     },
     {
       "clause_id": "C005761",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Atezolizumab",
@@ -6008,6 +6644,7 @@
     },
     {
       "clause_id": "C005762",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Atezolizumab",
@@ -6017,6 +6654,7 @@
     },
     {
       "clause_id": "C005763",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "non_actionable",
       "heuristic_inn": "Durvalumab",
@@ -6024,6 +6662,7 @@
     },
     {
       "clause_id": "C005764",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Durvalumab",
@@ -6033,6 +6672,7 @@
     },
     {
       "clause_id": "C005765",
+      "section_id": "4.2.14.C",
       "encode_tier": "C",
       "manifest_status": "encoded",
       "heuristic_inn": "Durvalumab",
@@ -6042,105 +6682,7 @@
     }
   ],
   "clause_trace_complete": true,
-  "manifest_coverage_pct": 100.0,
   "encode_tier_C_deferred_count": 9,
-  "tier_c_manifest": [
-    {
-      "clause_id": "C005056",
-      "encode_tier": "C",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": "Hemoglobinin normal değerinin alt sınırdan düşük olması"
-    },
-    {
-      "clause_id": "C005151",
-      "encode_tier": "C",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": "1- Gleason skorunun 8 veya üzerinde olması"
-    },
-    {
-      "clause_id": "C005185",
-      "encode_tier": "C",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": ""
-    },
-    {
-      "clause_id": "C005244",
-      "encode_tier": "C",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": "cc) Vismodegib (Ek:RG-25/03/2025-32852/9-ç md. Yürürlük:04/04/2025)"
-    },
-    {
-      "clause_id": "C005275",
-      "encode_tier": "C",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": "Dalak boyutlarında ultrasonografi ile küçülme saptanmaması veya"
-    },
-    {
-      "clause_id": "C005331",
-      "encode_tier": "C",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": "HLA doku grubu uyumlu vericisi olan ve kök hücre nakline uygun olan"
-    },
-    {
-      "clause_id": "C005344",
-      "encode_tier": "C",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": "Evre IV CD30 pozitif klasik Hodgkin Lenfoma tanısı konmuş olan hastalardan"
-    },
-    {
-      "clause_id": "C005487",
-      "encode_tier": "A",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": "NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda"
-    },
-    {
-      "clause_id": "C005638",
-      "encode_tier": "C",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway.",
-      "heuristic_inn": ""
-    }
-  ],
-  "tier_c_defer_themes_summary": {
-    "clinical_pathway": 9
-  },
-  "emr_blocked_note": "EMR-blocked clauses require clinical assessment (ECOG, mutation panel, response/progression) not available on DrugClaimLine alone.",
-  "tier_c_manifest_note": "A1 repair — 9 tier-C deferred, 32 EMR-blocked, 178 non-actionable; 615 in-force traces (lists synced from traces).",
-  "a1_coverage_gap": {
-    "canonical_count": 615,
-    "traced_count": 615,
-    "missing_clause_ids": [],
-    "extra_clause_ids": [],
-    "encoded_count": 396,
-    "tier_c_deferred_count": 9,
-    "emr_blocked_count": 32,
-    "gate_b_total": 832
-  },
-  "encoded_clause_pct": 64.4
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 67.6
 }

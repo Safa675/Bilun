@@ -47,6 +47,9 @@ data/gazette/coverage/
 !data/medula/
 !data/medula/**
 
+# Track C4 — Gate B corpus CSVs are optional human exports only
+data/gazette/prose_corpus/*.csv
+
 # Node.js / Frontend
 node_modules/
 .next/

@@ -24,7 +24,7 @@ from scripts.sut.prose.coverage import (  # noqa: E402
     write_sut_coverage,
 )
 from scripts.sut.prose.drug_indication_gate_b import infer_defer_themes  # noqa: E402
-from scripts.sut.prose.drug_indication_manifest import build_defer_reason  # noqa: E402
+from scripts.sut.prose.gate_b_generic import build_defer_reason  # noqa: E402
 
 _MANIFEST_DIR = _PROJECT_ROOT / "data" / "gazette" / "prose_manifests"
 _CLAUSES_PATH = _PROJECT_ROOT / "data" / "gazette" / "sut_clauses.parquet"

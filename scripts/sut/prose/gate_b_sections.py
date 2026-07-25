@@ -537,6 +537,22 @@ SECTION_4238 = GateBSection(
 )
 
 
+# ── §4.2.14.C — oncology specials (was phase5 / a1 repair) ───────────────────
+
+SECTION_4214C = GateBSection(
+    name="4214c",
+    match=SectionMatch(prefixes=("4.2.14.C",)),
+    drug_keywords=(),
+    manifest_version="canonical-v1",
+    manifest_section_id="4.2.14.C",
+    corpus_csv=f"{_CORPUS_DIR}/L4.2_drug_indication_4.2.14.C.csv",
+    manifest_path=f"{_MANIFEST_DIR}/L4.2_drug_indication_4.2.14.C_manifest.json",
+    requires_signal_for_export=False,
+    parquet_in_force_only=True,
+    filter_rules_by_section_prefix=False,
+)
+
+
 # ── Registry ─────────────────────────────────────────────────────────────────
 
 ALL_SECTIONS: dict[str, GateBSection] = {
@@ -548,6 +564,7 @@ ALL_SECTIONS: dict[str, GateBSection] = {
         SECTION_4210,
         SECTION_4213,
         SECTION_4213_4216,
+        SECTION_4214C,
         SECTION_4215,
         SECTION_4217,
         SECTION_4218_4236,

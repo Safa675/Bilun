@@ -220,6 +220,7 @@ class GateBSection:
     in_force_section_filter: str = ""  # which section prefix to use for coverage filter
     requires_signal_for_export: bool = True  # skip rows without deontic or keyword
     in_force_pass_through: bool = False  # in_force membership bypasses signal check
+    parquet_in_force_only: bool = False  # filter to sut_clauses.is_in_force (not coverage)
     superseded_ids: frozenset[str] = frozenset()  # always exclude
     force_include_ids: dict[str, frozenset[str]] = field(default_factory=dict)  # {prefix: ids}
     force_include_section: str = ""  # include ALL clauses from this section prefix
@@ -228,6 +229,9 @@ class GateBSection:
     signal_score: bool = False
     sort_keys: tuple[str, ...] = ("clause_id",)
     sort_descending: tuple[bool, ...] = ()
+
+    # When False, write_artifacts uses all rules from rules_path (not prefix-filtered).
+    filter_rules_by_section_prefix: bool = True
 
     # Per-section manifest totals (multi-section modules emit per-subsection counts)
     per_subsection_totals: bool = False
@@ -415,6 +419,11 @@ def export_candidates(
     if frame.is_empty():
         return pl.DataFrame()
 
+    if section.parquet_in_force_only and "is_in_force" in frame.columns:
+        frame = frame.filter(pl.col("is_in_force") == True)  # noqa: E712
+        if frame.is_empty():
+            return pl.DataFrame()
+
     in_force = (
         _in_force_clause_ids(clauses_path, section)
         if section.in_force_filtering
@@ -531,6 +540,14 @@ def build_manifest(
     """
     resolve_frame = resolve_clauses if resolve_clauses is not None else gate_b_frame
     encoded_ids = _encoded_clause_ids_from_rules(rules, resolve_frame)
+    frame_ids = {
+        str(x) for x in gate_b_frame["clause_id"].to_list() if x is not None and str(x).strip()
+    }
+    # §4.2.14.C / parquet_in_force_only: encode list must stay within the in-force
+    # universe. Other sections keep out-of-frame cites (legacy export filters).
+    if section.parquet_in_force_only:
+        encoded_ids = {cid for cid in encoded_ids if cid in frame_ids}
+    deferral = load_deferral_table(resolve_frame)
     rules_by_clause: dict[str, list[str]] = {}
     from scripts.sut.prose.clause_identity import (
         AmbiguousClauseCiteError,
@@ -566,13 +583,27 @@ def build_manifest(
     tier_a_pending: list[str] = []
     tier_b_pending: list[str] = []
     tier_c_deferred: list[str] = []
+    emr_blocked: list[str] = []
+    non_actionable: list[str] = []
 
     for row in gate_b_frame.iter_rows(named=True):
         clause_id = str(row.get("clause_id") or "")
         encode_tier = str(row.get("encode_tier") or "C")
         text = str(row.get("text_tr") or "")
+        defer_entry = deferral.get(clause_id) or {}
+        defer_status = str(defer_entry.get("status") or "")
+
         if clause_id in encoded_ids:
             status = "encoded"
+        elif defer_status == "emr_blocked":
+            status = "emr_blocked"
+            emr_blocked.append(clause_id)
+        elif defer_status == "non_actionable":
+            status = "non_actionable"
+            non_actionable.append(clause_id)
+        elif defer_status == "tier_c_deferred":
+            status = "tier_c_deferred"
+            tier_c_deferred.append(clause_id)
         elif encode_tier == "A":
             status = "tier_a_pending"
             tier_a_pending.append(clause_id)
@@ -593,12 +624,26 @@ def build_manifest(
         if status == "encoded":
             entry["linked_rule_ids"] = sorted(rules_by_clause.get(clause_id, []))
         elif status == "tier_c_deferred":
-            themes = infer_defer_themes(text)
+            themes = list(defer_entry.get("defer_themes") or []) or infer_defer_themes(text)
             entry["defer_themes"] = themes
-            labels = ", ".join(themes) if themes else "clinical_pathway"
-            entry["defer_reason"] = (
-                f"Deferred — requires structured ingest for: {labels}. "
-                "Tier C manifest-only until EMR fields support pathway."
+            entry["defer_reason"] = str(
+                defer_entry.get("defer_reason") or build_defer_reason(themes)
+            )
+        elif status == "emr_blocked":
+            entry["defer_reason"] = str(
+                defer_entry.get("defer_reason")
+                or (
+                    "EMR-blocked — structured clinical fields (ECOG/mutation/"
+                    "response/progression) required; not encodable on DrugClaimLine alone."
+                )
+            )
+        elif status == "non_actionable":
+            entry["defer_reason"] = str(
+                defer_entry.get("defer_reason")
+                or (
+                    "Non-actionable — structural heading, struck/superseded row, or "
+                    "navigational prose without deontic billing signal."
+                )
             )
         traces.append(entry)
 
@@ -614,12 +659,15 @@ def build_manifest(
         "tier_a_pending_clause_ids": sorted(tier_a_pending),
         "tier_b_pending_clause_ids": sorted(tier_b_pending),
         "tier_c_deferred_clause_ids": sorted(tier_c_deferred),
-        "emr_blocked_clause_ids": [],
-        "non_actionable_clause_ids": [],
+        "emr_blocked_clause_ids": sorted(emr_blocked),
+        "non_actionable_clause_ids": sorted(non_actionable),
         "tier_a_pending_count": len(tier_a_pending),
         "tier_b_pending_count": len(tier_b_pending),
         "tier_c_deferred_count": len(tier_c_deferred),
+        "emr_blocked_count": len(emr_blocked),
+        "non_actionable_count": len(non_actionable),
         "clause_traces": traces,
+        "clause_trace_complete": len(traces) == gate_b_frame.height,
     }
 
     # Per-subsection totals (multi-section modules)
@@ -680,14 +728,18 @@ def write_artifacts(
         resolved_rules = rules
     elif rules_path is not None:
         payload = json.loads(rules_path.read_text(encoding="utf-8"))
-        resolved_rules = [
-            rule
-            for rule in (payload.get("rules") or [])
-            if any(
-                str(rule.get("sut_section") or "").startswith(prefix)
-                for prefix in section.match.prefixes
-            )
-        ]
+        all_rules = list(payload.get("rules") or [])
+        if section.filter_rules_by_section_prefix:
+            resolved_rules = [
+                rule
+                for rule in all_rules
+                if any(
+                    str(rule.get("sut_section") or "").startswith(prefix)
+                    for prefix in section.match.prefixes
+                )
+            ]
+        else:
+            resolved_rules = all_rules
     else:
         raise ValueError("write_artifacts requires rules_path, rules, or batch_rules")
 

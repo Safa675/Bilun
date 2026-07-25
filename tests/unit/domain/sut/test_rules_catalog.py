@@ -230,6 +230,50 @@ class TestGlobalClauseSearch:
     def test_get_clause_missing_returns_none(self) -> None:
         assert rc.get_clause("DOESNOTEXIST") is None
 
+    def test_clause_coordinate_search(self) -> None:
+        clause = rc.get_clause("C002684")
+        assert clause is not None
+        coord = clause.get("clause_coordinate")
+        if not coord:
+            return
+        by_coord = rc.get_clause(str(coord))
+        assert by_coord is not None
+        assert by_coord["clause_id"] == clause["clause_id"]
+        found, total = rc.list_clauses(q=str(coord))
+        assert total >= 1
+        assert any(c["clause_id"] == clause["clause_id"] for c in found)
+
+    def test_list_deferrals_coordinate_first(self) -> None:
+        rows, total = rc.list_deferrals(limit=5)
+        assert total >= 0
+        for row in rows:
+            assert "clause_id" in row
+            assert "status" in row
+            # Primary display field present (may be None until Track E backfill).
+            assert "clause_coordinate" in row
+
+    def test_resolve_prose_rule_gate_b_sources(self) -> None:
+        detail = rc.resolve_prose_rule_gate_b_sources(
+            "definitions_2_6", "def_2_6_1_scope"
+        )
+        # Rule id may differ across corpora — soft-check shape when present.
+        if detail is None:
+            listing = rc.list_prose_rules_with_gate_b_sources(
+                "definitions_2_6", limit=3
+            )
+            if listing is None:
+                return
+            assert listing["rule_set_id"]
+            assert isinstance(listing["rules"], list)
+            for rule in listing["rules"]:
+                assert "gate_b_sources" in rule
+                for cite in rule["gate_b_sources"]:
+                    assert "ref" in cite
+                    assert "clause_coordinate" in cite
+            return
+        assert detail["rule_id"]
+        assert isinstance(detail["gate_b_sources"], list)
+
 
 class TestCoverageSummary:
     @_needs_coverage

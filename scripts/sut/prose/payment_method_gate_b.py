@@ -272,6 +272,7 @@ def run_gate_b_pipeline(
     corpus_csv_path: Path,
     manifest_path: Path,
     write_prose_json: bool = True,
+    write_corpus: bool = False,
 ) -> dict[str, Any]:
     candidates = load_candidate_clauses(clauses_path)
     text_col = regulatory_text_column(candidates)
@@ -290,8 +291,9 @@ def run_gate_b_pipeline(
     summary = gate_b_summary(enriched)
     manifest = build_encoded_manifest(rules=updated_rules, per_rule_sources=per_rule_sources)
 
-    corpus_csv_path.parent.mkdir(parents=True, exist_ok=True)
-    enriched.write_csv(corpus_csv_path)
+    if write_corpus:
+        corpus_csv_path.parent.mkdir(parents=True, exist_ok=True)
+        enriched.write_csv(corpus_csv_path)
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",

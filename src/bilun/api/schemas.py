@@ -1076,6 +1076,69 @@ class ProseInventoryResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class GateBSourceCite(BaseModel):
+    """One resolved ``gate_b_sources`` cite (coordinate-first)."""
+
+    ref: str
+    clause_id: str | None = None
+    clause_coordinate: str | None = None
+    text_snippet: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ProseRuleSourcesResponse(BaseModel):
+    """GET /api/rules/prose-rules/{rule_set_id}/{rule_id}."""
+
+    rule_set_id: str
+    rule_id: str
+    sut_section: str | None = None
+    gate_b_sources: list[GateBSourceCite] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ProseRulesSourcesListResponse(BaseModel):
+    """GET /api/rules/prose-rules/{rule_set_id}."""
+
+    rule_set_id: str
+    rules: list[ProseRuleSourcesResponse] = Field(default_factory=list)
+    total: int = 0
+    page: int = 1
+    per_page: int = 50
+    total_pages: int = 0
+    artifacts_available: bool = True
+
+    model_config = ConfigDict(extra="allow")
+
+
+class DeferralEntry(BaseModel):
+    """One deferral_table row for coordinate-first review."""
+
+    clause_id: str
+    clause_coordinate: str | None = None
+    section_id: str | None = None
+    status: str
+    defer_themes: list[str] = Field(default_factory=list)
+    defer_reason: str = ""
+    text_snippet: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class DeferralListResponse(BaseModel):
+    """GET /api/rules/deferrals."""
+
+    deferrals: list[DeferralEntry] = Field(default_factory=list)
+    total: int = 0
+    page: int = 1
+    per_page: int = 50
+    total_pages: int = 0
+    artifacts_available: bool = False
+
+    model_config = ConfigDict(extra="allow")
+
+
 class MedulaRejectionQueueRow(BaseModel):
     """One row in the MEDULA rejection triage queue."""
 

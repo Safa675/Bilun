@@ -80,12 +80,20 @@ def assert_manifest_consistent(
                     if raw is None or not str(raw).strip():
                         continue
                     try:
+                        can_encode_filter = (
+                            "clause_type" in frame.columns
+                            and "is_in_force" in frame.columns
+                            and (
+                                "clause_number" in frame.columns
+                                or "clause_letter" in frame.columns
+                            )
+                        )
                         rule_sources.update(
                             resolve_gate_b_sources_to_clause_ids(
                                 [raw],
                                 frame,
                                 in_force_only="is_in_force" in frame.columns,
-                                encode_eligible_only=True,
+                                encode_eligible_only=can_encode_filter,
                                 allow_ambiguous=False,
                             )
                         )

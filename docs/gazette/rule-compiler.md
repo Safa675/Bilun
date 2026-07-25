@@ -1,5 +1,7 @@
 # SUT Rule Compiler
 
+> Pipeline overview (extract → compile → derive → evaluate): [sut-pipeline.md](./sut-pipeline.md).
+
 `scripts/sut/compile_rules.py` is the single entrypoint for generated SUT prose rule artifacts.
 It replaces the retired `merge_*.py` scripts and writes rule JSON, Gate B manifests, golden
 fixtures, and prose-corpus CSVs from YAML section sources and named compile stages.

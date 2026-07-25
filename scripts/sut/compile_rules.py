@@ -470,6 +470,7 @@ def _drug_gate_b_targets() -> list[CompileTarget]:
         _drug_gate_b_target("drug_indication_4209_4227", gate_b_section="4209_4227", manifest_name="L4.2_drug_indication_4209_4227_manifest.json", corpus_name="L4.2_drug_indication_4209_4227.csv"),
         _drug_gate_b_target("drug_indication_4210", gate_b_section="4210", manifest_name="L4.2_drug_indication_4210_manifest.json", corpus_name="L4.2_drug_indication_4210.csv"),
         _drug_gate_b_target("drug_indication_4213_4216", gate_b_section="4213_4216", manifest_name="L4.2_drug_indication_4213_4216_manifest.json", corpus_name="L4.2_drug_indication_4213_4216.csv"),
+        _drug_gate_b_target("drug_indication_4214c", gate_b_section="4214c", manifest_name="L4.2_drug_indication_4.2.14.C_manifest.json", corpus_name="L4.2_drug_indication_4.2.14.C.csv"),
         _drug_gate_b_target("drug_indication_4215", gate_b_section="4215", manifest_name="L4.2_drug_indication_4215_manifest.json", corpus_name="L4.2_drug_indication_4215.csv"),
         _drug_gate_b_target("drug_indication_4217", gate_b_section="4217", manifest_name="L4.2_drug_indication_4217_manifest.json", corpus_name="L4.2_drug_indication_4217.csv"),
         _drug_gate_b_target("drug_indication_4218_4236", gate_b_section="4218_4236", manifest_name="L4.2_drug_indication_4218_4236_manifest.json", corpus_name="L4.2_drug_indication_4218_4236.csv"),
@@ -536,18 +537,6 @@ def _gate_b_stage_targets() -> list[CompileTarget]:
             corpus_csv=_PROJECT_ROOT / "data/gazette/prose_corpus/L2.2_payment_method_prose.csv",
         ),
         CompileTarget(
-            name="drug_indication_phase5",
-            rule_json=_RULES_DIR / "drug_indication_prose.json",
-            mode="stage",
-            dedup="skip_dup",
-            rule_set_id="drug_indication_4.2.14.C",
-            title="",
-            sut_anchors=[],
-            stages=["phase5_manifest"],
-            manifest_path=_MANIFEST_DIR / "L4.2_drug_indication_4.2.14.C_manifest.json",
-            corpus_csv=_PROJECT_ROOT / "data/gazette/prose_corpus/L4.2_drug_indication_4.2.14.C.csv",
-        ),
-        CompileTarget(
             name="anti_vegf_manifest",
             rule_json=_RULES_DIR / "anti_vegf_prose.json",
             mode="stage",
@@ -588,9 +577,7 @@ def all_targets() -> list[CompileTarget]:
     tier_b_targets = [t for t in drug_gate_b if "tier_b" in t.name]
     drug_gate_b_main = [t for t in drug_gate_b if "tier_b" not in t.name]
     stages = _gate_b_stage_targets()
-    phase5 = [t for t in stages if t.name == "drug_indication_phase5"]
-    stages_main = [t for t in stages if t.name != "drug_indication_phase5"]
-    return fresh + tier_b_targets + drug_gate_b_main + phase5 + stages_main
+    return fresh + tier_b_targets + drug_gate_b_main + stages
 
 
 # ─── compiler stages ──────────────────────────────────────────────────────────
@@ -792,41 +779,6 @@ def _stage_payment_pipeline(target: CompileTarget, ctx: dict[str, Any]) -> dict:
     manifest = _apply_payment_manifest_cross_refs(result["manifest"], len(rules), "4")
     _write_json(target.manifest_path, manifest)
     return {"added": 0, "skipped": [], "encoded": len(manifest.get("encoded_clause_ids") or [])}
-
-
-def _stage_phase5_manifest(target: CompileTarget, ctx: dict[str, Any]) -> dict:
-    """§4.2.14.C phase5 — documented exception until Track C3 retires a1 repair."""
-    from scripts.sut.prose.drug_indication_a1_manifest_coverage import repair_4214c_manifest
-
-    if not target.manifest_path:
-        raise ValueError(f"target {target.name} missing phase5 manifest path")
-    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
-    existing = list(payload.get("rules") or [])
-
-    payload["rules"] = sorted([_strip_batch(r) for r in existing], key=lambda r: str(r.get("rule_id", "")))
-    payload["title"] = "SUT §4.2 drug indication and report requirements (4.2.14.C Phase 5)"
-    payload["coverage_note"] = (
-        f"Phase 0–5 — {len(payload['rules'])} rules for §4.2.14.C; full clause trace manifest "
-        "(encoded + pending + Tier C deferred with theme tags)."
-    )
-    payload["sut_anchors"] = ["4.2", "4.2.14.C"]
-    _write_rule_set_for_target(target, payload)
-
-    clauses_path = _PROJECT_ROOT / "data/gazette/sut_clauses.parquet"
-    # Track C4: corpus CSV is optional human export — not part of the derive pipeline.
-    effective_date = _existing_effective_date(target.manifest_path) or date.today().isoformat()
-    manifest = repair_4214c_manifest(
-        clauses_path=clauses_path,
-        rules_path=target.rule_json,
-        manifest_path=target.manifest_path,
-        effective_date=effective_date,
-    )
-    return {
-        "added": 0,
-        "patched": 0,
-        "encoded": manifest.get("encoded_clause_count", 0),
-        "in_force_traces": manifest.get("section_clause_total", 0),
-    }
 
 
 def _stage_antivegf_manifest(target: CompileTarget, ctx: dict[str, Any]) -> dict:
@@ -1035,7 +987,6 @@ _STAGES = {
     "write_gate_b_artifacts": _stage_write_gate_b_artifacts,
     "csv_wave_clause_ids": _stage_csv_wave_clause_ids,
     "payment_pipeline": _stage_payment_pipeline,
-    "phase5_manifest": _stage_phase5_manifest,
     "antivegf_manifest": _stage_antivegf_manifest,
     "tier_b_remap": _stage_tier_b_remap,
     "treatment_pricing_wave2_manifest": _stage_treatment_pricing_wave2_manifest,
@@ -1313,7 +1264,7 @@ def check(targets: list[CompileTarget] | None = None) -> int:
             if len(mismatches) > 50:
                 print(f"  ... {len(mismatches) - 50} more")
             return 1
-        print(f"check ok: {len(after_paths)} rule/manifest/corpus artifacts byte-identical")
+        print(f"check ok: {len(after_paths)} rule/manifest artifacts byte-identical")
         return 0
     finally:
         for path, content in before.items():

@@ -31,6 +31,7 @@ import { FactCheckRollupBanner } from "./rule-database/FactCheckRollupBanner";
 import { RuleList, RuleDetailPanel } from "./rule-database/RuleList";
 import { SectionBrowserPanel } from "./rule-database/SectionBrowserPanel";
 import { ClauseBrowserPanel, ClauseCard } from "./rule-database/ClauseBrowserPanel";
+import { DeferralBrowserPanel } from "./rule-database/DeferralBrowserPanel";
 import { ProseInventoryPanel } from "./rule-database/ProseInventoryPanel";
 
 // Re-export so existing imports (e.g. tests) keep resolving from this module.
@@ -72,7 +73,7 @@ export function RuleDatabaseSection() {
   const handleAnchorClick = (anchor: string) => {
     setActiveTab("clauses");
     setClauseSearchQ(anchor);
-    updateUrl({ rdTab: "clauses", rdSection: anchor });
+    updateUrl({ rdTab: "clauses", rdSection: anchor, rdClause: anchor });
   };
 
   const handleNavigateToRule = (ruleId: string) => {
@@ -164,6 +165,9 @@ export function RuleDatabaseSection() {
             <TabsTrigger value="prose" density="compact">
               {t("sections.ruleDatabase.tabs.prose")}
             </TabsTrigger>
+            <TabsTrigger value="deferrals" density="compact">
+              {t("sections.ruleDatabase.tabs.deferrals")}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="rules" forceMount className="data-[state=inactive]:hidden">
@@ -248,6 +252,12 @@ export function RuleDatabaseSection() {
           <TabsContent value="prose" forceMount className="data-[state=inactive]:hidden">
             <div className="pt-4">
               <ProseInventoryPanel onAnchorClick={handleAnchorClick} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="deferrals" forceMount className="data-[state=inactive]:hidden">
+            <div className="pt-4">
+              <DeferralBrowserPanel onCoordinateClick={handleAnchorClick} />
             </div>
           </TabsContent>
         </TabsRoot>

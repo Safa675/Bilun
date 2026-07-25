@@ -159,7 +159,7 @@ Prefer **Track A → B → C → D → E**. Track F optional. Do not start Track
 #### B2 — Deferral table is the only judgment store
 - [x] Normalize statuses: `encoded` (derived), `tier_c_deferred`, `emr_blocked`, `non_actionable`, pending A/B
 - [x] Move `_RECLASSIFY_AS_NON_ALGORITHMIC` (~562 ids in `coverage.py`) into deferral / non_actionable data
-- [ ] Manifests **derive** bucket lists + traces from rules ∪ deferral; no hand-maintained defer themes in manifests *(partial — coverage reads deferral; full manifest derive = Track C)*
+- [x] Manifests **derive** bucket lists + traces from rules ∪ deferral; no hand-maintained defer themes in manifests *(`build_manifest` applies deferral statuses; §4.2.14.C on GateBSection)*
 - [x] **Exit (coverage):** deleting a deferral `non_actionable` row changes coverage taxonomy; no parallel Python frozenset
 
 #### B3 — Goldens
@@ -181,24 +181,24 @@ Prefer **Track A → B → C → D → E**. Track F optional. Do not start Track
 #### C2 — Thin `compile_rules.py`
 - [x] Collapse `gate_b_writer` flavors → one path: load section YAML → write JSON → derive manifest via `gate_b_generic`
 - [x] Target: compile orchestrator understandable in one screenful of stage list
-- [x] **Exit:** no `shared_manifest` / `rules_path_with_batch_rules` special cases (or ≤1 documented exception) *(exceptions: `4201_w4`, `4213_tier_b_remap`; phase5 repair until C3)*
+- [x] **Exit:** no `shared_manifest` / `rules_path_with_batch_rules` special cases (or ≤1 documented exception) *(exceptions: `4201_w4`, `4213_tier_b_remap`; §4.2.14.C now on GateBSection)*
 
 #### C3 — Coverage = one function
 - [x] Input: parquet + rule JSON + deferral *(encoding via `_clause_has_rule_encoding`; drug supplements via manifest globs)*
 - [x] Output: coverage parquets  
-- [ ] Delete §4.2.14.C-only side tools (`drug_indication_manifest`, `a1_manifest_coverage`) once generic covers them *(kept — phase5 still uses a1 repair; a0 deleted)*
-- [ ] Prefer Polars end-to-end (drop pandas dual stack in prose coverage/classify when touched) *(deferred — pandas still in `_enrich_with_coverage`)*
+- [x] Delete §4.2.14.C-only side tools (`drug_indication_manifest`, `a1_manifest_coverage`) once generic covers them *(`SECTION_4214C` + deferral-driven `build_manifest`)*
+- [ ] Prefer Polars end-to-end (drop pandas dual stack in prose coverage/classify when touched) *(still pandas in `_enrich_with_coverage` — dedicated follow-up)*
 - [x] **Exit:** “what is a gap?” answerable from one predicate + deferral *(`_clause_has_rule_encoding` + structural/deferral exclusions)*
 
 #### C4 — Corpus CSVs
-- [x] Stop committing / stop runtime-reading Gate B corpus CSVs; optional export-only for humans *(compile no longer writes/checks CSV; committed CSVs may still exist until cleanup)*
+- [x] Stop committing / stop runtime-reading Gate B corpus CSVs; optional export-only for humans *(gitignored; payment/copay/drug writers default `write_corpus=False`)*
 - [x] Counts from parquet  
 - [x] **Exit:** `rules_catalog` / coverage do not open `prose_corpus/*.csv`
 
 #### C5 — Retire shims & one-offs
 - [x] Remove `gate_b_shim` once tests call generic  
-- [x] Delete dead export/repair scripts superseded by generic audit *(a0 inventory, anti_vegf_4233_export)*
-- [x] **Exit:** `scripts/sut/prose/gate_b*.py` is generic + sections + audit (+ Track F non-drug if deferred) *(plus `drug_indication_gate_b` primitives + phase5 a1 until 4214c port)*
+- [x] Delete dead export/repair scripts superseded by generic audit *(a0 inventory, anti_vegf_4233_export, a1/phase5 repair, `drug_indication_manifest`)*
+- [x] **Exit:** `scripts/sut/prose/gate_b*.py` is generic + sections + audit (+ Track F non-drug if deferred) *(plus `drug_indication_gate_b` shared primitives)*
 
 ---
 
@@ -206,11 +206,11 @@ Prefer **Track A → B → C → D → E**. Track F optional. Do not start Track
 
 **Goal:** Specialists never need `C*` to audit.
 
-- [ ] Rule DB Hüküm: primary id = coordinate; copyable; search by coordinate + text  
-- [ ] Rule detail: show source fıkra cite(s) from `gate_b_sources` as coordinates + snippet  
-- [ ] Gap / deferral review views keyed by coordinate  
-- [ ] Docs: 4-verb pipeline README — `extract → compile → derive → evaluate`  
-- [ ] **Exit:** meeting demo can audit a rule without mentioning `C*`
+- [x] Rule DB Hüküm: primary id = coordinate; copyable; search by coordinate + text  
+- [x] Rule detail: show source fıkra cite(s) from `gate_b_sources` as coordinates + snippet  
+- [x] Gap / deferral review views keyed by coordinate  
+- [x] Docs: 4-verb pipeline README — `extract → compile → derive → evaluate`  
+- [x] **Exit:** meeting demo can audit a rule without mentioning `C*`
 
 ---
 
