@@ -2370,7 +2370,7 @@
       ],
       "message_tr": "Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki durumunun sağlık kurulu raporunda belirtilmesi gerekir (§4.2.1.C-7).",
       "gate_b_sources": [
-        "C003783"
+        "C003784"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -3113,7 +3113,7 @@
       ],
       "message_tr": "Kanakinumab — FMF tedavisinde 3 aylık yanıt değerlendirmesi yapılmalı; yanıt alınamayan hastalarda tedavi sonlandırılır (§4.2.1.C-7 (3)).",
       "gate_b_sources": [
-        "C003783"
+        "C003784"
       ],
       "prescriber_specialties": [
         "iç hastalıkları",
@@ -4173,7 +4173,7 @@
       ],
       "message_tr": "Tofacitinib/barisitinib — romatoid artritte romatoloji veya üniversite/eğitim hastanesi klinik immunoloji/fiziksel tıp uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6 (2)).",
       "gate_b_sources": [
-        "C003737"
+        "C003738"
       ],
       "prescriber_specialties": [
         "romatoloji",
@@ -5913,7 +5913,7 @@
       ],
       "message_tr": "Glekaprevir/pibrentasvir — kronik HCV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.3.2).",
       "gate_b_sources": [
-        "C004892"
+        "4.2.13.3.2.(1)"
       ],
       "legacy_provision": true
     },
@@ -6169,7 +6169,6 @@
       ],
       "message_tr": "Hepatit tedavisi — önceki ilaçlar, tanı ve tedavi başlama/kesilme kriterleri raporda belirtilmelidir; oral antiviral ilk rapor en fazla 6 ay (§4.2.13).",
       "gate_b_sources": [
-        "C004498",
         "4.2.13.3.1.(2)",
         "4.2.13.3.2.B.(3)",
         "4.2.13.3.2.B.b"
@@ -6612,7 +6611,7 @@
       ],
       "message_tr": "Ramucirumab — kolorektal/gastrik kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C004934"
+        "C004935"
       ],
       "legacy_provision": true
     },
@@ -6986,7 +6985,7 @@
       ],
       "message_tr": "Pemetreksed — KHDAK kemoterapi endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C004934"
+        "C005485"
       ],
       "legacy_provision": true
     },
@@ -8204,7 +8203,7 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924"
+        "4.2.14.(1)"
       ]
     },
     {
@@ -8382,7 +8381,6 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924",
         "C005304",
         "C005311"
       ]
@@ -9983,7 +9981,6 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924",
         "C004937",
         "C004964",
         "C004965",
@@ -10946,7 +10943,7 @@
       "sut_section": "4.2.14.C",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C008285"
+        "6.5.(1)"
       ],
       "drug_names": [
         "ravulizumab"
@@ -11029,7 +11026,7 @@
       "sut_section": "4.2.14.C",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C008282"
+        "6.4.(1)"
       ],
       "drug_names": [
         "ravulizumab"
@@ -11178,7 +11175,7 @@
       "gate_b_sources": [
         "4.2.14.B.(2)"
       ],
-      "message_tr": "(2) Filgrastim, lenograstim, pegfilgrastim ve lipegfilgrastim; (Değişik:RG-02/11/2024-32710/14md.  Yürürlük:09/11/2024) en az bir hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 a",
+      "message_tr": "(2) Filgrastim, lenograstim, pegfilgrastim ve lipegfilgrastim; (Değişik:RG-02/11/2024-32710/14md. Yürürlük:09/11/2024) en az bir hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 a",
       "prescriber_specialties": [
         "tıbbi onkoloji",
         "hematoloji"
@@ -12105,7 +12102,7 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924"
+        "4.2.14.(1)"
       ]
     },
     {
@@ -12129,7 +12126,7 @@
         "tıbbi onkoloji"
       ],
       "gate_b_sources": [
-        "C004924"
+        "4.2.14.(1)"
       ]
     },
     {
@@ -12771,7 +12768,7 @@
       ],
       "message_tr": "Dabigatran — tanımlı endikasyonlarda geçiş gerekçeli en az bir kardiyoloji uzmanının yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.15.D-3).",
       "gate_b_sources": [
-        "C005820"
+        "C005835"
       ],
       "report_required": true,
       "report_specialties": [
@@ -15959,7 +15956,6 @@
       ],
       "message_tr": "Koagülasyon faktörü — tanı, faktör ve inhibitör düzeyini gösteren hematoloji sağlık kurulu raporu; hematoloji/iç hastalıkları/çocuk sağlığı uzman reçetesi (§4.2.27.A).",
       "gate_b_sources": [
-        "C006210",
         "C006225",
         "C006232",
         "C006233",
@@ -20658,7 +20654,6 @@
       "report_required": true,
       "message_tr": "Pediatrik büyüme hormonu devam tedavisi — endokrinoloji uzman hekiminin yer aldığı 1 yıllık sağlık kurulu raporu ve epifiz hatları takibi gerekir (§4.2.6.A-1).",
       "gate_b_sources": [
-        "C003965",
         "C003982"
       ],
       "report_specialties": [

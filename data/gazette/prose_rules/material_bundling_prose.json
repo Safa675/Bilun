@@ -345,7 +345,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002682"
+        "3.1.1.(5)"
       ],
       "condition": {
         "procurement_record_incomplete": true
@@ -361,7 +361,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002682"
+        "3.1.1.(11)"
       ],
       "condition": {
         "procedure_not_reimbursed": true
@@ -441,7 +441,7 @@
       "sut_section": "3.2.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002821"
+        "3.2.1.A.(1)"
       ],
       "condition": {
         "procurement_price_refs_insufficient": true
@@ -606,7 +606,7 @@
       "sut_section": "3.2.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002821"
+        "3.2.1.A.(1)"
       ],
       "condition": {
         "supplier_contract_pricing_path": true
@@ -782,7 +782,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002682"
+        "3.1.1.(7)"
       ],
       "condition": {
         "non_reimbursed_inpatient_patient_charge": true
@@ -798,7 +798,7 @@
       "sut_section": "3.1.3",
       "deontic": "MUST_NOT_BILL",
       "gate_b_sources": [
-        "C002765"
+        "3.1.3.(10)"
       ],
       "condition": {
         "lab_material_separate_billing": true
@@ -814,7 +814,7 @@
       "sut_section": "3.1.3",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002765"
+        "3.1.3.(3)"
       ],
       "condition": {
         "shared_consumable_wrong_branch_billing": true
@@ -830,7 +830,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002699"
+        "3.1.2.(6)"
       ],
       "condition": {
         "material_prescription_quantity_exceeded": true
@@ -1010,7 +1010,7 @@
       "sut_section": "3.1.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002682"
+        "3.1.1.(3)"
       ],
       "condition": {
         "ismarlama_device_component_titubb_incomplete": true

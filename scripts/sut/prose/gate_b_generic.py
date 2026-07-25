@@ -81,6 +81,7 @@ def load_deferral_table(
 
     from scripts.sut.prose.clause_identity import (
         AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
         UnknownClauseCiteError,
         resolve_gate_b_ref_to_clause_ids,
     )
@@ -103,9 +104,14 @@ def load_deferral_table(
                     coordinate,
                     frame,
                     in_force_only=True,
+                    encode_eligible_only=True,
                     allow_ambiguous=False,
                 )
-            except (AmbiguousClauseCiteError, UnknownClauseCiteError):
+            except (
+                AmbiguousClauseCiteError,
+                NonEncodeEligibleCiteError,
+                UnknownClauseCiteError,
+            ):
                 continue
             if len(ids) != 1:
                 continue
@@ -471,15 +477,17 @@ def _encoded_clause_ids_from_rules(
     """Collect encoded clause_ids; resolve coordinate cites when ``clauses`` given."""
     from scripts.sut.prose.clause_identity import (
         AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
         UnknownClauseCiteError,
         encoded_clause_ids_from_rules,
+        is_clause_id,
         resolve_gate_b_sources_to_clause_ids,
     )
 
     if clauses is None:
         return encoded_clause_ids_from_rules(rules, None, resolve_coordinates=False)
 
-    # Prefer unique resolves; ambiguous/unknown cites keep C* pass-through only.
+    # Prefer unique resolves; ambiguous/non-eligible/unknown cites soft-skip.
     encoded: set[str] = set()
     for rule in rules:
         refs = rule.get("gate_b_sources") or []
@@ -492,16 +500,16 @@ def _encoded_clause_ids_from_rules(
                         [raw],
                         clauses,
                         in_force_only=True,
-                        encode_eligible_only=False,
+                        encode_eligible_only=True,
                         allow_ambiguous=False,
                     )
                 )
             except AmbiguousClauseCiteError:
                 # Collision cite — only count if the rule also has a C* (or skip).
                 continue
+            except NonEncodeEligibleCiteError:
+                continue
             except UnknownClauseCiteError:
-                from scripts.sut.prose.clause_identity import is_clause_id
-
                 text = str(raw).strip()
                 if is_clause_id(text):
                     encoded.add(text)
@@ -526,6 +534,7 @@ def build_manifest(
     rules_by_clause: dict[str, list[str]] = {}
     from scripts.sut.prose.clause_identity import (
         AmbiguousClauseCiteError,
+        NonEncodeEligibleCiteError,
         UnknownClauseCiteError,
         resolve_gate_b_sources_to_clause_ids,
     )
@@ -538,10 +547,15 @@ def build_manifest(
                 refs,
                 resolve_frame,
                 in_force_only=True,
+                encode_eligible_only=True,
                 allow_ambiguous=False,
             )
-        except (AmbiguousClauseCiteError, UnknownClauseCiteError):
-            # Collision or out-of-frame cite — keep opaque refs for linkage map.
+        except (
+            AmbiguousClauseCiteError,
+            NonEncodeEligibleCiteError,
+            UnknownClauseCiteError,
+        ):
+            # Collision / non-eligible / out-of-frame — keep opaque refs for map.
             clause_ids = {str(r) for r in refs if r is not None and str(r).strip()}
         except Exception:
             clause_ids = {str(r) for r in refs if r is not None and str(r).strip()}

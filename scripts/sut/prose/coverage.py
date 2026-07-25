@@ -13,6 +13,7 @@ import polars as pl
 from .classify import classify_clauses
 from .clause_identity import (
     AmbiguousClauseCiteError,
+    NonEncodeEligibleCiteError,
     UnknownClauseCiteError,
     encoded_clause_ids_from_rules,
     resolve_gate_b_ref_to_clause_ids,
@@ -165,7 +166,11 @@ def _load_sut_clauses_frame() -> pl.DataFrame | None:
         _sut_clauses_frame_cache = None
         return None
     try:
-        _sut_clauses_frame_cache = pl.read_parquet(_SUT_CLAUSES_PARQUET)
+        from scripts.sut.prose.clause_type_overrides import apply_clause_type_overrides
+
+        _sut_clauses_frame_cache = apply_clause_type_overrides(
+            pl.read_parquet(_SUT_CLAUSES_PARQUET)
+        )
     except Exception:  # pragma: no cover - defensive I/O
         _sut_clauses_frame_cache = None
     return _sut_clauses_frame_cache  # type: ignore[return-value]
@@ -185,9 +190,9 @@ def _resolve_rule_json_gate_b_sources(
 
     When ``clauses_frame`` is None, keep opaque strings (legacy C*-only path).
     When provided, resolve coordinate cites via ``clause_identity``. On
-    ``AmbiguousClauseCiteError`` or ``UnknownClauseCiteError`` for a cite,
-    skip that ref (do not insert the coordinate string). ``C*`` / ``F*`` ids
-    always pass through.
+    ``AmbiguousClauseCiteError``, ``NonEncodeEligibleCiteError``, or
+    ``UnknownClauseCiteError`` for a cite, skip that ref (do not insert the
+    coordinate string). ``C*`` / ``F*`` ids always pass through.
     """
     rules = list(payload.get("rules") or [])
     if clauses_frame is None:
@@ -202,10 +207,19 @@ def _resolve_rule_json_gate_b_sources(
             if not text:
                 continue
             try:
-                out.update(resolve_gate_b_ref_to_clause_ids(text, clauses_frame))
+                out.update(
+                    resolve_gate_b_ref_to_clause_ids(
+                        text,
+                        clauses_frame,
+                        encode_eligible_only=True,
+                    )
+                )
             except AmbiguousClauseCiteError:
                 # Mixed/legacy data: ambiguous coordinate would not match
                 # clause_id column — skip rather than crash coverage build.
+                continue
+            except NonEncodeEligibleCiteError:
+                # Heading/chapter/section-only cites are not encode linkage.
                 continue
             except UnknownClauseCiteError:
                 # Unknown / invalid coordinate cites — skip. C* never raises.

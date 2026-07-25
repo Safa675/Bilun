@@ -19,8 +19,8 @@ rules:
   report_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları
-  message_tr: HCV DAA — Child-Pugh sınıflamasını kanıtlayıcı belgeler ve tedavi şeması üçüncü basamak uzman hekim raporunda
-    belirtilmelidir (§4.2.13.3.2).
+  message_tr: HCV DAA — Child-Pugh sınıflamasını kanıtlayıcı belgeler ve tedavi şeması üçüncü basamak uzman hekim 
+    raporunda belirtilmelidir (§4.2.13.3.2).
   gate_b_sources:
   - 4.2.13.3.2.(5)
   prescriber_specialties:
@@ -47,8 +47,8 @@ rules:
   report_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları
-  message_tr: HCV DAA — üçüncü basamak kurumda gastroenteroloji/enfeksiyon uzman raporu ve tedavi şeması; bir defaya mahsus
-    (§4.2.13.3.2).
+  message_tr: HCV DAA — üçüncü basamak kurumda gastroenteroloji/enfeksiyon uzman raporu ve tedavi şeması; bir defaya 
+    mahsus (§4.2.13.3.2).
   gate_b_sources:
   - 4.2.13.3.2.(5)
   prescriber_specialties:
@@ -69,7 +69,7 @@ rules:
   - enfeksiyon hastalıkları
   message_tr: Glekaprevir/pibrentasvir — kronik HCV endikasyonu ve uzman hekim raporu gerekir (§4.2.13.3.2).
   gate_b_sources:
-  - C004892
+  - 4.2.13.3.2.(1)
   legacy_provision: true
 - rule_id: 4.2.13.hcv_sofosbuvir_ledipasvir_board
   sut_section: 4.2.13.3.2
@@ -82,7 +82,8 @@ rules:
   report_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları
-  message_tr: Sofosbuvir/ledipasvir — kronik HCV endikasyonu ve gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.2).
+  message_tr: Sofosbuvir/ledipasvir — kronik HCV endikasyonu ve gastroenteroloji/enfeksiyon uzman hekim raporu gerekir 
+    (§4.2.13.3.2).
   gate_b_sources:
   - 4.2.13.3.2.(5)
   - C004902
@@ -114,8 +115,8 @@ rules:
   report_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları
-  message_tr: HCV uzman hekim raporu — HCV RNA, siroz durumu, Child-Pugh B/C kanıtı, genotip ve önceki tedaviler belirtilmelidir
-    (§4.2.13.3.2).
+  message_tr: HCV uzman hekim raporu — HCV RNA, siroz durumu, Child-Pugh B/C kanıtı, genotip ve önceki tedaviler 
+    belirtilmelidir (§4.2.13.3.2).
   gate_b_sources:
   - 4.2.13.3.2.(6)
   - 4.2.13.3.2.A.(4)

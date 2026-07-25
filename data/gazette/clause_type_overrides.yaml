@@ -1,0 +1,25 @@
+# Track A3 — durable clause_type corrections.
+# Applied after DOCX extract (and to the committed parquet) so contentful
+# paragraphs mis-tagged as section_heading can remain linked via opaque C*
+# without violating the structural-cite ban (chapter / section_heading).
+#
+# Target type is ``prose`` (not encode-eligible). Gap exclusion for true
+# navigational headings is unchanged; these rows carry normative text and are
+# already encoded by rules.
+
+overrides:
+  C000852: {clause_type: prose}
+  C000855: {clause_type: prose}
+  C000856: {clause_type: prose}
+  C000857: {clause_type: prose}
+  C003074: {clause_type: prose}
+  C004113: {clause_type: prose}
+  C004135: {clause_type: prose}
+  C004257: {clause_type: prose}
+  C004299: {clause_type: prose}
+  C004363: {clause_type: prose}
+  C004371: {clause_type: prose}
+  C004379: {clause_type: prose}
+  C004928: {clause_type: prose}
+  C004930: {clause_type: prose}
+  C005870: {clause_type: prose}

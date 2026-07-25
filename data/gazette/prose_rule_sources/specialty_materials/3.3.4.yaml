@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.4
   deontic: NO_PAY
   gate_b_sources:
-  - C002930
+  - 3.3.4.A.(1)
   condition:
     tissue_bank_unauthorized_product: true
   action:

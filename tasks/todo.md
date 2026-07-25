@@ -1,37 +1,24 @@
-## Task: Track C slice B — Coverage one function + retire shims (C3 + C5)
+## Task: Track A3 — Clear structural-cite blocker (1+2)
 
 ### Goal
-Coverage derives from parquet + rule JSON + deferral only; delete §4.2.14.C-only side tools once generic covers them; retire `gate_b_shim` and dead exports so `gate_b*.py` is generic + sections + audit.
-
-### Decisions (locked)
-- [x] Stay on PR #43 / branch `refactor/sut-pipeline-god-plan`
-- [x] Slice A committed (`ad97020`)
-- [x] Non-drug ports remain Track F
-- [x] Keep phase5 `a1`/`drug_indication_manifest` until §4.2.14.C GateBSection port
-- [x] Drug encoded supplement list stays explicit (not full glob) to avoid gap-count drift
+Compile assert passes: contentful mis-tagged `section_heading` rows reclassified; remaining true navigational heading `C*` cites dropped or remapped to encode-eligible children.
 
 ### Subtasks
-
-#### C3 — Coverage = one function
-- [x] Single `_clause_has_rule_encoding` predicate
-- [x] Move `build_defer_reason` → `gate_b_generic` (re-exported from manifest module)
-- [x] Delete unused dead manifest path constants
-- [x] Delete `drug_indication_a0_inventory` + test
-- [ ] Port §4.2.14.C onto `GateBSection` / delete a1 (deferred — high risk)
-- [ ] Polars end-to-end enrich (deferred)
-
-#### C5 — Retire shims
-- [x] Extend `gate_b_generic.write_artifacts` (batch_rules / manifest_path / write_corpus)
-- [x] Compile + tests call generic / `ALL_SECTIONS` directly
-- [x] Delete `gate_b_shim.py`
-- [x] Delete `anti_vegf_4233_export.py`
+- [x] Inventory 38 cited `section_heading` C* → contentful vs true-navigational
+- [x] Reclassify contentful rows via `data/gazette/clause_type_overrides.yaml` + parquet patch + extractor hook
+- [x] Drop structural C* from drop-safe rules; remap heading-only to encode-eligible children/coords in YAML
+- [x] Recompile five affected targets; A3 assert green on all 14 compile rule JSONs
+- [x] Unit tests (clause_identity + extract + sample prose rules)
+- [x] Mark A3 done in god-plan + todo Review
 
 ### Out of Scope
-- Track D/E, Track F non-drug Gate B port
-- Full §4.2.14.C generic port (follow-up)
-- `plans/deployment/vps-openhands-smoke-test.md`
+- New cite syntax (`coord#fikra`)
+- Track D/E/F
+- Mass reclassify of uncited section_heading rows
+- Fixing historically wrong provenance families (e.g. pulmoner→2.5.1.*, ravulizumab→6.4/6.5) beyond making cites non-structural
 
 ### Review
 - Branch / PR: `refactor/sut-pipeline-god-plan` → https://github.com/Safa675/Bilun/pull/43
-- Baseline gaps: 222 / encoded 1994 / di gaps 63 (pin before C3)
-- Verified: 123 gate_b + schema tests pass after shim deletion
+- Overrides: 15 contentful `section_heading` → `prose` (`clause_type_overrides.yaml` + committed parquet)
+- YAML: 20 files, 34 remaps + 5 drops of navigational heading cites
+- Verify: A3 assert OK on 14 rule JSONs; `test_clause_identity` + related prose tests pass

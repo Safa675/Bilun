@@ -146,15 +146,16 @@ def _write_rule_set_json(path: Path, payload: dict, *, rule_set_id: str) -> None
 
 
 def _assert_gate_b_cites_resolvable(payload: dict, rule_set_id: str) -> None:
-    """Track A3 — coordinates in gate_b_sources must resolve uniquely."""
+    """Track A3 — gate_b_sources must be unique encode-eligible cites."""
     clauses_path = _PROJECT_ROOT / "data" / "gazette" / "sut_clauses.parquet"
     if not clauses_path.is_file():
         return
     import polars as pl
 
     from scripts.sut.prose.clause_identity import assert_gate_b_sources_resolvable
+    from scripts.sut.prose.clause_type_overrides import apply_clause_type_overrides
 
-    frame = pl.read_parquet(clauses_path)
+    frame = apply_clause_type_overrides(pl.read_parquet(clauses_path))
     assert_gate_b_sources_resolvable(
         list(payload.get("rules") or []),
         frame,

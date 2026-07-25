@@ -139,10 +139,10 @@ Prefer **Track A → B → C → D → E**. Track F optional. Do not start Track
 - [ ] **Exit:** `rg 'gate_b_sources:.*C[0-9]{6}'` clean in YAML sources; deferral has no bare `C*` keys (or only documented exceptions)
 
 #### A3 — Disambiguation policy for collisions
-- [ ] Default join: `(clause_coordinate, is_in_force=true)`
-- [ ] If still ambiguous: require explicit `clause_type` or refuse compile with actionable error
-- [ ] Section-only / heading / chapter: never appear in `gate_b_sources`; coverage excludes from algorithmic gap unless opted in
-- [ ] **Exit:** compile fails loud on ambiguous cites; no silent “first row wins”
+- [x] Default join: `(clause_coordinate, is_in_force=true)`
+- [x] If still ambiguous: require explicit `clause_type` or refuse compile with actionable error *(encode-eligible filter as implicit type disambiguation; still-ambiguous → refuse with candidate `C*` list)*
+- [x] Section-only / heading / chapter: never appear in `gate_b_sources`; coverage excludes from algorithmic gap unless opted in *(contentful mis-tags → `clause_type_overrides.yaml` + prose; true headings remapped/dropped in YAML)*
+- [x] **Exit:** compile fails loud on ambiguous cites; no silent “first row wins”
 
 ---
 

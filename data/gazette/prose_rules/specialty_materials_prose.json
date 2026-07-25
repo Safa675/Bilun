@@ -36,7 +36,7 @@
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002838"
+        "3.3.1.(10)"
       ],
       "condition": {
         "material_name_any": [
@@ -63,7 +63,7 @@
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002838"
+        "3.3.1.(10)"
       ],
       "condition": {
         "material_name_any": [
@@ -90,7 +90,7 @@
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002838"
+        "3.3.1.(10)"
       ],
       "condition": {
         "material_name_any": [
@@ -110,7 +110,7 @@
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002838"
+        "3.3.1.(10)"
       ],
       "condition": {
         "material_name_any": [
@@ -168,7 +168,7 @@
       "sut_section": "3.3.1",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C002838"
+        "3.3.1.(1)"
       ],
       "condition": {
         "immunobullous_wound_care_patient_supply": true
@@ -184,7 +184,7 @@
       "sut_section": "3.3.1",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C002838"
+        "3.3.1.(1)"
       ],
       "condition": {
         "immunobullous_wound_care_non_moh_facility": true
@@ -321,7 +321,7 @@
       "sut_section": "3.3.34",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C003386"
+        "3.3.34.(4)"
       ],
       "condition": {
         "tv5680_with_tv1080_tv1090_combo": true
@@ -433,7 +433,7 @@
       "sut_section": "3.3.4",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002930"
+        "3.3.4.A.(1)"
       ],
       "condition": {
         "tissue_bank_unauthorized_product": true
@@ -519,7 +519,7 @@
       "sut_section": "3.3.4.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002931"
+        "3.3.4.A.(4)"
       ],
       "condition": {
         "bone_stimulator_benign_tumor_use": true

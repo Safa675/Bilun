@@ -38,7 +38,7 @@ rules:
   sut_section: 3.3.4.A
   deontic: NO_PAY
   gate_b_sources:
-  - C002931
+  - 3.3.4.A.(4)
   condition:
     bone_stimulator_benign_tumor_use: true
   action:
@@ -69,8 +69,8 @@ rules:
   action:
     material_outcome: review_required
     severity: warning
-    message_tr: İnsan dokusu kaynaklı ürünlerin (allogreft) MEDULA girişinde TİTUBB/ÜTS kaydı “Allogreft Ürün Onay Ekranı”nda
-      tamamlanmalı ve barkodlu gönderilmelidir (§3.3.4.A(1)).
+    message_tr: İnsan dokusu kaynaklı ürünlerin (allogreft) MEDULA girişinde TİTUBB/ÜTS kaydı “Allogreft Ürün Onay 
+      Ekranı”nda tamamlanmalı ve barkodlu gönderilmelidir (§3.3.4.A(1)).
 - rule_id: 3.3.4.A.(2).allogreft_donor_id_mandatory
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
@@ -103,8 +103,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Tümör/travma korpektomi boşluğuna titanyum/çelik interbody kafes içi doldurulduğunda (DBM hariç) bedeli Kurumca
-      karşılanır (§3.3.4.A(e)).
+    message_tr: Tümör/travma korpektomi boşluğuna titanyum/çelik interbody kafes içi doldurulduğunda (DBM hariç) bedeli 
+      Kurumca karşılanır (§3.3.4.A(e)).
 - rule_id: 3.3.4.A.(10).synthetic_graft_30cc_cap
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
@@ -115,7 +115,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Sentetik greft kullanılan tüm uygulamalarda vaka başı 30 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.A(10)).
+    message_tr: Sentetik greft kullanılan tüm uygulamalarda vaka başı 30 cc’yi geçmemek üzere Kurumca karşılanır 
+      (§3.3.4.A(10)).
 - rule_id: 3.3.4.A.(11).allograft_xenograft_60cc_cap
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
@@ -126,7 +127,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Allogreft/xenogreft kullanılan tüm uygulamalarda vaka başı 60 cc’yi geçmemek üzere Kurumca karşılanır (§3.3.4.A(11)).
+    message_tr: Allogreft/xenogreft kullanılan tüm uygulamalarda vaka başı 60 cc’yi geçmemek üzere Kurumca karşılanır 
+      (§3.3.4.A(11)).
 - rule_id: 3.3.4.A.a.posterior_spinal_allograft_xenograft_cap
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
@@ -137,8 +139,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Posterior spinal stabilizasyonda allogreft/xenogreft C1-T10 her seviye 5 cc, T11-S1 her seviye 10 cc’yi geçmemek
-      üzere Kurumca karşılanır (§3.3.4.A(a)).
+    message_tr: Posterior spinal stabilizasyonda allogreft/xenogreft C1-T10 her seviye 5 cc, T11-S1 her seviye 10 cc’yi 
+      geçmemek üzere Kurumca karşılanır (§3.3.4.A(a)).
 - rule_id: 3.3.4.A.b.posterior_spinal_synthetic_graft_cap
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
@@ -149,8 +151,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Posterior spinal stabilizasyonda sentetik greft C1-T10 her seviye 2,5 cc, T11-S1 her seviye 5 cc’yi geçmemek
-      üzere Kurumca karşılanır (§3.3.4.A(b)).
+    message_tr: Posterior spinal stabilizasyonda sentetik greft C1-T10 her seviye 2,5 cc, T11-S1 her seviye 5 cc’yi 
+      geçmemek üzere Kurumca karşılanır (§3.3.4.A(b)).
 - rule_id: 3.3.4.A.(13).bone_cyst_allograft_xenograft_120cc_cap
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
@@ -161,8 +163,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Büyük kemik kisti cerrahisinde allogreft/xenogreft — koronal/aksiyel BT raporuyla 120 cc’yi geçmemek üzere
-      Kurumca karşılanır (§3.3.4.A(13)).
+    message_tr: Büyük kemik kisti cerrahisinde allogreft/xenogreft — koronal/aksiyel BT raporuyla 120 cc’yi geçmemek 
+      üzere Kurumca karşılanır (§3.3.4.A(13)).
 - rule_id: 3.3.4.A.(15).fascia_temporalis_ent_only
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION
@@ -173,8 +175,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Fasiya Temporalis alan tanımındaki allogreftler yalnızca Kulak Burun Boğaz uzmanlık dalınca kullanıldığında
-      Kurumca karşılanır (§3.3.4.A(15)).
+    message_tr: Fasiya Temporalis alan tanımındaki allogreftler yalnızca Kulak Burun Boğaz uzmanlık dalınca 
+      kullanıldığında Kurumca karşılanır (§3.3.4.A(15)).
 - rule_id: 3.3.4.A.(17).graft_op_note_epikriz_mandatory
   sut_section: 3.3.4.A
   deontic: REGULATORY_ACTION

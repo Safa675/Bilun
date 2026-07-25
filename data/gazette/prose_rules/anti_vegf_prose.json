@@ -122,7 +122,7 @@
         "göz hastalıkları"
       ],
       "gate_b_sources": [
-        "C006560"
+        "4.2.33.A.(1)"
       ],
       "message_tr": "Pegaptanib — 3 göz hastalıkları uzmanının yer aldığı 3 ay süreli sağlık kurulu raporu ve göz hastalıkları uzmanınca reçete şartı (§4.2.33.A)."
     },
@@ -268,7 +268,7 @@
       ],
       "message_tr": "Ranibizumab/aflibersept (RVDT/SRVT) — deksametazon uygun değilse 3 ay süreli rapor ve 3 yükleme dozu (§4.2.33.B, C006480 güncellemesi).",
       "gate_b_sources": [
-        "C006455"
+        "C006526"
       ],
       "report_duration_months": 3,
       "loading_dose_count": 3

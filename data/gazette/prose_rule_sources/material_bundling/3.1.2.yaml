@@ -129,7 +129,8 @@ rules:
   action:
     material_outcome: review_required
     severity: warning
-    message_tr: Özel sözleşme yolu ortez/protez faturalandırması — komisyon tespiti ve sözleşme kapsamı doğrulanmalı (§3.1.2(b)).
+    message_tr: Özel sözleşme yolu ortez/protez faturalandırması — komisyon tespiti ve sözleşme kapsamı doğrulanmalı 
+      (§3.1.2(b)).
 - rule_id: 3.1.2.(11).maintenance_cost_cap_exceeded
   sut_section: 3.1.2
   deontic: NO_PAY
@@ -249,7 +250,7 @@ rules:
   sut_section: 3.1.2
   deontic: NO_PAY
   gate_b_sources:
-  - C002699
+  - 3.1.2.(6)
   condition:
     material_prescription_quantity_exceeded: true
   action:
@@ -332,7 +333,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: EK-3/C listelerinde SUT kodu, alan tanımı ve fiyat tanımları geçerlidir — liste eşleşmesi doğrulanmalı (§3.1.2(1)).
+    message_tr: EK-3/C listelerinde SUT kodu, alan tanımı ve fiyat tanımları geçerlidir — liste eşleşmesi doğrulanmalı 
+      (§3.1.2(1)).
 - rule_id: 3.1.2.(4)a.ismarlama_licensed_center_supply
   sut_section: 3.1.2
   deontic: REGULATORY_ACTION
@@ -343,7 +345,8 @@ rules:
   action:
     material_outcome: review_required
     severity: warning
-    message_tr: Ismarlama protez/ortez veya işitme cihazı — Sağlık Bakanlığı ruhsatlı merkezden temin şartı (§3.1.2(4)(a)).
+    message_tr: Ismarlama protez/ortez veya işitme cihazı — Sağlık Bakanlığı ruhsatlı merkezden temin şartı 
+      (§3.1.2(4)(a)).
 - rule_id: 3.1.2.(5).ek3c_optional_appropriateness_consumables
   sut_section: 3.1.2
   deontic: REGULATORY_ACTION
@@ -358,8 +361,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Hasta alt bezi, sonda veya aspirasyon kateteri için tıbbi uygunluk zorunlu değil — ihtiyaç halinde aranabilir
-      (§3.1.2(5)).
+    message_tr: Hasta alt bezi, sonda veya aspirasyon kateteri için tıbbi uygunluk zorunlu değil — ihtiyaç halinde 
+      aranabilir (§3.1.2(5)).
 - rule_id: 3.1.2.(14).disabled_veteran_ortez_protez_billing
   sut_section: 3.1.2
   deontic: REGULATORY_ACTION
@@ -372,7 +375,8 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: 3713 sayılı Kanun kapsamı malul/vazife malulü ortez-protez — liste fiyatı aşımı ve kapsam doğrulanmalı (§3.1.2(14)).
+    message_tr: 3713 sayılı Kanun kapsamı malul/vazife malulü ortez-protez — liste fiyatı aşımı ve kapsam doğrulanmalı 
+      (§3.1.2(14)).
 - rule_id: 3.1.2.(15).terror_victim_ortez_protez_documentation
   sut_section: 3.1.2
   deontic: NO_PAY

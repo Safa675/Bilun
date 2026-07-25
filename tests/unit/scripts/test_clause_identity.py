@@ -1,4 +1,4 @@
-"""Unit tests for clause_identity dual-read (god plan Track A1)."""
+"""Unit tests for clause_identity dual-read (god plan Track A1 / A3)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,9 @@ import pytest
 
 from scripts.sut.prose.clause_identity import (
     AmbiguousClauseCiteError,
+    NonEncodeEligibleCiteError,
     UnknownClauseCiteError,
+    assert_gate_b_sources_resolvable,
     encoded_clause_ids_from_rules,
     filter_encode_eligible,
     is_clause_coordinate,
@@ -104,8 +106,103 @@ def test_encoded_clause_ids_without_frame_keeps_opaque_strings() -> None:
 
 
 def test_assert_gate_b_sources_resolvable_flags_ambiguous() -> None:
-    from scripts.sut.prose.clause_identity import assert_gate_b_sources_resolvable
-
     rules = [{"rule_id": "r_bad", "gate_b_sources": ["4.2.14.C.a"]}]
     with pytest.raises(AmbiguousClauseCiteError, match="r_bad"):
         assert_gate_b_sources_resolvable(rules, _frame(), rule_set_id="demo")
+
+
+def test_a3_ambiguous_error_lists_candidate_c_ids() -> None:
+    with pytest.raises(AmbiguousClauseCiteError, match=r"C000002\(bent\).*C000003\(bent\)"):
+        resolve_gate_b_ref_to_clause_ids(
+            "4.2.14.C.a",
+            _frame(),
+            encode_eligible_only=True,
+        )
+
+
+def test_a3_heading_coordinate_refused() -> None:
+    with pytest.raises(NonEncodeEligibleCiteError, match="section_heading"):
+        resolve_gate_b_ref_to_clause_ids(
+            "1.2",
+            _frame(),
+            encode_eligible_only=True,
+        )
+
+
+def test_a3_heading_clause_id_refused() -> None:
+    with pytest.raises(NonEncodeEligibleCiteError, match="C000004"):
+        resolve_gate_b_ref_to_clause_ids(
+            "C000004",
+            _frame(),
+            encode_eligible_only=True,
+        )
+
+
+def test_a3_prose_clause_id_allowed() -> None:
+    """Opaque C* may still target ``prose`` rows; only structural types are banned."""
+    frame = pl.DataFrame(
+        {
+            "clause_id": ["C000099"],
+            "clause_coordinate": [None],
+            "clause_type": ["prose"],
+            "clause_number": [None],
+            "clause_letter": [None],
+            "is_in_force": [True],
+        }
+    )
+    assert resolve_gate_b_ref_to_clause_ids(
+        "C000099",
+        frame,
+        encode_eligible_only=True,
+    ) == ["C000099"]
+
+
+def test_clause_type_overrides_flip_heading_to_prose() -> None:
+    from scripts.sut.prose.clause_type_overrides import apply_clause_type_overrides
+
+    frame = pl.DataFrame(
+        {
+            "clause_id": ["C000852", "C000001"],
+            "clause_type": ["section_heading", "fikra"],
+            "is_heading": [True, False],
+        }
+    )
+    out = apply_clause_type_overrides(
+        frame,
+        {"C000852": {"clause_type": "prose"}},
+    )
+    assert out.filter(pl.col("clause_id") == "C000852")["clause_type"][0] == "prose"
+    assert out.filter(pl.col("clause_id") == "C000852")["is_heading"][0] is False
+    assert out.filter(pl.col("clause_id") == "C000001")["clause_type"][0] == "fikra"
+
+
+def test_a3_assert_rejects_heading_cite() -> None:
+    rules = [{"rule_id": "r_head", "gate_b_sources": ["1.2"]}]
+    with pytest.raises(NonEncodeEligibleCiteError, match="r_head"):
+        assert_gate_b_sources_resolvable(rules, _frame(), rule_set_id="demo")
+
+
+def test_a3_encode_eligible_disambiguates_mixed_types() -> None:
+    """Coordinate with one encode-eligible + one heading → unique after filter."""
+    frame = pl.DataFrame(
+        {
+            "clause_id": ["C000010", "C000011"],
+            "clause_coordinate": ["2.1.(1)", "2.1.(1)"],
+            "clause_type": ["fikra", "section_heading"],
+            "clause_number": [1, None],
+            "clause_letter": [None, None],
+            "is_in_force": [True, True],
+        }
+    )
+    assert resolve_gate_b_ref_to_clause_ids(
+        "2.1.(1)",
+        frame,
+        encode_eligible_only=True,
+    ) == ["C000010"]
+
+
+def test_resolve_gate_b_sources_batch() -> None:
+    assert resolve_gate_b_sources_to_clause_ids(
+        ["C000001", "1.1.(1)"],
+        _frame(),
+    ) == {"C000001"}

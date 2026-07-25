@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.34
   deontic: NO_PAY
   gate_b_sources:
-  - C003386
+  - 3.3.34.(4)
   condition:
     tv5680_with_tv1080_tv1090_combo: true
   action:
@@ -25,8 +25,9 @@ rules:
   action:
     material_outcome: review_required
     severity: warning
-    message_tr: Hasta alt bezi/külotlu hasta alt bezi — primer inkontinans tanısı belirtilmesi ve günde 4 adedi geçmemek kaydıyla
-      18 yaş üstü için A10049, 3-18 yaş için A10118 kodlu malzeme fiyatı üzerinden 1 aylık tutar nakden ödenir (§3.3.34(2)).
+    message_tr: Hasta alt bezi/külotlu hasta alt bezi — primer inkontinans tanısı belirtilmesi ve günde 4 adedi geçmemek
+      kaydıyla 18 yaş üstü için A10049, 3-18 yaş için A10118 kodlu malzeme fiyatı üzerinden 1 aylık tutar nakden ödenir 
+      (§3.3.34(2)).
 - rule_id: 3.3.34.(3).inkontinans_hidrofilik_sonda_must_bill
   sut_section: 3.3.34
   deontic: MUST_BILL
@@ -39,5 +40,6 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: İdrar/gaita inkontinansı nedeniyle hasta alt bezi ödemesi alan hastalarda; SUT hükümlerine göre düzenlenen
-      sağlık raporu ve reçeteye istinaden hidrofilik kendinden kayganlaştırıcılı sonda bedeli Kurumca karşılanır (§3.3.34(3)).
+    message_tr: İdrar/gaita inkontinansı nedeniyle hasta alt bezi ödemesi alan hastalarda; SUT hükümlerine göre 
+      düzenlenen sağlık raporu ve reçeteye istinaden hidrofilik kendinden kayganlaştırıcılı sonda bedeli Kurumca 
+      karşılanır (§3.3.34(3)).

@@ -255,7 +255,7 @@ rules:
   - tıbbi onkoloji
   message_tr: Ramucirumab — kolorektal/gastrik kanser endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
-  - C004934
+  - C004935
   legacy_provision: true
 - rule_id: 4.2.14.C.(1).sonidegib_bcc_board
   sut_section: 4.2.14.C
@@ -501,7 +501,8 @@ rules:
   report_required: true
   report_specialties:
   - tıbbi onkoloji
-  message_tr: Pembrolizumab — metastatik KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir (§4.2.14.C(15)).
+  message_tr: Pembrolizumab — metastatik KHDAK endikasyonu ve tıbbi onkoloji sağlık kurulu raporu gerekir 
+    (§4.2.14.C(15)).
   gate_b_sources:
   - C005750
   - C005751
@@ -521,7 +522,7 @@ rules:
   - tıbbi onkoloji
   message_tr: Pemetreksed — KHDAK kemoterapi endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
-  - C004934
+  - C005485
   legacy_provision: true
 - rule_id: 4.2.14.C.(2).anagrelide_board
   sut_section: 4.2.14.C
@@ -1311,10 +1312,11 @@ rules:
   - çocuk onkoloji
   - hematoloji
   action:
-    enforcement: ALL/NHL with documented serious allergic/anaphylactic reaction to L-asparaginase/pegaspargase; 3rd-step report
-    message_tr: Çocuk/erişkin ALL veya Non-Hodgkin Lenfoma'da L-asparaginase/Pegaspargase'ye bağlı ciddi alerjik/anafilaktik
-      reaksiyon geliştiği raporda belirtilmişse, üçüncü basamak resmi sunucuda en az bir çocuk hematoloji/çocuk onkoloji/hematoloji
-      uzmanının düzenlediği 1 yıllık raporla reçete edilir (§4.2.14.C 1).
+    enforcement: ALL/NHL with documented serious allergic/anaphylactic reaction to L-asparaginase/pegaspargase; 3rd-step
+      report
+    message_tr: Çocuk/erişkin ALL veya Non-Hodgkin Lenfoma'da L-asparaginase/Pegaspargase'ye bağlı ciddi 
+      alerjik/anafilaktik reaksiyon geliştiği raporda belirtilmişse, üçüncü basamak resmi sunucuda en az bir çocuk 
+      hematoloji/çocuk onkoloji/hematoloji uzmanının düzenlediği 1 yıllık raporla reçete edilir (§4.2.14.C 1).
 - rule_id: 4.2.14.C.azacitidine_mds_4mo_heme
   sut_section: 4.2.14.C
   drug_names:
@@ -1382,7 +1384,7 @@ rules:
   - hematoloji
   - tıbbi onkoloji
   gate_b_sources:
-  - C004924
+  - 4.2.14.(1)
 - rule_id: 4.2.14.C.brentuximab_hodgkin_board
   sut_section: 4.2.14.C
   drug_names:
@@ -1434,8 +1436,8 @@ rules:
   - hematoloji
   action:
     enforcement: 'CD20+ diffuse large B-cell lymphoma: added to CHOP regimen'
-    message_tr: CD20 pozitif, diffüz büyük B hücreli lenfomada CHOP (siklofosfamid, doksorubisin, vinkristin, prednizolon)
-      şemasına ek olarak kullanılabilir (§4.2.14.C ç).
+    message_tr: CD20 pozitif, diffüz büyük B hücreli lenfomada CHOP (siklofosfamid, doksorubisin, vinkristin, 
+      prednizolon) şemasına ek olarak kullanılabilir (§4.2.14.C ç).
 - rule_id: 4.2.14.C.cetuximab_crc_board
   sut_section: 4.2.14.C
   drug_names:
@@ -1492,9 +1494,9 @@ rules:
   - tıbbi onkoloji
   action:
     enforcement: 'CLL 2nd-line: age <70, CIRS >6 and/or CrCl 30-69, unfit for fludarabine/bendamustine, prior rituximab'
-    message_tr: 70 yaş altında, CIRS >6 ve/veya kreatinin klirensi 30-69 ml/dk, fludarabinli/bendamustinli kombinasyona uygun
-      olmayan ve önceden rituksimab kullanmış kronik lenfositik lösemide ikinci sıra tedavide kullanılması halinde ödenir
-      (§4.2.14.C 2).
+    message_tr: 70 yaş altında, CIRS >6 ve/veya kreatinin klirensi 30-69 ml/dk, fludarabinli/bendamustinli kombinasyona 
+      uygun olmayan ve önceden rituksimab kullanmış kronik lenfositik lösemide ikinci sıra tedavide kullanılması halinde
+      ödenir (§4.2.14.C 2).
 - rule_id: 4.2.14.C.clofarabine_fikra2_heme
   sut_section: 4.2.14.C
   drug_names:
@@ -1512,7 +1514,6 @@ rules:
   - hematoloji
   - tıbbi onkoloji
   gate_b_sources:
-  - C004924
   - C005304
   - C005311
 - rule_id: 4.2.14.C.cutaneous_tcell_lymphoma_cd30_brentuximab
@@ -1532,9 +1533,10 @@ rules:
   - tıbbi onkoloji
   action:
     enforcement: cutaneous T-cell lymphoma, CD30 ≥5%, after ≥2 systemic regimens ± electron beam RT; max 12 cycles
-    message_tr: Kutanöz T hücreli lenfoma, malign hücrelerde ≥%5 CD30 pozitif, topikal tedavi tüketilmiş, ≥2 sistemik tedavi
-      (beksaroten, interferon, ECP, metotreksat) + elektron beam RT uygulanmış veya uygun olmayan relaps/refrakter olgularda,
-      en fazla 12 siklus; hematoloji/tıbbi onkoloji uzmanının yer aldığı rapor gerekir (§4.2.14.C 3).
+    message_tr: Kutanöz T hücreli lenfoma, malign hücrelerde ≥%5 CD30 pozitif, topikal tedavi tüketilmiş, ≥2 sistemik 
+      tedavi (beksaroten, interferon, ECP, metotreksat) + elektron beam RT uygulanmış veya uygun olmayan 
+      relaps/refrakter olgularda, en fazla 12 siklus; hematoloji/tıbbi onkoloji uzmanının yer aldığı rapor gerekir 
+      (§4.2.14.C 3).
 - rule_id: 4.2.14.C.decitabine_mds_4mo_heme
   sut_section: 4.2.14.C
   drug_names:
@@ -1607,7 +1609,8 @@ rules:
   report_required: true
   report_specialties:
   - nöroloji
-  message_tr: Ekulizumab — jeneralize miyastenia gravis endikasyonu ve nöroloji sağlık kurulu raporu gerekir (§4.2.14.C).
+  message_tr: Ekulizumab — jeneralize miyastenia gravis endikasyonu ve nöroloji sağlık kurulu raporu gerekir 
+    (§4.2.14.C).
   prescriber_specialties:
   - nöroloji
   gate_b_sources:
@@ -1706,9 +1709,9 @@ rules:
   - tıbbi onkoloji
   action:
     enforcement: 'coverage gate: ER ≥10% positive, HER-2 negative, pre/peri/postmenopausal recurrent/metastatic breast cancer'
-    message_tr: Östrojen reseptörü ≥%10 pozitif, HER-2 negatif, pre/peri/postmenopozal nüks/metastatik meme kanserinde en
-      az bir tıbbi onkoloji uzmanının yer aldığı en fazla 6 aylık sağlık kurulu raporuyla, tıbbi onkoloji uzmanlarınca reçete
-      edilir (§4.2.14.C(2)).
+    message_tr: Östrojen reseptörü ≥%10 pozitif, HER-2 negatif, pre/peri/postmenopozal nüks/metastatik meme kanserinde 
+      en az bir tıbbi onkoloji uzmanının yer aldığı en fazla 6 aylık sağlık kurulu raporuyla, tıbbi onkoloji 
+      uzmanlarınca reçete edilir (§4.2.14.C(2)).
 - rule_id: 4.2.14.C.erlotinib_6mo_nsclc
   sut_section: 4.2.14.C
   drug_names:
@@ -1804,7 +1807,6 @@ rules:
   - hematoloji
   - tıbbi onkoloji
   gate_b_sources:
-  - C004924
   - C004937
   - C004964
   - C004965
@@ -1904,8 +1906,8 @@ rules:
   prescriber_specialties:
   - nöroloji
   action:
-    enforcement: generalized myasthenia gravis meeting criteria; 3rd-step center, 3 neurology specialists (≤3 mo), monthly
-      dose
+    enforcement: generalized myasthenia gravis meeting criteria; 3rd-step center, 3 neurology specialists (≤3 mo), 
+      monthly dose
     message_tr: 'Jeneralize Miyastenia Gravis: kriterleri birlikte sağlayan hastalarda, üçüncü basamak kurumda 3 nöroloji
       uzmanının yer aldığı en fazla 3 aylık sağlık kurulu raporuyla, nöroloji uzmanlarınca birer aylık dozda reçete edilir
       (§4.2.14.C 3).'
@@ -1926,9 +1928,9 @@ rules:
   - tıbbi onkoloji
   action:
     enforcement: unresectable / high surgical-morbidity giant cell tumor of bone in adults & mature adolescents
-    message_tr: Rezeke edilemeyen veya cerrahi morbidite riski yüksek, erişkinler ve iskeleti olgunlaşmış adölesanlarda kemiğin
-      dev hücreli tümöründe, en az bir tıbbi onkoloji uzmanının yer aldığı 6 aylık sağlık kurulu raporuyla tıbbi onkoloji
-      uzmanlarınca reçete edilir (§4.2.14.C 2).
+    message_tr: Rezeke edilemeyen veya cerrahi morbidite riski yüksek, erişkinler ve iskeleti olgunlaşmış adölesanlarda 
+      kemiğin dev hücreli tümöründe, en az bir tıbbi onkoloji uzmanının yer aldığı 6 aylık sağlık kurulu raporuyla tıbbi
+      onkoloji uzmanlarınca reçete edilir (§4.2.14.C 2).
 - rule_id: 4.2.14.C.gynecologic_malignity_obgyn_third_step
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -1937,10 +1939,11 @@ rules:
   report_specialties:
   - kadın hastalıkları ve doğum
   action:
-    enforcement: gynecologic malignity drugs in §4.2.14.C may also be prescribed at 3rd-step centers with OB/GYN on board
-    message_tr: §4.2.14.C ilaçlarından jinekolojik malignite tedavisinde endikasyonu bulunanlar, yalnızca üçüncü basamak kurumlarda
-      olmak üzere kadın hastalıkları ve doğum uzmanının da yer aldığı sağlık kurulu raporuyla bu uzmanlarca da reçete edilebilir
-      (§4.2.14.C(4)).
+    enforcement: gynecologic malignity drugs in §4.2.14.C may also be prescribed at 3rd-step centers with OB/GYN on 
+      board
+    message_tr: §4.2.14.C ilaçlarından jinekolojik malignite tedavisinde endikasyonu bulunanlar, yalnızca üçüncü basamak
+      kurumlarda olmak üzere kadın hastalıkları ve doğum uzmanının da yer aldığı sağlık kurulu raporuyla bu uzmanlarca 
+      da reçete edilebilir (§4.2.14.C(4)).
 - rule_id: 4.2.14.C.hematology_3m_third_step_prescriber
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -1953,8 +1956,9 @@ rules:
   - hematoloji
   action:
     enforcement: 'coverage gate: 3rd-step official provider, ≥1 hematology board (≤3 mo), hematologist prescription'
-    message_tr: Üçüncü basamak resmi sağlık hizmeti sunucusunda bu durumların belirtildiği, en az bir hematoloji uzmanının
-      bulunduğu 3 aylık sağlık kurulu raporuyla hematoloji uzmanlarınca reçete edilmesi halinde ödenir (§4.2.14.C 3).
+    message_tr: Üçüncü basamak resmi sağlık hizmeti sunucusunda bu durumların belirtildiği, en az bir hematoloji 
+      uzmanının bulunduğu 3 aylık sağlık kurulu raporuyla hematoloji uzmanlarınca reçete edilmesi halinde ödenir 
+      (§4.2.14.C 3).
 - rule_id: 4.2.14.C.hematology_board_6m_prescriber
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -1967,8 +1971,8 @@ rules:
   - hematoloji
   action:
     enforcement: 'coverage gate: hematologist board report (≤6 months) + hematologist prescription'
-    message_tr: İçinde en az bir hematoloji uzmanının bulunduğu 6 ay süreli sağlık kurulu raporuna dayanılarak hematoloji
-      uzman hekimlerince reçete edilebilir (§4.2.14.C 1).
+    message_tr: İçinde en az bir hematoloji uzmanının bulunduğu 6 ay süreli sağlık kurulu raporuna dayanılarak 
+      hematoloji uzman hekimlerince reçete edilebilir (§4.2.14.C 1).
 - rule_id: 4.2.14.C.hematology_oncology_3m_third_step_board
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -1983,8 +1987,9 @@ rules:
   - tıbbi onkoloji
   action:
     enforcement: 'coverage gate: 3rd-step center, ≥1 hematology/oncology board (≤3 mo), specialist prescription'
-    message_tr: Üçüncü basamak kurumda düzenlenen, en az bir hematoloji veya tıbbi onkoloji uzmanının yer aldığı en fazla
-      3 aylık sağlık kurulu raporuyla, hematoloji/tıbbi onkoloji uzmanlarınca reçete edilmesi halinde ödenir (§4.2.14.C 1).
+    message_tr: Üçüncü basamak kurumda düzenlenen, en az bir hematoloji veya tıbbi onkoloji uzmanının yer aldığı en 
+      fazla 3 aylık sağlık kurulu raporuyla, hematoloji/tıbbi onkoloji uzmanlarınca reçete edilmesi halinde ödenir 
+      (§4.2.14.C 1).
 - rule_id: 4.2.14.C.hormone_receptor_positive_breast_recurrence
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2000,9 +2005,9 @@ rules:
   - tüm uzman hekimler
   action:
     enforcement: 'coverage gate: HR+ locally-advanced/metastatic breast cancer relapse on/after tamoxifen or AI (anastrazol/eksemestan/letrozol)'
-    message_tr: Hormon reseptörü pozitif, endokrin tedavi (tamoksifen veya aromataz inhibitörü) sırasında/sonrasında nüks
-      gelişen lokal ileri veya metastatik meme kanserinde, tıbbi onkoloji uzmanının yer aldığı sağlık kurulu raporuyla tüm
-      uzman hekimlerce reçete edilir (§4.2.14.C(1)).
+    message_tr: Hormon reseptörü pozitif, endokrin tedavi (tamoksifen veya aromataz inhibitörü) sırasında/sonrasında 
+      nüks gelişen lokal ileri veya metastatik meme kanserinde, tıbbi onkoloji uzmanının yer aldığı sağlık kurulu 
+      raporuyla tüm uzman hekimlerce reçete edilir (§4.2.14.C(1)).
 - rule_id: 4.2.14.C.ibrutinib_3mo_cll
   sut_section: 4.2.14.C
   drug_names:
@@ -2197,8 +2202,8 @@ rules:
   prescriber_specialties:
   - nöroloji
   action:
-    enforcement: high-activity relapsing NMOSD meeting criteria; 3rd-step center, 3 neurology specialists (≤6 mo), monthly
-      dose
+    enforcement: high-activity relapsing NMOSD meeting criteria; 3rd-step center, 3 neurology specialists (≤6 mo), 
+      monthly dose
     message_tr: 'Yüksek hastalık aktiviteli, relapslarla seyreden Nöromiyelitis Optika Spektrum Bozukluğu (NMOSB): kriterleri
       birlikte sağlayan hastalarda, üçüncü basamak kurumda 3 nöroloji uzmanının yer aldığı en fazla 6 aylık sağlık kurulu
       raporuyla, nöroloji uzmanlarınca birer aylık dozda reçete edilir (§4.2.14.C 9).'
@@ -2217,8 +2222,8 @@ rules:
   pay: false
   action:
     enforcement: 'no-pay: temsirolimus/sunitinib/sorafenib/pazopanib sequential/combination after cabozantinib progression'
-    message_tr: Kabozantinib tedavisinden sonra progresyon gelişenlerde ardışık ya da kombine temsirolimus, sunitinib, sorafenib
-      veya pazopanib kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.14.C 3).
+    message_tr: Kabozantinib tedavisinden sonra progresyon gelişenlerde ardışık ya da kombine temsirolimus, sunitinib, 
+      sorafenib veya pazopanib kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.14.C 3).
 - rule_id: 4.2.14.C.nopay_after_lorlatinib_alk_seq
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2234,8 +2239,8 @@ rules:
   pay: false
   action:
     enforcement: 'no-pay: crizotinib/alektinib/brigatinib/seritinib sequential/combination after lorlatinib progression'
-    message_tr: Lorlatinib tedavisinden sonra progresyon gelişenlerde ardışık ya da kombine krizotinib, alektinib, brigatinib
-      veya seritinib kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.14.C 3).
+    message_tr: Lorlatinib tedavisinden sonra progresyon gelişenlerde ardışık ya da kombine krizotinib, alektinib, 
+      brigatinib veya seritinib kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.14.C 3).
 - rule_id: 4.2.14.C.nopay_cdk46_fulvestrant_combo_exclusions_b
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2251,9 +2256,9 @@ rules:
   action:
     enforcement: 'no-pay condition: CDK4/6+fulvestrant only after 1st-line AI >6mo with progression; excluded if prior fulvestrant,
       AI relapse <12mo, or >1 AI line'
-    message_tr: Nüks/metastatik meme kanserinde birinci sıra aromataz inhibitörü tedavisini 6 aydan uzun kullandıktan sonra
-      progresyon varlığında fulvestrant ile kombine CDK4/6 inhibitörü ödenir; daha önce fulvestrant almış, adjuvan AI'nin
-      ilk 12 ayında relaps yapan veya birden fazla AI hattı almışlarda ödenmez (§4.2.14.C b).
+    message_tr: Nüks/metastatik meme kanserinde birinci sıra aromataz inhibitörü tedavisini 6 aydan uzun kullandıktan 
+      sonra progresyon varlığında fulvestrant ile kombine CDK4/6 inhibitörü ödenir; daha önce fulvestrant almış, adjuvan
+      AI'nin ilk 12 ayında relaps yapan veya birden fazla AI hattı almışlarda ödenmez (§4.2.14.C b).
 - rule_id: 4.2.14.C.nopay_cdk46_fulvestrant_combo_exclusions_c
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2269,9 +2274,9 @@ rules:
   action:
     enforcement: 'no-pay condition: CDK4/6+fulvestrant during/within 12mo of adjuvant AI (≥12mo taken); excluded if AI relapse
       <12mo or >1 AI line'
-    message_tr: Adjuvan aromataz inhibitörü tedavisi devam ederken (en az 12 ay) veya tamamlandıktan sonraki 12 ay içinde
-      nüks/metastaz görülenlerde fulvestrant ile kombine CDK4/6 inhibitörü ödenir; ancak AI'nin ilk 12 ayında relaps veya
-      birden fazla AI hattı alanlarda ödenmez (§4.2.14.C c).
+    message_tr: Adjuvan aromataz inhibitörü tedavisi devam ederken (en az 12 ay) veya tamamlandıktan sonraki 12 ay 
+      içinde nüks/metastaz görülenlerde fulvestrant ile kombine CDK4/6 inhibitörü ödenir; ancak AI'nin ilk 12 ayında 
+      relaps veya birden fazla AI hattı alanlarda ödenmez (§4.2.14.C c).
 - rule_id: 4.2.14.C.nopay_crizotinib_after_alk_inhibitors
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2284,8 +2289,8 @@ rules:
   pay: false
   action:
     enforcement: 'no-pay: crizotinib sequential/combination after alektinib/brigatinib/lorlatinib/seritinib progression'
-    message_tr: Alektinib, brigatinib, lorlatinib veya seritinib tedavisinden sonra progresyon gelişenlerde ardışık ya da
-      kombine krizotinib kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.14.C 3).
+    message_tr: Alektinib, brigatinib, lorlatinib veya seritinib tedavisinden sonra progresyon gelişenlerde ardışık ya 
+      da kombine krizotinib kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.14.C 3).
 - rule_id: 4.2.14.C.nopay_daratumumab_isatuximab_resistance
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2297,8 +2302,8 @@ rules:
   pay: false
   action:
     enforcement: 'no-pay: isatuksimab in daratumumab-resistant patients and vice versa'
-    message_tr: Daratumumab direnci olan hastalarda isatuksimabın, isatuksimab direnci olan hastalarda daratumumabın kullanılması
-      halinde bedelleri Kurumca karşılanmaz (§4.2.14.C).
+    message_tr: Daratumumab direnci olan hastalarda isatuksimabın, isatuksimab direnci olan hastalarda daratumumabın 
+      kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.14.C).
 - rule_id: 4.2.14.C.nopay_myeloma_pi_imid_combination
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2322,8 +2327,9 @@ rules:
   action:
     enforcement: 'no-pay: iksazomib/karfilzomib/daratumumab/isatuksimab/elranatamab/selineksor/pomalidomid combined with each
       other (outside their special provisions)'
-    message_tr: İksazomib, karfilzomib, daratumumab, isatuksimab, elranatamab, selineksor ve pomalidomid etken maddeli ilaçların
-      özel hükümleri dışında birbirleriyle kombine kullanılması halinde bedelleri Kurumca karşılanmaz (§4.2.14.C).
+    message_tr: İksazomib, karfilzomib, daratumumab, isatuksimab, elranatamab, selineksor ve pomalidomid etken maddeli 
+      ilaçların özel hükümleri dışında birbirleriyle kombine kullanılması halinde bedelleri Kurumca karşılanmaz 
+      (§4.2.14.C).
 - rule_id: 4.2.14.C.nopay_outside_conditions_generic
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2344,8 +2350,8 @@ rules:
   - tıbbi onkoloji
   action:
     enforcement: 'coverage gate: oncology board report (≤6 months) to continue therapy'
-    message_tr: Tedaviye tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden devam
-      edilebilir (§4.2.14.C 3).
+    message_tr: Tedaviye tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden
+      devam edilebilir (§4.2.14.C 3).
 - rule_id: 4.2.14.C.oncology_6m_prescriber_permission
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2359,8 +2365,8 @@ rules:
   - tıbbi onkoloji
   action:
     enforcement: 'permission gate: ≥1 medical oncology board (≤6 mo), oncologist prescription'
-    message_tr: En az bir tıbbi onkoloji uzman hekiminin bulunduğu 6 ay süreli sağlık kurulu raporuna istinaden tıbbi onkoloji
-      uzman hekimlerince reçete edilebilir (§4.2.14.C).
+    message_tr: En az bir tıbbi onkoloji uzman hekiminin bulunduğu 6 ay süreli sağlık kurulu raporuna istinaden tıbbi 
+      onkoloji uzman hekimlerince reçete edilebilir (§4.2.14.C).
 - rule_id: 4.2.14.C.oncology_hematology_board_only_prescriber
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2377,8 +2383,8 @@ rules:
   - hematoloji
   action:
     enforcement: 'coverage gate: paid only via board report + specialist-only prescription'
-    message_tr: Tıbbi onkoloji veya hematoloji uzman hekiminden en az birinin yer aldığı sağlık kurulu raporuna istinaden
-      yalnızca bu uzman hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.14.C d).
+    message_tr: Tıbbi onkoloji veya hematoloji uzman hekiminden en az birinin yer aldığı sağlık kurulu raporuna 
+      istinaden yalnızca bu uzman hekimlerce reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.14.C d).
 - rule_id: 4.2.14.C.oncology_hematology_board_prescriber_gate
   sut_section: 4.2.14.C
   gate_b_sources:
@@ -2392,9 +2398,9 @@ rules:
   - hematoloji
   action:
     enforcement: drug paid only when prescribed by oncology/hematology specialist under board report
-    message_tr: Tıbbi onkoloji/hematoloji uzmanı bulunan hastanelerde bu uzmanlardan en az birinin yer aldığı, bulunmadığı
-      3. basamak kurumlarda ilgili branş uzmanlarınca düzenlenen sağlık kurulu raporuyla; yalnızca bu uzmanlarca reçete edilince
-      ödenir (§4.2.14.C(1)).
+    message_tr: Tıbbi onkoloji/hematoloji uzmanı bulunan hastanelerde bu uzmanlardan en az birinin yer aldığı, 
+      bulunmadığı 3. basamak kurumlarda ilgili branş uzmanlarınca düzenlenen sağlık kurulu raporuyla; yalnızca bu 
+      uzmanlarca reçete edilince ödenir (§4.2.14.C(1)).
 - rule_id: 4.2.14.C.palbociclib_12mo_hr_breast
   sut_section: 4.2.14.C
   drug_names:
@@ -2441,7 +2447,8 @@ rules:
   prescriber_specialties:
   - pediatrik nöroloji
   action:
-    enforcement: pediatric generalized MG (≥6 yr) meeting criteria; 3rd-step, ≥1 pediatric neurology (≤3 mo), monthly dose
+    enforcement: pediatric generalized MG (≥6 yr) meeting criteria; 3rd-step, ≥1 pediatric neurology (≤3 mo), monthly 
+      dose
     message_tr: 'Pediatrik jeneralize miyastenia gravis (6 yaş ve üzeri): kriterleri birlikte sağlayan hastalarda, üçüncü
       basamak hizmet sunucusunda en az bir pediatrik nöroloji uzmanının yer aldığı en fazla 3 aylık sağlık kurulu raporuyla,
       pediatrik nöroloji uzmanlarınca birer aylık dozda reçete edilir (§4.2.14.C 10).'
@@ -2513,8 +2520,9 @@ rules:
   - hematoloji
   action:
     enforcement: licensed BMT center; max 2 cycles pre-allogeneic stem cell transplant for blast clearance
-    message_tr: Ruhsatlı kemik iliği nakli merkezlerinde, en az bir erişkin/çocuk hematoloji uzmanının yer aldığı sağlık kurulu
-      raporuyla, allojenik kök hücre nakli öncesi blast klirensi için maksimum 2 siklus kullanılması halinde ödenir (§4.2.14.C).
+    message_tr: Ruhsatlı kemik iliği nakli merkezlerinde, en az bir erişkin/çocuk hematoloji uzmanının yer aldığı sağlık
+      kurulu raporuyla, allojenik kök hücre nakli öncesi blast klirensi için maksimum 2 siklus kullanılması halinde 
+      ödenir (§4.2.14.C).
 - rule_id: 4.2.14.C.raltitrexed_mesothelioma_board
   sut_section: 4.2.14.C
   drug_names:
@@ -2572,7 +2580,8 @@ rules:
   report_required: true
   report_specialties:
   - tıbbi onkoloji
-  message_tr: Ribosiklib — NSAI kombinasyonu HR+/HER2- metastatik meme kanseri; sağlık kurulu raporu gerekir (§4.2.14.C).
+  message_tr: Ribosiklib — NSAI kombinasyonu HR+/HER2- metastatik meme kanseri; sağlık kurulu raporu gerekir 
+    (§4.2.14.C).
   prescriber_specialties:
   - tıbbi onkoloji
   gate_b_sources:
@@ -2616,8 +2625,8 @@ rules:
   report_required: true
   gate_b_sources:
   - 4.2.14.B.(2)
-  message_tr: (2) Filgrastim, lenograstim, pegfilgrastim ve lipegfilgrastim; (Değişik:RG-02/11/2024-32710/14md.  Yürürlük:09/11/2024)
-    en az bir hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 a
+  message_tr: (2) Filgrastim, lenograstim, pegfilgrastim ve lipegfilgrastim; (Değişik:RG-02/11/2024-32710/14md.  
+    Yürürlük:09/11/2024) en az bir hematoloji veya tıbbi onkoloji uzman hekiminin yer aldığı en fazla 6 a
   prescriber_specialties:
   - tıbbi onkoloji
   - hematoloji
@@ -2634,8 +2643,8 @@ rules:
   report_required: true
   gate_b_sources:
   - 4.2.14.C.ğ
-  message_tr: ğ) Floxuridin; Sadece kolon kanserinin karaciğere çoklu metastazlarında ilacın onaylı prospektüs bilgileri dikkate
-    alınarak, intraarterial yolla en fazla 6 kür olarak tıbbi onkoloji, genel cerrahi ve
+  message_tr: ğ) Floxuridin; Sadece kolon kanserinin karaciğere çoklu metastazlarında ilacın onaylı prospektüs bilgileri
+    dikkate alınarak, intraarterial yolla en fazla 6 kür olarak tıbbi onkoloji, genel cerrahi ve
   prescriber_specialties:
   - tıbbi onkoloji
   report_specialties:
@@ -2651,8 +2660,8 @@ rules:
   report_required: true
   gate_b_sources:
   - 4.2.14.C.ı
-  message_tr: Sağlık Bakanlığınca onaylanan prospektüslerinde yer alan endikasyonlarda kullanılmak üzere, söz konusu ilaçların
-    prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji
+  message_tr: Sağlık Bakanlığınca onaylanan prospektüslerinde yer alan endikasyonlarda kullanılmak üzere, söz konusu 
+    ilaçların prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji
   prescriber_specialties:
   - tıbbi onkoloji
   - hematoloji
@@ -2669,8 +2678,8 @@ rules:
   report_required: true
   gate_b_sources:
   - C005024
-  message_tr: 1) Dasatinib; prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji uzmanının
-    yer aldığı, en fazla 6 ay süre ile geçerli sağlık kurulu raporu ile tıbbi onkoloji veya
+  message_tr: 1) Dasatinib; prospektüsünde yazılan başlama kriterleri dikkate alınarak, içinde en az bir hematoloji 
+    uzmanının yer aldığı, en fazla 6 ay süre ile geçerli sağlık kurulu raporu ile tıbbi onkoloji veya
   prescriber_specialties:
   - tıbbi onkoloji
   - hematoloji
@@ -2723,8 +2732,8 @@ rules:
   report_required: true
   gate_b_sources:
   - C005272
-  message_tr: 1- En az 2 g/gün veya hastanın tolere edebileceği maksimum dozda hidroksiüre kullanan polistemi vera tanılı
-    hastalarda en az 3 aylık tedaviye rağmen;
+  message_tr: 1- En az 2 g/gün veya hastanın tolere edebileceği maksimum dozda hidroksiüre kullanan polistemi vera 
+    tanılı hastalarda en az 3 aylık tedaviye rağmen;
   report_specialties:
   - tıbbi onkoloji
   - hematoloji
@@ -2737,8 +2746,8 @@ rules:
   report_required: true
   gate_b_sources:
   - C005314
-  message_tr: ii) Mifamurtide; Yaşları 2-30 arasında değişen çocuk, ergen ve genç yetişkinlerdeki; makroskopik olarak tam
-    rezeke edilmiş, metastatik olmayan, yüksek evreli osteosarkom tedavisinde, çoklu ajan kemote
+  message_tr: ii) Mifamurtide; Yaşları 2-30 arasında değişen çocuk, ergen ve genç yetişkinlerdeki; makroskopik olarak 
+    tam rezeke edilmiş, metastatik olmayan, yüksek evreli osteosarkom tedavisinde, çoklu ajan kemote
   prescriber_specialties:
   - tıbbi onkoloji
   report_specialties:
@@ -2770,8 +2779,8 @@ rules:
   report_required: true
   gate_b_sources:
   - C005658
-  message_tr: jjj) Gemtuzumab ozogamisin; 15 yaş ve üzerinde daha önce tedavi edilmemiş, de novo CD33 pozitif, düşük (akut
-    promyelositik lösemi hariç) ve orta sitogenetik ve moleküler risk grubunda olduğu gösterilm
+  message_tr: jjj) Gemtuzumab ozogamisin; 15 yaş ve üzerinde daha önce tedavi edilmemiş, de novo CD33 pozitif, düşük 
+    (akut promyelositik lösemi hariç) ve orta sitogenetik ve moleküler risk grubunda olduğu gösterilm
   prescriber_specialties:
   - hematoloji
   report_specialties:
@@ -2789,8 +2798,8 @@ rules:
   report_required: true
   gate_b_sources:
   - C005698
-  message_tr: 3) Erlotinib, gefitinib, dakomitinib ve afatinib etkin maddeli ilaçların ardışık ya da kombine kullanılması
-    halinde bedelleri Kurumca karşılanmaz. Erlotinib, dakomitinib, gefitinib ve afatinib etkin m
+  message_tr: 3) Erlotinib, gefitinib, dakomitinib ve afatinib etkin maddeli ilaçların ardışık ya da kombine 
+    kullanılması halinde bedelleri Kurumca karşılanmaz. Erlotinib, dakomitinib, gefitinib ve afatinib etkin m
   report_specialties:
   - tıbbi onkoloji
   - hematoloji
@@ -2830,8 +2839,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C004942
-  message_tr: a) Trastuzumab; 1) HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda,  metastatik meme kanseri
-    endikasyonunda, bu durumun belirtildiği tıbbi onkoloji uzman hekiminin yer aldığı sağl
+  message_tr: a) Trastuzumab; 1) HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda,  metastatik meme 
+    kanseri endikasyonunda, bu durumun belirtildiği tıbbi onkoloji uzman hekiminin yer aldığı sağl
   required_biomarkers:
   - marker: HER2
     status_any:
@@ -2851,8 +2860,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C004945
-  message_tr: 2) HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda,   erken evre meme kanseri endikasyonunda,
-    tedavi süresi 9 haftadır. Tedavinin 52 haftaya tamamlanması düşünülen durumlarda, 9 h
+  message_tr: 2) HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan hastalarda,   erken evre meme kanseri 
+    endikasyonunda, tedavi süresi 9 haftadır. Tedavinin 52 haftaya tamamlanması düşünülen durumlarda, 9 h
   required_biomarkers:
   - marker: HER2
     status_any:
@@ -2875,8 +2884,8 @@ rules:
   - C005025
   - C005029
   - C005644
-  message_tr: 2) Nilotinib yalnızca; İmatinib dahil önceki tedavilere dirençli veya intolere, Philadelphia kromozomu pozitif
-    kronik evre veya hızlanmış evre kronik miyeloid lösemi tanılı yetişkin hastaların tedavis
+  message_tr: 2) Nilotinib yalnızca; İmatinib dahil önceki tedavilere dirençli veya intolere, Philadelphia kromozomu 
+    pozitif kronik evre veya hızlanmış evre kronik miyeloid lösemi tanılı yetişkin hastaların tedavis
   required_biomarkers:
   - marker: BCR_ABL
     status_any:
@@ -2901,8 +2910,8 @@ rules:
   - C005024
   - C005025
   - C005043
-  message_tr: 1) Dasatinib; imatinib dahil önceki tedavilere dirençli veya intolere (aşağıdaki 4. ve 5. maddede belirtilen
-    koşullarda), Philadelphia kromozomu pozitif kronik, hızlanmış veya blastik evre kronik miye
+  message_tr: 1) Dasatinib; imatinib dahil önceki tedavilere dirençli veya intolere (aşağıdaki 4. ve 5. maddede 
+    belirtilen koşullarda), Philadelphia kromozomu pozitif kronik, hızlanmış veya blastik evre kronik miye
   required_biomarkers:
   - marker: BCR_ABL
     status_any:
@@ -2925,8 +2934,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005043
-  message_tr: 7) Bosutinib; imatinib dahil önceki tedavilere dirençli veya intolere (yukarıdaki 4. ve 5. maddede belirtilen
-    koşullarda) kronik faz (KF), akselere faz (AF) veya blastik faz (BF) Philadelphia kromozom
+  message_tr: 7) Bosutinib; imatinib dahil önceki tedavilere dirençli veya intolere (yukarıdaki 4. ve 5. maddede 
+    belirtilen koşullarda) kronik faz (KF), akselere faz (AF) veya blastik faz (BF) Philadelphia kromozom
   required_biomarkers:
   - marker: BCR_ABL
     status_any:
@@ -2948,8 +2957,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005045
-  message_tr: 1) Dasatinib; Relaps/refrakter Philadelphia kromozomu pozitif (Ph+) ALL (akut lenfoblastik lösemili) yetişkin
-    hastaların tedavisinde çoklu ajanlı kemoterapi şemaları ile birlikte içinde en az bir hema
+  message_tr: 1) Dasatinib; Relaps/refrakter Philadelphia kromozomu pozitif (Ph+) ALL (akut lenfoblastik lösemili) 
+    yetişkin hastaların tedavisinde çoklu ajanlı kemoterapi şemaları ile birlikte içinde en az bir hema
   required_biomarkers:
   - marker: BCR_ABL
     status_any:
@@ -2970,8 +2979,8 @@ rules:
   - C005067
   - C005634
   - C005678
-  message_tr: 3) Tiroid kanseri endikasyonunda; daha önce VEGF-TKİ gibi hedefe yönelik bir tedavi almamış cerrahi ve radyoterapi
-    gibi lokal tedavilere uygun olmayan veya bu tedaviler sonrası progresyon gösteren, so
+  message_tr: 3) Tiroid kanseri endikasyonunda; daha önce VEGF-TKİ gibi hedefe yönelik bir tedavi almamış cerrahi ve 
+    radyoterapi gibi lokal tedavilere uygun olmayan veya bu tedaviler sonrası progresyon gösteren, so
   requires_prior_therapy:
     drug_or_class: prior_therapy
     outcome: resistant
@@ -3010,8 +3019,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005217
-  message_tr: a) Daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 olan, BRAF V600
-    mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavilerin tekrar
+  message_tr: a) Daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 olan, BRAF 
+    V600 mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavilerin tekrar
   required_biomarkers:
   - marker: BRAF
     status_any:
@@ -3031,8 +3040,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005218
-  message_tr: b) BRAF V600 E mutasyonu pozitif Evre III malign melanomu olan hastaların tam rezeksiyonu takiben adjuvan tedavisinde
-    progresyona kadar en fazla 12 ay süreyle; trametinib ile kombine kullanılması ve t
+  message_tr: b) BRAF V600 E mutasyonu pozitif Evre III malign melanomu olan hastaların tam rezeksiyonu takiben adjuvan 
+    tedavisinde progresyona kadar en fazla 12 ay süreyle; trametinib ile kombine kullanılması ve t
   required_biomarkers:
   - marker: BRAF
     status_any:
@@ -3052,8 +3061,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005220
-  message_tr: a) Daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 olan, BRAF V600
-    mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavilerin tekrar
+  message_tr: a) Daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 olan, BRAF 
+    V600 mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavilerin tekrar
   required_biomarkers:
   - marker: BRAF
     status_any:
@@ -3074,8 +3083,8 @@ rules:
   gate_b_sources:
   - C005221
   - C005224
-  message_tr: b) BRAF V600 E mutasyonu pozitif Evre III malign melanomu olan hastaların tam rezeksiyonu takiben adjuvan tedavisinde
-    progresyona kadar en fazla 12 ay süreyle; dabrafenib ile kombine kullanılması ve t
+  message_tr: b) BRAF V600 E mutasyonu pozitif Evre III malign melanomu olan hastaların tam rezeksiyonu takiben adjuvan 
+    tedavisinde progresyona kadar en fazla 12 ay süreyle; dabrafenib ile kombine kullanılması ve t
   required_biomarkers:
   - marker: BRAF
     status_any:
@@ -3095,8 +3104,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005222
-  message_tr: 3) Kobimetinib; daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 olan,
-    BRAF V600 mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavi
+  message_tr: 3) Kobimetinib; daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 
+    olan, BRAF V600 mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavi
   required_biomarkers:
   - marker: BRAF
     status_any:
@@ -3116,8 +3125,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005223
-  message_tr: 4) Vemurafenib; daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 olan,
-    BRAF V600 mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavi
+  message_tr: 4) Vemurafenib; daha önce herhangi bir RAF yolağı inhibitörü kullanmamış, ECOG performans skoru 0 veya 1 
+    olan, BRAF V600 mutasyonu pozitif, lokal tedaviler sonrası progresyon göstermiş ve lokal tedavi
   required_biomarkers:
   - marker: BRAF
     status_any:
@@ -3138,8 +3147,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005294
-  message_tr: gg) pertuzumab; daha önce metastatik hastalığı için sistemik kemoterapi veya trastuzumab tedavisi almamış, ECOG
-    performans skoru 0-1 olan, HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan, vi
+  message_tr: gg) pertuzumab; daha önce metastatik hastalığı için sistemik kemoterapi veya trastuzumab tedavisi almamış,
+    ECOG performans skoru 0-1 olan, HER-2 immünhistokimya ile +3 veya FISH/CISH/SISH (+) olan, vi
   required_biomarkers:
   - marker: HER2
     status_any:
@@ -3159,8 +3168,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005505
-  message_tr: 2) Daha önce tedavi edilmemiş, 17p delesyonu, TP53 mutasyonu, CD38 pozitifliği (%30), ZAP70 pozitifliği (%20)
-    veya immunoglobulin variable bölge mutasyonu yokluğu özelliklerinden herhangi birine sahip
+  message_tr: 2) Daha önce tedavi edilmemiş, 17p delesyonu, TP53 mutasyonu, CD38 pozitifliği (%30), ZAP70 pozitifliği 
+    (%20) veya immunoglobulin variable bölge mutasyonu yokluğu özelliklerinden herhangi birine sahip
   required_biomarkers:
   - marker: TP17_DELETION
     status_any:
@@ -3180,8 +3189,8 @@ rules:
   gate_b_sources:
   - C005368
   - C005544
-  message_tr: 2) Otolog kök hücre nakline uygun olan, bortezomib, lenalidomid ve otolog nakil destekli yüksek doz kemoterapötik
-    ilaç içeren en az üç seri tedaviyi uygun dozda ve yeterli sürede kullanmış olmasına ra
+  message_tr: 2) Otolog kök hücre nakline uygun olan, bortezomib, lenalidomid ve otolog nakil destekli yüksek doz 
+    kemoterapötik ilaç içeren en az üç seri tedaviyi uygun dozda ve yeterli sürede kullanmış olmasına ra
   requires_prior_therapy:
     drug_or_class: stem_cell_transplant
     outcome: completed
@@ -3198,8 +3207,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005543
-  message_tr: 1) Otolog kök hücre nakline uygun olmayan, bortezomib ve immünomodülatör ilaç içeren en az iki seri tedaviyi
-    uygun dozda ve yeterli sürede kullanmış olmasına rağmen yanıt alınamayan veya nüks gelişen
+  message_tr: 1) Otolog kök hücre nakline uygun olmayan, bortezomib ve immünomodülatör ilaç içeren en az iki seri 
+    tedaviyi uygun dozda ve yeterli sürede kullanmış olmasına rağmen yanıt alınamayan veya nüks gelişen
   requires_prior_therapy:
     drug_or_class: stem_cell_transplant
     outcome: completed
@@ -3216,8 +3225,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005544
-  message_tr: 2) Otolog kök hücre nakline uygun olan, bortezomib, lenalidomid ve otolog nakil destekli yüksek doz kemoterapötik
-    ilaç içeren en az iki seri tedaviyi uygun dozda ve yeterli sürede kullanmış olmasına r
+  message_tr: 2) Otolog kök hücre nakline uygun olan, bortezomib, lenalidomid ve otolog nakil destekli yüksek doz 
+    kemoterapötik ilaç içeren en az iki seri tedaviyi uygun dozda ve yeterli sürede kullanmış olmasına r
   requires_prior_therapy:
     drug_or_class: stem_cell_transplant
     outcome: completed
@@ -3234,8 +3243,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005545
-  message_tr: 3) Daha önce lenalidomid de dahil olmak üzere en az bir tedavi rejimi alan, bu tedavilere dirençli veya nüks
-    eden multiple miyelomlu erişkin hastaların tedavisinde bortezomib ve deksametazon ile kombi
+  message_tr: 3) Daha önce lenalidomid de dahil olmak üzere en az bir tedavi rejimi alan, bu tedavilere dirençli veya 
+    nüks eden multiple miyelomlu erişkin hastaların tedavisinde bortezomib ve deksametazon ile kombi
   requires_prior_therapy:
     drug_or_class: prior_therapy
     outcome: resistant
@@ -3252,8 +3261,8 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005707
-  message_tr: 1) Daha önce en az 1-3 sıra multiple myelom tedavisini uygun dozda ve yeterli sürede kullanmış ve önceki tedavilerle
-    Proteazom İnhibitörüne (PI) dirençli olmayan (önceki PI ile en az kısmi yanıt elde
+  message_tr: 1) Daha önce en az 1-3 sıra multiple myelom tedavisini uygun dozda ve yeterli sürede kullanmış ve önceki 
+    tedavilerle Proteazom İnhibitörüne (PI) dirençli olmayan (önceki PI ile en az kısmi yanıt elde
   requires_prior_therapy:
     drug_or_class: prior_therapy
     outcome: resistant
@@ -3273,7 +3282,7 @@ rules:
   - hematoloji
   - tıbbi onkoloji
   gate_b_sources:
-  - C004924
+  - 4.2.14.(1)
 - rule_id: 4.2.14.C.tiotepa_fikra2_heme
   sut_section: 4.2.14.C
   drug_names:
@@ -3290,7 +3299,7 @@ rules:
   - hematoloji
   - tıbbi onkoloji
   gate_b_sources:
-  - C004924
+  - 4.2.14.(1)
 - rule_id: 4.2.14.C.trabectedin_sarcoma_board
   sut_section: 4.2.14.C
   drug_names:
@@ -4366,8 +4375,8 @@ rules:
   pay: false
   action:
     enforcement: 'no-pay: dasatinib, bosutinib ve nilotinib kombine olarak kullanilamaz'
-    message_tr: Dasatinib, bosutinib ve nilotinib etkin maddeli ilaclarin birlikte kullanilmasi halinde bedelleri Kurumca
-      karsilanmaz
+    message_tr: Dasatinib, bosutinib ve nilotinib etkin maddeli ilaclarin birlikte kullanilmasi halinde bedelleri 
+      Kurumca karsilanmaz
   gate_b_sources:
   - C005039
   - C005046
@@ -4386,7 +4395,8 @@ rules:
   pay: false
   action:
     enforcement: 'no-pay: vismodegib ve sonidegib ardisik olarak kullanilmaz'
-    message_tr: Vismodegib ve sonidegib ardisik olarak kullanilmaz; birlikte kullanilmasi halinde bedelleri Kurumca karsilanmaz
+    message_tr: Vismodegib ve sonidegib ardisik olarak kullanilmaz; birlikte kullanilmasi halinde bedelleri Kurumca 
+      karsilanmaz
   gate_b_sources:
   - C005251
   icd10_ranges:
@@ -4418,17 +4428,17 @@ rules:
       vb.); transplantasyon öncesi/kök hücre nakli sonrası/komplikasyon/gebe bentleri için Bakanlık endikasyon dışı onay;
       üçüncü basamakta en az bir hematoloji uzmanının yer aldığı ≤6 ay süreli sağlık kurulu raporu; hematoloji uzmanlarınca
       reçete'
-    message_tr: Ravulizumab — Paroksismal Noktürnal Hemoglobinüri (PNH) tedavisinde vücut ağırlığı 10 kg ve üzerindeki çocuk
-      ve yetişkin hastalarda kriterlerden en az birinin karşılanması halinde, üçüncü basamak sağlık hizmeti sunucusunda en
-      az bir hematoloji uzman hekiminin yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden hematoloji uzman
-      hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır; transplantasyon öncesi, kök hücre nakli yapılamayan/yanıtsız,
-      nakil sonrası yanıtsız, PNH komplikasyonlu ve gebe olgular için Sağlık Bakanlığınca endikasyon dışı ilaç kullanım onayı
-      alınması gerekir (§4.2.14.C yyy/1).
+    message_tr: Ravulizumab — Paroksismal Noktürnal Hemoglobinüri (PNH) tedavisinde vücut ağırlığı 10 kg ve üzerindeki 
+      çocuk ve yetişkin hastalarda kriterlerden en az birinin karşılanması halinde, üçüncü basamak sağlık hizmeti 
+      sunucusunda en az bir hematoloji uzman hekiminin yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden 
+      hematoloji uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır; transplantasyon öncesi, kök hücre
+      nakli yapılamayan/yanıtsız, nakil sonrası yanıtsız, PNH komplikasyonlu ve gebe olgular için Sağlık Bakanlığınca 
+      endikasyon dışı ilaç kullanım onayı alınması gerekir (§4.2.14.C yyy/1).
 - rule_id: 4.2.14.C.ravulizumab_pnh_eculizumab_switch
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C008282
+  - 6.4.(1)
   drug_names:
   - ravulizumab
   icd10_ranges:
@@ -4443,10 +4453,10 @@ rules:
     coverage_note: true
   action:
     billable: true
-    enforcement: PNH tanısıyla en az son 6 ay ekulizumab tedavisi almış ve stabil (LDH ≤1,5 x NÜS) hastalarda ravulizumaba
-      geçilebilir
-    message_tr: PNH tanısı nedeniyle en az son 6 aydır ekulizumab ile tedavi edilmiş ve tedavi süresince stabil (LDH ≤1,5
-      x NÜS) olan hastalarda ravulizumaba geçilebilir (§4.2.14.C yyy/1-b).
+    enforcement: PNH tanısıyla en az son 6 ay ekulizumab tedavisi almış ve stabil (LDH ≤1,5 x NÜS) hastalarda 
+      ravulizumaba geçilebilir
+    message_tr: PNH tanısı nedeniyle en az son 6 aydır ekulizumab ile tedavi edilmiş ve tedavi süresince stabil (LDH 
+      ≤1,5 x NÜS) olan hastalarda ravulizumaba geçilebilir (§4.2.14.C yyy/1-b).
 - rule_id: 4.2.14.C.ravulizumab_pnh_6mo_continuation
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
@@ -4466,9 +4476,9 @@ rules:
     billable: true
     enforcement: 'PNH 6 aylık tedavi sonunda: klinik fayda gören + granülosit klonu pozitifliği akım sitometrik olarak devam
       eden + transfüzyon bağımsız olgularda tedaviye devam; tetkik sonuçları rapor ekinde'
-    message_tr: PNH hastalarında 6 aylık ilaç kullanım süresi sonunda; klinik fayda gören, granülosit klonu pozitifliğinin
-      devam ettiği akım sitometrik olarak gösterilmiş ve transfüzyon bağımsız olgularda tedaviye devam edilir; tetkik sonuçları
-      rapor ekinde yer almalıdır (§4.2.14.C yyy/1-c).
+    message_tr: PNH hastalarında 6 aylık ilaç kullanım süresi sonunda; klinik fayda gören, granülosit klonu 
+      pozitifliğinin devam ettiği akım sitometrik olarak gösterilmiş ve transfüzyon bağımsız olgularda tedaviye devam 
+      edilir; tetkik sonuçları rapor ekinde yer almalıdır (§4.2.14.C yyy/1-c).
 - rule_id: 4.2.14.C.ravulizumab_nmosb_3neurology_6m
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
@@ -4491,16 +4501,17 @@ rules:
     enforcement: 'NMOSB (yetişkin): AQP4 antikoru pozitif + EDSS ≤7 + ≥2 immünosupresan monoterapiye rağmen ≥1 atak; üçüncü
       basamakta 3 nöroloji uzmanının yer aldığı ≤6 ay süreli sağlık kurulu raporu; her reçetede güncel vücut ağırlığı; nöroloji
       uzmanlarınca reçete'
-    message_tr: Ravulizumab — yüksek hastalık aktiviteli, relapslarla seyreden yetişkin hastaların Nöromiyelitis Optika Spektrum
-      Bozukluğu (NMOSB) tedavisinde Aquaporin 4 (AQP4) antikoru pozitif, EDSS 7 ve altında olan ve en az iki immünosupresan
-      tedaviye rağmen en az bir atak geçiren hastalarda, üçüncü basamak sağlık hizmeti sunucusunda üç nöroloji uzman hekiminin
-      yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden nöroloji uzman hekimlerince reçete edilmesi halinde
-      bedeli Kurumca karşılanır; her reçetede hastanın güncel vücut ağırlığı belirtilmelidir (§4.2.14.C yyy/2).
+    message_tr: Ravulizumab — yüksek hastalık aktiviteli, relapslarla seyreden yetişkin hastaların Nöromiyelitis Optika 
+      Spektrum Bozukluğu (NMOSB) tedavisinde Aquaporin 4 (AQP4) antikoru pozitif, EDSS 7 ve altında olan ve en az iki 
+      immünosupresan tedaviye rağmen en az bir atak geçiren hastalarda, üçüncü basamak sağlık hizmeti sunucusunda üç 
+      nöroloji uzman hekiminin yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden nöroloji uzman 
+      hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır; her reçetede hastanın güncel vücut ağırlığı 
+      belirtilmelidir (§4.2.14.C yyy/2).
 - rule_id: 4.2.14.C.ravulizumab_nmosb_edss8_stop
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C008285
+  - 6.5.(1)
   drug_names:
   - ravulizumab
   icd10_ranges:
@@ -4512,10 +4523,10 @@ rules:
     coverage_note: true
   action:
     billable: false
-    enforcement: NMOSB 6 aylık tedavi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS her sağlık kurulu raporunda
-      belirtilmelidir
-    message_tr: NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS
-      her sağlık kurulu raporunda belirtilmelidir (§4.2.14.C yyy/2-b).
+    enforcement: NMOSB 6 aylık tedavi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; EDSS her sağlık kurulu 
+      raporunda belirtilmelidir
+    message_tr: NMOSB hastalarında 6 aylık ilaç kullanım süresi sonunda EDSS 8 ve üzerinde ise tedavi sonlandırılır; 
+      EDSS her sağlık kurulu raporunda belirtilmelidir (§4.2.14.C yyy/2-b).
 - rule_id: 4.2.14.C.ravulizumab_meningococcal_vaccination
   sut_section: 4.2.14.C
   verification_status: ai_generated_pending_review
@@ -4525,11 +4536,12 @@ rules:
   - 6.5.(1)
   action:
     billable: true
-    enforcement: tedaviden 2 hafta önce meningokok bağışıklaması tamamlanmış + Ravulizumab Kullanımı İçin Bilgilendirilmiş
-      Hasta Olur Formu reçete ekinde; 2 yaş altı veya bağışıklamayı takiben 2 hafta geçmeden başlanması gerekenlerde antibiyotik
-      profilaksisi reçetede belirtilmeli
-    message_tr: Ravulizumab tedavisine başlamadan iki hafta önce meningokok bağışıklaması tamamlanmış ve Ravulizumab Kullanımı
-      İçin Bilgilendirilmiş Hasta Olur Formu tedaviyi yürüten hekim tarafından düzenlenerek reçete ekine konmuş olmalıdır;
-      iki yaşından küçük çocuklarda veya bağışıklamayı takiben iki hafta geçmeden ravulizumab başlanması gereken olgularda
-      antibiyotik profilaksisi uygulanmış olduğu reçetede belirtilmelidir (§4.2.14.C yyy/3).
+    enforcement: tedaviden 2 hafta önce meningokok bağışıklaması tamamlanmış + Ravulizumab Kullanımı İçin 
+      Bilgilendirilmiş Hasta Olur Formu reçete ekinde; 2 yaş altı veya bağışıklamayı takiben 2 hafta geçmeden başlanması
+      gerekenlerde antibiyotik profilaksisi reçetede belirtilmeli
+    message_tr: Ravulizumab tedavisine başlamadan iki hafta önce meningokok bağışıklaması tamamlanmış ve Ravulizumab 
+      Kullanımı İçin Bilgilendirilmiş Hasta Olur Formu tedaviyi yürüten hekim tarafından düzenlenerek reçete ekine 
+      konmuş olmalıdır; iki yaşından küçük çocuklarda veya bağışıklamayı takiben iki hafta geçmeden ravulizumab 
+      başlanması gereken olgularda antibiyotik profilaksisi uygulanmış olduğu reçetede belirtilmelidir (§4.2.14.C 
+      yyy/3).
 source_note: Exported from drug_indication_prose.json (YAML source migration)

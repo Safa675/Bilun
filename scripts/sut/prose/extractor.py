@@ -567,6 +567,9 @@ def write_sut_clauses_parquet(
     body_start: int | None = None,
 ) -> pd.DataFrame:
     frame = extract_sut_clauses(docx_path, body_start=body_start)
+    from scripts.sut.prose.clause_type_overrides import apply_clause_type_overrides_pandas
+
+    frame = apply_clause_type_overrides_pandas(frame)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     frame.to_parquet(output_path, index=False)
     return frame

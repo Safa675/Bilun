@@ -68,6 +68,7 @@ def assert_manifest_consistent(
         if frame is not None:
             from scripts.sut.prose.clause_identity import (
                 AmbiguousClauseCiteError,
+                NonEncodeEligibleCiteError,
                 UnknownClauseCiteError,
                 is_clause_id,
                 resolve_gate_b_sources_to_clause_ids,
@@ -84,10 +85,15 @@ def assert_manifest_consistent(
                                 [raw],
                                 frame,
                                 in_force_only="is_in_force" in frame.columns,
+                                encode_eligible_only=True,
                                 allow_ambiguous=False,
                             )
                         )
-                    except (AmbiguousClauseCiteError, UnknownClauseCiteError):
+                    except (
+                        AmbiguousClauseCiteError,
+                        NonEncodeEligibleCiteError,
+                        UnknownClauseCiteError,
+                    ):
                         text = str(raw).strip()
                         if is_clause_id(text):
                             rule_sources.add(text)
