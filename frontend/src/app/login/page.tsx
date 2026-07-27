@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import BilunFullLogo from "@/components/brand/BilunFullLogo";
 import { Button, inputClass } from "@/components/primitives";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -11,11 +10,11 @@ import { useT } from "@/lib/i18n/useTranslations";
  *
  * Posts credentials to /api/auth/login (proxied to the backend via the
  * next.config.ts rewrite). On success the backend sets the httpOnly
- * bilun:session cookie; the middleware then admits subsequent requests.
+ * bilun:session cookie; a hard navigation then loads `/` so middleware
+ * sees the cookie (soft router.replace can race the Set-Cookie commit).
  */
 export default function LoginPage() {
   const t = useT();
-  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +40,11 @@ export default function LoginPage() {
         );
         return;
       }
-      router.replace("/");
-      router.refresh();
+      // Hard navigation so the new Set-Cookie is always sent on the next
+      // document request. router.replace() can race the cookie commit and
+      // leave a fresh (e.g. Incognito) session stuck on /login with no error.
+      window.location.assign("/");
+      return;
     } catch {
       setError(t("auth.login.networkError"));
     } finally {
