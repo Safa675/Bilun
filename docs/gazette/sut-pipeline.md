@@ -14,7 +14,7 @@ extract → compile → derive → evaluate
 Build the in-force clause corpus from Resmî Gazete / SUT docx sources.
 
 ```bash
-python scripts/sut/extract_sut_clauses.py   # produces data/gazette/sut_clauses.parquet
+python scripts/sut/extract_sut_prose.py   # produces data/gazette/sut_clauses.parquet
 ```
 
 Each row carries `clause_coordinate` (public identity when unique) and `clause_id`
@@ -35,7 +35,7 @@ python scripts/sut/compile_rules.py --list
 
 Details: [rule-compiler.md](./rule-compiler.md), [prose-encoding.md](./prose-encoding.md).
 
-Deferral judgments live only in `data/gazette/deferral_table.yaml`
+Deferral judgments live only in `data/gazette/prose_rules/deferral_table.yaml`
 (`emr_blocked` / `non_actionable` / `tier_c_deferred`).
 
 ## 3. Derive

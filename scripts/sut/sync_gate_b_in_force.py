@@ -4,7 +4,7 @@
 Drops ``is_in_force=false`` clause IDs from prose rule ``gate_b_sources``,
 manifest ``gate_b_sources`` / ``gate_b_sources_encoded`` lists, and manifest
 ``encoded_clause_ids`` lists (which feed the coverage ``has_rule_encoding``
-flag), then re-runs L1.4 corpus export scripts.
+flag). Recompile / coverage rebuild separately after scrubbing.
 
 Usage:
   python scripts/sut/sync_gate_b_in_force.py
@@ -16,7 +16,6 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -265,26 +264,7 @@ def main() -> None:
     print(f"gate_b_sources removed from manifests: {removed_manifests}")
 
     if args.dry_run:
-        l14 = _PROJECT_ROOT / "data/gazette/prose_corpus/L1.4_material_bundling_prose.csv"
-        if l14.is_file():
-            before = pl.read_csv(l14).height
-            after = pl.read_csv(l14).filter(pl.col("clause_id").is_in(list(in_force))).height
-            print(f"L1.4 corpus would be: {before} -> {after} rows")
         return
-
-    subprocess.run(
-        [sys.executable, str(_PROJECT_ROOT / "scripts/sut/export_material_bundling_clauses.py")],
-        check=True,
-        cwd=_PROJECT_ROOT,
-    )
-    subprocess.run(
-        [
-            sys.executable,
-            str(_PROJECT_ROOT / "scripts/sut/export_material_bundling_corpus_batch2.py"),
-        ],
-        check=True,
-        cwd=_PROJECT_ROOT,
-    )
 
 
 if __name__ == "__main__":
