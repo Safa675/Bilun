@@ -249,7 +249,7 @@ class TestGlobalClauseSearch:
         for row in rows:
             assert "clause_id" in row
             assert "status" in row
-            # Primary display field present (may be None until Track E backfill).
+            # Primary display field present (coordinate-first; C* opaque fallback).
             assert "clause_coordinate" in row
 
     def test_resolve_prose_rule_gate_b_sources(self) -> None:

@@ -187,18 +187,6 @@ def _dedup_first_wins(rules: list[dict]) -> list[dict]:
     return out
 
 
-def _dedup_skip_dup(existing: list[dict], new_rules: list[dict]) -> tuple[list[dict], list[str]]:
-    """Append new rules whose rule_id isn't already present; return (combined, skipped_ids)."""
-    existing_ids = {r.get("rule_id") for r in existing}
-    added, skipped = [], []
-    for r in new_rules:
-        if r["rule_id"] in existing_ids:
-            skipped.append(r["rule_id"])
-            continue
-        added.append(_strip_batch(r))
-    return existing + added, skipped
-
-
 def _dedup_union_overwrite(existing: list[dict], new_rules: list[dict]) -> tuple[list[dict], int, set[str]]:
     """Overwrite duplicate rule bodies but preserve the union of gate_b_sources."""
     by_id = {str(rule["rule_id"]): dict(rule) for rule in existing}
@@ -256,7 +244,7 @@ def _build_golden(rules: list[dict], rule_set_id: str, *, include_encode_batch: 
 class CompileTarget:
     name: str
     rule_json: Path
-    mode: str  # "fresh" (build from scratch) | "append" (load existing + append)
+    mode: str  # "fresh" | "yaml_merge" | "stage"
     dedup: str  # "first_wins" | "union_overwrite" | "skip_dup"
     rule_set_id: str
     title: str
@@ -269,8 +257,6 @@ class CompileTarget:
     manifest_version: str = "canonical-v1"
     manifest_extra_keys: dict[str, Any] | None = None
     manifest_filter_section: str | None = None  # e.g. "2.4.4" — only count clauses from this section
-    # shared manifest group (for wave2 cumulative)
-    shared_manifest_group: str | None = None
     # golden
     golden_path: Path | None = None
     golden_include_encode_batch: bool = True
@@ -648,7 +634,7 @@ def _write_payment_session_manifest() -> None:
 
 
 def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) -> dict:
-    """Drug Gate B stage — one path: section config → shim → gate_b_generic.
+    """Drug / non-drug Gate B stage — section config → gate_b_generic.write_artifacts.
 
     Documented exceptions (Track C2):
     - ``drug_indication_4213_tier_b_remap``: merges oral-switch YAML rules into JSON first
@@ -1079,81 +1065,11 @@ def _compile_fresh(target: CompileTarget) -> dict:
     return {"rules": len(rules), "json": str(target.rule_json.name)}
 
 
-def _compile_append(target: CompileTarget, group_state: dict) -> dict:
-    """Append to an existing rule JSON (Tier F wave2 pattern)."""
-    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
-    existing_rules = list(payload.get("rules") or [])
-
-    new_rules: list[dict] = _load_target_rules(target)
-
-    if target.dedup == "union_overwrite":
-        combined, added, covered = _dedup_union_overwrite(existing_rules, new_rules)
-        skipped: list[str] = []
-    else:
-        combined, skipped = _dedup_skip_dup(existing_rules, new_rules)
-        added = len(combined) - len(existing_rules)
-        covered = {cid for r in new_rules for cid in (r.get("gate_b_sources") or [])}
-    payload["rules"] = combined
-
-    # append new sut_anchors
-    anchors = list(dict.fromkeys(payload.get("sut_anchors") or []))
-    new_sections = sorted({r["sut_section"] for r in new_rules if r.get("sut_section") not in anchors})
-    payload["sut_anchors"] = anchors + [s for s in new_sections if s not in anchors]
-
-    _write_rule_set_for_target(target, payload)
-
-    # track wave additions for shared manifest
-    if target.shared_manifest_group:
-        gkey = target.wave_label or target.name
-        group_state.setdefault("wave_added", {})[gkey] = added
-        group_state.setdefault("wave_skipped", []).extend(skipped)
-
-    return {"added": added, "skipped": skipped, "covered_sources": len(covered),
-            "total": len(combined), "json": str(target.rule_json.name)}
-
-
-def _finalize_shared_manifest(target: CompileTarget, group_state: dict) -> None:
-    """Build the cumulative shared manifest after all append targets in the group ran."""
-    payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
-    rules = payload.get("rules") or []
-
-    # filter to section if specified (wave2 only counts §2.4.4)
-    filter_sec = target.manifest_filter_section
-    sources_by_rule: dict[str, list[str]] = {}
-    encoded: set[str] = set()
-    for r in rules:
-        srcs = r.get("gate_b_sources") or []
-        if not srcs:
-            continue
-        if filter_sec and not str(r.get("sut_section", "")).startswith(filter_sec):
-            continue
-        sources_by_rule[r["rule_id"]] = srcs
-        encoded.update(srcs)
-
-    wave_added = group_state.get("wave_added", {})
-    manifest = {
-        "manifest_version": target.manifest_version,
-        "rule_set_id": target.rule_set_id,
-    }
-    if target.wave_scope_note:
-        manifest["scope_note"] = target.wave_scope_note
-    manifest["rules_in_json"] = len(rules)
-    for label, count in sorted(wave_added.items()):
-        manifest[f"rules_added_{label}"] = count
-    manifest["rules_skipped_dup"] = sorted(set(group_state.get("wave_skipped", [])))
-    manifest["encoded_clause_ids"] = sorted(encoded)
-    manifest["gate_b_sources_by_rule"] = sources_by_rule
-    _write_json(target.manifest_path, manifest)
-
-
-def compile_target(target: CompileTarget, group_state: dict | None = None) -> dict:
+def compile_target(target: CompileTarget) -> dict:
     """Compile a single target."""
     ctx: dict[str, Any] = {}
     if target.mode == "fresh":
         result = _compile_fresh(target)
-    elif target.mode == "append":
-        gs = group_state if group_state is not None else {}
-        result = _compile_append(target, gs)
     elif target.mode == "yaml_merge":
         result = _compile_yaml_merge(target)
     elif target.mode == "stage":
@@ -1166,35 +1082,12 @@ def compile_target(target: CompileTarget, group_state: dict | None = None) -> di
 
 
 def compile_all(targets: list[CompileTarget] | None = None) -> None:
-    """Compile all targets, handling shared-manifest groups."""
+    """Compile all registered targets."""
     targets = targets or all_targets()
 
-    # group append targets by shared_manifest_group
-    groups: dict[str, list[CompileTarget]] = {}
-    standalone: list[CompileTarget] = []
     for t in targets:
-        if t.shared_manifest_group and t.mode == "append":
-            groups.setdefault(t.shared_manifest_group, []).append(t)
-        else:
-            standalone.append(t)
-
-    # compile standalone (fresh) targets first
-    for t in standalone:
         result = compile_target(t)
         print(f"  ✓ {t.name}: {result}")
-
-    # compile shared-manifest groups (append targets that share one manifest)
-    for group_name, group_targets in groups.items():
-        group_state: dict = {}
-        last_target = None
-        for t in group_targets:
-            result = compile_target(t, group_state)
-            print(f"  ✓ {t.name}: {result}")
-            last_target = t
-        # finalize the shared manifest after all appends
-        if last_target and last_target.manifest_path:
-            _finalize_shared_manifest(last_target, group_state)
-            print(f"    → shared manifest: {last_target.manifest_path.name}")
 
     from scripts.sut.close_algorithmic_gaps import apply_snapshot
 
@@ -1267,8 +1160,7 @@ def check(targets: list[CompileTarget] | None = None) -> int:
 def list_targets() -> None:
     for t in all_targets():
         mode = f"[{t.mode}]"
-        group = f" (group: {t.shared_manifest_group})" if t.shared_manifest_group else ""
-        print(f"  {t.name:40s} {mode:10s} → {t.rule_json.name}{group}")
+        print(f"  {t.name:40s} {mode:10s} → {t.rule_json.name}")
 
 
 def _select_targets(target_name: str | None) -> list[CompileTarget]:

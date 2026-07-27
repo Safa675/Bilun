@@ -1,18 +1,23 @@
-"""Tests for §1.8 copay Gate B export and manifest bootstrap."""
+"""Tests for §1.8 copay Gate B — generic path (Track F facade removed)."""
 
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 
 import polars as pl
 import pytest
 
-from tests.unit._helpers.brittle_guards import (
-    assert_audit_report_consistent,
-    assert_manifest_consistent,
-    soft_floor,
+from scripts.sut.prose.clause_identity import (
+    AmbiguousClauseCiteError,
+    NonEncodeEligibleCiteError,
+    UnknownClauseCiteError,
+    resolve_gate_b_sources_to_clause_ids,
 )
+from scripts.sut.prose.gate_b_generic import export_candidates, write_artifacts
+from scripts.sut.prose.gate_b_sections import SECTION_COPAY_18
+from tests.unit._helpers.brittle_guards import soft_floor
 
 pytestmark = pytest.mark.unit
 
@@ -23,18 +28,58 @@ _CORPUS = _REPO / "data/gazette/prose_corpus/L1.8_copay_exemption_prose.csv"
 _MANIFEST = _REPO / "data/gazette/prose_manifests/L1.8_copay_exemption_encoded_manifest.json"
 
 
-def test_gate_b_export_section_1_8_rows() -> None:
-    from scripts.sut.prose.copay_exemption_gate_b import export_copay_exemption_candidates
+def _with_category_hint(frame: pl.DataFrame) -> pl.DataFrame:
+    if frame.is_empty():
+        return frame
+    return frame.with_columns(
+        pl.when(pl.col("section_id").str.starts_with("1.8.2"))
+        .then(pl.lit("rate"))
+        .when(pl.col("section_id").str.starts_with("1.8.3"))
+        .then(pl.lit("rate"))
+        .when(pl.col("section_id").str.starts_with("1.8.4"))
+        .then(pl.lit("rate"))
+        .otherwise(pl.lit("exemption"))
+        .alias("category_hint")
+    )
 
-    frame = export_copay_exemption_candidates(_CLAUSES)
+
+def _map_json_rules_to_clause_ids(rules_path: Path, clauses_path: Path) -> dict[str, list[str]]:
+    payload = json.loads(rules_path.read_text(encoding="utf-8"))
+    clauses = pl.read_parquet(clauses_path)
+    mapping: dict[str, list[str]] = {}
+    for rule in payload.get("rules") or []:
+        rid = str(rule.get("rule_id") or "")
+        if not rid:
+            continue
+        refs = rule.get("gate_b_sources") or []
+        try:
+            ids = sorted(
+                resolve_gate_b_sources_to_clause_ids(
+                    refs,
+                    clauses,
+                    in_force_only=True,
+                    encode_eligible_only=False,
+                    allow_ambiguous=True,
+                )
+            )
+        except (
+            AmbiguousClauseCiteError,
+            NonEncodeEligibleCiteError,
+            UnknownClauseCiteError,
+        ):
+            ids = [str(r) for r in refs if str(r).startswith(("C", "F"))]
+        mapping[rid] = ids
+    return mapping
+
+
+def test_gate_b_export_section_1_8_rows() -> None:
+    frame = export_candidates(_CLAUSES, SECTION_COPAY_18)
     soft_floor(frame.height, 60, label="copay export rows")
     assert set(frame["section_id"].str.slice(0, 3).unique().to_list()) == {"1.8"}
 
 
 def test_gate_b_export_schema() -> None:
-    from scripts.sut.prose.copay_exemption_gate_b import export_copay_exemption_candidates
-
-    frame = export_copay_exemption_candidates(_CLAUSES)
+    frame = _with_category_hint(export_candidates(_CLAUSES, SECTION_COPAY_18))
     for col in (
         "clause_id",
         "section_id",
@@ -49,11 +94,7 @@ def test_gate_b_export_schema() -> None:
 
 
 def test_json_rules_map_to_expected_clause_ids() -> None:
-    from scripts.sut.prose.copay_exemption_gate_b import map_json_rules_to_clause_ids
-
-    mapping = map_json_rules_to_clause_ids(_RULES, _CLAUSES)
-    # Audit follow-up: added §1.8.1 base muayene schedule + family-physician 50%,
-    # the §1.8.(4) refund, and 10 missed §1.8.5 exemption paragraphs.
+    mapping = _map_json_rules_to_clause_ids(_RULES, _CLAUSES)
     assert set(mapping) == {
         "1.8.(4).copay_refund_sydv",
         "1.8.1.(1).muayene_copay_schedule",
@@ -86,16 +127,18 @@ def test_json_rules_map_to_expected_clause_ids() -> None:
         "1.8.5.(22)a.gss_5510_60_12",
         "1.8.5.(22)b.gss_5510_60_13_14",
     }
-    # Phase 4.2: 1.8.2.(1) now carries 5 sub-bullet clause_ids (collection-channel
-    # prose) in addition to the original C000314.
     assert mapping["1.8.2.(1)"] == ["C000314", "C000327", "C000328", "C000329", "C000330", "C000331"]
     assert mapping["1.8.5.(10).organ_nakli"] == ["C000364"]
 
 
 def test_manifest_has_encoded_clause_ids_union() -> None:
-    from scripts.sut.prose.copay_exemption_gate_b import build_encoded_manifest
-
-    manifest = build_encoded_manifest(_RULES, _CLAUSES)
+    _, manifest = write_artifacts(
+        clauses_path=_CLAUSES,
+        section=SECTION_COPAY_18,
+        effective_date=date.today().isoformat(),
+        rules_path=_RULES,
+        write_corpus=False,
+    )
     encoded = manifest["encoded_clause_ids"]
     soft_floor(len(encoded), 30, label="copay encoded_clause_ids")
     assert "C000364" in encoded
@@ -112,15 +155,15 @@ def test_manifest_has_encoded_clause_ids_union() -> None:
 
 
 def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
-    from scripts.sut.prose.copay_exemption_gate_b import write_gate_b_artifacts
-
     corpus = tmp_path / _CORPUS.name
     manifest_path = tmp_path / _MANIFEST.name
-    write_gate_b_artifacts(
+    write_artifacts(
         clauses_path=_CLAUSES,
+        section=SECTION_COPAY_18,
+        effective_date=date.today().isoformat(),
         rules_path=_RULES,
-        corpus_csv=corpus,
         manifest_path=manifest_path,
+        corpus_csv=corpus,
         write_corpus=True,
     )
     assert corpus.is_file()
