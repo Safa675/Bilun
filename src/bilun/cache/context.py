@@ -15,7 +15,6 @@ from src.bilun.cache.patient_slice import (
 )
 from src.bilun.cache.sut_context import (
     assemble_sut_context,
-    build_exact_sut_patient_totals,
     build_sut_patient_alerts_cache,
 )
 from src.bilun.cache.data_loader import load_anadata, load_labdata, load_recete
