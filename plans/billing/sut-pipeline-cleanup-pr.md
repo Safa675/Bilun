@@ -63,9 +63,11 @@ One focused PR that removes **spent / unreachable** SUT-pipeline debris left aft
 
 ## Verification / definition of done
 
-- [ ] `rg` shows deleted modules have **zero** remaining imports
-- [ ] Focused pytest green; `compile_rules.py --check` green
-- [ ] PR description lists what was **intentionally left** (C* collisions, migrate tool, wave config, payment stub)
+- [x] `rg` shows deleted modules have **zero** remaining imports
+- [x] Focused pytest green; `compile_rules.py --check` green
+- [x] PR description lists what was **intentionally left** (C* collisions, migrate tool, wave config, payment stub)
+
+**PR:** https://github.com/Safa675/Bilun/pull/44
 
 ---
 
