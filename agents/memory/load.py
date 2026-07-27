@@ -5,8 +5,8 @@ The agent reads the printed output to know what it found last run, so it can dif
 rather than re-discover the baseline.
 
 Usage:
-    Z_API_KEY=... python scripts/agent/memory/load.py --role reimbursement_engineer
-    Z_API_KEY=... python scripts/agent/memory/load.py --role reimbursement_engineer --query "wrong mappings"
+    Z_API_KEY=... python -m agents.memory.load --role reimbursement_engineer
+    Z_API_KEY=... python -m agents.memory.load --role reimbursement_engineer --query "wrong mappings"
 """
 
 from __future__ import annotations
@@ -14,9 +14,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
-from scripts.agent.memory.config import get_memory, validate_role
+from agents.memory.config import get_memory, validate_role
 
 
 def _format_memory(rec: dict) -> str:

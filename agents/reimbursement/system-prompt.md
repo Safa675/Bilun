@@ -28,7 +28,7 @@ Use your terminal tool to run, from `/workspace/bilun`:
 
 **Step 0 — load prior memory (NEW):**
 ```bash
-Z_API_KEY=$Z_API_KEY python -m scripts.agent.memory.load --role reimbursement_engineer
+Z_API_KEY=$Z_API_KEY python -m agents.memory.load --role reimbursement_engineer
 ```
 This prints a "Prior context" block — what you found in prior runs. Read it. Your job
 this run is to DIFF against that, not re-discover the baseline. If today's numbers match
@@ -51,7 +51,7 @@ using the structure in the "What to report" section below.
 
 **Step 4 — save findings to memory (NEW, after writing the report):**
 ```bash
-Z_API_KEY=$Z_API_KEY python -m scripts.agent.memory.save \
+Z_API_KEY=$Z_API_KEY python -m agents.memory.save \
     --role reimbursement_engineer \
     --report /workspace/reports/reimbursement/findings-$(date +%Y-%m-%d).md
 ```

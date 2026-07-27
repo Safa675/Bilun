@@ -1,11 +1,11 @@
 """Save an agent's findings report to memory.
 
 Run this at the END of an agent conversation (Step 4 in the role's system prompt).
-Reads the findings report, uses mem0's LLM (glm-4.6) to distill 3-7 facts, stores each
+Reads the findings report, uses mem0's LLM to distill 3-7 facts, stores each
 under the role's namespace. Recurring facts update the existing memory (mem0 dedup).
 
 Usage:
-    Z_API_KEY=... python scripts/agent/memory/save.py \\
+    Z_API_KEY=... python -m agents.memory.save \\
         --role reimbursement_engineer \\
         --report reports/agent/reimbursement/findings-2026-07-20.md
 
@@ -21,12 +21,10 @@ from __future__ import annotations
 
 import argparse
 import sys
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 
-from scripts.agent.memory.config import get_memory, validate_role
-
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+from agents.memory.config import PROJECT_ROOT, get_memory, validate_role
 
 
 def main() -> int:
@@ -50,7 +48,11 @@ def main() -> int:
     # Resolve report path (allow relative to CWD or PROJECT_ROOT)
     report_path = args.report
     if not report_path.is_absolute():
-        report_path = (Path.cwd() / report_path) if (Path.cwd() / report_path).exists() else (PROJECT_ROOT / report_path)
+        report_path = (
+            (Path.cwd() / report_path)
+            if (Path.cwd() / report_path).exists()
+            else (PROJECT_ROOT / report_path)
+        )
     if not report_path.exists():
         print(f"[save] report not found: {report_path}", file=sys.stderr)
         return 1
@@ -75,15 +77,26 @@ def main() -> int:
             kept = report_text[summary_marker : summary_marker + MAX_REPORT_CHARS]
         else:
             kept = report_text[:MAX_REPORT_CHARS]
-        report_text = kept + "\n\n[... report truncated for memory extraction; full report at the source_report path ...]"
+        report_text = (
+            kept
+            + "\n\n[... report truncated for memory extraction; full report at the source_report path ...]"
+        )
         # Log the ORIGINAL length (caught by PR #37 review — prior code printed the
         # post-truncation length, which was always ~MAX_REPORT_CHARS + suffix).
-        print(f"[save] truncated report to ~{MAX_REPORT_CHARS} chars (was {original_len}); memory holds summary only")
+        print(
+            f"[save] truncated report to ~{MAX_REPORT_CHARS} chars (was {original_len}); "
+            "memory holds summary only"
+        )
 
     import json
+
     metadata = {
         "run_date": datetime.now(UTC).date().isoformat(),
-        "source_report": str(report_path.relative_to(PROJECT_ROOT)) if str(PROJECT_ROOT) in str(report_path) else str(report_path),
+        "source_report": (
+            str(report_path.relative_to(PROJECT_ROOT))
+            if str(PROJECT_ROOT) in str(report_path)
+            else str(report_path)
+        ),
     }
     if args.metadata_json:
         try:
@@ -100,7 +113,10 @@ def main() -> int:
 
     # mem0's add() takes a string OR a list of messages. A plain string is the simplest
     # path — mem0's LLM extracts facts from it. user_id is the namespace.
-    print(f"[save] distilling {len(report_text)} chars from {report_path.name} into memory for {role}...")
+    print(
+        f"[save] distilling {len(report_text)} chars from {report_path.name} "
+        f"into memory for {role}..."
+    )
     result = m.add(
         report_text,
         user_id=role,
@@ -113,7 +129,7 @@ def main() -> int:
     added = []
     if isinstance(result, dict):
         for r in result.get("results", []):
-            added.append(f"{r.get('event','?')}: {r.get('memory','')[:100]}")
+            added.append(f"{r.get('event', '?')}: {r.get('memory', '')[:100]}")
 
     print(f"[save] done. {len(added)} memories written/updated:")
     for line in added:

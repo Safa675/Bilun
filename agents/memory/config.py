@@ -10,7 +10,13 @@ Storage layout:
 - MEM0_DATA_DIR defaults to `reports/agent/.mem0/` (gitignored, persisted on host via
   the reports/ :rw mount when run inside the OpenHands sandbox).
 
-LLM: Z-API GLM-4.6 (cheaper than 5.2 — fact extraction doesn't need deep reasoning).
+LLM (fact extraction) — all overridable via env so Z coding-plan URL/model changes
+do not require a code patch:
+- Z_API_KEY (required)
+- MEM0_LLM_BASE_URL (default: Z.ai coding paas)
+- MEM0_LLM_MODEL (default: glm-4.6)
+- MEM0_LLM_PROVIDER (default: openai — OpenAI-compatible client)
+
 Embedder: BAAI/bge-small-en (local, CPU-runnable, 384-dim, no API, ~130MB one-time download).
 """
 
@@ -29,7 +35,7 @@ ROLES = ("reimbursement_engineer", "fullstack_engineer", "data_engineer")
 #   2. /workspace/reports/.mem0  (the OpenHands sandbox :rw reports mount)
 #   3. <repo>/reports/agent/.mem0 (laptop fallback — repo is writable locally)
 # The repo is :ro inside the sandbox, so we check the sandbox path first.
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _SANDBOX_RW = Path("/workspace/reports/.mem0")
 if _SANDBOX_RW.parent.exists() and os.access(_SANDBOX_RW.parent, os.W_OK):
     _default_data_dir = _SANDBOX_RW
@@ -37,9 +43,15 @@ else:
     _default_data_dir = PROJECT_ROOT / "reports" / "agent" / ".mem0"
 MEM0_DATA_DIR = Path(os.environ.get("MEM0_DATA_DIR", _default_data_dir))
 
+# Defaults match the current Z.ai coding-plan OpenAI-compatible endpoint.
+# Override via env when the plan/base URL/model changes.
+_DEFAULT_LLM_BASE_URL = "https://api.z.ai/api/coding/paas/v4"
+_DEFAULT_LLM_MODEL = "glm-4.6"
+_DEFAULT_LLM_PROVIDER = "openai"
+
 
 def build_config() -> dict[str, Any]:
-    """Build the mem0 config dict. Reads Z_API_KEY from env (never hardcoded)."""
+    """Build the mem0 config dict. Reads secrets + LLM endpoint from env."""
     api_key = os.environ.get("Z_API_KEY")
     if not api_key:
         raise RuntimeError(
@@ -48,6 +60,10 @@ def build_config() -> dict[str, Any]:
         )
 
     MEM0_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    llm_base_url = os.environ.get("MEM0_LLM_BASE_URL", _DEFAULT_LLM_BASE_URL)
+    llm_model = os.environ.get("MEM0_LLM_MODEL", _DEFAULT_LLM_MODEL)
+    llm_provider = os.environ.get("MEM0_LLM_PROVIDER", _DEFAULT_LLM_PROVIDER)
 
     return {
         "vector_store": {
@@ -65,11 +81,11 @@ def build_config() -> dict[str, Any]:
             "config": {"model": "BAAI/bge-small-en"},
         },
         "llm": {
-            "provider": "openai",  # OpenAI-compatible — works with Z-API
+            "provider": llm_provider,
             "config": {
-                "model": "glm-4.6",
+                "model": llm_model,
                 "api_key": api_key,
-                "openai_base_url": "https://api.z.ai/api/coding/paas/v4",
+                "openai_base_url": llm_base_url,
             },
         },
         # Disable mem0's graph memory (requires an extra LLM store we don't need) and
@@ -81,8 +97,9 @@ def build_config() -> dict[str, Any]:
 
 def get_memory():
     """Construct a configured Memory instance. Imports mem0 lazily so the rest of
-    scripts/agent/ doesn't pay the import cost when mem0 isn't being used."""
+    agents/ doesn't pay the import cost when mem0 isn't being used."""
     from mem0 import Memory
+
     return Memory.from_config(build_config())
 
 
