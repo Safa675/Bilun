@@ -154,13 +154,9 @@ const patient = {
     },
     "outcomeSummary": {
       "eyebrow": "Exact-only patient outcome",
-      "title": "DRG package review stays explicit",
+      "title": "Claim-line totals stay explicit",
       "paragraph1": "Estimate-backed SUT cost ranges and gap projections were removed.",
-      "paragraph2": "This patient view now keeps only the surviving DRG package outcome surface, and missing pricing metadata stays unavailable instead of being treated as exact."
-    },
-    "noDrgSummary": {
-      "title": "No DRG episode summary available",
-      "body": "This patient outcome no longer includes estimate-backed fallback sections. If exact DRG pricing inputs are unavailable, the patient remains unavailable here."
+      "paragraph2": "This patient view keeps exact claim-line totals from the analytics cache; missing pricing metadata stays unavailable instead of being treated as exact."
     },
     "claimSummary": {
       "title": "Exact Claim-Line Summary",
@@ -182,31 +178,6 @@ const patient = {
         "billed": "Billed",
         "surcharge": "Surcharge",
         "copayRate": "EK-2C-1 copay rate"
-      }
-    },
-    "drgPanel": {
-      "title": "DRG Episode Cost Modeling",
-      "description": "Claim-exact comparison of itemized inpatient costs against billed SGK DRG package prices (EK-2C). LOS and package prices come from real claim lines, not estimates.",
-      "unavailableFallback": "DRG package pricing is unavailable when an inpatient claim has no billed package (P#####) line or missing admission/discharge dates.",
-      "episodes": "Episodes:",
-      "itemizedCost": "Itemized Cost:",
-      "drgPackagePrice": "DRG Package Price:",
-      "meanEpisode": "Mean/Episode:",
-      "costliest": "Costliest:",
-      "table": {
-        "index": "#",
-        "claimId": "Claim",
-        "icd10": "ICD-10",
-        "description": "Description",
-        "group": "Group",
-        "packageCode": "Package",
-        "los": "LOS",
-        "lab": "Lab",
-        "visit": "Visit",
-        "rx": "Rx",
-        "proc": "Proc",
-        "itemized": "Itemized",
-        "drgPrice": "DRG Price"
       }
     }
   }

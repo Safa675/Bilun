@@ -127,20 +127,3 @@ def read_patient_outcome_base(
     if not row:
         return None
     return json.loads(row[0])
-
-
-def read_patient_outcome_expensive(
-    con, build_id: str, patient_id: str
-) -> dict[str, Any] | None:
-    """Read pre-serialized expensive sections (DRG summary + reimbursement gaps).
-
-    Populated by the analytics-cache build job; returns ``None`` when the
-    patient was missing or errored during backfill.
-    """
-    row = con.execute(
-        "SELECT payload_json FROM patient_outcome_expensive WHERE build_id = ? AND patient_id = ?",
-        [build_id, patient_id],
-    ).fetchone()
-    if not row:
-        return None
-    return json.loads(row[0])

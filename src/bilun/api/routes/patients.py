@@ -9,7 +9,6 @@ from typing import Any
 
 from fastapi import APIRouter, Query
 
-from src.bilun.domain.analytics.drg_payload import normalize_cached_drg_summary_payload
 from src.bilun.shared.exceptions import PatientNotFound, ServiceUnavailableError
 from src.bilun.api.schemas import PatientSearchResponse
 from src.bilun.api.schemas import (
@@ -29,7 +28,6 @@ from src.bilun.db import (
     read_patient_meta as read_cache_patient_meta,
     read_patient_meta_by_ids as read_cache_patient_meta_by_ids,
     read_patient_outcome_base,
-    read_patient_outcome_expensive,
     search_patient_ids as search_cache_patient_ids,
 )
 from src.bilun.domain.claims import load_sut_claim_dataset
@@ -228,9 +226,6 @@ def search_bilun_patients(
 @router.get("/patient/{patient_id}/outcome", response_model=BilunPatientOutcomeResponse)
 def get_bilun_patient_outcome(
     patient_id: str,
-    include_expensive: bool = Query(
-        True, description="Include expensive DRG pricing analytics"
-    ),
 ):
     """BILUN patient outcome data without requiring an active IHP build."""
     mode = _pipeline_mode()
@@ -244,20 +239,12 @@ def get_bilun_patient_outcome(
     active_build = _active_bilun_build_or_503(reader)
     base = read_patient_outcome_base(reader, active_build, patient_id)
 
-    expensive = None
-    expensive_state = "skipped"
-    if include_expensive:
-        expensive = read_patient_outcome_expensive(reader, active_build, patient_id)
-        expensive_state = "ready" if expensive is not None else "missing"
-
-    if base is None and expensive is None:
+    if base is None:
         raise PatientNotFound(f"No BILUN outcome profile for patient {patient_id}")
 
-    base_payload = base or {}
-    expensive = expensive or {}
     return attach_bilun_data_source(
         {
-            **base_payload,
+            **base,
             "patient_id": patient_id,
             "eci": None,
             "narrative": "",
@@ -266,14 +253,6 @@ def get_bilun_patient_outcome(
             "patient_percentile": None,
             "cohort_total": 0,
             "feature_correlations": [],
-            "drg_summary": normalize_cached_drg_summary_payload(
-                expensive.get("drg_summary")
-            ),
-            "consistency_warnings": expensive.get("consistency_warnings") or [],
-            "expensive_analytics": {
-                "state": expensive_state,
-                "included": include_expensive,
-            },
         },
         read_active_bilun_data_source(reader, active_build),
     )

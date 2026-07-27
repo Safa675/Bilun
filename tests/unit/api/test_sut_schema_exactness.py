@@ -22,15 +22,16 @@ SYNTHETIC_DATA_SOURCE = {
 }
 
 
-def test_sut_patient_outcome_schema_requires_drg_pricing_status() -> None:
-    payload = {
-        "patient_id": "P1",
-        "drg_summary": {"total_drg_cost": 123.4},
-        "expensive_analytics": {"state": "ready", "included": True},
-    }
-
+def test_bilun_patient_outcome_schema_requires_patient_id() -> None:
     with pytest.raises(ValidationError):
-        BilunPatientOutcomeResponse.model_validate(payload)
+        BilunPatientOutcomeResponse.model_validate({})
+
+
+def test_bilun_patient_outcome_schema_accepts_minimal_payload() -> None:
+    parsed = BilunPatientOutcomeResponse.model_validate({"patient_id": "P1"})
+
+    assert parsed.patient_id == "P1"
+    assert parsed.data_source.mode == "unavailable"
 
 
 def test_sut_data_source_schema_preserves_synthetic_demo_metadata() -> None:
@@ -47,81 +48,6 @@ def test_sut_cache_schema_defaults_missing_provenance_to_unavailable_not_real() 
     assert parsed.data_source.mode == "unavailable"
     assert parsed.data_source.is_synthetic is None
     assert parsed.data_source.required_inputs_missing == ["data_source"]
-
-
-def test_bilun_patient_outcome_schema_requires_drg_pricing_status() -> None:
-    payload = {
-        "drg_summary": {"total_drg_cost": 123.4},
-        "expensive_analytics": {"state": "ready", "included": True},
-    }
-
-    with pytest.raises(ValidationError):
-        BilunPatientOutcomeResponse.model_validate(payload)
-
-
-def test_sut_patient_outcome_schema_preserves_explicit_exact_drg_status() -> None:
-    payload = {
-        "patient_id": "P1",
-        "drg_summary": {
-            "total_drg_cost": 123.4,
-            "pricing_status": "exact",
-        },
-        "expensive_analytics": {"state": "ready", "included": True},
-    }
-
-    parsed = BilunPatientOutcomeResponse.model_validate(payload)
-
-    assert parsed.drg_summary is not None
-    assert parsed.drg_summary.pricing_status == "exact"
-    assert parsed.drg_summary.required_inputs_missing == []
-    assert parsed.expensive_analytics.state == "ready"
-
-
-def test_sut_patient_outcome_schema_preserves_unavailable_drg_status() -> None:
-    payload = {
-        "patient_id": "P1",
-        "drg_summary": {
-            "total_drg_cost": 0.0,
-            "pricing_status": "unknown_date",
-            "unavailable_reason": "Missing admission date.",
-            "required_inputs_missing": ["admission_date"],
-            "episodes": [
-                {
-                    "episode_id": 1,
-                    "pricing_status": "unknown_date",
-                    "unavailable_reason": "Missing admission date.",
-                    "required_inputs_missing": ["admission_date"],
-                }
-            ],
-        },
-    }
-
-    parsed = BilunPatientOutcomeResponse.model_validate(payload)
-
-    assert parsed.drg_summary is not None
-    assert parsed.drg_summary.pricing_status == "unknown_date"
-    assert parsed.drg_summary.required_inputs_missing == ["admission_date"]
-    assert parsed.drg_summary.episodes[0].pricing_status == "unknown_date"
-
-
-def test_sut_patient_outcome_schema_rejects_unavailable_drg_without_inputs() -> None:
-    payload = {
-        "patient_id": "P1",
-        "drg_summary": {
-            "total_drg_cost": 0.0,
-            "pricing_status": "unknown_date",
-            "episodes": [
-                {
-                    "episode_id": 1,
-                    "pricing_status": "unknown_date",
-                    "required_inputs_missing": ["admission_date"],
-                }
-            ],
-        },
-    }
-
-    with pytest.raises(ValidationError):
-        BilunPatientOutcomeResponse.model_validate(payload)
 
 
 def test_billing_report_schema_missing_exactness_defaults_to_unavailable() -> None:

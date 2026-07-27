@@ -154,13 +154,9 @@ const patient = {
     },
     "outcomeSummary": {
       "eyebrow": "Yalnızca kesin hasta sonucu",
-      "title": "DRG paket incelemesi açık kalır",
+      "title": "Talep satırı toplamları açık kalır",
       "paragraph1": "Tahmine dayalı SUT maliyet aralıkları ve boşluk projeksiyonları kaldırıldı.",
-      "paragraph2": "Bu hasta görünümü artık yalnızca hayatta kalan DRG paket sonuç yüzeyini tutar; eksik fiyatlandırma meta verisi kesin sayılmak yerine kullanılamaz kalır."
-    },
-    "noDrgSummary": {
-      "title": "DRG epizod özeti mevcut değil",
-      "body": "Bu hasta sonucu artık tahmine dayalı yedek bölümler içermez. Kesin DRG fiyatlandırma girdileri kullanılamıyorsa hasta burada kullanılamaz kalır."
+      "paragraph2": "Bu hasta görünümü analitik önbellekten gelen kesin talep satırı toplamlarını tutar; eksik fiyatlandırma meta verisi kesin sayılmak yerine kullanılamaz kalır."
     },
     "claimSummary": {
       "title": "Kesin talep satırı özeti",
@@ -182,31 +178,6 @@ const patient = {
         "billed": "Faturalanan",
         "surcharge": "Fark ücreti",
         "copayRate": "EK-2C-1 katılım payı oranı"
-      }
-    },
-    "drgPanel": {
-      "title": "DRG epizod maliyet modellemesi",
-      "description": "Kalemlendirilmiş yatış maliyetleri ile faturalanan SGK DRG paket fiyatlarını (EK-2C) gerçek fatura satırlarına göre karşılaştırır. YBS ve paket fiyatları tahmine dayalı değil, fatura verilerinden gelir.",
-      "unavailableFallback": "Yatış faturasında faturalanan paket (P#####) satırı veya eksik yatış/taburcu tarihi varsa DRG paket fiyatlandırması kullanılamaz.",
-      "episodes": "Epizodlar:",
-      "itemizedCost": "Kalemlendirilmiş maliyet:",
-      "drgPackagePrice": "DRG paket fiyatı:",
-      "meanEpisode": "Ort./epizod:",
-      "costliest": "En maliyetli:",
-      "table": {
-        "index": "#",
-        "claimId": "Fatura",
-        "icd10": "ICD-10",
-        "description": "Açıklama",
-        "group": "Grup",
-        "packageCode": "Paket",
-        "los": "YBS",
-        "lab": "Laboratuvar",
-        "visit": "Ziyaret",
-        "rx": "Reçete",
-        "proc": "İşlem",
-        "itemized": "Kalemlendirilmiş",
-        "drgPrice": "DRG fiyatı"
       }
     }
   }

@@ -38,13 +38,14 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
     monkeypatch.setattr(
         sut_chat_mod,
         "get_bilun_patient_outcome",
-        lambda patient_id, include_expensive=True: {
+        lambda patient_id: {
             "patient_id": patient_id,
-            "drg_summary": {
-                "pricing_status": "unknown_date",
-                "required_inputs_missing": ["visit_date"],
+            "sut_claim_totals": {
+                "claim_count": 2,
+                "total_billed_try": 100.0,
+                "total_expected_payable_try": 90.0,
+                "exactness_status": "exact",
             },
-            "expensive_analytics": {"state": "ready", "included": include_expensive},
         },
     )
     monkeypatch.setattr(
@@ -93,8 +94,7 @@ def test_sut_chat_streams_sut_only_context(monkeypatch):
     assert '"active_tab": "SUT Patient Workspace"' in runtime_context
     assert "Patient ID: P-001" in runtime_context
     assert "Copay exempt: YES" in runtime_context
-    assert "[exactness: unknown_date]" in runtime_context
-    assert "visit_date" in runtime_context
+    assert "Needs exact billed procedure lines." in runtime_context
 
 
 def test_sut_chat_user_question_uses_summarized_billing_context(monkeypatch):
@@ -126,7 +126,7 @@ def test_sut_chat_user_question_uses_summarized_billing_context(monkeypatch):
     monkeypatch.setattr(
         sut_chat_mod,
         "get_bilun_patient_outcome",
-        lambda patient_id, include_expensive=False: {"patient_id": patient_id},
+        lambda patient_id: {"patient_id": patient_id},
     )
     monkeypatch.setattr(
         sut_chat_mod,
@@ -185,7 +185,7 @@ def test_sut_chat_patient_question_skips_tools_path(monkeypatch):
     monkeypatch.setattr(
         sut_chat_mod,
         "get_bilun_patient_outcome",
-        lambda patient_id, include_expensive=False: {"patient_id": patient_id},
+        lambda patient_id: {"patient_id": patient_id},
     )
     monkeypatch.setattr(
         sut_chat_mod,
@@ -385,7 +385,7 @@ def test_sut_chat_auto_brief_uses_summarized_billing(monkeypatch):
     monkeypatch.setattr(
         sut_chat_mod,
         "get_bilun_patient_outcome",
-        lambda patient_id, include_expensive=True: {"patient_id": patient_id},
+        lambda patient_id: {"patient_id": patient_id},
     )
     monkeypatch.setattr(
         sut_chat_mod,

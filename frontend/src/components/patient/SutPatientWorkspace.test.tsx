@@ -9,13 +9,10 @@ vi.mock("@/lib/constants", () => ({
   buildSutHomeHref: () => "/?tab=patients",
 }));
 
-vi.mock("@/components/tabs/sut/PatientSection", () => ({
-  DRGPanel: () => "DRGPanel",
-}));
-
 vi.mock("@/components/tabs/sut/shared", () => ({
   fmtLabel: (value: string) => value,
   fmtNum: (value: number) => String(value),
+  fmtTRY2: (value: number) => String(value),
   fmtPctRatio: (value: number) => `${(value * 100).toFixed(1)}%`,
   KpiCard: ({ label, value }: { label: string; value: string }) => `${label}:${value}`,
 }));
@@ -127,7 +124,7 @@ describe("PatientOptimizationSnapshot", () => {
     expect(html).not.toContain("sut-patient-id-title");
   });
 
-  it("renders the surviving DRG workspace without estimate-backed panels", () => {
+  it("renders the workspace without estimate-backed panels", () => {
     const html = renderToStaticMarkupWithLocale(
       <SutPatientWorkspace
         patientId="P-001"
@@ -139,27 +136,24 @@ describe("PatientOptimizationSnapshot", () => {
             is_synthetic: true,
             notice: "Demo data only. Rule calculations are exact for these synthetic claim lines.",
           },
-          consistency_warnings: ["Needs provenance review."],
-          drg_summary: {
-            n_episodes: 1,
-            total_drg_cost: 26,
-            mean_episode_cost: 26,
-            most_expensive_drg: "Circulatory system (I10)",
-            dominant_icd10_chapter: "I",
-            total_drg_package_price: 20,
-            fully_priced: true,
-            priced_episode_count: 1,
-            unknown_date_episode_count: 0,
-            pricing_status: "exact",
-            episodes: [],
+          sut_claim_totals: {
+            patient_id: "P-001",
+            total_billed_try: 100,
+            total_expected_payable_try: 90,
+            claim_count: 1,
+            procedure_line_count: 1,
+            material_line_count: 0,
+            drug_line_count: 0,
+            lab_billed_line_count: 0,
+            exactness_status: "exact",
           },
         }}
         optimization={null}
       />,
     );
 
-    expect(html).toContain("DRGPanel");
-    expect(html).toContain("Needs provenance review.");
+    expect(html).not.toContain("DRGPanel");
+    expect(html).not.toContain("DRG Episode Cost Modeling");
     expect(html).not.toContain("Actual reimbursement recovery");
     expect(html).not.toContain("Hospital-wide loss");
     expect(html).not.toContain("Production billing result");

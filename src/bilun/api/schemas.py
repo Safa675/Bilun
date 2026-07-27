@@ -203,74 +203,6 @@ class PatientAlertsResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class ExpensiveAnalyticsState(BaseModel):
-    state: Literal["ready", "missing", "skipped"] = "skipped"
-    included: bool = False
-
-    model_config = ConfigDict(extra="allow")
-
-
-class DRGEpisodeResponse(BaseModel):
-    episode_id: str | int | None = None
-    claim_id: str | int | None = None
-    primary_icd10: str = ""
-    primary_icd10_chapter: str = ""
-    description: str = ""
-    los_days: float = 0.0
-    lab_cost: float = 0.0
-    visit_cost: float = 0.0
-    rx_cost: float = 0.0
-    procedure_cost: float = 0.0
-    total_cost: float = 0.0
-    drg_package_price: float | None = None
-    package_code: str | None = None
-    ek2c_group: str = ""
-    admission_date: str | None = None
-    discharge_date: str | None = None
-    pricing_status: ExactnessStatus
-    pricing_date: str | None = None
-    unavailable_reason: str | None = None
-    required_inputs_missing: list[str] = Field(default_factory=list)
-
-    model_config = ConfigDict(extra="allow")
-
-    @model_validator(mode="after")
-    def _validate_pricing_required_inputs(self) -> DRGEpisodeResponse:
-        _ensure_required_inputs_for_status(
-            status=self.pricing_status,
-            required_inputs_missing=self.required_inputs_missing,
-            status_field="pricing_status",
-        )
-        return self
-
-
-class DRGSummaryResponse(BaseModel):
-    n_episodes: int = 0
-    total_drg_cost: float = 0.0
-    mean_episode_cost: float = 0.0
-    most_expensive_drg: str = "N/A"
-    dominant_icd10_chapter: str = "N/A"
-    total_drg_package_price: float | None = None
-    fully_priced: bool = True
-    priced_episode_count: int = 0
-    unknown_date_episode_count: int = 0
-    pricing_status: ExactnessStatus
-    unavailable_reason: str | None = None
-    required_inputs_missing: list[str] = Field(default_factory=list)
-    episodes: list[DRGEpisodeResponse] = Field(default_factory=list)
-
-    model_config = ConfigDict(extra="allow")
-
-    @model_validator(mode="after")
-    def _validate_pricing_required_inputs(self) -> DRGSummaryResponse:
-        _ensure_required_inputs_for_status(
-            status=self.pricing_status,
-            required_inputs_missing=self.required_inputs_missing,
-            status_field="pricing_status",
-        )
-        return self
-
-
 class BillingExactnessResponse(BaseModel):
     exactness_status: ExactnessStatus = "missing_exact_inputs"
     unavailable_reason: str | None = None
@@ -431,11 +363,6 @@ class BilunPatientOutcomeResponse(BaseModel):
     """
 
     patient_id: str
-    drg_summary: DRGSummaryResponse | None = None
-    consistency_warnings: list[str] = Field(default_factory=list)
-    expensive_analytics: ExpensiveAnalyticsState = Field(
-        default_factory=ExpensiveAnalyticsState
-    )
     data_source: BILUNDataSourceMetadata = Field(
         default_factory=default_bilun_data_source_metadata
     )

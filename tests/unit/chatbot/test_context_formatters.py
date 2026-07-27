@@ -43,11 +43,6 @@ def _sample_patient_data() -> dict:
             "status": "ready",
             "summary": {
                 "patient_id": "P-001",
-                "drg_summary": {
-                    "n_episodes": 1,
-                    "total_drg_package_price": 1200.0,
-                    "pricing_status": "exact",
-                },
             },
         },
         "patient_optimization": {
@@ -95,11 +90,10 @@ def test_build_cohort_context_includes_exemption_and_unavailable_surcharge():
     assert "exact_claim_lines_missing" in text
 
 
-def test_build_patient_context_includes_drg_and_copay_exemption():
+def test_build_patient_context_includes_copay_exemption():
     text = build_patient_context(_sample_patient_data())
     assert "--- PATIENT CONTEXT ---" in text
     assert "Patient ID: P-001" in text
-    assert "Total DRG package price: 1200.00 TRY" in text
     assert "Copay exempt: YES" in text
     assert "Diabetes (E11)" in text
 

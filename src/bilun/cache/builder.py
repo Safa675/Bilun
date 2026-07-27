@@ -10,11 +10,6 @@ from pathlib import Path
 
 import polars as pl
 
-from src.bilun.cache.build_expensive import (
-    DEFAULT_EXPENSIVE_TIMEOUT_MS,
-    backfill_expensive_sections,
-    run_active_sut_expensive_backfill,
-)
 from src.bilun.cache.build_streaming import json_ready, stream_payload_table
 from src.bilun.cache.context import load_sut_build_context
 from src.bilun.cache.payloads import (
@@ -92,23 +87,6 @@ def parse_args() -> argparse.Namespace:
         default=min(4, max(1, os.cpu_count() or 1)),
         help="Worker count for parallel per-patient billing report generation",
     )
-    expensive_group = parser.add_mutually_exclusive_group()
-    expensive_group.add_argument(
-        "--skip-expensive-backfill",
-        action="store_true",
-        help="Skip populating the patient_outcome_expensive table (DRG + gaps)",
-    )
-    expensive_group.add_argument(
-        "--expensive-only",
-        action="store_true",
-        help="Rebuild only patient_outcome_expensive on the active SUT build",
-    )
-    parser.add_argument(
-        "--expensive-timeout-ms",
-        type=int,
-        default=DEFAULT_EXPENSIVE_TIMEOUT_MS,
-        help="Per-patient hard compute budget for expensive sections",
-    )
     parser.add_argument(
         "--sut-data-mode",
         default=None,
@@ -179,16 +157,6 @@ def _print_sut_data_source(config: SUTDataSourceConfig) -> None:
 
 
 def run_build(args: argparse.Namespace) -> str:
-    if args.expensive_only:
-        return run_active_sut_expensive_backfill(
-            db_path=args.db_path,
-            stream_batch_size=args.stream_batch_size,
-            expensive_timeout_ms=args.expensive_timeout_ms,
-            sut_data_mode=args.sut_data_mode,
-            sut_claims_dir=args.sut_claims_dir,
-            sut_clean_dir=args.sut_clean_dir,
-        )
-
     db_path = Path(args.db_path)
     con = connect(db_path)
     init_schema(con)
@@ -354,51 +322,6 @@ def run_build(args: argparse.Namespace) -> str:
             patient_outcome_count=outcome_rows,
         )
 
-        expensive_counts = {"ready": 0, "failed": 0, "skipped": len(patient_ids)}
-        if args.skip_expensive_backfill:
-            print("  expensive_sections: skipped (--skip-expensive-backfill)")
-        else:
-            print(
-                f"  expensive_sections: backfilling {len(patient_ids)} patients "
-                f"→ patient_outcome_expensive (timeout={args.expensive_timeout_ms}ms each)"
-            )
-            expensive_counts = backfill_expensive_sections(
-                con,
-                build_id=build.build_id,
-                patient_ids=patient_ids,
-                ctx=ctx,
-                batch_size=args.stream_batch_size,
-                timeout_ms=args.expensive_timeout_ms,
-            )
-            print(
-                f"  expensive_sections: done — "
-                f"ready={expensive_counts['ready']}, "
-                f"failed={expensive_counts['failed']}, "
-                f"skipped={expensive_counts['skipped']}"
-            )
-            # B-H9: warn loudly when the expensive backfill had a high failure
-            # rate. The build is still completed+activated (the base outcome
-            # layer works without expensive DRG data), but operators must know
-            # the build is degraded so they can re-run the backfill. A 100%
-            # failure rate (e.g. every patient hit the DRG timeout) means the
-            # expensive layer is entirely empty — surface that explicitly.
-            total_attempted = (
-                expensive_counts["ready"]
-                + expensive_counts["failed"]
-                + expensive_counts["skipped"]
-            )
-            if total_attempted > 0:
-                failure_rate = expensive_counts["failed"] / total_attempted
-                if failure_rate >= 0.5:
-                    print(
-                        f"  ⚠ WARNING: expensive backfill failure rate "
-                        f"{failure_rate:.0%} ({expensive_counts['failed']}/"
-                        f"{total_attempted} patients). The active build will "
-                        f"serve with 'expensive analytics unavailable' for "
-                        f"those patients. Consider re-running with a higher "
-                        f"--expensive-timeout-ms."
-                    )
-
         row_counts = {
             "cohort_kpi": 0,
             "cohort_composites": 0,
@@ -422,9 +345,6 @@ def run_build(args: argparse.Namespace) -> str:
             "cohort_recovery_summary": 1,
             "patient_detail_cache": int(detail_rows),
             "patient_outcome_base": int(outcome_rows),
-            "patient_expensive_ready": int(expensive_counts["ready"]),
-            "patient_expensive_failed": int(expensive_counts["failed"]),
-            "patient_expensive_skipped": int(expensive_counts["skipped"]),
         }
         checksums = {
             "sut_patient_count": str(len(patient_ids)),
@@ -488,8 +408,6 @@ def rebuild_bilun_cache_offline(
     stream_batch_size: int = 2000,
     payload_workers: int = min(4, max(1, os.cpu_count() or 1)),
     billing_workers: int = min(4, max(1, os.cpu_count() or 1)),
-    skip_expensive_backfill: bool = False,
-    expensive_timeout_ms: int = DEFAULT_EXPENSIVE_TIMEOUT_MS,
     sut_data_mode: str | None = None,
     sut_claims_dir: str | None = None,
     sut_clean_dir: str | None = None,
@@ -501,9 +419,6 @@ def rebuild_bilun_cache_offline(
         stream_batch_size=stream_batch_size,
         payload_workers=payload_workers,
         billing_workers=billing_workers,
-        skip_expensive_backfill=skip_expensive_backfill,
-        expensive_only=False,
-        expensive_timeout_ms=expensive_timeout_ms,
         sut_data_mode=sut_data_mode,
         sut_claims_dir=sut_claims_dir,
         sut_clean_dir=sut_clean_dir,
