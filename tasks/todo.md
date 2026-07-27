@@ -9,7 +9,7 @@ Clear the 11 open Dependabot alerts by bumping `next`/`eslint-config-next` to 16
 - [x] Add/extend `overrides`: `sharp` ^0.35.3, `brace-expansion@1` 1.1.16 + `brace-expansion@5` 5.0.8 (keep `postcss`)
 - [x] Regenerate lockfile with `npm install` in `frontend/`
 - [x] Verify: lockfile versions + `tsc --noEmit` + `vitest run` (197) + `npm run build` (Next 16.2.12)
-- [ ] Commit, push, open PR
+- [x] Commit, push, open PR — https://github.com/Safa675/Bilun/pull/47
 
 ### Out of Scope
 - Reviving stale `chore/dependabot-next-security-bump` (16.2.9)
