@@ -43,7 +43,7 @@ conversation end. This doc specifies the integration without building it.
                                    ▼
   Agent conversation (OpenHands sandbox)
     │
-    ├─ Step 0 (NEW): run `scripts/agent/memory/load.py --role <role>`
+    ├─ Step 0 (NEW): run `agents/memory/load.py --role <role>`
     │   → queries mem0 for last-run findings + pending items
     │   → prints a "prior context" summary the agent reads before doing anything
     │
@@ -51,7 +51,7 @@ conversation end. This doc specifies the integration without building it.
     ├─ Step 2: diff current findings vs prior memory (NEW — in the prompt)
     ├─ Step 3: write findings report              (existing)
     │
-    └─ Step 4 (NEW): run `scripts/agent/memory/save.py --role <role>`
+    └─ Step 4 (NEW): run `agents/memory/save.py --role <role>`
         → extracts distilled facts from this run's findings
         → adds to mem0 with the role's user_id
         → marks which findings are new vs recurring
@@ -90,7 +90,7 @@ The role's `system-prompt.md` gains a new Step 0:
 
 ```bash
 # Step 0 (before running checkers): load prior memory
-python /workspace/bilun/scripts/agent/memory/load.py --role reimbursement_engineer
+python /workspace/bilun/agents/memory/load.py --role reimbursement_engineer
 ```
 
 This prints a "Prior context" block the agent reads:
@@ -108,11 +108,11 @@ job is to **diff and explain the delta**, not re-discover the baseline.
 
 ## When memory saves (end of run)
 
-`scripts/agent/memory/save.py` runs as the LAST step of `run_checks.sh`:
+`agents/memory/save.py` runs as the LAST step of `run_checks.sh`:
 
 ```bash
 # After the report is written:
-python /workspace/bilun/scripts/agent/memory/save.py \
+python /workspace/bilun/agents/memory/save.py \
     --role reimbursement_engineer \
     --report reports/agent/reimbursement/findings-$(date +%Y-%m-%d).md
 ```
@@ -127,7 +127,7 @@ The script:
 ## Configuration (self-hosted, OpenAI-compatible LLM)
 
 mem0 needs an LLM for fact extraction. We point it at the same Z-API GLM endpoint the
-agents use, so there's no new API key. Config (`scripts/agent/memory/config.py`):
+agents use, so there's no new API key. Config (`agents/memory/config.py`):
 
 ```python
 from mem0 import Memory
@@ -170,7 +170,7 @@ config, breaking OpenAI-compatible proxies. Workaround: set `OPENAI_BASE_URL` AN
 **Laptop (experimental, this round):**
 - mem0 runs in its own Docker container alongside `openhands-app` + the sandbox.
 - Qdrant data persists at `~/.bilun-mem0/qdrant/` (host volume).
-- `docker-compose.yml` under `scripts/agent/memory/` defines: mem0 + qdrant.
+- `docker-compose.yml` under `agents/memory/` defines: mem0 + qdrant.
 
 **VPS (future, once laptop-proven):**
 - Same compose file, deployed to the VPS. The 3-role architecture is unchanged.
@@ -207,8 +207,8 @@ until their re-run cadence justifies it.
 
 ## Subtasks (when this gets built — NOT this round)
 
-1. Add `scripts/agent/memory/{config.py,load.py,save.py,__init__.py}`.
-2. Add `scripts/agent/memory/docker-compose.yml` (mem0 + qdrant).
+1. Add `agents/memory/{config.py,load.py,save.py,__init__.py}`.
+2. Add `agents/memory/docker-compose.yml` (mem0 + qdrant).
 3. Add Step 0 (load) + Step 4 (save) to each role's `system-prompt.md` + `run_checks.sh`.
 4. Test: run Reimbursement twice; confirm the second run's report says "since last run:
    0 new findings" (proves memory load + diff works).
@@ -216,7 +216,7 @@ until their re-run cadence justifies it.
 6. Capture lessons; document the token-cost reality after N runs.
 
 ## Definition of Done (when built)
-- `docker compose up` under `scripts/agent/memory/` starts mem0 + qdrant cleanly.
+- `docker compose up` under `agents/memory/` starts mem0 + qdrant cleanly.
 - `load.py --role <r>` returns the last run's distilled facts in <2s.
 - `save.py --role <r> --report <path>` adds 3-7 facts to mem0 under the right namespace.
 - Two consecutive Reimbursement runs produce diff-aware reports (not identical baselines).
