@@ -145,20 +145,15 @@ def _summarize_optimization(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _summarize_patient_outcome(payload: dict[str, Any]) -> dict[str, Any]:
-    drg = payload.get("drg_summary") or {}
-    expensive = payload.get("expensive_analytics") or {}
+    totals = payload.get("sut_claim_totals") or {}
     return {
         "patient_id": payload.get("patient_id"),
-        "drg_summary": {
-            "pricing_status": drg.get("pricing_status"),
-            "unavailable_reason": drg.get("unavailable_reason"),
-            "required_inputs_missing": drg.get("required_inputs_missing"),
-            "n_episodes": drg.get("n_episodes"),
-            "total_drg_package_price": drg.get("total_drg_package_price"),
-        },
-        "expensive_analytics": {
-            "state": expensive.get("state"),
-            "included": expensive.get("included"),
+        "sut_claim_totals": {
+            "claim_count": totals.get("claim_count"),
+            "total_billed_try": totals.get("total_billed_try"),
+            "total_expected_payable_try": totals.get("total_expected_payable_try"),
+            "exactness_status": totals.get("exactness_status"),
+            "unavailable_reason": totals.get("unavailable_reason"),
         },
     }
 
@@ -403,7 +398,7 @@ def _fetch_runtime_data(
         return _safe_context_block(
             "Patient outcome",
             lambda: _summarize_patient_outcome(
-                get_bilun_patient_outcome(patient_id, include_expensive=False)
+                get_bilun_patient_outcome(patient_id)
             ),
         )
 

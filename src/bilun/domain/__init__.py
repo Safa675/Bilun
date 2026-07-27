@@ -12,7 +12,7 @@ analytics, and billing optimization based on official gazette annexes
 | Package | Purpose |
 |---------|---------|
 | `pricing` | DRG package pricing helpers |
-| `analytics` | DRG episode modeling, material cost estimation |
+| `analytics` | Material cost estimation |
 | `billing` | 5 billing optimization algorithms + cohort aggregator |
 | `optimization` | 6 rule engines for revenue optimization |
 | `claims` | Exact synthetic SUT claim-line loader and aggregates |
@@ -34,7 +34,6 @@ This package intentionally does NOT re-export submodule contents.
 Import directly from the relevant submodule:
 
     from src.bilun.domain.claims import load_sut_claim_dataset
-    from src.bilun.domain.analytics import compute_drg_summary
     from src.bilun.domain.billing import BillingActionReport
     from src.bilun.domain.optimization import check_copay_exemptions
 

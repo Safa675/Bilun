@@ -11,10 +11,8 @@ import type {
 } from "@/lib/domains/sut";
 import { PatientFinancialSummary } from "@/components/patient/PatientFinancialSummary";
 import { buildSutHomeHref } from "@/lib/constants";
-import { DRGPanel } from "@/components/tabs/sut/PatientSection";
 import { fmtNum, fmtPctRatio } from "@/components/tabs/sut/shared";
 import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
-import { translateConsistencyWarning } from "@/lib/apiMessages";
 import { theme } from "@/lib/theme";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { PatientExemptionRuleSourceAttribution } from "@/components/sut/RegulatorySourceChips";
@@ -294,23 +292,6 @@ export default function SutPatientWorkspace({
             />
           </div>
           <PatientOptimizationSnapshot optimization={optimization} />
-        </Surface>
-      )}
-
-      {outcome?.consistency_warnings && outcome.consistency_warnings.length > 0 && (
-        <Surface variant="soft" padding="md" className="space-y-2">
-          <Eyebrow tone="primary">{t("patient.workspace.consistencyEyebrow")}</Eyebrow>
-          {outcome.consistency_warnings.map((warning, index) => (
-            <p key={index} className="text-xs text-[var(--text-secondary)]">
-              {translateConsistencyWarning(warning)}
-            </p>
-          ))}
-        </Surface>
-      )}
-
-      {outcome?.drg_summary && outcome.drg_summary.n_episodes > 0 && (
-        <Surface variant="base" padding="lg">
-          <DRGPanel data={outcome.drg_summary} />
         </Surface>
       )}
     </div>

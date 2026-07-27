@@ -71,7 +71,6 @@ describe("PatientFinancialSummary", () => {
       lab_billed_line_count: 4,
     };
     const outcome: SutPatientOutcomeData = {
-      drg_summary: null,
       sut_claim_totals: claimTotals,
     };
 

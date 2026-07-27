@@ -285,38 +285,6 @@ def build_patient_context(data: dict[str, Any]) -> str:
 
     _format_sut_section(lines, "Patient ID", outcome.get("patient_id", "?"))
 
-    # DRG Summary
-    drg = outcome.get("drg_summary", {}) or {}
-    if drg:
-        _format_sut_section(
-            lines,
-            "DRG episodes",
-            drg.get("n_episodes", "?"),
-            exactness=drg.get("pricing_status"),
-        )
-        pkg_price = drg.get("total_drg_package_price")
-        if pkg_price is not None:
-            _format_sut_section(
-                lines,
-                "Total DRG package price",
-                f"{pkg_price:.2f} TRY",
-                exactness=drg.get("pricing_status"),
-            )
-        if drg.get("pricing_status") != "exact":
-            if drg.get("unavailable_reason"):
-                lines.append(f"    Reason: {drg['unavailable_reason']}")
-            if drg.get("required_inputs_missing"):
-                lines.append(
-                    f"    Needs: {', '.join(drg['required_inputs_missing'])}"
-                )
-
-    # Expensive analytics
-    expensive = outcome.get("expensive_analytics", {}) or {}
-    if expensive:
-        lines.append(
-            f"  Expensive analytics: {expensive.get('state', 'unavailable')}"
-        )
-
     # Optimization
     opt_copay = optimization.get("copay_exemptions", {}) or {}
     if opt_copay:

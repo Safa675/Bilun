@@ -101,33 +101,6 @@ _CORE_TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "type": "function",
         "function": {
-            "name": "get_drg_episode_cost",
-            "description": (
-                "Get a patient's DRG (Diagnosis-Related Group) inpatient"
-                " episode cost summary: total DRG cost, mean episode cost,"
-                " most expensive DRG, dominant ICD-10 chapter, total DRG"
-                " package price (EK-2C), episode count, and per-episode"
-                " breakdown (length of stay, lab/visit/rx/procedure cost,"
-                " DRG package price, package code, EK-2C group). Use this"
-                " for any DRG costing, inpatient episode, or package-pricing"
-                " question. Reports pricing_status (fully_priced / partial"
-                " / unavailable)."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "patient_id": {
-                        "type": "string",
-                        "description": "The patient ID",
-                    },
-                },
-                "required": ["patient_id"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
             "name": "validate_claim",
             "description": (
                 "Validate a STORED claim (by patient_id + claim_id) against"
@@ -414,7 +387,6 @@ _TOOL_FUNCTION_MAP: dict[str, str] = {
     "get_billing_report": "get_patient_billing_report",
     "get_bill_billing_report": "get_bill_billing_report",
     "get_revenue_recovery": "get_revenue_recovery",
-    "get_drg_episode_cost": "get_drg_episode_cost",
     "validate_claim": "validate_stored_claim",
     "get_patient_optimization": "get_patient_optimization",
     "get_optimization_summary": "get_optimization_summary",
@@ -704,7 +676,6 @@ async def execute_tool_call(
             )
             from src.bilun.api.routes.patients import (
                 get_bilun_patients,
-                get_bilun_patient_outcome,
                 get_patient_claim_detail,
                 search_bilun_patients,
             )
@@ -728,12 +699,6 @@ async def execute_tool_call(
                     arguments["claim_id"],
                 ),
                 "get_revenue_recovery": get_revenue_recovery,
-                "get_drg_episode_cost": lambda: (
-                    get_bilun_patient_outcome(
-                        arguments["patient_id"], include_expensive=True
-                    ).get("drg_summary")
-                    or {"unavailable_reason": "no DRG episode data for this patient"}
-                ),
                 "validate_stored_claim": lambda: _validate_stored_claim(
                     get_patient_claim_detail,
                     sut_validate_claim,

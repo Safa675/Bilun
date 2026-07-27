@@ -43,7 +43,6 @@ _BUILD_DATA_TABLES: frozenset[str] = frozenset(
         "cohort_recovery_summary",
         "patient_detail_cache",
         "patient_outcome_base",
-        "patient_outcome_expensive",
     }
 )
 

@@ -292,13 +292,3 @@ def init_schema(con) -> None:
         )
         """
     )
-
-    con.execute(
-        """
-        CREATE TABLE IF NOT EXISTS patient_outcome_expensive (
-            build_id TEXT NOT NULL,
-            patient_id TEXT NOT NULL,
-            payload_json TEXT NOT NULL
-        )
-        """
-    )

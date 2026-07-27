@@ -187,74 +187,17 @@ def test_get_tool_schemas_includes_repo_tools_for_dev():
     assert "get_bill_billing_report" in officer_names
 
 
-def test_get_tool_schemas_exposes_drg_and_validator_to_both_roles():
-    """The two newly-exposed algorithms must be in the core schema (both roles)."""
+def test_get_tool_schemas_exposes_validator_to_both_roles():
+    """validate_claim must be in the core schema for both roles."""
     from src.bilun.chatbot.tools import get_tool_schemas
 
     officer_names = {tool["function"]["name"] for tool in get_tool_schemas(user_role="billing_officer")}
     dev_names = {tool["function"]["name"] for tool in get_tool_schemas(user_role="dev")}
 
-    assert "get_drg_episode_cost" in officer_names
-    assert "get_drg_episode_cost" in dev_names
+    assert "get_drg_episode_cost" not in officer_names
+    assert "get_drg_episode_cost" not in dev_names
     assert "validate_claim" in officer_names
     assert "validate_claim" in dev_names
-
-
-def test_execute_tool_call_get_drg_episode_cost_extracts_summary(monkeypatch):
-    """DRG tool must call the outcome route with include_expensive=True and return drg_summary."""
-    captured: dict = {}
-
-    def fake_get_bilun_patient_outcome(patient_id, include_expensive=True):
-        captured["patient_id"] = patient_id
-        captured["include_expensive"] = include_expensive
-        return {
-            "patient_id": patient_id,
-            "drg_summary": {
-                "n_episodes": 2,
-                "total_drg_cost": 45678.9,
-                "mean_episode_cost": 22839.45,
-                "most_expensive_drg": "Q-123",
-                "pricing_status": "fully_priced",
-            },
-        }
-
-    monkeypatch.setattr(
-        "src.bilun.api.routes.patients.get_bilun_patient_outcome",
-        fake_get_bilun_patient_outcome,
-    )
-
-    result = asyncio.run(
-        execute_tool_call(
-            "get_drg_episode_cost",
-            {"patient_id": "P-001"},
-            ToolSession(),
-        )
-    )
-
-    assert result.success is True
-    assert captured["patient_id"] == "P-001"
-    assert captured["include_expensive"] is True
-    assert "45678.9" in result.content
-    assert "most_expensive_drg" in result.content
-
-
-def test_execute_tool_call_get_drg_episode_cost_missing_returns_unavailable(monkeypatch):
-    """When the patient has no DRG data, the tool surfaces a clear unavailable marker."""
-    monkeypatch.setattr(
-        "src.bilun.api.routes.patients.get_bilun_patient_outcome",
-        lambda patient_id, include_expensive=True: {"patient_id": patient_id},
-    )
-
-    result = asyncio.run(
-        execute_tool_call(
-            "get_drg_episode_cost",
-            {"patient_id": "P-001"},
-            ToolSession(),
-        )
-    )
-
-    assert result.success is True
-    assert "unavailable_reason" in result.content
 
 
 def test_execute_tool_call_validate_claim_remaps_stored_fields(monkeypatch):

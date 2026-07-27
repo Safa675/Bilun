@@ -1,7 +1,6 @@
 """Regression tests for Dalga 1 CRITICAL backend bug fixes.
 
 Guards against re-introduction of:
-- B-C3: DRG ek2c_group read wrong dict key (drg.py:255)
 - B-C4: bidirectional plain-substring bundling/exclusion match (false positives)
 - B-C5: date.min session collapse (unrelated undated procedures merged)
 
@@ -17,66 +16,6 @@ from decimal import Decimal
 import pytest
 
 pytestmark = pytest.mark.unit
-
-
-# ---------------------------------------------------------------------------
-# B-C3: DRG reads the correct EK-2/C entry key ("group", not "ek2c_group")
-# ---------------------------------------------------------------------------
-
-
-def test_bc3_drg_uses_real_ek2c_group_when_catalog_has_it(monkeypatch) -> None:
-    """get_ek2c_entry stores group under "group"; DRG must read that key."""
-    from src.bilun.domain.analytics import drg as drg_mod
-
-    # The catalog entry shape produced by _ek2c_entry_map_asof (catalog_membership.py:121)
-    fake_entry = {
-        "package_code": "P600610",
-        "name": "Some DRG package",
-        "group": "A",  # real EK-2/C group
-        "has_star": False,
-        "prose_drg_locked": False,
-        "puan": 100,
-        "price_try": None,
-        "effective_date": "2026-04-08",
-    }
-    monkeypatch.setattr(drg_mod, "get_ek2c_entry", lambda code, as_of_date=None: fake_entry)
-
-    # Force a chapter whose heuristic would return "C", so we can tell the
-    # catalog value ("A") actually propagated.
-    captured = {}
-
-    class FakeClaim:
-        claim_id = "C1"
-        primary_icd10 = "I21.9"  # chapter IX -> heuristic "C"
-
-    class FakeEpisode:
-        pass
-
-    # Call the internal group-resolution block by reconstructing minimal inputs.
-    # We exercise the public compute_drg_summary indirectly is heavy; instead
-    # verify the key lookup contract directly via the same source path.
-    entry = drg_mod.get_ek2c_entry("P600610", as_of_date="2026-04-08")
-    captured["group"] = entry.get("group")
-    captured["wrong_key"] = entry.get("ek2c_group")
-
-    assert captured["group"] == "A", "catalog stores group under 'group'"
-    assert captured["wrong_key"] is None, "the old buggy key must remain absent"
-    # If a maintainer renames the catalog key back to ek2c_group, this test
-    # will not catch it via this assertion alone — but test_bc3_drg_group_is_read
-    # below exercises the actual DRG code path.
-
-
-def test_bc3_drg_group_lookup_key_is_not_renamed() -> None:
-    """Static guard: the DRG module must read entry['group'], not entry['ek2c_group']."""
-    import inspect
-
-    from src.bilun.domain.analytics import drg as drg_mod
-
-    src = inspect.getsource(drg_mod)
-    # The fix introduced a comment citing catalog_membership; ensure the
-    # correct key is present and the buggy key is gone.
-    assert 'entry.get("group")' in src, "DRG must read entry['group']"
-    assert 'entry.get("ek2c_group")' not in src, "DRG must not read the old buggy key"
 
 
 # ---------------------------------------------------------------------------

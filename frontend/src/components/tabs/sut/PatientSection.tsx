@@ -1,16 +1,10 @@
 "use client";
 
-import type {
-  DRGSummaryData,
-  SutPatientOutcomeData,
-} from "@/lib/domains/sut";
-import { getUnavailableMessage, isExactOutput } from "@/lib/sutExactness";
-import { translateConsistencyWarning } from "@/lib/apiMessages";
+import type { SutPatientOutcomeData } from "@/lib/domains/sut";
 import useStaggeredReveal from "@/hooks/useStaggeredReveal";
 import { SutPatientAnalyticsSkeleton } from "@/components/skeletons/SutSkeletons";
 import { Chip, DataTable, EmptyState, Eyebrow, Surface, Button, buttonActiveClass } from "@/components/primitives";
 import {
-  DrgEk2cGroupCell,
   ProcedureCopayRateSourceCell,
   ProcedureSurchargeSourceCell,
 } from "@/components/sut/RegulatorySourceChips";
@@ -18,7 +12,6 @@ import PatientInvoiceTable from "@/components/tables/PatientInvoiceTable";
 import { useT } from "@/lib/i18n/useTranslations";
 import {
   fmtNum,
-  fmtTRY,
   fmtTRYOrUnavailable,
   getSutOutcomeViewState,
   KpiCard,
@@ -61,9 +54,7 @@ export function PatientSUTContent({
     };
 
   const summaryReveal = getReveal(0);
-  const warningReveal = getReveal(1);
-  const claimReveal = getReveal(2);
-  const drgReveal = getReveal(3);
+  const claimReveal = getReveal(1);
 
   const statusMessage =
     outcomeState === "loading"
@@ -145,20 +136,6 @@ export function PatientSUTContent({
             </div>
           </Surface>
 
-          {data.consistency_warnings && data.consistency_warnings.length > 0 && (
-            <div
-              {...warningReveal.staggerAttrs}
-              className={`rounded-lg border border-green-200 bg-green-50/50 px-4 py-3 ${warningReveal.staggerClass}`}
-              style={warningReveal.staggerStyle}
-            >
-              {data.consistency_warnings.map((warning, index) => (
-                <p key={index} className="text-xs text-amber-800">
-                  {translateConsistencyWarning(warning)}
-                </p>
-              ))}
-            </div>
-          )}
-
           {data.sut_claim_totals && (
             <Surface
               variant="base"
@@ -168,33 +145,6 @@ export function PatientSUTContent({
               style={claimReveal.staggerStyle}
             >
               <ClaimSummaryPanel data={data} />
-            </Surface>
-          )}
-
-          {data.drg_summary && data.drg_summary.n_episodes > 0 ? (
-            <Surface
-              variant="base"
-              padding="lg"
-              {...drgReveal.staggerAttrs}
-              className={drgReveal.staggerClass}
-              style={drgReveal.staggerStyle}
-            >
-              <DRGPanel data={data.drg_summary} />
-            </Surface>
-          ) : (
-            <Surface
-              variant="base"
-              padding="lg"
-              {...drgReveal.staggerAttrs}
-              className={drgReveal.staggerClass}
-              style={drgReveal.staggerStyle}
-            >
-              <p className="text-sm font-semibold text-[var(--text-primary)]">
-                {t("patient.section.noDrgSummary.title")}
-              </p>
-              <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                {t("patient.section.noDrgSummary.body")}
-              </p>
             </Surface>
           )}
         </div>
@@ -298,95 +248,5 @@ export function ClaimSummaryPanel({ data }: { data: SutPatientOutcomeData }) {
         </>
       )}
     </div>
-  );
-}
-
-export function DRGPanel({ data }: { data: DRGSummaryData }) {
-  const t = useT();
-  const drgExact = isExactOutput(data);
-  const totalPkgPrice = drgExact ? data.total_drg_package_price : null;
-
-  return (
-    <>
-      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-secondary">
-        {t("patient.section.drgPanel.title")}
-      </h3>
-      <p className="mb-3 text-xs text-slate-400">{t("patient.section.drgPanel.description")}</p>
-      {!drgExact && (
-        <div
-          className="mb-4 rounded-2xl border px-4 py-3 text-sm"
-          style={{ borderColor: "rgba(113, 113, 122, 0.2)", color: "#52525B" }}
-        >
-          {getUnavailableMessage(data, t("patient.section.drgPanel.unavailableFallback"))}
-        </div>
-      )}
-      <div className="mb-4 flex flex-wrap gap-6 text-sm">
-        <div>
-          <span className="text-slate-400">{t("patient.section.drgPanel.episodes")}</span>{" "}
-          <span className="font-bold text-text-primary">{fmtNum(data.n_episodes)}</span>
-        </div>
-        <div>
-          <span className="text-slate-400">{t("patient.section.drgPanel.itemizedCost")}</span>{" "}
-          <span className="font-bold tabular-nums text-[var(--text-primary)]">{fmtTRY(data.total_drg_cost)}</span>
-        </div>
-        <div>
-          <span className="text-slate-400">{t("patient.section.drgPanel.drgPackagePrice")}</span>{" "}
-          <span className="font-bold text-amber-800">{fmtTRYOrUnavailable(totalPkgPrice)}</span>
-        </div>
-        <div>
-          <span className="text-slate-400">{t("patient.section.drgPanel.meanEpisode")}</span>{" "}
-          <span className="font-bold text-text-primary">{fmtTRY(data.mean_episode_cost)}</span>
-        </div>
-        <div>
-          <span className="text-slate-400">{t("patient.section.drgPanel.costliest")}</span>{" "}
-          <span className="font-bold text-amber-800">{data.most_expensive_drg}</span>
-        </div>
-      </div>
-      <DataTable className="text-xs">
-        <thead>
-          <tr>
-            <th>{t("patient.section.drgPanel.table.index")}</th>
-            <th>{t("patient.section.drgPanel.table.claimId")}</th>
-            <th>{t("patient.section.drgPanel.table.icd10")}</th>
-            <th>{t("patient.section.drgPanel.table.description")}</th>
-            <th className="text-center">{t("patient.section.drgPanel.table.group")}</th>
-            <th>{t("patient.section.drgPanel.table.packageCode")}</th>
-            <th className="num-col">{t("patient.section.drgPanel.table.los")}</th>
-            <th className="num-col">{t("patient.section.drgPanel.table.lab")}</th>
-            <th className="num-col">{t("patient.section.drgPanel.table.visit")}</th>
-            <th className="num-col">{t("patient.section.drgPanel.table.rx")}</th>
-            <th className="num-col">{t("patient.section.drgPanel.table.proc")}</th>
-            <th className="num-col">{t("patient.section.drgPanel.table.itemized")}</th>
-            <th className="num-col">{t("patient.section.drgPanel.table.drgPrice")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.episodes.map((ep, idx) => {
-            const episodeExact = isExactOutput(ep);
-            return (
-              <tr key={ep.episode_id}>
-                <td className="text-[var(--text-muted)]">{fmtNum(idx + 1)}</td>
-                <td className="font-mono text-[var(--text-muted)]">{ep.claim_id ?? "—"}</td>
-                <td className="font-mono tabular-nums">{ep.primary_icd10}</td>
-                <td>{ep.description}</td>
-                <td className="text-center">
-                  <DrgEk2cGroupCell group={ep.ek2c_group} emDash={t("common.dash")} />
-                </td>
-                <td className="font-mono tabular-nums">{ep.package_code ?? "—"}</td>
-                <td className="num-col">{fmtNum(ep.los_days)}</td>
-                <td className="num-col">{fmtTRY(ep.lab_cost)}</td>
-                <td className="num-col">{fmtTRY(ep.visit_cost)}</td>
-                <td className="num-col">{fmtTRY(ep.rx_cost)}</td>
-                <td className="num-col">{fmtTRY(ep.procedure_cost)}</td>
-                <td className="num-col font-semibold">{fmtTRY(ep.total_cost)}</td>
-                <td className="num-col font-semibold text-[var(--warning)]">
-                  {fmtTRYOrUnavailable(episodeExact ? ep.drg_package_price : null)}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </DataTable>
-    </>
   );
 }

@@ -44,7 +44,6 @@ from .patient_meta import (
     read_patient_meta,
     read_patient_meta_by_ids,
     read_patient_outcome_base,
-    read_patient_outcome_expensive,
     search_patient_ids,
 )
 from .schema import init_schema
@@ -117,7 +116,6 @@ __all__ = [
     "search_patient_ids",
     "read_patient_detail",
     "read_patient_outcome_base",
-    "read_patient_outcome_expensive",
     # Hashing
     "source_hash_from_files",
     "config_hash_from_env",

@@ -223,43 +223,6 @@ def _build_sut_patient_meta(
     return rows
 
 
-def _assemble_sut_expensive_context(
-    *,
-    ana_df: pl.DataFrame,
-    lab_df: pl.DataFrame,
-    rec_df: pl.DataFrame,
-    patient_ids: list[str],
-    sut_data_source: SUTDataSourceConfig,
-) -> dict[str, Any]:
-    _log_memory_snapshot(
-        "analytics_context:before_sut_expensive",
-        ana_df_pl=ana_df,
-        lab_df_pl=lab_df,
-        rec_df_pl=rec_df,
-    )
-    claim_dataset = load_sut_claim_dataset(
-        claims_dir=sut_data_source.claims_dir,
-        mode=sut_data_source.mode,
-    )
-    sut_by_pid = build_exact_sut_patient_totals(
-        patient_ids,
-        load_sut_claim_dataset_fn=lambda: claim_dataset,
-    )
-    _log_memory_snapshot(
-        "analytics_context:after_sut_expensive",
-        sut_by_pid=sut_by_pid,
-        claim_dataset=claim_dataset,
-    )
-    return {
-        "patient_ids": patient_ids,
-        "sut_data_source": sut_data_source.metadata.as_dict(),
-        "ana_df_pl": ana_df,
-        "ana_by_pid": _partition_by_patient(ana_df),
-        "sut_by_pid": sut_by_pid,
-        "sut_claim_dataset": claim_dataset,
-    }
-
-
 def _load_sut_raw_inputs(
     *,
     clean_dir: Path | None,
@@ -305,27 +268,3 @@ def load_sut_build_context(
         sut_data_source=sut_data_source,
     )
 
-
-def load_sut_expensive_context(
-    *,
-    sut_data_mode: str | None = None,
-    sut_claims_dir: str | Path | None = None,
-    sut_clean_dir: str | Path | None = None,
-    sut_data_source_config: SUTDataSourceConfig | None = None,
-) -> dict[str, Any]:
-    """Load only the inputs needed for patient_outcome_expensive backfill."""
-    sut_data_source = sut_data_source_config or resolve_sut_data_source(
-        mode=sut_data_mode,
-        claims_dir=sut_claims_dir,
-        clean_dir=sut_clean_dir,
-    )
-    ana_df, lab_df, rec_df, patient_ids = _load_sut_raw_inputs(
-        clean_dir=sut_data_source.clean_dir,
-    )
-    return _assemble_sut_expensive_context(
-        ana_df=ana_df,
-        lab_df=lab_df,
-        rec_df=rec_df,
-        patient_ids=patient_ids,
-        sut_data_source=sut_data_source,
-    )

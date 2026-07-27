@@ -68,45 +68,6 @@ export interface CheckupPricingResponse {
   katsayi: number;
 }
 
-export interface DRGEpisodeData {
-  episode_id: string | number;
-  claim_id?: string;
-  primary_icd10: string;
-  primary_icd10_chapter: string;
-  description: string;
-  los_days: number;
-  lab_cost: number;
-  visit_cost: number;
-  rx_cost: number;
-  procedure_cost: number;
-  total_cost: number;
-  drg_package_price: number | null;
-  package_code?: string | null;
-  ek2c_group: string;
-  admission_date: string | null;
-  discharge_date: string | null;
-  pricing_status?: ExactnessStatus | null;
-  pricing_date?: string | null;
-  unavailable_reason?: string | null;
-  required_inputs_missing?: string[];
-}
-
-export interface DRGSummaryData {
-  n_episodes: number;
-  total_drg_cost: number;
-  mean_episode_cost: number;
-  most_expensive_drg: string;
-  dominant_icd10_chapter: string;
-  total_drg_package_price: number | null;
-  fully_priced?: boolean;
-  priced_episode_count?: number;
-  unknown_date_episode_count?: number;
-  pricing_status?: ExactnessStatus | null;
-  unavailable_reason?: string | null;
-  required_inputs_missing?: string[];
-  episodes: DRGEpisodeData[];
-}
-
 export interface SutPatientOutcomeData extends SUTDataSourceCarrier {
   patient_id?: string;
   sut_claim_totals?: ExactnessState & {
@@ -170,12 +131,6 @@ export interface SutPatientOutcomeData extends SUTDataSourceCarrier {
       billed_amount_try: number | null;
       expected_payable_try: number | null;
     }>;
-  };
-  drg_summary: DRGSummaryData | null;
-  consistency_warnings?: string[];
-  expensive_analytics?: {
-    state: "ready" | "missing" | "skipped";
-    included: boolean;
   };
 }
 

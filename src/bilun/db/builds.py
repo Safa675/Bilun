@@ -59,7 +59,7 @@ def require_complete_build(
     if status != BUILD_COMPLETE:
         raise RuntimeError(
             f"Build '{build_id}' is not complete (status={status!r}). "
-            "Finish or activate a complete build before running expensive backfill."
+            "Finish or activate a complete build before using build-scoped reads."
         )
 
 

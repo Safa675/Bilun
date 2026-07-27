@@ -361,7 +361,7 @@ def test_sut_patient_listing_includes_data_source(sut_cache_fixture):
 
 
 def test_sut_patient_outcome_includes_claim_totals_and_data_source(sut_cache_fixture):
-    result = get_bilun_patient_outcome("P1", include_expensive=False)
+    result = get_bilun_patient_outcome("P1")
 
     assert result["BILUN_claim_totals"]["exactness_status"] == "exact"
     assert result["data_source"]["mode"] == "synthetic_demo"
