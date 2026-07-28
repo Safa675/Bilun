@@ -714,12 +714,34 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         domain_modules=(
             "src/bilun/domain/prose_rules/fatura_inceleme_checklist.py",
             "data/gazette/prose_rules/fatura_inceleme_checklist.json",
+            "src/bilun/domain/billing/claim_submission_checklist.py",
         ),
         sut_section_prefixes=(),
         annex_refs=(),
         keywords=(),
-        description="SGK Fatura İnceleme — 63 documentation requirement rules. Produces pre-submission checklist items (not violations). Fires when a procedure is billed without the required report/epikriz content.",
-        description_tr="SGK Fatura İnceleme — 63 doküman gereksinim kuralı. Gönderim öncesi kontrol listesi öğeleri üretir (ihlal değil). Bir işlem faturalandığında gerekli rapor/epikriz içeriği yoksa devreye girer.",
+        description="SGK Fatura İnceleme — 63 documentation requirement rules. Wired as advisory pre-submission checklist items via claim_submission_checklist (checklist_kind=documentation_requirement). Does NOT produce analyze_claim violations — Bilun cannot verify document presence yet.",
+        description_tr="SGK Fatura İnceleme — 63 doküman gereksinim kuralı. claim_submission_checklist üzerinden gönderim öncesi uyarı/liste olarak bağlı (checklist_kind=documentation_requirement). analyze_claim ihlali üretmez — belge var/yok henüz doğrulanamaz.",
+    ),
+    RuleRegistryEntry(
+        rule_id="icu_bundled_leakage",
+        rule_category="icu",
+        rule_category_tr="Yoğun Bakım Paket İçi Çift Faturalama",
+        coverage_status="implemented",
+        domain_modules=(
+            "src/bilun/domain/prose_rules/icu_bundled_leakage.py",
+            "src/bilun/domain/billing/engine.py",
+        ),
+        sut_section_prefixes=("2.4.4.H",),
+        annex_refs=("EK-2/B",),
+        keywords=(
+            "yoğun bakım",
+            "510090",
+            "mekanik ventilasyon",
+            "paket",
+            "ayrı faturalama",
+        ),
+        description="SUT §2.4.4.H — on 510090 ICU day-rate days, bundled services (ventilation, oxygen, nebulization, suction, monitoring) billed separately are audit-exposure violations. Wired into analyze_claim.",
+        description_tr="SUT §2.4.4.H — 510090 YBÜ gününde paket-içi hizmetlerin (ventilasyon, oksijen, nebulizasyon, aspirasyon, monitörizasyon) ayrı faturalanması denetim riski ihlalidir. analyze_claim'e bağlı.",
     ),
 )
 

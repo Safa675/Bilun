@@ -136,3 +136,13 @@ class TestWiredEnginesRegistered:
     def test_dental_registered_implemented(self) -> None:
         e = RULE_BY_ID["dental_2_4_1"]
         assert e.coverage_status == "implemented"
+
+    def test_icu_bundled_leakage_registered_implemented(self) -> None:
+        e = RULE_BY_ID["icu_bundled_leakage"]
+        assert e.coverage_status == "implemented"
+        assert any("icu_bundled_leakage.py" in m for m in e.domain_modules)
+
+    def test_fatura_inceleme_checklist_wired_via_submission_checklist(self) -> None:
+        e = RULE_BY_ID["fatura_inceleme_checklist"]
+        assert e.coverage_status == "implemented"
+        assert any("claim_submission_checklist.py" in m for m in e.domain_modules)

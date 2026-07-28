@@ -79,6 +79,9 @@ from src.bilun.domain.prose_rules.traffic_accident_billing import (
 from src.bilun.domain.prose_rules.fatura_inceleme import (
     check_fatura_inceleme_for_context,
 )
+from src.bilun.domain.prose_rules.icu_bundled_leakage import (
+    detect_icu_bundled_leakage,
+)
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_admission_billing_window,
     detect_donor_prep_as_exam,
@@ -231,6 +234,19 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
                 violations.extend(
                     detect_transplant_package_scope_violations(claim, claim_lines)
                 )
+
+        # 14.5. SUT §2.4.4.H — ICU 510090 day-rate bundles ventilation/oxygen/
+        # nebulization/suction/monitoring; separately billed lines are
+        # audit-exposure (double-billing) violations. Not an uplift opportunity.
+        if ctx.procedure_lines:
+            claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
+            violations.extend(
+                detect_icu_bundled_leakage(
+                    list(ctx.claims),
+                    list(ctx.procedure_lines),
+                    claim_ids_with_procs=claim_ids_with_procs,
+                )
+            )
 
         # 15. Radiation oncology mutual-exclusion (800xxx family caps +
         # same-day collapse).
