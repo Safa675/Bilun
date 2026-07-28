@@ -48,26 +48,6 @@ export interface MaterialsBySpecialtyResponse {
   specialties: Array<{ label: string; name: string }>;
 }
 
-export interface CheckupLabEntry {
-  name: string;
-  [key: string]: unknown;
-}
-
-export interface CheckupProcedureEntry {
-  [key: string]: unknown;
-}
-
-export interface CheckupCopaymentInfo {
-  [key: string]: unknown;
-}
-
-export interface CheckupPricingResponse {
-  labs: CheckupLabEntry[];
-  procedures: CheckupProcedureEntry[];
-  copayment: CheckupCopaymentInfo;
-  katsayi: number;
-}
-
 export interface SutPatientOutcomeData extends SUTDataSourceCarrier {
   patient_id?: string;
   sut_claim_totals?: ExactnessState & {

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pandas as pd
 import pytest
 
@@ -11,21 +13,59 @@ pytestmark = pytest.mark.unit
 def test_loaders_facade_exports_split_helpers():
     import src.bilun.domain.loaders as loaders
 
-    assert callable(loaders._load_checkup_json)
+    assert callable(loaders._load_katsayi_history)
+    assert callable(loaders.resolve_current_katsayi)
     assert callable(loaders._load_curated_ek2b_by_asof)
     assert callable(loaders._load_ek1a_exemptions)
     assert callable(loaders.get_cached_ek2a)
 
 
-def test_checkup_loaders_return_empty_when_json_missing(monkeypatch, tmp_path):
-    import src.bilun.domain.loaders.checkup as checkup
+def test_katsayi_resolves_from_history_file():
+    from src.bilun.domain.catalog import get_katsayi
+    from src.bilun.domain.constants import DEFAULT_KATSAYI
 
-    monkeypatch.setattr(checkup, "CHECKUP_JSON_PATH", tmp_path / "missing-checkup.json")
-    monkeypatch.setattr(checkup, "_checkup_cache", None)
+    assert get_katsayi() == pytest.approx(DEFAULT_KATSAYI)
 
-    assert checkup._load_checkup_json() == {}
-    assert checkup._build_checkup_lab_index() == {}
-    assert checkup._build_checkup_procedure_index() == {}
+
+def test_katsayi_falls_back_when_history_missing(monkeypatch, tmp_path):
+    import src.bilun.domain.loaders.katsayi as katsayi_loader
+    from src.bilun.domain.constants import DEFAULT_KATSAYI
+
+    monkeypatch.setattr(
+        katsayi_loader, "KATSAYI_HISTORY_PATH", tmp_path / "missing-katsayi.json"
+    )
+    monkeypatch.setattr(katsayi_loader, "_katsayi_history_cache", None)
+
+    assert katsayi_loader.resolve_current_katsayi() == DEFAULT_KATSAYI
+
+
+def test_katsayi_prefers_open_ended_coefficient(monkeypatch, tmp_path):
+    import src.bilun.domain.loaders.katsayi as katsayi_loader
+
+    path = tmp_path / "katsayi.json"
+    path.write_text(
+        json.dumps(
+            {
+                "coefficients": [
+                    {
+                        "katsayi": 0.5,
+                        "effective_from": "2010-01-01",
+                        "effective_to": "2019-12-31",
+                    },
+                    {
+                        "katsayi": 0.593,
+                        "effective_from": "2020-01-01",
+                        "effective_to": None,
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(katsayi_loader, "KATSAYI_HISTORY_PATH", path)
+    monkeypatch.setattr(katsayi_loader, "_katsayi_history_cache", None)
+
+    assert katsayi_loader.resolve_current_katsayi() == pytest.approx(0.593)
 
 
 def test_gazette_curated_loaders_handle_missing_parquet(monkeypatch, tmp_path):

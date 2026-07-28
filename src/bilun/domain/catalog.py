@@ -21,7 +21,6 @@ from .constants import (
     BILUN_TO_SUT_CODE,
 )
 from .loaders import (
-    _load_checkup_json,
     _load_curated_ek2b_by_asof,
     _load_curated_ek2c_by_asof,
     _load_curated_ek2c_dental_by_asof,
@@ -29,6 +28,7 @@ from .loaders import (
     _load_ek2g_no_surcharge,
     _load_ek2c1_copay_rates,
     get_cached_ek2a,
+    resolve_current_katsayi,
 )
 from .money import money_round_half_up as _money
 from .utils import _safe_str
@@ -263,40 +263,15 @@ def get_visit_prices(visit_date: Any | None = None) -> dict[str, float]:
     return result
 
 
-def get_checkup_procedure_prices() -> dict[str, dict[str, Any]]:
-    """
-    Get check-up-specific procedure prices from the compiled JSON.
-
-    Returns:
-        Dict mapping procedure key (e.g. "ekg", "mamografi", "batin_usg")
-        to {"sut_kodu", "sut_adi", "puan", "tl"}.
-    """
-    data = _load_checkup_json()
-    return data.get("islemler", {})
-
-
-def get_copayment_info() -> dict[str, Any]:
-    """
-    Get co-payment (katilim payi) information from the compiled JSON.
-
-    Returns:
-        Dict with "muayene" and "ilac" co-payment tiers, or empty dict.
-    """
-    data = _load_checkup_json()
-    return data.get("katilim_payi", {})
-
-
 def get_katsayi() -> float:
     """
     Get the current SUT coefficient (katsayi) for puan -> TL conversion.
 
     Formula: Islem Bedeli (TL) = Puan x Katsayi
 
-    Returns:
-        Katsayi value (default 0.593 from RG-17/1/2026-33140).
+    Source: ``data/gazette/sut_katsayi_history.json`` (open-ended coefficient row).
     """
-    data = _load_checkup_json()
-    return data.get("meta", {}).get("katsayi", 0.593)
+    return resolve_current_katsayi()
 
 
 def get_ek2c_group_price_ranges(
@@ -523,18 +498,6 @@ def main() -> None:
         print(f"  {name:20s} -> {price:>10.2f} TRY (SUT code {code})")
 
     print(f"\n{len(lab_prices)}/{len(BILUN_TO_SUT_CODE)} tests mapped successfully")
-
-    # Print check-up procedure prices
-    proc_prices = get_checkup_procedure_prices()
-    if proc_prices:
-        print(f"\nCheck-up Procedure Prices ({len(proc_prices)} items):")
-        for key, entry in sorted(
-            proc_prices.items(), key=lambda x: x[1].get("tl", 0), reverse=True
-        ):
-            print(
-                f"  {key:30s} -> {entry.get('tl', 0):>10.2f} TRY "
-                f"({entry.get('sut_kodu', '?')})"
-            )
 
     print(f"\nKatsayi: {get_katsayi()}")
 

@@ -13,7 +13,6 @@ import { VisitPricingSection } from "./sections/VisitPricingSection";
 import { DrugCatalogSection } from "./sections/DrugCatalogSection";
 import { SpecialtyMaterialSection } from "./sections/SpecialtyMaterialSection";
 import { LabPricesSection } from "./sections/LabPricesSection";
-import { CheckupPricingSection } from "./sections/CheckupPricingSection";
 import { Chip, Surface, Button, buttonActiveClass } from "@/components/primitives";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -43,8 +42,7 @@ type BillingToolSubSection =
   | "visits"
   | "drugs"
   | "specialty"
-  | "lab_prices"
-  | "checkup";
+  | "lab_prices";
 
 const BILLING_SUB_IDS: BillingToolSubSection[] = [
   "validator",
@@ -55,7 +53,6 @@ const BILLING_SUB_IDS: BillingToolSubSection[] = [
   "drugs",
   "specialty",
   "lab_prices",
-  "checkup",
 ];
 
 const BILLING_SUB_KEY = {
@@ -67,7 +64,6 @@ const BILLING_SUB_KEY = {
   drugs: "drugs",
   specialty: "specialty",
   lab_prices: "labPrices",
-  checkup: "checkup",
 } as const satisfies Record<BillingToolSubSection, string>;
 
 function BillingToolsSection() {
@@ -132,7 +128,6 @@ function BillingToolsSection() {
       {activeSub === "drugs" && <DrugCatalogSection />}
       {activeSub === "specialty" && <SpecialtyMaterialSection />}
       {activeSub === "lab_prices" && <LabPricesSection />}
-      {activeSub === "checkup" && <CheckupPricingSection />}
     </div>
   );
 }

@@ -58,7 +58,7 @@
       "katsayi": 0.593,
       "resmi_gazete_date": "2026-01-17",
       "resmi_gazete": "RG-17.01.2026/33140",
-      "note": "Guncel SUT; sut_checkup_pricing.json meta referansi"
+      "note": "Guncel SUT; katsayi kaynagi sut_katsayi_history.json"
     }
   ],
   "sources": [

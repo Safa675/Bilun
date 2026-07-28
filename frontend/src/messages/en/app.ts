@@ -23,7 +23,7 @@ const app = {
         "title": "Gazette catalog assembly",
         "description": "Bilun reads the curated gazette schedules that back current procedure pricing, DRG package pricing, and normative SUT controls.",
         "detail1": "Canonical SUT pricing uses dated gazette catalog lookups.",
-        "detail2": "Procedure, DRG, material, and checkup references stay within SUT-owned routes.",
+        "detail2": "Procedure, DRG, and material references stay within SUT-owned routes.",
         "detail3": "Historical package availability is preserved instead of silently falling forward.",
         "feedsInto": "SUT reference tools, pricing APIs, and billing review"
       },
