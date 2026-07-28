@@ -9,7 +9,7 @@ Submodule split:
     chat          — BILUN chatbot streaming endpoint
     patients      — patient listing, search, outcome
     validation    — claim validation, bundled-consumables disclosure
-    pricing       — procedure / material / visit / lab / checkup lookups
+    pricing       — procedure / material / visit / lab lookups
     alerts        — patient-alerts table
     optimization  — optimization-summary, per-patient findings,
                     revenue-recovery dashboard
@@ -48,7 +48,6 @@ from .patients import (  # noqa: F401, E402
     search_bilun_patients,
 )
 from .pricing import (  # noqa: F401, E402
-    get_checkup_pricing,
     get_lab_prices,
     get_material_pricing,
     get_price_history,

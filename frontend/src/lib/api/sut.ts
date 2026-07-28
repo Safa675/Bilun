@@ -9,7 +9,6 @@ import type {
   SUTDataSourceMetadata,
   VisitPricingResponse,
   MaterialsBySpecialtyResponse,
-  CheckupPricingResponse,
   SutPatientOutcomeData,
   PatientClaimDetail,
   PatientClaimsListResponse,
@@ -888,10 +887,6 @@ export async function getLabPrices(options?: RequestInit): Promise<{ tests: LabP
     "/api/lab-prices",
     options,
   );
-}
-
-export async function getCheckupPricing(options?: RequestInit): Promise<CheckupPricingResponse> {
-  return requestJSON<CheckupPricingResponse>("/api/checkup-pricing", options);
 }
 
 

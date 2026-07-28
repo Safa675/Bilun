@@ -5,11 +5,6 @@ Compatibility facade for historical `src.bilun.domain.loaders` imports while spl
 loader responsibilities by source-specific modules.
 """
 
-from .checkup import (
-    _build_checkup_lab_index,
-    _build_checkup_procedure_index,
-    _load_checkup_json,
-)
 from .gazette import (
     _load_curated_ek2b_by_asof,
     _load_curated_ek2c_by_asof,
@@ -22,6 +17,7 @@ from .gazette import (
     get_cached_ek3h,
     get_cached_ek3i,
 )
+from .katsayi import _load_katsayi_history, resolve_current_katsayi
 from .legacy import (
     _load_ek1a_exemptions,
     _load_ek2c1_copay_rates,
@@ -29,9 +25,6 @@ from .legacy import (
 )
 
 __all__ = [
-    "_build_checkup_lab_index",
-    "_build_checkup_procedure_index",
-    "_load_checkup_json",
     "_load_curated_ek2b_by_asof",
     "_load_curated_ek2c_by_asof",
     "_load_curated_ek2c_dental_by_asof",
@@ -42,7 +35,9 @@ __all__ = [
     "_load_ek3_materials_parquet",
     "_load_gazette_lab_prices",
     "_load_gazette_visit_prices",
+    "_load_katsayi_history",
     "get_cached_ek2a",
     "get_cached_ek3h",
     "get_cached_ek3i",
+    "resolve_current_katsayi",
 ]

@@ -199,7 +199,6 @@ const sections = {
       drugs: "İlaç Kataloğu",
       specialty: "Branşa Göre",
       labPrices: "Laboratuvar Fiyatları",
-      checkup: "Kontrol muayenesi",
     },
     priceHistory: {
       loadingTitle: "Fiyat geçmişi verisi yükleniyor",
@@ -417,26 +416,6 @@ const sections = {
     },
     emptyState: "İlaç bulunamadı.",
     clearSearch: "Aramayı temizle",
-    notAvailable: "--",
-  },
-  checkupPricing: {
-    title: "Kontrol muayenesi paket fiyatlandırması (katsayı: {katsayi})",
-    labTests: "Laboratuvar testleri ({count})",
-    procedures: "İşlemler ({count})",
-    loadingTitle: "Kontrol muayenesi fiyatlandırması yükleniyor",
-    errors: {
-      loadFailed: "Kontrol muayenesi fiyatlandırması yüklenemedi",
-    },
-    labTable: {
-      test: "Tetkik",
-      sutCode: "SUT Kodu",
-      tl: "TL",
-    },
-    procedureTable: {
-      procedure: "İşlem",
-      sutCode: "SUT Kodu",
-      tl: "TL",
-    },
     notAvailable: "--",
   },
   labPrices: {

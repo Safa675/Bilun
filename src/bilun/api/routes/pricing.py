@@ -1,5 +1,5 @@
 """BILUN pricing reference endpoints — procedure / material / visit / lab /
-checkup / price-history lookups."""
+price-history lookups."""
 
 from __future__ import annotations
 
@@ -13,7 +13,6 @@ from src.bilun.shared.exceptions import (
     ValidationError,
 )
 from src.bilun.api.schemas import (
-    CheckupPricingResponse,
     LabPricesResponse,
     MaterialPricingResponse,
     PriceHistoryResponse,
@@ -202,28 +201,3 @@ def get_lab_prices():
             "price_try": round(prices.get(test_name, 0.0), 2),
         })
     return {"tests": result, "total": len(result)}
-
-
-@router.get("/checkup-pricing", response_model=CheckupPricingResponse)
-def get_checkup_pricing():
-    """Return check-up package pricing (37 lab + 22 procedure items)."""
-    from src.bilun.domain.catalog import (
-        get_checkup_procedure_prices,
-        get_copayment_info,
-        get_katsayi,
-    )
-    from src.bilun.domain.loaders import _load_checkup_json
-
-    checkup = _load_checkup_json()
-    labs_raw = checkup.get("lab_testleri", {})
-    labs = [{"name": k, **v} for k, v in labs_raw.items()] if isinstance(labs_raw, dict) else labs_raw
-    procedures = list(get_checkup_procedure_prices().values())
-    copayment = get_copayment_info()
-    katsayi = get_katsayi()
-
-    return {
-        "labs": labs,
-        "procedures": procedures,
-        "copayment": copayment,
-        "katsayi": katsayi,
-    }

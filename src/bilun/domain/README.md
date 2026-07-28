@@ -5,7 +5,7 @@ legacy shim modules.
 
 ## Loader split
 
-- `loaders/checkup.py`: check-up JSON loading/indexes.
+- `loaders/katsayi.py`: SUT puan→TL katsayi history loader.
 - `loaders/gazette.py`: curated/parquet gazette loaders and cache helpers.
 - `loaders/legacy.py`: fallback/legacy annex loaders used by optimization paths.
 - `loaders/__init__.py`: compatibility facade for `src.sut.loaders` imports.

@@ -37,8 +37,11 @@ FATURA_INCELEME_CLAUSES_PATH = _GAZETTE_DIR / "fatura_inceleme_clauses.parquet"
 # SUT clause embeddings — sidecar vectors for semantic clause retrieval (chatbot)
 SUT_CLAUSE_EMBEDDINGS_PATH = _GAZETTE_DIR / "sut_clause_embeddings.parquet"
 
+# SUT puan → TL coefficient history (authoritative; not check-up package data)
+KATSAYI_HISTORY_PATH = _GAZETTE_DIR / "sut_katsayi_history.json"
+DEFAULT_KATSAYI = 0.593
+
 # New primary data sources (compiled from 72 gazette documents)
-CHECKUP_JSON_PATH = _GAZETTE_DIR / "sut_checkup_pricing.json"
 EK2B_CURATED_HISTORY_PATH = _GAZETTE_CURATED_DIR / "ek2b_catalog_history.parquet"
 EK2C_CURATED_HISTORY_PATH = _GAZETTE_CURATED_DIR / "ek2c_catalog_history.parquet"
 

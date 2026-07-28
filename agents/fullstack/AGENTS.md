@@ -41,7 +41,7 @@ write the tests into the repo unsupervised.
 
 - **29 untested endpoints** — see `reports/agent/fullstack/endpoint_coverage.md`. Top 5:
   `GET /api/billing-report/{patient_id}`, `GET /api/billing-report/{patient_id}/bills/{claim_id}`,
-  `GET /api/bundled-consumables`, `GET /api/checkup-pricing`, `GET /api/drugs`. For each,
+  `GET /api/bundled-consumables`, `GET /api/drugs`. For each,
   propose a minimal pytest stub (method + path + the assertion shape), don't write it.
 - **3 dead test calls** in `test_sut_chat.py:515-517` — investigate and report.
 - **TS strict + vitest guardrail status** — run `npx tsc --noEmit` and `npx vitest run`

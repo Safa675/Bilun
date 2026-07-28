@@ -179,15 +179,6 @@ class LabPricesResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class CheckupPricingResponse(BaseModel):
-    labs: list[dict[str, Any]] | dict[str, Any]
-    procedures: list[dict[str, Any]]
-    copayment: dict[str, Any]
-    katsayi: Any
-
-    model_config = ConfigDict(extra="allow")
-
-
 # ── alerts.py ───────────────────────────────────────────────────────────────
 
 

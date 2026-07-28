@@ -199,7 +199,6 @@ const sections = {
       drugs: "Drug Catalog",
       specialty: "By Specialty",
       labPrices: "Lab Prices",
-      checkup: "Checkup",
     },
     priceHistory: {
       loadingTitle: "Loading price history data",
@@ -417,26 +416,6 @@ const sections = {
     },
     emptyState: "No drugs found.",
     clearSearch: "Clear search",
-    notAvailable: "--",
-  },
-  checkupPricing: {
-    title: "Checkup Package Pricing (katsayi: {katsayi})",
-    labTests: "Lab Tests ({count})",
-    procedures: "Procedures ({count})",
-    loadingTitle: "Loading checkup pricing",
-    errors: {
-      loadFailed: "Failed to load checkup pricing",
-    },
-    labTable: {
-      test: "Test",
-      sutCode: "SUT Code",
-      tl: "TL",
-    },
-    procedureTable: {
-      procedure: "Procedure",
-      sutCode: "SUT Code",
-      tl: "TL",
-    },
     notAvailable: "--",
   },
   labPrices: {
