@@ -40,11 +40,11 @@ and proposes fixes — but does NOT apply fixes unsupervised.
 
 ## Day-1 work (from the 2026-07-20 baseline)
 
-- **187 suspected wrong mappings** in the frozen crosswalk (see
-  `reports/agent/reimbursement/baseline-2026-07-20-finans_loop.json`). Triage: which are
-  real resolver bugs vs which are genuine hospital pricing errors? The
-  `MATERIAL resolver substring-collision bugs` commit (`06ba72f`) already fixed 26;
-  are the remaining 187 pre-fix residue or new?
+- ~~**187 suspected wrong mappings** in the frozen crosswalk~~ **Done 2026-07-27** —
+  triaged 38 unique pairs (`plans/data/finans-suspected-mapping-triage-report.md`);
+  removed 18 confirmed MATERIAL wrong maps from `hospital_to_sut.csv` (841→823);
+  kept 20 as hospital-billing / correct-name patterns. Optional follow-up: tighten
+  MATERIAL candidate filters (`Endo*`, airway vs lacrimal `entübasyon`, `vida` vs stent).
 - **`finans_pricing_audit.py` exits 1** when run fresh — import bug:
   `src/bilun/domain/pricing/__init__.py:7` imports
   `from src.bilun.domain.pricing.keywords`, which only resolves when `REPO_ROOT` is on
