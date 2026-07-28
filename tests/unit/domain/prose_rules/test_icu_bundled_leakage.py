@@ -458,3 +458,38 @@ def test_multiple_claims_isolated() -> None:
     )
     assert len(violations) == 1
     assert violations[0]["claim_id"] == "ICU"
+
+
+def test_analyze_claim_wires_icu_bundled_leakage() -> None:
+    """Denetim riski path: double-billed ICU bundled service reaches analyze_claim."""
+    from src.bilun.domain.billing.engine import analyze_claim
+    from src.bilun.domain.claims.patient_context import PatientClaimContext
+
+    header = _make_claim_header()
+    procs = [
+        _make_proc_line(procedure_code="510090"),
+        _make_proc_line(
+            procedure_line_id="ISL-2",
+            procedure_code="530130",
+            procedure_name="Hastanın mekanik ventilatöre bağlanması",
+        ),
+    ]
+    ctx = PatientClaimContext(
+        patient_id="P1",
+        claims=(header,),
+        procedure_lines=tuple(procs),
+        material_lines=(),
+        drug_lines=(),
+        diagnoses=(),
+    )
+    violations = analyze_claim(ctx)
+    icu_hits = [
+        v
+        for v in violations
+        if v.get("rule_id") == "icu_bundled_leakage_510090"
+        or v.get("type") == "icu_bundled_service_leakage"
+    ]
+    assert len(icu_hits) == 1
+    assert icu_hits[0]["procedure_code"] == "530130"
+    assert icu_hits[0]["savings_category"] == "audit_exposure"
+    assert icu_hits[0]["severity"] == "error"

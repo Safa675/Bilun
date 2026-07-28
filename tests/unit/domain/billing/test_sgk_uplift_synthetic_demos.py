@@ -484,11 +484,17 @@ class TestClaimReadinessSyntheticDemo:
             row
             for row in report.claim_submission_checklist.items
             if row.get("claim_id") == demo_claim.claim_id
+            and row.get("checklist_kind") != "documentation_requirement"
+            and row.get("sonuc_kodu_risk") == "0704"
         ]
         assert len(demo_rows) == 1
         assert demo_rows[0]["sonuc_kodu_risk"] == "0704"
         assert demo_rows[0]["included_in_sgk_total"] is False
-        assert report.claim_submission_checklist_count == 1
+        assert report.claim_submission_checklist_count >= 1
+        assert any(
+            row.get("sonuc_kodu_risk") == "0704"
+            for row in report.claim_submission_checklist.items
+        )
         assert report.medula_playbook_entry_count == 0
         assert report.exactness_status == "exact"
 

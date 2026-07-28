@@ -63,11 +63,14 @@ Step 0 will retrieve them so you can diff.
 Write your findings to `/workspace/reports/reimbursement/findings-<YYYY-MM-DD>.md`
 (create the date-stamped file; do not overwrite prior reports). Structure:
 
-1. **Summary** — 3-5 bullets, the highest-signal findings (e.g. "187 suspected wrong
-   mappings; 26 are pre-fix residue per commit 06ba72f, remaining 161 need triage").
-2. **Wrong-mapping triage** — for the suspected mappings: which are resolver bugs
-   (cite `code_resolver.py:line`) vs hospital pricing errors (cite the
-   `finans_pricing_audit.parquet` row). Don't list all 187 — sample 10, classify, extrapolate.
+1. **Summary** — 3-5 bullets, the highest-signal findings. Note: the 2026-07-20
+   “187 suspected mappings” item was triaged on 2026-07-27
+   (`plans/data/finans-suspected-mapping-triage-report.md`: 18 wrong maps removed,
+   20 kept as hospital-billing). Do not re-litigate that closed item unless new
+   audit output appears.
+2. **Wrong-mapping follow-ups** — optional: MATERIAL candidate-generator filters
+   for `Endo*` / airway-vs-lacrimal `entübasyon` / `vida` vs stent. Cite
+   `code_resolver.py` if proposing a filter change.
 3. **Stale-clause refs** — from the 116 TIER-1 superseded refs: which rule_sets are most
    affected? Are any of them rules whose cited clause was amended in the 04.08 tebliğ?
 4. **Import bug** — confirm the `finans_pricing_audit.py` exit-1 import bug; propose the
