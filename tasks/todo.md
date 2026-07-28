@@ -9,6 +9,7 @@
 - [x] Phase 1: `icu_bundled_leakage` → `analyze_claim` + test
 - [x] Phase 2: checklist → `claim_submission_checklist` A1 merge + test
 - [x] Phase 4: ilgili pytest yeşil
+- [x] CI: `test_f015` → copay + documentation_requirement checklist expectations
 - [ ] (İleride) Phase 3: belge presence → A→B — bu PR’da yok
 
 ### Out of Scope

@@ -22,7 +22,7 @@ def dataset():
 
 
 class TestBillingActionsBreakdown:
-    def test_f015_includes_three_violations_and_copay_review(self, dataset) -> None:
+    def test_f015_includes_copay_review_and_documentation_checklist(self, dataset) -> None:
         claim_id = "F-SENTETIK-HASTA-0003-015"
         ctx = build_bill_claim_context("SENTETIK-HASTA-0003", claim_id, dataset)
         assert ctx is not None
@@ -41,10 +41,9 @@ class TestBillingActionsBreakdown:
         )
 
         assert report.action_count == len(report.recommended_actions)
-        assert report.action_count == 1
 
         surfaces = {row["surface"] for row in report.recommended_actions}
-        assert surfaces == {"copay"}
+        assert surfaces == {"copay", "claim_checklist"}
 
         violations = [
             row
@@ -56,6 +55,15 @@ class TestBillingActionsBreakdown:
         copay_rows = [row for row in report.recommended_actions if row["surface"] == "copay"]
         assert len(copay_rows) == 1
         assert copay_rows[0]["kind"] == "exemption_review"
+
+        doc_rows = [
+            row
+            for row in report.recommended_actions
+            if row["surface"] == "claim_checklist"
+            and row["kind"] == "documentation_requirement"
+        ]
+        assert len(doc_rows) == 6
+        assert report.action_count == 1 + len(doc_rows)
 
     def test_f011_includes_override_and_material_uplift(self, dataset) -> None:
         claim_id = "F-SENTETIK-HASTA-0003-011"
