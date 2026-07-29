@@ -142,11 +142,33 @@ def test_condition_does_not_match_missing_code() -> None:
     assert _condition_matches(rule, ctx) is False
 
 
-def test_condition_no_codes_in_rule_always_matches() -> None:
-    """A general rule (empty procedure_code_any) always matches the code gate."""
-    rule = {"procedure_code_any": []}
-    assert _condition_matches(rule, {"procedure_code_any": ["999999"]}) is True
-    assert _condition_matches(rule, {}) is True
+def test_condition_code_less_without_signals_does_not_match() -> None:
+    """Option B: code-less rules without relevance_signals stay hidden."""
+    rule = {"procedure_code_any": [], "relevance_signals": []}
+    assert _condition_matches(rule, {"procedure_code_any": ["999999"]}) is False
+    assert _condition_matches(rule, {"relevance_flags": {"has_tpn": True}}) is False
+
+
+def test_condition_code_less_requires_all_relevance_signals() -> None:
+    """Code-less rules fire only when every listed relevance signal is true."""
+    rule = {
+        "procedure_code_any": [],
+        "relevance_signals": ["has_tpn", "is_inpatient_daycase_or_icu"],
+    }
+    assert (
+        _condition_matches(
+            rule,
+            {"relevance_flags": {"has_tpn": True, "is_inpatient_daycase_or_icu": False}},
+        )
+        is False
+    )
+    assert (
+        _condition_matches(
+            rule,
+            {"relevance_flags": {"has_tpn": True, "is_inpatient_daycase_or_icu": True}},
+        )
+        is True
+    )
 
 
 def test_condition_honest_skips_when_no_billed_codes() -> None:
@@ -214,18 +236,42 @@ def test_branch_filter_skips_wrong_department() -> None:
     )
 
 
-def test_ortak_rules_surface_for_any_department() -> None:
-    """ORTAK (branch=null) general rules surface regardless of department."""
+def test_ortak_rules_hidden_without_relevance_signals() -> None:
+    """Option B: ORTAK code-less rules do not spam claims without signals."""
     ctx = {"department": "Kardiyoloji", "procedure_code_any": ["999999"]}
     requirements = check_fatura_inceleme_checklist(ctx)
-    # ORTAK rules have empty procedure_code_any and branch=null, so they
-    # match any claim. At least the 6 ORTAK KRİTERLER documentation rules
-    # should be present.
     ortak = [r for r in requirements if r["fatura_inceleme_ref"].startswith("ORTAK")]
-    assert len(ortak) >= 6, (
-        f"Expected >=6 ORTAK requirements, got {len(ortak)}: "
+    assert ortak == [], (
+        f"Expected no ungated ORTAK requirements, got: "
         f"{[r['fatura_inceleme_ref'] for r in ortak]}"
     )
+
+
+def test_ortak_tpn_surfaces_with_signal_and_fi_dayanak() -> None:
+    """ORTAK-24 surfaces when has_tpn is set; dayanak is FI section not F000."""
+    ctx = {
+        "department": "Kardiyoloji",
+        "procedure_code_any": ["530430"],
+        "relevance_flags": {"has_tpn": True},
+    }
+    requirements = check_fatura_inceleme_checklist(ctx)
+    ortak24 = [r for r in requirements if r["fatura_inceleme_ref"] == "ORTAK-24"]
+    assert len(ortak24) == 1
+    assert ortak24[0]["sut_anchor"] == "Fatura İnceleme ORTAK-24"
+    assert "F000" not in ortak24[0]["sut_anchor"]
+    assert "C000" not in ortak24[0]["sut_anchor"]
+
+
+def test_ortak_ek2c_dayanak_includes_sut_section_label() -> None:
+    ctx = {
+        "department": "Genel Cerrahi",
+        "procedure_code_any": ["P609300"],
+        "relevance_flags": {"has_ek2c": True},
+    }
+    requirements = check_fatura_inceleme_checklist(ctx)
+    ortak17 = [r for r in requirements if r["fatura_inceleme_ref"] == "ORTAK-17"]
+    assert len(ortak17) == 1
+    assert ortak17[0]["sut_anchor"] == "Fatura İnceleme ORTAK-17 · SUT EK-2/C"
 
 
 def test_requirements_are_not_violations() -> None:
@@ -266,9 +312,8 @@ def test_for_context_wrong_branch_skips_rule() -> None:
     assert goz == []
 
 
-def test_for_context_no_procedure_code_returns_only_ortak() -> None:
-    """With no procedure code, only the general ORTAK rules surface."""
+def test_for_context_no_procedure_code_returns_empty_without_signals() -> None:
+    """With no procedure code and no claim_type signals, nothing surfaces."""
     ctx = _make_ctx(department="Kardiyoloji", procedure_code=None)
     requirements = check_fatura_inceleme_checklist_for_context(ctx)
-    code_specific = [r for r in requirements if r["procedure_code"]]
-    assert code_specific == []
+    assert requirements == []

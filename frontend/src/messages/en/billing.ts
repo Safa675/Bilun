@@ -180,14 +180,14 @@ const billing = {
   },
   "claimChecklist": {
     "title": "Pre-submission claim checklist",
-    "scopeFootnote": "Proactive MEDULA rejection-risk reminders from claim-line flags (report, ÜTS/TİTUBB). Prevention guidance only — not included in SGK uplift headline.",
+    "scopeFootnote": "Proactive MEDULA rejection-risk reminders from claim-line flags (report, ÜTS/TİTUBB), plus Fatura İnceleme documentation requirements gated to claim signals. Basis may be an FI section or SUT. Prevention guidance only — not included in SGK uplift headline.",
     "unavailable": "Claim checklist requires exact claim lines with optional report and registration flags.",
     "claim": "Claim",
     "line": "Line",
     "medulaRisk": "MEDULA risk code",
     "severity": "Severity",
     "reminder": "Reminder",
-    "sutAnchor": "SUT anchor",
+    "sutAnchor": "Basis",
     "steps": "Before submit"
   },
   "drugIndication": {

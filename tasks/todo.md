@@ -1,23 +1,22 @@
-## Task: Remove check-up pricing (UI + API + JSON)
+## Task: FI checklist relevance + dayanak UX
 
 ### Goal
-Check-up pricing yüzeyini uçtan uca sil; `get_katsayi()` için kaynağı `sut_katsayi_history.json`’a taşı. Plan: `plans/billing/2026-07-28-remove-checkup-pricing-plan.md`.
+FI documentation reminders only show when claim signals match; dayanak column shows FI/SUT **section** labels (not F000/C000); column title is “Dayanak”. Plan: `plans/billing/2026-07-29-fi-checklist-relevance-dayanak-plan.md`. Option B locked.
 
 ### Subtasks
-- [x] Onay: Phase 0 + full remove
-- [x] Phase 0: `get_katsayi()` → `sut_katsayi_history.json` (`loaders/katsayi.py`)
-- [x] Phase 1: backend route/schema/loader/catalog/tests/docs
-- [x] Phase 2: frontend chip + section + i18n + API client
-- [x] Phase 3: delete `data/gazette/sut_checkup_pricing.json`
-- [x] Phase 4: pytest loaders + anestezi/refakatçi; `get_katsayi()==0.593`; route yok
+- [x] Plan onay — Option B (kodsuz branş: sinyal yoksa gizle)
+- [x] Phase 1: relevans gates + `sut_anchor` = `Fatura İnceleme {ref}` (+ tests)
+- [x] Phase 2: i18n “Dayanak” / “Basis” + footnote
+- [x] Phase 3: verify (0003-011 spam down; dayanak filled)
 
 ### Out of Scope
-- Synthetic cohort adı `"checkup"`
-- ICD/keyword `"checkup"` sinyalleri
-- Gap-closing control-checkup kuralı
-- Lab prices section
+- EMR document presence
+- Algorithmic FI violation changes
+- A2 separate UI block
+- Removing `gate_b_sources` from JSON provenance
 
 ### Review
-- Katsayı: `resolve_current_katsayi()` history’den open-ended satır; fallback 0.593
-- Silinen: checkup loader, `/api/checkup-pricing`, `CheckupPricingResponse`, FE section/chip/i18n, JSON
-- Bilinçli bırakılan: synthetic kohort / diagnosis keyword `"checkup"`
+- Option B: code-less rules need `relevance_signals`; 6 ORTAK + ORTOPEDİ-6 wired; other 15 code-less hidden until signals added
+- Dayanak: `Fatura İnceleme {ref}` (+ optional `sut_section_label`); never F000/C000
+- FE: TR Dayanak / EN Basis; footnote mentions FI+SUT
+- Tests: 36 passed (`test_fatura_inceleme_checklist`, `test_claim_readiness`, `test_billing_actions`)

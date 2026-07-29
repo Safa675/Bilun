@@ -240,3 +240,16 @@ class TestClaimSubmissionChecklistWiring:
         assert all(item.get("severity") == "warning" for item in doc_items)
         # Advisory surface only — these must not look like analyze_claim violations.
         assert all(item.get("recommendation_kind") == "documentation_checklist" for item in doc_items)
+        # Dayanak is FI section text, never corpus F/C ids.
+        assert all(item.get("sut_anchor") for item in doc_items)
+        assert all(
+            "F000" not in (item.get("sut_anchor") or "")
+            and "C000" not in (item.get("sut_anchor") or "")
+            for item in doc_items
+        )
+        # Code-specific dermatology rule present; ungated ORTAK spam absent.
+        refs = {item.get("fatura_inceleme_ref") for item in doc_items}
+        assert "DERMATOLOJİ-2" in refs or any(
+            "700280" in str(item.get("procedure_code") or "") for item in doc_items
+        )
+        assert "ORTAK-24" not in refs  # no TPN on this claim

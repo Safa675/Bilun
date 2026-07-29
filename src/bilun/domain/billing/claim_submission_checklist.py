@@ -51,6 +51,19 @@ def _documentation_requirement_items(ctx: PatientClaimContext) -> list[dict[str,
         ref = str(req.get("fatura_inceleme_ref") or "")
         msg = str(req.get("message_tr") or "")
         docs = list(req.get("required_documents") or [])
+        # FI/SUT section label only — never gate_b_sources / F000 / C000.
+        dayanak = str(req.get("sut_anchor") or "").strip()
+        if not dayanak and ref:
+            from src.bilun.domain.prose_rules.fatura_inceleme_checklist import (
+                format_fi_dayanak,
+            )
+
+            dayanak = format_fi_dayanak(
+                {
+                    "fatura_inceleme_ref": ref,
+                    "sut_section_label": req.get("sut_section_label") or "",
+                }
+            )
         items.append(
             {
                 "checklist_id": f"fatura_doc:{ref or 'req'}:{claim_id}:{len(items)}",
@@ -61,6 +74,7 @@ def _documentation_requirement_items(ctx: PatientClaimContext) -> list[dict[str,
                 "procedure_codes": code_list,
                 "required_documents": docs,
                 "fatura_inceleme_ref": ref,
+                "sut_anchor": dayanak,
                 "message_tr": msg,
                 "reminder_tr": msg,
                 "detail": msg,

@@ -6,22 +6,22 @@ fatura inceleme guideline (dayanak 5510 md. 63/73). Hierarchy: SUT > this
 document. Conflicts → SUT wins.
 
 Unlike the algorithmic rules, these do NOT produce violations. They surface
-"required documents" — epikriz/report presence checks — as informational
-warnings so reviewers know which supporting documents (patoloji raporu,
-ameliyat notu, fotoğraf, alış faturası, etc.) the inceleyici will request for
-a given procedure.
+"required documents" as informational warnings.
 
-The motor is intentionally simpler than ``gap_closing.py``'s 4-layer pattern:
-matching is just ``procedure_code_any`` membership (with the same ORTAK/branch
-gate as ``fatura_inceleme.py``). Rules with an empty ``procedure_code_any``
-list are ORTAK/general and surface for any in-scope claim via their branch
-gate (mostly null-branch ORTAK rules, plus a few branch-general rules that
-name no specific code).
+Matching:
+  - Rules with ``procedure_code_any``: billed-code overlap + branch gate.
+  - Code-less rules: require ``relevance_signals`` (Option B). Missing/empty
+    signals → hidden. Signals are claim-shape flags derived in the context
+    bridge (TPN, EK-2/C, surgery/biopsy, outpatient, inpatient/ICU, etc.).
+
+UI dayanak uses ``fatura_inceleme_ref`` (+ optional ``sut_section_label``),
+never ``gate_b_sources`` / F000 / C000 corpus ids.
 """
 
 from __future__ import annotations
 
 import json
+import re
 from functools import lru_cache
 from typing import Any
 
@@ -29,10 +29,6 @@ from ..constants import _PROSE_RULES_DIR
 
 _RULES_PATH = _PROSE_RULES_DIR / "fatura_inceleme_checklist.json"
 
-# Reuse the same branch → keyword map as fatura_inceleme.py so the branch
-# gate is consistent across both motors. Kept here (not imported) to keep the
-# checklist motor self-contained and avoid a hard dependency on the algorithmic
-# motor's internals.
 _BRANCH_KEYWORDS: dict[str, list[str]] = {
     "ANESTEZİ VE REANİMASYON": ["anestezi", "reanimasyon"],
     "BEYİN VE SİNİR CERRAHİSİ": ["beyin", "sinir cerrahisi", "norosirurji"],
@@ -63,6 +59,34 @@ _BRANCH_KEYWORDS: dict[str, list[str]] = {
     "ACİL TIP HEKİMLİĞİ": ["acil tip", "acil servis", "emergency"],
 }
 
+_TPN_CODES = frozenset({"530430", "530980", "P530430", "P530980"})
+_TPN_NAME_RE = re.compile(r"\bTPN\b|parenteral\s+n[uü]trisyon|total\s+parenteral", re.I)
+_SURGERY_BIOPSY_NAME_RE = re.compile(
+    r"biyopsi|eksizyon|rezeksiyon|ameliyat|cerrah[iı]|operasyon|torakotom|lamin[eo]",
+    re.I,
+)
+_OUTPATIENT_TYPES = frozenset(
+    {
+        "poliklinik",
+        "ayaktan",
+        "outpatient",
+        "muayene",
+    }
+)
+_INPATIENT_DAYCASE_ICU_TYPES = frozenset(
+    {
+        "yatis",
+        "inpatient",
+        "gunubirlik",
+        "day_case",
+        "daycase",
+        "yogun bakim",
+        "icu",
+        "ybu",
+    }
+)
+_ICU_CODE_PREFIXES = ("510090", "P55200", "P55201", "P55202", "P55203", "P55206", "P55207", "P55208")
+
 
 @lru_cache(maxsize=1)
 def load_fatura_inceleme_checklist_rules() -> dict[str, Any]:
@@ -71,36 +95,39 @@ def load_fatura_inceleme_checklist_rules() -> dict[str, Any]:
         return json.load(handle)
 
 
-def _branch_matches(rule_branch: str | None, context: dict[str, Any]) -> bool:
-    """Check if a rule's branch matches the claim's department/specialty.
+def format_fi_dayanak(rule_or_ref: dict[str, Any] | str) -> str:
+    """Human-readable dayanak for UI — FI section, never F000/C000 corpus ids."""
+    if isinstance(rule_or_ref, str):
+        ref = rule_or_ref.strip()
+        sut_label = ""
+    else:
+        ref = str(rule_or_ref.get("fatura_inceleme_ref") or "").strip()
+        sut_label = str(rule_or_ref.get("sut_section_label") or "").strip()
+    if not ref:
+        return ""
+    basis = f"Fatura İnceleme {ref}"
+    if sut_label:
+        basis = f"{basis} · {sut_label}"
+    return basis
 
-    ORTAK rules (branch=null) match all claims. Branch-specific rules match
-    when the claim's department/specialty contains any of the branch's
-    keywords. Same semantics as ``fatura_inceleme._branch_matches``.
-    """
+
+def _branch_matches(rule_branch: str | None, context: dict[str, Any]) -> bool:
+    """Check if a rule's branch matches the claim's department/specialty."""
     if rule_branch is None:
-        return True  # ORTAK — applies to all branches
+        return True
     keywords = _BRANCH_KEYWORDS.get(rule_branch, [])
     if not keywords:
-        return False  # Unknown branch — honest skip
+        return False
     dept = (context.get("department") or "").lower()
     specialty = (context.get("provider_specialty") or "").lower()
     combined = f"{dept} {specialty}"
     return any(kw in combined for kw in keywords)
 
 
-def _condition_matches(rule: dict[str, Any], context: dict[str, Any]) -> bool:
-    """Evaluate a checklist rule's match condition.
-
-    Simpler than ``gap_closing._condition_matches``: a rule matches when the
-    claim's billed procedure codes overlap the rule's ``procedure_code_any``
-    list. Rules with an empty ``procedure_code_any`` are general (matched
-    purely on their branch gate) — they always match the code condition so
-    the branch gate is the sole discriminator.
-    """
+def _code_overlap(rule: dict[str, Any], context: dict[str, Any]) -> bool:
     required_codes = rule.get("procedure_code_any") or []
     if not required_codes:
-        return True  # General documentation rule — no code gate
+        return False
     billed_codes = context.get("procedure_code_any")
     if not billed_codes:
         billed_codes = context.get("procedure_code")
@@ -114,28 +141,41 @@ def _condition_matches(rule: dict[str, Any], context: dict[str, Any]) -> bool:
     return bool(billed_set & set(required_codes))
 
 
-def _requirement_from_rule(rule: dict[str, Any], ruleset_id: str) -> dict[str, Any]:
-    """Build the informational requirement dict for a matched rule.
+def _relevance_matches(rule: dict[str, Any], context: dict[str, Any]) -> bool:
+    """Option B: code-less rules need every listed relevance signal true."""
+    signals = rule.get("relevance_signals") or []
+    if not signals:
+        return False
+    flags = context.get("relevance_flags") or {}
+    for signal in signals:
+        if not flags.get(signal):
+            return False
+    return True
 
-    This is NOT a violation — it surfaces which supporting documents the
-    inceleyici will request, keyed to the originating Fatura İnceleme clause.
-    """
+
+def _condition_matches(rule: dict[str, Any], context: dict[str, Any]) -> bool:
+    """Code-gated rules use code overlap; code-less rules use relevance_signals."""
+    required_codes = rule.get("procedure_code_any") or []
+    if required_codes:
+        return _code_overlap(rule, context)
+    return _relevance_matches(rule, context)
+
+
+def _requirement_from_rule(rule: dict[str, Any], ruleset_id: str) -> dict[str, Any]:
+    """Build the informational requirement dict for a matched rule."""
     return {
         "procedure_code": sorted(rule.get("procedure_code_any") or []),
         "required_documents": list(rule.get("required_documents") or []),
         "rule_source": ruleset_id,
         "fatura_inceleme_ref": rule.get("fatura_inceleme_ref", ""),
+        "sut_section_label": rule.get("sut_section_label") or "",
+        "sut_anchor": format_fi_dayanak(rule),
         "message_tr": rule.get("message_tr", ""),
     }
 
 
 def check_fatura_inceleme_checklist(context: dict[str, Any]) -> list[dict[str, Any]]:
-    """Evaluate the documentation checklist against a flat claim context dict.
-
-    Returns a list of informational "required documents" entries. Does NOT
-    produce violations — callers should treat these as advisory requirements,
-    not denials.
-    """
+    """Evaluate the documentation checklist against a flat claim context dict."""
     if not _RULES_PATH.is_file():
         return []
     return _evaluate(load_fatura_inceleme_checklist_rules(), context)
@@ -155,14 +195,110 @@ def _evaluate(
     return requirements
 
 
-def _build_fatura_inceleme_checklist_context(ctx: Any) -> dict[str, Any]:
-    """Bridge a PatientClaimContext → flat dict for the checklist motor.
+def _normalize_claim_type(raw: str | None) -> str:
+    text = (raw or "").strip().lower()
+    return text.translate(
+        str.maketrans(
+            {
+                "ı": "i",
+                "ş": "s",
+                "ğ": "g",
+                "ü": "u",
+                "ö": "o",
+                "ç": "c",
+            }
+        )
+    )
 
-    Reuses the same context-derivation shape as
-    ``fatura_inceleme._build_fatura_inceleme_context`` (and gap_closing's
-    pattern) but only surfaces the fields this motor actually consumes:
-    ``procedure_code_any``, ``department`` and ``provider_specialty``.
-    """
+
+def _compute_relevance_flags(
+    *,
+    header: Any,
+    procedure_lines: list[Any],
+    drug_lines: list[Any] | None = None,
+) -> dict[str, bool]:
+    """Derive Option-B relevance flags from claim header + lines."""
+    from src.bilun.domain.prose_rules.catalog_membership import procedure_annex_membership
+
+    claim_type = _normalize_claim_type(getattr(header, "claim_type", None))
+    dept = (getattr(header, "department", None) or "").lower()
+    discharge = getattr(header, "discharge_date", None)
+
+    has_ek2b = False
+    has_ek2c = False
+    has_tpn = False
+    has_surgery_or_biopsy = False
+    has_icu_code = False
+    discharge_day_with_ek2b = False
+
+    for line in procedure_lines:
+        code = str(getattr(line, "procedure_code", "") or "")
+        name = str(getattr(line, "procedure_name", "") or "")
+        category = str(getattr(line, "procedure_category", "") or "").lower()
+        service_date = getattr(line, "procedure_date", None)
+        as_of = service_date or getattr(header, "claim_start_date", None)
+
+        if code in _TPN_CODES or _TPN_NAME_RE.search(name):
+            has_tpn = True
+        if any(code.startswith(prefix) for prefix in _ICU_CODE_PREFIXES):
+            has_icu_code = True
+
+        in_ek2b, in_ek2c = False, False
+        if code:
+            try:
+                in_ek2b, in_ek2c = procedure_annex_membership(code, as_of_date=as_of)
+            except (TypeError, ValueError, KeyError, AttributeError):
+                in_ek2b, in_ek2c = False, False
+        if in_ek2b:
+            has_ek2b = True
+        if in_ek2c or code.startswith("P"):
+            has_ek2c = True
+
+        if (
+            in_ek2c
+            or code.startswith("P")
+            or category in {"paket", "ameliyat", "cerrahi"}
+            or _SURGERY_BIOPSY_NAME_RE.search(name)
+        ):
+            has_surgery_or_biopsy = True
+
+        if (
+            discharge is not None
+            and service_date is not None
+            and service_date == discharge
+            and (in_ek2b or (code and not in_ek2c))
+        ):
+            # Prefer explicit EK-2/B membership; fall back to non-package itemized.
+            if in_ek2b:
+                discharge_day_with_ek2b = True
+
+    for line in drug_lines or []:
+        name = str(getattr(line, "drug_name", "") or "")
+        if _TPN_NAME_RE.search(name):
+            has_tpn = True
+
+    dept_folded = _normalize_claim_type(dept)
+    is_outpatient = claim_type in _OUTPATIENT_TYPES or "poliklinik" in dept_folded
+    is_inpatient_daycase_or_icu = (
+        claim_type in _INPATIENT_DAYCASE_ICU_TYPES
+        or has_icu_code
+        or "yogun" in dept_folded
+        or "ybu" in dept_folded
+    )
+
+    return {
+        "is_outpatient_polyclinic": is_outpatient,
+        "has_ek2c": has_ek2c,
+        "has_ek2b": has_ek2b,
+        "has_surgery_or_biopsy": has_surgery_or_biopsy,
+        "has_tpn": has_tpn,
+        "is_inpatient_daycase_or_icu": is_inpatient_daycase_or_icu,
+        "discharge_day_with_ek2b": discharge_day_with_ek2b,
+    }
+
+
+def _build_fatura_inceleme_checklist_context(ctx: Any) -> dict[str, Any]:
+    """Bridge a PatientClaimContext → flat dict for the checklist motor."""
     if not ctx.claims:
         return {}
     header = ctx.claims[0]
@@ -175,12 +311,20 @@ def _build_fatura_inceleme_checklist_context(ctx: Any) -> dict[str, Any]:
             if getattr(line, "claim_id", None) == claim_id
         ]
 
+    procedure_lines = _lines_for_claim("procedure_lines")
+    drug_lines = _lines_for_claim("drug_lines") if hasattr(ctx, "drug_lines") else []
+
     context: dict[str, Any] = {
         "department": header.department or "",
         "provider_specialty": getattr(header, "procedure_specialty_code", "") or "",
+        "claim_type": getattr(header, "claim_type", "") or "",
+        "relevance_flags": _compute_relevance_flags(
+            header=header,
+            procedure_lines=procedure_lines,
+            drug_lines=drug_lines,
+        ),
     }
 
-    procedure_lines = _lines_for_claim("procedure_lines")
     if procedure_lines:
         codes = {p.procedure_code for p in procedure_lines if p.procedure_code}
         if codes:
@@ -194,11 +338,7 @@ def _build_fatura_inceleme_checklist_context(ctx: Any) -> dict[str, Any]:
 def check_fatura_inceleme_checklist_for_context(
     ctx: Any,
 ) -> list[dict[str, Any]]:
-    """Evaluate the documentation checklist against a PatientClaimContext.
-
-    Bridges the checklist evaluator (which takes a flat dict) to the typed
-    PatientClaimContext via ``_build_fatura_inceleme_checklist_context``.
-    """
+    """Evaluate the documentation checklist against a PatientClaimContext."""
     context = _build_fatura_inceleme_checklist_context(ctx)
     if not context:
         return []

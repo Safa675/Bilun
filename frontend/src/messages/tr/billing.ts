@@ -180,14 +180,14 @@ const billing = {
   },
   "claimChecklist": {
     "title": "Gönderim öncesi fatura kontrol listesi",
-    "scopeFootnote": "Talep satırı bayraklarından (rapor, ÜTS/TİTUBB) proaktif MEDULA red riski hatırlatmaları. Yalnızca önleme rehberi — SGK artış başlığına dahil değildir.",
+    "scopeFootnote": "Talep satırı bayraklarından (rapor, ÜTS/TİTUBB) proaktif MEDULA red riski hatırlatmaları ile, claim sinyeline uyan Fatura İnceleme belge gereksinimleri. Dayanak FI bölümü veya SUT olabilir. Yalnızca önleme rehberi — SGK artış başlığına dahil değildir.",
     "unavailable": "Kontrol listesi için rapor ve kayıt bayraklarıyla kesin talep satırları gerekir.",
     "claim": "Fatura",
     "line": "Satır",
     "medulaRisk": "MEDULA risk kodu",
     "severity": "Önem",
     "reminder": "Hatırlatma",
-    "sutAnchor": "SUT dayanağı",
+    "sutAnchor": "Dayanak",
     "steps": "Gönderim öncesi"
   },
   "drugIndication": {

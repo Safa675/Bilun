@@ -62,8 +62,43 @@ class TestBillingActionsBreakdown:
             if row["surface"] == "claim_checklist"
             and row["kind"] == "documentation_requirement"
         ]
-        assert len(doc_rows) == 6
+        assert len(doc_rows) == 1
+        assert "muayene" in (doc_rows[0].get("detail") or "").lower()
         assert report.action_count == 1 + len(doc_rows)
+
+        checklist_docs = [
+            item
+            for item in report.claim_submission_checklist.items
+            if item.get("checklist_kind") == "documentation_requirement"
+        ]
+        assert len(checklist_docs) == 1
+        assert checklist_docs[0].get("sut_anchor") == "Fatura İnceleme ORTAK-5"
+
+    def test_f011_doc_checklist_is_relevance_gated(self, dataset) -> None:
+        """Yatış + EK-2/C cerrahi claim should not spam ungated ORTAK/TPN rules."""
+        claim_id = "F-SENTETIK-HASTA-0003-011"
+        ctx = build_bill_claim_context("SENTETIK-HASTA-0003", claim_id, dataset)
+        assert ctx is not None
+        report = compute_patient_billing_report(
+            "SENTETIK-HASTA-0003",
+            claim_context=ctx,
+            copay_exemption={"exempt": False, "n_qualifying": 0, "qualifying_diagnoses": []},
+        )
+        docs = [
+            item
+            for item in report.claim_submission_checklist.items
+            if item.get("checklist_kind") == "documentation_requirement"
+        ]
+        refs = {item.get("fatura_inceleme_ref") for item in docs}
+        assert "ORTAK-24" not in refs
+        assert "ORTAK-5" not in refs
+        assert "ORTAK-17" in refs  # EK-2/C present
+        assert "ORTAK-27" in refs  # yatis
+        assert "ORTOPEDİ-6" in refs
+        for item in docs:
+            anchor = item.get("sut_anchor") or ""
+            assert anchor.startswith("Fatura İnceleme ")
+            assert "F000" not in anchor and "C000" not in anchor
 
     def test_f011_includes_override_and_material_uplift(self, dataset) -> None:
         claim_id = "F-SENTETIK-HASTA-0003-011"
