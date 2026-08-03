@@ -29,13 +29,13 @@ FI documentation reminders only show when claim signals match; dayanak column sh
 Commit the working-tree changes (removal of the Finans Coder / coding-resolver pipeline + agent-doc updates) and push to `origin/fix/fi-checklist-relevance-dayanak` with green CI.
 
 ### Subtasks
-- [ ] Delete leftover `tests/unit/scripts/test_finans_cleanup.py` — imports deleted `analyze_finans_data` → pytest collection error (breaks full-suite CI)
-- [ ] Update `agents/reimbursement/run_checks.sh` — drop step 1 (`verification_loop.py` deleted)
-- [ ] Update `agents/reimbursement/system-prompt.md` "This runs:" list — remove `verification_loop.py`
-- [ ] Verify: full `pytest -q` green + `ruff check src/ scripts/` clean
-- [ ] Commit 1: `chore: remove Finans Coder coding pipeline` (deletions + agent docs + test cleanup + lessons)
-- [ ] Commit 2: `fix(data): update L1.8 copay-exemption manifest effective_date` (2026-07-25 → 2026-08-01)
-- [ ] Push; confirm no pre-existing failing CI on branch (AGENTS.md §10)
+- [x] Delete leftover `tests/unit/scripts/test_finans_cleanup.py` — imports deleted `analyze_finans_data` → pytest collection error (breaks full-suite CI)
+- [x] Update `agents/reimbursement/run_checks.sh` — drop step 1 (`verification_loop.py` deleted)
+- [x] Update `agents/reimbursement/system-prompt.md` "This runs:" list — remove `verification_loop.py`
+- [x] Verify: full `pytest -q` green + `ruff check src/ scripts/` clean
+- [x] Commit 1: `chore: remove Finans Coder coding pipeline` (deletions + agent docs + test cleanup + lessons)
+- [x] Commit 2: `fix(data): update L1.8 copay-exemption manifest effective_date` (2026-07-25 → 2026-08-01)
+- [x] Push; confirm no pre-existing failing CI on branch (AGENTS.md §10)
 
 ### Out of Scope
 - Re-enabling any Finans Coder functionality
