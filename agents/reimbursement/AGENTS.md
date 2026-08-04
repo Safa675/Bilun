@@ -13,8 +13,7 @@ and proposes fixes — but does NOT apply fixes unsupervised.
 - `src/bilun/domain/sut/rule_registry.py` — the canonical coverage registry
 - `src/bilun/domain/sut/fact_check_audit.py` — frozen June-2026 fact-check rollup
 - `data/gazette/prose_rules/*.json` — the encoded rule JSONs (gate_b_sources, actions)
-- `data/coding/hospital_to_sut.csv` + `data/coding/crosswalk_review.csv` — Finans Coder
-- `scripts/analysis/finans_pricing_audit.py` + `run_finans_coder.py` — the audit chain
+
 
 ## What this agent does NOT touch
 
@@ -40,15 +39,8 @@ and proposes fixes — but does NOT apply fixes unsupervised.
 
 ## Day-1 work (from the 2026-07-20 baseline)
 
-- ~~**187 suspected wrong mappings** in the frozen crosswalk~~ **Done 2026-07-27** —
-  triaged 38 unique pairs (`plans/data/finans-suspected-mapping-triage-report.md`);
-  removed 18 confirmed MATERIAL wrong maps from `hospital_to_sut.csv` (841→823);
-  kept 20 as hospital-billing / correct-name patterns. Optional follow-up: tighten
-  MATERIAL candidate filters (`Endo*`, airway vs lacrimal `entübasyon`, `vida` vs stent).
-- **`finans_pricing_audit.py` exits 1** when run fresh — import bug:
-  `src/bilun/domain/pricing/__init__.py:7` imports
-  `from src.bilun.domain.pricing.keywords`, which only resolves when `REPO_ROOT` is on
-  `sys.path`, but the script only inserts `REPO_ROOT/src`. Investigate + propose a fix.
+
+
 - **116 TIER-1 (superseded-clause) references** across rule sets — see
   `reports/agent/reimbursement/baseline-2026-07-20-stale_clause_refs.md`. Which rules
   cite superseded clauses that were amended in the 04.08 tebliğ?

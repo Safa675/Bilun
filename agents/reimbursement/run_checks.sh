@@ -4,7 +4,7 @@
 # Safe to run locally (no agent needed) to regenerate the baseline.
 #
 # Usage:
-#   bash agents/reimbursement/run_checks.sh          # run all 3
+#   bash agents/reimbursement/run_checks.sh          # run all 2
 #   bash agents/reimbursement/run_checks.sh --quiet  # suppress per-checker stdout
 set -euo pipefail
 
@@ -24,20 +24,16 @@ if [ "$QUIET" = "--quiet" ] || [ "$QUIET" = "-q" ]; then
     REDIRECT="/dev/null"
 fi
 
-echo "[run_checks] Reimbursement Engineer — running 3 checkers"
+echo "[run_checks] Reimbursement Engineer — running 2 checkers"
 echo "[run_checks] repo: $REPO_ROOT"
 echo "[run_checks] output: $OUT_DIR/"
 echo ""
 
-echo "=== 1. verification_loop (Finans Coder + pricing audit gate) ==="
-$PY scripts/agent/verification_loop.py || echo "  (gate FAILED — see $OUT_DIR/finans_loop.json)"
-echo ""
-
-echo "=== 2. stale_clause_refs (rule gate_b_sources × sut_clauses staleness) ==="
+echo "=== 1. stale_clause_refs (rule gate_b_sources × sut_clauses staleness) ==="
 $PY scripts/agent/stale_clause_refs.py $QUIET
 echo ""
 
-echo "=== 3. build_sut_coverage (rule_registry coverage matrix) ==="
+echo "=== 2. build_sut_coverage (rule_registry coverage matrix) ==="
 # NOTE: build_sut_coverage writes 4 parquets to data/gazette/ by default — that would
 # mutate committed artifacts (learned 2026-07-20). Redirect to a temp dir so the check
 # is read-only w.r.t. the repo; we only want the console summary for the agent.

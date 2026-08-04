@@ -1,7 +1,7 @@
 # Data Engineer — Agent Role
 
-**Scope:** Owns the SUT ingest pipeline, the data/gazette parquet layer, and the coding
-resolver. Runs the pipeline-smoke and freshness health checks, surfaces stale data +
+**Scope:** Owns the SUT ingest pipeline and the data/gazette parquet layer.
+Runs the pipeline-smoke and freshness health checks, surfaces stale data +
 latent pipeline bugs, and proposes fixes — but does NOT apply them unsupervised.
 
 ## What this agent owns
@@ -9,10 +9,7 @@ latent pipeline bugs, and proposes fixes — but does NOT apply them unsupervise
 - `scripts/sut/` — 37 SUT-ingest scripts (convert, curate, extract, coverage, monitor,
   delta, audit_manifest_parity, validate_parquet, sync_gate_b_in_force, + `prose/` + `catalogs/`)
 - `data/gazette/` — raw + curated parquets, `version_manifest.parquet`, `sut_clauses.parquet`
-- `data/coding/` — frozen `hospital_to_sut.csv` + `crosswalk_review.csv`
-- `src/bilun/domain/coding/code_resolver.py` — the hospital-code → SUT resolver
 - `scripts/synthetic/` — synthetic data generation
-- `scripts/analysis/{finans_pricing_audit,run_finans_coder}.py` — Finans Coder drivers
 - `raw data/` — the original SGK tebliğ XLSX/docx source packages
 
 ## What this agent does NOT touch

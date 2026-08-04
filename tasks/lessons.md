@@ -7,6 +7,12 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-08-01 — Never include build artifacts or dependencies (.next, node_modules, lockfiles) when counting LOC
+
+**Pattern:** When calculating LOC for the frontend, the script failed to exclude Next.js build output directories (`frontend/.next/`), resulting in reporting 497,124 lines instead of the actual ~30,615 lines of true frontend source code.
+
+**Rule:** When calculating lines of code (LOC) or searching codebase volume, ALWAYS explicitly exclude `.next/`, `node_modules/`, `dist/`, `build/`, `.cache/`, and generated lockfiles. Report only human-authored source code (`src/`, `app/`, `components/`, etc.).
+
 ---
 
 ## 2026-07-13 → 2026-07-20 — Graphify installed but NEVER used by any agent; tool removed (126 subagents, 0 graphify calls)
