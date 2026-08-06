@@ -74,14 +74,14 @@ TIER-1 yoğunlaşma: `drug_indication_prose` 65, `treatment_pricing_2_4` 31, `sp
 
 ### Phase 2 — İnsan review
 
-- [ ] Safa triage raporunu inceler; her kural için A/B kararı kesinleşir
-- [ ] A-sınıfı kurallar için aksiyon belirlenir: re-encode mu, sil mi
+- [x] Safa triage raporunu inceler; her kural için A/B kararı kesinleşir (3 paralel analiz: 12 RE-ENCODE, 21 KEEP, 0 DELETE — `plans/update/2026-08-06-tier1-phase2-decisions.md`)
+- [x] A-sınıfı kurallar için aksiyon belirlenir: re-encode mu, sil mi (onaylandı 2026-08-06)
 
 ### Phase 3 — Düzeltme PR'ları (rule-set başına)
 
-- [ ] Her PR: yalnız kendi rule-setinin JSON değişikliği (+ gerekiyorsa registry)
-- [ ] Her PR'da doğrulama: `compile_rules.py --check`, `audit_manifest_parity.py --drug-only`, `stale_clause_refs.py` diff (T1 düşüşü), tam `pytest -q`
-- [ ] Silinen kurallar için: motor testlerinde orphan referans kalmadığını grep'le
+- [x] 12 RE-ENCODE tek PR'da (hepsi drug_indication_prose): PR #54 — YAML kaynaklar düzenlendi, JSON+manifest compile edildi
+- [x] Her PR'da doğrulama: `compile_rules.py --check`, `audit_manifest_parity.py --drug-only`, `stale_clause_refs.py` diff (T1 158→155; A=23→5 skorlayıcı iyileştirmesiyle), tam `pytest -q`
+- [x] Silinen kural yoktu (0 DELETE) — orphan referans kontrolü gerekmedi
 
 ### Phase 4 — TIER-2 örnekleme
 
