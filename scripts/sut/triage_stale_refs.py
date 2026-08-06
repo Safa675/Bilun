@@ -5,7 +5,10 @@ Builds on ``scripts.agent.stale_clause_refs`` (the reporter). For every
 TIER-1 reference — a rule whose cited clause carries a superseded/mülga
 marker but is itself still ``is_in_force`` — this script computes the
 *repealed content* (``text_tr`` minus ``in_force_text``) and scores how much
-the rule's own fields overlap with that repealed content:
+the rule's own fields overlap with the *effective* repealed tokens (struck
+tokens that no longer appear anywhere in the current in-force text — tokens
+still present in force are ambiguous and cannot prove dependence on dead
+law), then proposes a class:
 
   - **A**      — rule fields overlap the repealed content significantly
                  (drug-name hit or overlap ≥ ``A_THRESHOLD``): the rule may be
@@ -173,16 +176,16 @@ def rule_tokens(rule: dict) -> set[str]:
     return tokens
 
 
-def drug_name_hit(rule: dict, struck_text: str) -> bool:
-    """True when any ``drug_names`` entry appears in the struck content."""
-    if not struck_text:
+def drug_name_hit(rule: dict, tokens: set[str]) -> bool:
+    """True when any ``drug_names`` entry's tokens are fully contained in the
+    given token set (use the effective struck-token set)."""
+    if not tokens:
         return False
-    struck_tokens = set(normalize_tokens(struck_text))
     for name in rule.get("drug_names") or []:
         if not isinstance(name, str):
             continue
         name_tokens = normalize_tokens(name)
-        if name_tokens and all(t in struck_tokens for t in name_tokens):
+        if name_tokens and all(t in tokens for t in name_tokens):
             return True
     return False
 
@@ -254,10 +257,16 @@ def build_triage(
     for row in joined.iter_rows(named=True):
         rule = rules.get((row["rule_set_id"], row["rule_id"]), {})
         struck = extract_struck_content(row.get("text_tr"), row.get("in_force_text"))
-        diff_tokens = set(normalize_tokens(struck))
+        struck_tokens = set(normalize_tokens(struck))
+        # Tokens that also appear in the current in-force text are ambiguous:
+        # the rule may refer to the current occurrence. Only tokens REMOVED
+        # from the law can prove dependence on repealed content (validated
+        # against the Phase-2 human verdicts, e.g. C006549 loading-dose case).
+        current_tokens = set(normalize_tokens(row.get("in_force_text")))
+        diff_tokens = struck_tokens - current_tokens
         r_tokens = rule_tokens(rule)
         score, matched = score_overlap(diff_tokens, r_tokens)
-        drug_hit = drug_name_hit(rule, struck)
+        drug_hit = drug_name_hit(rule, diff_tokens)
         proposed = propose_class(score, drug_hit, diff_tokens)
         amendment_refs = row.get("amendment_refs") or "[]"
         try:

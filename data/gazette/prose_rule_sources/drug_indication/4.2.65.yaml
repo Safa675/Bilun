@@ -53,17 +53,12 @@ rules:
   - E14.5
   - L97
   report_required: true
-  report_specialties:
-  - ortopedi ve travmatoloji
-  - enfeksiyon hastalıkları ve klinik mikrobiyoloji
+  report_specialties: []
   action:
-    enforcement: 'mandatory: osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun ortopedi ve
-      travmatoloji uzmanınca, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının
-      enfeksiyon hastalıkları ve klinik mikrobiyoloji uzmanınca raporda belirtilmesi gerekir'
-    message_tr: Osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun ortopedi ve travmatoloji
-      uzman hekimi tarafından, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının
-      enfeksiyon hastalıkları ve klinik mikrobiyoloji hastalıkları uzman hekimi tarafından raporda belirtilmesi gerekmektedir
-      (§4.2.65).
+    enforcement: 'mandatory: osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun, yumuşak doku
+      enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının raporda belirtilmesi gerekir'
+    message_tr: Osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun, yumuşak doku enfeksiyonuna
+      bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının raporda belirtilmesi gerekmektedir (§4.2.65).
 - rule_id: 4.2.65.derm.diabetic_foot_prior_conventional_tx_report_mandatory
   sut_section: 4.2.65
   gate_b_sources:

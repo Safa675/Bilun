@@ -174,17 +174,10 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: LABA/LAMA/İKS mono ürünler tek başına veya birlikte reçete edilirse ödenir; (LABA+LAMA+İKS) mono veya sabit
-      doz üçlü kombinasyonlar ≥3 ay İKS+LABA yetersiz + sık atak + dispneli orta-ağır KOAH erişkin idame tedavisinde kullanılır
-      ve durum raporda belirtilirse ödenir
+    enforcement: LABA/LAMA/İKS mono ürünler tek başına veya birlikte reçete edilirse ödenir
     message_tr: Uzun etkili solunum yolu beta-agonistleri (LABA), obstrüktif solunum yolu hastalıklarında kullanılan uzun
       etkili antikolinerjikler (LAMA) ve inhale kortikosteroidler (İKS) gruplarında mono olarak yer alan ürünlerin tek başına
-      veya birlikte reçete edilmesi halinde bedelleri Kurumca karşılanır. (LABA+LAMA+İKS) şeklinde mono ürünlerle veya sabit
-      doz kombinasyonlarla yapılacak üçlü kombinasyon tedavilerin; en az 3 ay süreyle inhale kortikosteroid (İKS) ve uzun
-      etkili solunum yolu beta-agonistleri (LABA) ile tedavi edildiği halde yeterli yanıt alınamayan, sık atak geçiren (yılda
-      2 ve üzeri atak veya 1 ve üzeri yatarak tedavi) ve dispnesi olan (mMrc 2 ve üzeri veya CAT skoru 10 ve üzeri) orta-ağır
-      kronik obstrüktif akciğer hastalığı (KOAH) olan erişkin hastaların idame tedavisinde kullanılmaları ve bu durumların
-      uzman hekim raporunda belirtilmesi halinde bedelleri Kurumca karşılanır (§4.2.24.B).
+      veya birlikte reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.24.B).
 - rule_id: 4.2.24.B.resp.laba_lama_iks_otherwise_nopay
   sut_section: 4.2.24.B
   gate_b_sources:
@@ -369,9 +362,9 @@ rules:
   icd10_ranges:
   - J44
   message_tr: LABA+LAMA+İKS üçlü kombinasyon — en az 3 ay İKS+LABA veya İKS+LAMA sonrası göğüs hastalıkları uzman sağlık kurulu
-    raporu gerekir (§4.2.24.B-4).
+    raporu gerekir (§4.2.24.B-12).
   gate_b_sources:
-  - 4.2.24.B.(4)
+  - 4.2.24.B.(12)
   report_required: true
   report_specialties:
   - göğüs hastalıkları

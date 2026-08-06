@@ -17,6 +17,8 @@ rules:
   - C004135
   - 4.2.9.A-2.(1)
   - C004137
+  - C004125
+  - C004127
   report_required: true
   report_specialties:
   - hematoloji

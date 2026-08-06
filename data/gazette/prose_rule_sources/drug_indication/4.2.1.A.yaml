@@ -14,16 +14,15 @@ rules:
   - iç hastalıkları
   - romatoloji
   - fiziksel tıp
-  - klinik immunoloji
   - çocuk sağlığı
-  message_tr: Leflunomid — romatoid/psoriatik artritte sulfasalazin veya methotrexat yetersiz/kontrendike olduğunda uzman
-    hekim raporu gerekir (§4.2.1.A).
+  report_duration_months: 12
+  message_tr: Leflunomid — romatoid/psoriatik artritte bir yıl süreli uzman hekim raporu gerekir (iç hastalıkları/romatoloji/çocuk
+    sağlığı/fiziksel tıp) (§4.2.1.A).
   gate_b_sources:
   - 4.2.1.A.(1)
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
   - fiziksel tıp
-  - klinik immunoloji
   - çocuk sağlığı
 source_note: Exported from drug_indication_prose.json (YAML source migration)

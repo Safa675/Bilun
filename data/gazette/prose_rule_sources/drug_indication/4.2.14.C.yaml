@@ -268,7 +268,10 @@ rules:
   - tıbbi onkoloji
   message_tr: Sonidegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
-  - C005235
+  - C005245
+  - C005246
+  - C005247
+  - C005248
 - rule_id: 4.2.14.C.(1).streptozocin_oncology_board
   sut_section: 4.2.14.C
   drug_names:
@@ -340,7 +343,10 @@ rules:
   - tıbbi onkoloji
   message_tr: Vismodegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).
   gate_b_sources:
-  - C005235
+  - C005245
+  - C005246
+  - C005247
+  - C005248
 - rule_id: 4.2.14.C.(1).zoledronate_oncology_board
   sut_section: 4.2.14.C
   drug_names:
@@ -2884,7 +2890,7 @@ rules:
   - C005025
   - C005029
   - C005644
-  message_tr: 2) Nilotinib yalnızca; İmatinib dahil önceki tedavilere dirençli veya intolere, Philadelphia kromozomu 
+  message_tr: 2) Nilotinib; İmatinib dahil önceki tedavilere dirençli veya intolere, Philadelphia kromozomu 
     pozitif kronik evre veya hızlanmış evre kronik miyeloid lösemi tanılı yetişkin hastaların tedavis
   required_biomarkers:
   - marker: BCR_ABL
@@ -2908,7 +2914,6 @@ rules:
   - C00-C97
   gate_b_sources:
   - C005024
-  - C005025
   - C005043
   message_tr: 1) Dasatinib; imatinib dahil önceki tedavilere dirençli veya intolere (aşağıdaki 4. ve 5. maddede 
     belirtilen koşullarda), Philadelphia kromozomu pozitif kronik, hızlanmış veya blastik evre kronik miye
@@ -3597,10 +3602,10 @@ rules:
   - onkoloji_ilac
   message_tr: 'Endikasyon: a) Diğer terapilerden sonra refrakter veya kalıcı hastalığı olan veya diğer tedavileri tolere edemeyen
     Evre IA veya Evre IB (Ek: RG-25/03/2025-32852/9-c md. Yürürlük:04/04/2025) veya Evre IIA kutanöz T-hücreli lenfoma hastalarının
-    kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır. (Mülga:RG-25/08/2022-31934/27-d
-    md. Yürürlük:03/09/2022) (§4.2.14.C deontic encode).'
+    kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır. (§4.2.14.C deontic encode).'
   gate_b_sources:
   - C005234
+  - C005235
   icd10_codes:
   - C81
   - C82
@@ -3611,8 +3616,7 @@ rules:
   - C88
   report_required: true
   report_specialties:
-  - tıbbi onkoloji
-  - hematoloji
+  - dermatoloji
 - rule_id: 4.2.14.C.deontic.C005239
   sut_section: 4.2.14.C
   drug_names:

@@ -3,7 +3,6 @@ rules:
 - rule_id: 4.2.13.hcv_acute_interferon_report
   sut_section: 4.2.13.3.1
   drug_names:
-  - interferon
   - pegile interferon
   - peginterferon
   icd10_ranges:
@@ -12,7 +11,7 @@ rules:
   report_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları
-  message_tr: Akut hepatit C interferon tedavisi — gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.1).
+  message_tr: Akut hepatit C pegile interferon alfa monoterapisi — gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.1).
   gate_b_sources:
   - 4.2.13.3.1.(1)
   - 4.2.13.3.1.(2)

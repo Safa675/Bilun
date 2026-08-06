@@ -115,11 +115,11 @@ def test_rule_tokens_collect_list_strings() -> None:
 # Drug-name hit
 # --------------------------------------------------------------------------- #
 def test_drug_name_hit_matches_struck_content() -> None:
-    struck = "bevacizumab ile tedaviye devam edilebilir"
+    struck = set(normalize_tokens("bevacizumab ile tedaviye devam edilebilir"))
     assert drug_name_hit({"drug_names": ["Bevacizumab"]}, struck) is True
     assert drug_name_hit({"drug_names": ["Ranibizumab"]}, struck) is False
     assert drug_name_hit({}, struck) is False
-    assert drug_name_hit({"drug_names": ["Bevacizumab"]}, "") is False
+    assert drug_name_hit({"drug_names": ["Bevacizumab"]}, set()) is False
 
 
 # --------------------------------------------------------------------------- #
@@ -192,12 +192,16 @@ def test_build_triage_classifies_golden_fixture() -> None:
     assert triage.height == 3
     by_rule = {r["rule_id"]: r for r in triage.iter_rows(named=True)}
 
-    # numeric loading_dose_count reaches the struck "yükleme dozu" via map
-    assert by_rule["loading_rule"]["proposed_class"] == "A"
+    # The C006549 loading-dose case: "yükleme dozu" tokens survive in the
+    # in-force text (forward switch), so only "yapılarak" is effectively
+    # repealed — loading_rule does not touch it → B. This matches the
+    # Phase-2 human verdict (KEEP) for 4.2.33.general_switch_to_bevacizumab.
+    assert by_rule["loading_rule"]["proposed_class"] == "B"
     assert by_rule["loading_rule"]["drug_name_hit"] is False
-    # verbatim quote of the struck phrase → high overlap → A
+    # verbatim quote of the struck phrase → covers the effective token → A
     assert by_rule["quote_rule"]["proposed_class"] == "A"
     assert by_rule["quote_rule"]["overlap_score"] >= A_THRESHOLD
+    assert by_rule["quote_rule"]["matched_tokens"] == "yapılarak"
     # zero overlap with struck content → B
     assert by_rule["unrelated_rule"]["proposed_class"] == "B"
     assert by_rule["unrelated_rule"]["overlap_score"] == 0.0
@@ -223,4 +227,4 @@ def test_render_report_contains_all_class_sections() -> None:
     assert "Sınıf B" in md
     assert "Amendment RG grupları" in md
     assert "RG-16/06/2020/31157" in md
-    assert "loading_rule" in md
+    assert "quote_rule" in md
