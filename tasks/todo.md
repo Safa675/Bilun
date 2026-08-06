@@ -54,7 +54,8 @@ Commit the working-tree changes (removal of the Finans Coder / coding-resolver p
 - [x] Phase 1: `scripts/sut/triage_stale_refs.py` — mülga diff + overlap skoru + A/REVIEW/B önerisi; md + parquet rapor (ayrıca stale_clause_refs.py + triage script'ine sys.path bootstrap: bare invocation ModuleNotFoundError düzeltildi)
 - [x] Phase 1: unit testler — 13 test yeşil (diff, sınıflama, drug-hit, loading-dose golden fixture, rapor render)
 - [x] Phase 1: gerçek data çalıştırıldı → A=23, REVIEW=10, B=125 (`reports/agent/reimbursement/tier1-triage-2026-08-06.md`, gitignored)
-- [ ] Phase 2: Safa review — A/B kararları kesinleşir
+- [x] Phase 2: analiz tamam — 33 A/REVIEW vakası 3 paralel subagent ile incelendi → 12 RE-ENCODE, 21 KEEP, 0 DELETE; karar belgesi `plans/update/2026-08-06-tier1-phase2-decisions.md` (onay bekliyor)
+- [ ] Phase 2: Safa onayı → Phase 3 PR'ları başlar
 - [ ] Phase 3: rule-set başına düzeltme PR'ları
 - [ ] Phase 4: TIER-2 örnekleme (~30 ref) + politika kararı
 - [ ] Phase 5: TIER-4 dangling sınıflama
