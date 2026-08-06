@@ -1335,8 +1335,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Nilotinib (Mülga:RG-23/05/2026-33262/4-a md. Yürürlük:04/06/2026)  yalnızca",
       "linked_rule_ids": [
-        "4.2.14.C.tier_c_b.C005021.nilotinib",
-        "4.2.14.C.tier_c_b.C005024.dasatinib"
+        "4.2.14.C.tier_c_b.C005021.nilotinib"
       ]
     },
     {
@@ -2923,8 +2922,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
-        "4.2.14.C.(1).sonidegib_bcc_board",
-        "4.2.14.C.(1).vismodegib_bcc_board"
+        "4.2.14.C.deontic.C005234"
       ]
     },
     {
@@ -3011,6 +3009,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Cerrahi",
       "linked_rule_ids": [
+        "4.2.14.C.(1).sonidegib_bcc_board",
+        "4.2.14.C.(1).vismodegib_bcc_board",
         "4.2.14.C.deontic.C005245"
       ]
     },
@@ -3021,6 +3021,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "4.2.14.C.(1).sonidegib_bcc_board",
+        "4.2.14.C.(1).vismodegib_bcc_board",
         "4.2.14.C.deontic.C005534"
       ]
     },
@@ -3031,6 +3033,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "4.2.14.C.(1).sonidegib_bcc_board",
+        "4.2.14.C.(1).vismodegib_bcc_board",
         "4.2.14.C.oncology_6m_continuation"
       ]
     },
@@ -3041,6 +3045,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
+        "4.2.14.C.(1).sonidegib_bcc_board",
+        "4.2.14.C.(1).vismodegib_bcc_board",
         "4.2.14.C.deontic.C005242"
       ]
     },

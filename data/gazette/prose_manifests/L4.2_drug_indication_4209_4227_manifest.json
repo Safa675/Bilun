@@ -306,7 +306,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "",
       "linked_rule_ids": [
-        "4.2.9.A.renal.esa_roxadustat_offlabel_nopay"
+        "4.2.9.A.renal.esa_roxadustat_offlabel_nopay",
+        "4.2.9.mds_esa_hematology_report"
       ]
     },
     {
@@ -327,7 +328,8 @@
       "heuristic_inn": "Eritropoietin alfa-beta-zeta",
       "linked_rule_ids": [
         "4.2.9.esa_ckd_monthly_nephrology_report",
-        "4.2.9.esa_legacy_muadil_monthly_report"
+        "4.2.9.esa_legacy_muadil_monthly_report",
+        "4.2.9.mds_esa_hematology_report"
       ]
     },
     {

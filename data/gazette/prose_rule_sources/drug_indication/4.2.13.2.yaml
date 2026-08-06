@@ -3,7 +3,6 @@ rules:
 - rule_id: 4.2.13.hdv_interferon_board
   sut_section: 4.2.13.2
   drug_names:
-  - interferon
   - pegile interferon
   - peginterferon
   - pegasys
@@ -23,7 +22,7 @@ rules:
   report_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları
-  message_tr: HDV(+) kronik hepatit B — interferon/pegile interferon; anti-HDV ve HBV DNA reçete/raporda belirtilmelidir (§4.2.13.2).
+  message_tr: HDV(+) kronik hepatit B — pegile interferon; anti-HDV ve HBV DNA reçete/raporda belirtilmelidir (§4.2.13.2).
   gate_b_sources:
   - 4.2.13.2.(1)
   prescriber_specialties:

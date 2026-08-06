@@ -536,8 +536,7 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Uzun etkili solunum yolu beta-agonistleri (LABA)",
       "linked_rule_ids": [
-        "4.2.24.B.resp.laba_lama_iks_mono_and_triple_maintenance",
-        "4.2.24.laba_lama_ics_triple_prior"
+        "4.2.24.B.resp.laba_lama_iks_mono_and_triple_maintenance"
       ]
     },
     {
@@ -629,7 +628,8 @@
       "manifest_status": "encoded",
       "heuristic_inn": "(4)",
       "linked_rule_ids": [
-        "4.2.24.B.resp.copd_triple_combo_maintenance"
+        "4.2.24.B.resp.copd_triple_combo_maintenance",
+        "4.2.24.laba_lama_ics_triple_prior"
       ]
     },
     {

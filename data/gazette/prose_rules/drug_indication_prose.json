@@ -3142,10 +3142,9 @@
         "iç hastalıkları",
         "romatoloji",
         "fiziksel tıp",
-        "klinik immunoloji",
         "çocuk sağlığı"
       ],
-      "message_tr": "Leflunomid — romatoid/psoriatik artritte sulfasalazin veya methotrexat yetersiz/kontrendike olduğunda uzman hekim raporu gerekir (§4.2.1.A).",
+      "message_tr": "Leflunomid — romatoid/psoriatik artritte bir yıl süreli uzman hekim raporu gerekir (iç hastalıkları/romatoloji/çocuk sağlığı/fiziksel tıp) (§4.2.1.A).",
       "gate_b_sources": [
         "4.2.1.A.(1)"
       ],
@@ -3153,9 +3152,9 @@
         "iç hastalıkları",
         "romatoloji",
         "fiziksel tıp",
-        "klinik immunoloji",
         "çocuk sağlığı"
-      ]
+      ],
+      "report_duration_months": 12
     },
     {
       "rule_id": "4.2.1.risankizumab_psoriasis_pasi_systemic_failure",
@@ -5783,7 +5782,6 @@
       "rule_id": "4.2.13.hcv_acute_interferon_report",
       "sut_section": "4.2.13.3.1",
       "drug_names": [
-        "interferon",
         "pegile interferon",
         "peginterferon"
       ],
@@ -5795,7 +5793,7 @@
         "gastroenteroloji",
         "enfeksiyon hastalıkları"
       ],
-      "message_tr": "Akut hepatit C interferon tedavisi — gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.1).",
+      "message_tr": "Akut hepatit C pegile interferon alfa monoterapisi — gastroenteroloji/enfeksiyon uzman hekim raporu gerekir (§4.2.13.3.1).",
       "gate_b_sources": [
         "4.2.13.3.1.(1)",
         "4.2.13.3.1.(2)"
@@ -6095,7 +6093,6 @@
       "rule_id": "4.2.13.hdv_interferon_board",
       "sut_section": "4.2.13.2",
       "drug_names": [
-        "interferon",
         "pegile interferon",
         "peginterferon",
         "pegasys",
@@ -6118,7 +6115,7 @@
         "gastroenteroloji",
         "enfeksiyon hastalıkları"
       ],
-      "message_tr": "HDV(+) kronik hepatit B — interferon/pegile interferon; anti-HDV ve HBV DNA reçete/raporda belirtilmelidir (§4.2.13.2).",
+      "message_tr": "HDV(+) kronik hepatit B — pegile interferon; anti-HDV ve HBV DNA reçete/raporda belirtilmelidir (§4.2.13.2).",
       "gate_b_sources": [
         "4.2.13.2.(1)"
       ],
@@ -6630,7 +6627,10 @@
       ],
       "message_tr": "Sonidegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005235"
+        "C005245",
+        "C005246",
+        "C005247",
+        "C005248"
       ]
     },
     {
@@ -6732,7 +6732,10 @@
       ],
       "message_tr": "Vismodegib — bazal hücreli karsinom endikasyonu ve sağlık kurulu raporu gerekir (§4.2.14.C).",
       "gate_b_sources": [
-        "C005235"
+        "C005245",
+        "C005246",
+        "C005247",
+        "C005248"
       ]
     },
     {
@@ -8747,9 +8750,10 @@
       "drug_names": [
         "onkoloji_ilac"
       ],
-      "message_tr": "Endikasyon: a) Diğer terapilerden sonra refrakter veya kalıcı hastalığı olan veya diğer tedavileri tolere edemeyen Evre IA veya Evre IB (Ek: RG-25/03/2025-32852/9-c md. Yürürlük:04/04/2025) veya Evre IIA kutanöz T-hücreli lenfoma hastalarının kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır. (Mülga:RG-25/08/2022-31934/27-d md. Yürürlük:03/09/2022) (§4.2.14.C deontic encode).",
+      "message_tr": "Endikasyon: a) Diğer terapilerden sonra refrakter veya kalıcı hastalığı olan veya diğer tedavileri tolere edemeyen Evre IA veya Evre IB (Ek: RG-25/03/2025-32852/9-c md. Yürürlük:04/04/2025) veya Evre IIA kutanöz T-hücreli lenfoma hastalarının kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır. (§4.2.14.C deontic encode).",
       "gate_b_sources": [
-        "C005234"
+        "C005234",
+        "C005235"
       ],
       "icd10_codes": [
         "C81",
@@ -8762,8 +8766,7 @@
       ],
       "report_required": true,
       "report_specialties": [
-        "tıbbi onkoloji",
-        "hematoloji"
+        "dermatoloji"
       ]
     },
     {
@@ -11530,7 +11533,7 @@
         "C005029",
         "C005644"
       ],
-      "message_tr": "2) Nilotinib yalnızca; İmatinib dahil önceki tedavilere dirençli veya intolere, Philadelphia kromozomu pozitif kronik evre veya hızlanmış evre kronik miyeloid lösemi tanılı yetişkin hastaların tedavis",
+      "message_tr": "2) Nilotinib; İmatinib dahil önceki tedavilere dirençli veya intolere, Philadelphia kromozomu pozitif kronik evre veya hızlanmış evre kronik miyeloid lösemi tanılı yetişkin hastaların tedavis",
       "required_biomarkers": [
         {
           "marker": "BCR_ABL",
@@ -11564,7 +11567,6 @@
       ],
       "gate_b_sources": [
         "C005024",
-        "C005025",
         "C005043"
       ],
       "message_tr": "1) Dasatinib; imatinib dahil önceki tedavilere dirençli veya intolere (aşağıdaki 4. ve 5. maddede belirtilen koşullarda), Philadelphia kromozomu pozitif kronik, hızlanmış veya blastik evre kronik miye",
@@ -14894,8 +14896,8 @@
         "coverage_note": true
       },
       "action": {
-        "enforcement": "LABA/LAMA/İKS mono ürünler tek başına veya birlikte reçete edilirse ödenir; (LABA+LAMA+İKS) mono veya sabit doz üçlü kombinasyonlar ≥3 ay İKS+LABA yetersiz + sık atak + dispneli orta-ağır KOAH erişkin idame tedavisinde kullanılır ve durum raporda belirtilirse ödenir",
-        "message_tr": "Uzun etkili solunum yolu beta-agonistleri (LABA), obstrüktif solunum yolu hastalıklarında kullanılan uzun etkili antikolinerjikler (LAMA) ve inhale kortikosteroidler (İKS) gruplarında mono olarak yer alan ürünlerin tek başına veya birlikte reçete edilmesi halinde bedelleri Kurumca karşılanır. (LABA+LAMA+İKS) şeklinde mono ürünlerle veya sabit doz kombinasyonlarla yapılacak üçlü kombinasyon tedavilerin; en az 3 ay süreyle inhale kortikosteroid (İKS) ve uzun etkili solunum yolu beta-agonistleri (LABA) ile tedavi edildiği halde yeterli yanıt alınamayan, sık atak geçiren (yılda 2 ve üzeri atak veya 1 ve üzeri yatarak tedavi) ve dispnesi olan (mMrc 2 ve üzeri veya CAT skoru 10 ve üzeri) orta-ağır kronik obstrüktif akciğer hastalığı (KOAH) olan erişkin hastaların idame tedavisinde kullanılmaları ve bu durumların uzman hekim raporunda belirtilmesi halinde bedelleri Kurumca karşılanır (§4.2.24.B)."
+        "enforcement": "LABA/LAMA/İKS mono ürünler tek başına veya birlikte reçete edilirse ödenir",
+        "message_tr": "Uzun etkili solunum yolu beta-agonistleri (LABA), obstrüktif solunum yolu hastalıklarında kullanılan uzun etkili antikolinerjikler (LAMA) ve inhale kortikosteroidler (İKS) gruplarında mono olarak yer alan ürünlerin tek başına veya birlikte reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.24.B)."
       }
     },
     {
@@ -15236,9 +15238,9 @@
       "icd10_ranges": [
         "J44"
       ],
-      "message_tr": "LABA+LAMA+İKS üçlü kombinasyon — en az 3 ay İKS+LABA veya İKS+LAMA sonrası göğüs hastalıkları uzman sağlık kurulu raporu gerekir (§4.2.24.B-4).",
+      "message_tr": "LABA+LAMA+İKS üçlü kombinasyon — en az 3 ay İKS+LABA veya İKS+LAMA sonrası göğüs hastalıkları uzman sağlık kurulu raporu gerekir (§4.2.24.B-12).",
       "gate_b_sources": [
-        "4.2.24.B.(4)"
+        "4.2.24.B.(12)"
       ],
       "report_required": true,
       "report_specialties": [
@@ -21039,13 +21041,10 @@
         "L97"
       ],
       "report_required": true,
-      "report_specialties": [
-        "ortopedi ve travmatoloji",
-        "enfeksiyon hastalıkları ve klinik mikrobiyoloji"
-      ],
+      "report_specialties": [],
       "action": {
-        "enforcement": "mandatory: osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun ortopedi ve travmatoloji uzmanınca, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının enfeksiyon hastalıkları ve klinik mikrobiyoloji uzmanınca raporda belirtilmesi gerekir",
-        "message_tr": "Osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun ortopedi ve travmatoloji uzman hekimi tarafından, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının enfeksiyon hastalıkları ve klinik mikrobiyoloji hastalıkları uzman hekimi tarafından raporda belirtilmesi gerekmektedir (§4.2.65)."
+        "enforcement": "mandatory: osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının raporda belirtilmesi gerekir",
+        "message_tr": "Osteomyelite bağlı ülserlerde osteomyelitin olmadığının/tedavi edilmiş olduğunun, yumuşak doku enfeksiyonuna bağlı ülserlerde yumuşak doku enfeksiyonunun kontrol altına alındığının raporda belirtilmesi gerekmektedir (§4.2.65)."
       }
     },
     {
@@ -22551,7 +22550,9 @@
       "gate_b_sources": [
         "C004135",
         "4.2.9.A-2.(1)",
-        "C004137"
+        "C004137",
+        "C004125",
+        "C004127"
       ],
       "report_required": true,
       "report_specialties": [
