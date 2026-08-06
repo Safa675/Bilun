@@ -39,5 +39,28 @@ Commit the working-tree changes (removal of the Finans Coder / coding-resolver p
 
 ### Out of Scope
 - Re-enabling any Finans Coder functionality
-- Deleting historical plan docs that reference the removed pipeline (`plans/data/2026-07-16-finans-cleanup-and-coder-plan.md`, `plans/tooling/employee-agents-plan.md`, etc.)
+- Deleting historical plan docs that reference the removed pipeline
 - `tasks/lessons.md` historical entries mentioning removed scripts
+
+---
+
+## Task: TIER-1 stale clause ref triage + burn-down
+
+### Goal
+158 TIER-1 gate_b referansını sil / re-encode / zararsız diye sınıflandırıp rule-set başına PR'larla eritmek. Plan: `plans/update/2026-08-06-stale-clause-triage-plan.md` (K1-K5 onaylı).
+
+### Subtasks
+- [x] Phase 0: plan onayı (K1-K5 hepsi onaylandı 2026-08-06) + todo güncelleme
+- [x] Phase 1: `scripts/sut/triage_stale_refs.py` — mülga diff + overlap skoru + A/REVIEW/B önerisi; md + parquet rapor (ayrıca stale_clause_refs.py + triage script'ine sys.path bootstrap: bare invocation ModuleNotFoundError düzeltildi)
+- [x] Phase 1: unit testler — 13 test yeşil (diff, sınıflama, drug-hit, loading-dose golden fixture, rapor render)
+- [x] Phase 1: gerçek data çalıştırıldı → A=23, REVIEW=10, B=125 (`reports/agent/reimbursement/tier1-triage-2026-08-06.md`, gitignored)
+- [ ] Phase 2: Safa review — A/B kararları kesinleşir
+- [ ] Phase 3: rule-set başına düzeltme PR'ları
+- [ ] Phase 4: TIER-2 örnekleme (~30 ref) + politika kararı
+- [ ] Phase 5: TIER-4 dangling sınıflama
+- [ ] Phase 6 (opsiyonel): T1 count CI uyarısı
+
+### Out of Scope
+- TIER-3 (intentionally low-priority)
+- Reporter'ı gate'e çevirmek
+- TIER-2/TIER-4 toplu düzeltmesi (sadece örnekleme + politika)

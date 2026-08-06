@@ -131,12 +131,13 @@ def test_json_rules_map_to_expected_clause_ids() -> None:
     assert mapping["1.8.5.(10).organ_nakli"] == ["C000364"]
 
 
-def test_manifest_has_encoded_clause_ids_union() -> None:
+def test_manifest_has_encoded_clause_ids_union(tmp_path: Path) -> None:
     _, manifest = write_artifacts(
         clauses_path=_CLAUSES,
         section=SECTION_COPAY_18,
         effective_date=date.today().isoformat(),
         rules_path=_RULES,
+        manifest_path=tmp_path / _MANIFEST.name,
         write_corpus=False,
     )
     encoded = manifest["encoded_clause_ids"]
