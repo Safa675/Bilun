@@ -85,8 +85,9 @@ TIER-1 yoğunlaşma: `drug_indication_prose` 65, `treatment_pricing_2_4` 31, `sp
 
 ### Phase 4 — TIER-2 örnekleme
 
-- [ ] 687 T2 ref'inden ~30 rastgele örnek: gerçekten ölü mü, yoksa extractor flag gürültüsü mü?
-- [ ] Gürültü oranı ölçülür → toplu politika kararı (ayrı plan)
+- [x] 687 T2 ref'inden 37 stratified örneklem (seed 42, 12 set kapsanıyor) analiz edildi
+- [x] Gürültü oranı: **0/37** — bayraklar doğru; içerik %76 taşınmış (in-force ikiz); 5 gerçek kırık vaka
+- [x] Politika kararı: `plans/update/2026-08-06-tier2-phase4-policy.md` (re-point batch + 5 insan kararlı vaka; gate yok)
 
 ### Phase 5 — TIER-4 dangling (ayrı workstream)
 
