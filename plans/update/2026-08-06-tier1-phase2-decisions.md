@@ -47,5 +47,24 @@
 
 ## Onay
 
-- [ ] Safa: 12 RE-ENCODE onaylandı → Phase 3 PR'ları başlar
-- [ ] Değişiklik istenen satırlar: ______
+- [x] Safa: 12 RE-ENCODE onaylandı (2026-08-06, "i dont have a complain start with phase 3") → Phase 3 uygulandı
+
+---
+
+## Phase 3 sonuçları (2026-08-06)
+
+12 RE-ENCODE `drug_indication_prose`'a uygulandı. Kaynak dosyalar `data/gazette/prose_rule_sources/drug_indication/*.yaml` — JSON bir compile çıktısıdır (`scripts/sut/compile_rules.py`), elle JSON düzenlemesi compile'da ezilir. Doğrulama: `compile_rules --check` OK, `audit_manifest_parity --drug-only` 0 issue, tam pytest pre-existing baseline'a döndü (24 auth-env hatası dışı yeşil; 2 golden sabiti bilinçli güncellendi: 4224 `_PILOT_SOURCES` C006171→C006180, 4201 leflunomid örneğine 12-ay süre eklendi).
+
+**Triage skorlayıcı iyileştirmesi:** Phase 3 doğrulaması gösterdi ki token-overlap skoru, güncel metinde hâlâ geçen token'ları da mülga bağımlılığı sayıyordu (örn. C006549 "yükleme dozu" — ileri yönde hâlâ yürürlükte). `triage_stale_refs.py` artık yalnız **güncel metinden tamamen silinmiş** token'ları skorluyor. Etki: A=23→5, REVIEW=10→2, B=125→148. Golden fixture (C006549) otomatik olarak Phase-2 insan kararıyla aynı sınıfa (B/KEEP) düştü.
+
+**Kalıcı reporter bayrakları (karara bağlanmış, işlem gerektirmez):**
+
+| rule_id | Bayrak | Neden kalıcı | Phase-2 kararı |
+|---|---|---|---|
+| 4.2.1.anti_tnf_ra_das28_initiation | A | Sertolizumab istisnalarının mülgası kuralı bozmuyor, tersine doğruluyor | KEEP |
+| 4.2.13.hdv_interferon_board | A | "interferon"/"interferonlar" tekil-çoğul token farkı; kural artık sadece pegile | RE-ENCODE uygulandı |
+| 4.2.15.dabigatran_cardiology_board | A | message_tr'deki "yer aldığı" eski ibare; enforce edilen mantık güncel (1 yıl, ≥3 hekim) | KEEP |
+| 4.2.17.A.osteoporosis_2yr_report_combo_one_paid | A | denosumab (a) bendinden C006034/(6)'ya taşındı; kural zaten doğru kaynakları cite ediyor | KEEP |
+| 4.2.9.mds_esa_hematology_report | A | darbepoetin C004137'den silindi; kuralın darbepoetin dayanağı artık eklenen C004125/C004127 | RE-ENCODE uygulandı |
+| 4.2.1.tocilizumab_jia_c5_prior_therapy_failure | REVIEW | çocuk romatoloji token'ları mülga cümlede de geçiyor; kural güncel metne dayanıyor | KEEP |
+| 4.2.14.C.deontic.C005234 | REVIEW | C005234 cite'ı endikasyon metni için gerekli; rapor hükmü C005235'e bağlandı | RE-ENCODE uygulandı |
