@@ -7,6 +7,18 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-08-06 — pytest in this repo can MUTATE committed artifacts; verify staged content at commit time, not at first-read time
+
+**Pattern:** Committing a user's manifest change (`effective_date: 2026-07-25 → 2026-08-01`), I read the diff at session start, then ran the full pytest suite, then committed — but a test (`test_copay_exemption_gate_b.py::test_manifest_has_encoded_clause_ids_union`) called `write_artifacts` without a `manifest_path`, so every pytest run rewrote the committed L1.8 manifest with `date.today()`. The committed value silently became 2026-08-03 while my commit message claimed 2026-08-01. The user's intended value was lost and the discrepancy was only found 3 days later when the date moved again (→ 2026-08-06). Aggravating factor: this repo's conftest ALSO writes on purpose (`reconcile_drug_manifests(write=True)` session fixture), so "pytest mutates the tree" is normal here — which makes accidental mutation easier to miss.
+
+**Rule:** A working-tree value read at session start is NOT the value you commit. Before every commit:
+1. `git diff --cached` the exact files being committed and confirm the content matches the stated intent (message and content must agree).
+2. After any full pytest run, re-run `git status --short` — new modifications to committed artifacts mean a test writes outside tmp_path; that is a test bug to fix, not noise to absorb.
+3. Any test calling a writer (`write_artifacts`, `reconcile_*`, `build_*` with default output paths) must pass an explicit tmp output path; audit with `grep -c write_artifacts` vs `grep -c manifest_path` per file when suspicious.
+4. A date/counter field that always equals "today" in a committed artifact is a write-leak signature — compare sibling artifacts' values before believing it.
+
+---
+
 ## 2026-08-01 — Never include build artifacts or dependencies (.next, node_modules, lockfiles) when counting LOC
 
 **Pattern:** When calculating LOC for the frontend, the script failed to exclude Next.js build output directories (`frontend/.next/`), resulting in reporting 497,124 lines instead of the actual ~30,615 lines of true frontend source code.
