@@ -2,7 +2,7 @@
   "manifest_version": "canonical-v1",
   "rule_set_id": "copay_general_1_8",
   "section_id": "1.8",
-  "effective_date": "2026-08-03",
+  "effective_date": "2026-08-01",
   "rules_in_json": 30,
   "section_clause_total": 103,
   "encoded_clause_count": 56,
