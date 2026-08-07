@@ -7,8 +7,8 @@ marker but is itself still ``is_in_force`` — this script computes the
 *repealed content* (``text_tr`` minus ``in_force_text``) and scores how much
 the rule's own fields overlap with the *effective* repealed tokens (struck
 tokens that no longer appear anywhere in the current in-force text — tokens
-still present in force are ambiguous and cannot prove dependence on dead
-law), then proposes a class:
+still present in the current in-force text are ambiguous and cannot prove
+dependence on dead law), then proposes a class:
 
   - **A**      — rule fields overlap the repealed content significantly
                  (drug-name hit or overlap ≥ ``A_THRESHOLD``): the rule may be

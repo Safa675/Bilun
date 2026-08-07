@@ -1,4 +1,4 @@
-# TIER-1 Stale Refs — Phase 2 Karar Belgesi (onay bekliyor)
+# TIER-1 Stale Refs — Phase 2 Karar Belgesi (onaylandı 2026-08-06)
 
 **Tarih:** 2026-08-06
 **Kaynak:** `reports/agent/reimbursement/tier1-triage-2026-08-06.md` (otomatik öneri) + 3 paralel hukuki analiz (rule JSON × `text_tr`/`in_force_text` karşılaştırması, kaynak DOCX doğrulamalı)
