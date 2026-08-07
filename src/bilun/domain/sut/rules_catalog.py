@@ -49,6 +49,7 @@ logger = logging.getLogger("ilay.sut_rules_catalog")
 # Columns surfaced for clause drill-down (kept narrow to bound payload size).
 _CLAUSE_COLUMNS: tuple[str, ...] = (
     "clause_id",
+    "clause_key",
     "section_id",
     "section_title",
     "section_path",
@@ -1166,6 +1167,7 @@ def _clause_payload(row: dict[str, Any], rule_id: str) -> dict[str, Any]:
     match_scores = _json_obj(row.get("match_scores"))
     payload = {
         "clause_id": row.get("clause_id"),
+        "clause_key": row.get("clause_key"),
         "section_id": row.get("section_id"),
         "section_title": row.get("section_title"),
         "section_path": row.get("section_path"),
@@ -1363,11 +1365,12 @@ def list_clauses(
 
 
 def get_clause(clause_id: str) -> dict[str, Any] | None:
-    """Return a single clause by ``clause_id`` or unique ``clause_coordinate``.
+    """Return a single clause by ``clause_id``, ``clause_key``, or ``clause_coordinate``.
 
-    Track D dual-read: ``C######`` / ``F######`` look up by id; otherwise treat
-    ``clause_id`` as a coordinate when it uniquely matches an in-force row.
-    Ambiguous coordinates return ``None`` (caller should search instead).
+    Track D dual-read: ``C######`` / ``F######`` look up by id; ``coord#hash``
+    looks up by stable clause_key; otherwise treat the input as a coordinate
+    when it uniquely matches an in-force row.  Ambiguous coordinates return
+    ``None`` (caller should search instead).
     """
     frame = _load_coverage()
     if frame is None:
@@ -1386,6 +1389,16 @@ def get_clause(clause_id: str) -> dict[str, Any] | None:
             if forced.height == 1:
                 return _clause_payload(forced.row(0, named=True), None)
         return _clause_payload(matched.row(0, named=True), None)
+
+    # Track E Phase 4: clause_key (coord#hash) lookup.
+    if "clause_key" in frame.columns and "#" in key:
+        by_key = frame.filter(pl.col("clause_key").cast(pl.Utf8) == key)
+        if by_key.height == 1:
+            return _clause_payload(by_key.row(0, named=True), None)
+        if by_key.height > 1 and "is_in_force" in by_key.columns:
+            forced = by_key.filter(pl.col("is_in_force") == True)  # noqa: E712
+            if forced.height == 1:
+                return _clause_payload(forced.row(0, named=True), None)
 
     if "clause_coordinate" not in frame.columns:
         return None
@@ -1408,8 +1421,9 @@ def list_deferrals(
 ) -> tuple[list[dict[str, Any]], int]:
     """Return deferral_table rows joined to coverage for coordinate-first review.
 
-    Each row includes ``clause_id``, ``clause_coordinate`` (when known), status,
-    themes, reason, and a short text snippet from coverage/clauses parquet.
+    Each row includes ``clause_id``, ``clause_key``, ``clause_coordinate``
+    (when known), status, themes, reason, and a short text snippet from
+    coverage/clauses parquet.
     """
     from scripts.sut.prose.gate_b_generic import load_deferral_table
 
@@ -1462,6 +1476,7 @@ def list_deferrals(
         rows.append(
             {
                 "clause_id": clause_id,
+                "clause_key": src.get("clause_key") or None,
                 "clause_coordinate": coordinate,
                 "section_id": src.get("section_id") or entry.get("section_id"),
                 "status": st,
@@ -1520,6 +1535,7 @@ def resolve_prose_rule_gate_b_sources(
         resolved_ids: list[str] = []
         coordinate: str | None = None
         snippet: str | None = None
+        resolved_key: str | None = None
         if resolve_frame is not None:
             try:
                 from scripts.sut.prose.clause_identity import (
@@ -1528,10 +1544,11 @@ def resolve_prose_rule_gate_b_sources(
                     UnknownClauseCiteError,
                     is_clause_coordinate,
                     is_clause_id,
+                    is_clause_key,
                     resolve_gate_b_ref_to_clause_ids,
                 )
 
-                if is_clause_id(ref) or is_clause_coordinate(ref):
+                if is_clause_id(ref) or is_clause_coordinate(ref) or is_clause_key(ref):
                     resolved_ids = resolve_gate_b_ref_to_clause_ids(
                         ref,
                         resolve_frame,
@@ -1556,6 +1573,7 @@ def resolve_prose_rule_gate_b_sources(
                     )
                     if coordinate is None and "clause_coordinate" in row:
                         coordinate = row.get("clause_coordinate")
+                    resolved_key = row.get("clause_key")
                     snippet = (clause_display_text(row) or "")[:240] or None
             elif "clause_coordinate" in resolve_frame.columns:
                 hit = resolve_frame.filter(pl.col("clause_coordinate").cast(pl.Utf8) == ref)
@@ -1563,6 +1581,7 @@ def resolve_prose_rule_gate_b_sources(
                     row = hit.row(0, named=True)
                     resolved_ids = [str(row.get("clause_id") or "")]
                     coordinate = ref
+                    resolved_key = row.get("clause_key")
                     snippet = (clause_display_text(row) or "")[:240] or None
 
         if coordinate is None and ref and ref[0].isdigit():
@@ -1571,6 +1590,7 @@ def resolve_prose_rule_gate_b_sources(
             {
                 "ref": ref,
                 "clause_id": resolved_ids[0] if resolved_ids else None,
+                "clause_key": resolved_key,
                 "clause_coordinate": coordinate,
                 "text_snippet": snippet,
             }

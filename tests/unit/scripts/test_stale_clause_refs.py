@@ -25,6 +25,7 @@ def test_classify_refs_resolves_coordinates_without_tier4() -> None:
             "is_in_force": [True],
             "is_superseded_marker": [False],
             "had_struck_content": [False],
+            "clause_key": ["2.2.1.(1)#abcd1234"],
         }
     )
     out = classify_refs(refs, clauses)
@@ -32,6 +33,7 @@ def test_classify_refs_resolves_coordinates_without_tier4() -> None:
     assert coord_row.height == 1
     assert coord_row["tier"][0] == "OK"
     assert coord_row["clause_id"][0] == "C000001"
+    assert coord_row["clause_key"][0] == "2.2.1.(1)#abcd1234"
     dangling = out.filter(pl.col("gate_b_ref") == "C999999")
     assert dangling.height == 1
     assert dangling["tier"][0] == "TIER 4"
@@ -39,3 +41,4 @@ def test_classify_refs_resolves_coordinates_without_tier4() -> None:
     assert healthy.height == 1
     assert healthy["tier"][0] == "OK"
     assert healthy["clause_id"][0] == "C000001"
+    assert healthy["clause_key"][0] == "2.2.1.(1)#abcd1234"
