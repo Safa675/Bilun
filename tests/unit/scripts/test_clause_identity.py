@@ -389,3 +389,68 @@ def test_clause_key_identical_content_returns_all() -> None:
     )
     key = clause_key("4.2.34.(1)", "ayni")
     assert resolve_gate_b_ref_to_clause_ids(key, frame) == ["C000001", "C000002"]
+
+
+# --------------------------------------------------------------------------- #
+# Track E Phase 5/6 — re-extraction stability.
+#
+# The whole point of clause_key = coord#content_hash is that an UNCHANGED clause
+# keeps a byte-identical key across re-extraction, so references survive. These
+# tests lock that guarantee: identity derivation must be deterministic.
+# --------------------------------------------------------------------------- #
+def test_add_identity_columns_is_deterministic() -> None:
+    """Same input frame → byte-identical content_hash / clause_key columns."""
+    import pandas as pd
+
+    from scripts.sut.prose.extractor import add_identity_columns
+
+    frame = pd.DataFrame(
+        {
+            "clause_coordinate": ["4.2.33.D.(1)", "1.8.1.a", None],
+            "in_force_text": ["metin a", "50 TL", "metin c"],
+        }
+    )
+    first = add_identity_columns(frame)
+    second = add_identity_columns(frame)
+    assert first["content_hash"].tolist() == second["content_hash"].tolist()
+    assert first["clause_key"].tolist() == second["clause_key"].tolist()
+
+
+def test_content_hash_whitespace_and_reextract_stable() -> None:
+    """Cosmetic whitespace variation must NOT flip the content hash — otherwise
+    re-extraction would produce false 'amended' signals for identical law."""
+    a = "(1) Ranibizumab veya aflibersept etkin maddeli ilaçlar."
+    b = "(1)  Ranibizumab veya aflibersept  etkin maddeli ilaçlar.\n"
+    assert content_hash(a) == content_hash(b)
+
+
+def _latest_sut_docx():
+    """Return the newest consolidated SUT docx, or None when absent."""
+    from scripts.sut._common import find_latest_consolidated_sut_docx
+
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[3]
+    return find_latest_consolidated_sut_docx(root / "raw data")
+
+
+def test_double_extract_clause_keys_byte_identical(tmp_path) -> None:
+    """Re-extracting the SAME docx twice yields byte-identical clause_keys.
+
+    This is the Phase 6 're-extract stability' guarantee. Skipped when no
+    consolidated SUT docx is available (e.g. a slim CI checkout).
+    """
+    docx = _latest_sut_docx()
+    if docx is None:
+        pytest.skip("no consolidated SUT docx under raw data/")
+
+    from scripts.sut.prose.extractor import write_sut_clauses_parquet
+
+    first = tmp_path / "first.parquet"
+    second = tmp_path / "second.parquet"
+    frame_a = write_sut_clauses_parquet(docx, first)
+    frame_b = write_sut_clauses_parquet(docx, second)
+
+    assert len(frame_a) == len(frame_b)
+    assert frame_a["clause_key"].tolist() == frame_b["clause_key"].tolist()
+    assert frame_a["content_hash"].tolist() == frame_b["content_hash"].tolist()

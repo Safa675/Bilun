@@ -56,12 +56,33 @@ jobs:
           echo "old_date=$OLD_DATE" >> "$GITHUB_OUTPUT"
           echo "Captured OLD_DATE=$OLD_DATE"
 
+      - name: Snapshot old clause corpus (pre-extract)
+        if: steps.monitor.outputs.new_teblig != ''
+        run: |
+          # MUST run BEFORE extract_sut_prose.py — it overwrites
+          # data/gazette/sut_clauses.parquet with the re-extracted corpus.
+          # The snapshot is the "old" side of the Track E clause_key diff.
+          cp data/gazette/sut_clauses.parquet /tmp/sut_clauses_old.parquet
+          echo "Snapshot old corpus -> /tmp/sut_clauses_old.parquet"
+
       - name: Run ingest pipeline
         if: steps.monitor.outputs.new_teblig != ''
         run: |
           python scripts/sut/convert_xlsx_to_parquet.py
           python scripts/sut/build_curated_catalogs.py --overwrite
           python scripts/sut/extract_sut_prose.py
+
+      - name: Compute clause_key diff (Track E)
+        if: steps.monitor.outputs.new_teblig != ''
+        id: clause_diff
+        run: |
+          # Track E Phase 5: compare old vs re-extracted corpus by clause_key
+          # (coord#hash). STABLE clauses keep refs valid; AMENDED/NEW/REMOVED
+          # rows become the human triage list in the PR body.
+          python scripts/sut/sut_clause_diff.py \
+            /tmp/sut_clauses_old.parquet \
+            data/gazette/sut_clauses.parquet \
+            --new-date "${{ steps.monitor.outputs.new_teblig_date }}"
 
       - name: Compute delta
         if: steps.monitor.outputs.new_teblig != '' && steps.capture.outputs.old_date != ''
@@ -74,7 +95,10 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           title: "chore(sut): ingest ${{ steps.monitor.outputs.new_teblig_date }} amendment"
-          body: ${{ steps.delta.outputs.delta_summary }}
+          body: |
+            ${{ steps.clause_diff.outputs.clause_diff_summary }}
+
+            ${{ steps.delta.outputs.delta_summary }}
           branch: chore/sut-auto-update
           labels: sut-update, automated
           commit-message: "chore(sut): auto-ingest ${{ steps.monitor.outputs.new_teblig_date }} SUT amendment"
