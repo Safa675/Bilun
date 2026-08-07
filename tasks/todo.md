@@ -77,7 +77,7 @@ Pozisyonel `clause_id` (C*) kırılganlığını bitirip Branch B corpus update'
 - [x] Phase 0: C* envanteri + collision + baseline — `plans/update/2026-08-07-track-e-phase0-audit.md` (load-bearing ~2930; 82 özdeş-collision; composite key yetersiz, content-hash yeterli)
 - [x] Phase 1: `normalize_for_hash` + `content_hash` + `clause_key` (`clause_identity.py`) + golden fixture kilidi + 11 unit test (C006549 loading-dose dahil)
 - [x] Phase 2: extractor `add_identity_columns`/`backfill_identity_columns` + parquet backfill (23.05 docx raw'da olmadığı için rejener yerine kolon backfill; içerik byte-identical, clause_id değişmedi; `clause_key` NaN-safe)
-- [ ] Phase 3: resolver dual-read + load-bearing C* migrate (gate_b → deferral → config)
+- [x] Phase 3: resolver dual-read (`coordinate#hash` çözer, mismatch fail-loud) + lossless migration scripti. **Data migrasyonu 3b'ye deferred** — manifest builder'ları encoded_clause_ids'i clause_key ham tutuyor; önce builder tutarlılığı, sonra migrasyon.
 - [ ] Phase 4: C* public contract'tan kaldır (Track E exit)
 - [ ] Phase 5: Branch B'yi bağla — 01.07 re-extract + corpus update otomasyonu
 - [ ] Phase 6: doğrulama (re-extract stabilite testi, stale reporter önce/sonra)

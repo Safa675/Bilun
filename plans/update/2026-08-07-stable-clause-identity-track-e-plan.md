@@ -65,9 +65,9 @@
 - [x] Doğrulama: compile_rules 136 byte-identical, audit_manifest_parity 0 issue, 32 test geçti.
 
 ### Phase 3 — Resolver dual-read + collision migrate
-- [ ] `clause_identity` resolver: `coordinate` ve `coordinate#hash` çözer; belirsizlikte fail-loud (Track A3 politikası korunur).
-- [ ] Load-bearing kalan `C*` referanslarını (Phase 0 envanteri) `coordinate#hash`'e migrate et.
-- [ ] Dual-read geçişi: hem `C*` hem `clause_key` kabul; provenance testleri coordinate+hash çözer.
+- [x] `clause_identity` resolver: `coordinate#hash` (clause_key) çözer; content-mismatch'te fail-loud; identical-content collision'lar tüm eş-id'leri döner (Track A3 korunur). +6 resolver testi.
+- [x] Migration scripti: `migrate_gate_b_sources_to_clause_keys.py` (lossless — clause_key ancak tek clause_id'ye çözünürse taşır).
+- [ ] **3b (deferred):** data migrasyonu. Engel: bazı manifest builder'ları `encoded_clause_ids`'i clause_key olarak ham tutuyor (C*'ye çözmüyor) → C* bekleyen testler kırılıyor. Önce builder'ları clause_key→C* çözecek şekilde tutarlamak, sonra migrasyonu koşmak gerek. Dry-run: 843/2379 lossless taşınabilir, ~270 prose/amendment C* kalır.
 
 ### Phase 4 — C* demote/remove (Track E exit)
 - [ ] Public contract'tan `C*` kaldır (gate_b_sources, deferral, API schema `^[CF][0-9]{6}$` → coordinate pattern).

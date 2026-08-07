@@ -17,6 +17,7 @@ from scripts.sut.prose.clause_identity import (
     filter_encode_eligible,
     is_clause_coordinate,
     is_clause_id,
+    is_clause_key,
     is_encode_eligible_row,
     is_gate_b_source_ref,
     normalize_for_hash,
@@ -328,3 +329,63 @@ def test_add_identity_columns_adds_stable_columns() -> None:
     assert out["clause_key"][0] == f"4.2.33.D.(1)#{content_hash('metin a')}"
     # no coordinate -> hash-only key
     assert out["clause_key"][1] == content_hash("metin b")
+
+
+def _key_frame() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            "clause_id": ["C000001", "C000002", "C000003"],
+            "clause_coordinate": ["4.2.14.C.(1)", "4.2.14.C.(1)", "1.1.(1)"],
+            "clause_type": ["numbered_item", "numbered_item", "fikra"],
+            "clause_number": [1, 1, 1],
+            "clause_letter": [None, None, None],
+            "is_in_force": [True, True, True],
+            "content_hash": [
+                content_hash("ilac A"),
+                content_hash("ilac B"),
+                content_hash("ilac C"),
+            ],
+        }
+    )
+
+
+def test_clause_key_disambiguates_collision() -> None:
+    frame = _key_frame()
+    ka = clause_key("4.2.14.C.(1)", "ilac A")
+    kb = clause_key("4.2.14.C.(1)", "ilac B")
+    assert resolve_gate_b_ref_to_clause_ids(ka, frame) == ["C000001"]
+    assert resolve_gate_b_ref_to_clause_ids(kb, frame) == ["C000002"]
+
+
+def test_clause_key_is_valid_gate_b_ref() -> None:
+    ka = clause_key("4.2.14.C.(1)", "ilac A")
+    assert is_clause_key(ka)
+    assert is_gate_b_source_ref(ka)
+    assert is_gate_b_source_ref(content_hash("ilac C"))  # bare hash
+
+
+def test_clause_key_content_mismatch_raises() -> None:
+    frame = _key_frame()
+    with pytest.raises(UnknownClauseCiteError, match="content mismatch"):
+        resolve_gate_b_ref_to_clause_ids("4.2.14.C.(1)#deadbeef", frame)
+
+
+def test_clause_key_bare_hash_resolves() -> None:
+    frame = _key_frame()
+    assert resolve_gate_b_ref_to_clause_ids(content_hash("ilac C"), frame) == ["C000003"]
+
+
+def test_clause_key_identical_content_returns_all() -> None:
+    frame = pl.DataFrame(
+        {
+            "clause_id": ["C000001", "C000002"],
+            "clause_coordinate": ["4.2.34.(1)", "4.2.34.(1)"],
+            "clause_type": ["numbered_item", "numbered_item"],
+            "clause_number": [1, 1],
+            "clause_letter": [None, None],
+            "is_in_force": [True, True],
+            "content_hash": [content_hash("ayni"), content_hash("ayni")],
+        }
+    )
+    key = clause_key("4.2.34.(1)", "ayni")
+    assert resolve_gate_b_ref_to_clause_ids(key, frame) == ["C000001", "C000002"]

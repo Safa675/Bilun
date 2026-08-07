@@ -100,6 +100,39 @@ def clause_key(coordinate: str | None, text: str | None) -> str:
     return f"{coord}#{h}"
 
 
+CLAUSE_KEY_SEP = "#"
+_CONTENT_HASH_RE = re.compile(r"^[0-9a-f]{8}$")
+
+
+def is_content_hash(ref: str) -> bool:
+    """True if ``ref`` is a bare 8-hex content hash."""
+    return bool(_CONTENT_HASH_RE.fullmatch(str(ref).strip()))
+
+
+def split_clause_key(ref: str) -> tuple[str | None, str | None]:
+    """Split a clause_key into ``(coordinate, content_hash)``.
+
+    - ``"coord#hash"`` -> ``(coord, hash)``
+    - ``"hash"`` (bare) -> ``(None, hash)``
+    - ``"coord"``      -> ``(coord, None)``
+    """
+    text = str(ref).strip()
+    if CLAUSE_KEY_SEP in text:
+        coord, _, h = text.partition(CLAUSE_KEY_SEP)
+        return (coord.strip() or None), (h.strip() or None)
+    if is_content_hash(text):
+        return None, text
+    return text, None
+
+
+def is_clause_key(ref: str) -> bool:
+    """True if ``ref`` is a Track E clause_key (``coord#hash`` or bare hash)."""
+    coord, h = split_clause_key(ref)
+    if h is None:
+        return False
+    return coord is None or is_clause_coordinate(coord)
+
+
 class AmbiguousClauseCiteError(ValueError):
     """Raised when a coordinate cite matches more than one parquet row."""
 
@@ -126,7 +159,11 @@ def is_clause_coordinate(ref: str) -> bool:
 def is_gate_b_source_ref(ref: str) -> bool:
     """True if ``ref`` is a valid dual-period gate_b_sources entry."""
     text = str(ref).strip()
-    return is_clause_id(text) or is_clause_coordinate(text)
+    return (
+        is_clause_id(text)
+        or is_clause_coordinate(text)
+        or is_clause_key(text)
+    )
 
 
 def is_encode_eligible_row(row: dict[str, Any]) -> bool:
@@ -159,6 +196,59 @@ def _format_match_candidates(matched: pl.DataFrame) -> str:
         if cid:
             parts.append(f"{cid}({ctype})")
     return ", ".join(parts[:8]) + ("…" if len(parts) > 8 else "")
+
+
+def _resolve_clause_key(
+    coord: str | None,
+    chash: str,
+    clauses: pl.DataFrame,
+    *,
+    in_force_only: bool,
+    encode_eligible_only: bool,
+) -> list[str]:
+    """Resolve a Track E clause_key (``coord#hash`` or bare hash) to clause_ids.
+
+    The content hash disambiguates coordinate collisions and flips when the
+    clause text is amended, so a stale key fails loud (re-triage) instead of
+    silently resolving to changed law.
+    """
+    for col in ("content_hash",):
+        if col not in clauses.columns:
+            raise ValueError(f"clauses frame missing {col} column")
+    if coord is not None:
+        if "clause_coordinate" not in clauses.columns:
+            raise ValueError("clauses frame missing clause_coordinate column")
+        matched = clauses.filter(pl.col("clause_coordinate").cast(pl.Utf8) == coord)
+        if matched.is_empty():
+            raise UnknownClauseCiteError(f"unknown clause_key coordinate: {coord}")
+    else:
+        matched = clauses
+
+    hashed = matched.filter(pl.col("content_hash").cast(pl.Utf8) == chash)
+    if hashed.is_empty():
+        raise UnknownClauseCiteError(
+            f"clause_key content mismatch for {coord!r}#{chash}: clause text "
+            "changed since the key was authored (amendment) — re-triage."
+        )
+    matched = hashed
+
+    if in_force_only and "is_in_force" in matched.columns:
+        forced = matched.filter(pl.col("is_in_force") == True)  # noqa: E712
+        if not forced.is_empty():
+            matched = forced
+
+    pre_eligible = matched
+    if encode_eligible_only:
+        matched = filter_encode_eligible(matched)
+        if matched.is_empty():
+            raise NonEncodeEligibleCiteError(
+                f"clause_key {coord!r}#{chash} matches only non-encode-eligible "
+                f"rows (candidates: {_format_match_candidates(pre_eligible)})."
+            )
+
+    # All rows sharing a content_hash are semantically identical, so returning
+    # several ids for an identical-content collision is correct (not ambiguous).
+    return sorted({str(x) for x in matched["clause_id"].to_list() if x})
 
 
 def resolve_gate_b_ref_to_clause_ids(
@@ -201,6 +291,18 @@ def resolve_gate_b_ref_to_clause_ids(
                         "drop the linkage."
                     )
         return [text]
+
+    # Track E clause_key: ``coord#hash`` (or bare hash). The content hash
+    # disambiguates coordinate collisions and fails loud on amendment.
+    coord, chash = split_clause_key(text)
+    if chash is not None:
+        return _resolve_clause_key(
+            coord,
+            chash,
+            clauses,
+            in_force_only=in_force_only,
+            encode_eligible_only=encode_eligible_only,
+        )
 
     if not is_clause_coordinate(text):
         raise UnknownClauseCiteError(f"invalid gate_b_sources cite: {text!r}")
