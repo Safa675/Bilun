@@ -19,6 +19,14 @@ Format per entry:
 
 ---
 
+## 2026-08-07 — "Repo'da yok" demeden önce raw data envanterini çıkar — ingest state'e de bak
+
+**Pattern:** Copay freshness açığını açıklarken "01/07/2026 sonrası metin repo'da hiçbir yerde yok, yeni SUT paketi gerekir" dedim. Kullanıcı paketi gösterdi: `raw data/2026.07.01-Değişiklik Tebliği İşlenmiş Güncel 2013 SUT/` (konsolide, EK klasörlü). Dahası `data/gazette/ingest_state.json` paketin 07-12'de ingest edildiğini söylüyordu — eksik olan yalnızca Branch B (docx → clause corpus) imiş. İki ayrı kanıt (klasör + state dosyası) varken yokluk iddiası yaptım.
+
+**Rule:** Bir veri/artifact "repo'da yok" demeden önce: (1) `raw data/` + `data/` altında isim/envanter araması yap (klasör adları tarih önekli), (2) varsa ingest/state/manifest dosyalarını oku ("ingest edildi ama downstream koşmadı" yarım-başarı durumları vardır), (3) yokluk iddiasını ancak ikisi de boşsa kur. Yarım-ingest durumlarında doğru soru "paket var mı?" değil "hangi adım koştu, hangısı koşmadı?"dır.
+
+---
+
 ## 2026-08-01 — Never include build artifacts or dependencies (.next, node_modules, lockfiles) when counting LOC
 
 **Pattern:** When calculating LOC for the frontend, the script failed to exclude Next.js build output directories (`frontend/.next/`), resulting in reporting 497,124 lines instead of the actual ~30,615 lines of true frontend source code.
