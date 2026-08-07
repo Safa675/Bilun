@@ -91,7 +91,8 @@ class TestClauseDrilldown:
         assert len(clauses) == total
         first = clauses[0]
         for key in (
-            "clause_id",
+            "clause_key",
+            "paragraph_index",
             "section_id",
             "text_tr",
             "annex_refs",
@@ -128,7 +129,7 @@ class TestClauseDrilldown:
         page1, total = rc.get_rule_clauses("copay_rate_ek2c1", limit=3, offset=0)
         page2, _ = rc.get_rule_clauses("copay_rate_ek2c1", limit=3, offset=3)
         assert len(page1) == 3
-        assert {c["clause_id"] for c in page1}.isdisjoint({c["clause_id"] for c in page2})
+        assert {c["paragraph_index"] for c in page1}.isdisjoint({c["paragraph_index"] for c in page2})
         assert total >= 6
 
     def test_unknown_rule_returns_empty(self) -> None:
@@ -144,7 +145,7 @@ class TestSectionClauseDrilldown:
         assert total > 0
         assert len(clauses) == total
         first = clauses[0]
-        assert "clause_id" in first
+        assert "clause_key" in first
         assert "text_tr" in first
         assert "coverage_status" in first
         assert "primary_rule_id" in first
@@ -161,8 +162,8 @@ class TestSectionClauseDrilldown:
         page1, total = rc.list_section_clauses("1.8", limit=3, offset=0)
         page2, _ = rc.list_section_clauses("1.8", limit=3, offset=3)
         assert len(page1) == 3
-        assert {c["clause_id"] for c in page1}.isdisjoint(
-            {c["clause_id"] for c in page2}
+        assert {c["paragraph_index"] for c in page1}.isdisjoint(
+            {c["paragraph_index"] for c in page2}
         )
         assert total >= 6
 
@@ -176,17 +177,20 @@ class TestGlobalClauseSearch:
         assert total > 0
         assert any("azasitidin" in c["text_tr"].lower() for c in clauses)
 
-    def test_clause_id_search(self) -> None:
-        clauses, total = rc.list_clauses(q="C002684")
-        assert total == 1
-        assert clauses[0]["clause_id"] == "C002684"
+    def test_clause_key_search(self) -> None:
+        clause = rc.get_clause("C002684")
+        assert clause is not None
+        key = clause["clause_key"]
+        clauses, total = rc.list_clauses(q=key)
+        assert total >= 1
+        assert any(c["clause_key"] == key for c in clauses)
 
     def test_pagination_disjoint(self) -> None:
         page1, total = rc.list_clauses(limit=5, offset=0)
         page2, _ = rc.list_clauses(limit=5, offset=5)
         assert len(page1) == 5
-        assert {c["clause_id"] for c in page1}.isdisjoint(
-            {c["clause_id"] for c in page2}
+        assert {c["paragraph_index"] for c in page1}.isdisjoint(
+            {c["paragraph_index"] for c in page2}
         )
         assert total >= 10
 
@@ -224,7 +228,7 @@ class TestGlobalClauseSearch:
     def test_get_clause_returns_dict(self) -> None:
         clause = rc.get_clause("C002684")
         assert clause is not None
-        assert clause["clause_id"] == "C002684"
+        assert clause["clause_key"] is not None
         assert "text_tr" in clause
 
     def test_get_clause_missing_returns_none(self) -> None:
@@ -238,19 +242,19 @@ class TestGlobalClauseSearch:
             return
         by_coord = rc.get_clause(str(coord))
         assert by_coord is not None
-        assert by_coord["clause_id"] == clause["clause_id"]
+        assert by_coord["clause_key"] == clause["clause_key"]
         found, total = rc.list_clauses(q=str(coord))
         assert total >= 1
-        assert any(c["clause_id"] == clause["clause_id"] for c in found)
+        assert any(c["clause_key"] == clause["clause_key"] for c in found)
 
     def test_list_deferrals_coordinate_first(self) -> None:
         rows, total = rc.list_deferrals(limit=5)
         assert total >= 0
         for row in rows:
-            assert "clause_id" in row
             assert "status" in row
-            # Primary display field present (coordinate-first; C* opaque fallback).
+            # Coordinate-first public surface; clause_key is the stable identity.
             assert "clause_coordinate" in row
+            assert "clause_key" in row
 
     def test_resolve_prose_rule_gate_b_sources(self) -> None:
         detail = rc.resolve_prose_rule_gate_b_sources(

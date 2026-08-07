@@ -5405,7 +5405,7 @@
       "rule_id": "4.2.13.3.2.B.hcv_geno1_4_rgtr_duration",
       "sut_section": "4.2.13.3.2.B",
       "gate_b_sources": [
-        "C004912"
+        "4.2.13.3.2.B.(3)#95dbdde5"
       ],
       "drug_names": [
         "interferon",

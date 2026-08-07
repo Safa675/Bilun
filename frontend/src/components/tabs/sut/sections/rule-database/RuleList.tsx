@@ -255,7 +255,7 @@ export function RuleDetailPanel({
         <>
           <ul className="space-y-3 overflow-y-auto max-h-[55vh]">
             {clauses.map((clause) => (
-              <ClauseCard key={clause.clause_id} clause={clause} onNavigateToRule={onNavigateToRule} />
+              <ClauseCard key={clause.paragraph_index ?? clause.clause_key ?? ""} clause={clause} onNavigateToRule={onNavigateToRule} />
             ))}
           </ul>
           {total_pages > 1 && (

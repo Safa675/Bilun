@@ -91,8 +91,8 @@ class TestDetailEndpoint:
     def test_pagination_is_disjoint_and_consistent(self) -> None:
         page1 = rules_route.get_rule_detail("copay_rate_ek2c1", page=1, per_page=5)
         page2 = rules_route.get_rule_detail("copay_rate_ek2c1", page=2, per_page=5)
-        ids1 = {c["clause_id"] for c in page1["clauses"]}
-        ids2 = {c["clause_id"] for c in page2["clauses"]}
+        ids1 = {c["paragraph_index"] for c in page1["clauses"]}
+        ids2 = {c["paragraph_index"] for c in page2["clauses"]}
         assert ids1.isdisjoint(ids2)
         assert page1["clause_total"] == page2["clause_total"]
         expected_pages = (page1["clause_total"] + 4) // 5
@@ -176,7 +176,7 @@ class TestSectionClausesEndpoint:
         assert model.clause_total > 0
         assert len(model.clauses) <= model.per_page
         first = model.clauses[0]
-        assert first.clause_id is not None
+        assert first.clause_key is not None
         assert first.is_primary is False  # section context, no rule highlight
 
     @_needs_coverage
@@ -239,10 +239,10 @@ class TestGlobalClausesEndpoint:
     def test_single_clause(self) -> None:
         payload = rules_route.get_single_clause(clause_id="C002684")
         model = RuleClause.model_validate(payload)
-        assert model.clause_id == "C002684"
-        # Track E Phase 4: clause_key surfaced in API response
-        if model.clause_key:
-            assert "#" in model.clause_key or model.clause_key == model.clause_id
+        # Track E: clause_id is no longer public; clause_key/coordinate are.
+        assert model.clause_key is not None
+        assert model.paragraph_index is not None
+        assert "#" in model.clause_key
 
     @_needs_coverage
     def test_single_clause_not_found(self) -> None:
@@ -313,7 +313,7 @@ class TestTrackDCoordinateSurfaces:
         coord = by_id.get("clause_coordinate")
         assert coord
         by_coord = rules_route.get_single_clause(clause_id=coord)
-        assert by_coord["clause_id"] == "C002684"
+        assert by_coord["clause_key"] == by_id["clause_key"]
         RuleClause.model_validate(by_coord)
 
     def test_clause_lookup_by_clause_key(self) -> None:
@@ -322,7 +322,7 @@ class TestTrackDCoordinateSurfaces:
         if clause_key and "#" in clause_key:
             by_key = rules_route.get_single_clause(clause_id=clause_key)
             assert by_key is not None
-            assert by_key["clause_id"] == "C002684"
+            assert by_key["clause_key"] == clause_key
             RuleClause.model_validate(by_key)
 
     def test_deferrals_list(self) -> None:
@@ -330,7 +330,7 @@ class TestTrackDCoordinateSurfaces:
         model = DeferralListResponse.model_validate(payload)
         assert model.total > 0
         assert len(model.deferrals) <= 10
-        assert model.deferrals[0].clause_id
+        assert model.deferrals[0].clause_coordinate or model.deferrals[0].clause_key
 
     def test_prose_rule_sources_list(self) -> None:
         payload = rules_route.list_prose_rule_sources(

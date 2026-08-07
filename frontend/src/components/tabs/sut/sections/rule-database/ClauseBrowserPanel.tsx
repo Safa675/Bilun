@@ -26,9 +26,9 @@ import { fmtNum } from "../../shared";
 import { CLAUSES_PER_PAGE, COVERAGE_KEY, STATUS_FILTERS, UtilizationChip, useDeonticLabel } from "./shared";
 
 function clauseDeepLinkKey(clause: RuleClause): string {
-  // Prefer unique opaque id for deep-links / React keys. Coordinates collide
-  // across in-force rows; get_clause(coord) returns null when ambiguous.
-  return clause.clause_id || clause.clause_coordinate || "";
+  // Track E: clause_key (coord#hash) is the stable public cite for deep-links;
+  // get_clause resolves it. Coordinates alone collide across in-force rows.
+  return clause.clause_key || clause.clause_coordinate || "";
 }
 
 function CopyableCoordinate({
@@ -289,10 +289,12 @@ export function ClauseBrowserPanel({
                 {t("sections.ruleDatabase.clauses.resultCount", { count: fmtNum(total) })}
               </div>
               <ul className="space-y-1.5">
-                {clauses.map((clause) => {
+                {clauses.map((clause, i) => {
+                  const clauseIdentity = clause.paragraph_index ?? clause.clause_key ?? "";
                   const isSelected =
-                    selectedClause?.clause_id === clause.clause_id;
-                  const rowKey = clause.clause_id || clause.clause_coordinate || "";
+                    (selectedClause?.paragraph_index ?? selectedClause?.clause_key ?? "") ===
+                      clauseIdentity && clauseIdentity !== "";
+                  const rowKey = `${clauseIdentity || clause.clause_coordinate || ""}-${i}`;
                   return (
                     <li
                       key={rowKey}
@@ -309,7 +311,7 @@ export function ClauseBrowserPanel({
                       <div className="flex items-center gap-2">
                         <CopyableCoordinate
                           coordinate={clause.clause_coordinate}
-                          clauseId={clause.clause_id}
+                          clauseId={clause.clause_key}
                         />
                         <UtilizationChip clause={clause} />
                         {clause.primary_rule_id && (
@@ -395,7 +397,7 @@ export function ClauseCard({
       <div className="mb-1.5 flex flex-wrap items-center gap-2">
         <CopyableCoordinate
           coordinate={clause.clause_coordinate}
-          clauseId={clause.clause_id}
+          clauseId={clause.clause_key}
         />
         {sectionLabel && (
           <span className="font-mono text-[11px] font-semibold text-[var(--text-primary)]">

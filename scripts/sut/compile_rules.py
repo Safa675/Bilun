@@ -218,6 +218,19 @@ def _clauses_frame():
     return apply_clause_type_overrides(pl.read_parquet(path))
 
 
+@functools.lru_cache(maxsize=1)
+def _clause_id_to_key() -> dict:
+    """Map clause_id -> stable clause_key (Track E) for manifest dual-write."""
+    frame = _clauses_frame()
+    out: dict = {}
+    if "clause_key" not in frame.columns or "clause_id" not in frame.columns:
+        return out
+    for cid, key in zip(frame["clause_id"].to_list(), frame["clause_key"].to_list()):
+        if cid is not None and key is not None:
+            out[str(cid)] = str(key)
+    return out
+
+
 def _resolve_gate_b_ids(refs: list[Any]) -> set[str]:
     """Resolve gate_b_sources refs (C* / coordinate / clause_key) to clause_ids.
 
@@ -259,9 +272,12 @@ def _build_gap_manifest(rules: list[dict], rule_set_id: str, *, manifest_version
     encoded: set[str] = set()
     for r in rules:
         encoded.update(_resolve_gate_b_ids(r.get("gate_b_sources") or []))
+    id_to_key = _clause_id_to_key()
+    keys = {id_to_key[cid] for cid in encoded if cid in id_to_key}
     return build_canonical_encoded_shell(
         rule_set_id=rule_set_id,
         encoded_clause_ids=encoded,
+        encoded_clause_keys=keys,
         section_id=section_id,
         rules_in_json=len(rules),
         extra_keys=extra_keys,

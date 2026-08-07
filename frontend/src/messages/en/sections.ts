@@ -93,7 +93,7 @@ const sections = {
       deferrals: "Deferrals",
     },
     clauses: {
-      searchPlaceholder: "Search coordinate, clause_id, or text…",
+      searchPlaceholder: "Search coordinate, clause_key, or text…",
       copyCoordinate: "Copy coordinate",
       filterGap: "Gap",
       filterEncoded: "Encoded",

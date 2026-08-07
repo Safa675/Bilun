@@ -109,6 +109,7 @@ def build_canonical_encoded_shell(
     tier_a_pending_clause_ids: list[str] | set[str] | None = None,
     tier_b_pending_clause_ids: list[str] | set[str] | None = None,
     section_clause_total: int | None = None,
+    encoded_clause_keys: list[str] | set[str] | None = None,
 ) -> dict[str, Any]:
     """Minimal canonical-v1 manifest for encoded-only rule families (gap/wave2/r6 stubs).
 
@@ -162,6 +163,10 @@ def build_canonical_encoded_shell(
         payload["rules_in_json"] = rules_in_json
     if effective_date:
         payload["effective_date"] = effective_date
+    if encoded_clause_keys is not None:
+        # Track E stable identity (coord#hash) alongside the positional ids so
+        # re-extraction can be diffed without depending on C* stability.
+        payload["encoded_clause_keys"] = sorted({str(k) for k in encoded_clause_keys})
     if extra_keys:
         payload.update(extra_keys)
     return payload

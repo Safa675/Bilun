@@ -399,7 +399,7 @@ function SectionDetailPane({
         <>
           <ul className="space-y-2">
             {clauses.map((clause) => (
-              <ClauseCard key={clause.clause_id} clause={clause} onNavigateToRule={onNavigateToRule} />
+              <ClauseCard key={clause.paragraph_index ?? clause.clause_key ?? ""} clause={clause} onNavigateToRule={onNavigateToRule} />
             ))}
           </ul>
           {totalPages > 1 && (

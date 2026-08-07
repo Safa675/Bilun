@@ -17,7 +17,7 @@ rules:
   deontic: REGULATORY_ACTION
   gate_b_sources:
   - 3.1.4.n
-  - C002801
+  - 3.1.4.(2)#e50fc314
   condition:
     diagnosis_package_material_unbundled: true
   action:

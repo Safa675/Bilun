@@ -4,7 +4,8 @@ import type { RuleClause } from "@/lib/api/sut";
 
 function clause(overrides: Partial<RuleClause>): RuleClause {
   return {
-    clause_id: "C000001",
+    clause_key: "1.1.(1)#c000001a",
+    paragraph_index: 1,
     section_id: null,
     section_title: null,
     section_path: null,
