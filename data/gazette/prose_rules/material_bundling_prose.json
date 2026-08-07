@@ -123,7 +123,7 @@
         "message_tr": "Malzeme kodu EK-3/C listelerinde yok — Kurumca karşılanmaz (§3.1.2(2))."
       },
       "gate_b_sources": [
-        "3.1.2.(2)"
+        "C002707"
       ]
     },
     {
@@ -890,7 +890,7 @@
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "3.1.4.n",
-        "3.1.4.(2)"
+        "C002801"
       ],
       "condition": {
         "diagnosis_package_material_unbundled": true

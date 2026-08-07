@@ -57,8 +57,18 @@ Commit the working-tree changes (removal of the Finans Coder / coding-resolver p
 - [x] Phase 2: analiz tamam — 33 A/REVIEW vakası 3 paralel subagent ile incelendi → 12 RE-ENCODE, 21 KEEP, 0 DELETE; karar belgesi `plans/update/2026-08-06-tier1-phase2-decisions.md`
 - [x] Phase 2: Safa onayı (2026-08-06)
 - [x] Phase 3: 12 RE-ENCODE uygulandı (YAML kaynaklar → compile), golden sabitler bilinçli güncellendi, skorlayıcı iyileştirildi (A=23→5); PR açıldı
-- [ ] Phase 4: TIER-2 örnekleme (~30 ref) + politika kararı
-- [ ] Phase 5: TIER-4 dangling sınıflama
+- [x] Phase 4: TIER-2 örnekleme — 37 vaka, 0/37 gürültü, politika belgesi `plans/update/2026-08-06-tier2-phase4-policy.md`
+- [x] Phase 4 uygulama: 4 re-point + siklosporin re-encode + 2 silme (T2 687→674) — PR #57
+- [ ] Phase 5: TIER-4 dangling sınıflama (154 ref: tipo vs extractor açığı)
+- [ ] Açık PR'leri kapat: #55 (copilot docs follow-up), #57 (T2 burn-down) — §11 review kontrolüyle
+- [ ] Phase 6 (opsiyonel): T1 count CI uyarısı
+
+---
+
+## Task: 01.07.2026 SUT clause corpus güncellemesi (Branch B) — BEKLEMEDE
+
+Plan: `plans/update/2026-08-07-sut-clause-corpus-update-plan.md`.
+Triage planı bitmeden başlanmayacak (Safa kararı 2026-08-07).
 - [ ] Phase 6 (opsiyonel): T1 count CI uyarısı
 
 ### Out of Scope

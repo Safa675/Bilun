@@ -262,23 +262,6 @@
       ]
     },
     {
-      "rule_id": "2.4.2.A.(6).transplant_except_dialysis_unable",
-      "sut_section": "2.4.2.A",
-      "condition": {
-        "procedure_category": "stem_cell_transplant",
-        "dialysis_unable_vascular_access": false,
-        "health_board_report": false
-      },
-      "action": {
-        "billable": false,
-        "denial_tr": "diyaliz mümkün olmayan (sağlık kurulu raporuyla belgeli) hastalar hariç kök hücre nakli koşulu",
-        "severity": "error"
-      },
-      "gate_b_sources": [
-        "2.4.2.A.(6)"
-      ]
-    },
-    {
       "rule_id": "2.4.2.B-2.(4).mesenchymal_stem_cell_separate_bill",
       "sut_section": "2.4.2.B-2",
       "condition": {

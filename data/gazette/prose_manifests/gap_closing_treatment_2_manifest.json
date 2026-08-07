@@ -2,7 +2,7 @@
   "manifest_version": "canonical-v1",
   "rule_set_id": "gap_closing_treatment_2",
   "section_id": "",
-  "section_clause_total": 44,
+  "section_clause_total": 43,
   "encoded_clause_ids": [
     "2.2.1.B-3.(3)",
     "2.2.2.B-1.(4)",
@@ -17,7 +17,6 @@
     "2.3.(1)",
     "2.3.1.(4)",
     "2.3.1.(5)",
-    "2.4.2.A.(6)",
     "2.4.2.B-2.(4)",
     "2.4.4.F-3.(1)",
     "2.4.4.H.(1)",
@@ -49,7 +48,7 @@
     "C000661",
     "C000686"
   ],
-  "encoded_clause_count": 44,
+  "encoded_clause_count": 43,
   "tier_c_deferred_clause_ids": [],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
@@ -111,10 +110,6 @@
     },
     {
       "clause_id": "2.3.1.(5)",
-      "manifest_status": "encoded"
-    },
-    {
-      "clause_id": "2.4.2.A.(6)",
       "manifest_status": "encoded"
     },
     {
@@ -238,5 +233,5 @@
       "manifest_status": "encoded"
     }
   ],
-  "rules_in_json": 44
+  "rules_in_json": 43
 }

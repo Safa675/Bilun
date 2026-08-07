@@ -537,10 +537,9 @@
         "göz hastalıkları"
       ],
       "gate_b_sources": [
-        "4.2.33.D.(1)"
+        "C006575"
       ],
-      "message_tr": "Siklosporin göz damlası — 3 göz hastalıkları uzmanı 1 yıl süreli sağlık kurulu raporu (§4.2.33.E).",
-      "verification_status": "struck_clause_no_replacement"
+      "message_tr": "Siklosporin göz damlası — göz hastalıkları uzman hekimince düzenlenen 1 yıl süreli uzman hekim raporu (§4.2.33.E)."
     },
     {
       "rule_id": "4.2.33.E.sisteamin_sistinozis",
