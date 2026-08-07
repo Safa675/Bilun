@@ -21,5 +21,5 @@ rules:
   - enfeksiyon hastalıkları
   message_tr: HCV yeniden tedavi — önceki peginterferon/ribavirin/PI deneyimi sağlık raporunda belirtilmelidir (§4.2.13.3.2.A).
   gate_b_sources:
-  - C004903
+  - 4.2.13.3.2.A.(3)#70ce05fd
 source_note: Exported from drug_indication_prose.json (YAML source migration)

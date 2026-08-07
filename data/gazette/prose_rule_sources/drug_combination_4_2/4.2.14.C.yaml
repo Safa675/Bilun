@@ -57,7 +57,7 @@ rules:
     severity: error
   gate_b_sources:
   - C005064
-  - C005111
+  - 4.2.14.C.(4)#f03d7d17
 - rule_id: 4.2.14.C.(melanoma).braf_sequential_no_pay
   sut_section: 4.2.14.C
   condition:
@@ -75,7 +75,7 @@ rules:
       mümkün)
     severity: error
   gate_b_sources:
-  - C005224
+  - 4.2.14.C.(5)#33818622
 - rule_id: 4.2.14.C.(alk).alk_tki_after_progression_seq_combo_no_pay
   sut_section: 4.2.14.C
   condition:
@@ -96,10 +96,10 @@ rules:
       ödenmez
     severity: error
   gate_b_sources:
-  - C005241
-  - C005406
-  - C005411
-  - C005614
+  - 4.2.14.C.(3)#97cd4894
+  - 4.2.14.C.(3)#2a23df5c
+  - 4.2.14.C.(3)#98232f80
+  - 4.2.14.C.(3)#f0e9cc53
 - rule_id: 4.2.14.C.(glioblastoma).bevacizumab_after_temozolomide
   sut_section: 4.2.14.C
   condition:
@@ -114,7 +114,7 @@ rules:
     payment_tr: glioblastoma (DSÖ IV); temozolomid sonrası nüks/progresyonda kemoterapi ile progresyona kadar bevacizumab
       ödenir
   gate_b_sources:
-  - C005364
+  - 4.2.14.C.(2)#b02f5e1c
 - rule_id: 4.2.14.C.(myeloma).pi_combo_no_pay
   sut_section: 4.2.14.C
   condition:
@@ -135,10 +135,10 @@ rules:
       dışında kombine kullanılırsa ödenmez
     severity: error
   gate_b_sources:
-  - C005547
-  - C005551
-  - C005606
-  - C005710
+  - 4.2.14.C.(5)#cd11b239
+  - 4.2.14.C.(3)#5de7a144
+  - 4.2.14.C.(4)#f03f6832
+  - 4.2.14.C.(4)#3bc1ad03
   - C005715
 - rule_id: 4.2.14.C.(myeloma).cross_resistance_daratumumab_isatuximab_no_pay
   sut_section: 4.2.14.C
@@ -153,7 +153,7 @@ rules:
     denial_tr: daratumumab direnci varsa isatuksimab ödenmez (tersi de geçerli)
     severity: error
   gate_b_sources:
-  - C005608
+  - 4.2.14.C.(5)#6c3de16f
 - rule_id: 4.2.14.C.(breast).fulvestrant_after_ai_adjuvant
   sut_section: 4.2.14.C
   condition:
@@ -169,8 +169,8 @@ rules:
     billable: true
     payment_tr: adjuvan AI ≥12 ay iken veya AI sonrası 12 ay içinde nüks/metastaz gelişirse fulvestrant + kombi ödenir
   gate_b_sources:
-  - C005568
-  - C005589
+  - 4.2.14.C.b#dad61f95
+  - 4.2.14.C.b#eb90e076
 - rule_id: 4.2.14.C.(pembro_nsclc_pdl1_lt_50).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -195,8 +195,8 @@ rules:
     - ecog_score
     - brain_metastasis_status
   gate_b_sources:
-  - C005751
-  - C005752
+  - 4.2.14.C.(1)#c2e95516
+  - 4.2.14.C.(2)#b7714019
 - rule_id: 4.2.14.C.(pembro_nsclc_pdl1_ge_50).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -218,7 +218,7 @@ rules:
     - pdl1_expression_pct
     - ecog_score
   gate_b_sources:
-  - C005753
+  - 4.2.14.C.(3)#a72a15c1
 - rule_id: 4.2.14.C.(pembro_tnbc_neoadjuvant).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -239,7 +239,7 @@ rules:
     - tumor_size_cm
     - lymph_node_status
   gate_b_sources:
-  - C005754
+  - 4.2.14.C.(4)#cfa3f148
 - rule_id: 4.2.14.C.(pembro_tnbc_pdl1_cps10).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -258,7 +258,7 @@ rules:
     - pdl1_cps
     - tnbc_status
   gate_b_sources:
-  - C005755
+  - 4.2.14.C.(5)#537cf02f
 - rule_id: 4.2.14.C.(pembro_nasopharyngeal).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -279,7 +279,7 @@ rules:
     - pdl1_cps
     - ecog_score
   gate_b_sources:
-  - C005756
+  - 4.2.14.C.(6)#c8a69f1f
 - rule_id: 4.2.14.C.(atezo_nsclc_adjuvant_pdl1_50).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -301,7 +301,7 @@ rules:
     - pdl1_tc_pct
     - tnm_stage
   gate_b_sources:
-  - C005758
+  - 4.2.14.C.(1)#d27edf9a
 - rule_id: 4.2.14.C.(atezo_nsclc_pdl1_50).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -323,7 +323,7 @@ rules:
     - pdl1_expression_pct
     - ecog_score
   gate_b_sources:
-  - C005759
+  - 4.2.14.C.(2)#25712d2c
 - rule_id: 4.2.14.C.(atezo_sclc_2l).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -344,7 +344,7 @@ rules:
     - prior_chemo_lines
     - progression_status
   gate_b_sources:
-  - C005760
+  - 4.2.14.C.(3)#807cbea3
 - rule_id: 4.2.14.C.(atezo_sclc_extensive_1l).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -365,7 +365,7 @@ rules:
     - ecog_score
     - sclc_stage
   gate_b_sources:
-  - C005761
+  - 4.2.14.C.(4)#b81417b1
 - rule_id: 4.2.14.C.(atezo_hcc_bevacizumab).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -387,7 +387,7 @@ rules:
     - ecog_score
     - child_pugh_score
   gate_b_sources:
-  - C005762
+  - 4.2.14.C.(5)#fa317ed5
 - rule_id: 4.2.14.C.(durva_biliary_pdl1_1).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -408,7 +408,7 @@ rules:
     clinical_fields_needed:
     - pdl1_expression_pct
   gate_b_sources:
-  - C005764
+  - 4.2.14.C.(1)#ccdfcb6c
 - rule_id: 4.2.14.C.(durva_nsclc_stage3_pdl1_1).tier_c_review
   sut_section: 4.2.14.C
   condition:
@@ -429,4 +429,4 @@ rules:
     - pdl1_expression_pct
     - tnm_stage
   gate_b_sources:
-  - C005765
+  - 4.2.14.C.(2)#f9fd3e35

@@ -10,4 +10,4 @@ rules:
     billable: true
     payment_tr: MEDULA arızası nedeniyle provizyon alınamayan sürede hizmet bedeli tutanakla ödenir
   gate_b_sources:
-  - C008050
+  - 5.2.(2)#81b3103b

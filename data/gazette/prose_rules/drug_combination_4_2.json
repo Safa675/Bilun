@@ -77,7 +77,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C003605"
+        "4.2.1.C-1.(2)#d7d9f193"
       ]
     },
     {
@@ -98,7 +98,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C003831"
+        "4.2.1.C-7.(3)#2cf0a2bc"
       ]
     },
     {
@@ -364,7 +364,7 @@
       },
       "gate_b_sources": [
         "C005064",
-        "C005111"
+        "4.2.14.C.(4)#f03d7d17"
       ]
     },
     {
@@ -388,7 +388,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C005224"
+        "4.2.14.C.(5)#33818622"
       ]
     },
     {
@@ -416,10 +416,10 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C005241",
-        "C005406",
-        "C005411",
-        "C005614"
+        "4.2.14.C.(3)#97cd4894",
+        "4.2.14.C.(3)#2a23df5c",
+        "4.2.14.C.(3)#98232f80",
+        "4.2.14.C.(3)#f0e9cc53"
       ]
     },
     {
@@ -440,7 +440,7 @@
         "payment_tr": "glioblastoma (DSÖ IV); temozolomid sonrası nüks/progresyonda kemoterapi ile progresyona kadar bevacizumab ödenir"
       },
       "gate_b_sources": [
-        "C005364"
+        "4.2.14.C.(2)#b02f5e1c"
       ]
     },
     {
@@ -467,10 +467,10 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C005547",
-        "C005551",
-        "C005606",
-        "C005710",
+        "4.2.14.C.(5)#cd11b239",
+        "4.2.14.C.(3)#5de7a144",
+        "4.2.14.C.(4)#f03f6832",
+        "4.2.14.C.(4)#3bc1ad03",
         "C005715"
       ]
     },
@@ -492,7 +492,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C005608"
+        "4.2.14.C.(5)#6c3de16f"
       ]
     },
     {
@@ -517,8 +517,8 @@
         "payment_tr": "adjuvan AI ≥12 ay iken veya AI sonrası 12 ay içinde nüks/metastaz gelişirse fulvestrant + kombi ödenir"
       },
       "gate_b_sources": [
-        "C005568",
-        "C005589"
+        "4.2.14.C.b#dad61f95",
+        "4.2.14.C.b#eb90e076"
       ]
     },
     {
@@ -552,8 +552,8 @@
         ]
       },
       "gate_b_sources": [
-        "C005751",
-        "C005752"
+        "4.2.14.C.(1)#c2e95516",
+        "4.2.14.C.(2)#b7714019"
       ]
     },
     {
@@ -585,7 +585,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005753"
+        "4.2.14.C.(3)#a72a15c1"
       ]
     },
     {
@@ -615,7 +615,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005754"
+        "4.2.14.C.(4)#cfa3f148"
       ]
     },
     {
@@ -643,7 +643,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005755"
+        "4.2.14.C.(5)#537cf02f"
       ]
     },
     {
@@ -673,7 +673,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005756"
+        "4.2.14.C.(6)#c8a69f1f"
       ]
     },
     {
@@ -704,7 +704,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005758"
+        "4.2.14.C.(1)#d27edf9a"
       ]
     },
     {
@@ -736,7 +736,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005759"
+        "4.2.14.C.(2)#25712d2c"
       ]
     },
     {
@@ -766,7 +766,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005760"
+        "4.2.14.C.(3)#807cbea3"
       ]
     },
     {
@@ -796,7 +796,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005761"
+        "4.2.14.C.(4)#b81417b1"
       ]
     },
     {
@@ -828,7 +828,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005762"
+        "4.2.14.C.(5)#fa317ed5"
       ]
     },
     {
@@ -858,7 +858,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005764"
+        "4.2.14.C.(1)#ccdfcb6c"
       ]
     },
     {
@@ -888,7 +888,7 @@
         ]
       },
       "gate_b_sources": [
-        "C005765"
+        "4.2.14.C.(2)#f9fd3e35"
       ]
     },
     {
@@ -987,7 +987,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C006116"
+        "4.2.23.(3)#cf0aee43"
       ]
     },
     {
@@ -1027,7 +1027,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C006163"
+        "4.2.24.B.b#b2e2ea59"
       ]
     },
     {
@@ -1143,7 +1143,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C006627"
+        "4.2.34.(2)#37edca05"
       ]
     },
     {
@@ -1169,7 +1169,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C006628"
+        "4.2.34.(3)#65e35a3d"
       ]
     },
     {

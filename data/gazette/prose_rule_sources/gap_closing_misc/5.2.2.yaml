@@ -11,7 +11,7 @@ rules:
     denial_tr: reçeteler ay son günü provizyon döneminin sonlandırılmasıyla faturalandırılır
     severity: error
   gate_b_sources:
-  - C008067
+  - 5.2.2.a#f93c85eb
 - rule_id: 5.2.2.(b).blood_hemophilia_prescription_2x_monthly
   sut_section: 5.2.2
   condition:
@@ -24,7 +24,7 @@ rules:
     denial_tr: kan ürünü/hemofili reçeteleri ayda iki dönem (1-15 ve 16-son, takip eden 3 iş günü) faturalandırılır
     severity: error
   gate_b_sources:
-  - C008068
+  - 5.2.2.b#d43bf5b6
 - rule_id: 5.2.2.(separate).prescriptions_billed_separately
   sut_section: 5.2.2
   condition:

@@ -58,7 +58,7 @@ rules:
 - rule_id: 4.2.49.B.neuro.risdiplam_multidisciplinary_monitoring_b
   sut_section: 4.2.49.B
   gate_b_sources:
-  - C007045
+  - 4.2.49.B.(2)#e0dba5fb
   drug_names:
   - risdiplam
   icd10_codes:

@@ -14,8 +14,8 @@ rules:
       yapılmalı; otherwise ödenmez
     severity: error
   gate_b_sources:
-  - C001102
-  - C001109
+  - 2.4.4.G-1.a#48b56be2
+  - 2.4.4.G-1.a#44411236
   - 2.4.4.G-1.b
 - rule_id: 2.4.4.G-1.(1).cytogenetic_tests_scope_header
   sut_section: 2.4.4.G-1
@@ -45,7 +45,7 @@ rules:
       alımıyla; bünyesinde ruhsatlı GHDM bulunan 2. basamak sunucu veya 3. basamak özel sunucularda faturalandırılır
     severity: error
   gate_b_sources:
-  - C001102
+  - 2.4.4.G-1.a#48b56be2
 - rule_id: 2.4.4.G-1.(a).cytogenetic_molecular_3rd_step_public_service_procurement
   sut_section: 2.4.4.G-1
   condition:
@@ -60,7 +60,7 @@ rules:
       sağlanarak faturalandırılabilir
     severity: error
   gate_b_sources:
-  - C001109
+  - 2.4.4.G-1.a#44411236
 - rule_id: 2.4.4.G-1.(b).cytogenetic_molecular_licensed_ghdm_facilities
   sut_section: 2.4.4.G-1
   condition:

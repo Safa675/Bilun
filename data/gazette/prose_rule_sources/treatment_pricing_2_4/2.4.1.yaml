@@ -70,7 +70,7 @@ rules:
       yaşından önce başlamış ve devam ediyorsa karşılanır
     severity: error
   gate_b_sources:
-  - C000752
+  - 2.4.1.a#60650e50
 - rule_id: 2.4.1.(b).early_orthodontic_p407321_p407322
   sut_section: 2.4.1
   condition:
@@ -90,7 +90,7 @@ rules:
     procedure_package: EK-2/Ç-7.1
     annex_basis: EK-2/Ç
   gate_b_sources:
-  - C000753
+  - 2.4.1.b#cb7d05c8
 - rule_id: 2.4.1.(c).fixed_orthodontics_class1_2_3_min_intervals
   sut_section: 2.4.1
   condition:
@@ -113,7 +113,7 @@ rules:
     procedure_package: EK-2/Ç-7.1
     annex_basis: EK-2/Ç
   gate_b_sources:
-  - C000754
+  - 2.4.1.c#face6d33
 - rule_id: 2.4.1.(c_cleft).cleft_lip_palate_orthodontics_age_windows
   sut_section: 2.4.1
   condition:
@@ -132,4 +132,4 @@ rules:
     procedure_package: EK-2/Ç-7.1
     annex_basis: EK-2/Ç
   gate_b_sources:
-  - C000755
+  - 2.4.1.ç#c80443d2

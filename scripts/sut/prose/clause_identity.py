@@ -17,7 +17,9 @@ Track A3 resolve policy for ``gate_b_sources`` (compile assert):
 
 from __future__ import annotations
 
+import hashlib
 import re
+import unicodedata
 from typing import Any
 from collections.abc import Iterable
 
@@ -33,6 +35,102 @@ ENCODE_ELIGIBLE_TYPES = frozenset({"fikra", "bent", "numbered_item"})
 # A3: never link these in gate_b_sources (coordinates or C*/F*).
 # ``prose`` / ``amendment`` may still be cited via opaque C* (not via coordinates).
 STRUCTURAL_NON_LINKABLE_TYPES = frozenset({"chapter", "section_heading"})
+
+# ---------------------------------------------------------------------------
+# Track E — stable clause identity (content hash).
+#
+# ``clause_coordinate`` is the human-readable anchor, but it collides for
+# structurally-repeated items (e.g. many independent ``1)`` clauses under one
+# section). The content hash disambiguates collisions and, crucially, is STABLE
+# across re-extraction of an unchanged clause and FLIPS when the clause text is
+# amended — which is exactly the signal the corpus-update triage needs.
+#
+# Normalization is deliberately conservative: it removes only cosmetic variation
+# (whitespace runs, line endings, unicode compatibility forms). It must NOT touch
+# legally-meaningful characters; case is preserved. Golden fixtures in
+# ``tests/unit/scripts/test_clause_identity.py`` lock this behaviour.
+# ---------------------------------------------------------------------------
+
+_CONTENT_HASH_WHITESPACE_RE = re.compile(r"\s+")
+CONTENT_HASH_LENGTH = 8
+
+
+def normalize_for_hash(text: str | None) -> str:
+    """Deterministic, meaning-preserving normalization for content hashing.
+
+    - NFKC unicode normalization (compatibility composition)
+    - line endings normalized to ``"\\n"``
+    - every whitespace run folded to a single ASCII space
+    - leading/trailing whitespace stripped
+    - case PRESERVED (legal text is case-sensitive; no casefolding)
+    """
+    if text is None:
+        return ""
+    s = unicodedata.normalize("NFKC", str(text))
+    s = s.replace("\r\n", "\n").replace("\r", "\n")
+    s = _CONTENT_HASH_WHITESPACE_RE.sub(" ", s)
+    return s.strip()
+
+
+def content_hash(text: str | None, *, length: int = CONTENT_HASH_LENGTH) -> str:
+    """Stable sha256 prefix of the normalized clause text (Track E identity).
+
+    Identical clause content → identical hash (re-extraction safe). Any
+    substantive text change → different hash (flags the clause for triage).
+    """
+    normalized = normalize_for_hash(text)
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:length]
+
+
+def clause_key(coordinate: str | None, text: str | None) -> str:
+    """Stable public identity: ``coordinate`` alone when it is the anchor, or
+    ``coordinate#<hash>`` when a content disambiguator is required.
+
+    Callers decide uniqueness; this helper only formats. A missing/empty
+    coordinate falls back to a hash-only key so every clause still gets a
+    stable identity.
+    """
+    h = content_hash(text)
+    if coordinate is None:
+        return h
+    coord = str(coordinate).strip()
+    # Pandas missing values stringify to "nan"/"None"/"<NA>"; treat as absent.
+    if not coord or coord.lower() in {"nan", "none", "<na>"}:
+        return h
+    return f"{coord}#{h}"
+
+
+CLAUSE_KEY_SEP = "#"
+_CONTENT_HASH_RE = re.compile(r"^[0-9a-f]{8}$")
+
+
+def is_content_hash(ref: str) -> bool:
+    """True if ``ref`` is a bare 8-hex content hash."""
+    return bool(_CONTENT_HASH_RE.fullmatch(str(ref).strip()))
+
+
+def split_clause_key(ref: str) -> tuple[str | None, str | None]:
+    """Split a clause_key into ``(coordinate, content_hash)``.
+
+    - ``"coord#hash"`` -> ``(coord, hash)``
+    - ``"hash"`` (bare) -> ``(None, hash)``
+    - ``"coord"``      -> ``(coord, None)``
+    """
+    text = str(ref).strip()
+    if CLAUSE_KEY_SEP in text:
+        coord, _, h = text.partition(CLAUSE_KEY_SEP)
+        return (coord.strip() or None), (h.strip() or None)
+    if is_content_hash(text):
+        return None, text
+    return text, None
+
+
+def is_clause_key(ref: str) -> bool:
+    """True if ``ref`` is a Track E clause_key (``coord#hash`` or bare hash)."""
+    coord, h = split_clause_key(ref)
+    if h is None:
+        return False
+    return coord is None or is_clause_coordinate(coord)
 
 
 class AmbiguousClauseCiteError(ValueError):
@@ -61,7 +159,11 @@ def is_clause_coordinate(ref: str) -> bool:
 def is_gate_b_source_ref(ref: str) -> bool:
     """True if ``ref`` is a valid dual-period gate_b_sources entry."""
     text = str(ref).strip()
-    return is_clause_id(text) or is_clause_coordinate(text)
+    return (
+        is_clause_id(text)
+        or is_clause_coordinate(text)
+        or is_clause_key(text)
+    )
 
 
 def is_encode_eligible_row(row: dict[str, Any]) -> bool:
@@ -94,6 +196,65 @@ def _format_match_candidates(matched: pl.DataFrame) -> str:
         if cid:
             parts.append(f"{cid}({ctype})")
     return ", ".join(parts[:8]) + ("…" if len(parts) > 8 else "")
+
+
+def _resolve_clause_key(
+    coord: str | None,
+    chash: str,
+    clauses: pl.DataFrame,
+    *,
+    in_force_only: bool,
+    encode_eligible_only: bool,
+) -> list[str]:
+    """Resolve a Track E clause_key (``coord#hash`` or bare hash) to clause_ids.
+
+    The content hash disambiguates coordinate collisions and flips when the
+    clause text is amended, so a stale key fails loud (re-triage) instead of
+    silently resolving to changed law.
+    """
+    if "clause_coordinate" not in clauses.columns:
+        raise ValueError("clauses frame missing clause_coordinate column")
+    # Row hashes: prefer the stored ``content_hash`` column; fall back to
+    # computing from ``in_force_text`` so minimal frames (tests) still resolve.
+    if "content_hash" in clauses.columns:
+        row_hashes = clauses["content_hash"].cast(pl.Utf8)
+    elif "in_force_text" in clauses.columns:
+        row_hashes = pl.Series(
+            "content_hash", [content_hash(t) for t in clauses["in_force_text"]]
+        )
+    else:
+        raise ValueError("clauses frame missing content_hash/in_force_text column")
+
+    if coord is not None:
+        mask = (clauses["clause_coordinate"].cast(pl.Utf8) == coord) & (
+            row_hashes == chash
+        )
+    else:
+        mask = row_hashes == chash
+    matched = clauses.filter(mask)
+    if matched.is_empty():
+        raise UnknownClauseCiteError(
+            f"clause_key content mismatch for {coord!r}#{chash}: clause text "
+            "changed since the key was authored (amendment) — re-triage."
+        )
+
+    if in_force_only and "is_in_force" in matched.columns:
+        forced = matched.filter(pl.col("is_in_force") == True)  # noqa: E712
+        if not forced.is_empty():
+            matched = forced
+
+    pre_eligible = matched
+    if encode_eligible_only:
+        matched = filter_encode_eligible(matched)
+        if matched.is_empty():
+            raise NonEncodeEligibleCiteError(
+                f"clause_key {coord!r}#{chash} matches only non-encode-eligible "
+                f"rows (candidates: {_format_match_candidates(pre_eligible)})."
+            )
+
+    # All rows sharing a content_hash are semantically identical, so returning
+    # several ids for an identical-content collision is correct (not ambiguous).
+    return sorted({str(x) for x in matched["clause_id"].to_list() if x})
 
 
 def resolve_gate_b_ref_to_clause_ids(
@@ -136,6 +297,18 @@ def resolve_gate_b_ref_to_clause_ids(
                         "drop the linkage."
                     )
         return [text]
+
+    # Track E clause_key: ``coord#hash`` (or bare hash). The content hash
+    # disambiguates coordinate collisions and fails loud on amendment.
+    coord, chash = split_clause_key(text)
+    if chash is not None:
+        return _resolve_clause_key(
+            coord,
+            chash,
+            clauses,
+            in_force_only=in_force_only,
+            encode_eligible_only=encode_eligible_only,
+        )
 
     if not is_clause_coordinate(text):
         raise UnknownClauseCiteError(f"invalid gate_b_sources cite: {text!r}")

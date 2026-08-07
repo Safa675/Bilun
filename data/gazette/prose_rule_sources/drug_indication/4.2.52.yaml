@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.52.gout.febuxostat_1yr_report_specialty_coverage
   sut_section: 4.2.52
   gate_b_sources:
-  - C007065
+  - 4.2.52.b#c56546b4
   drug_names:
   - febuxostat
   icd10_codes:
@@ -29,7 +29,7 @@ rules:
 - rule_id: 4.2.52.gout.febuxostat_hematology_3mo_report_coverage
   sut_section: 4.2.52
   gate_b_sources:
-  - C007068
+  - 4.2.52.b#ea44d82f
   drug_names:
   - febuxostat
   icd10_codes:
@@ -59,7 +59,7 @@ rules:
 - rule_id: 4.2.52.gout.febuxostat_hyperuricemia_allopurinol_failure_coverage
   sut_section: 4.2.52
   gate_b_sources:
-  - C007064
+  - 4.2.52.a#42554256
   drug_names:
   - febuxostat
   - febuxostat
@@ -82,7 +82,7 @@ rules:
 - rule_id: 4.2.52.gout.febuxostat_tumor_lysis_hematologic_coverage
   sut_section: 4.2.52
   gate_b_sources:
-  - C007067
+  - 4.2.52.a#c5ffbb6a
   drug_names:
   - febuxostat
   icd10_codes:

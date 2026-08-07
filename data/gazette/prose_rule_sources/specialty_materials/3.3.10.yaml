@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.10
   deontic: MUST_BILL
   gate_b_sources:
-  - C003115
+  - 3.3.10.a#691dc993
   condition:
     material_name_any:
     - sakropelvik
@@ -33,7 +33,7 @@ rules:
   sut_section: 3.3.10
   deontic: MUST_BILL
   gate_b_sources:
-  - C003127
+  - 3.3.10.a#e8e0ac7d
   condition:
     material_name_any:
     - asiri aktif mesane
@@ -47,7 +47,7 @@ rules:
   sut_section: 3.3.10
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003140
+  - 3.3.10.(2)#40845f77
   condition:
     material_name_any:
     - asiri aktif mesane
@@ -61,7 +61,7 @@ rules:
   sut_section: 3.3.10
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003141
+  - 3.3.10.(3)#314f81d8
   condition:
     material_name_any:
     - agrilı mesane

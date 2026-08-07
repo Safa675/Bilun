@@ -28,7 +28,7 @@ rules:
       tıbbi malzeme ve ilaçlar ile EK-2/A'ya dahil işlemler için ayrıca ilave ücret alınamaz; bunlar dışındaki hizmetler için
       Kurum fiyatını aşmamak üzere ilave ücret alınabilir
   gate_b_sources:
-  - C000383
+  - 1.9.1.(1)#43cd69a1
   verification_status: ai_generated_pending_review
   content_note: 'Scope rule: extra fee permissible at private/foundation-univ, EXCLUDED for EK-2/A/B/C/Ç bundled items. Extra
     fees never billable to Kurum (C003399).'

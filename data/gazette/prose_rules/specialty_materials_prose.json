@@ -864,7 +864,7 @@
       "sut_section": "3.3.26",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003201"
+        "3.3.26.(1)#0fe47a2a"
       ],
       "condition": {
         "orthopedic_tumor_prosthesis_third_step_facility": true
@@ -1200,7 +1200,7 @@
       "sut_section": "3.3.33.B",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003348"
+        "3.3.33.B.a#bc08bd2d"
       ],
       "condition": {
         "cochlear_implant_threshold_adult_child_criteria": true
@@ -1216,7 +1216,7 @@
       "sut_section": "3.3.33.B",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003349"
+        "3.3.33.B.b#b5229bfb"
       ],
       "condition": {
         "cochlear_implant_threshold_infant_criteria": true
@@ -1360,7 +1360,7 @@
       "sut_section": "3.3.33.Ç",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003366"
+        "3.3.33.Ç.(1)#e2a4a97c"
       ],
       "condition": {
         "middle_ear_implant_bilateral_stable_threshold": true
@@ -1376,7 +1376,7 @@
       "sut_section": "3.3.33.Ç",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003369"
+        "3.3.33.Ç.(2)#1e338727"
       ],
       "condition": {
         "middle_ear_implant_no_retrocochlear_pathology_required": true
@@ -1488,7 +1488,7 @@
       "sut_section": "3.3.4.A",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002950"
+        "3.3.4.A.a#bd1aa4e6"
       ],
       "condition": {
         "posterior_spinal_allograft_xenograft_per_level_cap": true
@@ -1504,7 +1504,7 @@
       "sut_section": "3.3.4.A",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002951"
+        "3.3.4.A.b#d016bdd3"
       ],
       "condition": {
         "posterior_spinal_synthetic_graft_per_level_cap": true
@@ -1775,7 +1775,7 @@
       "sut_section": "3.3.10",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003115"
+        "3.3.10.a#691dc993"
       ],
       "condition": {
         "material_name_any": [
@@ -1813,7 +1813,7 @@
       "sut_section": "3.3.10",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003127"
+        "3.3.10.a#e8e0ac7d"
       ],
       "condition": {
         "material_name_any": [
@@ -1832,7 +1832,7 @@
       "sut_section": "3.3.10",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003140"
+        "3.3.10.(2)#40845f77"
       ],
       "condition": {
         "material_name_any": [
@@ -1851,7 +1851,7 @@
       "sut_section": "3.3.10",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003141"
+        "3.3.10.(3)#314f81d8"
       ],
       "condition": {
         "material_name_any": [
@@ -1930,7 +1930,7 @@
       "sut_section": "3.3.2",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C002873"
+        "3.3.2.(1)#83632f1f"
       ],
       "condition": {
         "material_name_any": [
@@ -2058,7 +2058,7 @@
       "sut_section": "3.3.27",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003260"
+        "3.3.27.ç#33ac9eae"
       ],
       "condition": {
         "material_name_any": [
@@ -2349,7 +2349,7 @@
       "sut_section": "3.3.32",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003298"
+        "3.3.32.a#14320e10"
       ],
       "condition": {
         "material_name_any": [
@@ -2368,7 +2368,7 @@
       "sut_section": "3.3.32",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003299"
+        "3.3.32.b#71ef2714"
       ],
       "condition": {
         "material_name_any": [
@@ -2387,7 +2387,7 @@
       "sut_section": "3.3.32",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003300"
+        "3.3.32.c#0e9fb77c"
       ],
       "condition": {
         "material_name_any": [
@@ -2406,7 +2406,7 @@
       "sut_section": "3.3.32",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003301"
+        "3.3.32.ç#c6369f06"
       ],
       "condition": {
         "material_name_any": [
@@ -3405,7 +3405,7 @@
       "sut_section": "3.1.2",
       "deontic": "MUST_NOT_BILL",
       "gate_b_sources": [
-        "C002727"
+        "3.1.2.b#f3470615"
       ],
       "condition": {
         "miatli_material_early_renewal_misrouted_responsible": true
@@ -3421,7 +3421,7 @@
       "sut_section": "3.1.2",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C002728"
+        "3.1.2.c#19ee9464"
       ],
       "condition": {
         "protez_ortez_early_renewal_repair_cost_over_75pct": true
@@ -3437,7 +3437,7 @@
       "sut_section": "3.1.2",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C002729"
+        "3.1.2.ç#a9bd5aa5"
       ],
       "condition": {
         "protez_ortez_intermediate_part_renewal_documented": true
@@ -3582,7 +3582,7 @@
       "deontic": "MUST_BILL",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C002857"
+        "3.3.1.a#d5976b55"
       ],
       "condition": {
         "material_name_any": [
@@ -3603,7 +3603,7 @@
       "deontic": "MUST_BILL",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C002858"
+        "3.3.1.b#45000427"
       ],
       "condition": {
         "material_name_any": [

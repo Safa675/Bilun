@@ -13,4 +13,4 @@ rules:
   action:
     box_counting: one_box_per_line_item
   gate_b_sources:
-  - C000325
+  - 1.8.2.c#ad81dc3b

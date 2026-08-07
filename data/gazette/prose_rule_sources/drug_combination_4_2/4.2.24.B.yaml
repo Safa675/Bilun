@@ -14,4 +14,4 @@ rules:
     denial_tr: LABA/LAMA/İKS birbiriyle kombine kullanılırsa ödenmez
     severity: error
   gate_b_sources:
-  - C006163
+  - 4.2.24.B.b#b2e2ea59

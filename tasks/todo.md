@@ -75,3 +75,28 @@ Triage planı bitmeden başlanmayacak (Safa kararı 2026-08-07).
 - TIER-3 (intentionally low-priority)
 - Reporter'ı gate'e çevirmek
 - TIER-2/TIER-4 toplu düzeltmesi (sadece örnekleme + politika)
+
+---
+
+## Task: Track E — Stable clause identity (coordinate + content-hash)
+
+### Goal
+Pozisyonel `clause_id` (C*) kırılganlığını bitirip Branch B corpus update'i güvenli/otomatik yapmak. Plan: `plans/update/2026-08-07-stable-clause-identity-track-e-plan.md`.
+
+### Subtasks
+- [x] Phase 0: C* envanteri + collision + baseline — `plans/update/2026-08-07-track-e-phase0-audit.md` (load-bearing ~2930; 82 özdeş-collision; composite key yetersiz, content-hash yeterli)
+- [x] Phase 1: `normalize_for_hash` + `content_hash` + `clause_key` (`clause_identity.py`) + golden fixture kilidi + 11 unit test (C006549 loading-dose dahil)
+- [x] Phase 2: extractor `add_identity_columns`/`backfill_identity_columns` + parquet backfill (23.05 docx raw'da olmadığı için rejener yerine kolon backfill; içerik byte-identical, clause_id değişmedi; `clause_key` NaN-safe)
+- [x] Phase 3: resolver dual-read (`coordinate#hash` çözer, mismatch fail-loud) + lossless migration scripti.
+- [x] Phase 3b: builder tutarlılığı + data migrasyonu — 843 cite→clause_key (lossless), encoded_clause_ids tutarlı C*, 0 sızıntı, tam suite pre-existing baseline'da (24F/2416P).
+- [ ] Phase 4: C* public contract'tan kaldır (Track E exit)
+- [ ] Phase 5: Branch B'yi bağla — 01.07 re-extract + corpus update otomasyonu
+- [ ] Phase 6: doğrulama (re-extract stabilite testi, stale reporter önce/sonra)
+
+### Out of Scope
+- Fatura F* kimlik sistemi (D5, ayrı epic)
+- Yeni prose kural yazımı
+- Coordinate hiyerarşi zenginleştirme (content-hash yeterli)
+
+### Review
+- Phase 1: 31 test geçti (test_clause_identity), ruff temiz; tam pytest 24F(pre-existing)/2410P/20S

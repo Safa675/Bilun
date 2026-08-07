@@ -24,7 +24,7 @@ rules:
 - rule_id: 4.7.hemophilia_specialist_prescription_coverage
   sut_section: '4.7'
   gate_b_sources:
-  - C007816
+  - 4.7.(4)#90f60967
   prescriber_specialties:
   - hematoloji
   - iç hastalıkları

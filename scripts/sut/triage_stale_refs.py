@@ -53,6 +53,8 @@ CLAUSE_TEXT_COLS = [
     "text_tr",
     "in_force_text",
     "amendment_refs",
+    # Track E Phase 4: stable public identity (coord#hash).
+    "clause_key",
 ]
 
 # Overlap thresholds (plan K1: conservative, wide REVIEW band).
@@ -279,6 +281,7 @@ def build_triage(
                 "rule_id": row["rule_id"],
                 "gate_b_ref": row["gate_b_ref"],
                 "clause_id": row["clause_id"],
+                "clause_key": row.get("clause_key"),
                 "clause_coordinate": row.get("clause_coordinate"),
                 "amendment_refs": "; ".join(amends) if amends else "",
                 "struck_content": struck,
@@ -297,6 +300,7 @@ def build_triage(
                 "rule_id": pl.Utf8,
                 "gate_b_ref": pl.Utf8,
                 "clause_id": pl.Utf8,
+                "clause_key": pl.Utf8,
                 "clause_coordinate": pl.Utf8,
                 "amendment_refs": pl.Utf8,
                 "struck_content": pl.Utf8,
@@ -355,6 +359,7 @@ def render_report(triage: pl.DataFrame, date_tag: str) -> str:
     detail_cols = [
         "rule_set_id",
         "rule_id",
+        "clause_key",
         "clause_coordinate",
         "overlap_score",
         "matched_tokens",
@@ -387,7 +392,8 @@ def render_report(triage: pl.DataFrame, date_tag: str) -> str:
             p("")
             p("---\n")
             continue
-        shown = sub.select(detail_cols).with_columns(
+        shown_cols = [c for c in detail_cols if c in sub.columns]
+        shown = sub.select(shown_cols).with_columns(
             pl.col("struck_content").map_elements(
                 lambda t: _truncate(t), return_dtype=pl.Utf8
             )

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.1.C.4210_psoriasis_tertiary_dermatology_1yr
   sut_section: 4.2.1.C-4
   gate_b_sources:
-  - C003676
+  - 4.2.1.C-4.a#cf770292
   drug_names:
   - biyolojik ajan
   - anti-tnf
@@ -26,8 +26,8 @@ rules:
 - rule_id: 4.2.1.C.rheum_pmr_coverage_6mo_report
   sut_section: 4.2.1.C-4
   gate_b_sources:
-  - C003683
-  - C003684
+  - 4.2.1.C-4.a#7fb6d07e
+  - 4.2.1.C-4.b#97186e21
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -107,7 +107,7 @@ rules:
   message_tr: Ustekinumab — plak psoriyaziste sağlık kurulu raporunda başlangıç PASI değeri ve tedavi şeması belirtilmelidir
     (§4.2.1.C-4).
   gate_b_sources:
-  - C003677
+  - 4.2.1.C-4.b#c11e87a9
   - 4.2.1.C-4.ç
   prescriber_specialties:
   - dermatoloji

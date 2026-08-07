@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.1.C.psoriasis_tertiary_dermatology_4mo_6mo_pasi_c10
   sut_section: 4.2.1.C-10
   gate_b_sources:
-  - C003869
+  - 4.2.1.C-10.c#20994c93
   drug_names:
   - biyolojik ajan
   - ustekinumab
@@ -28,7 +28,7 @@ rules:
 - rule_id: 4.2.1.C.rheum_pmr_6mo_coverage_c10
   sut_section: 4.2.1.C-10
   gate_b_sources:
-  - C003874
+  - 4.2.1.C-10.c#2c2d1792
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -60,7 +60,7 @@ rules:
   message_tr: İxekizumab — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte sağlık kurulu raporunda önceki tedavi yetersizliği
     belirtilmelidir (§4.2.1.C-10).
   gate_b_sources:
-  - C003872
+  - 4.2.1.C-10.a#e728fe29
 - rule_id: 4.2.1.ixekizumab_psoriasis_pasi_systemic_failure
   sut_section: 4.2.1.C-10
   drug_names:
@@ -73,5 +73,5 @@ rules:
   message_tr: İxekizumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi
     gerekir (§4.2.1.C-10).
   gate_b_sources:
-  - C003867
+  - 4.2.1.C-10.a#dd1ff209
 source_note: Exported from drug_indication_prose.json (YAML source migration)

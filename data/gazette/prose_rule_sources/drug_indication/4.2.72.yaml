@@ -3,8 +3,8 @@ rules:
 - rule_id: 4.2.72.meta.mitochondrial_cytopathy_supplementary_foods_880tl_coverage
   sut_section: 4.2.72
   gate_b_sources:
-  - C007213
-  - C007221
+  - 4.2.72.(1)#e2d62aaf
+  - 4.2.72.(2)#ddf0b05e
   drug_names:
   - takviye edici gıdalar (mitokondriyal sitopati)
   icd10_codes:

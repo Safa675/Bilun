@@ -154,6 +154,7 @@ def _t1_frame() -> pl.DataFrame:
             "rule_id": ["loading_rule", "quote_rule", "unrelated_rule"],
             "gate_b_ref": ["4.2.33.(7)"] * 3,
             "clause_id": ["C006549"] * 3,
+            "clause_key": ["4.2.33.(7)#deadbeef"] * 3,
         }
     )
 
@@ -166,6 +167,7 @@ def _clauses_frame() -> pl.DataFrame:
             "text_tr": [_TEXT_TR],
             "in_force_text": [_IN_FORCE],
             "amendment_refs": ['["RG-16/06/2020/31157"]'],
+            "clause_key": ["4.2.33.(7)#deadbeef"],
         }
     )
 
@@ -207,6 +209,8 @@ def test_build_triage_classifies_golden_fixture() -> None:
     assert by_rule["unrelated_rule"]["overlap_score"] == 0.0
     # amendment metadata survives for RG grouping
     assert by_rule["loading_rule"]["amendment_refs"] == "RG-16/06/2020/31157"
+    # Track E Phase 4: clause_key surfaced in triage output
+    assert by_rule["loading_rule"]["clause_key"] == "4.2.33.(7)#deadbeef"
 
 
 def test_build_triage_empty_input() -> None:

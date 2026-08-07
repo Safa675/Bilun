@@ -14,4 +14,4 @@ rules:
     denial_tr: anakinra biyolojik DMARD veya JAK inhibitörü ile kombine kullanılırsa ödenmez
     severity: error
   gate_b_sources:
-  - C003831
+  - 4.2.1.C-7.(3)#2cf0a2bc

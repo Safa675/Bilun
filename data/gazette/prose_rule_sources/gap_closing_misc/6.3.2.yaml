@@ -12,4 +12,4 @@ rules:
       ödenmez
     severity: error
   gate_b_sources:
-  - C008243
+  - 6.3.2.b#568573e2

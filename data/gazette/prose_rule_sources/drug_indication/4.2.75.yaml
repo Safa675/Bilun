@@ -3,8 +3,8 @@ rules:
 - rule_id: 4.2.75.peds.child_endocrinology_metabolism_1yr_coverage
   sut_section: 4.2.75
   gate_b_sources:
-  - C007271
-  - C007286
+  - 4.2.75.b#f996c733
+  - 4.2.75.a#e84a7b6d
   report_required: true
   report_duration_months: 12
   report_specialties:

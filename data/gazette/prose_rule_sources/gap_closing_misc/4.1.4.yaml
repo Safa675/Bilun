@@ -33,7 +33,7 @@ rules:
     payment_tr: EK-4/D listesinde (*) yıldız işareti bulunmayan ilaçlar için Bakanlık endikasyon dışı ilaç kullanım onayı
       aranmaz
   gate_b_sources:
-  - C003465
+  - 4.1.4.b#11c4ab43
   verification_status: ai_generated_pending_review
   content_note: EK-4/D drugs WITHOUT the (*) marker are exempt from off-label approval.
 - rule_id: 4.1.4.(c).offlabel_approval_max_1_year_validity
@@ -46,7 +46,7 @@ rules:
     billable: true
     payment_tr: endikasyon dışı ilaç kullanım onayı en fazla 1 yıl süreyle geçerlidir
   gate_b_sources:
-  - C003466
+  - 4.1.4.c#0e5d165a
   verification_status: ai_generated_pending_review
   content_note: Off-label approval valid max 1 year.
 - rule_id: 4.1.4.(c).offlabel_prescriber_must_be_relevant_specialist

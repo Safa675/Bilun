@@ -70,6 +70,12 @@ CLAUSE_STALENESS_COLS = [
     "is_in_force",
     "is_superseded_marker",
     "had_struck_content",
+    # Track E: needed so clause_key (coord#hash) gate_b refs resolve during
+    # classification (content disambiguation); not part of the report output.
+    "in_force_text",
+    "content_hash",
+    # Track E Phase 4: stable public identity (coord#hash) surfaced in reports.
+    "clause_key",
 ]
 
 # Display order: highest severity first. TIER 4 (dangling) is technically a
@@ -190,6 +196,7 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
                 "rule_id": pl.Utf8,
                 "gate_b_ref": pl.Utf8,
                 "clause_id": pl.Utf8,
+                "clause_key": pl.Utf8,
                 "is_in_force": pl.Boolean,
                 "is_superseded_marker": pl.Boolean,
                 "had_struck_content": pl.Boolean,
@@ -207,7 +214,7 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
     )
 
     by_id = id_refs.join(
-        clauses.select(CLAUSE_STALENESS_COLS),
+        clauses.select([c for c in CLAUSE_STALENESS_COLS if c in clauses.columns]),
         left_on="gate_b_ref",
         right_on="clause_id",
         how="left",
@@ -226,7 +233,7 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
         by_id = by_id.with_columns(pl.lit(None).cast(pl.Utf8).alias("clause_id"))
 
     by_coord = other_refs.join(
-        clauses.select(CLAUSE_STALENESS_COLS),
+        clauses.select([c for c in CLAUSE_STALENESS_COLS if c in clauses.columns]),
         left_on="gate_b_ref",
         right_on="clause_coordinate",
         how="left",
@@ -261,6 +268,7 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
                         "rule_id": row["rule_id"],
                         "gate_b_ref": ref,
                         "clause_id": None,
+                        "clause_key": None,
                         "is_in_force": None,
                         "is_superseded_marker": None,
                         "had_struck_content": None,
@@ -276,6 +284,7 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
                             "rule_id": row["rule_id"],
                             "gate_b_ref": ref,
                             "clause_id": cid,
+                            "clause_key": None,
                             "is_in_force": None,
                             "is_superseded_marker": None,
                             "had_struck_content": None,
@@ -289,6 +298,7 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
                             "rule_id": row["rule_id"],
                             "gate_b_ref": ref,
                             "clause_id": crec.get("clause_id"),
+                            "clause_key": crec.get("clause_key"),
                             "is_in_force": crec.get("is_in_force"),
                             "is_superseded_marker": crec.get("is_superseded_marker"),
                             "had_struck_content": crec.get("had_struck_content"),
@@ -321,6 +331,7 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
         "rule_id",
         "gate_b_ref",
         "clause_id",
+        "clause_key",
         "is_in_force",
         "is_superseded_marker",
         "had_struck_content",
@@ -408,9 +419,12 @@ def render_report(
 
         # Per-rule_set detail tables, with the high-volume guard for tier 3.
         for rsid in rule_sets:
-            sub = tier_df.filter(pl.col("rule_set_id") == rsid).select(
-                "rule_set_id", "rule_id", "gate_b_ref", "clause_id"
-            )
+            detail_select = [
+                c for c in
+                ["rule_set_id", "rule_id", "gate_b_ref", "clause_key", "clause_id"]
+                if c in tier_df.columns
+            ]
+            sub = tier_df.filter(pl.col("rule_set_id") == rsid).select(detail_select)
             if sub.height == 0:
                 continue
 

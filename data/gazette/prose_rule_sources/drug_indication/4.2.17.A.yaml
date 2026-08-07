@@ -19,7 +19,7 @@ rules:
 - rule_id: 4.2.17.A.hormone_ablation_cancer_high_fracture
   sut_section: 4.2.17.A
   gate_b_sources:
-  - C006035
+  - 4.2.17.A.(1)#a9312531
   drug_names:
   - bifosfonat
   - denosumab
@@ -47,9 +47,9 @@ rules:
 - rule_id: 4.2.17.A.osteoporosis_2yr_report_combo_one_paid
   sut_section: 4.2.17.A
   gate_b_sources:
-  - C006018
+  - 4.2.17.A.(1)#625f29f8
   - 4.2.17.A.(6)
-  - C006031
+  - 4.2.17.A.a#68310181
   drug_names:
   - bifosfonat
   - raloksifen
@@ -113,7 +113,7 @@ rules:
   message_tr: Bifosfonat grubu — iç hastalıkları, fizik tedavi, ortopedi, romatoloji, endokrinoloji veya kadın doğum uzman
     hekim raporu gerekir (§4.2.17.A).
   gate_b_sources:
-  - C006019
+  - 4.2.17.A.(2)#69ab97ab
   - 4.2.17.A.(5)
   prescriber_specialties:
   - iç hastalıkları
@@ -212,7 +212,7 @@ rules:
   message_tr: Osteoporoz ilaç tedavisi — rapor tarihinden önce son iki yıl içinde KMY ölçümü planlanmalı; ölçüm yılda birden
     sık yapılamaz (§4.2.17.A).
   gate_b_sources:
-  - C006019
+  - 4.2.17.A.(2)#69ab97ab
 - rule_id: 4.2.17.secondary_osteoporosis_steroid_board
   sut_section: 4.2.17.A
   drug_names:
@@ -259,5 +259,5 @@ rules:
   message_tr: Stronsiyum ranelat / raloksifen — bifosfonat tolere edilemeyen veya yanıtsız osteoporozlu hastalarda uzman hekim
     raporu gerekir (§4.2.17.A).
   gate_b_sources:
-  - C006031
+  - 4.2.17.A.a#68310181
 source_note: Exported from drug_indication_prose.json (YAML source migration)

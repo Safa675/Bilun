@@ -48,7 +48,7 @@ rules:
   message_tr: İnsülin degludek+aspart kombinasyonu — labil glisemi/hipoglisemi riskinde endokrinoloji içeren sağlık kurulu
     raporu (24 ay) ve uzman reçetesi gerekir (§4.2.38).
   gate_b_sources:
-  - C006730
+  - 4.2.38.b#0e9d9eb0
   report_required: true
   report_specialties:
   - endokrinoloji
@@ -74,7 +74,7 @@ rules:
 - rule_id: 4.2.38.diab.empagliflozin_linagliptin_basal_insulin_permission
   sut_section: 4.2.38
   gate_b_sources:
-  - C006740
+  - 4.2.38.b#20ad5df5
   drug_names:
   - empagliflozin
   - linagliptin

@@ -20,7 +20,7 @@ rules:
 - rule_id: 4.2.70.A.continuation_gfr_6mwt_nyha_criteria
   sut_section: 4.2.70.A
   gate_b_sources:
-  - C007198
+  - 4.2.70.A.(4)#7ea641ca
   drug_names:
   - tafamidis
   - akoramidis
@@ -38,7 +38,7 @@ rules:
 - rule_id: 4.2.70.A.tertiary_3cardiology_3mo_report
   sut_section: 4.2.70.A
   gate_b_sources:
-  - C007197
+  - 4.2.70.A.(3)#048e7f94
   drug_names:
   - tafamidis
   - akoramidis
@@ -61,7 +61,7 @@ rules:
 - rule_id: 4.2.70.A.ttr_sintigraphy_mutation_analysis
   sut_section: 4.2.70.A
   gate_b_sources:
-  - C007186
+  - 4.2.70.A.d#be185f50
   drug_names:
   - tafamidis
   - akoramidis

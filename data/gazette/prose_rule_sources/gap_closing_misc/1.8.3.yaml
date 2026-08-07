@@ -12,4 +12,4 @@ rules:
     copay_required: true
     payment_tr: sözleşmesiz serbest dişhekimliği/kurum ağız protezi katılım payı ödeme aşamasında alınır
   gate_b_sources:
-  - C000347
+  - 1.8.3.b#11d2f4bb

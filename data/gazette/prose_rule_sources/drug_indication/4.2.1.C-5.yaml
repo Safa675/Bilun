@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.1.C.das28_1p2_improvement_continue_c5
   sut_section: 4.2.1.C-5
   gate_b_sources:
-  - C003694
+  - 4.2.1.C-5.c#ab4b75a0
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -36,7 +36,7 @@ rules:
   message_tr: Tosilizumab subkütan — dev hücreli arteritte 3 ay etkinlik değerlendirmesi sonrası 6 ay süreli romatoloji/immünoloji
     sağlık kurulu raporu gerekir (§4.2.1.C-5).
   gate_b_sources:
-  - C003722
+  - 4.2.1.C-5.(2)#b223df7c
   prescriber_specialties:
   - romatoloji
   - klinik immunoloji
@@ -59,7 +59,7 @@ rules:
   message_tr: Tosilizumab subkütan — dev hücreli arteritte koşulları sağlayan hastalarda 3 ay süreli sağlık kurulu raporu
     gerekir (§4.2.1.C-5).
   gate_b_sources:
-  - C003719
+  - 4.2.1.C-5.(1)#1893ac6c
   prescriber_specialties:
   - romatoloji
   - klinik immunoloji
@@ -82,7 +82,7 @@ rules:
   message_tr: Tosilizumab subkütan — dev hücreli arteritte yüksek doz steroid kontrendike olduğunda 3 ay süreli romatoloji/immünoloji
     sağlık kurulu raporu gerekir (§4.2.1.C-5).
   gate_b_sources:
-  - C003719
+  - 4.2.1.C-5.(1)#1893ac6c
   prescriber_specialties:
   - romatoloji
   - klinik immunoloji
@@ -126,7 +126,7 @@ rules:
   message_tr: Tosilizumab — juvenil artritte ilk 3 ay ACR pediatrik 30 yanıtı sonrası 3 ay süreli sağlık kurulu raporu ile
     tedaviye devam edilir (§4.2.1.C-5).
   gate_b_sources:
-  - C003699
+  - 4.2.1.C-5.b#9f383022
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -147,7 +147,7 @@ rules:
   message_tr: Tosilizumab — juvenil artritte ACR pediatrik 50 yanıtı ile 6 ay süreli sağlık kurulu raporu ile tedaviye devam
     edilir (§4.2.1.C-5).
   gate_b_sources:
-  - C003699
+  - 4.2.1.C-5.b#9f383022
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -168,8 +168,8 @@ rules:
   message_tr: Tosilizumab — NSAİ/methotrexat/anti-TNF sonrası ACR pediatrik 30 yanıtı alınamayan juvenil artritte 3 ay süreli
     çocuk romatoloji sağlık kurulu raporu gerekir (§4.2.1.C-5).
   gate_b_sources:
-  - C003698
-  - C003714
+  - 4.2.1.C-5.a#d0200250
+  - 4.2.1.C-5.c#3a4b9dd5
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -195,7 +195,7 @@ rules:
   message_tr: Tosilizumab — DMARD/anti-TNF yetersiz romatoid artritte methotreksat ile kombine 3 ay süreli sağlık kurulu raporu
     gerekir (§4.2.1.C-5).
   gate_b_sources:
-  - C003692
+  - 4.2.1.C-5.a#9e9d422a
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -225,7 +225,7 @@ rules:
   message_tr: Tosilizumab — anti-TNF yetersiz aktif romatoid artritte (DAS28>5.1) üniversite/eğitim hastanesi 3 ay süreli
     sağlık kurulu raporu gerekir (§4.2.1.C-5).
   gate_b_sources:
-  - C003691
+  - 4.2.1.C-5.a#cdb4ee2a
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -253,7 +253,7 @@ rules:
   message_tr: Tosilizumab — romatoid artritte 3. ay DAS28 skorunda 0,6 puandan fazla düşüş yeni 3 ay süreli sağlık kurulu
     raporunda belirtilmelidir (§4.2.1.C-3 b).
   gate_b_sources:
-  - C003665
+  - 4.2.1.C-3.b#2dd6de20
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -280,7 +280,7 @@ rules:
   message_tr: Tosilizumab — C-5 romatoid artritte 3. ay DAS28 skorunda 0,6 puandan fazla düşüş yeni 3 ay süreli sağlık kurulu
     raporunda belirtilmelidir (§4.2.1.C-5 b).
   gate_b_sources:
-  - C003693
+  - 4.2.1.C-5.b#2dd6de20
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -335,8 +335,8 @@ rules:
   message_tr: Tosilizumab/anakinra — sistemik juvenil artritte ACR pediatrik 50 yanıtı ile 3 ay süreli sağlık kurulu raporu
     gerekir (§4.2.1.C-5).
   gate_b_sources:
-  - C003705
-  - C003711
+  - 4.2.1.C-5.(3)#2c269f32
+  - 4.2.1.C-5.(3)#542b1c2c
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji

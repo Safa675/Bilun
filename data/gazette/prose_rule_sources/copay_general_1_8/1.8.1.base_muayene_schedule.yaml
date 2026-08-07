@@ -32,9 +32,9 @@ rules:
   condition:
     service: physician_or_dental_muayene
   gate_b_sources:
-  - C000287
-  - C000288
-  - C000289
+  - 1.8.1.(1)#22f992ca
+  - 1.8.1.a#da013286
+  - 1.8.1.b#083875bf
   - 1.8.1.ç
   - 1.8.1.d
   - 1.8.1.e

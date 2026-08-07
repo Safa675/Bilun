@@ -33,7 +33,7 @@ rules:
   sut_section: 3.3.32
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003298
+  - 3.3.32.a#14320e10
   condition:
     material_name_any:
     - işitme cihazı
@@ -47,7 +47,7 @@ rules:
   sut_section: 3.3.32
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003299
+  - 3.3.32.b#71ef2714
   condition:
     material_name_any:
     - işitme cihazı
@@ -61,7 +61,7 @@ rules:
   sut_section: 3.3.32
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003300
+  - 3.3.32.c#0e9fb77c
   condition:
     material_name_any:
     - işitme cihazı
@@ -75,7 +75,7 @@ rules:
   sut_section: 3.3.32
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003301
+  - 3.3.32.ç#c6369f06
   condition:
     material_name_any:
     - işitme cihazı

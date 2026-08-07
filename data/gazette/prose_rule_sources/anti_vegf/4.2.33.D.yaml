@@ -19,7 +19,7 @@ rules:
   - göz hastalıkları
   loading_dose_count: 3
   gate_b_sources:
-  - C006526
+  - 4.2.33.(1)#b0a830ed
   message_tr: Aflibersept (DMÖ) — 5 ay süreli sağlık kurulu raporu (DMÖ'de aflibersept için), 3 yükleme dozu (§4.2.33.D/C006552).
 - rule_id: 4.2.33.D.bevacizumab_dmo
   sut_section: 4.2.33.D
@@ -57,7 +57,7 @@ rules:
   - göz hastalıkları
   max_applications_per_year: 4
   gate_b_sources:
-  - C006526
+  - 4.2.33.(1)#b0a830ed
   - 4.2.33.(10)
   message_tr: Deksametazon ITV implant (DMÖ) — anti-VEGF sonrası en erken 1 ay, her göz için yılda maksimum 4 uygulama (§4.2.33/(10),
     C006556).
@@ -81,7 +81,7 @@ rules:
   - göz hastalıkları
   loading_dose_count: 3
   gate_b_sources:
-  - C006526
+  - 4.2.33.(1)#b0a830ed
   message_tr: Ranibizumab (DMÖ) — 3 ay süreli sağlık kurulu raporu, 3 yükleme dozu; her uygulama için yeni rapor (§4.2.33.D).
 - rule_id: 4.2.33.D.sunu_gozyasi_dry_eye
   sut_section: 4.2.33.D

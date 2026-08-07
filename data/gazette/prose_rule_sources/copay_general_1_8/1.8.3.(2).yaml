@@ -9,14 +9,14 @@ rules:
     other: 0.2
   max_copay_pct_of_minimum_wage: 75
   gate_b_sources:
-  - C000334
-  - C000335
+  - 1.8.3.a#a9c8992d
+  - 1.8.3.b#ff188459
   - 1.8.3.c
   - 1.8.3.(2)
-  - C000340
-  - C000341
+  - 1.8.3.a#7672b1e2
+  - 1.8.3.b#945d3f77
   - C000342
-  - C000346
+  - 1.8.3.a#2ed7e0af
   - C000348
   verification_status: ai_generated_pending_review
   content_note: 'Added the hard cap from C000338: material copay may not exceed 75% of the gross minimum wage (katılım payı

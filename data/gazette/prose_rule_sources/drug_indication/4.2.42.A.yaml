@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.42.A.hypogonadotropic_oi_iui_quota
   sut_section: 4.2.42.A
   gate_b_sources:
-  - C006788
+  - 4.2.42.A.(2)#8e02fb4d
   drug_names:
   - gonadotropin
   - fsh
@@ -35,7 +35,7 @@ rules:
 - rule_id: 4.2.42.A.oi_iui_eligibility_general
   sut_section: 4.2.42.A
   gate_b_sources:
-  - C006774
+  - 4.2.42.A.(1)#bdb71998
   drug_names:
   - gonadotropin
   - fsh
@@ -53,7 +53,7 @@ rules:
 - rule_id: 4.2.42.A.pcos_group_oi_iui_quota
   sut_section: 4.2.42.A
   gate_b_sources:
-  - C006785
+  - 4.2.42.A.(1)#165c047a
   drug_names:
   - gonadotropin
   - fsh
@@ -84,7 +84,7 @@ rules:
 - rule_id: 4.2.42.A.standard_group_oi_iui_quota
   sut_section: 4.2.42.A
   gate_b_sources:
-  - C006783
+  - 4.2.42.A.a#4ef833e6
   drug_names:
   - gonadotropin
   - fsh
@@ -101,8 +101,8 @@ rules:
 - rule_id: 4.2.42.A.treatment_within_6mo_report
   sut_section: 4.2.42.A
   gate_b_sources:
-  - C006775
-  - C006778
+  - 4.2.42.A.a#46b03598
+  - 4.2.42.A.(2)#e5dacbdb
   - 4.2.42.A.(3)
   drug_names:
   - gonadotropin

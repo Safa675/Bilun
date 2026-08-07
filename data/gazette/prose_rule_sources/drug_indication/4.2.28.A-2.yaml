@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.28.A_2.paediatric_ldl_two_measurement
   sut_section: 4.2.28.A-2
   gate_b_sources:
-  - C006331
+  - 4.2.28.A-2.(3)#466b6407
   drug_names:
   - statin
   - atorvastatin
@@ -25,7 +25,7 @@ rules:
 - rule_id: 4.2.28.A_2.paediatric_statin_6mo_report
   sut_section: 4.2.28.A-2
   gate_b_sources:
-  - C006322
+  - 4.2.28.A-2.(1)#67877ac3
   drug_names:
   - statin
   - atorvastatin

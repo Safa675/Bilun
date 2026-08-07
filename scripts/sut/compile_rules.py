@@ -16,6 +16,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import sys
 from dataclasses import dataclass, field
@@ -206,6 +207,47 @@ def _dedup_union_overwrite(existing: list[dict], new_rules: list[dict]) -> tuple
     return sorted(by_id.values(), key=lambda r: str(r.get("rule_id", ""))), added, covered
 
 
+@functools.lru_cache(maxsize=1)
+def _clauses_frame():
+    """Cached clause corpus (with type overrides) for gate_b resolution."""
+    import polars as pl
+
+    from scripts.sut.prose.clause_type_overrides import apply_clause_type_overrides
+
+    path = _PROJECT_ROOT / "data" / "gazette" / "sut_clauses.parquet"
+    return apply_clause_type_overrides(pl.read_parquet(path))
+
+
+def _resolve_gate_b_ids(refs: list[Any]) -> set[str]:
+    """Resolve gate_b_sources refs (C* / coordinate / clause_key) to clause_ids.
+
+    Track E dual-read: clause_key (``coord#hash``) refs resolve via content hash;
+    C* pass through; unresolvable cites are soft-skipped (C* kept as-is).
+    ``encode_eligible_only`` is off so prose/amendment C* behave exactly as before.
+    """
+    from scripts.sut.prose.clause_identity import (
+        is_clause_id,
+        resolve_gate_b_ref_to_clause_ids,
+    )
+
+    frame = _clauses_frame()
+    out: set[str] = set()
+    for raw in refs:
+        text = str(raw).strip()
+        if not text:
+            continue
+        try:
+            out.update(
+                resolve_gate_b_ref_to_clause_ids(
+                    text, frame, in_force_only=True, encode_eligible_only=False
+                )
+            )
+        except Exception:
+            if is_clause_id(text):
+                out.add(text)
+    return out
+
+
 # ─── manifest builders ────────────────────────────────────────────────────────
 
 def _build_gap_manifest(rules: list[dict], rule_set_id: str, *, manifest_version: str = "canonical-v1",
@@ -216,7 +258,7 @@ def _build_gap_manifest(rules: list[dict], rule_set_id: str, *, manifest_version
 
     encoded: set[str] = set()
     for r in rules:
-        encoded.update(str(cid) for cid in (r.get("gate_b_sources") or []))
+        encoded.update(_resolve_gate_b_ids(r.get("gate_b_sources") or []))
     return build_canonical_encoded_shell(
         rule_set_id=rule_set_id,
         encoded_clause_ids=encoded,
@@ -230,7 +272,7 @@ def _build_golden(rules: list[dict], rule_set_id: str, *, include_encode_batch: 
     """Provenance golden: clause_id → expected_rule_id mapping."""
     cases = []
     for r in rules:
-        for cid in (r.get("gate_b_sources") or []):
+        for cid in sorted(_resolve_gate_b_ids(r.get("gate_b_sources") or [])):
             case = {"clause_id": cid, "expected_rule_id": r["rule_id"]}
             if include_encode_batch:
                 case["encode_batch"] = r.get("encode_batch")
@@ -754,7 +796,7 @@ def _stage_treatment_pricing_wave2_manifest(target: CompileTarget, ctx: dict[str
             continue
         if not str(rule.get("sut_section", "")).startswith(filter_sec):
             continue
-        encoded.update(str(cid) for cid in srcs)
+        encoded.update(_resolve_gate_b_ids(srcs))
 
     manifest = build_canonical_encoded_shell(
         rule_set_id=target.rule_set_id,

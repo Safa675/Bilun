@@ -6,10 +6,18 @@ Prefer these over magic-number ``assert len(x) == N`` locks. See
 
 from __future__ import annotations
 
+import functools
 from pathlib import Path
 from typing import Any
 
 import polars as pl
+
+
+@functools.lru_cache(maxsize=1)
+def _full_clauses() -> pl.DataFrame:
+    """Full clause corpus (with content_hash) for clause_key disambiguation."""
+    root = Path(__file__).resolve().parents[3]
+    return pl.read_parquet(root / "data" / "gazette" / "sut_clauses.parquet")
 
 
 def soft_floor(actual: int, floor: int, *, label: str) -> None:
@@ -74,26 +82,22 @@ def assert_manifest_consistent(
                 resolve_gate_b_sources_to_clause_ids,
             )
 
+            # Resolve against the FULL corpus so clause_key (coord#hash) cites
+            # can disambiguate collisions; the minimal export frame lacks the
+            # text/hash columns. Mirrors the manifest builder's resolution.
+            resolve_frame = _full_clauses()
             rule_sources: set[str] = set()
             for rule in rules:
                 for raw in rule.get("gate_b_sources") or []:
                     if raw is None or not str(raw).strip():
                         continue
                     try:
-                        can_encode_filter = (
-                            "clause_type" in frame.columns
-                            and "is_in_force" in frame.columns
-                            and (
-                                "clause_number" in frame.columns
-                                or "clause_letter" in frame.columns
-                            )
-                        )
                         rule_sources.update(
                             resolve_gate_b_sources_to_clause_ids(
                                 [raw],
-                                frame,
-                                in_force_only="is_in_force" in frame.columns,
-                                encode_eligible_only=can_encode_filter,
+                                resolve_frame,
+                                in_force_only=True,
+                                encode_eligible_only=False,
                                 allow_ambiguous=False,
                             )
                         )

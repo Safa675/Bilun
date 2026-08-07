@@ -240,6 +240,9 @@ class TestGlobalClausesEndpoint:
         payload = rules_route.get_single_clause(clause_id="C002684")
         model = RuleClause.model_validate(payload)
         assert model.clause_id == "C002684"
+        # Track E Phase 4: clause_key surfaced in API response
+        if model.clause_key:
+            assert "#" in model.clause_key or model.clause_key == model.clause_id
 
     @_needs_coverage
     def test_single_clause_not_found(self) -> None:
@@ -312,6 +315,15 @@ class TestTrackDCoordinateSurfaces:
         by_coord = rules_route.get_single_clause(clause_id=coord)
         assert by_coord["clause_id"] == "C002684"
         RuleClause.model_validate(by_coord)
+
+    def test_clause_lookup_by_clause_key(self) -> None:
+        by_id = rules_route.get_single_clause(clause_id="C002684")
+        clause_key = by_id.get("clause_key")
+        if clause_key and "#" in clause_key:
+            by_key = rules_route.get_single_clause(clause_id=clause_key)
+            assert by_key is not None
+            assert by_key["clause_id"] == "C002684"
+            RuleClause.model_validate(by_key)
 
     def test_deferrals_list(self) -> None:
         payload = rules_route.list_deferrals(page=1, per_page=10)

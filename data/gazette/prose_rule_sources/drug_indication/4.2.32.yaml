@@ -16,7 +16,7 @@ rules:
 - rule_id: 4.2.32.gadoteric_acid_standard_overdose_2boxes
   sut_section: 4.2.32
   gate_b_sources:
-  - C006452
+  - 4.2.32.(4)#bbe2f7b5
   drug_names:
   - gadoterik asit
   report_required: true

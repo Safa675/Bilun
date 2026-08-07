@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.42.B.ivf_normal_response_quota
   sut_section: 4.2.42.B
   gate_b_sources:
-  - C006792
+  - 4.2.42.B.(1)#98dd46e0
   - 4.2.42.B.b
   drug_names:
   - gonadotropin

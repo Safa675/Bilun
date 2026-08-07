@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.26
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003201
+  - 3.3.26.(1)#0fe47a2a
   condition:
     orthopedic_tumor_prosthesis_third_step_facility: true
   action:
