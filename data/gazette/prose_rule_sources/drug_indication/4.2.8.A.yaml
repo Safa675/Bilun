@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.8.A.adult_dysphagia_special_enteral_2boxes
   sut_section: 4.2.8.A
   gate_b_sources:
-  - C004109
+  - 4.2.8.A.b#244d5695
   drug_names:
   - özel tıbbi amaçlı beslenme ürünü
   - enteral beslenme ürünü
@@ -54,7 +54,7 @@ rules:
 - rule_id: 4.2.8.A.adult_malnutrition_waived_6mo_report
   sut_section: 4.2.8.A
   gate_b_sources:
-  - C004105
+  - 4.2.8.A.b#62004870
   drug_names:
   - enteral beslenme ürünü
   icd10_codes:
@@ -100,8 +100,8 @@ rules:
 - rule_id: 4.2.8.A.enteral_report_fields_30day_dose
   sut_section: 4.2.8.A
   gate_b_sources:
-  - C004098
-  - C004106
+  - 4.2.8.A.c#fa36fc75
+  - 4.2.8.A.c#7a9928fd
   drug_names:
   - enteral beslenme ürünü
   icd10_codes:
@@ -123,7 +123,7 @@ rules:
 - rule_id: 4.2.8.A.malnutrition_waived_conditions_6mo_report
   sut_section: 4.2.8.A
   gate_b_sources:
-  - C004097
+  - 4.2.8.A.b#72dbe183
   drug_names:
   - enteral beslenme ürünü
   icd10_codes:
@@ -150,7 +150,7 @@ rules:
 - rule_id: 4.2.8.A.paediatric_dysphagia_special_enteral_2boxes
   sut_section: 4.2.8.A
   gate_b_sources:
-  - C004108
+  - 4.2.8.A.a#bfaba9f0
   drug_names:
   - özel tıbbi amaçlı beslenme ürünü
   - çocuk enteral beslenme

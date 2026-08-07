@@ -14,4 +14,4 @@ rules:
       merkez sorumlusu ile ruhsat sahibi kişiler müşterek ve müteselsilen yükümlüdür
     severity: error
   gate_b_sources:
-  - C001302
+  - 2.4.4.İ.(1)#1058b11a

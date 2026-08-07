@@ -34,7 +34,7 @@ rules:
   message_tr: Abatasept — juvenil artritte ilk 3 ay ACR pediatrik 30 yanıtı sonrası 3 ay süreli sağlık kurulu raporu ile tedaviye
     devam edilir (§4.2.1.C-3).
   gate_b_sources:
-  - C003670
+  - 4.2.1.C-3.b#cdb4ee2a
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -54,7 +54,7 @@ rules:
   message_tr: Abatasept — juvenil artritte ACR pediatrik 50 yanıtı ile 6 ay süreli sağlık kurulu raporu ile tedaviye devam
     edilir (§4.2.1.C-3).
   gate_b_sources:
-  - C003672
+  - 4.2.1.C-3.b#fde62f65
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -76,7 +76,7 @@ rules:
   message_tr: Tosilizumab — anti-TNF yetersiz juvenil artritte methotreksat ile kombine 3 ay süreli çocuk romatoloji sağlık
     kurulu raporu gerekir (§4.2.1.C-3).
   gate_b_sources:
-  - C003669
+  - 4.2.1.C-3.a#0163a7e9
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -101,7 +101,7 @@ rules:
   - çocuk sağlığı
   message_tr: Tosilizumab — aktif romatoid artritte methotreksat ile birlikte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-3).
   gate_b_sources:
-  - C003664
+  - 4.2.1.C-3.a#d3c2cedc
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -160,7 +160,7 @@ rules:
   message_tr: Tosilizumab — aktif romatoid artritte DMARD/anti-TNF yetersizliğinde üniversite/eğitim hastanesi 3 ay süreli
     sağlık kurulu raporu gerekir (§4.2.1.C-3).
   gate_b_sources:
-  - C003664
+  - 4.2.1.C-3.a#d3c2cedc
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji

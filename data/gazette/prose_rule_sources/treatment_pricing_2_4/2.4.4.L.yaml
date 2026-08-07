@@ -17,7 +17,7 @@ rules:
       halinde Kurumca karşılanır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C001352
+  - 2.4.4.L.(1)#5c602281
 - rule_id: 2.4.4.L.(2).diskoplasty_3_specialty_board_report_required
   sut_section: 2.4.4.L
   condition:
@@ -34,7 +34,7 @@ rules:
       branşlarından herhangi üç uzman hekim tarafından oluşturulan sağlık kurulu raporu düzenlenmesi gerekir
     severity: error
   gate_b_sources:
-  - C001353
+  - 2.4.4.L.(2)#614505f8
 - rule_id: 2.4.4.L.(3).diskoplasty_covered_when_conditions_met
   sut_section: 2.4.4.L
   condition:

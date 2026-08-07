@@ -16,10 +16,10 @@ rules:
 - rule_id: 4.2.23.neutropenia_prophylaxis_nopay
   sut_section: 4.2.23
   gate_b_sources:
-  - C006092
-  - C006103
-  - C006104
-  - C006116
+  - 4.2.23.a#77f6ee8f
+  - 4.2.23.(4)#06a1b9aa
+  - 4.2.23.(5)#2fe8e460
+  - 4.2.23.(3)#cf0aee43
   - 4.2.23.(8)
   drug_names:
   - posakonazol
@@ -35,7 +35,7 @@ rules:
 - rule_id: 4.2.23.posaconazole_parenteral_oral_unable
   sut_section: 4.2.23
   gate_b_sources:
-  - C006096
+  - 4.2.23.a#70ca881f
   drug_names:
   - posakonazol
   report_required: true
@@ -47,9 +47,9 @@ rules:
 - rule_id: 4.2.23.systemic_fungal_infection_coverage
   sut_section: 4.2.23
   gate_b_sources:
-  - C006090
-  - C006100
-  - C006101
+  - 4.2.23.(2)#96f25f53
+  - 4.2.23.(1)#ed3dd5ea
+  - 4.2.23.(2)#4b9ca2bb
   - 4.2.23.(7)
   drug_names:
   - itrakonazol

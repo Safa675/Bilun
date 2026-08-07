@@ -212,25 +212,31 @@ def _resolve_clause_key(
     clause text is amended, so a stale key fails loud (re-triage) instead of
     silently resolving to changed law.
     """
-    for col in ("content_hash",):
-        if col not in clauses.columns:
-            raise ValueError(f"clauses frame missing {col} column")
-    if coord is not None:
-        if "clause_coordinate" not in clauses.columns:
-            raise ValueError("clauses frame missing clause_coordinate column")
-        matched = clauses.filter(pl.col("clause_coordinate").cast(pl.Utf8) == coord)
-        if matched.is_empty():
-            raise UnknownClauseCiteError(f"unknown clause_key coordinate: {coord}")
+    if "clause_coordinate" not in clauses.columns:
+        raise ValueError("clauses frame missing clause_coordinate column")
+    # Row hashes: prefer the stored ``content_hash`` column; fall back to
+    # computing from ``in_force_text`` so minimal frames (tests) still resolve.
+    if "content_hash" in clauses.columns:
+        row_hashes = clauses["content_hash"].cast(pl.Utf8)
+    elif "in_force_text" in clauses.columns:
+        row_hashes = pl.Series(
+            "content_hash", [content_hash(t) for t in clauses["in_force_text"]]
+        )
     else:
-        matched = clauses
+        raise ValueError("clauses frame missing content_hash/in_force_text column")
 
-    hashed = matched.filter(pl.col("content_hash").cast(pl.Utf8) == chash)
-    if hashed.is_empty():
+    if coord is not None:
+        mask = (clauses["clause_coordinate"].cast(pl.Utf8) == coord) & (
+            row_hashes == chash
+        )
+    else:
+        mask = row_hashes == chash
+    matched = clauses.filter(mask)
+    if matched.is_empty():
         raise UnknownClauseCiteError(
             f"clause_key content mismatch for {coord!r}#{chash}: clause text "
             "changed since the key was authored (amendment) — re-triage."
         )
-    matched = hashed
 
     if in_force_only and "is_in_force" in matched.columns:
         forced = matched.filter(pl.col("is_in_force") == True)  # noqa: E712

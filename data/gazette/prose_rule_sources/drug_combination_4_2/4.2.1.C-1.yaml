@@ -20,4 +20,4 @@ rules:
       biyolojik başlanamaz
     severity: error
   gate_b_sources:
-  - C003605
+  - 4.2.1.C-1.(2)#d7d9f193

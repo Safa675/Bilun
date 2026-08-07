@@ -24,7 +24,7 @@ rules:
 - rule_id: 4.2.13.3.2.B.hcv_ifn_ribavirin_combination
   sut_section: 4.2.13.3.2.B
   gate_b_sources:
-  - C004911
+  - 4.2.13.3.2.B.(2)#808c6756
   drug_names:
   - interferon
   - peginterferon
@@ -104,7 +104,7 @@ rules:
   message_tr: Pediatrik kronik HCV — 12. haftadan önce komplikasyonla kesilen interferon+ribavirin tedavisi yeniden başlatma
     kuralları (§4.2.13.3.2.B).
   gate_b_sources:
-  - C004916
+  - 4.2.13.3.2.B.(1)#60dc70dd
   prescriber_specialties:
   - gastroenteroloji
   - enfeksiyon hastalıkları

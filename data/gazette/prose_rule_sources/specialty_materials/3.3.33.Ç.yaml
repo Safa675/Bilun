@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.33.Ç
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003366
+  - 3.3.33.Ç.(1)#e2a4a97c
   condition:
     middle_ear_implant_bilateral_stable_threshold: true
   action:
@@ -17,7 +17,7 @@ rules:
   sut_section: 3.3.33.Ç
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003369
+  - 3.3.33.Ç.(2)#1e338727
   condition:
     middle_ear_implant_no_retrocochlear_pathology_required: true
   action:

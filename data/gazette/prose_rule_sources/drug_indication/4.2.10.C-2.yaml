@@ -11,7 +11,7 @@ rules:
     (§4.2.10.C-2).
   gate_b_sources:
   - 4.2.10.C-2.(3)
-  - C004357
+  - 4.2.10.C-2.(1)#7c4b482e
   report_required: true
   report_specialties:
   - çocuk metabolizma

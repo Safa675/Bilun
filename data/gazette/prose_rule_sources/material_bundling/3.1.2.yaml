@@ -20,7 +20,7 @@ rules:
     severity: warning
     message_tr: Garanti kapsamındaki bakım/onarım — ayrıca faturalandırılamaz (§3.1.2(c)).
   gate_b_sources:
-  - C002741
+  - 3.1.2.c#65ed8d8b
 - rule_id: 3.1.2.(2).not_in_ek3c
   sut_section: 3.1.2
   deontic: NO_PAY
@@ -66,7 +66,7 @@ rules:
   sut_section: 3.1.2
   deontic: NO_PAY
   gate_b_sources:
-  - C002724
+  - 3.1.2.c#edb61f02
   condition:
     material_name_any:
     - kullanım kurallarına uyulmaması
@@ -81,7 +81,7 @@ rules:
   sut_section: 3.1.2
   deontic: NO_PAY
   gate_b_sources:
-  - C002742
+  - 3.1.2.ç#f2648b2c
   condition:
     material_name_any:
     - garanti süresi içindeki yenilenme
@@ -94,7 +94,7 @@ rules:
   sut_section: 3.1.2
   deontic: NO_PAY
   gate_b_sources:
-  - C002743
+  - 3.1.2.d#d9bbebfe
   condition:
     material_name_any:
     - aynı işlevi gören
@@ -123,20 +123,19 @@ rules:
   sut_section: 3.1.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002740
+  - 3.1.2.b#33abaebf
   condition:
     ortez_protez_contract_billing_invalid: true
   action:
     material_outcome: review_required
     severity: warning
-    message_tr: Özel sözleşme yolu ortez/protez faturalandırması — komisyon tespiti ve sözleşme kapsamı doğrulanmalı 
-      (§3.1.2(b)).
+    message_tr: Özel sözleşme yolu ortez/protez faturalandırması — komisyon tespiti ve sözleşme kapsamı doğrulanmalı (§3.1.2(b)).
 - rule_id: 3.1.2.(11).maintenance_cost_cap_exceeded
   sut_section: 3.1.2
   deontic: NO_PAY
   gate_b_sources:
-  - C002732
-  - C002733
+  - 3.1.2.(11)#32ebb1ab
+  - 3.1.2.(11)#6121ccdc
   condition:
     maintenance_cost_exceeds_sut_cap: true
   action:
@@ -147,9 +146,9 @@ rules:
   sut_section: 3.1.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002727
-  - C002728
-  - C002729
+  - 3.1.2.b#f3470615
+  - 3.1.2.c#19ee9464
+  - 3.1.2.ç#a9bd5aa5
   - 3.1.2.e
   condition:
     protez_repair_documentation_incomplete: true
@@ -161,7 +160,7 @@ rules:
   sut_section: 3.1.2
   deontic: MANDATORY
   gate_b_sources:
-  - C002723
+  - 3.1.2.b#8d8c4a1b
   condition:
     warranty_maintenance_procedure_incomplete: true
   action:
@@ -173,7 +172,7 @@ rules:
   deontic: REGULATORY_ACTION
   gate_b_sources:
   - 3.1.2.(8)
-  - C002722
+  - 3.1.2.a#017b78e7
   condition:
     ortez_protez_maintenance_unverified: true
   action:
@@ -217,7 +216,7 @@ rules:
   sut_section: 3.1.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002712
+  - 3.1.2.c#a34c3d6b
   condition:
     ek3c_custom_garment_contract_invalid: true
   action:
@@ -283,7 +282,7 @@ rules:
   sut_section: 3.1.2
   deontic: NO_PAY
   gate_b_sources:
-  - C002711
+  - 3.1.2.b#af1d1ae1
   condition:
     material_invoice_documentation_incomplete: true
   action:
@@ -316,7 +315,7 @@ rules:
   sut_section: 3.1.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002726
+  - 3.1.2.a#b7c7a480
   condition:
     child_growth_miat_renewal_claim: true
   action:
@@ -333,27 +332,25 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: EK-3/C listelerinde SUT kodu, alan tanımı ve fiyat tanımları geçerlidir — liste eşleşmesi doğrulanmalı 
-      (§3.1.2(1)).
+    message_tr: EK-3/C listelerinde SUT kodu, alan tanımı ve fiyat tanımları geçerlidir — liste eşleşmesi doğrulanmalı (§3.1.2(1)).
 - rule_id: 3.1.2.(4)a.ismarlama_licensed_center_supply
   sut_section: 3.1.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002710
+  - 3.1.2.a#47f9747d
   condition:
     ismarlama_licensed_center_supply_required: true
   action:
     material_outcome: review_required
     severity: warning
-    message_tr: Ismarlama protez/ortez veya işitme cihazı — Sağlık Bakanlığı ruhsatlı merkezden temin şartı 
-      (§3.1.2(4)(a)).
+    message_tr: Ismarlama protez/ortez veya işitme cihazı — Sağlık Bakanlığı ruhsatlı merkezden temin şartı (§3.1.2(4)(a)).
 - rule_id: 3.1.2.(5).ek3c_optional_appropriateness_consumables
   sut_section: 3.1.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002714
-  - C002716
-  - C002717
+  - 3.1.2.a#0bfdb44d
+  - 3.1.2.c#1c376326
+  - 3.1.2.ç#1340de85
   - C002718
   - C002731
   condition:
@@ -361,22 +358,21 @@ rules:
   action:
     material_outcome: review_required
     severity: info
-    message_tr: Hasta alt bezi, sonda veya aspirasyon kateteri için tıbbi uygunluk zorunlu değil — ihtiyaç halinde 
-      aranabilir (§3.1.2(5)).
+    message_tr: Hasta alt bezi, sonda veya aspirasyon kateteri için tıbbi uygunluk zorunlu değil — ihtiyaç halinde aranabilir
+      (§3.1.2(5)).
 - rule_id: 3.1.2.(14).disabled_veteran_ortez_protez_billing
   sut_section: 3.1.2
   deontic: REGULATORY_ACTION
   gate_b_sources:
   - 3.1.2.(14)
-  - C002737
+  - 3.1.2.a#50ebb6cc
   - C002738
   condition:
     disabled_veteran_ortez_protez_billing_review: true
   action:
     material_outcome: review_required
     severity: info
-    message_tr: 3713 sayılı Kanun kapsamı malul/vazife malulü ortez-protez — liste fiyatı aşımı ve kapsam doğrulanmalı 
-      (§3.1.2(14)).
+    message_tr: 3713 sayılı Kanun kapsamı malul/vazife malulü ortez-protez — liste fiyatı aşımı ve kapsam doğrulanmalı (§3.1.2(14)).
 - rule_id: 3.1.2.(15).terror_victim_ortez_protez_documentation
   sut_section: 3.1.2
   deontic: NO_PAY

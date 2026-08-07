@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.24.B.resp.copd_iks_laba_lama_failure_maintenance
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006162
+  - 4.2.24.B.a#80371e21
   drug_names:
   - flutikazon furoat+umeklidinyum+vilanterol
   - laba
@@ -91,7 +91,7 @@ rules:
 - rule_id: 4.2.24.B.resp.laba_lama_iks_combination_nopay
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006163
+  - 4.2.24.B.b#b2e2ea59
   drug_names:
   - uzun etkili solunum yolu beta-agonisti
   - laba
@@ -111,9 +111,9 @@ rules:
 - rule_id: 4.2.24.B.resp.laba_lama_iks_combinations_coverage
   sut_section: 4.2.24.B
   gate_b_sources:
-  - C006124
+  - 4.2.24.A.(1)#207d4fe2
   - 4.2.24.B.(1)
-  - C006167
+  - 4.2.24.B.b#bd1a6532
   drug_names:
   - formeterol
   - salmeterol

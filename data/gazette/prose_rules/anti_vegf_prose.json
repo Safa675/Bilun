@@ -98,8 +98,8 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006526",
-        "C006527"
+        "4.2.33.(1)#b0a830ed",
+        "4.2.33.a#18577c3c"
       ],
       "message_tr": "Bevacizumab (YAŞ AMD) — günübirlik tedavi kapsamında, göz hastalıkları uzmanı raporuyla 3 yükleme dozu (1,25 mg/0,1 ml); ilk tedavi seçeneği (§4.2.33)."
     },
@@ -268,7 +268,7 @@
       ],
       "message_tr": "Ranibizumab/aflibersept (RVDT/SRVT) — deksametazon uygun değilse 3 ay süreli rapor ve 3 yükleme dozu (§4.2.33.B, C006480 güncellemesi).",
       "gate_b_sources": [
-        "C006526"
+        "4.2.33.(1)#b0a830ed"
       ],
       "report_duration_months": 3,
       "loading_dose_count": 3
@@ -364,7 +364,7 @@
       "loading_dose_count": null,
       "gate_b_sources": [
         "4.2.33.C.(1)",
-        "C006527"
+        "4.2.33.a#18577c3c"
       ],
       "message_tr": "Bevacizumab (PM-KNV) — yükleme dozu şartı aranmaz (istisna, §4.2.33.C/C006527a); göz hastalıkları uzmanı raporu."
     },
@@ -414,7 +414,7 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006526"
+        "4.2.33.(1)#b0a830ed"
       ],
       "message_tr": "Aflibersept (DMÖ) — 5 ay süreli sağlık kurulu raporu (DMÖ'de aflibersept için), 3 yükleme dozu (§4.2.33.D/C006552)."
     },
@@ -466,7 +466,7 @@
       ],
       "max_applications_per_year": 4,
       "gate_b_sources": [
-        "C006526",
+        "4.2.33.(1)#b0a830ed",
         "4.2.33.(10)"
       ],
       "message_tr": "Deksametazon ITV implant (DMÖ) — anti-VEGF sonrası en erken 1 ay, her göz için yılda maksimum 4 uygulama (§4.2.33/(10), C006556).",
@@ -496,7 +496,7 @@
       ],
       "loading_dose_count": 3,
       "gate_b_sources": [
-        "C006526"
+        "4.2.33.(1)#b0a830ed"
       ],
       "message_tr": "Ranibizumab (DMÖ) — 3 ay süreli sağlık kurulu raporu, 3 yükleme dozu; her uygulama için yeni rapor (§4.2.33.D)."
     },
@@ -749,7 +749,7 @@
       ],
       "message_tr": "İdame tedavilerde yükleme dozu (3 doz) sonrası bevacizumab için göz hastalıkları uzman hekimi tarafından 1 ay süreli tek hekim raporu ile günübirlik tedavi (§4.2.33/b). Deksametazon ITV implant ve verteporfin bu idame kapsamı dışındadır.",
       "gate_b_sources": [
-        "C006528"
+        "4.2.33.b#cb8683ef"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Maintenance (idame) phase for bevacizumab — distinct from the 3-dose loading phase already encoded. Existing rules only carried loading_dose_count."

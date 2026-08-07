@@ -44,7 +44,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000097"
+        "1.5.1.(1)#5a27fb1f"
       ]
     },
     {
@@ -590,7 +590,7 @@
         "payment_tr": "MEDULA arızası nedeniyle provizyon alınamayan sürede hizmet bedeli tutanakla ödenir"
       },
       "gate_b_sources": [
-        "C008050"
+        "5.2.(2)#81b3103b"
       ]
     },
     {
@@ -606,7 +606,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C008067"
+        "5.2.2.a#f93c85eb"
       ]
     },
     {
@@ -625,7 +625,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C008068"
+        "5.2.2.b#d43bf5b6"
       ]
     },
     {
@@ -672,7 +672,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C008243"
+        "6.3.2.b#568573e2"
       ]
     },
     {
@@ -689,7 +689,7 @@
         "payment_tr": "sözleşmesiz serbest dişhekimliği/kurum ağız protezi katılım payı ödeme aşamasında alınır"
       },
       "gate_b_sources": [
-        "C000347"
+        "1.8.3.b#11d2f4bb"
       ]
     },
     {
@@ -708,7 +708,7 @@
         "payment_tr": "özel/vakıf üniversitesi kurumları SUT eki EK-2/B, EK-2/C, EK-2/Ç listelerinde yer alan işlemlerde kullanılan tıbbi malzeme ve ilaçlar ile EK-2/A'ya dahil işlemler için ayrıca ilave ücret alınamaz; bunlar dışındaki hizmetler için Kurum fiyatını aşmamak üzere ilave ücret alınabilir"
       },
       "gate_b_sources": [
-        "C000383"
+        "1.9.1.(1)#43cd69a1"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Scope rule: extra fee permissible at private/foundation-univ, EXCLUDED for EK-2/A/B/C/Ç bundled items. Extra fees never billable to Kurum (C003399)."
@@ -762,7 +762,7 @@
         "payment_tr": "EK-4/D listesinde (*) yıldız işareti bulunmayan ilaçlar için Bakanlık endikasyon dışı ilaç kullanım onayı aranmaz"
       },
       "gate_b_sources": [
-        "C003465"
+        "4.1.4.b#11c4ab43"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "EK-4/D drugs WITHOUT the (*) marker are exempt from off-label approval."
@@ -781,7 +781,7 @@
         "payment_tr": "endikasyon dışı ilaç kullanım onayı en fazla 1 yıl süreyle geçerlidir"
       },
       "gate_b_sources": [
-        "C003466"
+        "4.1.4.c#0e5d165a"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Off-label approval valid max 1 year."

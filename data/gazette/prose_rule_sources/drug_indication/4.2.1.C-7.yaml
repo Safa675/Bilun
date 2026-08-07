@@ -3,23 +3,23 @@ rules:
 - rule_id: 4.2.1.C.anakinra_biologic_jak_combo_nopay
   sut_section: 4.2.1.C-7
   gate_b_sources:
-  - C003705
-  - C003711
+  - 4.2.1.C-5.(3)#2c269f32
+  - 4.2.1.C-5.(3)#542b1c2c
   - C003787
   - C003790
-  - C003831
+  - 4.2.1.C-7.(3)#2cf0a2bc
   drug_names:
   - anakinra
   pay: false
   action:
     enforcement: 'no-pay condition: anakinra biyolojik DMARD veya JAK inhibitörü ile kombine kullanılırsa bedeli ödenmez;
       monoterapi veya konvansiyonel/sentetik DMARD kombinasyonuna izin var'
-    message_tr: Anakinra monoterapi veya diğer anti-inflamatuvar/konvansiyonel-sentetik DMARD'larla kombine verilebilir;
-      biyolojik DMARD ve JAK inhibitörleri ile kombine kullanılması halinde bedeli Kurumca karşılanmaz (§4.2.1.C-7).
+    message_tr: Anakinra monoterapi veya diğer anti-inflamatuvar/konvansiyonel-sentetik DMARD'larla kombine verilebilir; biyolojik
+      DMARD ve JAK inhibitörleri ile kombine kullanılması halinde bedeli Kurumca karşılanmaz (§4.2.1.C-7).
 - rule_id: 4.2.1.C.anakinra_kanakinumab_sequencing
   sut_section: 4.2.1.C-7
   gate_b_sources:
-  - C003818
+  - 4.2.1.C-7.b#ea8fa0a3
   drug_names:
   - anakinra
   - kanakinumab
@@ -30,11 +30,10 @@ rules:
   - romatoloji
   - çocuk sağlığı ve hastalıkları
   action:
-    enforcement: anakinra 3 ay sonrası / yanıtsızlık / yan etki sonrası dokümante konsültasyonla kanakinumaba geçiş; 
-      aynı/azaltık/açılmış dozla devam
-    message_tr: Anakinra ile 3 aylık tedavi sonrasında veya anakinraya yanıtsız/yan etki gelişenlerde dokümante 
-      konsültasyonla kanakinumaba başlanır; yanıt alınanlarda aynı/azaltılmış/aralığı açılmış dozla tedaviye devam 
-      edilebilir (§4.2.1.C-7).
+    enforcement: anakinra 3 ay sonrası / yanıtsızlık / yan etki sonrası dokümante konsültasyonla kanakinumaba geçiş; aynı/azaltık/açılmış
+      dozla devam
+    message_tr: Anakinra ile 3 aylık tedavi sonrasında veya anakinraya yanıtsız/yan etki gelişenlerde dokümante konsültasyonla
+      kanakinumaba başlanır; yanıt alınanlarda aynı/azaltılmış/aralığı açılmış dozla tedaviye devam edilebilir (§4.2.1.C-7).
 - rule_id: 4.2.1.C.moh_offlabel_approval_coverage_c7
   sut_section: 4.2.1.C-7
   gate_b_sources:
@@ -46,14 +45,13 @@ rules:
   - M04
   report_required: true
   action:
-    enforcement: koşullar sağlanırsa ve her iki ilaç için Sağlık Bakanlığı endikasyon dışı onay belgesi alınırsa bedeli 
-      ödenir
-    message_tr: Tedavide yukarıdaki koşulların sağlandığı durumlarda her iki ilaç için ayrıca Sağlık Bakanlığı 
-      endikasyon dışı onay belgesinin alınması halinde bedelleri Kurumca ödenir (§4.2.1.C-7).
+    enforcement: koşullar sağlanırsa ve her iki ilaç için Sağlık Bakanlığı endikasyon dışı onay belgesi alınırsa bedeli ödenir
+    message_tr: Tedavide yukarıdaki koşulların sağlandığı durumlarda her iki ilaç için ayrıca Sağlık Bakanlığı endikasyon
+      dışı onay belgesinin alınması halinde bedelleri Kurumca ödenir (§4.2.1.C-7).
 - rule_id: 4.2.1.C.pre_effective_date_starter_continuation
   sut_section: 4.2.1.C-7
   gate_b_sources:
-  - C003814
+  - 4.2.1.C-7.c#75dc7cb8
   drug_names:
   - anakinra
   - kanakinumab
@@ -63,8 +61,8 @@ rules:
     coverage_note: true
   action:
     enforcement: yürürlük öncesi başlayan hasta devam şartlarını sağlıyorsa bedeli ödenir
-    message_tr: Maddenin yürürlük tarihi öncesi ilaca başlamış hastaların yukarıdaki devam şartlarını sağlaması 
-      durumunda bedelleri Kurumca karşılanır (§4.2.1.C-7).
+    message_tr: Maddenin yürürlük tarihi öncesi ilaca başlamış hastaların yukarıdaki devam şartlarını sağlaması durumunda
+      bedelleri Kurumca karşılanır (§4.2.1.C-7).
 - rule_id: 4.2.1.anakinra_canakinumab_fmf_amyloidosis
   sut_section: 4.2.1.C-7
   drug_names:
@@ -85,10 +83,10 @@ rules:
   - nefroloji
   - romatoloji
   - klinik immunoloji
-  message_tr: Anakinra/kanakinumab — amiloidozlu FMF tedavisinde romatoloji ve/veya nefroloji uzmanının yer aldığı 1 yıl
-    süreli sağlık kurulu raporu gerekir (§4.2.1.C-7).
+  message_tr: Anakinra/kanakinumab — amiloidozlu FMF tedavisinde romatoloji ve/veya nefroloji uzmanının yer aldığı 1 yıl süreli
+    sağlık kurulu raporu gerekir (§4.2.1.C-7).
   gate_b_sources:
-  - C003813
+  - 4.2.1.C-7.b#837f54ae
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -118,10 +116,10 @@ rules:
   - nefroloji
   - romatoloji
   - klinik immunoloji
-  message_tr: Anakinra/kanakinumab — amiloidozlu FMF'de kolşisin yetersizliğinde romatoloji/nefroloji uzmanının yer 
-    aldığı 1 yıl süreli sağlık kurulu raporu gerekir (§4.2.1.C-7).
+  message_tr: Anakinra/kanakinumab — amiloidozlu FMF'de kolşisin yetersizliğinde romatoloji/nefroloji uzmanının yer aldığı
+    1 yıl süreli sağlık kurulu raporu gerekir (§4.2.1.C-7).
   gate_b_sources:
-  - C003813
+  - 4.2.1.C-7.b#837f54ae
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -148,11 +146,11 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Anakinra/kanakinumab — FMF tedavisinde resmi üçüncü basamak kurumda romatoloji uzmanının yer aldığı sağlık
-    kurulu raporu gerekir (§4.2.1.C-7).
+  message_tr: Anakinra/kanakinumab — FMF tedavisinde resmi üçüncü basamak kurumda romatoloji uzmanının yer aldığı sağlık kurulu
+    raporu gerekir (§4.2.1.C-7).
   gate_b_sources:
-  - C003791
-  - C003812
+  - 4.2.1.C-7.c#a8faa93a
+  - 4.2.1.C-7.(5)#49d3b9bb
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -172,10 +170,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Anakinra — FMF'de kolşisin yetersizliğinde atak/CRP/SAA bulgularının sağlık kurulu raporunda belirtilmesi 
-    gerekir (§4.2.1.C-7).
+  message_tr: Anakinra — FMF'de kolşisin yetersizliğinde atak/CRP/SAA bulgularının sağlık kurulu raporunda belirtilmesi gerekir
+    (§4.2.1.C-7).
   gate_b_sources:
-  - C003806
+  - 4.2.1.C-7.(1)#543e6a0e
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -195,10 +193,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Anakinra — amiloidozu olmayan FMF'de kolşisin yetersizliğinde atak/CRP bilgilerinin sağlık kurulu 
-    raporunda belirtilmesi gerekir (§4.2.1.C-7).
+  message_tr: Anakinra — amiloidozu olmayan FMF'de kolşisin yetersizliğinde atak/CRP bilgilerinin sağlık kurulu raporunda
+    belirtilmesi gerekir (§4.2.1.C-7).
   gate_b_sources:
-  - C003806
+  - 4.2.1.C-7.(1)#543e6a0e
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -221,13 +219,13 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Anakinra/kanakinumab — FMF tedavisinde üçüncü basamak kurumda romatoloji uzman hekiminin yer aldığı sağlık
-    kurulu raporu gerekir (§4.2.1.C-7).
+  message_tr: Anakinra/kanakinumab — FMF tedavisinde üçüncü basamak kurumda romatoloji uzman hekiminin yer aldığı sağlık kurulu
+    raporu gerekir (§4.2.1.C-7).
   gate_b_sources:
-  - C003812
-  - C003819
-  - C003827
-  - C003832
+  - 4.2.1.C-7.(5)#49d3b9bb
+  - 4.2.1.C-7.c#a33fcad5
+  - 4.2.1.C-7.(5)#6dc71805
+  - 4.2.1.C-7.(4)#015b118e
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -248,10 +246,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki durumunun sağlık kurulu raporunda 
-    belirtilmesi gerekir (§4.2.1.C-7).
+  message_tr: Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki durumunun sağlık kurulu raporunda belirtilmesi
+    gerekir (§4.2.1.C-7).
   gate_b_sources:
-  - C003784
+  - 4.2.1.C-7.(1)#564a9df2
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -272,10 +270,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki durumunun sağlık kurulu raporunda 
-    belirtilmesi gerekir (§4.2.1.C-7).
+  message_tr: Kanakinumab — FMF'de 3 ay anakinra yetersizliği veya ciddi yan etki durumunun sağlık kurulu raporunda belirtilmesi
+    gerekir (§4.2.1.C-7).
   gate_b_sources:
-  - C003807
+  - 4.2.1.C-7.(2)#8cd125df
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -296,10 +294,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Kanakinumab — FMF tedavi devamında atak sıklık/şiddet azalmasının sağlık kurulu raporunda belirtilmesi 
-    gerekir (§4.2.1.C-7).
+  message_tr: Kanakinumab — FMF tedavi devamında atak sıklık/şiddet azalmasının sağlık kurulu raporunda belirtilmesi gerekir
+    (§4.2.1.C-7).
   gate_b_sources:
-  - C003808
+  - 4.2.1.C-7.(3)#61ff8712
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -320,10 +318,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Kanakinumab — FMF'de 150 mg yetersizliğinde 300 mg doza geçiş gerekçesinin sağlık kurulu raporunda 
-    belirtilmesi gerekir (§4.2.1.C-7).
+  message_tr: Kanakinumab — FMF'de 150 mg yetersizliğinde 300 mg doza geçiş gerekçesinin sağlık kurulu raporunda belirtilmesi
+    gerekir (§4.2.1.C-7).
   gate_b_sources:
-  - C003811
+  - 4.2.1.C-7.(4)#b96be27b
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -350,8 +348,8 @@ rules:
   - fiziksel tıp
   - klinik immunoloji
   - nefroloji
-  message_tr: Anakinra/tosilizumab/kanakinumab — tedavi devamında ACR pediatrik yanıt kriteri 3 ayda bir 
-    değerlendirilmeli; yanıt alınamayan hastalarda tedavi sonlandırılır (§4.2.1.C-7 (2)).
+  message_tr: Anakinra/tosilizumab/kanakinumab — tedavi devamında ACR pediatrik yanıt kriteri 3 ayda bir değerlendirilmeli;
+    yanıt alınamayan hastalarda tedavi sonlandırılır (§4.2.1.C-7 (2)).
   gate_b_sources:
   - C003787
   - C003790
@@ -375,10 +373,10 @@ rules:
   - fiziksel tıp
   - klinik immunoloji
   - nefroloji
-  message_tr: Kanakinumab — FMF tedavisinde 3 aylık yanıt değerlendirmesi yapılmalı; yanıt alınamayan hastalarda tedavi 
-    sonlandırılır (§4.2.1.C-7 (3)).
+  message_tr: Kanakinumab — FMF tedavisinde 3 aylık yanıt değerlendirmesi yapılmalı; yanıt alınamayan hastalarda tedavi sonlandırılır
+    (§4.2.1.C-7 (3)).
   gate_b_sources:
-  - C003784
+  - 4.2.1.C-7.(1)#564a9df2
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji

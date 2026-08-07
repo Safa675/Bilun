@@ -70,6 +70,10 @@ CLAUSE_STALENESS_COLS = [
     "is_in_force",
     "is_superseded_marker",
     "had_struck_content",
+    # Track E: needed so clause_key (coord#hash) gate_b refs resolve during
+    # classification (content disambiguation); not part of the report output.
+    "in_force_text",
+    "content_hash",
 ]
 
 # Display order: highest severity first. TIER 4 (dangling) is technically a
@@ -207,7 +211,7 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
     )
 
     by_id = id_refs.join(
-        clauses.select(CLAUSE_STALENESS_COLS),
+        clauses.select([c for c in CLAUSE_STALENESS_COLS if c in clauses.columns]),
         left_on="gate_b_ref",
         right_on="clause_id",
         how="left",
@@ -226,7 +230,7 @@ def classify_refs(refs: pl.DataFrame, clauses: pl.DataFrame) -> pl.DataFrame:
         by_id = by_id.with_columns(pl.lit(None).cast(pl.Utf8).alias("clause_id"))
 
     by_coord = other_refs.join(
-        clauses.select(CLAUSE_STALENESS_COLS),
+        clauses.select([c for c in CLAUSE_STALENESS_COLS if c in clauses.columns]),
         left_on="gate_b_ref",
         right_on="clause_coordinate",
         how="left",

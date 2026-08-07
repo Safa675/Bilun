@@ -6,7 +6,7 @@ rules:
   drug_names:
   - lama
   gate_b_sources:
-  - C003844
+  - 4.2.1.C-9.a#bc47e4ce
   report_required: false
   message_tr: a) Biri maksimum doz indometazin olmak üzere en az 3 farklı nonsteroid antiinflamatuar ilacın maksimum dozunda
     kullanılmasına rağmen yeterli cevap alınamayan (Bath Ankilozan Spondilit Hastalık Aktivite İndeksi (BASDAİ) >5) ve bununla
@@ -199,7 +199,7 @@ rules:
   - nintedanib
   - pirfenidon
   gate_b_sources:
-  - C006842
+  - 4.2.46.A.a#89e9c50d
   report_required: true
   message_tr: a) FVC değerinde bir önceki sağlık kurulu raporu değerine göre (ataklar dışında) ≥%10 düşme olması ilaca yanıtsızlık
     olarak kabul edilir ve tedavi sonlandırılır.
@@ -209,7 +209,7 @@ rules:
   drug_names:
   - lama
   gate_b_sources:
-  - C006843
+  - 4.2.46.A.b#69ce193c
   report_required: true
   message_tr: b) Tedavinin devamı için düzenlenen raporlarda ikinci fıkrada belirtilen ilaç başlama kriterleri aranmaz. Tedavinin
     devamı için FVC değerinde bir önceki sağlık kurulu raporu değerine göre (ataklar dışında) ≥%10 düşme olmadığı her raporda
@@ -220,7 +220,7 @@ rules:
   drug_names:
   - ilac degisimi yapılması gereken hallerde
   gate_b_sources:
-  - C006847
+  - 4.2.46.A.b#21bd3955
   report_required: true
   message_tr: b) İlaç değişimi yapılması gereken hallerde, bu durumun ve üçüncü fıkrada belirtilen devam kriterlerinin yer
     aldığı yeni sağlık kurulu raporu düzenlenir.
@@ -247,7 +247,7 @@ rules:
   drug_names:
   - monoklonal gammopati
   gate_b_sources:
-  - C007184
+  - 4.2.70.A.c#3ed84897
   report_required: true
   message_tr: c) Yukardaki bulgulardan herhangi birinin pozitif olması halinde hematoloji uzman hekimi tarafından monoklonal
     gamapatinin dışlanması.

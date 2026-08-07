@@ -4,7 +4,7 @@ rules:
   sut_section: 4.2.46.B
   gate_b_sources:
   - 4.2.46.B.(2)
-  - C006865
+  - 4.2.46.B.b#aa27b4a1
   drug_names:
   - pirfenidon
   - nintedanib
@@ -19,7 +19,7 @@ rules:
   sut_section: 4.2.46.B
   gate_b_sources:
   - 4.2.46.B.(1)
-  - C006864
+  - 4.2.46.B.a#89e9c50d
   drug_names:
   - pirfenidon
   - nintedanib

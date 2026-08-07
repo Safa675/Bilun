@@ -10,7 +10,7 @@ rules:
     denial_tr: 5510/60(1)(c) (1)/(3) ve 12/13/14 fıkraları kapsamındaki özel şartlar
     severity: error
   gate_b_sources:
-  - C000097
+  - 1.5.1.(1)#5a27fb1f
 - rule_id: 1.5.1.(3).uncontracted_private_non_emergency_no_pay
   sut_section: 1.5.1
   condition:

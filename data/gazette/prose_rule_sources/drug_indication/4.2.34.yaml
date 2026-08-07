@@ -13,14 +13,14 @@ rules:
   message_tr: Alemtuzumab — EDSS 7 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl)
     ve nöroloji reçetesi gerekir (§4.2.34).
   gate_b_sources:
-  - C006676
+  - 4.2.34.b#84fd8614
   report_duration_months: 12
   prescriber_specialties:
   - nöroloji
 - rule_id: 4.2.34.cis_dmt_nopay
   sut_section: 4.2.34
   gate_b_sources:
-  - C006627
+  - 4.2.34.(2)#37edca05
   drug_names:
   - fampiridin
   - beta interferon
@@ -83,7 +83,7 @@ rules:
 - rule_id: 4.2.34.dmt_combination_nopay
   sut_section: 4.2.34
   gate_b_sources:
-  - C006628
+  - 4.2.34.(3)#65e35a3d
   drug_names:
   - beta interferon
   - glatiramer asetat
@@ -142,7 +142,7 @@ rules:
   message_tr: Beta interferon, glatiramer asetat, teriflunomid veya dimetil fumarat — EDSS 5,5 altı relaps-remisyon MS'de
     üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl) ve nöroloji reçetesi gerekir (§4.2.34).
   gate_b_sources:
-  - C006626
+  - 4.2.34.(1)#57c01047
   report_duration_months: 12
   prescriber_specialties:
   - nöroloji
@@ -177,14 +177,14 @@ rules:
   message_tr: Okrelizumab — EDSS 7 altı relaps-remisyon MS'de üçüncü basamak nöroloji uzman hekim raporu (en fazla 1 yıl)
     ve nöroloji reçetesi gerekir (§4.2.34).
   gate_b_sources:
-  - C006646
+  - 4.2.34.b#945b92f1
   report_duration_months: 12
   prescriber_specialties:
   - nöroloji
 - rule_id: 4.2.34.primary_progressive_ms_tertiary_neurology
   sut_section: 4.2.34
   gate_b_sources:
-  - C006648
+  - 4.2.34.c#d8f20a36
   drug_names:
   - okrelizumab
   icd10_codes:
@@ -206,7 +206,7 @@ rules:
 - rule_id: 4.2.34.rrms_edss5p5_high_activity
   sut_section: 4.2.34
   gate_b_sources:
-  - C006658
+  - 4.2.34.a#561c683a
   drug_names:
   - fingolimod
   - natalizumab
@@ -227,7 +227,7 @@ rules:
 - rule_id: 4.2.34.rrms_edss7_high_activity_after_platform
   sut_section: 4.2.34
   gate_b_sources:
-  - C006662
+  - 4.2.34.b#6fcb3317
   drug_names:
   - fingolimod
   - natalizumab
@@ -249,7 +249,7 @@ rules:
 - rule_id: 4.2.34.rrms_high_activity_after_advanced_dmt
   sut_section: 4.2.34
   gate_b_sources:
-  - C006672
+  - 4.2.34.a#d536f2fa
   drug_names:
   - alemtuzumab
   - lemtrada
@@ -315,7 +315,7 @@ rules:
 - rule_id: 4.2.34.rrms_high_activity_after_platform_c
   sut_section: 4.2.34
   gate_b_sources:
-  - C006642
+  - 4.2.34.a#0a8aa1ed
   drug_names:
   - fingolimod
   - natalizumab
@@ -338,7 +338,7 @@ rules:
 - rule_id: 4.2.34.spms_edss4_tertiary_neurology_report
   sut_section: 4.2.34
   gate_b_sources:
-  - C006679
+  - 4.2.34.a#d75610b8
   drug_names:
   - siponimod
   - okrelizumab
@@ -360,7 +360,7 @@ rules:
 - rule_id: 4.2.34.tertiary_neurology_1yr_report_prescription
   sut_section: 4.2.34
   gate_b_sources:
-  - C006666
+  - 4.2.34.c#ff3d4271
   drug_names:
   - fingolimod
   - natalizumab

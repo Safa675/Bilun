@@ -3,10 +3,10 @@ rules:
 - rule_id: 4.2.27.D.eltrombopag_discontinuation_criteria
   sut_section: 4.2.27.D
   gate_b_sources:
-  - C006286
-  - C006292
-  - C006293
-  - C006297
+  - 4.2.27.D.(1)#a7620173
+  - 4.2.27.D.(1)#de2a043a
+  - 4.2.27.D.(2)#924f96d5
+  - 4.2.27.D.(1)#aa15ff28
   drug_names:
   - eltrombopag
   - revolade
@@ -25,10 +25,10 @@ rules:
 - rule_id: 4.2.27.D.eltrombopag_dose_titration
   sut_section: 4.2.27.D
   gate_b_sources:
-  - C006287
-  - C006290
-  - C006294
-  - C006301
+  - 4.2.27.D.(2)#16954b24
+  - 4.2.27.D.(5)#ddf8592b
+  - 4.2.27.D.(3)#265c2e48
+  - 4.2.27.D.(5)#00d1e4ec
   drug_names:
   - eltrombopag
   - revolade

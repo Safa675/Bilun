@@ -66,7 +66,7 @@ rules:
   message_tr: Montelukast+antihistaminik kombinasyonları — KBB, iç hastalıkları, çocuk sağlığı, göğüs hastalıkları veya alerji
     uzman reçetesi/raporu gerekir (§4.2.24.C-1).
   gate_b_sources:
-  - C006125
+  - 4.2.24.A.(2)#2f69a7a4
   - 4.2.24.C.(1)
   report_required: true
   prescriber_specialties:

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.1.4.course_protocol_one_course_coverage
   sut_section: 4.1.4
   gate_b_sources:
-  - C003482
+  - 4.1.4.b#84cda464
   condition:
     coverage_note: true
     course_protocol: true
@@ -27,7 +27,7 @@ rules:
 - rule_id: 4.1.4.first_prescription_1month_dose_coverage
   sut_section: 4.1.4
   gate_b_sources:
-  - C003481
+  - 4.1.4.a#55c6cb0b
   condition:
     coverage_note: true
     max_days_per_dispense: 30
@@ -81,7 +81,7 @@ rules:
 - rule_id: 4.1.4.topical_antifungal_6month_2box_coverage
   sut_section: 4.1.4
   gate_b_sources:
-  - C003483
+  - 4.1.4.c#52e18a39
   drug_names:
   - topikal antifungal
   prescriber_specialties:

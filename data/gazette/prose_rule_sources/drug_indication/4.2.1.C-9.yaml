@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.1.C.psoriasis_tertiary_dermatology_6mo_pasi_c9
   sut_section: 4.2.1.C-9
   gate_b_sources:
-  - C003854
+  - 4.2.1.C-9.c#86afed33
   drug_names:
   - biyolojik ajan
   - ustekinumab
@@ -28,7 +28,7 @@ rules:
 - rule_id: 4.2.1.C.rheum_pmr_6mo_coverage_c9
   sut_section: 4.2.1.C-9
   gate_b_sources:
-  - C003858
+  - 4.2.1.C-9.c#0f02f1da
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -67,7 +67,7 @@ rules:
 - rule_id: 4.2.1.C.tertiary_immunology_6mo_internal_coverage_c9
   sut_section: 4.2.1.C-9
   gate_b_sources:
-  - C003850
+  - 4.2.1.C-9.c#11eee97f
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -96,7 +96,7 @@ rules:
 - rule_id: 4.2.1.C.three_dermatologists_tertiary_report_c9
   sut_section: 4.2.1.C-9
   gate_b_sources:
-  - C003863
+  - 4.2.1.C-9.c#2b1ada9e
   drug_names:
   - biyolojik ajan
   - ustekinumab
@@ -130,7 +130,7 @@ rules:
   message_tr: Sekukinumab — hidradenitis suppurativada 16 haftalık değerlendirme sonrası devam kriterlerinin belirtildiği
     en fazla 6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-9 b).
   gate_b_sources:
-  - C003862
+  - 4.2.1.C-9.b#e6b5c1d6
   prescriber_specialties:
   - dermatoloji
   report_duration_months: 6
@@ -151,7 +151,7 @@ rules:
   message_tr: Sekukinumab — hidradenitis suppurativada adalimumab yetersizliğinde 4 ay süreli sağlık kurulu raporu gerekir
     (§4.2.1.C-9).
   gate_b_sources:
-  - C003861
+  - 4.2.1.C-9.a#23b63da3
   report_duration_months: 4
 - rule_id: 4.2.1.sekukinumab_psa_second_line
   sut_section: 4.2.1.C-9
@@ -170,7 +170,7 @@ rules:
   message_tr: Sekukinumab — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte sağlık kurulu raporunda önceki tedavi yetersizliği
     belirtilmelidir (§4.2.1.C-9).
   gate_b_sources:
-  - C003856
+  - 4.2.1.C-9.a#e728fe29
 - rule_id: 4.2.1.sekukinumab_psoriasis_pasi_systemic_failure
   sut_section: 4.2.1.C-9
   drug_names:
@@ -188,5 +188,5 @@ rules:
   message_tr: Sekukinumab — geleneksel sistemik tedavi yetersiz plak psoriyaziste PASI değerinin sağlık kurulu raporunda belirtilmesi
     gerekir (§4.2.1.C-9).
   gate_b_sources:
-  - C003852
+  - 4.2.1.C-9.a#dd1ff209
 source_note: Exported from drug_indication_prose.json (YAML source migration)

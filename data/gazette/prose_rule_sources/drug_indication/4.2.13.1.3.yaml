@@ -3,8 +3,8 @@ rules:
 - rule_id: 4.2.13.1.3.transplant_oral_antiviral_coverage
   sut_section: 4.2.13.1.3
   gate_b_sources:
-  - C004539
-  - C004540
+  - 4.2.13.1.(1)#0792cfd9
+  - 4.2.13.1.a#3a85da7e
   - 4.2.13.1.3.(1)
   drug_names:
   - lamivudin

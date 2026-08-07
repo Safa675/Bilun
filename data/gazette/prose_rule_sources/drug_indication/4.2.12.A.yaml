@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.12.A.immunglob.cmv_ig_heart_lung_tx_coverage
   sut_section: 4.2.12.A
   gate_b_sources:
-  - C004440
+  - 4.2.12.A.(3)#afa4bdea
   drug_names:
   - sitomegalavirüs immünglobulini
   - sitomegalovirüs immünglobulini
@@ -36,8 +36,8 @@ rules:
 - rule_id: 4.2.12.A.immunglob.hbig_anhepatic_phase_dose_by_risk
   sut_section: 4.2.12.A
   gate_b_sources:
-  - C004417
-  - C004427
+  - 4.2.12.A.(2)#881f0973
+  - 4.2.12.A.b#1d219718
   drug_names:
   - hepatit b immünglobulini
   - hbig
@@ -55,7 +55,7 @@ rules:
 - rule_id: 4.2.12.A.immunglob.hbig_day14_antihbs_low_continuation
   sut_section: 4.2.12.A
   gate_b_sources:
-  - C004431
+  - 4.2.12.A.(3)#6527499d
   drug_names:
   - hepatit b immünglobulini
   - hbig
@@ -72,7 +72,7 @@ rules:
 - rule_id: 4.2.12.A.immunglob.hbig_day7_hbsag_positive_continuation
   sut_section: 4.2.12.A
   gate_b_sources:
-  - C004430
+  - 4.2.12.A.(2)#27cd8688
   drug_names:
   - hepatit b immünglobulini
   - hbig
@@ -90,7 +90,7 @@ rules:
 - rule_id: 4.2.12.A.immunglob.hbig_liver_tx_prophylaxis_risk_group
   sut_section: 4.2.12.A
   gate_b_sources:
-  - C004417
+  - 4.2.12.A.(2)#881f0973
   drug_names:
   - hepatit b immünglobulini
   - hbig
@@ -110,7 +110,7 @@ rules:
 - rule_id: 4.2.12.A.immunglob.hbig_posttx_day0_7_daily_maintenance
   sut_section: 4.2.12.A
   gate_b_sources:
-  - C004429
+  - 4.2.12.A.(1)#902eee25
   drug_names:
   - hepatit b immünglobulini
   - hbig
@@ -128,7 +128,7 @@ rules:
 - rule_id: 4.2.12.A.immunglob.hbig_tetanus_ambulatory_coverage
   sut_section: 4.2.12.A
   gate_b_sources:
-  - C004416
+  - 4.2.12.A.(1)#55ae45e4
   drug_names:
   - hepatit b immünglobulini
   - tetanoz immünglobulini

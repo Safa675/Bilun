@@ -93,7 +93,7 @@
         "message_tr": "Garanti kapsamındaki bakım/onarım — ayrıca faturalandırılamaz (§3.1.2(c))."
       },
       "gate_b_sources": [
-        "C002741"
+        "3.1.2.c#65ed8d8b"
       ]
     },
     {
@@ -244,7 +244,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002724"
+        "3.1.2.c#edb61f02"
       ],
       "condition": {
         "material_name_any": [
@@ -265,7 +265,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002742"
+        "3.1.2.ç#f2648b2c"
       ],
       "condition": {
         "material_name_any": [
@@ -284,7 +284,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002743"
+        "3.1.2.d#d9bbebfe"
       ],
       "condition": {
         "material_name_any": [
@@ -505,7 +505,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002740"
+        "3.1.2.b#33abaebf"
       ],
       "condition": {
         "ortez_protez_contract_billing_invalid": true
@@ -521,8 +521,8 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002732",
-        "C002733"
+        "3.1.2.(11)#32ebb1ab",
+        "3.1.2.(11)#6121ccdc"
       ],
       "condition": {
         "maintenance_cost_exceeds_sut_cap": true
@@ -538,9 +538,9 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002727",
-        "C002728",
-        "C002729",
+        "3.1.2.b#f3470615",
+        "3.1.2.c#19ee9464",
+        "3.1.2.ç#a9bd5aa5",
         "3.1.2.e"
       ],
       "condition": {
@@ -557,7 +557,7 @@
       "sut_section": "3.1.2",
       "deontic": "MANDATORY",
       "gate_b_sources": [
-        "C002723"
+        "3.1.2.b#8d8c4a1b"
       ],
       "condition": {
         "warranty_maintenance_procedure_incomplete": true
@@ -574,7 +574,7 @@
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "3.1.2.(8)",
-        "C002722"
+        "3.1.2.a#017b78e7"
       ],
       "condition": {
         "ortez_protez_maintenance_unverified": true
@@ -718,7 +718,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002712"
+        "3.1.2.c#a34c3d6b"
       ],
       "condition": {
         "ek3c_custom_garment_contract_invalid": true
@@ -873,7 +873,7 @@
       "sut_section": "3.1.2",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C002711"
+        "3.1.2.b#af1d1ae1"
       ],
       "condition": {
         "material_invoice_documentation_incomplete": true
@@ -976,7 +976,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002726"
+        "3.1.2.a#b7c7a480"
       ],
       "condition": {
         "child_growth_miat_renewal_claim": true
@@ -994,7 +994,7 @@
       "gate_b_sources": [
         "3.1.1.(6)",
         "3.2.1.A.(3)",
-        "C002715"
+        "3.1.2.b#3d3a16d5"
       ],
       "condition": {
         "facility_contract_material_supply_scope": true
@@ -1058,7 +1058,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002710"
+        "3.1.2.a#47f9747d"
       ],
       "condition": {
         "ismarlama_licensed_center_supply_required": true
@@ -1074,9 +1074,9 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002714",
-        "C002716",
-        "C002717",
+        "3.1.2.a#0bfdb44d",
+        "3.1.2.c#1c376326",
+        "3.1.2.ç#1340de85",
         "C002718",
         "C002731"
       ],
@@ -1095,7 +1095,7 @@
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
         "3.1.2.(14)",
-        "C002737",
+        "3.1.2.a#50ebb6cc",
         "C002738"
       ],
       "condition": {

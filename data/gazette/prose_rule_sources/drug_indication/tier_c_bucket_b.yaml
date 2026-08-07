@@ -6,7 +6,7 @@ rules:
   drug_names:
   - lama
   gate_b_sources:
-  - C003650
+  - 4.2.1.C-2.(2)#4e24982b
   report_required: true
   message_tr: (2) Siklofosfamide dirençli veya siklofosfamid tedavisi verilemeyen ciddi, aktif granulamatoz polianjitis (GPA/
     Wegener granülomatozu) ve mikroskobik polianjitis (MPA) hastalarının tedavisinde glukokortikoidlerle kombine olarak;
@@ -81,7 +81,7 @@ rules:
   drug_names:
   - amfoterisin
   gate_b_sources:
-  - C006102
+  - 4.2.23.(3)#84014798
   - 4.2.23.(7)
   report_required: true
   message_tr: 3) Amfoterisin B ile tedaviye refrakter ya da amfoterisin B’yi tolere edemeyen fusariozis hastalığı olan hastalarda.

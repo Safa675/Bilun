@@ -88,7 +88,7 @@ rules:
   sut_section: 3.3.33.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003348
+  - 3.3.33.B.a#bc08bd2d
   condition:
     cochlear_implant_threshold_adult_child_criteria: true
   action:
@@ -100,7 +100,7 @@ rules:
   sut_section: 3.3.33.B
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003349
+  - 3.3.33.B.b#b5229bfb
   condition:
     cochlear_implant_threshold_infant_criteria: true
   action:

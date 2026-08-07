@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.1.C.12_week_response_criteria_continue_c6
   sut_section: 4.2.1.C-6
   gate_b_sources:
-  - C003758
+  - 4.2.1.C-6.b#834be880
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -13,15 +13,15 @@ rules:
   - klinik immunoloji
   - fiziksel tıp ve rehabilitasyon
   action:
-    enforcement: 12 haftalık kullanım sonunda tedavi başlangıcına göre tanımlı kriterlerden en az biri sağlanırsa 
-      tedaviye devam
-    message_tr: 12 haftalık ilaç kullanım süresi sonunda tedavi başlangıcına göre belirlenen kriterlerden en az birinin 
-      sağlanması durumunda tedaviye devam edilebilir (§4.2.1.C-6).
+    enforcement: 12 haftalık kullanım sonunda tedavi başlangıcına göre tanımlı kriterlerden en az biri sağlanırsa tedaviye
+      devam
+    message_tr: 12 haftalık ilaç kullanım süresi sonunda tedavi başlangıcına göre belirlenen kriterlerden en az birinin sağlanması
+      durumunda tedaviye devam edilebilir (§4.2.1.C-6).
 - rule_id: 4.2.1.C.paediatric_acr30_acr50_continue_c6
   sut_section: 4.2.1.C-6
   gate_b_sources:
-  - C003769
-  - C003773
+  - 4.2.1.C-6.a#760d8ee0
+  - 4.2.1.C-6.b#d9fb6dff
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -36,12 +36,12 @@ rules:
   - çocuk sağlığı ve hastalıkları
   action:
     enforcement: 3. ay ACR pediatrik 30 → 3 aylık raporla devam; rapor sonunda ACR pediatrik ≥50 → 6 aylık raporla devam
-    message_tr: İlaca başlandıktan 3 ay sonra ACR pediatrik 30 yanıtı alınması halinde 3 ay süreli raporla; rapor süresi
-      sonunda ACR pediatrik ≥50 olması halinde 6 ay süreli raporla tedaviye devam edilebilir (§4.2.1.C-6).
+    message_tr: İlaca başlandıktan 3 ay sonra ACR pediatrik 30 yanıtı alınması halinde 3 ay süreli raporla; rapor süresi sonunda
+      ACR pediatrik ≥50 olması halinde 6 ay süreli raporla tedaviye devam edilebilir (§4.2.1.C-6).
 - rule_id: 4.2.1.C.rheum_6mo_report_coverage_c6
   sut_section: 4.2.1.C-6
   gate_b_sources:
-  - C003743
+  - 4.2.1.C-6.c#fa0f9327
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -56,15 +56,13 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: romatoloji uzman hekiminin yer aldığı 6 ay süreli raporla romatoloji uzmanlarınca reçete edilirse 
-      ödenir
-    message_tr: Bu durumların belirtildiği romatoloji uzman hekiminin yer aldığı 6'şar ay süreli sağlık kurulu raporuna 
-      dayanılarak romatoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır 
-      (§4.2.1.C-6).
+    enforcement: romatoloji uzman hekiminin yer aldığı 6 ay süreli raporla romatoloji uzmanlarınca reçete edilirse ödenir
+    message_tr: Bu durumların belirtildiği romatoloji uzman hekiminin yer aldığı 6'şar ay süreli sağlık kurulu raporuna dayanılarak
+      romatoloji uzman hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.1.C-6).
 - rule_id: 4.2.1.C.tertiary_immunology_rheum_internal_coverage_c6
   sut_section: 4.2.1.C-6
   gate_b_sources:
-  - C003747
+  - 4.2.1.C-6.c#85e8794c
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -84,15 +82,15 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: tüm romatoloji uzmanları veya üçüncü basamakta klinik immunoloji/PMR uzmanı raporuyla bu uzmanlarca 
-      veya iç hastalıkları uzmanlarınca reçete edilirse ödenir
-    message_tr: Tüm romatoloji uzman hekimleri veya üçüncü basamakta klinik immunoloji/fiziksel tıp ve rehabilitasyon 
-      uzmanlarından birinin yer aldığı sağlık kurulu raporuna dayanılarak bu uzmanlarca veya iç hastalıkları uzman 
-      hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.1.C-6).
+    enforcement: tüm romatoloji uzmanları veya üçüncü basamakta klinik immunoloji/PMR uzmanı raporuyla bu uzmanlarca veya
+      iç hastalıkları uzmanlarınca reçete edilirse ödenir
+    message_tr: Tüm romatoloji uzman hekimleri veya üçüncü basamakta klinik immunoloji/fiziksel tıp ve rehabilitasyon uzmanlarından
+      birinin yer aldığı sağlık kurulu raporuna dayanılarak bu uzmanlarca veya iç hastalıkları uzman hekimleri tarafından
+      reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.1.C-6).
 - rule_id: 4.2.1.C.tertiary_immunology_rheum_internal_coverage_c6_b
   sut_section: 4.2.1.C-6
   gate_b_sources:
-  - C003750
+  - 4.2.1.C-6.b#392bc266
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -112,11 +110,11 @@ rules:
   condition:
     coverage_note: true
   action:
-    enforcement: tüm romatoloji uzmanları veya üçüncü basamakta klinik immunoloji/PMR uzmanı raporuyla bu uzmanlarca 
-      veya iç hastalıkları uzmanlarınca reçete edilirse ödenir
-    message_tr: Tüm romatoloji uzman hekimleri veya üçüncü basamakta klinik immunoloji/fiziksel tıp ve rehabilitasyon 
-      uzmanlarından birinin yer aldığı sağlık kurulu raporuna dayanılarak bu uzmanlarca veya iç hastalıkları uzman 
-      hekimleri tarafından reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.1.C-6).
+    enforcement: tüm romatoloji uzmanları veya üçüncü basamakta klinik immunoloji/PMR uzmanı raporuyla bu uzmanlarca veya
+      iç hastalıkları uzmanlarınca reçete edilirse ödenir
+    message_tr: Tüm romatoloji uzman hekimleri veya üçüncü basamakta klinik immunoloji/fiziksel tıp ve rehabilitasyon uzmanlarından
+      birinin yer aldığı sağlık kurulu raporuna dayanılarak bu uzmanlarca veya iç hastalıkları uzman hekimleri tarafından
+      reçete edilmesi halinde bedelleri Kurumca karşılanır (§4.2.1.C-6).
 - rule_id: 4.2.1.baricitinib_ad_specialist_board
   sut_section: 4.2.1.C-6
   drug_names:
@@ -131,8 +129,8 @@ rules:
   - dermatoloji
   - immünoloji
   - immünoloji ve alerji
-  message_tr: Barisitinib/abrositinib — atopik dermatitte dermatoloji/immünoloji uzman hekimlerinin yer aldığı 4 ay 
-    süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).
+  message_tr: Barisitinib/abrositinib — atopik dermatitte dermatoloji/immünoloji uzman hekimlerinin yer aldığı 4 ay süreli
+    sağlık kurulu raporu gerekir (§4.2.1.C-6).
   gate_b_sources:
   - 4.2.1.C-6.d
   prescriber_specialties:
@@ -161,12 +159,12 @@ rules:
   - romatoloji
   - klinik immunoloji
   - fiziksel tıp
-  message_tr: JAK inhibitörleri — tedavi devamında etkinlik yanıtının romatoloji veya immünoloji uzman hekim raporunda 
-    belirtilmesi gerekir (§4.2.1.C-6).
+  message_tr: JAK inhibitörleri — tedavi devamında etkinlik yanıtının romatoloji veya immünoloji uzman hekim raporunda belirtilmesi
+    gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003745
-  - C003746
-  - C003781
+  - 4.2.1.C-6.a#34439eb2
+  - 4.2.1.C-6.b#a4c444df
+  - 4.2.1.C-6.(2)#b223df7c
   prescriber_specialties:
   - romatoloji
   - immünoloji
@@ -186,10 +184,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Upadasitinib — IBD tedavisinde sağlık kurulu raporuna dayanılarak gastroenteroloji/genel cerrahi/iç 
-    hastalıkları uzman hekimlerince reçete düzenlenmelidir (§4.2.1.C-6).
+  message_tr: Upadasitinib — IBD tedavisinde sağlık kurulu raporuna dayanılarak gastroenteroloji/genel cerrahi/iç hastalıkları
+    uzman hekimlerince reçete düzenlenmelidir (§4.2.1.C-6).
   gate_b_sources:
-  - C003770
+  - 4.2.1.C-6.b#5d3e6c0f
   prescriber_specialties:
   - gastroenteroloji
   - genel cerrahi
@@ -211,10 +209,10 @@ rules:
   report_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
-  message_tr: JAK inhibitörleri — juvenil artritte çocuk romatoloji uzmanının yer aldığı üçüncü basamak sağlık kurulu 
-    raporu gerekir (§4.2.1.C-6).
+  message_tr: JAK inhibitörleri — juvenil artritte çocuk romatoloji uzmanının yer aldığı üçüncü basamak sağlık kurulu raporu
+    gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003775
+  - 4.2.1.C-6.ç#719328b0
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -237,10 +235,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: JAK inhibitörleri — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte sağlık kurulu raporunda önceki 
-    tedavi yetersizliği belirtilmelidir (§4.2.1.C-6).
+  message_tr: JAK inhibitörleri — DMARD ve anti-TNF yetersiz aktif psöriyatik artritte sağlık kurulu raporunda önceki tedavi
+    yetersizliği belirtilmelidir (§4.2.1.C-6).
   gate_b_sources:
-  - C003741
+  - 4.2.1.C-6.a#2c2c04b5
 - rule_id: 4.2.1.jak_ra_dmard_initiation
   sut_section: 4.2.1.C-6
   drug_names:
@@ -261,10 +259,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: JAK inhibitörleri — romatoid artritte DMARD yetersizliğinde (DAS28>5.1) 3 ay süreli sağlık kurulu raporu 
-    gerekir (§4.2.1.C-6).
+  message_tr: JAK inhibitörleri — romatoid artritte DMARD yetersizliğinde (DAS28>5.1) 3 ay süreli sağlık kurulu raporu gerekir
+    (§4.2.1.C-6).
   gate_b_sources:
-  - C003738
+  - 4.2.1.C-6.(1)#96f9d0e8
   report_duration_months: 3
 - rule_id: 4.2.1.jak_ra_university_prescriber_board
   sut_section: 4.2.1.C-6
@@ -285,10 +283,10 @@ rules:
   - romatoloji
   - klinik immunoloji
   - fiziksel tıp
-  message_tr: JAK inhibitörleri — romatoid artritte üniversite/eğitim hastanesi romatoloji/klinik immunoloji/fiziksel 
-    tıp sağlık kurulu raporu gerekir (§4.2.1.C-6).
+  message_tr: JAK inhibitörleri — romatoid artritte üniversite/eğitim hastanesi romatoloji/klinik immunoloji/fiziksel tıp
+    sağlık kurulu raporu gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003739
+  - 4.2.1.C-6.(2)#9250b85a
   prescriber_specialties:
   - romatoloji
   - klinik immunoloji
@@ -309,10 +307,10 @@ rules:
   report_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
-  message_tr: JAK inhibitörleri — juvenil artritte tedavi devamında ACR pediatrik cevap kriteri 6 ayda bir 
-    değerlendirilmeli ve her sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-6 c).
+  message_tr: JAK inhibitörleri — juvenil artritte tedavi devamında ACR pediatrik cevap kriteri 6 ayda bir değerlendirilmeli
+    ve her sağlık kurulu raporunda belirtilmelidir (§4.2.1.C-6 c).
   gate_b_sources:
-  - C003774
+  - 4.2.1.C-6.c#9fa1a10d
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -333,11 +331,11 @@ rules:
   - fiziksel tıp
   - klinik immunoloji
   - çocuk sağlığı
-  message_tr: Tofacitinib/upadasitinib — anti-TNF yetersiz aksiyel/periferik ankilozan spondilitte 3 ay süreli sağlık 
-    kurulu raporu gerekir (§4.2.1.C-6).
+  message_tr: Tofacitinib/upadasitinib — anti-TNF yetersiz aksiyel/periferik ankilozan spondilitte 3 ay süreli sağlık kurulu
+    raporu gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003745
-  - C003746
+  - 4.2.1.C-6.a#34439eb2
+  - 4.2.1.C-6.b#a4c444df
   report_duration_months: 3
 - rule_id: 4.2.1.tofacitinib_axial_as_initiation
   sut_section: 4.2.1.C-6
@@ -352,10 +350,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Tofacitinib — aksiyel tutulumlu ankilozan spondilitte anti-TNF yetersizliğinde 3 ay süreli sağlık kurulu 
-    raporu gerekir (§4.2.1.C-6).
+  message_tr: Tofacitinib — aksiyel tutulumlu ankilozan spondilitte anti-TNF yetersizliğinde 3 ay süreli sağlık kurulu raporu
+    gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003745
+  - 4.2.1.C-6.a#34439eb2
   report_duration_months: 3
 - rule_id: 4.2.1.tofacitinib_peripheral_as_initiation
   sut_section: 4.2.1.C-6
@@ -370,10 +368,10 @@ rules:
   - romatoloji
   - fiziksel tıp
   - klinik immunoloji
-  message_tr: Tofacitinib — periferik eklem tutulumlu ankilozan spondilitte anti-TNF yetersizliğinde 3 ay süreli sağlık 
-    kurulu raporu gerekir (§4.2.1.C-6).
+  message_tr: Tofacitinib — periferik eklem tutulumlu ankilozan spondilitte anti-TNF yetersizliğinde 3 ay süreli sağlık kurulu
+    raporu gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003746
+  - 4.2.1.C-6.b#a4c444df
   report_duration_months: 3
 - rule_id: 4.2.1.tofacitinib_pjia_second_line
   sut_section: 4.2.1.C-6
@@ -386,10 +384,10 @@ rules:
   report_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
-  message_tr: Tofacitinib — metotreksat/TNF/IL-6 yetersiz poliartiküler juvenil artritte 3 ay süreli sağlık kurulu 
-    raporu gerekir (§4.2.1.C-6).
+  message_tr: Tofacitinib — metotreksat/TNF/IL-6 yetersiz poliartiküler juvenil artritte 3 ay süreli sağlık kurulu raporu
+    gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003772
+  - 4.2.1.C-6.a#0b44d883
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -413,10 +411,10 @@ rules:
   - fiziksel tıp
   - klinik immunoloji
   - çocuk sağlığı
-  message_tr: Tofacitinib/barisitinib/upadasitinib — anti-TNF yetersiz romatoid artritte 3 ay süreli sağlık kurulu 
-    raporu gerekir (§4.2.1.C-6).
+  message_tr: Tofacitinib/barisitinib/upadasitinib — anti-TNF yetersiz romatoid artritte 3 ay süreli sağlık kurulu raporu
+    gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003738
+  - 4.2.1.C-6.(1)#96f9d0e8
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -441,10 +439,10 @@ rules:
   - romatoloji
   - klinik immunoloji
   - fiziksel tıp
-  message_tr: Tofacitinib/barisitinib — romatoid artritte romatoloji veya üniversite/eğitim hastanesi klinik 
-    immunoloji/fiziksel tıp uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6 (2)).
+  message_tr: Tofacitinib/barisitinib — romatoid artritte romatoloji veya üniversite/eğitim hastanesi klinik immunoloji/fiziksel
+    tıp uzmanının yer aldığı en fazla 6 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6 (2)).
   gate_b_sources:
-  - C003738
+  - 4.2.1.C-6.(1)#96f9d0e8
   prescriber_specialties:
   - romatoloji
   - klinik immunoloji
@@ -461,8 +459,8 @@ rules:
   report_required: true
   report_specialties:
   - dermatoloji
-  message_tr: Upadasitinib — atopik dermatitte üçüncü basamak kurumda üç dermatoloji uzmanının yer aldığı 4 ay süreli 
-    sağlık kurulu raporu gerekir (§4.2.1.C-6).
+  message_tr: Upadasitinib — atopik dermatitte üçüncü basamak kurumda üç dermatoloji uzmanının yer aldığı 4 ay süreli sağlık
+    kurulu raporu gerekir (§4.2.1.C-6).
   gate_b_sources:
   - 4.2.1.C-6.d
   prescriber_specialties:
@@ -483,8 +481,8 @@ rules:
   - klinik immunoloji
   message_tr: Upadasitinib — anti-TNF yetersizliğinde 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003749
-  - C003778
+  - 4.2.1.C-6.a#8053db7d
+  - 4.2.1.C-6.(1)#9da9ee4c
   report_duration_months: 3
 - rule_id: 4.2.1.upadacitinib_crohn_anti_tnf
   sut_section: 4.2.1.C-6
@@ -498,10 +496,10 @@ rules:
   - gastroenteroloji
   - genel cerrahi
   - iç hastalıkları
-  message_tr: Upadasitinib — Crohn hastalığında anti-TNF yetersizliğinde doz/süre belirtilen 3 ay süreli sağlık kurulu 
-    raporu gerekir (§4.2.1.C-6).
+  message_tr: Upadasitinib — Crohn hastalığında anti-TNF yetersizliğinde doz/süre belirtilen 3 ay süreli sağlık kurulu raporu
+    gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003753
+  - 4.2.1.C-6.a#c3d98524
   prescriber_specialties:
   - gastroenteroloji
   - genel cerrahi
@@ -519,10 +517,10 @@ rules:
   - gastroenteroloji
   - genel cerrahi
   - iç hastalıkları
-  message_tr: Upadasitinib — ülseratif kolitte anti-TNF yetersizliğinde gastroenteroloji/genel cerrahi uzman hekim 
-    raporu gerekir (§4.2.1.C-6).
+  message_tr: Upadasitinib — ülseratif kolitte anti-TNF yetersizliğinde gastroenteroloji/genel cerrahi uzman hekim raporu
+    gerekir (§4.2.1.C-6).
   gate_b_sources:
-  - C003755
+  - 4.2.1.C-6.a#840b933d
   prescriber_specialties:
   - gastroenteroloji
   - genel cerrahi

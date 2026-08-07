@@ -21,7 +21,7 @@ rules:
     denial_tr: MS DMT ajanları Klinik İzole Sendrom tedavisinde ödenmez (fampiridin hariç listedeki ajanlar)
     severity: error
   gate_b_sources:
-  - C006627
+  - 4.2.34.(2)#37edca05
 - rule_id: 4.2.34.(3).ms_dmt_combo_no_pay
   sut_section: 4.2.34
   condition:
@@ -41,4 +41,4 @@ rules:
     denial_tr: MS DMT ajanları (fampiridin hariç) kombine kullanılırsa ödenmez
     severity: error
   gate_b_sources:
-  - C006628
+  - 4.2.34.(3)#65e35a3d

@@ -261,7 +261,7 @@ rules:
   message_tr: Formeterol/salmeterol/vilanterol — göğüs hastalıkları, göğüs cerrahisi, alerji, iç hastalıkları veya çocuk sağlığı
     uzman hekim reçetesi gerekir; uzman raporu ile devam reçetesi diğer hekimlere açılır (§4.2.24.A-1).
   gate_b_sources:
-  - C006124
+  - 4.2.24.A.(1)#207d4fe2
   report_required: true
   prescriber_specialties:
   - göğüs hastalıkları
@@ -282,7 +282,7 @@ rules:
   message_tr: Montelukast/zafirlukast — iç hastalıkları, çocuk sağlığı, göğüs hastalıkları veya alerji uzman hekim reçetesi
     veya uzman hekim raporu gerekir (§4.2.24.A-2).
   gate_b_sources:
-  - C006125
+  - 4.2.24.A.(2)#2f69a7a4
   report_required: true
   prescriber_specialties:
   - iç hastalıkları

@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.1.C.ankylosing_spondylitis_nsaids_failure_report
   sut_section: 4.2.1.C-1
   gate_b_sources:
-  - C003605
+  - 4.2.1.C-1.(2)#d7d9f193
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -60,7 +60,7 @@ rules:
 - rule_id: 4.2.1.C.juvenile_ra_das28_activity_scoring
   sut_section: 4.2.1.C-1
   gate_b_sources:
-  - C003604
+  - 4.2.1.C-1.(3)#7e4806b5
   drug_names:
   - anti-tnf
   - biyolojik ajan
@@ -93,7 +93,7 @@ rules:
   - iç hastalıkları
   message_tr: Adalimumab/infliksimab/sertolizumab — yetişkin Crohn hastalığında 4 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003629
+  - 4.2.1.C-1.a#c06ba8d0
   prescriber_specialties:
   - gastroenteroloji
   - genel cerrahi
@@ -135,7 +135,7 @@ rules:
   message_tr: Adalimumab — üveit eşlikli juvenil artritte ilk seçenek anti-TNF olarak 3 ay süreli sağlık kurulu raporu gerekir
     (§4.2.1.C-1).
   gate_b_sources:
-  - C003602
+  - 4.2.1.C-1.(1)#ab1ba007
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -159,7 +159,7 @@ rules:
   message_tr: Adalimumab/infliksimab — çocuk Crohn hastalığında konvansiyonel tedavi yetersizliğinde 4 ay süreli sağlık kurulu
     raporu gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003630
+  - 4.2.1.C-1.b#d10b7dcf
   prescriber_specialties:
   - gastroenteroloji
   - genel cerrahi
@@ -179,7 +179,7 @@ rules:
   - göz hastalıkları
   message_tr: Adalimumab — çocuk non-enfeksiyöz kronik anterior üveitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003635
+  - 4.2.1.C-1.b#6fbddd17
   prescriber_specialties:
   - göz hastalıkları
   report_duration_months: 3
@@ -196,7 +196,7 @@ rules:
   - göz hastalıkları
   message_tr: Adalimumab — yetişkin non-enfeksiyöz üveitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003634
+  - 4.2.1.C-1.a#511c9a60
   prescriber_specialties:
   - göz hastalıkları
   report_duration_months: 3
@@ -243,7 +243,7 @@ rules:
   message_tr: Anti-TNF — juvenil artritte ACR pediatrik 30 yanıtı sonrası 3 ay süreli sağlık kurulu raporu ile tedaviye devam
     edilir (§4.2.1.C-1).
   gate_b_sources:
-  - C003603
+  - 4.2.1.C-1.(2)#327d69e0
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -271,7 +271,7 @@ rules:
   message_tr: Anti-TNF — juvenil artritte ACR pediatrik 50 yanıtı ile 6 ay süreli sağlık kurulu raporu ile tedaviye devam
     edilir (§4.2.1.C-1).
   gate_b_sources:
-  - C003603
+  - 4.2.1.C-1.(2)#327d69e0
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -297,7 +297,7 @@ rules:
   message_tr: Anti-TNF — juvenil artritte ACR pediatrik 30/50 yanıtı ile tedavi devamında 3–6 ay süreli sağlık kurulu raporu
     gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003603
+  - 4.2.1.C-1.(2)#327d69e0
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -325,7 +325,7 @@ rules:
   message_tr: Anti-TNF — juvenil artritte tedavi devamında ACR pediatrik cevap kriterinin her sağlık kurulu raporunda belirtilmesi
     gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003603
+  - 4.2.1.C-1.(2)#327d69e0
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -350,7 +350,7 @@ rules:
   - çocuk endokrinoloji
   message_tr: Anti-TNF — juvenil artritte NSAİ ve DMARD yetersizliğinde 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003602
+  - 4.2.1.C-1.(1)#ab1ba007
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -378,7 +378,7 @@ rules:
   message_tr: Anti-TNF — juvenil idiyopatik artritte NSAİ/methotrexat yetersizliğinde ACR pediatrik 30 yanıtı ile 3 ay süreli
     sağlık kurulu raporu gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003593
+  - 4.2.1.C-1.b#3e23e816
   prescriber_specialties:
   - çocuk sağlığı
   - çocuk romatoloji
@@ -403,7 +403,7 @@ rules:
   - çocuk sağlığı
   message_tr: Anti-TNF — periferik eklem tutulumlu ankilozan spondilitte 3 ay süreli sağlık kurulu raporu gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003610
+  - 4.2.1.C-1.(3)#c51d3e01
   report_duration_months: 3
 - rule_id: 4.2.1.anti_tnf_prescriber_board
   sut_section: 4.2.1.C-1
@@ -508,7 +508,7 @@ rules:
   message_tr: Anti-TNF — erişkin romatoid artritte DMARD yetersizliğinde DAS28 takibi ile 3 ay süreli sağlık kurulu raporu
     gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003587
+  - 4.2.1.C-1.a#a9468383
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji
@@ -560,7 +560,7 @@ rules:
   message_tr: Fistülize/şiddetli Crohn — adalimumab/infliksimab/sertolizumab başlangıcında 4 ay süreli sağlık kurulu raporu;
     4. ayda CDAI 70 puan düşüşü değerlendirilir (§4.2.1.C-1 (10)).
   gate_b_sources:
-  - C003627
+  - 4.2.1.C-1.(10)#8772f445
   prescriber_specialties:
   - gastroenteroloji
   - genel cerrahi
@@ -614,7 +614,7 @@ rules:
   message_tr: İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz psöriyatik artritte PSARC yanıtı ile sağlık kurulu
     raporu gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003621
+  - 4.2.1.C-1.a#38b4c70a
   report_duration_months: 3
 - rule_id: 4.2.1.inflix_cert_gol_ra_second_line
   sut_section: 4.2.1.C-1
@@ -636,7 +636,7 @@ rules:
   message_tr: İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz romatoid artritte 3 ay süreli sağlık kurulu raporu
     gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003591
+  - 4.2.1.C-1.(1)#96813875
   report_duration_months: 3
 - rule_id: 4.2.1.inflix_peripheral_as_basdai_continuation
   sut_section: 4.2.1.C-1
@@ -725,7 +725,7 @@ rules:
   message_tr: İnfliksimab/golimumab/sertolizumab — diğer anti-TNF yetersiz psöriyatik artritte PSARC yanıtı ile 3 ay süreli
     sağlık kurulu raporu gerekir (§4.2.1.C-1).
   gate_b_sources:
-  - C003621
+  - 4.2.1.C-1.a#38b4c70a
   report_duration_months: 3
 - rule_id: 4.2.1.infliximab_as_basdai_second_line
   sut_section: 4.2.1.C-1
@@ -766,7 +766,7 @@ rules:
   message_tr: İnfliksimab — diğer anti-TNF yetersiz romatoid artritte DAS28 yanıtı ile 3 ay süreli sağlık kurulu raporu gerekir
     (§4.2.1.C-1).
   gate_b_sources:
-  - C003591
+  - 4.2.1.C-1.(1)#96813875
   prescriber_specialties:
   - iç hastalıkları
   - romatoloji

@@ -58,9 +58,9 @@ rules:
     malul_vazife_harp_max_per_implant_try: 2500
   gate_b_sources:
   - C000747
-  - C000744
-  - C000745
-  - C000746
+  - 2.4.1.b#154e6d11
+  - 2.4.1.c#4a1baac3
+  - 2.4.1.ç#18099244
   verification_status: ai_generated_pending_review
   content_note: 'Enhanced: added the numeric caps from C000747 (max 4 implants/jaw; +750 TL/implant on top of EK-2/Ç fee;
     max 2.500 TL/implant for vazife/harp malulleri per 3713/5434/2330) plus the radiographic-evidence and implant-count requirements.
@@ -94,5 +94,5 @@ rules:
       hariç)
     severity: error
   gate_b_sources:
-  - C000752
+  - 2.4.1.a#60650e50
   - 2.4.1.(4)

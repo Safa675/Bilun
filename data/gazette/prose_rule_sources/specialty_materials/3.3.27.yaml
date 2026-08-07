@@ -31,7 +31,7 @@ rules:
   sut_section: 3.3.27
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C003260
+  - 3.3.27.ç#33ac9eae
   condition:
     material_name_any:
     - kanama durdurma

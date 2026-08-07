@@ -17,7 +17,7 @@ rules:
   sut_section: 3.1.2
   deontic: MUST_NOT_BILL
   gate_b_sources:
-  - C002727
+  - 3.1.2.b#f3470615
   condition:
     miatli_material_early_renewal_misrouted_responsible: true
   action:
@@ -29,7 +29,7 @@ rules:
   sut_section: 3.1.2
   deontic: MUST_BILL
   gate_b_sources:
-  - C002728
+  - 3.1.2.c#19ee9464
   condition:
     protez_ortez_early_renewal_repair_cost_over_75pct: true
   action:
@@ -41,7 +41,7 @@ rules:
   sut_section: 3.1.2
   deontic: MUST_BILL
   gate_b_sources:
-  - C002729
+  - 3.1.2.ç#a9bd5aa5
   condition:
     protez_ortez_intermediate_part_renewal_documented: true
   action:

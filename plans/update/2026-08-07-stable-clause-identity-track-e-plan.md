@@ -67,7 +67,11 @@
 ### Phase 3 — Resolver dual-read + collision migrate
 - [x] `clause_identity` resolver: `coordinate#hash` (clause_key) çözer; content-mismatch'te fail-loud; identical-content collision'lar tüm eş-id'leri döner (Track A3 korunur). +6 resolver testi.
 - [x] Migration scripti: `migrate_gate_b_sources_to_clause_keys.py` (lossless — clause_key ancak tek clause_id'ye çözünürse taşır).
-- [ ] **3b (deferred):** data migrasyonu. Engel: bazı manifest builder'ları `encoded_clause_ids`'i clause_key olarak ham tutuyor (C*'ye çözmüyor) → C* bekleyen testler kırılıyor. Önce builder'ları clause_key→C* çözecek şekilde tutarlamak, sonra migrasyonu koşmak gerek. Dry-run: 843/2379 lossless taşınabilir, ~270 prose/amendment C* kalır.
+- [x] **3b:** builder tutarlılığı + data migrasyonu TAMAM.
+  - `compile_rules._resolve_gate_b_ids` (corpus-çözümleyici) + `_build_gap_manifest`/`_build_golden`/wave2 stage artık C*'ye çözüyor → encoded_clause_ids tutarlı C*.
+  - Resolver `_resolve_clause_key`: frame'de `content_hash` yoksa `in_force_text`'ten anlık hash (minimal test frame'leri çalışır).
+  - `brittle_guards.assert_manifest_consistent` tam corpus ile çözer; `stale_clause_refs` CLAUSE_STALENESS_COLS'a in_force_text/content_hash + toleranslı select.
+  - Sonuç: 843 cite → clause_key (lossless), ~270 prose/amendment C* kaldı; 0 clause_key sızıntısı; 136 byte-identical; parity 0; tam pytest pre-existing baseline (24F/2416P).
 
 ### Phase 4 — C* demote/remove (Track E exit)
 - [ ] Public contract'tan `C*` kaldır (gate_b_sources, deferral, API schema `^[CF][0-9]{6}$` → coordinate pattern).

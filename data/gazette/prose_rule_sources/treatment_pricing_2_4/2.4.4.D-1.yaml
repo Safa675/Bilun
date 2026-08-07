@@ -15,7 +15,7 @@ rules:
     payment_tr: hemodiyaliz EK-2/C işlem puanı üzerinden faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C000938
+  - 2.4.4.D-1.(7)#c16d179a
 - rule_id: 2.4.4.D-1.(8).hemodialysis_consumables_reuse_prohibited
   sut_section: 2.4.4.D-1
   condition:
@@ -28,7 +28,7 @@ rules:
     denial_tr: hemodiyaliz sarf malzemeleri hiçbir surette tekrar kullanılamaz (reuse)
     severity: error
   gate_b_sources:
-  - C000939
+  - 2.4.4.D-1.(8)#3a164d50
 - rule_id: 2.4.4.D-1.(9).private_dialysis_session_cap_excess
   sut_section: 2.4.4.D-1
   condition:
@@ -68,7 +68,7 @@ rules:
     payment_tr: ev hemodiyalizi EK-2/C 'ev hemodiyalizi' puanı üzerinden faturalandırılır
     annex_basis: EK-2/C
   gate_b_sources:
-  - C000953
+  - 2.4.4.D-1.(6)#a3b77a95
 - rule_id: 2.4.4.D-1.(7ev).home_hemodialysis_device_no_pay
   sut_section: 2.4.4.D-1
   condition:
@@ -80,7 +80,7 @@ rules:
     denial_tr: ev hemodiyalizi için hastaya kurulan cihaz bedeli ile bakım/onarım/yedek parça bedelleri ödenmez
     severity: error
   gate_b_sources:
-  - C000954
+  - 2.4.4.D-1.(7)#bb759730
 - rule_id: 2.4.4.D-1.(8ev).home_hemodialysis_session_cap_excess
   sut_section: 2.4.4.D-1
   condition:
@@ -92,7 +92,7 @@ rules:
     denial_tr: ev hemodiyalizinde rapordaki haftalık seans üstü ek tedavi bedelleri ödenmez
     severity: error
   gate_b_sources:
-  - C000955
+  - 2.4.4.D-1.(8)#f54c8637
 - rule_id: 2.4.4.D-1.(3).dialysis_prescription_by_center_physician
   sut_section: 2.4.4.D-1
   condition:
@@ -103,7 +103,7 @@ rules:
     payment_tr: tanıya dayalı işlem kapsamı dışındaki hastaya gerekli ilaçlar, merkezde görevli hekimlerce SUT/esaslarına
       uygun reçete edilir
   gate_b_sources:
-  - C000934
+  - 2.4.4.D-1.(3)#a9cf7693
 - rule_id: 2.4.4.D-1.(10).hemodialysis_min_4_hours
   sut_section: 2.4.4.D-1
   condition:
@@ -130,4 +130,4 @@ rules:
     payment_tr: ev hemodiyalizi hastasına gerekli ilaçlar (tanıya dayalı işlem hariç), hastanın takip ve tedavisini yapan
       merkezde görevli hekimlerce reçete edilir
   gate_b_sources:
-  - C000950
+  - 2.4.4.D-1.(3)#5d5117fa

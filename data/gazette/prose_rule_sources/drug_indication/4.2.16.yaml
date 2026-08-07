@@ -4,8 +4,8 @@ rules:
   sut_section: 4.2.16
   gate_b_sources:
   - 4.2.16.(2)
-  - C005983
-  - C005984
+  - 4.2.16.a#d52cf1b9
+  - 4.2.16.b#25ecebd2
   - 4.2.16.(4)
   report_required: true
   report_duration_months: 36
@@ -144,7 +144,7 @@ rules:
 - rule_id: 4.2.16.glycogen_starch_products_2yr_4boxes
   sut_section: 4.2.16
   gate_b_sources:
-  - C005985
+  - 4.2.16.c#b3c67827
   drug_names:
   - yüksek amilopektin içeren nişastalı ürün
   report_required: true
@@ -290,7 +290,7 @@ rules:
   - gastroenteroloji
   message_tr: Doğuştan metabolik hastalık özel formülü — metabolizma/gastroenteroloji uzman hekim raporu gerekir (§4.2.16).
   gate_b_sources:
-  - C005983
+  - 4.2.16.a#d52cf1b9
   report_duration_months: 36
   prescriber_specialties:
   - çocuk metabolizma
@@ -322,7 +322,7 @@ rules:
     reçete edilebilir (§4.2.16).
   gate_b_sources:
   - 4.2.16.(1)
-  - C005983
+  - 4.2.16.a#d52cf1b9
   prescriber_specialties:
   - çocuk sağlığı
   - iç hastalıkları
@@ -350,7 +350,7 @@ rules:
   message_tr: Doğuştan metabolik hastalık özel formülü — çocuk metabolizma/endokrinoloji/gastroenteroloji uzman hekim 3 yıl
     süreli rapor gerekir (§4.2.16).
   gate_b_sources:
-  - C005983
+  - 4.2.16.a#d52cf1b9
   prescriber_specialties:
   - çocuk metabolizma
   - metabolizma hastalıkları

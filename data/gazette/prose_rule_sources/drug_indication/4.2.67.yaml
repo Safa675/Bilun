@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.67.renal.adpkd_tolvaptan_initiation_criteria_regulatory
   sut_section: 4.2.67
   gate_b_sources:
-  - C007152
+  - 4.2.67.(1)#b598de61
   drug_names:
   - tolvaptan
   icd10_codes:
@@ -20,7 +20,7 @@ rules:
 - rule_id: 4.2.67.renal.adpkd_tolvaptan_tertiary_nephrology_1yr_coverage
   sut_section: 4.2.67
   gate_b_sources:
-  - C007162
+  - 4.2.67.(2)#3c562ca5
   drug_names:
   - tolvaptan
   icd10_codes:

@@ -82,7 +82,7 @@ rules:
   message_tr: İdame tedavilerde yükleme dozu (3 doz) sonrası bevacizumab için göz hastalıkları uzman hekimi tarafından 1 ay
     süreli tek hekim raporu ile günübirlik tedavi (§4.2.33/b). Deksametazon ITV implant ve verteporfin bu idame kapsamı dışındadır.
   gate_b_sources:
-  - C006528
+  - 4.2.33.b#cb8683ef
   verification_status: ai_generated_pending_review
   content_note: Maintenance (idame) phase for bevacizumab — distinct from the 3-dose loading phase already encoded. Existing
     rules only carried loading_dose_count.
