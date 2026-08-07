@@ -86,26 +86,6 @@
       }
     },
     {
-      "rule_id": "3.3.1.(10).wound_debridman_no_pay",
-      "sut_section": "3.3.1",
-      "deontic": "NO_PAY",
-      "gate_b_sources": [
-        "3.3.1.(10)"
-      ],
-      "condition": {
-        "material_name_any": [
-          "larva debridman",
-          "ultrasonik debridman",
-          "debridman sarf"
-        ]
-      },
-      "action": {
-        "material_outcome": "no_pay",
-        "severity": "error",
-        "message_tr": "Debridman sarf malzemesi — Kurumca karşılanmaz (§3.3.1(10))."
-      }
-    },
-    {
       "rule_id": "3.3.1.(10).wound_biostimulation_no_pay",
       "sut_section": "3.3.1",
       "deontic": "NO_PAY",
