@@ -6,16 +6,20 @@ import polars as pl
 import pytest
 
 from scripts.sut.prose.clause_identity import (
+    CONTENT_HASH_LENGTH,
     AmbiguousClauseCiteError,
     NonEncodeEligibleCiteError,
     UnknownClauseCiteError,
     assert_gate_b_sources_resolvable,
+    clause_key,
+    content_hash,
     encoded_clause_ids_from_rules,
     filter_encode_eligible,
     is_clause_coordinate,
     is_clause_id,
     is_encode_eligible_row,
     is_gate_b_source_ref,
+    normalize_for_hash,
     resolve_gate_b_ref_to_clause_ids,
     resolve_gate_b_sources_to_clause_ids,
 )
@@ -206,3 +210,101 @@ def test_resolve_gate_b_sources_batch() -> None:
         ["C000001", "1.1.(1)"],
         _frame(),
     ) == {"C000001"}
+
+
+# ---------------------------------------------------------------------------
+# Track E — stable clause identity (content hash) tests.
+# Golden fixtures lock the normalization: any change to normalize_for_hash
+# flips these hashes and fails CI. Texts are real clauses from
+# sut_clauses.parquet (source_effective_date=2026-05-23), hardcoded so the
+# test does not depend on reading the corpus.
+# ---------------------------------------------------------------------------
+
+_C006549_IN_FORCE = (
+    "(7) Ranibizumab veya aflibersept etkin maddeli ilaçlar arasında ilaç değişimi "
+    "gereken hallerde tedaviye bevacizumab etkin maddeli ilaç ile yükleme dozu "
+    "tamamlanmak suretiyle devam edilecektir. Bevacizumab etkin maddeli ilaçla "
+    "tedaviye cevapsızlık/yetersiz cevap alınması durumunda diğer etkin maddeli ilaç "
+    "ile tedaviye (Mülga:RG-16/06/2020-31157/19-c md. Yürürlük: 24/06/2020)  devam "
+    "edilebilir."
+)
+_C006549_TEXT_TR = (
+    "(7) Ranibizumab veya aflibersept etkin maddeli ilaçlar arasında ilaç değişimi "
+    "gereken hallerde tedaviye bevacizumab etkin maddeli ilaç ile yükleme dozu "
+    "tamamlanmak suretiyle devam edilecektir. Bevacizumab etkin maddeli ilaçla "
+    "tedaviye cevapsızlık/yetersiz cevap alınması durumunda diğer etkin maddeli ilaç "
+    "ile tedaviye (Mülga:RG-16/06/2020-31157/19-c md. Yürürlük: 24/06/2020) yükleme "
+    "dozu yapılarak devam edilebilir."
+)
+_C006575_IN_FORCE = (
+    "(1) Siklosporin içeren immünsupresif göz damlaları, göz hastalıkları uzman "
+    "hekimi tarafından düzenlenen bir yıl süreli uzman hekim raporuna dayanılarak göz "
+    "hastalıkları uzman hekimlerince reçete edilebilir."
+)
+
+GOLDEN_CONTENT_HASHES = [
+    ("C006549 in_force", _C006549_IN_FORCE, "797a956a"),
+    ("C006549 text_tr", _C006549_TEXT_TR, "79b53d74"),
+    ("C006575 in_force", _C006575_IN_FORCE, "c14348d7"),
+]
+
+
+def test_normalize_is_deterministic() -> None:
+    text = "  Siklosporin   içeren\n\ngöz damlaları  "
+    assert normalize_for_hash(text) == normalize_for_hash(text)
+
+
+def test_normalize_folds_whitespace_and_line_endings() -> None:
+    assert normalize_for_hash("a  b\n\nc\r\nd") == "a b c d"
+
+
+def test_normalize_strips_edges() -> None:
+    assert normalize_for_hash("  x  ") == "x"
+
+
+def test_normalize_preserves_case() -> None:
+    # Legal text is case-sensitive; no casefolding.
+    assert normalize_for_hash("SUT EK-2/C") != normalize_for_hash("sut ek-2/c")
+
+
+def test_normalize_preserves_turkish_chars() -> None:
+    # NFKC must not mangle Turkish letters.
+    assert normalize_for_hash("İlaç, şişe, değişim, sağlık") == "İlaç, şişe, değişim, sağlık"
+
+
+def test_content_hash_stable_under_cosmetic_variation() -> None:
+    a = content_hash("Siklosporin içeren immünsupresif göz damlaları")
+    b = content_hash("Siklosporin   içeren\nimmünsupresif  göz damlaları")
+    assert a == b
+
+
+def test_content_hash_flips_on_substantive_change() -> None:
+    a = content_hash("Siklosporin içeren göz damlaları")
+    b = content_hash("Siklosporin içeren göz damlaları uzman hekim raporu")
+    assert a != b
+
+
+def test_content_hash_length() -> None:
+    assert len(content_hash("x")) == CONTENT_HASH_LENGTH
+
+
+def test_golden_content_hashes_lock_normalization() -> None:
+    for label, text, expected in GOLDEN_CONTENT_HASHES:
+        assert content_hash(text) == expected, (
+            f"{label}: content hash changed — normalize_for_hash drifted"
+        )
+
+
+def test_golden_in_force_differs_from_text_tr_when_struck() -> None:
+    # C006549 has struck content, so in_force_text != text_tr -> different hash.
+    assert content_hash(_C006549_IN_FORCE) != content_hash(_C006549_TEXT_TR)
+
+
+def test_clause_key_uses_coordinate_and_hash() -> None:
+    key = clause_key("4.2.33.D.(1)", _C006575_IN_FORCE)
+    assert key == f"4.2.33.D.(1)#{content_hash(_C006575_IN_FORCE)}"
+
+
+def test_clause_key_falls_back_to_hash_without_coordinate() -> None:
+    assert clause_key(None, _C006575_IN_FORCE) == content_hash(_C006575_IN_FORCE)
+    assert clause_key("", _C006575_IN_FORCE) == content_hash(_C006575_IN_FORCE)

@@ -65,3 +65,27 @@ Commit the working-tree changes (removal of the Finans Coder / coding-resolver p
 - TIER-3 (intentionally low-priority)
 - Reporter'ı gate'e çevirmek
 - TIER-2/TIER-4 toplu düzeltmesi (sadece örnekleme + politika)
+
+---
+
+## Task: Track E — Stable clause identity (coordinate + content-hash)
+
+### Goal
+Pozisyonel `clause_id` (C*) kırılganlığını bitirip Branch B corpus update'i güvenli/otomatik yapmak. Plan: `plans/update/2026-08-07-stable-clause-identity-track-e-plan.md`.
+
+### Subtasks
+- [x] Phase 0: C* envanteri + collision + baseline — `plans/update/2026-08-07-track-e-phase0-audit.md` (load-bearing ~2930; 82 özdeş-collision; composite key yetersiz, content-hash yeterli)
+- [x] Phase 1: `normalize_for_hash` + `content_hash` + `clause_key` (`clause_identity.py`) + golden fixture kilidi + 11 unit test (C006549 loading-dose dahil)
+- [ ] Phase 2: extractor + parquet'a `content_hash`/`clause_key` kolonu
+- [ ] Phase 3: resolver dual-read + load-bearing C* migrate (gate_b → deferral → config)
+- [ ] Phase 4: C* public contract'tan kaldır (Track E exit)
+- [ ] Phase 5: Branch B'yi bağla — 01.07 re-extract + corpus update otomasyonu
+- [ ] Phase 6: doğrulama (re-extract stabilite testi, stale reporter önce/sonra)
+
+### Out of Scope
+- Fatura F* kimlik sistemi (D5, ayrı epic)
+- Yeni prose kural yazımı
+- Coordinate hiyerarşi zenginleştirme (content-hash yeterli)
+
+### Review
+- Phase 1: 31 test geçti (test_clause_identity), ruff temiz; tam pytest 24F(pre-existing)/2410P/20S

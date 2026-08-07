@@ -17,7 +17,9 @@ Track A3 resolve policy for ``gate_b_sources`` (compile assert):
 
 from __future__ import annotations
 
+import hashlib
 import re
+import unicodedata
 from typing import Any
 from collections.abc import Iterable
 
@@ -33,6 +35,66 @@ ENCODE_ELIGIBLE_TYPES = frozenset({"fikra", "bent", "numbered_item"})
 # A3: never link these in gate_b_sources (coordinates or C*/F*).
 # ``prose`` / ``amendment`` may still be cited via opaque C* (not via coordinates).
 STRUCTURAL_NON_LINKABLE_TYPES = frozenset({"chapter", "section_heading"})
+
+# ---------------------------------------------------------------------------
+# Track E — stable clause identity (content hash).
+#
+# ``clause_coordinate`` is the human-readable anchor, but it collides for
+# structurally-repeated items (e.g. many independent ``1)`` clauses under one
+# section). The content hash disambiguates collisions and, crucially, is STABLE
+# across re-extraction of an unchanged clause and FLIPS when the clause text is
+# amended — which is exactly the signal the corpus-update triage needs.
+#
+# Normalization is deliberately conservative: it removes only cosmetic variation
+# (whitespace runs, line endings, unicode compatibility forms). It must NOT touch
+# legally-meaningful characters; case is preserved. Golden fixtures in
+# ``tests/unit/scripts/test_clause_identity.py`` lock this behaviour.
+# ---------------------------------------------------------------------------
+
+_CONTENT_HASH_WHITESPACE_RE = re.compile(r"\s+")
+CONTENT_HASH_LENGTH = 8
+
+
+def normalize_for_hash(text: str | None) -> str:
+    """Deterministic, meaning-preserving normalization for content hashing.
+
+    - NFKC unicode normalization (compatibility composition)
+    - line endings normalized to ``"\\n"``
+    - every whitespace run folded to a single ASCII space
+    - leading/trailing whitespace stripped
+    - case PRESERVED (legal text is case-sensitive; no casefolding)
+    """
+    if text is None:
+        return ""
+    s = unicodedata.normalize("NFKC", str(text))
+    s = s.replace("\r\n", "\n").replace("\r", "\n")
+    s = _CONTENT_HASH_WHITESPACE_RE.sub(" ", s)
+    return s.strip()
+
+
+def content_hash(text: str | None, *, length: int = CONTENT_HASH_LENGTH) -> str:
+    """Stable sha256 prefix of the normalized clause text (Track E identity).
+
+    Identical clause content → identical hash (re-extraction safe). Any
+    substantive text change → different hash (flags the clause for triage).
+    """
+    normalized = normalize_for_hash(text)
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:length]
+
+
+def clause_key(coordinate: str | None, text: str | None) -> str:
+    """Stable public identity: ``coordinate`` alone when it is the anchor, or
+    ``coordinate#<hash>`` when a content disambiguator is required.
+
+    Callers decide uniqueness; this helper only formats. A missing/empty
+    coordinate falls back to a hash-only key so every clause still gets a
+    stable identity.
+    """
+    h = content_hash(text)
+    coord = str(coordinate or "").strip()
+    if not coord:
+        return h
+    return f"{coord}#{h}"
 
 
 class AmbiguousClauseCiteError(ValueError):
