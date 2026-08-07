@@ -91,8 +91,11 @@ def clause_key(coordinate: str | None, text: str | None) -> str:
     stable identity.
     """
     h = content_hash(text)
-    coord = str(coordinate or "").strip()
-    if not coord:
+    if coordinate is None:
+        return h
+    coord = str(coordinate).strip()
+    # Pandas missing values stringify to "nan"/"None"/"<NA>"; treat as absent.
+    if not coord or coord.lower() in {"nan", "none", "<na>"}:
         return h
     return f"{coord}#{h}"
 

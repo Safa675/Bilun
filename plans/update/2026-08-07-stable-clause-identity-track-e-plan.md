@@ -59,9 +59,10 @@
 - [ ] Unit test: normalizasyon determinizmi + hash stabilitesi.
 
 ### Phase 2 — `clause_key` kolonu (extractor + parquet)
-- [ ] `extractor.py`: her clause'a `content_hash` ve `clause_key` ekle (`coordinate` veya `coordinate#hash8`).
-- [ ] `sut_clauses.parquet` rejenerasyonu (hâlâ 23.05 docx'le — şema değişikliği, içerik güncellemesi değil).
-- [ ] `clause_key` benzersizlik doğrulaması (82 özdeş-collision'da key çakışır → bu beklenen, semantik özdeş).
+- [x] `extractor.py`: `add_identity_columns` + `write_sut_clauses_parquet` entegrasyonu (`content_hash` + `clause_key`).
+- [x] `sut_clauses.parquet` şema genişletme — **backfill** (23.05 docx raw data'da olmadığı için rejenerasyon yerine mevcut kolonlardan türetme; içerik byte-identical, clause_id değişmedi).
+- [x] `clause_key` benzersizlik doğrulaması: in-force 83 özdeş-collision grubu (beklenen ~82; semantik özdeş), NULL-koordinat 16 satır hash-only. `clause_key` NaN-safe yapıldı (pandas None→NaN truthy tuzağı).
+- [x] Doğrulama: compile_rules 136 byte-identical, audit_manifest_parity 0 issue, 32 test geçti.
 
 ### Phase 3 — Resolver dual-read + collision migrate
 - [ ] `clause_identity` resolver: `coordinate` ve `coordinate#hash` çözer; belirsizlikte fail-loud (Track A3 politikası korunur).

@@ -308,3 +308,23 @@ def test_clause_key_uses_coordinate_and_hash() -> None:
 def test_clause_key_falls_back_to_hash_without_coordinate() -> None:
     assert clause_key(None, _C006575_IN_FORCE) == content_hash(_C006575_IN_FORCE)
     assert clause_key("", _C006575_IN_FORCE) == content_hash(_C006575_IN_FORCE)
+
+
+def test_add_identity_columns_adds_stable_columns() -> None:
+    import pandas as pd
+
+    from scripts.sut.prose.extractor import add_identity_columns
+
+    frame = pd.DataFrame(
+        {
+            "clause_coordinate": ["4.2.33.D.(1)", None],
+            "in_force_text": ["metin a", "metin b"],
+        }
+    )
+    out = add_identity_columns(frame)
+    assert "content_hash" in out.columns
+    assert "clause_key" in out.columns
+    assert out["content_hash"][0] == content_hash("metin a")
+    assert out["clause_key"][0] == f"4.2.33.D.(1)#{content_hash('metin a')}"
+    # no coordinate -> hash-only key
+    assert out["clause_key"][1] == content_hash("metin b")

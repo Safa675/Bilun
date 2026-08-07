@@ -15,6 +15,8 @@ Phase 1 output schema (sut_clauses.parquet):
   clause_coordinate      — str | null — section + number + letter, e.g. 3.3.3.A.(1).a
   text_tr                — legacy paragraph text (all runs joined; audit only)
   in_force_text          — yürürlükteki metin (non-strike runs only)
+  content_hash           — sha256[:8] of normalize_for_hash(in_force_text) (Track E)
+  clause_key             — coordinate#content_hash, hash-only when no coordinate (Track E)
   is_in_force            — bool — len(in_force_text.strip()) > 0
   had_struck_content     — bool — paragraph had at least one strike run
   is_heading             — bool
@@ -44,6 +46,8 @@ from typing import Any
 from xml.etree import ElementTree as ET
 
 import pandas as pd
+
+from scripts.sut.prose.clause_identity import clause_key, content_hash
 
 _WORD_NS = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 
@@ -560,6 +564,22 @@ def extract_sut_clauses(docx_path: Path, *, body_start: int | None = None) -> pd
     return SutClauseExtractor(docx_path=docx_path, body_start=body_start).extract()
 
 
+def add_identity_columns(frame: pd.DataFrame) -> pd.DataFrame:
+    """Add Track E ``content_hash`` / ``clause_key`` columns to a clause frame.
+
+    Computed from the frame's own ``in_force_text`` / ``clause_coordinate``, so
+    it works both for fresh extractions and for backfilling an existing parquet
+    (schema-only augmentation; clause content is unchanged).
+    """
+    frame = frame.copy()
+    frame["content_hash"] = [content_hash(t) for t in frame["in_force_text"]]
+    frame["clause_key"] = [
+        clause_key(coord, text)
+        for coord, text in zip(frame["clause_coordinate"], frame["in_force_text"])
+    ]
+    return frame
+
+
 def write_sut_clauses_parquet(
     docx_path: Path,
     output_path: Path,
@@ -570,6 +590,21 @@ def write_sut_clauses_parquet(
     from scripts.sut.prose.clause_type_overrides import apply_clause_type_overrides_pandas
 
     frame = apply_clause_type_overrides_pandas(frame)
+    frame = add_identity_columns(frame)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     frame.to_parquet(output_path, index=False)
+    return frame
+
+
+def backfill_identity_columns(parquet_path: Path) -> pd.DataFrame:
+    """Add Track E identity columns to an existing parquet in place.
+
+    Used when the source docx is unavailable so a full re-extraction isn't
+    possible: the columns are derived from the parquet's own ``in_force_text``
+    and ``clause_coordinate``, keeping clause content byte-identical.
+    """
+    frame = pd.read_parquet(parquet_path)
+    frame = add_identity_columns(frame)
+    parquet_path.parent.mkdir(parents=True, exist_ok=True)
+    frame.to_parquet(parquet_path, index=False)
     return frame
