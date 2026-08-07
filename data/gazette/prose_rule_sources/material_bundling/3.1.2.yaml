@@ -31,7 +31,7 @@ rules:
     severity: error
     message_tr: Malzeme kodu EK-3/C listelerinde yok — Kurumca karşılanmaz (§3.1.2(2)).
   gate_b_sources:
-  - 3.1.2.(2)
+  - C002707
 - rule_id: 3.1.2.(2).not_in_ek3
   sut_section: 3.1.2
   deontic: NO_PAY
