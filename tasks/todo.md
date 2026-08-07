@@ -58,6 +58,7 @@ Commit the working-tree changes (removal of the Finans Coder / coding-resolver p
 - [x] Phase 2: Safa onayı (2026-08-06)
 - [x] Phase 3: 12 RE-ENCODE uygulandı (YAML kaynaklar → compile), golden sabitler bilinçli güncellendi, skorlayıcı iyileştirildi (A=23→5); PR açıldı
 - [x] Phase 4: TIER-2 örnekleme — 37 vaka, 0/37 gürültü, politika belgesi `plans/update/2026-08-06-tier2-phase4-policy.md`
+- [x] Phase 4 uygulama: 4 re-point + siklosporin re-encode + 2 silme (T2 687→674) — PR #57
 - [ ] Phase 5: TIER-4 dangling sınıflama
 - [ ] Phase 6 (opsiyonel): T1 count CI uyarısı
 

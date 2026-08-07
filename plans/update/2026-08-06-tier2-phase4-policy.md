@@ -40,6 +40,17 @@
 ## Politika özeti (Phase 4 kararı)
 
 1. **T2 bayraklarına dokunma** — extractor doğru çalışıyor (0/37 gürültü).
-2. **Burn-down stratejisi:** (a) aynı koordinatta in-force ikiz olan T2 ref'leri için otomatik re-point batch'i; (b) DEPENDS vakaları (yukarıdaki 5) için insan kararlı küçük PR; (c) taşınma olmayan 3 vaka için kural silme/re-encode kararı.
+2. **Burn-down stratejisi:** (a) aynı koordinatta in-force ikiz olan T2 ref'leri için otomatik re-point batch'i; (b) DEPENDS vakaları (yukarıdaki 5) için insan kararlı küçük PR; (c) reporter gate yapılmaz.
 3. **T2 reporter'ı gate yapılmaz** — pointer hijyeni tamamlanana kadar uyarı olarak kalır.
 4. Örneklem raw verisi: `/tmp/opencode/phase4_dossier.json` + `phase4_review_{1,2,3}.md` (geçici); bu belge kalıcı karar kaydıdır.
+
+---
+
+## Uygulama (2026-08-07)
+
+Onaylı liste uygulandı; T2 687→674:
+
+- **4 re-point:** not_in_ek3c→C002707, diagnosis_package→C002801, fixed_asset→C002795, hcv_geno1_4→C004912 (ölü duplikeler temiz)
+- **Siklosporin re-encode:** tek uzman + C006575; `struck_clause_no_replacement` kaldırıldı
+- **2 silme:** wound_debridman (dışlama hukuktan kalktı); gap_closing transplant duplikesi (doğru encode treatment_pricing'da zaten vardı: `abo_incompatible_kidney_transplant_no_pay` — "kozmetik etiket" sanılan hata aslında yanlış kategorili duplikeydi, silmek elegant fix)
+- **Yapılmadı (ayrı iş):** copay data-freshness (yeni SUT paketi gerekir)
