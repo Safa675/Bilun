@@ -33,7 +33,8 @@ vi.mock("../useSutApi", () => ({
 import { ClauseCard } from "./RuleDatabaseSection";
 
 const mockClause: RuleClause = {
-  clause_id: "C002684",
+  clause_key: "2.2.1.(1)#c002684a",
+  paragraph_index: 2684,
   section_id: "2.2.1",
   section_title: "Ödeme yöntemi",
   section_path: "2.2.1",

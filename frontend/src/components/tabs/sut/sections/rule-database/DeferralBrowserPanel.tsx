@@ -129,9 +129,9 @@ export function DeferralBrowserPanel({
             {t("sections.ruleDatabase.deferrals.resultCount", { count: fmtNum(total) })}
           </div>
           <ul className="space-y-1.5">
-            {rows.map((row) => {
-              const primary = row.clause_coordinate || row.clause_id || "";
-              const rowKey = row.clause_id || primary || row.defer_reason;
+            {rows.map((row, i) => {
+              const primary = row.clause_coordinate || row.clause_key || "";
+              const rowKey = `${row.clause_key || primary || row.defer_reason}-${i}`;
               return (
                 <li
                   key={rowKey}
@@ -141,8 +141,8 @@ export function DeferralBrowserPanel({
                     <button
                       type="button"
                       onClick={() =>
-                        (row.clause_id || primary) &&
-                        onCoordinateClick?.(row.clause_id || primary)
+                        (row.clause_key || primary) &&
+                        onCoordinateClick?.(row.clause_key || primary)
                       }
                       className="rounded bg-[var(--surface-default)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[var(--text-primary)] hover:opacity-80"
                     >

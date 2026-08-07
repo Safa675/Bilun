@@ -102,6 +102,19 @@ def _load_coverage() -> pl.DataFrame | None:
 
     try:
         frame = pl.read_parquet(SUT_CLAUSE_COVERAGE_PATH)
+        # The coverage parquet can lag the clause corpus on Track E identity
+        # columns; backfill clause_key from the corpus so the public surface
+        # always exposes the stable identifier.
+        if "clause_key" not in frame.columns and "paragraph_index" in frame.columns:
+            try:
+                corpus = _load_sut_clauses_frame()
+                if "clause_key" in corpus.columns and "paragraph_index" in corpus.columns:
+                    key_map = corpus.select(["paragraph_index", "clause_key"]).unique(
+                        "paragraph_index"
+                    )
+                    frame = frame.join(key_map, on="paragraph_index", how="left")
+            except Exception as aug_exc:  # pragma: no cover - defensive
+                logger.warning("clause_key backfill skipped: %s", aug_exc)
         available = [c for c in _CLAUSE_COLUMNS if c in frame.columns]
         frame = frame.select(available).with_columns(
             pl.col("matched_rule_ids")
@@ -1165,9 +1178,12 @@ def prose_inventory() -> dict[str, Any]:
 
 def _clause_payload(row: dict[str, Any], rule_id: str) -> dict[str, Any]:
     match_scores = _json_obj(row.get("match_scores"))
+    # Track E: clause_id (positional C*) is no longer a public identifier.
+    # clause_key / clause_coordinate are the stable public cites; paragraph_index
+    # is exposed only as an opaque row-identity token for UI list keys.
     payload = {
-        "clause_id": row.get("clause_id"),
         "clause_key": row.get("clause_key"),
+        "paragraph_index": row.get("paragraph_index"),
         "section_id": row.get("section_id"),
         "section_title": row.get("section_title"),
         "section_path": row.get("section_path"),
@@ -1302,8 +1318,8 @@ def list_clauses(
 ) -> tuple[list[dict[str, Any]], int]:
     """Return ``(clauses, total)`` across all in-force clauses with optional search/filter.
 
-    ``q`` does a case-insensitive contains on ``clause_id``, ``clause_coordinate``,
-    and ``in_force_text`` (Track D — coordinate-first search).
+    ``q`` does a case-insensitive contains on ``clause_key``, ``clause_coordinate``,
+    and ``in_force_text`` (Track D/E — coordinate/key-first search; C* is internal).
     """
     frame = _load_coverage()
     if frame is None:
@@ -1317,7 +1333,8 @@ def list_clauses(
     if q:
         needle = q.strip().lower()
         if needle:
-            id_hit = pl.col("clause_id").str.to_lowercase().str.contains(needle, literal=True)
+            key_col = "clause_key" if "clause_key" in frame.columns else "clause_id"
+            id_hit = pl.col(key_col).str.to_lowercase().str.contains(needle, literal=True)
             text_hit = pl.col("in_force_text").str.to_lowercase().str.contains(needle, literal=True)
             if "clause_coordinate" in frame.columns:
                 coord_hit = (
@@ -1475,7 +1492,6 @@ def list_deferrals(
             continue
         rows.append(
             {
-                "clause_id": clause_id,
                 "clause_key": src.get("clause_key") or None,
                 "clause_coordinate": coordinate,
                 "section_id": src.get("section_id") or entry.get("section_id"),
@@ -1486,7 +1502,7 @@ def list_deferrals(
             }
         )
 
-    rows.sort(key=lambda r: (str(r.get("clause_coordinate") or ""), str(r["clause_id"])))
+    rows.sort(key=lambda r: (str(r.get("clause_coordinate") or ""), str(r.get("clause_key") or "")))
     total = len(rows)
     if offset:
         rows = rows[offset:]
@@ -1589,7 +1605,6 @@ def resolve_prose_rule_gate_b_sources(
         cites.append(
             {
                 "ref": ref,
-                "clause_id": resolved_ids[0] if resolved_ids else None,
                 "clause_key": resolved_key,
                 "clause_coordinate": coordinate,
                 "text_snippet": snippet,

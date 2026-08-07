@@ -65,7 +65,7 @@ def test_api_lookup_by_coordinate_does_not_require_c_star() -> None:
     assert coord and is_clause_coordinate(str(coord))
     by_coord = rc.get_clause(str(coord))
     assert by_coord is not None
-    assert by_coord["clause_id"] == by_id["clause_id"]
+    assert by_coord["clause_key"] == by_id["clause_key"]
 
 
 def test_deferral_list_exposes_coordinates() -> None:

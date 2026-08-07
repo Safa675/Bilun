@@ -473,7 +473,8 @@ export interface RuleCatalogEntry {
 }
 
 export interface RuleClause {
-  clause_id: string | null;
+  clause_key: string | null;
+  paragraph_index: number | null;
   section_id: string | null;
   section_title: string | null;
   section_path: string | null;
@@ -788,7 +789,7 @@ export async function getProseInventory(options?: RequestInit): Promise<ProseInv
 
 export interface GateBSourceCite {
   ref: string;
-  clause_id: string | null;
+  clause_key: string | null;
   clause_coordinate: string | null;
   text_snippet: string | null;
 }
@@ -826,7 +827,7 @@ export async function listProseRuleSources(
 }
 
 export interface DeferralEntry {
-  clause_id: string | null;
+  clause_key: string | null;
   clause_coordinate: string | null;
   section_id: string | null;
   status: string;

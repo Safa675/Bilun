@@ -884,10 +884,14 @@ class MatchedRuleRef(BaseModel):
 
 
 class RuleClause(BaseModel):
-    """One extracted SUT clause mapped to a rule, with provenance."""
+    """One extracted SUT clause mapped to a rule, with provenance.
 
-    clause_id: str | None = None
+    Track E: ``clause_key`` / ``clause_coordinate`` are the stable public cites.
+    ``paragraph_index`` is an opaque row-identity token for UI list keys only.
+    """
+
     clause_key: str | None = None
+    paragraph_index: int | None = None
     section_id: str | None = None
     section_title: str | None = None
     section_path: str | None = None
@@ -999,7 +1003,6 @@ class GateBSourceCite(BaseModel):
     """One resolved ``gate_b_sources`` cite (coordinate-first)."""
 
     ref: str
-    clause_id: str | None = None
     clause_key: str | None = None
     clause_coordinate: str | None = None
     text_snippet: str | None = None
@@ -1035,12 +1038,10 @@ class ProseRulesSourcesListResponse(BaseModel):
 class DeferralEntry(BaseModel):
     """One deferral_table row for coordinate-first review.
 
-    ``clause_id`` is an opaque remappable join key (optional for clients).
     ``clause_key`` is the stable public identity (coord#hash).
     ``clause_coordinate`` is the human-readable SUT cite when known.
     """
 
-    clause_id: str | None = None
     clause_key: str | None = None
     clause_coordinate: str | None = None
     section_id: str | None = None
