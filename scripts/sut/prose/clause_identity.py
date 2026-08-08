@@ -428,6 +428,18 @@ def assert_gate_b_sources_resolvable(
                     f"{prefix}{rule_id}: empty gate_b_sources entry"
                 )
             ref = str(raw).strip()
+            # A3 (Track E): a C*/F* cite that is absent from the clauses corpus
+            # must fail loud — re-extraction that removes a clause silently
+            # re-points positional ids. Section-filtered corpora are not used in
+            # production (compile_rules always reads the full parquet).
+            if is_clause_id(ref) and "clause_id" in clauses.columns:
+                hit = clauses.filter(pl.col("clause_id").cast(pl.Utf8) == ref)
+                if hit.is_empty():
+                    raise UnknownClauseCiteError(
+                        f"{prefix}{rule_id}: clause_id cite {ref!r} is absent "
+                        "from the clauses corpus (removed by re-extraction?) — "
+                        "re-triage."
+                    )
             try:
                 resolve_gate_b_ref_to_clause_ids(
                     ref,
@@ -441,8 +453,5 @@ def assert_gate_b_sources_resolvable(
             except NonEncodeEligibleCiteError as exc:
                 raise NonEncodeEligibleCiteError(f"{prefix}{rule_id}: {exc}") from exc
             except UnknownClauseCiteError as exc:
-                # Unknown C* is allowed (section-filtered corpora / not yet in
-                # this parquet snapshot); unknown coordinates are not.
-                if is_clause_id(ref):
-                    continue
+                # Unknown coordinates are never allowed; C* was checked above.
                 raise UnknownClauseCiteError(f"{prefix}{rule_id}: {exc}") from exc

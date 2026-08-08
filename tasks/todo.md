@@ -100,3 +100,51 @@ Pozisyonel `clause_id` (C*) kırılganlığını bitirip Branch B corpus update'
 
 ### Review
 - Phase 1: 31 test geçti (test_clause_identity), ruff temiz; tam pytest 24F(pre-existing)/2410P/20S
+
+---
+
+## Task: Branch B otomasyonu — 3 paket (Safa onayı 2026-08-08)
+
+### Goal
+`sut-monitor.yml` Branch B (docx → clause corpus) otomatik güncellemesini güvenli çalışır hale getirmek. Paket 1: authored C* yüzeyini kapat (re-extract artık hiçbir referansı sessizce kaydıramaz). Paket 2: 01.07 docx re-extract'i elle doğrula (asıl bilinmeyen: extractor yeni docx'te çalışıyor mu + copay 50/90/100 hizalaması). Paket 3: stabilite testiyle otomasyonu bağla. Detaylı plan: `plans/update/2026-08-08-branch-b-automation-3-packet-plan.md`. Bu task, `2026-08-07-sut-clause-corpus-update-plan.md`'deki BEKLEMEDE gate'ini kaldırır.
+
+### Subtasks
+
+#### Paket 1 — Referans yüzeyini kapat (ölçüm revizyonu 2026-08-08)
+
+**Ölçüm sonucu:** gate_b_sources'taki 235 C* ref'in 192'si prose/amendment (encode-eligible değil → Track A3 gereği mecburen C*), 43'ü eligible ama hepsi özdeş-kopya (lossless değil). **Taşınabilir ref = 0** — 1.1 maddesi İPTAL, mevcut durum zaten güvenli. Asıl iş diğer authored yüzeylerde.
+
+- [x] 1.2 — **wave_config + sections + stub taşıması** (asıl iş):
+  - [x] `gate_b_wave_config.py` (199 C* → 184 taşındı: coord#hash; 15 istisna kalır: 13 prose + 2 özdeş bent); isim `DRUG_INDICATION_WAVE_CLAUSE_IDS` → `_KEYS`; `_stage_csv_wave_clause_ids` resolver ile C*'ye geri çözüyor → manifest byte-identical
+  - [x] `gate_b_sections.py` (74 C* → 44 taşındı: coord#hash; 30 kalır: 14 not-in-force + 16 non-eligible); engine `_ref_hit(clause_id, clause_key, refs)` ile hem C* hem coord#hash eşleşiyor (gate_b_generic.py)
+  - [x] `_PAYMENT_SESSION_MANIFEST_STUB` (7 C* → 6 taşındı, C000661 prose kalır); `encoded_clause_keys` alanı + `_write_payment_session_manifest` resolver → byte-identical
+  - [x] `clause_type_overrides.yaml` (15 C*, hepsi prose) → belgeli istisna, taşınmaz
+- [x] 1.3 — **deferral_table rekey**: clause_id C* → coord#hash (847/1541 taşındı, kayıpsız; 694 istisna: non-eligible + not-in-force + özdeş). `load_deferral_table` coord#hash'i C*'ye çözüyor — 1541/1541 çözüldü, kayıp 0. `clause_coordinate` alanı hiçbir tüketicide kullanılmıyordu (sadece status/defer_themes) → güvenli
+- [x] 1.4 — istisna envanteri + "artamaz" testi: `tests/unit/scripts/test_authored_cstar_inventory.py` — 5 yüzey toplam 975 C* kilitli (rule_sources 235, deferral 694, sections 30, wave 15, stub 1) + parquet'te varlık guard'ı
+- [x] 1.5 — CI ölçüm testi: `test_eligible_cstars_are_identical_duplicates_only` — eligible kalan C*'lerin hepsi özdeş-kopya (85 kilitli), lossless keylenebilir olanlar 0 (kaçırılmış migrasyon yakalanır)
+- [x] 1.7 — **YENİ: C* parquet'te yoksa → compile hatası** (`clause_identity.py` UnknownClauseCiteError; 1757 üretim kuralı doğrulandı, 2 yeni unit test)
+- [x] 1.6 — `.github/workflows/ci.yml` `fetch-depth: 1` dahil edildi
+- [x] 1.8 — Doğrulama: `compile_rules --check` 136/136 byte-identical; scripts suite 501 passed; tam suite 2434 passed / 14 pre-existing API auth kırığı (BILUN_AUTH env eksik — d1c05f4'te de fail, alan dışı); ruff temiz
+
+#### Paket 2 — 01.07 docx manuel re-extract (orta risk)
+- [ ] Yeni branch (`chore/sut-0107-clause-corpus`) aç; `extract_sut_prose.py`'yi 01.07 docx ile koş (ilk kez deneniyor; 2026-06-19 dersi: dependency gap'leri burada çıkar)
+- [ ] Doğrula: `source_effective_date=2026-07-01`; clause sayısı delta'sı makul; copay 1.8.1 in-force = 50/90/100 (şu an bayat 26/60)
+- [ ] Downstream rejenere: coverage parquet'leri, `compile_rules`, manifestler; `sut_clause_diff.py` eski/yeni diff çıkar
+- [ ] Tam pytest triage: kırıkları sınıfla — bilinçli değişim (yeni key'ler, taşınan hükümler) vs gerçek kırık; golden sabitler YALNIZCA re-audit sonrası güncellenir
+- [ ] Paket 1'deki 54 istisna ref'in triage ile doğrulanması (strike→in-force elenenler temizlenir, gerçek kopyalar kalır)
+- [ ] `stale_clause_refs.py` + `triage_stale_refs.py` önce/sonra tablosu (T1/T2/T4)
+
+#### Paket 3 — Otomasyonu bağla (düşük risk)
+- [ ] Re-extract stabilite testi: aynı docx iki kez extract → tüm `clause_key` byte-identical (Phase 6)
+- [ ] `sut-monitor.yml` Branch B adımı (`extract_sut_prose` + `sut_clause_diff.py`) scheduled run için güvenlik kontrolü; human-gated PR kalır
+- [ ] PR body'sinde `clause_diff_summary` + `delta_summary` render doğrulaması
+
+### Out of Scope
+- 82 özdeş-collision grubunun kök-neden temizliği (dedupe / hiyerarşik koordinat makinesi — ölçüm + fail-loud yeterli)
+- Fatura `F*` kimlik sistemi (D5)
+- Branch A re-ingest (zaten güncel)
+- Yeni prose kural yazımı
+
+### Review
+- **Paket 1 tamamlandı (2026-08-08):** 943→975 C* toplam envanter (ölçüm revizyonuyla yeni yüzeyler dahil) envanter testiyle kilitlendi. wave 184, sections 44, stub 6, deferral 847 ref coord#hash'e taşındı — hepsi lossless (`resolve == [cid]` şartıyla, özdeşler C* kaldı). Manifest üretimi resolver ile C*'ye geri çözüyor → 136 artifact byte-identical. Engine artık `_ref_hit` ile hem C* hem coord#hash kabul ediyor. 1.7: parquet'te olmayan C* → UnknownClauseCiteError (eski hoşgörü kapatıldı). 14 API auth kırığı pre-existing (BILUN_AUTH env, d1c05f4'te de fail) — alan dışı, Paket 2 başlamadan önce CI'da secrets ile yeşil olduğu doğrulanacak.
+- **Ölçüm revizyonu 2026-08-08:** 1.1 (181 ref migrasyonu) ölçümle çürüdü — 235 C* ref: 192 prose/amendment (Track A3 gereği C* kalmalı, coord#hash compile'da NonEncodeEligibleCiteError verir — test edildi) + 43 eligible özdeş-kopya (lossless değil). Taşınabilir=0, durum zaten güvenli. Asıl yüzey: wave_config 184, sections 50→44 (section_heading'ler non-eligible çıktı), stub 6. Deferral rekey coord'a değil coord#hash'e (1004/1541 ambiguous). Manifest encoded_clause_ids hâlâ saf C* — resolver katmanı manifest'leri değiştirmeden kaynağı temizliyor (dual-write yerine resolve-back tercih edildi; byte-identical kanıtı daha güçlü).

@@ -258,11 +258,19 @@ class GateBSection:
 # ── Generic tier classifier ──────────────────────────────────────────────────
 
 
+def _ref_hit(clause_id: str, clause_key: str, refs: frozenset[str]) -> bool:
+    """Match a row against a config ref-set holding C* ids and/or clause_keys."""
+    if clause_id in refs:
+        return True
+    return bool(clause_key) and clause_key in refs
+
+
 def classify_tier(
     text: str,
     section_id: str,
     clause_id: str,
     section: GateBSection,
+    clause_key: str = "",
 ) -> tuple[str, str]:
     """Classify a clause into encode tier (A/B/C) + heuristic INN.
 
@@ -279,10 +287,10 @@ def classify_tier(
 
     # Step 1: clause-ID overrides (highest priority)
     for override in section.tier_a_overrides:
-        if clause_id in override.clause_ids:
+        if _ref_hit(clause_id, clause_key, override.clause_ids):
             return "A", inn or override.inn_label
     for override in section.tier_b_overrides:
-        if clause_id in override.clause_ids:
+        if _ref_hit(clause_id, clause_key, override.clause_ids):
             return "B", inn or override.inn_label
 
     # Step 2: base classifier (or start from C if section skips base)
@@ -356,12 +364,16 @@ def _should_include_row(
 ) -> bool:
     """Export inclusion predicate — composed from section config."""
     clause_id = str(record.get("clause_id") or "")
+    clause_key = str(record.get("content_hash") or "")
+    coordinate = str(record.get("clause_coordinate") or "")
+    if coordinate and clause_key:
+        clause_key = f"{coordinate}#{clause_key}"
     section_id = str(record.get("section_id") or "")
     text = str(record.get("text_tr") or "")
     deontic = str(record.get("deontic_modality") or "")
 
     # Superseded IDs always excluded
-    if clause_id in section.superseded_ids:
+    if _ref_hit(clause_id, clause_key, section.superseded_ids):
         return False
 
     # Force-include section (4235_4237: all §4.2.37 clauses)
@@ -370,7 +382,7 @@ def _should_include_row(
 
     # Force-include IDs per prefix (4235_4237: explicit §4.2.35 include list)
     for prefix, ids in section.force_include_ids.items():
-        if section_id.startswith(prefix) and clause_id in ids:
+        if section_id.startswith(prefix) and _ref_hit(clause_id, clause_key, ids):
             return True
 
     has_deontic = deontic in (_DEONTIC_MODALITIES | section.admit_deontic_modalities)
@@ -454,11 +466,15 @@ def export_candidates(
             continue
 
         clause_id = str(record.get("clause_id") or "")
+        clause_key = str(record.get("content_hash") or "")
+        coordinate = str(record.get("clause_coordinate") or "")
+        if coordinate and clause_key:
+            clause_key = f"{coordinate}#{clause_key}"
         section_id = str(record.get("section_id") or "")
         text = str(record.get("text_tr") or "")
         deontic = str(record.get("deontic_modality") or "")
 
-        encode_tier, inn = classify_tier(text, section_id, clause_id, section)
+        encode_tier, inn = classify_tier(text, section_id, clause_id, section, clause_key)
 
         if clause_id in encoded_clause_ids:
             encode_priority = "skip_already_encoded"

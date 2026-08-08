@@ -28,7 +28,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from scripts.sut.gate_b_wave_config import DRUG_INDICATION_WAVE_CLAUSE_IDS
+from scripts.sut.gate_b_wave_config import DRUG_INDICATION_WAVE_CLAUSE_KEYS
 from scripts.sut.rule_sources import (
     load_yaml_sources,
     rule_family_yaml_paths,
@@ -671,16 +671,40 @@ _PAYMENT_SESSION_MANIFEST_STUB: dict[str, object] = {
     "rule_set_id": "session_pricing_2_2_2_B",
     "section_id": "2.2.2.B",
     "session_fraction_status": "PARTIAL",
-    "encoded_clause_ids": ["C000654", "C000655", "C000657", "C000658", "C000659", "C000660", "C000661"],
+    # Track E: authored refs are clause_keys (stable across re-extraction).
+    # C000661 (prose) has no coordinate — stays an opaque row id.
+    "encoded_clause_keys": [
+        "2.2.2.B.(1)#aa67606b",
+        "2.2.2.B.(2)#c08db53d",
+        "2.2.2.B.a#05fe5a60",
+        "2.2.2.B.b#da1ba7ae",
+        "2.2.2.B.c#79f31d41",
+        "2.2.2.B.ç#cbfc6e8e",
+        "C000661",
+    ],
 }
 
 
 def _write_payment_session_manifest() -> None:
+    import polars as pl
+
+    from scripts.sut.prose.clause_identity import resolve_gate_b_ref_to_clause_ids
+    from scripts.sut.prose.clause_type_overrides import apply_clause_type_overrides
     from scripts.sut.prose.manifest_index import build_canonical_encoded_shell
 
     session_json = _RULES_DIR / "session_pricing_2_2_2_B.json"
     session_payload = json.loads(session_json.read_text(encoding="utf-8"))
-    encoded = list(_PAYMENT_SESSION_MANIFEST_STUB.get("encoded_clause_ids") or [])
+    clauses_path = _PROJECT_ROOT / "data" / "gazette" / "sut_clauses.parquet"
+    frame = apply_clause_type_overrides(pl.read_parquet(clauses_path))
+    keys = list(_PAYMENT_SESSION_MANIFEST_STUB.get("encoded_clause_keys") or [])
+    encoded: list[str] = []
+    for key in keys:
+        if key.startswith("C") and key[1:].isdigit():
+            encoded.append(key)
+            continue
+        encoded.extend(
+            resolve_gate_b_ref_to_clause_ids(key, frame, in_force_only=True, encode_eligible_only=True)
+        )
     manifest = build_canonical_encoded_shell(
         rule_set_id="session_pricing_2_2_2_B",
         encoded_clause_ids=encoded,
@@ -771,11 +795,25 @@ def _stage_write_gate_b_artifacts(target: CompileTarget, ctx: dict[str, Any]) ->
 
 
 def _stage_csv_wave_clause_ids(target: CompileTarget, ctx: dict[str, Any]) -> dict:
+    import polars as pl
+
+    from scripts.sut.prose.clause_identity import resolve_gate_b_ref_to_clause_ids
+    from scripts.sut.prose.clause_type_overrides import apply_clause_type_overrides
     from scripts.sut.prose.manifest_index import build_canonical_encoded_shell
 
     payload = json.loads(target.rule_json.read_text(encoding="utf-8"))
     merged = list(payload.get("rules") or [])
-    wave_clause_ids = DRUG_INDICATION_WAVE_CLAUSE_IDS[target.rule_set_id]
+    wave_clause_keys = DRUG_INDICATION_WAVE_CLAUSE_KEYS[target.rule_set_id]
+    clauses_path = _PROJECT_ROOT / "data" / "gazette" / "sut_clauses.parquet"
+    frame = apply_clause_type_overrides(pl.read_parquet(clauses_path))
+    wave_clause_ids: list[str] = []
+    for ref in wave_clause_keys:
+        if ref.startswith("C") and ref[1:].isdigit():
+            wave_clause_ids.append(ref)
+            continue
+        wave_clause_ids.extend(
+            resolve_gate_b_ref_to_clause_ids(ref, frame, in_force_only=True, encode_eligible_only=True)
+        )
     manifest = build_canonical_encoded_shell(
         rule_set_id=target.rule_set_id,
         encoded_clause_ids=wave_clause_ids,

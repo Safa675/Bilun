@@ -187,6 +187,18 @@ def test_a3_assert_rejects_heading_cite() -> None:
         assert_gate_b_sources_resolvable(rules, _frame(), rule_set_id="demo")
 
 
+def test_a3_assert_rejects_clause_id_absent_from_corpus() -> None:
+    """Track E — a C* cite removed by re-extraction must fail loud, not pass."""
+    rules = [{"rule_id": "r_gone", "gate_b_sources": ["C999999"]}]
+    with pytest.raises(UnknownClauseCiteError, match="C999999"):
+        assert_gate_b_sources_resolvable(rules, _frame(), rule_set_id="demo")
+
+
+def test_a3_assert_accepts_clause_id_present_in_corpus() -> None:
+    rules = [{"rule_id": "r_ok", "gate_b_sources": ["C000001"]}]
+    assert_gate_b_sources_resolvable(rules, _frame(), rule_set_id="demo")
+
+
 def test_a3_encode_eligible_disambiguates_mixed_types() -> None:
     """Coordinate with one encode-eligible + one heading → unique after filter."""
     frame = pl.DataFrame(
