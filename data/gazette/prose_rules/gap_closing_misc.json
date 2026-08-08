@@ -124,7 +124,7 @@
         "payment_tr": "ayakta tedavi katılım payı alınır"
       },
       "gate_b_sources": [
-        "C000324"
+        "C000335"
       ]
     },
     {
@@ -640,7 +640,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C008078"
+        "C008144"
       ]
     },
     {

@@ -857,7 +857,7 @@
         "3.1.2.2.(1)",
         "3.1.2.2.(5)",
         "3.1.2.(12)",
-        "C002763"
+        "C002807"
       ],
       "condition": {
         "material_report_prescription_invalid": true
@@ -1042,7 +1042,7 @@
       "sut_section": "3.1.2",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002706"
+        "C002750"
       ],
       "condition": {
         "ek3c_list_field_definition_scope": true
@@ -1077,8 +1077,8 @@
         "3.1.2.a#0bfdb44d",
         "3.1.2.c#1c376326",
         "3.1.2.ç#1340de85",
-        "C002718",
-        "C002731"
+        "C002762",
+        "C002775"
       ],
       "condition": {
         "ek3c_optional_appropriateness_consumable": true
@@ -1096,7 +1096,7 @@
       "gate_b_sources": [
         "3.1.2.(14)",
         "3.1.2.a#50ebb6cc",
-        "C002738"
+        "C002782"
       ],
       "condition": {
         "disabled_veteran_ortez_protez_billing_review": true
@@ -1160,7 +1160,7 @@
       "sut_section": "3.1.3",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C008292"
+        "C008358"
       ],
       "condition": {
         "material_effective_date_transition_scope": true

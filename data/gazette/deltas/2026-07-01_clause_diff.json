@@ -1,8 +1,8 @@
 {
-  "old_corpus": "data/gazette/sut_clauses.parquet",
-  "new_corpus": "/tmp/sut_clauses_2026_07_01.parquet",
+  "old_corpus": "/tmp/opencode/sut_clauses_0507_backup.parquet",
+  "new_corpus": "data/gazette/sut_clauses.parquet",
   "new_date": "2026-07-01",
-  "generated_at": "2026-08-07",
+  "generated_at": "2026-08-08",
   "summary": {
     "stable": 8263,
     "amended": 94,

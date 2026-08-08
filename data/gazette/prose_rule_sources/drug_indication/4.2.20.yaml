@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.20.palivizumab.coverage_closing_clause
   sut_section: 4.2.20
   gate_b_sources:
-  - C006081
+  - C006145
   drug_names:
   - palivizumab
   - synagis

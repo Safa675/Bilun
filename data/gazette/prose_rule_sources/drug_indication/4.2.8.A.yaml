@@ -31,7 +31,7 @@ rules:
 - rule_id: 4.2.8.A.adult_malnutrition_1200kcal_3mo_report
   sut_section: 4.2.8.A
   gate_b_sources:
-  - C004104
+  - C004148
   drug_names:
   - enteral beslenme ürünü
   icd10_codes:
@@ -179,7 +179,7 @@ rules:
 - rule_id: 4.2.8.A.paediatric_malnutrition_enteral_6mo_report
   sut_section: 4.2.8.A
   gate_b_sources:
-  - C004096
+  - C004140
   drug_names:
   - enteral beslenme ürünü
   - çocuk enteral beslenme

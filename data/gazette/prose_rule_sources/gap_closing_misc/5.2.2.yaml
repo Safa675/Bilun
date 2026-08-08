@@ -34,4 +34,4 @@ rules:
     denial_tr: reçeteler ayrı ayrı faturalandırılmalıdır
     severity: error
   gate_b_sources:
-  - C008078
+  - C008144

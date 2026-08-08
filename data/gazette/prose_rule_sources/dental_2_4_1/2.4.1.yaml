@@ -57,7 +57,7 @@ rules:
     surcharge_per_implant_try: 750
     malul_vazife_harp_max_per_implant_try: 2500
   gate_b_sources:
-  - C000747
+  - C000760
   - 2.4.1.b#154e6d11
   - 2.4.1.c#4a1baac3
   - 2.4.1.ç#18099244

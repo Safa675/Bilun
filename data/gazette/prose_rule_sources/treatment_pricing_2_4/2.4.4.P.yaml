@@ -13,7 +13,7 @@ rules:
     message_tr: sağlık kurulu raporunda progrese, kastrasyona dirençli metastatik prostat kanseri tanısının bulunması gerekir
     severity: error
   gate_b_sources:
-  - 2.4.4.P.(2)
+  - 2.4.4.P-1.(2)
 - rule_id: 2.4.4.P.(3).psma_testosterone_under_50_psa_not_criteria
   sut_section: 2.4.4.P
   condition:
@@ -27,7 +27,7 @@ rules:
       kriter değildir
     severity: error
   gate_b_sources:
-  - 2.4.4.P.(3)
+  - 2.4.4.P-1.(3)
 - rule_id: 2.4.4.P.(5).psma_ga68_pet_min3_foci_above_liver
   sut_section: 2.4.4.P
   condition:
@@ -42,7 +42,7 @@ rules:
       ve en az 3 odakta karaciğerden daha yüksek düzeyde patolojik tutulumun bulunması gerekir
     severity: error
   gate_b_sources:
-  - 2.4.4.P.(5)
+  - 2.4.4.P-1.(5)
 - rule_id: 2.4.4.P.(6).psma_min6week_gap_8_or_12_doses_with_report
   sut_section: 2.4.4.P
   condition:
@@ -57,7 +57,7 @@ rules:
       uygulanabilir
     severity: error
   gate_b_sources:
-  - 2.4.4.P.(6)
+  - 2.4.4.P-1.(6)
 - rule_id: 2.4.4.P.(1).psma_3sign_board_nuc_plus_onc
   sut_section: 2.4.4.P
   verification_status: ai_generated_pending_review
@@ -74,4 +74,4 @@ rules:
       raporu bulunmalidir
     severity: error
   gate_b_sources:
-  - 2.4.4.P.(1)
+  - 2.4.4.P-1.(1)

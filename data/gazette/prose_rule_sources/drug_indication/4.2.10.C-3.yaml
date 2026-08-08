@@ -16,7 +16,7 @@ rules:
   message_tr: Mukopolisakkaridoz tedavisi — üçüncü basamak resmi sağlık kuruluşunda metabolizma uzmanlarının yer aldığı 1
     yıllık sağlık kurulu raporu gerekir (§4.2.10.C-3).
   gate_b_sources:
-  - C004363
+  - C004407
   - 4.2.10.C-3.(1)
   report_required: true
   report_specialties:

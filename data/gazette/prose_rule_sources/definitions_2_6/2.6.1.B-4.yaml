@@ -86,13 +86,13 @@ rules:
   verification_status: ai_generated_pending_review
   gate_b_sources:
   - 2.6.1.B-4.a
-  - C001551
-  - C001552
+  - C001595
+  - C001596
   - 2.6.1.B-4.b
-  - C001554
-  - C001555
-  - C001556
-  - C001557
+  - C001598
+  - C001599
+  - C001600
+  - C001601
   condition:
     definition_scope: Hava/deniz ambulansı uçuş/seyir saati başına TL+KDV tarife
     applies_to: Hava/deniz ambulansı ücretleri

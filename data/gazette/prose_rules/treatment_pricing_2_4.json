@@ -1140,7 +1140,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000991"
+        "C001006"
       ]
     },
     {
@@ -2189,7 +2189,7 @@
         "message_tr": "uygun şartlarda yapılan işlemin bedeli Kurumca karşılanır"
       },
       "gate_b_sources": [
-        "C001360"
+        "C001375"
       ]
     },
     {
@@ -2291,7 +2291,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "2.4.4.P.(2)"
+        "2.4.4.P-1.(2)"
       ]
     },
     {
@@ -2310,7 +2310,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "2.4.4.P.(3)"
+        "2.4.4.P-1.(3)"
       ]
     },
     {
@@ -2330,7 +2330,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "2.4.4.P.(5)"
+        "2.4.4.P-1.(5)"
       ]
     },
     {
@@ -2349,7 +2349,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "2.4.4.P.(6)"
+        "2.4.4.P-1.(6)"
       ]
     },
     {
@@ -2385,7 +2385,7 @@
         "message_tr": "uygun endikasyon nedeniyle uygulanması halinde bedelleri Kurumca karşılanır"
       },
       "gate_b_sources": [
-        "C000924"
+        "C000937"
       ]
     },
     {
@@ -2466,9 +2466,9 @@
         "message_tr": "risk puanına göre düşük risk grubunda %10 azaltma, yüksek risk grubunda %15 artırım uygulanarak ilgili işlem üzerinden karşılanır"
       },
       "gate_b_sources": [
-        "C001132",
-        "C001134",
-        "C001135"
+        "C001147",
+        "C001149",
+        "C001150"
       ]
     },
     {
@@ -2579,7 +2579,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001284"
+        "C001299"
       ]
     },
     {
@@ -2805,7 +2805,7 @@
         "annex_basis": "EK-2/Ç"
       },
       "gate_b_sources": [
-        "C000747"
+        "C000760"
       ]
     },
     {
@@ -3413,7 +3413,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000847"
+        "C000860"
       ]
     },
     {
@@ -3465,7 +3465,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000852"
+        "C000865"
       ]
     },
     {
@@ -3483,7 +3483,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000855"
+        "C000868"
       ]
     },
     {
@@ -3502,7 +3502,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000856"
+        "C000869"
       ]
     },
     {
@@ -3526,7 +3526,7 @@
         "billing_method": "procedure_package"
       },
       "gate_b_sources": [
-        "C000857"
+        "C000870"
       ]
     },
     {
@@ -3767,7 +3767,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "2.4.4.P.(1)"
+        "2.4.4.P-1.(1)"
       ]
     },
     {
@@ -3940,7 +3940,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C001399"
+        "C001443"
       ]
     }
   ]

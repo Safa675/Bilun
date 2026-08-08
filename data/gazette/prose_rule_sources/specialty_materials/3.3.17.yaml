@@ -5,7 +5,7 @@ rules:
   sut_section: 3.3.17
   deontic: MUST_BILL
   gate_b_sources:
-  - C003180
+  - C003224
   condition:
     material_name_any:
     - transbronsiyal iğne aspirasyonu

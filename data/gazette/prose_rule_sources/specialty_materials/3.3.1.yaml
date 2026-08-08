@@ -123,7 +123,7 @@ rules:
   sut_section: 3.3.1
   deontic: REGULATORY_ACTION
   gate_b_sources:
-  - C002850
+  - C002894
   condition:
     material_name_any:
     - yara bakim

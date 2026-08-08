@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.10.C1.two_compatible_analyses_ms_exclusion
   sut_section: 4.2.10.C-1
   gate_b_sources:
-  - C004348
+  - C004392
   report_required: true
   action:
     enforcement: analiz sonuçlarından en az ikisi hastalıkla uyumlu olmalı ve raporda belirtilmeli; Tip II, IVA, VI hastalarında

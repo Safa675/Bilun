@@ -1,6 +1,6 @@
 # SUT clause corpus diff (Track E clause_key)
 
-**Old:** `sut_clauses.parquet`  |  **New:** `sut_clauses_2026_07_01.parquet`
+**Old:** `sut_clauses_0507_backup.parquet`  |  **New:** `sut_clauses.parquet`
 
 ## Summary
 

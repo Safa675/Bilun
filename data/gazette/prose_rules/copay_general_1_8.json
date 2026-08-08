@@ -41,7 +41,7 @@
         "1.8.2.a#7672b1e2",
         "1.8.2.b#43a626de",
         "1.8.2.c#d157295b",
-        "C000331"
+        "C000309"
       ]
     },
     {
@@ -115,9 +115,9 @@
         "1.8.3.(2)",
         "1.8.3.a#7672b1e2",
         "1.8.3.b#945d3f77",
-        "C000342",
+        "C000309",
         "1.8.3.a#2ed7e0af",
-        "C000348"
+        "C000309"
       ],
       "max_copay_pct_of_minimum_wage": 75,
       "verification_status": "ai_generated_pending_review",
@@ -404,8 +404,8 @@
       },
       "gate_b_sources": [
         "1.8.1.(1)#22f992ca",
-        "1.8.1.a#da013286",
-        "1.8.1.b#083875bf",
+        "1.8.1.a#d269a477",
+        "1.8.1.b#15044ee0",
         "1.8.1.ç",
         "1.8.1.d",
         "1.8.1.e",
@@ -426,7 +426,7 @@
         "copay_rate_multiplier": 0.5
       },
       "gate_b_sources": [
-        "C000294"
+        "C000305"
       ],
       "verification_status": "ai_generated_pending_review",
       "content_note": "Family-physician-referred muayene copay reduced by 50% (aile hekiminden sevk edilerek yapılan muayenelerde katılım payı %50 azaltılır)."

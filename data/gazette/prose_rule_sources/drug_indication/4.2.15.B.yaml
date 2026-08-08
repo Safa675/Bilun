@@ -11,7 +11,7 @@ rules:
     gerekir (§4.2.15.B-1).
   gate_b_sources:
   - 4.2.15.B.(1)
-  - C005785
+  - C005849
   report_required: true
   report_specialties:
   - kalp damar cerrahisi

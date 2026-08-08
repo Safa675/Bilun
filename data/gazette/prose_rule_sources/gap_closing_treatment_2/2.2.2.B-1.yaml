@@ -37,7 +37,7 @@ rules:
     denial_tr: tanı ve tedavi kapsamındaki işlemler pakete dahil; ayrı faturalanamaz
     severity: error
   gate_b_sources:
-  - C000686
+  - C000699
 - rule_id: 2.2.2.B-1.(4).duration_exceeded_separate_bill
   sut_section: 2.2.2.B-1
   condition:
