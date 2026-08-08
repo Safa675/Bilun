@@ -79,9 +79,9 @@ SECTION_4206 = GateBSection(
     tier_a_overrides=(
         TierOverride(
             clause_ids=frozenset({
-                "C003998", "C004003", "C004039", "C003941", "C003957",
-                "C003966", "C003956", "C003982", "C004016", "C004030",
-                "C004033",
+                "4.2.6.A-2.(5)#2cdeafe7", "4.2.6.A-3.(1)#df7dccc5", "4.2.6.B-2.(1)#e92a7dce", "4.2.6.A.(1)#e2d1c50d", "C003957",
+                "4.2.6.A-1.(1)#e947d7a0", "C003956", "4.2.6.A-1.(2)#a3b772ff", "4.2.6.A-4.(2)#e8666e0c", "4.2.6.A-5.(4)#5cdc40bd",
+                "4.2.6.B.(1)#ec207e24",
             }),
             tier="A",
             inn_label="buyume_hormonu",
@@ -118,17 +118,17 @@ SECTION_4209_4227 = GateBSection(
     tier_a_overrides=(
         TierOverride(
             clause_ids=frozenset({
-                "C004127", "C004128", "C004130", "C004131", "C004135",
-                "C004137", "C004200",
+                "4.2.9.A.(3)#a9d0cf5b", "4.2.9.A.(4)#ed1d5fdf", "4.2.9.A-1.(1)#bb9d603f", "4.2.9.A-1.(2)#685f1394", "C004135",
+                "C004137", "4.2.9.E.(6)#70e7cc67",
             }),
             tier="A",
             inn_label="esa",
         ),
         TierOverride(
             clause_ids=frozenset({
-                "C006227", "C006228", "C006230", "C006232", "C006233",
-                "C006239", "C006246", "C006247", "C006249", "C006250",
-                "C006255", "C006267", "C006268",
+                "4.2.27.A.b#dd809964", "4.2.27.A.(2)#3dee23b2", "C006230", "4.2.27.A.a#0248d98e", "4.2.27.A.b#7aead70a",
+                "C006239", "4.2.27.A.a#3d54d6c8", "4.2.27.A.b#bbc2b66c", "4.2.27.A.(6)#3794fbde", "4.2.27.A.a#dab473f2",
+                "4.2.27.A.(7)#94ac5cb1", "4.2.27.B.(1)#2e11fcb9", "4.2.27.B.(2)#5548f8d0",
             }),
             tier="A",
             inn_label="koagulasyon_faktoru",
@@ -137,8 +137,8 @@ SECTION_4209_4227 = GateBSection(
     tier_b_overrides=(
         TierOverride(
             clause_ids=frozenset({
-                "C006210", "C006219", "C006235", "C006241", "C006244",
-                "C006287",
+                "C006210", "C006219", "4.2.27.A.a#64f0fd2c", "C006241", "4.2.27.A.(2)#23e717e6",
+                "4.2.27.D.(2)#16954b24",
             }),
             tier="B",
             inn_label="koagulasyon_faktoru",
@@ -185,9 +185,9 @@ SECTION_4210 = GateBSection(
     tier_a_overrides=(
         TierOverride(
             clause_ids=frozenset({
-                "C004209", "C004252", "C004257", "C004258", "C004299",
-                "C004300", "C004353", "C004363", "C004364", "C004371",
-                "C004372", "C004379", "C004380",
+                "4.2.10.A.(2)#4d260861", "4.2.10.A-3.(2)#92224da8", "C004257", "4.2.10.A-4.(1)#7ce6180e", "C004299",
+                "4.2.10.B-3.(1)#3e5d6616", "4.2.10.C-2.(3)#f3cd0246", "C004363", "4.2.10.C-3.(1)#7cd99d26", "C004371",
+                "4.2.10.Ç-2.(1)#cdd9ecde", "C004379", "4.2.10.D-2.(1)#ad1b5117",
             }),
             tier="A",
             inn_label="lsd_ilac",
@@ -218,7 +218,7 @@ SECTION_4213 = GateBSection(
     manifest_path=f"{_MANIFEST_DIR}/L4.2_drug_indication_4213_manifest.json",
     tier_b_overrides=(
         TierOverride(
-            clause_ids=frozenset({"C004584", "C004593"}),
+            clause_ids=frozenset({"4.2.13.1.e#50a8edb0", "4.2.13.1.(5)#6281d4b1"}),
             tier="B",
             inn_label="hepatit_ilac",
         ),
@@ -488,7 +488,7 @@ SECTION_4235_4237 = GateBSection(
     tier_a_overrides=(
         TierOverride(
             clause_ids=frozenset({
-                "C006694", "C006697", "C006715", "C006716", "C006718",
+                "4.2.35.A.(3)#4810c819", "4.2.35.A.b#9b19ef45", "4.2.37.A.(2)#ef5cfc78", "4.2.37.A.(3)#4be6d8e5", "4.2.37.A.(5)#b9399d4b",
             }),
             tier="A",
             inn_label="akromegali_ilac",
@@ -496,7 +496,7 @@ SECTION_4235_4237 = GateBSection(
     ),
     tier_b_overrides=(
         TierOverride(
-            clause_ids=frozenset({"C006705"}),
+            clause_ids=frozenset({"4.2.35.B.(2)#56d94324"}),
             tier="B",
             inn_label="pregabalin",
         ),
