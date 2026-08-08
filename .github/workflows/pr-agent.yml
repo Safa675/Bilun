@@ -3,6 +3,8 @@ name: PR Agent
 on:
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
+  issue_comment:
+    types: [created]
 
 jobs:
   pr_agent:
