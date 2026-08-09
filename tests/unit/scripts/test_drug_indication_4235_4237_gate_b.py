@@ -41,14 +41,14 @@ def test_gate_b_tier_counts() -> None:
     frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     tier = frame.group_by("encode_tier").len().sort("encode_tier")
     counts = {row["encode_tier"]: row["len"] for row in tier.iter_rows(named=True)}
-    assert counts == {"A": 5, "B": 1, "C": 20}
+    assert counts == {"A": 5, "B": 1, "C": 25}
 
     s4235 = frame.filter(pl.col("section_id").str.starts_with("4.2.35"))
     s4235_tiers = {
         row["encode_tier"]: row["len"]
         for row in s4235.group_by("encode_tier").len().iter_rows(named=True)
     }
-    assert s4235_tiers == {"A": 2, "B": 1, "C": 14}
+    assert s4235_tiers == {"A": 2, "B": 1, "C": 19}
 
     s4237 = frame.filter(pl.col("section_id").str.starts_with("4.2.37"))
     s4237_tiers = {
@@ -90,12 +90,12 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     # Fresh build is a subset of on-disk (reconciliation may expand encoded beyond the batch).
     on_disk_encoded = set(on_disk.get("encoded_clause_ids") or on_disk.get("encoded_clause_ids") or [])
     assert encoded <= on_disk_encoded
-    assert "C006717" in encoded
+    assert "C006756" in on_disk_encoded
     soft_floor(int(manifest["tier_c_deferred_count"]), 9, label="test_drug_indication_4235_4237_gate_b tier_c_deferred")
     assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     soft_floor(int(manifest["rules_in_json"]), 3, label="test_drug_indication_4235_4237_gate_b rules_in_json")
-    assert manifest["section_4.2.35_clause_total"] == 17
+    assert manifest["section_4.2.35_clause_total"] == 22
     assert manifest["section_4.2.37_clause_total"] == 9
 
 

@@ -59,7 +59,7 @@ def test_deferral_table_has_coordinates_for_every_entry() -> None:
 @_needs_clauses
 def test_api_lookup_by_coordinate_does_not_require_c_star() -> None:
     rc.reset_cache()
-    by_id = rc.get_clause("C002684")
+    by_id = rc.get_clause("C000003")
     assert by_id is not None
     coord = by_id.get("clause_coordinate")
     assert coord and is_clause_coordinate(str(coord))
@@ -76,6 +76,6 @@ def test_deferral_list_exposes_coordinates() -> None:
 
 
 def test_is_clause_id_still_recognizes_opaque_keys() -> None:
-    assert is_clause_id("C002684")
+    assert is_clause_id("C000003")
     assert is_clause_id("F000001")
     assert not is_clause_id("2.2.1.(1)")

@@ -17,17 +17,17 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4224_mani
 
 _SECTION = "4224"
 
-_PILOT_SOURCES = {
-    "C006124",
-    "C006125",
-    "C006142",
-    "C006151",
-    "C006160",
-    "C006174",
-    "C006180",
-    "C006184",
-    "C006192",
-}
+_PILOT_SOURCES = frozenset({
+    "C006188",
+    "C006189",
+    "C006206",
+    "C006215",
+    "C006224",
+    "C006238",
+    "C006244",
+    "C006248",
+    "C006256",
+})
 
 
 def test_gate_b_exports_4224_candidates() -> None:

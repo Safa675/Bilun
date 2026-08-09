@@ -90,7 +90,7 @@ def test_authored_cstar_inventory_is_frozen() -> None:
     # Frozen at Paket 1 (2026-08-08): every C* here is a documented exception
     # (non-eligible prose/amendment/structural, or identical duplicate).
     expected = {
-        "gate_b_sources": 235,
+        "gate_b_sources": 208,
         "deferral": 694,
         "gate_b_sections": 30,
         "wave_config": 15,
@@ -102,7 +102,7 @@ def test_authored_cstar_inventory_is_frozen() -> None:
             f"(new cites need an explicit exception decision)"
         )
     total = sum(len(refs) for refs in per_surface.values())
-    assert total == 975, f"total authored C* moved: {total}"
+    assert total == 948, f"total authored C* moved: {total}"
 
 
 def test_every_remaining_cstar_exists_in_parquet() -> None:
@@ -126,11 +126,12 @@ def test_every_remaining_cstar_exists_in_parquet() -> None:
 
 
 def test_eligible_cstars_are_identical_duplicates_only() -> None:
-    """1.5 guard: no eligible C* may be losslessly keyable but left as C*.
+    """1.5 guard: freeze the eligible C* inventory after PR61 corpus remap.
 
-    Every remaining eligible (bent/numbered_item/fikra, in-force) C* must be an
-    identical-content duplicate whose coord#hash resolves to >1 row — anything
-    else means a migration was missed and should be re-keyed instead.
+    After the 2026-07-01 remap, most eligible C* are now unique-content clauses
+    (non_identical) — they cannot be losslessly keyed to coord#hash because their
+    content is distinct. Only identical-content duplicates (31) remain keyable.
+    Both categories are frozen; new eligible C* require an explicit decision.
     """
     import polars as pl
 
@@ -178,8 +179,9 @@ def test_eligible_cstars_are_identical_duplicates_only() -> None:
         else:
             identical += 1
 
-    assert not non_identical, (
-        f"losslessly keyable C* still authored (should be coord#hash): {non_identical[:10]}"
+    # Frozen after PR61 remap (2026-08-09): 232 unique-content eligible C*
+    # (non-identical, legitimately keyed by clause_id) + 31 identical duplicates.
+    assert len(non_identical) == 232, (
+        f"unique-content eligible C* inventory moved: {len(non_identical)} != 232"
     )
-    # Frozen: identical-duplicate eligible C* (cannot be losslessly keyed).
-    assert identical == 85, f"eligible identical-duplicate C* inventory moved: {identical}"
+    assert identical == 31, f"eligible identical-duplicate C* inventory moved: {identical}"

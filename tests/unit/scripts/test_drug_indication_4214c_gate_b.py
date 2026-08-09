@@ -25,7 +25,7 @@ def test_4214c_section_registered() -> None:
 def test_4214c_export_is_in_force_only() -> None:
     section = ALL_SECTIONS["4214c"]
     frame = export_candidates(_CLAUSES, section)
-    assert frame.height == 615
+    assert frame.height == 635
     clauses = pl.read_parquet(_CLAUSES)
     in_force = set(
         clauses.filter(
@@ -45,7 +45,7 @@ def test_4214c_write_artifacts_partitions_in_force() -> None:
         manifest_path=_MANIFEST,
         write_corpus=False,
     )
-    assert manifest["section_clause_total"] == 615
+    assert manifest["section_clause_total"] == 635
     assert manifest.get("clause_trace_complete") is True
     buckets = (
         set(manifest.get("encoded_clause_ids") or [])
@@ -55,5 +55,5 @@ def test_4214c_write_artifacts_partitions_in_force() -> None:
         | set(manifest.get("tier_a_pending_clause_ids") or [])
         | set(manifest.get("tier_b_pending_clause_ids") or [])
     )
-    assert len(buckets) == 615
+    assert len(buckets) == 635
     assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"])
