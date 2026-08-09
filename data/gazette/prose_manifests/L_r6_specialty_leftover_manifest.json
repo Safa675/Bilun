@@ -2,9 +2,8 @@
   "manifest_version": "canonical-v1",
   "rule_set_id": "specialty_leftover_r6",
   "section_id": "",
-  "section_clause_total": 21,
+  "section_clause_total": 20,
   "encoded_clause_ids": [
-    "C002684",
     "C002689",
     "C002691",
     "C002692",
@@ -26,7 +25,7 @@
     "C002828",
     "C002831"
   ],
-  "encoded_clause_count": 21,
+  "encoded_clause_count": 20,
   "tier_c_deferred_clause_ids": [],
   "emr_blocked_clause_ids": [],
   "non_actionable_clause_ids": [],
@@ -38,10 +37,6 @@
   "tier_a_pending_count": 0,
   "tier_b_pending_count": 0,
   "clause_traces": [
-    {
-      "clause_id": "C002684",
-      "manifest_status": "encoded"
-    },
     {
       "clause_id": "C002689",
       "manifest_status": "encoded"

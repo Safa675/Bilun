@@ -2360,7 +2360,6 @@
       "manifest_status": "encoded",
       "heuristic_inn": "Tedavinin devamında ACR pediatrik yanıt kriterine 3 ayda bir bakılır",
       "linked_rule_ids": [
-        "4.2.1.C.anakinra_biologic_jak_combo_nopay",
         "4.2.1.fmf_jia_acr_pediatric_stop_c7"
       ]
     },
