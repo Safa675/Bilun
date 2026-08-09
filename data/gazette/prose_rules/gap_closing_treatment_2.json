@@ -95,7 +95,7 @@
         "point_uplift": 25
       },
       "gate_b_sources": [
-        "C000661"
+        "C000674"
       ]
     },
     {
@@ -164,7 +164,7 @@
         "severity": "error"
       },
       "gate_b_sources": [
-        "C000686"
+        "C000699"
       ]
     },
     {

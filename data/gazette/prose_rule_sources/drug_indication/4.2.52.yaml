@@ -29,7 +29,7 @@ rules:
 - rule_id: 4.2.52.gout.febuxostat_hematology_3mo_report_coverage
   sut_section: 4.2.52
   gate_b_sources:
-  - 4.2.52.b#ea44d82f
+  - 4.2.52.b#7263c7a7
   drug_names:
   - febuxostat
   icd10_codes:
@@ -47,15 +47,16 @@ rules:
   report_duration_months: 3
   report_specialties:
   - hematoloji
+  - onkoloji
   prescriber_specialties:
-  - hematoloji
+  - tüm uzman hekimler
   condition:
     coverage_note: true
   action:
-    enforcement: en az bir hematoloji uzmanının yer aldığı en fazla 3 ay süreli sağlık kurulu raporuyla hematoloji uzmanlarınca
-      reçete edilirse ödenir
-    message_tr: En az bir hematoloji uzman hekiminin yer aldığı en fazla 3 ay süreli sağlık kurulu raporuna istinaden hematoloji
-      uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.52).
+    enforcement: hematoloji veya onkoloji uzman hekimlerince düzenlenen en fazla 3 ay süreli uzman hekim raporuna istinaden
+      tüm uzman hekimlerce reçete edilirse ödenir
+    message_tr: Hematoloji veya onkoloji uzman hekimleri tarafından düzenlenen en fazla 3 ay süreli uzman hekim raporuna
+      istinaden tüm uzman hekimlerce reçete edilmesi halinde bedeli Kurumca karşılanır (§4.2.52).
 - rule_id: 4.2.52.gout.febuxostat_hyperuricemia_allopurinol_failure_coverage
   sut_section: 4.2.52
   gate_b_sources:
@@ -82,7 +83,7 @@ rules:
 - rule_id: 4.2.52.gout.febuxostat_tumor_lysis_hematologic_coverage
   sut_section: 4.2.52
   gate_b_sources:
-  - 4.2.52.a#c5ffbb6a
+  - 4.2.52.a#7fc7c92a
   drug_names:
   - febuxostat
   icd10_codes:
@@ -101,8 +102,8 @@ rules:
     coverage_note: true
   action:
     enforcement: hematolojik malignite için kemoterapi alan ve tümör lizis sendromu açısından orta veya yüksek riskli olup
-      allopurinol intoleransı/kontrendikasyonu olanlarda hiperüriseminin önlenmesi ve tedavisinde ödenir
+      allopurinol yanıtsız ve/veya kontrendikasyonu olanlarda hiperüriseminin önlenmesi ve tedavisinde ödenir
     message_tr: Hematolojik maligniteler için kemoterapi alan ve tümör lizis sendromu açısından orta veya yüksek dereceye
-      kadar riski olan allopurinol intoleransı ve/veya kontrendikasyonu olan hastalarda hiperüriseminin önlenmesi ve tedavisi
+      kadar riski olan allopurinol yanıtsız ve/veya kontrendikasyonu olan hastalarda hiperüriseminin önlenmesi ve tedavisi
       için kullanılması halinde bedelleri Kurumca karşılanır (§4.2.52).
 source_note: Exported from drug_indication_prose.json (YAML source migration)

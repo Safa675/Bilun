@@ -72,7 +72,9 @@ def cites_covered_by_encoded(
     cites: Iterable[str],
     encoded: frozenset[str] | set[str],
 ) -> bool:
-    """True when every cite is in ``encoded`` as-is or via resolved clause_id."""
+    """True when every cite is in ``encoded`` as-is or via resolved clause_id
+    (Track E dual-read: manifests expose both opaque ``encoded_clause_ids`` and
+    public ``encoded_clause_coordinates``)."""
     encoded_set = frozenset(str(x) for x in encoded)
     for cite in cites:
         token = str(cite or "").strip()

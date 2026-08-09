@@ -60,7 +60,7 @@ rules:
   sut_section: 3.3.2
   deontic: MUST_BILL
   gate_b_sources:
-  - C002881
+  - C002925
   condition:
     material_name_any:
     - kan sekeri olcum cubugu

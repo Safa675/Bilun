@@ -5,7 +5,7 @@ rules:
   gate_b_sources:
   - 4.2.46.A.(1)
   - 4.2.46.A.(2)
-  - C006840
+  - C006904
   drug_names:
   - pirfenidon
   - nintedanib

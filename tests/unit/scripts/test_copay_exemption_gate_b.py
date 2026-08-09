@@ -127,8 +127,8 @@ def test_json_rules_map_to_expected_clause_ids() -> None:
         "1.8.5.(22)a.gss_5510_60_12",
         "1.8.5.(22)b.gss_5510_60_13_14",
     }
-    assert mapping["1.8.2.(1)"] == ["C000314", "C000327", "C000328", "C000329", "C000330", "C000331"]
-    assert mapping["1.8.5.(10).organ_nakli"] == ["C000364"]
+    assert mapping["1.8.2.(1)"] == ["C000309", "C000325", "C000338", "C000339", "C000340", "C000341"]
+    assert mapping["1.8.5.(10).organ_nakli"] == ["C000375"]
 
 
 def test_manifest_has_encoded_clause_ids_union(tmp_path: Path) -> None:

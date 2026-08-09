@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.49.A.neuro.nusinersen_all_criteria_coverage_a
   sut_section: 4.2.49.A
   gate_b_sources:
-  - C007018
+  - C007082
   drug_names:
   - nusinersen
   - nusinersen sodium
@@ -22,7 +22,7 @@ rules:
 - rule_id: 4.2.49.A.neuro.nusinersen_all_criteria_coverage_b
   sut_section: 4.2.49.A
   gate_b_sources:
-  - C007026
+  - C007082
   drug_names:
   - nusinersen
   - nusinersen sodium
@@ -41,7 +41,7 @@ rules:
 - rule_id: 4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_a
   sut_section: 4.2.49.A
   gate_b_sources:
-  - C007024
+  - C007088
   drug_names:
   - nusinersen
   - nusinersen sodium
@@ -61,7 +61,7 @@ rules:
 - rule_id: 4.2.49.A.neuro.nusinersen_multidisciplinary_monitoring_b
   sut_section: 4.2.49.A
   gate_b_sources:
-  - C007029
+  - C007088
   drug_names:
   - nusinersen
   - nusinersen sodium

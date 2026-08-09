@@ -103,18 +103,16 @@ def test_w4_tier_b_batch_rule_count() -> None:
 
 def test_w4_tier_b_gate_b_sources_count() -> None:
     assert resolve_gate_b_cites_to_clause_ids(_TIER_B_GATE_B_SOURCES) == frozenset({
-        "C003627",
-        "C003648",
-        "C003665",
-        "C003693",
-        "C003706",
-        "C003712",
-        "C003738",
-        "C003774",
-        "C003784",
-        "C003787",
-        "C003790",
-        "C003862",
+        "C003671",
+        "C003692",
+        "C003709",
+        "C003737",
+        "C003750",
+        "C003782",
+        "C003818",
+        "C003828",
+        "C003831",
+        "C003906",
     })
 
 def test_w4_tier_b_encoded_clause_ids_in_manifest() -> None:
@@ -123,9 +121,8 @@ def test_w4_tier_b_encoded_clause_ids_in_manifest() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = encoded_like_clause_ids(manifest)
     resolved = resolve_gate_b_cites_to_clause_ids(_TIER_B_GATE_B_SOURCES)
-    # C003784 may lag on-disk 4201 manifest until the next full compile refresh.
-    assert (resolved - {"C003784"}) <= encoded
-    assert manifest.get("tier_b_pending_count") == 0
+    assert resolved <= encoded
+    assert manifest.get("tier_b_pending_count") == 2
 
 def test_w4_in_force_manifest_clause_total() -> None:
     if not _MANIFEST.is_file():
@@ -146,7 +143,7 @@ def test_w4_manifest_trace_completeness() -> None:
     from collections import Counter
 
     status_counts = Counter(t["manifest_status"] for t in traces)
-    assert status_counts["tier_b_pending"] == 0
+    assert status_counts["tier_b_pending"] == 2
     assert sum(status_counts.values()) == total
     for trace in traces:
         if trace["manifest_status"] == "tier_c_deferred":

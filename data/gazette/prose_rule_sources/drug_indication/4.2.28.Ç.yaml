@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.2.28.C_c.ezetimibe_statin_combination
   sut_section: 4.2.28.Ç
   gate_b_sources:
-  - C006348
+  - C006412
   drug_names:
   - ezetimib + statin
   - ezetimib atorvastatin

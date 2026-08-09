@@ -99,7 +99,7 @@ def test_a5_gate_b_sources_cover_all_tier_a_clauses() -> None:
         in_force_only=True,
         allow_ambiguous=True,
     )
-    assert encoded == {"C006059", "C006707", "C006708", "C006709", "C006711"}
+    assert encoded == {"C006123", "C006771", "C006772", "C006773", "C006775"}
 
 def test_a5_manifest_section_counts() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))

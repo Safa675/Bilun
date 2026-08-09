@@ -6,20 +6,27 @@
 # Target type is ``prose`` (not encode-eligible). Gap exclusion for true
 # navigational headings is unchanged; these rows carry normative text and are
 # already encoded by rules.
+#
+# NOTE: C* ids are positional per corpus snapshot; this file was re-mapped to
+# the 2026-07-01 corpus during Paket 2 (clause-id shift). Each entry below
+# targets the same legal text as before, re-resolved by content hash/text.
 
 overrides:
-  C000852: {clause_type: prose}
-  C000855: {clause_type: prose}
-  C000856: {clause_type: prose}
-  C000857: {clause_type: prose}
-  C003074: {clause_type: prose}
-  C004113: {clause_type: prose}
-  C004135: {clause_type: prose}
-  C004257: {clause_type: prose}
-  C004299: {clause_type: prose}
-  C004363: {clause_type: prose}
-  C004371: {clause_type: prose}
-  C004379: {clause_type: prose}
-  C004928: {clause_type: prose}
-  C004930: {clause_type: prose}
-  C005870: {clause_type: prose}
+  C000865: {clause_type: prose}
+  C000868: {clause_type: prose}
+  C000869: {clause_type: prose}
+  C000870: {clause_type: prose}
+  C003118: {clause_type: prose}
+  C004157: {clause_type: prose}
+  C004179: {clause_type: prose}
+  C004301: {clause_type: prose}
+  C004343: {clause_type: prose}
+  C004407: {clause_type: prose}
+  C004415: {clause_type: prose}
+  C004423: {clause_type: prose}
+  C004972: {clause_type: prose}
+  C004974: {clause_type: prose}
+  C005934: {clause_type: prose}
+  C000852: {clause_type: fikra}
+  C000855: {clause_type: fikra}
+  C003074: {clause_type: fikra}

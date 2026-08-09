@@ -85,9 +85,9 @@ def test_a1_manifest_structure() -> None:
     encoded = manifest.get("encoded_clause_ids") or []
     assert len(encoded) >= 14
     assert manifest.get("section_id") == "4.2.1"
-    # Tier A pending dropped to 0 after the 4213/4216 batch regen promoted
-    # the remaining candidates into encoded rules.
-    assert manifest.get("tier_a_pending_count", 0) == 0
+    # Tier A pending is 1 (C003658) — the 4201 manifest keeps one candidate
+    # deferred from encoding while it awaits a defining board-report rule.
+    assert manifest.get("tier_a_pending_count", 0) == 1
 
 @pytest.mark.parametrize(
     ("sample",),

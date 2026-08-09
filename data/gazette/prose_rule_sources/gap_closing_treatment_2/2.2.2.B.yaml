@@ -32,7 +32,7 @@ rules:
     annex_basis: EK-2/C
     point_uplift: 25
   gate_b_sources:
-  - C000661
+  - C000674
 - rule_id: 2.2.2.B.(4).planned_thoracic_chest_tube_no_separate_bill
   sut_section: 2.2.2.B
   condition:

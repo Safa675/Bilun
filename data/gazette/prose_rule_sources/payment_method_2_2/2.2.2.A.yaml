@@ -76,4 +76,4 @@ rules:
     payment_method_tr: farklı uzmanlık dallarında yüzdelik oran +25 puan
     rate_uplift_points: 25
   gate_b_sources:
-  - C000649
+  - C000662

@@ -111,5 +111,5 @@ rules:
     (SUT 2.2.2.A(5)).
   verification_status: ai_generated_pending_review
   gate_b_sources:
-  - C000649
+  - C000662
   provenance_note: Normative rule — SUT §2.2.2.A(5). Farklı uzmanlık dalında +25 puan uplift.

@@ -317,7 +317,7 @@
       "sut_section": "3.3.35",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C003289"
+        "C003333"
       ],
       "condition": {
         "hearing_in_ear_under_age_limit": true
@@ -668,7 +668,7 @@
       "sut_section": "3.3.8.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C003074"
+        "C003118"
       ],
       "condition": {
         "paraplegia_standing_table_over_age_limit": true
@@ -684,7 +684,7 @@
       "sut_section": "3.3.8.A",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C003074"
+        "C003118"
       ],
       "condition": {
         "paraplegia_wheelchair_separate_billing": true
@@ -700,7 +700,7 @@
       "sut_section": "3.3.8.B",
       "deontic": "NO_PAY",
       "gate_b_sources": [
-        "C003074"
+        "C003118"
       ],
       "condition": {
         "spinal_mobility_device_duplicate_billing": true
@@ -716,7 +716,7 @@
       "sut_section": "3.3.8.B",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003074"
+        "C003118"
       ],
       "condition": {
         "material_name_any": [
@@ -1088,7 +1088,7 @@
       "sut_section": "3.3.33.B",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003332"
+        "C003376"
       ],
       "condition": {
         "cochlear_implant_commission_or_bilateral_criteria": true
@@ -1328,7 +1328,7 @@
       "sut_section": "3.3.33.D",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003383"
+        "C003427"
       ],
       "condition": {
         "brainstem_implant_criteria_kurum_odeme": true
@@ -1715,7 +1715,7 @@
       "sut_section": "3.3.1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C002850"
+        "C002894"
       ],
       "condition": {
         "material_name_any": [
@@ -1984,7 +1984,7 @@
       "sut_section": "3.3.2",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C002881"
+        "C002925"
       ],
       "condition": {
         "material_name_any": [
@@ -2194,7 +2194,7 @@
       "sut_section": "3.3.3.C",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C002913"
+        "C002957"
       ],
       "condition": {
         "material_name_any": [
@@ -2486,7 +2486,7 @@
       "sut_section": "3.3.6.A-1",
       "deontic": "REGULATORY_ACTION",
       "gate_b_sources": [
-        "C003020"
+        "C003064"
       ],
       "condition": {
         "material_name_any": [
@@ -2567,7 +2567,7 @@
       "sut_section": "3.3.6.B",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003051"
+        "C003095"
       ],
       "condition": {
         "material_name_any": [
@@ -2917,7 +2917,7 @@
       "sut_section": "3.3.15",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003168"
+        "C003212"
       ],
       "condition": {
         "material_name_any": [
@@ -2955,7 +2955,7 @@
       "sut_section": "3.3.17",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003180"
+        "C003224"
       ],
       "condition": {
         "material_name_any": [
@@ -2974,7 +2974,7 @@
       "sut_section": "3.3.18",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003185"
+        "C003229"
       ],
       "condition": {
         "material_name_any": [
@@ -3206,7 +3206,7 @@
       "sut_section": "3.3.34",
       "deontic": "MUST_BILL",
       "gate_b_sources": [
-        "C003391"
+        "C003435"
       ],
       "condition": {
         "material_name_any": [

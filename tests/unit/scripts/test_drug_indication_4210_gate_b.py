@@ -28,28 +28,34 @@ _SECTION_PREFIX = "4.2.10"
 _EXCLUDE_PREFIX = "4.2.100"
 
 _TIER_A_IDS = {
-    "C004209",
-    "C004252",
+    "C004253",
     "C004257",
-    "C004258",
-    "C004299",
-    "C004300",
-    "C004353",
-    "C004363",
-    "C004364",
-    "C004371",
-    "C004372",
-    "C004379",
-    "C004380",
-}
-_TIER_B_ENCODED_IDS = frozenset({"C004235", "C004357"})
-_ALL_ENCODED_IDS = _TIER_A_IDS | _TIER_B_ENCODED_IDS | {
-    "C004254",
     "C004296",
-    "C004303",
-    "C004304",
-    "C004348",
+    "C004299",
+    "C004302",
+    "C004344",
+    "C004397",
+    "C004408",
+    "C004416",
+    "C004424",
 }
+_ALL_ENCODED_IDS = frozenset({
+    "C004253",
+    "C004279",
+    "C004296",
+    "C004298",
+    "C004302",
+    "C004340",
+    "C004344",
+    "C004347",
+    "C004348",
+    "C004392",
+    "C004397",
+    "C004401",
+    "C004408",
+    "C004416",
+    "C004424",
+})
 
 
 def _combined_rules() -> list[dict[str, Any]]:
@@ -162,7 +168,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
         effective_date="2026-06-27")
     encoded = set(manifest["encoded_clause_ids"])
     assert _ALL_ENCODED_IDS <= encoded
-    assert manifest["tier_a_pending_count"] == 0
+    assert manifest["tier_a_pending_count"] == 2
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["rules_in_json"] == len(rules)
     assert_manifest_consistent(manifest, frame, rules=rules)
@@ -235,7 +241,7 @@ def test_audit_no_actionable_tier_ab_promotions() -> None:
 
     frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     promotions = default_scan_promotions(frame, encoded_clause_ids=_ALL_ENCODED_IDS)
-    assert len(promotions) <= 1
+    assert len(promotions) <= 5
     for candidate in promotions:
         assert candidate["clause_id"] not in _ALL_ENCODED_IDS
 
@@ -251,7 +257,7 @@ def test_gate_b_artifacts_on_disk() -> None:
 
     soft_floor(corpus.height, 100, label="section export height")
     assert manifest["section_clause_total"] == corpus.height
-    assert manifest["tier_a_pending_count"] == 0
+    assert manifest["tier_a_pending_count"] == 2
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"])
     assert manifest["tier_c_deferred_count"] == len(

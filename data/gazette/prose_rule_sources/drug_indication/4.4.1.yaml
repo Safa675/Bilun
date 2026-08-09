@@ -3,7 +3,7 @@ rules:
 - rule_id: 4.4.1.discount_reference_basis_regulatory
   sut_section: 4.4.1
   gate_b_sources:
-  - C007725
+  - C007791
   action:
     enforcement: 'regulatory: in the public-institution discounts and additional-discount provisions, reference/equivalent/price-protected
       status is determined per MoH legislation; discount applications for status changes are evaluated by the Institution'
@@ -13,7 +13,7 @@ rules:
 - rule_id: 4.4.1.discount_reference_basis_regulatory_dup
   sut_section: 4.4.1
   gate_b_sources:
-  - C008258
+  - C007791
   action:
     enforcement: 'regulatory (duplicate provision): public-institution discounts and additional discounts — reference/equivalent/price-protected
       status per MoH legislation; status-change discounts evaluated by the Institution'
@@ -23,7 +23,7 @@ rules:
 - rule_id: 4.4.1.new_molecule_1year_additional_discount_exempt
   sut_section: 4.4.1
   gate_b_sources:
-  - C007745
+  - C007811
   condition:
     new_molecule_ek4a_entry: true
     additional_discount_exempt_months: 12
@@ -39,7 +39,7 @@ rules:
 - rule_id: 4.4.1.new_molecule_1year_additional_discount_exempt_dup
   sut_section: 4.4.1
   gate_b_sources:
-  - C008278
+  - C007811
   condition:
     new_molecule_ek4a_entry: true
     additional_discount_exempt_months: 12
@@ -53,7 +53,7 @@ rules:
 - rule_id: 4.4.1.provider_cannot_charge_price_gap_prohibited
   sut_section: 4.4.1
   gate_b_sources:
-  - C007747
+  - C007813
   pay: false
   action:
     enforcement: 'prohibited: outpatient/inpatient contracted providers invoice their own-pharmacy-supplied drugs at the equivalent-drug
@@ -68,7 +68,7 @@ rules:
 - rule_id: 4.4.1.provider_cannot_charge_price_gap_prohibited_dup
   sut_section: 4.4.1
   gate_b_sources:
-  - C008280
+  - C007813
   pay: false
   action:
     enforcement: 'prohibited (duplicate provision): contracted providers invoice own-pharmacy drugs at equivalent-drug max

@@ -10,7 +10,7 @@ rules:
   message_tr: Niemann-Pick Tip C tedavisi — gastroenteroloji, çocuk metabolizma veya nöroloji uzman hekimlerinin yer aldığı
     6 aylık sağlık kurulu raporu gerekir (§4.2.10.D-2).
   gate_b_sources:
-  - C004379
+  - C004423
   - 4.2.10.D-2.(1)
   report_required: true
   report_specialties:

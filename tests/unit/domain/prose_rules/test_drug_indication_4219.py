@@ -89,8 +89,8 @@ def test_a4_rules_merged(a4_rule_ids: set[str]) -> None:
 def test_a4_manifest_traces_encoded_clauses() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
-    assert "C006062" in encoded
-    assert "C006063" in encoded
+    assert "C006126" in encoded
+    assert "C006127" in encoded
     assert manifest["encoded_clause_count"] >= 2
 
 

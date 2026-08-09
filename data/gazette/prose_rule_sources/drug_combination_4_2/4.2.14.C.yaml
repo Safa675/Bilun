@@ -17,7 +17,7 @@ rules:
     payment_tr: nüks/metastatik meme kanseri; 1. sıra AI ≥6 ay sonrası progresyonda ribosiklib/palbosiklib + AI kombinasyonu
       ödenir
   gate_b_sources:
-  - C004961
+  - C005005
 - rule_id: 4.2.14.C.(renal).temsirolimus_poor_prognosis_3of6
   sut_section: 4.2.14.C
   condition:
@@ -56,7 +56,7 @@ rules:
       ödenir
     severity: error
   gate_b_sources:
-  - C005064
+  - C005108
   - 4.2.14.C.(4)#f03d7d17
 - rule_id: 4.2.14.C.(melanoma).braf_sequential_no_pay
   sut_section: 4.2.14.C
@@ -139,7 +139,7 @@ rules:
   - 4.2.14.C.(3)#5de7a144
   - 4.2.14.C.(4)#f03f6832
   - 4.2.14.C.(4)#3bc1ad03
-  - C005715
+  - C005759
 - rule_id: 4.2.14.C.(myeloma).cross_resistance_daratumumab_isatuximab_no_pay
   sut_section: 4.2.14.C
   condition:

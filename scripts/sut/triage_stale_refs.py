@@ -442,6 +442,10 @@ def main() -> int:
             "is_in_force",
             "is_superseded_marker",
             "had_struck_content",
+            # Track E: coord#hash gate_b refs resolve during classification.
+            "content_hash",
+            "in_force_text",
+            "clause_key",
         ],
     )
     classified = classify_refs(refs, staleness)

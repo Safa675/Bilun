@@ -11,7 +11,7 @@ rules:
     copay_required: true
     payment_tr: ayakta tedavi katılım payı alınır
   gate_b_sources:
-  - C000324
+  - C000335
 - rule_id: 1.8.2.(3).ek4d_exempt_no_copay
   sut_section: 1.8.2
   condition:

@@ -14,7 +14,7 @@ rules:
       sağlık raporuna istinaden karşılanır
     billing_method: procedure_package
   gate_b_sources:
-  - C000852
+  - C000865
 - rule_id: 2.4.3.(B).influenza_vaccine_annual_risk_groups_sep_mar
   sut_section: 2.4.3
   condition:
@@ -30,7 +30,7 @@ rules:
       mahsus karşılanır
     billing_method: procedure_package
   gate_b_sources:
-  - C000855
+  - C000868
 - rule_id: 2.4.3.(C).pneumococcal_vaccine_5_year_risk_groups
   sut_section: 2.4.3
   condition:
@@ -45,7 +45,7 @@ rules:
       gruplarına sağlık raporuyla 5 yılda bir, 65 yaş ve üzeri kişilere rapor aranmaksızın beş yılda bir karşılanır
     billing_method: procedure_package
   gate_b_sources:
-  - C000856
+  - C000869
 - rule_id: 2.4.3.(D).hepatitis_a_vaccine_max_2_yearly_seronegative
   sut_section: 2.4.3
   condition:
@@ -64,4 +64,4 @@ rules:
       en fazla yılda iki kez karşılanır
     billing_method: procedure_package
   gate_b_sources:
-  - C000857
+  - C000870

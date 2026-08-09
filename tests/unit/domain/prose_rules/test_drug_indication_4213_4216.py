@@ -171,8 +171,8 @@ def test_manifest_union_wires_encoded_clauses() -> None:
     assert _MANIFEST.is_file()
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
-    assert "C004572" in encoded
-    assert "C005999" in encoded
+    assert "C004547" in encoded
+    assert "C006048" in encoded
     # Track A3: heading/chapter ids may linger on older manifests; coverage union
     # only keeps encode-eligible cites from rule JSON.
     clauses = pl.read_parquet(_REPO / "data/gazette/sut_clauses.parquet")

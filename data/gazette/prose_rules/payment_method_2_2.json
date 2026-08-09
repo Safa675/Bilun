@@ -357,7 +357,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000606"
+        "C000617"
       ]
     },
     {
@@ -391,7 +391,7 @@
         "bill_drugs_separately": true
       },
       "gate_b_sources": [
-        "C000592"
+        "C000603"
       ]
     },
     {
@@ -710,7 +710,7 @@
         "rate_uplift_points": 25
       },
       "gate_b_sources": [
-        "C000649"
+        "C000662"
       ]
     },
     {

@@ -33,8 +33,8 @@ rules:
     service: physician_or_dental_muayene
   gate_b_sources:
   - 1.8.1.(1)#22f992ca
-  - 1.8.1.a#da013286
-  - 1.8.1.b#083875bf
+  - 1.8.1.a#d269a477
+  - 1.8.1.b#15044ee0
   - 1.8.1.ç
   - 1.8.1.d
   - 1.8.1.e
@@ -51,7 +51,7 @@ rules:
   action:
     copay_rate_multiplier: 0.5
   gate_b_sources:
-  - C000294
+  - C000305
   verification_status: ai_generated_pending_review
   content_note: Family-physician-referred muayene copay reduced by 50% (aile hekiminden sevk edilerek yapılan muayenelerde
     katılım payı %50 azaltılır).
