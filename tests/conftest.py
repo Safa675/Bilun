@@ -8,6 +8,9 @@ import pytest
 os.environ["TESTING"] = "1"
 # Pytest exercises route handlers without configuring production auth.
 os.environ.setdefault("BILUN_AUTH_OPTIONAL", "1")
+os.environ["BILUN_AUTH_USERNAME"] = ""
+os.environ["BILUN_AUTH_PASSWORD"] = ""
+os.environ["BILUN_SESSION_SECRET"] = ""
 
 from tests.fixtures.sut import (  # noqa: E402
     cohort_sut_summary_payload,

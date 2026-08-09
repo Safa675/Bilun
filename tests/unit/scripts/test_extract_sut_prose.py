@@ -43,7 +43,7 @@ def _find_consolidated_sut_docx(raw_data_dir: Path = _RAW_DATA_DIR) -> Path | No
             continue
         if not _CONSOLIDATED_FOLDER_RE.match(entry.name):
             continue
-        docx_files = sorted(entry.glob("*.docx"))
+        docx_files = sorted(entry.rglob("*.docx"))
         if docx_files:
             return docx_files[0]
     return None
@@ -218,6 +218,23 @@ class TestDocxExtraction:
     def test_annex_refs_in_payment_section(self, clauses: pd.DataFrame) -> None:
         section = clauses[clauses["section_path"].str.contains("2.2", na=False)]
         assert (section["annex_refs"].str.contains("EK-2/C", na=False)).any()
+
+    def test_reextract_stability(self, clauses: pd.DataFrame) -> None:
+        """Track E Phase 6: double-extraction must produce identical clause_keys."""
+        from scripts.sut.prose.extractor import add_identity_columns
+        
+        assert _ACTIVE_DOCX is not None
+        # clauses is the first extraction (via fixture). Add identity columns.
+        clauses_1 = add_identity_columns(clauses)
+        
+        # Extract a second time and add identity columns
+        clauses_2 = add_identity_columns(extract_sut_clauses(_ACTIVE_DOCX))
+        
+        # Keys should be identical and in the same order
+        keys_1 = clauses_1["clause_key"].to_list()
+        keys_2 = clauses_2["clause_key"].to_list()
+        assert keys_1 == keys_2
+
 
 
 @pytest.mark.skipif(not _ACTIVE_DOCX, reason="consolidated SUT docx not present")
