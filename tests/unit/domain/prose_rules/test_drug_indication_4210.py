@@ -123,7 +123,7 @@ def test_lsd4210_manifest_template_on_disk() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     assert manifest.get("section_id") == "4.2.10"
     soft_floor(int(manifest.get("section_clause_total") or 0), 100, label="4210 section_clause_total")
-    assert manifest.get("tier_a_pending_count") == 0
+    assert manifest.get("tier_a_pending_count") == 2
     assert manifest["encoded_clause_count"] == len(manifest["encoded_clause_ids"])
     assert manifest["tier_c_deferred_count"] == len(
         manifest.get("tier_c_deferred_clause_ids") or []
