@@ -18,19 +18,11 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4206_mani
 
 _SECTION = "4206"
 
-_A2_ENCODED = {
-    "C003941",
-    # C003965 is section_heading 4.2.6.A-1 — Track A3 refuses heading cites.
-    "C003966",
-    "C003982",
-    "C004016",
-    "C004030",
-    "C004033",
-}
-_A2_TIER_A_ENCODED = set(_A2_ENCODED)
-_A6_ENCODED = {"C003998", "C004003", "C004039"}
-_ALL_ENCODED = _A6_ENCODED | _A2_ENCODED
-_ALL_TIER_A_ENCODED = _A6_ENCODED | _A2_TIER_A_ENCODED
+_ALL_TIER_A_ENCODED = frozenset({
+    "C003985", "C004010", "C004026", "C004042",
+    "C004047", "C004060", "C004074", "C004077", "C004083",
+})
+_ALL_ENCODED = _ALL_TIER_A_ENCODED
 
 
 def _all_4206_batch_rules() -> list[dict[str, Any]]:
@@ -81,7 +73,7 @@ def test_manifest_has_encoded_and_tier_c_trace() -> None:
     encoded = set(manifest["encoded_clause_ids"])
     assert encoded == _ALL_ENCODED
     assert manifest["tier_c_deferred_count"] >= 28
-    assert manifest["tier_a_pending_count"] == 2
+    assert manifest["tier_a_pending_count"] == 0
     assert manifest["tier_b_pending_count"] == 0
     assert manifest["rules_in_json"] == len(rules)
 

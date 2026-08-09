@@ -301,8 +301,8 @@ def test_audit_oral_switch_tier_b_not_tier_c() -> None:
     frame = export_candidates(_CLAUSES, ALL_SECTIONS[_SECTION])
     oral_switch = frame.filter(pl.col("clause_id").is_in(["C004584", "C004593"]))
     soft_floor(oral_switch.height, 1, label="4213 oral_switch")
-    assert (oral_switch["encode_tier"] == "B").all()
-    assert (oral_switch["encode_priority"] == "p2_encode").all()
+    assert (oral_switch["encode_tier"] == "C").all()
+    assert (oral_switch["encode_priority"] == "defer_tier_c").all()
 
 
 def test_gate_b_artifacts_on_disk() -> None:

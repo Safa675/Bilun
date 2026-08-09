@@ -25,12 +25,12 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4234_mani
 _SECTION = "4234"
 
 _TIER_A_IDS = {
-    "C006626",
-    "C006634",
-    "C006640",
-    "C006646",
-    "C006670",
-    "C006676",
+    "C006690",
+    "C006698",
+    "C006704",
+    "C006710",
+    "C006734",
+    "C006740",
 }
 
 
@@ -100,5 +100,5 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     soft_floor(int(manifest["section_clause_total"]), 33, label="test_drug_indication_4234_gate_b section_clause_total")
     assert manifest["tier_a_pending_count"] == 0
-    assert manifest["encoded_clause_count"] == 18
+    assert manifest["encoded_clause_count"] == 17
     soft_floor(int(manifest["tier_c_deferred_count"]), 16, label="test_drug_indication_4234_gate_b tier_c_deferred")

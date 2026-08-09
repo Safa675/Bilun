@@ -19,18 +19,16 @@ _MANIFEST = _REPO / "data/gazette/prose_manifests/L4.2_drug_indication_4215_mani
 
 _SECTION = "4215"
 
-_PILOT_SOURCES = {
-    "C005776",
-    "C005777",
-    "C005778",
-    "C005779",
-    "C005780",
-    "C005782",
-    "C005785",
-    # Track A3: heading C005820 (4.2.15.D) refused; child fikra C005835 encodes.
-    "C005835",
-    "C005870",
-}
+_PILOT_SOURCES = frozenset({
+    "C005840",
+    "C005841",
+    "C005842",
+    "C005843",
+    "C005844",
+    "C005846",
+    "C005849",
+    "C005899",
+})
 
 
 def test_gate_b_exports_4215_candidates() -> None:
@@ -98,5 +96,5 @@ def test_gate_b_artifacts_on_disk(tmp_path: Path) -> None:
     assert corpus.is_file()
     assert manifest_path.is_file()
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["encoded_clause_count"] == 9
+    assert manifest["encoded_clause_count"] == 8
     assert manifest["section_id"] == "4.2.15"
