@@ -6,7 +6,7 @@
       "report_present": false,
       "expect_violation": "missing_board_report",
       "rule_id": "4.2.13.hbv_oral_antiviral_switch_adult_report",
-      "gate_b_source": "C004584"
+      "gate_b_source": "C004628"
     },
     {
       "drug_name": "BARACLUDE 0.5 MG (ENTEKAVIR)",
@@ -14,7 +14,7 @@
       "report_present": true,
       "expect_violation": null,
       "rule_id": "4.2.13.hbv_oral_antiviral_switch_adult_report",
-      "gate_b_source": "C004584"
+      "gate_b_source": "C004628"
     },
     {
       "drug_name": "VIREAD 245 MG (TENOFOVIR)",
@@ -22,7 +22,7 @@
       "report_present": false,
       "expect_violation": "missing_board_report",
       "rule_id": "4.2.13.hbv_oral_antiviral_switch_adult_report",
-      "gate_b_source": "C004584"
+      "gate_b_source": "C004628"
     },
     {
       "drug_name": "ZEFFIX 100 MG (LAMIVUDIN)",
@@ -30,7 +30,7 @@
       "report_present": true,
       "expect_violation": "indication_mismatch",
       "rule_id": "4.2.13.hbv_oral_antiviral_switch_adult_report",
-      "gate_b_source": "C004584"
+      "gate_b_source": "C004628"
     },
     {
       "drug_name": "BARACLUDE 0.5 MG (ENTEKAVIR)",
@@ -38,7 +38,7 @@
       "report_present": false,
       "expect_violation": "missing_board_report",
       "rule_id": "4.2.13.hbv_oral_antiviral_switch_pediatric_report",
-      "gate_b_source": "C004593"
+      "gate_b_source": "C004637"
     },
     {
       "drug_name": "BARACLUDE 0.5 MG (ENTEKAVIR)",
@@ -46,7 +46,7 @@
       "report_present": true,
       "expect_violation": null,
       "rule_id": "4.2.13.hbv_oral_antiviral_switch_pediatric_report",
-      "gate_b_source": "C004593"
+      "gate_b_source": "C004637"
     },
     {
       "drug_name": "VIREAD 245 MG (TENOFOVIR)",
@@ -54,7 +54,7 @@
       "report_present": false,
       "expect_violation": "missing_board_report",
       "rule_id": "4.2.13.hbv_oral_antiviral_switch_pediatric_report",
-      "gate_b_source": "C004593"
+      "gate_b_source": "C004637"
     }
   ]
 }

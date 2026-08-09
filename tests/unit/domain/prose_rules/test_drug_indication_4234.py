@@ -78,12 +78,12 @@ def test_ms4234_batch_rule_count() -> None:
     soft_floor(len(BATCH_MS4234_RULES), 6, label='BATCH_MS4234_RULES')
     sources = {src for rule in BATCH_MS4234_RULES for src in rule["gate_b_sources"]}
     assert resolve_gate_b_cites_to_clause_ids(sources) == frozenset({
-        "C006626",
-        "C006634",
-        "C006640",
-        "C006646",
-        "C006670",
-        "C006676",
+        "C006690",
+        "C006698",
+        "C006704",
+        "C006710",
+        "C006734",
+        "C006740",
     })
 
 def test_ms4234_tier_a_clause_ids() -> None:
@@ -104,7 +104,7 @@ def test_ms4234_manifest_template_on_disk() -> None:
     encoded_ids = manifest.get("encoded_clause_ids") or []
     assert manifest.get("encoded_clause_count") == len(encoded_ids)
     assert manifest.get("rules_in_json") == 18
-    assert manifest.get("tier_c_deferred_count") == 32
+    assert manifest.get("tier_c_deferred_count") == 33
 
 @pytest.mark.parametrize(
     ("sample",),

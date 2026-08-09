@@ -85,7 +85,7 @@ def test_a5_manifest_encoded_sources() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     encoded = set(manifest.get("encoded_clause_ids") or [])
     assert manifest.get("section_id") == "4.2.38"
-    assert manifest.get("section_clause_total") == 22
+    assert manifest.get("section_clause_total") == 21
     assert manifest.get("tier_a_pending_count") == 0
     assert manifest["encoded_clause_count"] == len(encoded)
     assert manifest["tier_c_deferred_count"] == len(

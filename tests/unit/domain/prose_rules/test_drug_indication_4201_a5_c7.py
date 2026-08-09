@@ -17,6 +17,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.sut.prose.manifest_index import encoded_like_clause_ids
 from scripts.sut.rule_sources import load_drug_section_rules
 
 BATCH_A5_C7_RULES = load_drug_section_rules("4.2.1.C-7")
@@ -36,7 +37,7 @@ _A5_GATE_B_SOURCES = frozenset(
     for clause_id in (rule.get("gate_b_sources") or [])
 )
 _MANIFEST_DATA = json.loads(_MANIFEST.read_text(encoding="utf-8"))
-_ENCODED = frozenset(_MANIFEST_DATA.get("encoded_clause_ids") or [])
+_ENCODED = frozenset(encoded_like_clause_ids(_MANIFEST_DATA))
 
 def _a5_rule(rule_id: str) -> dict:
     clean_rules = [
