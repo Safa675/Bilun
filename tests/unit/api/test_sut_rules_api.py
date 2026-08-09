@@ -237,7 +237,7 @@ class TestGlobalClausesEndpoint:
 
     @_needs_coverage
     def test_single_clause(self) -> None:
-        payload = rules_route.get_single_clause(clause_id="C002684")
+        payload = rules_route.get_single_clause(clause_id="C000006")
         model = RuleClause.model_validate(payload)
         # Track E: clause_id is no longer public; clause_key/coordinate are.
         assert model.clause_key is not None
@@ -309,7 +309,7 @@ class TestProseInventoryEndpoint:
 @_needs_coverage
 class TestTrackDCoordinateSurfaces:
     def test_clause_lookup_by_coordinate(self) -> None:
-        by_id = rules_route.get_single_clause(clause_id="C002684")
+        by_id = rules_route.get_single_clause(clause_id="C000006")
         coord = by_id.get("clause_coordinate")
         assert coord
         by_coord = rules_route.get_single_clause(clause_id=coord)
@@ -317,7 +317,7 @@ class TestTrackDCoordinateSurfaces:
         RuleClause.model_validate(by_coord)
 
     def test_clause_lookup_by_clause_key(self) -> None:
-        by_id = rules_route.get_single_clause(clause_id="C002684")
+        by_id = rules_route.get_single_clause(clause_id="C000006")
         clause_key = by_id.get("clause_key")
         if clause_key and "#" in clause_key:
             by_key = rules_route.get_single_clause(clause_id=clause_key)
