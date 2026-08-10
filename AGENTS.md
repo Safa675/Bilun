@@ -304,6 +304,30 @@ The review is the last gate before main — read it, don't rubber-stamp it.
   the next reader knows it was considered, not missed.
 
                                            
+## 11.5 Merge Sessions End on main
+
+Any session that merges agent work (local integration branches like `pr-*`,
+`followup/*`, etc.) MUST leave the repository checked out on `main` before the
+session ends.
+
+### Why
+A local merge branch left checked out (e.g. `pr-61`) has no upstream and breaks
+the deploy workflow (`git pull --ff-only` fails with "no tracking information").
+The VPS got stuck on `pr-61` for exactly this reason — work was merged locally,
+never pushed, and the working branch was never returned to main.
+
+### Steps
+- After the final merge of the session: `git checkout main && git pull --ff-only`
+- Verify `git status` shows `On branch main` before ending the session
+- If work is intentionally left unmerged (e.g. waiting on the user): still return
+  to `main`; the pending commits remain reachable on their branch, and the user
+  decides whether/when to push (push is the user's call, never the agent's)
+
+### Hard Rule
+Ending a session on any branch other than `main` (after having done merge work)
+is a critical failure — it silently breaks the next deploy.
+
+
 ## 12. Anti Hallucination Rules
 1. NEVER name a library, model, or function without grep/read confirming it exists first.
 2. When asked for deep analysis, the FIRST action must be tool calls, not prose.
