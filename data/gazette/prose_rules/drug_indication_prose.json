@@ -8747,7 +8747,7 @@
       "drug_names": [
         "onkoloji_ilac"
       ],
-      "message_tr": "Endikasyon: a) Diğer terapilerden sonra refrakter veya kalıcı hastalığı olan veya diğer tedavileri tolere edemeyen Evre IA veya Evre IB (Ek: RG-25/03/2025-32852/9-c md. Yürürlük:04/04/2025) veya Evre IIA kutanöz T-hücreli lenfoma hastalarının kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır. (§4.2.14.C deontic encode).",
+      "message_tr": "Endikasyon: a) Diğer terapilerden sonra refrakter veya kalıcı hastalığı olan veya diğer tedavileri tolere edemeyen Evre IA veya Evre IB (Ek: RG-25/03/2025-32852/9-c md. Yürürlük:04/04/2025) veya Evre IIA kutanöz T-hücreli lenfoma hastalarının kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır (rapor şartı yoktur; RG-25/08/2022-31934/27-d ile mülga). (§4.2.14.C deontic encode).",
       "gate_b_sources": [
         "4.2.14.C.a#47759c5b",
         "4.2.14.C.b#7ed50e55"
@@ -8760,10 +8760,6 @@
         "C85",
         "C86",
         "C88"
-      ],
-      "report_required": true,
-      "report_specialties": [
-        "dermatoloji"
       ]
     },
     {
@@ -12765,17 +12761,21 @@
         "I65",
         "I66"
       ],
-      "message_tr": "Dabigatran — tanımlı endikasyonlarda geçiş gerekçeli en az bir kardiyoloji uzmanının yer aldığı 1 yıllık sağlık kurulu raporu gerekir (§4.2.15.D-3).",
+      "message_tr": "Dabigatran — tanımlı endikasyonlarda geçiş gerekçeli, en az biri kardiyoloji veya nöroloji uzman hekimi olan en az üç uzman hekimin bulunduğu 1 yıllık sağlık kurulu raporu gerekir (§4.2.15.D-1.(2)).",
       "gate_b_sources": [
         "4.2.15.D-1.(2)"
       ],
       "report_required": true,
       "report_specialties": [
-        "kardiyoloji"
+        "kardiyoloji",
+        "nöroloji"
       ],
       "prescriber_specialties": [
         "kardiyoloji",
-        "iç hastalıkları"
+        "iç hastalıkları",
+        "göğüs hastalıkları",
+        "kalp damar cerrahisi",
+        "nöroloji"
       ],
       "report_duration_months": 12
     },
@@ -13510,8 +13510,7 @@
         "bifosfonat",
         "raloksifen",
         "calcitonin",
-        "stronsiyum ranelat",
-        "denosumab"
+        "stronsiyum ranelat"
       ],
       "icd10_codes": [
         "M80",
@@ -13524,7 +13523,7 @@
       },
       "action": {
         "enforcement": "bifosfonatlar ve diğer osteoporoz ilaçları tanımlı koşullarda ödenir; tedavi süresinin belirtildiği 2 yıllık sağlık raporu gerekir; kombine kullanımda yalnızca birinin bedeli ödenir",
-        "message_tr": "Osteoporoz tedavisinde bifosfonatlar (kombinasyonları dahil) ve diğer osteoporoz ilaçları (raloksifen, calcitonin, stronsiyum ranelat, denosumab) belirtilen koşullarda ödenir. Bu ilaçlar tedavi süresinin belirtildiği sağlık raporuna dayanılarak reçete edilir; rapor süresi 2 yıldır. Bu grup ilaçların kombine kullanımında sadece birinin bedeli ödenir (§4.2.17.A)."
+        "message_tr": "Osteoporoz tedavisinde bifosfonatlar (kombinasyonları dahil) ve diğer osteoporoz ilaçları (raloksifen, calcitonin, stronsiyum ranelat) belirtilen koşullarda ödenir. Bu ilaçlar tedavi süresinin belirtildiği sağlık raporuna dayanılarak reçete edilir; rapor süresi 2 yıldır. Bu grup ilaçların kombine kullanımında sadece birinin bedeli ödenir (§4.2.17.A)."
       }
     },
     {

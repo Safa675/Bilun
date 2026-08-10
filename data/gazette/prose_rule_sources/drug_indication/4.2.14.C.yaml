@@ -3591,7 +3591,7 @@ rules:
   - onkoloji_ilac
   message_tr: 'Endikasyon: a) Diğer terapilerden sonra refrakter veya kalıcı hastalığı olan veya diğer tedavileri tolere edemeyen
     Evre IA veya Evre IB (Ek: RG-25/03/2025-32852/9-c md. Yürürlük:04/04/2025) veya Evre IIA kutanöz T-hücreli lenfoma hastalarının
-    kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır. (§4.2.14.C deontic encode).'
+    kutanöz lezyonlarının topikal tedavisinde kullanılması halinde bedelleri Kurumca karşılanır (rapor şartı yoktur; RG-25/08/2022-31934/27-d ile mülga). (§4.2.14.C deontic encode).'
   gate_b_sources:
   - 4.2.14.C.a#47759c5b
   - 4.2.14.C.b#7ed50e55
@@ -3603,9 +3603,6 @@ rules:
   - C85
   - C86
   - C88
-  report_required: true
-  report_specialties:
-  - dermatoloji
 - rule_id: 4.2.14.C.deontic.C005239
   sut_section: 4.2.14.C
   drug_names:

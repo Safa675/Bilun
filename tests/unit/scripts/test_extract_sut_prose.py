@@ -245,16 +245,25 @@ class TestInForceExtraction:
         return extract_sut_clauses(_ACTIVE_DOCX)
 
     def test_titubb_fikra_in_force_flags(self, clauses: pd.DataFrame) -> None:
-        c618 = clauses.loc[clauses["clause_id"] == "C001618"].iloc[0]
-        c619 = clauses.loc[clauses["clause_id"] == "C001619"].iloc[0]
-        c684 = clauses.loc[clauses["clause_id"] == "C002684"].iloc[0]
-        assert not bool(c618["is_in_force"])
-        assert c618["in_force_text"] == ""
-        assert bool(c618["had_struck_content"])
-        assert not bool(c619["is_in_force"])
-        assert bool(c684["is_in_force"])
-        assert "TİTUBB" in str(c684["in_force_text"])
-        assert str(c684["in_force_text"]).startswith("(2)")
+        """Track E: §3.1.1.(2) TİTUBB struck rows are not in force; current text is.
+
+        Positional C* IDs shift across corpus re-extraction (01.07 corpus moved
+        these rows), so identity is the stable clause_key (coord#hash), not the
+        legacy clause_id.
+        """
+        from scripts.sut.prose.extractor import add_identity_columns
+
+        identified = add_identity_columns(clauses)
+        struck = identified.loc[identified["clause_key"] == "3.1.1.(2)#e3b0c442"]
+        current = identified.loc[identified["clause_key"] == "3.1.1.(2)#975f52d2"]
+        assert not struck.empty
+        assert not current.empty
+        assert not bool(struck["is_in_force"].any())
+        assert (struck["in_force_text"].fillna("").astype(str) == "").all()
+        assert bool(struck["had_struck_content"].all())
+        assert bool(current.iloc[0]["is_in_force"])
+        assert "TİTUBB" in str(current.iloc[0]["in_force_text"])
+        assert str(current.iloc[0]["in_force_text"]).startswith("(2)")
 
     def test_mixed_strike_strips_dead_runs(self, clauses: pd.DataFrame) -> None:
         mixed = clauses[
