@@ -22,10 +22,32 @@ from src.bilun.domain.sut import clause_retrieval as cr
 pytestmark = pytest.mark.unit
 
 _HAS_INDEX = SUT_CLAUSES_PATH.exists() and SUT_CLAUSE_EMBEDDINGS_PATH.exists()
+
+# Embedding-backed tests need an API key whenever the committed index is a
+# remote model (e.g. nvidia/nv-embedqa-e5-v5); local-hash index needs none.
+# CI has no .env, so without this guard the retrieval suite fails on key
+# absence instead of skipping.
+def _index_usable() -> bool:
+    if not _HAS_INDEX:
+        return False
+    import polars as pl
+
+    try:
+        embeds = pl.read_parquet(SUT_CLAUSE_EMBEDDINGS_PATH)
+        model = str(embeds["embed_model"][0])
+    except Exception:
+        return False
+    if model == "local-hash-v1":
+        return True
+    from src.bilun.domain.sut.embeddings import _resolve_api_key
+
+    return bool(_resolve_api_key())
+
+
 _needs_index = pytest.mark.skipif(
-    not _HAS_INDEX,
-    reason="sut_clauses.parquet / sut_clause_embeddings.parquet not present "
-    "(run scripts/sut/build_clause_embeddings.py)",
+    not _index_usable(),
+    reason="sut_clause_embeddings.parquet missing or its model needs an "
+    "embedding API key not present in this environment",
 )
 
 _GOLD_PATH = Path(__file__).resolve().parents[3] / "data" / "sut_retrieval_gold.jsonl"
