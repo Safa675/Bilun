@@ -602,3 +602,16 @@ exit codes for "couldn't run" (we now use 2) vs "ran and found problems" (1) vs 
 **Pattern:** Frontend CI failed on `tsc --noEmit` in `*.test.tsx` after introducing `fmtTRY2Fixture(number)` helpers — fixture fields typed `number | null` / optional nested fields were passed without narrowing, so Vitest could pass locally while CI failed.
 
 **Rule:** When adding typed helpers used in FE tests, ensure call sites satisfy `tsc` (local non-null fixtures or narrowing). Run `npx tsc --noEmit` from `frontend/` before pushing FE test changes — Vitest alone is not enough.
+
+---
+
+## 2026-08-09 — KAOS/FMXInno repack installers: "range check error" under Wine is the FMX UI; bypass it with Inno silent switches
+
+**Pattern:** Installing a KAOS repack (A Way Out) under Proton/Wine: `Setup.exe` (32-bit Inno Setup self-extractor, `/SL5=` switch) launches an inner Delphi installer skinned with **FMXInno.dll** (FireMonkey UI — temp dir contains FMXInno.dll, KAOS.STYLE, FONT.OTF, KAOS.MP3). Under Wine the FMX UI throws a Delphi **"Range check error"** dialog immediately, regardless of: path spaces, bypassing Proton's steam.exe shim, CWD/data-file placement, or virtual desktop. Wasted ~6 attempts on those. The fix: the FMX UI is only a *skin* over Inno Setup — running `Setup.exe /VERYSILENT /SUPPRESSMSGBOXES /NOCANCEL /DIR="C:\Games\X"` skips form creation entirely, the range check never fires, and extraction runs to completion (~2GB/30s). A trailing "runtime error 216" (Delphi GPF) at installer exit is the FMX UI dying on teardown — harmless once files are extracted; verify by the installed tree + launching the game, not by the exit dialog.
+
+**Rule:** For any repack installer that dies under Wine/Proton with a Delphi runtime error ("Range check error", "runtime error 216") before extraction:
+1. Identify the UI layer first: extract the inner installer from `C:\users\<user>\AppData\Local\Temp\is-*.tmp\` and `strings` it — `FMXInno.dll`/`*.style`/FireMonkey markers mean the *skin* is the failure point, not the data or the path.
+2. Don't iterate on path/CWD/shim/virtual-desktop guesses — the UI crash is independent of all of them. Go straight to Inno's silent switches (`/VERYSILENT /SUPPRESSMSGBOXES /NOCANCEL /DIR=...`); silent mode never instantiates the FMX forms.
+3. Monitor success by the target directory growing (`du -s` deltas), not by whether the process is alive (the error dialog also keeps it alive) or by exit code (the FMX teardown GPF poisons it).
+4. Treat post-extraction Delphi exit errors as cosmetic; validate by launching the installed game.
+5. Cleanup hygiene: `pkill -f "Setup.exe"` from a bash tool kills the tool's own shell (the pattern matches its own cmdline) — use `pkill -f '[S]etup\.exe'` bracket form or Proton's `wineserver -k` with WINEPREFIX.

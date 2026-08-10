@@ -23,9 +23,20 @@ import hashlib
 import logging
 import os
 import re
-from typing import Protocol, runtime_checkable
+from pathlib import Path
+from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
+
+try:
+    from dotenv import load_dotenv
+    _f = Path(__file__).resolve()
+    for _p in _f.parents:
+        if (_p / ".env").exists() or (_p / "pyproject.toml").exists():
+            load_dotenv(dotenv_path=_p / ".env")
+            break
+except ImportError:
+    pass
 
 logger = logging.getLogger("bilun.sut.embeddings")
 
@@ -157,18 +168,28 @@ class OpenAIEmbeddingProvider:
     def embed(self, texts: list[str]) -> np.ndarray:
         import httpx
 
+        batch_size = 32 if ("nvidia" in self.model_id or "nvidia.com" in self._base_url) else _EMBED_BATCH_SIZE
         vectors: list[list[float]] = []
         headers = {"Authorization": f"Bearer {self._api_key}"}
         with httpx.Client(timeout=60.0) as client:
-            for start in range(0, len(texts), _EMBED_BATCH_SIZE):
-                batch = texts[start : start + _EMBED_BATCH_SIZE]
+            for start in range(0, len(texts), batch_size):
+                batch = texts[start : start + batch_size]
+                if "nvidia" in self.model_id or "nvidia.com" in self._base_url:
+                    batch = [t[:800] for t in batch]
                 payload: dict = {"model": self.model_id, "input": batch}
                 if self._supports_dims():
                     payload["dimensions"] = self.dims
+                input_type = os.getenv("EMBEDDING_INPUT_TYPE")
+                if not input_type and ("nvidia" in self.model_id or "nvidia.com" in self._base_url):
+                    input_type = "passage" if len(texts) > 1 else "query"
+                if input_type:
+                    payload["input_type"] = input_type
                 resp = client.post(
                     f"{self._base_url}/embeddings", json=payload, headers=headers
                 )
-                resp.raise_for_status()
+                if resp.status_code != 200:
+                    logger.error("Embedding API error (%d): %s", resp.status_code, resp.text)
+                    resp.raise_for_status()
                 data = resp.json()["data"]
                 data.sort(key=lambda item: item["index"])
                 vectors.extend(item["embedding"] for item in data)

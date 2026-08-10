@@ -36,7 +36,7 @@ LLM_ENDPOINT = os.getenv(
     "LLM_ENDPOINT",
     os.getenv("LLM_BASE_URL", "https://openrouter.ai/api/v1/chat/completions"),
 )
-MODEL = os.getenv("LLM_MODEL", "deepseek/deepseek-v4-pro")
+MODEL = os.getenv("LLM_MODEL", "deepseek/deepseek-v4-flash-0731")
 
 
 def _get_api_key() -> str | None:
