@@ -33,7 +33,6 @@ from pathlib import Path
 
 from ..constants import (
     _PROSE_RULES_DIR,
-    PROSE_MANIFESTS_DIR,
     SUT_CLAUSES_PATH,
     SUT_CLAUSE_COVERAGE_PATH,
     SUT_REGISTRY_COVERAGE_PATH,
