@@ -5,16 +5,14 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 8,
   "section_clause_total": 21,
-  "encoded_clause_count": 11,
+  "encoded_clause_count": 9,
   "encoded_clause_ids": [
     "C006787",
     "C006791",
     "C006794",
     "C006799",
-    "C006803",
     "C006804",
     "C006805",
-    "C006807",
     "C006809",
     "C006811",
     "C006813"
@@ -276,5 +274,8 @@
       ]
     }
   ],
-  "clause_trace_complete": true
+  "clause_trace_complete": true,
+  "encode_tier_C_deferred_count": 12,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 42.9
 }

@@ -422,5 +422,8 @@
       ]
     }
   ],
-  "clause_trace_complete": true
+  "clause_trace_complete": true,
+  "encode_tier_C_deferred_count": 13,
+  "manifest_coverage_pct": 100.0,
+  "encoded_clause_pct": 52.9
 }
