@@ -83,7 +83,7 @@
         "2.4.1.ç#18099244"
       ],
       "verification_status": "ai_generated_pending_review",
-      "content_note": "Enhanced: added the numeric caps from C000747 (max 4 implants/jaw; +750 TL/implant on top of EK-2/Ç fee; max 2.500 TL/implant for vazife/harp malulleri per 3713/5434/2330) plus the radiographic-evidence and implant-count requirements. Previously only the board-report condition was encoded."
+      "content_note": "Enhanced: added the numeric caps from C000760 (max 4 implants/jaw; +750 TL/implant on top of EK-2/Ç fee; max 2.500 TL/implant for vazife/harp malulleri per 3713/5434/2330) plus the radiographic-evidence and implant-count requirements. Previously only the board-report condition was encoded."
     },
     {
       "rule_id": "2.4.1.(3).prosthesis_4yr_renewal_cap",

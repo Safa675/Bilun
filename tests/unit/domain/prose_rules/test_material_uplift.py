@@ -77,10 +77,16 @@ def test_coronary_stent_specialty_pairing() -> None:
         procedure_name="PTCA and stent",
     )
     rows = detect_missing_billable_material_opportunities(claim, [proc], [])
-    assert len(rows) == 1
+    # 700910 pairs with KR1151 (drug-eluting, pairing.700910_kr1151) and with
+    # the generic bare-metal KR1150 (pairing.700800_kr1150 coronary intervention).
+    assert len(rows) == 2
     assert rows[0]["material_code"] == "KR1151"
+    assert rows[0]["rule_id"] == "pairing.700910_kr1151"
     assert rows[0]["pairing_mode"] == "specialty_annex"
     assert rows[0]["recoverable_uplift_try"] == pytest.approx(2890.39, rel=0.01)
+    assert rows[1]["material_code"] == "KR1150"
+    assert rows[1]["rule_id"] == "pairing.700800_kr1150"
+    assert rows[1]["recoverable_uplift_try"] == pytest.approx(862.67, rel=0.01)
 
 
 def test_tavi_valve_specialty_pairing() -> None:
@@ -163,9 +169,14 @@ def test_coronary_stent_kr1152_specialty_pairing() -> None:
         procedure_name="Koroner stent",
     )
     rows = detect_missing_billable_material_opportunities(claim, [proc], [])
-    assert len(rows) == 1
-    assert rows[0]["material_code"] == "KR1152".upper() or rows[0]["material_code"] == "KR1152"
+    # 700920 pairs with KR1152 (graft, pairing.700920_kr1152) and with the
+    # generic bare-metal KR1150 (pairing.700800_kr1150 coronary intervention).
+    assert len(rows) == 2
+    assert rows[0]["material_code"] == "KR1152"
+    assert rows[0]["rule_id"] == "pairing.700920_kr1152"
     assert rows[0]["recoverable_uplift_try"] > 1000
+    assert rows[1]["material_code"] == "KR1150"
+    assert rows[1]["rule_id"] == "pairing.700800_kr1150"
 
 
 def test_open_heart_kr4000_specialty_pairing() -> None:

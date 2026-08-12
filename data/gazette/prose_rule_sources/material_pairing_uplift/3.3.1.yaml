@@ -20,10 +20,9 @@ rules:
   pairing_mode: specialty_annex
   procedure_codes:
   - '700920'
-  - '700930'
   expected_material_codes:
   - KR1152
-  message_tr: Koroner stent islemi sonrasi EK-3H ilac salinimli stent (KR1152) ayri faturalandirilmamis.
+  message_tr: Koroner stent islemi sonrasi EK-3H graft stent (KR1152) ayri faturalandirilmamis.
   verification_status: pilot_heuristic
   provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
     practice, not the SUT text. Do not cite as SUT provenance in audit.
@@ -61,7 +60,7 @@ rules:
   - '604960'
   expected_material_codes:
   - KR4000
-  message_tr: Acik kalp cerrahisi sonrasi EK-3H kalp pili/cihaz (KR4000) ayri faturalandirilmamis.
+  message_tr: Acik kalp cerrahisi sonrasi EK-3H perkutan sol atriyum appendiks kapama sistemi (LAA) (KR4000) ayri faturalandirilmamis.
   verification_status: pilot_heuristic
   provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
     practice, not the SUT text. Do not cite as SUT provenance in audit.
@@ -70,7 +69,9 @@ rules:
   specialty_annex: EK-3H
   pairing_mode: specialty_annex
   procedure_codes:
-  - '700800'
+  - '700910'
+  - '700920'
+  - '700890'
   expected_material_codes:
   - KR1150
   message_tr: Koroner girisim islemi sonrasi EK-3H bare-metal stent (KR1150) ayri faturalandirilmamis.
