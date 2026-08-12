@@ -82,6 +82,9 @@ from src.bilun.domain.prose_rules.fatura_inceleme import (
 from src.bilun.domain.prose_rules.icu_bundled_leakage import (
     detect_icu_bundled_leakage,
 )
+from src.bilun.domain.prose_rules.blood_component_isbt128 import (
+    detect_blood_component_isbt128_violations,
+)
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_admission_billing_window,
     detect_donor_prep_as_exam,
@@ -242,6 +245,22 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
             claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
             violations.extend(
                 detect_icu_bundled_leakage(
+                    list(ctx.claims),
+                    list(ctx.procedure_lines),
+                    claim_ids_with_procs=claim_ids_with_procs,
+                )
+            )
+
+        # 14.7. SUT §4.6 — blood components must carry ISBT 128 barcodes.
+        # Rules 4.6.ek2b/4.6.ek2c: EK-2/B payment is conditioned on the
+        # epicrisis stating component name/count/ISBT barcodes, and every
+        # blood component must be recorded in MEDULA with its ISBT 128
+        # barcode. Missing/malformed barcode on a blood-component line is an
+        # audit-exposure violation (compliance), not an uplift opportunity.
+        if ctx.procedure_lines:
+            claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
+            violations.extend(
+                detect_blood_component_isbt128_violations(
                     list(ctx.claims),
                     list(ctx.procedure_lines),
                     claim_ids_with_procs=claim_ids_with_procs,

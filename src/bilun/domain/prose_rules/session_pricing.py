@@ -502,10 +502,23 @@ def compute_session_adjusted_itemized_total(
 
 
 def blood_component_billable_fraction(procedure_code: str) -> float | None:
-    """Return separately billable point fraction for special blood component codes."""
+    """Return separately billable point fraction for special blood component codes.
+
+    Reads the authoritative per-code ``fractions`` map first
+    (``special_codes.blood_component_partial_bill.fractions`` — the SUT §4.6
+    EK-2/C partial-billing tiers), then falls back to the legacy ``codes[]`` +
+    ``billable_point_fraction`` pair so configs without the map keep the old
+    behaviour.
+    """
     normalized = normalize_procedure_code(procedure_code)
+    if not normalized:
+        return None
     rules = _load_session_rules()
     special = rules.get("special_codes", {}).get("blood_component_partial_bill", {})
+    fractions = special.get("fractions") or {}
+    for raw_code, fraction in fractions.items():
+        if normalize_procedure_code(raw_code) == normalized:
+            return float(fraction)
     if normalized in {normalize_procedure_code(c) for c in special.get("codes", [])}:
         return float(special.get("billable_point_fraction", 0.36))
     return None

@@ -81,6 +81,11 @@ class ProcedureClaimLine:
     lab_billing_status: str = ""
     procedure_specialty_code: str = ""
     sag_sol: str = ""  # Medula sagSol: "1"=Sağ(right), "2"=Sol(left), "3"=Ayrım yok, ""=missing
+    # MEDULA ISBT 128 blood-barcode number for blood component lines (SUT
+    # §4.6: components must be recorded in MEDULA with ISBT 128 barcodes).
+    # Populated by the MEDULA ingest layer; empty string when the source
+    # feed does not carry the field yet.
+    isbt128_barcode: str = ""
 
 
 @dataclass(frozen=True)
