@@ -343,9 +343,5 @@
       "manifest_status": "encoded"
     }
   ],
-  "rules_in_json": 930,
-  "encode_tier_C_deferred_count": 0,
-  "clause_trace_complete": true,
-  "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 100.0
+  "rules_in_json": 930
 }

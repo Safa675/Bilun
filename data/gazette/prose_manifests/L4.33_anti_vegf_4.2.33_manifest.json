@@ -3,7 +3,7 @@
   "section_id": "4.2.33",
   "effective_date": "2026-06-29",
   "rule_set_id": "anti_vegf_prose",
-  "rules_in_json": 37,
+  "rules_in_json": 35,
   "section_clause_total": 55,
   "encoded_clause_count": 25,
   "encoded_clause_ids": [
@@ -393,9 +393,7 @@
       "section_id": "4.2.33.A",
       "manifest_status": "encoded",
       "linked_rule_ids": [
-        "4.2.33.A.aflibersept_wet_amd",
-        "4.2.33.A.anti_vegf_switch_after_bevacizumab_failure",
-        "4.2.33.A.ranibizumab_wet_amd"
+        "4.2.33.A.anti_vegf_switch_after_bevacizumab_failure"
       ]
     },
     {

@@ -22,8 +22,9 @@
       "catalog": "ek2b",
       "sut_section": "2.2",
       "message_tr": "600150 işlemi 2026-01-17 tebliğ öncesi hizmet tarihinde eski EK-2/B list fiyatı ile faturalanmış olabilir — liste fiyat kontrolü (manuel).",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` annex=EK-2B (✅ bağlandı)"
     },
     {
       "rule_id": "repricing.600160",
@@ -33,8 +34,9 @@
       "catalog": "ek2b",
       "sut_section": "2.2",
       "message_tr": "600160 işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` annex=EK-2B (✅ bağlandı)"
     },
     {
       "rule_id": "repricing.600560",
@@ -44,8 +46,9 @@
       "catalog": "ek2b",
       "sut_section": "2.2",
       "message_tr": "600560 işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` annex=EK-2B (✅ bağlandı)"
     },
     {
       "rule_id": "repricing.600710",
@@ -55,8 +58,9 @@
       "catalog": "ek2b",
       "sut_section": "2.2",
       "message_tr": "600710 işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` annex=EK-2B (✅ bağlandı)"
     },
     {
       "rule_id": "repricing.610170",
@@ -67,8 +71,9 @@
       "catalog": "ek2b",
       "sut_section": "2.2",
       "message_tr": "610170/610171 işlemleri 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` annex=EK-2B (✅ bağlandı)"
     },
     {
       "rule_id": "repricing.610200",
@@ -79,8 +84,9 @@
       "catalog": "ek2b",
       "sut_section": "2.2",
       "message_tr": "610200/610201 işlemleri 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` annex=EK-2B (✅ bağlandı)"
     },
     {
       "rule_id": "repricing.701450",
@@ -90,8 +96,9 @@
       "catalog": "ek2b",
       "sut_section": "2.2",
       "message_tr": "701450 kolonoskopi işlemi 2026-01-17 tebliğ sonrası EK-2/B liste artışı için manuel liste fiyat kontrolü.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` annex=EK-2B (✅ bağlandı)"
     },
     {
       "rule_id": "repricing.609270",
@@ -101,8 +108,9 @@
       "catalog": "ek2c",
       "sut_section": "2.2",
       "message_tr": "609270 paket kodu tebliğ sonrası EK-2/C list artışı için manuel liste fiyat kontrolü.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2c_catalog_history.parquet` annex=EK-2C (✅ bağlandı)"
     },
     {
       "rule_id": "repricing.609300",
@@ -112,8 +120,9 @@
       "catalog": "ek2c",
       "sut_section": "2.2",
       "message_tr": "609300 paket kodu tebliğ sonrası EK-2/C list artışı için manuel liste fiyat kontrolü.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2c_catalog_history.parquet` annex=EK-2C (✅ bağlandı)"
     },
     {
       "rule_id": "repricing.616190",
@@ -123,8 +132,9 @@
       "catalog": "ek2c",
       "sut_section": "2.2",
       "message_tr": "616190 paket kodu tebliğ sonrası EK-2/C list artışı için manuel liste fiyat kontrolü.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2c_catalog_history.parquet` annex=EK-2C (✅ bağlandı)"
     },
     {
       "rule_id": "repricing.602100",
@@ -134,8 +144,9 @@
       "catalog": "ek2c",
       "sut_section": "2.2",
       "message_tr": "602100 paket kodu tebliğ sonrası EK-2/C list artışı için manuel liste fiyat kontrolü.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2c_catalog_history.parquet` annex=EK-2C (✅ bağlandı)"
     }
   ],
   "provenance_note": "WARNING: Rules in this file are operational heuristics / pilot estimates, NOT extracted from specific SUT clauses. They encode billing-practice knowledge rather than normative SUT text. verification_status=pilot_heuristic on every rule."

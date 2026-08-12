@@ -5,9 +5,11 @@
   "effective_date": "2026-06-27",
   "rules_in_json": 18,
   "section_clause_total": 48,
-  "encoded_clause_count": 15,
+  "encoded_clause_count": 17,
   "encoded_clause_ids": [
     "C006690",
+    "C006691",
+    "C006692",
     "C006694",
     "C006698",
     "C006704",
@@ -591,8 +593,5 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     }
   ],
-  "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 33,
-  "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 31.2
+  "clause_trace_complete": true
 }
