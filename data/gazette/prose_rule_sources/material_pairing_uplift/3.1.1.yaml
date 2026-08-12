@@ -3,7 +3,7 @@ source_note: Exported from material_pairing_uplift.json (YAML source migration)
 rules:
 - rule_id: pairing.600150_or2640
   sut_section: 3.1.1
-  specialty_annex: EK-3/C
+  specialty_annex: EK-3/A
   pairing_mode: separate_billing
   procedure_codes:
   - '600150'
@@ -15,7 +15,7 @@ rules:
     practice, not the SUT text. Do not cite as SUT provenance in audit.
 - rule_id: pairing.600160_or2640
   sut_section: 3.1.1
-  specialty_annex: EK-3/C
+  specialty_annex: EK-3/A
   pairing_mode: separate_billing
   procedure_codes:
   - '600160'

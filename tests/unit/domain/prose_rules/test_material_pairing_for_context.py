@@ -92,12 +92,14 @@ def _ctx(claims, procs) -> PatientClaimContext:
 class TestCheckMaterialPairingForContext:
     def test_missing_kr1151_for_procedure_700910_returns_violation(self) -> None:
         # Procedure 700910 (PTCA + stent) billed without separately billable
-        # EK-3H stent KR1151 → inverse-EK-3B-1 uplift review flag.
+        # EK-3H stent → inverse-EK-3B-1 uplift review flags. 700910 pairs with
+        # KR1151 (drug-eluting, pairing.700910_kr1151) and with the generic
+        # bare-metal KR1150 (pairing.700800_kr1150 coronary intervention).
         ctx = _ctx([_claim()], [_proc()])
 
         violations = check_material_pairing_for_context(ctx)
 
-        assert len(violations) == 1
+        assert len(violations) == 2
         v = violations[0]
         # W1.2 unified-core contract: rule tag for the orchestrator.
         assert v["rule"] == "material_pairing_uplift"
@@ -115,6 +117,11 @@ class TestCheckMaterialPairingForContext:
         assert v["details"]["opportunity"]["material_code"] == "KR1151"
         assert v["details"]["pairing_mode"] == "specialty_annex"
         assert v["details"]["specialty_annex"] == "EK-3H"
+        # generic bare-metal pairing also fires for the same procedure.
+        generic = violations[1]
+        assert generic["material_code"] == "KR1150"
+        assert generic["rule_id"] == "pairing.700800_kr1150"
+        assert generic["savings_try"] == pytest.approx(862.67, rel=0.01)
 
     def test_unrelated_procedure_produces_no_violation(self) -> None:
         # A procedure code that is not in the pairing index.

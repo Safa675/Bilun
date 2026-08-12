@@ -10992,7 +10992,14 @@
       "sut_section": "4.2.14.C",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
-        "C007814"
+        "C005778",
+        "C005779",
+        "C005780",
+        "C005781",
+        "C005782",
+        "C005783",
+        "C005784",
+        "C005785"
       ],
       "drug_names": [
         "ravulizumab"

@@ -148,7 +148,16 @@ def get_ek2c_price_for_date(
     """
     asof_date = _normalize_required_asof_date(procedure_date)
     catalog = load_sut_catalog(visit_date=asof_date)
-    entry = catalog.get("ek2c", {}).get("by_code", {}).get(package_code.strip())
+    by_code = catalog.get("ek2c", {}).get("by_code", {})
+
+    normalized = _normalize_procedure_code(package_code)
+    entry = by_code.get(normalized)
+    if entry is None and normalized and normalized[0] not in ("P", "p"):
+        # EK-2/C catalogs store package codes with a "P" prefix (e.g. P609270);
+        # accept bare codes (e.g. 609270) by retrying with the prefix — mirrors
+        # the P-fallback in get_ek2b_price_for_date.
+        entry = by_code.get(f"P{normalized}")
+
     if entry is None or not _is_effective_on_or_before(entry, asof_date):
         return None
 

@@ -909,6 +909,7 @@
       "sut_section": "2.6.1.B-4",
       "verification_status": "ai_generated_pending_review",
       "gate_b_sources": [
+        "C001593",
         "2.6.1.B-4.a",
         "C001595",
         "C001596",
@@ -926,13 +927,16 @@
           "jet_aircraft": 3500,
           "single_engine_helicopter": 1500,
           "twin_engine_helicopter": 2750,
-          "sea_ambulance": 1500
-        }
+          "sea_ambulance": 1500,
+          "jet_aircraft_international": 4000
+        },
+        "tariff_cap_note": "Azami ücretlerdir (ust sinir) — SUT 2.6.1.B-4.(6) C001593"
       },
       "action": {
         "enforcement": "gate",
-        "message_tr": "Ambulans ücretleri (gidiş-dönüş, saat başına, KDV hariç) — turbo-prop uçak 2.000 TL, jet 3.500 TL, tek motorlu helikopter 1.500 TL, çift motorlu helikopter 2.750 TL, deniz ambulansı 1.500 TL üzerinden ödenir."
-      }
+        "message_tr": "Ambulans ücretleri (gidiş-dönüş, saat başına, KDV hariç) — turbo-prop uçak 2.000 TL, jet 3.500 TL (yurt dışı uçuşlar 4.000 TL), tek motorlu helikopter 1.500 TL, çift motorlu helikopter 2.750 TL, deniz ambulansı 1.500 TL üzerinden ödenir. Bu tarifeler AZAMİ ücrettir (üst sınır)."
+      },
+      "verification_note": "MIH-8 dogrulamasi: yurt disi jet 4.000 TL (C001596) ve azami-ucret niteligi (C001593) eklendi"
     },
     {
       "rule_id": "2.6.5.(3).organ_transplant_failure_does_not_block_payment",

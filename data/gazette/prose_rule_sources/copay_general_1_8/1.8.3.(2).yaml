@@ -15,9 +15,8 @@ rules:
   - 1.8.3.(2)
   - 1.8.3.a#7672b1e2
   - 1.8.3.b#945d3f77
-  - C000309
   - 1.8.3.a#2ed7e0af
-  - C000309
+  - C000349
   verification_status: ai_generated_pending_review
-  content_note: 'Added the hard cap from C000338: material copay may not exceed 75% of the gross minimum wage (katılım payı
+  content_note: 'Added the hard cap from C000349: material copay may not exceed 75% of the gross minimum wage (katılım payı
     tutarı brüt asgari ücretin %75 ini geçemez). Previously only the 10%/20% rates were modeled.'
