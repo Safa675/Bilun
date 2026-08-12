@@ -20,8 +20,9 @@
         "OR2640"
       ],
       "message_tr": "600150 islemi ile birlikte ayrica faturalandirilabilir OR2640 malzemesi eksik veya sifir faturalanmis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3a_multibranch_materials.parquet (EK-3/A)"
     },
     {
       "rule_id": "pairing.600160_or2640",
@@ -35,8 +36,9 @@
         "OR2640"
       ],
       "message_tr": "600160 islemi ile birlikte ayrica faturalandirilabilir OR2640 malzemesi eksik veya sifir faturalanmis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3a_multibranch_materials.parquet (EK-3/A)"
     },
     {
       "rule_id": "pairing.700910_kr1151",
@@ -51,8 +53,9 @@
         "KR1151"
       ],
       "message_tr": "Koroner anjiyoplasti/stent islemi sonrasi EK-3H ilac salinimli koroner stent (KR1151) ayri faturalandirilmamis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3h_cardiology_materials.parquet (EK-3H) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.700920_kr1152",
@@ -60,14 +63,16 @@
       "specialty_annex": "EK-3H",
       "pairing_mode": "specialty_annex",
       "procedure_codes": [
-        "700920"
+        "700920",
+        "700930"
       ],
       "expected_material_codes": [
         "KR1152"
       ],
-      "message_tr": "Koroner stent islemi sonrasi EK-3H graft stent (KR1152) ayri faturalandirilmamis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "message_tr": "Koroner stent islemi sonrasi EK-3H ilac salinimli stent (KR1152) ayri faturalandirilmamis.",
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3h_cardiology_materials.parquet (EK-3H) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.700944_kv1012",
@@ -81,8 +86,9 @@
         "KV1012"
       ],
       "message_tr": "Transkateter aortik kapak implantasyonu sonrasi EK-3I TAVI seti (KV1012) eksik veya sifir faturalanmis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3i_cv_surgery_materials.parquet (EK-3I) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.700710_kr1000",
@@ -98,8 +104,9 @@
         "KR1000"
       ],
       "message_tr": "ICD implantasyonu sonrasi EK-3H ICD cihazi (KR1000) eksik veya sifir faturalanmis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3h_cardiology_materials.parquet (EK-3H) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.604670_kv1002",
@@ -114,8 +121,9 @@
         "KV1002"
       ],
       "message_tr": "Acik mitral kapak islemi sonrasi EK-3I stentli biyolojik kalp kapagi (KV1002) eksik veya sifir faturalanmis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3i_cv_surgery_materials.parquet (EK-3I) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.606152_kr3000",
@@ -129,8 +137,9 @@
         "KR3000"
       ],
       "message_tr": "Fenestre endovaskuler aort anevrizma islemi sonrasi EK-3H EVAR stentgreft (KR3000) eksik veya sifir faturalanmis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3h_cardiology_materials.parquet (EK-3H) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.612480_ap1390",
@@ -145,8 +154,9 @@
         "AP1390"
       ],
       "message_tr": "Kalca artroplastisi sonrasi EK-3F-1 kalca protez bileseni (AP1390) eksik veya sifir faturalanmis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3f1_arthroplasty_materials.parquet (EK-3F-1) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.604960_kr4000",
@@ -160,8 +170,9 @@
         "KR4000"
       ],
       "message_tr": "Acik kalp cerrahisi sonrasi EK-3H perkutan sol atriyum appendiks kapama sistemi (LAA) (KR4000) ayri faturalandirilmamis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3h_cardiology_materials.parquet (EK-3H) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.605020_kv1000",
@@ -175,8 +186,9 @@
         "KV1000"
       ],
       "message_tr": "Kapak cerrahisi sonrasi EK-3I biyolojik kapak protezi (KV1000) eksik veya sifir faturalanmis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3i_cv_surgery_materials.parquet (EK-3I) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.700800_kr1150",
@@ -184,17 +196,16 @@
       "specialty_annex": "EK-3H",
       "pairing_mode": "specialty_annex",
       "procedure_codes": [
-        "700910",
-        "700920",
-        "700890"
+        "700800"
       ],
       "expected_material_codes": [
         "KR1150"
       ],
       "message_tr": "Koroner girisim islemi sonrasi EK-3H bare-metal stent (KR1150) ayri faturalandirilmamis.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3h_cardiology_materials.parquet (EK-3H) (✅ bağlandı)"
     }
   ],
-  "provenance_note": "WARNING: Rules in this file are operational heuristics / pilot estimates, NOT extracted from specific SUT clauses. They encode billing-practice knowledge rather than normative SUT text. verification_status=pilot_heuristic on every rule."
+  "provenance_note": "Rules in this file are marked sut_derived_unverified based on EK-2B/EK-2C catalog mappings from the MIH-3 report; clause-level SUT verification is still pending."
 }

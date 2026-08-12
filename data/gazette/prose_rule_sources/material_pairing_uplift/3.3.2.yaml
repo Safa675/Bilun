@@ -12,11 +12,10 @@ rules:
   message_tr: Transkateter aortik kapak implantasyonu sonrasi EK-3I TAVI seti (KV1012)
     eksik veya sifir faturalanmis.
   verification_status: sut_derived_unverified
-  provenance_note: Operational heuristic — not directly sourced from a specific SUT
-    clause. Verified against clinical billing practice, not the SUT text. Do not cite
-    as SUT provenance in audit.
+  provenance_note: Candidate SUT-derived mapping from the MIH-3 annex report; clause-level
+    SUT verification still pending.
   verification_note: 'EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler
-    → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3i_cv_surg (✅ bağlandı)'
+    → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3i_cv_surgery_materials.parquet (EK-3I) (✅ bağlandı)'
 - rule_id: pairing.604670_kv1002
   sut_section: 3.3.2
   specialty_annex: EK-3I
@@ -29,11 +28,10 @@ rules:
   message_tr: Acik mitral kapak islemi sonrasi EK-3I stentli biyolojik kalp kapagi
     (KV1002) eksik veya sifir faturalanmis.
   verification_status: sut_derived_unverified
-  provenance_note: Operational heuristic — not directly sourced from a specific SUT
-    clause. Verified against clinical billing practice, not the SUT text. Do not cite
-    as SUT provenance in audit.
+  provenance_note: Candidate SUT-derived mapping from the MIH-3 annex report; clause-level
+    SUT verification still pending.
   verification_note: 'EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler
-    → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3i_cv_surg (✅ bağlandı)'
+    → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3i_cv_surgery_materials.parquet (EK-3I) (✅ bağlandı)'
 - rule_id: pairing.605020_kv1000
   sut_section: 3.3.2
   specialty_annex: EK-3I
@@ -45,8 +43,7 @@ rules:
   message_tr: Kapak cerrahisi sonrasi EK-3I biyolojik kapak protezi (KV1000) eksik
     veya sifir faturalanmis.
   verification_status: sut_derived_unverified
-  provenance_note: Operational heuristic — not directly sourced from a specific SUT
-    clause. Verified against clinical billing practice, not the SUT text. Do not cite
-    as SUT provenance in audit.
+  provenance_note: Candidate SUT-derived mapping from the MIH-3 annex report; clause-level
+    SUT verification still pending.
   verification_note: 'EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler
-    → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3i_cv_surg (✅ bağlandı)'
+    → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3i_cv_surgery_materials.parquet (EK-3I) (✅ bağlandı)'
