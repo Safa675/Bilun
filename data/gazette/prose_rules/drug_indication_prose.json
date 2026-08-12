@@ -11022,8 +11022,7 @@
         "billable": true,
         "enforcement": "PNH: ≥10 kg çocuk/yetişkin, 7 kriterden en az biri (FLAER granülosit klonu >%1 + LDH >1,5xNÜS kronik hemoliz vb.); transplantasyon öncesi/kök hücre nakli sonrası/komplikasyon/gebe bentleri için Bakanlık endikasyon dışı onay; üçüncü basamakta en az bir hematoloji uzmanının yer aldığı ≤6 ay süreli sağlık kurulu raporu; hematoloji uzmanlarınca reçete",
         "message_tr": "Ravulizumab — Paroksismal Noktürnal Hemoglobinüri (PNH) tedavisinde vücut ağırlığı 10 kg ve üzerindeki çocuk ve yetişkin hastalarda kriterlerden en az birinin karşılanması halinde, üçüncü basamak sağlık hizmeti sunucusunda en az bir hematoloji uzman hekiminin yer aldığı en fazla 6 ay süreli sağlık kurulu raporuna istinaden hematoloji uzman hekimlerince reçete edilmesi halinde bedeli Kurumca karşılanır; transplantasyon öncesi, kök hücre nakli yapılamayan/yanıtsız, nakil sonrası yanıtsız, PNH komplikasyonlu ve gebe olgular için Sağlık Bakanlığınca endikasyon dışı ilaç kullanım onayı alınması gerekir (§4.2.14.C yyy/1)."
-      },
-      "verification_note": "MIH-8 dogrulamasi: gate C007814 yanlis (4.4.1.(12) ilac fiyat maddesi); dogru kaynak C005778 (4.2.14.C.a ana kosul) + C005779-C005785 (kriterler)"
+      }
     },
     {
       "rule_id": "4.2.14.C.ravulizumab_pnh_eculizumab_switch",

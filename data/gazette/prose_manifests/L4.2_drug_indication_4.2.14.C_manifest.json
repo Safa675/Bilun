@@ -5,7 +5,7 @@
   "effective_date": "2026-07-25",
   "rules_in_json": 930,
   "section_clause_total": 635,
-  "encoded_clause_count": 405,
+  "encoded_clause_count": 413,
   "encoded_clause_ids": [
     "C004979",
     "C004980",
@@ -380,6 +380,14 @@
     "C005768",
     "C005769",
     "C005774",
+    "C005778",
+    "C005779",
+    "C005780",
+    "C005781",
+    "C005782",
+    "C005783",
+    "C005784",
+    "C005785",
     "C005795",
     "C005797",
     "C005798",
@@ -461,9 +469,7 @@
     "C005140",
     "C005793"
   ],
-  "tier_b_pending_clause_ids": [
-    "C005778"
-  ],
+  "tier_b_pending_clause_ids": [],
   "tier_c_deferred_clause_ids": [
     "C004978",
     "C004991",
@@ -572,13 +578,6 @@
     "C005775",
     "C005776",
     "C005777",
-    "C005779",
-    "C005780",
-    "C005781",
-    "C005782",
-    "C005783",
-    "C005784",
-    "C005785",
     "C005786",
     "C005787",
     "C005788",
@@ -698,8 +697,8 @@
     "C005827"
   ],
   "tier_a_pending_count": 2,
-  "tier_b_pending_count": 1,
-  "tier_c_deferred_count": 123,
+  "tier_b_pending_count": 0,
+  "tier_c_deferred_count": 116,
   "emr_blocked_count": 16,
   "non_actionable_count": 88,
   "clause_traces": [
@@ -6679,87 +6678,81 @@
       "clause_id": "C005778",
       "section_id": "4.2.14.C",
       "encode_tier": "B",
-      "manifest_status": "tier_b_pending",
-      "heuristic_inn": "Vücut ağırlığı 10 kg veya üzerinde olan çocuk ve yetişkin hastalarda"
+      "manifest_status": "encoded",
+      "heuristic_inn": "Vücut ağırlığı 10 kg veya üzerinde olan çocuk ve yetişkin hastalarda",
+      "linked_rule_ids": [
+        "4.2.14.C.ravulizumab_pnh_board_hematology_6m"
+      ]
     },
     {
       "clause_id": "C005779",
       "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.ravulizumab_pnh_board_hematology_6m"
+      ]
     },
     {
       "clause_id": "C005780",
       "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.ravulizumab_pnh_board_hematology_6m"
+      ]
     },
     {
       "clause_id": "C005781",
       "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "clinical_pathway"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.ravulizumab_pnh_board_hematology_6m"
+      ]
     },
     {
       "clause_id": "C005782",
       "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment",
-        "moh_patient_approval"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Batch encode when EMR/report fields support this pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.ravulizumab_pnh_board_hematology_6m"
+      ]
     },
     {
       "clause_id": "C005783",
       "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "response_assessment",
-        "moh_patient_approval"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: response_assessment, moh_patient_approval. Batch encode when EMR/report fields support this pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.ravulizumab_pnh_board_hematology_6m"
+      ]
     },
     {
       "clause_id": "C005784",
       "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "6- Tromboembolik olay",
-      "defer_themes": [
-        "moh_patient_approval"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: moh_patient_approval. Batch encode when EMR/report fields support this pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.ravulizumab_pnh_board_hematology_6m"
+      ]
     },
     {
       "clause_id": "C005785",
       "section_id": "4.2.14.C",
       "encode_tier": "C",
-      "manifest_status": "tier_c_deferred",
+      "manifest_status": "encoded",
       "heuristic_inn": "",
-      "defer_themes": [
-        "moh_patient_approval"
-      ],
-      "defer_reason": "Deferred — requires structured ingest for: moh_patient_approval. Batch encode when EMR/report fields support this pathway."
+      "linked_rule_ids": [
+        "4.2.14.C.ravulizumab_pnh_board_hematology_6m"
+      ]
     },
     {
       "clause_id": "C005786",
@@ -7210,7 +7203,7 @@
     }
   ],
   "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 123,
+  "encode_tier_C_deferred_count": 116,
   "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 63.8
+  "encoded_clause_pct": 65.0
 }
