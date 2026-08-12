@@ -54,11 +54,13 @@ jobs:
           echo "HEAD before: $(git rev-parse --short HEAD)"
 
           # Capture current HEAD so we can detect whether anything actually changed.
-          # On a healthy VPS this is the last-deployed commit (local main).
-          # Capture BEFORE from the remote-tracking ref (pre-fetch), NOT from HEAD:
-          # if the VPS is stuck on a stale branch, HEAD is that branch's commit and
-          # the no-op detection below would always report a difference.
-          BEFORE=$(git rev-parse origin/main)
+          # BEFORE is captured from HEAD pre-fetch. On a healthy VPS this is the
+          # last-deployed commit (local main) and equals post-reset HEAD -> no-op.
+          # If the VPS is stuck on a stale branch (pr-61), HEAD differs from
+          # origin/main -> deploy runs, which is exactly what a branch recovery
+          # needs: the services may still be running the stale branch's code, so
+          # masking the recovery as a no-op would leave them on the wrong commit.
+          BEFORE=$(git rev-parse HEAD)
 
           # Safety: never depend on which branch the VPS happens to be on.
           # A leftover local integration branch (e.g. pr-61, no upstream) would
