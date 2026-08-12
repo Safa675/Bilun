@@ -85,7 +85,17 @@
         "705440"
       ],
       "billable_point_fraction": 0.36,
-      "note": "2026 SUT: 705371/705430/705440 billed at 36% of points when used in package context"
+      "fractions": {
+        "705371": 0.36,
+        "705430": 0.36,
+        "705440": 0.36,
+        "705372": 0.24,
+        "705373": 0.24,
+        "705441": 0.2,
+        "705442": 0.28,
+        "705443": 0.28
+      },
+      "note": "2026 SUT §4.6: blood components in EK-2/C package context are partially billable — 705371/705430/705440 at 36%, 705372/705373 at 24%, 705441 at 20%, 705442/705443 at 28%. 'fractions' is the authoritative per-code map; 'codes'+'billable_point_fraction' retained for backward compatibility."
     }
   }
 }
