@@ -82,6 +82,9 @@ from src.bilun.domain.prose_rules.fatura_inceleme import (
 from src.bilun.domain.prose_rules.icu_bundled_leakage import (
     detect_icu_bundled_leakage,
 )
+from src.bilun.domain.prose_rules.yatak_icu_overlap import (
+    detect_yatak_icu_overlap,
+)
 from src.bilun.domain.prose_rules.common_billing_errors import (
     detect_admission_billing_window,
     detect_donor_prep_as_exam,
@@ -242,6 +245,22 @@ def analyze_claim(ctx: PatientClaimContext) -> list[dict[str, Any]]:
             claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
             violations.extend(
                 detect_icu_bundled_leakage(
+                    list(ctx.claims),
+                    list(ctx.procedure_lines),
+                    claim_ids_with_procs=claim_ids_with_procs,
+                )
+            )
+
+        # 14.6. SUT §2.4.4.H + §2.2.2 — service bed (510010) billed on an ICU
+        # discharge/transfer day (510090 last day) is double-billing: the ICU
+        # day-rate already pays for the bed (EK-2B "Yemek, yatak, hasta vizit
+        # hizmetlerini kapsar"). Audit-exposure violation. The recoverable-
+        # uplift counterpart (dropping the day from expected yatak bed days)
+        # runs in patient_report.reconcile_yatak_icu_overlap.
+        if ctx.procedure_lines:
+            claim_ids_with_procs = {line.claim_id for line in ctx.procedure_lines}
+            violations.extend(
+                detect_yatak_icu_overlap(
                     list(ctx.claims),
                     list(ctx.procedure_lines),
                     claim_ids_with_procs=claim_ids_with_procs,
