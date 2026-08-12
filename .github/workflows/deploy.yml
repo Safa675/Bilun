@@ -55,16 +55,22 @@ jobs:
 
           # Capture current HEAD so we can detect whether anything actually changed.
           # On a healthy VPS this is the last-deployed commit (local main).
-          BEFORE=$(git rev-parse HEAD)
+          # Capture BEFORE from the remote-tracking ref (pre-fetch), NOT from HEAD:
+          # if the VPS is stuck on a stale branch, HEAD is that branch's commit and
+          # the no-op detection below would always report a difference.
+          BEFORE=$(git rev-parse origin/main)
 
           # Safety: never depend on which branch the VPS happens to be on.
           # A leftover local integration branch (e.g. pr-61, no upstream) would
           # make `git pull --ff-only` fail with "no tracking information" and
           # silently break every deploy. Reset local main to origin/main and
-          # check it out; -B (force-reset) also discards any stale leftover
-          # working-tree changes on the old branch.
+          # check it out; -f (force) actually discards stale working-tree changes
+          # (plain -B only resets the branch ref and aborts if tracked files would
+          # be overwritten). NOTE: never add `git clean -fd` here — .env is
+          # gitignored but the deploy script edits it, so a clean would destroy
+          # the production config.
           git fetch origin
-          git checkout -B main origin/main
+          git checkout -f -B main origin/main
           git pull --ff-only
 
           AFTER=$(git rev-parse HEAD)
