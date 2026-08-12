@@ -15,8 +15,9 @@
         "600150"
       ],
       "message_tr": "Temel paket 609270 yalnızca 600150 işlem ayak izini gerektirir.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: paket → `ek2c_catalog_history.parquet` (annex=EK-2C); prosedürler → `ek2b_catalog_history.parquet (EK-2B) (✅ bağlandı)"
     },
     {
       "rule_id": "adequacy.609300",
@@ -27,9 +28,10 @@
         "600160"
       ],
       "message_tr": "Genişletilmiş paket 609300; 600150 ve 600160 birlikte gerçekleştirildiğinde kod gözden geçirilmelidir.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit."
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: paket → `ek2c_catalog_history.parquet` (annex=EK-2C); prosedürler → `ek2b_catalog_history.parquet (EK-2B) (✅ bağlandı)"
     }
   ],
-  "provenance_note": "WARNING: Rules in this file are operational heuristics / pilot estimates, NOT extracted from specific SUT clauses. They encode billing-practice knowledge rather than normative SUT text. verification_status=pilot_heuristic on every rule."
+  "provenance_note": "Rules in this file are marked sut_derived_unverified based on EK-2B/EK-2C catalog mappings from the MIH-3 report; clause-level SUT verification is still pending."
 }

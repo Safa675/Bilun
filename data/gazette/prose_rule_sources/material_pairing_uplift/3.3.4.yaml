@@ -10,7 +10,10 @@ rules:
   - '612510'
   expected_material_codes:
   - AP1390
-  message_tr: Kalca artroplastisi sonrasi EK-3F-1 kalca protez bileseni (AP1390) eksik veya sifir faturalanmis.
-  verification_status: pilot_heuristic
-  provenance_note: Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing
-    practice, not the SUT text. Do not cite as SUT provenance in audit.
+  message_tr: Kalca artroplastisi sonrasi EK-3F-1 kalca protez bileseni (AP1390) eksik
+    veya sifir faturalanmis.
+  verification_status: sut_derived_unverified
+  provenance_note: Candidate SUT-derived mapping from the MIH-3 annex report; clause-level
+    SUT verification still pending.
+  verification_note: 'EK tablosu baglantisi MIH-3 raporuyla dogrulandi: prosedürler
+    → `ek2b_catalog_history.parquet` (EK-2B); malzemeler → `ek3f1_arthroplasty_materials.parquet (EK-3F-1) (✅ bağlandı)'

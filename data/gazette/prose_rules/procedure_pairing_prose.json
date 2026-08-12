@@ -19,12 +19,13 @@
       "addon_factor": 0.3,
       "same_incision": true,
       "message_tr": "Kolonoskopi (701450) ile aynı seansta kolonoskopik polipektomi (701460) eksik veya sıfır faturalanmış.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
       "gate_b_sources": [
         "2.2.2.A.(5)",
         "2.2.2.A.a"
-      ]
+      ],
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` (EK-2B) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.701540_701410",
@@ -39,12 +40,13 @@
       "addon_factor": 0.3,
       "same_incision": true,
       "message_tr": "ÖGD (701540/701550) ile aynı seansta gastroskopik polipektomi (701410) eksik veya sıfır faturalanmış.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
       "gate_b_sources": [
         "2.2.2.A.(5)",
         "2.2.2.A.a"
-      ]
+      ],
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` (EK-2B) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.701530_701410",
@@ -58,12 +60,13 @@
       "addon_factor": 0.3,
       "same_incision": true,
       "message_tr": "Özefagogastroskopi (701530) ile aynı seansta gastroskopik polipektomi (701410) eksik veya sıfır faturalanmış.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
       "gate_b_sources": [
         "2.2.2.A.(5)",
         "2.2.2.A.a"
-      ]
+      ],
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` (EK-2B) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.701400_701460",
@@ -77,12 +80,13 @@
       "addon_factor": 0.3,
       "same_incision": true,
       "message_tr": "Rektosigmoidoskopi/biyopsi (701400) ile aynı seansta kolonoskopik polipektomi (701460) eksik veya sıfır faturalanmış.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
       "gate_b_sources": [
         "2.2.2.A.(5)",
         "2.2.2.A.a"
-      ]
+      ],
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` (EK-2B) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.701545_701411",
@@ -96,12 +100,13 @@
       "addon_factor": 0.3,
       "same_incision": true,
       "message_tr": "Konfokal lazer endomikroskopik üst GİS endoskopi (701545) ile aynı seansta endoskopik mukoza rezeksiyonu (701411) eksik veya sıfır faturalanmış.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
       "gate_b_sources": [
         "2.2.2.A.(5)",
         "2.2.2.A.a"
-      ]
+      ],
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` (EK-2B) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.701430_701440",
@@ -115,12 +120,13 @@
       "addon_factor": 0.3,
       "same_incision": true,
       "message_tr": "GİS stent yerleştirme (701430) ile aynı seansta koledok taş çıkarma (701440) eksik veya sıfır faturalanmış.",
-      "verification_status": "pilot_heuristic",
-      "provenance_note": "Operational heuristic — not directly sourced from a specific SUT clause. Verified against clinical billing practice, not the SUT text. Do not cite as SUT provenance in audit.",
+      "verification_status": "sut_derived_unverified",
+      "provenance_note": "Candidate SUT-derived mapping from the MIH-3 annex report; clause-level SUT verification still pending.",
       "gate_b_sources": [
         "2.2.2.A.(5)",
         "2.2.2.A.a"
-      ]
+      ],
+      "verification_note": "EK tablosu baglantisi MIH-3 raporuyla dogrulandi: `ek2b_catalog_history.parquet` (EK-2B) (✅ bağlandı)"
     },
     {
       "rule_id": "pairing.2_2_2_A_5_different_incision_50pct",
@@ -147,5 +153,5 @@
       "provenance_note": "Normative rule — SUT §2.2.2.A(5). Farklı uzmanlık dalında +25 puan uplift."
     }
   ],
-  "provenance_note": "WARNING: This file mixes two provenance tiers — see per-rule verification_status. 6 rules are pilot_heuristic (operational billing-practice heuristics, NOT extracted from specific SUT clauses); 2 rules (pairing.2_2_2_A_5_different_incision_50pct, pairing.2_2_2_A_5_different_specialty_plus25) are ai_generated_pending_review (normative SUT §2.2.2.A(5) rules pending review)."
+  "provenance_note": "WARNING: This file mixes two provenance tiers — see per-rule verification_status. 6 rules are sut_derived_unverified (EK-2B catalog mappings from the MIH-3 report, clause-level SUT verification pending); 2 rules (pairing.2_2_2_A_5_different_incision_50pct, pairing.2_2_2_A_5_different_specialty_plus25) are ai_generated_pending_review (normative SUT §2.2.2.A(5) rules pending review)."
 }

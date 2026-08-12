@@ -1,0 +1,14 @@
+{
+ "4.2.33.A.aflibersept_wet_amd": {
+  "replaced_by": "L4.33_anti_vegf_4.2.33_manifest (4.2.33.A.(2) encode, C006-series, effective 2026-06-29)"
+ },
+ "4.2.33.A.ranibizumab_wet_amd": {
+  "replaced_by": "L4.33_anti_vegf_4.2.33_manifest (4.2.33.A.(2) encode, C006-series, effective 2026-06-29)"
+ },
+ "4.2.1.kanakinumab_fmf_3mo_response_c7": {
+  "replaced_by": "4.2.1.C-7.yaml -> rule 4.2.1.C.anakinra_kanakinumab_sequencing"
+ },
+ "4.2.1.tofacitinib_ra_prescriber_board_c6": {
+  "replaced_by": "4.2.1.C-6.yaml -> tofacitinib/barisitinib/upadasitinib rules (lines 121-176)"
+ }
+}

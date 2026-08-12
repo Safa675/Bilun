@@ -98,7 +98,7 @@ def _drug_line(
     )
 
 def test_w4_tier_b_batch_rule_count() -> None:
-    soft_floor(len(BATCH_4201_W4_TIER_B_RULES), 10, label='BATCH_4201_W4_TIER_B_RULES')
+    soft_floor(len(BATCH_4201_W4_TIER_B_RULES), 8, label='BATCH_4201_W4_TIER_B_RULES')
 
 
 def test_w4_tier_b_gate_b_sources_count() -> None:
@@ -108,9 +108,7 @@ def test_w4_tier_b_gate_b_sources_count() -> None:
         "C003709",
         "C003737",
         "C003750",
-        "C003782",
         "C003818",
-        "C003828",
         "C003831",
         "C003906",
     })
