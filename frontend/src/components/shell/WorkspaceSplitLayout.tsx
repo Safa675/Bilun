@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeftRight, X } from "lucide-react";
 import { SutPatientPageContent } from "@/app/patient/[id]/page";
@@ -18,6 +18,8 @@ import {
  * second patient workspace for side-by-side comparison. Pane B is store-only
  * (not in the URL) per the workspace-shell plan.
  */
+const noopSubscribe = () => () => {};
+
 export default function WorkspaceSplitLayout({ children }: { children: ReactNode }) {
   const t = useT();
   const router = useRouter();
@@ -25,22 +27,26 @@ export default function WorkspaceSplitLayout({ children }: { children: ReactNode
   const store = useWorkspaceStoreApi();
   const chatDock = useAiDockPosition();
   const setChatDock = useSetAiDockPosition();
+  // The split state hydrates from sessionStorage, which the server cannot
+  // see; gate it behind a mounted flag so hydration matches the SSR tree.
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
+  const effectivePaneB = mounted ? paneB : null;
 
   // Right-docked chat is disabled while split is active (v1 scope).
   useEffect(() => {
     if (paneB && chatDock === "right") setChatDock("center");
   }, [paneB, chatDock, setChatDock]);
 
-  if (!paneB) {
+  if (!effectivePaneB) {
     return <>{children}</>;
   }
 
   const handleSwap = () => {
     const { tabs, activeTabId, setPaneB } = store.getState();
     const activeTab = tabs.find((tab) => tab.id === activeTabId);
-    router.push(workspaceTabHref(paneB));
+    router.push(workspaceTabHref(effectivePaneB));
     setPaneB(
-      activeTab && activeTab.kind === "patient" && activeTab.id !== paneB.id
+      activeTab && activeTab.kind === "patient" && activeTab.id !== effectivePaneB.id
         ? activeTab.id
         : null,
     );
@@ -55,7 +61,7 @@ export default function WorkspaceSplitLayout({ children }: { children: ReactNode
       >
         <div className="sticky top-10 z-20 flex items-center justify-between gap-2 border-b border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-1.5">
           <span className="truncate font-mono text-xs font-medium text-[var(--text-secondary)]">
-            {paneB.refId}
+            {effectivePaneB.refId}
           </span>
           <div className="flex items-center gap-1">
             <button
@@ -78,7 +84,7 @@ export default function WorkspaceSplitLayout({ children }: { children: ReactNode
             </button>
           </div>
         </div>
-        <SutPatientPageContent patientId={paneB.refId} embedded />
+        <SutPatientPageContent patientId={effectivePaneB.refId} embedded />
       </div>
     </div>
   );
