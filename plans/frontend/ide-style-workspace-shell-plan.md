@@ -124,9 +124,11 @@ not tabs. Therefore:
       close/refresh-restore × collapsed/expanded sidebar, no overlap).
 - [ ] Keyboard additive Ctrl+\ for split (deferred; palette gets Ctrl+K).
 
-#### Phase 3 — Quick-open palette
-- [ ] Ctrl+K + visible search affordance; fuzzy patient id/name search over
-      the existing `/api/patients` list; opens result as a tab.
+#### Phase 3 — Quick-open palette (implemented 2026-08-13, pending review)
+- [x] Ctrl+K (and Cmd+K) + visible Search trigger in the tab strip; debounced
+      search over `/api/patients/search`; arrow-key navigation; Enter opens the
+      patient as a tab; Escape/backdrop closes.
+- [x] Playwright 9/9 (open/focus/search/Enter/trigger/Escape/arrow-nav).
 
 ### Out of Scope (v1)
 - Drag-to-reorder tabs, drag-and-drop splitting, >2 panes, tab groups.

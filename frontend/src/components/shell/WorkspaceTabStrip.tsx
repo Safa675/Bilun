@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Columns2, User, X } from "lucide-react";
+import { ChevronDown, Columns2, Search, User, X } from "lucide-react";
 import { TAB_ICONS, tabMessageKey } from "@/components/shell/AppSidebar";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -183,6 +183,16 @@ export default function WorkspaceTabStrip() {
           )}
         </div>
       )}
+      <button
+        type="button"
+        onClick={() => store.getState().setQuickOpen(true)}
+        aria-label={t("shell.quickOpen.ariaLabel")}
+        title={`${t("shell.quickOpen.ariaLabel")} (Ctrl+K)`}
+        data-quick-open-trigger
+        className="ml-auto mb-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--r-md)] text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-secondary)] transition-colors"
+      >
+        <Search className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
     </div>
   );
 }

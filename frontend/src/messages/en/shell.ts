@@ -26,6 +26,11 @@ const shell = {
     closeSplit: "Close split view",
     swapPanes: "Swap panes",
   },
+  quickOpen: {
+    ariaLabel: "Quick open patient",
+    placeholder: "Search patient id… (Ctrl+K)",
+    empty: "No matching patients",
+  },
 } as const;
 
 export default shell;

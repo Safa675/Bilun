@@ -6,6 +6,7 @@ import AppSidebar from "@/components/shell/AppSidebar";
 import ChatDockInsetSync from "@/components/shell/ChatDockInsetSync";
 import SkipToContent from "@/components/shell/SkipToContent";
 import WorkspaceRouteSync from "@/components/shell/WorkspaceRouteSync";
+import WorkspaceQuickOpen from "@/components/shell/WorkspaceQuickOpen";
 import WorkspaceSplitLayout from "@/components/shell/WorkspaceSplitLayout";
 import { ConfigProvider } from "@/lib/configContext";
 import { SUT_BRAND } from "@/lib/constants";
@@ -82,6 +83,7 @@ export default async function RootLayout({
             </Suspense>
             <WorkspaceTabStripMount />
             <WorkspaceSplitLayout>{children}</WorkspaceSplitLayout>
+            <WorkspaceQuickOpen />
           </ShellStateProviders>
         </ConfigProvider>
       </body>

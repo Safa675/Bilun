@@ -16,6 +16,9 @@ export interface WorkspaceStore extends WorkspaceSessionState {
   openSplit: (view: WorkspaceView) => void;
   setPaneB: (tabId: string | null) => void;
   closeSplit: () => void;
+  /** Ctrl+K quick-open palette visibility (UI-only, not persisted). */
+  quickOpen: boolean;
+  setQuickOpen: (open: boolean) => void;
 }
 
 export function createWorkspaceStore(
@@ -75,6 +78,11 @@ export function createWorkspaceStore(
 
     closeSplit: () => {
       set({ paneBTabId: null });
+    },
+
+    quickOpen: false,
+    setQuickOpen: (open) => {
+      set({ quickOpen: open });
     },
   }));
 }

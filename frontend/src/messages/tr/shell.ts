@@ -26,6 +26,11 @@ const shell = {
     closeSplit: "Bölünmüş görünümü kapat",
     swapPanes: "Bölmeleri değiştir",
   },
+  quickOpen: {
+    ariaLabel: "Hızlı hasta aç",
+    placeholder: "Hasta no ara… (Ctrl+K)",
+    empty: "Eşleşen hasta yok",
+  },
 } as const;
 
 export default shell;
