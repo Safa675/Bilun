@@ -105,6 +105,31 @@ export function applyWorkspaceSync(
 }
 
 /**
+ * Open the view's tab WITHOUT activating it (used for split pane B).
+ * Enforces the cap; never evicts the currently active tab or the new one.
+ */
+export function ensureWorkspaceTab(
+  tabs: WorkspaceTab[],
+  activeTabId: string | null,
+  view: WorkspaceView,
+  now: number,
+): { tabs: WorkspaceTab[]; tabId: string } {
+  const id = workspaceTabId(view.kind, view.refId);
+  if (tabs.some((tab) => tab.id === id)) return { tabs, tabId: id };
+  let next = [
+    ...tabs,
+    { id, kind: view.kind, refId: view.refId, query: view.query, lastActivatedAt: now },
+  ];
+  if (next.length > WORKSPACE_MAX_TABS) {
+    const lru = [...next]
+      .filter((tab) => tab.id !== id && tab.id !== activeTabId)
+      .sort((a, b) => a.lastActivatedAt - b.lastActivatedAt)[0];
+    if (lru) next = next.filter((tab) => tab.id !== lru.id);
+  }
+  return { tabs: next, tabId: id };
+}
+
+/**
  * Remove a tab. When the active tab closes, the most-recently-used remaining
  * tab becomes active. Returns the href the caller should navigate to (null =
  * no navigation needed).
@@ -138,6 +163,8 @@ export function applyWorkspaceClose(
 export interface WorkspaceSessionState {
   tabs: WorkspaceTab[];
   activeTabId: string | null;
+  /** Split view: the patient tab rendered in pane B (store-only, not in URL). */
+  paneBTabId: string | null;
 }
 
 export function readWorkspaceSession(): WorkspaceSessionState | null {
@@ -170,7 +197,12 @@ export function readWorkspaceSession(): WorkspaceSessionState | null {
       tabs.some((tab) => tab.id === parsed.activeTabId)
         ? parsed.activeTabId
         : null;
-    return { tabs: tabs.slice(0, WORKSPACE_MAX_TABS), activeTabId };
+    const paneBTabId =
+      typeof parsed.paneBTabId === "string" &&
+      tabs.some((tab) => tab.id === parsed.paneBTabId && tab.kind === "patient")
+        ? parsed.paneBTabId
+        : null;
+    return { tabs: tabs.slice(0, WORKSPACE_MAX_TABS), activeTabId, paneBTabId };
   } catch {
     return null;
   }

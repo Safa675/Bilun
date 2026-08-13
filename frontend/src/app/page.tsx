@@ -30,6 +30,7 @@ import {
   useShowAdmin,
   useShowHowItWorks,
   useSutChatSession,
+  useWorkspacePaneBTabId,
 } from "@/stores/index";
 import { useT } from "@/lib/i18n";
 
@@ -62,6 +63,9 @@ function SutHomeContent() {
   const setShowHowItWorks = useSetShowHowItWorks();
   const chatDock = useAiDockPosition();
   const setChatDock = useSetAiDockPosition();
+  // Split view disables chat docking (v1 scope).
+  const splitActive = useWorkspacePaneBTabId() !== null;
+  const dockChange = splitActive ? undefined : setChatDock;
   const showAdmin = useShowAdmin();
   const setShowAdmin = useSetShowAdmin();
   const healthStatus = useHealthStatus();
@@ -142,7 +146,7 @@ function SutHomeContent() {
                   activeTab={activeTabLabel}
                   pageContext={chatPageContext}
                   dock={chatDock}
-                  onDockChange={setChatDock}
+                  onDockChange={dockChange}
                   chatState={chatState}
                   onChatStateChange={handleChatStateChange}
                 />
@@ -177,7 +181,7 @@ function SutHomeContent() {
           activeTab={activeTabLabel}
           pageContext={chatPageContext}
           dock={chatDock}
-          onDockChange={setChatDock}
+          onDockChange={dockChange}
           chatState={chatState}
           onChatStateChange={handleChatStateChange}
         />

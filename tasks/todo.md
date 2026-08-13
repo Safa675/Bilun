@@ -1,3 +1,31 @@
+## Task: Ready or Not launch script in home dir
+
+### Goal
+Create `/home/safa/ready_or_not.sh` (Steam App 1144200) and get the game running. Diagnosis: game is NOT installed — only Steam library (`~/.steam/debian-installation`) has apps 1493710/4183110, no `appmanifest_1144200.acf` anywhere; `steam -applaunch` on an uninstalled title silently does nothing.
+
+### Subtasks
+- [x] Write install-aware launcher: parses `libraryfolders.vdf`, launches via `steam -applaunch` if manifest present, else opens `steam://install/1144200`
+- [x] `chmod +x` and run it
+- [x] Verify: Steam console log shows `ExecCommandLine`/`ExecuteSteamURL: steam://install/1144200` at 21:13:10 → install dialog delivered to running client
+- [x] Report disk space requirement (~90 GB) and next steps
+
+### Resolution (2026-08-13)
+- "No licenses" error: account `safaksz` has NO license for app 1144200 — 0 hits in `config.vdf` license cache, and no `LaunchApp [AppID 1144200]` entry ever in Steam logs. Steam correctly refuses.
+- Build is a RUNE repack, not official: `Engine/Binaries/ThirdParty/Steamworks/Steamv153/Win64/steam_api64.rne` (renamed original DLL — RUNE signature), no `steam_api64.dll` beside the exe, uniform 2026-08-04 extraction timestamps. It "worked with Steam in the past" by running OUTSIDE Steam's license check via its patched Steamworks layer — Steam itself never launched it.
+- Earlier claim "official Steam build (signed installscript.vdf)" was WRONG: preserved depot files don't prove an uncracked build; decisive signals are the Steamworks layer + account license.
+- BLOCKED on user decision: (a) buy on Steam (~$29, frequent sales) → adoption of the genuine 49 GB paks then works and Steam repairs the cracked files; (b) log into an account that owns it. Setting up the cracked build's launch is not something I will do.
+- Game folder left in place at `Documents/steamapps/common/Ready or Not`; launcher script `/home/safa/ready_or_not.sh` stays (works once a license exists).
+
+### Out of Scope
+- Actually downloading/installing the ~90 GB game (needs user interaction + disk space)
+- Proton configuration tuning
+
+### Review (2026-08-13)
+- Root cause of "game didn't start": Ready or Not (1144200) was never installed — only library (`~/.steam/debian-installation/steamapps`) contains apps 1493710/4183110; `steam -applaunch` on an uninstalled title silently does nothing.
+- Script `/home/safa/ready_or_not.sh` is install-aware: parses `libraryfolders.vdf` for `appmanifest_1144200.acf`; launches if present, otherwise opens Steam install dialog. Verified via `console_log.txt` that the `steam://install/1144200` URL was dispatched to the running client.
+- Blocker to flag to user: only 65 GB free on `/` (nvme0n1p2), game needs ~90 GB → free space or another drive required before Install can complete. Script was written outside the workspace, hence the one-time full-access escalation.
+- Once installed, re-running the script will launch the game directly.
+
 ## Task: PR #31 polish — crescent logo, auto-collapse on dock-right, stale-CSS overlap fix
 
 ### Goal
@@ -34,7 +62,7 @@ Full design in `plans/frontend/ide-style-workspace-shell-plan.md`: editor-tab la
 ### Subtasks
 - [x] Phase 0: locked 2026-08-13 — all sections tabbed; sessionStorage persistence; 6-tab + 2-pane caps; chat-right disabled during split
 - [x] Phase 1: implemented + verified 2026-08-13 (208 vitest, lint at baseline, Playwright 14/14); pending Safa's local review + commit/branch decision
-- [ ] Phase 2: 2-pane split for patient comparison + layout matrix verification
+- [x] Phase 2: implemented + verified 2026-08-13 (213 vitest, lint at baseline, Playwright 12/12)
 - [ ] Phase 3: Ctrl+K patient quick-open palette
 
 ### Out of Scope

@@ -13,7 +13,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = store.subscribe((state) => {
-      writeWorkspaceSession({ tabs: state.tabs, activeTabId: state.activeTabId });
+      writeWorkspaceSession({
+        tabs: state.tabs,
+        activeTabId: state.activeTabId,
+        paneBTabId: state.paneBTabId,
+      });
     });
     return unsubscribe;
   }, [store]);
@@ -42,4 +46,16 @@ export function useWorkspaceTabs() {
 export function useWorkspaceActiveTabId() {
   const store = useWorkspaceStoreApi();
   return useStore(store, (state) => state.activeTabId);
+}
+
+export function useWorkspacePaneBTabId() {
+  const store = useWorkspaceStoreApi();
+  return useStore(store, (state) => state.paneBTabId);
+}
+
+export function useWorkspacePaneB() {
+  const store = useWorkspaceStoreApi();
+  return useStore(store, (state) =>
+    state.tabs.find((tab) => tab.id === state.paneBTabId) ?? null,
+  );
 }

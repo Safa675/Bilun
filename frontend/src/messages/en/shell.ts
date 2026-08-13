@@ -22,6 +22,9 @@ const shell = {
     ariaLabel: "Open workspaces",
     close: "Close tab",
     overflow: "More open tabs",
+    openSideBySide: "Open side by side",
+    closeSplit: "Close split view",
+    swapPanes: "Swap panes",
   },
 } as const;
 

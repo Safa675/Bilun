@@ -111,12 +111,18 @@ not tabs. Therefore:
 - [x] i18n (en/tr `shell.workspaceTabs`); 13 new vitest cases (208 total);
       Playwright matrix 14/14 (open/switch/close/LRU cap/overflow/F5 restore).
 
-#### Phase 2 — 2-pane split (comparison)
-- [ ] Split action on patient tabs; pane B renders a second
-      `/patient/[id]` workspace instance (independent scroll + chat context).
-- [ ] Pane headers (focus, swap, close split); keyboard additive (Ctrl+\).
-- [ ] Layout math with sidebar var + chat insets; Playwright matrix
-      (split × collapsed/expanded sidebar × chat center).
+#### Phase 2 — 2-pane split (implemented 2026-08-13, pending review)
+- [x] Split action (Columns2 button) on patient tabs incl. overflow entries;
+      pane B renders `SutPatientPageContent` (page extracted to a prop-driven
+      component with `embedded` mode) — store-only, not in URL.
+- [x] Pane header with swap + close split; activating pane B's tab moves it to
+      pane A and clears the split.
+- [x] Right-docked chat disabled while split active (dock buttons hidden,
+      forced back to center). v1 scoping: panes share window scroll and pane B
+      has no chat panel (synced scroll aids comparison).
+- [x] Layout verified with sidebar var: Playwright 12/12 (split open/swap/
+      close/refresh-restore × collapsed/expanded sidebar, no overlap).
+- [ ] Keyboard additive Ctrl+\ for split (deferred; palette gets Ctrl+K).
 
 #### Phase 3 — Quick-open palette
 - [ ] Ctrl+K + visible search affordance; fuzzy patient id/name search over

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, User, X } from "lucide-react";
+import { ChevronDown, Columns2, User, X } from "lucide-react";
 import { TAB_ICONS, tabMessageKey } from "@/components/shell/AppSidebar";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
@@ -53,6 +53,27 @@ export default function WorkspaceTabStrip() {
     if (navigateTo) router.push(navigateTo);
   };
 
+  const handleSplit = (tab: WorkspaceTab) => {
+    store.getState().openSplit({ kind: tab.kind, refId: tab.refId });
+  };
+
+  const splitButton = (tab: WorkspaceTab, alwaysVisible: boolean) =>
+    tab.kind === "patient" ? (
+      <button
+        type="button"
+        onClick={() => handleSplit(tab)}
+        aria-label={`${t("shell.workspaceTabs.openSideBySide")}: ${tabLabel(tab, t)}`}
+        title={t("shell.workspaceTabs.openSideBySide")}
+        className={cn(
+          "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[var(--text-muted)] transition-opacity hover:bg-[var(--surface-base)] hover:text-[var(--text-primary)]",
+          !alwaysVisible &&
+            "opacity-0 focus-visible:opacity-100 group-hover:opacity-100",
+        )}
+      >
+        <Columns2 className="h-3 w-3" aria-hidden="true" />
+      </button>
+    ) : null;
+
   const renderTab = (tab: WorkspaceTab) => {
     const isActive = tab.id === activeTabId;
     return (
@@ -78,6 +99,7 @@ export default function WorkspaceTabStrip() {
             {tabLabel(tab, t)}
           </span>
         </Link>
+        {splitButton(tab, false)}
         <button
           type="button"
           onClick={() => handleClose(tab.id)}
@@ -93,7 +115,7 @@ export default function WorkspaceTabStrip() {
 
   return (
     <div
-      className="sticky top-0 z-30 flex items-end gap-1 border-b border-[var(--border-subtle)] bg-[var(--surface-base)] px-2 pt-1"
+      className="sticky top-0 z-30 flex h-10 items-end gap-1 border-b border-[var(--border-subtle)] bg-[var(--surface-base)] px-2 pt-1"
       style={{ paddingRight: "calc(var(--chat-dock-inset-right, 0px) + 0.5rem)" }}
       role="navigation"
       aria-label={t("shell.workspaceTabs.ariaLabel")}
@@ -145,6 +167,7 @@ export default function WorkspaceTabStrip() {
                         {tabLabel(tab, t)}
                       </span>
                     </Link>
+                    {splitButton(tab, true)}
                     <button
                       type="button"
                       onClick={() => handleClose(tab.id)}

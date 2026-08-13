@@ -1,0 +1,85 @@
+"use client";
+
+import { useEffect, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeftRight, X } from "lucide-react";
+import { SutPatientPageContent } from "@/app/patient/[id]/page";
+import { useT } from "@/lib/i18n/useTranslations";
+import { workspaceTabHref } from "@/lib/workspaceTabs";
+import {
+  useAiDockPosition,
+  useSetAiDockPosition,
+  useWorkspacePaneB,
+  useWorkspaceStoreApi,
+} from "@/stores/index";
+
+/**
+ * Two-pane workspace: pane A is the routed view (children); pane B renders a
+ * second patient workspace for side-by-side comparison. Pane B is store-only
+ * (not in the URL) per the workspace-shell plan.
+ */
+export default function WorkspaceSplitLayout({ children }: { children: ReactNode }) {
+  const t = useT();
+  const router = useRouter();
+  const paneB = useWorkspacePaneB();
+  const store = useWorkspaceStoreApi();
+  const chatDock = useAiDockPosition();
+  const setChatDock = useSetAiDockPosition();
+
+  // Right-docked chat is disabled while split is active (v1 scope).
+  useEffect(() => {
+    if (paneB && chatDock === "right") setChatDock("center");
+  }, [paneB, chatDock, setChatDock]);
+
+  if (!paneB) {
+    return <>{children}</>;
+  }
+
+  const handleSwap = () => {
+    const { tabs, activeTabId, setPaneB } = store.getState();
+    const activeTab = tabs.find((tab) => tab.id === activeTabId);
+    router.push(workspaceTabHref(paneB));
+    setPaneB(
+      activeTab && activeTab.kind === "patient" && activeTab.id !== paneB.id
+        ? activeTab.id
+        : null,
+    );
+  };
+
+  return (
+    <div className="flex items-start" data-workspace-split>
+      <div className="min-w-0 flex-1">{children}</div>
+      <div
+        className="min-w-0 flex-1 border-l border-[var(--border-subtle)]"
+        data-workspace-pane="b"
+      >
+        <div className="sticky top-10 z-20 flex items-center justify-between gap-2 border-b border-[var(--border-subtle)] bg-[var(--surface-base)] px-3 py-1.5">
+          <span className="truncate font-mono text-xs font-medium text-[var(--text-secondary)]">
+            {paneB.refId}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={handleSwap}
+              aria-label={t("shell.workspaceTabs.swapPanes")}
+              title={t("shell.workspaceTabs.swapPanes")}
+              className="inline-flex h-6 w-6 items-center justify-center rounded-[var(--r-md)] text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              <ArrowLeftRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => store.getState().closeSplit()}
+              aria-label={t("shell.workspaceTabs.closeSplit")}
+              title={t("shell.workspaceTabs.closeSplit")}
+              className="inline-flex h-6 w-6 items-center justify-center rounded-[var(--r-md)] text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+        <SutPatientPageContent patientId={paneB.refId} embedded />
+      </div>
+    </div>
+  );
+}

@@ -4,6 +4,7 @@ import {
   applyWorkspaceClose,
   applyWorkspaceSync,
   deriveWorkspaceView,
+  ensureWorkspaceTab,
   WORKSPACE_MAX_TABS,
   workspaceTabHref,
   workspaceTabId,
@@ -109,6 +110,52 @@ describe("applyWorkspaceClose", () => {
     expect(next.tabs).toHaveLength(0);
     expect(next.activeTabId).toBeNull();
     expect(next.navigateTo).toBe("/?tab=patients");
+  });
+});
+
+describe("ensureWorkspaceTab", () => {
+  it("opens without activating and never evicts the active tab", () => {
+    const tabs = [
+      tab("section", "patients", 1),
+      tab("patient", "A", 2),
+      tab("patient", "B", 3),
+      tab("patient", "C", 4),
+      tab("patient", "D", 5),
+      tab("patient", "E", 6),
+    ];
+    const next = ensureWorkspaceTab(tabs, "patient:E", { kind: "patient", refId: "F" }, 7);
+    expect(next.tabId).toBe("patient:F");
+    expect(next.tabs).toHaveLength(WORKSPACE_MAX_TABS);
+    expect(next.tabs.some((t) => t.id === "section:patients")).toBe(false);
+    expect(next.tabs.some((t) => t.id === "patient:E")).toBe(true);
+  });
+});
+
+describe("workspaceStore split", () => {
+  it("openSplit sets pane B without changing the active tab", () => {
+    const store = createWorkspaceStore({ tabs: [], activeTabId: null });
+    store.getState().syncFromRoute({ kind: "patient", refId: "P-001" });
+    store.getState().openSplit({ kind: "patient", refId: "P-002" });
+    expect(store.getState().activeTabId).toBe("patient:P-001");
+    expect(store.getState().paneBTabId).toBe("patient:P-002");
+    expect(store.getState().tabs).toHaveLength(2);
+  });
+
+  it("closing pane B's tab clears the split", () => {
+    const store = createWorkspaceStore({ tabs: [], activeTabId: null });
+    store.getState().syncFromRoute({ kind: "patient", refId: "P-001" });
+    store.getState().openSplit({ kind: "patient", refId: "P-002" });
+    store.getState().closeTab("patient:P-002");
+    expect(store.getState().paneBTabId).toBeNull();
+  });
+
+  it("activating pane B's tab moves it to pane A and clears the split", () => {
+    const store = createWorkspaceStore({ tabs: [], activeTabId: null });
+    store.getState().syncFromRoute({ kind: "patient", refId: "P-001" });
+    store.getState().openSplit({ kind: "patient", refId: "P-002" });
+    store.getState().syncFromRoute({ kind: "patient", refId: "P-002" });
+    expect(store.getState().activeTabId).toBe("patient:P-002");
+    expect(store.getState().paneBTabId).toBeNull();
   });
 });
 

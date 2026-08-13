@@ -22,6 +22,9 @@ const shell = {
     ariaLabel: "Açık çalışma alanları",
     close: "Sekmeyi kapat",
     overflow: "Diğer açık sekmeler",
+    openSideBySide: "Yan yana aç",
+    closeSplit: "Bölünmüş görünümü kapat",
+    swapPanes: "Bölmeleri değiştir",
   },
 } as const;
 
