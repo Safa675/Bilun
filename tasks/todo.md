@@ -22,3 +22,20 @@ On `experiment/collapsible-sidebar-shell`: (1) collapsed sidebar shows the half-
 - Auto-collapse semantics: docking right collapses the sidebar (including on mount if already docked); manual re-expand while docked right still works; returning to center does not auto re-expand (per plan).
 - Verification stack used throwaway credentials generated via `src.bilun.api.auth.hash_password` injected through process env (process env overrides `frontend/.env.local` in Next.js), so no user secrets were read.
 - Changed files: `frontend/src/components/shell/AppSidebar.tsx`, `frontend/src/stores/navigationContext.tsx` (new `useNavigationStoreApi`), `frontend/public/brand/nameless.png` (new asset). Left uncommitted for user review.
+- Committed + pushed to PR #31 as `7b2b61f` after Safa's local review (2026-08-13).
+
+---
+
+## Task: IDE-style workspace shell (tabs + 2-pane split)
+
+### Goal
+Full design in `plans/frontend/ide-style-workspace-shell-plan.md`: editor-tab layer for multi-patient work + side-by-side comparison, with complexity guardrails. Direction locked with Safa 2026-08-13 (full IDE-style shell; solves both alternating and comparison).
+
+### Subtasks
+- [x] Phase 0: locked 2026-08-13 — all sections tabbed; sessionStorage persistence; 6-tab + 2-pane caps; chat-right disabled during split
+- [x] Phase 1: implemented + verified 2026-08-13 (208 vitest, lint at baseline, Playwright 14/14); pending Safa's local review + commit/branch decision
+- [ ] Phase 2: 2-pane split for patient comparison + layout matrix verification
+- [ ] Phase 3: Ctrl+K patient quick-open palette
+
+### Out of Scope
+- Drag-reorder/drag-split, >2 panes, tab groups, multi-window sync, mobile layouts

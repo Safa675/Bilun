@@ -93,7 +93,7 @@ export function buildSutHomeHref(
   const params = new URLSearchParams();
   params.set("tab", tab);
   if (preserveParams) {
-    for (const key of ["cohortQ", "cohortSex", "cohortAgeMin", "cohortAgeMax", "cohortDoctor", "admin"] as const) {
+    for (const key of ["cohortQ", "cohortSex", "cohortAgeMin", "cohortAgeMax", "cohortDoctor", "admin", "p"] as const) {
       const value = preserveParams.get(key);
       if (value) params.set(key, value);
     }

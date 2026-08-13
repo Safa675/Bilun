@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getRevenueRecovery, getSutPatients } from "@/lib/api/sut";
 import type { CohortRecoverySummary } from "@/lib/domains/sut";
 import type { PatientMeta } from "@/lib/domains/patient";
@@ -131,10 +131,11 @@ export default function PatientInvoiceTable({
   tRef.current = t;
   const sortByTitle = (label: string) => t("home.patientTable.sortBy", { label });
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [rows, setRows] = useState<PatientRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
   const [jumpInput, setJumpInput] = useState("");
   const [sort, setSort] = useState<{ column: SortableColumn; direction: SortDirection } | null>(null);
 
@@ -144,7 +145,24 @@ export default function PatientInvoiceTable({
   }, [rows, sort]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(sortedRows.length / PAGE_SIZE)), [sortedRows.length]);
-  const currentPage = useMemo(() => Math.min(page, totalPages), [page, totalPages]);
+  const urlPage = Number.parseInt(searchParams.get("p") ?? "", 10);
+  const currentPage = useMemo(() => {
+    const requested = Number.isFinite(urlPage) && urlPage >= 1 ? urlPage : 1;
+    return Math.min(requested, totalPages);
+  }, [urlPage, totalPages]);
+
+  const writePage = useCallback(
+    (next: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (next <= 1) {
+        params.delete("p");
+      } else {
+        params.set("p", String(next));
+      }
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
   const pageRows = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return sortedRows.slice(start, start + PAGE_SIZE);
@@ -207,7 +225,6 @@ export default function PatientInvoiceTable({
         });
 
         setRows(merged);
-        setPage(1);
         setSort(null);
       } catch (err) {
         if (controller.signal.aborted) return;
@@ -232,21 +249,21 @@ export default function PatientInvoiceTable({
       // New column: default to desc (highest first) per user request
       return { column, direction: "desc" };
     });
-    setPage(1);
+    writePage(1);
   }
 
   function handlePrev() {
-    setPage((p) => Math.max(1, p - 1));
+    writePage(currentPage - 1);
   }
 
   function handleNext() {
-    setPage((p) => Math.min(totalPages, p + 1));
+    writePage(currentPage + 1);
   }
 
   function handleJump() {
     const n = Number(jumpInput);
     if (!Number.isNaN(n) && n >= 1 && n <= totalPages) {
-      setPage(n);
+      writePage(n);
     }
     setJumpInput("");
   }

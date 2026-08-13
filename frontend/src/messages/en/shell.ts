@@ -18,6 +18,11 @@ const shell = {
     billing_officer: "Billing Officer",
     dev: "Developer",
   },
+  workspaceTabs: {
+    ariaLabel: "Open workspaces",
+    close: "Close tab",
+    overflow: "More open tabs",
+  },
 } as const;
 
 export default shell;

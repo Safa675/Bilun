@@ -48,7 +48,7 @@ interface AppSidebarProps {
   className?: string;
 }
 
-const TAB_ICONS: Record<SutHomeTab, LucideIcon> = {
+export const TAB_ICONS: Record<SutHomeTab, LucideIcon> = {
   patients: Users,
   compliance: ShieldCheck,
   revenue: CircleDollarSign,
@@ -62,7 +62,7 @@ function useActiveHomeTab(): SutHomeTab {
   return parseSutHomeTab(searchParams.get("tab"));
 }
 
-function tabMessageKey(tabId: SutHomeTab): string {
+export function tabMessageKey(tabId: SutHomeTab): string {
   if (tabId === "reference-tools") return "referenceTools";
   if (tabId === "rule-database") return "ruleDatabase";
   return tabId;

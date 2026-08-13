@@ -7,6 +7,7 @@ import type { Locale } from "@/lib/i18n/types";
 import type { UserRole } from "@/lib/userRole";
 import { NavigationProvider } from "./navigationContext";
 import { UIStateProvider } from "./uiStateContext";
+import { WorkspaceProvider } from "./workspaceContext";
 
 export function ShellStateProviders({
   children,
@@ -21,7 +22,9 @@ export function ShellStateProviders({
     <LocaleProvider initialLocale={initialLocale}>
       <RoleProvider initialRole={initialRole}>
         <NavigationProvider>
-          <UIStateProvider>{children}</UIStateProvider>
+          <WorkspaceProvider>
+            <UIStateProvider>{children}</UIStateProvider>
+          </WorkspaceProvider>
         </NavigationProvider>
       </RoleProvider>
     </LocaleProvider>
