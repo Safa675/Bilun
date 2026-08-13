@@ -18,6 +18,19 @@ const shell = {
     billing_officer: "Faturalama Görevlisi",
     dev: "Geliştirici",
   },
+  workspaceTabs: {
+    ariaLabel: "Açık çalışma alanları",
+    close: "Sekmeyi kapat",
+    overflow: "Diğer açık sekmeler",
+    openSideBySide: "Yan yana aç",
+    closeSplit: "Bölünmüş görünümü kapat",
+    swapPanes: "Bölmeleri değiştir",
+  },
+  quickOpen: {
+    ariaLabel: "Hızlı hasta aç",
+    placeholder: "Hasta no ara… (Ctrl+K)",
+    empty: "Eşleşen hasta yok",
+  },
 } as const;
 
 export default shell;

@@ -68,26 +68,27 @@ import {
   useSetSutChatSession,
   useShowHowItWorks,
   useSutChatSession,
+  useWorkspacePaneBTabId,
 } from "@/stores/index";
 import { useT } from "@/lib/i18n/useTranslations";
 
-export default function SutPatientPage() {
+export function SutPatientPageContent({
+  patientId,
+  embedded = false,
+}: {
+  patientId: string;
+  embedded?: boolean;
+}) {
   const t = useT();
   // Keep the latest `t` in a ref so fetch callbacks read a fresh translator
   // without re-creating themselves (and the effects that call them) on every
   // locale switch. Fixes locale-switch churn: C2, H1, M7.
   const tRef = useRef(t);
   tRef.current = t;
-  const params = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const claimQuery = searchParams.get("claim");
   const sectionQuery = searchParams.get("section");
-  // `useParams()` returns a fresh object every render, so useMemo on it never
-  // caches. Decode directly — the resulting string is stable across renders.
-  const patientId = decodeURIComponent(
-    Array.isArray(params?.id) ? params.id[0] : params?.id ?? "",
-  );
 
   const [outcome, setOutcome] = useState<SutPatientOutcomeData | null>(null);
   const [optimization, setOptimization] = useState<PatientOptimization | null>(null);
@@ -474,14 +475,18 @@ export default function SutPatientPage() {
   );
   const shouldRenderChat = !loading && !allFailed;
   const isDocked = shouldRenderChat && chatDock !== "center";
-  const sectionClass = isDocked
-    ? "w-full space-y-6"
-    : "mx-auto max-w-7xl space-y-6";
+  const sectionClass =
+    isDocked || embedded ? "w-full space-y-6" : "mx-auto max-w-7xl space-y-6";
+  // Split view: dock controls are disabled and pane B renders no chat panel.
+  const splitActive = useWorkspacePaneBTabId() !== null;
+  const dockChange = splitActive ? undefined : setChatDock;
+  const ShellTag = (embedded ? "div" : "main") as "div" | "main";
 
   return (
     <>
-      <main id="main-content" className="sut-app-main">
+      <ShellTag id={embedded ? undefined : "main-content"} className="sut-app-main">
         <section className={sectionClass}>
+            {!embedded && (
             <Surface variant="base" padding="lg">
               <nav
                 aria-label={t("patient.page.breadcrumbAria")}
@@ -518,14 +523,15 @@ export default function SutPatientPage() {
                 </p>
               </div>
             </Surface>
+            )}
 
-            {shouldRenderChat && chatDock === "center" && (
+            {!embedded && shouldRenderChat && chatDock === "center" && (
               <SutInlineAIPanel
                 patientId={patientId}
                 activeTab="SUT Patient Workspace"
                 pageContext={chatPageContext}
                 dock={chatDock}
-                onDockChange={setChatDock}
+                onDockChange={dockChange}
                 chatState={chatState}
                 onChatStateChange={handleChatStateChange}
               />
@@ -701,19 +707,31 @@ export default function SutPatientPage() {
               </>
             )}
           </section>
-      </main>
-      {shouldRenderChat && chatDock !== "center" && (
+      </ShellTag>
+      {!embedded && shouldRenderChat && chatDock !== "center" && (
         <SutInlineAIPanel
           patientId={patientId}
           activeTab="SUT Patient Workspace"
           pageContext={chatPageContext}
           dock={chatDock}
-          onDockChange={setChatDock}
+          onDockChange={dockChange}
           chatState={chatState}
           onChatStateChange={handleChatStateChange}
         />
       )}
-      <SutHowItWorksModal open={showHowItWorks} onClose={() => setShowHowItWorks(false)} />
+      {!embedded && (
+        <SutHowItWorksModal open={showHowItWorks} onClose={() => setShowHowItWorks(false)} />
+      )}
     </>
   );
+}
+
+export default function SutPatientPage() {
+  const params = useParams<{ id: string }>();
+  // `useParams()` returns a fresh object every render, so useMemo on it never
+  // caches. Decode directly — the resulting string is stable across renders.
+  const patientId = decodeURIComponent(
+    Array.isArray(params?.id) ? params.id[0] : params?.id ?? "",
+  );
+  return <SutPatientPageContent patientId={patientId} />;
 }

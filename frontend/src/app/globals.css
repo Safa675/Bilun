@@ -322,3 +322,9 @@ textarea:focus-visible {
 .sut-app-sidebar {
   transition: width 0.2s ease;
 }
+
+/* Split view: tighten pane padding so two panes read side by side. */
+[data-workspace-split] .sut-app-main {
+  min-height: 0;
+  padding: 1.25rem;
+}

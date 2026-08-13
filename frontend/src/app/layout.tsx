@@ -5,6 +5,9 @@ import { Fraunces, Inter } from "next/font/google";
 import AppSidebar from "@/components/shell/AppSidebar";
 import ChatDockInsetSync from "@/components/shell/ChatDockInsetSync";
 import SkipToContent from "@/components/shell/SkipToContent";
+import WorkspaceRouteSync from "@/components/shell/WorkspaceRouteSync";
+import WorkspaceQuickOpen from "@/components/shell/WorkspaceQuickOpen";
+import WorkspaceSplitLayout from "@/components/shell/WorkspaceSplitLayout";
 import { ConfigProvider } from "@/lib/configContext";
 import { SUT_BRAND } from "@/lib/constants";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/types";
@@ -23,6 +26,7 @@ function resolveMetaDescription(locale: Locale): string {
 function parseRole(value: string | undefined): UserRole {
   return value === "billing_officer" ? "billing_officer" : "dev";
 }
+import WorkspaceTabStripMount from "@/components/shell/WorkspaceTabStripMount";
 import { ShellStateProviders } from "@/stores/providers";
 import "./globals.css";
 import "./styles/sut-how-modal.css";
@@ -75,8 +79,11 @@ export default async function RootLayout({
             <ChatDockInsetSync />
             <Suspense>
               <AppSidebar />
+              <WorkspaceRouteSync />
             </Suspense>
-            {children}
+            <WorkspaceTabStripMount />
+            <WorkspaceSplitLayout>{children}</WorkspaceSplitLayout>
+            <WorkspaceQuickOpen />
           </ShellStateProviders>
         </ConfigProvider>
       </body>
