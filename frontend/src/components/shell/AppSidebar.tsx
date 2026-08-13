@@ -29,7 +29,11 @@ import {
   type SutHomeTab,
 } from "@/lib/constants";
 import { useT } from "@/lib/i18n/useTranslations";
-import { useSetShowHowItWorks } from "@/stores/index";
+import {
+  useAiDockPosition,
+  useNavigationStoreApi,
+  useSetShowHowItWorks,
+} from "@/stores/index";
 import { getMedulaRejectionIngestStatus } from "@/lib/api/sut";
 import { useUserRole } from "@/components/shell/RoleProvider";
 import {
@@ -77,9 +81,22 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
   const [medulaIngestAvailable, setMedulaIngestAvailable] = useState<boolean | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const hideShell = pathname === "/login";
+  const chatDock = useAiDockPosition();
+  const navigationStore = useNavigationStoreApi();
 
+  useEffect(() => {
+    if (hideShell) return;
+    return navigationStore.subscribe((state, prevState) => {
+      if (state.aiDockPosition === "right" && prevState.aiDockPosition !== "right") {
+        setCollapsed(true);
+      }
+    });
+  }, [hideShell, navigationStore]);
+
+  // Mount-only read; live dock transitions are handled by the store subscription above.
   useLayoutEffect(() => {
-    setCollapsed(readSidebarCollapsed());
+    setCollapsed(readSidebarCollapsed() || chatDock === "right");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only read
   }, []);
 
   useLayoutEffect(() => {
@@ -191,12 +208,15 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
           aria-label={t("shell.appSidebar.logoAlt")}
         >
           {collapsed ? (
-            <span
-              className="font-[family-name:var(--font-display)] text-lg font-medium text-[var(--text-primary)]"
+            // eslint-disable-next-line @next/next/no-img-element -- static brand asset; no next/image in app yet
+            <img
+              src="/brand/nameless.png"
+              alt=""
+              width={20}
+              height={24}
+              className="block h-6 w-auto"
               aria-hidden="true"
-            >
-              B
-            </span>
+            />
           ) : (
             <BilunWordmark size={20} />
           )}
