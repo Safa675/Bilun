@@ -6,7 +6,6 @@ const chat = {
   },
   actions: {
     regenerateAnalysis: "Analizi yenile",
-    dockLeft: "Sola sabitle",
     centerInline: "Ortala (satır içi)",
     dockRight: "Sağa sabitle",
     sendMessage: "Mesaj gönder",

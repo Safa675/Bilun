@@ -6,8 +6,8 @@ import { getChatDockInsets, isChatDockEligiblePath } from "@/lib/chatDockLayout"
 import { useAiDockPosition } from "@/stores/index";
 
 /**
- * Keeps `--chat-dock-inset-left/right` in sync so AppTopBar tabs and main
- * content shift away from a fixed docked chat panel.
+ * Keeps `--chat-dock-inset-left/right` in sync so main content shifts away
+ * from a fixed right-docked chat panel.
  */
 export default function ChatDockInsetSync() {
   const pathname = usePathname();

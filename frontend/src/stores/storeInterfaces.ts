@@ -1,7 +1,8 @@
 import type { ChatMessage } from "@/lib/domains/common";
 import type { HealthStatus } from "@/lib/api/health";
 
-export type SutChatDockPosition = "left" | "center" | "right";
+/** Chat may sit inline (center) or dock to the right; left is reserved for the app sidebar. */
+export type SutChatDockPosition = "center" | "right";
 
 export interface SutInlineChatState {
   messages: ChatMessage[];

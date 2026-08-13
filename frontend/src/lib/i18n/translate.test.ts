@@ -5,7 +5,7 @@ import enMessages from "@/messages/en/index";
 
 describe("i18n translate", () => {
   it("resolves nested keys", () => {
-    expect(translate(enMessages, "shell.appTopBar.howItWorks")).toBe("How it works");
+    expect(translate(enMessages, "shell.appSidebar.howItWorks")).toBe("How it works");
   });
 
   it("interpolates params", () => {

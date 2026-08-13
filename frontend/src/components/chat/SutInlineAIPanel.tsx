@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
   Minimize2,
-  PanelLeft,
   PanelRight,
   RotateCcw,
   Send,
@@ -427,11 +426,7 @@ export default function SutInlineAIPanel({
         "border border-[var(--border-subtle)] bg-[var(--surface-base)] px-5 py-4 text-[var(--text-primary)] shadow-[var(--shadow-1)]",
         dock === "center"
           ? "my-4 max-h-80 w-full overflow-y-auto rounded-[var(--r-lg)]"
-          : cn(
-              "fixed top-0 z-50 h-screen w-[380px] overflow-y-auto rounded-none max-md:w-[min(100vw,380px)]",
-              dock === "left" && "left-0",
-              dock === "right" && "right-0",
-            ),
+          : "fixed top-0 right-0 z-50 h-screen w-[380px] overflow-y-auto rounded-none max-md:w-[min(100vw,380px)]",
       )}
     >
       <div className="mb-2 flex items-start justify-between gap-3">
@@ -476,18 +471,6 @@ export default function SutInlineAIPanel({
           </Button>
           {onDockChange && (
             <div className="flex items-center gap-1">
-              <Button
-                variant="icon"
-                onClick={() => onDockChange("left")}
-                aria-label={t("chat.actions.dockLeft")}
-                title={t("chat.actions.dockLeft")}
-                className={cn(
-                  "h-7 w-7 border-transparent text-[var(--text-muted)] hover:bg-[var(--gold-subtle)] hover:text-[var(--gold)]",
-                  dock === "left" && buttonActiveClass,
-                )}
-              >
-                <PanelLeft className="h-3.5 w-3.5" />
-              </Button>
               <Button
                 variant="icon"
                 onClick={() => onDockChange("center")}

@@ -53,7 +53,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-[var(--surface-soft)] px-4">
+    <main
+      data-sut-login
+      className="flex min-h-dvh items-center justify-center bg-[var(--surface-soft)] px-4"
+    >
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-4 text-center">
           <BilunFullLogo size={28} />

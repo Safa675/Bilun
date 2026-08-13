@@ -35,9 +35,10 @@ def main() -> int:
         return 2
 
     print("# Paste these into your .env (backend + frontend read the same vars).")
-    print(f"BILUN_AUTH_USERNAME={username}")
-    print(f"BILUN_AUTH_PASSWORD={hash_password(password)}")
-    print(f"BILUN_SESSION_SECRET={generate_session_secret()}")
+    print("# Quote values so `source .env` does not expand $ in the PBKDF2 hash.")
+    print(f"BILUN_AUTH_USERNAME='{username}'")
+    print(f"BILUN_AUTH_PASSWORD='{hash_password(password)}'")
+    print(f"BILUN_SESSION_SECRET='{generate_session_secret()}'")
     return 0
 
 

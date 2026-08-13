@@ -35,7 +35,7 @@ const ConfigContext = createContext<ConfigState>({
  * Display strings (risk-tier labels, direction labels, sut_data_source
  * label/notice) are intentionally empty: the fallback represents an
  * unavailable/uninitialized state, and the only config consumers
- * (AppTopBar via SyntheticDemoChip, SUTOptimizerTab via regulatory
+ * (AppSidebar via SyntheticDemoChip, SUTOptimizerTab via regulatory
  * counts) never render these label fields. The real localized labels
  * come from the backend /api/frontend-config response in production.
  */

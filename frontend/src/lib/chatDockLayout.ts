@@ -18,9 +18,8 @@ export function getChatDockInsets(
     return { left: "0px", right: "0px" };
   }
 
-  const inset = `${CHAT_DOCK_INSET_PX}px`;
   return {
-    left: dock === "left" ? inset : "0px",
-    right: dock === "right" ? inset : "0px",
+    left: "0px",
+    right: dock === "right" ? `${CHAT_DOCK_INSET_PX}px` : "0px",
   };
 }

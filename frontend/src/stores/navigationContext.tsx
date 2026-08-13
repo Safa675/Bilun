@@ -47,6 +47,14 @@ export function useSetShowAdmin() {
   return useNavigationStore((state) => state.setShowAdmin);
 }
 
+export function useNavigationStoreApi(): StoreApi<NavigationStore> {
+  const context = useContext(NavigationContext);
+  if (!context) {
+    throw new Error("useNavigationStore must be used within a NavigationProvider");
+  }
+  return context.store;
+}
+
 export function useAiDockPosition() {
   return useNavigationStore((state) => state.aiDockPosition);
 }
