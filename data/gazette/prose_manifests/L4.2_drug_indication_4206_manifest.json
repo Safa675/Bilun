@@ -534,8 +534,5 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Tier C manifest-only until EMR fields support pathway."
     }
   ],
-  "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 27,
-  "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 35.7
+  "clause_trace_complete": true
 }

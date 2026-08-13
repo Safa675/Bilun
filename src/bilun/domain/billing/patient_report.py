@@ -8,6 +8,9 @@ import polars as pl
 
 from src.bilun.domain.billing.claim_blood_uplift import recommend_blood_uplift_from_claims
 from src.bilun.domain.billing.claim_yatak_puani import recommend_yatak_puani_from_claims
+from src.bilun.domain.billing.claim_yatak_icu_overlap import (
+    reconcile_yatak_icu_overlap,
+)
 from src.bilun.domain.billing.claim_icu_puani import recommend_icu_puani_from_claims
 from src.bilun.domain.billing.claim_yenidogan_yatak import (
     recommend_yenidogan_yatak_from_claims,
@@ -116,6 +119,16 @@ def compute_patient_billing_report(
         report.blood_uplift = recommend_blood_uplift_from_claims(claim_context)
         report.yatak_puani = recommend_yatak_puani_from_claims(claim_context)
         report.icu_puani = recommend_icu_puani_from_claims(claim_context)
+        # YB→servis geçiş günü koordinasyonu (post-processing): 510090'nun son
+        # günü (YB çıkış/transfer günü) servis yatağı (510010) ile aynı takvim
+        # gününe denk gelirse yatak iki kez faturalanır (EK-2B: 510090 "Yemek,
+        # yatak, hasta vizit hizmetlerini kapsar"). O gün yatak beklenen gün
+        # sayısından düşülür — recoverable uplift çift hesaplanmaz. Fiilen çift
+        # faturalanan 510010 satırları ayrıca analyze_claim'de audit-exposure
+        # violation olarak raporlanır (yatak_icu_overlap.detect_*).
+        report.yatak_puani = reconcile_yatak_icu_overlap(
+            claim_context, report.yatak_puani
+        )
         report.yenidogan_yatak = recommend_yenidogan_yatak_from_claims(claim_context)
         report.refakatci = recommend_refakatci_from_claims(claim_context)
         report.anestezi_puani = recommend_anestezi_puani_from_claims(claim_context)

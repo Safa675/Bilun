@@ -766,6 +766,31 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         description="SUT §4.6 — blood components (705371/705430/705440/705372/705373/705441/705442/705443) must be recorded in MEDULA with ISBT 128 barcodes (4.6.ek2c); EK-2/B payment is conditioned on the epicrisis stating component name/count/ISBT barcodes (4.6.ek2b). Missing/malformed barcode lines are audit-exposure violations wired into analyze_claim.",
         description_tr="SUT §4.6 — kan bileşenleri (705371/705430/705440/705372/705373/705441/705442/705443) ISBT 128 barkod numaralarıyla MEDULA'ya kaydedilmelidir (4.6.ek2c); EK-2/B ödemesi epikrizde bileşen adı/sayısı/ISBT barkodunun belirtilmesine bağlıdır (4.6.ek2b). Barkod eksik/hatalı satırlar analyze_claim'e bağlı denetim-risk ihlalidir.",
     ),
+    RuleRegistryEntry(
+        rule_id="yatak_icu_overlap",
+        rule_category="icu",
+        rule_category_tr="YB→Servis Geçiş Günü Yatak Çift Faturalama",
+        coverage_status="implemented",
+        domain_modules=(
+            "src/bilun/domain/prose_rules/yatak_icu_overlap.py",
+            "src/bilun/domain/billing/claim_yatak_icu_overlap.py",
+            "src/bilun/domain/billing/patient_report.py",
+            "src/bilun/domain/billing/engine.py",
+        ),
+        sut_section_prefixes=("2.4.4.H", "2.2.2"),
+        annex_refs=("EK-2/B",),
+        keywords=(
+            "yoğun bakım",
+            "510090",
+            "510010",
+            "yatak",
+            "çıkış günü",
+            "çift faturalama",
+            "servis",
+        ),
+        description="SUT §2.4.4.H + §2.2.2 — on an ICU discharge/transfer day (510090 last day) the bed is already paid (EK-2B 'yemek, yatak, hasta vizit'), so the service bed (510010) cannot be billed the same day. patient_report drops the day from expected yatak bed days (recoverable-uplift path); analyze_claim flags actually billed 510010 lines on ICU last days as audit-exposure violations.",
+        description_tr="SUT §2.4.4.H + §2.2.2 — YB çıkış/transfer gününde (510090 son gün) yatak zaten ödendiği için (EK-2B 'yemek, yatak, hasta vizit') aynı gün servis yatağı (510010) faturalanamaz. patient_report beklenen yatak gününden o günü düşer (recoverable-uplift yolu); analyze_claim YB son gününe tarihlenen fiili 510010 satırlarını denetim riski ihlali olarak işaretler.",
+    ),
 )
 
 RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = tuple(

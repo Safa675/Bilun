@@ -1579,8 +1579,5 @@
       "defer_reason": "Deferred — requires structured ingest for: clinical_pathway. Batch encode when EMR/report fields support this pathway."
     }
   ],
-  "clause_trace_complete": true,
-  "encode_tier_C_deferred_count": 112,
-  "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 13.0
+  "clause_trace_complete": true
 }

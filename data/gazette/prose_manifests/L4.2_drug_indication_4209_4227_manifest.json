@@ -1545,8 +1545,5 @@
   "section_4.2.9_tier_c_count": 42,
   "section_4.2.27_clause_total": 69,
   "section_4.2.27_tier_a_count": 16,
-  "section_4.2.27_tier_c_count": 49,
-  "encode_tier_C_deferred_count": 59,
-  "manifest_coverage_pct": 100.0,
-  "encoded_clause_pct": 49.2
+  "section_4.2.27_tier_c_count": 49
 }
