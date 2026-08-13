@@ -246,6 +246,7 @@ def parse_procedure_line(row: RowDict, errors: list[str]) -> ProcedureClaimLine 
             lab_billing_status=parse_text(row, "lab_billing_status"),
             procedure_specialty_code=parse_text(row, "procedure_specialty_code"),
             sag_sol=parse_text(row, "sag_sol"),
+            isbt128_barcode=parse_text(row, "isbt128_barcode"),
         )
     except KeyError as exc:
         errors.append(f"procedure_claim_lines missing field {exc.args[0]}")

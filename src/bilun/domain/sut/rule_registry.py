@@ -743,6 +743,29 @@ _BASE_RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = (
         description="SUT §2.4.4.H — on 510090 ICU day-rate days, bundled services (ventilation, oxygen, nebulization, suction, monitoring) billed separately are audit-exposure violations. Wired into analyze_claim.",
         description_tr="SUT §2.4.4.H — 510090 YBÜ gününde paket-içi hizmetlerin (ventilasyon, oksijen, nebulizasyon, aspirasyon, monitörizasyon) ayrı faturalanması denetim riski ihlalidir. analyze_claim'e bağlı.",
     ),
+    RuleRegistryEntry(
+        rule_id="blood_component_isbt128_barcode",
+        rule_category="blood_component",
+        rule_category_tr="Kan Bileşeni ISBT 128 Barkod Zorunluluğu",
+        coverage_status="implemented",
+        domain_modules=(
+            "src/bilun/domain/prose_rules/blood_component_isbt128.py",
+            "src/bilun/domain/billing/engine.py",
+        ),
+        sut_section_prefixes=("4.6",),
+        annex_refs=("EK-2/B", "EK-2/C"),
+        keywords=(
+            "ISBT 128",
+            "barkod",
+            "kan bileşeni",
+            "eritrosit",
+            "trombosit",
+            "plazma",
+            "MEDULA",
+        ),
+        description="SUT §4.6 — blood components (705371/705430/705440/705372/705373/705441/705442/705443) must be recorded in MEDULA with ISBT 128 barcodes (4.6.ek2c); EK-2/B payment is conditioned on the epicrisis stating component name/count/ISBT barcodes (4.6.ek2b). Missing/malformed barcode lines are audit-exposure violations wired into analyze_claim.",
+        description_tr="SUT §4.6 — kan bileşenleri (705371/705430/705440/705372/705373/705441/705442/705443) ISBT 128 barkod numaralarıyla MEDULA'ya kaydedilmelidir (4.6.ek2c); EK-2/B ödemesi epikrizde bileşen adı/sayısı/ISBT barkodunun belirtilmesine bağlıdır (4.6.ek2b). Barkod eksik/hatalı satırlar analyze_claim'e bağlı denetim-risk ihlalidir.",
+    ),
 )
 
 RULE_REGISTRY: tuple[RuleRegistryEntry, ...] = tuple(
