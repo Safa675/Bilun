@@ -96,9 +96,16 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
     });
   }, [hideShell, navigationStore]);
 
-  // Mount-only read; live dock transitions are handled by the store subscription above.
+  // Mount-only read; synchronously initialize sidebar state and width before paint.
   useLayoutEffect(() => {
-    setCollapsed(readSidebarCollapsed() || chatDock === "right");
+    const initialCollapsed = readSidebarCollapsed() || chatDock === "right";
+    setCollapsed(initialCollapsed);
+    if (!hideShell) {
+      document.documentElement.style.setProperty(
+        "--shell-sidebar-width",
+        `${sidebarWidthPx(initialCollapsed)}px`,
+      );
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only read
   }, []);
 
@@ -106,15 +113,10 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
     const root = document.documentElement;
     if (hideShell) {
       root.style.setProperty("--shell-sidebar-width", "0px");
-      return () => {
-        root.style.setProperty("--shell-sidebar-width", "0px");
-      };
+      return;
     }
     const width = `${sidebarWidthPx(collapsed)}px`;
     root.style.setProperty("--shell-sidebar-width", width);
-    return () => {
-      root.style.setProperty("--shell-sidebar-width", "0px");
-    };
   }, [collapsed, hideShell]);
 
   useEffect(() => {
