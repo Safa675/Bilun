@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
 import SutHowItWorksModal from "@/components/modals/SutHowItWorksModal";
+import ReportProblemModal from "@/components/feedback/ReportProblemModal";
 import SutPatientWorkspace from "@/components/patient/SutPatientWorkspace";
 import {
   BillingSummary,
@@ -65,8 +66,10 @@ import {
   useAiDockPosition,
   useSetAiDockPosition,
   useSetShowHowItWorks,
+  useSetShowReportProblem,
   useSetSutChatSession,
   useShowHowItWorks,
+  useShowReportProblem,
   useSutChatSession,
   useWorkspacePaneBTabId,
 } from "@/stores/index";
@@ -109,6 +112,8 @@ export function SutPatientPageContent({
   const setChatDock = useSetAiDockPosition();
   const showHowItWorks = useShowHowItWorks();
   const setShowHowItWorks = useSetShowHowItWorks();
+  const showReportProblem = useShowReportProblem();
+  const setShowReportProblem = useSetShowReportProblem();
   const outcomeControllerRef = useRef<AbortController | null>(null);
   const optimizationControllerRef = useRef<AbortController | null>(null);
   const billingControllerRef = useRef<AbortController | null>(null);
@@ -720,7 +725,10 @@ export function SutPatientPageContent({
         />
       )}
       {!embedded && (
-        <SutHowItWorksModal open={showHowItWorks} onClose={() => setShowHowItWorks(false)} />
+        <>
+          <SutHowItWorksModal open={showHowItWorks} onClose={() => setShowHowItWorks(false)} />
+          <ReportProblemModal open={showReportProblem} onClose={() => setShowReportProblem(false)} />
+        </>
       )}
     </>
   );

@@ -55,6 +55,14 @@ export function useNavigationStoreApi(): StoreApi<NavigationStore> {
   return context.store;
 }
 
+export function useShowReportProblem() {
+  return useNavigationStore((state) => state.showReportProblem);
+}
+
+export function useSetShowReportProblem() {
+  return useNavigationStore((state) => state.setShowReportProblem);
+}
+
 export function useAiDockPosition() {
   return useNavigationStore((state) => state.aiDockPosition);
 }
@@ -62,3 +70,4 @@ export function useAiDockPosition() {
 export function useSetAiDockPosition() {
   return useNavigationStore((state) => state.setAiDockPosition);
 }
+

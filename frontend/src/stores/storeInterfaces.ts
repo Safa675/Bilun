@@ -22,12 +22,14 @@ export const EMPTY_SUT_INLINE_CHAT_STATE: SutInlineChatState = {
 export interface NavigationState {
   showHowItWorks: boolean;
   showAdmin: boolean;
+  showReportProblem: boolean;
   aiDockPosition: SutChatDockPosition;
 }
 
 export interface NavigationActions {
   setShowHowItWorks: (show: boolean) => void;
   setShowAdmin: (show: boolean) => void;
+  setShowReportProblem: (show: boolean) => void;
   setAiDockPosition: (position: SutChatDockPosition) => void;
 }
 
