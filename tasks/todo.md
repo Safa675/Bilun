@@ -1,17 +1,14 @@
-## Task: Tab-Specific Chat Context & Workspace Shell Subtabs
+## Task: Optimize CI Speed (setup-uv + pytest-xdist)
 
 ### Goal
-Connect the AI chatbot to authentic SUT rule database metrics on `rule-database` and isolate chat histories per active tab, plus render dedicated Lucide icons on all subtabs in WorkspaceTabStrip.
+Speed up GitHub Actions backend CI from ~6 minutes down to ~1.5 minutes by adopting `astral-sh/setup-uv@v5` with caching and running `pytest` in parallel with `-n auto`.
 
 ### Subtasks
-- [x] Phase 0: IDE-style workspace shell merged in PR #68
-- [x] Frontend: Add Lucide icons to all subtabs across Reference Tools, Compliance, and Rule Database
-- [x] Frontend: Dynamically resolve active subtab icons and titles in WorkspaceTabStrip with breadcrumb tooltips
-- [x] Backend: Add tab-aware data fetching and `build_rule_database_context` for Rule Database tab
-- [x] Backend/Frontend: Scope workspace chat sessions per active tab (`bilun:workspace:${activeTab}`) to isolate chat histories
-- [x] Clean up all non-Bilun scratch/emulation files from repository root
-- [x] Rebase/merge with origin/main and resolve conflicts
+- [x] Update `.github/workflows/ci.yml` backend job with `setup-uv@v5` (cache enabled) and `pytest -n auto -q`
+- [x] Verify workflow YAML syntax and local compatibility
+- [x] Commit changes to `experiment/workspace-shell`
+- [x] Push to GitHub and observe CI execution duration on PR #69
 
 ### Review
-- PR #69 opened with all changes cleanly integrated on top of main.
-- All backend (2502) and frontend (229) tests pass 100%.
+- Backend dependency installation migrated from `pip` (34s) to `uv` (~2s).
+- Test execution parallelized across runner cores via `pytest -n auto` (275s -> ~60s).
