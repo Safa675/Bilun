@@ -383,6 +383,13 @@ async def stream_chat_response_with_tools(
             return
 
         # Execute tool calls (max 3 tools per round)
+        tool_names = [tc.get("function", {}).get("name", "tool") for tc in tool_calls[:3]]
+        tool_names_str = ", ".join(tool_names)
+        if ui_locale == "tr":
+            yield ("reasoning", f"SUT ve hasta verileri sorgulanıyor ({tool_names_str})...\n")
+        else:
+            yield ("reasoning", f"Querying SUT and patient data ({tool_names_str})...\n")
+
         if round_num >= MAX_TOOL_CALLS_PER_TURN:
             logger.warning(
                 "TOOL CALL LIMIT REACHED | round=%d | limit=%d",
@@ -450,6 +457,11 @@ async def stream_chat_response_with_tools(
         for _tc, tool_message in tool_results:
             if tool_message is not None:
                 full_messages.append(tool_message)
+
+        if ui_locale == "tr":
+            yield ("reasoning", "Veriler alındı, yanıt derleniyor...\n")
+        else:
+            yield ("reasoning", "Data retrieved, compiling response...\n")
 
     # Should not reach here (handled above), but safety net
     stream_payload = {

@@ -49,13 +49,24 @@ const CHAT_CURSOR_CLASS =
 function resolvePromptKey(activeTab: string): string {
   const map: Record<string, string> = {
     "SUT Workspace": "sutWorkspace",
+    "SUT Çalışma Alanı": "sutWorkspace",
     Patients: "patients",
+    Hastalar: "patients",
     Compliance: "compliance",
+    Uyumluluk: "compliance",
     Revenue: "revenue",
+    Gelir: "revenue",
+    Operations: "operations",
+    Operasyonlar: "operations",
     "Reference Tools": "referenceTools",
+    "Referans Araçları": "referenceTools",
     "Rule Database": "ruleDatabase",
+    "Kural Veritabanı": "ruleDatabase",
+    "SUT Kural Veritabanı": "ruleDatabase",
     "SUT Patient Workspace": "sutPatientWorkspace",
+    "SUT Hasta Çalışma Alanı": "sutPatientWorkspace",
     "SUT Billing Review": "sutBillingReview",
+    "SUT Fatura İncelemesi": "sutBillingReview",
   };
   return map[activeTab] ?? "sutWorkspace";
 }
@@ -519,7 +530,7 @@ export default function SutInlineAIPanel({
               key={`${message.role}-${message.content.slice(0, 64)}-${index}`}
               className="mb-3"
             >
-              <div className="mb-1 text-[0.68rem] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              <div className="mb-1 text-[0.72rem] font-semibold text-[var(--text-muted)]">
                 {message.role === "user" ? t("chat.roles.you") : t("chat.roles.bilun")}
               </div>
               <div

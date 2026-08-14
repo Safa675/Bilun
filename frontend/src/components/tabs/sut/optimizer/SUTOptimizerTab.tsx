@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ShieldAlert,
   ShieldCheck,
@@ -781,7 +782,13 @@ function ComplianceAlerts({
   cohortFilterActive: boolean;
 }) {
   const t = useT();
-  const [activeSub, setActiveSub] = useState<AlertSubId>("exemptions");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const rawComp = searchParams?.get("compTab") || searchParams?.get("subtab");
+  const activeSub: AlertSubId = rawComp === "surcharge" ? "surcharge" : "exemptions";
+
   const [status, setStatus] = useState<PatientAlertsStatus>("all");
   const [page, setPage] = useState(1);
   const { filter: cohortFilter } = useCohortFilter();
@@ -810,9 +817,13 @@ function ComplianceAlerts({
   }, []);
 
   const handleCategoryChange = (nextCategory: AlertSubId) => {
-    setActiveSub(nextCategory);
     setStatus("all");
     setPage(1);
+    if (pathname) {
+      const params = new URLSearchParams(searchParams?.toString() ?? "");
+      params.set("compTab", nextCategory);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
   };
 
   const handleStatusChange = (nextStatus: PatientAlertsStatus) => {

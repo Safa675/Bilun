@@ -1,7 +1,16 @@
 import type { ChatMessage } from "@/lib/domains/common";
 
-/** Single persistent chat thread for the SUT workspace (all tabs + patient routes). */
+/** Base persistent chat thread key for the SUT workspace. */
 export const SUT_WORKSPACE_CHAT_SESSION_KEY = "bilun:workspace";
+
+export function sutWorkspaceChatSessionKey(tab?: string | null): string {
+  const normalized = tab?.trim() || "home";
+  return `${SUT_WORKSPACE_CHAT_SESSION_KEY}:${normalized}`;
+}
+
+export function sutPatientChatSessionKey(patientId: string): string {
+  return `bilun:patient:${patientId.trim()}`;
+}
 
 export function buildSutChatContextKey(
   patientId: string | null | undefined,

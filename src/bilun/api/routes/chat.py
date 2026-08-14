@@ -66,6 +66,7 @@ from .optimization import get_optimization_summary, get_patient_optimization, ge
 from .patients import get_bilun_patient_outcome
 from .billing import get_bill_billing_report, get_patient_billing_report
 from .medula_rejections import get_medula_rejection_queue
+from .rules import get_rule_catalog
 
 from src.bilun.chatbot.medula_kb import search_medula
 from src.bilun.db import read_patient_alert_row_by_id, read_patient_alerts_summary
@@ -251,6 +252,35 @@ def _summarize_billing_report(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _summarize_rule_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
+    cov = catalog.get("coverage_summary") or {}
+    clauses = cov.get("clauses") or {}
+    registry = cov.get("registry") or {}
+    fact_check = catalog.get("fact_check") or {}
+    return {
+        "artifacts_available": catalog.get("artifacts_available", True),
+        "total_rules": catalog.get("total", registry.get("total_rules", 0)),
+        "registry_by_status": registry.get("by_status", []),
+        "implemented_rules": registry.get("implemented_rules", 0),
+        "partial_rules": registry.get("partial_rules", 0),
+        "missing_rules": registry.get("missing_rules", 0),
+        "needs_claim_lines_rules": registry.get("needs_claim_lines_rules", 0),
+        "non_algorithmic_rules": registry.get("non_algorithmic_rules", 0),
+        "total_clauses": clauses.get("total_extracted", 0),
+        "numbered_clause_count": clauses.get("numbered_clause_count", 0),
+        "algorithmic_gaps": clauses.get("algorithmic_gaps", 0),
+        "algorithmic_gap_pct": clauses.get("algorithmic_gap_pct", 0.0),
+        "clause_type_breakdown": clauses.get("clause_type_breakdown", {}),
+        "top_gap_categories": (clauses.get("top_gap_categories") or [])[:6],
+        "fact_check_summary": {
+            "total_units": fact_check.get("total_units", 0),
+            "compliant": fact_check.get("compliant", 0),
+            "partial": fact_check.get("partial", 0),
+            "heuristic": fact_check.get("heuristic", 0),
+        } if fact_check else None,
+    }
+
+
 def _safe_context_block(label: str, builder) -> dict[str, Any]:
     try:
         return {"status": "ready", "summary": builder()}
@@ -371,6 +401,38 @@ def _get_patient_optimization_for_chat(patient_id: str) -> dict[str, Any]:
     return get_patient_optimization(patient_id)
 
 
+def _normalize_tab_slug(active_tab: str, page_context: dict[str, Any] | None = None) -> str:
+    if page_context and isinstance(page_context.get("tab"), str) and page_context["tab"].strip():
+        tab_val = page_context["tab"].strip().lower()
+        if "rule" in tab_val or "kural" in tab_val:
+            return "rule-database"
+        if "operation" in tab_val or "operasyon" in tab_val or "medula" in tab_val:
+            return "operations"
+        if "tool" in tab_val or "araç" in tab_val or "referans" in tab_val:
+            return "reference-tools"
+        if "revenue" in tab_val or "gelir" in tab_val:
+            return "revenue"
+        if "compliance" in tab_val or "uyumluluk" in tab_val:
+            return "compliance"
+        if "patient" in tab_val or "hasta" in tab_val:
+            return "patients"
+
+    raw = active_tab.strip().lower()
+    if "rule" in raw or "kural" in raw:
+        return "rule-database"
+    if "operation" in raw or "operasyon" in raw or "medula" in raw:
+        return "operations"
+    if "tool" in raw or "araç" in raw or "referans" in raw:
+        return "reference-tools"
+    if "revenue" in raw or "gelir" in raw:
+        return "revenue"
+    if "compliance" in raw or "uyumluluk" in raw:
+        return "compliance"
+    if "patient" in raw or "hasta" in raw:
+        return "patients"
+    return "patients"
+
+
 def _fetch_runtime_data(
     active_tab: str,
     patient_id: str | None,
@@ -381,6 +443,13 @@ def _fetch_runtime_data(
     user_role: UserRole = "billing_officer",
 ) -> dict[str, Any]:
     """Fetch all data needed for context assembly (parallel where independent)."""
+    tab_slug = _normalize_tab_slug(active_tab, page_context)
+
+    def _fetch_rule_catalog() -> dict[str, Any]:
+        return _safe_context_block(
+            "Rule catalog",
+            lambda: _summarize_rule_catalog(get_rule_catalog()),
+        )
 
     def _fetch_optimization_summary() -> dict[str, Any]:
         return _safe_context_block(
@@ -437,21 +506,25 @@ def _fetch_runtime_data(
             else {"ingest_available": False, "total": 0},
         )
 
-    jobs: dict[str, Any] = {
-        "optimization_summary": _fetch_optimization_summary,
-        "revenue_recovery": _fetch_revenue_recovery,
-    }
+    jobs: dict[str, Any] = {}
     if patient_id:
+        jobs["optimization_summary"] = _fetch_optimization_summary
+        jobs["revenue_recovery"] = _fetch_revenue_recovery
         jobs["patient_outcome"] = _fetch_patient_outcome
         jobs["patient_optimization"] = _fetch_patient_optimization
         jobs["billing_report"] = _fetch_billing_report
     else:
-        # MEDULA playbook context is cohort/home only; do not inject into
-        # patient workspace chat where the playbook section may be hidden.
-        if user_message:
-            jobs["medula_search"] = _fetch_medula_search
-        if page_context and page_context.get("tab") == "operations":
+        if tab_slug == "rule-database":
+            jobs["rule_catalog"] = _fetch_rule_catalog
+        elif tab_slug == "operations":
             jobs["medula_queue_count"] = _fetch_medula_queue_count
+            if user_message:
+                jobs["medula_search"] = _fetch_medula_search
+        else:
+            jobs["optimization_summary"] = _fetch_optimization_summary
+            jobs["revenue_recovery"] = _fetch_revenue_recovery
+            if user_message:
+                jobs["medula_search"] = _fetch_medula_search
 
     data: dict[str, Any] = {}
     max_workers = min(4, len(jobs))

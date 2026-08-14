@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkupWithLocale } from "@/test/renderWithLocale";
 import { fmtTRYFixture } from "@/test/fmtMoney";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  usePathname: () => "/",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 vi.mock("@/hooks/useStaggeredReveal", () => ({
   default: () => ({
     getRevealProps: () => ({

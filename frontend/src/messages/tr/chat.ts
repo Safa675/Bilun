@@ -46,6 +46,8 @@ const chat = {
       "Filtrelenmiş kohort için uyumluluk uyarılarını özetleyin. Katılım payı muafiyeti (EK-1A), fark ücreti bayrakları (EK-2G), EK-2C-1 katılım payı oranı uyumsuzlukları ve kesinlik engellerini vurgulayın. Türkçe yanıt verin.",
     revenue:
       "Filtrelenmiş kohort için gelir geri kazanımını özetleyin. Geri kazanılabilir toplamları, öncelikli hastaları ve kesinlik sınırlamalarını vurgulayın. Türkçe yanıt verin.",
+    operations:
+      "MEDULA fatura operasyonlarını ve ret kuyruklarını özetleyin. Bekleyen retleri, hata kodu kategorilerini ve yeniden gönderim öncesi düzeltici adımları vurgulayın. Türkçe yanıt verin.",
     referenceTools:
       "Hangi tebliğ referans araçlarının mevcut olduğunu ve bir fatura görevlisinin her sorguyu ne zaman kullanması gerektiğini açıklayın. Türkçe yanıt verin.",
     ruleDatabase:

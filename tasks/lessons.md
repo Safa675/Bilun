@@ -7,6 +7,18 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-08-14 — A scene crack that "launches but hangs" is stuck on ONLINE auth (OnlineFix/EOS), not on Wine/Proton/GPU
+
+**Pattern:** "0xdeadcode" (OnlineFix) releases of online-only games silently HANG — not crash — while polling the crack's auth servers (`api.epicgames.dev`, `online-fix.me`). The game process shows 66 threads, ~5GB virtual but tiny resident growth, near-zero CPU, no GPU process, and no engine log (`SixDays.log`) because it never reaches UE4's log init. The prior session kept fighting Wine/Proton/Steamless/GPU, but the real blocker was the OnlineFix cloud handshake.
+
+**Rule:** When a cracked game "launches but never shows a window", before touching Wine/Proton/GPU: (1) sniff the hang (`ss -tnp` for ESTABLISHED sockets to Cloudflare/Akamai + `WINEDEBUG=+winsock` to see `connect`/`select`/`WS2_recv` polling), (2) identify the crack layer (a `winmm.dll`/`version.dll` proxy exporting an `OnlineFix` symbol + `dlllist.txt` listing `OnlineFix64.dll`/`StubDRM64.dll` + a shrunken `EOSSDK-Win64-Shipping.dll` vs a larger `.of` original), (3) decide offline-bypass (drop the proxy DLL so the game uses the system DLL, restore the original SDK, rely on Goldberg `steam_api64.dll`). A game process at 0% GPU + polling a network socket for minutes = online-auth hang, not a rendering bug. The fix is crack-layer surgery, not driver/prefix tweaking.
+
+## 2026-08-13 — Don't call a game build "official" from preserved depot files alone; check the Steamworks layer and the license
+
+**Pattern:** Diagnosed `/home/safa/Documents/Ready.or.Not` as an "official Steam build" because `installscript.vdf` carried a valid Valve signature and the content paks were signed. In reality it was a RUNE repack: `steam_api64.dll` was replaced (original preserved as `steam_api64.rne`), the account had zero license hits for app 1144200 in `config.vdf`, and Steam logs showed the game was never launched via Steam (`LaunchApp [AppID 1144200]` absent). Repackers preserve depot files byte-for-byte — signed install scripts and paks prove nothing about the executable/Steamworks layer.
+
+**Rule:** Before classifying any software folder as a genuine/official install, require multiple independent signals: (1) an install manifest (`appmanifest_*.acf`) in a registered library OR a license for the appid in `config.vdf`; (2) the Steamworks DLL (`steam_api64.dll`/`steam_api.dll`) present unrenamed next to the game executable; (3) absence of repack markers (renamed `.rne`/`.o` dlls, `crack`/`RUNE` folders, uniform extraction timestamps across all files). One preserved signed file is never enough — same multi-signal pattern as the 2026-08-07 inventory lesson.
+
 ## 2026-08-06 — pytest in this repo can MUTATE committed artifacts; verify staged content at commit time, not at first-read time
 
 **Pattern:** Committing a user's manifest change (`effective_date: 2026-07-25 → 2026-08-01`), I read the diff at session start, then ran the full pytest suite, then committed — but a test (`test_copay_exemption_gate_b.py::test_manifest_has_encoded_clause_ids_union`) called `write_artifacts` without a `manifest_path`, so every pytest run rewrote the committed L1.8 manifest with `date.today()`. The committed value silently became 2026-08-03 while my commit message claimed 2026-08-01. The user's intended value was lost and the discrepancy was only found 3 days later when the date moved again (→ 2026-08-06). Aggravating factor: this repo's conftest ALSO writes on purpose (`reconcile_drug_manifests(write=True)` session fixture), so "pytest mutates the tree" is normal here — which makes accidental mutation easier to miss.
