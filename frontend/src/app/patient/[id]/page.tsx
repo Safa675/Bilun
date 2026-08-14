@@ -52,7 +52,7 @@ import {
 } from "@/lib/recommendedActions";
 import { cn } from "@/lib/cn";
 import { buildPatientWorkspacePageContext } from "@/lib/sutChatPageContext";
-import { SUT_WORKSPACE_CHAT_SESSION_KEY } from "@/lib/sutChatSession";
+import { sutPatientChatSessionKey } from "@/lib/sutChatSession";
 import { recordRecent } from "@/lib/recents";
 import type {
   BillingActionReport,
@@ -454,7 +454,7 @@ export function SutPatientPageContent({
     ? [outcomeError, optimizationError, billingError].filter(Boolean).join(" ")
     : null;
 
-  const chatSessionKey = SUT_WORKSPACE_CHAT_SESSION_KEY;
+  const chatSessionKey = sutPatientChatSessionKey(patientId);
   const chatState = useSutChatSession(chatSessionKey);
   const setChatSession = useSetSutChatSession();
   const handleChatStateChange = useCallback(

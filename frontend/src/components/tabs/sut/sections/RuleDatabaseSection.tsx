@@ -34,6 +34,8 @@ import { ClauseBrowserPanel, ClauseCard } from "./rule-database/ClauseBrowserPan
 import { DeferralBrowserPanel } from "./rule-database/DeferralBrowserPanel";
 import { ProseInventoryPanel } from "./rule-database/ProseInventoryPanel";
 
+import { RULE_DATABASE_SUB_ICONS } from "@/lib/workspaceSubtabs";
+
 // Re-export so existing imports (e.g. tests) keep resolving from this module.
 export { ClauseCard };
 
@@ -153,19 +155,39 @@ export function RuleDatabaseSection() {
 
         <TabsRoot value={activeTab} onValueChange={handleTabChange}>
           <TabsList density="compact">
-            <TabsTrigger value="rules" density="compact">
+            <TabsTrigger
+              value="rules"
+              density="compact"
+              leading={<RULE_DATABASE_SUB_ICONS.rules className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
+            >
               {t("sections.ruleDatabase.tabs.rules")}
             </TabsTrigger>
-            <TabsTrigger value="sections" density="compact">
+            <TabsTrigger
+              value="sections"
+              density="compact"
+              leading={<RULE_DATABASE_SUB_ICONS.sections className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
+            >
               {t("sections.ruleDatabase.tabs.sections")}
             </TabsTrigger>
-            <TabsTrigger value="clauses" density="compact">
+            <TabsTrigger
+              value="clauses"
+              density="compact"
+              leading={<RULE_DATABASE_SUB_ICONS.clauses className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
+            >
               {t("sections.ruleDatabase.tabs.clauses")}
             </TabsTrigger>
-            <TabsTrigger value="prose" density="compact">
+            <TabsTrigger
+              value="prose"
+              density="compact"
+              leading={<RULE_DATABASE_SUB_ICONS.prose className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
+            >
               {t("sections.ruleDatabase.tabs.prose")}
             </TabsTrigger>
-            <TabsTrigger value="deferrals" density="compact">
+            <TabsTrigger
+              value="deferrals"
+              density="compact"
+              leading={<RULE_DATABASE_SUB_ICONS.deferrals className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
+            >
               {t("sections.ruleDatabase.tabs.deferrals")}
             </TabsTrigger>
           </TabsList>

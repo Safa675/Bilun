@@ -12,7 +12,7 @@ import {
   SUT_HOME_TABS,
 } from "@/lib/constants";
 import { buildHomePageContext } from "@/lib/sutChatPageContext";
-import { SUT_WORKSPACE_CHAT_SESSION_KEY } from "@/lib/sutChatSession";
+import { sutWorkspaceChatSessionKey } from "@/lib/sutChatSession";
 import {
   SutAnalyticsShellSkeleton,
   SutOptimizerShellSkeleton,
@@ -87,7 +87,7 @@ function SutHomeContent() {
         ? "ruleDatabase"
         : activeMeta.id;
   const activeTabLabel = t(`constants.homeTabs.${activeTabCatalogKey}.label`);
-  const chatSessionKey = SUT_WORKSPACE_CHAT_SESSION_KEY;
+  const chatSessionKey = sutWorkspaceChatSessionKey(activeTab);
   const chatState = useSutChatSession(chatSessionKey);
   const setChatSession = useSetSutChatSession();
   const handleChatStateChange = useCallback(

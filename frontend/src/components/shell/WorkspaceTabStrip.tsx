@@ -3,32 +3,27 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Columns2, Search, User, X } from "lucide-react";
-import { TAB_ICONS, tabMessageKey } from "@/components/shell/AppSidebar";
+import { ChevronDown, Columns2, Search, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
-import type { SutHomeTab } from "@/lib/constants";
 import {
   WORKSPACE_INLINE_TABS,
   workspaceTabHref,
   type WorkspaceTab,
 } from "@/lib/workspaceTabs";
+import { resolveTabInfo } from "@/lib/workspaceSubtabs";
 import {
   useWorkspaceActiveTabId,
   useWorkspaceStoreApi,
   useWorkspaceTabs,
 } from "@/stores/workspaceContext";
 
-function tabLabel(tab: WorkspaceTab, t: ReturnType<typeof useT>): string {
-  if (tab.kind === "patient") return tab.refId;
-  return t(`constants.homeTabs.${tabMessageKey(tab.refId as SutHomeTab)}.label`);
+function tabDisplay(tab: WorkspaceTab, t: ReturnType<typeof useT>) {
+  return resolveTabInfo(tab, (key) => t(key as any));
 }
 
-function TabIcon({ tab }: { tab: WorkspaceTab }) {
-  if (tab.kind === "patient") {
-    return <User className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />;
-  }
-  const Icon = TAB_ICONS[tab.refId as SutHomeTab];
+function TabIcon({ tab, t }: { tab: WorkspaceTab; t: ReturnType<typeof useT> }) {
+  const { Icon } = tabDisplay(tab, t);
   return <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />;
 }
 
@@ -57,12 +52,13 @@ export default function WorkspaceTabStrip() {
     store.getState().openSplit({ kind: tab.kind, refId: tab.refId });
   };
 
-  const splitButton = (tab: WorkspaceTab, alwaysVisible: boolean) =>
-    tab.kind === "patient" ? (
+  const splitButton = (tab: WorkspaceTab, alwaysVisible: boolean) => {
+    const { label } = tabDisplay(tab, t);
+    return tab.kind === "patient" ? (
       <button
         type="button"
         onClick={() => handleSplit(tab)}
-        aria-label={`${t("shell.workspaceTabs.openSideBySide")}: ${tabLabel(tab, t)}`}
+        aria-label={`${t("shell.workspaceTabs.openSideBySide")}: ${label}`}
         title={t("shell.workspaceTabs.openSideBySide")}
         className={cn(
           "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[var(--text-muted)] transition-opacity hover:bg-[var(--surface-base)] hover:text-[var(--text-primary)]",
@@ -73,9 +69,11 @@ export default function WorkspaceTabStrip() {
         <Columns2 className="h-3 w-3" aria-hidden="true" />
       </button>
     ) : null;
+  };
 
   const renderTab = (tab: WorkspaceTab) => {
     const isActive = tab.id === activeTabId;
+    const { label, fullTitle } = tabDisplay(tab, t);
     return (
       <div
         key={tab.id}
@@ -92,18 +90,18 @@ export default function WorkspaceTabStrip() {
           href={workspaceTabHref(tab)}
           scroll={false}
           className="flex min-w-0 flex-1 items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium"
-          title={tabLabel(tab, t)}
+          title={fullTitle}
         >
-          <TabIcon tab={tab} />
+          <TabIcon tab={tab} t={t} />
           <span className={cn("truncate", tab.kind === "patient" && "font-mono text-[11px]")}>
-            {tabLabel(tab, t)}
+            {label}
           </span>
         </Link>
         {splitButton(tab, false)}
         <button
           type="button"
           onClick={() => handleClose(tab.id)}
-          aria-label={`${t("shell.workspaceTabs.close")}: ${tabLabel(tab, t)}`}
+          aria-label={`${t("shell.workspaceTabs.close")}: ${label}`}
           title={t("shell.workspaceTabs.close")}
           className="mr-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[var(--text-muted)] opacity-0 transition-opacity hover:bg-[var(--surface-base)] hover:text-[var(--text-primary)] focus-visible:opacity-100 group-hover:opacity-100"
         >
@@ -145,39 +143,43 @@ export default function WorkspaceTabStrip() {
                 onClick={() => setOverflowOpen(false)}
               />
               <div className="absolute left-0 top-full z-40 mt-1 flex w-56 flex-col gap-0.5 rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-base)] p-1 shadow-[var(--shadow-2)]">
-                {overflowTabs.map((tab) => (
-                  <div
-                    key={tab.id}
-                    data-workspace-tab={tab.id}
-                    className={cn(
-                      "group flex items-center rounded-[var(--r-md)]",
-                      tab.id === activeTabId
-                        ? "bg-[var(--surface-tint)] text-[var(--text-primary)]"
-                        : "text-[var(--text-muted)] hover:bg-[var(--surface-tint)]",
-                    )}
-                  >
-                    <Link
-                      href={workspaceTabHref(tab)}
-                      scroll={false}
-                      onClick={() => setOverflowOpen(false)}
-                      className="flex min-w-0 flex-1 items-center gap-1.5 px-2 py-1.5 text-xs font-medium"
+                {overflowTabs.map((tab) => {
+                  const { label, fullTitle } = tabDisplay(tab, t);
+                  return (
+                    <div
+                      key={tab.id}
+                      data-workspace-tab={tab.id}
+                      className={cn(
+                        "group flex items-center rounded-[var(--r-md)]",
+                        tab.id === activeTabId
+                          ? "bg-[var(--surface-tint)] text-[var(--text-primary)]"
+                          : "text-[var(--text-muted)] hover:bg-[var(--surface-tint)]",
+                      )}
                     >
-                      <TabIcon tab={tab} />
-                      <span className={cn("truncate", tab.kind === "patient" && "font-mono text-[11px]")}>
-                        {tabLabel(tab, t)}
-                      </span>
-                    </Link>
-                    {splitButton(tab, true)}
-                    <button
-                      type="button"
-                      onClick={() => handleClose(tab.id)}
-                      aria-label={`${t("shell.workspaceTabs.close")}: ${tabLabel(tab, t)}`}
-                      className="mr-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                    >
-                      <X className="h-3 w-3" aria-hidden="true" />
-                    </button>
-                  </div>
-                ))}
+                      <Link
+                        href={workspaceTabHref(tab)}
+                        scroll={false}
+                        onClick={() => setOverflowOpen(false)}
+                        className="flex min-w-0 flex-1 items-center gap-1.5 px-2 py-1.5 text-xs font-medium"
+                        title={fullTitle}
+                      >
+                        <TabIcon tab={tab} t={t} />
+                        <span className={cn("truncate", tab.kind === "patient" && "font-mono text-[11px]")}>
+                          {label}
+                        </span>
+                      </Link>
+                      {splitButton(tab, true)}
+                      <button
+                        type="button"
+                        onClick={() => handleClose(tab.id)}
+                        aria-label={`${t("shell.workspaceTabs.close")}: ${label}`}
+                        className="mr-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                      >
+                        <X className="h-3 w-3" aria-hidden="true" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}

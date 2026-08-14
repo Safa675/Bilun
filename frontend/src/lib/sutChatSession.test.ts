@@ -3,10 +3,19 @@ import { describe, expect, it } from "vitest";
 import {
   buildSutChatContextKey,
   formatSutChatContextPrompt,
+  sutPatientChatSessionKey,
+  sutWorkspaceChatSessionKey,
   visibleChatMessages,
 } from "./sutChatSession";
 
 describe("sutChatSession", () => {
+  it("builds tab-scoped workspace chat session keys", () => {
+    expect(sutWorkspaceChatSessionKey("rule-database")).toBe("bilun:workspace:rule-database");
+    expect(sutWorkspaceChatSessionKey("patients")).toBe("bilun:workspace:patients");
+    expect(sutWorkspaceChatSessionKey(null)).toBe("bilun:workspace:home");
+    expect(sutPatientChatSessionKey("P-001")).toBe("bilun:patient:P-001");
+  });
+
   it("builds stable context keys for cohort and patient views", () => {
     expect(buildSutChatContextKey(null, "Patients")).toBe("cohort::Patients::en");
     expect(buildSutChatContextKey("P-001", "SUT Patient Workspace")).toBe(

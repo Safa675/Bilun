@@ -800,6 +800,56 @@ def build_medula_context(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def build_rule_database_context(data: dict[str, Any]) -> str:
+    """Build SUT Rule Database & clause coverage context from pre-fetched catalog."""
+    catalog = data.get("rule_catalog", {}) or {}
+    if isinstance(catalog, dict) and "summary" in catalog and isinstance(catalog["summary"], dict):
+        catalog = catalog["summary"]
+    if not catalog or not isinstance(catalog, dict):
+        return ""
+
+    lines: list[str] = ["--- SUT RULE DATABASE & CLAUSE COVERAGE ---"]
+    lines.append(f"  Registered rule engines: {catalog.get('total_rules', 0)}")
+    lines.append(
+        f"    Implemented: {catalog.get('implemented_rules', 0)}, "
+        f"Partial: {catalog.get('partial_rules', 0)}, "
+        f"Missing: {catalog.get('missing_rules', 0)}, "
+        f"Needs claim lines: {catalog.get('needs_claim_lines_rules', 0)}, "
+        f"Non-algorithmic (reference only): {catalog.get('non_algorithmic_rules', 0)}"
+    )
+    total_clauses = catalog.get("total_clauses", 0)
+    numbered = catalog.get("numbered_clause_count", 0)
+    lines.append(
+        f"  Live SUT clause corpus: {total_clauses} total paragraphs in force ({numbered} numbered rule clauses)"
+    )
+    types = catalog.get("clause_type_breakdown", {})
+    if isinstance(types, dict) and types:
+        lines.append(
+            f"    Clause types: {types.get('fikra', 0)} fıkra, {types.get('bent', 0)} bent, "
+            f"{types.get('prose', 0)} prose paragraphs, {types.get('section_heading', 0)} headings"
+        )
+    gaps = catalog.get("algorithmic_gaps", 0)
+    gap_pct = catalog.get("algorithmic_gap_pct", 0.0)
+    lines.append(f"  Algorithmic gaps: {gaps} clauses ({gap_pct:.1f}% gap rate)")
+    top_gaps = catalog.get("top_gap_categories", [])
+    if top_gaps and isinstance(top_gaps, list):
+        _format_list_section(
+            lines,
+            "Top gap categories",
+            top_gaps,
+            key="category",
+            fmt="{category} ({count} clauses)",
+            max_items=6,
+        )
+    fc = catalog.get("fact_check_summary")
+    if isinstance(fc, dict) and fc.get("total_units"):
+        lines.append(
+            f"  Fact-check audit rollup: {fc.get('compliant', 0)} compliant, "
+            f"{fc.get('partial', 0)} partial, {fc.get('heuristic', 0)} heuristic units"
+        )
+    return "\n".join(lines)
+
+
 def slim_page_context(page_context: dict[str, Any] | None) -> dict[str, Any] | None:
     """Keep page_view metadata only — full patient data is fetched server-side."""
     if not page_context:
@@ -847,7 +897,7 @@ def build_bilun_runtime_context(
     Args:
         data: Pre-fetched data dict from the API layer.
             May contain: optimization_summary, patient_outcome,
-            patient_optimization, billing_report, catalog_info.
+            patient_optimization, billing_report, catalog_info, rule_catalog.
         active_tab: Current workspace tab name.
         patient_id: Currently selected patient, if any.
         page_context: Structured view of the current page (sections, labels, values).
@@ -867,7 +917,7 @@ def build_bilun_runtime_context(
         "user_role": user_role,
         "ui_locale": ui_locale,
         "assistant_rules": [
-            "Answer only from BILUN financial, reimbursement, optimization, and patient-workspace context.",
+            "Answer only from BILUN financial, reimbursement, optimization, rule-database, and patient-workspace context.",
             "If an exactness or pricing status is not exact, describe that surface as unavailable instead of inventing zero, clear, or low-risk values.",
             "Do not rely on IHP-only risk, causal, or trajectory claims.",
             "Always cite the exactness_status when reporting financial amounts.",
@@ -892,7 +942,18 @@ def build_bilun_runtime_context(
     if slim_view:
         context["page_view"] = slim_view
 
-    context["cohort_context"] = build_cohort_context(data)
+    tab_normalized = active_tab.strip().lower()
+    if page_context and isinstance(page_context.get("tab"), str):
+        tab_normalized = page_context["tab"].strip().lower()
+
+    is_rule_db = "rule" in tab_normalized or "kural" in tab_normalized
+
+    if is_rule_db:
+        rule_db_ctx = build_rule_database_context(data)
+        if rule_db_ctx:
+            context["rule_database_context"] = rule_db_ctx
+    else:
+        context["cohort_context"] = build_cohort_context(data)
 
     if patient_id:
         context["patient_context"] = build_patient_context(data)

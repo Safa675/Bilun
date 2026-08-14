@@ -524,3 +524,77 @@ def test_removed_estimate_native_sut_routes_return_404():
                 "rx_cost": 10.0,
             },
         ).status_code == 404
+
+
+def test_sut_chat_rule_database_context(monkeypatch):
+    import src.bilun.api.routes.chat as sut_chat_mod
+    from src.bilun.api import app
+
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(sut_chat_mod, "_check_rate_limit", lambda _ip: True)
+    monkeypatch.setattr(
+        sut_chat_mod,
+        "get_rule_catalog",
+        lambda: {
+            "total": 47,
+            "artifacts_available": True,
+            "coverage_summary": {
+                "clauses": {
+                    "total_extracted": 3250,
+                    "numbered_clause_count": 3250,
+                    "algorithmic_gaps": 622,
+                    "algorithmic_gap_pct": 19.1,
+                    "clause_type_breakdown": {"fikra": 2800, "bent": 450, "prose": 0, "section_heading": 50},
+                    "top_gap_categories": [
+                        {"category": "drug_indication", "count": 230},
+                        {"category": "payment_method", "count": 73},
+                    ],
+                },
+                "registry": {
+                    "total_rules": 47,
+                    "implemented_rules": 37,
+                    "partial_rules": 4,
+                    "missing_rules": 0,
+                    "needs_claim_lines_rules": 0,
+                    "non_algorithmic_rules": 6,
+                },
+            },
+            "fact_check": {
+                "total_units": 28,
+                "compliant": 26,
+                "partial": 2,
+                "heuristic": 0,
+            },
+        },
+    )
+
+    async def fake_stream_chat_response(
+        messages, runtime_context="", extra_params=None, intent="user_question", **kwargs
+    ):
+        captured["messages"] = messages
+        captured["runtime_context"] = runtime_context
+        yield "Kural veritabanı "
+        yield "özeti."
+
+    monkeypatch.setattr(sut_chat_mod, "stream_chat_response", fake_stream_chat_response)
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/chat",
+            json={
+                "messages": [{"role": "user", "content": "SUT kurallarını özetle"}],
+                "patient_id": None,
+                "active_tab": "rule-database",
+                "intent": "auto_brief",
+            },
+        )
+
+    assert response.status_code == 200
+    runtime_context = str(captured["runtime_context"])
+    assert "SUT RULE DATABASE & CLAUSE COVERAGE" in runtime_context
+    assert "Registered rule engines: 47" in runtime_context
+    assert "Algorithmic gaps: 622" in runtime_context
+    assert "drug_indication" in runtime_context
+    # Patient cohort context should NOT be present
+    assert "COHORT OPTIMIZATION" not in runtime_context
