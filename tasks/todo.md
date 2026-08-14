@@ -1,14 +1,17 @@
-## Task: Clean Up Root Scratch & Non-Bilun Research Files
+## Task: Tab-Specific Chat Context & Workspace Shell Subtabs
 
 ### Goal
-Delete all 29 non-Bilun loose `.txt` and `.html` web dump/scratch files in the repository root while preserving core project files like `requirements.txt`.
+Connect the AI chatbot to authentic SUT rule database metrics on `rule-database` and isolate chat histories per active tab, plus render dedicated Lucide icons on all subtabs in WorkspaceTabStrip.
 
 ### Subtasks
-- [x] Remove loose non-project text files: `aa.txt`, `aai.txt`, `aaii.txt`, `cnnturk_bedelli.txt`, `critpt.txt`, `ddg_ermaasi.txt`, `ds4.txt`, `ds_swe.txt`, `evals_ds.txt`, `gazetebirlik.txt`, `gdpval.txt`, `gem_blog.txt`, `gemini37.txt`, `hf_ds.txt`, `hurriyet_bedelli.txt`, `idx.txt`, `lms_ds.txt`, `mc_gem.txt`, `msb_cookies.txt`, `or_ds.txt`, `or_gem.txt`, `sr.txt`, `tau3.txt`, `taub.txt`, `tmp_links.txt`, `vs.txt`, `zenmux.txt`
-- [x] Remove loose non-project html files: `msb_duyuru.html`, `msb_home.html`
-- [x] Verify `requirements.txt` and all Bilun source code/test files remain intact
-- [x] Check `git status` to ensure repository cleanliness
+- [x] Phase 0: IDE-style workspace shell merged in PR #68
+- [x] Frontend: Add Lucide icons to all subtabs across Reference Tools, Compliance, and Rule Database
+- [x] Frontend: Dynamically resolve active subtab icons and titles in WorkspaceTabStrip with breadcrumb tooltips
+- [x] Backend: Add tab-aware data fetching and `build_rule_database_context` for Rule Database tab
+- [x] Backend/Frontend: Scope workspace chat sessions per active tab (`bilun:workspace:${activeTab}`) to isolate chat histories
+- [x] Clean up all non-Bilun scratch/emulation files from repository root
+- [x] Rebase/merge with origin/main and resolve conflicts
 
 ### Review
-- All 29 scratch and web dump files were permanently removed.
-- Repository root is clean, retaining only legitimate Bilun project files.
+- PR #69 opened with all changes cleanly integrated on top of main.
+- All backend (2502) and frontend (229) tests pass 100%.
