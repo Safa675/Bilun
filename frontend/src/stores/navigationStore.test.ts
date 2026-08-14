@@ -9,6 +9,7 @@ describe("createNavigationStore", () => {
     expect(store.getState()).toMatchObject({
       showHowItWorks: false,
       showAdmin: false,
+      showReportProblem: false,
       aiDockPosition: "center",
     });
   });
@@ -18,11 +19,13 @@ describe("createNavigationStore", () => {
 
     store.getState().setShowHowItWorks(true);
     store.getState().setShowAdmin(true);
+    store.getState().setShowReportProblem(true);
     store.getState().setAiDockPosition("right");
 
     expect(store.getState()).toMatchObject({
       showHowItWorks: true,
       showAdmin: true,
+      showReportProblem: true,
       aiDockPosition: "right",
     });
   });

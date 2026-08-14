@@ -11,6 +11,7 @@ import {
   ClipboardList,
   Database,
   LogOut,
+  MessageSquareWarning,
   PanelLeft,
   PanelLeftClose,
   ShieldCheck,
@@ -33,6 +34,7 @@ import {
   useAiDockPosition,
   useNavigationStoreApi,
   useSetShowHowItWorks,
+  useSetShowReportProblem,
 } from "@/stores/index";
 import { getMedulaRejectionIngestStatus } from "@/lib/api/sut";
 import { useUserRole } from "@/components/shell/RoleProvider";
@@ -73,6 +75,7 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
   const router = useRouter();
   const pathname = usePathname();
   const setShowHowItWorks = useSetShowHowItWorks();
+  const setShowReportProblem = useSetShowReportProblem();
   const config = useConfig();
   const searchParams = useSearchParams();
   const sutDataSource = config.sut_data_source ?? config.sutDataSource ?? null;
@@ -299,6 +302,22 @@ export default function AppSidebar({ onOpenHowItWorks, className }: AppSidebarPr
       >
         <LocaleSwitcher compact={collapsed} />
         <RoleSwitcher compact={collapsed} />
+
+        <button
+          type="button"
+          onClick={() => setShowReportProblem(true)}
+          className={cn(
+            "inline-flex items-center gap-2 rounded-[var(--r-md)] px-2.5 py-2 text-[11px] font-medium",
+            "text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-secondary)]",
+            "transition-colors",
+            collapsed && "justify-center px-0",
+          )}
+          title={t("shell.appSidebar.reportProblem")}
+          aria-label={t("shell.appSidebar.reportProblem")}
+        >
+          <MessageSquareWarning className="h-3.5 w-3.5 shrink-0 text-[var(--gold)]" aria-hidden="true" />
+          {!collapsed && <span>{t("shell.appSidebar.reportProblem")}</span>}
+        </button>
 
         <button
           type="button"
