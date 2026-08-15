@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from decimal import Decimal
+from functools import lru_cache
 
 from src.bilun.domain.claims.models import ClaimHeader
 from src.bilun.domain.claims.patient_context import PatientClaimContext
@@ -11,8 +12,16 @@ from src.bilun.domain.prose_rules.copay_general import (
     resolve_drug_copay_rate,
     resolve_material_copay_rate,
 )
+from src.bilun.domain.sut.clause_reference import (
+    RULE_TYPE_COPAY_RATE,
+    RULE_TYPE_COPAY_WAIVER,
+    SutClauseReference,
+    sut_clause_reference,
+)
 
 from .copay_line_waivers import (
+    _EMERGENCY_TYPES,
+    _normalize_token,
     WaiverResult,
     find_ek1a_source,
     waiver_composite_drug,
@@ -23,6 +32,7 @@ from .copay_line_waivers import (
 )
 from .line_decomposition import (
     aggregate_decomposition_status,
+    cancer_surcharge_exemption_clause,
     decompose_drug_line,
     decompose_procedure_line,
 )
@@ -87,15 +97,90 @@ def _resolve_exemption_sources(copay_exemption: dict) -> list[dict]:
     ]
 
 
+# Drug-derived exemption grounds; their rate-correction rows already carry
+# ilave_ucret_status="drug_prohibited" and never receive the cancer upgrade.
+_DRUG_EXEMPTION_GROUNDS = frozenset(
+    {"inpatient_drug_1_8_5_8", "ek4d_drug", "ek4d_partial"}
+)
+
+
+def _has_malignant_qualifying_diagnosis(sources: list[dict]) -> bool:
+    """True when any qualifying diagnosis ICD-10 code is in the C00-C97 range.
+
+    Consumes structured exemption output only: a code qualifies when it
+    uppercased starts with 'C' followed by two digits (e.g. "C50", "C83.1").
+    """
+    for source in sources:
+        evidence = source.get("evidence") or {}
+        for diagnosis in evidence.get("qualifying_diagnoses") or []:
+            code = str(diagnosis.get("icd10") or "").strip().upper()
+            if len(code) >= 3 and code[0] == "C" and code[1:3].isdigit():
+                return True
+    return False
+
+
+def _emergency_claim_ids(
+    claims: tuple[ClaimHeader, ...],
+    sources: list[dict],
+) -> frozenset[str]:
+    """Claim ids whose type is an emergency type, when an acil source exists."""
+    if not any(source.get("category") == "acil_servis" for source in sources):
+        return frozenset()
+    return frozenset(
+        claim.claim_id
+        for claim in claims
+        if _normalize_token(claim.claim_type) in _EMERGENCY_TYPES
+    )
+
+
+def _annotate_cancer_exempt(
+    row: dict,
+    *,
+    exemption_ground: str,
+    cancer_exempt: bool,
+) -> None:
+    """Upgrade an unset/'none' procedure-derived row to cancer_exempt."""
+    if not cancer_exempt:
+        return
+    if exemption_ground in _DRUG_EXEMPTION_GROUNDS:
+        return
+    if row.get("ilave_ucret_status") not in (None, "none"):
+        return
+    row["ilave_ucret_status"] = "cancer_exempt"
+    row["ilave_clause_ref"] = cancer_surcharge_exemption_clause().to_dict()
+
+
+@lru_cache(maxsize=1)
+def _ek1a_partial_clause_ref() -> SutClauseReference:
+    return sut_clause_reference(
+        "1.8.5.(7)", rule_type=RULE_TYPE_COPAY_WAIVER, annex="EK-1/A"
+    )
+
+
+@lru_cache(maxsize=1)
+def _drug_copay_mandate_clause_ref() -> SutClauseReference:
+    return sut_clause_reference("1.8.2.(1)", rule_type=RULE_TYPE_COPAY_RATE)
+
+
+@lru_cache(maxsize=1)
+def _material_copay_clause_ref() -> SutClauseReference:
+    return sut_clause_reference("1.8.3.(2)", rule_type=RULE_TYPE_COPAY_RATE)
+
+
 def _apply_procedure_waiver(
     waiver: WaiverResult | None,
     *,
     visit_savings: Decimal,
     result: CopayOptimization,
+    cancer_exempt: bool = False,
 ) -> Decimal:
     if waiver is None:
         return visit_savings
-    result.rate_corrections.append(waiver.to_rate_correction())
+    row = waiver.to_rate_correction()
+    _annotate_cancer_exempt(
+        row, exemption_ground=waiver.exemption_ground, cancer_exempt=cancer_exempt
+    )
+    result.rate_corrections.append(row)
     if waiver.component_try > 0:
         visit_savings += waiver.component_try
     return visit_savings
@@ -107,10 +192,15 @@ def _apply_drug_waiver(
     rx_savings: Decimal,
     rx_by_ground: dict[str, Decimal],
     result: CopayOptimization,
+    cancer_exempt: bool = False,
 ) -> Decimal:
     if waiver is None:
         return rx_savings
-    result.rate_corrections.append(waiver.to_rate_correction())
+    row = waiver.to_rate_correction()
+    _annotate_cancer_exempt(
+        row, exemption_ground=waiver.exemption_ground, cancer_exempt=cancer_exempt
+    )
+    result.rate_corrections.append(row)
     if waiver.component_try > 0:
         rx_savings += waiver.component_try
         rx_by_ground[waiver.exemption_ground] += waiver.component_try
@@ -131,6 +221,8 @@ def optimize_copay_from_claims(
 
     exemption_sources = _resolve_exemption_sources(copay_exemption)
     ek1a_source = find_ek1a_source(exemption_sources)
+    cancer_exempt = _has_malignant_qualifying_diagnosis(exemption_sources)
+    emergency_claim_ids = _emergency_claim_ids(ctx.claims, exemption_sources)
 
     if is_exempt:
         qualifying = copay_exemption.get("qualifying_diagnoses", [])
@@ -149,6 +241,8 @@ def optimize_copay_from_claims(
                         "§1.8.5(7) savings not asserted"
                     ),
                     "sut_section": "1.8.5(7)",
+                    "rule_id": "copay_exemption_ek1a",
+                    "clause_ref": _ek1a_partial_clause_ref().to_dict(),
                 }
             )
 
@@ -168,7 +262,11 @@ def optimize_copay_from_claims(
 
     for line in ctx.procedure_lines:
         if line.billed_amount_try > line.expected_payable_try:
-            decomp = decompose_procedure_line(line)
+            decomp = decompose_procedure_line(
+                line,
+                cancer_exempt=cancer_exempt,
+                emergency_exempt=line.claim_id in emergency_claim_ids,
+            )
             patient_copay_total += decomp.patient_copay_try
             ilave_total += decomp.ilave_ucret_try
             decomposition_statuses.append(decomp.status)
@@ -194,6 +292,7 @@ def optimize_copay_from_claims(
             waiver,
             visit_savings=visit_savings,
             result=result,
+            cancer_exempt=cancer_exempt,
         )
 
     for line in ctx.drug_lines:
@@ -240,6 +339,7 @@ def optimize_copay_from_claims(
             rx_savings=rx_savings,
             rx_by_ground=rx_by_ground,
             result=result,
+            cancer_exempt=cancer_exempt,
         )
 
     visit_waived = round(float(visit_savings), 2)
@@ -283,6 +383,7 @@ def optimize_copay_from_claims(
                 ),
                 "expected_copay_rate_pct": round(expected_rx_rate * 100, 1),
                 "sut_section": "1.8.2.(1)",
+                "clause_ref": _drug_copay_mandate_clause_ref().to_dict(),
             }
         )
 
@@ -295,6 +396,9 @@ def optimize_copay_from_claims(
                 ),
                 "expected_copay_rate_pct": round(material_rate * 100, 1),
                 "sut_section": "1.8.3.(2)",
+                "clause_ref": _material_copay_clause_ref().to_dict(),
+                "message_code": "material_copay_rate",
+                "message_params": {"rate_pct": int(round(material_rate * 100))},
             }
         )
 

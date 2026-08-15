@@ -45,6 +45,10 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_CATEGORY_COMPLIANCE,
     SAVINGS_CATEGORY_COPAY_WAIVER,
 )
+from src.bilun.domain.sut.clause_reference import (
+    SOURCE_ALGORITMA_REHBERI,
+    non_sut_reference,
+)
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -57,6 +61,18 @@ _OPPORTUNITY_TYPE = "traffic_accident_billing"
 _SUT_SECTION_ID = "algoritma_2_09"
 _RULE_REFERENCE = "2918 Sayılı KKT Madde 98 / Algoritma Rehberi §2-09"
 _PROVISION_CODE = "120.05.01.04"
+
+# Provenance (Phase 2): the rule source is the Algoritma Rehberi backed by
+# 2918 Sayılı Kanun — NOT a SUT clause, so findings carry an honest non-SUT
+# reference (empty clause_key) instead of an invented SUT cite. Resolved
+# once at module load; every finding shares the same dict.
+_STATUTORY_LAW = "2918 Sayılı Kanun Madde 98"
+_SOURCE_TYPE = SOURCE_ALGORITMA_REHBERI
+_CLAUSE_REF = non_sut_reference(
+    "Algoritma Rehberi §2-09",
+    source_type=SOURCE_ALGORITMA_REHBERI,
+    statutory_law=_STATUTORY_LAW,
+).to_dict()
 
 # ---------------------------------------------------------------------------
 # Traffic-accident detection vocabulary.
@@ -209,6 +225,8 @@ def detect_traffic_accident_wrong_pathway(
                 "rule_id": "trafik_kazasi_wrong_pathway",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_COMPLIANCE,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -285,6 +303,8 @@ def detect_traffic_accident_copay(
                     "rule_id": "trafik_kazasi_copay_charged",
                     "detail": detail,
                     "sut_section_id": _SUT_SECTION_ID,
+                    "source_type": _SOURCE_TYPE,
+                    "clause_ref": _CLAUSE_REF,
                     "savings_category": SAVINGS_CATEGORY_COPAY_WAIVER,
                     "savings_basis": SAVINGS_BASIS_SOURCED,
                     "severity": "error",

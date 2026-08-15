@@ -67,6 +67,114 @@ export function copayCorrectionIlaveTry(
   return null;
 }
 
+export function copayCorrectedPayableTry(
+  correction: CopayRateCorrectionRow,
+): number | null {
+  const billed = copayCorrectionBilledTry(correction);
+  const payable = copayCorrectionPayableTry(correction);
+  const copay = copayCorrectionSavingsTry(correction);
+
+  if (billed != null) {
+    return billed;
+  }
+  if (payable != null && copay != null) {
+    return payable + copay;
+  }
+  return payable;
+}
+
+export type CopayIlaveStatusKind =
+  | "numeric"
+  | "drug_prohibited"
+  | "cancer_exempt"
+  | "emergency_exempt"
+  | "unavailable";
+
+export interface CopayIlaveStatus {
+  kind: CopayIlaveStatusKind;
+  amount?: number;
+  labelKey: string;
+  tooltipKey: string;
+  /** Interpolation params ({coordinate}, {law}) composed from backend clause refs. */
+  labelParams: { coordinate: string; law: string };
+  /** Surcharge clause_key when resolvable — enables the clause drawer link. */
+  clauseKey: string;
+  clauseCoordinate: string;
+}
+
+const ILAVE_REASON_BY_STATUS: Record<
+  string,
+  Pick<CopayIlaveStatus, "kind" | "labelKey" | "tooltipKey">
+> = {
+  drug_prohibited: {
+    kind: "drug_prohibited",
+    labelKey: "billing.copay.ilaveReasons.drugProhibited",
+    tooltipKey: "billing.copay.ilaveReasons.drugProhibitedTooltip",
+  },
+  cancer_exempt: {
+    kind: "cancer_exempt",
+    labelKey: "billing.copay.ilaveReasons.cancerExempt",
+    tooltipKey: "billing.copay.ilaveReasons.cancerExemptTooltip",
+  },
+  emergency_exempt: {
+    kind: "emergency_exempt",
+    labelKey: "billing.copay.ilaveReasons.emergencyExempt",
+    tooltipKey: "billing.copay.ilaveReasons.emergencyExemptTooltip",
+  },
+};
+
+/**
+ * Render the backend-decided ilave ücret (surcharge) outcome of a copay row.
+ *
+ * Primary path: the backend emits `ilave_ucret_status` together with the
+ * governing §1.9 clause (`ilave_clause_ref`); the cite shown in the label and
+ * tooltip is composed from that ref (coordinate + statutory law), never
+ * hardcoded. Rows without a backend status keep the conservative fallback:
+ * numeric passthrough or "—". The backend decides — no client heuristics.
+ */
+export function resolveCopayIlaveStatus(
+  correction: CopayRateCorrectionRow,
+): CopayIlaveStatus {
+  const reason = ILAVE_REASON_BY_STATUS[correction.ilave_ucret_status ?? ""];
+  if (reason) {
+    const ref = correction.ilave_clause_ref ?? correction.clause_ref ?? null;
+    const coordinate = (ref?.clause_coordinate ?? "").trim();
+    return {
+      kind: reason.kind,
+      labelKey: reason.labelKey,
+      tooltipKey: reason.tooltipKey,
+      labelParams: {
+        coordinate: coordinate ? `§${coordinate}` : "",
+        law: (ref?.statutory_law ?? "").trim(),
+      },
+      clauseKey: (ref?.clause_key ?? "").trim(),
+      clauseCoordinate: coordinate,
+    };
+  }
+
+  const ilaveTry = copayCorrectionIlaveTry(correction);
+  if (typeof ilaveTry === "number" && ilaveTry > 0) {
+    return {
+      kind: "numeric",
+      amount: ilaveTry,
+      labelKey: "",
+      tooltipKey: "",
+      labelParams: { coordinate: "", law: "" },
+      clauseKey: "",
+      clauseCoordinate: "",
+    };
+  }
+
+  return {
+    kind: "unavailable",
+    labelKey: "common.unavailable",
+    tooltipKey: "billing.copay.ilaveUcretFootnote",
+    labelParams: { coordinate: "", law: "" },
+    clauseKey: "",
+    clauseCoordinate: "",
+  };
+}
+
 export function copayExemptionGapTotal(copay: CopayOptimization): number {
   return (
     copay.patient_copay_waived_total_try ??
@@ -89,27 +197,30 @@ export function copayCorrectionGroundKey(
   return ground || null;
 }
 
+/**
+ * Annex chips for the claim-scoped copay table, derived from the backend
+ * `clause_ref` on each rate-correction row: the annex when present, else the
+ * clause coordinate. Deduped in first-seen (row) order — no hardcoded list.
+ */
 export function copayClaimScopedAnnexLabels(
   copay: CopayOptimization,
 ): string[] {
   const labels: string[] = [];
-  const hasEk1aVisit = copay.rate_corrections.some(
-    (row) =>
-      row.exemption_ground === "ek1a_muayene" &&
-      (row.copay_component_try ?? 0) > 0,
-  );
-  if (hasEk1aVisit) {
-    labels.push("EK-1A");
+  const seen = new Set<string>();
+  for (const row of copay.rate_corrections) {
+    const ref = row.clause_ref;
+    if (!ref) {
+      continue;
+    }
+    const annex = (ref.annex ?? "").trim();
+    const coordinate = (ref.clause_coordinate ?? "").trim();
+    const label = annex || (coordinate ? formatSutSectionLabel(coordinate) : "");
+    if (!label || seen.has(label)) {
+      continue;
+    }
+    seen.add(label);
+    labels.push(label);
   }
-
-  const byGround = copay.rx_copay_savings_by_ground ?? {};
-  if ((byGround.inpatient_drug_1_8_5_8 ?? 0) > 0) {
-    labels.push("§1.8.5(8)");
-  }
-  if ((byGround.ek4d_drug ?? 0) > 0) {
-    labels.push("EK-4D");
-  }
-
   return labels;
 }
 

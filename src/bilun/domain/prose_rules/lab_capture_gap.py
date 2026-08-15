@@ -10,12 +10,21 @@ from typing import Any
 import polars as pl
 
 from src.bilun.domain.catalog import get_lab_price, lookup_procedure_code
+from src.bilun.domain.sut.clause_reference import SOURCE_REHBER, non_sut_reference
 
 SAVINGS_CATEGORY_CAPTURE_GAP = "capture_gap"
 SAVINGS_BASIS_SOURCED = "sourced"
 _RULE_SET_ID = "lab_capture_gap"
 _OPPORTUNITY_TYPE = "lab_performed_not_submitted"
 _BILLING_TOLERANCE = 0.02
+
+# Provenance (Phase 2): lab capture completeness is a review guideline
+# (rehber) rule, not a SUT clause — honest non-SUT reference (empty
+# clause_key). Resolved once at module load; shared by every finding.
+_SOURCE_TYPE = SOURCE_REHBER
+_CLAUSE_REF = non_sut_reference(
+    "Lab capture completeness review", source_type=SOURCE_REHBER
+).to_dict()
 
 
 def _resolve_lab_list_price(code: str, service_date: Any | None = None) -> tuple[float | None, str]:
@@ -113,6 +122,8 @@ def detect_lab_capture_gaps(
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "included_in_sgk_total": False,
                 "sut_section_id": "clinical lab capture completeness",
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "rule_id": "lab_performed_not_submitted",
                 "rule_set_id": _RULE_SET_ID,
                 "detail": (

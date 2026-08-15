@@ -8,57 +8,33 @@ type TranslateFn = (
 
 export type { RecommendedActionItem };
 
-/** User-facing finding class for recommended-action rows (not backend motors). */
+/** User-facing finding class for recommended-action rows. */
 export type FindingType = "compliance" | "opportunity" | "informational";
-
-const COMPLIANCE_SURFACES = new Set([
-  "materials",
-  "drug_indication",
-  "lab",
-]);
-
-const OPPORTUNITY_SURFACES = new Set([
-  "session_uplift",
-  "drg_uplift",
-  "blood_uplift",
-  "yatak_puani",
-  "material_uplift",
-  "procedure_addon_uplift",
-  "procedure_capture_gap",
-  "drg_package_adequacy",
-  "gazette_repricing",
-  "care_setting_review",
-  "copay",
-]);
-
-const INFORMATIONAL_SURFACES = new Set([
-  "medula_playbook",
-  "claim_checklist",
-]);
 
 /**
  * Classify a recommended action for UI badges.
- * Surface-primary using real `collect_billing_actions` values; strategy uses kind.
+ *
+ * The backend classifies rows (`finding_type` on each action row, including
+ * the billing_strategy kind special case); rows without it are informational.
  */
 export function getFindingType(action: RecommendedActionItem): FindingType {
-  const surface = action.surface;
-  const kind = action.kind;
-
-  if (surface === "billing_strategy") {
-    if (kind === "optional_override") return "opportunity";
-    if (
-      kind === "compliance_violation" ||
-      kind === "mandatory_compliance" ||
-      kind === "strategy"
-    ) {
-      return "compliance";
-    }
-    return "informational";
+  const type = action.finding_type;
+  if (type === "compliance" || type === "opportunity" || type === "informational") {
+    return type;
   }
+  return "informational";
+}
 
-  if (COMPLIANCE_SURFACES.has(surface)) return "compliance";
-  if (OPPORTUNITY_SURFACES.has(surface)) return "opportunity";
-  if (INFORMATIONAL_SURFACES.has(surface)) return "informational";
+/** billing_strategy rows are classified by kind (backend parity). */
+function billingStrategyFindingType(kind: string): FindingType {
+  if (kind === "optional_override") return "opportunity";
+  if (
+    kind === "compliance_violation" ||
+    kind === "mandatory_compliance" ||
+    kind === "strategy"
+  ) {
+    return "compliance";
+  }
   return "informational";
 }
 
@@ -117,6 +93,7 @@ function buildRecommendedActionsFallback(
       procedure_name: test.test_name ?? null,
       compliance_savings_try: test.savings_try ?? null,
       detail: test.detail ?? null,
+      finding_type: "compliance",
     });
   }
 
@@ -130,16 +107,19 @@ function buildRecommendedActionsFallback(
         report.copay.total_copay_savings_try ??
         null,
       detail: report.copay.exemption_disease ?? null,
-      sut_section_id: "1.8.5(7)",
+      // Canonical dot form (backend emits "1.8.5.(7)"; legacy "1.8.5(7)" is gone).
+      sut_section_id: "1.8.5.(7)",
+      finding_type: "opportunity",
     });
   }
 
   for (const row of report.billing_strategy?.recommendations ?? []) {
     if (row.type === "informational") continue;
+    const kind = String(row.type ?? row.recommendation_kind ?? "strategy");
     actions.push({
       action_id: `strategy:${row.claim_id}:${row.procedure_code}:${row.type ?? row.recommendation_kind}`,
       surface: "billing_strategy",
-      kind: String(row.type ?? row.recommendation_kind ?? "strategy"),
+      kind,
       claim_id: row.claim_id ?? null,
       procedure_code: row.procedure_code ?? null,
       procedure_name: row.procedure_name ?? null,
@@ -149,6 +129,11 @@ function buildRecommendedActionsFallback(
           : row.savings_try ?? row.recoverable_uplift_try ?? null,
       detail: row.detail ?? null,
       sut_section_id: row.sut_section_id ?? row.sut_section ?? null,
+      finding_type: billingStrategyFindingType(kind),
+      message_code:
+        (row.message_code as string | undefined) ?? null,
+      message_params:
+        (row.message_params as Record<string, unknown> | undefined) ?? null,
     });
   }
 
@@ -177,6 +162,7 @@ function buildRecommendedActionsFallback(
           null,
         detail: (row.detail as string | undefined) ?? null,
         sut_section_id: (row.sut_section_id as string | undefined) ?? null,
+        finding_type: "opportunity",
       });
     }
   }

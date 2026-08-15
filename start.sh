@@ -78,17 +78,22 @@ free_port() {
 # next-server, or a detached uvicorn). Scoped to THIS repo's paths only so it
 # never touches unrelated node/python processes (Cursor, Antigravity, etc.).
 kill_stray_bilun_dev() {
+    local target="${1:-all}"
     local found=()
     while IFS= read -r pid; do
         [ -n "$pid" ] && found+=("$pid")
     done < <(
-        pgrep -f "next dev .*$FRONTEND_PORT" 2>/dev/null || true
-        pgrep -f "next-server" 2>/dev/null | while read -r pid; do
-            if tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -q "$SCRIPT_DIR"; then
-                echo "$pid"
-            fi
-        done
-        pgrep -f "uvicorn src.bilun.api:app" 2>/dev/null || true
+        if [ "$target" = "all" ] || [ "$target" = "frontend" ]; then
+            pgrep -f "next dev .*$FRONTEND_PORT" 2>/dev/null || true
+            pgrep -f "next-server" 2>/dev/null | while read -r pid; do
+                if tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -q "$SCRIPT_DIR"; then
+                    echo "$pid"
+                fi
+            done
+        fi
+        if [ "$target" = "all" ] || [ "$target" = "backend" ]; then
+            pgrep -f "uvicorn src.bilun.api:app" 2>/dev/null || true
+        fi
     )
     if [ "${#found[@]}" -gt 0 ]; then
         warn "Killing stray BILUN dev process(es): ${found[*]}"
@@ -102,16 +107,16 @@ free_bilun_ports() {
     case "$target" in
         backend)
             free_port "$BACKEND_PORT" "backend"
-            kill_stray_bilun_dev
+            kill_stray_bilun_dev backend
             ;;
         frontend)
             free_port "$FRONTEND_PORT" "frontend"
-            kill_stray_bilun_dev
+            kill_stray_bilun_dev frontend
             ;;
         all)
             free_port "$BACKEND_PORT" "backend"
             free_port "$FRONTEND_PORT" "frontend"
-            kill_stray_bilun_dev
+            kill_stray_bilun_dev all
             ;;
     esac
 }

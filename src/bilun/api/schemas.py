@@ -883,6 +883,26 @@ class MatchedRuleRef(BaseModel):
     rule_category_tr: str | None = None
 
 
+class ClauseReferenceResponse(BaseModel):
+    """Structured clause cite carried by billing findings (Track E identity).
+
+    Emitted as ``clause_ref`` inside ``rate_corrections`` rows, waiver rows,
+    and ``recommended_actions`` rows (see ``SutClauseReference`` in
+    ``src/bilun/domain/sut/clause_reference.py``). ``clause_key`` may be
+    empty when the coordinate could not be resolved against the coverage
+    store; ``clause_coordinate`` remains the human-readable cite. Display
+    text is fetched from ``GET /api/rules/clauses/{clause_key}``, never
+    duplicated here.
+    """
+
+    clause_key: str = ""
+    clause_coordinate: str = ""
+    source_type: str = "sut_clause"
+    rule_type: str = ""
+    annex: str = ""
+    statutory_law: str = ""
+
+
 class RuleClause(BaseModel):
     """One extracted SUT clause mapped to a rule, with provenance.
 

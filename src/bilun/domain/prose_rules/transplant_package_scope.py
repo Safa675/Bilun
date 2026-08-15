@@ -25,6 +25,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_HEURISTIC,
     SAVINGS_CATEGORY_AUDIT_EXPOSURE,
 )
+from src.bilun.domain.sut.clause_reference import SOURCE_REHBER, non_sut_reference
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
@@ -35,9 +36,20 @@ _LIVER_TRANSPLANT_CODE = normalize_procedure_code("P609080")
 
 _RULE_SET_ID = "transplant_package_scope"
 _RULE_ID = "transplant_bundled_surgical_procedure"
-_SUT_SECTION_ID = "P609080 package scope (Tüm cerrahi işlemler dahildir)"
+# Structured snake_case locator (Phase 2): the rule registry carries no
+# transplant entry whose coordinate resolves in the coverage parquet, so a
+# SUT cite would be invented — the finding keeps an honest package-scope
+# locator with rehber provenance instead.
+_SUT_SECTION_ID = "p609080_package_scope"
 _OPPORTUNITY_TYPE = "transplant_bundled_violation"
 _BILLING_TOLERANCE = 0.02
+
+# Provenance (Phase 2): resolved once at module load; shared by every
+# finding (clause_key stays empty — no SUT-corpus row behind this locator).
+_SOURCE_TYPE = SOURCE_REHBER
+_CLAUSE_REF = non_sut_reference(
+    "P609080 package scope", source_type=SOURCE_REHBER
+).to_dict()
 
 # Procedure categories that count as "surgical procedures" for the purposes
 # of the P609080 package scope. The package prose says all *surgical*
@@ -146,6 +158,8 @@ def detect_transplant_package_scope_violations(
                 "savings_basis": SAVINGS_BASIS_HEURISTIC,
                 "included_in_sgk_total": False,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "rule_id": _RULE_ID,
                 "rule_set_id": _RULE_SET_ID,
                 "care_setting": care_setting,

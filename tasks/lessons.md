@@ -7,6 +7,12 @@ Format per entry:
 - Mistake pattern (not just the incident)
 - Rule that prevents recurrence
 
+## 2026-08-15 — A lazy module-level loader that publishes its "loaded" flag BEFORE populating the cache races under ThreadPoolExecutor; a memoizing resolver then freezes the poisoned empty result forever
+
+**Pattern:** `rules_catalog._load_coverage()` set `_coverage_loaded = True` *before* assigning `_coverage_cache`. Cohort billing reports run on a `ThreadPoolExecutor` (`cohort_runner.map_parallel`), so a worker racing the first load saw `loaded=True` with a still-`None` frame, `get_clause` returned nothing, and the new `resolve_clause_key` — decorated with `lru_cache` — cached the empty `clause_key` for the process lifetime. Symptom: unit tests green (single-threaded first call loads cleanly) but the LIVE cache rebuild emitted `clause_ref.clause_key == ""` for exactly the coordinates resolved early in each worker, while later coordinates resolved fine. Tests did not catch it because they never reproduce the concurrent first-load.
+
+**Rule:** Any module-level lazy loader must publish its ready flag only AFTER the value is assigned, guarded by a lock — and any resolver that memoizes must NOT cache a miss/empty result. Concretely: (1) wrap the load in `threading.Lock`, assign cache then flag inside the lock; (2) keep a manual success-only memo (skip `lru_cache` when failures are possible), so a transient miss retries instead of freezing; (3) when a feature will be called from a ThreadPoolExecutor (all `cohort_runner` paths), add a concurrency regression test that resets module state (`monkeypatch` the cache/flag) and hammers the resolver from N threads asserting every call gets the real value. "Unit tests pass" is not evidence a lazy initializer is correct under the cohort runner — verify through the threaded path.
+
 ## 2026-08-14 — A scene crack that "launches but hangs" is stuck on ONLINE auth (OnlineFix/EOS), not on Wine/Proton/GPU
 
 **Pattern:** "0xdeadcode" (OnlineFix) releases of online-only games silently HANG — not crash — while polling the crack's auth servers (`api.epicgames.dev`, `online-fix.me`). The game process shows 66 threads, ~5GB virtual but tiny resident growth, near-zero CPU, no GPU process, and no engine log (`SixDays.log`) because it never reaches UE4's log init. The prior session kept fighting Wine/Proton/Steamless/GPU, but the real blocker was the OnlineFix cloud handshake.

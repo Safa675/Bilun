@@ -125,6 +125,9 @@ const billing = {
     "billed": "Faturalanan",
     "payable": "SGK ödenecek (talep)",
     "copayComponent": "Katılım payı",
+    "correctedPayable": "Düzeltilmiş SGK ödenecek (%100)",
+    "correctedPayableTooltip": "katilimPayindanMuaf=E onayı sonrası SGK tarafından hastaneye ödenecek %100 tam tutar (İlk Talep + Katılım Payı)",
+    "cashierRefundNotice": "Vezne İade Bilgisi: Katılım payı muafiyetiyle SGK'dan %100 tam tahsilat sağlandığında; hastadan kabul aşamasında veznede katılım payı tahsil edildiyse, 5510 Sayılı Kanun ve SGK sözleşmesi uyarınca hastaya iade makbuzu düzenlenerek vezne tahsilatı iade edilmelidir.",
     "ilaveUcret": "İlave ücret",
     "ilaveUcretTotal": "İlave ücret toplamı",
     "waiverGround": "Muafiyet gerekçesi",
@@ -133,6 +136,19 @@ const billing = {
     "ek1aScopeNotice": "Bu faturada EK-1A yalnızca ayaktan uzman muayene satırlarına uygulanır (§1.8.5(7)); tetkik, ilaç ve günübirlik/yatış ziyaretleri başka gerekçelerle değerlendirilir.",
     "inpatientDrugWaiverNotice": "Bu faturadaki reçete muafiyet farkı, satır düzeyinde yatarak ilaç bayrağı olana kadar yatış/günübirlik taleplerindeki ilaçlar için §1.8.5(8) gerekçesiyle hesaplanmıştır.",
     "patientVsClaimExemptionNotice": "Hasta düzeyinde EK-1A uygunluğu, bu faturadaki her satırın EK-1A ile muaf olduğu anlamına gelmez — aşağıdaki satır gerekçelerine bakın.",
+    "ilaveReasons": {
+      "drugProhibited": "Alınamaz ({coordinate} İlaç)",
+      "cancerExempt": "Muaf ({coordinate} Kanser)",
+      "emergencyExempt": "Muaf ({coordinate} Acil)",
+      "drugProhibitedTooltip": "SUT {coordinate} ve {law} uyarınca ilaçlardan ilave ücret (fark ücreti) alınması kanunen yasaktır.",
+      "cancerExemptTooltip": "SUT {coordinate} uyarınca onkolojik tedavilerden (kanser/kemoterapi/radyoterapi) hastadan hiçbir ilave ücret alınamaz.",
+      "emergencyExemptTooltip": "SUT {coordinate} uyarınca acil hal kapsamındaki işlemlerden hiçbir ilave ücret alınamaz."
+    },
+    "clauseDrawer": {
+      "title": "SUT fıkra metni",
+      "kicker": "Mevzuat",
+      "ariaLabel": "SUT fıkra metni çekmecesi"
+    },
     "groundLabels": {
       "ek1a_muayene": "EK-1A ayaktan muayene",
       "inpatient_drug_1_8_5_8": "§1.8.5(8) yatış/günübirlik ilaç",

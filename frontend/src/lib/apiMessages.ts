@@ -372,98 +372,11 @@ function tryTranslateBillingProsePart(trimmed: string): string | null {
     return t("api.billingProse.billedCorrectlyItemized");
   }
 
-  const claimPackageOk = trimmed.match(
-    /^Claim (.+) is billed correctly as package per SUT §2\.2\.2\(1\)\. Package total ([\d.]+) TRY\.$/,
-  );
-  if (claimPackageOk) {
-    return t("api.billingProse.claimPackageOk", {
-      claimId: claimPackageOk[1],
-      amount: claimPackageOk[2],
-    });
-  }
-
-  const claimItemizedOk = trimmed.match(
-    /^Claim (.+) is billed correctly as itemized per SUT §2\.2\. Itemized total ([\d.]+) TRY\.$/,
-  );
-  if (claimItemizedOk) {
-    return t("api.billingProse.claimItemizedOk", {
-      claimId: claimItemizedOk[1],
-      amount: claimItemizedOk[2],
-    });
-  }
-
-  const claimMandatePackage = trimmed.match(
-    /^SUT §2\.2 mandates package billing for claim (.+) \(EK-2\/C procedure present\)\. Package total ([\d.]+) TRY vs itemized ([\d.]+) TRY\.$/,
-  );
-  if (claimMandatePackage) {
-    return t("api.billingProse.claimMandatePackage", {
-      claimId: claimMandatePackage[1],
-      packageTotal: claimMandatePackage[2],
-      itemizedTotal: claimMandatePackage[3],
-    });
-  }
-
-  const claimMandateItemized = trimmed.match(
-    /^SUT §2\.2 mandates itemized billing for claim (.+)\. Itemized total ([\d.]+) TRY vs package ([\d.]+) TRY\.$/,
-  );
-  if (claimMandateItemized) {
-    return t("api.billingProse.claimMandateItemized", {
-      claimId: claimMandateItemized[1],
-      itemizedTotal: claimMandateItemized[2],
-      packageTotal: claimMandateItemized[3],
-    });
-  }
-
-  const claimOptionalPackage = trimmed.match(
-    /^Claim (.+): optional §2\.2\.2\(2\) override — package billing \(([\d.]+) TRY\) is the higher legal option vs itemized \(([\d.]+) TRY\)\.$/,
-  );
-  if (claimOptionalPackage) {
-    return t("api.billingProse.claimOptionalPackageHigher", {
-      claimId: claimOptionalPackage[1],
-      packageTotal: claimOptionalPackage[2],
-      itemizedTotal: claimOptionalPackage[3],
-    });
-  }
-
-  const claimOptionalItemized = trimmed.match(
-    /^Claim (.+): optional §2\.2\.2\(2\) override — itemized billing \(([\d.]+) TRY\) is the higher legal option vs package \(([\d.]+) TRY\)\.$/,
-  );
-  if (claimOptionalItemized) {
-    return t("api.billingProse.claimOptionalItemizedHigher", {
-      claimId: claimOptionalItemized[1],
-      itemizedTotal: claimOptionalItemized[2],
-      packageTotal: claimOptionalItemized[3],
-    });
-  }
-
-  const mustPackage = trimmed.match(
-    /^Procedure (.+) must use package billing \((.+)\) per (.+)\.$/,
-  );
-  if (mustPackage) {
-    return t("api.billingProse.procedureMustPackage", {
-      code: mustPackage[1],
-      method: mustPackage[2],
-      section: mustPackage[3],
-    });
-  }
-
-  const mustItemized = trimmed.match(
-    /^Procedure (.+) must use itemized billing \((.+)\) per (.+)\.$/,
-  );
-  if (mustItemized) {
-    return t("api.billingProse.procedureMustItemized", {
-      code: mustItemized[1],
-      method: mustItemized[2],
-      section: mustItemized[3],
-    });
-  }
-
-  const materialRate = trimmed.match(
-    /^SUT §1\.8\.3\(2\) material copay reference rate: (\d+)%$/,
-  );
-  if (materialRate) {
-    return t("api.billingProse.materialCopayRate", { rate: materialRate[1] });
-  }
+  // §2.2 billing-prose cluster (claim package/itemized verdicts, §2.2.2(2)
+  // optional overrides, mandated-method violations, material copay rate) is
+  // served by the structured message contract — see
+  // `translateStructuredApiMessage` and STRUCTURED_BILLING_PROSE_CODES. The
+  // regex parsers for those nine shapes were removed in the Aşama 3 cutover.
 
   const exactBillingKeys: Array<keyof typeof enMessages.api.billingProse> = [
     "ek1aChronic",
@@ -583,6 +496,107 @@ function tryTranslateLlmError(trimmed: string): string | null {
   }
 
   return null;
+}
+
+/** Row shape carrying the backend structured message contract (Aşama 3). */
+export interface StructuredApiMessageRow {
+  message_code?: string | null;
+  message_params?: Record<string, unknown> | null;
+  detail?: string | null;
+}
+
+type StructuredTranslateFn = (
+  key: string,
+  params?: Record<string, string | number | undefined | null>,
+) => string;
+
+/**
+ * message_code → i18n key + param mapping for the §2.2 billing-prose surface
+ * and the material copay rate row. Backend param names (snake_case) map to the
+ * existing `api.billingProse.*` template params.
+ */
+const STRUCTURED_BILLING_PROSE_CODES: Record<
+  string,
+  { key: string; paramMap: Record<string, string> }
+> = {
+  claim_package_ok: {
+    key: "api.billingProse.claimPackageOk",
+    paramMap: { claim_id: "claimId", amount_try: "amount" },
+  },
+  claim_itemized_ok: {
+    key: "api.billingProse.claimItemizedOk",
+    paramMap: { claim_id: "claimId", amount_try: "amount" },
+  },
+  claim_mandate_package: {
+    key: "api.billingProse.claimMandatePackage",
+    paramMap: {
+      claim_id: "claimId",
+      package_total_try: "packageTotal",
+      itemized_total_try: "itemizedTotal",
+    },
+  },
+  claim_mandate_itemized: {
+    key: "api.billingProse.claimMandateItemized",
+    paramMap: {
+      claim_id: "claimId",
+      itemized_total_try: "itemizedTotal",
+      package_total_try: "packageTotal",
+    },
+  },
+  claim_optional_package_higher: {
+    key: "api.billingProse.claimOptionalPackageHigher",
+    paramMap: {
+      claim_id: "claimId",
+      package_total_try: "packageTotal",
+      itemized_total_try: "itemizedTotal",
+    },
+  },
+  claim_optional_itemized_higher: {
+    key: "api.billingProse.claimOptionalItemizedHigher",
+    paramMap: {
+      claim_id: "claimId",
+      itemized_total_try: "itemizedTotal",
+      package_total_try: "packageTotal",
+    },
+  },
+  procedure_must_package: {
+    key: "api.billingProse.procedureMustPackage",
+    paramMap: { procedure_code: "code", method: "method", section: "section" },
+  },
+  procedure_must_itemized: {
+    key: "api.billingProse.procedureMustItemized",
+    paramMap: { procedure_code: "code", method: "method", section: "section" },
+  },
+  material_copay_rate: {
+    key: "api.billingProse.materialCopayRate",
+    paramMap: { rate_pct: "rate" },
+  },
+};
+
+/**
+ * Render a backend structured message (`message_code` + `message_params`)
+ * through the i18n templates instead of regex-parsing the English `detail`.
+ * Unknown or absent codes fall back to prose translation of `row.detail`, so
+ * rows emitted before the structured contract still render as before.
+ */
+export function translateStructuredApiMessage(
+  translateFn: StructuredTranslateFn,
+  row: StructuredApiMessageRow | null | undefined,
+): string {
+  const code = row?.message_code ?? undefined;
+  const entry = code ? STRUCTURED_BILLING_PROSE_CODES[code] : undefined;
+  if (!entry) {
+    return translateApiText(row?.detail);
+  }
+  const source = row?.message_params ?? {};
+  const params: Record<string, string | number> = {};
+  for (const [sourceKey, targetKey] of Object.entries(entry.paramMap)) {
+    const value = source[sourceKey];
+    if (typeof value === "string" || typeof value === "number") {
+      params[targetKey] = value;
+    }
+  }
+  return translateFn(entry.key, params);
 }
 
 /**

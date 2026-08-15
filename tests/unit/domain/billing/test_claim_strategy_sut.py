@@ -103,6 +103,18 @@ class TestClaimStrategySut:
         assert rec["payment_method_kind"] == "DRG_MANDATORY"
         assert "lower than" not in rec["detail"]
         assert "mandates package billing" in rec["detail"]
+        # Structured message contract: params rebuild the detail byte-for-byte.
+        assert rec["message_code"] == "claim_mandate_package"
+        params = rec["message_params"]
+        assert params["claim_id"] == "CLM1"
+        assert rec["detail"] == (
+            "SUT §2.2 mandates package billing for claim CLM1 "
+            "(EK-2/C procedure present). Package total "
+            f"{params['package_total_try']} TRY vs itemized "
+            f"{params['itemized_total_try']} TRY."
+        )
+        # clause_ref resolves from the row's own sut_section coordinate.
+        assert rec["clause_ref"]["clause_coordinate"] == rec["sut_section_id"]
 
     def test_tier_3_overridable_recommends_higher_legal_option(self) -> None:
         claim = _claim(facility_tier="egitim_arastirma", claim_type="yatis")
@@ -123,6 +135,28 @@ class TestClaimStrategySut:
         assert claim_rec["recommendation_kind"] == "optional_override"
         assert claim_rec["recommendation"] in {"package", "itemized"}
         assert claim_rec["savings_try"] >= 0.0
+        # Structured message contract for §2.2.2(2) optional overrides.
+        code = claim_rec["message_code"]
+        assert code in {
+            "claim_optional_package_higher",
+            "claim_optional_itemized_higher",
+        }
+        higher = "package" if code == "claim_optional_package_higher" else "itemized"
+        assert claim_rec["recommendation"] == higher
+        params = claim_rec["message_params"]
+        higher_amount = params[
+            "package_total_try" if higher == "package" else "itemized_total_try"
+        ]
+        lower_amount = params[
+            "itemized_total_try" if higher == "package" else "package_total_try"
+        ]
+        lower = "itemized" if higher == "package" else "package"
+        assert claim_rec["detail"] == (
+            f"Claim CLM1: optional §2.2.2(2) override — {higher} billing "
+            f"({higher_amount} TRY) is the higher legal option vs {lower} "
+            f"({lower_amount} TRY)."
+        )
+        assert claim_rec["clause_ref"]["clause_coordinate"] == "2.2.2.(2)"
 
     def test_tier_3_starred_code_mandatory_package(self) -> None:
         claim = _claim(facility_tier="egitim_arastirma")
@@ -145,6 +179,17 @@ class TestClaimStrategySut:
         )
         assert claim_rec["payment_method_kind"] == "DRG_MANDATORY"
         assert claim_rec["mandated_method"] == "package"
+        # Structured message contract for the "must use package billing" row.
+        assert claim_rec["message_code"] == "procedure_must_package"
+        params = claim_rec["message_params"]
+        assert params["procedure_code"] == "550970"
+        assert params["section"] == claim_rec["sut_section_id"]
+        assert params["method"]
+        assert claim_rec["detail"] == (
+            f"Procedure 550970 must use package billing ({params['method']}) "
+            f"per {params['section']}."
+        )
+        assert claim_rec["clause_ref"]["clause_coordinate"] == params["section"]
         # No informational duplicate should be present for this procedure.
         assert not any(
             rec.get("type") == "informational"
@@ -169,6 +214,15 @@ class TestClaimStrategySut:
         )
         assert claim_rec["recommendation"] == "package"
         assert claim_rec["savings_try"] == 0.0
+        # Already-compliant claim → claim_package_ok structured message.
+        assert claim_rec["message_code"] == "claim_package_ok"
+        params = claim_rec["message_params"]
+        assert params["claim_id"] == "CLM1"
+        assert claim_rec["detail"] == (
+            "Claim CLM1 is billed correctly as package per SUT §2.2.2(1). "
+            f"Package total {params['amount_try']} TRY."
+        )
+        assert claim_rec["clause_ref"]["clause_coordinate"] == claim_rec["sut_section_id"]
 
     def test_compliance_violation_includes_payment_method_kind(self) -> None:
         claim = _claim(facility_tier="2_basamak_kamu")
@@ -185,6 +239,95 @@ class TestClaimStrategySut:
         ]
         assert len(violations) == 1
         assert violations[0]["payment_method_kind"] == "DRG_MANDATORY"
+        assert violations[0]["message_code"] == "procedure_must_package"
+        assert violations[0]["message_params"]["procedure_code"] == "610070"
+
+    def test_ek2b_only_claim_billed_itemized_message(self) -> None:
+        from src.bilun.domain.prose_rules.catalog_membership import (
+            get_ek2b_codes,
+            get_ek2c_codes,
+        )
+
+        ek2b_only = sorted(get_ek2b_codes() - get_ek2c_codes())
+        assert ek2b_only, "catalog must contain EK-2/B-only codes"
+        code = ek2b_only[0]
+
+        claim = _claim(facility_tier="2_basamak_kamu")
+        lines = [
+            _proc(
+                procedure_code=code,
+                procedure_category="islem",
+                expected_payable_try=Decimal("700"),
+            ),
+        ]
+        result = recommend_billing_strategy_from_claims(_ctx(claim, *lines))
+        claim_rec = next(
+            rec
+            for rec in result.recommendations
+            if rec.get("claim_id") == "CLM1" and "recommendation" in rec
+        )
+        assert claim_rec["payment_method_kind"] == "ITEMIZED"
+        assert claim_rec["recommendation"] == "itemized"
+        assert claim_rec["recommendation_kind"] == "mandatory_compliance"
+        # Already billed itemized → claim_itemized_ok structured message.
+        assert claim_rec["message_code"] == "claim_itemized_ok"
+        params = claim_rec["message_params"]
+        assert params["claim_id"] == "CLM1"
+        assert claim_rec["detail"] == (
+            f"Claim CLM1 is billed correctly as itemized per SUT §2.2. "
+            f"Itemized total {params['amount_try']} TRY."
+        )
+        assert claim_rec["clause_ref"]["clause_coordinate"] == claim_rec["sut_section_id"]
+
+    def test_ek2b_only_claim_billed_package_messages(self) -> None:
+        from src.bilun.domain.prose_rules.catalog_membership import (
+            get_ek2b_codes,
+            get_ek2c_codes,
+        )
+
+        ek2b_only = sorted(get_ek2b_codes() - get_ek2c_codes())
+        assert ek2b_only, "catalog must contain EK-2/B-only codes"
+        code = ek2b_only[0]
+
+        claim = _claim(facility_tier="2_basamak_kamu")
+        lines = [
+            _proc(
+                procedure_code=code,
+                procedure_category="paket",
+                expected_payable_try=Decimal("700"),
+            ),
+        ]
+        result = recommend_billing_strategy_from_claims(_ctx(claim, *lines))
+        claim_rec = next(
+            rec
+            for rec in result.recommendations
+            if rec.get("claim_id") == "CLM1" and "recommendation" in rec
+        )
+        assert claim_rec["payment_method_kind"] == "ITEMIZED"
+        assert claim_rec["recommendation"] == "itemized"
+        # Billed as package → claim_mandate_itemized structured message.
+        assert claim_rec["message_code"] == "claim_mandate_itemized"
+        params = claim_rec["message_params"]
+        assert claim_rec["detail"] == (
+            f"SUT §2.2 mandates itemized billing for claim CLM1. "
+            f"Itemized total {params['itemized_total_try']} TRY vs package "
+            f"{params['package_total_try']} TRY."
+        )
+        # The same line also emits the procedure_must_itemized violation row.
+        violation = next(
+            rec
+            for rec in result.recommendations
+            if rec.get("type") == "compliance_violation"
+        )
+        assert violation["message_code"] == "procedure_must_itemized"
+        vparams = violation["message_params"]
+        assert vparams["procedure_code"] == code
+        assert vparams["section"] == violation["sut_section_id"]
+        assert vparams["method"]
+        assert violation["detail"] == (
+            f"Procedure {code} must use itemized billing ({vparams['method']}) "
+            f"per {vparams['section']}."
+        )
 
     def test_itemized_totals_exclude_payment_method_violation(self) -> None:
         claim = _claim(
@@ -294,3 +437,13 @@ class TestClaimStrategySut:
         )
         assert claim_rec["recommendation"] == "package"
         assert "lower than" not in claim_rec["detail"]
+        # Golden check: the structured contract does not alter the detail byte.
+        assert claim_rec["message_code"] == "claim_package_ok"
+        assert claim_rec["message_params"] == {
+            "claim_id": "F-SENTETIK-HASTA-0001-001",
+            "amount_try": "8705.13",
+        }
+        assert claim_rec["detail"] == (
+            "Claim F-SENTETIK-HASTA-0001-001 is billed correctly as package "
+            "per SUT §2.2.2(1). Package total 8705.13 TRY."
+        )

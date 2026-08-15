@@ -19,32 +19,35 @@ const t = (key: string, params?: Record<string, string | number>) => {
 };
 
 describe("getFindingType", () => {
-  const cases: Array<[string, string, "compliance" | "opportunity" | "informational"]> = [
-    ["materials", "material_bundling", "compliance"],
-    ["materials", "material_pre_auth", "compliance"],
-    ["drug_indication", "drug_indication", "compliance"],
-    ["lab", "hemogram_unbundling", "compliance"],
-    ["billing_strategy", "compliance_violation", "compliance"],
-    ["billing_strategy", "mandatory_compliance", "compliance"],
-    ["billing_strategy", "optional_override", "opportunity"],
-    ["copay", "exemption_review", "opportunity"],
-    ["session_uplift", "session_uplift", "opportunity"],
-    ["drg_uplift", "drg_uplift", "opportunity"],
-    ["blood_uplift", "blood_uplift", "opportunity"],
-    ["yatak_puani", "yatak_puani", "opportunity"],
-    ["material_uplift", "missing_billable_material", "opportunity"],
-    ["procedure_addon_uplift", "procedure_addon_uplift", "opportunity"],
-    ["procedure_capture_gap", "capture_gap", "opportunity"],
-    ["drg_package_adequacy", "drg_package_adequacy", "opportunity"],
-    ["gazette_repricing", "gazette_repricing", "opportunity"],
-    ["care_setting_review", "care_setting_review", "opportunity"],
-    ["medula_playbook", "medula_rejection", "informational"],
-    ["claim_checklist", "submission_check", "informational"],
-    ["unknown_surface", "whatever", "informational"],
+  const cases: Array<["compliance" | "opportunity" | "informational"]> = [
+    ["compliance"],
+    ["opportunity"],
+    ["informational"],
   ];
 
-  it.each(cases)("maps %s/%s → %s", (surface, kind, expected) => {
-    expect(getFindingType({ action_id: "x", surface, kind })).toBe(expected);
+  it.each(cases)("passes through backend finding_type %s", (findingType) => {
+    expect(
+      getFindingType({
+        action_id: "x",
+        surface: "materials",
+        kind: "material_pre_auth",
+        finding_type: findingType,
+      }),
+    ).toBe(findingType);
+  });
+
+  it("defaults to informational when finding_type is absent", () => {
+    expect(
+      getFindingType({ action_id: "x", surface: "materials", kind: "material_pre_auth" }),
+    ).toBe("informational");
+    expect(
+      getFindingType({
+        action_id: "x",
+        surface: "billing_strategy",
+        kind: "compliance_violation",
+        finding_type: null,
+      }),
+    ).toBe("informational");
   });
 
   it("maps finding types to chip variants", () => {
@@ -121,6 +124,34 @@ describe("recommendedActions", () => {
     expect(
       recommendedActionTitle(t, actions[1]!),
     ).toContain("608870");
+    // Fallback rows carry finding_type and the canonical dot-form section id.
+    const copayRow = actions.find((row) => row.surface === "copay")!;
+    expect(copayRow.finding_type).toBe("opportunity");
+    expect(copayRow.sut_section_id).toBe("1.8.5.(7)");
+    expect(
+      actions.find((row) => row.surface === "billing_strategy")!.finding_type,
+    ).toBe("compliance");
+  });
+
+  it("classifies fallback lab and uplift rows", () => {
+    const report = {
+      copay: { is_exempt: false },
+      lab: {
+        flagged_tests: [
+          { test_name: "Hemogram", flag_type: "hemogram_unbundling", savings_try: 5 },
+        ],
+      },
+      billing_strategy: { recommendations: [] },
+      session_uplift: {
+        opportunities: [{ claim_id: "F-2", procedure_code: "908110" }],
+      },
+    } as unknown as BillingActionReport;
+
+    const actions = getRecommendedActions(report);
+    const lab = actions.find((row) => row.surface === "lab")!;
+    expect(lab.finding_type).toBe("compliance");
+    const uplift = actions.find((row) => row.surface === "session_uplift")!;
+    expect(uplift.finding_type).toBe("opportunity");
   });
 
   it("renders material rows with billed amount and material name title", () => {

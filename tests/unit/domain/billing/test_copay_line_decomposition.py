@@ -8,9 +8,15 @@ from decimal import Decimal
 import pytest
 
 from src.bilun.domain.billing.claim_copay import optimize_copay_from_claims
-from src.bilun.domain.billing.copay_line_waivers import _waivable_copay_parts, waiver_ek1a_muayene
-from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
+from src.bilun.domain.billing.copay_line_waivers import (
+    _waivable_copay_parts,
+    waiver_composite_procedure,
+    waiver_ek1a_muayene,
+    waiver_inpatient_drug,
+)
+from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
+from src.bilun.domain.sut.clause_reference import RULE_TYPE_COPAY_WAIVER
 
 pytestmark = pytest.mark.unit
 
@@ -110,6 +116,15 @@ def test_ek1a_waiver_carries_ilave_separately() -> None:
     assert correction["copay_component_try"] == pytest.approx(40.0)
     assert correction["ilave_ucret_try"] == pytest.approx(20.0)
 
+    # Track E clause link + ilave ücret status on the rate correction.
+    assert correction["ilave_ucret_status"] == "none"
+    clause_ref = correction["clause_ref"]
+    assert clause_ref["clause_coordinate"] == "1.8.5.(7)"
+    assert clause_ref["clause_key"]  # resolved, non-empty
+    assert clause_ref["clause_key"].startswith("1.8.5.(7)#")
+    assert clause_ref["rule_type"] == RULE_TYPE_COPAY_WAIVER
+    assert clause_ref["annex"] == "EK-1/A"
+
 
 def test_optimize_copay_populates_decomposition_totals() -> None:
     line = _package_line_with_copay_and_surcharge()
@@ -159,3 +174,129 @@ def test_optimize_copay_populates_decomposition_totals() -> None:
     assert result.patient_copay_try == pytest.approx(400.0)
     assert result.ilave_ucret_total_try == pytest.approx(200.0)
     assert result.line_decomposition_status == "exact"
+
+
+def test_inpatient_drug_waiver_correction_is_drug_prohibited() -> None:
+    line = DrugClaimLine(
+        drug_claim_line_id="DL-INP",
+        prescription_id="RX-INP",
+        claim_id="F-TEST-003",
+        patient_id="PT-1",
+        episode_id="EP-1",
+        drug_claim_date=date(2026, 3, 10),
+        drug_name="Inpatient Drug",
+        drug_code="P-INP",
+        barkod="",
+        equivalence_group="",
+        quantity=1,
+        unit_price_try=Decimal("100.00"),
+        billed_amount_try=Decimal("100.00"),
+        expected_payable_try=Decimal("80.00"),
+        discount_tier_expected=Decimal("0"),
+        denial_reason_expected="",
+        rule_trace_expected="",
+        copay_rate=Decimal("0.20"),
+    )
+    claim = ClaimHeader(
+        claim_id=line.claim_id,
+        patient_id=line.patient_id,
+        episode_id=line.episode_id,
+        claim_type="yatis",
+        facility_tier="2",
+        provider_type="kamu",
+        department="dahiliye",
+        admission_date=date(2026, 3, 10),
+        discharge_date=date(2026, 3, 12),
+        claim_start_date=date(2026, 3, 10),
+        claim_end_date=date(2026, 3, 12),
+        primary_icd10="E11.9",
+        package_candidate=False,
+        expected_total_billed_try=Decimal("100.00"),
+        expected_total_payable_try=Decimal("80.00"),
+        expected_denial_reason="",
+        scenario_tag="sentetik",
+    )
+
+    waiver = waiver_inpatient_drug(line, claim)
+
+    assert waiver is not None
+    assert waiver.component_try == pytest.approx(Decimal("20.00"))
+    correction = waiver.to_rate_correction()
+
+    # Drug waiver rows carry the §1.9.1 + 5510 md.73 prohibition status.
+    assert correction["ilave_ucret_status"] == "drug_prohibited"
+    ilave_ref = correction["ilave_clause_ref"]
+    assert ilave_ref["clause_coordinate"] == "1.9.1"
+    assert ilave_ref["clause_key"]  # resolved, non-empty
+    assert ilave_ref["statutory_law"] == "5510 Sayılı Kanun Madde 73"
+
+    clause_ref = correction["clause_ref"]
+    assert clause_ref["clause_coordinate"] == "1.8.5.(8)"
+    assert clause_ref["clause_key"]  # resolved, non-empty
+    assert clause_ref["clause_key"].startswith("1.8.5.(8)#")
+    assert clause_ref["rule_type"] == RULE_TYPE_COPAY_WAIVER
+
+
+def test_composite_acil_procedure_waiver_correction_is_emergency_exempt() -> None:
+    line = ProcedureClaimLine(
+        procedure_line_id="PL-ACIL",
+        claim_id="F-TEST-004",
+        patient_id="PT-1",
+        episode_id="EP-1",
+        procedure_date=date(2026, 3, 10),
+        procedure_code="520030",
+        procedure_name="Acil muayene",
+        procedure_category="muayene",
+        quantity=1,
+        unit_price_try=Decimal("100.00"),
+        billed_amount_try=Decimal("100.00"),
+        expected_payable_try=Decimal("70.00"),
+        is_package_included=False,
+        package_code="",
+        surcharge_applicable=False,
+        copay_rate_applicable=True,
+        denial_reason_expected="",
+        rule_trace_expected="",
+    )
+    claim = ClaimHeader(
+        claim_id=line.claim_id,
+        patient_id=line.patient_id,
+        episode_id=line.episode_id,
+        claim_type="acil",
+        facility_tier="2",
+        provider_type="kamu",
+        department="acil",
+        admission_date=None,
+        discharge_date=None,
+        claim_start_date=date(2026, 3, 10),
+        claim_end_date=date(2026, 3, 10),
+        primary_icd10="S06.0",
+        package_candidate=False,
+        expected_total_billed_try=Decimal("100.00"),
+        expected_total_payable_try=Decimal("70.00"),
+        expected_denial_reason="",
+        scenario_tag="sentetik",
+    )
+
+    waiver = waiver_composite_procedure(
+        line,
+        claim,
+        [
+            {
+                "category": "acil_servis",
+                "rule_source": "SUT §1.8.5(5) emergency visit copay waiver",
+                "counts_toward_exempt": True,
+                "waives_sections": ("1.8.1", "1.8.2", "1.8.3"),
+            }
+        ],
+        {claim.claim_id: {line.procedure_code}},
+    )
+
+    assert waiver is not None
+    assert waiver.exemption_ground == "composite_acil_servis"
+    correction = waiver.to_rate_correction()
+
+    assert correction["ilave_ucret_status"] == "emergency_exempt"
+    clause_ref = correction["clause_ref"]
+    assert clause_ref["clause_coordinate"] == "1.8.5"
+    assert clause_ref["rule_type"] == RULE_TYPE_COPAY_WAIVER

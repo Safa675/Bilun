@@ -14,6 +14,7 @@ from src.bilun.domain.materials.catalog_lookup import (
     resolve_material_name_by_code,
 )
 from .catalog_membership import normalize_procedure_code
+from .clause_linking import clause_ref_for_rule_id
 
 from ..constants import _PROSE_RULES_DIR
 
@@ -325,7 +326,7 @@ def _violation_from_rule(
 ) -> dict[str, Any]:
     action = rule.get("action") or {}
     display_name = name or resolve_material_name_by_code(code) or code or "—"
-    return {
+    finding: dict[str, Any] = {
         "rule": "material_bundling_prose",
         "severity": action.get("severity", "warning"),
         "material_name": display_name,
@@ -341,6 +342,15 @@ def _violation_from_rule(
             "prose_rule_set": ruleset.get("rule_set_id"),
         },
     }
+    # Phase 2 canonical clause linking: attach the structured SUT clause
+    # reference when this rule_id resolves via the prose-manifest
+    # clause_traces join. Additive only — message and amounts unchanged;
+    # unresolvable rule ids keep the finding as-is (no invented cite).
+    clause_ref = clause_ref_for_rule_id(str(rule.get("rule_id", "")))
+    if clause_ref is not None:
+        finding["clause_ref"] = clause_ref
+        finding["source_type"] = clause_ref["source_type"]
+    return finding
 
 
 def check_material_bundling_prose(

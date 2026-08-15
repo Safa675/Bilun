@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import Any
 
 from src.bilun.domain.claims.models import ClaimHeader, ProcedureClaimLine
 from src.bilun.domain.claims.patient_context import PatientClaimContext
@@ -23,9 +24,11 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_OPTIONAL_OVERRIDE,
     SAVINGS_CATEGORY_COMPLIANCE,
     SAVINGS_CATEGORY_SGK_UPLIFT,
+    PaymentMethodCompliance,
     PaymentMethodKind,
     PaymentMethodResult,
 )
+from src.bilun.domain.sut.clause_reference import sut_clause_reference
 
 from .demo_vignette_lookup import (
     hypothetical_itemized_total_try,
@@ -236,7 +239,7 @@ def _compute_claim_savings(
     return _money(max(0.0, package_total - itemized_total))
 
 
-def _claim_recommendation_detail(
+def _claim_recommendation_message(
     *,
     claim_id: str,
     claim_kind: PaymentMethodKind,
@@ -245,42 +248,123 @@ def _claim_recommendation_detail(
     package_total: float,
     itemized_total: float,
     current_billing: str,
-) -> str:
+) -> dict[str, Any]:
+    """Claim-level detail plus the §2.2 structured message contract.
+
+    The English ``detail`` stays byte-identical (fallback / ``text_en``);
+    ``message_code`` + ``message_params`` let the frontend render the same
+    sentence from i18n templates without regex-parsing. Amount params carry
+    the exact two-decimal text embedded in ``detail`` so rendering output is
+    unchanged.
+    """
+    package_amount = f"{package_total:.2f}"
+    itemized_amount = f"{itemized_total:.2f}"
+
     if claim_kind == "DRG_MANDATORY":
         if current_billing == "package":
-            return (
-                f"Claim {claim_id} is billed correctly as package per SUT §2.2.2(1). "
-                f"Package total {package_total:.2f} TRY."
-            )
-        return (
-            f"SUT §2.2 mandates package billing for claim {claim_id} "
-            f"(EK-2/C procedure present). Package total {package_total:.2f} TRY vs "
-            f"itemized {itemized_total:.2f} TRY."
-        )
+            return {
+                "detail": (
+                    f"Claim {claim_id} is billed correctly as package per SUT §2.2.2(1). "
+                    f"Package total {package_amount} TRY."
+                ),
+                "message_code": "claim_package_ok",
+                "message_params": {
+                    "claim_id": claim_id,
+                    "amount_try": package_amount,
+                },
+            }
+        return {
+            "detail": (
+                f"SUT §2.2 mandates package billing for claim {claim_id} "
+                f"(EK-2/C procedure present). Package total {package_amount} TRY vs "
+                f"itemized {itemized_amount} TRY."
+            ),
+            "message_code": "claim_mandate_package",
+            "message_params": {
+                "claim_id": claim_id,
+                "package_total_try": package_amount,
+                "itemized_total_try": itemized_amount,
+            },
+        }
 
     if claim_kind == "ITEMIZED":
         if current_billing == "itemized":
-            return (
-                f"Claim {claim_id} is billed correctly as itemized per SUT §2.2. "
-                f"Itemized total {itemized_total:.2f} TRY."
-            )
-        return (
-            f"SUT §2.2 mandates itemized billing for claim {claim_id}. "
-            f"Itemized total {itemized_total:.2f} TRY vs package "
-            f"{package_total:.2f} TRY."
-        )
+            return {
+                "detail": (
+                    f"Claim {claim_id} is billed correctly as itemized per SUT §2.2. "
+                    f"Itemized total {itemized_amount} TRY."
+                ),
+                "message_code": "claim_itemized_ok",
+                "message_params": {
+                    "claim_id": claim_id,
+                    "amount_try": itemized_amount,
+                },
+            }
+        return {
+            "detail": (
+                f"SUT §2.2 mandates itemized billing for claim {claim_id}. "
+                f"Itemized total {itemized_amount} TRY vs package "
+                f"{package_amount} TRY."
+            ),
+            "message_code": "claim_mandate_itemized",
+            "message_params": {
+                "claim_id": claim_id,
+                "itemized_total_try": itemized_amount,
+                "package_total_try": package_amount,
+            },
+        }
 
     if recommendation == "package":
-        return (
-            f"Claim {claim_id}: optional §2.2.2(2) override — package billing "
-            f"({package_total:.2f} TRY) is the higher legal option vs itemized "
-            f"({itemized_total:.2f} TRY)."
-        )
-    return (
-        f"Claim {claim_id}: optional §2.2.2(2) override — itemized billing "
-        f"({itemized_total:.2f} TRY) is the higher legal option vs package "
-        f"({package_total:.2f} TRY)."
+        return {
+            "detail": (
+                f"Claim {claim_id}: optional §2.2.2(2) override — package billing "
+                f"({package_amount} TRY) is the higher legal option vs itemized "
+                f"({itemized_amount} TRY)."
+            ),
+            "message_code": "claim_optional_package_higher",
+            "message_params": {
+                "claim_id": claim_id,
+                "package_total_try": package_amount,
+                "itemized_total_try": itemized_amount,
+            },
+        }
+    return {
+        "detail": (
+            f"Claim {claim_id}: optional §2.2.2(2) override — itemized billing "
+            f"({itemized_amount} TRY) is the higher legal option vs package "
+            f"({package_amount} TRY)."
+        ),
+        "message_code": "claim_optional_itemized_higher",
+        "message_params": {
+            "claim_id": claim_id,
+            "itemized_total_try": itemized_amount,
+            "package_total_try": package_amount,
+        },
+    }
+
+
+def _compliance_violation_message(
+    compliance: PaymentMethodCompliance,
+    payment_method_tr: str,
+) -> dict[str, Any]:
+    """Structured message fields for §2.2 "must use" compliance-violation rows.
+
+    Only called for non-compliant rows with a known mandated method, i.e. the
+    two detail shapes built by ``check_payment_method_compliance``.
+    """
+    message_code = (
+        "procedure_must_package"
+        if compliance.mandated_method == "package"
+        else "procedure_must_itemized"
     )
+    return {
+        "message_code": message_code,
+        "message_params": {
+            "procedure_code": compliance.procedure_code,
+            "method": payment_method_tr,
+            "section": compliance.trace.sut_section,
+        },
+    }
 
 
 def recommend_billing_strategy_from_claims(
@@ -305,29 +389,34 @@ def recommend_billing_strategy_from_claims(
             provider_type=claim.provider_type if claim is not None else None,
             as_of_date=as_of,
         )
-        emitted_violation = False
-        if not compliance.is_compliant and compliance.mandated_method != "unknown":
-            recommendations.append(
-                {
-                    "type": "compliance_violation",
-                    "claim_id": line.claim_id,
-                    "procedure_code": line.procedure_code,
-                    "procedure_name": line.procedure_name,
-                    "mandated_method": compliance.mandated_method,
-                    "payment_method_kind": compliance.kind,
-                    "billed_as_package": billed_as_package,
-                    "sut_section_id": compliance.trace.sut_section,
-                    "rule_id": compliance.trace.rule_id,
-                    "detail": compliance.detail,
-                }
-            )
-            emitted_violation = True
-
         mandated = _resolve_line_payment_method(
             line,
             claim,
             care_setting=care_setting,
         )
+        emitted_violation = False
+        if not compliance.is_compliant and compliance.mandated_method != "unknown":
+            violation_row: dict[str, Any] = {
+                "type": "compliance_violation",
+                "claim_id": line.claim_id,
+                "procedure_code": line.procedure_code,
+                "procedure_name": line.procedure_name,
+                "mandated_method": compliance.mandated_method,
+                "payment_method_kind": compliance.kind,
+                "billed_as_package": billed_as_package,
+                "sut_section_id": compliance.trace.sut_section,
+                "rule_id": compliance.trace.rule_id,
+                "detail": compliance.detail,
+            }
+            violation_row.update(
+                _compliance_violation_message(compliance, mandated.payment_method_tr)
+            )
+            if compliance.trace.sut_section:
+                violation_row["clause_ref"] = sut_clause_reference(
+                    compliance.trace.sut_section
+                ).to_dict()
+            recommendations.append(violation_row)
+            emitted_violation = True
         if mandated.kind == "MISSING_INPUTS":
             tier_inputs_missing = True
         # Only emit the informational mandated-method line when we did NOT
@@ -433,7 +522,7 @@ def recommend_billing_strategy_from_claims(
             package_total=package_total,
             itemized_total=itemized_total,
         )
-        detail = _claim_recommendation_detail(
+        message = _claim_recommendation_message(
             claim_id=claim.claim_id,
             claim_kind=claim_kind,
             recommendation=recommendation,
@@ -469,39 +558,46 @@ def recommend_billing_strategy_from_claims(
             else None
         )
 
-        recommendations.append(
-            {
-                "claim_id": claim.claim_id,
-                "recommendation": recommendation,
-                "recommendation_kind": recommendation_kind,
-                "payment_method_kind": claim_kind,
-                "recommended_package_code": recommended_package_code,
-                "sut_section_id": primary.trace.sut_section,
-                "rule_id": primary.trace.rule_id,
-                "package_total_try": _money(package_total),
-                "itemized_total_try": _money(itemized_total),
-                "savings_try": savings,
-                "recoverable_uplift_try": savings,
-                "savings_basis": savings_basis,
-                "savings_category": savings_category,
-                "included_in_sgk_total": bool(savings_category),
-                "current_billing": current_billing,
-                "detail": detail,
-                "catalog_as_of_date": catalog_dates[-1] if catalog_dates else None,
-                "package_price_methodology": package_price_methodology,
-                "itemized_price_methodology": itemized_price_methodology,
-                "itemized_raw_try": _money(itemized_raw),
-                "itemized_excluded_violation_count": excluded_count,
-                "itemized_excluded_procedure_codes": excluded_codes[:10],
-                "mandated_methods": sorted(
-                    {
-                        result.payment_method
-                        for result in line_results
-                        if result.payment_method != "unknown"
-                    }
-                ),
-            }
-        )
+        claim_row: dict[str, Any] = {
+            "claim_id": claim.claim_id,
+            "recommendation": recommendation,
+            "recommendation_kind": recommendation_kind,
+            "payment_method_kind": claim_kind,
+            "recommended_package_code": recommended_package_code,
+            "sut_section_id": primary.trace.sut_section,
+            "rule_id": primary.trace.rule_id,
+            "package_total_try": _money(package_total),
+            "itemized_total_try": _money(itemized_total),
+            "savings_try": savings,
+            "recoverable_uplift_try": savings,
+            "savings_basis": savings_basis,
+            "savings_category": savings_category,
+            "included_in_sgk_total": bool(savings_category),
+            "current_billing": current_billing,
+            "detail": message["detail"],
+            "message_code": message["message_code"],
+            "message_params": message["message_params"],
+            "catalog_as_of_date": catalog_dates[-1] if catalog_dates else None,
+            "package_price_methodology": package_price_methodology,
+            "itemized_price_methodology": itemized_price_methodology,
+            "itemized_raw_try": _money(itemized_raw),
+            "itemized_excluded_violation_count": excluded_count,
+            "itemized_excluded_procedure_codes": excluded_codes[:10],
+            "mandated_methods": sorted(
+                {
+                    result.payment_method
+                    for result in line_results
+                    if result.payment_method != "unknown"
+                }
+            ),
+        }
+        # Natural coordinate already carried by the row (sut_section_id) —
+        # attach the resolved clause cite; never invent one.
+        if primary.trace.sut_section:
+            claim_row["clause_ref"] = sut_clause_reference(
+                primary.trace.sut_section
+            ).to_dict()
+        recommendations.append(claim_row)
 
     required_inputs_missing = (
         [FACILITY_TIER_MISSING_INPUT] if tier_inputs_missing else []

@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
+from src.bilun.domain.sut.clause_reference import SOURCE_SUT_CLAUSE
+
 CareSetting = Literal["outpatient", "inpatient"]
 PaymentMethod = Literal["package", "itemized", "unknown", "overridable"]
 PaymentMethodKind = Literal[
@@ -19,12 +21,22 @@ PatientCopayProfile = Literal["sgk_income_recipient", "other"]
 
 @dataclass(frozen=True)
 class ProseRuleTrace:
-    """Traceability back to SUT prose and decision table."""
+    """Traceability back to SUT prose and decision table.
+
+    Phase 2 provenance fields (additive): ``source_type`` classifies the
+    cite (``sut_clause`` vs non-SUT sources such as ``el_kitabi`` /
+    ``algoritma_rehberi`` / ``kanun`` / ``rehber``) and ``clause_ref``
+    carries the structured ``SutClauseReference.to_dict()`` payload when
+    one is attached to the finding. Defaults keep every existing
+    constructor working unchanged.
+    """
 
     rule_id: str
     sut_section: str
     rule_set_id: str
     detail: str
+    source_type: str = SOURCE_SUT_CLAUSE
+    clause_ref: dict | None = None
 
 
 @dataclass(frozen=True)
@@ -52,6 +64,10 @@ class PaymentMethodCompliance:
     is_compliant: bool
     detail: str
     trace: ProseRuleTrace
+    # Structured message contract (§2.2 surface): consumers localize via
+    # message_code + message_params instead of regex-parsing ``detail``.
+    message_code: str = ""
+    message_params: dict | None = None
 
 
 @dataclass(frozen=True)
