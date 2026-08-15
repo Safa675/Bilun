@@ -16,8 +16,8 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/sessionToken";
 const LOGIN_PATH = "/login";
 // Login/logout API must be reachable without a session — otherwise the login
 // form's POST /api/auth/login is redirected to /login and credentials look "wrong".
-// /api/health is an exact path, not a prefix, so /api/healthz-style routes stay gated.
-const PUBLIC_PATHS = [LOGIN_PATH, "/api/health"];
+// /api/health and /api/feedback are exact paths, not prefixes.
+const PUBLIC_PATHS = [LOGIN_PATH, "/api/health", "/api/feedback"];
 /** Auth endpoints must stay reachable before a session exists. */
 const PUBLIC_PREFIXES = ["/api/auth/"];
 

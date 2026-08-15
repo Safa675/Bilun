@@ -22,11 +22,7 @@ Değerlendirme sonucunda tespit edilen hataları gideren revize mimari planı `p
 - [x] Plan iddialarını 4 paralel denetim ajanıyla dosya:satır bazında doğrula
 - [x] §2.4.4 entegrasyon noktalarını doğrula (`line_decomposition.py`, `optimization/surcharge.py`)
 - [x] Revize planı yaz (clause_key sözleşmesi, mevcut altyapının yeniden kullanımı, Aşama 0 çakışma çözümü, düzeltilmiş mevcut durum analizi)
-- [ ] Kullanıcı onayı — uygulama bu plandan bağımsız olarak başlatılmaz
-
-### Out of Scope
-- Kod değişikliği yok; bu görev yalnızca plan revizyonudur.
-- Devam eden (uncommitted) copay UI çalışmasının refactor'ü — revize planın Aşama 0/1 kapsamındadır.
+- [x] Kullanıcı onayı — uygulama bu plandan bağımsız olarak başlatılmaz
 
 ### Review
 Revizyon 2026-08-15: plan v2 yazıldı. Kullanıcı onayladı → uygulama görevine geçildi.
@@ -48,34 +44,20 @@ Revizyon 2026-08-15: plan v2 yazıldı. Kullanıcı onayladı → uygulama göre
 - [x] Aşama 3: apiMessages ilk yüzey (§2.2 kümesi, 9 message_code) — backend üreticiler + `translateStructuredApiMessage` + tüm row-taşıyan tüketiciler kesover (BillingSummary dahil; `PaymentMethodCompliance` structured alanları ile drg_unbundling ihlalleri de kod taşıyor)
 - [x] Aşama 4: doğrulama — backend migration yüzeyleri 1641 test yeşil; frontend `npx tsc --noEmit` + 223 vitest + `npm run build` yeşil; full suite'te 25 çevresel hata (401 auth-not-configured + başka bir sürecin tuttuğu DuckDB lock) migration yüzeylerinin DIŞINDA; ruff: değişen/yeni dosyalarda 0 hata
 
-### Out of Scope
-- apiMessages'ın kalan yüzeyleri (plan gereği yüzey-yüzey, ayrı PR'lar; bu görevde ilk yüzey tamam).
-- `sutRegulatorySources.ts` EK regex'i — backend rule_source yapılaşmasını bekler (Aşama 2 follow-up).
-- Commit/push/PR — kullanıcı kararı.
-
 ### Review
 Uygulama 2026-08-15'te tamamlandı. En kritik bulgu: planın ve clarity planının §2.4.4 atfı corpus'a göre YANLIŞTI; ilave ücret mevzuatı §1.9 altında. Tüm kanıtlar dosya:satır bazında testlerle sabitlendi. Kalan takip işleri: (a) apiMessages kalan yüzeyleri (EK-3B :208-224 vd.), (b) `sutRegulatorySources.ts` EK regex'i, (c) ~20 prose dedektörüne clause_ref wiring'i (hazır `clause_linking` primitifleriyle), (d) committed i18n'daki eski atıfların temizlik geçişi ("§2.4" dipnotu, "§1.8.5(8)" ground label'ı).
 
-## Task: Aşama 3 ilk yüzey — §2.2 billing prose + material copay rate structured message contract
+## Task: Fix Sidebar & Tab Strip Intertwining + Resolve PR Conflicts
 
 ### Goal
-Backend §2.2 üreticilerine `message_code` + `message_params` ekle (detail byte-identical kalır), frontend'de `translateStructuredApiMessage` ile dokuz §2.2 regex ayrıştırıcısını sil ve row-taşıyan tüketicileri kesover et.
+Fix the layout bug where the fixed sidebar and sticky workspace tab strip overlap/intertwine due to CSS variable reset in `AppSidebar.tsx`, resolve merge conflicts with `main`, and verify full frontend and backend test suites pass.
 
 ### Subtasks
-- [x] Backend: `claim_strategy.py` — 6 claim-level detail + compliance_violation row'larına message_code/message_params (+ doğal coordinate varsa clause_ref)
-- [x] Backend: `claim_copay.py` — yalnız material rate informational row'una material_copay_rate kodu
-- [x] Frontend: `apiMessages.ts` — `translateStructuredApiMessage` ekle, dokuz §2.2 matcher'ı sil
-- [x] Frontend: `SutBillingReportSections.tsx` — CopaySection insight row, BillingStrategySection, OptionalOverrideSection kesover
-- [x] Testler: `test_claim_strategy_sut.py`, `test_claim_copay_cancer_context.py`, `apiMessages.test.ts` güncelle
-- [x] Doğrulama: touched backend pytest dosyaları + `npx vitest run` + `npx tsc --noEmit`
-
-### Out of Scope
-- `prose_rules/types.py` (PaymentMethodCompliance frozen dataclass — eşzamanlı iş; structured alanlar row seviyesinde claim_strategy'de eklenir)
-- `drg_unbundling.py` row'ları (dosya sahipliği dışında; detail passthrough devam eder)
-- `recommendedActions.ts` (read-only; bare-string tüketici olarak kalır)
-- Diğer apiMessages yüzeyleri (EK-3B, validation, yatak, honesty…)
-
-### Review
-Tamamlandı (2026-08-15): dokuz message_code üretici tarafında detail byte-identical kalacak şekilde eklendi; frontend regex kümesi silindi, row-taşıyan dört render noktası `translateStructuredApiMessage`'a kesover edildi. Doğrulama: touched pytest dosyaları 16/16, ek güvenlik ağı billing+prose_rules 1574/1575 (tek kalıntı failure eşzamanlı işe ait pre-existing `test_clause_linking` beklentisi), vitest 223/223, tsc temiz.
-
-Not (kapanış, 2026-08-15): Out of Scope'taki üç madde orchestrator tarafından TAMAMLANDI — `PaymentMethodCompliance` structured alanları (types.py + payment_method.py), drg_unbundling ihlal row'ları ve recommendedActions/BillingSummary passthrough. Kalıntı `test_clause_linking` failure'ı pre-existing değildi (section-heading fallback ile çözülen "3.1.2" beklentisi); test yeni davranışa güncellendi. Yüzey tam kapalı.
+- [x] Resolve git merge conflicts with `main` in `WorkspaceTabStrip.tsx` and `tasks/todo.md`
+- [x] Fix `AppSidebar.tsx` layout effect: prevent cleanup from resetting `--shell-sidebar-width` to `0px` when the shell is active
+- [x] Ensure `WorkspaceTabStrip` and page layout have robust, bulletproof sidebar offsets across all screen widths and collapsed states
+- [x] Verify `npm run typecheck` (`tsc --noEmit`) passes with 0 errors
+- [x] Verify `npm test` (`vitest`) passes with 100% test pass rate (232/232 passed)
+- [x] Verify `npm run build` succeeds cleanly in 2.4s
+- [x] Verify backend checks and parity pass with 0 errors
+- [x] Commit and push changes to `experiment/workspace-shell` to update PR #72

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import SutInlineAIPanel from "@/components/chat/SutInlineAIPanel";
 import SutHealthPanel from "@/components/admin/SutHealthPanel";
 import SutHowItWorksModal from "@/components/modals/SutHowItWorksModal";
+import ReportProblemModal from "@/components/feedback/ReportProblemModal";
 import {
   buildSutPatientHref,
   parseSutHomeTab,
@@ -26,9 +27,11 @@ import {
   useSetHealthStatus,
   useSetShowAdmin,
   useSetShowHowItWorks,
+  useSetShowReportProblem,
   useSetSutChatSession,
   useShowAdmin,
   useShowHowItWorks,
+  useShowReportProblem,
   useSutChatSession,
   useWorkspacePaneBTabId,
 } from "@/stores/index";
@@ -61,6 +64,8 @@ function SutHomeContent() {
   const isWorkspaceMode = true;
   const showHowItWorks = useShowHowItWorks();
   const setShowHowItWorks = useSetShowHowItWorks();
+  const showReportProblem = useShowReportProblem();
+  const setShowReportProblem = useSetShowReportProblem();
   const chatDock = useAiDockPosition();
   const setChatDock = useSetAiDockPosition();
   // Split view disables chat docking (v1 scope).
@@ -176,6 +181,7 @@ function SutHomeContent() {
           </section>
       </main>
       <SutHowItWorksModal open={showHowItWorks} onClose={() => setShowHowItWorks(false)} />
+      <ReportProblemModal open={showReportProblem} onClose={() => setShowReportProblem(false)} />
       {shouldRenderChat && chatDock !== "center" && (
         <SutInlineAIPanel
           activeTab={activeTabLabel}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Columns2, Search, X } from "lucide-react";
+import { ChevronDown, Columns2, MessageSquareWarning, Search, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useT } from "@/lib/i18n/useTranslations";
 import {
@@ -12,6 +12,7 @@ import {
   type WorkspaceTab,
 } from "@/lib/workspaceTabs";
 import { resolveTabInfo } from "@/lib/workspaceSubtabs";
+import { useSetShowReportProblem } from "@/stores/index";
 import {
   useWorkspaceActiveTabId,
   useWorkspaceStoreApi,
@@ -34,6 +35,7 @@ export default function WorkspaceTabStrip() {
   const tabs = useWorkspaceTabs();
   const activeTabId = useWorkspaceActiveTabId();
   const store = useWorkspaceStoreApi();
+  const setShowReportProblem = useSetShowReportProblem();
   const [overflowOpen, setOverflowOpen] = useState(false);
 
   if (pathname === "/login" || tabs.length === 0) {
@@ -185,16 +187,28 @@ export default function WorkspaceTabStrip() {
           )}
         </div>
       )}
-      <button
-        type="button"
-        onClick={() => store.getState().setQuickOpen(true)}
-        aria-label={t("shell.quickOpen.ariaLabel")}
-        title={`${t("shell.quickOpen.ariaLabel")} (Ctrl+K)`}
-        data-quick-open-trigger
-        className="ml-auto mb-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--r-md)] text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-secondary)] transition-colors"
-      >
-        <Search className="h-3.5 w-3.5" aria-hidden="true" />
-      </button>
+      <div className="ml-auto mb-0.5 flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => setShowReportProblem(true)}
+          aria-label={t("shell.feedback.button")}
+          title={`${t("shell.feedback.button")} (safaoksuz@bilun.tech)`}
+          data-feedback-trigger
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--r-md)] text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--gold)] transition-colors"
+        >
+          <MessageSquareWarning className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={() => store.getState().setQuickOpen(true)}
+          aria-label={t("shell.quickOpen.ariaLabel")}
+          title={`${t("shell.quickOpen.ariaLabel")} (Ctrl+K)`}
+          data-quick-open-trigger
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--r-md)] text-[var(--text-muted)] hover:bg-[var(--surface-tint)] hover:text-[var(--text-secondary)] transition-colors"
+        >
+          <Search className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
+      </div>
     </div>
   );
 }
