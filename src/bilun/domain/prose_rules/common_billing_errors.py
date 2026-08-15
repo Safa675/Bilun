@@ -44,6 +44,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
 )
+from src.bilun.domain.sut.clause_reference import SOURCE_EL_KITABI, non_sut_reference
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import (
@@ -54,6 +55,15 @@ if TYPE_CHECKING:
 # Common violation-shape keys reused by every detector.
 _OPPORTUNITY_TYPE = "common_billing_error"
 _SUT_SECTION_ID = "tablo_15"
+
+# Provenance (Phase 2): Tablo 15 is El Kitabı content, not a SUT clause —
+# findings are labeled honestly instead of carrying an invented SUT cite.
+# The reference dict is resolved ONCE at module load and shared by every
+# finding (clause_key is empty: the El Kitabı has no row in the SUT corpus).
+_SOURCE_TYPE = SOURCE_EL_KITABI
+_CLAUSE_REF = non_sut_reference(
+    "El Kitabı Tablo 15", source_type=SOURCE_EL_KITABI
+).to_dict()
 
 # Error #2 — Exam categories that represent a poliklinik muayenesi. The
 # 10-day duplicate rule applies only to outpatient exam procedures, not to
@@ -204,6 +214,8 @@ def detect_duplicate_exam_10day(
                         "rule_id": "tablo15_2_duplicate_exam_10day",
                         "detail": detail,
                         "sut_section_id": _SUT_SECTION_ID,
+                        "source_type": _SOURCE_TYPE,
+                        "clause_ref": _CLAUSE_REF,
                         "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                         "savings_basis": SAVINGS_BASIS_SOURCED,
                         "severity": "error",
@@ -252,6 +264,8 @@ def detect_missing_diagnosis(
                 "rule_id": "tablo15_8_missing_diagnosis",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -313,6 +327,8 @@ def detect_duplicate_tests(
                             "rule_id": "tablo15_12_duplicate_test",
                             "detail": detail,
                             "sut_section_id": _SUT_SECTION_ID,
+                            "source_type": _SOURCE_TYPE,
+                            "clause_ref": _CLAUSE_REF,
                             "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                             "savings_basis": SAVINGS_BASIS_SOURCED,
                             "severity": "warning",
@@ -376,6 +392,8 @@ def detect_exam_admission_date_mismatch(
                 "rule_id": "tablo15_22_exam_admission_date_mismatch",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -426,6 +444,8 @@ def detect_missing_drug_barcode(
                 "rule_id": "tablo15_20_missing_drug_barcode",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -509,6 +529,8 @@ def detect_vakabasi_wrong_method(
                 "rule_id": "tablo15_3_vakabasi_wrong_method",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -561,6 +583,8 @@ def detect_normal_poliklinik_wrong_method(
                 "rule_id": "tablo15_4_normal_poliklinik_wrong_method",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -620,6 +644,8 @@ def detect_material_identity_errors(
                 "rule_id": "tablo15_5_material_identity_error",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -679,6 +705,8 @@ def detect_green_area_bundled_extras(
                 "rule_id": "tablo15_7_green_area_bundled_extra",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "warning",
@@ -726,6 +754,8 @@ def detect_admission_billing_window(
                 "rule_id": "tablo15_9_admission_billing_window",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -776,6 +806,8 @@ def detect_unreported_lab_result(
                 "rule_id": "tablo15_10_unreported_lab_result",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "warning",
@@ -833,6 +865,8 @@ def detect_drug_quantity_error(
                 "rule_id": "tablo15_11_drug_quantity_error",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -888,6 +922,8 @@ def detect_material_preauth_missing(
                 "rule_id": "tablo15_15_material_preauth_missing",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "warning",
@@ -941,6 +977,8 @@ def detect_material_type_missing(
                 "rule_id": "tablo15_16_material_type_missing",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -992,6 +1030,8 @@ def detect_inpatient_on_outpatient(
                 "rule_id": "tablo15_21_inpatient_on_outpatient",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -1047,6 +1087,8 @@ def detect_donor_prep_as_exam(
                 "rule_id": "tablo15_24_donor_prep_as_exam",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "warning",

@@ -6,12 +6,17 @@ import pytest
 
 from src.bilun.domain.billing.billing_actions import collect_billing_actions, count_billing_actions
 from src.bilun.domain.billing.patient_report import compute_patient_billing_report
-from src.bilun.domain.billing.types import BillingActionReport, MaterialPreCheck
+from src.bilun.domain.billing.types import (
+    BillingActionReport,
+    CopayOptimization,
+    MaterialPreCheck,
+)
 from src.bilun.domain.claims.loader import load_sut_claim_dataset
 from src.bilun.domain.claims.patient_context import (
     build_bill_claim_context,
     build_patient_claim_context,
 )
+from src.bilun.domain.sut.clause_reference import RULE_TYPE_COPAY_WAIVER
 
 pytestmark = pytest.mark.unit
 
@@ -54,7 +59,17 @@ class TestBillingActionsBreakdown:
 
         copay_rows = [row for row in report.recommended_actions if row["surface"] == "copay"]
         assert len(copay_rows) == 1
-        assert copay_rows[0]["kind"] == "exemption_review"
+        copay_row = copay_rows[0]
+        assert copay_row["kind"] == "exemption_review"
+        assert copay_row["finding_type"] == "opportunity"
+        clause_ref = copay_row["clause_ref"]
+        assert clause_ref is not None
+        assert clause_ref["rule_type"] == RULE_TYPE_COPAY_WAIVER
+        # Canonical dot-form coordinate — never the legacy "1.8.5(7)" string.
+        coordinate = clause_ref["clause_coordinate"]
+        assert coordinate != "1.8.5(7)"
+        assert "(" not in coordinate or ".(" in coordinate
+        assert copay_row["sut_section_id"] == coordinate
 
         doc_rows = [
             row
@@ -190,3 +205,115 @@ class TestMaterialRecommendedActions:
         assert row["kind"] == "material_bundling"
         assert row["sut_section_id"] == "EK-3B-1"
         assert row["billed_try"] == pytest.approx(99.0)
+
+
+class TestCopayExemptionActionRows:
+    """Reason-specific copay exemption rows (EK-1/A, EK-4/D, acil, fallback)."""
+
+    @staticmethod
+    def _copay_actions(report: BillingActionReport) -> list[dict]:
+        return [row for row in collect_billing_actions(report) if row["surface"] == "copay"]
+
+    def test_ek4d_row_emitted_without_is_exempt(self) -> None:
+        report = BillingActionReport(
+            patient_id="PT-COPAY",
+            copay=CopayOptimization(
+                is_exempt=False,
+                rx_copay_savings_by_ground={"ek4d_drug": 12.0},
+            ),
+        )
+
+        rows = self._copay_actions(report)
+        assert len(rows) == 1
+        row = rows[0]
+        assert row["action_id"] == "copay:ek4d_exemption_review"
+        assert row["kind"] == "exemption_review"
+        assert row["finding_type"] == "opportunity"
+        assert row["sut_section_id"] == "1.8.2.(3)"
+        assert row["clause_ref"]["clause_coordinate"] == "1.8.2.(3)"
+        assert row["clause_ref"]["annex"] == "EK-4/D"
+        assert row["clause_ref"]["rule_type"] == RULE_TYPE_COPAY_WAIVER
+        assert row["compliance_savings_try"] is None
+
+    def test_acil_servis_category_row(self) -> None:
+        report = BillingActionReport(
+            patient_id="PT-COPAY",
+            copay=CopayOptimization(
+                is_exempt=True,
+                exemption_disease="Akut miyokard enfarktüsü",
+                exemption_sources=[
+                    {
+                        "category": "acil_servis",
+                        "rule_source": "SUT §1.8.5 acil servis muafiyeti",
+                        "counts_toward_exempt": True,
+                        "waives_sections": ("1.8.1",),
+                        "evidence": {},
+                    }
+                ],
+                patient_copay_waived_total_try=150.0,
+            ),
+        )
+
+        rows = self._copay_actions(report)
+        assert len(rows) == 1
+        row = rows[0]
+        assert row["action_id"] == "copay:acil_servis_exemption_review"
+        assert row["sut_section_id"] == "1.8.5"
+        assert row["clause_ref"]["clause_coordinate"] == "1.8.5"
+        assert row["detail"] == "Akut miyokard enfarktüsü"
+        assert row["compliance_savings_try"] == pytest.approx(150.0)
+
+    def test_money_lands_only_on_primary_row(self) -> None:
+        report = BillingActionReport(
+            patient_id="PT-COPAY",
+            copay=CopayOptimization(
+                is_exempt=True,
+                exemption_disease="KOAH",
+                exemption_sources=[
+                    {
+                        "category": "acil_servis",
+                        "rule_source": "SUT §1.8.5 acil servis muafiyeti",
+                        "counts_toward_exempt": True,
+                        "waives_sections": ("1.8.1",),
+                        "evidence": {},
+                    },
+                    {
+                        "category": "ek1a_chronic",
+                        "rule_source": "SUT §1.8.5(7) + EK-1/A",
+                        "counts_toward_exempt": True,
+                        "waives_sections": ("1.8.1",),
+                        "evidence": {},
+                    },
+                ],
+                primary_exemption_category="ek1a_chronic",
+                patient_copay_waived_total_try=240.0,
+            ),
+        )
+
+        rows = self._copay_actions(report)
+        assert [row["action_id"] for row in rows] == [
+            "copay:acil_servis_exemption_review",
+            "copay:ek1a_exemption_review",
+        ]
+        assert rows[0]["compliance_savings_try"] is None
+        assert rows[1]["compliance_savings_try"] == pytest.approx(240.0)
+        assert rows[1]["clause_ref"]["clause_coordinate"] == "1.8.5.(7)"
+        assert rows[1]["clause_ref"]["annex"] == "EK-1/A"
+
+    def test_fallback_row_when_is_exempt_without_sources(self) -> None:
+        report = BillingActionReport(
+            patient_id="PT-COPAY",
+            copay=CopayOptimization(
+                is_exempt=True,
+                patient_copay_waived_total_try=80.0,
+            ),
+        )
+
+        rows = self._copay_actions(report)
+        assert len(rows) == 1
+        row = rows[0]
+        assert row["action_id"] == "copay:exemption_review"
+        assert row["sut_section_id"] == "1.8.5"
+        assert row["clause_ref"]["clause_coordinate"] == "1.8.5"
+        assert row["finding_type"] == "opportunity"
+        assert row["compliance_savings_try"] == pytest.approx(80.0)

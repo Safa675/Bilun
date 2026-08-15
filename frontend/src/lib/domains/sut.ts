@@ -424,6 +424,27 @@ export interface LabOptimization extends ExactnessState {
   }>;
 }
 
+/**
+ * Structured SUT clause cite carried by billing findings (Track E identity).
+ * `clause_key` (coord#hash) is the stable public cite and may be "" when the
+ * coordinate could not be resolved; `clause_coordinate` remains the cite.
+ * Display text is fetched from GET /api/rules/clauses/{clause_key}, never
+ * duplicated here.
+ */
+export interface SutClauseReference {
+  clause_key: string;
+  clause_coordinate: string;
+  source_type?:
+    | "sut_clause"
+    | "el_kitabi"
+    | "algoritma_rehberi"
+    | "kanun"
+    | "rehber";
+  rule_type?: string;
+  annex?: string;
+  statutory_law?: string;
+}
+
 export interface CopayOptimization extends ExactnessState {
   rule_source?: string;
   is_exempt: boolean;
@@ -444,7 +465,7 @@ export interface CopayOptimization extends ExactnessState {
   patient_copay_waived_total_try?: number;
   /** Total katılım payı on claim lines (before waiver). */
   patient_copay_try?: number;
-  /** Total ilave ücret (§2.4) — informational, never waived. */
+  /** Total ilave ücret (§1.9) — informational, never waived. */
   ilave_ucret_total_try?: number;
   line_decomposition_status?: "exact" | "copay_only" | "missing_inputs";
   rx_copay_savings_by_ground?: Record<string, number>;
@@ -462,6 +483,17 @@ export interface CopayOptimization extends ExactnessState {
     sut_section?: string;
     annex?: string;
     detail?: string;
+    /** Waiver clause cite for this row (Track E). */
+    clause_ref?: SutClauseReference | null;
+    /** Backend-decided surcharge outcome; absent on informational rows. */
+    ilave_ucret_status?:
+      | "drug_prohibited"
+      | "cancer_exempt"
+      | "emergency_exempt"
+      | "applicable"
+      | "none";
+    /** §1.9 surcharge clause cite backing ilave_ucret_status. */
+    ilave_clause_ref?: SutClauseReference | null;
   }>;
 }
 
@@ -502,6 +534,9 @@ export interface BillingStrategyRecommendation extends ExactnessState {
     recommended_package_code?: string | null;
     recoverable_uplift_try?: number | null;
     included_in_sgk_total?: boolean | null;
+    /** Structured message contract (§2.2 surface). */
+    message_code?: string;
+    message_params?: Record<string, unknown>;
   }>;
 }
 
@@ -633,6 +668,9 @@ export interface MaterialUplift extends ExactnessState {
     savings_category?: string;
     sut_section_id?: string;
     detail?: string;
+    /** Structured message contract (§2.2 surface). */
+    message_code?: string;
+    message_params?: Record<string, unknown>;
   }>;
   total_uplift_try?: number;
   confirmed_uplift_try?: number;
@@ -868,6 +906,13 @@ export interface RecommendedActionItem {
   material_name?: string | null;
   detail?: string | null;
   sut_section_id?: string | null;
+  /** Clause cite backing this action row (Track E); clause_key may be "". */
+  clause_ref?: SutClauseReference | null;
+  /** Backend classification for UI badges; absent on legacy payloads. */
+  finding_type?: "compliance" | "opportunity" | "informational" | null;
+  /** Structured message contract (§2.2 surface): localize via i18n code. */
+  message_code?: string | null;
+  message_params?: Record<string, unknown> | null;
 }
 
 export interface BillingActionReport extends SUTDataSourceCarrier {

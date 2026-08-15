@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from ..money import money_round_half_up_opt as _money
-from .types import BillingActionReport
+from ..sut.clause_reference import RULE_TYPE_COPAY_WAIVER, sut_clause_reference
+from .types import BillingActionReport, CopayOptimization
 
 _MATERIAL_KIND_SUT_SECTION: dict[str, str] = {
     "material_pre_auth": "3.1.2",
@@ -15,6 +16,69 @@ _MATERIAL_KIND_SUT_SECTION: dict[str, str] = {
     "material_prose_bundling": "3.1.5",
     "material_specialty_prose": "3.3",
 }
+
+# Mirror of frontend/src/lib/recommendedActions.ts getFindingType (UI badge
+# taxonomy) so the backend can serve finding_type directly; billing_strategy
+# keeps its kind-based special case.
+_COMPLIANCE_SURFACES: frozenset[str] = frozenset({"materials", "drug_indication", "lab"})
+_OPPORTUNITY_SURFACES: frozenset[str] = frozenset(
+    {
+        "session_uplift",
+        "drg_uplift",
+        "blood_uplift",
+        "yatak_puani",
+        "material_uplift",
+        "procedure_addon_uplift",
+        "procedure_capture_gap",
+        "drg_package_adequacy",
+        "gazette_repricing",
+        "care_setting_review",
+        "copay",
+    }
+)
+_INFORMATIONAL_SURFACES: frozenset[str] = frozenset({"medula_playbook", "claim_checklist"})
+
+
+def _finding_type(surface: str, kind: str | None = None) -> str:
+    """User-facing finding class for a row; mirrors frontend getFindingType.
+
+    billing_strategy is classified by kind (parity with the frontend); every
+    other surface is surface-primary and unlisted surfaces default to
+    informational.
+    """
+    if surface == "billing_strategy":
+        if kind == "optional_override":
+            return "opportunity"
+        if kind in ("compliance_violation", "mandatory_compliance", "strategy"):
+            return "compliance"
+        return "informational"
+    if surface in _COMPLIANCE_SURFACES:
+        return "compliance"
+    if surface in _OPPORTUNITY_SURFACES:
+        return "opportunity"
+    if surface in _INFORMATIONAL_SURFACES:
+        return "informational"
+    return "informational"
+
+
+# Reason-specific copay exemption review rows (Track E, plan Aşama 1):
+# category -> (action_id, clause_coordinate, annex). Coordinates use the
+# canonical dot form ("1.8.5.(7)"), never the legacy "1.8.5(7)" string.
+_COPAY_CATEGORY_ROW_SPECS: dict[str, tuple[str, str, str]] = {
+    "ek1a_chronic": ("copay:ek1a_exemption_review", "1.8.5.(7)", "EK-1/A"),
+    "acil_servis": ("copay:acil_servis_exemption_review", "1.8.5", ""),
+    "is_kazasi_meslek": ("copay:is_kazasi_exemption_review", "1.8.5", ""),
+    "yesil_kart": ("copay:yesil_kart_exemption_review", "1.8.5", ""),
+    "sehit_gazi": ("copay:sehit_gazi_exemption_review", "1.8.5", ""),
+    "vatani_hizmet": ("copay:vatani_hizmet_exemption_review", "1.8.5", ""),
+    "koruyucu_saglik": ("copay:koruyucu_saglik_exemption_review", "1.8.5", ""),
+}
+_COPAY_EK4D_ROW_SPEC: tuple[str, str, str] = (
+    "copay:ek4d_exemption_review",
+    "1.8.2.(3)",
+    "EK-4/D",
+)
+_COPAY_FALLBACK_ROW_SPEC: tuple[str, str, str] = ("copay:exemption_review", "1.8.5", "")
 
 
 def _material_row_billed_try(row: dict[str, object]) -> float | None:
@@ -56,6 +120,10 @@ def _action_row(
     material_name: str | None = None,
     detail: str | None = None,
     sut_section_id: str | None = None,
+    clause_ref: dict | None = None,
+    finding_type: str | None = None,
+    message_code: str | None = None,
+    message_params: dict | None = None,
 ) -> dict[str, Any]:
     return {
         "action_id": action_id,
@@ -73,7 +141,83 @@ def _action_row(
         "material_name": material_name,
         "detail": detail,
         "sut_section_id": sut_section_id,
+        "clause_ref": clause_ref,
+        "finding_type": finding_type,
+        "message_code": message_code,
+        "message_params": message_params,
     }
+
+
+def _copay_exemption_rows(copay: CopayOptimization) -> list[dict[str, Any]]:
+    """Reason-specific copay exemption-review rows (EK-1/A, EK-4/D, acil, ...).
+
+    Emits one row per identified exemption ground instead of the previous
+    single hardcoded EK-1/A row: EK-4/D, emergency (acil), work-accident
+    (iş kazası), yeşil kart and other grounds each get their own action row.
+    """
+    categories: list[str] = []
+    for source in copay.exemption_sources:
+        category = str(source.get("category") or "") if isinstance(source, dict) else ""
+        if category and category not in categories:
+            categories.append(category)
+
+    ek4d_present = any(
+        str(ground).startswith("ek4d") for ground in copay.rx_copay_savings_by_ground
+    ) or any(
+        str(row.get("exemption_ground") or "").startswith("ek4d")
+        for row in copay.rate_corrections
+        if isinstance(row, dict)
+    )
+
+    if not copay.is_exempt and not ek4d_present:
+        return []
+
+    # (category, action_id, clause_coordinate, annex), sources order preserved.
+    row_specs: list[tuple[str, str, str, str]] = []
+    for category in categories:
+        spec = _COPAY_CATEGORY_ROW_SPECS.get(category)
+        if spec is not None:
+            row_specs.append((category, *spec))
+    if ek4d_present:
+        row_specs.append(("ek4d", *_COPAY_EK4D_ROW_SPEC))
+    if copay.is_exempt and not row_specs:
+        row_specs.append(("", *_COPAY_FALLBACK_ROW_SPEC))
+
+    # B-H5: patient_copay_waived_total_try IS the true total (visit + rx
+    # copay savings). The previous `or total_copay_savings_try` fallback
+    # was a bug: when the true total is 0 (falsy), it fell back to
+    # total_copay_savings_try which holds ONLY visit savings (legacy
+    # misleading field name), injecting a non-zero gap where there is
+    # none. Use the true total directly.
+    gap = copay.patient_copay_waived_total_try
+    waived_total = gap if gap and gap > 0 else None
+
+    # Money rides the PRIMARY ground row only (primary_exemption_category
+    # when it matches an emitted row, else the first row).
+    primary_index = 0
+    if copay.primary_exemption_category:
+        for index, (category, *_spec) in enumerate(row_specs):
+            if category == copay.primary_exemption_category:
+                primary_index = index
+                break
+
+    rows: list[dict[str, Any]] = []
+    for index, (_category, action_id, coordinate, annex) in enumerate(row_specs):
+        rows.append(
+            _action_row(
+                action_id=action_id,
+                surface="copay",
+                kind="exemption_review",
+                compliance_savings_try=waived_total if index == primary_index else None,
+                detail=copay.exemption_disease or None,
+                sut_section_id=coordinate,
+                clause_ref=sut_clause_reference(
+                    coordinate, rule_type=RULE_TYPE_COPAY_WAIVER, annex=annex
+                ).to_dict(),
+                finding_type=_finding_type("copay"),
+            )
+        )
+    return rows
 
 
 def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]:
@@ -91,27 +235,11 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                 procedure_name=test.get("test_name"),
                 compliance_savings_try=test.get("savings_try"),
                 detail=test.get("detail"),
+                finding_type=_finding_type("lab"),
             )
         )
 
-    if report.copay.is_exempt:
-        # B-H5: patient_copay_waived_total_try IS the true total (visit + rx
-        # copay savings). The previous `or total_copay_savings_try` fallback
-        # was a bug: when the true total is 0 (falsy), it fell back to
-        # total_copay_savings_try which holds ONLY visit savings (legacy
-        # misleading field name), injecting a non-zero gap where there is
-        # none. Use the true total directly.
-        gap = report.copay.patient_copay_waived_total_try
-        actions.append(
-            _action_row(
-                action_id="copay:ek1a_exemption_review",
-                surface="copay",
-                kind="exemption_review",
-                compliance_savings_try=gap if gap and gap > 0 else None,
-                detail=report.copay.exemption_disease or None,
-                sut_section_id="1.8.5(7)",
-            )
-        )
+    actions.extend(_copay_exemption_rows(report.copay))
 
     for index, row in enumerate(report.billing_strategy.recommendations):
         if row.get("type") == "informational":
@@ -133,6 +261,9 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                 sgk_uplift_try=sgk,
                 detail=row.get("detail"),
                 sut_section_id=row.get("sut_section_id") or row.get("sut_section"),
+                finding_type=_finding_type("billing_strategy", kind),
+                message_code=row.get("message_code"),
+                message_params=row.get("message_params"),
             )
         )
 
@@ -163,6 +294,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                     sgk_uplift_try=row.get(uplift_field) or row.get("recoverable_uplift_try"),
                     detail=row.get("detail"),
                     sut_section_id=row.get("sut_section_id") or row.get("sut_section"),
+                    finding_type=_finding_type(surface_name),
                 )
             )
 
@@ -177,6 +309,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                 procedure_name=row.get("procedure_name"),
                 sgk_uplift_try=row.get("recoverable_gap_try"),
                 detail=row.get("detail"),
+                finding_type=_finding_type("procedure_capture_gap"),
             )
         )
 
@@ -189,6 +322,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                 claim_id=row.get("claim_id"),
                 detail=row.get("detail") or row.get("playbook_id"),
                 sut_section_id=row.get("sut_section_id"),
+                finding_type=_finding_type("medula_playbook"),
             )
         )
 
@@ -202,6 +336,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                 procedure_code=row.get("procedure_code"),
                 material_code=row.get("material_code"),
                 detail=row.get("detail"),
+                finding_type=_finding_type("claim_checklist"),
             )
         )
 
@@ -215,6 +350,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                 drug_code=row.get("drug_code") or row.get("inn"),
                 detail=row.get("detail"),
                 sut_section_id=row.get("sut_section_id"),
+                finding_type=_finding_type("drug_indication"),
             )
         )
 
@@ -246,6 +382,7 @@ def collect_billing_actions(report: BillingActionReport) -> list[dict[str, Any]]
                         or row_dict.get("sut_section")
                         or _MATERIAL_KIND_SUT_SECTION.get(kind)
                     ),
+                    finding_type=_finding_type("materials"),
                 )
             )
 

@@ -125,6 +125,9 @@ const billing = {
     "billed": "Billed",
     "payable": "SGK payable (claim)",
     "copayComponent": "Copay (participation fee)",
+    "correctedPayable": "Corrected SGK payable (100%)",
+    "correctedPayableTooltip": "Full 100% reimbursement paid by SGK to the hospital after katilimPayindanMuaf=E approval (Initial Claim + Waived Copay)",
+    "cashierRefundNotice": "Cashier Refund Notice: When full 100% payment is collected from SGK via copay exemption, any copay collected from the patient at registration must be refunded via a cashier receipt per Law No. 5510.",
     "ilaveUcret": "Ilave ücret",
     "ilaveUcretTotal": "Ilave ücret total",
     "waiverGround": "Waiver ground",
@@ -133,6 +136,19 @@ const billing = {
     "ek1aScopeNotice": "EK-1A on this bill applies only to outpatient specialist examination lines (§1.8.5(7)); labs, drugs, and day-case or inpatient visits use other grounds.",
     "inpatientDrugWaiverNotice": "Prescription exemption gap on this bill is attributed to §1.8.5(8) for drugs on inpatient or day-case claims until line-level inpatient-drug flags exist.",
     "patientVsClaimExemptionNotice": "Patient-level EK-1A eligibility does not mean every line on this bill is waived under EK-1A — see per-line waiver grounds below.",
+    "ilaveReasons": {
+      "drugProhibited": "Prohibited ({coordinate} Drug)",
+      "cancerExempt": "Exempt ({coordinate} Oncology)",
+      "emergencyExempt": "Exempt ({coordinate} Emergency)",
+      "drugProhibitedTooltip": "Per SUT {coordinate} and {law}, charging surcharges on pharmaceutical drugs is prohibited by law.",
+      "cancerExemptTooltip": "Per SUT {coordinate}, no facility surcharges may be charged for oncology treatments.",
+      "emergencyExemptTooltip": "Per SUT {coordinate}, no facility surcharges may be charged for emergency services."
+    },
+    "clauseDrawer": {
+      "title": "SUT clause text",
+      "kicker": "Legislation",
+      "ariaLabel": "SUT clause text drawer"
+    },
     "groundLabels": {
       "ek1a_muayene": "EK-1A outpatient examination",
       "inpatient_drug_1_8_5_8": "§1.8.5(8) inpatient/day-case drug",

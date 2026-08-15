@@ -391,6 +391,20 @@ def check_payment_method_compliance(
             )
         )
 
+    message_code = ""
+    message_params: dict | None = None
+    if not is_compliant and detail.startswith("Procedure "):
+        message_code = (
+            "procedure_must_package"
+            if kind == "DRG_MANDATORY"
+            else "procedure_must_itemized"
+        )
+        message_params = {
+            "code": mandated.procedure_code,
+            "method": mandated.payment_method_tr,
+            "section": mandated.trace.sut_section,
+        }
+
     return PaymentMethodCompliance(
         procedure_code=mandated.procedure_code,
         mandated_method=method,
@@ -399,6 +413,8 @@ def check_payment_method_compliance(
         is_compliant=is_compliant,
         detail=detail,
         trace=mandated.trace,
+        message_code=message_code,
+        message_params=message_params,
     )
 
 

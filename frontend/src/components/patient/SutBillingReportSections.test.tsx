@@ -196,6 +196,92 @@ describe("SutBillingReportSections honest gaps", () => {
     expect(html).toContain("Copay (participation fee)");
   });
 
+  it("renders backend ilave reasons with clause drawer links when resolvable", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <CopayOptimizationSection
+        copayData={{
+          exactness_status: "exact",
+          is_exempt: true,
+          exemption_disease: "Multiple Miyelom ve Malign Plazma",
+          exemption_range: "C90",
+          visit_copay_savings_try: 0,
+          rx_copay_savings_try: 31.24,
+          total_copay_savings_try: 0,
+          patient_copay_waived_total_try: 31.24,
+          ilave_ucret_total_try: 25,
+          line_decomposition_status: "exact",
+          rate_corrections: [
+            {
+              code: "A11925",
+              name: "MONOVAS 5 MG",
+              exemption_ground: "inpatient_drug_1_8_5_8",
+              billed_try: 111.55,
+              payable_try: 80.32,
+              copay_component_try: 31.24,
+              clause_ref: {
+                clause_key: "1.8.5.(8)#abc123",
+                clause_coordinate: "1.8.5.(8)",
+              },
+              ilave_ucret_status: "drug_prohibited",
+              ilave_clause_ref: {
+                clause_key: "1.9.1#52ade285",
+                clause_coordinate: "1.9.1",
+                statutory_law: "5510 Sayılı Kanun Madde 73",
+              },
+            },
+          ],
+        }}
+      />,
+    );
+
+    // Backend-driven reason label composed from the §1.9.1 clause ref.
+    expect(html).toContain("Prohibited (§1.9.1 Drug)");
+    // Ilave cell links the surcharge clause; ground cell links the waiver clause.
+    expect(html).toContain('data-clause-link="1.9.1#52ade285"');
+    expect(html).toContain('data-clause-link="1.8.5.(8)#abc123"');
+    // In-flight affordances kept.
+    expect(html).toContain("Corrected SGK payable (100%)");
+    expect(html).toContain("Cashier Refund Notice");
+  });
+
+  it("renders unresolved ilave reasons as plain text without a drawer link", () => {
+    const html = renderToStaticMarkupWithLocale(
+      <CopayOptimizationSection
+        copayData={{
+          exactness_status: "exact",
+          is_exempt: true,
+          exemption_disease: "Multiple Miyelom",
+          exemption_range: "C90",
+          visit_copay_savings_try: 10,
+          rx_copay_savings_try: 0,
+          total_copay_savings_try: 10,
+          patient_copay_waived_total_try: 10,
+          ilave_ucret_total_try: 5,
+          line_decomposition_status: "exact",
+          rate_corrections: [
+            {
+              code: "520010",
+              name: "Muayene",
+              billed_try: 100,
+              payable_try: 80,
+              copay_component_try: 10,
+              ilave_ucret_status: "cancer_exempt",
+              ilave_clause_ref: {
+                clause_key: "",
+                clause_coordinate: "1.9.3.ç",
+              },
+            },
+          ],
+        }}
+      />,
+    );
+
+    // Cite is still composed from the coordinate, but clause_key is empty →
+    // graceful degradation to plain text (no drawer link anywhere).
+    expect(html).toContain("Exempt (§1.9.3.ç Oncology)");
+    expect(html).not.toContain("data-clause-link");
+  });
+
   it("shows ilave info stat in billing summary when decomposition is exact", () => {
     const html = renderToStaticMarkupWithLocale(
       <BillingSummary
@@ -585,7 +671,14 @@ describe("DrugIndicationReviewSection", () => {
               action_id: "copay:ek1a",
               surface: "copay",
               kind: "exemption_review",
-              sut_section_id: "1.8.5(7)",
+              // Backend emits the canonical dot form (never legacy "1.8.5(7)").
+              sut_section_id: "1.8.5.(7)",
+              clause_ref: {
+                clause_key: "1.8.5.(7)#9f2c41de",
+                clause_coordinate: "1.8.5.(7)",
+                annex: "EK-1/A",
+              },
+              finding_type: "opportunity",
             },
           ],
           copay: {
@@ -601,7 +694,7 @@ describe("DrugIndicationReviewSection", () => {
     expect(html).toContain("Torakotomi");
     // Both recommended actions render as separate rows in the itemized table.
     expect(html).toContain("§2.2.1.B-1.a");
-    expect(html).toContain("§1.8.5(7)");
+    expect(html).toContain("§1.8.5.(7)");
   });
 
   it("renders material recommended actions with SUT, billed amount, and detail", () => {

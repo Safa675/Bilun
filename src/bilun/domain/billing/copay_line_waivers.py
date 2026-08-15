@@ -4,14 +4,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
+from functools import lru_cache
 from typing import Any
 
 from src.bilun.domain.billing.line_decomposition import (
     decompose_drug_line,
     decompose_procedure_line,
+    drug_surcharge_prohibition_clause,
+    emergency_surcharge_exemption_clause,
 )
 from src.bilun.domain.claims.models import ClaimHeader, DrugClaimLine, ProcedureClaimLine
 from src.bilun.domain.drugs.ek4d_exempt import match_ek4d_copay_exempt_drug
+from src.bilun.domain.sut.clause_reference import (
+    RULE_TYPE_COPAY_WAIVER,
+    SutClauseReference,
+    sut_clause_reference,
+)
 
 _INPATIENT_CLAIM_TYPES = frozenset({"yatis", "gunubirlik"})
 _EMERGENCY_TYPES = frozenset(
@@ -33,6 +41,12 @@ _COMPOSITE_PATIENT_STATUS_CATEGORIES = frozenset(
 )
 
 
+@lru_cache(maxsize=8)
+def _copay_waiver_clause_ref(coordinate: str, annex: str = "") -> SutClauseReference:
+    """Cached Track E reference for a copay-waiver clause (per coordinate)."""
+    return sut_clause_reference(coordinate, rule_type=RULE_TYPE_COPAY_WAIVER, annex=annex)
+
+
 @dataclass(frozen=True)
 class WaiverResult:
     """Savings or insight for one claim line under a specific waiver ground."""
@@ -49,6 +63,8 @@ class WaiverResult:
     payable_try: float | None = None
     insight_only: bool = False
     ilave_ucret_try: Decimal = Decimal("0")
+    clause_ref: SutClauseReference | None = None
+    drug_waiver: bool = False
 
     def to_rate_correction(self) -> dict[str, Any]:
         row: dict[str, Any] = {
@@ -71,6 +87,16 @@ class WaiverResult:
             row["copay_component_try"] = float(self.component_try)
         if self.ilave_ucret_try > 0:
             row["ilave_ucret_try"] = float(self.ilave_ucret_try)
+        if self.clause_ref is not None:
+            row["clause_ref"] = self.clause_ref.to_dict()
+        if self.drug_waiver:
+            row["ilave_ucret_status"] = "drug_prohibited"
+            row["ilave_clause_ref"] = drug_surcharge_prohibition_clause().to_dict()
+        elif self.exemption_ground.startswith("composite_acil"):
+            row["ilave_ucret_status"] = "emergency_exempt"
+            row["ilave_clause_ref"] = emergency_surcharge_exemption_clause().to_dict()
+        elif self.exemption_ground == "ek1a_muayene":
+            row["ilave_ucret_status"] = "none"
         return row
 
 
@@ -181,6 +207,7 @@ def waiver_ek1a_muayene(
         name=line.procedure_name,
         billed_try=float(line.billed_amount_try),
         payable_try=float(line.expected_payable_try),
+        clause_ref=_copay_waiver_clause_ref("1.8.5.(7)", "EK-1/A"),
     )
 
 
@@ -211,6 +238,8 @@ def waiver_inpatient_drug(
         name=line.drug_name,
         billed_try=float(line.billed_amount_try),
         payable_try=float(line.expected_payable_try),
+        clause_ref=_copay_waiver_clause_ref("1.8.5.(8)"),
+        drug_waiver=True,
     )
 
 
@@ -250,6 +279,8 @@ def waiver_ek4d_drug(
             code=line.drug_code,
             name=line.drug_name,
             insight_only=True,
+            clause_ref=_copay_waiver_clause_ref("1.8.2.(3)", "EK-4/D"),
+            drug_waiver=True,
         )
 
     if not ek4d.get("counts_toward_exempt"):
@@ -271,6 +302,8 @@ def waiver_ek4d_drug(
             billed_try=float(line.billed_amount_try),
             payable_try=float(line.expected_payable_try),
             insight_only=True,
+            clause_ref=_copay_waiver_clause_ref("1.8.2.(3)", "EK-4/D"),
+            drug_waiver=True,
         )
 
     if component <= 0:
@@ -290,6 +323,8 @@ def waiver_ek4d_drug(
         name=line.drug_name,
         billed_try=float(line.billed_amount_try),
         payable_try=float(line.expected_payable_try),
+        clause_ref=_copay_waiver_clause_ref("1.8.2.(3)", "EK-4/D"),
+        drug_waiver=True,
     )
 
 
@@ -341,6 +376,7 @@ def waiver_composite_procedure(
         name=line.procedure_name,
         billed_try=float(line.billed_amount_try),
         payable_try=float(line.expected_payable_try),
+        clause_ref=_copay_waiver_clause_ref("1.8.5"),
     )
 
 
@@ -374,4 +410,6 @@ def waiver_composite_drug(
         name=line.drug_name,
         billed_try=float(line.billed_amount_try),
         payable_try=float(line.expected_payable_try),
+        clause_ref=_copay_waiver_clause_ref("1.8.5"),
+        drug_waiver=True,
     )

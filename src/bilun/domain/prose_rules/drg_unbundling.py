@@ -77,20 +77,22 @@ def detect_payment_method_violations(
         if compliance.is_compliant or compliance.mandated_method == "unknown":
             continue
 
-        violations.append(
-            {
-                "procedure_line_id": line.procedure_line_id,
-                "procedure_code": line.procedure_code,
-                "procedure_name": line.procedure_name,
-                "mandated_method": compliance.mandated_method,
-                "billed_as_package": billed_as_package,
-                "billed_amount_try": _money(_line_billed(line)),
-                "sut_section": compliance.trace.sut_section,
-                "rule_id": compliance.trace.rule_id,
-                "detail": compliance.detail,
-                "risk_amount_try": _money(_line_billed(line)),
-            }
-        )
+        violation_row: dict[str, Any] = {
+            "procedure_line_id": line.procedure_line_id,
+            "procedure_code": line.procedure_code,
+            "procedure_name": line.procedure_name,
+            "mandated_method": compliance.mandated_method,
+            "billed_as_package": billed_as_package,
+            "billed_amount_try": _money(_line_billed(line)),
+            "sut_section": compliance.trace.sut_section,
+            "rule_id": compliance.trace.rule_id,
+            "detail": compliance.detail,
+            "risk_amount_try": _money(_line_billed(line)),
+        }
+        if compliance.message_code:
+            violation_row["message_code"] = compliance.message_code
+            violation_row["message_params"] = compliance.message_params
+        violations.append(violation_row)
 
     return violations
 

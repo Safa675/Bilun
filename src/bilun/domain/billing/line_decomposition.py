@@ -1,17 +1,65 @@
-"""Claim-line copay vs ilave ücret decomposition (SUT §1.8 / §2.4)."""
+"""Claim-line copay vs ilave ücret decomposition (SUT §1.8 / §1.9)."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import Decimal
+from functools import lru_cache
 from typing import Literal
 
 from src.bilun.domain.claims.models import DrugClaimLine, ProcedureClaimLine
 from src.bilun.domain.money import quantize_money, quantize_money_or_zero
+from src.bilun.domain.sut.clause_reference import (
+    RULE_TYPE_SURCHARGE_EXEMPTION,
+    RULE_TYPE_SURCHARGE_PROHIBITION,
+    SutClauseReference,
+    sut_clause_reference,
+)
 
 LineDecompositionStatus = Literal["exact", "copay_only", "missing_inputs"]
 
 DEFAULT_IDENTITY_TOLERANCE = Decimal("0.10")
+
+# Track E clause cites for the surcharge (ilave ücret) rules. Verified against
+# data/gazette/sut_clause_coverage.parquet: ilave ücret is legislated under
+# SUT §1.9 (not §2.4.4 — that section is "Diğer bazı tetkik ve tedavi
+# yöntemleri" and no 2.4.4 sub-clause carries ilave-ücret wording).
+# §1.9.1 scopes ilave ücret to EK-2/B + EK-2/C list prices, so drugs (billed
+# via EK-4/A) can never carry one; the statutory anchor is 5510 md.73.
+# §1.9.3 lists services from which no ilave ücret may be taken: bent (a)
+# acil haller, bent (ç) kanser tedavisi.
+_DRUG_SURCHARGE_SCOPE_COORDINATE = "1.9.1"
+_EMERGENCY_SURCHARGE_EXEMPTION_COORDINATE = "1.9.3.a"
+_CANCER_SURCHARGE_EXEMPTION_COORDINATE = "1.9.3.ç"
+_DRUG_SURCHARGE_PROHIBITION_LAW = "5510 Sayılı Kanun Madde 73"
+
+
+@lru_cache(maxsize=1)
+def drug_surcharge_prohibition_clause() -> SutClauseReference:
+    """SUT §1.9.1 + 5510 md.73: an ilave ücret on drugs is legally prohibited."""
+    return sut_clause_reference(
+        _DRUG_SURCHARGE_SCOPE_COORDINATE,
+        rule_type=RULE_TYPE_SURCHARGE_PROHIBITION,
+        statutory_law=_DRUG_SURCHARGE_PROHIBITION_LAW,
+    )
+
+
+@lru_cache(maxsize=1)
+def emergency_surcharge_exemption_clause() -> SutClauseReference:
+    """SUT §1.9.3(a): no ilave ücret on services delivered as acil haller."""
+    return sut_clause_reference(
+        _EMERGENCY_SURCHARGE_EXEMPTION_COORDINATE,
+        rule_type=RULE_TYPE_SURCHARGE_EXEMPTION,
+    )
+
+
+@lru_cache(maxsize=1)
+def cancer_surcharge_exemption_clause() -> SutClauseReference:
+    """SUT §1.9.3(ç): no ilave ücret on kanser tedavisi."""
+    return sut_clause_reference(
+        _CANCER_SURCHARGE_EXEMPTION_COORDINATE,
+        rule_type=RULE_TYPE_SURCHARGE_EXEMPTION,
+    )
 
 
 @dataclass(frozen=True)
@@ -25,6 +73,8 @@ class LineDecomposition:
     patient_copay_try: Decimal
     ilave_ucret_try: Decimal
     at_risk_total_try: Decimal
+    ilave_ucret_status: str = "none"
+    surcharge_clause: SutClauseReference | None = None
 
 
 def _rate_decimal(value: Decimal | None) -> Decimal | None:
@@ -130,8 +180,20 @@ def decompose_line(
     )
 
 
-def decompose_procedure_line(line: ProcedureClaimLine) -> LineDecomposition:
-    return decompose_line(
+def decompose_procedure_line(
+    line: ProcedureClaimLine,
+    *,
+    cancer_exempt: bool = False,
+    emergency_exempt: bool = False,
+) -> LineDecomposition:
+    """Decompose a procedure line and annotate its ilave ücret status.
+
+    The money math is unchanged (``decompose_line``); the annotation only
+    links the governing SUT §1.9.3 surcharge-exemption clause when a
+    surcharge applies.
+    """
+
+    base = decompose_line(
         line.billed_amount_try,
         line.expected_payable_try,
         copay_rate=line.copay_rate,
@@ -139,19 +201,46 @@ def decompose_procedure_line(line: ProcedureClaimLine) -> LineDecomposition:
         copay_applicable=line.copay_rate_applicable,
         surcharge_applicable=line.surcharge_applicable,
     )
+    if not (line.surcharge_applicable and line.surcharge_rate is not None):
+        return base
+    if cancer_exempt:
+        return replace(
+            base,
+            ilave_ucret_status="cancer_exempt",
+            surcharge_clause=cancer_surcharge_exemption_clause(),
+        )
+    if emergency_exempt:
+        return replace(
+            base,
+            ilave_ucret_status="emergency_exempt",
+            surcharge_clause=emergency_surcharge_exemption_clause(),
+        )
+    return replace(base, ilave_ucret_status="applicable")
 
 
 def decompose_drug_line(line: DrugClaimLine) -> LineDecomposition:
+    """Decompose a drug line; the drug surcharge prohibition is unconditional.
+
+    SUT §1.9.1 + 5510 md.73: an ilave ücret on drugs is legally prohibited,
+    so the annotation applies even when decomposition returns missing_inputs.
+    The money math is unchanged (``decompose_line``).
+    """
+
     copay_rate = line.copay_rate
     if copay_rate is None and line.discount_tier_expected is not None:
         copay_rate = line.discount_tier_expected
-    return decompose_line(
+    base = decompose_line(
         line.billed_amount_try,
         line.expected_payable_try,
         copay_rate=copay_rate,
         surcharge_rate=line.surcharge_rate,
         copay_applicable=copay_rate is not None,
         surcharge_applicable=line.surcharge_rate is not None,
+    )
+    return replace(
+        base,
+        ilave_ucret_status="drug_prohibited",
+        surcharge_clause=drug_surcharge_prohibition_clause(),
     )
 
 

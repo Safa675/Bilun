@@ -30,6 +30,7 @@ from src.bilun.domain.prose_rules.types import (
     SAVINGS_BASIS_SOURCED,
     SAVINGS_CATEGORY_SGK_UPLIFT,
 )
+from src.bilun.domain.sut.clause_reference import SOURCE_EL_KITABI, non_sut_reference
 
 if TYPE_CHECKING:
     from src.bilun.domain.claims.models import ClaimDiagnosis, ClaimHeader, ProcedureClaimLine
@@ -37,6 +38,15 @@ if TYPE_CHECKING:
 # Common violation-shape keys reused by every detector.
 _OPPORTUNITY_TYPE = "diagnosis_quality"
 _SUT_SECTION_ID = "elkitabi_diagnosis_coding"
+
+# Provenance (Phase 2): diagnosis-coding quality rules are El Kitabı
+# content, not a SUT clause — findings are labeled honestly instead of
+# carrying an invented SUT cite. Resolved once at module load; every
+# finding shares the same dict (clause_key stays empty).
+_SOURCE_TYPE = SOURCE_EL_KITABI
+_CLAUSE_REF = non_sut_reference(
+    "El Kitabı — Tanı Kodlama Kalitesi", source_type=SOURCE_EL_KITABI
+).to_dict()
 
 # ---------------------------------------------------------------------------
 # A1 — Never-valid principal diagnosis blocklists.
@@ -213,6 +223,8 @@ def detect_never_principal_diagnosis(
                 "rule_id": "never_principal_diagnosis_blocklist",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "error",
@@ -304,6 +316,8 @@ def detect_diagnosis_procedure_mismatch(
                 "rule_id": "dx_procedure_mismatch",
                 "detail": detail,
                 "sut_section_id": _SUT_SECTION_ID,
+                "source_type": _SOURCE_TYPE,
+                "clause_ref": _CLAUSE_REF,
                 "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                 "savings_basis": SAVINGS_BASIS_SOURCED,
                 "severity": "warning",
@@ -430,6 +444,8 @@ def detect_unnecessary_additional_diagnosis(
                     "rule_id": "unnecessary_additional_diagnosis",
                     "detail": detail,
                     "sut_section_id": _SUT_SECTION_ID,
+                    "source_type": _SOURCE_TYPE,
+                    "clause_ref": _CLAUSE_REF,
                     "savings_category": SAVINGS_CATEGORY_SGK_UPLIFT,
                     "savings_basis": SAVINGS_BASIS_SOURCED,
                     "severity": "warning",

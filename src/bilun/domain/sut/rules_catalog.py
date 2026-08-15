@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import threading
 from functools import lru_cache
 from typing import Any
 
@@ -80,6 +81,7 @@ _CLAUSE_COLUMNS: tuple[str, ...] = (
 
 _coverage_cache: pl.DataFrame | None = None
 _coverage_loaded = False
+_coverage_lock = threading.Lock()
 _registry_coverage_cache: dict[str, dict[str, Any]] | None = None
 
 # Cache for the computed coverage summary keyed by max parquet mtime.
@@ -88,15 +90,27 @@ _coverage_summary_mtime: float | None = None
 
 
 def _load_coverage() -> pl.DataFrame | None:
-    """Load the clause coverage matrix (cached). None when the artifact is absent."""
+    """Load the clause coverage matrix (cached). None when the artifact is absent.
+
+    Thread-safe: the loaded flag is only published once the frame (or its
+    definitive absence) is assigned. Without the lock, a worker racing the
+    first load observed ``_coverage_loaded=True`` with a still-None cache and
+    cached empty clause keys downstream (cohort billing reports run on a
+    ThreadPoolExecutor).
+    """
     global _coverage_cache, _coverage_loaded
-    if _coverage_loaded:
+    with _coverage_lock:
+        if _coverage_loaded:
+            return _coverage_cache
+        frame = _load_coverage_locked()
+        _coverage_cache = frame
+        _coverage_loaded = True
         return _coverage_cache
 
-    _coverage_loaded = True
+
+def _load_coverage_locked() -> pl.DataFrame | None:
     if not SUT_CLAUSE_COVERAGE_PATH.exists():
         logger.warning("SUT clause coverage parquet not found: %s", SUT_CLAUSE_COVERAGE_PATH)
-        _coverage_cache = None
         return None
 
     try:
@@ -122,11 +136,9 @@ def _load_coverage() -> pl.DataFrame | None:
             .alias("_matched_rule_ids_list")
         )
         logger.info("SUT clause coverage loaded: %d clauses", frame.height)
-        _coverage_cache = frame
         return frame
     except Exception as exc:  # pragma: no cover - defensive
         logger.warning("Failed to load SUT clause coverage: %s", exc)
-        _coverage_cache = None
         return None
 
 

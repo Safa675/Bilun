@@ -1,12 +1,12 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { BillingActionReport, ClaimSubmissionChecklist, PatientOptimization } from "@/lib/domains/sut";
 import { getSutAlertBadgeLabel, getSutSeverityLabel, getPaymentMethodKindLabel } from "@/lib/sutLabels";
 import { useT } from "@/lib/i18n/useTranslations";
 import { getModuleLocale } from "@/lib/i18n/localeModule";
 import { fmtDate } from "@/lib/i18n/formatters";
-import { translateApiText } from "@/lib/apiMessages";
+import { translateApiText, translateStructuredApiMessage } from "@/lib/apiMessages";
 import {
   hasRecoverableBillingTotals,
   isExactOutput,
@@ -19,7 +19,8 @@ import {
   copayCorrectionPayableTry,
   copayCorrectionProcedureLabel,
   copayCorrectionSavingsTry,
-  copayCorrectionIlaveTry,
+  copayCorrectedPayableTry,
+  resolveCopayIlaveStatus,
   copayExemptionGapTotal,
   copayShowsIlaveColumn,
   formatSutSectionLabel,
@@ -59,6 +60,7 @@ import { theme } from "@/lib/theme";
 import { cn } from "@/lib/cn";
 import { ExemptionBasisChips } from "@/components/sut/ExemptionBasisChips";
 import { EkAnnexChips, RuleSourceAttribution } from "@/components/sut/RegulatorySourceChips";
+import { SutClauseDrawer } from "@/components/sut/SutClauseDrawer";
 import { resolveBillingEkAnnexLabels } from "@/lib/sutRegulatorySources";
 import { MaterialBundlingScopeNotice } from "@/components/sut/MaterialBundlingScopeNotice";
 import { SpecialtyProseScopeNotice } from "@/components/sut/SpecialtyProseScopeNotice";
@@ -260,7 +262,11 @@ export function RecommendedActionsPanel({
                     "—"
                   )}
                 </td>
-                <td className="text-sm text-[var(--text-secondary)]">{action.detail ? translateApiText(action.detail) : "—"}</td>
+                <td className="text-sm text-[var(--text-secondary)]">
+                  {action.detail || action.message_code
+                    ? translateStructuredApiMessage(t, action)
+                    : "—"}
+                </td>
               </tr>
             );
           })}
@@ -517,6 +523,7 @@ export function LabOptimizationSection({ labData }: { labData: BillingActionRepo
 
 export function CopayOptimizationSection({ copayData }: { copayData: BillingActionReport["copay"] }) {
   const t = useT();
+  const [clauseDrawerKey, setClauseDrawerKey] = useState<string | null>(null);
   const copayExact = isExactOutput(copayData);
   const hasInsight =
     copayData.is_exempt ||
@@ -662,7 +669,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
           <div className="space-y-2">
             {insightOnlyRows.map((correction, index) => (
               <p key={`insight-${index}`} className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                {translateApiText(correction.detail)}
+                {translateStructuredApiMessage(t, correction)}
               </p>
             ))}
           </div>
@@ -675,7 +682,12 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
               {t("billing.copay.tableIntro")}
             </p>
           )}
-          <TableWrap minWidth={760}>
+          {copayData.is_exempt && (
+            <div className="rounded-[var(--r-md)] border border-[var(--border-subtle)] bg-[var(--surface-tint)] p-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+              <span className="font-semibold text-[var(--text-primary)]">ℹ️ {t("billing.copay.cashierRefundNotice")}</span>
+            </div>
+          )}
+          <TableWrap minWidth={840}>
             <thead>
               <tr>
                 <th>{t("billing.copay.procedure")}</th>
@@ -685,6 +697,9 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.billed")}</th>
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.payable")}</th>
                     <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.copayComponent")}</th>
+                    <th className="num-col tabular-nums text-right font-semibold text-[var(--success)]" style={WRAPPED_HEADER_STYLE} title={t("billing.copay.correctedPayableTooltip")}>
+                      {t("billing.copay.correctedPayable")}
+                    </th>
                     {showIlaveColumn ? (
                       <th className="num-col tabular-nums text-right" style={WRAPPED_HEADER_STYLE}>{t("billing.copay.ilaveUcret")}</th>
                     ) : null}
@@ -703,7 +718,25 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
                   <td>{copayCorrectionProcedureLabel(correction)}</td>
                   {hasWaiverGroundColumn ? (
                     <td className="text-sm text-[var(--text-secondary)]">
-                      {waiverGroundLabel(copayCorrectionGroundKey(correction))}
+                      {(() => {
+                        const label = waiverGroundLabel(copayCorrectionGroundKey(correction));
+                        const groundClauseKey = (correction.clause_ref?.clause_key ?? "").trim();
+                        if (!groundClauseKey) {
+                          return label;
+                        }
+                        const coordinate = (correction.clause_ref?.clause_coordinate ?? "").trim();
+                        return (
+                          <button
+                            type="button"
+                            data-clause-link={groundClauseKey}
+                            onClick={() => setClauseDrawerKey(groundClauseKey)}
+                            title={coordinate ? formatSutSectionLabel(coordinate) : undefined}
+                            className="cursor-pointer underline decoration-dotted decoration-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                          >
+                            {label}
+                          </button>
+                        );
+                      })()}
                     </td>
                   ) : null}
                   {usesClaimCopayCorrectionShape(correction) ? (
@@ -714,12 +747,45 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
                       <td className="num-col tabular-nums text-right">
                         {fmtTRY2OrUnavailable(copayCorrectionPayableTry(correction))}
                       </td>
-                      <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
+                      <td className="num-col tabular-nums text-right font-semibold text-[var(--gold)]">
                         {fmtTRY2OrUnavailable(copayCorrectionSavingsTry(correction))}
                       </td>
+                      <td className="num-col tabular-nums text-right font-semibold text-[var(--success)]" title={t("billing.copay.correctedPayableTooltip")}>
+                        {fmtTRY2OrUnavailable(copayCorrectedPayableTry(correction))}
+                      </td>
                       {showIlaveColumn ? (
-                        <td className="num-col tabular-nums text-right text-[var(--text-secondary)]">
-                          {fmtTRY2OrUnavailable(copayCorrectionIlaveTry(correction))}
+                        <td className="num-col tabular-nums text-right text-xs text-[var(--text-secondary)]">
+                          {(() => {
+                            const status = resolveCopayIlaveStatus(correction);
+                            if (status.kind === "numeric" && status.amount != null) {
+                              return fmtTRY2(status.amount);
+                            }
+                            const label = t(status.labelKey, status.labelParams);
+                            const tooltip = status.tooltipKey
+                              ? t(status.tooltipKey, status.labelParams)
+                              : undefined;
+                            if (status.clauseKey) {
+                              return (
+                                <button
+                                  type="button"
+                                  data-clause-link={status.clauseKey}
+                                  onClick={() => setClauseDrawerKey(status.clauseKey)}
+                                  title={tooltip}
+                                  className="cursor-pointer underline decoration-dotted decoration-[var(--border-strong)] hover:text-[var(--text-primary)]"
+                                >
+                                  {label}
+                                </button>
+                              );
+                            }
+                            return (
+                              <span
+                                title={tooltip}
+                                className="cursor-help underline decoration-dotted decoration-[var(--border-strong)]"
+                              >
+                                {label}
+                              </span>
+                            );
+                          })()}
                         </td>
                       ) : null}
                     </>
@@ -740,6 +806,7 @@ export function CopayOptimizationSection({ copayData }: { copayData: BillingActi
           </>
         )}
       </div>
+      <SutClauseDrawer clauseKey={clauseDrawerKey} onClose={() => setClauseDrawerKey(null)} />
     </BillingSectionShell>
   );
 }
@@ -829,7 +896,11 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
                 <td>
                   <Chip variant="outline">{t("patient.workspace.reviewPackage")}</Chip>
                 </td>
-                <td>{translateApiText(item.detail ?? strategySecondaryLabel(item))}</td>
+                <td>
+                  {item.detail
+                    ? translateStructuredApiMessage(t, item)
+                    : translateApiText(strategySecondaryLabel(item))}
+                </td>
                 <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                   {fmtTRY2OrUnavailable(item.savings_try ?? null)}
                 </td>
@@ -924,8 +995,10 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
                   </td>
                   <td className="text-sm text-[var(--text-secondary)]">
                     {isViolation
-                      ? (item.detail ? translateApiText(item.detail) : "—")
-                      : (translateApiText(strategySecondaryLabel(item)) || "—")}
+                      ? (item.detail ? translateStructuredApiMessage(t, item) : "—")
+                      : (translateStructuredApiMessage(t, item) ||
+                          translateApiText(strategySecondaryLabel(item)) ||
+                          "—")}
                   </td>
                 </tr>
               );
@@ -951,7 +1024,11 @@ export function BillingStrategySection({ strategyData }: { strategyData: Billing
                   <td>
                     <Chip variant="outline">{t("patient.workspace.reviewPackage")}</Chip>
                   </td>
-                  <td>{translateApiText(item.detail ?? strategySecondaryLabel(item))}</td>
+                  <td>
+                  {item.detail
+                    ? translateStructuredApiMessage(t, item)
+                    : translateApiText(strategySecondaryLabel(item))}
+                </td>
                   <td className="num-col tabular-nums text-right font-semibold text-[var(--text-primary)]">
                     {fmtTRY2OrUnavailable(item.savings_try ?? null)}
                   </td>
@@ -1056,7 +1133,7 @@ export function OptionalOverrideSection({
                 })()}
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
-              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
+              <td>{item.detail ? translateStructuredApiMessage(t, item) : "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1146,7 +1223,11 @@ export function MaterialUpliftSection({
                 <BillingRegulatorySourceCell ruleSource={materialData.rule_source} />
               </td>
               <td>{formatSutSectionLabel(item.sut_section_id)}</td>
-              <td>{item.detail ? translateApiText(item.detail) : "—"}</td>
+              <td>
+                {item.detail || item.message_code
+                  ? translateStructuredApiMessage(t, item)
+                  : "—"}
+              </td>
             </tr>
           ))}
         </tbody>
