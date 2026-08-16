@@ -42,6 +42,11 @@ const mockT = (key: string) => {
 
     "optimizer.tabs.exemptions": "Katılım Payı Muafiyetleri",
     "optimizer.tabs.surcharge": "İlave Ücret & Tavan Sınırı",
+    "optimizer.tabs.copay_rates": "Katılım oranı",
+    "optimizer.tabs.materials": "Tıbbi malzeme",
+    "optimizer.tabs.drug_indication": "İlaç endikasyon",
+    "optimizer.tabs.lab": "Laboratuvar",
+    "optimizer.tabs.payment_methods": "Ödeme yöntemi",
 
     "sections.ruleDatabase.tabs.coverage": "Kapsam",
     "sections.ruleDatabase.tabs.rules": "Kurallar",
@@ -125,8 +130,16 @@ describe("resolveTabInfo", () => {
       expect(info.subtab).toBe("surcharge");
     });
 
-    it("falls back to exemptions when compTab is an unknown value", () => {
+    it("resolves materials when compTab=materials", () => {
       const tab = makeTab("section", "compliance", "tab=compliance&compTab=materials");
+      const info = resolveTabInfo(tab, mockT);
+      expect(info.label).toBe("Tıbbi malzeme");
+      expect(info.Icon).toBe(COMPLIANCE_SUB_ICONS.materials);
+      expect(info.subtab).toBe("materials");
+    });
+
+    it("falls back to exemptions when compTab is an unknown value", () => {
+      const tab = makeTab("section", "compliance", "tab=compliance&compTab=surgical_sessions");
       const info = resolveTabInfo(tab, mockT);
       expect(info.label).toBe("Katılım Payı Muafiyetleri");
       expect(info.Icon).toBe(COMPLIANCE_SUB_ICONS.exemptions);

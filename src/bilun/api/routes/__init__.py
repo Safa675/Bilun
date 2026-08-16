@@ -13,6 +13,7 @@ Submodule split:
     alerts        — patient-alerts table
     optimization  — optimization-summary, per-patient findings,
                     revenue-recovery dashboard
+    compliance    — cohort compliance index (live finding families)
     billing       — per-patient billing report, drug catalog,
                     materials-by-specialty browser
     rules         — SUT rule database: catalog index + extracted-clause
@@ -23,7 +24,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from . import alerts, auth, billing, chat, medula_rejections, optimization, patients, pricing, rules, validation
+from . import alerts, auth, billing, chat, compliance, medula_rejections, optimization, patients, pricing, rules, validation
 
 # Public function re-exports — flat surface for tests and external callers
 # that prefer ``from src.bilun.api.routes import <fn>`` over reaching into a
@@ -36,6 +37,7 @@ from .billing import (  # noqa: F401, E402
     get_patient_billing_report,
 )
 from .chat import bilun_chat  # noqa: F401, E402
+from .compliance import get_compliance_index  # noqa: F401, E402
 from .optimization import (  # noqa: F401, E402
     get_bill_optimization,
     get_optimization_summary,
@@ -68,6 +70,7 @@ router.include_router(validation.router)
 router.include_router(pricing.router)
 router.include_router(alerts.router)
 router.include_router(optimization.router)
+router.include_router(compliance.router)
 router.include_router(billing.router)
 router.include_router(medula_rejections.router)
 router.include_router(rules.router)

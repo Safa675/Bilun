@@ -276,8 +276,8 @@ Fix CI first. Push second. No exceptions.
                                            
 ## 11. PR Review Check Before Every Merge
 
-Before merging ANY PR to main, check the PR review feedback first — bot reviewers
-(`pr_agent`, Copilot) AND any human reviews.
+Before merging ANY PR to main, check the PR review feedback first — Copilot
+AND any human reviews.
 
 ### Steps
 - After CI passes, fetch the PR review comments (`gh pr view <n> --json reviews,comments`)
@@ -293,10 +293,6 @@ Merging a PR with an unaddressed real-bug review finding is a critical failure.
 The review is the last gate before main — read it, don't rubber-stamp it.
 
 ### Notes
-- Bot reviewers (the `pr_agent` GitHub Action runs on every PR) catch real bugs —
-  PR #37's review found 3 genuine issues (identical if/else branches, atexit cleanup
-  deleting preserved dirs, a regex that failed on dash-less tokens). Treat bot reviews
-  as substantive, not noise.
 - "Real bug" = the code would produce wrong output, crash on a realistic input, or
   contradict its own docstring/comment. Style nits and low-probability defensive
   measures are NOT real bugs.

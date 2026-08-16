@@ -15,6 +15,7 @@ from src.bilun.domain.claims.provenance import (
 _PROVENANCE_TABLES = (
     "cohort_optimization_summary",
     "cohort_recovery_summary",
+    "cohort_compliance_index",
 )
 
 

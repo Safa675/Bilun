@@ -13,6 +13,7 @@ export const ALERT_PAGE_SIZE = 100;
 const ALERT_STATUS_OPTIONS: Record<PatientAlertsCategory, readonly PatientAlertsStatus[]> = {
   exemptions: ["all", "exempt", "not_exempt"],
   surcharge: ["all", "flagged", "clear"],
+  copay_rates: ["all", "flagged", "clear"],
 } as const;
 
 function t(key: string): string {

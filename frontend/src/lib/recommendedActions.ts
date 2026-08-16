@@ -175,6 +175,7 @@ const RECOMMENDED_ACTION_SECTION_IDS: Record<string, string> = {
   copay: "billing-copay",
   billing_strategy: "billing-strategy",
   materials: "materials-pre-check",
+  payment_methods: "billing-strategy",
   medula_playbook: "medula-playbook",
   claim_checklist: "claim-submission-checklist",
   drug_indication: "drug-indication",

@@ -361,7 +361,7 @@ export interface PatientAlertRow {
   copay_rate_exposure: PatientAlertCopayRate;
 }
 
-export type PatientAlertsCategory = "exemptions" | "surcharge";
+export type PatientAlertsCategory = "exemptions" | "surcharge" | "copay_rates";
 export type PatientAlertsStatus = "all" | "exempt" | "not_exempt" | "flagged" | "clear";
 
 export interface PatientAlertsSummary {
@@ -408,6 +408,54 @@ export interface PatientAlertsResponse extends SUTDataSourceCarrier {
   summary: PatientAlertsSummary;
   pagination: PatientAlertsPagination;
   query: PatientAlertsQuery;
+}
+
+export type ComplianceIndexSurface =
+  | "materials"
+  | "drug_indication"
+  | "lab"
+  | "payment_methods";
+
+export interface ComplianceIndexRow {
+  patient_id: string;
+  claim_id?: string | null;
+  surface: ComplianceIndexSurface;
+  source_surface?: string | null;
+  kind?: string | null;
+  finding_type?: "compliance";
+  billed_try?: number | null;
+  detail?: string | null;
+  procedure_code?: string | null;
+  procedure_name?: string | null;
+  material_code?: string | null;
+  material_name?: string | null;
+  drug_code?: string | null;
+  sut_section_id?: string | null;
+  action_id?: string | null;
+}
+
+export interface ComplianceIndexSurfaceSummary {
+  n: number;
+  billed_try: number;
+  n_patients?: number;
+}
+
+export interface ComplianceIndexPagination {
+  total_matching: number;
+  limit: number;
+  offset: number;
+  has_more: boolean;
+}
+
+export interface ComplianceIndexResponse extends SUTDataSourceCarrier {
+  artifacts_available: boolean;
+  n_patients: number | null;
+  n_findings: number | null;
+  n_patients_with_findings: number | null;
+  billed_at_risk_try: number | null;
+  by_surface: Record<string, ComplianceIndexSurfaceSummary>;
+  rows: ComplianceIndexRow[];
+  pagination?: ComplianceIndexPagination;
 }
 
 export interface LabOptimization extends ExactnessState {

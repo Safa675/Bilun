@@ -34,6 +34,7 @@ from src.bilun.db import (
     write_patient_alert_tables,
     write_dataframe,
 )
+from src.bilun.domain.billing.cohort_compliance import build_cohort_compliance_index
 from src.bilun.domain.claims.provenance import attach_bilun_data_source_metadata
 from src.bilun.domain.claims import SUTDataSourceConfig, resolve_sut_data_source
 from src.bilun.shared.memory import memory_snapshot_message, read_current_rss_mb
@@ -280,6 +281,15 @@ def run_build(args: argparse.Namespace) -> str:
                 sut_data_source_metadata,
             ),
         )
+        upsert_single_json_table(
+            con,
+            "cohort_compliance_index",
+            build.build_id,
+            attach_bilun_data_source_metadata(
+                build_cohort_compliance_index(billing_reports),
+                sut_data_source_metadata,
+            ),
+        )
 
         _print_memory_snapshot(
             "analytics_cache:after_phase1_tables",
@@ -343,6 +353,7 @@ def run_build(args: argparse.Namespace) -> str:
                 len(ctx.get("bill_billing_reports", {}))
             ),
             "cohort_recovery_summary": 1,
+            "cohort_compliance_index": 1,
             "patient_detail_cache": int(detail_rows),
             "patient_outcome_base": int(outcome_rows),
         }

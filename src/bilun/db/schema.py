@@ -271,6 +271,15 @@ def init_schema(con) -> None:
         """
     )
 
+    con.execute(
+        """
+        CREATE TABLE IF NOT EXISTS cohort_compliance_index (
+            build_id TEXT PRIMARY KEY,
+            payload_json TEXT NOT NULL
+        )
+        """
+    )
+
     # ── Phase 2 tables: per-patient pre-serialization ────────────────────
 
     con.execute(

@@ -1,11 +1,16 @@
 const optimizer = {
   tabs: {
     complianceDescription:
-      "Cohort compliance alerts: copay exemptions (EK-1A) and surcharge flags (EK-2G).",
+      "Cohort compliance alerts from live engines: copay exemptions, surcharge, EK-2C-1 rates, materials, indication, lab, and payment methods.",
     revenueDescription:
       "Cohort-level recovery review dashboard for active billing algorithms, plus availability notices for optimization checks that remain blocked on exact claim-line data.",
     exemptions: "Copay Exemptions",
     surcharge: "Surcharge Compliance",
+    copay_rates: "Copay Rates",
+    materials: "Materials",
+    drug_indication: "Drug Indication",
+    lab: "Lab",
+    payment_methods: "Payment Methods",
     categoriesAria: "Compliance alert categories",
   },
   filters: {
@@ -32,6 +37,7 @@ const optimizer = {
   categories: {
     exemptions: "Copay Exemptions",
     surcharge: "Surcharge Compliance",
+    copay_rates: "Copay Rates",
   },
   errors: {
     loadAlerts: "Failed to load patient alerts",
@@ -184,6 +190,23 @@ const optimizer = {
     exactClaimInputsRequired: "Exact claim inputs required",
     billedMinusExpectedPayable:
       "Billed minus expected payable (excludes EK-1A-exempt Rx copay — see copay savings)",
+  },
+  complianceIndex: {
+    findings: "Findings",
+    patientsWithFindings: "Patients with findings",
+    billedAtRisk: "Billed at risk",
+    medulaRejections: "MEDULA rejections",
+    medulaHint: "Rejection queue",
+    indexUnavailable: "Compliance index is not in this cache. Rebuild the analytics cache.",
+    noFindings: "No compliance findings for this filter.",
+    patientId: "Patient ID",
+    claim: "Claim",
+    code: "Code",
+    kind: "Kind",
+    billed: "Billed",
+    sutSection: "SUT",
+    inspect: "Inspect",
+    openBill: "Open bill",
   },
   savingsCategory: {
     sgk_uplift: "SGK uplift",

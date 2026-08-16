@@ -14,6 +14,7 @@ import type {
   PatientClaimsListResponse,
   MedulaRejectionIngestStatus,
   MedulaRejectionQueueResponse,
+  ComplianceIndexResponse,
 } from "../domains/sut";
 import type { PatientMeta, PatientSearchResponse } from "../domains/patient";
 
@@ -349,6 +350,34 @@ export async function getPatientAlerts(
 ): Promise<PatientAlertsResponse> {
   return requestJSON<PatientAlertsResponse>(
     buildPatientAlertsPath(params),
+    options,
+  );
+}
+
+export async function getComplianceIndex(
+  params?: {
+    surface?: string;
+    patientId?: string | string[];
+    limit?: number;
+    offset?: number;
+  },
+  options?: RequestInit,
+): Promise<ComplianceIndexResponse> {
+  const query = new URLSearchParams();
+  if (params?.surface) query.set("surface", params.surface);
+  if (params?.limit != null) query.set("limit", String(params.limit));
+  if (params?.offset != null) query.set("offset", String(params.offset));
+  const patientIds = Array.isArray(params?.patientId)
+    ? params.patientId
+    : params?.patientId
+      ? [params.patientId]
+      : [];
+  for (const id of patientIds) {
+    query.append("patient_id", id);
+  }
+  const queryString = query.toString();
+  return requestJSON<ComplianceIndexResponse>(
+    queryString ? `/api/compliance-index?${queryString}` : "/api/compliance-index",
     options,
   );
 }

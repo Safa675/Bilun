@@ -13,6 +13,7 @@ import {
   FlaskConical,
   FolderTree,
   PackageSearch,
+  Percent,
   PieChart,
   Pill,
   ScrollText,
@@ -74,21 +75,43 @@ export const BILLING_SUB_ICONS: Record<BillingToolSubSection, LucideIcon> = {
   lab_prices: FlaskConical,
 };
 
-export type ComplianceSubSection = "exemptions" | "surcharge";
+export type ComplianceSubSection =
+  | "exemptions"
+  | "surcharge"
+  | "copay_rates"
+  | "materials"
+  | "drug_indication"
+  | "lab"
+  | "payment_methods";
 
 export const COMPLIANCE_SUB_IDS: readonly ComplianceSubSection[] = [
   "exemptions",
   "surcharge",
+  "copay_rates",
+  "materials",
+  "drug_indication",
+  "lab",
+  "payment_methods",
 ] as const;
 
 export const COMPLIANCE_SUB_KEY = {
   exemptions: "exemptions",
   surcharge: "surcharge",
+  copay_rates: "copay_rates",
+  materials: "materials",
+  drug_indication: "drug_indication",
+  lab: "lab",
+  payment_methods: "payment_methods",
 } as const satisfies Record<ComplianceSubSection, string>;
 
 export const COMPLIANCE_SUB_ICONS: Record<ComplianceSubSection, LucideIcon> = {
   exemptions: ShieldCheck,
   surcharge: ShieldAlert,
+  copay_rates: Percent,
+  materials: Boxes,
+  drug_indication: Pill,
+  lab: FlaskConical,
+  payment_methods: FileCheck2,
 };
 
 export type RuleDatabaseSubSection =
